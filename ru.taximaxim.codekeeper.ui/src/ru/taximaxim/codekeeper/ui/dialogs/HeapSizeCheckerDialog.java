@@ -37,7 +37,8 @@ import ru.taximaxim.codekeeper.ui.prefs.heap.HeapSizeChecker;
  */
 public class HeapSizeCheckerDialog extends Dialog {
 
-    private static String LINK_ECLIPSE_INI_INFO = "https://wiki.eclipse.org/Eclipse.ini"; //$NON-NLS-1$
+    private static final String LINK_ECLIPSE_INI_INFO = "https://wiki.eclipse.org/Eclipse.ini"; //$NON-NLS-1$
+    private static final String VMARGS = "-vmargs"; //$NON-NLS-1$
 
     private Combo combo;
 
@@ -85,7 +86,7 @@ public class HeapSizeCheckerDialog extends Dialog {
             String xmxLineWintNewHeapSizeGb = new StringBuilder()
                     .append('-').append(HeapSizeChecker.XMX_HEAP_PARAMETER)
                     .append(Integer.parseInt(selectedHeapSizeGb))
-                    .append("G").toString(); //$NON-NLS-1$
+                    .append('G').toString();
 
             List<String> lines = lineStream.collect(Collectors.toList());
 
@@ -95,21 +96,19 @@ public class HeapSizeCheckerDialog extends Dialog {
 
             String newEclipseIniTex = null;
             if (xmxLine == null) {
-                StringBuilder sb = new StringBuilder();
-                for (String ln : lines) {
-                    if (ln.contains("-vmargs")) { //$NON-NLS-1$
-                        sb.append(ln).append("\n"); //$NON-NLS-1$
-                        sb.append(xmxLineWintNewHeapSizeGb).append("\n"); //$NON-NLS-1$
-                        continue;
-                    }
-                    sb.append(ln).append("\n"); //$NON-NLS-1$
+                int index = lines.indexOf(VMARGS);
+                if (index != -1) {
+                    lines.add(index, xmxLineWintNewHeapSizeGb);
+                } else {
+                    lines.add(VMARGS);
+                    lines.add(xmxLineWintNewHeapSizeGb);
                 }
-                newEclipseIniTex = sb.toString();
+                newEclipseIniTex = String.join("\n", lines); //$NON-NLS-1$
             } else {
-                newEclipseIniTex = lines.stream()
-                        .collect(Collectors.joining("\n")) //$NON-NLS-1$
+                newEclipseIniTex = String.join("\n", lines) //$NON-NLS-1$
                         .replace(xmxLine, xmxLineWintNewHeapSizeGb);
             }
+
             try (BufferedWriter writer = Files.newBufferedWriter(path)) {
                 writer.write(newEclipseIniTex);
                 if (MessageDialog.openQuestion(Display.getDefault().getActiveShell(),
@@ -119,7 +118,7 @@ public class HeapSizeCheckerDialog extends Dialog {
                 }
             }
         } catch (IOException e) {
-            new MessageDialogWithLink(Display.getDefault().getActiveShell(),
+            new MessageDialogWithLink(getShell(),
                     Messages.HeapSizeCheckerDialog_manual_heap_editing_title,
                     MessageFormat.format(Messages.HeapSizeCheckerDialog_manual_heap_editing,
                             selectedHeapSizeGb, path.toAbsolutePath()), MessageDialog.ERROR,

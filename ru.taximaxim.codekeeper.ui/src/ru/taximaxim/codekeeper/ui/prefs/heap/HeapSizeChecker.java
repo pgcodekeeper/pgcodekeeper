@@ -5,7 +5,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.util.Locale;
 import java.util.stream.Stream;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -29,9 +28,8 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
  */
 public class HeapSizeChecker implements IStartup {
 
-    private static final int RECOMMENDED_SIZE_GB = 2;
-    private static final double EMPIRICAL_RECOMMENDED_SIZE_GB = 1.7;
     public static final String XMX_HEAP_PARAMETER = "Xmx"; //$NON-NLS-1$
+    private static final int RECOMMENDED_SIZE_GB = 2;
 
     private final IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
 
@@ -67,43 +65,46 @@ public class HeapSizeChecker implements IStartup {
             if (xmxLine == null) {
                 Log.log(Log.LOG_WARNING,
                         "There is no 'Xmx' property in eclipse.ini file."); //$NON-NLS-1$
-                return isEmpiricalLessThanJvmAttemptsToUse();
+                return isComputedValLessThanNecessary();
             }
 
             double eclipseIniHeapSizeGb = 0;
-            String unit = xmxLine.substring(xmxLine.length() - 1).toUpperCase(Locale.ROOT);
-            int xmxValueBeginIdx = xmxLine.indexOf(XMX_HEAP_PARAMETER) + 3;
+            char unit = xmxLine.charAt(xmxLine.length() - 1);
+            int xmxValueBeginIdx = xmxLine.indexOf(XMX_HEAP_PARAMETER) + XMX_HEAP_PARAMETER.length();
             String valueStr = xmxLine.substring(xmxValueBeginIdx, xmxLine.length() - 1);
             switch (unit) {
-            case "G":
+            case 'G':
+            case 'g':
                 eclipseIniHeapSizeGb = Double.parseDouble(valueStr);
                 break;
-            case "M":
+            case 'M':
+            case 'm':
                 eclipseIniHeapSizeGb = Double.parseDouble(valueStr) / 1024;
                 break;
-            case "K":
+            case 'K':
+            case 'k':
                 eclipseIniHeapSizeGb = Double.parseDouble(valueStr) / 1024 / 1024;
                 break;
             default:
-                if (!Character.isDigit(unit.charAt(0))) {
+                if (!Character.isDigit(unit)) {
                     Log.log(Log.LOG_ERROR, MessageFormat.format(
                             "'{0}' has incorrect unit of 'Xmx' property" //$NON-NLS-1$
                             + " in eclipse.ini file", xmxLine)); //$NON-NLS-1$
-                    return isEmpiricalLessThanJvmAttemptsToUse();
+                    return isComputedValLessThanNecessary();
                 }
-                valueStr = xmxLine.substring(xmxValueBeginIdx, xmxLine.length());
+                valueStr = xmxLine.substring(xmxValueBeginIdx);
                 eclipseIniHeapSizeGb = Double.parseDouble(valueStr) / 1024 / 1024 / 1024;
                 break;
             }
             return RECOMMENDED_SIZE_GB > eclipseIniHeapSizeGb;
         } catch (IOException e) {
-            return isEmpiricalLessThanJvmAttemptsToUse();
+            return isComputedValLessThanNecessary();
         }
     }
 
-    private boolean isEmpiricalLessThanJvmAttemptsToUse() {
-        // 'Runtime.getRuntime().maxMemory()' - shows the size 2 times bigger
-        // than it is, therefore division by 2 is used
-        return EMPIRICAL_RECOMMENDED_SIZE_GB > Runtime.getRuntime().maxMemory() / 1024 / 1024 / 1024 / 2;
+    private boolean isComputedValLessThanNecessary() {
+        // TODO find out how programmatically to compute (or get Xmx value)
+        // return RECOMMENDED_SIZE_GB > computedValGb;
+        return true;
     }
 }
