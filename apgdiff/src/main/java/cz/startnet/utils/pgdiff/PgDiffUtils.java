@@ -12,14 +12,20 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.Lexer;
+import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.misc.Interval;
 import org.eclipse.core.runtime.IProgressMonitor;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLLexer;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.sql.Keyword;
 import ru.taximaxim.codekeeper.apgdiff.sql.Keyword.KeywordCategory;
@@ -108,61 +114,47 @@ public final class PgDiffUtils {
         return s.substring(1, s.length() - 1).replace("''", "'");
     }
 
-    @Deprecated
-    // TODO use antlr context's getText()
     public static String normalizeWhitespaceUnquoted(String string) {
         StringBuilder sb = new StringBuilder(string.length());
 
-        boolean quote = false;
-        boolean doubleQuote = false;
-        int currentWhitespaceStart = -1;
-        for (int pos = 0; pos < string.length(); ++pos) {
-            char ch = string.charAt(pos);
+        boolean needSpace = false;
 
-            if (ch == '\'') {
-                if (!doubleQuote) {
-                    quote = !quote;
-                }
-            } else if (ch == '"') {
-                if (!quote) {
-                    doubleQuote = !doubleQuote;
-                }
-            } else if (Character.isWhitespace(ch) && !quote && !doubleQuote) {
-                if (currentWhitespaceStart < 0) {
-                    currentWhitespaceStart = pos;
-                }
-
-                // do not add whitespace while iterating over it
+        Lexer lexer = new SQLLexer(new ANTLRInputStream(string));
+        for (Token token : lexer.getAllTokens()) {
+            int type = token.getType();
+            // skip whitespace
+            if (SQLLexer.White_Space == type || SQLLexer.Space == type) {
                 continue;
-            } else {
-                // if we interrupted some whitespace
-                if (currentWhitespaceStart >= 0) {
-                    // check whitespace boundaries, if it was delimited by a
-                    // special character do not separate that character - add nothing
-                    // if whitespace was necessary (e.g. delimited words) - add one space
-                    boolean removeWhitespace = false;
-
-                    if (currentWhitespaceStart - 1 >= 0) {
-                        char preW = string.charAt(currentWhitespaceStart - 1);
-                        removeWhitespace |= preW == '(' || preW == ')'
-                                || preW == ',';
-                    }
-                    if (pos + 1 < string.length()) {
-                        char postW = string.charAt(pos + 1);
-                        removeWhitespace |= postW == '(' || postW == ')'
-                                || postW == ',';
-                    }
-
-                    // reset whitespace flag
-                    currentWhitespaceStart = -1;
-                    if (!removeWhitespace) {
-                        sb.append(' ');
-                    }
-                }
             }
 
-            // append unskipped characters
-            sb.append(ch);
+            String text;
+            if (type == SQLLexer.QuotedIdentifier
+                    || type == SQLLexer.Character_String_Literal) {
+                // get text with quotes
+                text = token.getInputStream().getText(
+                        Interval.of(token.getStartIndex(), token.getStopIndex()));
+            } else if (SQLLexer.ALL <= type && type <= SQLLexer.WITH) {
+                // upper case reserved keywords
+                text = token.getText().toUpperCase(Locale.ROOT);
+            } else {
+                text = token.getText();
+            }
+
+            // remove whitespace before special characters
+            needSpace &= type != SQLLexer.DOT && type != SQLLexer.RIGHT_PAREN
+                    && type != SQLLexer.Text_between_Dollar
+                    && type != SQLLexer.EndDollarStringConstant;
+
+            if (needSpace && type != SQLLexer.COMMA) {
+                sb.append(' ');
+            }
+
+            sb.append(text);
+
+            // remove whitespace after special characters
+            needSpace = type != SQLLexer.DOT && type != SQLLexer.LEFT_PAREN
+                    && type != SQLLexer.Text_between_Dollar
+                    && type != SQLLexer.BeginDollarStringConstant;
         }
 
         return sb.toString();
