@@ -66,7 +66,6 @@ implements TSqlContextProcessor {
 
     private boolean ansiNulls = true;
     private boolean quotedIdentifier = true;
-    private CommonTokenStream stream;
 
     public CustomTSQLParserListener(PgDatabase database, String filename,
             ParserListenerMode mode, List<AntlrError> errors, IProgressMonitor monitor) {
@@ -75,7 +74,6 @@ implements TSqlContextProcessor {
 
     @Override
     public void process(Tsql_fileContext rootCtx, CommonTokenStream stream) {
-        this.stream = stream;
         for (BatchContext b : rootCtx.batch()) {
             Sql_clausesContext clauses = b.sql_clauses();
             Batch_statementContext batchSt;
@@ -113,11 +111,11 @@ implements TSqlContextProcessor {
                 alter(alter);
             } else if ((disable = ddl.enable_disable_trigger()) != null) {
                 safeParseStatement(new DisableMsTrigger(disable, db), disable);
-                addUndescribedObjToQueries(disable, stream);
+                addToQueries(disable, getAction(disable));
             } else if ((drop = ddl.schema_drop()) != null) {
                 safeParseStatement(new DropMsStatement(drop, db), drop);
             } else {
-                addUndescribedObjToQueries(ddl, stream);
+                addToQueries(ddl, getAction(ddl));
             }
         } else if ((dml = st.dml_clause()) != null) {
             Update_statementContext update = dml.update_statement();
@@ -130,23 +128,23 @@ implements TSqlContextProcessor {
             } else if (delete != null) {
                 safeParseStatement(new DeleteMsStatement(delete, db), delete);
             } else {
-                addUndescribedObjToQueries(dml, stream);
+                addToQueries(dml, getAction(dml));
             }
         } else if ((ast = st.another_statement()) != null) {
             Set_statementContext set = ast.set_statement();
             Security_statementContext security;
             if (set != null) {
                 set(set);
-                addUndescribedObjToQueries(set, stream);
+                addToQueries(set, getAction(set));
             } else if ((security = ast.security_statement()) != null
                     && security.rule_common() != null) {
                 safeParseStatement(new CreateMsRule(security.rule_common(), db), security);
-                addUndescribedObjToQueries(security, stream);
+                addToQueries(security, getAction(security));
             } else {
-                addUndescribedObjToQueries(ast, stream);
+                addToQueries(ast, getAction(ast));
             }
         } else {
-            addUndescribedObjToQueries(st, stream);
+            addToQueries(st, getAction(st));
         }
     }
 
@@ -171,7 +169,7 @@ implements TSqlContextProcessor {
         } else if (body.create_or_alter_trigger() != null) {
             p = new CreateMsTrigger(ctx, db, ansiNulls, quotedIdentifier, stream);
         } else {
-            addUndescribedObjToQueries(ctx, stream);
+            addToQueries(ctx, getAction(ctx));
             return;
         }
 
@@ -195,7 +193,7 @@ implements TSqlContextProcessor {
         } else if (ctx.create_type() != null) {
             p = new CreateMsType(ctx.create_type(), db);
         } else {
-            addUndescribedObjToQueries(ctx, stream);
+            addToQueries(ctx, getAction(ctx));
             return;
         }
         safeParseStatement(p, ctx);
@@ -216,7 +214,7 @@ implements TSqlContextProcessor {
                 || ctx.alter_sequence() != null) {
             p = new AlterMsOther(ctx, db);
         } else {
-            addUndescribedObjToQueries(ctx, stream);
+            addToQueries(ctx, getAction(ctx));
             return;
         }
         safeParseStatement(p, ctx);
@@ -249,9 +247,7 @@ implements TSqlContextProcessor {
         }
     }
 
-    @Override
-    protected String getActionForUndescribedObj(ParserRuleContext ctx,
-            CommonTokenStream tokenStream) {
+    private String getAction(ParserRuleContext ctx) {
         if (ctx instanceof Another_statementContext) {
             Another_statementContext ast = (Another_statementContext) ctx;
             Transaction_statementContext transactionCtx;
@@ -308,7 +304,7 @@ implements TSqlContextProcessor {
                     && xmlIdxCtx.PRIMARY() != null)) {
                 descrWordsCount = 4;
             }
-            return getActionDescription(tokenStream, ctx, descrWordsCount);
+            return getActionDescription(ctx, descrWordsCount);
         } else if (ctx instanceof Schema_alterContext) {
             Schema_alterContext alterCtx = (Schema_alterContext) ctx;
             int descrWordsCount = 0;
@@ -351,8 +347,8 @@ implements TSqlContextProcessor {
             } else {
                 descrWordsCount = 2;
             }
-            return getActionDescription(tokenStream, ctx, descrWordsCount);
+            return getActionDescription(ctx, descrWordsCount);
         }
-        return super.getActionForUndescribedObj(ctx, tokenStream);
+        return ctx.getStart().getText().toUpperCase(Locale.ROOT);
     }
 }

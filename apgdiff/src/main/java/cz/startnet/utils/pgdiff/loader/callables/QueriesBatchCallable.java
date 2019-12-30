@@ -51,19 +51,17 @@ public class QueriesBatchCallable extends StatementCallable<String> {
         SubMonitor subMonitor = SubMonitor.convert(monitor);
         PgObjLocation currQuery = null;
 
-        List<List<PgObjLocation>> batchesList = getListBatchesFromSetBatches();
-
         try {
-            if (!isMsSql && batchesList.size() == 1) {
-                List<PgObjLocation> queries = batchesList.get(0);
-                subMonitor.setWorkRemaining(queries.size());
-                for (PgObjLocation query : queries) {
+            if (!isMsSql) {
+                subMonitor.setWorkRemaining(batches.size());
+                for (PgObjLocation query : batches) {
                     PgDiffUtils.checkCancelled(monitor);
                     currQuery = query;
                     executeSingleStatement(query);
                     subMonitor.worked(1);
                 }
             } else {
+                List<List<PgObjLocation>> batchesList = getListBatchesFromSetBatches();
                 subMonitor.setWorkRemaining(batchesList.size());
                 for (List<PgObjLocation> queriesList : batchesList) {
                     PgDiffUtils.checkCancelled(monitor);
@@ -165,6 +163,10 @@ public class QueriesBatchCallable extends StatementCallable<String> {
         if (isAutoCommitEnabled) {
             connection.setAutoCommit(false);
             isAutoCommitEnabled = false;
+        }
+
+        if (reporter != null) {
+            reporter.writeMessage("Starting batch");
         }
 
         for (PgObjLocation query : queriesList) {

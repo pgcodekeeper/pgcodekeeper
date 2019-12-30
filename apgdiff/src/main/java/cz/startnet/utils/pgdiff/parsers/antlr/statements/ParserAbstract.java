@@ -535,7 +535,7 @@ public abstract class ParserAbstract {
     }
 
     /**
-     * Returns the Pair with StatementActions and GenericColumn objects which
+     * Returns the Pair with action name string and GenericColumn objects which
      * will be used for getting the action information of described statement.
      * <br />
      * (The action information will later be used for showing in console and in 'Outline')

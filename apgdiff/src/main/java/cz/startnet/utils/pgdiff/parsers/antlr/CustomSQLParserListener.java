@@ -66,7 +66,6 @@ implements SqlContextProcessor {
     private String tablespace;
     private String oids;
     private final Queue<AntlrTask<?>> antlrTasks;
-    private CommonTokenStream stream;
 
     public CustomSQLParserListener(PgDatabase database, String filename, ParserListenerMode mode,
             List<AntlrError> errors, Queue<AntlrTask<?>> antlrTasks, IProgressMonitor monitor) {
@@ -76,7 +75,6 @@ implements SqlContextProcessor {
 
     @Override
     public void process(SqlContext rootCtx, CommonTokenStream stream) {
-        this.stream = stream;
         for (StatementContext s : rootCtx.statement()) {
             statement(s);
         }
@@ -102,7 +100,7 @@ implements SqlContextProcessor {
         } else if ((ds = statement.data_statement()) != null) {
             data(ds);
         } else {
-            addUndescribedObjToQueries(statement, stream);
+            addToQueries(statement, getAction(statement));
         }
     }
 
@@ -147,26 +145,26 @@ implements SqlContextProcessor {
         } else if (ctx.comment_on_statement() != null) {
             if (ParserListenerMode.SCRIPT != mode) {
                 p = new CommentOn(ctx.comment_on_statement(), db);
-                addUndescribedObjToQueries(ctx, stream);
+                addToQueries(ctx, getAction(ctx));
             } else {
-                addUndescribedObjToQueries(ctx, stream);
+                addToQueries(ctx, getAction(ctx));
                 return;
             }
         } else if (ctx.rule_common() != null) {
             if (ParserListenerMode.SCRIPT != mode) {
                 p = new CreateRule(ctx.rule_common(), db);
-                addUndescribedObjToQueries(ctx, stream);
+                addToQueries(ctx, getAction(ctx));
             } else {
-                addUndescribedObjToQueries(ctx, stream);
+                addToQueries(ctx, getAction(ctx));
                 return;
             }
         } else if (ctx.set_statement() != null) {
             Set_statementContext setCtx = ctx.set_statement();
             set(setCtx);
-            addUndescribedObjToQueries(setCtx, stream);
+            addToQueries(setCtx, getAction(setCtx));
             return;
         } else {
-            addUndescribedObjToQueries(ctx, stream);
+            addToQueries(ctx, getAction(ctx));
             return;
         }
         safeParseStatement(p, ctx);
@@ -192,11 +190,10 @@ implements SqlContextProcessor {
                 || ctx.alter_schema_statement() != null
                 || ctx.alter_type_statement() != null
                 || ctx.alter_operator_statement() != null
-                || ctx.alter_index_statement() != null
                 || ctx.alter_extension_statement() != null) {
             p = new AlterOther(ctx, db);
         } else {
-            addUndescribedObjToQueries(ctx, stream);
+            addToQueries(ctx, getAction(ctx));
             return;
         }
         safeParseStatement(p, ctx);
@@ -211,7 +208,7 @@ implements SqlContextProcessor {
         } else if (ctx.delete_stmt_for_psql() != null) {
             p =  new DeleteStatement(ctx.delete_stmt_for_psql(), db);
         } else {
-            addUndescribedObjToQueries(ctx, stream);
+            addToQueries(ctx, getAction(ctx));
             return;
         }
 
@@ -235,7 +232,7 @@ implements SqlContextProcessor {
 
         switch (confParam.toLowerCase(Locale.ROOT)) {
         case "search_path":
-            if (ParserListenerMode.REF != mode
+            if (ParserListenerMode.NORMAL == mode
             && (vex.size() != 1 || !ApgdiffConsts.PG_CATALOG.equals(confValue))) {
                 throw new UnresolvedReferenceException("Unsupported search_path", ctx.start);
             }
@@ -260,9 +257,7 @@ implements SqlContextProcessor {
         }
     }
 
-    @Override
-    protected String getActionForUndescribedObj(ParserRuleContext ctx,
-            CommonTokenStream tokenStream) {
+    private String getAction(ParserRuleContext ctx) {
         if (ctx instanceof StatementContext) {
             StatementContext stmtCtx = (StatementContext) ctx;
             Script_statementContext scriptCtx;
@@ -297,10 +292,13 @@ implements SqlContextProcessor {
             } else if (createCtx.schema_import() != null
                     || createCtx.create_foreign_data_wrapper() != null) {
                 descrWordsCount = 4;
+            } else if (createCtx.comment_on_statement() != null
+                    || createCtx.rule_common() != null) {
+                descrWordsCount = 1;
             } else {
                 descrWordsCount = 2;
             }
-            return getActionDescription(tokenStream, ctx, descrWordsCount);
+            return getActionDescription(ctx, descrWordsCount);
         } else if (ctx instanceof Schema_alterContext) {
             Schema_alterContext alterCtx = (Schema_alterContext) ctx;
             int descrWordsCount = 0;
@@ -308,7 +306,8 @@ implements SqlContextProcessor {
                 return "ALTER LANGUAGE";
             } else if (alterCtx.alter_foreign_data_wrapper() != null) {
                 descrWordsCount = 4;
-            } else if (alterCtx.alter_default_privileges() != null
+            } else if (alterCtx.alter_index_all() != null
+                    || alterCtx.alter_default_privileges() != null
                     || alterCtx.alter_event_trigger() != null
                     || alterCtx.alter_user_mapping() != null
                     || alterCtx.alter_operator_family_statement() != null
@@ -317,8 +316,8 @@ implements SqlContextProcessor {
             } else {
                 descrWordsCount = 2;
             }
-            return getActionDescription(tokenStream, ctx, descrWordsCount);
+            return getActionDescription(ctx, descrWordsCount);
         }
-        return super.getActionForUndescribedObj(ctx, tokenStream);
+        return ctx.getStart().getText().toUpperCase(Locale.ROOT);
     }
 }

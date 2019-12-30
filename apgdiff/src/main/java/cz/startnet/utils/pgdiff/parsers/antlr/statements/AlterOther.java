@@ -7,7 +7,6 @@ import java.util.List;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_extension_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_function_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_index_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_operator_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_schema_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_type_statementContext;
@@ -38,8 +37,6 @@ public class AlterOther extends ParserAbstract {
             alterType(ctx.alter_type_statement());
         } else if (ctx.alter_operator_statement() != null) {
             alterOperator(ctx.alter_operator_statement());
-        } else if (ctx.alter_index_statement() != null) {
-            alterIndex(ctx.alter_index_statement());
         } else if (ctx.alter_extension_statement() != null) {
             alterExtension(ctx.alter_extension_statement());
         }
@@ -73,12 +70,6 @@ public class AlterOther extends ParserAbstract {
                 DbObjType.OPERATOR, ACTION_ALTER);
     }
 
-    private void alterIndex(Alter_index_statementContext ctx) {
-        addObjReference(ctx.ALL() != null ? Arrays.asList(ctx.identifier().get(0))
-                : ctx.schema_qualified_name().identifier(),
-                DbObjType.INDEX, ACTION_ALTER);
-    }
-
     private void alterExtension(Alter_extension_statementContext ctx) {
         addObjReference(Arrays.asList(ctx.identifier()), DbObjType.EXTENSION, ACTION_ALTER);
     }
@@ -109,8 +100,6 @@ public class AlterOther extends ParserAbstract {
             return DbObjType.SCHEMA;
         } else if (ctx.alter_type_statement() != null) {
             return DbObjType.TYPE;
-        } else if (ctx.alter_index_statement() != null) {
-            return DbObjType.INDEX;
         } else if (ctx.alter_extension_statement() != null) {
             return DbObjType.EXTENSION;
         }
@@ -125,10 +114,6 @@ public class AlterOther extends ParserAbstract {
             return Arrays.asList(ctx.alter_schema_statement().identifier());
         } else if (ctx.alter_type_statement() != null) {
             return ctx.alter_type_statement().name.identifier();
-        } else if (ctx.alter_index_statement() != null) {
-            Alter_index_statementContext alterIdxCtx = ctx.alter_index_statement();
-            return alterIdxCtx.ALL() != null ? Arrays.asList(alterIdxCtx.identifier().get(0))
-                    : alterIdxCtx.schema_qualified_name().identifier();
         } else if (ctx.alter_extension_statement() != null) {
             return Arrays.asList(ctx.alter_extension_statement().identifier());
         }

@@ -4,9 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -84,31 +85,36 @@ public class CustomParserListener {
      * 'undescribed DB object' - means that it is not a child of
      * {@link cz.startnet.utils.pgdiff.schema.PgStatement}.
      */
-    protected void addUndescribedObjToQueries(ParserRuleContext ctx, CommonTokenStream tokenStream) {
-        safeParseStatement(() -> db.addToQueries(filename, new PgObjLocation(
-                getActionForUndescribedObj(ctx, tokenStream), ctx,
+    protected void addToQueries(ParserRuleContext ctx, String acton) {
+        safeParseStatement(() -> db.addToQueries(filename, new PgObjLocation(acton, ctx,
                 ParserListenerMode.SCRIPT == mode ? ParserAbstract.getFullCtxText(ctx) : null)), ctx);
-    }
-
-    /**
-     * Returns a string describing the action based on 'ctx'.
-     */
-    protected String getActionForUndescribedObj(ParserRuleContext ctx, CommonTokenStream tokenStream) {
-        return ctx.getStart().getText().toUpperCase(Locale.ROOT);
     }
 
     /**
      *  Returns only the first 'descrWordsCount' words from a query in 'ctx'.
      */
-    protected String getActionDescription(CommonTokenStream tokenStream, ParserRuleContext ctx,
-            int descrWordsCount) {
-        List<Token> tokens = tokenStream.getTokens(ctx.getStart().getTokenIndex(),
-                ctx.getStop().getTokenIndex());
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < descrWordsCount; i++) {
-            sb.append(tokens.get(i).getText()).append(' ');
+    protected String getActionDescription(ParserRuleContext ctx, int descrWordsCount) {
+        List<String> tokens = new ArrayList<>();
+        fillTokens(ctx, descrWordsCount, tokens);
+        return String.join(" ", tokens);
+    }
+
+    private void fillTokens(ParserRuleContext ctx, int descrWordsCount, List<String> tokens) {
+        List<ParseTree> children = ctx.children;
+        if (children == null) {
+            return;
         }
-        sb.setLength(sb.length() - 1);
-        return sb.toString();
+
+        for (ParseTree child : children) {
+            if (tokens.size() >= descrWordsCount) {
+                return;
+            }
+
+            if (child instanceof ParserRuleContext) {
+                fillTokens((ParserRuleContext) child, descrWordsCount, tokens);
+            } else if (child instanceof TerminalNode) {
+                tokens.add(child.getText().toUpperCase(Locale.ROOT));
+            }
+        }
     }
 }

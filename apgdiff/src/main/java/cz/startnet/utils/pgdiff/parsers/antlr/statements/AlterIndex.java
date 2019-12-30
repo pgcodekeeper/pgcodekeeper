@@ -24,10 +24,6 @@ public class AlterIndex extends ParserAbstract {
 
     @Override
     public void parseObject() {
-        if (ctx.ALL() != null) {
-            return;
-        }
-
         List<IdentifierContext> ids = ctx.schema_qualified_name().identifier();
 
         Schema_qualified_nameContext inherit = ctx.index_def_action().index;
