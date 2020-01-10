@@ -5,8 +5,12 @@ import java.util.List;
 import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.AbstractExprWithNmspc;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExprWithNmspc;
@@ -28,6 +32,10 @@ public abstract class AbstractAnalysisLauncher {
     protected final ParserRuleContext ctx;
     private final String location;
 
+    private int offset;
+    private int lineOffset;
+    private int inLineOffset;
+
     public AbstractAnalysisLauncher(PgStatementWithSearchPath stmt,
             ParserRuleContext ctx, String location) {
         this.stmt = stmt;
@@ -37,6 +45,12 @@ public abstract class AbstractAnalysisLauncher {
 
     public PgStatementWithSearchPath getStmt() {
         return stmt;
+    }
+
+    public void setOffset(TerminalNode codeStart) {
+        offset = codeStart.getSymbol().getStartIndex();
+        lineOffset = codeStart.getSymbol().getLine() - 1;
+        inLineOffset = codeStart.getSymbol().getCharPositionInLine();
     }
 
     /**
@@ -60,6 +74,13 @@ public abstract class AbstractAnalysisLauncher {
 
         try {
             return analyze(ctx);
+        } catch (UnresolvedReferenceException ex) {
+            Token t = ex.getErrorToken();
+            AntlrError err = new AntlrError(t, location, t.getLine(),
+                    t.getCharPositionInLine(), ex.getMessage())
+                    .copyWithOffset(offset, lineOffset, inLineOffset);
+            Log.log(Log.LOG_ERROR, err.toString(), ex);
+            errors.add(err);
         } catch (Exception ex) {
             Log.log(Log.LOG_ERROR, ex.toString(), ex);
             errors.add(location + ' ' + ex);

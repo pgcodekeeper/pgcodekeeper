@@ -193,14 +193,22 @@ public class CreateFunction extends ParserAbstract {
             AntlrParser.submitAntlrTask(antlrTasks,
                     () -> AntlrParser.makeBasicParser(SQLParser.class, def,
                             name, errors, start).sql(),
-                    ctx -> db.addAnalysisLauncher(new FuncProcAnalysisLauncher(
-                            function, ctx, fileName, funcArgs)));
+                    ctx -> {
+                        FuncProcAnalysisLauncher launcher = new FuncProcAnalysisLauncher(
+                                function, ctx, fileName, funcArgs);
+                        launcher.setOffset(start);
+                        db.addAnalysisLauncher(launcher);
+                    });
         } else if ("PLPGSQL".equalsIgnoreCase(language)) {
             AntlrParser.submitAntlrTask(antlrTasks,
                     () -> AntlrParser.makeBasicParser(SQLParser.class, def,
                             name, errors, start).plpgsql_function(),
-                    ctx -> db.addAnalysisLauncher(new FuncProcAnalysisLauncher(
-                            function, ctx, fileName, funcArgs)));
+                    ctx -> {
+                        FuncProcAnalysisLauncher launcher = new FuncProcAnalysisLauncher(
+                                function, ctx, fileName, funcArgs);
+                        launcher.setOffset(start);
+                        db.addAnalysisLauncher(launcher);
+                    });
         }
     }
 
