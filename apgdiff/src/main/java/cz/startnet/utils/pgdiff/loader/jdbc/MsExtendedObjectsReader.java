@@ -7,6 +7,7 @@ import java.util.List;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
+import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsValueExpr;
 import cz.startnet.utils.pgdiff.schema.AbstractMsClrFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.ArgMode;
@@ -69,6 +70,12 @@ public class MsExtendedObjectsReader extends JdbcReader {
                     if (def != null) {
                         column.setDefaultValue(def);
                         column.setDefaultName(col.getString("dn"));
+                        loader.submitMsAntlrTask(def, p -> p.expression_eof().expression().get(0),
+                                ctx -> {
+                                    MsValueExpr vex = new MsValueExpr(schema.getName());
+                                    vex.analyze(ctx);
+                                    localFunc.addAllDeps(vex.getDepcies());
+                                });
                     }
 
                     column.setCollation(col.getString("cn"));

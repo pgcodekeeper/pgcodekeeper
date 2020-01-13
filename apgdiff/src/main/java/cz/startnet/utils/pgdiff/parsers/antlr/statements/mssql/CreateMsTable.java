@@ -9,11 +9,13 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_def_table_constr
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_tableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Data_typeContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ExpressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Identity_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_optionsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.TableAbstract;
 import cz.startnet.utils.pgdiff.schema.MsColumn;
 import cz.startnet.utils.pgdiff.schema.MsIndex;
@@ -125,7 +127,12 @@ public class CreateMsTable extends TableAbstract {
             if (option.id() != null) {
                 col.setDefaultName(option.id().getText());
             }
-            col.setDefaultValue(getFullCtxText(option.expression()));
+            ExpressionContext exp = option.expression();
+            col.setDefaultValue(getFullCtxText(exp));
+            MsValueExpr vex = new MsValueExpr(getSchemaNameSafe(
+                    Arrays.asList(ctx.qualified_name().schema, ctx.qualified_name().name)));
+            vex.analyze(exp);
+            col.addAllDeps(vex.getDepcies());
         }
     }
 
