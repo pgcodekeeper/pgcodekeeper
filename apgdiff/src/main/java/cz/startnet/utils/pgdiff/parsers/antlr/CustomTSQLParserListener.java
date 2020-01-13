@@ -18,6 +18,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Ddl_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Delete_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Dml_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Enable_disable_triggerContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Go_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Insert_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_alterContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_createContext;
@@ -62,8 +63,6 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 public class CustomTSQLParserListener extends CustomParserListener
 implements TSqlContextProcessor {
 
-    private static final int OFFSET_TO_GO_POSITION = 2;
-
     private boolean ansiNulls = true;
     private boolean quotedIdentifier = true;
 
@@ -81,19 +80,19 @@ implements TSqlContextProcessor {
                 for (St_clauseContext st : clauses.st_clause()) {
                     clause(st);
                 }
-                endBatch(clauses);
             } else if ((batchSt = b.batch_statement()) != null) {
                 batchStatement(batchSt, stream);
-                endBatch(batchSt);
+            }
+
+            if (ParserListenerMode.SCRIPT == mode && b.EOF() == null) {
+                endBatch(b.go_statement(0));
             }
         }
     }
 
-    private void endBatch(ParserRuleContext previousObjCtx) {
-        db.addToQueries(filename, new PgObjLocation(null, ApgdiffConsts.GO,
-                previousObjCtx.getStop().getStopIndex() + OFFSET_TO_GO_POSITION,
-                previousObjCtx.getStop().getLine() + OFFSET_TO_GO_POSITION, 0, null,
-                ParserListenerMode.SCRIPT == mode ? ApgdiffConsts.GO : null));
+    private void endBatch(Go_statementContext goCtx) {
+        db.addToQueries(filename, new PgObjLocation(ApgdiffConsts.GO,
+                goCtx, ApgdiffConsts.GO));
     }
 
     public void clause(St_clauseContext st) {

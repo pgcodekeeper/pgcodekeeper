@@ -16,7 +16,6 @@ import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -142,9 +141,7 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
         public Object[] getElements(Object inputElement) {
             Stream<PgObjLocation> stream = sqlEditor.getParser().getObjsForEditor(
                     sqlEditor.getEditorInput()).stream()
-                    .filter(e -> e.getAction() != null
-                    && !ApgdiffConsts.GO.equalsIgnoreCase(e.getAction()))
-                    .sorted((a, b) -> Integer.compare(a.getOffset(), b.getOffset()));
+                    .filter(e -> e.getAction() != null);
             if (filterDangerous) {
                 stream = stream.filter(PgObjLocation::isDanger);
             }
