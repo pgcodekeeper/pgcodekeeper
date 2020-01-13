@@ -19,4 +19,5 @@ public interface Hasher {
     public void put(Set<String> col);
     public void putOrdered(Collection<? extends IHashable> col);
     public void putUnordered(Collection<? extends IHashable> col);
+    public void putUnordered(Map<String, ? extends IHashable> map);
 }

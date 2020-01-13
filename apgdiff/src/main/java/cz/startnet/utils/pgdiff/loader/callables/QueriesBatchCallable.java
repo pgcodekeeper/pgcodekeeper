@@ -150,7 +150,8 @@ public class QueriesBatchCallable extends StatementCallable<String> {
         return batchesList;
     }
 
-    private void executeSingleStatement(PgObjLocation query) throws SQLException {
+    private void executeSingleStatement(PgObjLocation query)
+            throws SQLException, InterruptedException {
         if (st.execute(query.getSql())) {
             writeResult(query.getSql());
         }
@@ -182,7 +183,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
         writeWarnings();
     }
 
-    private void writeResult(String query) throws SQLException {
+    private void writeResult(String query) throws SQLException, InterruptedException {
         if (reporter == null) {
             return;
         }
@@ -204,6 +205,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
 
             // add other rows
             while (res.next()) {
+                PgDiffUtils.checkCancelled(monitor);
                 List<Object> row = new ArrayList<>(count);
                 results.add(row);
                 for (int i = 1; i <= count; i++) {

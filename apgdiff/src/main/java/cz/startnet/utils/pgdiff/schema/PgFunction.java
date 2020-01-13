@@ -87,6 +87,10 @@ public class PgFunction extends AbstractPgFunction {
             }
         }
 
+        if (getSupportFunc() != null) {
+            sbSQL.append(" SUPPORT ").append(getSupportFunc());
+        }
+
         for (Entry<String, String> param : configurations.entrySet()) {
             String val = param.getValue();
             sbSQL.append("\n    SET ").append(param.getKey());
@@ -113,7 +117,7 @@ public class PgFunction extends AbstractPgFunction {
     }
 
     @Override
-    protected boolean needDrop(AbstractPgFunction newFunction) {
+    public boolean needDrop(AbstractFunction newFunction) {
         if (newFunction == null ||
                 !Objects.equals(getReturns(), newFunction.getReturns())) {
             return true;

@@ -31,6 +31,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.exception.MonitorCancelledRuntimeException;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
@@ -482,10 +483,14 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         GenericColumn object = this.currentObject;
         List<AntlrError> list = new ArrayList<>();
         AntlrParser.submitAntlrTask(antlrTasks, () -> {
+            PgDiffUtils.checkCancelled(monitor);
             P p = AntlrParser.makeBasicParser(parserClass, sql, location, list);
             return parserCtxReader.apply(p);
         }, t -> {
             list.stream().map(Object::toString).forEach(errors::add);
+            if (monitor.isCanceled()) {
+                throw new MonitorCancelledRuntimeException();
+            }
             setCurrentObject(object);
             finalizer.accept(t);
         });

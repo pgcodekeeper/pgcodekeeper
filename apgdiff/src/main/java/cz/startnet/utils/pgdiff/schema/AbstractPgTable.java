@@ -5,11 +5,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 /**
@@ -22,13 +24,14 @@ public abstract class AbstractPgTable extends AbstractTable {
 
     protected boolean hasOids;
     protected final List<Inherits> inherits = new ArrayList<>();
+    private String method = ApgdiffConsts.HEAP;
 
     public AbstractPgTable(String name) {
         super(name);
     }
 
     public boolean isClustered() {
-        for (AbstractIndex ind : indexes) {
+        for (AbstractIndex ind : indexes.values()) {
             if (ind.isClusterIndex()) {
                 return true;
             }
@@ -44,6 +47,7 @@ public abstract class AbstractPgTable extends AbstractTable {
         appendName(sbSQL);
         appendColumns(sbSQL, sbOption);
         appendInherit(sbSQL);
+        appendAccessMethod(sbSQL);
         appendOptions(sbSQL);
         sbSQL.append(sbOption);
         appendAlterOptions(sbSQL);
@@ -96,6 +100,20 @@ public abstract class AbstractPgTable extends AbstractTable {
             }
             sbSQL.setLength(sbSQL.length() - 2);
             sbSQL.append(")");
+        }
+    }
+
+    /**
+     * Appends table access method.
+     * <br />
+     * (defined here because the table access method is not used for partitioned
+     * and foreign tables)
+     *
+     * @param sbSQL - StringBuilder for access method
+     */
+    protected void appendAccessMethod(StringBuilder sbSQL) {
+        if (!ApgdiffConsts.HEAP.equals(method)) {
+            sbSQL.append("\nUSING ").append(PgDiffUtils.getQuotedName(method));
         }
     }
 
@@ -184,6 +202,11 @@ public abstract class AbstractPgTable extends AbstractTable {
         compareComment(newTable,sb);
 
         return sb.length() > startLength;
+    }
+
+    @Override
+    protected boolean isNeedRecreate(AbstractTable newTable) {
+        return !Objects.equals(getMethod(), ((AbstractPgTable) newTable).getMethod());
     }
 
     @Override
@@ -276,6 +299,15 @@ public abstract class AbstractPgTable extends AbstractTable {
 
     public void setHasOids(final boolean hasOids) {
         this.hasOids = hasOids;
+        resetHash();
+    }
+
+    public String getMethod() {
+        return method;
+    }
+
+    public void setMethod(String using) {
+        this.method = using;
         resetHash();
     }
 
@@ -397,7 +429,8 @@ public abstract class AbstractPgTable extends AbstractTable {
             AbstractPgTable table = (AbstractPgTable) obj;
 
             return hasOids == table.getHasOids()
-                    && inherits.equals(table.inherits);
+                    && inherits.equals(table.inherits)
+                    && Objects.equals(method, table.getMethod());
         }
         return false;
     }
@@ -407,6 +440,7 @@ public abstract class AbstractPgTable extends AbstractTable {
         super.computeHash(hasher);
         hasher.putOrdered(inherits);
         hasher.put(hasOids);
+        hasher.put(method);
     }
 
     @Override
@@ -414,6 +448,7 @@ public abstract class AbstractPgTable extends AbstractTable {
         AbstractPgTable copy = (AbstractPgTable) super.shallowCopy();
         copy.inherits.addAll(inherits);
         copy.setHasOids(getHasOids());
+        copy.setMethod(getMethod());
         return copy;
     }
 }

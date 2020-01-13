@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.ConcurrentModificationException;
 import java.util.function.BiConsumer;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQuery;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -35,6 +36,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
             setParams(statement);
             ResultSet result = loader.runner.runScript(statement);
             while (result.next()) {
+                PgDiffUtils.checkCancelled(loader.monitor);
                 long schemaId = result.getLong("schema_oid");
                 AbstractSchema schema = loader.schemaIds.get(schemaId);
                 if (schema != null) {

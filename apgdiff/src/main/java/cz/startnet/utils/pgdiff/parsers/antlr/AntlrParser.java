@@ -123,6 +123,7 @@ public class AntlrParser {
             SqlContextProcessor listener, Queue<AntlrTask<?>> antlrTasks)
                     throws InterruptedException {
         submitAntlrTask(antlrTasks, () -> {
+            PgDiffUtils.checkCancelled(mon);
             try(InputStream stream = inputStream.getStream()) {
                 SQLParser parser = makeBasicParser(SQLParser.class, stream,
                         charsetName, parsedObjectName, errors);
@@ -147,6 +148,7 @@ public class AntlrParser {
             TSqlContextProcessor listener, Queue<AntlrTask<?>> antlrTasks)
                     throws InterruptedException {
         submitAntlrTask(antlrTasks, () -> {
+            PgDiffUtils.checkCancelled(mon);
             try(InputStream stream = inputStream.getStream()) {
                 TSQLParser parser = makeBasicParser(TSQLParser.class,
                         stream, charsetName, parsedObjectName, errors);

@@ -31,11 +31,14 @@ public class CreateView extends ParserAbstract {
 
     private final Create_view_statementContext context;
     private final String tablespace;
+    private final String accessMethod;
 
-    public CreateView(Create_view_statementContext context, PgDatabase db, String tablespace) {
+    public CreateView(Create_view_statementContext context, PgDatabase db,
+            String tablespace, String accessMethod) {
         super(db);
         this.context = context;
         this.tablespace = tablespace;
+        this.accessMethod = accessMethod;
     }
 
     @Override
@@ -51,6 +54,11 @@ public class CreateView extends ParserAbstract {
                 view.setTablespace(space.identifier().getText());
             } else if (tablespace != null) {
                 view.setTablespace(tablespace);
+            }
+            if (ctx.USING() != null) {
+                view.setMethod(ctx.identifier().getText());
+            } else if (accessMethod != null) {
+                view.setMethod(accessMethod);
             }
         } else if (ctx.RECURSIVE() != null) {
             String sql = MessageFormat.format(RECURSIVE_PATTERN,

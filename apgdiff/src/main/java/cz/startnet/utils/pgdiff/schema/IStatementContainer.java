@@ -1,22 +1,22 @@
 package cz.startnet.utils.pgdiff.schema;
 
-import java.util.List;
+import java.util.Collection;
 
 public interface IStatementContainer extends IStatement {
 
     void addTrigger(AbstractTrigger trigger);
     AbstractTrigger getTrigger(String name);
-    List<AbstractTrigger> getTriggers();
+    Collection<AbstractTrigger> getTriggers();
 
     void addRule(PgRule rule);
     PgRule getRule(String name);
-    List<PgRule> getRules();
+    Collection<PgRule> getRules();
 
     void addIndex(AbstractIndex index);
     AbstractIndex getIndex(String name);
-    List<AbstractIndex> getIndexes();
+    Collection<AbstractIndex> getIndexes();
 
     void addConstraint(AbstractConstraint constraint);
     AbstractConstraint getConstraint(String name);
-    List<AbstractConstraint> getConstraints();
+    Collection<AbstractConstraint> getConstraints();
 }

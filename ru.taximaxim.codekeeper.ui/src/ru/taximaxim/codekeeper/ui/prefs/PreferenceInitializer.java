@@ -7,7 +7,6 @@ import org.eclipse.swt.graphics.RGB;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
-import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PG_EDIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
@@ -39,8 +38,6 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(DB_UPDATE_PREF.MIGRATION_COMMAND, UIConsts.DDL_DEFAULT_CMD);
 
         store.setDefault(PG_EDIT_PREF.PERSPECTIVE_CHANGING_STATUS, MessageDialogWithToggle.PROMPT);
-
-        store.setDefault(COMMIT_PREF.CONSIDER_DEPCY_IN_COMMIT, true);
 
         store.setDefault(USAGE_REPORT_PREF.USAGEREPORT_ENABLED_ID, true);
         store.setDefault(USAGE_REPORT_PREF.ASK_USER_USAGEREPORT_ID, true);

@@ -815,7 +815,7 @@ alter_foreign_data_wrapper
     ;
 
 alter_foreign_data_wrapper_action
-    : (HANDLER identifier | NO HANDLER )? (VALIDATOR identifier | NO VALIDATOR)? define_foreign_options?
+    : (HANDLER schema_qualified_name_nontype | NO HANDLER )? (VALIDATOR schema_qualified_name_nontype | NO VALIDATOR)? define_foreign_options?
     | owner_to
     | rename_to
     ;
@@ -862,7 +862,7 @@ create_transform_statement
     ;
 
 create_access_method
-    : ACCESS METHOD name=identifier TYPE type=identifier HANDLER func_name=schema_qualified_name
+    : ACCESS METHOD identifier TYPE (TABLE | INDEX) HANDLER schema_qualified_name
     ;
 
 create_user_or_role
@@ -924,8 +924,8 @@ create_statistics
     ;
 
 create_foreign_data_wrapper
-    : FOREIGN DATA WRAPPER name=identifier (HANDLER identifier | NO HANDLER )?
-    (VALIDATOR identifier | NO VALIDATOR)?
+    : FOREIGN DATA WRAPPER name=identifier (HANDLER schema_qualified_name_nontype | NO HANDLER )?
+    (VALIDATOR schema_qualified_name_nontype | NO VALIDATOR)?
     (OPTIONS LEFT_PAREN option_without_equal (COMMA option_without_equal)* RIGHT_PAREN )?
     ;
 
@@ -2734,7 +2734,7 @@ after_ops
     | LIMIT (vex | ALL)
     | OFFSET vex (ROW | ROWS)?
     | FETCH (FIRST | NEXT) vex? (ROW | ROWS) ONLY?
-    | FOR (UPDATE | NO KEY UPDATE | SHARE | NO KEY SHARE) (OF schema_qualified_name (COMMA schema_qualified_name)*)? NOWAIT?
+    | FOR (UPDATE | NO KEY UPDATE | SHARE | KEY SHARE) (OF schema_qualified_name (COMMA schema_qualified_name)*)? (NOWAIT | SKIP_ LOCKED)?
     ;
 
 // select_stmt copy that doesn't consume external parens

@@ -364,6 +364,10 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
         String withName = withQuery.query_name.getText();
         List<IdentifierContext> paramNamesIdentifers = withQuery.column_name;
         for (int i = 0; i < paramNamesIdentifers.size(); ++i) {
+            if (i >= resultTypes.size()) {
+                Log.log(Log.LOG_WARNING, "Cte contains fewer columns than specified: " +  withName);
+                break;
+            }
             resultTypes.get(i).setFirst(paramNamesIdentifers.get(i).getText());
         }
         List<Pair<String, String>> unmodifiable = resultTypes.stream()

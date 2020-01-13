@@ -8,7 +8,6 @@ import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
@@ -104,7 +103,7 @@ public class MsModelExporter extends AbstractModelExporter {
         writeProjVersion(outDir.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER));
     }
 
-    private void dumpObjects(List<? extends PgStatementWithSearchPath> objects,
+    private void dumpObjects(Collection<? extends PgStatementWithSearchPath> objects,
             Path parentOutDir) throws IOException {
         for (PgStatementWithSearchPath obj : objects) {
             String dump = getDumpSql(obj);

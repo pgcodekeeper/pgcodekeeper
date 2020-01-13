@@ -5,7 +5,7 @@ SET search_path = pg_catalog;
 
 CREATE TABLE public.t2 (
     c3 integer,
-    c4 integer DEFAULT nextval('seq2'::regclass)
+    c4 integer DEFAULT nextval('public.seq2'::regclass)
 )
 INHERITS (public.t1);
 

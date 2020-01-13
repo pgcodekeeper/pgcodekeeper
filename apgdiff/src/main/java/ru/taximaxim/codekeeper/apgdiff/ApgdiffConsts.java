@@ -19,6 +19,7 @@ public interface ApgdiffConsts {
     String UTC = "UTC";
     String PUBLIC = "public";
     String DBO = "dbo";
+    String HEAP = "heap";
 
     String PG_DEFAULT = "pg_default";
 
