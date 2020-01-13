@@ -1,8 +1,6 @@
 package cz.startnet.utils.pgdiff;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,8 +20,8 @@ import ru.taximaxim.codekeeper.apgdiff.log.Log;
 public class MsDiffTest {
 
     @Parameters
-    public static Collection<?> parameters() {
-        return Arrays.asList(
+    public static Iterable<Object[]> parameters() {
+        return ApgdiffTestUtils.getParameters(
                 new Object[][] {
                     // Tests scenario where MS PRIVILEGES for columns is added.
                     {"add_ms_column_privileges"},

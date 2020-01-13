@@ -1,8 +1,6 @@
 package cz.startnet.utils.pgdiff.depcies;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,7 +25,7 @@ public class PgDiffDepciesTest {
 
     @Parameters
     public static Iterable<Object[]> parameters() {
-        List<Object[]> p = Arrays.asList(new Object[][] {
+        return ApgdiffTestUtils.getParameters(new Object[][] {
             {"empty_usr"},
             // изменяется тип колонок у обоих таблиц, пользователь выбирает
             // view v1
@@ -218,13 +216,6 @@ public class PgDiffDepciesTest {
             // пользователь выбрал таблицу t1
             {"add_table_with_cyclic_dep_usr_t1", true},
         });
-
-        int maxLength = p.stream()
-                .mapToInt(oo -> oo.length)
-                .max().getAsInt();
-        return p.stream()
-                .map(oo -> oo.length < maxLength ? Arrays.copyOf(oo, maxLength) : oo)
-                ::iterator;
     }
 
     /**
