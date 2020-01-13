@@ -78,6 +78,6 @@ public class AlterFtsStatement extends ParserAbstract {
         }
         List<IdentifierContext> ids = ctx.name.identifier();
         return new Pair<>(ACTION_ALTER, new GenericColumn(QNameParser.getSchemaName(ids),
-                QNameParser.getFirstNameCtx(ids).getText(), tt));
+                QNameParser.getFirstName(ids), tt));
     }
 }

@@ -87,7 +87,7 @@ public class AlterOther extends ParserAbstract {
             List<IdentifierContext> ids = getIds();
             if (type != null && !ids.isEmpty()) {
                 descrObj = new GenericColumn(QNameParser.getSchemaName(ids),
-                        QNameParser.getFirstNameCtx(ids).getText(), type);
+                        QNameParser.getFirstName(ids), type);
             }
         }
         return descrObj != null ? new Pair<>(ACTION_ALTER, descrObj) : null;

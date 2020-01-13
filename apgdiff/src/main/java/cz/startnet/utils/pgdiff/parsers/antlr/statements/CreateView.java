@@ -93,6 +93,6 @@ public class CreateView extends ParserAbstract {
     protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
         List<IdentifierContext> ids = context.name.identifier();
         return new Pair<>(ACTION_CREATE, new GenericColumn(QNameParser.getSchemaName(ids),
-                QNameParser.getFirstNameCtx(ids).getText(), DbObjType.VIEW));
+                QNameParser.getFirstName(ids), DbObjType.VIEW));
     }
 }

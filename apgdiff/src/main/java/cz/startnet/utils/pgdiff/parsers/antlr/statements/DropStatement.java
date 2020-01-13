@@ -155,19 +155,19 @@ public class DropStatement extends ParserAbstract {
                 type = DbObjType.AGGREGATE;
             }
             descrObj = new GenericColumn(QNameParser.getSchemaName(ids),
-                    QNameParser.getFirstNameCtx(ids).getText(), type);
+                    QNameParser.getFirstName(ids), type);
         } else if (ctx.drop_trigger_statement() != null) {
             Drop_trigger_statementContext dropTrigCtx = ctx.drop_trigger_statement();
             ids = dropTrigCtx.table_name.identifier();
             descrObj = new GenericColumn(QNameParser.getSchemaName(ids),
-                    QNameParser.getFirstNameCtx(ids).getText(),
-                    dropTrigCtx.name.getText(), DbObjType.TRIGGER);
+                    QNameParser.getFirstName(ids), dropTrigCtx.name.getText(),
+                    DbObjType.TRIGGER);
         } else if (ctx.drop_rule_statement() != null) {
             Drop_rule_statementContext dropRuleCtx = ctx.drop_rule_statement();
             ids = dropRuleCtx.schema_qualified_name().identifier();
             descrObj = new GenericColumn(QNameParser.getSchemaName(ids),
-                    QNameParser.getFirstNameCtx(ids).getText(),
-                    dropRuleCtx.name.getText(), DbObjType.RULE);
+                    QNameParser.getFirstName(ids), dropRuleCtx.name.getText(),
+                    DbObjType.RULE);
         } else if (ctx.drop_statements() != null) {
             Drop_statementsContext dropStmtCtx = ctx.drop_statements();
             type = getTypeOfDropStmt(dropStmtCtx);
@@ -179,7 +179,7 @@ public class DropStatement extends ParserAbstract {
                 String objName = "";
                 if (objNames.size() == 1) {
                     schemaName = QNameParser.getSchemaName(ids);
-                    objName = QNameParser.getFirstNameCtx(ids).getText();
+                    objName = QNameParser.getFirstName(ids);
                 }
                 descrObj = new GenericColumn(schemaName, objName, type);
             }

@@ -48,6 +48,6 @@ public class AlterDomain extends ParserAbstract {
     protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
         List<IdentifierContext> ids = ctx.name.identifier();
         return new Pair<>(ACTION_ALTER, new GenericColumn(QNameParser.getSchemaName(ids),
-                QNameParser.getFirstNameCtx(ids).getText(), DbObjType.DOMAIN));
+                QNameParser.getFirstName(ids), DbObjType.DOMAIN));
     }
 }

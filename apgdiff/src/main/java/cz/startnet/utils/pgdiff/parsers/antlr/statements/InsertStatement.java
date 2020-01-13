@@ -28,6 +28,6 @@ public class InsertStatement extends ParserAbstract {
     protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
         List<IdentifierContext> ids = ctx.insert_table_name.identifier();
         return new Pair<>(ACTION_INSERT, new GenericColumn(QNameParser.getSchemaName(ids),
-                QNameParser.getFirstNameCtx(ids).getText(), DbObjType.TABLE));
+                QNameParser.getFirstName(ids), DbObjType.TABLE));
     }
 }

@@ -159,7 +159,7 @@ public class AlterOwner extends ParserAbstract {
         if ((qualNameCtx = ctx.name) != null) {
             List<IdentifierContext> ids = qualNameCtx.identifier();
             schemaName = QNameParser.getSchemaName(ids);
-            objName = QNameParser.getFirstNameCtx(ids).getText();
+            objName = QNameParser.getFirstName(ids);
         } else if ((targetOperCtx = ctx.target_operator()) != null) {
             Operator_nameContext operNameCtx = targetOperCtx.name;
             schemaName = operNameCtx.schema_name.getText();

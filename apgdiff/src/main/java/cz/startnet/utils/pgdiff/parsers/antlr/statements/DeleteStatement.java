@@ -28,6 +28,6 @@ public class DeleteStatement extends ParserAbstract {
     protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
         List<IdentifierContext> ids = ctx.delete_table_name.identifier();
         return new Pair<>(ACTION_DELETE, new GenericColumn(QNameParser.getSchemaName(ids),
-                QNameParser.getFirstNameCtx(ids).getText(), DbObjType.TABLE));
+                QNameParser.getFirstName(ids), DbObjType.TABLE));
     }
 }

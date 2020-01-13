@@ -134,7 +134,7 @@ public class CreateTrigger extends ParserAbstract {
     protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
         List<IdentifierContext> ids = ctx.table_name.identifier();
         return new Pair<>(ACTION_CREATE, new GenericColumn(
-                QNameParser.getSchemaName(ids), QNameParser.getFirstNameCtx(ids).getText(),
+                QNameParser.getSchemaName(ids), QNameParser.getFirstName(ids),
                 ctx.name.getText(), DbObjType.TRIGGER));
     }
 }

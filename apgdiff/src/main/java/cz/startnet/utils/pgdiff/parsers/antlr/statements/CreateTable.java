@@ -155,6 +155,6 @@ public class CreateTable extends TableAbstract {
     protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
         List<IdentifierContext> ids = ctx.name.identifier();
         return new Pair<>(ACTION_CREATE, new GenericColumn(QNameParser.getSchemaName(ids),
-                QNameParser.getFirstNameCtx(ids).getText(), DbObjType.TABLE));
+                QNameParser.getFirstName(ids), DbObjType.TABLE));
     }
 }

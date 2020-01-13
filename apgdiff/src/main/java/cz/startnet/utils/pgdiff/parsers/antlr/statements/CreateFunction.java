@@ -258,7 +258,7 @@ public class CreateFunction extends ParserAbstract {
     protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
         List<IdentifierContext> ids = ctx.function_parameters().schema_qualified_name().identifier();
         return new Pair<>(ACTION_CREATE, new GenericColumn(
-                QNameParser.getSchemaName(ids), QNameParser.getFirstNameCtx(ids).getText(),
+                QNameParser.getSchemaName(ids), QNameParser.getFirstName(ids),
                 ctx.PROCEDURE() != null ? DbObjType.PROCEDURE : DbObjType.FUNCTION));
     }
 }

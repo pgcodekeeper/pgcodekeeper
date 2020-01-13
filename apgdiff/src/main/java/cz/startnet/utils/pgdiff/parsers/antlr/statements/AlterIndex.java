@@ -50,6 +50,6 @@ public class AlterIndex extends ParserAbstract {
     protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
         List<IdentifierContext> ids = ctx.schema_qualified_name().identifier();
         return new Pair<>(ACTION_ALTER, new GenericColumn(QNameParser.getSchemaName(ids),
-                QNameParser.getFirstNameCtx(ids).getText(), DbObjType.INDEX));
+                QNameParser.getFirstName(ids), DbObjType.INDEX));
     }
 }
