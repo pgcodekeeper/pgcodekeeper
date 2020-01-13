@@ -217,6 +217,9 @@ public class PgDiffDepciesTest {
             // добавление таблицы с цикличной зависимотью к функции
             // пользователь выбрал таблицу t1
             {"add_table_with_cyclic_dep_usr_t1", true},
+            // изменение функции от которой зависит триггер
+            // пользователь выбрал функцию f1
+            {"modify_trigger_function_usr_f1"}
         });
 
         int maxLength = p.stream()
