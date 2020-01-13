@@ -289,6 +289,11 @@ public class MsDiffTest {
                     {"modify_quoted_identifier"},
                     // Tests scenario where TABLE type is changed to memory optimized.
                     {"change_ms_table_type"},
+                    // Tests scenario where MS COLUMN default with dependency is added.
+                    {"add_ms_column_default_with_dep"},
+                    // Tests scenario where MS COLUMN default dependency is modified.
+                    // TODO broken order, set default must be last
+                    {"modify_ms_column_default_with_dep"},
                 });
     }
 
