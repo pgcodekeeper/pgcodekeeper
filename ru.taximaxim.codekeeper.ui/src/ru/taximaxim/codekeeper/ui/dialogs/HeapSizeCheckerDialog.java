@@ -27,7 +27,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.PlatformUI;
 
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.heap.HeapSizeChecker;
@@ -111,11 +110,11 @@ public class HeapSizeCheckerDialog extends Dialog {
 
             try (BufferedWriter writer = Files.newBufferedWriter(path)) {
                 writer.write(newEclipseIniTex);
-                if (MessageDialog.openQuestion(Display.getDefault().getActiveShell(),
+                // not dialog with question because of:
+                // "https://bugs.eclipse.org/bugs/show_bug.cgi?id=323565"
+                MessageDialog.openInformation(Display.getDefault().getActiveShell(),
                         Messages.HeapSizeCheckerDialog_heap_size_updated,
-                        Messages.HeapSizeCheckerDialog_restart_offer)) {
-                    PlatformUI.getWorkbench().restart();
-                }
+                        Messages.HeapSizeCheckerDialog_restart_offer);
             }
         } catch (IOException e) {
             new MessageDialogWithLink(getShell(),
