@@ -9,12 +9,13 @@ import org.antlr.v4.runtime.misc.Interval;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.SourceStatement;
 
 public abstract class BatchContextProcessor extends ParserAbstract {
 
     private final ParserRuleContext batchCtx;
-    protected final CommonTokenStream stream;
+    private final CommonTokenStream stream;
 
     public BatchContextProcessor(PgDatabase db, ParserRuleContext batchCtx,
             CommonTokenStream stream) {
@@ -39,5 +40,13 @@ public abstract class BatchContextProcessor extends ParserAbstract {
         int start = getDelimiterCtx().getStop().getStopIndex() + 1;
         String second = stopToken.getInputStream().getText(Interval.of(start, stop));
         st.setSecondPart(isKeepNewLines ? second : second.replace("\r", ""));
+    }
+
+    @Override
+    protected PgObjLocation fillQueryLocation(ParserRuleContext ctx) {
+        PgObjLocation loc = new PgObjLocation(getStmtAction(ctx), ctx,
+                ParserAbstract.getFullCtxTextWithHidden(ctx, stream));
+        db.addToQueries(fileName, loc);
+        return loc;
     }
 }

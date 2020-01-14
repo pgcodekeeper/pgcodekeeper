@@ -24,7 +24,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Sql_clausesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsSelect;
 import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsSqlClauses;
 import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsValueExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
@@ -33,7 +32,6 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsClrFunction;
 import cz.startnet.utils.pgdiff.schema.MsFunction;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
@@ -187,14 +185,6 @@ public class CreateMsFunction extends BatchContextProcessor {
 
             function.addArgument(arg);
         }
-    }
-
-    @Override
-    protected PgObjLocation fillQueryLocation(ParserRuleContext ctx) {
-        PgObjLocation loc = new PgObjLocation(getStmtAction(ctx), ctx,
-                ParserAbstract.getFullCtxTextWithHidden(ctx, stream));
-        db.addToQueries(fileName, loc);
-        return loc;
     }
 
     @Override

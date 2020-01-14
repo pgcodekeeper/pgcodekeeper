@@ -13,12 +13,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Select_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsSelect;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.MsSelectStmt;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
@@ -85,14 +83,6 @@ public class CreateMsView extends BatchContextProcessor {
             addSafe(schema, view, ids);
         }
         return view;
-    }
-
-    @Override
-    protected PgObjLocation fillQueryLocation(ParserRuleContext ctx) {
-        PgObjLocation loc = new PgObjLocation(getStmtAction(ctx), ctx,
-                ParserAbstract.getFullCtxTextWithHidden(ctx, stream));
-        db.addToQueries(fileName, loc);
-        return loc;
     }
 
     @Override

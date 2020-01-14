@@ -10,13 +10,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_triggerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsSqlClauses;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.MsTrigger;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
@@ -93,14 +91,6 @@ public class CreateMsTrigger extends BatchContextProcessor {
                     Arrays.asList(schemaCtx, tableNameCtx, nameCtx));
         }
         return trigger;
-    }
-
-    @Override
-    protected PgObjLocation fillQueryLocation(ParserRuleContext ctx) {
-        PgObjLocation loc = new PgObjLocation(getStmtAction(ctx), ctx,
-                ParserAbstract.getFullCtxTextWithHidden(ctx, stream));
-        db.addToQueries(fileName, loc);
-        return loc;
     }
 
     @Override

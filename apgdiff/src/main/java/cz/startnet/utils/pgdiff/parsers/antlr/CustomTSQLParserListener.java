@@ -147,7 +147,7 @@ implements TSqlContextProcessor {
         }
     }
 
-    public void batchStatement(Batch_statementContext ctx, CommonTokenStream stream) {
+    private void batchStatement(Batch_statementContext ctx, CommonTokenStream stream) {
         Batch_statement_bodyContext body = ctx.batch_statement_body();
 
         if (ctx.ALTER() != null) {
