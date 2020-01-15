@@ -11,6 +11,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ClusteredContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_def_table_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_typeContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ExpressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Identity_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_optionContext;
@@ -20,6 +21,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_whereContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_constraint_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Type_definitionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.MsColumn;
 import cz.startnet.utils.pgdiff.schema.MsType;
@@ -119,6 +121,7 @@ public class CreateMsType extends ParserAbstract {
                 fillColumnOption(option, col);
             }
 
+            type.addAllDeps(col.getDeps());
             type.addColumn(col.getFullDefinition());
         }
     }
@@ -202,7 +205,12 @@ public class CreateMsType extends ParserAbstract {
             if (option.id() != null) {
                 col.setDefaultName(option.id().getText());
             }
-            col.setDefaultValue(getFullCtxText(option.expression()));
+            ExpressionContext exp = option.expression();
+            col.setDefaultValue(getFullCtxText(exp));
+            MsValueExpr vex = new MsValueExpr(getSchemaNameSafe(
+                    Arrays.asList(ctx.qualified_name().schema, ctx.qualified_name().name)));
+            vex.analyze(exp);
+            col.addAllDeps(vex.getDepcies());
         }
     }
 }
