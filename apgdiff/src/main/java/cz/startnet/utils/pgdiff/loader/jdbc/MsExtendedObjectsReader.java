@@ -7,7 +7,6 @@ import java.util.List;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
-import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsValueExpr;
 import cz.startnet.utils.pgdiff.schema.AbstractMsClrFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.ArgMode;
@@ -56,31 +55,8 @@ public class MsExtendedObjectsReader extends JdbcReader {
                     if (!isUserDefined) {
                         column.setCollation(col.getString("cn"));
                     }
-
                     column.setType(JdbcLoaderBase.getMsType(localFunc, col.getString("st"), col.getString("type"),
                             isUserDefined, col.getInt("size"), col.getInt("pr"), col.getInt("sc")));
-                    column.setNullValue(col.getBoolean("nl"));
-                    column.setSparse(col.getBoolean("sp"));
-                    if (col.getBoolean("ii")) {
-                        column.setIdentity(Integer.toString(col.getInt("s")), Integer.toString(col.getInt("i")));
-                        column.setNotForRep(col.getBoolean("nfr"));
-                    }
-
-                    String def = col.getString("dv");
-                    if (def != null) {
-                        column.setDefaultValue(def);
-                        column.setDefaultName(col.getString("dn"));
-                        loader.submitMsAntlrTask(def, p -> p.expression_eof().expression().get(0),
-                                ctx -> {
-                                    MsValueExpr vex = new MsValueExpr(schema.getName());
-                                    vex.analyze(ctx);
-                                    localFunc.addAllDeps(vex.getDepcies());
-                                });
-                    }
-
-                    column.setCollation(col.getString("cn"));
-
-                    column.setExpression(col.getString("def"));
                     columns.add(column.getFullDefinition());
                 }
 
