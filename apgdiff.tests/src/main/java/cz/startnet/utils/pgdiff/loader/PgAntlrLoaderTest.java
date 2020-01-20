@@ -7,8 +7,6 @@ package cz.startnet.utils.pgdiff.loader;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Collection;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -77,29 +75,13 @@ public class PgAntlrLoaderTest {
      * @return parameters for the tests
      */
     @Parameters
-    public static Collection<?> parameters() {
-        return Arrays.asList(
-                new Object[][]{
-                    // SONAR-OFF
-                    {1},
-                    {2},
-                    {3},
-                    {4},
-                    {5},
-                    {6},
-                    {7},
-                    {8},
-                    {9},
-                    {10},
-                    {11},
-                    {12},
-                    {13},
-                    {14},
-                    {15},
-                    {16},
-                    {17}
-                    // SONAR-ON
-                });
+    public static Iterable<Object[]> parameters() {
+        return ApgdiffTestUtils.getParameters(new Object[][] {
+            // SONAR-OFF
+            {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10},
+            {11}, {12}, {13}, {14}, {15}, {16}, {17}
+            // SONAR-ON
+        });
     }
     /**
      * Index of the file that should be tested.

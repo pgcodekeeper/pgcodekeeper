@@ -6,8 +6,6 @@
 package cz.startnet.utils.pgdiff;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,9 +25,9 @@ import ru.taximaxim.codekeeper.apgdiff.log.Log;
 public class PgDiffTest {
 
     @Parameters
-    public static Collection<?> parameters() {
-        return Arrays.asList(
-                new Object[][]{
+    public static Iterable<Object[]> parameters() {
+        return ApgdiffTestUtils.getParameters(
+                new Object[][] {
                     // Tests scenario where COLUMN type is modified.
                     {"modify_column_type"},
                     // Tests scenario where COLUMN type is modified, column has constraint.

@@ -1,0 +1,23 @@
+-- DEPCY: This FUNCTION is a dependency of COLUMN: [dbo].[t1].[c1]
+
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+CREATE FUNCTION [dbo].[f1] (@first integer) 
+RETURNS integer
+AS
+BEGIN
+  return 1;
+END
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+CREATE TABLE [dbo].[t1](
+	[c1] [bigint] NOT NULL CONSTRAINT [d] DEFAULT ([dbo].[f1](1)),
+	[c2] [int] NOT NULL
+) ON [PRIMARY]
+GO
