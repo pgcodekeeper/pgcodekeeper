@@ -9,5 +9,6 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="[3.4.0,4.0.0)",
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: %Bundle-Vendor
+Bundle-Localization: plugin
 Export-Package: ru.taximaxim.codekeeper.mainapp
 Automatic-Module-Name: ru.taximaxim.codekeeper.mainapp
