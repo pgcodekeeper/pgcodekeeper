@@ -61,7 +61,7 @@ public class CreateView extends ParserAbstract {
         Select_stmtContext vQuery = ctx.v_query;
         if (vQuery != null) {
             addStatementBody(vQuery);
-            view.setQuery(getFullCtxText(vQuery));
+            view.setQuery(getFullCtxText(vQuery), normalizeWhitespaceUnquoted(vQuery));
             db.addAnalysisLauncher(new ViewAnalysisLauncher(view, vQuery));
         }
         if (ctx.column_names != null) {

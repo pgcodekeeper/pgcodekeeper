@@ -699,7 +699,8 @@ class PgDB9 implements PgDatabaseObjectCreator {
         table.addColumn(col);
 
         PgView view = new PgView("user");
-        view.setQuery("( SELECT user_data.id, user_data.email, user_data.created FROM public.user_data)");
+        view.setQuery("( SELECT user_data.id, user_data.email, user_data.created FROM public.user_data)",
+                "(SELECT user_data.id, user_data.email, user_data.created FROM public.user_data)");
         view.addColumnDefaultValue("created", "now()");
         schema.addView(view);
 
@@ -724,7 +725,8 @@ class PgDB9 implements PgDatabaseObjectCreator {
         view.addRule(rule);
 
         view = new PgView("ws_test");
-        view.setQuery("SELECT ud.id \"   i   d   \" FROM public.user_data ud");
+        view.setQuery("SELECT ud.id \"   i   d   \" FROM public.user_data ud",
+                "SELECT ud.id \"   i   d   \" FROM public.user_data ud");
         schema.addView(view);
 
         return d;
@@ -949,7 +951,8 @@ class PgDB14 implements PgDatabaseObjectCreator {
         seq.setComment("'test table sequence'");
 
         PgView view = new PgView("test_view");
-        view.setQuery("SELECT test.id, test.text FROM public.test");
+        view.setQuery("SELECT test.id, test.text FROM public.test",
+                "SELECT test.id, test.text FROM public.test");
         schema.addView(view);
 
         view.setComment("'test view'");
@@ -1018,8 +1021,10 @@ class PgDB16 implements PgDatabaseObjectCreator {
 
         // view
         PgView view = new PgView("v_subselect");
-        view.setQuery("SELECT c.id, t.id FROM ( SELECT t_work.id FROM public.t_work) t"
-                + " JOIN public.t_chart c ON t.id = c.id");
+        view.setQuery("SELECT c.id, t.id FROM ( SELECT t_work.id FROM public.t_work) t "
+                + "JOIN public.t_chart c ON t.id = c.id",
+                "SELECT c.id, t.id FROM (SELECT t_work.id FROM public.t_work) t "
+                        + "JOIN public.t_chart c ON t.id = c.id");
         schema.addView(view);
 
         return d;
@@ -1065,7 +1070,12 @@ class PgDB17 implements PgDatabaseObjectCreator {
         view.setQuery("SELECT c.id, t.id AS second, t.name\n" +
                 "   FROM (( SELECT w.id, m.name FROM (( SELECT t_work.id FROM public.t_work) w\n" +
                 "             JOIN public.t_memo m ON (((w.id)::text = m.name)))) t\n" +
-                "     JOIN public.t_chart c ON ((t.id = c.id)))");
+                "     JOIN public.t_chart c ON ((t.id = c.id)))",
+
+                "SELECT c.id, t.id AS second, t.name "
+                        + "FROM ((SELECT w.id, m.name FROM ((SELECT t_work.id FROM public.t_work) w "
+                        + "JOIN public.t_memo m ON (((w.id) :: text = m.name)))) t "
+                        + "JOIN public.t_chart c ON ((t.id = c.id)))");
         schema.addView(view);
 
         return d;

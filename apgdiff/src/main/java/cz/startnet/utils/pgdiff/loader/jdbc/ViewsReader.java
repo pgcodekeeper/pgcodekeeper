@@ -48,13 +48,16 @@ public class ViewsReader extends JdbcReader {
         checkObjectValidity(definition, DbObjType.VIEW, viewName);
         String viewDef = definition.trim();
         int semicolonPos = viewDef.length() - 1;
-        v.setQuery(viewDef.charAt(semicolonPos) == ';' ? viewDef.substring(0, semicolonPos) : viewDef);
+        String query = viewDef.charAt(semicolonPos) == ';' ? viewDef.substring(0, semicolonPos) : viewDef;
 
         PgDatabase dataBase = schema.getDatabase();
 
         loader.submitAntlrTask(viewDef,
                 p -> p.sql().statement(0).data_statement().select_stmt(),
-                ctx -> dataBase.addAnalysisLauncher(new ViewAnalysisLauncher(v, ctx)));
+                ctx -> {
+                    dataBase.addAnalysisLauncher(new ViewAnalysisLauncher(v, ctx));
+                    v.setQuery(query, ParserAbstract.normalizeWhitespaceUnquoted(ctx));
+                });
 
         // OWNER
         loader.setOwner(v, res.getLong(CLASS_RELOWNER));

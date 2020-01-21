@@ -333,9 +333,9 @@ public class PgView extends AbstractView implements PgOptionContainer  {
         return Collections.unmodifiableList(columnNames);
     }
 
-    public void setQuery(final String query) {
+    public void setQuery(final String query, final String normalizedQuery) {
         this.query = query;
-        this.normalizedQuery = PgDiffUtils.normalizeWhitespaceUnquoted(query);
+        this.normalizedQuery = normalizedQuery;
         resetHash();
     }
 
