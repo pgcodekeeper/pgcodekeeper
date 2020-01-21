@@ -17,48 +17,8 @@
     <packaging>eclipse-repository</packaging>
 
     <properties>
-        <archive-filename>pgCodeKeeper-cli-${unqualifiedVersion}.${buildQualifier}</archive-filename>
+        <archive-filename>pgCodeKeeper-cli-${unqualifiedVersion}</archive-filename>
     </properties>
-
-    <profiles>
-        <profile>
-            <id>deploy-cli-github</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.gmavenplus</groupId>
-                        <artifactId>gmavenplus-plugin</artifactId>
-                        <version>1.6</version>
-                        <executions>
-                            <execution>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>execute</goal>
-                                </goals>
-                                <configuration>
-                                    <scripts>
-                                        <script>file:///${project.basedir}/deploy-github-release.groovy</script>
-                                    </scripts>
-                                    <bindPropertiesToSeparateVariables>false</bindPropertiesToSeparateVariables>
-                                    <properties>
-                                        <cli-version>${unqualifiedVersion}</cli-version>
-                                        <cli-archive-file>${project.basedir}/target/products/${archive-filename}-linux.gtk.x86_64.zip</cli-archive-file>
-                                    </properties>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-            <dependencies>
-                <dependency>
-                    <groupId>org.codehaus.groovy</groupId>
-                    <artifactId>groovy-all</artifactId>
-                    <version>2.4.13</version>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>
 
     <build>
         <plugins>
@@ -131,6 +91,24 @@
                         </product>
                     </products>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.coderplus.maven.plugins</groupId>
+                <artifactId>copy-rename-maven-plugin</artifactId>
+                <version>1.0.1</version>
+                <executions>
+                    <execution>
+                        <id>rename-file</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>rename</goal>
+                        </goals>
+                        <configuration>
+                            <sourceFile>${project.basedir}/target/products/${archive-filename}-linux.gtk.x86_64.zip</sourceFile>
+                            <destinationFile>${project.basedir}/target/products/${archive-filename}.zip</destinationFile>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
