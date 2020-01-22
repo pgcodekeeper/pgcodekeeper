@@ -783,6 +783,7 @@ MODULAR : '%';
 EXP : '^';
 
 DOT : '.';
+QUOTE_CHAR : '\'';
 DOUBLE_QUOTE : '"';
 DOLLAR : '$';
 LEFT_BRACKET : '[';
@@ -914,7 +915,7 @@ Character_String_Literal
 
 fragment
 Single_String
-    : '\'' ( ESC_SEQ | ~('\'') )* '\''
+    : QUOTE_CHAR ( ESC_SEQ | ~('\'') )* QUOTE_CHAR
     ;
 
 fragment

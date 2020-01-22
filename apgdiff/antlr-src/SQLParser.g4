@@ -1220,7 +1220,7 @@ agg_order
 
 character_string
     : BeginDollarStringConstant Text_between_Dollar* EndDollarStringConstant
-    | Character_String_Literal 
+    | Character_String_Literal
     ;
 
 function_arguments

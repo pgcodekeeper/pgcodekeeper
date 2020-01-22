@@ -169,7 +169,7 @@ public class CreateFunction extends ParserAbstract {
 
     private void analyzeFunctionDefinition(AbstractPgFunction function, String language,
             Character_stringContext definition, List<Pair<String, GenericColumn>> funcArgs) {
-        
+
         String def;
         TerminalNode codeStart = definition.Character_String_Literal();
         if (codeStart != null) {
