@@ -60,9 +60,9 @@ script_statement
 script_transaction
     : (START TRANSACTION | BEGIN (WORK | TRANSACTION)?) (transaction_mode (COMMA transaction_mode)*)?
     | (COMMIT | END | ABORT | ROLLBACK) (WORK | TRANSACTION)? (AND NO? CHAIN)?
-    | (COMMIT PREPARED | PREPARE TRANSACTION) multi_string
+    | (COMMIT PREPARED | PREPARE TRANSACTION) Character_String_Literal
     | (SAVEPOINT | RELEASE SAVEPOINT?) identifier
-    | ROLLBACK PREPARED multi_string 
+    | ROLLBACK PREPARED Character_String_Literal 
     | ROLLBACK (WORK | TRANSACTION)? TO SAVEPOINT? identifier
     | lock_table
     ;
@@ -105,7 +105,7 @@ additional_statement
     | ANALYZE (LEFT_PAREN analyze_mode (COMMA analyze_mode)* RIGHT_PAREN | VERBOSE)? table_cols_list?
     | CLUSTER VERBOSE? (identifier ON schema_qualified_name | schema_qualified_name (USING identifier)?)?
     | CHECKPOINT
-    | LOAD multi_string
+    | LOAD Character_String_Literal
     | DEALLOCATE PREPARE? (identifier | ALL)
     | REINDEX (LEFT_PAREN VERBOSE RIGHT_PAREN)? (INDEX | TABLE | SCHEMA | DATABASE | SYSTEM) CONCURRENTLY? schema_qualified_name
     | RESET ((identifier DOT)? identifier | TIME ZONE | SESSION AUTHORIZATION | ALL)
@@ -881,8 +881,8 @@ user_or_role_or_group_common_option
     | CREATEROLE | NOCREATEROLE
     | INHERIT | NOINHERIT
     | LOGIN | NOLOGIN
-    | ENCRYPTED? PASSWORD (password=multi_string | NULL)
-    | VALID UNTIL date_time=multi_string
+    | ENCRYPTED? PASSWORD (password=Character_String_Literal | NULL)
+    | VALID UNTIL date_time=Character_String_Literal
     ;
 
 user_or_role_common_option
@@ -907,7 +907,7 @@ group_option
 
 create_tablespace
     : TABLESPACE name=identifier (OWNER user_name)?
-    LOCATION directory=multi_string
+    LOCATION directory=Character_String_Literal
     (WITH LEFT_PAREN option_with_value (COMMA option_with_value)* RIGHT_PAREN)?
     ;
 
@@ -925,7 +925,7 @@ create_foreign_data_wrapper
     ;
 
 option_without_equal
-    : identifier multi_string
+    : identifier Character_String_Literal
     ;
 
 create_operator_statement
@@ -984,15 +984,15 @@ set_statement
 set_action
     : CONSTRAINTS (ALL | names_references) (DEFERRED | IMMEDIATE)
     | TRANSACTION transaction_mode (COMMA transaction_mode)*
-    | TRANSACTION SNAPSHOT multi_string
+    | TRANSACTION SNAPSHOT Character_String_Literal
     | SESSION CHARACTERISTICS AS TRANSACTION transaction_mode (COMMA transaction_mode)*
     | (SESSION | LOCAL)? session_local_option
     | XML OPTION (DOCUMENT | CONTENT)
     ;
 
 session_local_option
-    : SESSION AUTHORIZATION (multi_string | identifier | DEFAULT)
-    | TIME ZONE (multi_string | signed_numerical_literal | LOCAL | DEFAULT)
+    : SESSION AUTHORIZATION (Character_String_Literal | identifier | DEFAULT)
+    | TIME ZONE (Character_String_Literal | signed_numerical_literal | LOCAL | DEFAULT)
     | (identifier DOT)? config_param=identifier (TO | EQUAL) set_statement_value
     | ROLE (identifier | NONE)
     ;
@@ -1220,11 +1220,7 @@ agg_order
 
 character_string
     : BeginDollarStringConstant Text_between_Dollar* EndDollarStringConstant
-    | multi_string 
-    ;
-
-multi_string
-    : BeginCharacterStringConstant Text_Between_Quote* (String_Joiner Text_Between_Quote*)* EndCharacterStringConstant
+    | Character_String_Literal 
     ;
 
 function_arguments
@@ -1286,7 +1282,7 @@ drop_policy_statement
 
 create_subscription_statement
     : SUBSCRIPTION identifier
-    CONNECTION multi_string
+    CONNECTION Character_String_Literal
     PUBLICATION identifier_list
     with_storage_parameter?
     ;
@@ -1370,7 +1366,7 @@ drop_operator_class_statement
     ;
 
 create_conversion_statement
-    : DEFAULT? CONVERSION schema_qualified_name FOR multi_string TO multi_string FROM schema_qualified_name
+    : DEFAULT? CONVERSION schema_qualified_name FOR Character_String_Literal TO Character_String_Literal FROM schema_qualified_name
     ;
 
 alter_conversion_statement
@@ -1413,14 +1409,14 @@ copy_statement
 
 copy_from_statement
     : COPY table_cols
-    FROM (PROGRAM? multi_string | STDIN) 
+    FROM (PROGRAM? Character_String_Literal | STDIN) 
     (WITH? (LEFT_PAREN copy_option_list RIGHT_PAREN | copy_option_list))?
     (WHERE vex)?
     ;
 
 copy_to_statement
     : COPY (table_cols | LEFT_PAREN (select_stmt | insert_stmt_for_psql | update_stmt_for_psql | delete_stmt_for_psql) RIGHT_PAREN)
-    TO (PROGRAM? multi_string | STDOUT)
+    TO (PROGRAM? Character_String_Literal | STDOUT)
     (WITH? (LEFT_PAREN copy_option_list RIGHT_PAREN | copy_option_list))?
     ;
 
@@ -1432,17 +1428,17 @@ copy_option
     : FORMAT? (TEXT | CSV | BINARY)
     | OIDS truth_value?
     | FREEZE truth_value?
-    | DELIMITER AS? multi_string
-    | NULL AS? multi_string
+    | DELIMITER AS? Character_String_Literal
+    | NULL AS? Character_String_Literal
     | HEADER truth_value?
-    | QUOTE multi_string
-    | ESCAPE multi_string
+    | QUOTE Character_String_Literal
+    | ESCAPE Character_String_Literal
     | FORCE QUOTE (MULTIPLY | identifier_list)
     | FORCE_QUOTE (MULTIPLY | LEFT_PAREN identifier_list RIGHT_PAREN)
     | FORCE NOT NULL identifier_list
     | FORCE_NOT_NULL LEFT_PAREN identifier_list RIGHT_PAREN
     | FORCE_NULL LEFT_PAREN identifier_list RIGHT_PAREN
-    | ENCODING multi_string
+    | ENCODING Character_String_Literal
     ;
 
 create_view_statement

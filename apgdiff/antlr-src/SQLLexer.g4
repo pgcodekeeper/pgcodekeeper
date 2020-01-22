@@ -908,8 +908,18 @@ Control_Characters                  :   '\u0001' .. '\u0008' | '\u000B' | '\u000
 fragment
 Extended_Control_Characters         :   '\u0080' .. '\u009F';
 
-BeginCharacterStringConstant
-    : [eEnN]? '\'' -> pushMode(StringMode)
+Character_String_Literal
+    : [eEnN]? Single_String (String_Joiner Single_String)*
+    ;
+
+fragment
+Single_String
+    : '\'' ( ESC_SEQ | ~('\'') )* '\''
+    ;
+
+fragment
+String_Joiner
+    :  ((Space | Tab | White_Space | LineComment)* New_Line)+ (Space | Tab | White_Space)*
     ;
 
 fragment
@@ -987,17 +997,4 @@ Text_between_Dollar
 
 EndDollarStringConstant
     : '$' Tag? '$' {getText().equals(_tags.peek())}? {_tags.pop();} -> popMode
-    ;
-
-mode StringMode;
-Text_Between_Quote
-    : (ESC_SEQ | ~('\''))
-    ;
-
-String_Joiner
-    : '\'' ((Space | Tab | White_Space| LineComment)* New_Line)+ (Space | Tab | White_Space)* '\''
-    ;
-
-EndCharacterStringConstant
-    : '\'' -> popMode
     ;

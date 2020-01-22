@@ -784,7 +784,7 @@ public class ValueExpr extends AbstractExpr {
         if (!regcast.startsWith("reg")) {
             return;
         }
-        String s = ParserAbstract.unquoteQuotedString(strCtx);
+        String s = PgDiffUtils.unquoteQuotedString(strCtx.getText());
         switch (regcast) {
         case "regproc":
             // In this case, the function is not overloaded.

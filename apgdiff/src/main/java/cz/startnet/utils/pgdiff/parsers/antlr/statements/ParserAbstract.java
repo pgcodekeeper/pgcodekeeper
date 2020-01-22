@@ -7,17 +7,14 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
-import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
-import org.antlr.v4.runtime.tree.TerminalNode;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
@@ -25,7 +22,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Id_tokenContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identifier_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Including_indexContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Multi_stringContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Predefined_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
@@ -196,22 +192,6 @@ public abstract class ParserAbstract {
 
         return type;
     }
-
-    public static String unquoteQuotedString(Character_stringContext s) {
-        Multi_stringContext str = s.multi_string();
-        if (str != null) {
-            String def = str.Text_Between_Quote().stream()
-                    .map(TerminalNode::getText)
-                    .collect(Collectors.joining());
-
-            return def.replace("''", "'");
-        }
-
-        return s.Text_between_Dollar().stream()
-                .map(TerminalNode::getText)
-                .collect(Collectors.joining());
-    }
-
 
     public static String parseSignature(String name, Function_argsContext argsContext) {
         AbstractPgFunction function = new PgFunction(name);

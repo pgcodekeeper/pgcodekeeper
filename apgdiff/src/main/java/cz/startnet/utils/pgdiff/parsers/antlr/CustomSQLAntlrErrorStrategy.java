@@ -29,7 +29,7 @@ class CustomSQLAntlrErrorStrategy extends CustomAntlrErrorStrategy {
         case SQLLexer.Identifier:
         case SQLLexer.QuotedIdentifier:
             return IDENTIFIER;
-        case SQLLexer.BeginCharacterStringConstant:
+        case SQLLexer.Character_String_Literal:
         case SQLLexer.BeginDollarStringConstant:
             return STRING;
         case SQLLexer.NUMBER_LITERAL:

@@ -23,7 +23,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_column_name_typ
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identifier_nontypeContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Multi_stringContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statement_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
@@ -170,22 +169,19 @@ public class CreateFunction extends ParserAbstract {
 
     private void analyzeFunctionDefinition(AbstractPgFunction function, String language,
             Character_stringContext definition, List<Pair<String, GenericColumn>> funcArgs) {
-        TerminalNode codeStart;
-        List<TerminalNode> nodes;
-        Multi_stringContext str = definition.multi_string();
-        if (str != null) {
-            nodes = str.Text_Between_Quote();
+        
+        String def;
+        TerminalNode codeStart = definition.Character_String_Literal();
+        if (codeStart != null) {
+            // TODO support special escaping schemes (maybe in the util itself)
+            def = PgDiffUtils.unquoteQuotedString(codeStart.getText());
         } else {
-            nodes = definition.Text_between_Dollar();
+            List<TerminalNode> dollarText = definition.Text_between_Dollar();
+            codeStart = dollarText.get(0);
+            def = dollarText.stream()
+                    .map(TerminalNode::getText)
+                    .collect(Collectors.joining());
         }
-
-        if (nodes.isEmpty()) {
-            return;
-        }
-
-        codeStart = nodes.get(0);
-        String text = nodes.stream().map(TerminalNode::getText).collect(Collectors.joining());
-        String def = str == null ? text : text.replace("''", "'");
 
         // Parsing the function definition and adding its result context for analysis.
         // Adding contexts of function arguments for analysis.
