@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -13,8 +12,6 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
-import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.TerminalNode;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
@@ -89,55 +86,39 @@ public abstract class ParserAbstract {
      */
     public abstract void parseObject();
 
-    public static String normalizeWhitespaceUnquoted(ParserRuleContext ctx) {
+    public static String normalizeWhitespaceUnquoted(ParserRuleContext ctx, CommonTokenStream stream) {
         StringBuilder sb = new StringBuilder();
 
-        boolean needSpace = false;
+        // skip space before first token
+        int previous = SQLLexer.DOT;
 
-        List<Token> tokens = new ArrayList<>();
-        fillTokens(ctx, tokens);
-
-        for (Token token : tokens) {
-            int type = token.getType();
-
-            // skip whitespace
-            if (SQLLexer.White_Space == type || SQLLexer.Space == type) {
+        List<Token> tokens = stream.getTokens();
+        for (int i = ctx.getStart().getTokenIndex(); i <= ctx.getStop().getTokenIndex(); i++) {
+            Token token  = tokens.get(i);
+            // skip tokens from non default channel
+            if (token.getChannel() != Token.DEFAULT_CHANNEL) {
                 continue;
             }
+            int type = token.getType();
 
-            // remove whitespace before special characters
-            needSpace &= type != SQLLexer.DOT && type != SQLLexer.RIGHT_PAREN
+            // remove whitespace after and before some special characters
+            if (previous != SQLLexer.DOT
+                    && previous != SQLLexer.LEFT_PAREN
+                    && previous != SQLLexer.Text_between_Dollar
+                    && previous != SQLLexer.BeginDollarStringConstant
+                    && type != SQLLexer.DOT
+                    && type != SQLLexer.RIGHT_PAREN
                     && type != SQLLexer.Text_between_Dollar
-                    && type != SQLLexer.EndDollarStringConstant;
-
-            if (needSpace && type != SQLLexer.COMMA) {
+                    && type != SQLLexer.EndDollarStringConstant
+                    && type != SQLLexer.COMMA) {
                 sb.append(' ');
             }
 
             sb.append(getTokenText(type, token));
-
-            // remove whitespace after special characters
-            needSpace = type != SQLLexer.DOT && type != SQLLexer.LEFT_PAREN
-                    && type != SQLLexer.Text_between_Dollar
-                    && type != SQLLexer.BeginDollarStringConstant;
+            previous = type;
         }
 
         return sb.toString();
-    }
-
-    private static void fillTokens(ParserRuleContext ctx, List<Token> tokens) {
-        List<ParseTree> children = ctx.children;
-        if (children == null) {
-            return;
-        }
-
-        for (ParseTree child : children) {
-            if (child instanceof ParserRuleContext) {
-                fillTokens((ParserRuleContext) child, tokens);
-            } else if (child instanceof TerminalNode) {
-                tokens.add(((TerminalNode) child).getSymbol());
-            }
-        }
     }
 
     private static String getTokenText(int type, Token token) {

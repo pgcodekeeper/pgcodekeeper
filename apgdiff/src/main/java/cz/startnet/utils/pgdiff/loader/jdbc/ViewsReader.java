@@ -4,6 +4,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.antlr.v4.runtime.CommonTokenStream;
+
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
@@ -15,6 +17,7 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class ViewsReader extends JdbcReader {
 
@@ -57,10 +60,13 @@ public class ViewsReader extends JdbcReader {
         PgDatabase dataBase = schema.getDatabase();
 
         loader.submitAntlrTask(viewDef,
-                p -> p.sql().statement(0).data_statement().select_stmt(),
-                ctx -> {
-                    dataBase.addAnalysisLauncher(new ViewAnalysisLauncher(v, ctx));
-                    v.setQuery(query, ParserAbstract.normalizeWhitespaceUnquoted(ctx));
+                p -> new Pair<>(
+                        p.sql().statement(0).data_statement().select_stmt(),
+                        (CommonTokenStream) p.getTokenStream()),
+                pair -> {
+                    dataBase.addAnalysisLauncher(new ViewAnalysisLauncher(v, pair.getFirst()));
+                    v.setQuery(query, ParserAbstract.normalizeWhitespaceUnquoted(
+                            pair.getFirst(), pair.getSecond()));
                 });
 
         // OWNER
