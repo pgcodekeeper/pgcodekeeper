@@ -480,11 +480,13 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
             Class<P> parserClass) {
         String location = getCurrentLocation();
         GenericColumn object = this.currentObject;
+        List<Object> list = new ArrayList<>();
         AntlrParser.submitAntlrTask(antlrTasks, () -> {
             PgDiffUtils.checkCancelled(monitor);
-            P p = AntlrParser.makeBasicParser(parserClass, sql, location, errors);
+            P p = AntlrParser.makeBasicParser(parserClass, sql, location, list);
             return parserCtxReader.apply(p);
         }, t -> {
+            errors.addAll(list);
             if (monitor.isCanceled()) {
                 throw new MonitorCancelledRuntimeException();
             }
