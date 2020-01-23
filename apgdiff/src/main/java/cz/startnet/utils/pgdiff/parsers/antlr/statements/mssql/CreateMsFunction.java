@@ -21,6 +21,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Procedure_paramContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Select_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Sql_clausesContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.MsAnalysisLauncher;
 import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsSelect;
 import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsSqlClauses;
 import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsValueExpr;
@@ -115,22 +116,19 @@ public class CreateMsFunction extends BatchContextProcessor {
             }
 
             if (select != null) {
-                MsSelect sel = new MsSelect(schemaName, disabledDepcies);
-                sel.analyze(select);
-                func.addAllDeps(sel.getDepcies());
+                db.addAnalysisLauncher(new MsAnalysisLauncher(func, select,
+                        new MsSelect(schemaName, disabledDepcies)));
             } else {
                 ExpressionContext exp = bodyRet.expression();
                 if (exp != null) {
-                    MsValueExpr vex = new MsValueExpr(schemaName, disabledDepcies);
-                    vex.analyze(exp);
-                    func.addAllDeps(vex.getDepcies());
+                    db.addAnalysisLauncher(new MsAnalysisLauncher(func, exp,
+                            new MsValueExpr(schemaName, disabledDepcies)));
                 }
 
                 Sql_clausesContext clausesCtx = bodyRet.sql_clauses();
                 if (clausesCtx != null) {
-                    MsSqlClauses clauses = new MsSqlClauses(schemaName, disabledDepcies);
-                    clauses.analyze(clausesCtx);
-                    func.addAllDeps(clauses.getDepcies());
+                    db.addAnalysisLauncher(new MsAnalysisLauncher(func, clausesCtx,
+                            new MsSqlClauses(schemaName, disabledDepcies)));
                 }
             }
 

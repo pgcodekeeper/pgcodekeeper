@@ -15,6 +15,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Identity_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_optionsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.MsAnalysisLauncher;
 import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.TableAbstract;
 import cz.startnet.utils.pgdiff.schema.MsColumn;
@@ -129,10 +130,9 @@ public class CreateMsTable extends TableAbstract {
             }
             ExpressionContext exp = option.expression();
             col.setDefaultValue(getFullCtxText(exp));
-            MsValueExpr vex = new MsValueExpr(getSchemaNameSafe(
-                    Arrays.asList(ctx.qualified_name().schema, ctx.qualified_name().name)));
-            vex.analyze(exp);
-            col.addAllDeps(vex.getDepcies());
+            db.addAnalysisLauncher(new MsAnalysisLauncher(col, exp,
+                    new MsValueExpr(getSchemaNameSafe(
+                            Arrays.asList(ctx.qualified_name().schema, ctx.qualified_name().name)))));
         }
     }
 
