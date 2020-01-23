@@ -178,7 +178,7 @@ public abstract class TableAbstract extends ParserAbstract {
             col.setGenerated(true);
             VexContext genExpr = body.vex();
             col.setDefaultValue(getFullCtxText(genExpr));
-            db.addAnalysisLauncher(new VexAnalysisLauncher(col, genExpr));
+            db.addAnalysisLauncher(new VexAnalysisLauncher(col, genExpr, fileName));
         }
 
         if (constr != null) {
