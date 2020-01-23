@@ -174,6 +174,11 @@ public abstract class TableAbstract extends ParserAbstract {
 
             col.setSequence(sequence);
             col.setIdentityType(identity.ALWAYS() != null ? "ALWAYS" : "BY DEFAULT");
+        } else if (body.GENERATED() != null) {
+            col.setGenerated(true);
+            VexContext genExpr = body.vex();
+            col.setDefaultValue(getFullCtxText(genExpr));
+            db.addAnalysisLauncher(new VexAnalysisLauncher(col, genExpr));
         }
 
         if (constr != null) {

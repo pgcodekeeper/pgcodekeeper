@@ -1,8 +1,6 @@
 package cz.startnet.utils.pgdiff.depcies;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,7 +25,7 @@ public class MsDiffDepciesTest {
 
     @Parameters
     public static Iterable<Object[]> parameters() {
-        List<Object[]> p = Arrays.asList(new Object[][] {
+        return ApgdiffTestUtils.getParameters(new Object[][] {
             {"empty_usr"},
             // создаются две функции f1 и f2, в f2 через 'EXECUTE' вызвается f1,
             // пользователь выбирает функцию f2
@@ -40,13 +38,6 @@ public class MsDiffDepciesTest {
             // пользователь выбирает t1
             {"change_ms_table_usr_t1" }
         });
-
-        int maxLength = p.stream()
-                .mapToInt(oo -> oo.length)
-                .max().getAsInt();
-        return p.stream()
-                .map(oo -> oo.length < maxLength ? Arrays.copyOf(oo, maxLength) : oo)
-                ::iterator;
     }
 
     /**

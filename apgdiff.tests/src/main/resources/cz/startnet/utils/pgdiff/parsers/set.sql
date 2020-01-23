@@ -52,3 +52,6 @@ reset enable_parallel_append;
 SET xmlbinary TO base64;
 SET XML OPTION DOCUMENT;
 SET vacuum_cost_delay TO 40;
+SET enable_hashagg TO 0;
+set enable_hashagg = false;
+reset enable_hashagg;

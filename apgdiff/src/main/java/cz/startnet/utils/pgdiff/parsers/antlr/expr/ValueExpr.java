@@ -14,7 +14,6 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_bracketsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_elementsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Case_expressionContext;
@@ -31,7 +30,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Frame_boundContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Frame_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_callContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_constructContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.General_literalContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IndirectionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_listContext;
@@ -154,20 +152,18 @@ public class ValueExpr extends AbstractExpr {
                     addTypeDepcy(type);
                 }
                 ret = new ModPair<>(NONAME, TypesSetManually.BOOLEAN);
-            } else {
-                if (operandsList.size() == 1) {
-                    ret = operandsList.get(0);
-                    Indirection_listContext indir = vex.indirectionList();
-                    if (indir != null) {
-                        indirection(indir.indirection(), ret);
-                        if (indir.MULTIPLY() != null) {
-                            ret = new ModPair<>(NONAME, TypesSetManually.QUALIFIED_ASTERISK);
-                        }
+            } else if (operandsList.size() == 1) {
+                ret = operandsList.get(0);
+                Indirection_listContext indir = vex.indirectionList();
+                if (indir != null) {
+                    indirection(indir.indirection(), ret);
+                    if (indir.MULTIPLY() != null) {
+                        ret = new ModPair<>(NONAME, TypesSetManually.QUALIFIED_ASTERISK);
                     }
-                } else {
-                    // TODO add record type placeholder?
-                    ret = new ModPair<>("row", TypesSetManually.UNKNOWN);
                 }
+            } else {
+                // TODO add record type placeholder?
+                ret = new ModPair<>("row", TypesSetManually.UNKNOWN);
             }
         } else if (vex.is() != null
                 || vex.or() != null
@@ -207,12 +203,10 @@ public class ValueExpr extends AbstractExpr {
             // check simple built-in types for reg*** casts
             Value_expression_primaryContext castPrimary = operand.primary();
             Unsigned_value_specificationContext value;
-            General_literalContext literal;
             Character_stringContext str;
             if (castPrimary != null
                     && (value = castPrimary.unsigned_value_specification()) != null
-                    && (literal = value.general_literal()) != null
-                    && (str = literal.character_string()) != null) {
+                    && (str = value.character_string()) != null) {
                 regCast(str, customType.getText());
             }
         }
@@ -323,13 +317,11 @@ public class ValueExpr extends AbstractExpr {
                 new Select(this).analyze(compMod.select_stmt_no_parens());
             }
         } else if ((array = primary.array_expression()) != null) {
-            Array_bracketsContext arrayb = array.array_brackets();
-            if (arrayb != null) {
-                ret = arrayElements(arrayb.array_elements());
+            Array_elementsContext elements = array.array_elements();
+            if (elements != null) {
+                ret = arrayElements(elements);
             } else {
-                ret = new Select(this)
-                        .analyze(array.array_query().table_subquery().select_stmt())
-                        .get(0);
+                ret = new Select(this).analyze(array.table_subquery().select_stmt()).get(0);
             }
             ret.setFirst("array");
             ret.setSecond(ret.getSecond() + "[]");
@@ -818,7 +810,6 @@ public class ValueExpr extends AbstractExpr {
     private String literal(Unsigned_value_specificationContext unsignedValue){
         String ret;
         Unsigned_numeric_literalContext unsignedNumeric;
-        General_literalContext generalLiteral;
         Truth_valueContext truthValue;
 
         if ((unsignedNumeric = unsignedValue.unsigned_numeric_literal()) != null) {
@@ -827,22 +818,17 @@ public class ValueExpr extends AbstractExpr {
             } else {
                 ret = TypesSetManually.NUMERIC;
             }
-
-        } else {
-            generalLiteral = unsignedValue.general_literal();
-
-            if (generalLiteral.character_string() != null) {
-                ret = TypesSetManually.TEXT;
-            } else if ((truthValue = generalLiteral.truth_value()) != null) {
-                if (truthValue.TRUE() != null || truthValue.FALSE() != null) {
-                    ret = TypesSetManually.BOOLEAN;
-                } else {
-                    ret = TypesSetManually.TEXT;
-                }
+        } else if (unsignedValue.character_string() != null) {
+            ret = TypesSetManually.TEXT;
+        } else if ((truthValue = unsignedValue.truth_value()) != null) {
+            if (truthValue.TRUE() != null || truthValue.FALSE() != null) {
+                ret = TypesSetManually.BOOLEAN;
             } else {
-                Log.log(Log.LOG_WARNING, "No alternative in general_literal!");
-                ret = TypesSetManually.UNKNOWN;
+                ret = TypesSetManually.TEXT;
             }
+        } else {
+            Log.log(Log.LOG_WARNING, "No alternative in unsigned_value_specification!");
+            ret = TypesSetManually.UNKNOWN;
         }
         return ret;
     }

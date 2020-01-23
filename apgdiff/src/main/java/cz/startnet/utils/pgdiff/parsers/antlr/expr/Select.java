@@ -123,15 +123,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
     private List<ModPair<String, String>> perform(Perform_stmtContext perform) {
         // from defines the namespace so it goes before everything else
         if (perform.FROM() != null) {
-            boolean oldFrom = inFrom;
-            try {
-                inFrom = true;
-                for (From_itemContext fromItem : perform.from_item()) {
-                    from(fromItem);
-                }
-            } finally {
-                inFrom = oldFrom;
-            }
+            from(perform.from_item());
         }
 
         ValueExpr vex = new ValueExpr(this);
@@ -240,15 +232,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
         if (primary.SELECT() != null) {
             // from defines the namespace so it goes before everything else
             if (primary.FROM() != null) {
-                boolean oldFrom = inFrom;
-                try {
-                    inFrom = true;
-                    for (From_itemContext fromItem : primary.from_item()) {
-                        from(fromItem);
-                    }
-                } finally {
-                    inFrom = oldFrom;
-                }
+                from(primary.from_item());
             }
 
             ValueExpr vex = new ValueExpr(this);
@@ -298,7 +282,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
         return ret;
     }
 
-    private List<ModPair<String, String>> sublist(List<Select_sublistContext> sublist, ValueExpr vex) {
+    List<ModPair<String, String>> sublist(List<Select_sublistContext> sublist, ValueExpr vex) {
         List<ModPair<String, String>> ret = new ArrayList<>(sublist.size());
         for (Select_sublistContext target : sublist) {
             Vex selectSublistVex = new Vex(target.vex());
@@ -466,7 +450,19 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
         }
     }
 
-    void from(From_itemContext fromItem) {
+    void from(List<From_itemContext> items) {
+        boolean oldFrom = inFrom;
+        try {
+            inFrom = true;
+            for (From_itemContext fromItem : items) {
+                from(fromItem);
+            }
+        } finally {
+            inFrom = oldFrom;
+        }
+    }
+
+    private void from(From_itemContext fromItem) {
         From_primaryContext primary;
 
         if (fromItem.LEFT_PAREN() != null && fromItem.RIGHT_PAREN() != null) {

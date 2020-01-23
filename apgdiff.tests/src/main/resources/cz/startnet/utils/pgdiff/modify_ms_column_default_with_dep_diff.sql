@@ -1,0 +1,17 @@
+ALTER TABLE [dbo].[t1] DROP CONSTRAINT [d]
+GO
+
+ALTER TABLE [dbo].[t1] ADD CONSTRAINT [d] DEFAULT ([dbo].[f1](1)) FOR [c1]
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+ALTER FUNCTION [dbo].[f1] (@first integer) 
+RETURNS integer
+AS
+BEGIN
+  return 1;
+END
+GO

@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -23,6 +22,7 @@ import org.junit.runners.Parameterized.Parameters;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
 
 /**
@@ -36,7 +36,7 @@ public class MsParserTest {
 
     @Parameters
     public static Iterable<Object[]> parameters() {
-        List<Object[]> p = Arrays.asList(new Object[][] {
+        return ApgdiffTestUtils.getParameters(new Object[][] {
             {"ms_assemblies"},
             {"ms_authorizations"},
             {"ms_availability_group"},
@@ -75,13 +75,6 @@ public class MsParserTest {
             {"ms_users"},
             {"ms_xml_data_type", 1},
         });
-
-        int maxLength = p.stream()
-                .mapToInt(oo -> oo.length)
-                .max().getAsInt();
-        return p.stream()
-                .map(oo -> oo.length < maxLength ? Arrays.copyOf(oo, maxLength) : oo)
-                ::iterator;
     }
 
     /**

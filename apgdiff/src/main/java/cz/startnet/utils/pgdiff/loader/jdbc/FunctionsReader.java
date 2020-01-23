@@ -120,6 +120,13 @@ public class FunctionsReader extends JdbcReader {
             }
         }
 
+        if (SupportedVersion.VERSION_12.isLE(loader.version)) {
+            String supportFunc = res.getString("support_func");
+            if (!"-".equals(supportFunc)) {
+                setFunctionWithDep(AbstractPgFunction::setSupportFunc, function, supportFunc);
+            }
+        }
+
         function.setWindow(res.getBoolean("proiswindow"));
 
         // VOLATILE is default

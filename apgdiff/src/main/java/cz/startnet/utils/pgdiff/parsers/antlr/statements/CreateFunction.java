@@ -116,6 +116,10 @@ public class CreateFunction extends ParserAbstract {
                 function.setParallel("RESTRICTED");
             } else if (action.SET() != null) {
                 setConfigParams(action, function);
+            } else if (action.SUPPORT() != null) {
+                List<IdentifierContext> suppFuncIds = action.schema_qualified_name().identifier();
+                function.setSupportFunc(getFullCtxText(suppFuncIds));
+                addDepSafe(function, suppFuncIds, DbObjType.FUNCTION, true);
             }
         }
 
