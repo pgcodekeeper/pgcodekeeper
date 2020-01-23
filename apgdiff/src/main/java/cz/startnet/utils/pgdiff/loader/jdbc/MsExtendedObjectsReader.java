@@ -55,25 +55,8 @@ public class MsExtendedObjectsReader extends JdbcReader {
                     if (!isUserDefined) {
                         column.setCollation(col.getString("cn"));
                     }
-
                     column.setType(JdbcLoaderBase.getMsType(localFunc, col.getString("st"), col.getString("type"),
                             isUserDefined, col.getInt("size"), col.getInt("pr"), col.getInt("sc")));
-                    column.setNullValue(col.getBoolean("nl"));
-                    column.setSparse(col.getBoolean("sp"));
-                    if (col.getBoolean("ii")) {
-                        column.setIdentity(Integer.toString(col.getInt("s")), Integer.toString(col.getInt("i")));
-                        column.setNotForRep(col.getBoolean("nfr"));
-                    }
-
-                    String def = col.getString("dv");
-                    if (def != null) {
-                        column.setDefaultValue(def);
-                        column.setDefaultName(col.getString("dn"));
-                    }
-
-                    column.setCollation(col.getString("cn"));
-
-                    column.setExpression(col.getString("def"));
                     columns.add(column.getFullDefinition());
                 }
 

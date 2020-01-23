@@ -41,9 +41,13 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
         AbstractFunction newFunction = (AbstractFunction) newCondition;
 
         if (!compareUnalterable(newFunction)) {
-            isNeedDepcies.set(true);
             if (needDrop(newFunction)) {
+                isNeedDepcies.set(true);
                 return true;
+            }
+
+            if (!isPostgres()) {
+                isNeedDepcies.set(true);
             }
 
             sb.append(newFunction.getFunctionFullSQL(false));

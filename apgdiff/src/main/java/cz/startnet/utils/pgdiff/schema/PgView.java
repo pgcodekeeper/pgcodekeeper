@@ -34,6 +34,7 @@ public class PgView extends AbstractView implements PgOptionContainer  {
 
     private String query;
     private String normalizedQuery;
+    private String method = ApgdiffConsts.HEAP;
     private String tablespace;
     private Boolean isWithData;
     private final List<DefaultValue> defaultValues = new ArrayList<>();
@@ -69,6 +70,10 @@ public class PgView extends AbstractView implements PgOptionContainer  {
                 sbSQL.append(PgDiffUtils.getQuotedName(columnNames.get(i)));
             }
             sbSQL.append(')');
+        }
+
+        if (!ApgdiffConsts.HEAP.equals(method)) {
+            sbSQL.append("\nUSING ").append(PgDiffUtils.getQuotedName(method));
         }
 
         StringBuilder sb = new StringBuilder();
@@ -156,7 +161,8 @@ public class PgView extends AbstractView implements PgOptionContainer  {
         final int startLength = sb.length();
         PgView newView = (PgView) newCondition;
 
-        if (isViewModified(newView) || isMatView() != newView.isMatView()) {
+        if (isViewModified(newView) || isMatView() != newView.isMatView()
+                || !Objects.equals(getMethod(), newView.getMethod())) {
             isNeedDepcies.set(true);
             return true;
         }
@@ -356,6 +362,15 @@ public class PgView extends AbstractView implements PgOptionContainer  {
         resetHash();
     }
 
+    public String getMethod() {
+        return method;
+    }
+
+    public void setMethod(String using) {
+        this.method = using;
+        resetHash();
+    }
+
     public String getTablespace() {
         return tablespace;
     }
@@ -462,6 +477,7 @@ public class PgView extends AbstractView implements PgOptionContainer  {
             PgView view = (PgView) obj;
             return Objects.equals(normalizedQuery, view.getNormalizedQuery())
                     && Objects.equals(isWithData, view.isWithData())
+                    && Objects.equals(method, view.getMethod())
                     && Objects.equals(tablespace, view.getTablespace())
                     && columnNames.equals(view.columnNames)
                     && PgDiffUtils.setlikeEquals(defaultValues, view.defaultValues)
@@ -480,6 +496,7 @@ public class PgView extends AbstractView implements PgOptionContainer  {
         hasher.putOrdered(columnComments);
         hasher.put(options);
         hasher.put(isWithData);
+        hasher.put(method);
         hasher.put(tablespace);
     }
 
@@ -491,6 +508,7 @@ public class PgView extends AbstractView implements PgOptionContainer  {
         view.query = query;
         view.normalizedQuery = normalizedQuery;
         view.setIsWithData(isWithData());
+        view.setMethod(getMethod());
         view.setTablespace(getTablespace());
         view.columnNames.addAll(columnNames);
         view.defaultValues.addAll(defaultValues);

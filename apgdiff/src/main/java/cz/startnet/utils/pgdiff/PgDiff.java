@@ -60,34 +60,15 @@ public class PgDiff {
         return Collections.unmodifiableList(errors);
     }
 
+    private static final Path META_PATH = Paths.get(System.getProperty("user.home"))
+            .resolve(".pgcodekeeper-cli").resolve("dependencies");
+
     /**
      * Creates diff on the two database schemas.
      */
     public String createDiff() throws InterruptedException, IOException, PgCodekeeperException {
-        PgDatabase oldDatabase = loadOldDatabase();
-        PgDatabase newDatabase = loadNewDatabase();
-
-        Path metaPath = Paths.get(System.getProperty("user.home")).resolve(".pgcodekeeper-cli")
-                .resolve("dependencies");
-
-        loadLibraries(oldDatabase, metaPath, arguments.getSourceLibXmls(),
-                arguments.getSourceLibs(), arguments.getSourceLibsWithoutPriv());
-        loadLibraries(newDatabase, metaPath, arguments.getTargetLibXmls(),
-                arguments.getTargetLibs(), arguments.getTargetLibsWithoutPriv());
-
-        if (arguments.isLibSafeMode() &&
-                (!oldDatabase.getOverrides().isEmpty() || !newDatabase.getOverrides().isEmpty())) {
-            List<PgOverride> overrides = oldDatabase.getOverrides();
-            overrides.addAll(newDatabase.getOverrides());
-            throw new LibraryObjectDuplicationException(overrides);
-        }
-
-        // read additional privileges from special folder
-        loadOverrides(oldDatabase, arguments.getOldSrcFormat(), arguments.getOldSrc());
-        loadOverrides(newDatabase, arguments.getNewSrcFormat(), arguments.getNewSrc());
-
-        FullAnalyze.fullAnalyze(oldDatabase, null);
-        FullAnalyze.fullAnalyze(newDatabase, null);
+        PgDatabase oldDatabase = loadOldDatabaseWithLibraries();
+        PgDatabase newDatabase = loadNewDatabaseWithLibraries();
 
         IgnoreParser ignoreParser = new IgnoreParser();
         for (String listFilename : arguments.getIgnoreLists()) {
@@ -107,10 +88,10 @@ public class PgDiff {
         assertErrors();
     }
 
-    private void loadLibraries(PgDatabase db, Path metaPath, Collection<String> libXmls,
+    private void loadLibraries(PgDatabase db, Collection<String> libXmls,
             Collection<String> libs, Collection<String> libsWithoutPriv)
                     throws InterruptedException, IOException, PgCodekeeperException {
-        LibraryLoader ll = new LibraryLoader(db, metaPath, errors);
+        LibraryLoader ll = new LibraryLoader(db, META_PATH, errors);
 
         for (String xml : libXmls) {
             ll.loadXml(new DependenciesXmlStore(Paths.get(xml)), arguments);
@@ -119,6 +100,46 @@ public class PgDiff {
         ll.loadLibraries(arguments, false, libs);
         ll.loadLibraries(arguments, true, libsWithoutPriv);
         assertErrors();
+    }
+
+    public PgDatabase loadNewDatabaseWithLibraries()
+            throws IOException, InterruptedException, PgCodekeeperException {
+        PgDatabase newDatabase = loadNewDatabase();
+
+        loadLibraries(newDatabase, arguments.getTargetLibXmls(),
+                arguments.getTargetLibs(), arguments.getTargetLibsWithoutPriv());
+
+        List<PgOverride> overrides = newDatabase.getOverrides();
+        if (arguments.isLibSafeMode() && !overrides.isEmpty()) {
+            throw new LibraryObjectDuplicationException(overrides);
+        }
+
+        // read additional privileges from special folder
+        loadOverrides(newDatabase, arguments.getNewSrcFormat(), arguments.getNewSrc());
+
+        FullAnalyze.fullAnalyze(newDatabase, null);
+
+        return newDatabase;
+    }
+
+    public PgDatabase loadOldDatabaseWithLibraries()
+            throws IOException, InterruptedException, PgCodekeeperException {
+        PgDatabase oldDatabase = loadOldDatabase();
+
+        loadLibraries(oldDatabase, arguments.getSourceLibXmls(),
+                arguments.getSourceLibs(), arguments.getSourceLibsWithoutPriv());
+
+        List<PgOverride> overrides = oldDatabase.getOverrides();
+        if (arguments.isLibSafeMode() && !overrides.isEmpty()) {
+            throw new LibraryObjectDuplicationException(overrides);
+        }
+
+        // read additional privileges from special folder
+        loadOverrides(oldDatabase, arguments.getOldSrcFormat(), arguments.getOldSrc());
+
+        FullAnalyze.fullAnalyze(oldDatabase, null);
+
+        return oldDatabase;
     }
 
     public PgDatabase loadNewDatabase() throws IOException, InterruptedException, PgCodekeeperException {

@@ -3,6 +3,8 @@ package ru.taximaxim.codekeeper.apgdiff;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Assert;
 
@@ -68,6 +70,17 @@ public final class ApgdiffTestUtils {
         Assert.assertEquals("File name template: " + template,
                 sbExpDiff.toString().trim(), script.trim());
     }
+
+    public static Iterable<Object[]> getParameters(Object[][] objects) {
+        List<Object[]> p = Arrays.asList(objects);
+        int maxLength = p.stream()
+                .mapToInt(oo -> oo.length)
+                .max().getAsInt();
+        return p.stream()
+                .map(oo -> oo.length < maxLength ? Arrays.copyOf(oo, maxLength) : oo)
+                ::iterator;
+    }
+
 
     private ApgdiffTestUtils() {
     }
