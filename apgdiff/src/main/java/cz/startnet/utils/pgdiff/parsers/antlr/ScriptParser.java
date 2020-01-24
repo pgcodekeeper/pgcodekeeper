@@ -11,6 +11,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_sequence_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Column_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_statementsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_alterContext;
@@ -117,9 +118,10 @@ public class ScriptParser {
             dangerStatements.add(DangerStatement.RESTART_WITH);
         } else if ((at = alter.alter_table_statement()) != null) {
             for (Table_actionContext tablAction : at.table_action()) {
+                Column_actionContext colAction = tablAction.column_action();
                 if (tablAction.column != null && tablAction.DROP() != null) {
                     dangerStatements.add(DangerStatement.DROP_COLUMN);
-                } else if (tablAction.datatype != null) {
+                } else if (colAction != null && colAction.data_type() != null) {
                     dangerStatements.add(DangerStatement.ALTER_COLUMN);
                 }
             }

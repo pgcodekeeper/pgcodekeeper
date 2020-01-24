@@ -108,66 +108,6 @@ public final class PgDiffUtils {
         return s.substring(1, s.length() - 1).replace("''", "'");
     }
 
-    @Deprecated
-    // TODO use antlr context's getText()
-    public static String normalizeWhitespaceUnquoted(String string) {
-        StringBuilder sb = new StringBuilder(string.length());
-
-        boolean quote = false;
-        boolean doubleQuote = false;
-        int currentWhitespaceStart = -1;
-        for (int pos = 0; pos < string.length(); ++pos) {
-            char ch = string.charAt(pos);
-
-            if (ch == '\'') {
-                if (!doubleQuote) {
-                    quote = !quote;
-                }
-            } else if (ch == '"') {
-                if (!quote) {
-                    doubleQuote = !doubleQuote;
-                }
-            } else if (Character.isWhitespace(ch) && !quote && !doubleQuote) {
-                if (currentWhitespaceStart < 0) {
-                    currentWhitespaceStart = pos;
-                }
-
-                // do not add whitespace while iterating over it
-                continue;
-            } else {
-                // if we interrupted some whitespace
-                if (currentWhitespaceStart >= 0) {
-                    // check whitespace boundaries, if it was delimited by a
-                    // special character do not separate that character - add nothing
-                    // if whitespace was necessary (e.g. delimited words) - add one space
-                    boolean removeWhitespace = false;
-
-                    if (currentWhitespaceStart - 1 >= 0) {
-                        char preW = string.charAt(currentWhitespaceStart - 1);
-                        removeWhitespace |= preW == '(' || preW == ')'
-                                || preW == ',';
-                    }
-                    if (pos + 1 < string.length()) {
-                        char postW = string.charAt(pos + 1);
-                        removeWhitespace |= postW == '(' || postW == ')'
-                                || postW == ',';
-                    }
-
-                    // reset whitespace flag
-                    currentWhitespaceStart = -1;
-                    if (!removeWhitespace) {
-                        sb.append(' ');
-                    }
-                }
-            }
-
-            // append unskipped characters
-            sb.append(ch);
-        }
-
-        return sb.toString();
-    }
-
     public static byte[] getHash(String s, String instance) {
         try {
             return MessageDigest.getInstance(instance)
