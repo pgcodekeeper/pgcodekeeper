@@ -43,6 +43,8 @@ public class MsTypesReader extends JdbcReader {
                 // object since it is temporary
                 AbstractColumn column = MsTablesReader.getColumn(col, schema, loader, type);
                 type.addColumn(column.getFullDefinition());
+                // extract type depcy from column object since it is temporary
+                // (column also has depcy that is not related to the analysis)
                 type.addAllDeps(column.getDeps());
             }
 
