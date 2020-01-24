@@ -119,10 +119,9 @@ public class CreateMsType extends ParserAbstract {
             }
 
             for (Column_optionContext option : colCtx.column_option()) {
-                fillColumnOption(option, col);
+                fillColumnOption(option, col, type);
             }
 
-            type.addAllDeps(col.getDeps());
             type.addColumn(col.getFullDefinition());
         }
     }
@@ -180,7 +179,7 @@ public class CreateMsType extends ParserAbstract {
         sb.append("\n)");
     }
 
-    private void fillColumnOption(Column_optionContext option, MsColumn col) {
+    private void fillColumnOption(Column_optionContext option, MsColumn col, MsType type) {
         if (option.SPARSE() != null) {
             col.setSparse(true);
         } else if (option.COLLATE() != null) {
@@ -208,7 +207,7 @@ public class CreateMsType extends ParserAbstract {
             }
             ExpressionContext exp = option.expression();
             col.setDefaultValue(getFullCtxText(exp));
-            db.addAnalysisLauncher(new MsAnalysisLauncher(col, exp,
+            db.addAnalysisLauncher(new MsAnalysisLauncher(type, exp,
                     new MsValueExpr(getSchemaNameSafe(
                             Arrays.asList(ctx.qualified_name().schema, ctx.qualified_name().name)))));
         }

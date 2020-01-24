@@ -39,10 +39,10 @@ public class MsTypesReader extends JdbcReader {
             type.setNotNull(!res.getBoolean("is_nullable"));
         } else {
             for (XmlReader col : XmlReader.readXML(res.getString("cols"))) {
-                AbstractColumn column = MsTablesReader.getColumn(col, schema.getName(), loader);
+                // pass the 'type' to the method for extract type depcy from column
+                // object since it is temporary
+                AbstractColumn column = MsTablesReader.getColumn(col, schema, loader, type);
                 type.addColumn(column.getFullDefinition());
-                // extract type depcy from column object since it is temporary
-                type.addAllDeps(column.getDeps());
             }
 
             for (XmlReader index : XmlReader.readXML(res.getString("indices"))) {
