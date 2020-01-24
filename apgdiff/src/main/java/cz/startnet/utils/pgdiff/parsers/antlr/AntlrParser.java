@@ -146,13 +146,13 @@ public class AntlrParser {
                 parser.addParseListener(new CustomParseTreeListener(
                         monitoringLevel, mon == null ? new NullProgressMonitor() : mon));
                 saveTimeOfLastParserStart(false);
-                return parser.sql();
+                return new Pair<>(parser.sql(), (CommonTokenStream) parser.getTokenStream());
             } catch (MonitorCancelledRuntimeException mcre){
                 throw new InterruptedException();
             }
-        }, ctx -> {
+        }, pair -> {
             try {
-                listener.process(ctx, null);
+                listener.process(pair.getFirst(), pair.getSecond());
             } catch (UnresolvedReferenceException ex) {
                 errors.add(CustomSQLParserListener.handleUnresolvedReference(ex, parsedObjectName));
             }
