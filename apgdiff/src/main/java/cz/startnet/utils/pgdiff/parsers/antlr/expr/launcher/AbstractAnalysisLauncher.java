@@ -76,11 +76,16 @@ public abstract class AbstractAnalysisLauncher {
             return analyze(ctx);
         } catch (UnresolvedReferenceException ex) {
             Token t = ex.getErrorToken();
-            AntlrError err = new AntlrError(t, location, t.getLine(),
-                    t.getCharPositionInLine(), ex.getMessage())
-                    .copyWithOffset(offset, lineOffset, inLineOffset);
-            Log.log(Log.LOG_WARNING, err.toString(), ex);
-            errors.add(err);
+            if (t != null) {
+                AntlrError err = new AntlrError(t, location, t.getLine(),
+                        t.getCharPositionInLine(), ex.getMessage())
+                        .copyWithOffset(offset, lineOffset, inLineOffset);
+                Log.log(Log.LOG_WARNING, err.toString(), ex);
+                errors.add(err);
+            } else {
+                Log.log(Log.LOG_WARNING, ex.toString(), ex);
+                errors.add(location + ' ' + ex.getLocalizedMessage());
+            }
         } catch (Exception ex) {
             Log.log(Log.LOG_ERROR, ex.toString(), ex);
             errors.add(location + ' ' + ex);
