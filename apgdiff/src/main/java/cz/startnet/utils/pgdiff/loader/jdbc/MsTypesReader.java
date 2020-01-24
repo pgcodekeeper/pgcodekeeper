@@ -43,6 +43,7 @@ public class MsTypesReader extends JdbcReader {
                 // object since it is temporary
                 AbstractColumn column = MsTablesReader.getColumn(col, schema, loader, type);
                 type.addColumn(column.getFullDefinition());
+                type.addAllDeps(column.getDeps());
             }
 
             for (XmlReader index : XmlReader.readXML(res.getString("indices"))) {
