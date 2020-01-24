@@ -79,7 +79,7 @@ public abstract class AbstractAnalysisLauncher {
             AntlrError err = new AntlrError(t, location, t.getLine(),
                     t.getCharPositionInLine(), ex.getMessage())
                     .copyWithOffset(offset, lineOffset, inLineOffset);
-            Log.log(Log.LOG_ERROR, err.toString(), ex);
+            Log.log(Log.LOG_WARNING, err.toString(), ex);
             errors.add(err);
         } catch (Exception ex) {
             Log.log(Log.LOG_ERROR, ex.toString(), ex);
