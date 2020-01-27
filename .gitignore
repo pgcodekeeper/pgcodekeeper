@@ -1,1 +1,4 @@
 */.settings/org.sonarlint.eclipse.core.prefs
+target/
+workspace/
+.project

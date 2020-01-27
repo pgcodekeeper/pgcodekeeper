@@ -12,19 +12,23 @@ Use /script/update-version.sh NEW-VERSION
 to update all relevant poms and metadatas
 
     фича:
-    feature/feature.xml
-    feature/pom.xml
+    ru.taximaxim.codekeeper.mainapp/feature/feature.xml
+    ru.taximaxim.codekeeper.mainapp/feature/pom.xml
     
     branding plugin:
-    META-INF/MANIFEST.MF
-    pom.xml
+    ru.taximaxim.codekeeper.mainapp/META-INF/MANIFEST.MF
+    ru.taximaxim.codekeeper.mainapp/pom.xml
+    
+    product (rcp):
+    ru.taximaxim.codekeeper.mainapp/product/rcp/*.product
+    ru.taximaxim.codekeeper.mainapp/product/rcp/pom.xml
     
     product (стендэлон апгдифф):
-    product/*.product
-    product/pom.xml
+    ru.taximaxim.codekeeper.mainapp/product/standalone/*.product
+    ru.taximaxim.codekeeper.mainapp/product/standalone/pom.xml
     
     update site:
-    updatesite/pom.xml
+    ru.taximaxim.codekeeper.mainapp/updatesite/pom.xml
     
     this file:
     property 'global.version' (also updated by the script)
@@ -36,17 +40,17 @@ to update all relevant poms and metadatas
     <version>${global.version}</version>
     <packaging>pom</packaging>
     <modules>
-        <module>..</module>
-        <module>../../apgdiff</module>
-        <module>../../apgdiff.tests</module>
-        <module>../../ru.taximaxim.codekeeper.ui</module>
-        <module>../../ru.taximaxim.codekeeper.ui.tests</module>
-        <module>../../ru.taximaxim.codekeeper.cli</module>
-        <module>../../ru.taximaxim.codekeeper.cli.tests</module>
-        <module>../feature</module>
-        <module>../updatesite</module>
-        <module>../product/rcp</module>
-        <module>../product/standalone</module>
+        <module>apgdiff</module>
+        <module>apgdiff.tests</module>
+        <module>ru.taximaxim.codekeeper.ui</module>
+        <module>ru.taximaxim.codekeeper.ui.tests</module>
+        <module>ru.taximaxim.codekeeper.cli</module>
+        <module>ru.taximaxim.codekeeper.cli.tests</module>
+        <module>ru.taximaxim.codekeeper.mainapp</module>
+        <module>ru.taximaxim.codekeeper.mainapp/feature</module>
+        <module>ru.taximaxim.codekeeper.mainapp/updatesite</module>
+        <module>ru.taximaxim.codekeeper.mainapp/product/rcp</module>
+        <module>ru.taximaxim.codekeeper.mainapp/product/standalone</module>
     </modules>
 
     <properties>
@@ -119,10 +123,10 @@ to update all relevant poms and metadatas
                                     <tagName>v${unqualifiedVersion}</tagName>
                                     <name>pgCodeKeeper ${unqualifiedVersion}</name>
                                     <assets>
-                                        <asset>../product/stanalone/target/products/pgCodeKeeper-cli-${unqualifiedVersion}.zip</asset>
-                                        <asset>../product/rcp/target/products/pgCodeKeeper-${unqualifiedVersion}-win32.win32.x86_64.zip</asset>
-                                        <asset>../product/rcp/target/products/pgCodeKeeper-${unqualifiedVersion}-linux.gtk.x86_64.tar.gz</asset>
-                                        <asset>../product/rcp/target/products/pgCodeKeeper-${unqualifiedVersion}-macosx.cocoa.x86_64.tar.gz</asset>
+                                        <asset>ru.taximaxim.codekeeper.mainapp/product/stanalone/target/products/pgCodeKeeper-cli-${unqualifiedVersion}.zip</asset>
+                                        <asset>ru.taximaxim.codekeeper.mainapp/product/rcp/target/products/pgCodeKeeper-${unqualifiedVersion}-win32.win32.x86_64.zip</asset>
+                                        <asset>ru.taximaxim.codekeeper.mainapp/product/rcp/target/products/pgCodeKeeper-${unqualifiedVersion}-linux.gtk.x86_64.tar.gz</asset>
+                                        <asset>ru.taximaxim.codekeeper.mainapp/product/rcp/target/products/pgCodeKeeper-${unqualifiedVersion}-macosx.cocoa.x86_64.tar.gz</asset>
                                     </assets>
                                 </configuration>
                             </execution>
@@ -133,12 +137,9 @@ to update all relevant poms and metadatas
         </profile>
         <profile>
             <id>internal</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
             <modules>
-                <module>../../../codekeeper-internal/ru.taximaxim.codekeeper.internal.tests</module>
-                <module>../../../codekeeper-internal/ru.taximaxim.codekeeper.internal.ui.tests</module>
+                <module>../codekeeper-internal/ru.taximaxim.codekeeper.internal.tests</module>
+                <module>../codekeeper-internal/ru.taximaxim.codekeeper.internal.ui.tests</module>
             </modules>
         </profile>
         <profile>
@@ -182,7 +183,7 @@ to update all relevant poms and metadatas
                             <groupId>ru.taximaxim.codeKeeper</groupId>
                             <artifactId>ru.taximaxim.codeKeeper</artifactId>
                             <version>${global.version}</version>
-                            <classifier>../${target.definition.file}</classifier>
+                            <classifier>ru.taximaxim.codekeeper.mainapp/${target.definition.file}</classifier>
                         </artifact>
                     </target>
                     <pomDependencies>consider</pomDependencies>
