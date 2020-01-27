@@ -114,6 +114,10 @@ public class CliArgs extends PgDiffArguments {
             usage="print exception stacktrace")
     private boolean isDebug;
 
+    @Option(name="--ignore-errors",
+            usage="do not stop on errors")
+    private boolean ignoreErrors;
+
     @Option(name="-P", aliases="--no-privileges",
             usage="ignore privileges and owners of database objects")
     private boolean ignorePrivileges;
@@ -406,6 +410,16 @@ public class CliArgs extends PgDiffArguments {
 
     public void setDebug(boolean isDebug) {
         this.isDebug = isDebug;
+    }
+
+    @Override
+    public boolean isIgnoreErrors() {
+        return ignoreErrors;
+    }
+
+    @Override
+    public void setIgnoreErrors(boolean ignoreErrors) {
+        this.ignoreErrors = ignoreErrors;
     }
 
     @Override

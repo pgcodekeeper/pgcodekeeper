@@ -161,7 +161,7 @@ public class PgDiff {
     }
 
     private void assertErrors() throws PgCodekeeperException {
-        if (!errors.isEmpty()) {
+        if (!errors.isEmpty() && !arguments.isIgnoreErrors()) {
             throw new PgCodekeeperException("Error while load database");
         }
     }
