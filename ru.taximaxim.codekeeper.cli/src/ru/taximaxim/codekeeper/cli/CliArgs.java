@@ -115,7 +115,7 @@ public class CliArgs extends PgDiffArguments {
     private boolean isDebug;
 
     @Option(name="--ignore-errors",
-            usage="do not stop on errors")
+            usage="do not stop on parse errors")
     private boolean ignoreErrors;
 
     @Option(name="-P", aliases="--no-privileges",
