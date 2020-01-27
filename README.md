@@ -8,8 +8,8 @@ A tool for easier PostgreSQL and SQL Server development.
 * Generate migration scripts via a user-friendly interface. You can use both live DB instances and DB dumps as initial data. You can also compare pgCodeKeeper projects — useful when working with versions control systems.
 * pgCodeKeeper is an <a href="http://www.eclipse.org/">Eclipse IDE</a> plug-in. The DB code is saved as an Eclipse project, and the project can be tracked under any of the versions control systems supported by Eclipse — Git, SVN, Mercurial, CVS and many others.
 
-<a href="https://pgcodekeeper.org/images/main-view.png"><img src="https://pgcodekeeper.org/images/main-view.png" width="450"/></a>
-<a href="https://pgcodekeeper.org/images/sql-editor.png"><img src="https://pgcodekeeper.org/images/sql-editor.png" width="450"></a>
+<a href="https://pgcodekeeper.org/github-images/main-view.png"><img src="https://pgcodekeeper.org/github-images/main-view.png" width="450"/></a>
+<a href="https://pgcodekeeper.org/github-images/sql-editor.png"><img src="https://pgcodekeeper.org/github-images/sql-editor.png" width="450"></a>
 
 ## Download
 
