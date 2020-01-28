@@ -982,14 +982,6 @@ Tab
     : '\u0009' -> channel(HIDDEN)
     ;
 
-New_Line
-    : ('\u000D' | '\u000D'? '\u000A') -> channel(HIDDEN)
-    ;
-
-Tab
-    : '\u0009' -> channel(HIDDEN)
-    ;
-
 BOM: '\ufeff';
 
 BAD
