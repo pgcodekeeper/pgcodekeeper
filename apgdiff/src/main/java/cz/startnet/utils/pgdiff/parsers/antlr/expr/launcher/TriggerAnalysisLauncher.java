@@ -11,8 +11,8 @@ import cz.startnet.utils.pgdiff.schema.PgTrigger;
 
 public class TriggerAnalysisLauncher extends AbstractAnalysisLauncher {
 
-    public TriggerAnalysisLauncher(PgTrigger stmt, VexContext ctx) {
-        super(stmt, ctx);
+    public TriggerAnalysisLauncher(PgTrigger stmt, VexContext ctx, String location) {
+        super(stmt, ctx, location);
     }
 
     @Override

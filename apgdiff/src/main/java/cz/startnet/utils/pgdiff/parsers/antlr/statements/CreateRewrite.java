@@ -37,7 +37,7 @@ public class CreateRewrite extends ParserAbstract {
             rule.setInstead(true);
         }
 
-        setConditionAndAddCommands(ctx, rule, db);
+        setConditionAndAddCommands(ctx, rule, db, fileName);
 
         IdentifierContext parent = QNameParser.getFirstNameCtx(ids);
         IStatementContainer cont = getSafe(AbstractSchema::getStatementContainer,
@@ -47,7 +47,7 @@ public class CreateRewrite extends ParserAbstract {
     }
 
     public static void setConditionAndAddCommands(Create_rewrite_statementContext ctx,
-            PgRule rule, PgDatabase db) {
+            PgRule rule, PgDatabase db, String location) {
         rule.setCondition((ctx.WHERE() != null) ? getFullCtxText(ctx.vex()) : null);
 
         // allows to write a common namespace-setup code with no copy-paste for each cmd type
@@ -55,6 +55,6 @@ public class CreateRewrite extends ParserAbstract {
             rule.addCommand(db.getArguments(), getFullCtxText(cmd));
         }
 
-        db.addAnalysisLauncher(new RuleAnalysisLauncher(rule, ctx));
+        db.addAnalysisLauncher(new RuleAnalysisLauncher(rule, ctx, location));
     }
 }

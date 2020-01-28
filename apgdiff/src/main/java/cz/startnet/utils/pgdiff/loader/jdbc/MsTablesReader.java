@@ -5,6 +5,7 @@ import java.sql.SQLException;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
+import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsValueExpr;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -47,7 +48,7 @@ public class MsTablesReader extends JdbcReader {
         boolean isTextImage = false;
         for (XmlReader col : XmlReader.readXML(res.getString("cols"))) {
             isTextImage = isTextImage || col.getBoolean("ti");
-            table.addColumn(getColumn(col));
+            table.addColumn(getColumn(col, schema.getName(), loader));
         }
 
         if (isTextImage) {
@@ -72,7 +73,7 @@ public class MsTablesReader extends JdbcReader {
         loader.setPrivileges(table, XmlReader.readXML(res.getString("acl")));
     }
 
-    static AbstractColumn getColumn(XmlReader col) {
+    static AbstractColumn getColumn(XmlReader col, String schemaName, JdbcLoaderBase loader) {
         MsColumn column = new MsColumn(col.getString("name"));
         String exp = col.getString("def");
         column.setExpression(exp);
@@ -100,6 +101,12 @@ public class MsTablesReader extends JdbcReader {
         if (def != null) {
             column.setDefaultValue(def);
             column.setDefaultName(col.getString("dn"));
+            loader.submitMsAntlrTask(def, p -> p.expression_eof().expression().get(0),
+                    ctx -> {
+                        MsValueExpr vex = new MsValueExpr(schemaName);
+                        vex.analyze(ctx);
+                        column.addAllDeps(vex.getDepcies());
+                    });
         }
         return column;
     }

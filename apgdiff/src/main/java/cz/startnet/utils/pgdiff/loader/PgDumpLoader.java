@@ -22,7 +22,6 @@ import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.SqlContextProcessor;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.TSqlContextProcessor;
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
@@ -53,12 +52,12 @@ public class PgDumpLoader {
     private final IProgressMonitor monitor;
     private final int monitoringLevel;
 
-    private final List<AntlrError> errors = new ArrayList<>();
+    private final List<Object> errors = new ArrayList<>();
 
     private boolean refMode;
     private Map<PgStatement, StatementOverride> overrides;
 
-    public List<AntlrError> getErrors() {
+    public List<Object> getErrors() {
         return errors;
     }
 

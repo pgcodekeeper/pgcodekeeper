@@ -11,6 +11,10 @@ tsql_file
     : BOM? go_statement* batch* EOF
     ;
 
+expression_eof
+    : expression (COMMA expression)* EOF
+    ;
+
 batch
     : (sql_clauses | batch_statement) (go_statement+ | EOF)
     ;

@@ -29,7 +29,6 @@ import cz.startnet.utils.pgdiff.loader.FullAnalyze;
 import cz.startnet.utils.pgdiff.loader.LibraryLoader;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.loader.ProjectLoader;
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -52,7 +51,7 @@ public class UIProjectLoader extends ProjectLoader {
     }
 
     public UIProjectLoader(IProject iProject, PgDiffArguments arguments,
-            IProgressMonitor monitor, List<AntlrError> errors) {
+            IProgressMonitor monitor, List<Object> errors) {
         super(null, arguments, monitor, errors);
         this.iProject = iProject;
     }

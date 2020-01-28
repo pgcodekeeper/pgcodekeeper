@@ -139,8 +139,9 @@ public abstract class AbstractRegularTable extends AbstractPgTable {
 
     @Override
     protected boolean isNeedRecreate(AbstractTable newTable) {
-        return  !(newTable instanceof AbstractRegularTable) ||
-                !Objects.equals(getPartitionBy(),
+        return  super.isNeedRecreate(newTable)
+                || !(newTable instanceof AbstractRegularTable)
+                || !Objects.equals(getPartitionBy(),
                         ((AbstractRegularTable)newTable).getPartitionBy());
     }
 

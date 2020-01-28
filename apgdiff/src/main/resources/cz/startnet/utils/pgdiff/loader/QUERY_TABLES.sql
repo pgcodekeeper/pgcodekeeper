@@ -31,6 +31,7 @@ SELECT  -- GENERAL
     tc.reloptions AS toast_reloptions,
     tabsp.spcname AS table_space,
     d.description AS table_comment,
+    am.amname AS access_method,
     
     -- inherits tables
     parents.inhrelnames,
@@ -70,6 +71,7 @@ LEFT JOIN pg_catalog.pg_foreign_server ser ON ser.oid = ftbl.ftserver
 LEFT JOIN pg_catalog.pg_tablespace tabsp ON tabsp.oid = c.reltablespace
 LEFT JOIN pg_catalog.pg_description d ON d.objoid = c.oid AND d.objsubid = 0
 LEFT JOIN pg_catalog.pg_class tc ON tc.oid = c.reltoastrelid
+LEFT JOIN pg_catalog.pg_am am ON am.oid = c.relam
 LEFT JOIN (SELECT
             a.attrelid,
             pg_catalog.array_agg(a.attname ORDER BY a.attnum) AS col_names,
