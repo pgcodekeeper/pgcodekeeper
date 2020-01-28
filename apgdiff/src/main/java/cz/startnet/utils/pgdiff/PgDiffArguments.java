@@ -52,6 +52,7 @@ public class PgDiffArguments implements Cloneable {
     private int graphDepth;
     private boolean graphReverse;
     private final List<String> graphNames = new ArrayList<>();
+    private boolean ignoreErrors;
 
     public void setModeParse(final boolean modeParse) {
         this.modeParse = modeParse;
@@ -203,6 +204,14 @@ public class PgDiffArguments implements Cloneable {
 
     public void setIgnoreConcurrentModification(boolean ignoreConcurrentModification) {
         this.ignoreConcurrentModification = ignoreConcurrentModification;
+    }
+
+    public boolean isIgnoreErrors() {
+        return ignoreErrors;
+    }
+
+    public void setIgnoreErrors(boolean ignoreErrors) {
+        this.ignoreErrors = ignoreErrors;
     }
 
     public String getInCharsetName() {

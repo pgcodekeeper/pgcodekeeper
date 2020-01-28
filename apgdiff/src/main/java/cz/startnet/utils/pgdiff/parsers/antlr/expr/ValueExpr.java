@@ -236,7 +236,7 @@ public class ValueExpr extends AbstractExpr {
             // TODO When the user's operators will be also process by codeKeeper,
             // put in 'findFunctions' operator's schema name instead of 'PgSystemStorage.SCHEMA_PG_CATALOG'.
             IFunction resultOperFunction = resolveCall(operator, Arrays.asList(larg, rarg),
-                    availableFunctions(ApgdiffConsts.PG_CATALOG));
+                    availableFunctions(ApgdiffConsts.PG_CATALOG, op));
             return new ModPair<>(NONAME, resultOperFunction != null ? resultOperFunction.getReturns()
                     : TypesSetManually.FUNCTION_COLUMN);
         } else {
@@ -490,11 +490,13 @@ public class ValueExpr extends AbstractExpr {
             argsType.add(stripParens(argType));
         }
 
+        Collection<? extends IFunction> functions = availableFunctions(schemaName, function);
+
         if (args.size() == 1 && TypesSetManually.QUALIFIED_ASTERISK.equals(argsType.get(0))) {
             //// In this case function's argument is '*' or 'source.*'.
 
             IFunction func = null;
-            for (IFunction f : availableFunctions(schemaName)) {
+            for (IFunction f : functions) {
                 if (f.getArguments().size() == 1
                         && f.getArguments().get(0).getMode().isIn()
                         && f.getBareName().equals(functionName)) {
@@ -510,7 +512,7 @@ public class ValueExpr extends AbstractExpr {
             return new ModPair<>(functionName, func != null ?
                     getFunctionReturns(func) : TypesSetManually.FUNCTION_COLUMN);
         } else {
-            IFunction resultFunction = resolveCall(functionName, argsType, availableFunctions(schemaName));
+            IFunction resultFunction = resolveCall(functionName, argsType, functions);
 
             if (resultFunction != null) {
                 addFunctionDepcy(resultFunction);
@@ -726,11 +728,11 @@ public class ValueExpr extends AbstractExpr {
         }
     }
 
-    private Collection<? extends IFunction> availableFunctions(String schemaName) {
+    private Collection<? extends IFunction> availableFunctions(String schemaName, ParserRuleContext errorCtx) {
         if (schemaName != null) {
             ISchema schema = systemStorage.getSchema(schemaName);
             if (schema == null) {
-                schema = findSchema(schemaName, null);
+                schema = findSchema(schemaName, errorCtx);
             }
             return schema.getFunctions();
         } else {

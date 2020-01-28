@@ -70,7 +70,8 @@ public class RulesReader extends JdbcReader {
 
         loader.submitAntlrTask(command, p -> p.sql().statement(0)
                 .schema_statement().schema_create().create_rewrite_statement(),
-                ctx -> CreateRewrite.setConditionAndAddCommands(ctx, r, schema.getDatabase()));
+                ctx -> CreateRewrite.setConditionAndAddCommands(ctx, r,
+                        schema.getDatabase(), loader.getCurrentLocation()));
 
         loader.setAuthor(r, res);
         // COMMENT

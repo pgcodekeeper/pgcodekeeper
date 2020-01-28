@@ -63,7 +63,7 @@ implements SqlContextProcessor {
     private final Queue<AntlrTask<?>> antlrTasks;
 
     public CustomSQLParserListener(PgDatabase database, String filename, boolean refMode,
-            List<AntlrError> errors, Queue<AntlrTask<?>> antlrTasks, IProgressMonitor monitor) {
+            List<Object> errors, Queue<AntlrTask<?>> antlrTasks, IProgressMonitor monitor) {
         super(database, filename, refMode, errors, monitor);
         this.antlrTasks = antlrTasks;
     }

@@ -111,7 +111,7 @@ public class CreateTrigger extends ParserAbstract {
                         DbObjType.COLUMN, true);
             }
         }
-        parseWhen(ctx.when_trigger(), trigger, db);
+        parseWhen(ctx.when_trigger(), trigger, db, fileName);
 
         IdentifierContext parent = QNameParser.getFirstNameCtx(ids);
         IStatementContainer cont = getSafe(AbstractSchema::getStatementContainer,
@@ -121,11 +121,11 @@ public class CreateTrigger extends ParserAbstract {
     }
 
     public static void parseWhen(When_triggerContext whenCtx, PgTrigger trigger,
-            PgDatabase db) {
+            PgDatabase db, String location) {
         if (whenCtx != null) {
             VexContext vex = whenCtx.vex();
             trigger.setWhen(getFullCtxText(vex));
-            db.addAnalysisLauncher(new TriggerAnalysisLauncher(trigger, vex));
+            db.addAnalysisLauncher(new TriggerAnalysisLauncher(trigger, vex, location));
         }
     }
 }

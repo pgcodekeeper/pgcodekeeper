@@ -74,7 +74,7 @@ public class CreateView extends ParserAbstract {
         if (vQuery != null) {
             addStatementBody(vQuery);
             view.setQuery(getFullCtxText(vQuery), normalizeWhitespaceUnquoted(vQuery, stream));
-            db.addAnalysisLauncher(new ViewAnalysisLauncher(view, vQuery));
+            db.addAnalysisLauncher(new ViewAnalysisLauncher(view, vQuery, fileName));
         }
         if (ctx.column_names != null) {
             for (IdentifierContext column : ctx.column_names.identifier()) {

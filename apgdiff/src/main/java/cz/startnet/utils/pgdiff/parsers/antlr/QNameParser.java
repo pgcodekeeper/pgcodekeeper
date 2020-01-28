@@ -75,14 +75,14 @@ public final class QNameParser<T extends ParserRuleContext> {
     }
 
     private final List<T> parts;
-    private final List<AntlrError> errors;
+    private final List<Object> errors;
 
     public List<T> getIds() {
         return Collections.unmodifiableList(parts);
     }
 
     public static QNameParser<IdentifierContext> parsePg(String schemaQualifiedName) {
-        List<AntlrError> errors = new ArrayList<>();
+        List<Object> errors = new ArrayList<>();
         List<IdentifierContext> parts = AntlrParser
                 .makeBasicParser(SQLParser.class, schemaQualifiedName, "qname: " + schemaQualifiedName, errors)
                 .qname_parser()
@@ -91,7 +91,7 @@ public final class QNameParser<T extends ParserRuleContext> {
         return new QNameParser<>(parts, errors);
     }
 
-    private QNameParser(List<T> parts, List<AntlrError> errors) {
+    private QNameParser(List<T> parts, List<Object> errors) {
         this.errors = errors;
         this.parts = parts;
     }
