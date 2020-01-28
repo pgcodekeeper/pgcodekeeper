@@ -63,6 +63,13 @@ public class TablesReader extends JdbcReader {
             t = new SimplePgTable(tableName);
         }
 
+        if (SupportedVersion.VERSION_12.isLE(loader.version)) {
+            String accessMethod = res.getString("access_method");
+            if (accessMethod != null) {
+                t.setMethod(accessMethod);
+            }
+        }
+
         String[] foptions = getColArray(res, "ftoptions");
         if (foptions != null) {
             ParserAbstract.fillOptionParams(foptions, t::addOption, false, true, false);
@@ -162,6 +169,11 @@ public class TablesReader extends JdbcReader {
         String[] colStorages = getColArray(res, "col_storages");
         String[] colDefaultStorages = getColArray(res, "col_default_storages");
 
+        String[] colGenerated = null;
+        if (SupportedVersion.VERSION_12.isLE(loader.version)) {
+            colGenerated = getColArray(res, "col_generated");
+        }
+
         for (int i = 0; i < colNames.length; i++) {
             PgColumn column = new PgColumn(colNames[i]);
             column.setInherit(!colIsLocal[i]);
@@ -214,7 +226,7 @@ public class TablesReader extends JdbcReader {
                     column.setDefaultValue(columnDefault);
                     loader.submitAntlrTask(columnDefault, p -> p.vex_eof().vex().get(0),
                             ctx -> schema.getDatabase().addAnalysisLauncher(
-                                    new VexAnalysisLauncher(column, ctx)));
+                                    new VexAnalysisLauncher(column, ctx, loader.getCurrentLocation())));
                 }
             }
 
@@ -227,6 +239,10 @@ public class TablesReader extends JdbcReader {
             // non-negative (i.e. it's not the default value)
             if (statistics > -1) {
                 column.setStatistics(statistics);
+            }
+
+            if (colGenerated != null && "s".equals(colGenerated[i])) {
+                column.setGenerated(true);
             }
 
             String comment = colComments[i];

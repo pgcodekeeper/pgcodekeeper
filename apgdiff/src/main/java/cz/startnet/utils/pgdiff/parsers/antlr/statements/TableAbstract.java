@@ -73,7 +73,7 @@ public abstract class TableAbstract extends ParserAbstract {
             AbstractTable table, String schemaName, String tablespace) {
         PgConstraint constrBlank = createTableConstraintBlank(tblConstrCtx);
         processTableConstraintBlank(tblConstrCtx, constrBlank, db, schemaName,
-                table.getName(), tablespace, isRefMode());
+                table.getName(), tablespace, fileName, isRefMode());
         doSafe(AbstractTable::addConstraint, table, constrBlank);
     }
 
@@ -86,7 +86,7 @@ public abstract class TableAbstract extends ParserAbstract {
         VexContext def = body.default_expr;
         if (def != null) {
             col.setDefaultValue(getFullCtxText(def));
-            db.addAnalysisLauncher(new VexAnalysisLauncher(col, def));
+            db.addAnalysisLauncher(new VexAnalysisLauncher(col, def, fileName));
         } else if (body.NULL() != null) {
             col.setNullValue(body.NOT() == null);
         } else if (body.REFERENCES() != null) {
@@ -158,7 +158,7 @@ public abstract class TableAbstract extends ParserAbstract {
             constr = new PgConstraint(constrName);
             VexContext expCtx = body.expression;
             constr.setDefinition("CHECK ((" + getFullCtxText(expCtx) + "))");
-            db.addAnalysisLauncher(new ConstraintAnalysisLauncher(constr, expCtx));
+            db.addAnalysisLauncher(new ConstraintAnalysisLauncher(constr, expCtx, fileName));
         } else if (body.identity_body() != null) {
             Identity_bodyContext identity = body.identity_body();
 
@@ -174,6 +174,11 @@ public abstract class TableAbstract extends ParserAbstract {
 
             col.setSequence(sequence);
             col.setIdentityType(identity.ALWAYS() != null ? "ALWAYS" : "BY DEFAULT");
+        } else if (body.GENERATED() != null) {
+            col.setGenerated(true);
+            VexContext genExpr = body.vex();
+            col.setDefaultValue(getFullCtxText(genExpr));
+            db.addAnalysisLauncher(new VexAnalysisLauncher(col, genExpr, fileName));
         }
 
         if (constr != null) {
@@ -250,7 +255,7 @@ public abstract class TableAbstract extends ParserAbstract {
 
     protected static void processTableConstraintBlank(Constraint_commonContext ctx,
             PgConstraint constrBlank, PgDatabase db, String schemaName,
-            String tableName, String tablespace, boolean isRefMode) {
+            String tableName, String tablespace, String location, boolean isRefMode) {
         Constr_bodyContext constrBody = ctx.constr_body();
 
         if (constrBody.REFERENCES() != null) {
@@ -331,12 +336,12 @@ public abstract class TableAbstract extends ParserAbstract {
         constrBlank.setDefinition(sb.toString());
 
         for (Sort_specifierContext s : constrBody.sort_specifier()) {
-            db.addAnalysisLauncher(new ConstraintAnalysisLauncher(constrBlank, s.vex()));
+            db.addAnalysisLauncher(new ConstraintAnalysisLauncher(constrBlank, s.vex(), location));
         }
 
         VexContext exp = constrBody.vex();
         if (exp != null) {
-            db.addAnalysisLauncher(new ConstraintAnalysisLauncher(constrBlank, exp));
+            db.addAnalysisLauncher(new ConstraintAnalysisLauncher(constrBlank, exp, location));
         }
     }
 

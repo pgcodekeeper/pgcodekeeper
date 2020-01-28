@@ -12,8 +12,8 @@ import cz.startnet.utils.pgdiff.schema.PgIndex;
 
 public class IndexAnalysisLauncher extends AbstractAnalysisLauncher {
 
-    public IndexAnalysisLauncher(PgIndex stmt, Index_restContext ctx) {
-        super(stmt, ctx);
+    public IndexAnalysisLauncher(PgIndex stmt, Index_restContext ctx, String location) {
+        super(stmt, ctx, location);
     }
 
     @Override

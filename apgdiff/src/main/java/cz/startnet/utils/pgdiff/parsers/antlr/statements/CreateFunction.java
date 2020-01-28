@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
@@ -30,6 +29,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Transform_for_typeContex
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_storage_parameterContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.FuncProcAnalysisLauncher;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.VexAnalysisLauncher;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -42,13 +42,13 @@ import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class CreateFunction extends ParserAbstract {
 
-    private final List<AntlrError> errors;
+    private final List<Object> errors;
     private final Queue<AntlrTask<?>> antlrTasks;
     private final Create_function_statementContext ctx;
 
 
     public CreateFunction(Create_function_statementContext ctx, PgDatabase db,
-            List<AntlrError> errors, Queue<AntlrTask<?>> antlrTasks) {
+            List<Object> errors, Queue<AntlrTask<?>> antlrTasks) {
         super(db);
         this.ctx = ctx;
         this.errors = errors;
@@ -116,6 +116,10 @@ public class CreateFunction extends ParserAbstract {
                 function.setParallel("RESTRICTED");
             } else if (action.SET() != null) {
                 setConfigParams(action, function);
+            } else if (action.SUPPORT() != null) {
+                List<IdentifierContext> suppFuncIds = action.schema_qualified_name().identifier();
+                function.setSupportFunc(getFullCtxText(suppFuncIds));
+                addDepSafe(function, suppFuncIds, DbObjType.FUNCTION, true);
             }
         }
 
@@ -182,31 +186,35 @@ public class CreateFunction extends ParserAbstract {
                     .map(TerminalNode::getText)
                     .collect(Collectors.joining());
         }
+        TerminalNode start = codeStart;
 
         // Parsing the function definition and adding its result context for analysis.
         // Adding contexts of function arguments for analysis.
 
-        int startOffset = codeStart.getSymbol().getStartIndex();
-        int startLine = codeStart.getSymbol().getLine() - 1;
-        int inLineOffset = codeStart.getSymbol().getCharPositionInLine();
         String name = "function definition of " + function.getBareName();
-        List<AntlrError> err = new ArrayList<>();
+        List<Object> err = new ArrayList<>();
 
         if ("SQL".equalsIgnoreCase(language)) {
-            AntlrParser.submitAntlrTask(antlrTasks, () -> AntlrParser.makeBasicParser(
-                    SQLParser.class, def, name, err).sql(),
+            AntlrParser.submitAntlrTask(antlrTasks,
+                    () -> AntlrParser.makeBasicParser(SQLParser.class, def,
+                            name, err, start).sql(),
                     ctx -> {
-                        err.stream().map(e -> e.copyWithOffset(startOffset,
-                                startLine, inLineOffset)).forEach(errors::add);
-                        db.addAnalysisLauncher(new FuncProcAnalysisLauncher(function, ctx, funcArgs));
+                        errors.addAll(err);
+                        FuncProcAnalysisLauncher launcher = new FuncProcAnalysisLauncher(
+                                function, ctx, fileName, funcArgs);
+                        launcher.setOffset(start);
+                        db.addAnalysisLauncher(launcher);
                     });
         } else if ("PLPGSQL".equalsIgnoreCase(language)) {
-            AntlrParser.submitAntlrTask(antlrTasks, () -> AntlrParser.makeBasicParser(
-                    SQLParser.class, def, name, err).plpgsql_function(),
+            AntlrParser.submitAntlrTask(antlrTasks,
+                    () -> AntlrParser.makeBasicParser(SQLParser.class, def,
+                            name, err, start).plpgsql_function(),
                     ctx -> {
-                        err.stream().map(e -> e.copyWithOffset(startOffset,
-                                startLine, inLineOffset)).forEach(errors::add);
-                        db.addAnalysisLauncher(new FuncProcAnalysisLauncher(function, ctx, funcArgs));
+                        errors.addAll(err);
+                        FuncProcAnalysisLauncher launcher = new FuncProcAnalysisLauncher(
+                                function, ctx, fileName, funcArgs);
+                        launcher.setOffset(start);
+                        db.addAnalysisLauncher(launcher);
                     });
         }
     }
@@ -243,9 +251,7 @@ public class CreateFunction extends ParserAbstract {
             VexContext def = argument.vex();
             if (def != null) {
                 arg.setDefaultExpression(getFullCtxText(def));
-
-                db.addAnalysisLauncher(new FuncProcAnalysisLauncher(
-                        function, def));
+                db.addAnalysisLauncher(new VexAnalysisLauncher(function, def, fileName));
             }
 
             function.addArgument(arg);

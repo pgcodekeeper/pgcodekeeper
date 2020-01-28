@@ -20,13 +20,13 @@ public class CustomParserListener {
     protected final PgDatabase db;
     protected final boolean refMode;
     protected final String filename;
-    protected final List<AntlrError> errors;
+    protected final List<Object> errors;
     private final IProgressMonitor monitor;
 
     private final List<StatementBodyContainer> statementBodies = new ArrayList<>();
 
     public CustomParserListener(PgDatabase database, String filename,
-            boolean refMode, List<AntlrError> errors, IProgressMonitor monitor) {
+            boolean refMode, List<Object> errors, IProgressMonitor monitor) {
         this.db = database;
         this.errors = errors;
         this.monitor = monitor;
@@ -65,7 +65,7 @@ public class CustomParserListener {
         return err;
     }
 
-    public static AntlrError handleParserContextException(Exception ex, String filename, ParserRuleContext ctx) {
+    private AntlrError handleParserContextException(Exception ex, String filename, ParserRuleContext ctx) {
         Token t = ctx.getStart();
         AntlrError err = new AntlrError(t, filename, t.getLine(), t.getCharPositionInLine(),  ex.getMessage());
         Log.log(ex instanceof ObjectCreationException ? Log.LOG_WARNING : Log.LOG_ERROR,

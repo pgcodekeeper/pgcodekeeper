@@ -6,8 +6,6 @@
 package cz.startnet.utils.pgdiff;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,9 +25,9 @@ import ru.taximaxim.codekeeper.apgdiff.log.Log;
 public class PgDiffTest {
 
     @Parameters
-    public static Collection<?> parameters() {
-        return Arrays.asList(
-                new Object[][]{
+    public static Iterable<Object[]> parameters() {
+        return ApgdiffTestUtils.getParameters(
+                new Object[][] {
                     // Tests scenario where COLUMN type is modified.
                     {"modify_column_type"},
                     // Tests scenario where COLUMN type is modified, column has constraint.
@@ -52,6 +50,8 @@ public class PgDiffTest {
                     {"delete_table_option"},
                     // Tests scenario where TABLE is modified by changing of an option.
                     {"modify_table_option"},
+                    // Tests scenario where access method of TABLE is changed.
+                    {"modify_table_access_method"},
                     // Tests scenario where TABLE with partition is added.
                     {"add_table_with_partition"},
                     // Tests scenario where WITH OIDS is dropped from TABLE.
@@ -103,6 +103,10 @@ public class PgDiffTest {
                     {"drop_column"},
                     // Tests scenario where COLUMNs are dropped from partitioned TABLE.
                     {"drop_col_from_partitioned_tbl"},
+                    // Tests scenario where generated COLUMN is added to TABLE definition.
+                    {"add_column_generated"},
+                    // Tests scenario where generated COLUMN is modified.
+                    {"modify_column_generated"},
                     // Tests scenario where new TABLE is added.
                     {"add_table"},
                     // Tests scenario where new FOREIGN TABLE is added.
@@ -131,6 +135,8 @@ public class PgDiffTest {
                     {"modify_table_row_security"},
                     // Tests scenario where TABLE logged status is changed.
                     {"modify_table_unlogged"},
+                    // Tests scenario where new TABLE with generated column is added.
+                    {"add_table_with_generated_col"},
                     // Tests scenario where TABLE CONSTRAINT is added.
                     {"add_constraint"},
                     // Tests scenario where TABLE CONSTRAINT with tablespace is added.
@@ -202,6 +208,10 @@ public class PgDiffTest {
                     {"drop_function_args"},
                     // Tests scenario where FUNCTION with args is modified.
                     {"modify_function_args"},
+                    // Tests scenario where new FUNCTION with support function is added.
+                    {"add_function_with_support_function"},
+                    // Tests scenario where FUNCTION with support function is modified.
+                    {"modify_function_with_support_function"},
                     // изменить тип out аргумента
                     {"function_out_type_chg"},
                     // изменить out параметра
@@ -410,6 +420,8 @@ public class PgDiffTest {
                     {"modify_empty_foreign_table"},
                     // Tests scenario where materialized VIEW options is changed.
                     {"modify_materialized_view_options"},
+                    // Tests scenario where materialized VIEW access method is changed.
+                    {"modify_materialized_view_access_method"},
                     // Tests scenario where materialized VIEW is changed.
                     {"modify_materialized_view"},
                     //Tests scenario where empty SEQUENCE is compared.
@@ -494,16 +506,18 @@ public class PgDiffTest {
                     {"add_specific_function"},
                     // Tests scenario where TABLE tablespace is modified.
                     {"modify_tablespace"},
-                    //Tests scenario where generated SEQUENCE is compared.
+                    // Tests scenario where generated SEQUENCE is compared.
                     {"compare_generated_sequence"},
-                    //Tests scenario where PRIVILEGE added to object with quoted name.
+                    // Tests scenario where PRIVILEGE added to object with quoted name.
                     {"add_privilege_quoted_name"},
-                    //Tests scenario where MATERIALIZED VIEW is refreshed.
+                    // Tests scenario where MATERIALIZED VIEW is refreshed.
                     {"refresh_materialized_view"},
-                    //tests scenario where table is recreated and its column dependency is dropped
+                    // Tests scenario where table is recreated and its column dependency is dropped
                     {"tabl_to_func_drop"},
-                    // tests scenario where owner and its privileges are both changed
-                    {"chg_owner_grant"}
+                    // Tests scenario where owner and its privileges are both changed
+                    {"chg_owner_grant"},
+                    // Tests scenario where object definitions are compared
+                    {"compare_definitions"}
                 });
     }
 

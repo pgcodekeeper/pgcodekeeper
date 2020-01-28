@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Delete_stmt_for_psqlContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.From_itemContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
@@ -24,24 +23,27 @@ public class Delete extends AbstractExprWithNmspc<Delete_stmt_for_psqlContext> {
 
     @Override
     public List<ModPair<String, String>> analyze(Delete_stmt_for_psqlContext delete) {
+        // this select is used to collect namespaces for this DELETE operation
+        Select select = new Select(this);
         With_clauseContext with = delete.with_clause();
         if (with != null) {
-            analyzeCte(with);
+            select.analyzeCte(with);
         }
 
-        addNameReference(delete.delete_table_name, delete.alias, null);
+        select.addNameReference(delete.delete_table_name, delete.alias, null);
         if (delete.USING() != null) {
-            for (From_itemContext fromItem : delete.from_item()) {
-                //TODO collect to current namespace
-                new Select(this).from(fromItem);
-            }
+            select.from(delete.from_item());
         }
 
         if (delete.WHERE() != null) {
             VexContext vex = delete.vex();
             if (vex != null) {
-                new ValueExpr(this).analyze(new Vex(vex));
+                new ValueExpr(select).analyze(new Vex(vex));
             }
+        }
+
+        if (delete.RETURNING() != null) {
+            return select.sublist(delete.select_list().select_sublist(), new ValueExpr(select));
         }
 
         return Collections.emptyList();
