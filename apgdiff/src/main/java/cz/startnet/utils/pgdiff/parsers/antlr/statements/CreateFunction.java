@@ -192,12 +192,14 @@ public class CreateFunction extends ParserAbstract {
         // Adding contexts of function arguments for analysis.
 
         String name = "function definition of " + function.getBareName();
+        List<Object> err = new ArrayList<>();
 
         if ("SQL".equalsIgnoreCase(language)) {
             AntlrParser.submitAntlrTask(antlrTasks,
                     () -> AntlrParser.makeBasicParser(SQLParser.class, def,
-                            name, errors, start).sql(),
+                            name, err, start).sql(),
                     ctx -> {
+                        errors.addAll(err);
                         FuncProcAnalysisLauncher launcher = new FuncProcAnalysisLauncher(
                                 function, ctx, fileName, funcArgs);
                         launcher.setOffset(start);
@@ -206,8 +208,9 @@ public class CreateFunction extends ParserAbstract {
         } else if ("PLPGSQL".equalsIgnoreCase(language)) {
             AntlrParser.submitAntlrTask(antlrTasks,
                     () -> AntlrParser.makeBasicParser(SQLParser.class, def,
-                            name, errors, start).plpgsql_function(),
+                            name, err, start).plpgsql_function(),
                     ctx -> {
+                        errors.addAll(err);
                         FuncProcAnalysisLauncher launcher = new FuncProcAnalysisLauncher(
                                 function, ctx, fileName, funcArgs);
                         launcher.setOffset(start);
