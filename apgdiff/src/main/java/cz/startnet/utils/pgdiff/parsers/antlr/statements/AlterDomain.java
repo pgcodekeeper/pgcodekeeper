@@ -33,7 +33,7 @@ public class AlterDomain extends ParserAbstract {
         if (constrCtx != null && constrCtx.CHECK() != null) {
             IdentifierContext name = constrCtx.name;
             AbstractConstraint constr = new PgConstraint(name != null ? name.getText() : "");
-            CreateDomain.parseDomainConstraint(domain, constr, constrCtx, db);
+            CreateDomain.parseDomainConstraint(domain, constr, constrCtx, db, fileName);
             if (ctx.not_valid != null) {
                 constr.setNotValid(true);
             }

@@ -23,8 +23,8 @@ import cz.startnet.utils.pgdiff.schema.PgRule;
 
 public class RuleAnalysisLauncher extends AbstractAnalysisLauncher {
 
-    public RuleAnalysisLauncher(PgRule stmt, Create_rewrite_statementContext ctx) {
-        super(stmt, ctx);
+    public RuleAnalysisLauncher(PgRule stmt, Create_rewrite_statementContext ctx, String location) {
+        super(stmt, ctx, location);
     }
 
     @Override

@@ -2287,6 +2287,20 @@ begin
   raise notice 'plpgsql.print_strict_params is %', i;
 end;
 
+declare 
+  _id int;
+  _count int;
+begin
+    if _count <> coalesce (array_length (_id, 1), 0) then
+        raise warning 'some text '
+                        'more text '
+                        ' and parameters: '
+                        '% %',
+               _count,
+               coalesce (array_length (_id, 1));
+    end if;
+end;
+
 /*
 DECLARE n bigint = c1 from public.t1 limit 1;
 BEGIN

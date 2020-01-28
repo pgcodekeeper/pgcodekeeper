@@ -484,7 +484,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     ==================================================
     */
     
-    ALL: [aA] [lL] [lL];
+    ALL: [aA] [lL] [lL];   // first RESERVED_KEYWORD, sync with PgDiffUtils.normalizeWhitespaceUnquoted
     ANALYSE: [aA] [nN] [aA] [lL] [yY] [sS] [eE];
     ANALYZE: [aA] [nN] [aA] [lL] [yY] [zZ] [eE];
     AND: [aA] [nN] [dD];
@@ -578,7 +578,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     WHEN: [wW] [hH] [eE] [nN];
     WHERE: [wW] [hH] [eE] [rR] [eE];
     WINDOW: [wW] [iI] [nN] [dD] [oO] [wW];
-    WITH: [wW] [iI] [tT] [hH];
+    WITH: [wW] [iI] [tT] [hH];   // last RESERVED_KEYWORD, sync with PgDiffUtils.normalizeWhitespaceUnquoted
     
     /*
      * Other tokens.
@@ -910,8 +910,18 @@ fragment
 Extended_Control_Characters         :   '\u0080' .. '\u009F';
 
 Character_String_Literal
-  : [eEnN]? QUOTE_CHAR ( ESC_SEQ | ~('\'') )* QUOTE_CHAR
-  ;
+    : [eEnN]? Single_String (String_Joiner Single_String)*
+    ;
+
+fragment
+Single_String
+    : QUOTE_CHAR ( ESC_SEQ | ~('\'') )* QUOTE_CHAR
+    ;
+
+fragment
+String_Joiner
+    :  ((Space | Tab | White_Space | LineComment)* New_Line)+ (Space | Tab | White_Space)*
+    ;
 
 fragment
 EXPONENT : ('e'|'E') ('+'|'-')? Digit+ ;
@@ -962,6 +972,14 @@ Space
 
 White_Space
     : ( Control_Characters  | Extended_Control_Characters )+ -> channel(HIDDEN)
+    ;
+
+New_Line
+    : ('\u000D' | '\u000D'? '\u000A') -> channel(HIDDEN)
+    ;
+
+Tab
+    : '\u0009' -> channel(HIDDEN)
     ;
 
 New_Line

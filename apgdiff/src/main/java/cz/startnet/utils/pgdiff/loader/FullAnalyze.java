@@ -5,7 +5,6 @@ import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Queue;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.AbstractAnalysisLauncher;
@@ -15,16 +14,16 @@ import cz.startnet.utils.pgdiff.schema.PgView;
 
 public final class FullAnalyze {
 
-    private final List<? super AntlrError> errors;
+    private final List<Object> errors;
     private final Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>();
     private final PgDatabase db;
 
-    public FullAnalyze(PgDatabase db, List<? super AntlrError> errors) {
+    private FullAnalyze(PgDatabase db, List<Object> errors) {
         this.db = db;
         this.errors = errors;
     }
 
-    public static void fullAnalyze(PgDatabase db, List<? super AntlrError> errors)
+    public static void fullAnalyze(PgDatabase db, List<Object> errors)
             throws InterruptedException, IOException {
         new FullAnalyze(db, errors).fullAnalyze();
     }

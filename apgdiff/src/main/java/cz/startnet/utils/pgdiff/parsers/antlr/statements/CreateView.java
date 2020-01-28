@@ -4,6 +4,8 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 import java.text.MessageFormat;
 import java.util.List;
 
+import org.antlr.v4.runtime.CommonTokenStream;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
@@ -28,11 +30,16 @@ public class CreateView extends ParserAbstract {
 
     private final Create_view_statementContext context;
     private final String tablespace;
+    private final String accessMethod;
+    private final CommonTokenStream stream;
 
-    public CreateView(Create_view_statementContext context, PgDatabase db, String tablespace) {
+    public CreateView(Create_view_statementContext context, PgDatabase db,
+            String tablespace, String accessMethod, CommonTokenStream stream) {
         super(db);
         this.context = context;
         this.tablespace = tablespace;
+        this.accessMethod = accessMethod;
+        this.stream = stream;
     }
 
     @Override
@@ -49,6 +56,11 @@ public class CreateView extends ParserAbstract {
             } else if (tablespace != null) {
                 view.setTablespace(tablespace);
             }
+            if (ctx.USING() != null) {
+                view.setMethod(ctx.identifier().getText());
+            } else if (accessMethod != null) {
+                view.setMethod(accessMethod);
+            }
         } else if (ctx.RECURSIVE() != null) {
             String sql = MessageFormat.format(RECURSIVE_PATTERN,
                     ParserAbstract.getFullCtxText(name),
@@ -61,8 +73,8 @@ public class CreateView extends ParserAbstract {
         Select_stmtContext vQuery = ctx.v_query;
         if (vQuery != null) {
             addStatementBody(vQuery);
-            view.setQuery(getFullCtxText(vQuery));
-            db.addAnalysisLauncher(new ViewAnalysisLauncher(view, vQuery));
+            view.setQuery(getFullCtxText(vQuery), normalizeWhitespaceUnquoted(vQuery, stream));
+            db.addAnalysisLauncher(new ViewAnalysisLauncher(view, vQuery, fileName));
         }
         if (ctx.column_names != null) {
             for (IdentifierContext column : ctx.column_names.identifier()) {

@@ -31,12 +31,15 @@ import cz.startnet.utils.pgdiff.schema.TypedPgTable;
 public class CreateTable extends TableAbstract {
     private final Create_table_statementContext ctx;
     private final String tablespace;
+    private final String accessMethod;
     private final String oids;
 
-    public CreateTable(Create_table_statementContext ctx, PgDatabase db, String tablespace, String oids) {
+    public CreateTable(Create_table_statementContext ctx, PgDatabase db,
+            String tablespace, String accessMethod, String oids) {
         super(db);
         this.ctx = ctx;
         this.tablespace = tablespace;
+        this.accessMethod = accessMethod;
         this.oids = oids;
     }
 
@@ -125,7 +128,14 @@ public class CreateTable extends TableAbstract {
         Partition_byContext part = ctx.partition_by();
         if (part != null) {
             table.setPartitionBy(ParserAbstract.getFullCtxText(part.partition_method()));
+
+            // table access method for partitioned tables is not supported
+        } else if (ctx.USING() != null) {
+            table.setMethod(ctx.identifier().getText());
+        } else if (accessMethod != null) {
+            table.setMethod(accessMethod);
         }
+
         return table;
     }
 

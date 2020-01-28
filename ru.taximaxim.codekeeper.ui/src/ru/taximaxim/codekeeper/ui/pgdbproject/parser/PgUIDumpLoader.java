@@ -78,7 +78,11 @@ public class PgUIDumpLoader extends PgDumpLoader {
             Log.log(ex);
         }
         IDocument doc = null;
-        for (AntlrError antlrError : getErrors()) {
+        for (Object error : getErrors()) {
+            if (!(error instanceof AntlrError)) {
+                continue;
+            }
+            AntlrError antlrError = (AntlrError) error;
             try {
                 IMarker marker = file.createMarker(MARKER.ERROR);
                 int line = antlrError.getLine();

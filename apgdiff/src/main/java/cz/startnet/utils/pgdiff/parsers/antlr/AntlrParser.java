@@ -67,7 +67,7 @@ public class AntlrParser {
 
     public static <T extends Parser> T makeBasicParser(Class<T> parserClass,
             InputStream stream, String charset, String parsedObjectName,
-            List<AntlrError> errors) throws IOException {
+            List<Object> errors) throws IOException {
         return makeBasicParser(
                 parserClass, new ANTLRInputStream(new InputStreamReader(stream, charset)),
                 parsedObjectName, errors);
@@ -83,12 +83,27 @@ public class AntlrParser {
     }
 
     public static <T extends Parser> T makeBasicParser(Class<T> parserClass, String string,
-            String parsedObjectName, List<AntlrError> errors) {
+            String parsedObjectName, List<Object> errors) {
         return makeBasicParser(parserClass, new ANTLRInputStream(string), parsedObjectName, errors);
     }
 
     private static <T extends Parser> T makeBasicParser(Class<T> parserClass,
-            ANTLRInputStream stream, String parsedObjectName, List<AntlrError> errors) {
+            ANTLRInputStream stream, String parsedObjectName, List<Object> errors) {
+        return makeBasicParser(parserClass, stream, parsedObjectName, errors, 0, 0, 0);
+    }
+
+    public static <T extends Parser> T makeBasicParser(Class<T> parserClass, String string,
+            String parsedObjectName, List<Object> errors, TerminalNode codeStart) {
+        int offset = codeStart.getSymbol().getStartIndex();
+        int lineOffset = codeStart.getSymbol().getLine() - 1;
+        int inLineOffset = codeStart.getSymbol().getCharPositionInLine();
+        return makeBasicParser(parserClass, new ANTLRInputStream(string),
+                parsedObjectName, errors, offset, lineOffset, inLineOffset);
+    }
+
+    private static <T extends Parser> T makeBasicParser(Class<T> parserClass,
+            ANTLRInputStream stream, String parsedObjectName, List<Object> errors,
+            int offset, int lineOffset, int inLineOffset) {
         Lexer lexer;
         Parser parser;
         if (parserClass.isAssignableFrom(SQLParser.class)) {
@@ -109,7 +124,8 @@ public class AntlrParser {
             throw new IllegalArgumentException("Unknown parser class: " + parserClass);
         }
 
-        CustomAntlrErrorListener err = new CustomAntlrErrorListener(parsedObjectName, errors);
+        CustomAntlrErrorListener err = new CustomAntlrErrorListener(
+                parsedObjectName, errors, offset, lineOffset, inLineOffset);
         lexer.removeErrorListeners();
         lexer.addErrorListener(err);
         parser.removeErrorListeners();
@@ -119,7 +135,7 @@ public class AntlrParser {
     }
 
     public static void parseSqlStream(InputStreamProvider inputStream, String charsetName,
-            String parsedObjectName, List<AntlrError> errors, IProgressMonitor mon, int monitoringLevel,
+            String parsedObjectName, List<Object> errors, IProgressMonitor mon, int monitoringLevel,
             SqlContextProcessor listener, Queue<AntlrTask<?>> antlrTasks)
                     throws InterruptedException {
         submitAntlrTask(antlrTasks, () -> {
@@ -130,13 +146,13 @@ public class AntlrParser {
                 parser.addParseListener(new CustomParseTreeListener(
                         monitoringLevel, mon == null ? new NullProgressMonitor() : mon));
                 saveTimeOfLastParserStart(false);
-                return parser.sql();
+                return new Pair<>(parser.sql(), (CommonTokenStream) parser.getTokenStream());
             } catch (MonitorCancelledRuntimeException mcre){
                 throw new InterruptedException();
             }
-        }, ctx -> {
+        }, pair -> {
             try {
-                listener.process(ctx, null);
+                listener.process(pair.getFirst(), pair.getSecond());
             } catch (UnresolvedReferenceException ex) {
                 errors.add(CustomSQLParserListener.handleUnresolvedReference(ex, parsedObjectName));
             }
@@ -144,7 +160,7 @@ public class AntlrParser {
     }
 
     public static void parseTSqlStream(InputStreamProvider inputStream, String charsetName,
-            String parsedObjectName, List<AntlrError> errors, IProgressMonitor mon, int monitoringLevel,
+            String parsedObjectName, List<Object> errors, IProgressMonitor mon, int monitoringLevel,
             TSqlContextProcessor listener, Queue<AntlrTask<?>> antlrTasks)
                     throws InterruptedException {
         submitAntlrTask(antlrTasks, () -> {
@@ -171,7 +187,7 @@ public class AntlrParser {
 
     public static <T extends ParserRuleContext, P extends Parser>
     T parseSqlString(Class<P> parserClass, Function<P, T> parserEntry, String sql,
-            String parsedObjectName, List<AntlrError> errors) {
+            String parsedObjectName, List<Object> errors) {
         Future<T> f = submitAntlrTask(() -> parserEntry.apply(
                 makeBasicParser(parserClass, sql, parsedObjectName, errors)));
         try {
@@ -314,23 +330,30 @@ class CustomParseTreeListener implements ParseTreeListener{
 class CustomAntlrErrorListener extends BaseErrorListener {
 
     private final String parsedObjectName;
-    private final List<AntlrError> errors;
+    private final List<Object> errors;
+    private final int offset;
+    private final int lineOffset;
+    private final int inLineOffset;
 
-    public CustomAntlrErrorListener(String parsedObjectName, List<AntlrError> errors) {
+    public CustomAntlrErrorListener(String parsedObjectName, List<Object> errors,
+            int offset, int lineOffset, int inLineOffset) {
         this.parsedObjectName = parsedObjectName;
         this.errors = errors;
+        this.offset = offset;
+        this.lineOffset = lineOffset;
+        this.inLineOffset = inLineOffset;
     }
 
     @Override
-    public void syntaxError(Recognizer<?, ?> recognizer,
-            Object offendingSymbol, int line, int charPositionInLine,
-            String msg, RecognitionException e) {
-        Log.log(Log.LOG_WARNING, "ANTLR Error:\n"
-                + parsedObjectName + " line " + line + ':' + charPositionInLine
-                + ' ' + msg);
+    public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol,
+            int line, int charPositionInLine, String msg, RecognitionException e) {
+        Token token = offendingSymbol instanceof Token ? (Token) offendingSymbol : null;
+        AntlrError error = new AntlrError(token, parsedObjectName, line, charPositionInLine, msg)
+                .copyWithOffset(offset, lineOffset, inLineOffset);
+
+        Log.log(Log.LOG_WARNING, "ANTLR Error:\n" + error.toString());
         if (errors != null) {
-            Token token = offendingSymbol instanceof Token ? (Token) offendingSymbol : null;
-            errors.add(new AntlrError(token, parsedObjectName, line, charPositionInLine, msg));
+            errors.add(error);
         }
     }
 }

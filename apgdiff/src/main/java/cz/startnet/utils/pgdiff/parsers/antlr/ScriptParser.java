@@ -11,6 +11,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_sequence_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Column_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_statementsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_alterContext;
@@ -32,7 +33,7 @@ public class ScriptParser {
 
     private final String script;
     private final List<List<String>> batches = new ArrayList<>();
-    private final List<AntlrError> errors = new ArrayList<>();
+    private final List<Object> errors = new ArrayList<>();
     private final Set<DangerStatement> dangerStatements = EnumSet.noneOf(DangerStatement.class);
 
     public ScriptParser(String name, String script, boolean isMsSql) {
@@ -117,9 +118,10 @@ public class ScriptParser {
             dangerStatements.add(DangerStatement.RESTART_WITH);
         } else if ((at = alter.alter_table_statement()) != null) {
             for (Table_actionContext tablAction : at.table_action()) {
+                Column_actionContext colAction = tablAction.column_action();
                 if (tablAction.column != null && tablAction.DROP() != null) {
                     dangerStatements.add(DangerStatement.DROP_COLUMN);
-                } else if (tablAction.datatype != null) {
+                } else if (colAction != null && colAction.data_type() != null) {
                     dangerStatements.add(DangerStatement.ALTER_COLUMN);
                 }
             }
@@ -191,7 +193,7 @@ public class ScriptParser {
         if (!errors.isEmpty()) {
             StringBuilder sb = new StringBuilder();
             sb.append("Errors while parse script:\n");
-            for (AntlrError er : errors) {
+            for (Object er : errors) {
                 sb.append(er).append('\n');
             }
             return sb.toString();

@@ -2065,3 +2065,5 @@ drop function dump_delete();
 
 create trigger trig_part_create before insert on tab_part_create
   for each statement execute procedure func_part_create();
+CREATE TRIGGER t BEFORE TRUNCATE ON trunc_trigger_test
+FOR EACH STATEMENT EXECUTE PROCEDURE trunctrigger('before trigger truncate');

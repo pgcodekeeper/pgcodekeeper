@@ -22,7 +22,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class TypesReader extends JdbcReader {
 
-    static final String ADD_CONSTRAINT = "ALTER DOMAIN noname ADD CONSTRAINT noname ";
+    private static final String ADD_CONSTRAINT = "ALTER DOMAIN noname ADD CONSTRAINT noname ";
 
     public TypesReader(JdbcLoaderBase loader) {
         super(JdbcQueries.QUERY_TYPES, loader);
@@ -86,7 +86,8 @@ public class TypesReader extends JdbcReader {
             }
         } else {
             loader.submitAntlrTask(def, p -> p.vex_eof().vex().get(0),
-                    ctx -> dataBase.addAnalysisLauncher(new VexAnalysisLauncher(d, ctx)));
+                    ctx -> dataBase.addAnalysisLauncher(
+                            new VexAnalysisLauncher(d, ctx, loader.getCurrentLocation())));
         }
 
         d.setDefaultValue(def);
@@ -105,7 +106,8 @@ public class TypesReader extends JdbcReader {
                 loader.submitAntlrTask(ADD_CONSTRAINT + definition + ';',
                         p -> p.sql().statement(0).schema_statement().schema_alter()
                         .alter_domain_statement().dom_constraint,
-                        ctx -> CreateDomain.parseDomainConstraint(d, c, ctx, dataBase));
+                        ctx -> CreateDomain.parseDomainConstraint(d, c, ctx,
+                                dataBase, loader.getCurrentLocation()));
 
                 d.addConstraint(c);
                 if (concomments[i] != null && !concomments[i].isEmpty()) {

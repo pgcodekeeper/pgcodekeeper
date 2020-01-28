@@ -117,7 +117,7 @@ additional_statement
     ;
 
 explain_statement
-    : EXPLAIN (ANALYZE? VERBOSE? | (LEFT_PAREN explain_option (COMMA explain_option)* RIGHT_PAREN)) explain_query;
+    : EXPLAIN (ANALYZE? VERBOSE? | LEFT_PAREN explain_option (COMMA explain_option)* RIGHT_PAREN) explain_query;
 
 explain_query
     : data_statement
@@ -359,36 +359,23 @@ alter_language_statement
 
 alter_table_statement
     : FOREIGN? TABLE if_exists? ONLY? name=schema_qualified_name MULTIPLY?(
-        (table_action (COMMA table_action)*
-        | RENAME COLUMN? column=schema_qualified_name TO new_column=schema_qualified_name)
-    | set_schema
-    | rename_to
-    | RENAME CONSTRAINT identifier TO identifier
-    | ATTACH PARTITION child=schema_qualified_name for_values_bound
-    | DETACH PARTITION child=schema_qualified_name)
+        table_action (COMMA table_action)*
+        | RENAME COLUMN? identifier TO identifier
+        | set_schema
+        | rename_to
+        | RENAME CONSTRAINT identifier TO identifier
+        | ATTACH PARTITION child=schema_qualified_name for_values_bound
+        | DETACH PARTITION child=schema_qualified_name)
     ;
 
 table_action
     : ADD COLUMN? if_not_exists? table_column_definition
-    | DROP COLUMN? if_exists? column=schema_qualified_name cascade_restrict?
-    | ALTER COLUMN? column=schema_qualified_name
-      ((SET DATA)? TYPE datatype=data_type collate_identifier? (USING expression=vex)?
-      | (set_def_column
-        | drop_def
-        | ((set=SET | DROP) NOT NULL)
-        | SET STATISTICS signed_number_literal
-        | SET storage_parameter
-        | define_foreign_options
-        | RESET names_in_parens
-        | set_storage
-        | ADD identity_body
-        | alter_identity+
-        | DROP IDENTITY if_exists?
-        ))
+    | DROP COLUMN? if_exists? column=identifier cascade_restrict?
+    | ALTER COLUMN? column=identifier column_action
     | ADD tabl_constraint=constraint_common (NOT not_valid=VALID)?
     | validate_constraint
     | drop_constraint
-    | (DISABLE | ENABLE) TRIGGER (trigger_name=schema_qualified_name | (ALL | USER))?
+    | (DISABLE | ENABLE) TRIGGER (trigger_name=schema_qualified_name | ALL | USER)?
     | ENABLE (REPLICA | ALWAYS) TRIGGER trigger_name=schema_qualified_name
     | (DISABLE | ENABLE) RULE rewrite_rule_name=schema_qualified_name
     | ENABLE (REPLICA | ALWAYS) RULE rewrite_rule_name=schema_qualified_name
@@ -411,6 +398,21 @@ table_action
     | ALTER CONSTRAINT identifier table_deferrable? table_initialy_immed?
     ;
 
+column_action
+    : (SET DATA)? TYPE data_type collate_identifier? (USING vex)?
+    | ADD identity_body
+    | set_def_column
+    | drop_def
+    | (set=SET | DROP) NOT NULL
+    | DROP IDENTITY if_exists?
+    | SET storage_parameter
+    | SET STATISTICS signed_number_literal
+    | SET STORAGE storage_option
+    | RESET names_in_parens
+    | define_foreign_options
+    | alter_identity+
+    ;
+
 identity_body
     : GENERATED (ALWAYS | BY DEFAULT) AS IDENTITY (LEFT_PAREN sequence_body+ RIGHT_PAREN)?
     ;
@@ -419,10 +421,6 @@ alter_identity
     : SET GENERATED (ALWAYS | BY DEFAULT)
     | SET sequence_body
     | RESTART (WITH? NUMBER_LITERAL)?
-    ;
-
-set_storage
-    : SET STORAGE storage_option
     ;
 
 storage_option
@@ -495,22 +493,12 @@ alter_default_privileges
 
 abbreviated_grant_or_revoke
     : (GRANT | REVOKE grant_option_for?) (
-       table_column_privilege (COMMA table_column_privilege)*
-        ON TABLES
-
-    | ((usage_select_update(COMMA usage_select_update)*)
-        | ALL PRIVILEGES?)
-        ON SEQUENCES
-
-    | (EXECUTE | ALL PRIVILEGES?)
-        ON FUNCTIONS
-
-    | (USAGE | CREATE | ALL PRIVILEGES?)
-        ON SCHEMAS
-
-    | (USAGE | ALL PRIVILEGES?)
-        ON TYPES)
-        (grant_to_rule | revoke_from_cascade_restrict)
+        table_column_privilege (COMMA table_column_privilege)* ON TABLES
+        | (usage_select_update (COMMA usage_select_update)* | ALL PRIVILEGES?) ON SEQUENCES
+        | (EXECUTE | ALL PRIVILEGES?) ON FUNCTIONS
+        | (USAGE | CREATE | ALL PRIVILEGES?) ON SCHEMAS
+        | (USAGE | ALL PRIVILEGES?) ON TYPES)
+    (grant_to_rule | revoke_from_cascade_restrict)
     ;
 
 grant_option_for
@@ -629,8 +617,8 @@ index_where
     : EXTENSION if_not_exists? name=identifier 
     WITH?
     (SCHEMA schema=identifier)? 
-    (VERSION unsigned_value_specification)? 
-    (FROM unsigned_value_specification)?
+    (VERSION (identifier | character_string))?
+    (FROM (identifier | character_string))?
     CASCADE?
     ;
 
@@ -857,7 +845,7 @@ create_transform_statement
     ;
 
 create_access_method
-    : ACCESS METHOD name=identifier TYPE type=identifier HANDLER func_name=schema_qualified_name
+    : ACCESS METHOD identifier TYPE (TABLE | INDEX) HANDLER schema_qualified_name
     ;
 
 create_user_or_role
@@ -1219,7 +1207,7 @@ agg_order
     ;
 
 character_string
-    : BeginDollarStringConstant Text_between_Dollar+ EndDollarStringConstant
+    : BeginDollarStringConstant Text_between_Dollar* EndDollarStringConstant
     | Character_String_Literal
     ;
 
@@ -2555,17 +2543,13 @@ value_expression_primary
 
 unsigned_value_specification
   : unsigned_numeric_literal
-  | general_literal
+  | character_string
+  | truth_value
   ;
 
 unsigned_numeric_literal
   : NUMBER_LITERAL
   | REAL_NUMBER
-  ;
-
-general_literal
-  : character_string
-  | truth_value
   ;
 
 truth_value
@@ -2682,20 +2666,11 @@ frame_bound
     ;
 
 array_expression
-    : array_brackets
-    | array_query
-    ;
-
-array_brackets
-    : ARRAY array_elements
+    : ARRAY (array_elements | table_subquery)
     ;
 
 array_elements
     : LEFT_BRACKET ((vex | array_elements) (COMMA (vex | array_elements))*)? RIGHT_BRACKET
-    ;
-
-array_query
-    : ARRAY table_subquery
     ;
 
 type_coercion
