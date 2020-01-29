@@ -10,6 +10,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
@@ -209,7 +210,7 @@ public class CreateFunction extends ParserAbstract {
             AntlrParser.submitAntlrTask(antlrTasks,
                     () -> {
                         SQLParser parser = AntlrParser.makeBasicParser(SQLParser.class, def, name, err, start);
-                        AntlrParser.removeIntoStatements(parser);
+                        AntlrUtils.removeIntoStatements(parser);
                         return parser.plpgsql_function();
                     },
                     ctx -> {

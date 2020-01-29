@@ -28,6 +28,7 @@ import cz.startnet.utils.pgdiff.loader.JdbcRunner;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.MonitorCancelledRuntimeException;
@@ -467,12 +468,12 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
 
     protected <T> void submitAntlrTask(String sql,
             Function<SQLParser, T> parserCtxReader, Consumer<T> finalizer) {
-        submitAntlrTask(sql, parserCtxReader, finalizer, false);
+        submitAntlrTask(sql, parserCtxReader, finalizer, false, SQLParser.class);
     }
 
-    protected <T> void submitAntlrTask(String sql, Function<SQLParser, T> parserCtxReader,
-            Consumer<T> finalizer, boolean removeInto) {
-        submitAntlrTask(sql, parserCtxReader, finalizer, removeInto, SQLParser.class);
+    protected <T> void submitPlpgsqlTask(String sql,
+            Function<SQLParser, T> parserCtxReader, Consumer<T> finalizer) {
+        submitAntlrTask(sql, parserCtxReader, finalizer, true, SQLParser.class);
     }
 
     protected <T> void submitMsAntlrTask(String sql,
@@ -490,7 +491,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
             PgDiffUtils.checkCancelled(monitor);
             P p = AntlrParser.makeBasicParser(parserClass, sql, location, list);
             if (removeInto) {
-                AntlrParser.removeIntoStatements(p);
+                AntlrUtils.removeIntoStatements(p);
             }
             return parserCtxReader.apply(p);
         }, t -> {

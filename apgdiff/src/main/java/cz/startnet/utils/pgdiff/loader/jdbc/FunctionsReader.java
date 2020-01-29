@@ -226,11 +226,10 @@ public class FunctionsReader extends JdbcReader {
                             function, ctx, loader.getCurrentLocation(),
                             argsQualTypes)));
         } else if (!"-".equals(definition) && "PLPGSQL".equalsIgnoreCase(function.getLanguage())) {
-            loader.submitAntlrTask(definition, SQLParser::plpgsql_function,
+            loader.submitPlpgsqlTask(definition, SQLParser::plpgsql_function,
                     ctx -> db.addAnalysisLauncher(new FuncProcAnalysisLauncher(
                             function, ctx, loader.getCurrentLocation(),
-                            argsQualTypes)),
-                    true);
+                            argsQualTypes)));
         }
     }
 

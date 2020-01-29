@@ -9,6 +9,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.ViewAnalysisLauncher;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
@@ -66,7 +67,7 @@ public class ViewsReader extends JdbcReader {
                 pair -> {
                     dataBase.addAnalysisLauncher(new ViewAnalysisLauncher(
                             v, pair.getFirst(), loader.getCurrentLocation()));
-                    v.setQuery(query, ParserAbstract.normalizeWhitespaceUnquoted(
+                    v.setQuery(query, AntlrUtils.normalizeWhitespaceUnquoted(
                             pair.getFirst(), pair.getSecond()));
                 });
 
