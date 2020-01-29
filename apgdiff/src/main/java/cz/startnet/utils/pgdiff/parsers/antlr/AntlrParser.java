@@ -121,7 +121,8 @@ public class AntlrParser {
         int i = 0;
 
         while (true) {
-            int type = stream.LA(++i);
+            stream.seek(i++);
+            int type = stream.LA(1);
 
             switch (type) {
             case SQLLexer.EOF:
@@ -133,18 +134,17 @@ public class AntlrParser {
                 hasInto = false;
                 break;
             case SQLLexer.IMPORT:
-                if (stream.LA(i + 1) == SQLLexer.FOREIGN && stream.LA(i + 2) == SQLLexer.SCHEMA) {
+                if (stream.LA(2) == SQLLexer.FOREIGN && stream.LA(3) == SQLLexer.SCHEMA) {
                     isImport = true;
                 }
                 break;
             case SQLLexer.INTO:
-                if (hasInto || isImport || i == 1 || stream.LA(i - 1) == SQLLexer.INSERT) {
+                if (hasInto || isImport || stream.LA(- 1) == SQLLexer.INSERT) {
                     break;
                 }
-                if (hideIntoTokens(stream, i)) {
+                if (hideIntoTokens(stream)) {
                     hasInto = true;
-                    // back to previous index, because we hide current token
-                    i--;
+                    i--; // back to previous index, because we hide current token
                 }
                 break;
             default:
@@ -153,7 +153,8 @@ public class AntlrParser {
         }
     }
 
-    private static boolean hideIntoTokens(CommonTokenStream stream, int i) {
+    private static boolean hideIntoTokens(CommonTokenStream stream) {
+        int i = 1;
         List<CommonToken> tokens = new ArrayList<>();
         tokens.add((CommonToken) stream.LT(i++));
 
