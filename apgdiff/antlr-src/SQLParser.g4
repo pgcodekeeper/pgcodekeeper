@@ -2889,6 +2889,17 @@ truncate_stmt
     ((RESTART | CONTINUE) IDENTITY)? cascade_restrict?
     ;
 
+identifier_list
+    : identifier (COMMA identifier)*
+    ;
+
+anonymous_block
+    : DO (LANGUAGE (identifier | character_string))? character_string
+    | DO character_string LANGUAGE (identifier | character_string)
+    ;
+
+// plpgsql rules
+
 comp_options
     : HASH_SIGN identifier (identifier | truth_value)
     ;
@@ -3060,10 +3071,6 @@ loop_start
     | FOREACH identifier_list (SLICE NUMBER_LITERAL)? IN ARRAY vex
     ;
 
-identifier_list
-    : identifier (COMMA identifier)*
-    ;
-
 using_vex
     : USING vex (COMMA vex)*
     ;
@@ -3075,9 +3082,4 @@ if_statement
 // plpgsql case
 case_statement
     : CASE vex? (WHEN vex (COMMA vex)* THEN function_statements)+ (ELSE function_statements)? END CASE
-    ;
-
-anonymous_block
-    : DO (LANGUAGE (identifier | character_string))? character_string
-    | DO character_string LANGUAGE (identifier | character_string)
     ;
