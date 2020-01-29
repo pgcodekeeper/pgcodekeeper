@@ -467,23 +467,31 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
 
     protected <T> void submitAntlrTask(String sql,
             Function<SQLParser, T> parserCtxReader, Consumer<T> finalizer) {
-        submitAntlrTask(sql, parserCtxReader, finalizer, SQLParser.class);
+        submitAntlrTask(sql, parserCtxReader, finalizer, false);
+    }
+
+    protected <T> void submitAntlrTask(String sql, Function<SQLParser, T> parserCtxReader,
+            Consumer<T> finalizer, boolean removeInto) {
+        submitAntlrTask(sql, parserCtxReader, finalizer, removeInto, SQLParser.class);
     }
 
     protected <T> void submitMsAntlrTask(String sql,
             Function<TSQLParser, T> parserCtxReader, Consumer<T> finalizer) {
-        submitAntlrTask(sql, parserCtxReader, finalizer, TSQLParser.class);
+        submitAntlrTask(sql, parserCtxReader, finalizer, false, TSQLParser.class);
     }
 
     private <T, P extends Parser> void submitAntlrTask(String sql,
             Function<P, T> parserCtxReader, Consumer<T> finalizer,
-            Class<P> parserClass) {
+            boolean removeInto, Class<P> parserClass) {
         String location = getCurrentLocation();
         GenericColumn object = this.currentObject;
         List<Object> list = new ArrayList<>();
         AntlrParser.submitAntlrTask(antlrTasks, () -> {
             PgDiffUtils.checkCancelled(monitor);
             P p = AntlrParser.makeBasicParser(parserClass, sql, location, list);
+            if (removeInto) {
+                AntlrParser.removeIntoStatements(p);
+            }
             return parserCtxReader.apply(p);
         }, t -> {
             errors.addAll(list);

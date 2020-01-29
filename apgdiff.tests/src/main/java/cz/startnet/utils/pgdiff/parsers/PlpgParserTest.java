@@ -73,7 +73,7 @@ public class PlpgParserTest {
 
         SQLParser parser = AntlrParser
                 .makeBasicParser(SQLParser.class, sql, fileNameTemplate, errors);
-
+        AntlrParser.removeIntoStatements(parser);
         parser.getInterpreter().setPredictionMode(PredictionMode.LL_EXACT_AMBIG_DETECTION);
         parser.addErrorListener(new BaseErrorListener() {
 

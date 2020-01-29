@@ -207,8 +207,11 @@ public class CreateFunction extends ParserAbstract {
                     });
         } else if ("PLPGSQL".equalsIgnoreCase(language)) {
             AntlrParser.submitAntlrTask(antlrTasks,
-                    () -> AntlrParser.makeBasicParser(SQLParser.class, def,
-                            name, err, start).plpgsql_function(),
+                    () -> {
+                        SQLParser parser = AntlrParser.makeBasicParser(SQLParser.class, def, name, err, start);
+                        AntlrParser.removeIntoStatements(parser);
+                        return parser.plpgsql_function();
+                    },
                     ctx -> {
                         errors.addAll(err);
                         FuncProcAnalysisLauncher launcher = new FuncProcAnalysisLauncher(
