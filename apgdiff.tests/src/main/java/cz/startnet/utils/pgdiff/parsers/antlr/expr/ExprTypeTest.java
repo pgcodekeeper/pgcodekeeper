@@ -8,9 +8,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -42,7 +40,7 @@ public class ExprTypeTest {
 
     @Parameters
     public static Iterable<Object[]> parameters() {
-        List<Object[]> p = Arrays.asList(new Object[][] {
+        return ApgdiffTestUtils.getParameters(new Object[][] {
             // Compare the types between an asterisk and an ordinary in view.
             {COMPARE + "types_aster_ord_view"},
             // Check types in columns of asterisk in view.
@@ -56,8 +54,6 @@ public class ExprTypeTest {
             // Check array types.
             {CHECK + "array_types"},
         });
-
-        return p.stream()::iterator;
     }
 
     /**

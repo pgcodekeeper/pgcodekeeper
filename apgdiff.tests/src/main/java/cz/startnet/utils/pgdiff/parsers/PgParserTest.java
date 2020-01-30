@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -20,10 +19,10 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
 
 /**
@@ -37,7 +36,7 @@ public class PgParserTest {
 
     @Parameters
     public static Iterable<Object[]> parameters() {
-        List<Object[]> p = Arrays.asList(new Object[][] {
+        return ApgdiffTestUtils.getParameters(new Object[][] {
             // basetype = 'ANY'
             // func args in refs
             {"aggregates"},
@@ -58,7 +57,6 @@ public class PgParserTest {
             {"create_type"},
             {"create_view"},
             {"date"},
-            {"dbsize"},
             {"delete"},
             {"dependency"},
             {"domain"},
@@ -66,7 +64,6 @@ public class PgParserTest {
             {"drop_operator"},
             {"enum"},
             {"event_trigger"},
-            {"expressions"},
             {"fast_default"},
             {"float8"},
             {"foreign_data"},
@@ -76,7 +73,6 @@ public class PgParserTest {
             {"groupingsets", 47},
             {"hash_func"},
             {"hash_index"},
-            {"identity"},
             {"index_including"},
             {"indexing", 1},
             {"indirect_toast"},
@@ -115,15 +111,12 @@ public class PgParserTest {
             {"publication"},
             {"rangefuncs"},
             {"rangetypes"},
-            {"regproc"},
             {"reloptions"},
-            {"replica_identity"},
-            {"returning"},
             {"role"},
             {"rowtypes"},
             {"rules", 1},
             // IDEA can't find 7 ambiguity
-            {"select", 11},
+            {"select", 12},
             {"set"},
             {"sequence"},
             {"spgist", 2},
@@ -132,32 +125,20 @@ public class PgParserTest {
             {"subscription"},
             {"subselect"},
             {"sysviews"},
-            {"temp"},
             {"time"},
             {"timestamp"},
             {"timestamptz"},
             {"timetz"},
             {"transactions"},
             {"triggers"},
-            {"truncate"},
             {"tsdicts"},
             {"tsearch", 1},
-            {"tsrf", 6},
-            {"tstypes", 1},
             {"type_sanity"},
             {"updatable_views", 6},
             {"update"},
-            {"varchar"},
             {"window"},
             {"with"},
         });
-
-        int maxLength = p.stream()
-                .mapToInt(oo -> oo.length)
-                .max().getAsInt();
-        return p.stream()
-                .map(oo -> oo.length < maxLength ? Arrays.copyOf(oo, maxLength) : oo)
-                ::iterator;
     }
 
     /**
@@ -184,7 +165,7 @@ public class PgParserTest {
 
     @Test
     public void runDiff() throws IOException {
-        List<AntlrError> errors = new ArrayList<>();
+        List<Object> errors = new ArrayList<>();
         AtomicInteger ambiguity = new AtomicInteger();
 
         String sql = getStringFromInpunStream(PgParserTest.class

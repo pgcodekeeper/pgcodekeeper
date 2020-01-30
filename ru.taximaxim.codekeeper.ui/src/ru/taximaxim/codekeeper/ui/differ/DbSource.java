@@ -24,7 +24,6 @@ import cz.startnet.utils.pgdiff.loader.JdbcMsConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcMsLoader;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.loader.ProjectLoader;
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.InputStreamProvider;
@@ -46,7 +45,7 @@ public abstract class DbSource {
 
     private final String origin;
     private PgDatabase dbObject;
-    protected List<? extends Object> errors = Collections.emptyList();
+    protected List<Object> errors = Collections.emptyList();
 
     public String getOrigin() {
         return origin;
@@ -197,7 +196,7 @@ class DbSourceDirTree extends DbSource {
             throws InterruptedException, IOException {
         monitor.subTask(Messages.dbSource_loading_tree);
 
-        List<AntlrError> er = new ArrayList<>();
+        List<Object> er = new ArrayList<>();
         PgDatabase db = new ProjectLoader(dirTreePath, getPgDiffArgs(encoding,
                 forceUnixNewlines, isMsSql, null, oneTimePrefs), monitor, er)
                 .loadDatabaseSchemaFromDirTree();
@@ -227,7 +226,7 @@ class DbSourceProject extends DbSource {
         monitor.setWorkRemaining(UIProjectLoader.countFiles(project));
 
         IEclipsePreferences pref = proj.getPrefs();
-        List<AntlrError> er = new ArrayList<>();
+        List<Object> er = new ArrayList<>();
 
         PgDiffArguments arguments = getPgDiffArgs(charset,
                 pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),

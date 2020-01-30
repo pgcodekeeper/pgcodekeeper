@@ -69,7 +69,7 @@ implements SqlContextProcessor {
     private final Queue<AntlrTask<?>> antlrTasks;
 
     public CustomSQLParserListener(PgDatabase database, String filename, ParserListenerMode mode,
-            List<AntlrError> errors, Queue<AntlrTask<?>> antlrTasks, IProgressMonitor monitor) {
+            List<Object> errors, Queue<AntlrTask<?>> antlrTasks, IProgressMonitor monitor) {
         super(database, filename, mode, errors, monitor);
         this.antlrTasks = antlrTasks;
     }
@@ -77,14 +77,14 @@ implements SqlContextProcessor {
     @Override
     public void process(SqlContext rootCtx, CommonTokenStream stream) {
         for (StatementContext s : rootCtx.statement()) {
-            statement(s);
+            statement(s, stream);
         }
         if (ParserListenerMode.NORMAL == mode) {
             db.sortColumns();
         }
     }
 
-    public void statement(StatementContext statement) {
+    public void statement(StatementContext statement, CommonTokenStream stream) {
         Schema_statementContext schema = statement.schema_statement();
         Data_statementContext ds;
         if (schema != null) {
@@ -92,7 +92,7 @@ implements SqlContextProcessor {
             Schema_alterContext alter;
             Schema_dropContext drop;
             if (create != null) {
-                create(create);
+                create(create, stream);
             } else if ((alter = schema.schema_alter()) != null) {
                 alter(alter);
             } else if ((drop = schema.schema_drop()) != null) {
@@ -105,7 +105,7 @@ implements SqlContextProcessor {
         }
     }
 
-    private void create(Schema_createContext ctx) {
+    private void create(Schema_createContext ctx, CommonTokenStream stream) {
         ParserAbstract p;
         if (ctx.create_table_statement() != null) {
             p = new CreateTable(ctx.create_table_statement(), db, tablespace, accessMethod, oids);
@@ -130,7 +130,7 @@ implements SqlContextProcessor {
         } else if (ctx.create_schema_statement() != null) {
             p = new CreateSchema(ctx.create_schema_statement(), db);
         } else if (ctx.create_view_statement() != null) {
-            p = new CreateView(ctx.create_view_statement(), db, tablespace, accessMethod);
+            p = new CreateView(ctx.create_view_statement(), db, tablespace, accessMethod, stream);
         } else if (ctx.create_type_statement() != null) {
             p = new CreateType(ctx.create_type_statement(), db);
         } else if (ctx.create_domain_statement() != null) {

@@ -22,7 +22,7 @@ public class ScriptParser {
     private final String script;
 
     private final Set<PgObjLocation> batches;
-    private final List<AntlrError> errors;
+    private final List<Object> errors;
     private final Set<DangerStatement> dangerStatements;
 
     public ScriptParser(String filePath, String script, boolean isMsSql)
@@ -66,7 +66,7 @@ public class ScriptParser {
         if (!errors.isEmpty()) {
             StringBuilder sb = new StringBuilder();
             sb.append("Errors while parse script:\n");
-            for (AntlrError er : errors) {
+            for (Object er : errors) {
                 sb.append(er).append('\n');
             }
             return sb.toString();

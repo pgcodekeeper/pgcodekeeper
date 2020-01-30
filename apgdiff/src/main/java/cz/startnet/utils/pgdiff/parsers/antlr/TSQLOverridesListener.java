@@ -32,8 +32,7 @@ implements TSqlContextProcessor {
     private final Map<PgStatement, StatementOverride> overrides;
 
     public TSQLOverridesListener(PgDatabase db, String filename, ParserListenerMode mode,
-            List<AntlrError> errors, IProgressMonitor mon,
-            Map<PgStatement, StatementOverride> overrides) {
+            List<Object> errors, IProgressMonitor mon, Map<PgStatement, StatementOverride> overrides) {
         super(db, filename, mode, errors, mon);
         this.overrides = overrides;
     }

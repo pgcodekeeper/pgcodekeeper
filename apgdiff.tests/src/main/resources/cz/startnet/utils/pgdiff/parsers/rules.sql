@@ -1194,8 +1194,9 @@ INSERT INTO ruletest1 VALUES (4);
 RESET session_replication_role;
 INSERT INTO ruletest1 VALUES (5);
 
-SELECT * FROM ruletest1;
-SELECT * FROM ruletest2;
-
-DROP TABLE ruletest1;
-DROP TABLE ruletest2;
+CREATE OR REPLACE RULE voo_u AS ON UPDATE TO voo 
+    DO INSTEAD UPDATE foo SET f1 = new.f1, f2 = new.f2 WHERE f1 = old.f1 RETURNING f1, f2;
+CREATE OR REPLACE RULE voo_d AS ON DELETE TO voo 
+    DO INSTEAD DELETE FROM foo WHERE f1 = old.f1 RETURNING f1, f2;
+CREATE RULE joinview_u AS ON UPDATE TO joinview 
+    DO INSTEAD UPDATE f SET f1 = new.f1, f3 = new.f3 FROM j WHERE f2 = 1 AND f2 = old.f2 RETURNING f.*, other;

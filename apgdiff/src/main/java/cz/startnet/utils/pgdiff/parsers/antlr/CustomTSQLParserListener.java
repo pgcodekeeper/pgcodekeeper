@@ -67,7 +67,7 @@ implements TSqlContextProcessor {
     private boolean quotedIdentifier = true;
 
     public CustomTSQLParserListener(PgDatabase database, String filename,
-            ParserListenerMode mode, List<AntlrError> errors, IProgressMonitor monitor) {
+            ParserListenerMode mode, List<Object> errors, IProgressMonitor monitor) {
         super(database, filename, mode, errors, monitor);
     }
 

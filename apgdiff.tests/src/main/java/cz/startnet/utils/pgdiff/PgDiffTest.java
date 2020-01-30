@@ -6,8 +6,6 @@
 package cz.startnet.utils.pgdiff;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,9 +25,9 @@ import ru.taximaxim.codekeeper.apgdiff.log.Log;
 public class PgDiffTest {
 
     @Parameters
-    public static Collection<?> parameters() {
-        return Arrays.asList(
-                new Object[][]{
+    public static Iterable<Object[]> parameters() {
+        return ApgdiffTestUtils.getParameters(
+                new Object[][] {
                     // Tests scenario where COLUMN type is modified.
                     {"modify_column_type"},
                     // Tests scenario where COLUMN type is modified, column has constraint.
@@ -508,16 +506,18 @@ public class PgDiffTest {
                     {"add_specific_function"},
                     // Tests scenario where TABLE tablespace is modified.
                     {"modify_tablespace"},
-                    //Tests scenario where generated SEQUENCE is compared.
+                    // Tests scenario where generated SEQUENCE is compared.
                     {"compare_generated_sequence"},
-                    //Tests scenario where PRIVILEGE added to object with quoted name.
+                    // Tests scenario where PRIVILEGE added to object with quoted name.
                     {"add_privilege_quoted_name"},
-                    //Tests scenario where MATERIALIZED VIEW is refreshed.
+                    // Tests scenario where MATERIALIZED VIEW is refreshed.
                     {"refresh_materialized_view"},
-                    //tests scenario where table is recreated and its column dependency is dropped
+                    // Tests scenario where table is recreated and its column dependency is dropped
                     {"tabl_to_func_drop"},
-                    // tests scenario where owner and its privileges are both changed
-                    {"chg_owner_grant"}
+                    // Tests scenario where owner and its privileges are both changed
+                    {"chg_owner_grant"},
+                    // Tests scenario where object definitions are compared
+                    {"compare_definitions"}
                 });
     }
 
