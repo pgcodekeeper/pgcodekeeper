@@ -19,7 +19,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -66,7 +65,7 @@ public class PlpgParserTest {
 
     @Test
     public void runDiff() throws IOException {
-        List<AntlrError> errors = new ArrayList<>();
+        List<Object> errors = new ArrayList<>();
         AtomicInteger ambiguity = new AtomicInteger();
 
         String sql = getStringFromInpunStream(PlpgParserTest.class

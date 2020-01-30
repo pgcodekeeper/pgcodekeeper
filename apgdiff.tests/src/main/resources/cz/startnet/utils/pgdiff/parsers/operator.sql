@@ -170,3 +170,4 @@ CREATE OPERATOR CLASS box_ops DEFAULT
     FUNCTION 5  gist_box_penalty(internal, internal, internal),
     FUNCTION 6  gist_box_picksplit(internal, internal),
     FUNCTION 7  gist_box_same(box, box, internal);
+CREATE OPERATOR |@| (PROCEDURE = unnest, RIGHTARG = ANYARRAY);

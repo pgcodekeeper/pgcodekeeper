@@ -114,6 +114,10 @@ public class CliArgs extends PgDiffArguments {
             usage="print exception stacktrace")
     private boolean isDebug;
 
+    @Option(name="--ignore-errors",
+            usage="do not stop on parse errors")
+    private boolean ignoreErrors;
+
     @Option(name="-P", aliases="--no-privileges",
             usage="ignore privileges and owners of database objects")
     private boolean ignorePrivileges;
@@ -130,7 +134,7 @@ public class CliArgs extends PgDiffArguments {
             usage="set check_function_bodies to false at the beginning of the script")
     private boolean disableCheckFunctionBodies;
 
-    @Option(name="--enable-function-bodies-dependencies", forbids={"--graph", "--parse"},
+    @Option(name="--enable-function-bodies-dependencies", forbids={"--parse"},
             usage="enable dependencies from bodies of functions and procedures to other functions or procedures")
     private boolean enableFunctionBodiesDependencies;
 
@@ -170,37 +174,37 @@ public class CliArgs extends PgDiffArguments {
                     + "\nspecify multiple times to use several lists")
     private List<String> ignoreLists;
 
-    @Option(name="--src-lib-xml", metaVar="<path>", forbids={"--graph", "--parse"},
+    @Option(name="--src-lib-xml", metaVar="<path>", forbids={"--parse"},
             usage="add xml with library dependencies to source"
                     + "\nspecify multiple times to use several library xml's")
     private List<String> targetLibXmls;
 
-    @Option(name="--src-lib", metaVar="<path or JDBC>", forbids={"--graph", "--parse"},
+    @Option(name="--src-lib", metaVar="<path or JDBC>", forbids={"--parse"},
             usage="add library dependency to source"
                     + "\nspecify multiple times to use several libraries")
     private List<String> targetLibs;
 
-    @Option(name="--src-lib-no-priv", metaVar="<path or JDBC>", forbids={"--graph", "--parse"},
+    @Option(name="--src-lib-no-priv", metaVar="<path or JDBC>", forbids={"--parse"},
             usage="add library dependency to source without privileges"
                     + "\nspecify multiple times to use several libraries")
     private List<String> targetLibsWithoutPriv;
 
-    @Option(name="--tgt-lib-xml", metaVar="<path>", forbids={"--graph", "--parse"},
+    @Option(name="--tgt-lib-xml", metaVar="<path>", forbids={"--parse"},
             usage="add xml with library dependencies to target"
                     + "\nspecify multiple times to use several library xml's")
     private List<String> sourceLibXmls;
 
-    @Option(name="--tgt-lib", metaVar="<path or JDBC>", forbids={"--graph", "--parse"},
+    @Option(name="--tgt-lib", metaVar="<path or JDBC>", forbids={"--parse"},
             usage="add library dependency to destination"
                     + "\nspecify multiple times to use several libraries")
     private List<String> sourceLibs;
 
-    @Option(name="--tgt-lib-no-priv", metaVar="<path or JDBC>", forbids={"--graph", "--parse"},
+    @Option(name="--tgt-lib-no-priv", metaVar="<path or JDBC>", forbids={"--parse"},
             usage="add library dependency to destination without privileges"
                     + "\nspecify multiple times to use several libraries")
     private List<String> sourceLibsWithoutPriv;
 
-    @Option(name="--lib-safe-mode", forbids={"--graph", "--parse"},
+    @Option(name="--lib-safe-mode", forbids={"--parse"},
             usage="exit with an error if a library object conflicts with other schema or library objects"
                     + " otherwise, in case of conflicts objects loaded first have priority")
     private boolean libSafeMode;
@@ -406,6 +410,16 @@ public class CliArgs extends PgDiffArguments {
 
     public void setDebug(boolean isDebug) {
         this.isDebug = isDebug;
+    }
+
+    @Override
+    public boolean isIgnoreErrors() {
+        return ignoreErrors;
+    }
+
+    @Override
+    public void setIgnoreErrors(boolean ignoreErrors) {
+        this.ignoreErrors = ignoreErrors;
     }
 
     @Override

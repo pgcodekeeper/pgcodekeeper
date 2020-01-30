@@ -15,6 +15,7 @@ import org.antlr.v4.runtime.misc.Interval;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLLexer;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
@@ -56,7 +57,7 @@ public abstract class ParserAbstract {
 
     private List<StatementBodyContainer> statementBodies;
     private boolean refMode;
-    private String fileName;
+    protected String fileName;
 
     public ParserAbstract(PgDatabase db) {
         this.db = db;
@@ -84,6 +85,57 @@ public abstract class ParserAbstract {
      * Parse object from context
      */
     public abstract void parseObject();
+
+    public static String normalizeWhitespaceUnquoted(ParserRuleContext ctx, CommonTokenStream stream) {
+        StringBuilder sb = new StringBuilder();
+
+        // skip space before first token
+        int previous = SQLLexer.DOT;
+
+        List<Token> tokens = stream.getTokens();
+        for (int i = ctx.getStart().getTokenIndex(); i <= ctx.getStop().getTokenIndex(); i++) {
+            Token token  = tokens.get(i);
+            // skip tokens from non default channel
+            if (token.getChannel() != Token.DEFAULT_CHANNEL) {
+                continue;
+            }
+            int type = token.getType();
+
+            // remove whitespace after and before some special characters
+            if (previous != SQLLexer.DOT
+                    && previous != SQLLexer.LEFT_PAREN
+                    && previous != SQLLexer.Text_between_Dollar
+                    && previous != SQLLexer.BeginDollarStringConstant
+                    && type != SQLLexer.DOT
+                    && type != SQLLexer.RIGHT_PAREN
+                    && type != SQLLexer.Text_between_Dollar
+                    && type != SQLLexer.EndDollarStringConstant
+                    && type != SQLLexer.COMMA) {
+                sb.append(' ');
+            }
+
+            sb.append(getTokenText(type, token));
+            previous = type;
+        }
+
+        return sb.toString();
+    }
+
+    private static String getTokenText(int type, Token token) {
+        if (type == SQLLexer.QuotedIdentifier
+                || type == SQLLexer.Character_String_Literal) {
+            // get text with quotes
+            return token.getInputStream().getText(
+                    Interval.of(token.getStartIndex(), token.getStopIndex()));
+        }
+
+        if (SQLLexer.ALL <= type && type <= SQLLexer.WITH) {
+            // upper case reserved keywords
+            return token.getText().toUpperCase(Locale.ROOT);
+        }
+
+        return token.getText();
+    }
 
     /**
      * Extracts raw text from context

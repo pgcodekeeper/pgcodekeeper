@@ -11,8 +11,8 @@ import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 
 public class VexAnalysisLauncher extends AbstractAnalysisLauncher {
 
-    public VexAnalysisLauncher(PgStatementWithSearchPath stmt, VexContext ctx) {
-        super(stmt, ctx);
+    public VexAnalysisLauncher(PgStatementWithSearchPath stmt, VexContext ctx, String location) {
+        super(stmt, ctx, location);
     }
 
     @Override

@@ -46,7 +46,7 @@ public class CreateIndex extends ParserAbstract {
         IdentifierContext nameCtx = ctx.name;
         String name = nameCtx != null ? nameCtx.getText() : "";
         PgIndex ind = new PgIndex(name);
-        parseIndex(ctx.index_rest(), tablespace, schemaName, tableName, ind, db);
+        parseIndex(ctx.index_rest(), tablespace, schemaName, tableName, ind, db, fileName);
         ind.setUnique(ctx.UNIQUE() != null);
 
         if (nameCtx != null) {
@@ -59,8 +59,8 @@ public class CreateIndex extends ParserAbstract {
     }
 
     public static void parseIndex(Index_restContext rest, String tablespace,
-            String schemaName, String tableName, PgIndex ind, PgDatabase db) {
-        db.addAnalysisLauncher(new IndexAnalysisLauncher(ind, rest));
+            String schemaName, String tableName, PgIndex ind, PgDatabase db, String location) {
+        db.addAnalysisLauncher(new IndexAnalysisLauncher(ind, rest, location));
 
         Index_sortContext sort = rest.index_sort();
         parseColumns(sort, ind);

@@ -31,7 +31,7 @@ public class AlterView extends ParserAbstract {
             VexContext exp = ctx.set_def_column().vex();
             doSafe((s,o) -> {
                 s.addColumnDefaultValue(getFullCtxText(ctx.column_name), getFullCtxText(exp));
-                db.addAnalysisLauncher(new ViewAnalysisLauncher(s, exp));
+                db.addAnalysisLauncher(new ViewAnalysisLauncher(s, exp, fileName));
             }, dbView, null);
         }
         if (ctx.drop_def() != null) {

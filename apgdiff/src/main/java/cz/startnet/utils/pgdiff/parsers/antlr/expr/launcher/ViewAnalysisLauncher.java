@@ -17,8 +17,8 @@ public class ViewAnalysisLauncher extends AbstractAnalysisLauncher {
 
     private FullAnalyze fullAnalyze;
 
-    public ViewAnalysisLauncher(PgView stmt, ParserRuleContext ctx) {
-        super(stmt, ctx);
+    public ViewAnalysisLauncher(PgView stmt, ParserRuleContext ctx, String location) {
+        super(stmt, ctx, location);
     }
 
     public void setFullAnalyze(FullAnalyze fullAnalyze) {
