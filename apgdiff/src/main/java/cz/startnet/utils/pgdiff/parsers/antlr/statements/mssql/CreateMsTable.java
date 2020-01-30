@@ -130,7 +130,7 @@ public class CreateMsTable extends TableAbstract {
             }
             ExpressionContext exp = option.expression();
             col.setDefaultValue(getFullCtxText(exp));
-            db.addAnalysisLauncher(new MsAnalysisLauncher(col, exp,
+            db.addAnalysisLauncher(new MsAnalysisLauncher(col, exp, fileName,
                     new MsValueExpr(getSchemaNameSafe(
                             Arrays.asList(ctx.qualified_name().schema, ctx.qualified_name().name)))));
         }

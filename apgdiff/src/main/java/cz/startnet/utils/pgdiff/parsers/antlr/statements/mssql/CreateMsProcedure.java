@@ -95,7 +95,7 @@ public class CreateMsProcedure extends BatchContextProcessor {
             clauses = new MsSqlClauses(schemaName, DbObjType.FUNCTION, DbObjType.PROCEDURE);
         }
         db.addAnalysisLauncher(new MsAnalysisLauncher(procedure,
-                ctx.proc_body().sql_clauses(), clauses));
+                ctx.proc_body().sql_clauses(), fileName, clauses));
 
         if (isJdbc && schema != null) {
             schema.addFunction(procedure);

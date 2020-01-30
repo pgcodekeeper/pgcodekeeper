@@ -78,8 +78,8 @@ public class CreateMsTrigger extends BatchContextProcessor {
         } else {
             clauses = new MsSqlClauses(schemaName, DbObjType.FUNCTION, DbObjType.PROCEDURE);
         }
-        db.addAnalysisLauncher(new MsAnalysisLauncher(trigger,
-                ctx.sql_clauses(), clauses));
+        db.addAnalysisLauncher(new MsAnalysisLauncher(trigger, ctx.sql_clauses(),
+                fileName, clauses));
 
         IStatementContainer cont = getSafe(AbstractSchema::getStatementContainer,
                 schema, tableNameCtx);

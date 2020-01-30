@@ -207,7 +207,7 @@ public class CreateMsType extends ParserAbstract {
             }
             ExpressionContext exp = option.expression();
             col.setDefaultValue(getFullCtxText(exp));
-            db.addAnalysisLauncher(new MsAnalysisLauncher(type, exp,
+            db.addAnalysisLauncher(new MsAnalysisLauncher(type, exp, fileName,
                     new MsValueExpr(getSchemaNameSafe(
                             Arrays.asList(ctx.qualified_name().schema, ctx.qualified_name().name)))));
         }

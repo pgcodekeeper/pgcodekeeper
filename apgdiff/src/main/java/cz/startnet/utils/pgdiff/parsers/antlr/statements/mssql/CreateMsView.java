@@ -67,8 +67,8 @@ public class CreateMsView extends BatchContextProcessor {
             } else {
                 schemaName = getSchemaNameSafe(ids);
             }
-            db.addAnalysisLauncher(new MsAnalysisLauncher(view,
-                    vQuery, new MsSelect(schemaName)));
+            db.addAnalysisLauncher(new MsAnalysisLauncher(view, vQuery, fileName,
+                    new MsSelect(schemaName)));
         }
 
         if (isJdbc && schema != null) {

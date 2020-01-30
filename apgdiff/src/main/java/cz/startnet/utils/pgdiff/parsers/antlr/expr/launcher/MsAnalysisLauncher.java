@@ -20,8 +20,8 @@ public class MsAnalysisLauncher extends AbstractAnalysisLauncher {
     private final MsAbstractExpr abstractExpr;
 
     public MsAnalysisLauncher(PgStatementWithSearchPath stmt, ParserRuleContext ctx,
-            MsAbstractExpr abstractExpr) {
-        super(stmt, ctx);
+            String location, MsAbstractExpr abstractExpr) {
+        super(stmt, ctx, location);
         this.abstractExpr = abstractExpr;
     }
 

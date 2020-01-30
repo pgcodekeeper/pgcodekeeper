@@ -117,18 +117,18 @@ public class CreateMsFunction extends BatchContextProcessor {
 
             if (select != null) {
                 db.addAnalysisLauncher(new MsAnalysisLauncher(func, select,
-                        new MsSelect(schemaName, disabledDepcies)));
+                        fileName, new MsSelect(schemaName, disabledDepcies)));
             } else {
                 ExpressionContext exp = bodyRet.expression();
                 if (exp != null) {
                     db.addAnalysisLauncher(new MsAnalysisLauncher(func, exp,
-                            new MsValueExpr(schemaName, disabledDepcies)));
+                            fileName, new MsValueExpr(schemaName, disabledDepcies)));
                 }
 
                 Sql_clausesContext clausesCtx = bodyRet.sql_clauses();
                 if (clausesCtx != null) {
                     db.addAnalysisLauncher(new MsAnalysisLauncher(func, clausesCtx,
-                            new MsSqlClauses(schemaName, disabledDepcies)));
+                            fileName, new MsSqlClauses(schemaName, disabledDepcies)));
                 }
             }
 

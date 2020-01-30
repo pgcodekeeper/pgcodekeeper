@@ -109,7 +109,8 @@ public class MsTablesReader extends JdbcReader {
             loader.submitMsAntlrTask(def, p -> p.expression_eof().expression().get(0),
                     ctx -> schema.getDatabase().addAnalysisLauncher(
                             new MsAnalysisLauncher(type == null ? column : type,
-                                    ctx, new MsValueExpr(schema.getName()))));
+                                    ctx, loader.getCurrentLocation(),
+                                    new MsValueExpr(schema.getName()))));
         }
         return column;
     }
