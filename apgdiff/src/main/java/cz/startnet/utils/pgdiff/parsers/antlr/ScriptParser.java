@@ -33,7 +33,7 @@ public class ScriptParser {
 
     private final String script;
     private final List<List<String>> batches = new ArrayList<>();
-    private final List<AntlrError> errors = new ArrayList<>();
+    private final List<Object> errors = new ArrayList<>();
     private final Set<DangerStatement> dangerStatements = EnumSet.noneOf(DangerStatement.class);
 
     public ScriptParser(String name, String script, boolean isMsSql) {
@@ -193,7 +193,7 @@ public class ScriptParser {
         if (!errors.isEmpty()) {
             StringBuilder sb = new StringBuilder();
             sb.append("Errors while parse script:\n");
-            for (AntlrError er : errors) {
+            for (Object er : errors) {
                 sb.append(er).append('\n');
             }
             return sb.toString();

@@ -16,7 +16,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class ConstraintsReader extends JdbcReader {
 
-    static final String ADD_CONSTRAINT = "ALTER TABLE noname ADD CONSTRAINT noname ";
+    private static final String ADD_CONSTRAINT = "ALTER TABLE noname ADD CONSTRAINT noname ";
 
     public ConstraintsReader(JdbcLoaderBase loader) {
         super(JdbcQueries.QUERY_CONSTRAINTS, loader);
@@ -62,7 +62,7 @@ public class ConstraintsReader extends JdbcReader {
                 p -> p.sql().statement(0).schema_statement().schema_alter()
                 .alter_table_statement().table_action(0),
                 ctx -> AlterTable.parseAlterTableConstraint(ctx, c, schema.getDatabase(),
-                        schemaName, tableName, tablespace, false));
+                        schemaName, tableName, tablespace, loader.getCurrentLocation(), false));
         loader.setAuthor(c, res);
 
         String comment = res.getString("description");

@@ -34,7 +34,7 @@ implements SqlContextProcessor {
 
     private final Map<PgStatement, StatementOverride> overrides;
 
-    public SQLOverridesListener(PgDatabase db, String filename, boolean refMode, List<AntlrError> errors,
+    public SQLOverridesListener(PgDatabase db, String filename, boolean refMode, List<Object> errors,
             IProgressMonitor mon, Map<PgStatement, StatementOverride> overrides) {
         super(db, filename, refMode, errors, mon);
         this.overrides = overrides;

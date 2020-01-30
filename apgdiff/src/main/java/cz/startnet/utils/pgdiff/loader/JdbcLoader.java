@@ -49,7 +49,7 @@ public class JdbcLoader extends JdbcLoaderBase {
 
     public PgDatabase getDbFromJdbc() throws IOException, InterruptedException {
         PgDatabase d = getDbFromJdbc(new PgDatabase(args));
-        FullAnalyze.fullAnalyze(d, null);
+        FullAnalyze.fullAnalyze(d, errors);
         return d;
     }
 

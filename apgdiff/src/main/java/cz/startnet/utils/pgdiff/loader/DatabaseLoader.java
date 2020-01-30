@@ -5,18 +5,17 @@ import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Queue;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
 
 public class DatabaseLoader {
 
-    protected final List<? super AntlrError> errors;
+    protected final List<Object> errors;
 
     protected final Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>();
     protected final Queue<PgDumpLoader> launchedLoaders = new ArrayDeque<>();
 
-    public DatabaseLoader(List<? super AntlrError> errors) {
+    public DatabaseLoader(List<Object> errors) {
         this.errors = errors;
     }
 

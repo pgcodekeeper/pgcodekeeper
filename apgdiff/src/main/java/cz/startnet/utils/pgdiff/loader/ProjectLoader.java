@@ -17,7 +17,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
@@ -54,7 +53,7 @@ public class ProjectLoader extends DatabaseLoader {
     }
 
     public ProjectLoader(String dirPath, PgDiffArguments arguments,
-            IProgressMonitor monitor, List<? super AntlrError> errors) {
+            IProgressMonitor monitor, List<Object> errors) {
         super(errors);
         this.dirPath = dirPath;
         this.arguments = arguments;

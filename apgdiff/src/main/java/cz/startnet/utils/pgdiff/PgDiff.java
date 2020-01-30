@@ -78,6 +78,12 @@ public class PgDiff {
         return diffDatabaseSchemas(oldDatabase, newDatabase, ignoreParser.getIgnoreList());
     }
 
+    private void analyzeDatabase(PgDatabase db)
+            throws InterruptedException, IOException, PgCodekeeperException {
+        FullAnalyze.fullAnalyze(db, errors);
+        assertErrors();
+    }
+
     private void loadOverrides(PgDatabase db, String format, String source)
             throws InterruptedException, IOException, PgCodekeeperException {
         if (!"parsed".equals(format)) {
@@ -117,7 +123,7 @@ public class PgDiff {
         // read additional privileges from special folder
         loadOverrides(newDatabase, arguments.getNewSrcFormat(), arguments.getNewSrc());
 
-        FullAnalyze.fullAnalyze(newDatabase, null);
+        analyzeDatabase(newDatabase);
 
         return newDatabase;
     }
@@ -137,7 +143,7 @@ public class PgDiff {
         // read additional privileges from special folder
         loadOverrides(oldDatabase, arguments.getOldSrcFormat(), arguments.getOldSrc());
 
-        FullAnalyze.fullAnalyze(oldDatabase, null);
+        analyzeDatabase(oldDatabase);
 
         return oldDatabase;
     }
@@ -155,7 +161,7 @@ public class PgDiff {
     }
 
     private void assertErrors() throws PgCodekeeperException {
-        if (!errors.isEmpty()) {
+        if (!errors.isEmpty() && !arguments.isIgnoreErrors()) {
             throw new PgCodekeeperException("Error while load database");
         }
     }

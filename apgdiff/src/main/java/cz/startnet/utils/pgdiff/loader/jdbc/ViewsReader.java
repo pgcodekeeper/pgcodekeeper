@@ -64,7 +64,8 @@ public class ViewsReader extends JdbcReader {
                         p.sql().statement(0).data_statement().select_stmt(),
                         (CommonTokenStream) p.getTokenStream()),
                 pair -> {
-                    dataBase.addAnalysisLauncher(new ViewAnalysisLauncher(v, pair.getFirst()));
+                    dataBase.addAnalysisLauncher(new ViewAnalysisLauncher(
+                            v, pair.getFirst(), loader.getCurrentLocation()));
                     v.setQuery(query, ParserAbstract.normalizeWhitespaceUnquoted(
                             pair.getFirst(), pair.getSecond()));
                 });
@@ -86,7 +87,7 @@ public class ViewsReader extends JdbcReader {
                     v.addColumnDefaultValue(colName, colDefault);
                     loader.submitAntlrTask(colDefault, p -> p.vex_eof().vex().get(0),
                             ctx -> dataBase.addAnalysisLauncher(
-                                    new ViewAnalysisLauncher(v, ctx)));
+                                    new ViewAnalysisLauncher(v, ctx, loader.getCurrentLocation())));
                 }
                 String colComment = colComments[i];
                 if (colComment != null) {

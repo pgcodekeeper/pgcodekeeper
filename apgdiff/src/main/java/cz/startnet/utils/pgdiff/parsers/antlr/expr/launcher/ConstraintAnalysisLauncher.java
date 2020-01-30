@@ -10,8 +10,8 @@ import cz.startnet.utils.pgdiff.schema.PgConstraint;
 
 public class ConstraintAnalysisLauncher extends AbstractAnalysisLauncher {
 
-    public ConstraintAnalysisLauncher(PgConstraint stmt, VexContext ctx) {
-        super(stmt, ctx);
+    public ConstraintAnalysisLauncher(PgConstraint stmt, VexContext ctx, String location) {
+        super(stmt, ctx, location);
     }
 
     @Override
