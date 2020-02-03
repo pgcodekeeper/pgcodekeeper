@@ -51,14 +51,8 @@ public class ScriptParser {
     }
 
     public Set<DangerStatement> getDangerDdl(Collection<DangerStatement> allowedDangers) {
-        Set<DangerStatement> danger = EnumSet.noneOf(DangerStatement.class);
-
-        for (DangerStatement d : dangerStatements) {
-            if (!allowedDangers.contains(d)) {
-                danger.add(d);
-            }
-        }
-
+        Set<DangerStatement> danger = EnumSet.copyOf(dangerStatements);
+        danger.removeAll(allowedDangers);
         return danger;
     }
 
