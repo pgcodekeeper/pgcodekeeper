@@ -1226,9 +1226,7 @@
                 </adapt>
             </triggerPoints>
             <possibleChildren>
-                <or>
-                    <instanceof value="ru.taximaxim.codekeeper.ui.views.navigator.LibraryContainer" />
-                </or>
+                <instanceof value="ru.taximaxim.codekeeper.ui.libraries.AbstractLibrary"/>
             </possibleChildren>
             <commonSorter class="ru.taximaxim.codekeeper.ui.views.navigator.DisabledSorter">
             </commonSorter>
@@ -1237,8 +1235,7 @@
             class="ru.taximaxim.codekeeper.ui.views.navigator.NavigationLibrariesActionProvider"
             id="ru.taximaxim.codekeeper.ui.views.navigator.codekeeperLibrariesActionProvider">
             <enablement>
-                <instanceof value="ru.taximaxim.codekeeper.ui.views.navigator.LibraryContainer">
-                </instanceof>
+                <instanceof value="ru.taximaxim.codekeeper.ui.libraries.AbstractLibrary"/>
             </enablement>
         </actionProvider>
         <navigatorContent

@@ -43,12 +43,14 @@ import org.osgi.service.prefs.BackingStoreException;
 
 import cz.startnet.utils.pgdiff.libraries.PgLibrary;
 import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
+import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.CommonEditingSupport;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
+import ru.taximaxim.codekeeper.ui.libraries.LibraryUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.AbstractTxtEditingSupport;
 import ru.taximaxim.codekeeper.ui.prefs.PrefListEditor;
@@ -114,6 +116,24 @@ public class DependencyProperties extends PropertyPage {
             return false;
         }
         return true;
+    }
+
+    @Override
+    protected void contributeButtons(Composite parent) {
+        ((GridLayout) parent.getLayout()).numColumns++;
+        Button button = new Button(parent, SWT.PUSH);
+        button.setText(Messages.DependencyProperties_clear_libraries_cache);
+        button.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                try {
+                    FileUtils.deleteRecursive(LibraryUtils.META_PATH);
+                } catch (IOException ex) {
+                    Log.log(Log.LOG_ERROR, "Error while clear cache", ex); //$NON-NLS-1$
+                }
+            }
+        });
     }
 
     private void refreshProject() {

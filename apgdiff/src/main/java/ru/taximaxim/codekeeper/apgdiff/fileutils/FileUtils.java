@@ -1,6 +1,8 @@
 package ru.taximaxim.codekeeper.apgdiff.fileutils;
 
+import java.io.EOFException;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.io.UncheckedIOException;
 import java.nio.file.FileSystemException;
 import java.nio.file.Files;
@@ -72,6 +74,30 @@ public final class FileUtils {
     public static String getFileDate() {
         return FileUtils.FILE_DATE.format(LocalDateTime.now());
     }
+
+    public static boolean isZipFile(Path path) throws IOException {
+        try (RandomAccessFile raf = new RandomAccessFile(path.toFile(), "r")) {
+            int fileSignature = raf.readInt();
+            return fileSignature == 0x504B0304 || fileSignature == 0x504B0506
+                    || fileSignature == 0x504B0708;
+        } catch (EOFException e) {
+            return false;
+        }
+    }
+
+    public static Path getUnzippedFilePath(Path metaPath, Path path) {
+        String hash;
+        if (path.startsWith(metaPath)) {
+            hash = metaPath.relativize(path).toString();
+        } else {
+            hash = path.toString();
+        }
+
+        String name = path.getFileName().toString() + '_' + PgDiffUtils.md5(hash).substring(0, 10);
+
+        return metaPath.resolve(name);
+    }
+
 
     private FileUtils() {
     }

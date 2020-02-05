@@ -1,10 +1,8 @@
 package cz.startnet.utils.pgdiff.loader;
 
-import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.RandomAccessFile;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -113,7 +111,7 @@ public class LibraryLoader extends DatabaseLoader {
             }
         }
 
-        if (isZipFile(path)) {
+        if (FileUtils.isZipFile(p)) {
             return loadZip(p, args, isIgnorePriv);
         }
 
@@ -125,34 +123,10 @@ public class LibraryLoader extends DatabaseLoader {
         return db;
     }
 
-    private boolean isZipFile(String path) throws IOException {
-        int fileSignature = 0;
-        try (RandomAccessFile raf = new RandomAccessFile(path, "r")) {
-            fileSignature = raf.readInt();
-        } catch (EOFException e) {
-            // empty file
-            return false;
-        }
-
-        return fileSignature == 0x504B0304 || fileSignature == 0x504B0506
-                || fileSignature == 0x504B0708;
-    }
-
     private PgDatabase loadZip(Path path, PgDiffArguments args, boolean isIgnorePriv)
             throws InterruptedException, IOException {
-        String hash;
-        if (path.startsWith(metaPath)) {
-            hash = metaPath.relativize(path).toString();
-        } else {
-            hash = path.toString();
-        }
-
-        String name = path.getFileName().toString() + '_'
-                + PgDiffUtils.md5(hash).substring(0, 10);
-
-        PgDatabase db = getLibrary(unzip(path, metaPath.resolve(name)),
-                args, isIgnorePriv);
-
+        Path dir = FileUtils.getUnzippedFilePath(metaPath, path);
+        PgDatabase db = getLibrary(unzip(path, dir), args, isIgnorePriv);
         db.getDescendants().forEach(st -> st.setLocation(new PgObjLocation(path.toString())));
         return db;
     }
@@ -220,6 +194,7 @@ public class LibraryLoader extends DatabaseLoader {
                 if (!ze.isDirectory()) {
                     Files.createDirectories(newFile.getParent());
                     Files.copy(zis, newFile);
+                    newFile.toFile().setWritable(false, false);
                 }
                 //close this ZipEntry
                 zis.closeEntry();

@@ -354,6 +354,8 @@ public final class Messages extends NLS {
 
     public static String DependencyProperties_attention;
 
+    public static String DependencyProperties_clear_libraries_cache;
+
     public static String DependencyProperties_connection_start;
 
     public static String DependencyProperties_empty_scheme;
@@ -550,9 +552,17 @@ public final class Messages extends NLS {
 
     public static String MockDataWizard_create_data_table;
 
+    public static String NavigationLibrariesActionProvider_clear_library_cache;
+
+    public static String NavigationLibrariesActionProvider_failed_to_clear_library_cache;
+
     public static String NavigationLibrariesActionProvider_failed_to_open_library;
 
+    public static String NavigationLibrariesActionProvider_failed_to_refresh_library;
+
     public static String NavigationLibrariesActionProvider_open_library;
+
+    public static String NavigationLibrariesActionProvider_refresh_library;
 
     public static String NavigatorRootActionProvider_open_action;
 
