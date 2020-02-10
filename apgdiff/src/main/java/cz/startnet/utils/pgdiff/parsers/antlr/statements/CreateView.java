@@ -7,6 +7,7 @@ import java.util.List;
 import org.antlr.v4.runtime.CommonTokenStream;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_statementContext;
@@ -73,7 +74,7 @@ public class CreateView extends ParserAbstract {
         Select_stmtContext vQuery = ctx.v_query;
         if (vQuery != null) {
             addStatementBody(vQuery);
-            view.setQuery(getFullCtxText(vQuery), normalizeWhitespaceUnquoted(vQuery, stream));
+            view.setQuery(getFullCtxText(vQuery), AntlrUtils.normalizeWhitespaceUnquoted(vQuery, stream));
             db.addAnalysisLauncher(new ViewAnalysisLauncher(view, vQuery, fileName));
         }
         if (ctx.column_names != null) {
