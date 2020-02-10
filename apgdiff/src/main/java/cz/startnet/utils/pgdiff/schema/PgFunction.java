@@ -149,6 +149,13 @@ public class PgFunction extends AbstractPgFunction {
                     !Objects.equals(argOld.getDataType(), argNew.getDataType())) {
                 return true;
             }
+
+            // Covers any difference between modes of arguments, but used only
+            // for cases of changes of 'IN' to 'INOUT' and vice versa.
+            // Other cases are processed in another places.
+            if (argOld.getMode() != argNew.getMode()) {
+                return true;
+            }
         }
         // Если добавляется или удаляется out параметр нужно удалить функцию,
         // т.к. меняется её возвращаемое значение
