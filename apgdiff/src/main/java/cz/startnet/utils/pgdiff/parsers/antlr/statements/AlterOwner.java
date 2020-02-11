@@ -11,7 +11,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_ownerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -154,10 +153,9 @@ public class AlterOwner extends ParserAbstract {
 
         String schemaName = null;
         String objName = null;
-        Schema_qualified_nameContext qualNameCtx;
         Target_operatorContext targetOperCtx;
-        if ((qualNameCtx = ctx.name) != null) {
-            List<IdentifierContext> ids = qualNameCtx.identifier();
+        if (ctx.name != null) {
+            List<IdentifierContext> ids = ctx.name.identifier();
             schemaName = QNameParser.getSchemaName(ids);
             objName = QNameParser.getFirstName(ids);
         } else if ((targetOperCtx = ctx.target_operator()) != null) {

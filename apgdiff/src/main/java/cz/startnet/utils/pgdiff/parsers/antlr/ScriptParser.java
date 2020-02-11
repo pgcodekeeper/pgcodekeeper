@@ -38,7 +38,7 @@ public class ScriptParser {
         dangerStatements = batches.stream()
                 .filter(PgObjLocation::isDanger)
                 .map(PgObjLocation::getDanger)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toCollection(() -> EnumSet.noneOf(DangerStatement.class)));
         errors = loader.getErrors();
     }
 
