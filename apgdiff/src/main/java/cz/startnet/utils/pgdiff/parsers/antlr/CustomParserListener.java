@@ -94,26 +94,29 @@ public class CustomParserListener {
      *  Returns only the first 'descrWordsCount' words from a query in 'ctx'.
      */
     protected String getActionDescription(ParserRuleContext ctx, int descrWordsCount) {
-        List<String> tokens = new ArrayList<>();
-        fillTokens(ctx, descrWordsCount, tokens);
-        return String.join(" ", tokens);
+        StringBuilder descr = new StringBuilder();
+        fillActionDescription(ctx, descrWordsCount, descr);
+        descr.setLength(descr.length() - 1);
+        return descr.toString();
     }
 
-    private void fillTokens(ParserRuleContext ctx, int descrWordsCount, List<String> tokens) {
+    private void fillActionDescription(ParserRuleContext ctx, int descrWordsCount,
+            StringBuilder descr) {
         List<ParseTree> children = ctx.children;
         if (children == null) {
             return;
         }
 
         for (ParseTree child : children) {
-            if (tokens.size() >= descrWordsCount) {
+            String descrStr = descr.toString().trim();
+            if (!descrStr.isEmpty() && descrStr.split("(\\s+)").length >= descrWordsCount) {
                 return;
             }
 
             if (child instanceof ParserRuleContext) {
-                fillTokens((ParserRuleContext) child, descrWordsCount, tokens);
+                fillActionDescription((ParserRuleContext) child, descrWordsCount, descr);
             } else if (child instanceof TerminalNode) {
-                tokens.add(child.getText().toUpperCase(Locale.ROOT));
+                descr.append(child.getText().toUpperCase(Locale.ROOT)).append(' ');
             }
         }
     }
