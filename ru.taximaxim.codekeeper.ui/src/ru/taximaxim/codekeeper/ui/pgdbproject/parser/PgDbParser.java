@@ -55,6 +55,7 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
+import ru.taximaxim.codekeeper.ui.libraries.LibraryEditorInput;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class PgDbParser implements IResourceChangeListener, Serializable {
@@ -324,8 +325,10 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         }
         if (in.exists() && in instanceof IURIEditorInput) {
             return Paths.get(((IURIEditorInput) in).getURI()).toString();
-        } else {
-            return null;
+        } else if (in.exists() && in instanceof LibraryEditorInput) {
+            return ((LibraryEditorInput) in).getLib().getPath().toString();
         }
+
+        return null;
     }
 }

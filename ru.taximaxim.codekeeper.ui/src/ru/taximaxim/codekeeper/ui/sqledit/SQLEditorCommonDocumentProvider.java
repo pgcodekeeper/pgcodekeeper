@@ -10,9 +10,9 @@ import org.eclipse.jface.text.rules.MultiLineRule;
 import org.eclipse.jface.text.rules.RuleBasedPartitionScanner;
 import org.eclipse.jface.text.rules.SingleLineRule;
 import org.eclipse.jface.text.rules.Token;
-import org.eclipse.ui.editors.text.TextFileDocumentProvider;
+import org.eclipse.ui.editors.text.StorageDocumentProvider;
 
-public class SQLEditorCommonDocumentProvider extends TextFileDocumentProvider {
+public class SQLEditorCommonDocumentProvider extends StorageDocumentProvider {
 
     /**
      * The recipe partitioning. It contains two partition types: {@link #SQL_CODE} and
@@ -41,22 +41,19 @@ public class SQLEditorCommonDocumentProvider extends TextFileDocumentProvider {
     };
 
     @Override
-    protected FileInfo createFileInfo(Object element) throws CoreException{
-        FileInfo info = super.createFileInfo(element);
-        if(info == null){
-            info = createEmptyFileInfo();
-        }
-        IDocument document = info.fTextFileBuffer.getDocument();
+    protected IDocument createDocument(Object element) throws CoreException {
+        IDocument document = super.createDocument(element);
         if (document != null) {
             setupDocument(document);
         }
-        return info;
+
+        return document;
     }
 
-    void setupDocument(IDocument document) {
+    private void setupDocument(IDocument document) {
         if (document instanceof IDocumentExtension3) {
-            IDocumentExtension3 ext= (IDocumentExtension3) document;
-            IDocumentPartitioner partitioner= createRecipePartitioner();
+            IDocumentExtension3 ext = (IDocumentExtension3) document;
+            IDocumentPartitioner partitioner = createRecipePartitioner();
             partitioner.connect(document);
             ext.setDocumentPartitioner(SQL_PARTITIONING, partitioner);
         }

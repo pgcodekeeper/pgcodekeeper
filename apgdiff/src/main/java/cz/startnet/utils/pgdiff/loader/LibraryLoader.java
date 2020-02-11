@@ -194,7 +194,6 @@ public class LibraryLoader extends DatabaseLoader {
                 if (!ze.isDirectory()) {
                     Files.createDirectories(newFile.getParent());
                     Files.copy(zis, newFile);
-                    newFile.toFile().setWritable(false, false);
                 }
                 //close this ZipEntry
                 zis.closeEntry();

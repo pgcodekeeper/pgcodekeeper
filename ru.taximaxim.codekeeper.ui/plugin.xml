@@ -1117,16 +1117,21 @@
             class="ru.taximaxim.codekeeper.ui.editors.CodekeeperLinkHelper"
             id="ru.taximaxim.codekeeper.ui.editors.codekeeperlinkHelper">
             <editorInputEnablement>
-                <instanceof value="ru.taximaxim.codekeeper.ui.editors.ProjectEditorInput">
-                </instanceof>
+                 <or>
+                    <instanceof value="ru.taximaxim.codekeeper.ui.editors.ProjectEditorInput"/>
+                    <instanceof value="ru.taximaxim.codekeeper.ui.libraries.LibraryEditorInput"/>
+                 </or>
             </editorInputEnablement>
             <selectionEnablement>
-                <adapt type="org.eclipse.core.resources.IProject">
-                    <test
-                        property="org.eclipse.core.resources.projectNature"
-                        value="ru.taximaxim.codekeeper.ui.nature">
-                    </test>
-                </adapt>
+                <or>
+                    <adapt type="org.eclipse.core.resources.IProject">
+                        <test
+                            property="org.eclipse.core.resources.projectNature"
+                            value="ru.taximaxim.codekeeper.ui.nature">
+                        </test>
+                    </adapt>
+                    <instanceof value="ru.taximaxim.codekeeper.ui.libraries.FileLibrary"/>
+                </or>
             </selectionEnablement>
         </linkHelper>
     </extension>

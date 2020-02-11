@@ -3,6 +3,7 @@ package ru.taximaxim.codekeeper.ui.libraries;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.eclipse.swt.graphics.Image;
 
@@ -59,5 +60,30 @@ public abstract class AbstractLibrary {
 
     public Path getPath() {
         return path;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        } else if (obj instanceof AbstractLibrary) {
+            AbstractLibrary lib = (AbstractLibrary) obj;
+            return Objects.equals(path, lib.path)
+                    && Objects.equals(parent, lib.parent)
+                    && isMsSql == lib.isMsSql;
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        final int itrue = 1231;
+        final int ifalse = 1237;
+        int result = 1;
+        result = prime * result + ((path == null) ? 0 : path.hashCode());
+        result = prime * result + ((parent == null) ? 0 : parent.hashCode());
+        result = prime * result + (isMsSql ? itrue : ifalse);
+        return result;
     }
 }

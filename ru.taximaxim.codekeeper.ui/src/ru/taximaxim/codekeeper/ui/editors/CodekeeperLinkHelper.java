@@ -1,34 +1,33 @@
 package ru.taximaxim.codekeeper.ui.editors;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.navigator.ILinkHelper;
-import org.eclipse.ui.part.FileEditorInput;
 
-public class CodekeeperLinkHelper implements ILinkHelper{
+import ru.taximaxim.codekeeper.ui.libraries.FileLibrary;
+import ru.taximaxim.codekeeper.ui.libraries.LibraryEditorInput;
+
+public class CodekeeperLinkHelper implements ILinkHelper {
 
     @Override
     public IStructuredSelection findSelection(IEditorInput anInput) {
-        StructuredSelection sel = null;
         if (anInput instanceof ProjectEditorInput) {
-            ProjectEditorInput in = (ProjectEditorInput)anInput;
-            sel = new StructuredSelection(in.getProject());
-        } 
-        if (sel == null) {
-            IFile file = ResourceUtil.getFile(anInput);
-            if (file != null) {
-                sel = new StructuredSelection(file);
-            }
+            ProjectEditorInput in = (ProjectEditorInput) anInput;
+            return new StructuredSelection(in.getProject());
         }
-        return sel;
+
+        if (anInput instanceof LibraryEditorInput) {
+            LibraryEditorInput in = (LibraryEditorInput) anInput;
+            return new StructuredSelection(in.getLib());
+        }
+
+        return null;
     }
-    
+
     @Override
     public void activateEditor(IWorkbenchPage aPage,
             IStructuredSelection aSelection) {
@@ -40,9 +39,8 @@ public class CodekeeperLinkHelper implements ILinkHelper{
         if (element instanceof IProject) {
             IProject proj = (IProject)element;
             input = new ProjectEditorInput(proj.getName());
-            
-        } else if (element instanceof IFile) {
-            input = new FileEditorInput((IFile) element);
+        } else if (element instanceof FileLibrary) {
+            input = new LibraryEditorInput((FileLibrary) element);
         }
         if (input == null) {
             return;
@@ -50,6 +48,6 @@ public class CodekeeperLinkHelper implements ILinkHelper{
         IEditorPart editor = aPage.findEditor(input);
         if (editor != null) {
             aPage.activate(editor);
-        }   
+        }
     }
 }

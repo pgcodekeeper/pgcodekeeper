@@ -17,8 +17,8 @@ import org.eclipse.ui.navigator.ICommonMenuConstants;
 
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
-import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.libraries.FileLibrary;
+import ru.taximaxim.codekeeper.ui.libraries.LibraryUtils;
 import ru.taximaxim.codekeeper.ui.libraries.ZipLibrary;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
@@ -84,9 +84,8 @@ public class NavigationLibrariesActionProvider extends CommonActionProvider {
             IStructuredSelection selection = (IStructuredSelection) getContext().getSelection();
             Object sel = selection.getFirstElement();
             if (sel instanceof FileLibrary) {
-                FileLibrary lib = (FileLibrary) sel;
                 try {
-                    FileUtilsUi.openFileInSqlEditor(lib.getPath(), lib.isMsSql());
+                    LibraryUtils.openLibrary((FileLibrary) sel);
                 } catch (PartInitException e) {
                     Log.log(e);
                     ExceptionNotifier.notifyDefault(
