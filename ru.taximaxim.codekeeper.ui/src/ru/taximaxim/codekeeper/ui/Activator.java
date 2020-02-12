@@ -41,7 +41,7 @@ public class Activator extends AbstractUIPlugin {
      * @return Shared pgadmin {@link Image}. Do not dispose!
      */
     public static Image getDbObjImage(DbObjType dbObjType) {
-        return dbObjType != null ? getRegisteredImage(dbObjType.name()) : getEclipseImage(ISharedImages.IMG_OBJ_FILE);
+        return getRegisteredImage(dbObjType.name());
     }
     /**
      * @return Shared {@link Image}, registered with this plugin with the <code>name</code> key.

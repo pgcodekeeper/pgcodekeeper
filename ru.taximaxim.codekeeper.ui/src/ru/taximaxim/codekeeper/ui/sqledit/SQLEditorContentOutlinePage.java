@@ -13,9 +13,11 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IActionBars;
+import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -47,7 +49,9 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
             public Image getImage(Object element) {
                 if (element instanceof Segments) {
                     Segments seg = (Segments)element;
-                    return Activator.getDbObjImage(seg.getType());
+                    DbObjType type = seg.getType();
+                    return type != null ? Activator.getDbObjImage(type)
+                            : Activator.getEclipseImage(ISharedImages.IMG_OBJ_FILE);
                 }
                 return super.getImage(element);
             }
