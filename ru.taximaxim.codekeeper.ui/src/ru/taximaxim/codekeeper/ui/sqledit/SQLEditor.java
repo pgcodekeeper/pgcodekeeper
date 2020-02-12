@@ -465,8 +465,7 @@ implements IResourceChangeListener, ITextErrorReporter {
         IRunnableWithProgress runnable = monitor -> {
             try {
                 ScriptParser parser = new ScriptParser(
-                        PgDbParser.getPathFromInput(getEditorInput()),
-                        textRetrieved, dbInfo.isMsSql());
+                        getEditorInput().getName(), textRetrieved, dbInfo.isMsSql());
                 String error = parser.getErrorMessage();
                 if (error != null) {
                     UiProgressReporter.writeSingleError(error);

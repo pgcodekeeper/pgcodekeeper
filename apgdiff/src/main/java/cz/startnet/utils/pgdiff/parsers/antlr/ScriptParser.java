@@ -25,16 +25,16 @@ public class ScriptParser {
     private final List<Object> errors;
     private final Set<DangerStatement> dangerStatements;
 
-    public ScriptParser(String filePath, String script, boolean isMsSql)
+    public ScriptParser(String name, String script, boolean isMsSql)
             throws IOException, InterruptedException {
         this.script = script;
         PgDiffArguments args = new PgDiffArguments();
         args.setMsSql(isMsSql);
         PgDumpLoader loader = new PgDumpLoader(
                 () -> new ByteArrayInputStream(script.getBytes(StandardCharsets.UTF_8)),
-                filePath, args, new NullProgressMonitor(), 0);
+                name, args, new NullProgressMonitor(), 0);
         loader.setMode(ParserListenerMode.SCRIPT);
-        batches = loader.load().getObjDefinitions().get(filePath);
+        batches = loader.load().getObjDefinitions().get(name);
         dangerStatements = batches.stream()
                 .filter(PgObjLocation::isDanger)
                 .map(PgObjLocation::getDanger)
