@@ -72,12 +72,7 @@ public class PgObjLocation extends ContextLocation {
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
-        if (obj != null) {
-            result = prime * result + ((obj.column == null) ? 0 : obj.column.hashCode());
-            result = prime * result + ((obj.schema == null) ? 0 : obj.schema.hashCode());
-            result = prime * result + ((obj.table == null) ? 0 : obj.table.hashCode());
-            result = prime * result + ((obj.type == null) ? 0 : obj.type.hashCode());
-        }
+        result = prime * result + (obj == null ? 0 : obj.hashCode());
         result = prime * result + ((getSql() == null) ? 0 : getSql().hashCode());
         result = prime * result + ((getAction() == null) ? 0 : getAction().hashCode());
         return result;
