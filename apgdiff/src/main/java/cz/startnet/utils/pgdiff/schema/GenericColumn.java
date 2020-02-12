@@ -25,7 +25,7 @@ public class GenericColumn implements Serializable {
             "oid", "tableoid", "xmin", "cmin", "xmax", "cmax", "ctid"
             )));
 
-    private static final long serialVersionUID = 4705823005023672984L;
+    private static final long serialVersionUID = -5032985077177033449L;
     // SONAR-OFF
     public final String schema;
     public final String table;

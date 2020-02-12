@@ -198,7 +198,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
                     // check word boundaries, whole words only
                     if ((index == 0 || !PgDiffUtils.isValidIdChar(body.charAt(index - 1))) &&
                             (next >= body.length() || !PgDiffUtils.isValidIdChar(body.charAt(next)))) {
-                        PgObjLocation loc = new PgObjLocation(def.getGenericColumn(), null,
+                        PgObjLocation loc = new PgObjLocation(def.getObj(), null,
                                 statementBody.getOffset() + index,
                                 statementBody.getLineNumber(),
                                 statementBody.getPath());

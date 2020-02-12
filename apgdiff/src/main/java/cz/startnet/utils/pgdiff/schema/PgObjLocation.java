@@ -17,13 +17,13 @@ public class PgObjLocation extends ContextLocation {
 
     private final String action;
 
-    private final GenericColumn gObj;
+    private final GenericColumn obj;
     private String sql;
 
-    public PgObjLocation(GenericColumn gObj, String action,
+    public PgObjLocation(GenericColumn obj, String action,
             int offset, int lineNumber, int charPositionInLine, String filePath) {
         super(filePath, offset, lineNumber, charPositionInLine);
-        this.gObj = gObj;
+        this.obj = obj;
         this.action = action;
     }
 
@@ -35,12 +35,6 @@ public class PgObjLocation extends ContextLocation {
     public PgObjLocation(String action, ParserRuleContext ctx, String sql) {
         this(null, action, ctx.getStart().getStartIndex(), ctx.getStart().getLine(),
                 ctx.getStart().getCharPositionInLine(), null);
-        this.sql = sql;
-    }
-
-    public PgObjLocation(GenericColumn gObj, String action, int offset, int lineNumber,
-            int charPositionInLine, String filePath, String sql) {
-        this(gObj, action, offset, lineNumber, charPositionInLine, filePath);
         this.sql = sql;
     }
 
@@ -66,7 +60,7 @@ public class PgObjLocation extends ContextLocation {
         }
         if (obj instanceof PgObjLocation) {
             PgObjLocation loc = (PgObjLocation) obj;
-            return Objects.equals(loc.getGenericColumn(), getGenericColumn())
+            return Objects.equals(loc.getObj(), getObj())
                     && Objects.equals(loc.getSql(), getSql())
                     && Objects.equals(loc.getAction(), getAction());
 
@@ -78,11 +72,11 @@ public class PgObjLocation extends ContextLocation {
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
-        if (gObj != null) {
-            result = prime * result + ((gObj.column == null) ? 0 : gObj.column.hashCode());
-            result = prime * result + ((gObj.schema == null) ? 0 : gObj.schema.hashCode());
-            result = prime * result + ((gObj.table == null) ? 0 : gObj.table.hashCode());
-            result = prime * result + ((gObj.type == null) ? 0 : gObj.type.hashCode());
+        if (obj != null) {
+            result = prime * result + ((obj.column == null) ? 0 : obj.column.hashCode());
+            result = prime * result + ((obj.schema == null) ? 0 : obj.schema.hashCode());
+            result = prime * result + ((obj.table == null) ? 0 : obj.table.hashCode());
+            result = prime * result + ((obj.type == null) ? 0 : obj.type.hashCode());
         }
         result = prime * result + ((getSql() == null) ? 0 : getSql().hashCode());
         result = prime * result + ((getAction() == null) ? 0 : getAction().hashCode());
@@ -120,8 +114,8 @@ public class PgObjLocation extends ContextLocation {
         return danger;
     }
 
-    public GenericColumn getGenericColumn() {
-        return gObj;
+    public GenericColumn getObj() {
+        return obj;
     }
 
     public String getSql() {
@@ -129,30 +123,30 @@ public class PgObjLocation extends ContextLocation {
     }
 
     public String getObjName() {
-        return gObj != null ? gObj.getObjName() : "";
+        return obj != null ? obj.getObjName() : "";
     }
 
     public String getSchema() {
-        return gObj == null ? null : gObj.schema;
+        return obj == null ? null : obj.schema;
     }
 
     public DbObjType getType() {
-        return gObj == null ? null : gObj.type;
+        return obj == null ? null : obj.type;
     }
 
     public final boolean compare(PgObjLocation loc) {
-        GenericColumn col = loc.getGenericColumn();
-        if (gObj == null || col == null) {
+        GenericColumn col = loc.getObj();
+        if (obj == null || col == null) {
             return false;
         }
-        return Objects.equals(gObj.schema, col.schema)
-                && Objects.equals(gObj.table, col.table)
-                && Objects.equals(gObj.column, col.column)
+        return Objects.equals(obj.schema, col.schema)
+                && Objects.equals(obj.table, col.table)
+                && Objects.equals(obj.column, col.column)
                 && compareTypes(col.type);
     }
 
     private boolean compareTypes(DbObjType objType) {
-        DbObjType type = gObj.type;
+        DbObjType type = obj.type;
         if (type == objType) {
             return true;
         }

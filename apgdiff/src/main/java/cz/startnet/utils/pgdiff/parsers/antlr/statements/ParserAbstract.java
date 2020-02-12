@@ -436,7 +436,7 @@ public abstract class ParserAbstract {
         PgObjLocation loc = getLocation(ids, type, null, true, signature);
         if (loc != null && !ApgdiffUtils.isSystemSchema(loc.getSchema(), isPostgres)) {
             if (!refMode) {
-                st.addDep(loc.getGenericColumn());
+                st.addDep(loc.getObj());
             }
             db.getObjReferences().computeIfAbsent(fileName, k -> new LinkedHashSet<>()).add(loc);
         }
