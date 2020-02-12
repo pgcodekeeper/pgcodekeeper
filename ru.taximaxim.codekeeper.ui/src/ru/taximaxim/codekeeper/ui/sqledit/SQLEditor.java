@@ -84,8 +84,8 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.JDBC_CONSTS;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.TempFile;
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.ITextErrorReporter;
 import ru.taximaxim.codekeeper.ui.IPartAdapter2;
+import ru.taximaxim.codekeeper.ui.ITextErrorReporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.CMD_VARS;
 import ru.taximaxim.codekeeper.ui.UIConsts.CONTEXT;
@@ -516,7 +516,11 @@ implements IResourceChangeListener, ITextErrorReporter {
 
     @Override
     public void setErrorPosition(int start, int length) {
-        UiSync.exec(PlatformUI.getWorkbench().getDisplay(), () -> selectAndReveal(start, length));
+        UiSync.exec(parentComposite.getDisplay(), () -> {
+            if (!parentComposite.isDisposed()) {
+                selectAndReveal(start, length);
+            }
+        });
     }
 
     private class ScriptThreadJobWrapper extends SingletonEditorJob {

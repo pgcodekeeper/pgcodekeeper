@@ -186,10 +186,10 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         for (StatementBodyContainer statementBody : statementBodies) {
             String body = statementBody.getBody().toLowerCase(Locale.ROOT);
             Set<PgObjLocation> newRefs = new LinkedHashSet<>();
-            getAllObjDefinitions().forEach(def -> {
+            for (PgObjLocation def : (Iterable<PgObjLocation>) getAllObjDefinitions()::iterator) {
                 int lenght = def.getObjLength();
                 if (lenght == 0) {
-                    return;
+                    continue;
                 }
                 String name = def.getObjName().toLowerCase(Locale.ROOT);
                 int index = body.indexOf(name);
@@ -206,8 +206,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
                     }
                     index = body.indexOf(name, index + 1);
                 }
-
-            });
+            }
             if (!newRefs.isEmpty()) {
                 Set<PgObjLocation> refs = objReferences.get(statementBody.getPath());
                 if (refs != null) {
