@@ -10,12 +10,13 @@ import java.util.HashMap;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.security.storage.StorageException;
 import org.eclipse.jface.preference.PreferencePage;
-import org.eclipse.jface.viewers.ArrayContentProvider;
-import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.jface.viewers.ListViewer;
+import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -92,7 +93,7 @@ implements IWorkbenchPreferencePage {
     }
 }
 
-class DbStorePrefListEditor extends PrefListEditor<DbInfo, ListViewer> {
+class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
 
     public DbStorePrefListEditor(Composite parent) {
         super(parent);
@@ -110,20 +111,35 @@ class DbStorePrefListEditor extends PrefListEditor<DbInfo, ListViewer> {
     }
 
     @Override
-    protected ListViewer createViewer(Composite parent) {
-        ListViewer viewerObjs = new ListViewer(parent, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
-        GridData gd =  new GridData(SWT.FILL, SWT.FILL, true, true, 1, 7);
-        viewerObjs.getControl().setLayoutData(gd);
+    protected TableViewer createViewer() {
+        TableViewer viewer = super.createViewer();
+        viewer.addDoubleClickListener(event -> editObject());
+        return viewer;
+    }
 
-        viewerObjs.setContentProvider(ArrayContentProvider.getInstance());
-        viewerObjs.setLabelProvider(new LabelProvider() {
+    @Override
+    protected void addColumns(TableViewer tableViewer) {
+        TableViewerColumn col = new TableViewerColumn(tableViewer, SWT.NONE);
+        col.setLabelProvider(new ColumnLabelProvider() {
 
             @Override
             public String getText(Object element) {
                 return ((DbInfo) element).getName();
             }
+
+            @Override
+            public Image getImage(Object element) {
+                DbInfo info = (DbInfo) element;
+
+                if (info.isMsSql()) {
+                    return Activator.getRegisteredImage(FILE.MS_ICON);
+                }
+
+                return Activator.getRegisteredImage(FILE.PG_ICON);
+            }
         });
-        return viewerObjs;
+
+        col.getColumn().setWidth(200);
     }
 
     @Override
@@ -132,8 +148,6 @@ class DbStorePrefListEditor extends PrefListEditor<DbInfo, ListViewer> {
         createButton(parent, COPY_ID, Messages.copy, Activator.getEclipseImage(ISharedImages.IMG_TOOL_COPY));
         createButton(parent, EDIT_ID, Messages.edit, FILE.ICONEDIT);
         createButton(parent, DELETE_ID, Messages.delete, Activator.getEclipseImage(ISharedImages.IMG_ETOOL_DELETE));
-        createButton(parent, UP_ID, null, FILE.ICONUP);
-        createButton(parent, DOWN_ID, null, FILE.ICONDOWN);
 
         Button btnPgPass = createButton(parent, CLIENT_ID,
                 Messages.DbStorePrefPage_pg_pass_import_tooltip, FILE.PGPASS);

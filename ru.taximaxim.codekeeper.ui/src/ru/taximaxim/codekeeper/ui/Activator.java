@@ -91,6 +91,12 @@ public class Activator extends AbstractUIPlugin {
         reg.put(FILE.ICONDATABASE, ImageDescriptor.createFromURL(
                 context.getBundle().getResource(FILE.ICONDATABASE)));
 
+        reg.put(FILE.PG_ICON, ImageDescriptor.createFromURL(
+                context.getBundle().getResource(FILE.PG_ICON)));
+
+        reg.put(FILE.MS_ICON, ImageDescriptor.createFromURL(
+                context.getBundle().getResource(FILE.MS_ICON)));
+
         for (DbObjType dbObjType : DbObjType.values()) {
             reg.put(dbObjType.name(), ImageDescriptor.createFromURL(context.getBundle()
                     .getResource(FILE.ICONPGADMIN + dbObjType.name().toLowerCase(Locale.ROOT) + ".png"))); //$NON-NLS-1$
