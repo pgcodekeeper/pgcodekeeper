@@ -391,7 +391,7 @@ class PagePartial extends WizardPage {
         DbSource target = treeDiffer.getDbTarget();
         lblSource.setText(source.getOrigin());
         lblTarget.setText(target.getOrigin());
-        UiSync.exec(getShell(), () -> lblSource.getParent().layout());
+        lblSource.getParent().layout();
         diffTable.setInput(source, target, treeDiffer.getDiffTree(), ignoreList);
     }
 
