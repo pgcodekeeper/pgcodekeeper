@@ -8,11 +8,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.ViewAnalysisLauncher;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class AlterView extends ParserAbstract {
 
@@ -43,9 +41,7 @@ public class AlterView extends ParserAbstract {
     }
 
     @Override
-    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
-        List<IdentifierContext> ids = ctx.name.identifier();
-        return new Pair<>(ACTION_ALTER, new GenericColumn(QNameParser.getSchemaName(ids),
-                QNameParser.getFirstName(ids), DbObjType.VIEW));
+    protected String getStmtAction() {
+        return getStrForStmtAction(ACTION_ALTER, DbObjType.VIEW, ctx.name.identifier());
     }
 }

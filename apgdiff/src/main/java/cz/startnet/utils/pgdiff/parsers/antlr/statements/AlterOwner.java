@@ -13,13 +13,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.StatementOverride;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class AlterOwner extends ParserAbstract {
 
@@ -123,7 +121,7 @@ public class AlterOwner extends ParserAbstract {
     }
 
     @Override
-    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
+    protected String getStmtAction() {
         DbObjType type = null;
         if (ctx.SCHEMA() != null) {
             type = DbObjType.SCHEMA;
@@ -166,6 +164,7 @@ public class AlterOwner extends ParserAbstract {
             return null;
         }
 
-        return new Pair<>(ACTION_ALTER, new GenericColumn(schemaName, objName, type));
+        return new StringBuilder(ACTION_ALTER).append(' ').append(type).append(' ')
+                .append(schemaName).append('.').append(objName).toString();
     }
 }

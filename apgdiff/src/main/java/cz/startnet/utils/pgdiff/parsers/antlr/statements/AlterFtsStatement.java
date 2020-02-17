@@ -9,11 +9,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_fts_statementConte
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFtsConfiguration;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class AlterFtsStatement extends ParserAbstract {
 
@@ -65,19 +63,17 @@ public class AlterFtsStatement extends ParserAbstract {
     }
 
     @Override
-    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
-        DbObjType tt;
+    protected String getStmtAction() {
+        DbObjType ftsType;
         if (ctx.DICTIONARY() != null) {
-            tt = DbObjType.FTS_DICTIONARY;
+            ftsType = DbObjType.FTS_DICTIONARY;
         } else if (ctx.TEMPLATE() != null) {
-            tt = DbObjType.FTS_TEMPLATE;
+            ftsType = DbObjType.FTS_TEMPLATE;
         } else if (ctx.PARSER() != null) {
-            tt = DbObjType.FTS_PARSER;
+            ftsType = DbObjType.FTS_PARSER;
         } else {
-            tt = DbObjType.FTS_CONFIGURATION;
+            ftsType = DbObjType.FTS_CONFIGURATION;
         }
-        List<IdentifierContext> ids = ctx.name.identifier();
-        return new Pair<>(ACTION_ALTER, new GenericColumn(QNameParser.getSchemaName(ids),
-                QNameParser.getFirstName(ids), tt));
+        return getStrForStmtAction(ACTION_ALTER, ftsType, ctx.name.identifier());
     }
 }

@@ -19,13 +19,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_storage_parameterCo
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.IndexAnalysisLauncher;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class CreateIndex extends ParserAbstract {
     private final Create_index_statementContext ctx;
@@ -116,10 +114,12 @@ public class CreateIndex extends ParserAbstract {
     }
 
     @Override
-    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
-        List<IdentifierContext> ids = ctx.table_name.identifier();
-        return new Pair<>(ACTION_CREATE, new GenericColumn(
-                QNameParser.getSchemaName(ids),
-                ctx.name != null ? ctx.name.getText() : "", DbObjType.INDEX));
+    protected String getStmtAction() {
+        StringBuilder sb = new StringBuilder(ACTION_CREATE).append(' ').append(DbObjType.INDEX)
+                .append(' ').append(QNameParser.getSchemaName(ctx.table_name.identifier()));
+        if (ctx.name != null) {
+            sb.append('.').append(ctx.name.getText());
+        }
+        return sb.toString();
     }
 }

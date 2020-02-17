@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -9,11 +10,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_sequenceContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_alterContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class AlterMsOther extends ParserAbstract {
 
@@ -57,19 +56,20 @@ public class AlterMsOther extends ParserAbstract {
     }
 
     @Override
-    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
-        GenericColumn descrObj = null;
+    protected String getStmtAction() {
+        DbObjType type = null;
+        List<? extends ParserRuleContext> ids = null;
         if (ctx.alter_schema_sql() != null) {
-            descrObj = new GenericColumn(ctx.alter_schema_sql().schema_name.getText(),
-                    DbObjType.SCHEMA);
+            type = DbObjType.SCHEMA;
+            ids = Arrays.asList(ctx.alter_schema_sql().schema_name);
         } else if (ctx.alter_user() != null) {
-            descrObj = new GenericColumn(ctx.alter_user().username.getText(),
-                    DbObjType.USER);
+            type = DbObjType.USER;
+            ids = Arrays.asList(ctx.alter_user().username);
         } else if (ctx.alter_sequence() != null) {
+            type = DbObjType.SEQUENCE;
             Qualified_nameContext qname = ctx.alter_sequence().qualified_name();
-            descrObj = new GenericColumn(qname.schema.getText(), qname.name.getText(),
-                    DbObjType.SEQUENCE);
+            ids = Arrays.asList(qname.schema, qname.name);
         }
-        return descrObj != null ? new Pair<>(ACTION_ALTER, descrObj) : null;
+        return type != null ? getStrForStmtAction(ACTION_ALTER, type, ids) : null;
     }
 }

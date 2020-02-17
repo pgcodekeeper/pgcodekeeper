@@ -11,13 +11,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_trigger
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsSqlClauses;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.MsTrigger;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class CreateMsTrigger extends BatchContextProcessor {
 
@@ -94,12 +92,12 @@ public class CreateMsTrigger extends BatchContextProcessor {
     }
 
     @Override
-    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
+    protected String getStmtAction() {
         IdContext schemaCtx = ctx.trigger_name.schema;
         if (schemaCtx == null) {
             schemaCtx = ctx.table_name.schema;
         }
-        return new Pair<>(ACTION_CREATE, new GenericColumn(schemaCtx.getText(),
-                ctx.table_name.name.getText(), ctx.trigger_name.name.getText(), DbObjType.TRIGGER));
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.TRIGGER,
+                Arrays.asList(schemaCtx, ctx.table_name.name, ctx.trigger_name.name));
     }
 }

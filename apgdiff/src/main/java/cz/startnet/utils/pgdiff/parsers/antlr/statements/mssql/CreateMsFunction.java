@@ -28,12 +28,10 @@ import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.FuncTypes;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsClrFunction;
 import cz.startnet.utils.pgdiff.schema.MsFunction;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class CreateMsFunction extends BatchContextProcessor {
 
@@ -188,9 +186,9 @@ public class CreateMsFunction extends BatchContextProcessor {
     }
 
     @Override
-    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
+    protected String getStmtAction() {
         Qualified_nameContext qualName = ctx.qualified_name();
-        return new Pair<>(ACTION_CREATE, new GenericColumn(
-                qualName.schema.getText(), qualName.name.getText(), DbObjType.FUNCTION));
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.FUNCTION,
+                Arrays.asList(qualName.schema, qualName.name));
     }
 }

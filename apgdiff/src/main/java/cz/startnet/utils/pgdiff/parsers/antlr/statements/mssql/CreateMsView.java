@@ -14,11 +14,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Select_statementContext
 import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsSelect;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.MsSelectStmt;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class CreateMsView extends BatchContextProcessor {
 
@@ -86,9 +84,9 @@ public class CreateMsView extends BatchContextProcessor {
     }
 
     @Override
-    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
+    protected String getStmtAction() {
         Qualified_nameContext qualNameCtx = ctx.qualified_name();
-        return new Pair<>(ACTION_CREATE, new GenericColumn(
-                qualNameCtx.schema.getText(), qualNameCtx.name.getText(), DbObjType.VIEW));
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.VIEW,
+                Arrays.asList(qualNameCtx.schema, qualNameCtx.name));
     }
 }

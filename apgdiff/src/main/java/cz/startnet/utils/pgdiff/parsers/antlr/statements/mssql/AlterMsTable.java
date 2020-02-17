@@ -18,14 +18,12 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.TableAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsConstraint;
 import cz.startnet.utils.pgdiff.schema.MsTable;
 import cz.startnet.utils.pgdiff.schema.MsTrigger;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class AlterMsTable extends TableAbstract {
 
@@ -103,9 +101,9 @@ public class AlterMsTable extends TableAbstract {
     }
 
     @Override
-    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
+    protected String getStmtAction() {
         Qualified_nameContext qualNameCtx = ctx.name;
-        return new Pair<>(ACTION_ALTER, new GenericColumn(
-                qualNameCtx.schema.getText(), qualNameCtx.name.getText(), DbObjType.TABLE));
+        return getStrForStmtAction(ACTION_ALTER, DbObjType.TABLE,
+                Arrays.asList(qualNameCtx.schema, qualNameCtx.name));
     }
 }

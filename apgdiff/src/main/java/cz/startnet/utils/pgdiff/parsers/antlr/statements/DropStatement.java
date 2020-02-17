@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -17,11 +18,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_dropContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class DropStatement extends ParserAbstract {
 
@@ -140,13 +139,15 @@ public class DropStatement extends ParserAbstract {
     }
 
     @Override
-    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
-        DbObjType type;
+    protected String getStmtAction() {
         List<IdentifierContext> ids;
-        GenericColumn descrObj = null;
+        DbObjType type = null;
+        List<String> qNameList = new ArrayList<>();
         if (ctx.drop_function_statement() != null) {
             Drop_function_statementContext dropFuncCtx = ctx.drop_function_statement();
             ids = dropFuncCtx.name.identifier();
+            qNameList.add(QNameParser.getSchemaName(ids));
+            qNameList.add(QNameParser.getFirstName(ids));
             if (dropFuncCtx.PROCEDURE() != null) {
                 type = DbObjType.PROCEDURE;
             } else if (dropFuncCtx.FUNCTION() != null) {
@@ -154,20 +155,20 @@ public class DropStatement extends ParserAbstract {
             } else {
                 type = DbObjType.AGGREGATE;
             }
-            descrObj = new GenericColumn(QNameParser.getSchemaName(ids),
-                    QNameParser.getFirstName(ids), type);
         } else if (ctx.drop_trigger_statement() != null) {
             Drop_trigger_statementContext dropTrigCtx = ctx.drop_trigger_statement();
             ids = dropTrigCtx.table_name.identifier();
-            descrObj = new GenericColumn(QNameParser.getSchemaName(ids),
-                    QNameParser.getFirstName(ids), dropTrigCtx.name.getText(),
-                    DbObjType.TRIGGER);
+            qNameList.add(QNameParser.getSchemaName(ids));
+            qNameList.add(QNameParser.getFirstName(ids));
+            qNameList.add(dropTrigCtx.name.getText());
+            type = DbObjType.TRIGGER;
         } else if (ctx.drop_rule_statement() != null) {
             Drop_rule_statementContext dropRuleCtx = ctx.drop_rule_statement();
             ids = dropRuleCtx.schema_qualified_name().identifier();
-            descrObj = new GenericColumn(QNameParser.getSchemaName(ids),
-                    QNameParser.getFirstName(ids), dropRuleCtx.name.getText(),
-                    DbObjType.RULE);
+            qNameList.add(QNameParser.getSchemaName(ids));
+            qNameList.add(QNameParser.getFirstName(ids));
+            qNameList.add(dropRuleCtx.name.getText());
+            type = DbObjType.RULE;
         } else if (ctx.drop_statements() != null) {
             Drop_statementsContext dropStmtCtx = ctx.drop_statements();
             type = getTypeOfDropStmt(dropStmtCtx);
@@ -181,7 +182,8 @@ public class DropStatement extends ParserAbstract {
                     schemaName = QNameParser.getSchemaName(ids);
                     objName = QNameParser.getFirstName(ids);
                 }
-                descrObj = new GenericColumn(schemaName, objName, type);
+                qNameList.add(schemaName);
+                qNameList.add(objName);
             }
         } else if (ctx.drop_operator_statement() != null) {
             Drop_operator_statementContext dropRuleCtx = ctx.drop_operator_statement();
@@ -193,9 +195,21 @@ public class DropStatement extends ParserAbstract {
                 schemaName = nameCtx.schema_name.getText();
                 objName = nameCtx.operator.getText();
             }
-            descrObj = new GenericColumn(schemaName, objName, DbObjType.OPERATOR);
+            qNameList.add(schemaName);
+            qNameList.add(objName);
+            type = DbObjType.OPERATOR;
         }
 
-        return descrObj != null ? new Pair<>(ACTION_DROP, descrObj) : null;
+        if (type != null) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(ACTION_DROP).append(' ').append(type).append(' ');
+            for (String name : qNameList) {
+                sb.append(name).append('.');
+            }
+            sb.setLength(sb.length() - 1);
+            return sb.toString();
+        }
+
+        return null;
     }
 }

@@ -261,7 +261,6 @@ schema_alter
     | alter_group
     | alter_tablespace
     | alter_statistics
-    | alter_index_all
     | alter_foreign_data_wrapper
     | alter_operator_statement
     | alter_aggregate_statement
@@ -470,13 +469,9 @@ function_def
     : definition=character_string (COMMA symbol=character_string)?
     ;
 
-alter_index_all
-    : INDEX ALL IN TABLESPACE identifier (OWNED BY identifier_list)? 
-    SET TABLESPACE identifier NOWAIT?
-    ;
-
 alter_index_statement
     : INDEX if_exists? schema_qualified_name index_def_action
+    | INDEX ALL IN TABLESPACE identifier (OWNED BY identifier_list)? SET TABLESPACE identifier NOWAIT?
     ;
 
 index_def_action

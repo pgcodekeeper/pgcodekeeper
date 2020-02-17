@@ -8,12 +8,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Domain_constraintContext
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class AlterDomain extends ParserAbstract {
 
@@ -45,9 +43,7 @@ public class AlterDomain extends ParserAbstract {
     }
 
     @Override
-    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
-        List<IdentifierContext> ids = ctx.name.identifier();
-        return new Pair<>(ACTION_ALTER, new GenericColumn(QNameParser.getSchemaName(ids),
-                QNameParser.getFirstName(ids), DbObjType.DOMAIN));
+    protected String getStmtAction() {
+        return getStrForStmtAction(ACTION_ALTER, DbObjType.DOMAIN, ctx.name.identifier());
     }
 }

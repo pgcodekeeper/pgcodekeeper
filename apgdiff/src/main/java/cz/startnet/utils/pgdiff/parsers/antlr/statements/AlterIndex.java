@@ -7,11 +7,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_index_statementCon
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class AlterIndex extends ParserAbstract {
 
@@ -24,6 +22,10 @@ public class AlterIndex extends ParserAbstract {
 
     @Override
     public void parseObject() {
+        if (ctx.ALL() != null) {
+            return;
+        }
+
         List<IdentifierContext> ids = ctx.schema_qualified_name().identifier();
 
         Schema_qualified_nameContext inherit = ctx.index_def_action().index;
@@ -47,9 +49,12 @@ public class AlterIndex extends ParserAbstract {
     }
 
     @Override
-    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
-        List<IdentifierContext> ids = ctx.schema_qualified_name().identifier();
-        return new Pair<>(ACTION_ALTER, new GenericColumn(QNameParser.getSchemaName(ids),
-                QNameParser.getFirstName(ids), DbObjType.INDEX));
+    protected String getStmtAction() {
+        if (ctx.ALL() != null) {
+            return new StringBuilder(ACTION_ALTER).append(" INDEX ALL IN TABLESPACE ")
+                    .append(ctx.identifier(0)).toString();
+        }
+        return getStrForStmtAction(ACTION_ALTER, DbObjType.INDEX,
+                ctx.schema_qualified_name().identifier());
     }
 }

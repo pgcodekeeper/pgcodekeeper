@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -16,14 +17,12 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.When_triggerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.TriggerAnalysisLauncher;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgTrigger.TgTypes;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class CreateTrigger extends ParserAbstract {
     private final Create_trigger_statementContext ctx;
@@ -131,10 +130,9 @@ public class CreateTrigger extends ParserAbstract {
     }
 
     @Override
-    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
-        List<IdentifierContext> ids = ctx.table_name.identifier();
-        return new Pair<>(ACTION_CREATE, new GenericColumn(
-                QNameParser.getSchemaName(ids), QNameParser.getFirstName(ids),
-                ctx.name.getText(), DbObjType.TRIGGER));
+    protected String getStmtAction() {
+        List<IdentifierContext> ids = new ArrayList<>(ctx.table_name.identifier());
+        ids.add(ctx.name);
+        return getStrForStmtAction(ACTION_ALTER, DbObjType.TRIGGER, ids);
     }
 }

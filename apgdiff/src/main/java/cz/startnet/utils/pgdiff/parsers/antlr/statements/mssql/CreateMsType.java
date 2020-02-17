@@ -24,12 +24,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Type_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsColumn;
 import cz.startnet.utils.pgdiff.schema.MsType;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class CreateMsType extends ParserAbstract {
 
@@ -218,9 +216,9 @@ public class CreateMsType extends ParserAbstract {
     }
 
     @Override
-    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
+    protected String getStmtAction() {
         Qualified_nameContext qualNameCtx = ctx.qualified_name();
-        return new Pair<>(ACTION_CREATE, new GenericColumn(
-                qualNameCtx.schema.getText(), qualNameCtx.name.getText(), DbObjType.TYPE));
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.TYPE,
+                Arrays.asList(qualNameCtx.schema, qualNameCtx.name));
     }
 }

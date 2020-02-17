@@ -4,7 +4,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_extension_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_operator_statementContext;
@@ -13,10 +14,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_type_statementCont
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_alterContext;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class AlterOther extends ParserAbstract {
 
@@ -75,22 +74,23 @@ public class AlterOther extends ParserAbstract {
     }
 
     @Override
-    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
-        GenericColumn descrObj = null;
+    protected String getStmtAction() {
+        DbObjType type;
+        List<? extends ParserRuleContext> ids;
         Alter_operator_statementContext alterOperCtx = ctx.alter_operator_statement();
         if (alterOperCtx != null) {
             Operator_nameContext nameCtx = alterOperCtx.target_operator().operator_name();
-            descrObj = new GenericColumn(nameCtx.schema_name.getText(),
-                    nameCtx.operator.getText(), DbObjType.OPERATOR);
+            ids = Arrays.asList(nameCtx.schema_name, nameCtx.operator);
+            type = DbObjType.OPERATOR;
         } else {
-            DbObjType type = getType();
-            List<IdentifierContext> ids = getIds();
-            if (type != null && !ids.isEmpty()) {
-                descrObj = new GenericColumn(QNameParser.getSchemaName(ids),
-                        QNameParser.getFirstName(ids), type);
-            }
+            ids = getIds();
+            type = getType();
         }
-        return descrObj != null ? new Pair<>(ACTION_ALTER, descrObj) : null;
+
+        if (type != null && !ids.isEmpty()) {
+            return getStrForStmtAction(ACTION_ALTER, type, ids);
+        }
+        return null;
     }
 
     private DbObjType getType() {

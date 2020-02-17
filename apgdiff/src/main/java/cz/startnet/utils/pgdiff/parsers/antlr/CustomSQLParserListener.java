@@ -310,8 +310,7 @@ implements SqlContextProcessor {
                 return "ALTER LANGUAGE";
             } else if (alterCtx.alter_foreign_data_wrapper() != null) {
                 descrWordsCount = 4;
-            } else if (alterCtx.alter_index_all() != null
-                    || alterCtx.alter_default_privileges() != null
+            } else if (alterCtx.alter_default_privileges() != null
                     || alterCtx.alter_event_trigger() != null
                     || alterCtx.alter_user_mapping() != null
                     || alterCtx.alter_operator_family_statement() != null

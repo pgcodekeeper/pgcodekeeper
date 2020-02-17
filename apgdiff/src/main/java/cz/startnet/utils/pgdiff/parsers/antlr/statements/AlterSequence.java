@@ -17,7 +17,6 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class AlterSequence extends ParserAbstract {
     private final Alter_sequence_statementContext ctx;
@@ -64,9 +63,7 @@ public class AlterSequence extends ParserAbstract {
     }
 
     @Override
-    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
-        List<IdentifierContext> ids = ctx.name.identifier();
-        return new Pair<>(ACTION_CREATE, new GenericColumn(QNameParser.getSchemaName(ids),
-                QNameParser.getFirstName(ids), DbObjType.SEQUENCE));
+    protected String getStmtAction() {
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.SEQUENCE, ctx.name.identifier());
     }
 }

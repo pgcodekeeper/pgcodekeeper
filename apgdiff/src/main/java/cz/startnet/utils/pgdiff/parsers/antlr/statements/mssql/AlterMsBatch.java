@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -9,11 +10,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_trigger
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class AlterMsBatch extends ParserAbstract {
 
@@ -66,20 +65,21 @@ public class AlterMsBatch extends ParserAbstract {
     }
 
     @Override
-    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
-        GenericColumn descrObj = null;
+    protected String getStmtAction() {
+        DbObjType type = null;
+        List<? extends ParserRuleContext> ids = null;
         if (ctx.create_or_alter_procedure() != null) {
             Qualified_nameContext qname = ctx.create_or_alter_procedure().qualified_name();
-            descrObj = new GenericColumn(qname.schema.getText(),
-                    qname.name.getText(), DbObjType.PROCEDURE);
+            ids = Arrays.asList(qname.schema, qname.name);
+            type = DbObjType.PROCEDURE;
         } else if (ctx.create_or_alter_function() != null) {
             Qualified_nameContext qname = ctx.create_or_alter_function().qualified_name();
-            descrObj = new GenericColumn(qname.schema.getText(),
-                    qname.name.getText(), DbObjType.FUNCTION);
+            ids = Arrays.asList(qname.schema, qname.name);
+            type = DbObjType.FUNCTION;
         } else if (ctx.create_or_alter_view() != null) {
             Qualified_nameContext qname = ctx.create_or_alter_view().qualified_name();
-            descrObj = new GenericColumn(qname.schema.getText(),
-                    qname.name.getText(), DbObjType.VIEW);
+            ids = Arrays.asList(qname.schema, qname.name);
+            type = DbObjType.VIEW;
         } else if (ctx.create_or_alter_trigger() != null) {
             Create_or_alter_triggerContext trigCtx = ctx.create_or_alter_trigger();
             Qualified_nameContext qname = trigCtx.trigger_name;
@@ -88,9 +88,9 @@ public class AlterMsBatch extends ParserAbstract {
             if (schemaCtx == null) {
                 schemaCtx = secondCtx;
             }
-            descrObj = new GenericColumn(schemaCtx.getText(),
-                    trigCtx.table_name.name.getText(), qname.name.getText(), DbObjType.TRIGGER);
+            ids = Arrays.asList(schemaCtx, trigCtx.table_name.name, qname.name);
+            type = DbObjType.TRIGGER;
         }
-        return descrObj != null ? new Pair<>(ACTION_ALTER, descrObj) : null;
+        return type != null ? getStrForStmtAction(ACTION_ALTER, type, ids) : null;
     }
 }

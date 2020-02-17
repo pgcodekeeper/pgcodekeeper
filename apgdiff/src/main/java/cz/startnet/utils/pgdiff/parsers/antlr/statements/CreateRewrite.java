@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -10,14 +11,12 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.RuleAnalysisLauncher;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgRule.PgRuleEventType;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class CreateRewrite extends ParserAbstract {
     private final Create_rewrite_statementContext ctx;
@@ -60,10 +59,9 @@ public class CreateRewrite extends ParserAbstract {
     }
 
     @Override
-    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
-        List<IdentifierContext> ids = ctx.table_name.identifier();
-        return new Pair<>(ACTION_CREATE, new GenericColumn(
-                QNameParser.getSchemaName(ids), QNameParser.getFirstName(ids),
-                ctx.name.getText(), DbObjType.RULE));
+    protected String getStmtAction() {
+        List<IdentifierContext> ids = new ArrayList<>(ctx.table_name.identifier());
+        ids.add(ctx.name);
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.RULE, ids);
     }
 }

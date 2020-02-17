@@ -17,11 +17,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_option
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_spaceContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.ViewAnalysisLauncher;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class CreateView extends ParserAbstract {
 
@@ -102,9 +100,7 @@ public class CreateView extends ParserAbstract {
     }
 
     @Override
-    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
-        List<IdentifierContext> ids = context.name.identifier();
-        return new Pair<>(ACTION_CREATE, new GenericColumn(QNameParser.getSchemaName(ids),
-                QNameParser.getFirstName(ids), DbObjType.VIEW));
+    protected String getStmtAction() {
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.VIEW, context.name.identifier());
     }
 }

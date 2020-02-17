@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -44,8 +45,10 @@ public abstract class BatchContextProcessor extends ParserAbstract {
 
     @Override
     protected PgObjLocation fillQueryLocation(ParserRuleContext ctx) {
-        PgObjLocation loc = new PgObjLocation(getStmtAction(ctx), ctx,
-                ParserAbstract.getFullCtxTextWithHidden(ctx, stream));
+        String act = getStmtAction();
+        PgObjLocation loc = new PgObjLocation(
+                act != null ? act : ctx.getStart().getText().toUpperCase(Locale.ROOT),
+                        ctx, getFullCtxTextWithHidden(ctx, stream));
         db.addToQueries(fileName, loc);
         return loc;
     }

@@ -17,12 +17,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsSqlClauses;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsClrProcedure;
 import cz.startnet.utils.pgdiff.schema.MsProcedure;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class CreateMsProcedure extends BatchContextProcessor {
 
@@ -121,9 +119,9 @@ public class CreateMsProcedure extends BatchContextProcessor {
     }
 
     @Override
-    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
+    protected String getStmtAction() {
         Qualified_nameContext qualNameCtx = ctx.qualified_name();
-        return new Pair<>(ACTION_CREATE, new GenericColumn(qualNameCtx.schema.getText(),
-                qualNameCtx.name.getText(), DbObjType.PROCEDURE));
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.PROCEDURE,
+                Arrays.asList(qualNameCtx.schema, qualNameCtx.name));
     }
 }

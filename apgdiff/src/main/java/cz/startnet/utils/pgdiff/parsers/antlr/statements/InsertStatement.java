@@ -1,14 +1,8 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.util.List;
-
-import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Insert_stmt_for_psqlContext;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class InsertStatement extends ParserAbstract {
 
@@ -25,9 +19,9 @@ public class InsertStatement extends ParserAbstract {
     }
 
     @Override
-    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
-        List<IdentifierContext> ids = ctx.insert_table_name.identifier();
-        return new Pair<>(ACTION_INSERT, new GenericColumn(QNameParser.getSchemaName(ids),
-                QNameParser.getFirstName(ids), DbObjType.TABLE));
+    protected String getStmtAction() {
+        return getStrForStmtAction(
+                new StringBuilder(ACTION_INSERT).append(' ').append("INTO").toString(),
+                DbObjType.TABLE, ctx.insert_table_name.identifier());
     }
 }

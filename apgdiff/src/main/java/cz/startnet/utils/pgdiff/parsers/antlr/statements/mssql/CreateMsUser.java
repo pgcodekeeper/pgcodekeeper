@@ -7,11 +7,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.User_loginContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.User_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsUser;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class CreateMsUser extends ParserAbstract {
 
@@ -42,8 +40,7 @@ public class CreateMsUser extends ParserAbstract {
     }
 
     @Override
-    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
-        return new Pair<>(ACTION_CREATE,
-                new GenericColumn(ctx.user_name.getText(), DbObjType.USER));
+    protected String getStmtAction() {
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.USER, Arrays.asList(ctx.user_name));
     }
 }

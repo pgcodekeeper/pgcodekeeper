@@ -45,7 +45,6 @@ import cz.startnet.utils.pgdiff.schema.PgOperator;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 /**
  * Abstract Class contents common operations for parsing
@@ -550,47 +549,30 @@ public abstract class ParserAbstract {
      * filled 'PgObjLocation'-object to the storage of queries.
      */
     protected PgObjLocation fillQueryLocation(ParserRuleContext ctx) {
-        PgObjLocation loc = new PgObjLocation(getStmtAction(ctx), ctx, getFullCtxText(ctx));
+        String act = getStmtAction();
+        PgObjLocation loc = new PgObjLocation(
+                act != null ? act : ctx.getStart().getText().toUpperCase(Locale.ROOT),
+                        ctx, getFullCtxText(ctx));
         db.addToQueries(fileName, loc);
         return loc;
     }
 
-    protected String getStmtAction(ParserRuleContext ctx) {
-        String result;
-        Pair<String, GenericColumn> actionAndObj = getActionAndObjForStmtAction();
-        if (actionAndObj == null) {
-            result = ctx.getStart().getText().toUpperCase(Locale.ROOT);
-        } else {
-            String action = actionAndObj.getFirst();
-            GenericColumn descrObj = actionAndObj.getSecond();
-
-            StringBuilder sb = new StringBuilder();
-            sb.append(action);
-
-            switch (action) {
-            case ACTION_UPDATE:
-                break;
-            case ACTION_INSERT:
-                sb.append(' ').append("INTO");
-                break;
-            case ACTION_DELETE:
-                sb.append(' ').append("FROM");
-                break;
-            default:
-                sb.append(' ').append(descrObj.type);
-                break;
-            }
-
-            result = sb.append(' ').append(descrObj.getQualifiedName()).toString();
-        }
-        return result;
-    }
+    /**
+     * Returns action information which will later be used for showing in console,
+     * in 'Outline' and in 'outline of Project explorer files'.
+     */
+    protected abstract String getStmtAction();
 
     /**
-     * Returns the Pair with action name string and GenericColumn objects which
-     * will be used for getting the action information of described statement.
-     * <br />
-     * (The action information will later be used for showing in console and in 'Outline')
+     * Used in general cases in {@link #getStmtAction()} for get action information.
      */
-    protected abstract Pair<String, GenericColumn> getActionAndObjForStmtAction();
+    protected String getStrForStmtAction(String action, DbObjType type,
+            List<? extends ParserRuleContext> ids) {
+        StringBuilder sb = new StringBuilder(action).append(' ').append(type).append(' ');
+        for (ParserRuleContext id : ids) {
+            sb.append(id.getText()).append('.');
+        }
+        sb.setLength(sb.length() - 1);
+        return sb.toString();
+    }
 }

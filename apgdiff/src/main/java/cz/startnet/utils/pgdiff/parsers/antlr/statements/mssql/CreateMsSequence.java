@@ -12,11 +12,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Sequence_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsSequence;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class CreateMsSequence extends ParserAbstract {
 
@@ -78,9 +76,9 @@ public class CreateMsSequence extends ParserAbstract {
     }
 
     @Override
-    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
+    protected String getStmtAction() {
         Qualified_nameContext qualNameCtx = ctx.qualified_name();
-        return new Pair<>(ACTION_CREATE, new GenericColumn(
-                qualNameCtx.schema.getText(), qualNameCtx.name.getText(), DbObjType.SEQUENCE));
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.SEQUENCE,
+                Arrays.asList(qualNameCtx.schema, qualNameCtx.name));
     }
 }

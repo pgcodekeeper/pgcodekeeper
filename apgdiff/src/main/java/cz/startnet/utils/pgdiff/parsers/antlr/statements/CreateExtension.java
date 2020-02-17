@@ -4,11 +4,9 @@ import java.util.Arrays;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_extension_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class CreateExtension extends ParserAbstract {
 
@@ -33,8 +31,7 @@ public class CreateExtension extends ParserAbstract {
     }
 
     @Override
-    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
-        return new Pair<>(ACTION_CREATE,
-                new GenericColumn(ctx.name.getText(), DbObjType.EXTENSION));
+    protected String getStmtAction() {
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.EXTENSION, Arrays.asList(ctx.name));
     }
 }

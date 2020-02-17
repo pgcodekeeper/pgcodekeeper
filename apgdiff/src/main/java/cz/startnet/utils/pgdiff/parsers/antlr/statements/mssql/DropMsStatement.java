@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -12,7 +13,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_dropContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -107,12 +107,13 @@ public class DropMsStatement extends ParserAbstract {
     }
 
     @Override
-    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
-        GenericColumn descrObj = null;
+    protected String getStmtAction() {
+        DbObjType type = null;
+        List<String> qNameList = new ArrayList<>();
         if (ctx.drop_assembly() != null) {
             List<IdContext> ids = ctx.drop_assembly().id();
-            descrObj = new GenericColumn(ids.size() != 1 ? "" : ids.get(0).getText(),
-                    DbObjType.ASSEMBLY);
+            qNameList.add(ids.size() != 1 ? "" : ids.get(0).getText());
+            type = DbObjType.ASSEMBLY;
         } else if (ctx.drop_index() != null) {
             List<Drop_relational_or_xml_or_spatial_indexContext> indices = ctx
                     .drop_index().drop_relational_or_xml_or_spatial_index();
@@ -126,16 +127,34 @@ public class DropMsStatement extends ParserAbstract {
                 tblName = tableIds.name.getText();
                 objName = ind.index_name.getText();
             }
-            descrObj = new GenericColumn(schemaName, tblName, objName, DbObjType.INDEX);
+            qNameList.add(schemaName);
+            qNameList.add(tblName);
+            qNameList.add(objName);
+            type = DbObjType.INDEX;
         } else if (ctx.drop_statements() != null) {
-            descrObj = dropOtherStmt(ctx.drop_statements());
+            Pair<DbObjType, List<String>> typeAndQName = dropOtherStmt(ctx.drop_statements());
+            if (typeAndQName != null) {
+                type = typeAndQName.getFirst();
+                qNameList = typeAndQName.getSecond();
+            }
         }
 
-        return descrObj != null ? new Pair<>(ACTION_DROP, descrObj) : null;
+        if (type != null) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(ACTION_DROP).append(' ').append(type).append(' ');
+            for (String name : qNameList) {
+                sb.append(name).append('.');
+            }
+            sb.setLength(sb.length() - 1);
+            return sb.toString();
+        }
+
+        return null;
     }
 
-    private GenericColumn dropOtherStmt(Drop_statementsContext dropStmtCtx) {
+    private Pair<DbObjType, List<String>> dropOtherStmt(Drop_statementsContext dropStmtCtx) {
         DbObjType type = null;
+        List<String> qNameList = new ArrayList<>();
 
         if (dropStmtCtx.SCHEMA() != null) {
             type = DbObjType.SCHEMA;
@@ -147,7 +166,8 @@ public class DropMsStatement extends ParserAbstract {
 
         if (type != null) {
             List<Qualified_nameContext> qnames = dropStmtCtx.qualified_name();
-            return new GenericColumn(qnames.size() != 1 ? "" : qnames.get(0).name.getText(), type);
+            qNameList.add(qnames.size() != 1 ? "" : qnames.get(0).name.getText());
+            return new Pair<>(type, qNameList);
         }
 
         if (dropStmtCtx.FUNCTION() != null) {
@@ -174,7 +194,9 @@ public class DropMsStatement extends ParserAbstract {
                 schemaName = qnames.get(0).schema.getText();
                 objName = qnames.get(0).name.getText();
             }
-            return new GenericColumn(schemaName, objName, type);
+            qNameList.add(schemaName);
+            qNameList.add(objName);
+            return new Pair<>(type, qNameList);
         }
 
         return null;

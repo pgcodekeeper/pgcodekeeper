@@ -6,12 +6,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_schema_statementC
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.User_nameContext;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class CreateSchema extends ParserAbstract {
 
@@ -41,8 +39,7 @@ public class CreateSchema extends ParserAbstract {
     }
 
     @Override
-    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
-        return new Pair<>(ACTION_CREATE,
-                new GenericColumn(ctx.name.getText(), DbObjType.SCHEMA));
+    protected String getStmtAction() {
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.SCHEMA, Arrays.asList(ctx.name));
     }
 }
