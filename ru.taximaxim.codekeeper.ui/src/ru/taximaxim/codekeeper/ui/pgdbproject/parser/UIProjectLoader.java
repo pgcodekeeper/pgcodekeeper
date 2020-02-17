@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.ui.pgdbproject.parser;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -51,8 +52,8 @@ public class UIProjectLoader extends ProjectLoader {
     private final List<StatementBodyContainer> statementBodies;
 
     public UIProjectLoader(IProject iProject, PgDiffArguments arguments, IProgressMonitor monitor,
-            List<StatementBodyContainer> statementBodies, List<Object> errors) {
-        super(null, arguments, monitor, errors);
+            List<StatementBodyContainer> statementBodies) {
+        super(null, arguments, monitor, new ArrayList<>());
         this.iProject = iProject;
         this.statementBodies = statementBodies;
     }
@@ -326,7 +327,7 @@ public class UIProjectLoader extends ProjectLoader {
     public static PgDatabase buildFiles(Collection<IFile> files, boolean isMsSql,
             IProgressMonitor monitor, List<StatementBodyContainer> statementBodies)
                     throws InterruptedException, IOException, CoreException {
-        UIProjectLoader loader = new UIProjectLoader(null, null, monitor, statementBodies, null);
+        UIProjectLoader loader = new UIProjectLoader(null, null, monitor, statementBodies);
         SubMonitor mon = SubMonitor.convert(monitor, files.size());
         PgDatabase d = isMsSql ? loader.buildMsFiles(files, mon) : loader.buildPgFiles(files, mon);
         loader.finishLoaders();

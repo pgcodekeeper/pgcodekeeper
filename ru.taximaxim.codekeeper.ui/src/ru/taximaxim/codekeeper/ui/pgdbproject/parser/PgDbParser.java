@@ -222,7 +222,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(proj.getDefaultCharset(true));
         args.setMsSql(OpenProjectUtils.checkMsSql(proj));
-        PgDatabase db = new UIProjectLoader(proj, args, mon, statementBodies, new ArrayList<>())
+        PgDatabase db = new UIProjectLoader(proj, args, mon, statementBodies)
                 .loadDatabaseSchemaFromProject();
         objDefinitions.clear();
         objDefinitions.putAll(db.getObjDefinitions());

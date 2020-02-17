@@ -19,6 +19,10 @@ public class DatabaseLoader {
         this.errors = errors;
     }
 
+    public List<Object> getErrors() {
+        return errors;
+    }
+
     protected void finishLoaders() throws InterruptedException, IOException {
         AntlrParser.finishAntlr(antlrTasks);
         PgDumpLoader l;
