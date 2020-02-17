@@ -350,8 +350,7 @@ public abstract class ParserAbstract {
                 ACTION_CREATE, false, null);
         if (loc != null) {
             child.setLocation(loc);
-            db.getObjDefinitions().computeIfAbsent(fileName, k -> new LinkedHashSet<>()).add(loc);
-            db.getObjReferences().computeIfAbsent(fileName, k -> new LinkedHashSet<>()).add(loc);
+            db.addToQueries(fileName, loc);
         }
     }
 

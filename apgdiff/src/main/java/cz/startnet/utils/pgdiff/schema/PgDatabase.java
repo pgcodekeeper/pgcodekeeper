@@ -93,9 +93,9 @@ public class PgDatabase extends PgStatement {
         return objReferences;
     }
 
-    public void addToQueries(String filePath, PgObjLocation loc) {
-        objDefinitions.computeIfAbsent(filePath, k -> new LinkedHashSet<>()).add(loc);
-        objReferences.computeIfAbsent(filePath, k -> new LinkedHashSet<>()).add(loc);
+    public void addToQueries(String fileName, PgObjLocation loc) {
+        objDefinitions.computeIfAbsent(fileName, k -> new LinkedHashSet<>()).add(loc);
+        objReferences.computeIfAbsent(fileName, k -> new LinkedHashSet<>()).add(loc);
     }
 
     public List<AbstractAnalysisLauncher> getAnalysisLaunchers() {
