@@ -143,7 +143,9 @@ public class DropMsStatement extends ParserAbstract {
             StringBuilder sb = new StringBuilder();
             sb.append(ACTION_DROP).append(' ').append(type).append(' ');
             for (String name : qNameList) {
-                sb.append(name).append('.');
+                if (!name.isEmpty()) {
+                    sb.append(name).append('.');
+                }
             }
             sb.setLength(sb.length() - 1);
             return sb.toString();
