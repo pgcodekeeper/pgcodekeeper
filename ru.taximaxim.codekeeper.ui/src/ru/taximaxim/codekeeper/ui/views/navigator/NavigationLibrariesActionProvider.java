@@ -106,7 +106,7 @@ public class NavigationLibrariesActionProvider extends CommonActionProvider {
             ISelection selection = getContext().getSelection();
             if (!selection.isEmpty()) {
                 Object sel = ((IStructuredSelection) selection).getFirstElement();
-                return sel instanceof ZipLibrary && !((ZipLibrary) sel).isZipped();
+                return sel instanceof ZipLibrary && ((ZipLibrary) sel).exists();
             }
 
             return false;
@@ -116,7 +116,7 @@ public class NavigationLibrariesActionProvider extends CommonActionProvider {
         public void run() {
             IStructuredSelection selection = (IStructuredSelection) getContext().getSelection();
             Object sel = selection.getFirstElement();
-            if (sel instanceof ZipLibrary && !((ZipLibrary) sel).isZipped()) {
+            if (sel instanceof ZipLibrary && ((ZipLibrary) sel).exists()) {
                 try {
                     ((ZipLibrary) sel).clearCache();
                 } catch (IOException e) {

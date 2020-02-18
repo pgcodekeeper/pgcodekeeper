@@ -1111,6 +1111,10 @@
             class="ru.taximaxim.codekeeper.ui.editors.ProjectEditorInputFactory"
             id="ru.taximaxim.codekeeper.ui.editors.ProjectEditorInputFactory">
         </factory>
+        <factory
+            class="ru.taximaxim.codekeeper.ui.libraries.LibraryEditorInputFactory"
+            id="ru.taximaxim.codekeeper.ui.libraries.LibraryEditorInputFactory">
+        </factory>
     </extension>
     <extension point="org.eclipse.ui.navigator.linkHelper">
         <linkHelper

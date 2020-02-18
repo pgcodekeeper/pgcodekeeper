@@ -8,12 +8,14 @@ import java.nio.file.Path;
 import org.eclipse.core.resources.IStorage;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.ISharedImages;
 
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 
 public class FileLibrary extends AbstractLibrary implements IStorage {
 
@@ -27,11 +29,11 @@ public class FileLibrary extends AbstractLibrary implements IStorage {
     }
 
     @Override
-    public String getLabel() {
+    public String toString() {
         StringBuilder sb = new StringBuilder(name);
 
         if (getParent() instanceof LibraryContainer) {
-            sb.append(" - ").append(path.getParent()); //$NON-NLS-1$
+            sb.append(" - ").append(getPath().getParent()); //$NON-NLS-1$
         }
 
         return sb.toString();
@@ -47,8 +49,7 @@ public class FileLibrary extends AbstractLibrary implements IStorage {
         try {
             return Files.newInputStream(path);
         } catch (IOException e) {
-            Log.log(e);
-            return null;
+            throw new CoreException(new Status(IStatus.ERROR, PLUGIN_ID.THIS, e.getLocalizedMessage(), e));
         }
     }
 

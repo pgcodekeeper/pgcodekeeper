@@ -8,15 +8,10 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class LibraryContainer extends AbstractLibrary {
 
-    private static final String ROOT = Messages.LibraryContainer_root;
-
-    LibraryContainer(boolean isMsSql) {
-        super(null, null, ROOT, isMsSql);
-    }
-
-    @Override
-    public String getLabel() {
-        return ROOT;
+    LibraryContainer(boolean isMsSql, String project) {
+        super(null, null, Messages.LibraryContainer_root);
+        this.isMsSql = isMsSql;
+        this.project = project;
     }
 
     @Override

@@ -14,7 +14,7 @@ public class DirectoryLibrary extends AbstractLibrary {
     }
 
     @Override
-    public String getLabel() {
+    public String toString() {
         StringBuilder sb = new StringBuilder(name);
 
         if (getParent() instanceof LibraryContainer) {

@@ -1,15 +1,14 @@
 package ru.taximaxim.codekeeper.ui.libraries;
 
-import java.nio.file.Files;
-
 import org.eclipse.core.resources.IStorage;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorRegistry;
+import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.IStorageEditorInput;
 import org.eclipse.ui.PlatformUI;
 
-public class LibraryEditorInput implements IStorageEditorInput {
+public class LibraryEditorInput implements IStorageEditorInput, IPersistableElement {
 
     private final FileLibrary lib;
 
@@ -19,7 +18,7 @@ public class LibraryEditorInput implements IStorageEditorInput {
 
     @Override
     public boolean exists() {
-        return Files.exists(lib.getPath());
+        return lib.exists();
     }
 
     public boolean isMsSql() {
@@ -28,7 +27,7 @@ public class LibraryEditorInput implements IStorageEditorInput {
 
     @Override
     public ImageDescriptor getImageDescriptor() {
-        IEditorRegistry registry= PlatformUI.getWorkbench().getEditorRegistry();
+        IEditorRegistry registry = PlatformUI.getWorkbench().getEditorRegistry();
         return registry.getImageDescriptor(getContentType());
     }
 
@@ -43,7 +42,7 @@ public class LibraryEditorInput implements IStorageEditorInput {
 
     @Override
     public IPersistableElement getPersistable() {
-        return null;
+        return this;
     }
 
     @Override
@@ -80,5 +79,15 @@ public class LibraryEditorInput implements IStorageEditorInput {
     @Override
     public int hashCode() {
         return lib.hashCode();
+    }
+
+    @Override
+    public void saveState(IMemento memento) {
+        LibraryEditorInputFactory.saveState(memento, this);
+    }
+
+    @Override
+    public String getFactoryId() {
+        return LibraryEditorInputFactory.getFactoryId();
     }
 }

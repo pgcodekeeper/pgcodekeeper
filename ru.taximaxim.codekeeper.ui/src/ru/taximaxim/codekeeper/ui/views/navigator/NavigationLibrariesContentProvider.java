@@ -31,7 +31,7 @@ public class NavigationLibrariesContentProvider implements ITreeContentProvider 
                 IProject proj = (IProject) parent;
                 List<PgLibrary> libs = new DependenciesXmlStore(Paths.get(proj.getLocation()
                         .append(DependenciesXmlStore.FILE_NAME).toString())).readObjects();
-                return new Object[] {LibraryUtils.create(libs, proj.hasNature(NATURE.MS))};
+                return new Object[] {LibraryUtils.create(libs, proj.getName(), proj.hasNature(NATURE.MS))};
             } catch (IOException | CoreException e) {
                 Log.log(e);
             }
