@@ -9,8 +9,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_triggerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.MsSqlClausesAnalysisLauncher;
-import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsSqlClauses;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.MsFuncProcTrigAnalysisLauncher;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.MsTrigger;
@@ -63,23 +62,13 @@ public class CreateMsTrigger extends BatchContextProcessor {
         trigger.setQuotedIdentified(quotedIdentifier);
         setSourceParts(trigger);
 
-        String schemaName;
-        if (schema != null) {
-            schemaName = schema.getName();
-        } else {
+        if (schema == null) {
             List<IdContext> ids = Arrays.asList(schemaCtx, tableNameCtx);
-            schemaName = getSchemaNameSafe(ids);
             addObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
         }
 
-        MsSqlClauses clauses;
-        if (db.getArguments().isEnableFunctionBodiesDependencies()) {
-            clauses = new MsSqlClauses(schemaName);
-        } else {
-            clauses = new MsSqlClauses(schemaName, DbObjType.FUNCTION, DbObjType.PROCEDURE);
-        }
-        db.addAnalysisLauncher(new MsSqlClausesAnalysisLauncher(trigger, ctx.sql_clauses(),
-                fileName, clauses));
+        db.addAnalysisLauncher(new MsFuncProcTrigAnalysisLauncher(trigger,
+                ctx.sql_clauses(), fileName));
 
         IStatementContainer cont = getSafe(AbstractSchema::getStatementContainer,
                 schema, tableNameCtx);

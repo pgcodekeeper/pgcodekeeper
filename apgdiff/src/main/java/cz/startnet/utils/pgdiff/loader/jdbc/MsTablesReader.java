@@ -6,7 +6,6 @@ import java.sql.SQLException;
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.MsExpressionAnalysisLauncher;
-import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsValueExpr;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -109,8 +108,7 @@ public class MsTablesReader extends JdbcReader {
             loader.submitMsAntlrTask(def, p -> p.expression_eof().expression().get(0),
                     ctx -> schema.getDatabase().addAnalysisLauncher(
                             new MsExpressionAnalysisLauncher(type == null ? column : type,
-                                    ctx, loader.getCurrentLocation(),
-                                    new MsValueExpr(schema.getName()))));
+                                    ctx, loader.getCurrentLocation())));
         }
         return column;
     }

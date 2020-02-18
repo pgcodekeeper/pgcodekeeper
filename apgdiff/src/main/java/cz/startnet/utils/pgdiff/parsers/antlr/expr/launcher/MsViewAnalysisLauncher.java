@@ -7,21 +7,18 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Select_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsSelect;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
+import cz.startnet.utils.pgdiff.schema.MsView;
 
-public class MsSelectAnalysisLauncher extends AbstractAnalysisLauncher {
+public class MsViewAnalysisLauncher extends AbstractAnalysisLauncher {
 
-    private final MsSelect sel;
-
-    public MsSelectAnalysisLauncher(PgStatementWithSearchPath stmt,
-            Select_statementContext ctx, String location, MsSelect sel) {
+    public MsViewAnalysisLauncher(MsView stmt, Select_statementContext ctx,
+            String location) {
         super(stmt, ctx, location);
-        this.sel = sel;
     }
 
     @Override
     public Set<GenericColumn> analyze(ParserRuleContext ctx) {
-        sel.analyze((Select_statementContext) ctx);
-        return sel.getDepcies();
+        MsSelect select = new MsSelect(stmt.getSchemaName());
+        return analyze((Select_statementContext) ctx, select);
     }
 }

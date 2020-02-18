@@ -22,7 +22,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_constraint_bodyCo
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Type_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.MsExpressionAnalysisLauncher;
-import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.MsColumn;
 import cz.startnet.utils.pgdiff.schema.MsType;
@@ -207,9 +206,7 @@ public class CreateMsType extends ParserAbstract {
             }
             ExpressionContext exp = option.expression();
             col.setDefaultValue(getFullCtxText(exp));
-            db.addAnalysisLauncher(new MsExpressionAnalysisLauncher(type, exp, fileName,
-                    new MsValueExpr(getSchemaNameSafe(
-                            Arrays.asList(ctx.qualified_name().schema, ctx.qualified_name().name)))));
+            db.addAnalysisLauncher(new MsExpressionAnalysisLauncher(type, exp, fileName));
         }
     }
 }

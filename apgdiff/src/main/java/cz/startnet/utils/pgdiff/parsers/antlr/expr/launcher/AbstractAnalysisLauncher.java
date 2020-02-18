@@ -10,10 +10,13 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ExpressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.AbstractExprWithNmspc;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExprWithNmspc;
+import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsAbstractExprWithNmspc;
+import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -104,6 +107,17 @@ public abstract class AbstractAnalysisLauncher {
 
     protected Set<GenericColumn> analyze(VexContext ctx, ValueExpr analyzer) {
         analyzer.analyze(new Vex(ctx));
+        return analyzer.getDepcies();
+    }
+
+    protected <T extends ParserRuleContext> Set<GenericColumn> analyze(
+            T ctx, MsAbstractExprWithNmspc<T> analyzer) {
+        analyzer.analyze(ctx);
+        return analyzer.getDepcies();
+    }
+
+    protected Set<GenericColumn> analyze(ExpressionContext ctx, MsValueExpr analyzer) {
+        analyzer.analyze(ctx);
         return analyzer.getDepcies();
     }
 

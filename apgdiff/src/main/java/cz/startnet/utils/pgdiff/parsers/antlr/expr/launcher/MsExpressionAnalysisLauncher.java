@@ -11,17 +11,14 @@ import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 
 public class MsExpressionAnalysisLauncher extends AbstractAnalysisLauncher {
 
-    private final MsValueExpr vex;
-
     public MsExpressionAnalysisLauncher(PgStatementWithSearchPath stmt,
-            ExpressionContext ctx, String location, MsValueExpr vex) {
+            ExpressionContext ctx, String location) {
         super(stmt, ctx, location);
-        this.vex = vex;
     }
 
     @Override
     public Set<GenericColumn> analyze(ParserRuleContext ctx) {
-        vex.analyze((ExpressionContext) ctx);
-        return vex.getDepcies();
+        MsValueExpr expr = new MsValueExpr(stmt.getSchemaName());
+        return analyze((ExpressionContext) ctx, expr);
     }
 }
