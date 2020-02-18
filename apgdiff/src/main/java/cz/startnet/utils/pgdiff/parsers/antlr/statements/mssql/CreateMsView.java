@@ -11,7 +11,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_viewCon
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Select_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.MsAnalysisLauncher;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.MsSelectAnalysisLauncher;
 import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsSelect;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.MsView;
@@ -67,7 +67,7 @@ public class CreateMsView extends BatchContextProcessor {
             } else {
                 schemaName = getSchemaNameSafe(ids);
             }
-            db.addAnalysisLauncher(new MsAnalysisLauncher(view, vQuery, fileName,
+            db.addAnalysisLauncher(new MsSelectAnalysisLauncher(view, vQuery, fileName,
                     new MsSelect(schemaName)));
         }
 

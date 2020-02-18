@@ -21,7 +21,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Procedure_paramContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Select_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Sql_clausesContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.MsAnalysisLauncher;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.MsExpressionAnalysisLauncher;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.MsSelectAnalysisLauncher;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.MsSqlClausesAnalysisLauncher;
 import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsSelect;
 import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsSqlClauses;
 import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsValueExpr;
@@ -116,18 +118,18 @@ public class CreateMsFunction extends BatchContextProcessor {
             }
 
             if (select != null) {
-                db.addAnalysisLauncher(new MsAnalysisLauncher(func, select,
+                db.addAnalysisLauncher(new MsSelectAnalysisLauncher(func, select,
                         fileName, new MsSelect(schemaName, disabledDepcies)));
             } else {
                 ExpressionContext exp = bodyRet.expression();
                 if (exp != null) {
-                    db.addAnalysisLauncher(new MsAnalysisLauncher(func, exp,
+                    db.addAnalysisLauncher(new MsExpressionAnalysisLauncher(func, exp,
                             fileName, new MsValueExpr(schemaName, disabledDepcies)));
                 }
 
                 Sql_clausesContext clausesCtx = bodyRet.sql_clauses();
                 if (clausesCtx != null) {
-                    db.addAnalysisLauncher(new MsAnalysisLauncher(func, clausesCtx,
+                    db.addAnalysisLauncher(new MsSqlClausesAnalysisLauncher(func, clausesCtx,
                             fileName, new MsSqlClauses(schemaName, disabledDepcies)));
                 }
             }

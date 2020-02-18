@@ -13,7 +13,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Procedure_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Procedure_paramContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.MsAnalysisLauncher;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.MsSqlClausesAnalysisLauncher;
 import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsSqlClauses;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
@@ -94,7 +94,7 @@ public class CreateMsProcedure extends BatchContextProcessor {
         } else {
             clauses = new MsSqlClauses(schemaName, DbObjType.FUNCTION, DbObjType.PROCEDURE);
         }
-        db.addAnalysisLauncher(new MsAnalysisLauncher(procedure,
+        db.addAnalysisLauncher(new MsSqlClausesAnalysisLauncher(procedure,
                 ctx.proc_body().sql_clauses(), fileName, clauses));
 
         if (isJdbc && schema != null) {

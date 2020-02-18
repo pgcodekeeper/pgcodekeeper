@@ -9,7 +9,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_triggerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.MsAnalysisLauncher;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.MsSqlClausesAnalysisLauncher;
 import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsSqlClauses;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.IStatementContainer;
@@ -78,7 +78,7 @@ public class CreateMsTrigger extends BatchContextProcessor {
         } else {
             clauses = new MsSqlClauses(schemaName, DbObjType.FUNCTION, DbObjType.PROCEDURE);
         }
-        db.addAnalysisLauncher(new MsAnalysisLauncher(trigger, ctx.sql_clauses(),
+        db.addAnalysisLauncher(new MsSqlClausesAnalysisLauncher(trigger, ctx.sql_clauses(),
                 fileName, clauses));
 
         IStatementContainer cont = getSafe(AbstractSchema::getStatementContainer,
