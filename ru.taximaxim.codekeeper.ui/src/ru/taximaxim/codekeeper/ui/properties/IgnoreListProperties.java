@@ -112,7 +112,6 @@ public class IgnoreListProperties extends PropertyPage {
         protected void addColumns(TableViewer tableViewer) {
             TableViewerColumn col = new TableViewerColumn(tableViewer, SWT.NONE);
             col.setLabelProvider(new ColumnLabelProvider());
-            col.getColumn().setWidth(200);
         }
 
         @Override

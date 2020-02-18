@@ -20,7 +20,6 @@ public class StoragePrefListEditor extends PrefListEditor<String> {
     protected void addColumns(TableViewer tableViewer) {
         TableViewerColumn col = new TableViewerColumn(tableViewer, SWT.NONE);
         col.setLabelProvider(new ColumnLabelProvider());
-        col.getColumn().setWidth(200);
     }
 
     @Override

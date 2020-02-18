@@ -97,6 +97,7 @@ class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
 
     public DbStorePrefListEditor(Composite parent) {
         super(parent);
+        getViewer().addDoubleClickListener(event -> editObject());
     }
 
     @Override
@@ -111,13 +112,6 @@ class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
     }
 
     @Override
-    protected TableViewer createViewer() {
-        TableViewer viewer = super.createViewer();
-        viewer.addDoubleClickListener(event -> editObject());
-        return viewer;
-    }
-
-    @Override
     protected void addColumns(TableViewer tableViewer) {
         TableViewerColumn col = new TableViewerColumn(tableViewer, SWT.NONE);
         col.setLabelProvider(new ColumnLabelProvider() {
@@ -129,17 +123,9 @@ class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
 
             @Override
             public Image getImage(Object element) {
-                DbInfo info = (DbInfo) element;
-
-                if (info.isMsSql()) {
-                    return Activator.getRegisteredImage(FILE.MS_ICON);
-                }
-
-                return Activator.getRegisteredImage(FILE.PG_ICON);
+                return Activator.getRegisteredImage(((DbInfo) element).isMsSql() ? FILE.MS_ICON : FILE.PG_ICON);
             }
         });
-
-        col.getColumn().setWidth(200);
     }
 
     @Override
@@ -151,7 +137,7 @@ class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
 
         Button btnPgPass = createButton(parent, CLIENT_ID,
                 Messages.DbStorePrefPage_pg_pass_import_tooltip, FILE.PGPASS);
-        btnPgPass.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_END));
+        btnPgPass.setLayoutData(new GridData(SWT.DEFAULT, SWT.END, false, true));
 
         btnPgPass.addSelectionListener(new SelectionAdapter() {
 

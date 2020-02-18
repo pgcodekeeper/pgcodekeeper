@@ -59,7 +59,29 @@ public abstract class PrefListEditor<T> extends Composite {
         gridLayout.marginWidth = 0;
         setLayout(gridLayout);
         setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-        viewerObjs = createViewer();
+
+        viewerObjs = new TableViewer(
+                this, SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
+        viewerObjs.setContentProvider(ArrayContentProvider.getInstance());
+
+        addColumns(viewerObjs);
+
+        GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+        viewerObjs.getTable().setLayoutData(gd);
+        if (viewerObjs.getTable().getColumnCount() > 1) {
+            viewerObjs.getTable().setLinesVisible(true);
+            viewerObjs.getTable().setHeaderVisible(true);
+        } else {
+            // set nonzero width to make column visible
+            viewerObjs.getTable().getColumn(0).setWidth(1);
+        }
+        gd.widthHint = WIDTH_HINT_PX;
+        gd.heightHint = HEIGHT_HINT_PX;
+
+        Transfer[] transferTypes = {LocalSelectionTransfer.getTransfer()};
+        viewerObjs.addDragSupport(DND.DROP_MOVE, transferTypes, new DragListener());
+        viewerObjs.addDropSupport(DND.DROP_MOVE, transferTypes, new DropListener());
+
         createSideBar();
     }
 
@@ -195,29 +217,6 @@ public abstract class PrefListEditor<T> extends Composite {
         }
     }
 
-    protected TableViewer createViewer() {
-        TableViewer viewer = new TableViewer(
-                this, SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
-        viewer.setContentProvider(ArrayContentProvider.getInstance());
-
-        addColumns(viewer);
-
-        GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        viewer.getTable().setLayoutData(gd);
-        if (viewer.getTable().getColumnCount() > 1) {
-            viewer.getTable().setLinesVisible(true);
-            viewer.getTable().setHeaderVisible(true);
-        }
-        gd.widthHint = WIDTH_HINT_PX;
-        gd.heightHint = HEIGHT_HINT_PX;
-
-        Transfer[] transferTypes = {LocalSelectionTransfer.getTransfer()};
-        viewer.addDragSupport(DND.DROP_MOVE, transferTypes, new DragListener(viewer));
-        viewer.addDropSupport(DND.DROP_MOVE, transferTypes, new DropListener(viewer));
-
-        return viewer;
-    }
-
     protected abstract void addColumns(TableViewer viewer);
 
     /**
@@ -245,40 +244,35 @@ public abstract class PrefListEditor<T> extends Composite {
         viewerObjs.setInput(objsList);
     }
 
-    private int sourceIndex = -1;
-    private int targetIndex = -1;
+    private Object dragSource;
+    private Object dragTarget;
 
     private class DragListener extends DragSourceAdapter {
 
-        private final TableViewer viewer;
-
-        public DragListener(TableViewer viewer) {
-            this.viewer = viewer;
-        }
-
         @Override
         public void dragStart(DragSourceEvent event) {
-            IStructuredSelection selection = viewer.getStructuredSelection();
-            sourceIndex = objsList.indexOf(selection.getFirstElement());
+            dragSource = viewerObjs.getStructuredSelection().getFirstElement();
         }
     }
 
-
     private class DropListener extends ViewerDropAdapter {
 
-        private final TableViewer viewer;
-
-        public DropListener(TableViewer viewer) {
-            super(viewer);
-            this.viewer = viewer;
+        public DropListener() {
+            super(viewerObjs);
         }
 
         @Override
         public boolean performDrop(Object data) {
-            if (sourceIndex != targetIndex && sourceIndex != -1 && targetIndex != -1) {
-                objsList.add(targetIndex, objsList.remove(sourceIndex));
-                sourceIndex = targetIndex = -1;
-                viewer.refresh();
+            if (dragSource != dragTarget) {
+                @SuppressWarnings("unchecked")
+                T source = (T) dragSource;
+
+                int targetIndex = objsList.indexOf(dragTarget);
+                objsList.remove(source);
+                objsList.add(targetIndex, source);
+                dragSource = dragTarget = null;
+                viewerObjs.refresh();
+                return true;
             }
             return false;
         }
@@ -287,7 +281,7 @@ public abstract class PrefListEditor<T> extends Composite {
         public boolean validateDrop(Object target, int operation,
                 TransferData transferType) {
             if (target != null) {
-                targetIndex = objsList.indexOf(target);
+                dragTarget = target;
             }
             return true;
         }
