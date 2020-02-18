@@ -308,7 +308,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
 
     private void checkFileSize() {
         int lines = getDocumentProvider().getDocument(getEditorInput()).getNumberOfLines();
-        int maxLines = mainPrefs.getInt(SQL_EDITOR_PREF.NUMBER_OF_LINES);
+        int maxLines = mainPrefs.getInt(SQL_EDITOR_PREF.NUMBER_OF_LINES_LIMIT);
         isLargeFile = maxLines != 0 && lines > maxLines;
     }
 

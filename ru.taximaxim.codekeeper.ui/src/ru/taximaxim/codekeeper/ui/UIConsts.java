@@ -102,7 +102,7 @@ public interface UIConsts {
         String MATCHING_BRACKETS_COLOR = "matchingBracketsColor"; //$NON-NLS-1$
         String HIGHLIGHT_BRACKET_AT_CARET_LOCATION = "highlightBracketAtCaretLocation"; //$NON-NLS-1$
         String ENCLOSING_BRACKETS = "enclosingBrackets"; //$NON-NLS-1$
-        String NUMBER_OF_LINES = "numberOfLines"; //$NON-NLS-1$
+        String NUMBER_OF_LINES_LIMIT = "numberOfLinesLimit"; //$NON-NLS-1$
     }
 
     interface USAGE_REPORT_PREF {

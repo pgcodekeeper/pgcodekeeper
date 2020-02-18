@@ -39,7 +39,7 @@ public class SQLEditorMainPage extends FieldEditorPreferencePage implements IWor
         IPreferenceStore store = getPreferenceStore();
         Composite area = getFieldEditorParent();
 
-        addField(new IntegerFieldEditor(SQL_EDITOR_PREF.NUMBER_OF_LINES,
+        addField(new IntegerFieldEditor(SQL_EDITOR_PREF.NUMBER_OF_LINES_LIMIT,
                 Messages.SQLEditorMainPage_disable_parser, area, 7));
 
         addField(new BooleanFieldEditor(SQL_EDITOR_PREF.MATCHING_BRACKETS,
