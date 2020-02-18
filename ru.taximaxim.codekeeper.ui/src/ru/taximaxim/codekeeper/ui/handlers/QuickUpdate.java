@@ -159,8 +159,8 @@ class QuickUpdateJob extends SingletonEditorJob {
         IEclipsePreferences projPrefs = proj.getPrefs();
         String timezone = projPrefs.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC);
 
-        PgDatabase dbProjectFragment = new UIProjectLoader(monitor.newChild(1))
-                .buildFiles(Arrays.asList(file), isMsSql);
+        PgDatabase dbProjectFragment = UIProjectLoader
+                .buildFiles(Arrays.asList(file), isMsSql, monitor.newChild(1));
         Collection<PgStatement> listPgObjectsFragment = dbProjectFragment.getDescendants().collect(Collectors.toList());
 
         long schemaCount = dbProjectFragment.getSchemas().size();

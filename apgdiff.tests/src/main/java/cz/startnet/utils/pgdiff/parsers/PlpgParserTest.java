@@ -20,6 +20,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
@@ -73,7 +74,7 @@ public class PlpgParserTest {
 
         SQLParser parser = AntlrParser
                 .makeBasicParser(SQLParser.class, sql, fileNameTemplate, errors);
-
+        AntlrUtils.removeIntoStatements(parser);
         parser.getInterpreter().setPredictionMode(PredictionMode.LL_EXACT_AMBIG_DETECTION);
         parser.addErrorListener(new BaseErrorListener() {
 

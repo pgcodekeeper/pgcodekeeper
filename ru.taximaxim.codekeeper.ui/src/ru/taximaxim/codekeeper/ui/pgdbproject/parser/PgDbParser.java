@@ -166,7 +166,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
 
     public void getObjFromProjFiles(Collection<IFile> files, IProgressMonitor monitor, boolean isMsSql)
             throws InterruptedException, IOException, CoreException {
-        PgDatabase db = new UIProjectLoader(monitor).buildFiles(files, isMsSql);
+        PgDatabase db = UIProjectLoader.buildFiles(files, isMsSql, monitor);
         files.forEach(this::removeResFromRefs);
         objDefinitions.putAll(db.getObjDefinitions());
         objReferences.putAll(db.getObjReferences());
@@ -179,7 +179,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(proj.getDefaultCharset(true));
         args.setMsSql(OpenProjectUtils.checkMsSql(proj));
-        PgDatabase db = new UIProjectLoader(proj, args, mon, null)
+        PgDatabase db = new UIProjectLoader(proj, args, mon)
                 .loadDatabaseSchemaFromProject();
         objDefinitions.clear();
         objDefinitions.putAll(db.getObjDefinitions());

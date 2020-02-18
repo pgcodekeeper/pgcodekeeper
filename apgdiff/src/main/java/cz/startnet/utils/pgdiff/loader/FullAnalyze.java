@@ -28,7 +28,7 @@ public final class FullAnalyze {
         new FullAnalyze(db, errors).fullAnalyze();
     }
 
-    public void fullAnalyze() throws InterruptedException, IOException {
+    private void fullAnalyze() throws InterruptedException, IOException {
         analyzeView(null);
 
         for (AbstractAnalysisLauncher l : db.getAnalysisLaunchers()) {

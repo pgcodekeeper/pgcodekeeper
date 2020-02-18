@@ -2,10 +2,10 @@ package ru.taximaxim.codekeeper.ui.pgdbproject.parser;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.eclipse.core.resources.IContainer;
@@ -14,6 +14,7 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -29,6 +30,7 @@ import cz.startnet.utils.pgdiff.loader.FullAnalyze;
 import cz.startnet.utils.pgdiff.loader.LibraryLoader;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.loader.ProjectLoader;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -46,13 +48,8 @@ public class UIProjectLoader extends ProjectLoader {
 
     private final IProject iProject;
 
-    public UIProjectLoader(IProgressMonitor monitor) {
-        this(null, null, monitor, null);
-    }
-
-    public UIProjectLoader(IProject iProject, PgDiffArguments arguments,
-            IProgressMonitor monitor, List<Object> errors) {
-        super(null, arguments, monitor, errors);
+    public UIProjectLoader(IProject iProject, PgDiffArguments arguments, IProgressMonitor monitor) {
+        super(null, arguments, monitor, new ArrayList<>());
         this.iProject = iProject;
     }
 
@@ -71,8 +68,23 @@ public class UIProjectLoader extends ProjectLoader {
         }
         finishLoaders();
 
-        FullAnalyze.fullAnalyze(db, errors);
+        analyzeAndMark(db);
         return db;
+    }
+
+    private void analyzeAndMark(PgDatabase db) throws InterruptedException, IOException {
+        FullAnalyze.fullAnalyze(db, errors);
+
+        for (Object error : errors) {
+            if (error instanceof AntlrError) {
+                AntlrError antlrError = (AntlrError) error;
+                IPath path = new Path(antlrError.getLocation());
+                IFile file = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(path);
+                if (file != null) {
+                    PgUIDumpLoader.addMarker(file, antlrError);
+                }
+            }
+        }
     }
 
     private void loadPgStructure(IContainer baseDir, PgDatabase db)
@@ -148,14 +160,6 @@ public class UIProjectLoader extends ProjectLoader {
         }
         loader.loadDatabase(db, antlrTasks);
         launchedLoaders.add(loader);
-    }
-
-    public PgDatabase buildFiles(Collection<IFile> files, boolean isMsSql)
-            throws InterruptedException, IOException, CoreException {
-        SubMonitor mon = SubMonitor.convert(monitor, files.size());
-        PgDatabase d = isMsSql ? buildMsFiles(files, mon) : buildPgFiles(files, mon);
-        finishLoaders();
-        return d;
     }
 
     private PgDatabase buildMsFiles(Collection<IFile> files, SubMonitor mon)
@@ -294,7 +298,7 @@ public class UIProjectLoader extends ProjectLoader {
             }
         }
         finishLoaders();
-        FullAnalyze.fullAnalyze(db, errors);
+        analyzeAndMark(db);
         return db;
     }
 
@@ -312,11 +316,21 @@ public class UIProjectLoader extends ProjectLoader {
         ((PgUIDumpLoader) l).updateMarkers();
     }
 
+    public static PgDatabase buildFiles(Collection<IFile> files, boolean isMsSql, IProgressMonitor monitor)
+            throws InterruptedException, IOException, CoreException {
+        UIProjectLoader loader = new UIProjectLoader(null, null, monitor);
+        SubMonitor mon = SubMonitor.convert(monitor, files.size());
+        PgDatabase d = isMsSql ? loader.buildMsFiles(files, mon) : loader.buildPgFiles(files, mon);
+        loader.finishLoaders();
+        return d;
+    }
+
     public static PgStatement parseStatement(IFile file, Collection<DbObjType> types)
             throws InterruptedException, IOException, CoreException {
-        return new UIProjectLoader(new NullProgressMonitor())
-                .buildFiles(Arrays.asList(file), false).getDescendants()
-                .filter(e -> types.contains(e.getStatementType())).findAny().orElse(null);
+        return buildFiles(Arrays.asList(file), false, new NullProgressMonitor())
+                .getDescendants()
+                .filter(e -> types.contains(e.getStatementType()))
+                .findAny().orElse(null);
     }
 
     public static int countFiles(IContainer container) throws CoreException {

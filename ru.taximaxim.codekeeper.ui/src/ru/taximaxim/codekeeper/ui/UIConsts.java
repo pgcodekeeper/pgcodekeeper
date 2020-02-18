@@ -54,6 +54,7 @@ public interface UIConsts {
 
     interface PREF_PAGE {
         String DB_STORE = PLUGIN_ID.THIS + ".dbstore"; //$NON-NLS-1$
+        String SQL_EDITOR = PLUGIN_ID.THIS + ".sqleditor"; //$NON-NLS-1$
     }
 
     interface PREF {
@@ -101,6 +102,7 @@ public interface UIConsts {
         String MATCHING_BRACKETS_COLOR = "matchingBracketsColor"; //$NON-NLS-1$
         String HIGHLIGHT_BRACKET_AT_CARET_LOCATION = "highlightBracketAtCaretLocation"; //$NON-NLS-1$
         String ENCLOSING_BRACKETS = "enclosingBrackets"; //$NON-NLS-1$
+        String NUMBER_OF_LINES_LIMIT = "numberOfLinesLimit"; //$NON-NLS-1$
     }
 
     interface USAGE_REPORT_PREF {
@@ -156,6 +158,8 @@ public interface UIConsts {
         String ICONBALLGREEN = "/icons/ball_green.png"; //$NON-NLS-1$
         String ICONADDDEP = "/icons/add_dep.png"; //$NON-NLS-1$
         String PGPASS = "/icons/pg_pass.png"; //$NON-NLS-1$
+        String PG_ICON = "/icons/postgresql_icon.png"; //$NON-NLS-1$
+        String MS_ICON = "/icons/mssql_icon.png"; //$NON-NLS-1$
 
         // pgadmin icons
         String ICONPGADMIN = "/icons/pgadmin/"; //$NON-NLS-1$

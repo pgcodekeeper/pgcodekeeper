@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -49,7 +50,7 @@ public class ProjectLoader extends DatabaseLoader {
     protected boolean isOverrideMode;
 
     public ProjectLoader(String dirPath, PgDiffArguments arguments) {
-        this(dirPath, arguments, null, null);
+        this(dirPath, arguments, null, new ArrayList<>());
     }
 
     public ProjectLoader(String dirPath, PgDiffArguments arguments,

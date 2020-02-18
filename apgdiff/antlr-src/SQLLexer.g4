@@ -484,7 +484,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     ==================================================
     */
     
-    ALL: [aA] [lL] [lL];   // first RESERVED_KEYWORD, sync with PgDiffUtils.normalizeWhitespaceUnquoted
+    ALL: [aA] [lL] [lL];   // first RESERVED_KEYWORD, sync with AntlrUtils.normalizeWhitespaceUnquoted
     ANALYSE: [aA] [nN] [aA] [lL] [yY] [sS] [eE];
     ANALYZE: [aA] [nN] [aA] [lL] [yY] [zZ] [eE];
     AND: [aA] [nN] [dD];
@@ -578,7 +578,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     WHEN: [wW] [hH] [eE] [nN];
     WHERE: [wW] [hH] [eE] [rR] [eE];
     WINDOW: [wW] [iI] [nN] [dD] [oO] [wW];
-    WITH: [wW] [iI] [tT] [hH];   // last RESERVED_KEYWORD, sync with PgDiffUtils.normalizeWhitespaceUnquoted
+    WITH: [wW] [iI] [tT] [hH];   // last RESERVED_KEYWORD, sync with AntlrUtils.normalizeWhitespaceUnquoted
     
     /*
      * Other tokens.

@@ -14,7 +14,6 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.dialogs.InputDialog;
-import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckboxCellEditor;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ColumnViewer;
@@ -124,7 +123,7 @@ public class DependencyProperties extends PropertyPage {
         }
     }
 
-    private class DependenciesListEditor extends PrefListEditor<PgLibrary, TableViewer> {
+    private class DependenciesListEditor extends PrefListEditor<PgLibrary> {
 
         public DependenciesListEditor(Composite parent) {
             super(parent);
@@ -150,22 +149,7 @@ public class DependencyProperties extends PropertyPage {
         }
 
         @Override
-        protected TableViewer createViewer(Composite parent) {
-            TableViewer viewer = new TableViewer(
-                    parent, SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
-            viewer.setContentProvider(ArrayContentProvider.getInstance());
-
-            addColumns(viewer);
-
-            GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 7);
-            viewer.getTable().setLayoutData(gd);
-            viewer.getTable().setLinesVisible(true);
-            viewer.getTable().setHeaderVisible(true);
-
-            return viewer;
-        }
-
-        private void addColumns(TableViewer viewer) {
+        protected void addColumns(TableViewer viewer) {
             TableViewerColumn path = new TableViewerColumn(viewer, SWT.LEFT);
             path.getColumn().setText(Messages.DependencyProperties_path);
             path.getColumn().setResizable(true);
@@ -282,8 +266,6 @@ public class DependencyProperties extends PropertyPage {
             });
 
             createButton(parent, DELETE_ID, Messages.delete, Activator.getEclipseImage(ISharedImages.IMG_ETOOL_DELETE));
-            createButton(parent, UP_ID, null, FILE.ICONUP);
-            createButton(parent, DOWN_ID, null, FILE.ICONDOWN);
         }
     }
 

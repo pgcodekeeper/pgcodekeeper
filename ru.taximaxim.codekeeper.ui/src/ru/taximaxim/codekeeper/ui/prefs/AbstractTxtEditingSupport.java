@@ -4,7 +4,6 @@ import java.text.MessageFormat;
 import java.util.ListIterator;
 
 import org.eclipse.jface.viewers.ColumnViewer;
-import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -13,7 +12,7 @@ import org.eclipse.swt.widgets.MessageBox;
 import ru.taximaxim.codekeeper.ui.CommonEditingSupport;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
-public abstract class AbstractTxtEditingSupport<T, K extends PrefListEditor<T, TableViewer>>
+public abstract class AbstractTxtEditingSupport<T, K extends PrefListEditor<T>>
 extends CommonEditingSupport<TextCellEditor> {
 
     protected final Class<T> klass;
