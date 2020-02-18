@@ -81,6 +81,7 @@ public class JdbcMsLoader extends JdbcLoaderBase {
             throw new IOException(MessageFormat.format(Messages.Connection_DatabaseJdbcAccessError,
                     e.getLocalizedMessage(), getCurrentLocation()), e);
         }
+        FullAnalyze.fullAnalyze(d, errors);
         return d;
     }
 }
