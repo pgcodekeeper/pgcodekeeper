@@ -14,17 +14,6 @@ public class DirectoryLibrary extends AbstractLibrary {
     }
 
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder(name);
-
-        if (getParent() instanceof LibraryContainer) {
-            sb.append(" - ").append(path.getParent()); //$NON-NLS-1$
-        }
-
-        return sb.toString();
-    }
-
-    @Override
     public Image getImage() {
         return Activator.getEclipseImage(ISharedImages.IMG_OBJ_FOLDER);
     }

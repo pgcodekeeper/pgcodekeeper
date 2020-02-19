@@ -29,17 +29,6 @@ public class FileLibrary extends AbstractLibrary implements IStorage {
     }
 
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder(name);
-
-        if (getParent() instanceof LibraryContainer) {
-            sb.append(" - ").append(getPath().getParent()); //$NON-NLS-1$
-        }
-
-        return sb.toString();
-    }
-
-    @Override
     public Image getImage() {
         return Activator.getEclipseImage(ISharedImages.IMG_OBJ_FILE);
     }

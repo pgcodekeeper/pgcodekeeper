@@ -48,14 +48,12 @@ public class LibraryUtils {
                 break;
             case URL:
                 try {
-                    String urlPath = new URI(path).getPath();
-                    if (urlPath != null) {
-                        path = urlPath.substring(urlPath.lastIndexOf('/') + 1) + " - " +  path; //$NON-NLS-1$
-                    }
+                    UrlLibrary url = new UrlLibrary(root, new URI(path));
+                    readDir(url, url.getPath());
                 } catch (URISyntaxException e) {
-                    // Nothing to do, use default path
+                    // use default path
+                    new SimpleLibrary(root, path);
                 }
-                new SimpleLibrary(root, path);
                 break;
             case LOCAL:
                 readFile(root, Paths.get(path));

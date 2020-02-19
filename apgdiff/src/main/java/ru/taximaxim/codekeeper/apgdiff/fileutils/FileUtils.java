@@ -4,10 +4,12 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.io.UncheckedIOException;
+import java.net.URI;
 import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.DosFileAttributeView;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -98,6 +100,24 @@ public final class FileUtils {
         return metaPath.resolve(name);
     }
 
+    public static Path getLoadedFilePath(Path metaPath, URI uri) {
+        String path = uri.getPath();
+        String fileName = FileUtils.getValidFilename(Paths.get(path).getFileName().toString());
+        String name = fileName + '_' + PgDiffUtils.md5(path).substring(0, 10);
+        return metaPath.resolve(name);
+    }
+
+    public static String getNameFromUri(URI uri) {
+        if (uri == null) {
+            return null;
+        }
+        String urlPath = uri.getPath();
+        if (urlPath != null) {
+            return urlPath.substring(urlPath.lastIndexOf('/') + 1);
+        }
+
+        return uri.toString();
+    }
 
     private FileUtils() {
     }

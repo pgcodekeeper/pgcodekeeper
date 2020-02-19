@@ -76,8 +76,12 @@ public abstract class AbstractLibrary {
         return path;
     }
 
+    public String getName() {
+        return name;
+    }
+
     public boolean exists() {
-        return Files.exists(path);
+        return Files.exists(getPath());
     }
 
     @Override

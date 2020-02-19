@@ -17,9 +17,9 @@ import org.eclipse.ui.navigator.ICommonMenuConstants;
 
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
+import ru.taximaxim.codekeeper.ui.libraries.CacheableLibrary;
 import ru.taximaxim.codekeeper.ui.libraries.FileLibrary;
 import ru.taximaxim.codekeeper.ui.libraries.LibraryUtils;
-import ru.taximaxim.codekeeper.ui.libraries.ZipLibrary;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class NavigationLibrariesActionProvider extends CommonActionProvider {
@@ -106,7 +106,7 @@ public class NavigationLibrariesActionProvider extends CommonActionProvider {
             ISelection selection = getContext().getSelection();
             if (!selection.isEmpty()) {
                 Object sel = ((IStructuredSelection) selection).getFirstElement();
-                return sel instanceof ZipLibrary && ((ZipLibrary) sel).exists();
+                return sel instanceof CacheableLibrary && ((CacheableLibrary) sel).exists();
             }
 
             return false;
@@ -116,9 +116,9 @@ public class NavigationLibrariesActionProvider extends CommonActionProvider {
         public void run() {
             IStructuredSelection selection = (IStructuredSelection) getContext().getSelection();
             Object sel = selection.getFirstElement();
-            if (sel instanceof ZipLibrary && ((ZipLibrary) sel).exists()) {
+            if (sel instanceof CacheableLibrary && ((CacheableLibrary) sel).exists()) {
                 try {
-                    ((ZipLibrary) sel).clearCache();
+                    ((CacheableLibrary) sel).clear();
                 } catch (IOException e) {
                     Log.log(e);
                     ExceptionNotifier.notifyDefault(
@@ -138,7 +138,7 @@ public class NavigationLibrariesActionProvider extends CommonActionProvider {
         @Override
         public boolean isEnabled() {
             IStructuredSelection selection = (IStructuredSelection) getContext().getSelection();
-            return selection.getFirstElement() instanceof ZipLibrary;
+            return selection.getFirstElement() instanceof CacheableLibrary;
         }
 
         @Override
@@ -146,9 +146,9 @@ public class NavigationLibrariesActionProvider extends CommonActionProvider {
             IStructuredSelection selection = (IStructuredSelection) getContext()
                     .getSelection();
             Object sel = selection.getFirstElement();
-            if (sel instanceof ZipLibrary) {
+            if (sel instanceof CacheableLibrary) {
                 try {
-                    ((ZipLibrary) sel).reload();
+                    ((CacheableLibrary) sel).refresh();
                 } catch (IOException e) {
                     Log.log(e);
                     ExceptionNotifier.notifyDefault(
