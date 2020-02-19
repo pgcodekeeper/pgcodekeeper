@@ -12,13 +12,13 @@ import java.util.List;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.ListViewer;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -102,19 +102,16 @@ public class IgnoreListProperties extends PropertyPage {
         });
     }
 
-    public static class IgnoreListEditor extends PrefListEditor<String, ListViewer> {
+    public static class IgnoreListEditor extends PrefListEditor<String> {
 
         public IgnoreListEditor(Composite parent) {
             super(parent);
         }
 
         @Override
-        protected ListViewer createViewer(Composite parent) {
-            ListViewer viewer = new ListViewer(parent, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
-            GridData gd =  new GridData(SWT.FILL, SWT.FILL, true, true, 1, 6);
-            viewer.getControl().setLayoutData(gd);
-            viewer.setContentProvider(ArrayContentProvider.getInstance());
-            return viewer;
+        protected void addColumns(TableViewer tableViewer) {
+            TableViewerColumn col = new TableViewerColumn(tableViewer, SWT.NONE);
+            col.setLabelProvider(new ColumnLabelProvider());
         }
 
         @Override

@@ -33,6 +33,7 @@ import org.eclipse.ui.PartInitException;
 
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
@@ -48,6 +49,7 @@ import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
 
 public class DiffWizard extends Wizard implements IPageChangingListener {
 
@@ -101,7 +103,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                 return;
             }
 
-            pagePartial.setData(dbSource.getOrigin(), dbTarget.getOrigin(), treediffer);
+            pagePartial.setData(treediffer, pageDiff.getIgnoreList());
         }
     }
 
@@ -175,6 +177,14 @@ class PageDiff extends WizardPage implements Listener {
 
     public DbSource getDbTarget() {
         return dbTarget.getDbSource(btnMsSql.getSelection(), getOneTimePrefs());
+    }
+
+    public IgnoreList getIgnoreList() {
+        if (btnUseGlobalIgnoreList.getSelection()) {
+            return InternalIgnoreList.readInternalList();
+        }
+
+        return new IgnoreList();
     }
 
     public String getTimezone() {
@@ -375,11 +385,14 @@ class PagePartial extends WizardPage {
     private Label lblTarget;
     private DiffTableViewer diffTable;
 
-    public void setData(String source, String target, TreeDiffer treeDiffer) {
+    public void setData(TreeDiffer treeDiffer, IgnoreList ignoreList) {
         this.treeDiffer = treeDiffer;
-        lblSource.setText(source);
-        lblTarget.setText(target);
-        diffTable.setInput(treeDiffer.getDbSource(), treeDiffer.getDbTarget(), treeDiffer.getDiffTree(), null);
+        DbSource source = treeDiffer.getDbSource();
+        DbSource target = treeDiffer.getDbTarget();
+        lblSource.setText(source.getOrigin());
+        lblTarget.setText(target.getOrigin());
+        lblSource.getParent().layout();
+        diffTable.setInput(source, target, treeDiffer.getDiffTree(), ignoreList);
     }
 
     public TreeDiffer getTreeDiffer() {

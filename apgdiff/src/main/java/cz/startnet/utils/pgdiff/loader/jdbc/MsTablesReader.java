@@ -5,12 +5,13 @@ import java.sql.SQLException;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
-import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsValueExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.MsExpressionAnalysisLauncher;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsColumn;
 import cz.startnet.utils.pgdiff.schema.MsTable;
+import cz.startnet.utils.pgdiff.schema.MsType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MsTablesReader extends JdbcReader {
@@ -48,7 +49,7 @@ public class MsTablesReader extends JdbcReader {
         boolean isTextImage = false;
         for (XmlReader col : XmlReader.readXML(res.getString("cols"))) {
             isTextImage = isTextImage || col.getBoolean("ti");
-            table.addColumn(getColumn(col, schema.getName(), loader));
+            table.addColumn(getColumn(col, schema, loader, null));
         }
 
         if (isTextImage) {
@@ -73,7 +74,10 @@ public class MsTablesReader extends JdbcReader {
         loader.setPrivileges(table, XmlReader.readXML(res.getString("acl")));
     }
 
-    static AbstractColumn getColumn(XmlReader col, String schemaName, JdbcLoaderBase loader) {
+    // 'MsType type' used only for MsTypesReader processing to extract type depcy
+    // from column object since it is temporary
+    static AbstractColumn getColumn(XmlReader col, AbstractSchema schema,
+            JdbcLoaderBase loader, MsType type) {
         MsColumn column = new MsColumn(col.getString("name"));
         String exp = col.getString("def");
         column.setExpression(exp);
@@ -102,11 +106,9 @@ public class MsTablesReader extends JdbcReader {
             column.setDefaultValue(def);
             column.setDefaultName(col.getString("dn"));
             loader.submitMsAntlrTask(def, p -> p.expression_eof().expression().get(0),
-                    ctx -> {
-                        MsValueExpr vex = new MsValueExpr(schemaName);
-                        vex.analyze(ctx);
-                        column.addAllDeps(vex.getDepcies());
-                    });
+                    ctx -> schema.getDatabase().addAnalysisLauncher(
+                            new MsExpressionAnalysisLauncher(type == null ? column : type,
+                                    ctx, loader.getCurrentLocation())));
         }
         return column;
     }

@@ -42,6 +42,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(USAGE_REPORT_PREF.USAGEREPORT_ENABLED_ID, true);
         store.setDefault(USAGE_REPORT_PREF.ASK_USER_USAGEREPORT_ID, true);
 
+        store.setDefault(SQL_EDITOR_PREF.NUMBER_OF_LINES_LIMIT, 5000);
         store.setDefault(SQL_EDITOR_PREF.MATCHING_BRACKETS, true);
         store.setDefault(SQL_EDITOR_PREF.MATCHING_BRACKETS_COLOR, "127, 0, 85"); //$NON-NLS-1$
         store.setDefault(SQL_EDITOR_PREF.HIGHLIGHT_BRACKET_AT_CARET_LOCATION, true);
