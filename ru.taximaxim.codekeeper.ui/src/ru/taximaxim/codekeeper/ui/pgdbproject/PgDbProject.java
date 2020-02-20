@@ -33,6 +33,10 @@ public class PgDbProject {
         return prefs;
     }
 
+    public IEclipsePreferences getAuxPrefs() {
+        return getPrefs(project, true);
+    }
+
     public String getProjectName() {
         return project.getName();
     }
@@ -94,9 +98,14 @@ public class PgDbProject {
      * @return pgCodeKeeper project preferences or null if wrong project
      */
     public static IEclipsePreferences getPrefs(IProject proj) {
+        return getPrefs(proj, false);
+    }
+
+    public static IEclipsePreferences getPrefs(IProject proj, boolean isAuxiliary) {
         try {
             if (proj.hasNature(NATURE.ID)) {
-                return new ProjectScope(proj).getNode(PLUGIN_ID.THIS);
+                return new ProjectScope(proj)
+                        .getNode(isAuxiliary ? PLUGIN_ID.AUXILIARY : PLUGIN_ID.THIS);
             }
         } catch (CoreException ex) {
             Log.log(ex);

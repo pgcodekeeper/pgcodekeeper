@@ -121,7 +121,7 @@ implements IExecutableExtension, INewWizard {
             if (pageDb.isBound()) {
                 DbInfo dbInfo = pageDb.getDbInfo();
                 if (dbInfo != null) {
-                    props.getPrefs().put(PROJ_PREF.NAME_OF_BOUND_DB, dbInfo.getName());
+                    props.getAuxPrefs().put(PROJ_PREF.NAME_OF_BOUND_DB, dbInfo.getName());
                     applyProps = true;
                 }
             }
