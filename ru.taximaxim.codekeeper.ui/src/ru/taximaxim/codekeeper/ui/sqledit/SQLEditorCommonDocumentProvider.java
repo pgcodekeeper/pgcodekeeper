@@ -10,9 +10,9 @@ import org.eclipse.jface.text.rules.MultiLineRule;
 import org.eclipse.jface.text.rules.RuleBasedPartitionScanner;
 import org.eclipse.jface.text.rules.SingleLineRule;
 import org.eclipse.jface.text.rules.Token;
-import org.eclipse.ui.editors.text.StorageDocumentProvider;
+import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 
-public class SQLEditorCommonDocumentProvider extends StorageDocumentProvider {
+public class SQLEditorCommonDocumentProvider extends TextFileDocumentProvider {
 
     /**
      * The recipe partitioning. It contains two partition types: {@link #SQL_CODE} and
@@ -41,22 +41,40 @@ public class SQLEditorCommonDocumentProvider extends StorageDocumentProvider {
     };
 
     @Override
-    protected IDocument createDocument(Object element) throws CoreException {
-        IDocument document = super.createDocument(element);
+    protected FileInfo createFileInfo(Object element) throws CoreException{
+        FileInfo info = super.createFileInfo(element);
+        if (info == null) {
+            return null;
+        }
+
+        if (element instanceof SQLEditorInput && ((SQLEditorInput) element).isTemp()) {
+            info.fTextFileBuffer.setDirty(true);
+        }
+
+        IDocument document = info.fTextFileBuffer.getDocument();
         if (document != null) {
             setupDocument(document);
         }
 
-        return document;
+        return info;
     }
 
     private void setupDocument(IDocument document) {
         if (document instanceof IDocumentExtension3) {
             IDocumentExtension3 ext = (IDocumentExtension3) document;
-            IDocumentPartitioner partitioner = createRecipePartitioner();
+            IDocumentPartitioner partitioner= createRecipePartitioner();
             partitioner.connect(document);
             ext.setDocumentPartitioner(SQL_PARTITIONING, partitioner);
         }
+    }
+
+    @Override
+    public boolean isReadOnly(Object element) {
+        if (element instanceof SQLEditorInput) {
+            return ((SQLEditorInput) element).isReadOnly();
+        }
+
+        return super.isReadOnly(element);
     }
 
     IDocumentPartitioner createRecipePartitioner() {

@@ -9,7 +9,8 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.navigator.ILinkHelper;
 
 import ru.taximaxim.codekeeper.ui.libraries.FileLibrary;
-import ru.taximaxim.codekeeper.ui.libraries.LibraryEditorInput;
+import ru.taximaxim.codekeeper.ui.libraries.LibraryUtils;
+import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorInput;
 
 public class CodekeeperLinkHelper implements ILinkHelper {
 
@@ -20,12 +21,13 @@ public class CodekeeperLinkHelper implements ILinkHelper {
             return new StructuredSelection(in.getProject());
         }
 
-        if (anInput instanceof LibraryEditorInput) {
-            LibraryEditorInput in = (LibraryEditorInput) anInput;
-            return new StructuredSelection(in.getLib());
+        if (anInput instanceof SQLEditorInput) {
+            SQLEditorInput input = (SQLEditorInput) anInput;
+            return new StructuredSelection(LibraryUtils.createFileLib(
+                    input.getPath(), input.getProject(), input.isMsSql()));
         }
 
-        return null;
+        return StructuredSelection.EMPTY;
     }
 
     @Override
@@ -35,12 +37,13 @@ public class CodekeeperLinkHelper implements ILinkHelper {
             return;
         }
         IEditorInput input = null;
-        Object element= aSelection.getFirstElement();
+        Object element = aSelection.getFirstElement();
         if (element instanceof IProject) {
-            IProject proj = (IProject)element;
+            IProject proj = (IProject) element;
             input = new ProjectEditorInput(proj.getName());
         } else if (element instanceof FileLibrary) {
-            input = new LibraryEditorInput((FileLibrary) element);
+            FileLibrary lib = (FileLibrary) element;
+            input = new SQLEditorInput(lib.getPath(), lib.isMsSql(), true);
         }
         if (input == null) {
             return;

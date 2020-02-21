@@ -1112,8 +1112,8 @@
             id="ru.taximaxim.codekeeper.ui.editors.ProjectEditorInputFactory">
         </factory>
         <factory
-            class="ru.taximaxim.codekeeper.ui.libraries.LibraryEditorInputFactory"
-            id="ru.taximaxim.codekeeper.ui.libraries.LibraryEditorInputFactory">
+            class="ru.taximaxim.codekeeper.ui.sqledit.SQLEditorInputFactory"
+            id="ru.taximaxim.codekeeper.ui.sqledit.SQLEditorInputFactory">
         </factory>
     </extension>
     <extension point="org.eclipse.ui.navigator.linkHelper">
@@ -1123,7 +1123,7 @@
             <editorInputEnablement>
                  <or>
                     <instanceof value="ru.taximaxim.codekeeper.ui.editors.ProjectEditorInput"/>
-                    <instanceof value="ru.taximaxim.codekeeper.ui.libraries.LibraryEditorInput"/>
+                    <instanceof value="ru.taximaxim.codekeeper.ui.sqledit.SQLEditorInput"/>
                  </or>
             </editorInputEnablement>
             <selectionEnablement>

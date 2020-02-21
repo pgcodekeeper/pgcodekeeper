@@ -11,16 +11,12 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.ide.IDE;
 
 import cz.startnet.utils.pgdiff.libraries.PgLibrary;
+import cz.startnet.utils.pgdiff.libraries.PgLibrarySource;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 
 public class LibraryUtils {
 
@@ -42,7 +38,7 @@ public class LibraryUtils {
 
         for (PgLibrary lib : libs) {
             String path = lib.getPath();
-            switch (lib.getSource()) {
+            switch (PgLibrarySource.getSource(path)) {
             case JDBC:
                 new SimpleLibrary(root, JdbcConnector.dbNameFromUrl(path));
                 break;
@@ -86,10 +82,11 @@ public class LibraryUtils {
         }
     }
 
-    public static void openLibrary(FileLibrary lib) throws PartInitException {
-        IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-        LibraryEditorInput input = new LibraryEditorInput(lib);
-        IDE.openEditor(page, input, EDITOR.SQL);
+    public static FileLibrary createFileLib(Path path, String projectName, boolean isMsSql) {
+        FileLibrary lib = new FileLibrary(null, path);
+        lib.setProject(projectName);
+        lib.setMsSql(isMsSql);
+        return lib;
     }
 
     private LibraryUtils() {

@@ -54,7 +54,8 @@ public class SQLEditorHyperLink implements IHyperlink {
     @Override
     public void open() {
         try {
-            ITextEditor editor = (ITextEditor) FileUtilsUi.openFileInSqlEditor(Paths.get(location), isMsSql);
+            ITextEditor editor = (ITextEditor) FileUtilsUi.openFileInSqlEditor(
+                    Paths.get(location), null, isMsSql, false);
             editor.selectAndReveal(region.getOffset(), region.getLength());
         } catch (PartInitException ex) {
             ExceptionNotifier.notifyDefault(

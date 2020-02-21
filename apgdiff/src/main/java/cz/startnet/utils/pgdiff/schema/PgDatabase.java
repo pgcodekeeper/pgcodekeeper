@@ -395,10 +395,7 @@ public class PgDatabase extends PgStatement {
     }
 
     public void addLib(PgDatabase lib) {
-        lib.getDescendants().forEach(st -> {
-            st.markAsLib();
-            concat(st);
-        });
+        lib.getDescendants().forEach(this::concat);
 
         lib.analysisLaunchers.stream()
         .filter(st -> st.getStmt().getParent() != null)
@@ -408,7 +405,7 @@ public class PgDatabase extends PgStatement {
         });
     }
 
-    public void concat(PgStatement st) {
+    private void concat(PgStatement st) {
         DbObjType type = st.getStatementType();
         String name = st.getName();
         PgStatement parent = st.getParent();

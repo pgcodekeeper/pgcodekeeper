@@ -110,8 +110,12 @@ public abstract class PgStatement implements IStatement, IHashable {
         return getMeta().isLib();
     }
 
-    public void markAsLib() {
-        getMeta().setLib(true);
+    public String getLibName() {
+        return getMeta().getLibName();
+    }
+
+    public void setLibName(String libName) {
+        getMeta().setLibName(libName);
     }
 
     public String getAuthor() {

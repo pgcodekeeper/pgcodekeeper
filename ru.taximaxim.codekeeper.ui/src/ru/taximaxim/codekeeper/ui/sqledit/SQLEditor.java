@@ -107,8 +107,6 @@ import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
 import ru.taximaxim.codekeeper.ui.handlers.AddBuilder;
 import ru.taximaxim.codekeeper.ui.job.SingletonEditorJob;
-import ru.taximaxim.codekeeper.ui.libraries.FileLibrary;
-import ru.taximaxim.codekeeper.ui.libraries.LibraryEditorInput;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
@@ -382,8 +380,6 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             }
         } else if (in instanceof SQLEditorInput) {
             isMsSql = ((SQLEditorInput) in).isMsSql();
-        } else if (in instanceof LibraryEditorInput) {
-            isMsSql = ((LibraryEditorInput) in).isMsSql();
         }
 
         if (res != null && UIProjectLoader.isInProject(res)) {
@@ -438,17 +434,11 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         }
 
         IEditorInput in = getEditorInput();
-        if (in.exists()) {
-            if (in instanceof IURIEditorInput) {
-                IDocument document = getDocumentProvider().getDocument(in);
-                InputStream stream = new ByteArrayInputStream(document.get().getBytes(StandardCharsets.UTF_8));
-                String name = Paths.get(((IURIEditorInput) in).getURI()).toString();
-                parser.fillRefsFromInputStream(stream, name, isMsSql, monitor);
-            } else if (in instanceof LibraryEditorInput) {
-                FileLibrary lib = ((LibraryEditorInput) in).getLib();
-                String name = lib.getPath().toString();
-                parser.fillRefsFromInputStream(lib.getContents(), name, isMsSql, monitor);
-            }
+        if (in.exists() && in instanceof IURIEditorInput) {
+            IDocument document = getDocumentProvider().getDocument(in);
+            InputStream stream = new ByteArrayInputStream(document.get().getBytes(StandardCharsets.UTF_8));
+            String name = Paths.get(((IURIEditorInput) in).getURI()).toString();
+            parser.fillRefsFromInputStream(stream, name, isMsSql, monitor);
         }
     }
 

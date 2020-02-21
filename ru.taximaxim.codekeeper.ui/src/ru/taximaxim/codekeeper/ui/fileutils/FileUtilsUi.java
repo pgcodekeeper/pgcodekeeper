@@ -6,8 +6,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.eclipse.core.filesystem.EFS;
-import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
@@ -40,8 +38,7 @@ public final class FileUtilsUi {
         Log.log(Log.LOG_INFO, "Creating file " + filenamePrefix); //$NON-NLS-1$
         Path path = Files.createTempFile(filenamePrefix + '_', ".sql"); //$NON-NLS-1$
         Files.write(path, content.getBytes(StandardCharsets.UTF_8));
-        IFileStore externalFile = EFS.getLocalFileSystem().fromLocalFile(path.toFile());
-        IEditorInput input = new SQLEditorInput(externalFile, isMsSql);
+        IEditorInput input = new SQLEditorInput(path, isMsSql, false);
 
         IEditorPart part = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
                 .openEditor(input, EDITOR.SQL);
@@ -54,16 +51,19 @@ public final class FileUtilsUi {
         }
     }
 
-    public static void openFileInSqlEditor(PgObjLocation loc, boolean isMsSql) throws PartInitException {
+    public static void openFileInSqlEditor(PgObjLocation loc, String project,
+            boolean isMsSql, boolean isReadOnly) throws PartInitException {
         if (loc != null && loc.getFilePath() != null) {
-            IEditorPart part = openFileInSqlEditor(Paths.get(loc.getFilePath()), isMsSql);
+            IEditorPart part = openFileInSqlEditor(
+                    Paths.get(loc.getFilePath()), project, isMsSql, isReadOnly);
             if (part instanceof ITextEditor) {
                 ((ITextEditor) part).selectAndReveal(loc.getOffset(), loc.getObjLength());
             }
         }
     }
 
-    public static IEditorPart openFileInSqlEditor(Path path, boolean isMsSql) throws PartInitException {
+    public static IEditorPart openFileInSqlEditor(Path path, String project,
+            boolean isMsSql, boolean isReadOnly) throws PartInitException {
         IWorkspace workspace = ResourcesPlugin.getWorkspace();
         IFile[] files = workspace.getRoot().findFilesForLocationURI(path.toUri());
         IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
@@ -73,8 +73,7 @@ public final class FileUtilsUi {
                 return IDE.openEditor(page, f, EDITOR.SQL);
             }
         }
-        IFileStore externalFile = EFS.getLocalFileSystem().fromLocalFile(path.toFile());
-        IEditorInput input = new SQLEditorInput(externalFile, isMsSql);
+        IEditorInput input = new SQLEditorInput(path, project, isMsSql, isReadOnly);
         return IDE.openEditor(page, input, EDITOR.SQL);
     }
 

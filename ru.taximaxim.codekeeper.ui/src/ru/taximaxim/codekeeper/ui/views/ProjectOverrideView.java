@@ -25,7 +25,9 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
 
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgOverride;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -166,9 +168,10 @@ public class ProjectOverrideView extends ViewPart implements ISelectionListener 
             Object obj = ((IStructuredSelection) selection).getFirstElement();
             if (obj instanceof PgOverride) {
                 try {
-                    PgOverride ov = (PgOverride)obj;
-                    FileUtilsUi.openFileInSqlEditor(openOldFile ? ov.getOldLocation() : ov.getNewLocation(),
-                            !ov.getNewStatement().isPostgres());
+                    PgOverride ov = (PgOverride) obj;
+                    PgStatement st = openOldFile ? ov.getOldStatement() : ov.getNewStatement();
+                    PgObjLocation loc = st.getLocation();
+                    FileUtilsUi.openFileInSqlEditor(loc, null, !st.isPostgres(), st.isLib());
                 } catch (PartInitException ex) {
                     ExceptionNotifier.notifyDefault(ex.getLocalizedMessage(), ex);
                 }

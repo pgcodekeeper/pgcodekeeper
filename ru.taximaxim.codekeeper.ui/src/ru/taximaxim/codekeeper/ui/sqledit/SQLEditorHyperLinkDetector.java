@@ -8,6 +8,7 @@ import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.hyperlink.AbstractHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
+import org.eclipse.ui.IEditorInput;
 
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
@@ -18,10 +19,15 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
     public IHyperlink[] detectHyperlinks(ITextViewer textViewer, IRegion region,
             boolean canShowMultipleHyperlinks) {
         SQLEditor editor = getAdapter(SQLEditor.class);
+        IEditorInput input = editor.getEditorInput();
+        if (input instanceof SQLEditorInput && ((SQLEditorInput) input).isReadOnly()) {
+            return new IHyperlink[0];
+        }
+
         PgDbParser parser = editor.getParser();
 
         int offset = region.getOffset();
-        Set<PgObjLocation> refs = parser.getObjsForEditor(editor.getEditorInput());
+        Set<PgObjLocation> refs = parser.getObjsForEditor(input);
 
         Stream<IHyperlink> links = Stream.empty();
 

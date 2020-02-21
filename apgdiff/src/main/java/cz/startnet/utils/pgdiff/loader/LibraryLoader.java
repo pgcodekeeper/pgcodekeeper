@@ -19,8 +19,8 @@ import java.util.zip.ZipInputStream;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.libraries.PgLibrary;
+import cz.startnet.utils.pgdiff.libraries.PgLibrarySource;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -40,14 +40,18 @@ public class LibraryLoader extends DatabaseLoader {
     public void loadLibraries(PgDiffArguments args, boolean isIgnorePriv,
             Collection<String> paths) throws InterruptedException, IOException {
         for (String path : paths) {
-            database.addLib(getLibrary(path, args, isIgnorePriv));
+            PgDatabase db = getLibrary(path, args, isIgnorePriv);
+            //db.getDescendants().forEach(st -> st.setLibName(path));
+            database.addLib(db);
         }
     }
 
     public void loadXml(DependenciesXmlStore xmlStore, PgDiffArguments args)
             throws InterruptedException, IOException {
         for (PgLibrary lib : xmlStore.readObjects()) {
-            PgDatabase l = getLibrary(lib.getPath(), args, lib.isIgnorePriv());
+            String path = lib.getPath();
+            PgDatabase l = getLibrary(path, args, lib.isIgnorePriv());
+            l.getDescendants().forEach(st -> st.setLibName(path));
             String owner = lib.getOwner();
             if (!owner.isEmpty()) {
                 l.getDescendants()
@@ -65,7 +69,7 @@ public class LibraryLoader extends DatabaseLoader {
         PgDiffArguments args = arguments.clone();
         args.setIgnorePrivileges(isIgnorePriv);
 
-        switch (PgLibrary.getSource(path)) {
+        switch (PgLibrarySource.getSource(path)) {
         case JDBC:
             String timezone = args.getTimeZone() == null ? ApgdiffConsts.UTC : args.getTimeZone();
             PgDatabase db;
@@ -75,15 +79,11 @@ public class LibraryLoader extends DatabaseLoader {
                 // TODO add errors from JDBC to list
                 db = new JdbcLoader(JdbcConnector.fromUrl(path, timezone), args).getDbFromJdbc();
             }
-
-            db.getDescendants().forEach(st -> st.setLocation(new PgObjLocation(path)));
             return db;
-
         case URL:
             try {
                 URI uri = new URI(path);
                 db = loadURI(uri, args, isIgnorePriv);
-                db.getDescendants().forEach(st -> st.setLocation(new PgObjLocation(path)));
                 return db;
             } catch (URISyntaxException ex) {
                 // shouldn't happen, already checked by getSource
@@ -126,9 +126,7 @@ public class LibraryLoader extends DatabaseLoader {
     private PgDatabase loadZip(Path path, PgDiffArguments args, boolean isIgnorePriv)
             throws InterruptedException, IOException {
         Path dir = FileUtils.getUnzippedFilePath(metaPath, path);
-        PgDatabase db = getLibrary(unzip(path, dir), args, isIgnorePriv);
-        db.getDescendants().forEach(st -> st.setLocation(new PgObjLocation(path.toString())));
-        return db;
+        return getLibrary(unzip(path, dir), args, isIgnorePriv);
     }
 
     private PgDatabase loadURI(URI uri, PgDiffArguments args, boolean isIgnorePriv)
