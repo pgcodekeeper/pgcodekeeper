@@ -324,8 +324,8 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         }
         if (in.exists() && in instanceof IURIEditorInput) {
             return Paths.get(((IURIEditorInput) in).getURI()).toString();
+        } else {
+            return null;
         }
-
-        return null;
     }
 }

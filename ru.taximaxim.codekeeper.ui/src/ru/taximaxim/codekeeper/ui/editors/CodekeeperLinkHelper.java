@@ -23,8 +23,10 @@ public class CodekeeperLinkHelper implements ILinkHelper {
 
         if (anInput instanceof SQLEditorInput) {
             SQLEditorInput input = (SQLEditorInput) anInput;
-            return new StructuredSelection(LibraryUtils.createFileLib(
-                    input.getPath(), input.getProject(), input.isMsSql()));
+            if (input.isReadOnly()) {
+                return new StructuredSelection(LibraryUtils.createFileLib(
+                        input.getPath(), input.getProject(), input.isMsSql()));
+            }
         }
 
         return StructuredSelection.EMPTY;
