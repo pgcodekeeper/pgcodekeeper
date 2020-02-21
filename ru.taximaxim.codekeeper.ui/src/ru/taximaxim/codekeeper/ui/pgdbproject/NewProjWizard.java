@@ -129,6 +129,7 @@ implements IExecutableExtension, INewWizard {
             if (applyProps) {
                 try {
                     props.getPrefs().flush();
+                    props.getAuxPrefs().flush();
                 } catch (BackingStoreException e) {
                     Log.log(Log.LOG_WARNING, "Error while flushing project properties!", e); //$NON-NLS-1$
                 }

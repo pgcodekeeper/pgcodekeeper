@@ -295,6 +295,7 @@ public class ProjectProperties extends PropertyPage {
             prefs.putBoolean(PREF.SIMPLIFY_VIEW, btnSimplifyView.getSelection());
         }
         prefs.flush();
+        auxPrefs.flush();
         setValid(true);
         setErrorMessage(null);
     }
