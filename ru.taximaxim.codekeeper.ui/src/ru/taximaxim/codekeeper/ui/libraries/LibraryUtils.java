@@ -100,13 +100,10 @@ public class LibraryUtils {
         while (parent != null && !(parent instanceof RootLibrary)) {
             sb.insert(0, '/');
             sb.insert(0, parent.getName());
-            lib = parent;
             parent = parent.getParent();
         }
 
-        if (parent instanceof RootLibrary) {
-            sb.append(AbstractLibrary.CONCAT_STRING).append(lib.getLibPath());
-        }
+        sb.append(AbstractLibrary.CONCAT_STRING).append(lib.getPath());
 
         return sb.toString();
     }
