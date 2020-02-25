@@ -53,7 +53,7 @@ public abstract class CacheableLibrary extends AbstractLibrary {
         }
 
         if (obj instanceof CacheableLibrary && super.equals(obj)) {
-            CacheableLibrary lib = (UrlLibrary) obj;
+            CacheableLibrary lib = (CacheableLibrary) obj;
             return Objects.equals(libPath, lib.libPath);
         }
 
