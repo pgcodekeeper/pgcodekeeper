@@ -10,6 +10,8 @@ import org.eclipse.swt.graphics.Image;
 
 public abstract class AbstractLibrary {
 
+    protected static final String CONCAT_STRING = " - ";  //$NON-NLS-1$
+
     protected boolean isMsSql;
     protected String project;
 
@@ -69,7 +71,17 @@ public abstract class AbstractLibrary {
 
     @Override
     public String toString() {
-        return name;
+        StringBuilder sb = new StringBuilder(name);
+
+        if (parent instanceof RootLibrary) {
+            sb.append(CONCAT_STRING).append(getLibPath());
+        }
+
+        return sb.toString();
+    }
+
+    public String getLibPath() {
+        return path.toString();
     }
 
     public Path getPath() {

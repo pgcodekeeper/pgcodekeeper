@@ -12,7 +12,7 @@ public class UrlLibrary extends CacheableLibrary {
 
     UrlLibrary(AbstractLibrary parent, URI uri) {
         super(parent, FileUtils.getLoadedFilePath(LibraryUtils.META_PATH, uri),
-                FileUtils.getNameFromUri(uri));
+                FileUtils.getNameFromUri(uri), uri.toString());
     }
 
     @Override
@@ -21,6 +21,11 @@ public class UrlLibrary extends CacheableLibrary {
         if (!exists()) {
             sb.append(" [not loaded]"); //$NON-NLS-1$
         }
+
+        if (parent instanceof RootLibrary) {
+            sb.append(CONCAT_STRING).append(getLibPath());
+        }
+
         return sb.toString();
     }
 

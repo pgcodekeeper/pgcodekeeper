@@ -12,7 +12,7 @@ public class ZipLibrary extends CacheableLibrary {
 
     ZipLibrary(AbstractLibrary parent, Path path) {
         super(parent, FileUtils.getUnzippedFilePath(LibraryUtils.META_PATH, path),
-                path.getFileName().toString());
+                path.getFileName().toString(), path.toString());
     }
 
     @Override
@@ -20,6 +20,10 @@ public class ZipLibrary extends CacheableLibrary {
         StringBuilder sb = new StringBuilder(name);
         if (!exists()) {
             sb.append(" [not unzipped]"); //$NON-NLS-1$
+        }
+
+        if (parent instanceof RootLibrary) {
+            sb.append(CONCAT_STRING).append(getLibPath());
         }
 
         return sb.toString();

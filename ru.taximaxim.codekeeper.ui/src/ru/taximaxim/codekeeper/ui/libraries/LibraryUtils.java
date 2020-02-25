@@ -34,7 +34,7 @@ public class LibraryUtils {
 
     public static AbstractLibrary create(List<PgLibrary> libs, String project,
             boolean isMsSql) throws IOException {
-        AbstractLibrary root = new LibraryContainer(isMsSql, project);
+        AbstractLibrary root = new RootLibrary(isMsSql, project);
 
         for (PgLibrary lib : libs) {
             String path = lib.getPath();
@@ -87,6 +87,28 @@ public class LibraryUtils {
         lib.setProject(projectName);
         lib.setMsSql(isMsSql);
         return lib;
+    }
+
+    public static String getDescription(AbstractLibrary lib) {
+        if (lib == null || lib instanceof RootLibrary) {
+            return ""; //$NON-NLS-1$
+        }
+
+        StringBuilder sb = new StringBuilder(lib.getName());
+
+        AbstractLibrary parent = lib.getParent();
+        while (parent != null && !(parent instanceof RootLibrary)) {
+            sb.insert(0, '/');
+            sb.insert(0, parent.getName());
+            lib = parent;
+            parent = parent.getParent();
+        }
+
+        if (parent instanceof RootLibrary) {
+            sb.append(AbstractLibrary.CONCAT_STRING).append(lib.getLibPath());
+        }
+
+        return sb.toString();
     }
 
     private LibraryUtils() {
