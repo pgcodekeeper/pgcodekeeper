@@ -440,6 +440,10 @@ public class FunctionsReader extends JdbcReader {
             f.addArgument(a);
         }
 
+        if (argTypes.length == 1) {
+            processAggSpecialCase(f, res);
+        }
+
         if (DbObjType.FUNCTION == f.getStatementType()) {
             // RETURN TYPE
             if (sb.length() != 0) {
@@ -454,5 +458,32 @@ public class FunctionsReader extends JdbcReader {
         }
 
         return argsQualifiedTypes;
+    }
+
+    /*
+     * Processing of special case in aggregates with arguments: VARIADIC "any".
+     */
+    private void processAggSpecialCase(AbstractPgFunction f, ResultSet res) throws SQLException {
+        // Explanation from documentation about this special case
+        // (source: "https://www.postgresql.org/docs/11/sql-createaggregate.html").
+        //
+        // The syntax for ordered-set aggregates allows VARIADIC to be specified
+        // for both the last direct parameter and the last aggregated (WITHIN GROUP)
+        // parameter. However, the current implementation restricts use of VARIADIC
+        // in two ways. First, ordered-set aggregates can only use VARIADIC "any",
+        // not other variadic array types. Second, if the last direct parameter is
+        // VARIADIC "any", then there can be only one aggregated parameter and it
+        // must also be VARIADIC "any". (In the representation used in the system
+        // catalogs, these two parameters are merged into a single VARIADIC "any"
+        // item, since pg_proc cannot represent functions with more than one VARIADIC
+        // parameter.) If the aggregate is a hypothetical-set aggregate, the direct
+        // arguments that match the VARIADIC "any" parameter are the hypothetical
+        // ones; any preceding parameters represent additional direct arguments
+        // that are not constrained to match the aggregated arguments.
+        Argument a = f.getArguments().get(0);
+        if (ArgMode.VARIADIC == a.getMode() && "\"any\"".equals(a.getDataType())
+                && res.getInt("pronargs") == 1 && res.getInt("aggnumdirectargs") == 1) {
+            f.addArgument(a);
+        }
     }
 }
