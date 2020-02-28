@@ -440,7 +440,7 @@ public class FunctionsReader extends JdbcReader {
             f.addArgument(a);
         }
 
-        if (argTypes.length == 1) {
+        if (f.getArguments().size() == 1) {
             processAggSpecialCase(f, res);
         }
 
