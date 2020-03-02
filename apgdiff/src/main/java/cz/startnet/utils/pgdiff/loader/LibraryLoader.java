@@ -102,7 +102,12 @@ public class LibraryLoader extends DatabaseLoader {
 
         if (Files.isDirectory(p)) {
             if (Files.exists(p.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER))) {
-                return new ProjectLoader(path, args, null, errors).loadSchemaOnly();
+                PgDatabase db = new ProjectLoader(path, args, null, errors).loadSchemaOnly();
+
+                new LibraryLoader(db, metaPath, errors).loadXml(
+                        new DependenciesXmlStore(p.resolve(DependenciesXmlStore.FILE_NAME)), args);
+
+                return db;
             } else {
                 PgDatabase db = new PgDatabase(args);
                 readStatementsFromDirectory(p, db);

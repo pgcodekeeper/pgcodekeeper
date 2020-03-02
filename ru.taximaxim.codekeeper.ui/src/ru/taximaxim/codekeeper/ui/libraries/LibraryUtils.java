@@ -15,6 +15,8 @@ import org.eclipse.core.runtime.Platform;
 import cz.startnet.utils.pgdiff.libraries.PgLibrary;
 import cz.startnet.utils.pgdiff.libraries.PgLibrarySource;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
+import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
 
@@ -37,27 +39,31 @@ public class LibraryUtils {
         AbstractLibrary root = new RootLibrary(isMsSql, project);
 
         for (PgLibrary lib : libs) {
-            String path = lib.getPath();
-            switch (PgLibrarySource.getSource(path)) {
-            case JDBC:
-                new SimpleLibrary(root, JdbcConnector.dbNameFromUrl(path));
-                break;
-            case URL:
-                try {
-                    UrlLibrary url = new UrlLibrary(root, new URI(path));
-                    readDir(url, url.getPath());
-                } catch (URISyntaxException e) {
-                    // use default path
-                    new SimpleLibrary(root, path);
-                }
-                break;
-            case LOCAL:
-                readFile(root, Paths.get(path));
-                break;
-            }
+            readLib(root, lib);
         }
 
         return root;
+    }
+
+    private static void readLib(AbstractLibrary root, PgLibrary lib) throws IOException {
+        String path = lib.getPath();
+        switch (PgLibrarySource.getSource(path)) {
+        case JDBC:
+            new SimpleLibrary(root, JdbcConnector.dbNameFromUrl(path));
+            break;
+        case URL:
+            try {
+                UrlLibrary url = new UrlLibrary(root, new URI(path));
+                readDir(url, url.getPath());
+            } catch (URISyntaxException e) {
+                // use default path
+                new SimpleLibrary(root, path);
+            }
+            break;
+        case LOCAL:
+            readFile(root, Paths.get(path));
+            break;
+        }
     }
 
     private static void readFile(AbstractLibrary parent, Path path) throws IOException {
@@ -75,10 +81,38 @@ public class LibraryUtils {
         if (Files.notExists(path)) {
             return;
         }
+
+        if (Files.exists(path.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER))) {
+            readProject(parent, path);
+            return;
+        }
+
         try (Stream<Path> stream = Files.list(path).sorted(DIR_COMPARATOR)) {
             for (Path sub : (Iterable<Path>) stream::iterator) {
                 readFile(parent, sub);
             }
+        }
+    }
+
+    private static void readProject(AbstractLibrary parent, Path path) throws IOException {
+        Path extension = path.resolve(ApgdiffConsts.WORK_DIR_NAMES.EXTENSION.toString());
+        if (Files.exists(extension)) {
+            readFile(parent, extension);
+        }
+
+        Path schema = path.resolve(ApgdiffConsts.WORK_DIR_NAMES.SCHEMA.toString());
+        if (Files.exists(schema)) {
+            readFile(parent, schema);
+        }
+
+        while (!(parent instanceof RootLibrary)) {
+            parent = parent.getParent();
+        }
+
+        Path xml = path.resolve(DependenciesXmlStore.FILE_NAME);
+
+        for (PgLibrary lib : new DependenciesXmlStore(xml).readObjects()) {
+            readLib(parent, lib);
         }
     }
 
