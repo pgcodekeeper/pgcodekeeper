@@ -27,9 +27,9 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.ide.ResourceUtil;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
+import cz.startnet.utils.pgdiff.loader.DatabaseLoader;
 import cz.startnet.utils.pgdiff.loader.FullAnalyze;
 import cz.startnet.utils.pgdiff.loader.LibraryLoader;
-import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.loader.ProjectLoader;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
@@ -58,23 +58,22 @@ public class UIProjectLoader extends ProjectLoader {
         this.statementBodies = statementBodies;
     }
 
-    /**
-     * Loads database schema from a ModelExporter directory tree.
-     *
-     * @return database schema
-     */
-    public PgDatabase loadDatabaseSchemaFromProject()
-            throws InterruptedException, IOException, CoreException {
-        PgDatabase db = new PgDatabase(arguments);
-        if (arguments.isMsSql()) {
-            loadMsStructure(iProject, db);
-        } else {
-            loadPgStructure(iProject, db);
-        }
-        finishLoaders();
+    @Override
+    public PgDatabase loadAndAnalyze() throws IOException, InterruptedException {
+        PgDatabase d = load();
+        analyzeAndMark(d);
+        return d;
+    }
 
-        analyzeAndMark(db);
-        return db;
+    @Override
+    public PgDatabase load() throws InterruptedException, IOException {
+        try {
+            return loadDatabaseWithLibraries();
+        } catch (CoreException e) {
+            IOException ex = new IOException("Error while load project structure", e);
+            ex.addSuppressed(e);
+            throw ex;
+        }
     }
 
     private void analyzeAndMark(PgDatabase db) throws InterruptedException, IOException {
@@ -274,7 +273,7 @@ public class UIProjectLoader extends ProjectLoader {
         return db;
     }
 
-    public PgDatabase loadDatabaseWithLibraries()
+    private PgDatabase loadDatabaseWithLibraries()
             throws InterruptedException, IOException, CoreException {
         PgDatabase db = new PgDatabase(arguments);
         if (arguments.isMsSql()) {
@@ -303,7 +302,6 @@ public class UIProjectLoader extends ProjectLoader {
             }
         }
         finishLoaders();
-        analyzeAndMark(db);
         return db;
     }
 
@@ -316,12 +314,15 @@ public class UIProjectLoader extends ProjectLoader {
     }
 
     @Override
-    protected void finishLoader(PgDumpLoader l) {
+    protected void finishLoader(DatabaseLoader l) {
         super.finishLoader(l);
-        if (statementBodies != null) {
-            statementBodies.addAll(l.getStatementBodyReferences());
+        if (l instanceof PgUIDumpLoader) {
+            PgUIDumpLoader loader = (PgUIDumpLoader) l;
+            if (statementBodies != null) {
+                statementBodies.addAll(loader.getStatementBodyReferences());
+            }
+            loader.updateMarkers();
         }
-        ((PgUIDumpLoader) l).updateMarkers();
     }
 
     public static PgDatabase buildFiles(Collection<IFile> files, boolean isMsSql,

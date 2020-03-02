@@ -6,12 +6,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.MessageFormat;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -22,12 +20,12 @@ import org.eclipse.core.runtime.SubMonitor;
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.loader.DatabaseLoader;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.loader.JdbcRunner;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser;
@@ -50,7 +48,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  *
  * @author levsha_aa
  */
-public abstract class JdbcLoaderBase implements PgCatalogStrings {
+public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalogStrings {
 
     private static final String EXTENSION_QUERY = "SELECT q.*, time.ses_user FROM ({0}) q\n"
             + "LEFT JOIN {1}.dbots_event_data time ON q.oid = time.objid";
@@ -62,7 +60,6 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     protected final JdbcConnector connector;
     protected final SubMonitor monitor;
     protected final PgDiffArguments args;
-    private final Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>();
     private GenericColumn currentObject;
     private String currentOperation;
     protected Connection connection;
@@ -72,7 +69,6 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     protected final Map<Long, AbstractSchema> schemaIds = new HashMap<>();
     protected int version;
     private long lastSysOid;
-    protected final List<Object> errors = new ArrayList<>();
     protected JdbcRunner runner;
 
     private String extensionSchema;
@@ -504,7 +500,8 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         });
     }
 
-    protected void finishAntlr() throws InterruptedException, IOException {
+    @Override
+    protected void finishLoaders() throws InterruptedException, IOException {
         setCurrentOperation("finalizing antlr");
         AntlrParser.finishAntlr(antlrTasks);
     }
