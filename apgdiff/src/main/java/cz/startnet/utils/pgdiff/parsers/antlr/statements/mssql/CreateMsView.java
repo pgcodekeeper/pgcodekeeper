@@ -11,8 +11,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_viewCon
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Select_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsSelect;
-import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.MsSelectStmt;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.MsViewAnalysisLauncher;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.MsView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -61,18 +60,8 @@ public class CreateMsView extends BatchContextProcessor {
 
         Select_statementContext vQuery = ctx.select_statement();
         if (vQuery != null) {
-            String schemaName;
-            if (schema != null) {
-                schemaName = schema.getName();
-            } else {
-                schemaName = getSchemaNameSafe(ids);
-            }
-
-            MsSelect select = new MsSelect(schemaName);
-            select.analyze(new MsSelectStmt(vQuery));
-            view.addAllDeps(select.getDepcies());
+            db.addAnalysisLauncher(new MsViewAnalysisLauncher(view, vQuery, fileName));
         }
-
 
         if (isJdbc && schema != null) {
             schema.addView(view);

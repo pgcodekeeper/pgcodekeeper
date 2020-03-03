@@ -21,9 +21,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Procedure_paramContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Select_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Sql_clausesContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsSelect;
-import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsSqlClauses;
-import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsValueExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.MsFuncProcTrigAnalysisLauncher;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
@@ -103,34 +101,21 @@ public class CreateMsFunction extends BatchContextProcessor {
             setSourceParts(func);
 
             Select_statementContext select = bodyRet.select_statement();
-            DbObjType [] disabledDepcies = new DbObjType[] {DbObjType.FUNCTION, DbObjType.PROCEDURE};
-            if (db.getArguments().isEnableFunctionBodiesDependencies()) {
-                disabledDepcies = new DbObjType[0];
-            }
-            String schemaName;
-            if (schema != null) {
-                schemaName = schema.getName();
-            } else {
-                schemaName = getSchemaNameSafe(ids);
-            }
 
             if (select != null) {
-                MsSelect sel = new MsSelect(schemaName, disabledDepcies);
-                sel.analyze(select);
-                func.addAllDeps(sel.getDepcies());
+                db.addAnalysisLauncher(new MsFuncProcTrigAnalysisLauncher(
+                        func, select, fileName));
             } else {
                 ExpressionContext exp = bodyRet.expression();
                 if (exp != null) {
-                    MsValueExpr vex = new MsValueExpr(schemaName, disabledDepcies);
-                    vex.analyze(exp);
-                    func.addAllDeps(vex.getDepcies());
+                    db.addAnalysisLauncher(new MsFuncProcTrigAnalysisLauncher(
+                            func, exp, fileName));
                 }
 
                 Sql_clausesContext clausesCtx = bodyRet.sql_clauses();
                 if (clausesCtx != null) {
-                    MsSqlClauses clauses = new MsSqlClauses(schemaName, disabledDepcies);
-                    clauses.analyze(clausesCtx);
-                    func.addAllDeps(clauses.getDepcies());
+                    db.addAnalysisLauncher(new MsFuncProcTrigAnalysisLauncher(
+                            func, clausesCtx, fileName));
                 }
             }
 

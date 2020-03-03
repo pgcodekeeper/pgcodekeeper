@@ -28,6 +28,7 @@ import cz.startnet.utils.pgdiff.loader.JdbcRunner;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.MonitorCancelledRuntimeException;
@@ -467,23 +468,31 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
 
     protected <T> void submitAntlrTask(String sql,
             Function<SQLParser, T> parserCtxReader, Consumer<T> finalizer) {
-        submitAntlrTask(sql, parserCtxReader, finalizer, SQLParser.class);
+        submitAntlrTask(sql, parserCtxReader, finalizer, false, SQLParser.class);
+    }
+
+    protected <T> void submitPlpgsqlTask(String sql,
+            Function<SQLParser, T> parserCtxReader, Consumer<T> finalizer) {
+        submitAntlrTask(sql, parserCtxReader, finalizer, true, SQLParser.class);
     }
 
     protected <T> void submitMsAntlrTask(String sql,
             Function<TSQLParser, T> parserCtxReader, Consumer<T> finalizer) {
-        submitAntlrTask(sql, parserCtxReader, finalizer, TSQLParser.class);
+        submitAntlrTask(sql, parserCtxReader, finalizer, false, TSQLParser.class);
     }
 
     private <T, P extends Parser> void submitAntlrTask(String sql,
             Function<P, T> parserCtxReader, Consumer<T> finalizer,
-            Class<P> parserClass) {
+            boolean removeInto, Class<P> parserClass) {
         String location = getCurrentLocation();
         GenericColumn object = this.currentObject;
         List<Object> list = new ArrayList<>();
         AntlrParser.submitAntlrTask(antlrTasks, () -> {
             PgDiffUtils.checkCancelled(monitor);
             P p = AntlrParser.makeBasicParser(parserClass, sql, location, list);
+            if (removeInto) {
+                AntlrUtils.removeIntoStatements(p);
+            }
             return parserCtxReader.apply(p);
         }, t -> {
             errors.addAll(list);
