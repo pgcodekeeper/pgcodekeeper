@@ -1,13 +1,12 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
-import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_operator_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_rule_statementContext;
@@ -140,14 +139,11 @@ public class DropStatement extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        List<IdentifierContext> ids;
+        List<? extends ParserRuleContext> ids = null;
         DbObjType type = null;
-        List<String> qNameList = new ArrayList<>();
         if (ctx.drop_function_statement() != null) {
             Drop_function_statementContext dropFuncCtx = ctx.drop_function_statement();
             ids = dropFuncCtx.name.identifier();
-            qNameList.add(QNameParser.getSchemaName(ids));
-            qNameList.add(QNameParser.getFirstName(ids));
             if (dropFuncCtx.PROCEDURE() != null) {
                 type = DbObjType.PROCEDURE;
             } else if (dropFuncCtx.FUNCTION() != null) {
@@ -157,17 +153,15 @@ public class DropStatement extends ParserAbstract {
             }
         } else if (ctx.drop_trigger_statement() != null) {
             Drop_trigger_statementContext dropTrigCtx = ctx.drop_trigger_statement();
-            ids = dropTrigCtx.table_name.identifier();
-            qNameList.add(QNameParser.getSchemaName(ids));
-            qNameList.add(QNameParser.getFirstName(ids));
-            qNameList.add(dropTrigCtx.name.getText());
+            List<IdentifierContext> auxIds = dropTrigCtx.table_name.identifier();
+            auxIds.add(dropTrigCtx.name);
+            ids = auxIds;
             type = DbObjType.TRIGGER;
         } else if (ctx.drop_rule_statement() != null) {
             Drop_rule_statementContext dropRuleCtx = ctx.drop_rule_statement();
-            ids = dropRuleCtx.schema_qualified_name().identifier();
-            qNameList.add(QNameParser.getSchemaName(ids));
-            qNameList.add(QNameParser.getFirstName(ids));
-            qNameList.add(dropRuleCtx.name.getText());
+            List<IdentifierContext> auxIds = dropRuleCtx.schema_qualified_name().identifier();
+            auxIds.add(dropRuleCtx.name);
+            ids = auxIds;
             type = DbObjType.RULE;
         } else if (ctx.drop_statements() != null) {
             Drop_statementsContext dropStmtCtx = ctx.drop_statements();
@@ -175,43 +169,17 @@ public class DropStatement extends ParserAbstract {
             if (type != null) {
                 List<Schema_qualified_nameContext> objNames = dropStmtCtx
                         .if_exist_names_restrict_cascade().names_references().schema_qualified_name();
-                ids = objNames.get(0).identifier();
-                String schemaName = "";
-                String objName = "";
-                if (objNames.size() == 1) {
-                    schemaName = QNameParser.getSchemaName(ids);
-                    objName = QNameParser.getFirstName(ids);
-                }
-                qNameList.add(schemaName);
-                qNameList.add(objName);
+                ids = objNames.size() == 1 ? objNames.get(0).identifier()
+                        : Collections.emptyList();
             }
         } else if (ctx.drop_operator_statement() != null) {
             Drop_operator_statementContext dropRuleCtx = ctx.drop_operator_statement();
             List<Target_operatorContext> targetOpers = dropRuleCtx.target_operator();
             Operator_nameContext nameCtx = targetOpers.get(0).operator_name();
-            String schemaName = "";
-            String objName = "";
-            if (targetOpers.size() == 1) {
-                schemaName = nameCtx.schema_name.getText();
-                objName = nameCtx.operator.getText();
-            }
-            qNameList.add(schemaName);
-            qNameList.add(objName);
+            ids = targetOpers.size() == 1 ? Arrays.asList(nameCtx.schema_name, nameCtx.operator)
+                    : Collections.emptyList();
             type = DbObjType.OPERATOR;
         }
-
-        if (type != null) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(ACTION_DROP).append(' ').append(type).append(' ');
-            for (String name : qNameList) {
-                if (!name.isEmpty()) {
-                    sb.append(name).append('.');
-                }
-            }
-            sb.setLength(sb.length() - 1);
-            return sb.toString();
-        }
-
-        return null;
+        return type != null ? getStrForStmtAction(ACTION_DROP, type, ids) : null;
     }
 }

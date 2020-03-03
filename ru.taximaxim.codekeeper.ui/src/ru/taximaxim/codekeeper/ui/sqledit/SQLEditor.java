@@ -515,7 +515,7 @@ implements IResourceChangeListener, ITextErrorReporter {
 
     @Override
     public void setErrorPosition(int start, int length) {
-        UiSync.exec(parentComposite.getDisplay(), () -> {
+        UiSync.exec(parentComposite, () -> {
             if (!parentComposite.isDisposed()) {
                 selectAndReveal(start, length);
             }

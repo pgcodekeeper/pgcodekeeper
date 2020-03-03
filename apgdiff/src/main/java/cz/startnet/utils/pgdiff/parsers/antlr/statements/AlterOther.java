@@ -11,7 +11,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_function_statement
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_operator_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_schema_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_type_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_alterContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -75,26 +74,17 @@ public class AlterOther extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        DbObjType type;
-        List<? extends ParserRuleContext> ids;
-        Alter_operator_statementContext alterOperCtx = ctx.alter_operator_statement();
-        if (alterOperCtx != null) {
-            Operator_nameContext nameCtx = alterOperCtx.target_operator().operator_name();
-            ids = Arrays.asList(nameCtx.schema_name, nameCtx.operator);
-            type = DbObjType.OPERATOR;
-        } else {
-            ids = getIds();
-            type = getType();
-        }
+        DbObjType type = getType();
+        List<? extends ParserRuleContext> ids = getIds();
+        return type != null && !ids.isEmpty()
+                ? getStrForStmtAction(ACTION_ALTER, type, ids) : null;
 
-        if (type != null && !ids.isEmpty()) {
-            return getStrForStmtAction(ACTION_ALTER, type, ids);
-        }
-        return null;
     }
 
     private DbObjType getType() {
-        if (ctx.alter_function_statement() != null) {
+        if (ctx.alter_operator_statement() != null) {
+            return DbObjType.OPERATOR;
+        } else if (ctx.alter_function_statement() != null) {
             return DbObjType.FUNCTION;
         } else if (ctx.alter_schema_statement() != null) {
             return DbObjType.SCHEMA;
@@ -106,8 +96,12 @@ public class AlterOther extends ParserAbstract {
         return null;
     }
 
-    private List<IdentifierContext> getIds() {
-        if (ctx.alter_function_statement() != null) {
+    private List<? extends ParserRuleContext> getIds() {
+        Alter_operator_statementContext alterOperCtx = ctx.alter_operator_statement();
+        if (alterOperCtx != null) {
+            Operator_nameContext nameCtx = alterOperCtx.target_operator().operator_name();
+            return Arrays.asList(nameCtx.schema_name, nameCtx.operator);
+        } else if (ctx.alter_function_statement() != null) {
             return ctx.alter_function_statement().function_parameters()
                     .schema_qualified_name().identifier();
         } else if (ctx.alter_schema_statement() != null) {
