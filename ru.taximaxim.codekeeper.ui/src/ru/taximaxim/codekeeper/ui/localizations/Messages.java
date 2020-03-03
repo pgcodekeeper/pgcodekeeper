@@ -39,11 +39,15 @@ public final class Messages extends NLS {
 
     public static String ShowConsoleParticipant_terminate;
 
+    public static String SQLEditorContentOutlinePage_disabled_by_option;
+
     public static String SQLEditorContentOutlinePage_hide_non_dangerous;
 
     public static String SQLEditorContentOutlinePage_sort_alphabetically;
 
     public static String SQLEditorMainPage_bracket_highlighting;
+
+    public static String SQLEditorMainPage_disable_parser;
 
     public static String SQLEditorMainPage_enclosing_brackets;
 

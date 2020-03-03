@@ -7,8 +7,8 @@ options {
 
 @header {package cz.startnet.utils.pgdiff.parsers.antlr;}
 
-// для запуска парсинга рекомендуется использовать только правила с EOF
-// это исключает неоднозначные варианты разбора и ускоряет процесс
+// to start parsing, it is recommended to use only rules with EOF
+// this eliminates the ambiguous parsing options and speeds up the process
 /******* Start symbols *******/
 
 sql
@@ -89,7 +89,6 @@ lock_mode
 script_additional
     : additional_statement
     | VACUUM vacuum_mode table_cols_list?
-    | show_statement
     | (FETCH | MOVE) fetch_move_direction? (FROM | IN)? identifier
     | CLOSE (identifier | ALL)
     | CALL function_call
@@ -114,10 +113,11 @@ additional_statement
     | PREPARE identifier (LEFT_PAREN data_type (COMMA data_type)* RIGHT_PAREN)? AS data_statement
     | REASSIGN OWNED BY user_name (COMMA user_name)* TO user_name
     | copy_statement
+    | show_statement
     ;
 
 explain_statement
-    : EXPLAIN (ANALYZE? VERBOSE? | (LEFT_PAREN explain_option (COMMA explain_option)* RIGHT_PAREN)) explain_query;
+    : EXPLAIN (ANALYZE? VERBOSE? | LEFT_PAREN explain_option (COMMA explain_option)* RIGHT_PAREN) explain_query;
 
 explain_query
     : data_statement
@@ -359,36 +359,23 @@ alter_language_statement
 
 alter_table_statement
     : FOREIGN? TABLE if_exists? ONLY? name=schema_qualified_name MULTIPLY?(
-        (table_action (COMMA table_action)*
-        | RENAME COLUMN? column=schema_qualified_name TO new_column=schema_qualified_name)
-    | set_schema
-    | rename_to
-    | RENAME CONSTRAINT identifier TO identifier
-    | ATTACH PARTITION child=schema_qualified_name for_values_bound
-    | DETACH PARTITION child=schema_qualified_name)
+        table_action (COMMA table_action)*
+        | RENAME COLUMN? identifier TO identifier
+        | set_schema
+        | rename_to
+        | RENAME CONSTRAINT identifier TO identifier
+        | ATTACH PARTITION child=schema_qualified_name for_values_bound
+        | DETACH PARTITION child=schema_qualified_name)
     ;
 
 table_action
     : ADD COLUMN? if_not_exists? table_column_definition
-    | DROP COLUMN? if_exists? column=schema_qualified_name cascade_restrict?
-    | ALTER COLUMN? column=schema_qualified_name
-      ((SET DATA)? TYPE datatype=data_type collate_identifier? (USING expression=vex)?
-      | (set_def_column
-        | drop_def
-        | ((set=SET | DROP) NOT NULL)
-        | SET STATISTICS signed_number_literal
-        | SET storage_parameter
-        | define_foreign_options
-        | RESET names_in_parens
-        | set_storage
-        | ADD identity_body
-        | alter_identity+
-        | DROP IDENTITY if_exists?
-        ))
+    | DROP COLUMN? if_exists? column=identifier cascade_restrict?
+    | ALTER COLUMN? column=identifier column_action
     | ADD tabl_constraint=constraint_common (NOT not_valid=VALID)?
     | validate_constraint
     | drop_constraint
-    | (DISABLE | ENABLE) TRIGGER (trigger_name=schema_qualified_name | (ALL | USER))?
+    | (DISABLE | ENABLE) TRIGGER (trigger_name=schema_qualified_name | ALL | USER)?
     | ENABLE (REPLICA | ALWAYS) TRIGGER trigger_name=schema_qualified_name
     | (DISABLE | ENABLE) RULE rewrite_rule_name=schema_qualified_name
     | ENABLE (REPLICA | ALWAYS) RULE rewrite_rule_name=schema_qualified_name
@@ -411,6 +398,21 @@ table_action
     | ALTER CONSTRAINT identifier table_deferrable? table_initialy_immed?
     ;
 
+column_action
+    : (SET DATA)? TYPE data_type collate_identifier? (USING vex)?
+    | ADD identity_body
+    | set_def_column
+    | drop_def
+    | (set=SET | DROP) NOT NULL
+    | DROP IDENTITY if_exists?
+    | SET storage_parameter
+    | SET STATISTICS signed_number_literal
+    | SET STORAGE storage_option
+    | RESET names_in_parens
+    | define_foreign_options
+    | alter_identity+
+    ;
+
 identity_body
     : GENERATED (ALWAYS | BY DEFAULT) AS IDENTITY (LEFT_PAREN sequence_body+ RIGHT_PAREN)?
     ;
@@ -419,10 +421,6 @@ alter_identity
     : SET GENERATED (ALWAYS | BY DEFAULT)
     | SET sequence_body
     | RESTART (WITH? NUMBER_LITERAL)?
-    ;
-
-set_storage
-    : SET STORAGE storage_option
     ;
 
 storage_option
@@ -495,22 +493,12 @@ alter_default_privileges
 
 abbreviated_grant_or_revoke
     : (GRANT | REVOKE grant_option_for?) (
-       table_column_privilege (COMMA table_column_privilege)*
-        ON TABLES
-
-    | ((usage_select_update(COMMA usage_select_update)*)
-        | ALL PRIVILEGES?)
-        ON SEQUENCES
-
-    | (EXECUTE | ALL PRIVILEGES?)
-        ON FUNCTIONS
-
-    | (USAGE | CREATE | ALL PRIVILEGES?)
-        ON SCHEMAS
-
-    | (USAGE | ALL PRIVILEGES?)
-        ON TYPES)
-        (grant_to_rule | revoke_from_cascade_restrict)
+        table_column_privilege (COMMA table_column_privilege)* ON TABLES
+        | (usage_select_update (COMMA usage_select_update)* | ALL PRIVILEGES?) ON SEQUENCES
+        | (EXECUTE | ALL PRIVILEGES?) ON FUNCTIONS
+        | (USAGE | CREATE | ALL PRIVILEGES?) ON SCHEMAS
+        | (USAGE | ALL PRIVILEGES?) ON TYPES)
+    (grant_to_rule | revoke_from_cascade_restrict)
     ;
 
 grant_option_for
@@ -629,8 +617,8 @@ index_where
     : EXTENSION if_not_exists? name=identifier 
     WITH?
     (SCHEMA schema=identifier)? 
-    (VERSION unsigned_value_specification)? 
-    (FROM unsigned_value_specification)?
+    (VERSION (identifier | character_string))?
+    (FROM (identifier | character_string))?
     CASCADE?
     ;
 
@@ -1219,7 +1207,7 @@ agg_order
     ;
 
 character_string
-    : BeginDollarStringConstant Text_between_Dollar+ EndDollarStringConstant
+    : BeginDollarStringConstant Text_between_Dollar* EndDollarStringConstant
     | Character_String_Literal
     ;
 
@@ -2555,17 +2543,13 @@ value_expression_primary
 
 unsigned_value_specification
   : unsigned_numeric_literal
-  | general_literal
+  | character_string
+  | truth_value
   ;
 
 unsigned_numeric_literal
   : NUMBER_LITERAL
   | REAL_NUMBER
-  ;
-
-general_literal
-  : character_string
-  | truth_value
   ;
 
 truth_value
@@ -2682,20 +2666,11 @@ frame_bound
     ;
 
 array_expression
-    : array_brackets
-    | array_query
-    ;
-
-array_brackets
-    : ARRAY array_elements
+    : ARRAY (array_elements | table_subquery)
     ;
 
 array_elements
     : LEFT_BRACKET ((vex | array_elements) (COMMA (vex | array_elements))*)? RIGHT_BRACKET
-    ;
-
-array_query
-    : ARRAY table_subquery
     ;
 
 type_coercion
@@ -2721,7 +2696,7 @@ table_subquery
     ;
 
 select_stmt
-    : with_clause? select_ops (after_ops into_statement?)*
+    : with_clause? select_ops after_ops*
     ;
 
 after_ops
@@ -2762,12 +2737,10 @@ select_ops_no_parens
 
 select_primary
     : SELECT
-        into_statement?
         (set_qualifier (ON LEFT_PAREN vex (COMMA vex)* RIGHT_PAREN)?)?
-        select_list?
-        (into_statement | into_table)?
-        (FROM into_statement? from_item (COMMA from_item)*)?
-        (WHERE vex into_statement?)?
+        select_list? into_table?
+        (FROM from_item (COMMA from_item)*)?
+        (WHERE vex)?
         groupby_clause?
         (HAVING vex)?
         (WINDOW identifier AS window_definition (COMMA identifier AS window_definition)*)?
@@ -2784,17 +2757,16 @@ select_sublist
   ;
 
 into_table
-    : INTO TABLE schema_qualified_name
-    | INTO (TEMPORARY | TEMP | UNLOGGED) TABLE? schema_qualified_name
+    : INTO (TEMPORARY | TEMP | UNLOGGED)? TABLE? schema_qualified_name
     ;
 
 from_item
     : LEFT_PAREN from_item RIGHT_PAREN alias_clause?
     | from_item CROSS JOIN from_item
-    | from_item (INNER | (LEFT | RIGHT | FULL) OUTER?)? JOIN from_item ON vex into_statement?
+    | from_item (INNER | (LEFT | RIGHT | FULL) OUTER?)? JOIN from_item ON vex
     | from_item (INNER | (LEFT | RIGHT | FULL) OUTER?)? JOIN from_item USING names_in_parens
     | from_item NATURAL (INNER | (LEFT | RIGHT | FULL) OUTER?)? JOIN from_item
-    | from_primary into_statement?
+    | from_primary
     ;
 
 from_primary
@@ -2866,7 +2838,7 @@ insert_stmt_for_psql
     (OVERRIDING (SYSTEM | USER) VALUE)? insert_columns?
     (select_stmt | DEFAULT VALUES)
     (ON CONFLICT conflict_object? conflict_action)?
-    (RETURNING select_list into_statement?)?
+    (RETURNING select_list)?
     ;
 
 insert_columns
@@ -2891,7 +2863,7 @@ delete_stmt_for_psql
     : with_clause? DELETE FROM ONLY? delete_table_name=schema_qualified_name MULTIPLY? (AS? alias=identifier)?
     (USING from_item (COMMA from_item)*)?
     (WHERE (vex | CURRENT OF cursor=identifier))?
-    (RETURNING select_list into_statement?)?
+    (RETURNING select_list)?
     ;
 
 update_stmt_for_psql
@@ -2899,7 +2871,7 @@ update_stmt_for_psql
     SET update_set (COMMA update_set)*
     (FROM from_item (COMMA from_item)*)?
     (WHERE (vex | CURRENT OF cursor=identifier))?
-    (RETURNING select_list into_statement?)?
+    (RETURNING select_list)?
     ;
 
 update_set
@@ -2916,6 +2888,17 @@ truncate_stmt
     : TRUNCATE TABLE? only_table_multiply (COMMA only_table_multiply)*
     ((RESTART | CONTINUE) IDENTITY)? cascade_restrict?
     ;
+
+identifier_list
+    : identifier (COMMA identifier)*
+    ;
+
+anonymous_block
+    : DO (LANGUAGE (identifier | character_string))? character_string
+    | DO character_string LANGUAGE (identifier | character_string)
+    ;
+
+// plpgsql rules
 
 comp_options
     : HASH_SIGN identifier (identifier | truth_value)
@@ -2973,12 +2956,11 @@ function_statement
     | schema_statement
     | data_statement
     | additional_statement
-    | show_into_statement
     ;
 
 base_statement
     : assign_stmt
-    | EXECUTE vex (into_statement? using_vex? | using_vex into_statement)
+    | EXECUTE vex using_vex?
     | PERFORM perform_stmt
     | GET (CURRENT | STACKED)? DIAGNOSTICS diagnostic_option (COMMA diagnostic_option)*
     | NULL
@@ -3024,7 +3006,7 @@ control_statement
 cursor_statement
     : OPEN var (NO? SCROLL)? FOR (select_stmt | execute_stmt)
     | OPEN var (LEFT_PAREN option (COMMA option)* RIGHT_PAREN)?
-    | FETCH fetch_move_direction? (FROM | IN)? var into_statement
+    | FETCH fetch_move_direction? (FROM | IN)? var
     | MOVE fetch_move_direction? (FROM | IN)? var
     | CLOSE var
     ;
@@ -3089,10 +3071,6 @@ loop_start
     | FOREACH identifier_list (SLICE NUMBER_LITERAL)? IN ARRAY vex
     ;
 
-identifier_list
-    : identifier (COMMA identifier)*
-    ;
-
 using_vex
     : USING vex (COMMA vex)*
     ;
@@ -3104,17 +3082,4 @@ if_statement
 // plpgsql case
 case_statement
     : CASE vex? (WHEN vex (COMMA vex)* THEN function_statements)+ (ELSE function_statements)? END CASE
-    ;
-
-show_into_statement
-    : show_statement into_statement
-    ;
-
-into_statement
-    : INTO STRICT? names_references
-    ;
-
-anonymous_block
-    : DO (LANGUAGE (identifier | character_string))? character_string
-    | DO character_string LANGUAGE (identifier | character_string)
     ;

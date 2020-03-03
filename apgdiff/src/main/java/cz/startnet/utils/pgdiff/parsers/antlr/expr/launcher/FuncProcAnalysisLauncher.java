@@ -7,10 +7,8 @@ import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Plpgsql_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Function;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Sql;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -26,29 +24,21 @@ public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
      */
     private final List<Pair<String, GenericColumn>> funcArgs;
 
-    public FuncProcAnalysisLauncher(AbstractPgFunction stmt, VexContext ctx) {
-        super(stmt, ctx);
-        funcArgs = null;
-    }
-
     public FuncProcAnalysisLauncher(AbstractPgFunction stmt, SqlContext ctx,
-            List<Pair<String, GenericColumn>> funcArgs) {
-        super(stmt, ctx);
+            String location, List<Pair<String, GenericColumn>> funcArgs) {
+        super(stmt, ctx, location);
         this.funcArgs = funcArgs;
     }
 
     public FuncProcAnalysisLauncher(AbstractPgFunction stmt, Plpgsql_functionContext ctx,
-            List<Pair<String, GenericColumn>> funcArgs) {
-        super(stmt, ctx);
+            String location, List<Pair<String, GenericColumn>> funcArgs) {
+        super(stmt, ctx, location);
         this.funcArgs = funcArgs;
     }
 
     @Override
     public Set<GenericColumn> analyze(ParserRuleContext ctx) {
         PgDatabase db = stmt.getDatabase();
-        if (ctx instanceof VexContext) {
-            return analyze((VexContext) ctx, new ValueExpr(db));
-        }
 
         if (ctx instanceof SqlContext) {
             Sql sql;

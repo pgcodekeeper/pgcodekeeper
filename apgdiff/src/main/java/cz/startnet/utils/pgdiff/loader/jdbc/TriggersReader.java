@@ -139,7 +139,7 @@ public class TriggersReader extends JdbcReader {
         checkObjectValidity(definition, DbObjType.TRIGGER, triggerName);
         loader.submitAntlrTask(definition, p -> p.sql().statement(0).schema_statement()
                 .schema_create().create_trigger_statement().when_trigger(),
-                ctx -> CreateTrigger.parseWhen(ctx, t, schema.getDatabase()));
+                ctx -> CreateTrigger.parseWhen(ctx, t, schema.getDatabase(), loader.getCurrentLocation()));
 
         loader.setAuthor(t, res);
 

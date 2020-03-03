@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -17,7 +18,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
@@ -50,11 +50,11 @@ public class ProjectLoader extends DatabaseLoader {
     protected boolean isOverrideMode;
 
     public ProjectLoader(String dirPath, PgDiffArguments arguments) {
-        this(dirPath, arguments, null, null);
+        this(dirPath, arguments, null, new ArrayList<>());
     }
 
     public ProjectLoader(String dirPath, PgDiffArguments arguments,
-            IProgressMonitor monitor, List<? super AntlrError> errors) {
+            IProgressMonitor monitor, List<Object> errors) {
         super(errors);
         this.dirPath = dirPath;
         this.arguments = arguments;

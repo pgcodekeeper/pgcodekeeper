@@ -4,9 +4,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.antlr.v4.runtime.CommonTokenStream;
+
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.ViewAnalysisLauncher;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
@@ -15,6 +18,7 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class ViewsReader extends JdbcReader {
 
@@ -52,13 +56,20 @@ public class ViewsReader extends JdbcReader {
         checkObjectValidity(definition, DbObjType.VIEW, viewName);
         String viewDef = definition.trim();
         int semicolonPos = viewDef.length() - 1;
-        v.setQuery(viewDef.charAt(semicolonPos) == ';' ? viewDef.substring(0, semicolonPos) : viewDef);
+        String query = viewDef.charAt(semicolonPos) == ';' ? viewDef.substring(0, semicolonPos) : viewDef;
 
         PgDatabase dataBase = schema.getDatabase();
 
         loader.submitAntlrTask(viewDef,
-                p -> p.sql().statement(0).data_statement().select_stmt(),
-                ctx -> dataBase.addAnalysisLauncher(new ViewAnalysisLauncher(v, ctx)));
+                p -> new Pair<>(
+                        p.sql().statement(0).data_statement().select_stmt(),
+                        (CommonTokenStream) p.getTokenStream()),
+                pair -> {
+                    dataBase.addAnalysisLauncher(new ViewAnalysisLauncher(
+                            v, pair.getFirst(), loader.getCurrentLocation()));
+                    v.setQuery(query, AntlrUtils.normalizeWhitespaceUnquoted(
+                            pair.getFirst(), pair.getSecond()));
+                });
 
         // OWNER
         loader.setOwner(v, res.getLong(CLASS_RELOWNER));
@@ -77,7 +88,7 @@ public class ViewsReader extends JdbcReader {
                     v.addColumnDefaultValue(colName, colDefault);
                     loader.submitAntlrTask(colDefault, p -> p.vex_eof().vex().get(0),
                             ctx -> dataBase.addAnalysisLauncher(
-                                    new ViewAnalysisLauncher(v, ctx)));
+                                    new ViewAnalysisLauncher(v, ctx, loader.getCurrentLocation())));
                 }
                 String colComment = colComments[i];
                 if (colComment != null) {

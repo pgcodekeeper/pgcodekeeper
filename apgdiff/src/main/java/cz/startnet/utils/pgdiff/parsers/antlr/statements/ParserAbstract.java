@@ -56,7 +56,7 @@ public abstract class ParserAbstract {
 
     private List<StatementBodyContainer> statementBodies;
     private boolean refMode;
-    private String fileName;
+    protected String fileName;
 
     public ParserAbstract(PgDatabase db) {
         this.db = db;

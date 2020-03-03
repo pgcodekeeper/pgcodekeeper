@@ -12,6 +12,7 @@ import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.FuncProcAnalysisLauncher;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.VexAnalysisLauncher;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateAggregate;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
@@ -92,7 +93,8 @@ public class FunctionsReader extends JdbcReader {
                             if (a.getMode().isIn()) {
                                 VexContext vx = vexCtxListIterator.previous();
                                 a.setDefaultExpression(ParserAbstract.getFullCtxText(vx));
-                                db.addAnalysisLauncher(new FuncProcAnalysisLauncher(f, vx));
+                                db.addAnalysisLauncher(new VexAnalysisLauncher(
+                                        f, vx, loader.getCurrentLocation()));
                             }
                         }
                     });
@@ -220,10 +222,10 @@ public class FunctionsReader extends JdbcReader {
         // Parsing the function definition and adding its result context for analysis.
         if (!"-".equals(definition) && "SQL".equalsIgnoreCase(function.getLanguage())) {
             loader.submitAntlrTask(definition, SQLParser::sql, ctx -> db.addAnalysisLauncher(
-                    new FuncProcAnalysisLauncher(function, ctx, argsQualTypes)));
+                    new FuncProcAnalysisLauncher(function, ctx, loader.getCurrentLocation(), argsQualTypes)));
         } else if (!"-".equals(definition) && "PLPGSQL".equalsIgnoreCase(function.getLanguage())) {
-            loader.submitAntlrTask(definition, SQLParser::plpgsql_function, ctx -> db.addAnalysisLauncher(
-                    new FuncProcAnalysisLauncher(function, ctx, argsQualTypes)));
+            loader.submitPlpgsqlTask(definition, SQLParser::plpgsql_function, ctx -> db.addAnalysisLauncher(
+                    new FuncProcAnalysisLauncher(function, ctx, loader.getCurrentLocation(), argsQualTypes)));
         }
     }
 

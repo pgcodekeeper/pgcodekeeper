@@ -208,6 +208,8 @@ public class PgDiffTest {
                     {"drop_function_args"},
                     // Tests scenario where FUNCTION with args is modified.
                     {"modify_function_args"},
+                    // Tests scenario where the arg mode in FUNCTION is modified.
+                    {"modify_function_args_mode"},
                     // Tests scenario where new FUNCTION with support function is added.
                     {"add_function_with_support_function"},
                     // Tests scenario where FUNCTION with support function is modified.
@@ -506,16 +508,18 @@ public class PgDiffTest {
                     {"add_specific_function"},
                     // Tests scenario where TABLE tablespace is modified.
                     {"modify_tablespace"},
-                    //Tests scenario where generated SEQUENCE is compared.
+                    // Tests scenario where generated SEQUENCE is compared.
                     {"compare_generated_sequence"},
-                    //Tests scenario where PRIVILEGE added to object with quoted name.
+                    // Tests scenario where PRIVILEGE added to object with quoted name.
                     {"add_privilege_quoted_name"},
-                    //Tests scenario where MATERIALIZED VIEW is refreshed.
+                    // Tests scenario where MATERIALIZED VIEW is refreshed.
                     {"refresh_materialized_view"},
-                    //tests scenario where table is recreated and its column dependency is dropped
+                    // Tests scenario where table is recreated and its column dependency is dropped
                     {"tabl_to_func_drop"},
-                    // tests scenario where owner and its privileges are both changed
-                    {"chg_owner_grant"}
+                    // Tests scenario where owner and its privileges are both changed
+                    {"chg_owner_grant"},
+                    // Tests scenario where object definitions are compared
+                    {"compare_definitions"}
                 });
     }
 

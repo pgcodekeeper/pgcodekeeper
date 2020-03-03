@@ -13,8 +13,8 @@ import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class DomainAnalysisLauncher extends AbstractAnalysisLauncher {
 
-    public DomainAnalysisLauncher(PgDomain stmt, VexContext ctx) {
-        super(stmt, ctx);
+    public DomainAnalysisLauncher(PgDomain stmt, VexContext ctx, String location) {
+        super(stmt, ctx, location);
     }
 
     @Override
