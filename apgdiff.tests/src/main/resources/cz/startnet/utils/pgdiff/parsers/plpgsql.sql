@@ -2387,3 +2387,17 @@ BEGIN
   RETURN NULL;
 END;
 */
+
+DECLARE
+    rc refcurcor;
+    r record;
+BEGIN
+    NOTIFY virtual;
+    OPEN open x for explain analyze values (1);
+
+    FOR r IN show time zone loop 
+        raise notice 'var is %', r;
+    end loop;
+
+    return query explain insert into public.t1 (c1) values (1) returning c1;
+END;
