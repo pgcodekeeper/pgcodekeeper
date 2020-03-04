@@ -9,20 +9,25 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameCon
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class AlterIndex extends ParserAbstract {
 
     private final Alter_index_statementContext ctx;
+    private final String action;
 
     public AlterIndex(Alter_index_statementContext ctx, PgDatabase db) {
         super(db);
         this.ctx = ctx;
+        action = new StringBuilder(ACTION_ALTER).append(" INDEX ALL IN TABLESPACE ")
+                .append(ctx.identifier(0)).toString();
     }
 
     @Override
     public void parseObject() {
         if (ctx.ALL() != null) {
+            db.addToQueries(fileName, new PgObjLocation(action, ctx, null));
             return;
         }
 
@@ -50,11 +55,8 @@ public class AlterIndex extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        if (ctx.ALL() != null) {
-            return new StringBuilder(ACTION_ALTER).append(" INDEX ALL IN TABLESPACE ")
-                    .append(ctx.identifier(0)).toString();
-        }
-        return getStrForStmtAction(ACTION_ALTER, DbObjType.INDEX,
-                ctx.schema_qualified_name().identifier());
+        return ctx.ALL() != null ? action
+                : getStrForStmtAction(ACTION_ALTER, DbObjType.INDEX,
+                        ctx.schema_qualified_name().identifier());
     }
 }
