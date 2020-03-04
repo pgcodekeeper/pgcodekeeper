@@ -95,12 +95,11 @@ public class CustomParserListener {
      */
     protected String getActionDescription(ParserRuleContext ctx, int descrWordsCount) {
         StringBuilder descr = new StringBuilder();
-        fillActionDescription(ctx, descrWordsCount, descr);
-        descr.setLength(descr.length() - 1);
+        fillActionDescription(ctx, new int[] {descrWordsCount}, descr);
         return descr.toString();
     }
 
-    private void fillActionDescription(ParserRuleContext ctx, int descrWordsCount,
+    private void fillActionDescription(ParserRuleContext ctx, int[] descrWordsCount,
             StringBuilder descr) {
         List<ParseTree> children = ctx.children;
         if (children == null) {
@@ -108,15 +107,17 @@ public class CustomParserListener {
         }
 
         for (ParseTree child : children) {
-            String descrStr = descr.toString().trim();
-            if (!descrStr.isEmpty() && descrStr.split("(\\s+)").length >= descrWordsCount) {
+            if (0 >= descrWordsCount[0]) {
                 return;
             }
 
             if (child instanceof ParserRuleContext) {
                 fillActionDescription((ParserRuleContext) child, descrWordsCount, descr);
             } else if (child instanceof TerminalNode) {
-                descr.append(child.getText().toUpperCase(Locale.ROOT)).append(' ');
+                descr.append(child.getText().toUpperCase(Locale.ROOT));
+                if (0 < --descrWordsCount[0]) {
+                    descr.append(' ');
+                }
             }
         }
     }
