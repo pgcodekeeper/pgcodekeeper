@@ -2393,7 +2393,7 @@ DECLARE
     r record;
 BEGIN
     NOTIFY virtual;
-    OPEN open x for explain analyze values (1);
+    open rc for explain analyze values (1);
 
     FOR r IN show time zone loop 
         raise notice 'var is %', r;

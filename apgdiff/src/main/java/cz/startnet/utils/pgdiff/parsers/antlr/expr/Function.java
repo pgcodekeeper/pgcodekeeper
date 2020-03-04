@@ -41,7 +41,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Plpgsql_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Raise_usingContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Return_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmt_no_parensContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_colsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_cols_listContext;
@@ -49,8 +48,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Transaction_statementCon
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Truncate_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Type_declarationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Using_vexContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Values_stmtContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Values_valuesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
@@ -308,18 +305,15 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
 
     private void cursor(Cursor_statementContext cursor) {
         List<OptionContext> options = cursor.option();
-        Select_stmtContext select;
-        Execute_stmtContext exec;
+        Plpgsql_data_statementContext data;
 
         if (!options.isEmpty()) {
             ValueExpr vex = new ValueExpr(this);
             for (OptionContext option : options) {
                 vex.analyze(new Vex(option.vex()));
             }
-        } else if ((select = cursor.select_stmt()) != null) {
-            new Select(this).analyze(new SelectStmt(select));
-        } else if ((exec = cursor.execute_stmt()) != null) {
-            execute(exec);
+        } else if ((data = cursor.plpgsql_data_statement()) != null) {
+            data(data);
         }
     }
 
@@ -349,19 +343,11 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
         } else if ((statement = data.explain_statement()) != null) {
             Explain_queryContext query = statement.explain_query();
             ds = query.data_statement();
-            Values_stmtContext values;
             Execute_statementContext ex;
             Declare_statementContext dec;
 
             if (ds != null) {
                 new Sql(this).data(ds);
-            } else if ((values = query.values_stmt()) != null) {
-                ValueExpr vex = new ValueExpr(this);
-                for (Values_valuesContext vals : values.values_values()) {
-                    for (VexContext v : vals.vex()) {
-                        vex.analyze(new Vex(v));
-                    }
-                }
             } else if ((ex = query.execute_statement()) != null) {
                 ValueExpr vex = new ValueExpr(this);
                 for (VexContext v : ex.vex()) {

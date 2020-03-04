@@ -121,7 +121,6 @@ explain_statement
 
 explain_query
     : data_statement
-    | values_stmt
     | execute_statement
     | declare_statement
     | CREATE (create_table_as_statement | create_view_statement)
@@ -3003,7 +3002,7 @@ control_statement
     ;
 
 cursor_statement
-    : OPEN var (NO? SCROLL)? FOR (select_stmt | execute_stmt)
+    : OPEN var (NO? SCROLL)? FOR plpgsql_data_statement
     | OPEN var (LEFT_PAREN option (COMMA option)* RIGHT_PAREN)?
     | FETCH fetch_move_direction? (FROM | IN)? var
     | MOVE fetch_move_direction? (FROM | IN)? var
