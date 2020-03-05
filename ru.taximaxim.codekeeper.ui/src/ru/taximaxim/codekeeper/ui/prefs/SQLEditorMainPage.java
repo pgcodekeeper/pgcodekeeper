@@ -1,18 +1,17 @@
 package ru.taximaxim.codekeeper.ui.prefs;
 
-import org.eclipse.jface.preference.ColorSelector;
+import org.eclipse.jface.preference.BooleanFieldEditor;
+import org.eclipse.jface.preference.ColorFieldEditor;
+import org.eclipse.jface.preference.FieldEditor;
+import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.preference.PreferencePage;
-import org.eclipse.jface.resource.StringConverter;
+import org.eclipse.jface.preference.IntegerFieldEditor;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
@@ -20,14 +19,15 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.SQL_EDITOR_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
-public class SQLEditorMainPage extends PreferencePage implements IWorkbenchPreferencePage {
+public class SQLEditorMainPage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 
-    private Button btnHighlight;
     private Button btnMatchBrackets;
     private Button btnMatchCaret;
     private Button btnEnclosing;
-    private Composite radioComposite;
-    private ColorSelector color;
+
+    public SQLEditorMainPage() {
+        super(GRID);
+    }
 
     @Override
     public void init(IWorkbench workbench) {
@@ -35,27 +35,17 @@ public class SQLEditorMainPage extends PreferencePage implements IWorkbenchPrefe
     }
 
     @Override
-    protected Control createContents(Composite parent) {
+    protected void createFieldEditors() {
         IPreferenceStore store = getPreferenceStore();
-        boolean state = store.getBoolean(SQL_EDITOR_PREF.MATCHING_BRACKETS);
+        Composite area = getFieldEditorParent();
 
-        Composite area = new Composite(parent, SWT.NONE);
-        area.setLayout(new GridLayout(2, false));
-        area.setLayoutData(new GridData(GridData.FILL_BOTH));
+        addField(new IntegerFieldEditor(SQL_EDITOR_PREF.NUMBER_OF_LINES_LIMIT,
+                Messages.SQLEditorMainPage_disable_parser, area, 7));
 
-        btnHighlight = new Button(area, SWT.CHECK);
-        btnHighlight.setText(Messages.SQLEditorMainPage_bracket_highlighting);
-        btnHighlight.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1));
-        btnHighlight.setSelection(state);
-        btnHighlight.addSelectionListener(new SelectionAdapter() {
+        addField(new BooleanFieldEditor(SQL_EDITOR_PREF.MATCHING_BRACKETS,
+                Messages.SQLEditorMainPage_bracket_highlighting, area));
 
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                setEnableButtons(btnHighlight.getSelection());
-            }
-        });
-
-        radioComposite = new Composite(area, SWT.NONE);
+        Composite radioComposite = new Composite(area, SWT.NONE);
         GridData data = new GridData();
         data.horizontalSpan = 2;
         data.horizontalIndent = 20;
@@ -83,39 +73,46 @@ public class SQLEditorMainPage extends PreferencePage implements IWorkbenchPrefe
             btnMatchBrackets.setSelection(true);
         }
 
-        new Label(area, SWT.NONE).setText(Messages.SQLEditorMainPage_matching_bracket_highlighting_color);
-        color = new ColorSelector(area);
-        color.setColorValue(StringConverter.asRGB(store.getString(SQL_EDITOR_PREF.MATCHING_BRACKETS_COLOR)));
+        addField(new ColorFieldEditor(SQL_EDITOR_PREF.MATCHING_BRACKETS_COLOR,
+                Messages.SQLEditorMainPage_matching_bracket_highlighting_color, area));
 
-        setEnableButtons(state);
-
-        return area;
+        setEnableButtons(store.getBoolean(SQL_EDITOR_PREF.MATCHING_BRACKETS));
     }
 
     private void setEnableButtons(boolean state) {
-        for (Control child : radioComposite.getChildren()) {
-            child.setEnabled(state);
-        }
+        btnMatchBrackets.setEnabled(state);
+        btnMatchCaret.setEnabled(state);
+        btnEnclosing.setEnabled(state);
     }
 
     @Override
     public boolean performOk() {
+        if (!super.performOk()) {
+            return false;
+        }
+
         IPreferenceStore store = getPreferenceStore();
-        store.setValue(SQL_EDITOR_PREF.MATCHING_BRACKETS, btnHighlight.getSelection());
         store.setValue(SQL_EDITOR_PREF.ENCLOSING_BRACKETS, btnEnclosing.getSelection());
         store.setValue(SQL_EDITOR_PREF.HIGHLIGHT_BRACKET_AT_CARET_LOCATION, !btnMatchBrackets.getSelection());
-        store.setValue(SQL_EDITOR_PREF.MATCHING_BRACKETS_COLOR, StringConverter.asString(color.getColorValue()));
         return true;
     }
 
     @Override
     protected void performDefaults() {
-        IPreferenceStore store = getPreferenceStore();
-        btnHighlight.setSelection(true);
+        super.performDefaults();
         btnMatchBrackets.setSelection(false);
         btnMatchCaret.setSelection(false);
         btnEnclosing.setSelection(true);
         setEnableButtons(true);
-        color.setColorValue(StringConverter.asRGB(store.getDefaultString(SQL_EDITOR_PREF.MATCHING_BRACKETS_COLOR)));
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent event) {
+        FieldEditor source = (FieldEditor) event.getSource();
+        if (source.getPreferenceName() == SQL_EDITOR_PREF.MATCHING_BRACKETS) {
+            setEnableButtons((boolean) event.getNewValue());
+        }
+
+        super.propertyChange(event);
     }
 }

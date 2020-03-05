@@ -8,7 +8,10 @@ import java.nio.file.Paths;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -25,7 +28,9 @@ import org.eclipse.ui.IWorkingSetManager;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.WorkingSetGroup;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.WORKING_SET;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.handlers.ConvertProject;
@@ -40,6 +45,7 @@ class PgImport extends WizardPage {
     private Text txtPath;
     private Text txtName;
     private Button btnMsSql;
+    private ComboViewer charsetCombo;
     private WorkingSetGroup workingSetGroup;
 
     protected PgImport(String pageName, IStructuredSelection selection) {
@@ -86,6 +92,15 @@ class PgImport extends WizardPage {
         txtName.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
         txtName.addModifyListener(e -> getWizard().getContainer().updateButtons());
 
+        //char sets
+        new Label(area, SWT.NONE).setText(Messages.NewProjWizard_select_charset);
+
+        charsetCombo = new ComboViewer(area, SWT.DROP_DOWN);
+        charsetCombo.getCombo().setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
+        charsetCombo.setContentProvider(ArrayContentProvider.getInstance());
+        charsetCombo.setInput(UIConsts.ENCODINGS);
+        charsetCombo.setSelection(new StructuredSelection(ApgdiffConsts.UTF_8));
+
         btnMsSql = new Button(area, SWT.CHECK);
         btnMsSql.setText(Messages.PgImport_import_as_mssql);
 
@@ -116,8 +131,13 @@ class PgImport extends WizardPage {
 
         try {
             if (ConvertProject.createMarker(getShell(), p, btnMsSql.getSelection())) {
-                PgDbProject.createPgDbProject(project,
+                PgDbProject props = PgDbProject.createPgDbProject(project,
                         isInWorkspaceRoot(p) ? null : p.toUri(), btnMsSql.getSelection());
+                String charset = charsetCombo.getCombo().getText();
+                if (!charset.isEmpty() && !ResourcesPlugin.getWorkspace().getRoot()
+                        .getDefaultCharset().equals(charset)) {
+                    props.setProjectCharset(charset);
+                }
                 addToWorkingSet(project);
             } else {
                 return false;

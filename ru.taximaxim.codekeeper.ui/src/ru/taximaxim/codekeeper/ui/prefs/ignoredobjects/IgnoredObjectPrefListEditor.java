@@ -30,7 +30,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoredObject;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.PrefListEditor;
 
-public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject, TableViewer> {
+public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject> {
 
     enum BooleanChangeValues {
         REGULAR, IGNORE_CONTENT;
@@ -98,20 +98,7 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject, T
     }
 
     @Override
-    protected TableViewer createViewer(Composite parent) {
-        TableViewer viewer = new TableViewer(
-                parent, SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
-        viewer.setContentProvider(ArrayContentProvider.getInstance());
-
-        addColumns(viewer);
-        GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 2);
-        viewer.getTable().setLayoutData(gd);
-        viewer.getTable().setLinesVisible(true);
-        viewer.getTable().setHeaderVisible(true);
-        return viewer;
-    }
-
-    private void addColumns(TableViewer tableViewer) {
+    protected void addColumns(TableViewer tableViewer) {
         TableViewerColumn name = new TableViewerColumn(tableViewer, SWT.NONE);
         name.getColumn().setResizable(true);
         name.getColumn().setText(Messages.ignoredObjectPrefListEditor_name);

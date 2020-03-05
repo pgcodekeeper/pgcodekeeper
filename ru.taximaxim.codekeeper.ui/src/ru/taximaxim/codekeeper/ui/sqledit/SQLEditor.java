@@ -55,8 +55,11 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IURIEditorInput;
+import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
@@ -126,6 +129,7 @@ implements IResourceChangeListener, ITextErrorReporter {
     private Image errorTitleImage;
     private PgDbParser parser;
     private boolean isMsSql;
+    private boolean isLargeFile;
 
     private ScriptThreadJobWrapper scriptThreadJobWrapper;
 
@@ -234,14 +238,7 @@ implements IResourceChangeListener, ITextErrorReporter {
     // see Eclipse bug 543782
     public void doSave(IProgressMonitor progressMonitor) {
         super.doSave(progressMonitor);
-        IResource res = ResourceUtil.getResource(getEditorInput());
-        try {
-            if (res == null || !UIProjectLoader.isInProject(res)) {
-                refreshParser(getParser(), res, new NullProgressMonitor());
-            }
-        } catch (InterruptedException | IOException | CoreException ex) {
-            Log.log(ex);
-        }
+        refreshParser();
     }
 
     @Override
@@ -275,6 +272,7 @@ implements IResourceChangeListener, ITextErrorReporter {
         setDocumentProvider(new SQLEditorCommonDocumentProvider());
 
         super.init(site, input);
+        checkFileSize();
 
         try {
             checkBuilder();
@@ -295,6 +293,25 @@ implements IResourceChangeListener, ITextErrorReporter {
 
         partListener = new SqlEditorPartListener();
         getSite().getPage().addPartListener(partListener);
+
+        if (isLargeFile()) {
+            IWorkbenchPage page = getSite().getPage();
+            IViewPart part = page.showView(IPageLayout.ID_OUTLINE, null, IWorkbenchPage.VIEW_CREATE);
+            IWorkbenchPartReference ref = page.getReference(part);
+            if (IWorkbenchPage.STATE_MINIMIZED == page.getPartState(ref)) {
+                page.setPartState(ref, IWorkbenchPage.STATE_RESTORED);
+            }
+        }
+    }
+
+    public boolean isLargeFile() {
+        return isLargeFile;
+    }
+
+    private void checkFileSize() {
+        int lines = getDocumentProvider().getDocument(getEditorInput()).getNumberOfLines();
+        int maxLines = mainPrefs.getInt(SQL_EDITOR_PREF.NUMBER_OF_LINES_LIMIT);
+        isLargeFile = maxLines != 0 && lines > maxLines;
     }
 
     @Override
@@ -352,6 +369,10 @@ implements IResourceChangeListener, ITextErrorReporter {
     }
 
     private PgDbParser initParser() throws InterruptedException, IOException, CoreException {
+        if (isLargeFile()) {
+            return new PgDbParser();
+        }
+
         IEditorInput in = getEditorInput();
         IResource res = ResourceUtil.getResource(in);
 
@@ -372,6 +393,17 @@ implements IResourceChangeListener, ITextErrorReporter {
         return parser;
     }
 
+    void refreshParser() {
+        IResource res = ResourceUtil.getResource(getEditorInput());
+        try {
+            if (res == null || !UIProjectLoader.isInProject(res)) {
+                refreshParser(getParser(), res, new NullProgressMonitor());
+            }
+        } catch (InterruptedException | IOException | CoreException ex) {
+            Log.log(ex);
+        }
+    }
+
     /**
      * Use only for non-project parsers
      * @param {@link IFileEditorInput} {@link IResource} or null
@@ -379,6 +411,14 @@ implements IResourceChangeListener, ITextErrorReporter {
      */
     private void refreshParser(PgDbParser parser, IResource res, IProgressMonitor monitor)
             throws InterruptedException, IOException, CoreException {
+        checkFileSize();
+        if (isLargeFile()) {
+            parser.getObjDefinitions().clear();
+            parser.getObjReferences().clear();
+            parser.notifyListeners();
+            return;
+        }
+
         if (res instanceof IFile) {
             IFile file = (IFile) res;
             IProject proj = file.getProject();

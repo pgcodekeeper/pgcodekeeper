@@ -196,12 +196,13 @@ class DbSourceDirTree extends DbSource {
             throws InterruptedException, IOException {
         monitor.subTask(Messages.dbSource_loading_tree);
 
-        List<Object> er = new ArrayList<>();
-        PgDatabase db = new ProjectLoader(dirTreePath, getPgDiffArgs(encoding,
-                forceUnixNewlines, isMsSql, null, oneTimePrefs), monitor, er)
-                .loadDatabaseSchemaFromDirTree();
-        errors = er;
-        return db;
+        ProjectLoader loader = new ProjectLoader(dirTreePath, getPgDiffArgs(encoding,
+                forceUnixNewlines, isMsSql, null, oneTimePrefs), monitor, new ArrayList<>());
+        try {
+            return loader.loadDatabaseSchemaFromDirTree();
+        } finally {
+            errors = loader.getErrors();
+        }
     }
 }
 
@@ -226,16 +227,17 @@ class DbSourceProject extends DbSource {
         monitor.setWorkRemaining(UIProjectLoader.countFiles(project));
 
         IEclipsePreferences pref = proj.getPrefs();
-        List<Object> er = new ArrayList<>();
 
         PgDiffArguments arguments = getPgDiffArgs(charset,
                 pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
                 OpenProjectUtils.checkMsSql(project), project, oneTimePrefs);
 
-        PgDatabase db = new UIProjectLoader(project, arguments, monitor, null, er)
-                .loadDatabaseWithLibraries();
-        errors = er;
-        return db;
+        UIProjectLoader loader = new UIProjectLoader(project, arguments, monitor, null);
+        try {
+            return loader.loadDatabaseWithLibraries();
+        } finally {
+            errors = loader.getErrors();
+        }
     }
 }
 
@@ -430,9 +432,11 @@ class DbSourceJdbc extends DbSource {
         }
 
         JdbcLoader loader = new JdbcLoader(jdbcConnector, args, monitor);
-        PgDatabase database = loader.getDbFromJdbc();
-        errors = loader.getErrors();
-        return database;
+        try {
+            return loader.getDbFromJdbc();
+        } finally {
+            errors = loader.getErrors();
+        }
     }
 }
 

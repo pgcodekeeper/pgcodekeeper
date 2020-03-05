@@ -13,7 +13,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Procedure_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Procedure_paramContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsSqlClauses;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.MsFuncProcTrigAnalysisLauncher;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
@@ -81,20 +81,8 @@ public class CreateMsProcedure extends BatchContextProcessor {
         fillArguments(procedure);
         setSourceParts(procedure);
 
-        String schemaName;
-        if (schema != null) {
-            schemaName = schema.getName();
-        } else {
-            schemaName = getSchemaNameSafe(ids);
-        }
-        MsSqlClauses clauses;
-        if (db.getArguments().isEnableFunctionBodiesDependencies()) {
-            clauses = new MsSqlClauses(schemaName);
-        } else {
-            clauses = new MsSqlClauses(schemaName, DbObjType.FUNCTION, DbObjType.PROCEDURE);
-        }
-        clauses.analyze(ctx.proc_body().sql_clauses());
-        procedure.addAllDeps(clauses.getDepcies());
+        db.addAnalysisLauncher(new MsFuncProcTrigAnalysisLauncher(procedure,
+                ctx.proc_body().sql_clauses(), fileName));
 
         if (isJdbc && schema != null) {
             schema.addFunction(procedure);
