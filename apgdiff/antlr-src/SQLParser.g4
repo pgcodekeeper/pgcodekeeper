@@ -2953,7 +2953,7 @@ function_statement
     | cursor_statement
     | message_statement
     | schema_statement
-    | plpgsql_data_statement
+    | plpgsql_query
     | additional_statement
     ;
 
@@ -3002,7 +3002,7 @@ control_statement
     ;
 
 cursor_statement
-    : OPEN var (NO? SCROLL)? FOR plpgsql_data_statement
+    : OPEN var (NO? SCROLL)? FOR plpgsql_query
     | OPEN var (LEFT_PAREN option (COMMA option)* RIGHT_PAREN)?
     | FETCH fetch_move_direction? (FROM | IN)? var
     | MOVE fetch_move_direction? (FROM | IN)? var
@@ -3053,7 +3053,7 @@ raise_param
 return_stmt
     : RETURN perform_stmt?
     | RETURN NEXT vex
-    | RETURN QUERY plpgsql_data_statement
+    | RETURN QUERY plpgsql_query
     ;
 
 loop_statement
@@ -3064,7 +3064,7 @@ loop_statement
 loop_start
     : WHILE vex
     | FOR alias=identifier IN REVERSE? vex DOUBLE_DOT vex (BY vex)?
-    | FOR identifier_list IN plpgsql_data_statement
+    | FOR identifier_list IN plpgsql_query
     | FOR cursor=identifier IN identifier (LEFT_PAREN option (COMMA option)* RIGHT_PAREN)? // cursor loop
     | FOREACH identifier_list (SLICE NUMBER_LITERAL)? IN ARRAY vex
     ;
@@ -3082,7 +3082,7 @@ case_statement
     : CASE vex? (WHEN vex (COMMA vex)* THEN function_statements)+ (ELSE function_statements)? END CASE
     ;
 
-plpgsql_data_statement
+plpgsql_query
     : data_statement
     | execute_stmt
     | show_statement
