@@ -1725,7 +1725,7 @@ table_action_drop
 
 // https://msdn.microsoft.com/en-us/library/ms174269.aspx
 alter_database
-    : DATABASE (database=id | CURRENT) (MODIFY NAME EQUAL new_name=id | COLLATE collation=id | SET database_optionspec (WITH termination)? )
+    : DATABASE (database=id | CURRENT) (MODIFY NAME EQUAL new_name=id | COLLATE collation=id | file_and_filegroup_options | SET database_optionspec (WITH termination)? )
     ;
 
 alter_database_encryption_key
@@ -2976,6 +2976,38 @@ database_filestream_option
     : LR_BRACKET (NON_TRANSACTED_ACCESS EQUAL ( OFF | READ_ONLY | FULL ) | DIRECTORY_NAME EQUAL STRING) RR_BRACKET
     ;
 
+file_and_filegroup_options
+    : add_or_modify_files | add_or_modify_filegroups
+    ;
+
+add_or_modify_files
+    : (ADD | MODIFY) LOG? FILE file_spec_alter (COMMA file_spec_alter)* (TO FILEGROUP id)?
+    | REMOVE FILE ( id | STRING )
+    ;
+
+file_spec_alter
+    : LR_BRACKET NAME EQUAL ( id | STRING ) (COMMA NEWNAME EQUAL ( id | STRING ))?
+    (COMMA FILENAME EQUAL STRING)? (COMMA SIZE EQUAL file_size)?
+    (COMMA MAXSIZE EQUAL ( file_size | UNLIMITED ))? (COMMA FILEGROWTH EQUAL file_size)? 
+    (COMMA OFFLINE)? RR_BRACKET
+    ;
+
+add_or_modify_filegroups
+    : ADD FILEGROUP id CONTAINS? ( FILESTREAM | MEMORY_OPTIMIZED_DATA )?
+    | REMOVE FILEGROUP id
+    | MODIFY FILEGROUP id
+        ( filegroup_updatability_option
+        | DEFAULT
+        | NAME EQUAL id
+        | ( AUTOGROW_SINGLE_FILE | AUTOGROW_ALL_FILES )
+        )
+    ;
+
+filegroup_updatability_option
+    : ( READONLY | READWRITE )
+    | ( READ_ONLY | READ_WRITE )
+    ;
+
 database_file_spec
     : file_group | file_spec
     ;
@@ -3176,6 +3208,8 @@ simple_id
     | AUTO_UPDATE_STATISTICS_ASYNC
     | AUTO_UPDATE_STATISTICS
     | AUTO
+    | AUTOGROW_ALL_FILES
+    | AUTOGROW_SINGLE_FILE
     | AUTOMATED_BACKUP_PREFERENCE
     | AUTOMATIC
     | AVAILABILITY_MODE
@@ -3469,6 +3503,7 @@ simple_id
     | NEW_ACCOUNT
     | NEW_BROKER
     | NEW_PASSWORD
+    | NEWNAME
     | NEXT
     | NO_CHECKSUM
     | NO_COMPRESSION
@@ -3570,6 +3605,7 @@ simple_id
     | READ_ONLY
     | READ_WRITE_FILEGROUPS
     | READ_WRITE
+    | READWRITE
     | READONLY
     | REBUILD
     | RECEIVE
