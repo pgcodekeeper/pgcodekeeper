@@ -22,8 +22,10 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
  */
 public class HeapSizeChecker implements IStartup {
 
-    public static final String XMX_HEAP_PARAMETER = "Xmx"; //$NON-NLS-1$
+    private static final double MINIMAL_XMX_SIZE_GB = 1.5;
     private static final double RECOMMENDED_XMX_SIZE_GB = 2.0;
+
+    private static final double ONE_GB = 1024 * 1024 * 1024.0;
 
     private final IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
 
@@ -31,7 +33,7 @@ public class HeapSizeChecker implements IStartup {
     public void earlyStartup() {
         UiSync.exec(Display.getDefault(), () -> {
             if (mainPrefs.getBoolean(PREF.HEAP_SIZE_WARNING)
-                    && (RECOMMENDED_XMX_SIZE_GB > Runtime.getRuntime().maxMemory() / 1024 / 1024 / 1024)) {
+                    && (MINIMAL_XMX_SIZE_GB > Runtime.getRuntime().maxMemory() / ONE_GB)) {
                 Shell shell = Display.getDefault().getActiveShell();
 
                 MessageDialogWithToggle dialog = MessageDialogWithToggle.openYesNoQuestion(

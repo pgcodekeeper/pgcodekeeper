@@ -12,24 +12,18 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.prefs.heap.HeapSizeChecker;
 
 /**
  * Dialog box for changing heap size.
@@ -38,6 +32,7 @@ public class HeapSizeCheckerDialog extends Dialog {
 
     private static final String LINK_ECLIPSE_INI_INFO = "https://wiki.eclipse.org/Eclipse.ini"; //$NON-NLS-1$
     private static final String VMARGS = "-vmargs"; //$NON-NLS-1$
+    private static final String XMX = "Xmx"; //$NON-NLS-1$
 
     private Combo combo;
 
@@ -83,15 +78,13 @@ public class HeapSizeCheckerDialog extends Dialog {
                 .getParent().resolve("eclipse.ini"); //$NON-NLS-1$
         try (Stream<String> lineStream = Files.lines(path, StandardCharsets.UTF_8)) {
             String xmxLineWintNewHeapSizeGb = new StringBuilder()
-                    .append('-').append(HeapSizeChecker.XMX_HEAP_PARAMETER)
+                    .append('-').append(XMX)
                     .append(Integer.parseInt(selectedHeapSizeGb))
                     .append('G').toString();
 
             List<String> lines = lineStream.collect(Collectors.toList());
 
-            String xmxLine = lines.stream()
-                    .filter(l -> l.contains(HeapSizeChecker.XMX_HEAP_PARAMETER))
-                    .findAny().orElse(null);
+            String xmxLine = lines.stream().filter(l -> l.contains(XMX)).findAny().orElse(null);
 
             String newEclipseIniTex = null;
             if (xmxLine == null) {
@@ -125,40 +118,6 @@ public class HeapSizeCheckerDialog extends Dialog {
                     LINK_ECLIPSE_INI_INFO).open();
         } finally {
             super.okPressed();
-        }
-    }
-
-    private static class MessageDialogWithLink extends MessageDialog {
-
-        private final String linkText;
-        private final String link;
-
-        public MessageDialogWithLink(Shell parentShell, String dialogTitle,
-                String dialogMessage, int dialogImageType, String linkText, String link) {
-            super(parentShell, dialogTitle, null, dialogMessage, dialogImageType,
-                    0, new String[] {IDialogConstants.OK_LABEL});
-            this.linkText = linkText;
-            this.link = link;
-        }
-
-        @Override
-        protected Control createCustomArea(Composite parent) {
-            Composite panel = new Composite(parent, SWT.NONE);
-            panel.setLayout(new GridLayout());
-
-            Link linkHint = new Link(panel, SWT.WRAP);
-            GridData gd = new GridData();
-            gd.horizontalIndent = 60;
-            linkHint.setLayoutData(gd);
-            linkHint.setText(linkText + " <a>" + link + "</a>"); //$NON-NLS-1$ //$NON-NLS-2$
-            linkHint.addSelectionListener(new SelectionAdapter()  {
-
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    Program.launch(link);
-                }
-            });
-            return panel;
         }
     }
 }
