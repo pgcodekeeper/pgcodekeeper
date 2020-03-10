@@ -297,7 +297,7 @@ public class FunctionsReader extends JdbcReader {
                 // ones; any preceding parameters represent additional direct arguments
                 // that are not constrained to match the aggregated arguments.
 
-                // last argument must VARIADIC "any"
+                // last argument must be VARIADIC "any"
                 List<Argument> args = aggregate.getArguments();
                 aggregate.addArgument(args.get(args.size() - 1));
             }
