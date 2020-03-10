@@ -733,9 +733,11 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                     });
                 }
 
-                newDiffer.getErrors().forEach(e -> StatusManager.getManager().handle(
-                        new Status(IStatus.WARNING, PLUGIN_ID.THIS, e.toString()),
-                        StatusManager.SHOW));
+                if (mainPrefs.getBoolean(PREF.SHOW_DIFF_ERRORS)) {
+                    newDiffer.getErrors().forEach(e -> StatusManager.getManager().handle(
+                            new Status(IStatus.WARNING, PLUGIN_ID.THIS, e.toString()),
+                            StatusManager.SHOW));
+                }
             }
         });
         job.setProperty(IProgressConstants2.SHOW_IN_TASKBAR_ICON_PROPERTY, Boolean.TRUE);

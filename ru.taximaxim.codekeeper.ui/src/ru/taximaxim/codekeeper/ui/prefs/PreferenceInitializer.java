@@ -21,6 +21,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
     public void initializeDefaultPreferences() {
         IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 
+        store.setDefault(PREF.SHOW_DIFF_ERRORS, true);
         store.setDefault(PREF.FORCE_SHOW_CONSOLE, true);
         store.setDefault(PREF.PARSER_CACHE_CLEANING_INTERVAL, 30);
 
