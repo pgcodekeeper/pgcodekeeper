@@ -2387,3 +2387,27 @@ BEGIN
   RETURN NULL;
 END;
 */
+
+DECLARE
+    rc refcursor;
+    r record;
+BEGIN
+    open rc for explain analyze values (1);
+    close rc;
+    open rc for SHOW ALL;
+    close rc;
+    open rc for select 1 from public.t1;
+    close rc;
+    open rc for insert into public.t1 (c1) select 5 returning *;
+    close rc;
+    open rc for update public.t1 set c1 = 6 where c1 = 5  returning *;
+    close rc;
+    open rc for DELETE from public.t1 where c1 = 6  returning *;
+    close rc;
+
+    FOR r IN show time zone loop 
+        raise notice 'var is %', r;
+    end loop;
+
+    return query explain insert into public.t1 (c1) values (1) returning c1;
+END;
