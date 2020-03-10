@@ -2977,12 +2977,19 @@ database_filestream_option
     ;
 
 file_and_filegroup_options
-    : add_or_modify_files | add_or_modify_filegroups
-    ;
-
-add_or_modify_files
-    : (ADD | MODIFY) LOG? FILE file_spec_alter (COMMA file_spec_alter)* (TO FILEGROUP id)?
+    : (ADD | MODIFY) LOG? FILE file_spec_alter (COMMA file_spec_alter)* (TO FILEGROUP id)? 
     | REMOVE FILE ( id | STRING )
+    | ADD FILEGROUP id CONTAINS? ( FILESTREAM | MEMORY_OPTIMIZED_DATA )?
+    | REMOVE FILEGROUP id
+    | MODIFY FILEGROUP id
+        ( READONLY 
+        | READWRITE 
+        | READ_ONLY 
+        | READ_WRITE
+        | DEFAULT
+        | NAME EQUAL id
+        | AUTOGROW_SINGLE_FILE 
+        | AUTOGROW_ALL_FILES )
     ;
 
 file_spec_alter
@@ -2990,22 +2997,6 @@ file_spec_alter
     (COMMA FILENAME EQUAL STRING)? (COMMA SIZE EQUAL file_size)?
     (COMMA MAXSIZE EQUAL ( file_size | UNLIMITED ))? (COMMA FILEGROWTH EQUAL file_size)? 
     (COMMA OFFLINE)? RR_BRACKET
-    ;
-
-add_or_modify_filegroups
-    : ADD FILEGROUP id CONTAINS? ( FILESTREAM | MEMORY_OPTIMIZED_DATA )?
-    | REMOVE FILEGROUP id
-    | MODIFY FILEGROUP id
-        ( filegroup_updatability_option
-        | DEFAULT
-        | NAME EQUAL id
-        | ( AUTOGROW_SINGLE_FILE | AUTOGROW_ALL_FILES )
-        )
-    ;
-
-filegroup_updatability_option
-    : ( READONLY | READWRITE )
-    | ( READ_ONLY | READ_WRITE )
     ;
 
 database_file_spec
