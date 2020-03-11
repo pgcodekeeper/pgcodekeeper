@@ -12,6 +12,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts.DB_BIND_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 
@@ -27,14 +28,14 @@ public class PgDbProject {
     public IEclipsePreferences getPrefs() {
         IEclipsePreferences prefs = this.prefs;
         if (prefs == null) {
-            prefs = getPrefs(project);
+            prefs = getPrefs(project, true);
             this.prefs = prefs;
         }
         return prefs;
     }
 
-    public IEclipsePreferences getAuxPrefs() {
-        return getPrefs(project, true);
+    public IEclipsePreferences getDbBindPrefs() {
+        return getPrefs(project, false);
     }
 
     public String getProjectName() {
@@ -97,15 +98,11 @@ public class PgDbProject {
     /**
      * @return pgCodeKeeper project preferences or null if wrong project
      */
-    public static IEclipsePreferences getPrefs(IProject proj) {
-        return getPrefs(proj, false);
-    }
-
-    public static IEclipsePreferences getPrefs(IProject proj, boolean isAuxiliary) {
+    public static IEclipsePreferences getPrefs(IProject proj, boolean isProject) {
         try {
             if (proj.hasNature(NATURE.ID)) {
                 return new ProjectScope(proj)
-                        .getNode(isAuxiliary ? PLUGIN_ID.AUXILIARY : PLUGIN_ID.THIS);
+                        .getNode(isProject ? PLUGIN_ID.THIS : DB_BIND_PREF.DB_BINDING);
             }
         } catch (CoreException ex) {
             Log.log(ex);

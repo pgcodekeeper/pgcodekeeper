@@ -21,8 +21,8 @@ import org.eclipse.ui.part.FileEditorInput;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.IPartAdapter2;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts.DB_BIND_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
-import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStorePicker;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -100,13 +100,13 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
             if (input instanceof FileEditorInput) {
                 proj = ((FileEditorInput) input).getFile().getProject();
             }
-            setDbComboEnableState(editor.getProjAuxPrefs());
+            setDbComboEnableState(editor.getProjDbBindPrefs());
         } else if (part instanceof ProjectEditorDiffer) {
             ProjectEditorDiffer differ = (ProjectEditorDiffer) part;
             lastDb = differ.getCurrentDb();
             storePicker.loadStore(true);
             proj = differ.getProject();
-            setDbComboEnableState(PgDbProject.getPrefs(differ.getProject(), true));
+            setDbComboEnableState(PgDbProject.getPrefs(differ.getProject(), false));
         } else {
             return;
         }
@@ -128,7 +128,7 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
 
     private void setDbComboEnableState(IEclipsePreferences auxPrefs) {
         storePicker.setComboEnabled(auxPrefs == null ? true :
-            auxPrefs.get(PROJ_PREF.NAME_OF_BOUND_DB, "").isEmpty()); //$NON-NLS-1$
+            auxPrefs.get(DB_BIND_PREF.NAME_OF_BOUND_DB, "").isEmpty()); //$NON-NLS-1$
     }
 
     private class EditorPartListener extends IPartAdapter2 {
