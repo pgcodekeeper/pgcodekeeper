@@ -91,6 +91,7 @@ import ru.taximaxim.codekeeper.ui.IPartAdapter2;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.CMD_VARS;
 import ru.taximaxim.codekeeper.ui.UIConsts.CONTEXT;
+import ru.taximaxim.codekeeper.ui.UIConsts.DB_BIND_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.LANGUAGE;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
@@ -160,9 +161,9 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     public static void saveLastDb(DbInfo lastDb, IEditorInput inputForProject) {
         IResource res = ResourceUtil.getResource(inputForProject);
         if (res != null) {
-            IEclipsePreferences prefs = PgDbProject.getPrefs(res.getProject());
+            IEclipsePreferences prefs = PgDbProject.getPrefs(res.getProject(), false);
             if (prefs != null) {
-                prefs.put(PROJ_PREF.LAST_DB_STORE_EDITOR, lastDb.getName());
+                prefs.put(DB_BIND_PREF.LAST_DB_STORE_EDITOR, lastDb.getName());
                 try {
                     prefs.flush();
                 } catch (BackingStoreException ex) {
@@ -180,7 +181,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         // it's need to do for refresh content and state of DbCombo in SQLEditor
         // when it's opened as inactive second tab, while setting the binding in
         // project properties
-        DbInfo boundDb = getDbFromPref(PROJ_PREF.NAME_OF_BOUND_DB);
+        DbInfo boundDb = getDbFromPref(DB_BIND_PREF.NAME_OF_BOUND_DB);
         if (boundDb != null) {
             return boundDb;
         }
@@ -189,18 +190,18 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             return currentDB;
         }
 
-        return getDbFromPref(PROJ_PREF.LAST_DB_STORE_EDITOR);
+        return getDbFromPref(DB_BIND_PREF.LAST_DB_STORE_EDITOR);
     }
 
     private DbInfo getDbFromPref(String prefName) {
-        IEclipsePreferences prefs = getProjPrefs();
-        return prefs == null ? null :
-            DbInfo.getLastDb(prefs.get(prefName, "")); //$NON-NLS-1$
+        IEclipsePreferences auxPrefs = getProjDbBindPrefs();
+        return auxPrefs == null ? null :
+            DbInfo.getLastDb(auxPrefs.get(prefName, "")); //$NON-NLS-1$
     }
 
-    public IEclipsePreferences getProjPrefs() {
+    public IEclipsePreferences getProjDbBindPrefs() {
         IResource res = ResourceUtil.getResource(getEditorInput());
-        return res != null ? PgDbProject.getPrefs(res.getProject()) : null;
+        return res != null ? PgDbProject.getPrefs(res.getProject(), false) : null;
     }
 
     @Override
@@ -420,7 +421,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         if (res instanceof IFile) {
             IFile file = (IFile) res;
             IProject proj = file.getProject();
-            IEclipsePreferences prefs = PgDbProject.getPrefs(proj);
+            IEclipsePreferences prefs = PgDbProject.getPrefs(proj, true);
 
             if (prefs != null
                     && prefs.getBoolean(PROJ_PREF.DISABLE_PARSER_IN_EXTERNAL_FILES, false)) {
