@@ -879,7 +879,7 @@ public final class Messages extends NLS {
 
     public static String GeneralPrefPage_reuse_open_compare_editor;
 
-    public static String GeneralPrefPage_show_diff_erors;
+    public static String GeneralPrefPage_show_diff_errors;
 
     public static String GeneralPrefPage_simplify_view;
 

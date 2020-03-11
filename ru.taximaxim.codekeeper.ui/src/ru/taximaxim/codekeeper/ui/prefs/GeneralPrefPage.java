@@ -31,7 +31,12 @@ implements IWorkbenchPreferencePage  {
     protected void createFieldEditors() {
 
         addField(new BooleanFieldEditor(PREF.FORCE_SHOW_CONSOLE,
-                Messages.generalPrefPage_show_console_when_program_write_to_console, getFieldEditorParent()));
+                Messages.generalPrefPage_show_console_when_program_write_to_console,
+                getFieldEditorParent()));
+
+        addField(new BooleanFieldEditor(PREF.SHOW_DIFF_ERRORS,
+                Messages.GeneralPrefPage_show_diff_errors,
+                getFieldEditorParent()));
 
         addField(new BooleanFieldEditor(PREF.NO_PRIVILEGES,
                 Messages.dbUpdatePrefPage_ignore_privileges,
@@ -54,10 +59,6 @@ implements IWorkbenchPreferencePage  {
 
         addField(new BooleanFieldEditor(PREF.IGNORE_CONCURRENT_MODIFICATION,
                 Messages.GeneralPrefPage_ignore_concurrent_modification,
-                getFieldEditorParent()));
-
-        addField(new BooleanFieldEditor(PREF.SHOW_DIFF_ERRORS,
-                Messages.GeneralPrefPage_show_diff_erors,
                 getFieldEditorParent()));
 
         addField(new IntegerFieldEditor(PREF.PARSER_CACHE_CLEANING_INTERVAL,
