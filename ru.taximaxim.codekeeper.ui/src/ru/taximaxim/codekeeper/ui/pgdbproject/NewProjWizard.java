@@ -52,6 +52,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.DB_BIND_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.WIZARD;
@@ -121,7 +122,7 @@ implements IExecutableExtension, INewWizard {
             if (pageDb.isBound()) {
                 DbInfo dbInfo = pageDb.getDbInfo();
                 if (dbInfo != null) {
-                    props.getPrefs().put(PROJ_PREF.NAME_OF_BOUND_DB, dbInfo.getName());
+                    props.getDbBindPrefs().put(DB_BIND_PREF.NAME_OF_BOUND_DB, dbInfo.getName());
                     applyProps = true;
                 }
             }
@@ -129,6 +130,7 @@ implements IExecutableExtension, INewWizard {
             if (applyProps) {
                 try {
                     props.getPrefs().flush();
+                    props.getDbBindPrefs().flush();
                 } catch (BackingStoreException e) {
                     Log.log(Log.LOG_WARNING, "Error while flushing project properties!", e); //$NON-NLS-1$
                 }
