@@ -1428,10 +1428,12 @@ output_column_name
 
 // https://msdn.microsoft.com/en-ie/library/ms176061.aspx
 create_database
-    : DATABASE (database=id)
+    : DATABASE database = id
     ( CONTAINMENT EQUAL ( NONE | PARTIAL ) )?
-    ( ON PRIMARY? database_file_spec ( COMMA database_file_spec )* )?
-    ( LOG ON database_file_spec ( COMMA database_file_spec )* )?
+    (
+        ON PRIMARY? database_file_spec ( COMMA database_file_spec )*
+        ( LOG ON database_file_spec ( COMMA database_file_spec )* )?
+    )?
     ( COLLATE collation_name = id )?
     ( WITH  create_database_option ( COMMA create_database_option )* )?
     ;
@@ -2965,11 +2967,12 @@ create_database_option
     : FILESTREAM ( database_filestream_option (COMMA database_filestream_option)* )
     | DEFAULT_LANGUAGE EQUAL ( id | STRING )
     | DEFAULT_FULLTEXT_LANGUAGE EQUAL ( id | STRING )
-    | NESTED_TRIGGERS EQUAL ( OFF | ON )
-    | TRANSFORM_NOISE_WORDS EQUAL ( OFF | ON )
+    | NESTED_TRIGGERS EQUAL on_off
+    | TRANSFORM_NOISE_WORDS EQUAL on_off
     | TWO_DIGIT_YEAR_CUTOFF EQUAL DECIMAL
-    | DB_CHAINING ( OFF | ON )
-    | TRUSTWORTHY ( OFF | ON )
+    | DB_CHAINING on_off
+    | TRUSTWORTHY on_off
+    | PERSISTENT_LOG_BUFFER EQUAL ON LR_BRACKET DIRECTORY_NAME EQUAL STRING RR_BRACKET
     ;
 
 database_filestream_option
@@ -3559,6 +3562,7 @@ simple_id
     | PERMISSION_SET
     | PERSIST_SAMPLE_PERSENT
     | PERSISTED
+    | PERSISTENT_LOG_BUFFER
     | PLATFORM
     | POISON_MESSAGE_HANDLING
     | POLICY
