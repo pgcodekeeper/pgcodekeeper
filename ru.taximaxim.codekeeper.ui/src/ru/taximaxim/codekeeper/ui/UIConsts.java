@@ -10,6 +10,7 @@ public interface UIConsts {
 
     interface PLUGIN_ID {
         String THIS = "ru.taximaxim.codekeeper.ui"; //$NON-NLS-1$
+        String AUXILIARY = THIS + ".auxiliary"; //$NON-NLS-1$
     }
 
     interface PERSPECTIVE {

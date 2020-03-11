@@ -160,11 +160,11 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     public static void saveLastDb(DbInfo lastDb, IEditorInput inputForProject) {
         IResource res = ResourceUtil.getResource(inputForProject);
         if (res != null) {
-            IEclipsePreferences prefs = PgDbProject.getPrefs(res.getProject());
-            if (prefs != null) {
-                prefs.put(PROJ_PREF.LAST_DB_STORE_EDITOR, lastDb.getName());
+            IEclipsePreferences auxPrefs = PgDbProject.getPrefs(res.getProject(), true);
+            if (auxPrefs != null) {
+                auxPrefs.put(PROJ_PREF.LAST_DB_STORE_EDITOR, lastDb.getName());
                 try {
-                    prefs.flush();
+                    auxPrefs.flush();
                 } catch (BackingStoreException ex) {
                     Log.log(ex);
                 }
@@ -180,7 +180,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         // it's need to do for refresh content and state of DbCombo in SQLEditor
         // when it's opened as inactive second tab, while setting the binding in
         // project properties
-        DbInfo boundDb = getDbFromPref(PROJ_PREF.NAME_OF_BOUND_DB);
+        DbInfo boundDb = getDbFromAuxPref(PROJ_PREF.NAME_OF_BOUND_DB);
         if (boundDb != null) {
             return boundDb;
         }
@@ -189,18 +189,18 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             return currentDB;
         }
 
-        return getDbFromPref(PROJ_PREF.LAST_DB_STORE_EDITOR);
+        return getDbFromAuxPref(PROJ_PREF.LAST_DB_STORE_EDITOR);
     }
 
-    private DbInfo getDbFromPref(String prefName) {
-        IEclipsePreferences prefs = getProjPrefs();
-        return prefs == null ? null :
-            DbInfo.getLastDb(prefs.get(prefName, "")); //$NON-NLS-1$
+    private DbInfo getDbFromAuxPref(String prefName) {
+        IEclipsePreferences auxPrefs = getProjAuxPrefs();
+        return auxPrefs == null ? null :
+            DbInfo.getLastDb(auxPrefs.get(prefName, "")); //$NON-NLS-1$
     }
 
-    public IEclipsePreferences getProjPrefs() {
+    public IEclipsePreferences getProjAuxPrefs() {
         IResource res = ResourceUtil.getResource(getEditorInput());
-        return res != null ? PgDbProject.getPrefs(res.getProject()) : null;
+        return res != null ? PgDbProject.getPrefs(res.getProject(), true) : null;
     }
 
     @Override

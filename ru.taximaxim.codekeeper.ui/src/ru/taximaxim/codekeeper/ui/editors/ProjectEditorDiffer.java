@@ -808,8 +808,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     }
 
     public Object getCurrentDb() {
-        IEclipsePreferences prefs = proj.getPrefs();
-        DbInfo boundDb = DbInfo.getLastDb(prefs.get(PROJ_PREF.NAME_OF_BOUND_DB, "")); //$NON-NLS-1$
+        IEclipsePreferences auxPrefs = proj.getAuxPrefs();
+        DbInfo boundDb = DbInfo.getLastDb(auxPrefs.get(PROJ_PREF.NAME_OF_BOUND_DB, "")); //$NON-NLS-1$
         if (boundDb != null) {
             return boundDb;
         }
@@ -818,7 +818,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             return currentRemote;
         }
 
-        return DbInfo.getLastDb(prefs.get(PROJ_PREF.LAST_DB_STORE, "")); //$NON-NLS-1$
+        return DbInfo.getLastDb(auxPrefs.get(PROJ_PREF.LAST_DB_STORE, "")); //$NON-NLS-1$
     }
 
     public void saveLastDb(DbInfo lastDb) {
@@ -826,11 +826,11 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     }
 
     public static void saveLastDb(DbInfo lastDb, IProject project) {
-        IEclipsePreferences prefs = PgDbProject.getPrefs(project);
-        if (prefs != null) {
-            prefs.put(PROJ_PREF.LAST_DB_STORE, lastDb.getName());
+        IEclipsePreferences auxPrefs = PgDbProject.getPrefs(project, true);
+        if (auxPrefs != null) {
+            auxPrefs.put(PROJ_PREF.LAST_DB_STORE, lastDb.getName());
             try {
-                prefs.flush();
+                auxPrefs.flush();
             } catch (BackingStoreException ex) {
                 Log.log(ex);
             }

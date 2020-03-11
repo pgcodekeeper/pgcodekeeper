@@ -121,7 +121,7 @@ implements IExecutableExtension, INewWizard {
             if (pageDb.isBound()) {
                 DbInfo dbInfo = pageDb.getDbInfo();
                 if (dbInfo != null) {
-                    props.getPrefs().put(PROJ_PREF.NAME_OF_BOUND_DB, dbInfo.getName());
+                    props.getAuxPrefs().put(PROJ_PREF.NAME_OF_BOUND_DB, dbInfo.getName());
                     applyProps = true;
                 }
             }
@@ -129,6 +129,7 @@ implements IExecutableExtension, INewWizard {
             if (applyProps) {
                 try {
                     props.getPrefs().flush();
+                    props.getAuxPrefs().flush();
                 } catch (BackingStoreException e) {
                     Log.log(Log.LOG_WARNING, "Error while flushing project properties!", e); //$NON-NLS-1$
                 }

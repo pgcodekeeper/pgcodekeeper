@@ -100,13 +100,13 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
             if (input instanceof FileEditorInput) {
                 proj = ((FileEditorInput) input).getFile().getProject();
             }
-            setDbComboEnableState(editor.getProjPrefs());
+            setDbComboEnableState(editor.getProjAuxPrefs());
         } else if (part instanceof ProjectEditorDiffer) {
             ProjectEditorDiffer differ = (ProjectEditorDiffer) part;
             lastDb = differ.getCurrentDb();
             storePicker.loadStore(true);
             proj = differ.getProject();
-            setDbComboEnableState(PgDbProject.getPrefs(differ.getProject()));
+            setDbComboEnableState(PgDbProject.getPrefs(differ.getProject(), true));
         } else {
             return;
         }
@@ -126,9 +126,9 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
         }
     }
 
-    private void setDbComboEnableState(IEclipsePreferences prefs) {
-        storePicker.setComboEnabled(prefs == null ? true :
-            prefs.get(PROJ_PREF.NAME_OF_BOUND_DB, "").isEmpty()); //$NON-NLS-1$
+    private void setDbComboEnableState(IEclipsePreferences auxPrefs) {
+        storePicker.setComboEnabled(auxPrefs == null ? true :
+            auxPrefs.get(PROJ_PREF.NAME_OF_BOUND_DB, "").isEmpty()); //$NON-NLS-1$
     }
 
     private class EditorPartListener extends IPartAdapter2 {

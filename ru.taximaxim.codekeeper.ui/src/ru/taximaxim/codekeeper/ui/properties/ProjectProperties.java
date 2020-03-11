@@ -56,6 +56,7 @@ public class ProjectProperties extends PropertyPage {
     private DbInfo dbForBind;
 
     private IEclipsePreferences prefs;
+    private IEclipsePreferences auxPrefs;
 
     private boolean isMsSql;
 
@@ -66,6 +67,7 @@ public class ProjectProperties extends PropertyPage {
         super.setElement(element);
         IProject project = element.getAdapter(IProject.class);
         prefs = new ProjectScope(project).getNode(UIConsts.PLUGIN_ID.THIS);
+        auxPrefs = new ProjectScope(project).getNode(UIConsts.PLUGIN_ID.AUXILIARY);
         isMsSql = OpenProjectUtils.checkMsSql(project);
     }
 
@@ -88,7 +90,7 @@ public class ProjectProperties extends PropertyPage {
         btnForceUnixNewlines.setLayoutData(new GridData(SWT.DEFAULT, SWT.DEFAULT, false, false, 2, 1));
         btnForceUnixNewlines.setSelection(prefs.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true));
 
-        String nameOfBoundDb = prefs.get(PROJ_PREF.NAME_OF_BOUND_DB, ""); //$NON-NLS-1$
+        String nameOfBoundDb = auxPrefs.get(PROJ_PREF.NAME_OF_BOUND_DB, ""); //$NON-NLS-1$
         btnBindProjToDb = new Button(panel, SWT.CHECK);
         btnBindProjToDb.setText(Messages.ProjectProperties_binding_to_db_connection + ':');
         btnBindProjToDb.setSelection(!nameOfBoundDb.isEmpty());
@@ -287,12 +289,13 @@ public class ProjectProperties extends PropertyPage {
         prefs.putBoolean(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, btnUseGlobalIgnoreList.getSelection());
         prefs.putBoolean(PROJ_PREF.DISABLE_PARSER_IN_EXTERNAL_FILES, btnDisableParser.getSelection());
         prefs.putBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, btnForceUnixNewlines.getSelection());
-        prefs.put(PROJ_PREF.NAME_OF_BOUND_DB, dbForBind != null ? dbForBind.getName() : ""); //$NON-NLS-1$
+        auxPrefs.put(PROJ_PREF.NAME_OF_BOUND_DB, dbForBind != null ? dbForBind.getName() : ""); //$NON-NLS-1$
         if (!isMsSql) {
             prefs.put(PROJ_PREF.TIMEZONE, cmbTimezone.getText());
             prefs.putBoolean(PREF.SIMPLIFY_VIEW, btnSimplifyView.getSelection());
         }
         prefs.flush();
+        auxPrefs.flush();
         setValid(true);
         setErrorMessage(null);
     }
