@@ -19,7 +19,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
@@ -105,7 +104,7 @@ public class HeapSizeCheckerDialog extends Dialog {
                 writer.write(newEclipseIniTex);
                 // not dialog with question because of:
                 // "https://bugs.eclipse.org/bugs/show_bug.cgi?id=323565"
-                MessageDialog.openInformation(Display.getDefault().getActiveShell(),
+                MessageDialog.openInformation(getShell(),
                         Messages.HeapSizeCheckerDialog_heap_size_updated,
                         Messages.HeapSizeCheckerDialog_restart_offer);
             }
