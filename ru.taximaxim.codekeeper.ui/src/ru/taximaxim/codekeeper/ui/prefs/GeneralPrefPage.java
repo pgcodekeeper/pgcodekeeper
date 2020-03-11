@@ -31,12 +31,7 @@ implements IWorkbenchPreferencePage  {
     protected void createFieldEditors() {
 
         addField(new BooleanFieldEditor(PREF.FORCE_SHOW_CONSOLE,
-                Messages.generalPrefPage_show_console_when_program_write_to_console,
-                getFieldEditorParent()));
-
-        addField(new BooleanFieldEditor(PREF.SHOW_DIFF_ERRORS,
-                Messages.GeneralPrefPage_show_diff_errors,
-                getFieldEditorParent()));
+                Messages.generalPrefPage_show_console_when_program_write_to_console, getFieldEditorParent()));
 
         addField(new BooleanFieldEditor(PREF.NO_PRIVILEGES,
                 Messages.dbUpdatePrefPage_ignore_privileges,

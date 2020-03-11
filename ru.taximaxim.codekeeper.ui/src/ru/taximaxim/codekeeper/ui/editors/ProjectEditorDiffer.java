@@ -733,7 +733,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                     });
                 }
 
-                if (mainPrefs.getBoolean(PREF.SHOW_DIFF_ERRORS)) {
+                if (mainPrefs.getBoolean(PG_EDIT_PREF.SHOW_DIFF_ERRORS)) {
                     newDiffer.getErrors().forEach(e -> StatusManager.getManager().handle(
                             new Status(IStatus.WARNING, PLUGIN_ID.THIS, e.toString()),
                             StatusManager.SHOW));

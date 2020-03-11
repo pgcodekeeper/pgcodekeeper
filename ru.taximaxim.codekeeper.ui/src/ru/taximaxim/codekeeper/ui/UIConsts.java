@@ -58,7 +58,6 @@ public interface UIConsts {
     }
 
     interface PREF {
-        String SHOW_DIFF_ERRORS = "showDiffErrors"; //$NON-NLS-1$
         String FORCE_SHOW_CONSOLE = "prefForceShowConsole"; //$NON-NLS-1$
         String DB_STORE_FILES = "prefDbStoreHistory"; //$NON-NLS-1$
         String NO_PRIVILEGES = "prefNoPrivileges"; //$NON-NLS-1$
@@ -96,6 +95,7 @@ public interface UIConsts {
         String UPDATE = "UPDATE"; //$NON-NLS-1$
         String RESET = "RESET"; //$NON-NLS-1$
         String NO_ACTION = "NO_ACTION"; //$NON-NLS-1$
+        String SHOW_DIFF_ERRORS = "showDiffErrors"; //$NON-NLS-1$
     }
 
     interface SQL_EDITOR_PREF {
