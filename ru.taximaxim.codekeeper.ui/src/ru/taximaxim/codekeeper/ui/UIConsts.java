@@ -96,6 +96,7 @@ public interface UIConsts {
         String UPDATE = "UPDATE"; //$NON-NLS-1$
         String RESET = "RESET"; //$NON-NLS-1$
         String NO_ACTION = "NO_ACTION"; //$NON-NLS-1$
+        String SHOW_DIFF_ERRORS = "showDiffErrors"; //$NON-NLS-1$
     }
 
     interface SQL_EDITOR_PREF {
