@@ -103,6 +103,7 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
 import ru.taximaxim.codekeeper.ui.UIConsts.CONTEXT;
+import ru.taximaxim.codekeeper.ui.UIConsts.DB_BIND_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
@@ -810,8 +811,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     }
 
     public Object getCurrentDb() {
-        IEclipsePreferences auxPrefs = proj.getAuxPrefs();
-        DbInfo boundDb = DbInfo.getLastDb(auxPrefs.get(PROJ_PREF.NAME_OF_BOUND_DB, "")); //$NON-NLS-1$
+        IEclipsePreferences prefs = proj.getDbBindPrefs();
+        DbInfo boundDb = DbInfo.getLastDb(prefs.get(DB_BIND_PREF.NAME_OF_BOUND_DB, "")); //$NON-NLS-1$
         if (boundDb != null) {
             return boundDb;
         }
@@ -820,7 +821,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             return currentRemote;
         }
 
-        return DbInfo.getLastDb(auxPrefs.get(PROJ_PREF.LAST_DB_STORE, "")); //$NON-NLS-1$
+        return DbInfo.getLastDb(prefs.get(DB_BIND_PREF.LAST_DB_STORE, "")); //$NON-NLS-1$
     }
 
     public void saveLastDb(DbInfo lastDb) {
@@ -828,11 +829,11 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     }
 
     public static void saveLastDb(DbInfo lastDb, IProject project) {
-        IEclipsePreferences auxPrefs = PgDbProject.getPrefs(project, true);
-        if (auxPrefs != null) {
-            auxPrefs.put(PROJ_PREF.LAST_DB_STORE, lastDb.getName());
+        IEclipsePreferences prefs = PgDbProject.getPrefs(project, false);
+        if (prefs != null) {
+            prefs.put(DB_BIND_PREF.LAST_DB_STORE, lastDb.getName());
             try {
-                auxPrefs.flush();
+                prefs.flush();
             } catch (BackingStoreException ex) {
                 Log.log(ex);
             }
