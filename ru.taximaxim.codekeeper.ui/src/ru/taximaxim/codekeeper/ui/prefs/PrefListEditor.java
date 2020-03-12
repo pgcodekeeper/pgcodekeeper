@@ -73,7 +73,7 @@ public abstract class PrefListEditor<T> extends Composite {
             viewerObjs.getTable().setHeaderVisible(true);
         } else {
             // set nonzero width to make column visible
-            viewerObjs.getTable().getColumn(0).setWidth(1);
+            viewerObjs.getTable().getColumn(0).setWidth(WIDTH_HINT_PX);
         }
         gd.widthHint = WIDTH_HINT_PX;
         gd.heightHint = HEIGHT_HINT_PX;

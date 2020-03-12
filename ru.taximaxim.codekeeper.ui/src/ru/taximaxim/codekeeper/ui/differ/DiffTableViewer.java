@@ -925,7 +925,7 @@ public class DiffTableViewer extends Composite {
             @Override
             public void done(IJobChangeEvent event) {
                 if (event.getResult().isOK()) {
-                    UiSync.exec(getDisplay(), () -> {
+                    UiSync.exec(DiffTableViewer.this, () -> {
                         if (viewerFilter.isLocalChange.get()
                                 || !viewerFilter.gitUserFilter.isEmpty()
                                 || comparator.sortOrder.stream().anyMatch(c -> c.col == Columns.GIT_USER)) {
