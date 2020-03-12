@@ -34,6 +34,7 @@ SELECT  -- common part (functions/procedures/aggregates)
         array(select pg_catalog.unnest(p.proargtypes))::bigint[] as argtypes,
         pg_catalog.pg_get_expr(p.proargdefaults, 0) AS default_values_as_string,
         p.pronamespace AS schema_oid,
+        p.pronargs,
         
         -- for aggregates
         sfunc.proname AS sfunc,
