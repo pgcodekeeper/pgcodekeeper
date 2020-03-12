@@ -1,6 +1,5 @@
 package ru.taximaxim.codekeeper.ui.libraries;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -90,10 +89,6 @@ public abstract class AbstractLibrary {
 
     public String getName() {
         return name;
-    }
-
-    public boolean exists() {
-        return Files.exists(getPath());
     }
 
     @Override

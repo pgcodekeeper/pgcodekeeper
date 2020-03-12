@@ -14,7 +14,6 @@ import org.eclipse.core.runtime.Platform;
 
 import cz.startnet.utils.pgdiff.libraries.PgLibrary;
 import cz.startnet.utils.pgdiff.libraries.PgLibrarySource;
-import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
@@ -49,15 +48,15 @@ public class LibraryUtils {
         String path = lib.getPath();
         switch (PgLibrarySource.getSource(path)) {
         case JDBC:
-            new SimpleLibrary(root, JdbcConnector.dbNameFromUrl(path));
+            new JdbcLibrary(root, path);
             break;
         case URL:
             try {
                 UrlLibrary url = new UrlLibrary(root, new URI(path));
                 readDir(url, url.getPath());
             } catch (URISyntaxException e) {
-                // use default path
-                new SimpleLibrary(root, path);
+                // shouldn't happen, already checked by getSource
+                // not URI, try to folder or file
             }
             break;
         case LOCAL:

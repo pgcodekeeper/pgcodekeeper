@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui.libraries;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
@@ -39,6 +40,10 @@ public abstract class CacheableLibrary extends AbstractLibrary {
                 }
             }
         }
+    }
+
+    public boolean exists() {
+        return Files.exists(getPath());
     }
 
     @Override

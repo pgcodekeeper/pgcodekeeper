@@ -126,6 +126,11 @@ public class ProjectOverrideView extends ViewPart implements ISelectionListener 
             public void run() {
                 openFile(false);
             }
+
+            @Override
+            public boolean isEnabled() {
+                return canOpen(false);
+            }
         });
 
         menuMgr.add(new Action(Messages.ProjectOverrideView_open_old_location) {
@@ -133,6 +138,11 @@ public class ProjectOverrideView extends ViewPart implements ISelectionListener 
             @Override
             public void run() {
                 openFile(true);
+            }
+
+            @Override
+            public boolean isEnabled() {
+                return canOpen(true);
             }
         });
 
@@ -177,6 +187,20 @@ public class ProjectOverrideView extends ViewPart implements ISelectionListener 
                 }
             }
         }
+    }
+
+    private boolean canOpen(boolean isOld) {
+        ISelection selection = viewer.getSelection();
+        if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
+            Object obj = ((IStructuredSelection) selection).getFirstElement();
+            if (obj instanceof PgOverride) {
+                PgOverride ov = (PgOverride) obj;
+                PgStatement st = isOld ? ov.getOldStatement() : ov.getNewStatement();
+                return st.getLocation() != null;
+            }
+        }
+
+        return false;
     }
 
     private void addColumns() {
