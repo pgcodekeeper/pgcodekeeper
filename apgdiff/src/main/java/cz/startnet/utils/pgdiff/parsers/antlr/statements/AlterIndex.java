@@ -15,19 +15,20 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 public class AlterIndex extends ParserAbstract {
 
     private final Alter_index_statementContext ctx;
-    private final String action;
+    private final String alterIdxAllAction;
 
     public AlterIndex(Alter_index_statementContext ctx, PgDatabase db) {
         super(db);
         this.ctx = ctx;
-        action = new StringBuilder(ACTION_ALTER).append(" INDEX ALL IN TABLESPACE ")
-                .append(ctx.identifier(0)).toString();
+        alterIdxAllAction = ctx.ALL() == null ? null
+                : new StringBuilder(ACTION_ALTER).append(" INDEX ALL IN TABLESPACE ")
+                .append(ctx.identifier(0).getText()).toString();
     }
 
     @Override
     public void parseObject() {
-        if (ctx.ALL() != null) {
-            db.addToQueries(fileName, new PgObjLocation(action, ctx.getParent(), null));
+        if (alterIdxAllAction != null) {
+            db.addToQueries(fileName, new PgObjLocation(alterIdxAllAction, ctx.getParent(), null));
             return;
         }
 
@@ -55,7 +56,7 @@ public class AlterIndex extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        return ctx.ALL() != null ? action
+        return alterIdxAllAction != null ? alterIdxAllAction
                 : getStrForStmtAction(ACTION_ALTER, DbObjType.INDEX,
                         ctx.schema_qualified_name().identifier());
     }
