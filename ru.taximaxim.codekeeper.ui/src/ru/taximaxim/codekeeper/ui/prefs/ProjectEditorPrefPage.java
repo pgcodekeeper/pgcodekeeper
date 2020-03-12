@@ -42,5 +42,9 @@ public class ProjectEditorPrefPage extends FieldEditorPreferencePage implements 
         addField(new BooleanFieldEditor(
                 PG_EDIT_PREF.SHOW_GIT_USER, Messages.ProjectEditorPrefPage_show_git_user,
                 getFieldEditorParent()));
+
+        addField(new BooleanFieldEditor(PG_EDIT_PREF.SHOW_DIFF_ERRORS,
+                Messages.GeneralPrefPage_show_diff_errors,
+                getFieldEditorParent()));
     }
 }

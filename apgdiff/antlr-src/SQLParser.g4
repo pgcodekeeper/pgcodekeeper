@@ -48,8 +48,6 @@ data_statement
     | insert_stmt_for_psql
     | update_stmt_for_psql
     | delete_stmt_for_psql
-    | notify_stmt
-    | truncate_stmt
     ;
 
 script_statement
@@ -95,6 +93,8 @@ script_additional
     | DISCARD (ALL | PLANS | SEQUENCES | TEMPORARY | TEMP)
     | declare_statement
     | execute_statement
+    | explain_statement
+    | show_statement
     ;
 
 additional_statement
@@ -108,12 +108,12 @@ additional_statement
     | DEALLOCATE PREPARE? (identifier | ALL)
     | REINDEX (LEFT_PAREN VERBOSE RIGHT_PAREN)? (INDEX | TABLE | SCHEMA | DATABASE | SYSTEM) CONCURRENTLY? schema_qualified_name
     | RESET ((identifier DOT)? identifier | TIME ZONE | SESSION AUTHORIZATION | ALL)
-    | explain_statement
     | REFRESH MATERIALIZED VIEW CONCURRENTLY? schema_qualified_name (WITH NO? DATA)?
     | PREPARE identifier (LEFT_PAREN data_type (COMMA data_type)* RIGHT_PAREN)? AS data_statement
     | REASSIGN OWNED BY user_name (COMMA user_name)* TO user_name
     | copy_statement
-    | show_statement
+    | truncate_stmt
+    | notify_stmt
     ;
 
 explain_statement
@@ -121,7 +121,6 @@ explain_statement
 
 explain_query
     : data_statement
-    | values_stmt
     | execute_statement
     | declare_statement
     | CREATE (create_table_as_statement | create_view_statement)
@@ -1403,7 +1402,7 @@ copy_from_statement
     ;
 
 copy_to_statement
-    : COPY (table_cols | LEFT_PAREN (select_stmt | insert_stmt_for_psql | update_stmt_for_psql | delete_stmt_for_psql) RIGHT_PAREN)
+    : COPY (table_cols | LEFT_PAREN data_statement RIGHT_PAREN)
     TO (PROGRAM? Character_String_Literal | STDOUT)
     (WITH? (LEFT_PAREN copy_option_list RIGHT_PAREN | copy_option_list))?
     ;
@@ -2720,7 +2719,7 @@ with_clause
 
 with_query
     : query_name=identifier (LEFT_PAREN column_name+=identifier (COMMA column_name+=identifier)* RIGHT_PAREN)?
-    AS (NOT? MATERIALIZED)? LEFT_PAREN (select_stmt | insert_stmt_for_psql | update_stmt_for_psql | delete_stmt_for_psql) RIGHT_PAREN
+    AS (NOT? MATERIALIZED)? LEFT_PAREN data_statement RIGHT_PAREN
     ;
 
 select_ops
@@ -2954,13 +2953,12 @@ function_statement
     | cursor_statement
     | message_statement
     | schema_statement
-    | data_statement
+    | plpgsql_query
     | additional_statement
     ;
 
 base_statement
     : assign_stmt
-    | EXECUTE vex using_vex?
     | PERFORM perform_stmt
     | GET (CURRENT | STACKED)? DIAGNOSTICS diagnostic_option (COMMA diagnostic_option)*
     | NULL
@@ -3004,7 +3002,7 @@ control_statement
     ;
 
 cursor_statement
-    : OPEN var (NO? SCROLL)? FOR (select_stmt | execute_stmt)
+    : OPEN var (NO? SCROLL)? FOR plpgsql_query
     | OPEN var (LEFT_PAREN option (COMMA option)* RIGHT_PAREN)?
     | FETCH fetch_move_direction? (FROM | IN)? var
     | MOVE fetch_move_direction? (FROM | IN)? var
@@ -3055,7 +3053,7 @@ raise_param
 return_stmt
     : RETURN perform_stmt?
     | RETURN NEXT vex
-    | RETURN QUERY (select_stmt | execute_stmt | show_statement | explain_statement)
+    | RETURN QUERY plpgsql_query
     ;
 
 loop_statement
@@ -3066,7 +3064,7 @@ loop_statement
 loop_start
     : WHILE vex
     | FOR alias=identifier IN REVERSE? vex DOUBLE_DOT vex (BY vex)?
-    | FOR identifier_list IN (select_stmt | execute_stmt)
+    | FOR identifier_list IN plpgsql_query
     | FOR cursor=identifier IN identifier (LEFT_PAREN option (COMMA option)* RIGHT_PAREN)? // cursor loop
     | FOREACH identifier_list (SLICE NUMBER_LITERAL)? IN ARRAY vex
     ;
@@ -3082,4 +3080,11 @@ if_statement
 // plpgsql case
 case_statement
     : CASE vex? (WHEN vex (COMMA vex)* THEN function_statements)+ (ELSE function_statements)? END CASE
+    ;
+
+plpgsql_query
+    : data_statement
+    | execute_stmt
+    | show_statement
+    | explain_statement
     ;

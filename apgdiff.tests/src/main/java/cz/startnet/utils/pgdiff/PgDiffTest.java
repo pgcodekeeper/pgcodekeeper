@@ -496,6 +496,8 @@ public class PgDiffTest {
                     {"add_aggregate_overloaded"},
                     // Tests scenario where new AGGREGATE with using elements from other schemas is added.
                     {"add_aggregate_use_other_schema"},
+                    // Tests scenario where new AGGREGATE with VARIADIC "any" arguments is added.
+                    {"add_aggregate_variadic_any_args"},
                     // Tests scenario where AGGREGATE is dropped.
                     {"drop_aggregate"},
                     // Tests scenario where options of AGGREGATE is modified.
