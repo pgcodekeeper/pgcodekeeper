@@ -7,8 +7,8 @@ options {
 
 @header {package cz.startnet.utils.pgdiff.parsers.antlr;}
 
-// для запуска парсинга рекомендуется использовать только правила с EOF
-// это исключает неоднозначные варианты разбора и ускоряет процесс
+// to start parsing, it is recommended to use only rules with EOF
+// this eliminates the ambiguous parsing options and speeds up the process
 /******* Start symbols *******/
 
 sql
@@ -48,8 +48,6 @@ data_statement
     | insert_stmt_for_psql
     | update_stmt_for_psql
     | delete_stmt_for_psql
-    | notify_stmt
-    | truncate_stmt
     ;
 
 script_statement
@@ -89,13 +87,14 @@ lock_mode
 script_additional
     : additional_statement
     | VACUUM vacuum_mode table_cols_list?
-    | show_statement
     | (FETCH | MOVE) fetch_move_direction? (FROM | IN)? identifier
     | CLOSE (identifier | ALL)
     | CALL function_call
     | DISCARD (ALL | PLANS | SEQUENCES | TEMPORARY | TEMP)
     | declare_statement
     | execute_statement
+    | explain_statement
+    | show_statement
     ;
 
 additional_statement
@@ -109,11 +108,12 @@ additional_statement
     | DEALLOCATE PREPARE? (identifier | ALL)
     | REINDEX (LEFT_PAREN VERBOSE RIGHT_PAREN)? (INDEX | TABLE | SCHEMA | DATABASE | SYSTEM) CONCURRENTLY? schema_qualified_name
     | RESET ((identifier DOT)? identifier | TIME ZONE | SESSION AUTHORIZATION | ALL)
-    | explain_statement
     | REFRESH MATERIALIZED VIEW CONCURRENTLY? schema_qualified_name (WITH NO? DATA)?
     | PREPARE identifier (LEFT_PAREN data_type (COMMA data_type)* RIGHT_PAREN)? AS data_statement
     | REASSIGN OWNED BY user_name (COMMA user_name)* TO user_name
     | copy_statement
+    | truncate_stmt
+    | notify_stmt
     ;
 
 explain_statement
@@ -121,7 +121,6 @@ explain_statement
 
 explain_query
     : data_statement
-    | values_stmt
     | execute_statement
     | declare_statement
     | CREATE (create_table_as_statement | create_view_statement)
@@ -1403,7 +1402,7 @@ copy_from_statement
     ;
 
 copy_to_statement
-    : COPY (table_cols | LEFT_PAREN (select_stmt | insert_stmt_for_psql | update_stmt_for_psql | delete_stmt_for_psql) RIGHT_PAREN)
+    : COPY (table_cols | LEFT_PAREN data_statement RIGHT_PAREN)
     TO (PROGRAM? Character_String_Literal | STDOUT)
     (WITH? (LEFT_PAREN copy_option_list RIGHT_PAREN | copy_option_list))?
     ;
@@ -2696,7 +2695,7 @@ table_subquery
     ;
 
 select_stmt
-    : with_clause? select_ops (after_ops into_statement?)*
+    : with_clause? select_ops after_ops*
     ;
 
 after_ops
@@ -2720,7 +2719,7 @@ with_clause
 
 with_query
     : query_name=identifier (LEFT_PAREN column_name+=identifier (COMMA column_name+=identifier)* RIGHT_PAREN)?
-    AS (NOT? MATERIALIZED)? LEFT_PAREN (select_stmt | insert_stmt_for_psql | update_stmt_for_psql | delete_stmt_for_psql) RIGHT_PAREN
+    AS (NOT? MATERIALIZED)? LEFT_PAREN data_statement RIGHT_PAREN
     ;
 
 select_ops
@@ -2737,12 +2736,10 @@ select_ops_no_parens
 
 select_primary
     : SELECT
-        into_statement?
         (set_qualifier (ON LEFT_PAREN vex (COMMA vex)* RIGHT_PAREN)?)?
-        select_list?
-        (into_statement | into_table)?
-        (FROM into_statement? from_item (COMMA from_item)*)?
-        (WHERE vex into_statement?)?
+        select_list? into_table?
+        (FROM from_item (COMMA from_item)*)?
+        (WHERE vex)?
         groupby_clause?
         (HAVING vex)?
         (WINDOW identifier AS window_definition (COMMA identifier AS window_definition)*)?
@@ -2759,17 +2756,16 @@ select_sublist
   ;
 
 into_table
-    : INTO TABLE schema_qualified_name
-    | INTO (TEMPORARY | TEMP | UNLOGGED) TABLE? schema_qualified_name
+    : INTO (TEMPORARY | TEMP | UNLOGGED)? TABLE? schema_qualified_name
     ;
 
 from_item
     : LEFT_PAREN from_item RIGHT_PAREN alias_clause?
     | from_item CROSS JOIN from_item
-    | from_item (INNER | (LEFT | RIGHT | FULL) OUTER?)? JOIN from_item ON vex into_statement?
+    | from_item (INNER | (LEFT | RIGHT | FULL) OUTER?)? JOIN from_item ON vex
     | from_item (INNER | (LEFT | RIGHT | FULL) OUTER?)? JOIN from_item USING names_in_parens
     | from_item NATURAL (INNER | (LEFT | RIGHT | FULL) OUTER?)? JOIN from_item
-    | from_primary into_statement?
+    | from_primary
     ;
 
 from_primary
@@ -2841,7 +2837,7 @@ insert_stmt_for_psql
     (OVERRIDING (SYSTEM | USER) VALUE)? insert_columns?
     (select_stmt | DEFAULT VALUES)
     (ON CONFLICT conflict_object? conflict_action)?
-    (RETURNING select_list into_statement?)?
+    (RETURNING select_list)?
     ;
 
 insert_columns
@@ -2866,7 +2862,7 @@ delete_stmt_for_psql
     : with_clause? DELETE FROM ONLY? delete_table_name=schema_qualified_name MULTIPLY? (AS? alias=identifier)?
     (USING from_item (COMMA from_item)*)?
     (WHERE (vex | CURRENT OF cursor=identifier))?
-    (RETURNING select_list into_statement?)?
+    (RETURNING select_list)?
     ;
 
 update_stmt_for_psql
@@ -2874,7 +2870,7 @@ update_stmt_for_psql
     SET update_set (COMMA update_set)*
     (FROM from_item (COMMA from_item)*)?
     (WHERE (vex | CURRENT OF cursor=identifier))?
-    (RETURNING select_list into_statement?)?
+    (RETURNING select_list)?
     ;
 
 update_set
@@ -2891,6 +2887,17 @@ truncate_stmt
     : TRUNCATE TABLE? only_table_multiply (COMMA only_table_multiply)*
     ((RESTART | CONTINUE) IDENTITY)? cascade_restrict?
     ;
+
+identifier_list
+    : identifier (COMMA identifier)*
+    ;
+
+anonymous_block
+    : DO (LANGUAGE (identifier | character_string))? character_string
+    | DO character_string LANGUAGE (identifier | character_string)
+    ;
+
+// plpgsql rules
 
 comp_options
     : HASH_SIGN identifier (identifier | truth_value)
@@ -2946,14 +2953,12 @@ function_statement
     | cursor_statement
     | message_statement
     | schema_statement
-    | data_statement
+    | plpgsql_query
     | additional_statement
-    | show_into_statement
     ;
 
 base_statement
     : assign_stmt
-    | EXECUTE vex (into_statement? using_vex? | using_vex into_statement)
     | PERFORM perform_stmt
     | GET (CURRENT | STACKED)? DIAGNOSTICS diagnostic_option (COMMA diagnostic_option)*
     | NULL
@@ -2997,9 +3002,9 @@ control_statement
     ;
 
 cursor_statement
-    : OPEN var (NO? SCROLL)? FOR (select_stmt | execute_stmt)
+    : OPEN var (NO? SCROLL)? FOR plpgsql_query
     | OPEN var (LEFT_PAREN option (COMMA option)* RIGHT_PAREN)?
-    | FETCH fetch_move_direction? (FROM | IN)? var into_statement
+    | FETCH fetch_move_direction? (FROM | IN)? var
     | MOVE fetch_move_direction? (FROM | IN)? var
     | CLOSE var
     ;
@@ -3048,7 +3053,7 @@ raise_param
 return_stmt
     : RETURN perform_stmt?
     | RETURN NEXT vex
-    | RETURN QUERY (select_stmt | execute_stmt | show_statement | explain_statement)
+    | RETURN QUERY plpgsql_query
     ;
 
 loop_statement
@@ -3059,13 +3064,9 @@ loop_statement
 loop_start
     : WHILE vex
     | FOR alias=identifier IN REVERSE? vex DOUBLE_DOT vex (BY vex)?
-    | FOR identifier_list IN (select_stmt | execute_stmt)
+    | FOR identifier_list IN plpgsql_query
     | FOR cursor=identifier IN identifier (LEFT_PAREN option (COMMA option)* RIGHT_PAREN)? // cursor loop
     | FOREACH identifier_list (SLICE NUMBER_LITERAL)? IN ARRAY vex
-    ;
-
-identifier_list
-    : identifier (COMMA identifier)*
     ;
 
 using_vex
@@ -3081,15 +3082,9 @@ case_statement
     : CASE vex? (WHEN vex (COMMA vex)* THEN function_statements)+ (ELSE function_statements)? END CASE
     ;
 
-show_into_statement
-    : show_statement into_statement
-    ;
-
-into_statement
-    : INTO STRICT? names_references
-    ;
-
-anonymous_block
-    : DO (LANGUAGE (identifier | character_string))? character_string
-    | DO character_string LANGUAGE (identifier | character_string)
+plpgsql_query
+    : data_statement
+    | execute_stmt
+    | show_statement
+    | explain_statement
     ;

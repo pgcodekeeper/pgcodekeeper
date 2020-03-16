@@ -57,8 +57,11 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IURIEditorInput;
+import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
@@ -90,6 +93,7 @@ import ru.taximaxim.codekeeper.ui.IPartAdapter2;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.CMD_VARS;
 import ru.taximaxim.codekeeper.ui.UIConsts.CONTEXT;
+import ru.taximaxim.codekeeper.ui.UIConsts.DB_BIND_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.LANGUAGE;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
@@ -126,6 +130,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     private Image errorTitleImage;
     private PgDbParser parser;
     private boolean isMsSql;
+    private boolean isLargeFile;
 
     private ScriptThreadJobWrapper scriptThreadJobWrapper;
 
@@ -158,9 +163,9 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     public static void saveLastDb(DbInfo lastDb, IEditorInput inputForProject) {
         IResource res = ResourceUtil.getResource(inputForProject);
         if (res != null) {
-            IEclipsePreferences prefs = PgDbProject.getPrefs(res.getProject());
+            IEclipsePreferences prefs = PgDbProject.getPrefs(res.getProject(), false);
             if (prefs != null) {
-                prefs.put(PROJ_PREF.LAST_DB_STORE_EDITOR, lastDb.getName());
+                prefs.put(DB_BIND_PREF.LAST_DB_STORE_EDITOR, lastDb.getName());
                 try {
                     prefs.flush();
                 } catch (BackingStoreException ex) {
@@ -178,7 +183,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         // it's need to do for refresh content and state of DbCombo in SQLEditor
         // when it's opened as inactive second tab, while setting the binding in
         // project properties
-        DbInfo boundDb = getDbFromPref(PROJ_PREF.NAME_OF_BOUND_DB);
+        DbInfo boundDb = getDbFromPref(DB_BIND_PREF.NAME_OF_BOUND_DB);
         if (boundDb != null) {
             return boundDb;
         }
@@ -187,18 +192,18 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             return currentDB;
         }
 
-        return getDbFromPref(PROJ_PREF.LAST_DB_STORE_EDITOR);
+        return getDbFromPref(DB_BIND_PREF.LAST_DB_STORE_EDITOR);
     }
 
     private DbInfo getDbFromPref(String prefName) {
-        IEclipsePreferences prefs = getProjPrefs();
-        return prefs == null ? null :
-            DbInfo.getLastDb(prefs.get(prefName, "")); //$NON-NLS-1$
+        IEclipsePreferences auxPrefs = getProjDbBindPrefs();
+        return auxPrefs == null ? null :
+            DbInfo.getLastDb(auxPrefs.get(prefName, "")); //$NON-NLS-1$
     }
 
-    public IEclipsePreferences getProjPrefs() {
+    public IEclipsePreferences getProjDbBindPrefs() {
         IResource res = ResourceUtil.getResource(getEditorInput());
-        return res != null ? PgDbProject.getPrefs(res.getProject()) : null;
+        return res != null ? PgDbProject.getPrefs(res.getProject(), false) : null;
     }
 
     @Override
@@ -234,14 +239,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     // see Eclipse bug 543782
     public void doSave(IProgressMonitor progressMonitor) {
         super.doSave(progressMonitor);
-        IResource res = ResourceUtil.getResource(getEditorInput());
-        try {
-            if (res == null || !UIProjectLoader.isInProject(res)) {
-                refreshParser(getParser(), res, new NullProgressMonitor());
-            }
-        } catch (InterruptedException | IOException | CoreException ex) {
-            Log.log(ex);
-        }
+        refreshParser();
     }
 
     public void doUpdate() {
@@ -279,6 +277,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         setDocumentProvider(new SQLEditorCommonDocumentProvider());
 
         super.init(site, input);
+        checkFileSize();
 
         try {
             checkBuilder();
@@ -299,6 +298,25 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
 
         partListener = new SqlEditorPartListener();
         getSite().getPage().addPartListener(partListener);
+
+        if (isLargeFile()) {
+            IWorkbenchPage page = getSite().getPage();
+            IViewPart part = page.showView(IPageLayout.ID_OUTLINE, null, IWorkbenchPage.VIEW_CREATE);
+            IWorkbenchPartReference ref = page.getReference(part);
+            if (IWorkbenchPage.STATE_MINIMIZED == page.getPartState(ref)) {
+                page.setPartState(ref, IWorkbenchPage.STATE_RESTORED);
+            }
+        }
+    }
+
+    public boolean isLargeFile() {
+        return isLargeFile;
+    }
+
+    private void checkFileSize() {
+        int lines = getDocumentProvider().getDocument(getEditorInput()).getNumberOfLines();
+        int maxLines = mainPrefs.getInt(SQL_EDITOR_PREF.NUMBER_OF_LINES_LIMIT);
+        isLargeFile = maxLines != 0 && lines > maxLines;
     }
 
     @Override
@@ -356,6 +374,10 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     }
 
     private PgDbParser initParser() throws InterruptedException, IOException, CoreException {
+        if (isLargeFile()) {
+            return new PgDbParser();
+        }
+
         IEditorInput in = getEditorInput();
         IResource res = ResourceUtil.getResource(in);
 
@@ -376,6 +398,17 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         return parser;
     }
 
+    void refreshParser() {
+        IResource res = ResourceUtil.getResource(getEditorInput());
+        try {
+            if (res == null || !UIProjectLoader.isInProject(res)) {
+                refreshParser(getParser(), res, new NullProgressMonitor());
+            }
+        } catch (InterruptedException | IOException | CoreException ex) {
+            Log.log(ex);
+        }
+    }
+
     /**
      * Use only for non-project parsers
      * @param {@link IFileEditorInput} {@link IResource} or null
@@ -383,10 +416,18 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
      */
     private void refreshParser(PgDbParser parser, IResource res, IProgressMonitor monitor)
             throws InterruptedException, IOException, CoreException {
+        checkFileSize();
+        if (isLargeFile()) {
+            parser.getObjDefinitions().clear();
+            parser.getObjReferences().clear();
+            parser.notifyListeners();
+            return;
+        }
+
         if (res instanceof IFile) {
             IFile file = (IFile) res;
             IProject proj = file.getProject();
-            IEclipsePreferences prefs = PgDbProject.getPrefs(proj);
+            IEclipsePreferences prefs = PgDbProject.getPrefs(proj, true);
 
             if (prefs != null
                     && prefs.getBoolean(PROJ_PREF.DISABLE_PARSER_IN_EXTERNAL_FILES, false)) {

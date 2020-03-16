@@ -54,6 +54,7 @@ public interface UIConsts {
 
     interface PREF_PAGE {
         String DB_STORE = PLUGIN_ID.THIS + ".dbstore"; //$NON-NLS-1$
+        String SQL_EDITOR = PLUGIN_ID.THIS + ".sqleditor"; //$NON-NLS-1$
     }
 
     interface PREF {
@@ -94,6 +95,7 @@ public interface UIConsts {
         String UPDATE = "UPDATE"; //$NON-NLS-1$
         String RESET = "RESET"; //$NON-NLS-1$
         String NO_ACTION = "NO_ACTION"; //$NON-NLS-1$
+        String SHOW_DIFF_ERRORS = "showDiffErrors"; //$NON-NLS-1$
     }
 
     interface SQL_EDITOR_PREF {
@@ -101,6 +103,7 @@ public interface UIConsts {
         String MATCHING_BRACKETS_COLOR = "matchingBracketsColor"; //$NON-NLS-1$
         String HIGHLIGHT_BRACKET_AT_CARET_LOCATION = "highlightBracketAtCaretLocation"; //$NON-NLS-1$
         String ENCLOSING_BRACKETS = "enclosingBrackets"; //$NON-NLS-1$
+        String NUMBER_OF_LINES_LIMIT = "numberOfLinesLimit"; //$NON-NLS-1$
     }
 
     interface FORMATTER_PREF {
@@ -134,15 +137,20 @@ public interface UIConsts {
     interface PROJ_PREF {
         String TIMEZONE = "prefGeneralTimezone"; //$NON-NLS-1$
         String FORCE_UNIX_NEWLINES = "prefForceUnixNewlines"; //$NON-NLS-1$
-        String LAST_DB_STORE = "prefLastDbStore"; //$NON-NLS-1$
-        String LAST_DB_STORE_EDITOR = "prefLastDbStoreEditor"; //$NON-NLS-1$
         String DISABLE_PARSER_IN_EXTERNAL_FILES = "disableParserInExternalFiles"; //$NON-NLS-1$
         String LIB_SAFE_MODE = "libSafeMode"; //$NON-NLS-1$
         String STORAGE_LIST = "storageList"; //$NON-NLS-1$
-        String NAME_OF_BOUND_DB = "nameOfBoundDatabase"; //$NON-NLS-1$
         String ENABLE_PROJ_PREF_ROOT = "prefEnableProjPrefRoot"; //$NON-NLS-1$
         String ENABLE_PROJ_PREF_DB_UPDATE = "prefEnableProjPrefDbUpdate"; //$NON-NLS-1$
         String USE_GLOBAL_IGNORE_LIST = "prefUseGlobalIgnoreList"; //$NON-NLS-1$
+    }
+
+    interface DB_BIND_PREF {
+        String DB_BINDING = PLUGIN_ID.THIS + ".dbbinding"; //$NON-NLS-1$
+
+        String LAST_DB_STORE = "prefLastDbStore"; //$NON-NLS-1$
+        String LAST_DB_STORE_EDITOR = "prefLastDbStoreEditor"; //$NON-NLS-1$
+        String NAME_OF_BOUND_DB = "nameOfBoundDatabase"; //$NON-NLS-1$
     }
 
     interface PROJ_PATH {
@@ -170,6 +178,8 @@ public interface UIConsts {
         String ICONBALLGREEN = "/icons/ball_green.png"; //$NON-NLS-1$
         String ICONADDDEP = "/icons/add_dep.png"; //$NON-NLS-1$
         String PGPASS = "/icons/pg_pass.png"; //$NON-NLS-1$
+        String PG_ICON = "/icons/postgresql_icon.png"; //$NON-NLS-1$
+        String MS_ICON = "/icons/mssql_icon.png"; //$NON-NLS-1$
 
         // pgadmin icons
         String ICONPGADMIN = "/icons/pgadmin/"; //$NON-NLS-1$

@@ -6,7 +6,6 @@ import java.util.Map.Entry;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.layout.PixelConverter;
-import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
@@ -22,7 +21,7 @@ import org.eclipse.swt.widgets.Text;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.PrefListEditor;
 
-public class DbPropertyListEditor extends PrefListEditor<Entry<String, String>, TableViewer> {
+public class DbPropertyListEditor extends PrefListEditor<Entry<String, String>> {
 
     public DbPropertyListEditor(Composite parent) {
         super(parent);
@@ -46,20 +45,7 @@ public class DbPropertyListEditor extends PrefListEditor<Entry<String, String>, 
     }
 
     @Override
-    protected TableViewer createViewer(Composite parent) {
-        TableViewer viewer = new TableViewer(
-                parent, SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
-        viewer.setContentProvider(ArrayContentProvider.getInstance());
-
-        addColumns(viewer);
-        GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 2);
-        viewer.getTable().setLayoutData(gd);
-        viewer.getTable().setLinesVisible(true);
-        viewer.getTable().setHeaderVisible(true);
-        return viewer;
-    }
-
-    private void addColumns(TableViewer tableViewer) {
+    protected void addColumns(TableViewer tableViewer) {
         TableViewerColumn name = new TableViewerColumn(tableViewer, SWT.NONE);
         name.getColumn().setResizable(true);
         name.getColumn().setText(Messages.DbPropertyListEditor_tbl_col_name);

@@ -12,7 +12,6 @@ import java.util.List;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.viewers.ListViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -31,11 +30,11 @@ import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
 public class IgnoreListEditorDialog extends Dialog {
 
     private final IgnoreList ignoreList = new IgnoreList();
-    private final PrefListEditor<String, ListViewer> editor;
+    private final PrefListEditor<String> editor;
     private Path path;
     private IgnoredObjectPrefListEditor listEditor;
 
-    public IgnoreListEditorDialog(Shell shell, Path path, PrefListEditor<String, ListViewer> editor) {
+    public IgnoreListEditorDialog(Shell shell, Path path, PrefListEditor<String> editor) {
         super(shell);
         this.path = path;
         this.editor = editor;

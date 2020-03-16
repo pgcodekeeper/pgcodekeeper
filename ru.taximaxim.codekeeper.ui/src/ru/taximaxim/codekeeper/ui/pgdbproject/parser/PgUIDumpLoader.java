@@ -77,36 +77,35 @@ public class PgUIDumpLoader extends PgDumpLoader {
         } catch (CoreException ex) {
             Log.log(ex);
         }
-        IDocument doc = null;
         for (Object error : getErrors()) {
-            if (!(error instanceof AntlrError)) {
-                continue;
+            if (error instanceof AntlrError) {
+                addMarker(file, (AntlrError) error);
             }
-            AntlrError antlrError = (AntlrError) error;
-            try {
-                IMarker marker = file.createMarker(MARKER.ERROR);
-                int line = antlrError.getLine();
-                marker.setAttribute(IMarker.LINE_NUMBER, line);
-                marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-                marker.setAttribute(IMarker.MESSAGE, antlrError.getMsg());
-                int start = antlrError.getStart();
-                int stop = antlrError.getStop();
-                if (start == -1 || stop == -1) {
-                    if (doc == null) {
-                        // load only when this case actually happens
-                        IDocumentProvider provider = new TextFileDocumentProvider();
-                        provider.connect(file);
-                        doc = provider.getDocument(file);
-                    }
-                    int lineOffset = doc.getLineOffset(line - 1);
-                    start = lineOffset + antlrError.getCharPositionInLine();
-                    stop = start;
-                }
-                marker.setAttribute(IMarker.CHAR_START, start);
-                marker.setAttribute(IMarker.CHAR_END, stop + 1);
-            } catch (BadLocationException | CoreException ex) {
-                Log.log(ex);
+        }
+    }
+
+    public static void addMarker(IFile file, AntlrError antlrError) {
+        try {
+            IMarker marker = file.createMarker(MARKER.ERROR);
+            int line = antlrError.getLine();
+            marker.setAttribute(IMarker.LINE_NUMBER, line);
+            marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+            marker.setAttribute(IMarker.MESSAGE, antlrError.getMsg());
+            int start = antlrError.getStart();
+            int stop = antlrError.getStop();
+            if (start == -1 || stop == -1) {
+                // load only when this case actually happens
+                IDocumentProvider provider = new TextFileDocumentProvider();
+                provider.connect(file);
+                IDocument doc = provider.getDocument(file);
+                int lineOffset = doc.getLineOffset(line - 1);
+                start = lineOffset + antlrError.getCharPositionInLine();
+                stop = start;
             }
+            marker.setAttribute(IMarker.CHAR_START, start);
+            marker.setAttribute(IMarker.CHAR_END, stop + 1);
+        } catch (BadLocationException | CoreException ex) {
+            Log.log(ex);
         }
     }
 }

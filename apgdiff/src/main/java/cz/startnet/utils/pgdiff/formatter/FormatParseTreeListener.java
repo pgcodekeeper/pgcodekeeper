@@ -22,7 +22,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_statementsConte
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Groupby_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.If_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Insert_stmt_for_psqlContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Into_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Loop_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
@@ -84,7 +83,7 @@ public class FormatParseTreeListener implements ParseTreeListener {
             // subselect
             indents.put(ctx.getStart(), IndentDirection.BLOCK_START);
             putBlockStop(ctx.getStop());
-        } else if (ctx instanceof After_opsContext || ctx instanceof Into_statementContext) {
+        } else if (ctx instanceof After_opsContext) {
             indents.put(ctx.getStart(), IndentDirection.BLOCK_LINE);
         } else if (ctx instanceof StatementContext) {
             formatSql((StatementContext) ctx);

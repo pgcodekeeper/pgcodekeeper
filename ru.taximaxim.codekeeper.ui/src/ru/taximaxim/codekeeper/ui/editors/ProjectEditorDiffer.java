@@ -103,6 +103,7 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
 import ru.taximaxim.codekeeper.ui.UIConsts.CONTEXT;
+import ru.taximaxim.codekeeper.ui.UIConsts.DB_BIND_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
@@ -733,9 +734,11 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                     });
                 }
 
-                newDiffer.getErrors().forEach(e -> StatusManager.getManager().handle(
-                        new Status(IStatus.WARNING, PLUGIN_ID.THIS, e.toString()),
-                        StatusManager.SHOW));
+                if (mainPrefs.getBoolean(PG_EDIT_PREF.SHOW_DIFF_ERRORS)) {
+                    newDiffer.getErrors().forEach(e -> StatusManager.getManager().handle(
+                            new Status(IStatus.WARNING, PLUGIN_ID.THIS, e.toString()),
+                            StatusManager.SHOW));
+                }
             }
         });
         job.setProperty(IProgressConstants2.SHOW_IN_TASKBAR_ICON_PROPERTY, Boolean.TRUE);
@@ -808,8 +811,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     }
 
     public Object getCurrentDb() {
-        IEclipsePreferences prefs = proj.getPrefs();
-        DbInfo boundDb = DbInfo.getLastDb(prefs.get(PROJ_PREF.NAME_OF_BOUND_DB, "")); //$NON-NLS-1$
+        IEclipsePreferences prefs = proj.getDbBindPrefs();
+        DbInfo boundDb = DbInfo.getLastDb(prefs.get(DB_BIND_PREF.NAME_OF_BOUND_DB, "")); //$NON-NLS-1$
         if (boundDb != null) {
             return boundDb;
         }
@@ -818,7 +821,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             return currentRemote;
         }
 
-        return DbInfo.getLastDb(prefs.get(PROJ_PREF.LAST_DB_STORE, "")); //$NON-NLS-1$
+        return DbInfo.getLastDb(prefs.get(DB_BIND_PREF.LAST_DB_STORE, "")); //$NON-NLS-1$
     }
 
     public void saveLastDb(DbInfo lastDb) {
@@ -826,9 +829,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     }
 
     public static void saveLastDb(DbInfo lastDb, IProject project) {
-        IEclipsePreferences prefs = PgDbProject.getPrefs(project);
+        IEclipsePreferences prefs = PgDbProject.getPrefs(project, false);
         if (prefs != null) {
-            prefs.put(PROJ_PREF.LAST_DB_STORE, lastDb.getName());
+            prefs.put(DB_BIND_PREF.LAST_DB_STORE, lastDb.getName());
             try {
                 prefs.flush();
             } catch (BackingStoreException ex) {
