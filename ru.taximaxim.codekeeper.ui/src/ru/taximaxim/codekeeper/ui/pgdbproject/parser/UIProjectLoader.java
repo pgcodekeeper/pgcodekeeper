@@ -83,7 +83,7 @@ public class UIProjectLoader extends ProjectLoader {
         for (Object error : errors) {
             if (error instanceof AntlrError) {
                 AntlrError antlrError = (AntlrError) error;
-                IPath path = new Path(antlrError.getLocation());
+                IPath path = new Path(antlrError.getFilePath());
                 IFile file = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(path);
                 if (file != null) {
                     PgUIDumpLoader.addMarker(file, antlrError);

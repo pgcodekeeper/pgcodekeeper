@@ -15,6 +15,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.MsViewAnalysisLaunch
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.MsView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateMsView extends BatchContextProcessor {
 
@@ -69,5 +70,12 @@ public class CreateMsView extends BatchContextProcessor {
             addSafe(schema, view, ids);
         }
         return view;
+    }
+
+    @Override
+    protected String getStmtAction() {
+        Qualified_nameContext qualNameCtx = ctx.qualified_name();
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.VIEW,
+                Arrays.asList(qualNameCtx.schema, qualNameCtx.name));
     }
 }

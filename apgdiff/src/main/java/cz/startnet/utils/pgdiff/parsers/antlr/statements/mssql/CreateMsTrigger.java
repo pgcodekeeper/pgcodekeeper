@@ -15,7 +15,6 @@ import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.MsTrigger;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateMsTrigger extends BatchContextProcessor {
@@ -45,7 +44,7 @@ public class CreateMsTrigger extends BatchContextProcessor {
             schemaCtx = ctx.table_name.schema;
         }
         List<IdContext> ids = Arrays.asList(schemaCtx, ctx.table_name.name);
-        addObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
+        addObjReference(ids, DbObjType.TABLE, null);
         getObject(getSchemaSafe(ids), false);
     }
 
@@ -64,7 +63,7 @@ public class CreateMsTrigger extends BatchContextProcessor {
 
         if (schema == null) {
             List<IdContext> ids = Arrays.asList(schemaCtx, tableNameCtx);
-            addObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
+            addObjReference(ids, DbObjType.TABLE, null);
         }
 
         db.addAnalysisLauncher(new MsFuncProcTrigAnalysisLauncher(trigger,
@@ -80,5 +79,15 @@ public class CreateMsTrigger extends BatchContextProcessor {
                     Arrays.asList(schemaCtx, tableNameCtx, nameCtx));
         }
         return trigger;
+    }
+
+    @Override
+    protected String getStmtAction() {
+        IdContext schemaCtx = ctx.trigger_name.schema;
+        if (schemaCtx == null) {
+            schemaCtx = ctx.table_name.schema;
+        }
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.TRIGGER,
+                Arrays.asList(schemaCtx, ctx.table_name.name, ctx.trigger_name.name));
     }
 }

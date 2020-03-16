@@ -88,6 +88,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.JDBC_CONSTS;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.TempFile;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.IPartAdapter2;
+import ru.taximaxim.codekeeper.ui.ITextErrorReporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.CMD_VARS;
 import ru.taximaxim.codekeeper.ui.UIConsts.CONTEXT;
@@ -114,7 +115,8 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
 import ru.taximaxim.codekeeper.ui.propertytests.UpdateDdlJobTester;
 
-public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceChangeListener {
+public class SQLEditor extends AbstractDecoratedTextEditor
+implements IResourceChangeListener, ITextErrorReporter {
 
     static final String CONTENT_ASSIST = "ContentAssist"; //$NON-NLS-1$
 
@@ -225,7 +227,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         Set<PgObjLocation> refs = getParser().getObjsForEditor(getEditorInput());
         IAnnotationModel model = getSourceViewer().getAnnotationModel();
         for (PgObjLocation loc : refs) {
-            if (loc.getWarningText() != null) {
+            if (loc.isDanger()) {
                 model.addAnnotation(new Annotation(MARKER.DANGER_ANNOTATION, false, loc.getWarningText()),
                         new Position(loc.getOffset(), loc.getObjLength()));
             }
@@ -502,13 +504,17 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
 
         ScriptParser [] parsers = new ScriptParser[1];
         IRunnableWithProgress runnable = monitor -> {
-            ScriptParser parser = new ScriptParser(
-                    getEditorInput().getName(), textRetrieved, dbInfo.isMsSql());
-            String error = parser.getErrorMessage();
-            if (error != null) {
-                UiProgressReporter.writeSingleError(error);
-            } else {
-                parsers[0] = parser;
+            try {
+                ScriptParser parser = new ScriptParser(
+                        getEditorInput().getName(), textRetrieved, dbInfo.isMsSql());
+                String error = parser.getErrorMessage();
+                if (error != null) {
+                    UiProgressReporter.writeSingleError(error);
+                } else {
+                    parsers[0] = parser;
+                }
+            } catch (InterruptedException | IOException ex) {
+                UiProgressReporter.writeSingleError(ex.getLocalizedMessage());
             }
         };
 
@@ -548,6 +554,15 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         parentComposite.setCursor(parentComposite.getDisplay().getSystemCursor(SWT.CURSOR_WAIT));
     }
 
+    @Override
+    public void setErrorPosition(int start, int length) {
+        UiSync.exec(parentComposite, () -> {
+            if (!parentComposite.isDisposed()) {
+                selectAndReveal(start, length);
+            }
+        });
+    }
+
     private class ScriptThreadJobWrapper extends SingletonEditorJob {
 
         private final DbInfo dbInfo;
@@ -583,10 +598,9 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
                         dbInfo.isReadOnly(), ApgdiffConsts.UTC);
             }
 
-            IProgressReporter reporter = new UiProgressReporter(monitor);
+            IProgressReporter reporter = new UiProgressReporter(monitor, SQLEditor.this);
             try (IProgressReporter toClose = reporter) {
-                List<List<String>> batches = parser.batch();
-                new JdbcRunner(monitor).runBatches(connector, batches, reporter);
+                new JdbcRunner(monitor).runBatches(connector, parser.batch(), reporter);
                 ProjectEditorDiffer.notifyDbChanged(dbInfo);
                 return Status.OK_STATUS;
             } catch (InterruptedException ex) {
@@ -605,7 +619,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             Log.log(Log.LOG_INFO, "Running DDL update using external command"); //$NON-NLS-1$
 
             Thread scriptThread = null;
-            try (UiProgressReporter reporter = new UiProgressReporter(monitor)) {
+            try (UiProgressReporter reporter = new UiProgressReporter(monitor, SQLEditor.this)) {
                 scriptThread = new Thread(new RunScriptExternal(parser.getScript(),
                         reporter, new ArrayList<>(Arrays.asList(
                                 getReplacedCmd(mainPrefs.getString(DB_UPDATE_PREF.MIGRATION_COMMAND), dbInfo).split(" "))))); //$NON-NLS-1$

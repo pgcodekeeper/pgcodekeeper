@@ -190,4 +190,9 @@ public class CreateMsRule extends ParserAbstract {
                     k -> new StatementOverride()).addPrivilege(privilege);
         }
     }
+
+    @Override
+    protected String getStmtAction() {
+        return null;
+    }
 }

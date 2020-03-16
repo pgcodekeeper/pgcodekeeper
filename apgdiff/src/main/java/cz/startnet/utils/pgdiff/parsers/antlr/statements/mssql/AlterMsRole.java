@@ -6,7 +6,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_db_roleContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.MsRole;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class AlterMsRole extends ParserAbstract {
@@ -26,6 +25,11 @@ public class AlterMsRole extends ParserAbstract {
             doSafe(MsRole::addMember, role, ctx.database_principal.getText());
         }
 
-        addObjReference(Arrays.asList(ctx.role_name), DbObjType.ROLE, StatementActions.ALTER);
+        addObjReference(Arrays.asList(ctx.role_name), DbObjType.ROLE, ACTION_ALTER);
+    }
+
+    @Override
+    protected String getStmtAction() {
+        return getStrForStmtAction(ACTION_ALTER, DbObjType.ROLE, Arrays.asList(ctx.role_name));
     }
 }

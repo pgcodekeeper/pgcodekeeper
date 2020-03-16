@@ -3,6 +3,8 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 import java.util.Arrays;
 import java.util.List;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
@@ -12,6 +14,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_foreign_optionsCo
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Foreign_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identity_bodyContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_alterContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sequence_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_def_columnContext;
@@ -36,7 +39,6 @@ import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class AlterTable extends TableAbstract {
@@ -57,16 +59,16 @@ public class AlterTable extends TableAbstract {
         IdentifierContext nameCtx = QNameParser.getFirstNameCtx(ids);
         AbstractPgTable tabl = null;
 
-        PgObjLocation loc = addObjReference(ids, DbObjType.TABLE, StatementActions.ALTER);
+        PgObjLocation loc = addObjReference(ids, DbObjType.TABLE, ACTION_ALTER);
 
         for (Table_actionContext tablAction : ctx.table_action()) {
             IdentifierContext column = tablAction.column;
             Column_actionContext colAction = tablAction.column_action();
 
             if (column != null && tablAction.DROP() != null) {
-                loc.setWarningText(DangerStatement.DROP_COLUMN);
+                loc.setWarning(DangerStatement.DROP_COLUMN);
             } else if (colAction != null && colAction.data_type() != null) {
-                loc.setWarningText(DangerStatement.ALTER_COLUMN);
+                loc.setWarning(DangerStatement.ALTER_COLUMN);
             }
 
             if (tablAction.owner_to() != null) {
@@ -98,7 +100,7 @@ public class AlterTable extends TableAbstract {
             if (tablAction.drop_constraint() != null) {
                 addObjReference(Arrays.asList(QNameParser.getSchemaNameCtx(ids), nameCtx,
                         tablAction.drop_constraint().constraint_name),
-                        DbObjType.CONSTRAINT, StatementActions.DROP);
+                        DbObjType.CONSTRAINT, ACTION_DROP);
             }
 
             if (isRefMode()) {
@@ -244,5 +246,27 @@ public class AlterTable extends TableAbstract {
         processTableConstraintBlank(tableAction.tabl_constraint, constrBlank, db,
                 schemaName, tableName, tablespace, location, isRefMode);
         return constrBlank;
+    }
+
+    @Override
+    protected PgObjLocation fillQueryLocation(ParserRuleContext ctx) {
+        PgObjLocation loc = super.fillQueryLocation(ctx);
+        for (Table_actionContext tablAction : ((Schema_alterContext) ctx)
+                .alter_table_statement().table_action()) {
+            IdentifierContext column = tablAction.column;
+            Column_actionContext colAction = tablAction.column_action();
+
+            if (column != null && tablAction.DROP() != null) {
+                loc.setWarning(DangerStatement.DROP_COLUMN);
+            } else if (colAction != null && colAction.data_type() != null) {
+                loc.setWarning(DangerStatement.ALTER_COLUMN);
+            }
+        }
+        return loc;
+    }
+
+    @Override
+    protected String getStmtAction() {
+        return getStrForStmtAction(ACTION_ALTER, DbObjType.TABLE, ctx.name.identifier());
     }
 }
