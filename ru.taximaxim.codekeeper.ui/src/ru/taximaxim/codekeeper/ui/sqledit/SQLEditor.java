@@ -242,7 +242,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         refreshParser();
     }
 
-    public void doUpdate() {
+    public void doFormat() {
         ((SourceViewer) getSourceViewer()).doOperation(ISourceViewer.FORMAT);
     }
 

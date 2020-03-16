@@ -13,7 +13,7 @@ public class Format extends AbstractHandler {
     @Override
     public Object execute(ExecutionEvent event) {
         SQLEditor editor = (SQLEditor) HandlerUtil.getActiveEditor(event);
-        editor.doUpdate();
+        editor.doFormat();
         return null;
     }
 
