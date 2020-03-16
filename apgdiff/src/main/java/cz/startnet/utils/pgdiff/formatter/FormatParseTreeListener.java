@@ -79,7 +79,7 @@ public class FormatParseTreeListener implements ParseTreeListener {
             formatExceptionStatement((Exception_statementContext) ctx);
         } else if (ctx instanceof Select_stmt_no_parensContext
                 || (ctx instanceof Select_stmtContext
-                        && !(ctx.parent.parent instanceof Function_statementContext))) {
+                        && !(ctx.parent.parent.parent instanceof Function_statementContext))) {
             // subselect
             indents.put(ctx.getStart(), IndentDirection.BLOCK_START);
             putBlockStop(ctx.getStop());
