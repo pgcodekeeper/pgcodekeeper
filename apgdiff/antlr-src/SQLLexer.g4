@@ -967,12 +967,12 @@ Tag
 */
 
 Space
-    : ' ' -> channel(HIDDEN)
-    ;
+  : ' ' -> channel(HIDDEN)
+  ;
 
 White_Space
-    : ( Control_Characters  | Extended_Control_Characters )+ -> channel(HIDDEN)
-    ;
+  : ( Control_Characters  | Extended_Control_Characters )+ -> channel(HIDDEN)
+  ;
 
 New_Line
     : ('\u000D' | '\u000D'? '\u000A') -> channel(HIDDEN)
@@ -985,12 +985,12 @@ Tab
 BOM: '\ufeff';
 
 BAD
-    : .
-    ;
+  : .
+  ;
 
 mode DollarQuotedStringMode;
 Text_between_Dollar
-    : ~'$'+
+   : ~'$'+
     | // this alternative improves the efficiency of handling $ characters within a dollar-quoted string which are
     // not part of the ending tag.
     '$' ~'$'*
