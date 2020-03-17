@@ -41,7 +41,6 @@ public class LibraryLoader extends DatabaseLoader {
             Collection<String> paths) throws InterruptedException, IOException {
         for (String path : paths) {
             PgDatabase db = getLibrary(path, args, isIgnorePriv);
-            //db.getDescendants().forEach(st -> st.setLibName(path));
             database.addLib(db);
         }
     }
@@ -51,7 +50,10 @@ public class LibraryLoader extends DatabaseLoader {
         for (PgLibrary lib : xmlStore.readObjects()) {
             String path = lib.getPath();
             PgDatabase l = getLibrary(path, args, lib.isIgnorePriv());
-            l.getDescendants().forEach(st -> st.setLibName(path));
+            l.getDescendants()
+            // do not override dependent library name
+            .filter(st -> st.getLibName() == null)
+            .forEach(st -> st.setLibName(path));
             String owner = lib.getOwner();
             if (!owner.isEmpty()) {
                 l.getDescendants()
