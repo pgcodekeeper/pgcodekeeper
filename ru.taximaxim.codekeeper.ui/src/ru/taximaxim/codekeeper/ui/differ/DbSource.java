@@ -350,7 +350,7 @@ class DbSourceDb extends DbSource {
         pm.newChild(1).subTask(Messages.dbSource_executing_pg_dump);
 
         byte[] dump;
-        try (IProgressReporter progress = new UiProgressReporter(monitor)) {
+        try (IProgressReporter progress = new UiProgressReporter(monitor, null)) {
             dump = new PgDumper(exePgdump, customParams,
                     host, port, user, pass, dbname, encoding, timezone, progress)
                     .pgDump();

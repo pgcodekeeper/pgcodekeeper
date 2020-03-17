@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -51,6 +52,7 @@ public class PgDatabase extends PgStatement {
     private PgDiffArguments arguments;
 
     private final List<PgOverride> overrides = new ArrayList<>();
+
     private SupportedVersion postgresVersion;
 
     @Override
@@ -89,6 +91,11 @@ public class PgDatabase extends PgStatement {
 
     public Map<String, Set<PgObjLocation>> getObjReferences() {
         return objReferences;
+    }
+
+    public void addToQueries(String fileName, PgObjLocation loc) {
+        objDefinitions.computeIfAbsent(fileName, k -> new LinkedHashSet<>()).add(loc);
+        objReferences.computeIfAbsent(fileName, k -> new LinkedHashSet<>()).add(loc);
     }
 
     public List<AbstractAnalysisLauncher> getAnalysisLaunchers() {

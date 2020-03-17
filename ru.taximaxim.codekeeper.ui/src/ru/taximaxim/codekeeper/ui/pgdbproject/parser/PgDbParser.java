@@ -44,11 +44,11 @@ import org.eclipse.ui.ide.ResourceUtil;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -162,7 +162,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         args.setMsSql(isMsSql);
         args.setInCharsetName(file.getCharset());
         PgUIDumpLoader loader = new PgUIDumpLoader(file, args, monitor);
-        loader.setRefMode(true);
+        loader.setMode(ParserListenerMode.REF);
         PgDatabase db = loader.loadFile(new PgDatabase(args));
         removeResFromRefs(file);
         objDefinitions.putAll(db.getObjDefinitions());
@@ -186,25 +186,27 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         for (StatementBodyContainer statementBody : statementBodies) {
             String body = statementBody.getBody().toLowerCase(Locale.ROOT);
             Set<PgObjLocation> newRefs = new LinkedHashSet<>();
-            getAllObjDefinitions().forEach(def -> {
+            for (PgObjLocation def : (Iterable<PgObjLocation>) getAllObjDefinitions()::iterator) {
+                int lenght = def.getObjLength();
+                if (lenght == 0) {
+                    continue;
+                }
                 String name = def.getObjName().toLowerCase(Locale.ROOT);
                 int index = body.indexOf(name);
                 while (index >= 0) {
-                    int next = index + def.getObjLength();
+                    int next = index + lenght;
                     // check word boundaries, whole words only
                     if ((index == 0 || !PgDiffUtils.isValidIdChar(body.charAt(index - 1))) &&
                             (next >= body.length() || !PgDiffUtils.isValidIdChar(body.charAt(next)))) {
-                        PgObjLocation loc = new PgObjLocation(def.schema,
-                                def.table, def.column, def.type, StatementActions.NONE);
-                        loc.setOffset(statementBody.getOffset() + index);
-                        loc.setFilePath(statementBody.getPath());
-                        loc.setLine(statementBody.getLineNumber());
+                        PgObjLocation loc = new PgObjLocation(def.getObj(), null,
+                                statementBody.getOffset() + index,
+                                statementBody.getLineNumber(),
+                                statementBody.getPath());
                         newRefs.add(loc);
                     }
                     index = body.indexOf(name, index + 1);
                 }
-
-            });
+            }
             if (!newRefs.isEmpty()) {
                 Set<PgObjLocation> refs = objReferences.get(statementBody.getPath());
                 if (refs != null) {
@@ -242,7 +244,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         PgDiffArguments args = new PgDiffArguments();
         args.setMsSql(isMsSql);
         PgDumpLoader loader = new PgDumpLoader(() -> input, fileName, args, monitor);
-        loader.setRefMode(true);
+        loader.setMode(ParserListenerMode.REF);
         PgDatabase db = loader.load();
         objDefinitions.clear();
         objDefinitions.putAll(db.getObjDefinitions());

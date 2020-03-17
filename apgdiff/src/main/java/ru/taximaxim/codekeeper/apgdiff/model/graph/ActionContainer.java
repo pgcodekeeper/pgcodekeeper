@@ -3,7 +3,6 @@ package ru.taximaxim.codekeeper.apgdiff.model.graph;
 import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 
 /**
  * Класс используется как контейнер для объединения дейсвий с объектом БД

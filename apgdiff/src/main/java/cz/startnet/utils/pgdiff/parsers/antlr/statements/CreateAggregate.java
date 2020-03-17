@@ -281,4 +281,9 @@ public class CreateAggregate extends ParserAbstract {
         String argType = aggr.getArguments().get(0).getDataType();
         return '(' + argType + ", " + argType + ')';
     }
+
+    @Override
+    protected String getStmtAction() {
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.AGGREGATE, ctx.name.identifier());
+    }
 }

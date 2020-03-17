@@ -15,7 +15,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 import cz.startnet.utils.pgdiff.schema.StatementOverride;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -55,7 +54,7 @@ public class AlterOwner extends ParserAbstract {
                     parseSignature(operNameCtx.operator.getText(), targetOperCtx),
                     operNameCtx.operator.getStart());
             setOwner(st, owner);
-            addObjReference(ids, DbObjType.OPERATOR, StatementActions.ALTER);
+            addObjReference(ids, DbObjType.OPERATOR, ACTION_ALTER);
             return;
         }
 
@@ -100,7 +99,7 @@ public class AlterOwner extends ParserAbstract {
         }
 
         if (type != null)  {
-            addObjReference(ids, type, StatementActions.ALTER);
+            addObjReference(ids, type, ACTION_ALTER);
         }
 
         if (st == null || (type == DbObjType.SCHEMA
@@ -119,5 +118,53 @@ public class AlterOwner extends ParserAbstract {
             overrides.computeIfAbsent(st,
                     k -> new StatementOverride()).setOwner(owner.name.getText());
         }
+    }
+
+    @Override
+    protected String getStmtAction() {
+        DbObjType type = null;
+        if (ctx.SCHEMA() != null) {
+            type = DbObjType.SCHEMA;
+        } else if (ctx.DOMAIN() != null) {
+            type = DbObjType.DOMAIN;
+        } else if (ctx.VIEW() != null) {
+            type = DbObjType.VIEW;
+        } else if (ctx.DICTIONARY() != null) {
+            type = DbObjType.FTS_DICTIONARY;
+        } else if (ctx.CONFIGURATION() != null) {
+            type = DbObjType.FTS_CONFIGURATION;
+        } else if (ctx.SEQUENCE() != null) {
+            type = DbObjType.SEQUENCE;
+        } else if (ctx.TYPE() != null) {
+            type = DbObjType.TYPE;
+        } else if (ctx.FUNCTION() != null) {
+            type = DbObjType.FUNCTION;
+        } else if (ctx.PROCEDURE() != null) {
+            type = DbObjType.PROCEDURE;
+        } else if (ctx.AGGREGATE() != null) {
+            type = DbObjType.AGGREGATE;
+        } else if (ctx.OPERATOR() != null) {
+            type = DbObjType.OPERATOR;
+        } else {
+            return null;
+        }
+
+        String schemaName = null;
+        String objName = null;
+        Target_operatorContext targetOperCtx;
+        if (ctx.name != null) {
+            List<IdentifierContext> ids = ctx.name.identifier();
+            schemaName = QNameParser.getSchemaName(ids);
+            objName = QNameParser.getFirstName(ids);
+        } else if ((targetOperCtx = ctx.target_operator()) != null) {
+            Operator_nameContext operNameCtx = targetOperCtx.name;
+            schemaName = operNameCtx.schema_name.getText();
+            objName = operNameCtx.operator.getText();
+        } else {
+            return null;
+        }
+
+        return new StringBuilder(ACTION_ALTER).append(' ').append(type).append(' ')
+                .append(schemaName).append('.').append(objName).toString();
     }
 }

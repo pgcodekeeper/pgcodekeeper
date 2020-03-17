@@ -22,11 +22,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.IActionBars;
+import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF_PAGE;
@@ -71,7 +72,9 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
             public Image getImage(Object element) {
                 if (element instanceof Segments) {
                     Segments seg = (Segments) element;
-                    return Activator.getDbObjImage(seg.getType());
+                    DbObjType type = seg.getType();
+                    return type != null ? Activator.getDbObjImage(type)
+                            : Activator.getEclipseImage(ISharedImages.IMG_OBJ_FILE);
                 }
                 return super.getImage(element);
             }
@@ -205,9 +208,8 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
         @Override
         public Object[] getElements(Object inputElement) {
             Stream<PgObjLocation> stream = sqlEditor.getParser().getObjsForEditor(
-                    sqlEditor.getEditorInput()).stream().filter(
-                            e -> e.getAction() != StatementActions.NONE)
-                    .sorted((a, b) -> Integer.compare(a.getOffset(), b.getOffset()));
+                    sqlEditor.getEditorInput()).stream()
+                    .filter(e -> e.getAction() != null);
             if (filterDangerous) {
                 stream = stream.filter(PgObjLocation::isDanger);
             }
