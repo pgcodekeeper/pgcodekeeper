@@ -65,6 +65,7 @@ public class ModelExporter extends AbstractModelExporter {
         case INDEX:
         case TRIGGER:
         case RULE:
+        case POLICY:
             TreeElement elParent = el.getParent();
             if (elParent.getType() == DbObjType.TABLE){
                 processTableAndContents(elParent, elParent.getPgStatement(oldDb), el);
@@ -103,6 +104,7 @@ public class ModelExporter extends AbstractModelExporter {
         case INDEX:
         case TRIGGER:
         case RULE:
+        case POLICY:
             createParentSchema(elParent.getParent());
             if (elParent.getType() == DbObjType.TABLE) {
                 processTableAndContents(elParent, elParent.getPgStatement(newDb), el);
@@ -173,6 +175,7 @@ public class ModelExporter extends AbstractModelExporter {
         case RULE:
         case INDEX:
         case CONSTRAINT:
+        case POLICY:
             createParentSchema(elParent.getParent());
             // table actually, not schema
             createParentSchema(elParent);
@@ -455,6 +458,7 @@ public class ModelExporter extends AbstractModelExporter {
         case INDEX:
         case RULE:
         case TRIGGER:
+        case POLICY:
         case COLUMN:
             st = parentSt;
             schemaName = ModelExporter.getExportedFilename(parentSt.getParent());

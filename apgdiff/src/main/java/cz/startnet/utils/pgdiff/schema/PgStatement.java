@@ -198,6 +198,7 @@ public abstract class PgStatement implements IStatement, IHashable {
         case CONSTRAINT:
         case TRIGGER:
         case RULE:
+        case POLICY:
             sb.append(PgDiffUtils.getQuotedName(getName()))
             .append(" ON ")
             .append(getParent().getQualifiedName());

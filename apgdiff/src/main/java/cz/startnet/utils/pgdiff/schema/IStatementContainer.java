@@ -19,4 +19,8 @@ public interface IStatementContainer extends IStatement {
     void addConstraint(AbstractConstraint constraint);
     AbstractConstraint getConstraint(String name);
     Collection<AbstractConstraint> getConstraints();
+
+    void addPolicy(PgPolicy policy);
+    PgPolicy getPolicy(String name);
+    Collection<PgPolicy> getPolicies();
 }

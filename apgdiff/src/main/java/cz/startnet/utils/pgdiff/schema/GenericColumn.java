@@ -143,6 +143,8 @@ public class GenericColumn implements Serializable {
             return sc == null ? null : sc.getTrigger(column);
         case RULE:
             return sc == null ? null : sc.getRule(column);
+        case POLICY:
+            return sc == null ? null : sc.getPolicy(column);
 
         default: throw new IllegalStateException("Unhandled DbObjType: " + type);
         }

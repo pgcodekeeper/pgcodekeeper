@@ -41,6 +41,7 @@ public class PgOverridesModelExporter extends AbstractModelExporter {
         case INDEX:
         case TRIGGER:
         case RULE:
+        case POLICY:
         case EXTENSION:
         case COLUMN:
             break;

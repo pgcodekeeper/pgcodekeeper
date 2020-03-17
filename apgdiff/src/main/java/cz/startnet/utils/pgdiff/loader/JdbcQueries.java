@@ -44,6 +44,7 @@ public final class JdbcQueries {
     public static final JdbcQuery QUERY_VIEWS = new JdbcQuery();
     public static final JdbcQuery QUERY_TYPES = new JdbcQuery();
     public static final JdbcQuery QUERY_RULES = new JdbcQuery();
+    public static final JdbcQuery QUERY_POLICIES = new JdbcQuery();
     public static final JdbcQuery QUERY_FTS_PARSERS = new JdbcQuery();
     public static final JdbcQuery QUERY_FTS_TEMPLATES = new JdbcQuery();
     public static final JdbcQuery QUERY_FTS_DICTIONARIES = new JdbcQuery();

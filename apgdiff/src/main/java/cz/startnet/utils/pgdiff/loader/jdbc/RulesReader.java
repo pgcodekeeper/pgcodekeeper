@@ -10,7 +10,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.PgRule;
-import cz.startnet.utils.pgdiff.schema.PgRule.PgRuleEventType;
+import cz.startnet.utils.pgdiff.schema.PgEventType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class RulesReader extends JdbcReader {
@@ -39,16 +39,16 @@ public class RulesReader extends JdbcReader {
 
         switch (res.getString("ev_type")) {
         case "1":
-            r.setEvent(PgRuleEventType.SELECT);
+            r.setEvent(PgEventType.SELECT);
             break;
         case "2":
-            r.setEvent(PgRuleEventType.UPDATE);
+            r.setEvent(PgEventType.UPDATE);
             break;
         case "3":
-            r.setEvent(PgRuleEventType.INSERT);
+            r.setEvent(PgEventType.INSERT);
             break;
         case "4":
-            r.setEvent(PgRuleEventType.DELETE);
+            r.setEvent(PgEventType.DELETE);
             break;
         }
 

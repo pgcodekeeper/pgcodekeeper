@@ -21,6 +21,7 @@ import cz.startnet.utils.pgdiff.loader.jdbc.FunctionsReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.IndicesReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.JdbcLoaderBase;
 import cz.startnet.utils.pgdiff.loader.jdbc.OperatorsReader;
+import cz.startnet.utils.pgdiff.loader.jdbc.PoliciesReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.RulesReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.SchemasReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.SequencesReader;
@@ -79,6 +80,7 @@ public class JdbcLoader extends JdbcLoaderBase {
             new ViewsReader(this).read();
             new TablesReader(this).read();
             new RulesReader(this).read();
+            new PoliciesReader(this).read();
             new TriggersReader(this).read();
             new IndicesReader(this).read();
             // Reads FUNCTIONs, PROCEDUREs and AGGREGATEs from JDBC.

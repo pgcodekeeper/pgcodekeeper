@@ -17,6 +17,7 @@ implements IStatementContainer, IRelation {
     private final Map<String, PgRule> rules = new LinkedHashMap<>();
     private final Map<String, AbstractTrigger> triggers = new LinkedHashMap<>();
     private final Map<String, AbstractIndex> indexes = new LinkedHashMap<>();
+    private final Map<String, PgPolicy> policies = new LinkedHashMap<>();
 
     @Override
     public DbObjType getStatementType() {
@@ -32,6 +33,7 @@ implements IStatementContainer, IRelation {
         l.add(rules.values());
         l.add(triggers.values());
         l.add(indexes.values());
+        l.add(policies.values());
     }
 
     @Override
@@ -43,6 +45,8 @@ implements IStatementContainer, IRelation {
             return getTrigger(name);
         case INDEX:
             return getIndex(name);
+        case POLICY:
+            return getPolicy(name);
         default:
             return null;
         }
@@ -63,6 +67,9 @@ implements IStatementContainer, IRelation {
             break;
         case RULE:
             addRule((PgRule) st);
+            break;
+        case POLICY:
+            addPolicy((PgPolicy) st);
             break;
         default:
             throw new IllegalArgumentException("Unsupported child type: " + type);
@@ -145,6 +152,21 @@ implements IStatementContainer, IRelation {
     }
 
     @Override
+    public void addPolicy(PgPolicy policy) {
+        addUnique(policies, policy, this);
+    }
+
+    @Override
+    public PgPolicy getPolicy(String name) {
+        return policies.get(name);
+    }
+
+    @Override
+    public Collection<PgPolicy> getPolicies() {
+        return Collections.unmodifiableCollection(policies.values());
+    }
+
+    @Override
     public Stream<Pair<String, String>> getRelationColumns() {
         return Stream.empty();
     }
@@ -160,7 +182,8 @@ implements IStatementContainer, IRelation {
             AbstractView view = (AbstractView) obj;
             return rules.equals(view.rules)
                     && triggers.equals(view.triggers)
-                    && indexes.equals(view.indexes);
+                    && indexes.equals(view.indexes)
+                    && policies.equals(view.policies);
         }
         return false;
     }
@@ -170,6 +193,7 @@ implements IStatementContainer, IRelation {
         hasher.putUnordered(rules);
         hasher.putUnordered(triggers);
         hasher.putUnordered(indexes);
+        hasher.putUnordered(policies);
     }
 
     @Override
