@@ -2,7 +2,6 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -216,7 +215,7 @@ public class CommentOn extends ParserAbstract {
             doSafe((s,c) -> s.setComment(db.getArguments(), c), st, comment);
             PgObjLocation ref = addObjReference(ids, type, ACTION_COMMENT);
 
-            db.getObjDefinitions().values().stream().flatMap(Set::stream)
+            db.getObjDefinitions().values().stream().flatMap(List::stream)
             .filter(ref::compare).forEach(def -> def.setComment(comment));
         }
     }
