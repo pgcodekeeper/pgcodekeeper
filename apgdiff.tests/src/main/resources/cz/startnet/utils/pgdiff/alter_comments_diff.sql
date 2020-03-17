@@ -29,3 +29,7 @@ COMMENT ON COLUMN public.test_view.id IS 'view id col 2';
 COMMENT ON INDEX public.test_index IS 'test table index 2';
 
 COMMENT ON TRIGGER test_trigger ON public.test IS 'test trigger 2';
+
+COMMENT ON RULE test_rule ON public.test IS 'test rule 2';
+
+COMMENT ON POLICY test_policy ON public.test IS 'test policy 2';

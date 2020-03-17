@@ -516,12 +516,14 @@ public class PgDiffTest {
                     {"add_privilege_quoted_name"},
                     // Tests scenario where MATERIALIZED VIEW is refreshed.
                     {"refresh_materialized_view"},
-                    // Tests scenario where table is recreated and its column dependency is dropped
+                    // Tests scenario where table is recreated and its column dependency is dropped.
                     {"tabl_to_func_drop"},
-                    // Tests scenario where owner and its privileges are both changed
+                    // Tests scenario where owner and its privileges are both changed.
                     {"chg_owner_grant"},
-                    // Tests scenario where object definitions are compared
-                    {"compare_definitions"}
+                    // Tests scenario where object definitions are compared.
+                    {"compare_definitions"},
+                    // Tests scenario where POLICY is compared.
+                    {"compare_policies"},
                 });
     }
 

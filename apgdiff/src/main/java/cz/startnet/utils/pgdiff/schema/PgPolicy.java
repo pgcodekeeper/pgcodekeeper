@@ -79,7 +79,7 @@ public class PgPolicy extends PgStatementWithSearchPath {
         sbSQL.append(" ON ").append(getParent().getQualifiedName());
 
         if (!isPermissive()) {
-            sbSQL.append("\n  AS RESTRICTIVE ");
+            sbSQL.append("\n  AS RESTRICTIVE");
         }
 
         if (event != null) {
@@ -139,18 +139,18 @@ public class PgPolicy extends PgStatementWithSearchPath {
             if (!Objects.equals(roles, newRoles)) {
                 sb.append("\n  TO ");
                 if (newRoles.isEmpty()) {
-                    sb.append("PUBLIC;");
+                    sb.append("PUBLIC");
                 } else {
                     sb.append(String.join(", ", newRoles));
                 }
             }
 
             if (!Objects.equals(using, newUsing)) {
-                sb.append("\n  USING ").append(using);
+                sb.append("\n  USING ").append(newUsing);
             }
 
             if (!Objects.equals(check, newCheck)) {
-                sb.append("\n  WITH CHECK ").append(check);
+                sb.append("\n  WITH CHECK ").append(newCheck);
             }
             sb.append(';');
         }

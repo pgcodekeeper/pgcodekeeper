@@ -41,3 +41,5 @@ COMMENT ON INDEX public.test_index IS NULL;
 COMMENT ON TRIGGER test_trigger ON public.test IS NULL;
 
 COMMENT ON RULE test_rule ON public.test IS NULL;
+
+COMMENT ON POLICY test_policy ON public.test IS NULL;

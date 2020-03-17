@@ -41,3 +41,5 @@ COMMENT ON INDEX public.test_index IS 'test table index';
 COMMENT ON TRIGGER test_trigger ON public.test IS 'test trigger';
 
 COMMENT ON RULE test_rule ON public.test IS 'test rule';
+
+COMMENT ON POLICY test_policy ON public.test IS 'test policy';

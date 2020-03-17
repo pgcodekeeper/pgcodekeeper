@@ -72,3 +72,11 @@ BEFORE UPDATE ON public.test
 FOR EACH STATEMENT EXECUTE PROCEDURE public.trigger_fnc();
 
 COMMENT ON TRIGGER test_trigger ON public.test IS 'test trigger';
+
+CREATE RULE test_rule AS ON DELETE TO public.test DO NOTHING;
+
+COMMENT ON RULE test_rule ON public.test IS 'test rule';
+
+CREATE POLICY test_policy ON public.test;
+
+COMMENT ON POLICY test_policy ON public.test IS 'test policy';
