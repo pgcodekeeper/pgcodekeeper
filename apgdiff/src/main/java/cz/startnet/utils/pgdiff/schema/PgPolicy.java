@@ -184,7 +184,7 @@ public class PgPolicy extends PgStatementWithSearchPath {
         if (obj instanceof PgPolicy && super.compare(obj)) {
             PgPolicy police = (PgPolicy) obj;
             return compareUnalterable(police)
-                    && Objects.equals(roles, police.roles)
+                    && roles.equals(police.roles)
                     && Objects.equals(getUsing(), police.getUsing())
                     && Objects.equals(getCheck(), police.getCheck());
         }
