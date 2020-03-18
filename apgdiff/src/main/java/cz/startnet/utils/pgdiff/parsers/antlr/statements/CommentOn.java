@@ -1,7 +1,9 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -62,6 +64,11 @@ public class CommentOn extends ParserAbstract {
         // column (separately because of schema qualification)
         // otherwise schema reference is considered unresolved
         if (obj.COLUMN() != null) {
+            PgObjLocation loc = new PgObjLocation(
+                    ctx.getParent().getStart().getText().toUpperCase(Locale.ROOT),
+                    ctx.getParent(), getFullCtxText(ctx.getParent()));
+            db.getObjReferences().computeIfAbsent(fileName, k -> new ArrayList<>()).add(loc);
+
             if (isRefMode()) {
                 return;
             }
@@ -217,6 +224,11 @@ public class CommentOn extends ParserAbstract {
 
             db.getObjDefinitions().values().stream().flatMap(List::stream)
             .filter(ref::compare).forEach(def -> def.setComment(comment));
+        } else {
+            PgObjLocation loc = new PgObjLocation(
+                    ctx.getParent().getStart().getText().toUpperCase(Locale.ROOT),
+                    ctx.getParent(), getFullCtxText(ctx.getParent()));
+            db.getObjReferences().computeIfAbsent(fileName, k -> new ArrayList<>()).add(loc);
         }
     }
 

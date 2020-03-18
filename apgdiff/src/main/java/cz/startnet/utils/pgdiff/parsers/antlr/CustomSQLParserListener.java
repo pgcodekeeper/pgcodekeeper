@@ -144,13 +144,7 @@ implements SqlContextProcessor {
         } else if (ctx.create_fts_dictionary() != null) {
             p = new CreateFtsDictionary(ctx.create_fts_dictionary(), db);
         } else if (ctx.comment_on_statement() != null) {
-            if (ParserListenerMode.SCRIPT != mode) {
-                p = new CommentOn(ctx.comment_on_statement(), db);
-                addToQueries(ctx, getAction(ctx));
-            } else {
-                addToQueries(ctx, getAction(ctx));
-                return;
-            }
+            p = new CommentOn(ctx.comment_on_statement(), db);
         } else if (ctx.rule_common() != null) {
             if (ParserListenerMode.SCRIPT != mode) {
                 p = new CreateRule(ctx.rule_common(), db);
@@ -296,8 +290,7 @@ implements SqlContextProcessor {
             } else if (createCtx.schema_import() != null
                     || createCtx.create_foreign_data_wrapper() != null) {
                 descrWordsCount = 4;
-            } else if (createCtx.comment_on_statement() != null
-                    || createCtx.rule_common() != null) {
+            } else if (createCtx.rule_common() != null) {
                 descrWordsCount = 1;
             } else {
                 descrWordsCount = 2;
