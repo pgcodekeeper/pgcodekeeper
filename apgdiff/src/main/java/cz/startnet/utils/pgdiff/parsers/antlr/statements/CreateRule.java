@@ -23,7 +23,6 @@ import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.StatementOverride;
@@ -49,8 +48,7 @@ public class CreateRule extends ParserAbstract {
 
     @Override
     public void parseObject() {
-        db.getObjReferences().computeIfAbsent(fileName, k -> new ArrayList<>())
-        .add(new PgObjLocation(state, ctx, null));
+        addOutlineRefForCommentOrRule(state, ctx);
 
         Rule_member_objectContext obj = ctx.rule_member_object();
         // unsupported roles rules, ALL TABLES/SEQUENCES/FUNCTIONS IN SCHENA
@@ -276,6 +274,6 @@ public class CreateRule extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        return null;
+        return state;
     }
 }

@@ -505,6 +505,16 @@ public abstract class ParserAbstract {
     }
 
     /**
+     * Adds missing COMMENT/RULE refs for correct showing them in Outline.
+     * (In the case of comments : used for COLUMN comments and comments
+     * for objects which undefined in DbObjType).
+     */
+    protected void addOutlineRefForCommentOrRule(String action, ParserRuleContext ctx) {
+        db.getObjReferences().computeIfAbsent(fileName, k -> new ArrayList<>())
+        .add(new PgObjLocation(action, ctx, null));
+    }
+
+    /**
      * Returns action information which will later be used for showing in console,
      * in 'Outline' and in 'outline of Project explorer files'.
      */
