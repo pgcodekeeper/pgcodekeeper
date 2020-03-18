@@ -33,4 +33,9 @@ public class CreateFtsTemplate extends ParserAbstract {
 
         addSafe(getSchemaSafe(ids), template, ids);
     }
+
+    @Override
+    protected String getStmtAction() {
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.FTS_TEMPLATE, ctx.name.identifier());
+    }
 }

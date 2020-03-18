@@ -9,7 +9,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 import ru.taximaxim.codekeeper.ui.sqledit.SegmentsWithParent;
 
@@ -30,11 +29,10 @@ public class NavigatorOutlineContentProvider implements ITreeContentProvider {
 
         Set<PgObjLocation> refs = PgDbParser.getParser(iProject).getObjsForPath(iFile.getLocation().toOSString());
         List<SegmentsWithParent> segments = new ArrayList<>(refs.size());
-        for (PgObjLocation loc : refs) {
-            if (loc.getAction() != StatementActions.NONE) {
-                segments.add(new SegmentsWithParent(loc, iFile));
-            }
-        }
+
+        refs.stream().filter(e -> e.getAction() != null)
+        .forEach(e -> segments.add(new SegmentsWithParent(e, iFile)));
+
         return segments.toArray();
     }
 

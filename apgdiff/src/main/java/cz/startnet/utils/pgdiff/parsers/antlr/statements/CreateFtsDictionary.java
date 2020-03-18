@@ -33,4 +33,9 @@ public class CreateFtsDictionary extends ParserAbstract {
         addDepSafe(dictionary, templateIds, DbObjType.FTS_TEMPLATE, true);
         addSafe(getSchemaSafe(ids), dictionary, ids);
     }
+
+    @Override
+    protected String getStmtAction() {
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.FTS_DICTIONARY, ctx.name.identifier());
+    }
 }

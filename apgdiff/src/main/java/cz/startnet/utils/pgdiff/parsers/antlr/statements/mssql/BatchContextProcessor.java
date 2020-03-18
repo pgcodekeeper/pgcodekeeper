@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -9,6 +10,7 @@ import org.antlr.v4.runtime.misc.Interval;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.SourceStatement;
 
 public abstract class BatchContextProcessor extends ParserAbstract {
@@ -39,5 +41,15 @@ public abstract class BatchContextProcessor extends ParserAbstract {
         int start = getDelimiterCtx().getStop().getStopIndex() + 1;
         String second = stopToken.getInputStream().getText(Interval.of(start, stop));
         st.setSecondPart(isKeepNewLines ? second : second.replace("\r", ""));
+    }
+
+    @Override
+    protected PgObjLocation fillQueryLocation(ParserRuleContext ctx) {
+        String act = getStmtAction();
+        PgObjLocation loc = new PgObjLocation(
+                act != null ? act : ctx.getStart().getText().toUpperCase(Locale.ROOT),
+                        ctx, getFullCtxTextWithHidden(ctx, stream));
+        db.addToQueries(fileName, loc);
+        return loc;
     }
 }

@@ -9,21 +9,26 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameCon
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class AlterIndex extends ParserAbstract {
 
     private final Alter_index_statementContext ctx;
+    private final String alterIdxAllAction;
 
     public AlterIndex(Alter_index_statementContext ctx, PgDatabase db) {
         super(db);
         this.ctx = ctx;
+        alterIdxAllAction = ctx.ALL() == null ? null
+                : new StringBuilder(ACTION_ALTER).append(" INDEX ALL IN TABLESPACE ")
+                .append(ctx.identifier(0).getText()).toString();
     }
 
     @Override
     public void parseObject() {
-        if (ctx.ALL() != null) {
+        if (alterIdxAllAction != null) {
+            db.addToQueries(fileName, new PgObjLocation(alterIdxAllAction, ctx.getParent(), null));
             return;
         }
 
@@ -43,9 +48,16 @@ public class AlterIndex extends ParserAbstract {
             doSafe((i,o) -> i.addInherit(inhSchemaName, inhTableName), index, null);
             addDepSafe(index, ids, DbObjType.INDEX, true);
 
-            addObjReference(idsInh, DbObjType.INDEX, StatementActions.ALTER);
+            addObjReference(idsInh, DbObjType.INDEX, ACTION_ALTER);
         } else {
-            addObjReference(ids, DbObjType.INDEX, StatementActions.ALTER);
+            addObjReference(ids, DbObjType.INDEX, ACTION_ALTER);
         }
+    }
+
+    @Override
+    protected String getStmtAction() {
+        return alterIdxAllAction != null ? alterIdxAllAction
+                : getStrForStmtAction(ACTION_ALTER, DbObjType.INDEX,
+                        ctx.schema_qualified_name().identifier());
     }
 }
