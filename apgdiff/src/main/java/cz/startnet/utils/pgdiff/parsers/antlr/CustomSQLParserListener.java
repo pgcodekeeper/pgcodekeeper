@@ -146,13 +146,7 @@ implements SqlContextProcessor {
         } else if (ctx.comment_on_statement() != null) {
             p = new CommentOn(ctx.comment_on_statement(), db);
         } else if (ctx.rule_common() != null) {
-            if (ParserListenerMode.SCRIPT != mode) {
-                p = new CreateRule(ctx.rule_common(), db);
-                addToQueries(ctx, getAction(ctx));
-            } else {
-                addToQueries(ctx, getAction(ctx));
-                return;
-            }
+            p = new CreateRule(ctx.rule_common(), db);
         } else if (ctx.set_statement() != null) {
             Set_statementContext setCtx = ctx.set_statement();
             set(setCtx);
@@ -290,8 +284,6 @@ implements SqlContextProcessor {
             } else if (createCtx.schema_import() != null
                     || createCtx.create_foreign_data_wrapper() != null) {
                 descrWordsCount = 4;
-            } else if (createCtx.rule_common() != null) {
-                descrWordsCount = 1;
             } else {
                 descrWordsCount = 2;
             }
