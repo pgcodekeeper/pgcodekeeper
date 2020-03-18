@@ -27,6 +27,8 @@ public interface ApgdiffConsts {
     String INFORMATION_SCHEMA = "information_schema";
     String SYS = "sys";
 
+    String GO = "GO";
+
     String APGDIFF_PLUGIN_ID = "apgdiff";
 
     String OVERRIDES_DIR = "OVERRIDES";

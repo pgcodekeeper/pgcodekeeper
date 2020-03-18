@@ -62,4 +62,9 @@ public class CreateSequence extends ParserAbstract {
         }
         sequence.setMinMaxInc(inc, maxValue, minValue, sequence.getDataType(), 0L);
     }
+
+    @Override
+    protected String getStmtAction() {
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.SEQUENCE, ctx.name.identifier());
+    }
 }

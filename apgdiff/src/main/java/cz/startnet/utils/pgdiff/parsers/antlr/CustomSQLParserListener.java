@@ -5,14 +5,18 @@ import java.util.Locale;
 import java.util.Queue;
 
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.eclipse.core.runtime.IProgressMonitor;
 
+import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.SqlContextProcessor;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_alterContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_createContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_dropContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Script_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Script_transactionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Session_local_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statement_valueContext;
@@ -48,7 +52,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTable;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateType;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.DeleteStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.DropStatement;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.InsertStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.UpdateStatement;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -62,9 +68,9 @@ implements SqlContextProcessor {
     private String oids;
     private final Queue<AntlrTask<?>> antlrTasks;
 
-    public CustomSQLParserListener(PgDatabase database, String filename, boolean refMode,
+    public CustomSQLParserListener(PgDatabase database, String filename, ParserListenerMode mode,
             List<Object> errors, Queue<AntlrTask<?>> antlrTasks, IProgressMonitor monitor) {
-        super(database, filename, refMode, errors, monitor);
+        super(database, filename, mode, errors, monitor);
         this.antlrTasks = antlrTasks;
     }
 
@@ -73,7 +79,9 @@ implements SqlContextProcessor {
         for (StatementContext s : rootCtx.statement()) {
             statement(s, stream);
         }
-        db.sortColumns();
+        if (ParserListenerMode.NORMAL == mode) {
+            db.sortColumns();
+        }
     }
 
     public void statement(StatementContext statement, CommonTokenStream stream) {
@@ -92,6 +100,8 @@ implements SqlContextProcessor {
             }
         } else if ((ds = statement.data_statement()) != null) {
             data(ds);
+        } else {
+            addToQueries(statement, getAction(statement));
         }
     }
 
@@ -134,13 +144,28 @@ implements SqlContextProcessor {
         } else if (ctx.create_fts_dictionary() != null) {
             p = new CreateFtsDictionary(ctx.create_fts_dictionary(), db);
         } else if (ctx.comment_on_statement() != null) {
-            p = new CommentOn(ctx.comment_on_statement(), db);
+            if (ParserListenerMode.SCRIPT != mode) {
+                p = new CommentOn(ctx.comment_on_statement(), db);
+                addToQueries(ctx, getAction(ctx));
+            } else {
+                addToQueries(ctx, getAction(ctx));
+                return;
+            }
         } else if (ctx.rule_common() != null) {
-            p = new CreateRule(ctx.rule_common(), db);
+            if (ParserListenerMode.SCRIPT != mode) {
+                p = new CreateRule(ctx.rule_common(), db);
+                addToQueries(ctx, getAction(ctx));
+            } else {
+                addToQueries(ctx, getAction(ctx));
+                return;
+            }
         } else if (ctx.set_statement() != null) {
-            set(ctx.set_statement());
+            Set_statementContext setCtx = ctx.set_statement();
+            set(setCtx);
+            addToQueries(setCtx, getAction(setCtx));
             return;
         } else {
+            addToQueries(ctx, getAction(ctx));
             return;
         }
         safeParseStatement(p, ctx);
@@ -162,8 +187,15 @@ implements SqlContextProcessor {
             p = new AlterFtsStatement(ctx.alter_fts_statement(), db);
         } else if (ctx.alter_owner() != null) {
             p = new AlterOwner(ctx.alter_owner(), db);
-        } else {
+        } else if (ctx.alter_function_statement() != null
+                || ctx.alter_schema_statement() != null
+                || ctx.alter_type_statement() != null
+                || ctx.alter_operator_statement() != null
+                || ctx.alter_extension_statement() != null) {
             p = new AlterOther(ctx, db);
+        } else {
+            addToQueries(ctx, getAction(ctx));
+            return;
         }
         safeParseStatement(p, ctx);
     }
@@ -172,7 +204,12 @@ implements SqlContextProcessor {
         ParserAbstract p;
         if (ctx.update_stmt_for_psql() != null) {
             p =  new UpdateStatement(ctx.update_stmt_for_psql(), db);
+        } else if (ctx.insert_stmt_for_psql() != null) {
+            p =  new InsertStatement(ctx.insert_stmt_for_psql(), db);
+        } else if (ctx.delete_stmt_for_psql() != null) {
+            p =  new DeleteStatement(ctx.delete_stmt_for_psql(), db);
         } else {
+            addToQueries(ctx, getAction(ctx));
             return;
         }
 
@@ -196,7 +233,8 @@ implements SqlContextProcessor {
 
         switch (confParam.toLowerCase(Locale.ROOT)) {
         case "search_path":
-            if (!refMode && (vex.size() != 1 || !ApgdiffConsts.PG_CATALOG.equals(confValue))) {
+            if (ParserListenerMode.NORMAL == mode
+            && (vex.size() != 1 || !ApgdiffConsts.PG_CATALOG.equals(confValue))) {
                 throw new UnresolvedReferenceException("Unsupported search_path", ctx.start);
             }
             break;
@@ -221,5 +259,68 @@ implements SqlContextProcessor {
         default:
             break;
         }
+    }
+
+    private String getAction(ParserRuleContext ctx) {
+        if (ctx instanceof StatementContext) {
+            StatementContext stmtCtx = (StatementContext) ctx;
+            Script_statementContext scriptCtx;
+            Script_transactionContext transactionCtx;
+            if ((scriptCtx = stmtCtx.script_statement()) != null
+                    && (transactionCtx = scriptCtx.script_transaction()) != null
+                    && transactionCtx.START() != null) {
+                return "START TRANSACTION";
+            }
+        } else if (ctx instanceof Data_statementContext) {
+            if (((Data_statementContext) ctx).select_stmt() != null) {
+                return "SELECT";
+            }
+        } else if (ctx instanceof Schema_createContext) {
+            Schema_createContext createCtx = (Schema_createContext) ctx;
+            int descrWordsCount = 0;
+            if (createCtx.create_language_statement() != null) {
+                return "CREATE LANGUAGE";
+            } else if (createCtx.create_transform_statement() != null) {
+                return "CREATE TRANSFORM";
+            } else if (createCtx.create_table_as_statement() != null) {
+                return "CREATE TABLE";
+            } else if (createCtx.create_conversion_statement() != null) {
+                return "CREATE CONVERSION";
+            } else if (createCtx.create_event_trigger() != null
+                    || createCtx.create_user_mapping() != null
+                    || createCtx.create_access_method() != null
+                    || createCtx.create_operator_family_statement() != null
+                    || createCtx.create_operator_class_statement() != null
+                    || createCtx.security_label() != null) {
+                descrWordsCount = 3;
+            } else if (createCtx.schema_import() != null
+                    || createCtx.create_foreign_data_wrapper() != null) {
+                descrWordsCount = 4;
+            } else if (createCtx.comment_on_statement() != null
+                    || createCtx.rule_common() != null) {
+                descrWordsCount = 1;
+            } else {
+                descrWordsCount = 2;
+            }
+            return getActionDescription(ctx, descrWordsCount);
+        } else if (ctx instanceof Schema_alterContext) {
+            Schema_alterContext alterCtx = (Schema_alterContext) ctx;
+            int descrWordsCount = 0;
+            if (alterCtx.alter_language_statement() != null) {
+                return "ALTER LANGUAGE";
+            } else if (alterCtx.alter_foreign_data_wrapper() != null) {
+                descrWordsCount = 4;
+            } else if (alterCtx.alter_default_privileges() != null
+                    || alterCtx.alter_event_trigger() != null
+                    || alterCtx.alter_user_mapping() != null
+                    || alterCtx.alter_operator_family_statement() != null
+                    || alterCtx.alter_operator_class_statement() != null) {
+                descrWordsCount = 3;
+            } else {
+                descrWordsCount = 2;
+            }
+            return getActionDescription(ctx, descrWordsCount);
+        }
+        return ctx.getStart().getText().toUpperCase(Locale.ROOT);
     }
 }

@@ -105,4 +105,11 @@ public class CreateMsProcedure extends BatchContextProcessor {
             function.addArgument(arg);
         }
     }
+
+    @Override
+    protected String getStmtAction() {
+        Qualified_nameContext qualNameCtx = ctx.qualified_name();
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.PROCEDURE,
+                Arrays.asList(qualNameCtx.schema, qualNameCtx.name));
+    }
 }

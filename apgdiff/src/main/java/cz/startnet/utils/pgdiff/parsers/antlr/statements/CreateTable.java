@@ -27,6 +27,7 @@ import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.SimplePgTable;
 import cz.startnet.utils.pgdiff.schema.TypedPgTable;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateTable extends TableAbstract {
     private final Create_table_statementContext ctx;
@@ -156,5 +157,10 @@ public class CreateTable extends TableAbstract {
                 fillOptionParams(value, optionText, false, table::addOption);
             }
         }
+    }
+
+    @Override
+    protected String getStmtAction() {
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.TABLE, ctx.name.identifier());
     }
 }
