@@ -9,6 +9,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.User_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.MsUser;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateMsUser extends ParserAbstract {
 
@@ -36,5 +37,10 @@ public class CreateMsUser extends ParserAbstract {
         }
 
         addSafe(db, user, Arrays.asList(nameCtx));
+    }
+
+    @Override
+    protected String getStmtAction() {
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.USER, Arrays.asList(ctx.user_name));
     }
 }

@@ -263,4 +263,11 @@ public class CreateFunction extends ParserAbstract {
         }
         return funcArgs;
     }
+
+    @Override
+    protected String getStmtAction() {
+        return getStrForStmtAction(ACTION_CREATE,
+                ctx.PROCEDURE() != null ? DbObjType.PROCEDURE : DbObjType.FUNCTION,
+                        ctx.function_parameters().schema_qualified_name().identifier());
+    }
 }

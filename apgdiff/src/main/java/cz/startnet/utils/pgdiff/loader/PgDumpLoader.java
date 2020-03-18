@@ -56,7 +56,7 @@ public class PgDumpLoader {
 
     private final List<Object> errors = new ArrayList<>();
 
-    private boolean refMode;
+    private ParserListenerMode mode = ParserListenerMode.NORMAL;
     private List<StatementBodyContainer> statementBodyReferences;
     private Map<PgStatement, StatementOverride> overrides;
 
@@ -64,8 +64,8 @@ public class PgDumpLoader {
         return errors;
     }
 
-    public void setRefMode(boolean refMode) {
-        this.refMode = refMode;
+    public void setMode(ParserListenerMode mode) {
+        this.mode = mode;
     }
 
     public void setOverridesMap(Map<PgStatement, StatementOverride> overrides) {
@@ -158,10 +158,10 @@ public class PgDumpLoader {
             TSqlContextProcessor listener;
             if (overrides != null) {
                 listener = new TSQLOverridesListener(
-                        intoDb, inputObjectName, refMode, errors, monitor, overrides);
+                        intoDb, inputObjectName, mode, errors, monitor, overrides);
             } else {
                 listener = new CustomTSQLParserListener(
-                        intoDb, inputObjectName, refMode, errors, monitor);
+                        intoDb, inputObjectName, mode, errors, monitor);
                 statementBodyReferences = Collections.emptyList();
             }
             AntlrParser.parseTSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
@@ -170,10 +170,10 @@ public class PgDumpLoader {
             SqlContextProcessor listener;
             if (overrides != null) {
                 listener = new SQLOverridesListener(
-                        intoDb, inputObjectName, refMode, errors, monitor, overrides);
+                        intoDb, inputObjectName, mode, errors, monitor, overrides);
             } else {
                 CustomSQLParserListener cust = new CustomSQLParserListener(intoDb,
-                        inputObjectName, refMode, errors, antlrTasks, monitor);
+                        inputObjectName, mode, errors, antlrTasks, monitor);
                 statementBodyReferences = cust.getStatementBodies();
                 listener = cust;
             }
