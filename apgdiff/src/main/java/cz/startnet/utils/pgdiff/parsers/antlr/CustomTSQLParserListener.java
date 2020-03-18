@@ -138,7 +138,6 @@ implements TSqlContextProcessor {
             } else if ((security = ast.security_statement()) != null
                     && security.rule_common() != null) {
                 safeParseStatement(new CreateMsRule(security.rule_common(), db), security);
-                addToQueries(security, getAction(security));
             } else {
                 addToQueries(ast, getAction(ast));
             }
