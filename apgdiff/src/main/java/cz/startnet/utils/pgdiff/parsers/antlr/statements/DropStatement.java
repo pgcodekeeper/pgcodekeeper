@@ -53,7 +53,7 @@ public class DropStatement extends ParserAbstract {
         if (ctx.drop_policy_statement() != null
                 || ctx.drop_cast_statement() != null) {
             descrWordsCount = 2;
-        } else if(ctx.drop_operator_family_statement() != null
+        } else if (ctx.drop_operator_family_statement() != null
                 || ctx.drop_operator_class_statement() != null
                 || ctx.drop_user_mapping() != null
                 || ctx.drop_owned() != null) {

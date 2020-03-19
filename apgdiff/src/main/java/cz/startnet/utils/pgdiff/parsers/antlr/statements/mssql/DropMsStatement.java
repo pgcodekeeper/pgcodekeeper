@@ -1,12 +1,14 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
+import cz.startnet.utils.pgdiff.parsers.antlr.CustomParserListener;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Drop_backward_compatible_indexContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Drop_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Drop_relational_or_xml_or_spatial_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Drop_statementsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
@@ -44,6 +46,8 @@ public class DropMsStatement extends ParserAbstract {
             }
         } else if (ctx.drop_statements() != null) {
             drop(ctx.drop_statements());
+        } else {
+            addOutlineRefForCommentOrRuleOrDrop(getOtherDropAction(), ctx);
         }
     }
 
@@ -96,6 +100,24 @@ public class DropMsStatement extends ParserAbstract {
         }
     }
 
+    private String getOtherDropAction() {
+        int descrWordsCount = 1;
+        if (ctx.drop_ddl_trigger() != null
+                || (ctx.drop_signature() != null && ctx.drop_signature().COUNTER() == null)) {
+            descrWordsCount = 2;
+        } else if (ctx.drop_asymmetric_key() != null
+                || ctx.drop_event_notifications_or_session() != null
+                || ctx.drop_external_library() != null
+                || ctx.drop_master_key() != null
+                || (ctx.drop_signature() != null && ctx.drop_signature().COUNTER() != null)
+                || ctx.drop_symmetric_key() != null) {
+            descrWordsCount = 3;
+        } else if (ctx.drop_database_encryption_key() != null) {
+            descrWordsCount = 4;
+        }
+        return CustomParserListener.getActionDescription(ctx, descrWordsCount);
+    }
+
     @Override
     protected PgObjLocation fillQueryLocation(ParserRuleContext ctx) {
         PgObjLocation loc = super.fillQueryLocation(ctx);
@@ -109,54 +131,38 @@ public class DropMsStatement extends ParserAbstract {
     @Override
     protected String getStmtAction() {
         DbObjType type = null;
-        List<String> qNameList = new ArrayList<>();
+        List<IdContext> ids = null;
         if (ctx.drop_assembly() != null) {
-            List<IdContext> ids = ctx.drop_assembly().id();
-            qNameList.add(ids.size() != 1 ? "" : ids.get(0).getText());
+            ids = ctx.drop_assembly().id();
             type = DbObjType.ASSEMBLY;
         } else if (ctx.drop_index() != null) {
-            List<Drop_relational_or_xml_or_spatial_indexContext> indices = ctx
-                    .drop_index().drop_relational_or_xml_or_spatial_index();
-            String schemaName = "";
-            String tblName = "";
-            String objName = "";
-            if (indices.size() == 1) {
-                Drop_relational_or_xml_or_spatial_indexContext ind = indices.get(0);
-                Qualified_nameContext tableIds = ind.qualified_name();
-                schemaName = tableIds.schema.getText();
-                tblName = tableIds.name.getText();
-                objName = ind.index_name.getText();
-            }
-            qNameList.add(schemaName);
-            qNameList.add(tblName);
-            qNameList.add(objName);
-            type = DbObjType.INDEX;
-        } else if (ctx.drop_statements() != null) {
-            Pair<DbObjType, List<String>> typeAndQName = dropOtherStmt(ctx.drop_statements());
-            if (typeAndQName != null) {
-                type = typeAndQName.getFirst();
-                qNameList = typeAndQName.getSecond();
-            }
-        }
-
-        if (type != null) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(ACTION_DROP).append(' ').append(type).append(' ');
-            for (String name : qNameList) {
-                if (!name.isEmpty()) {
-                    sb.append(name).append('.');
+            Drop_indexContext dropIdxCtx = ctx.drop_index();
+            List<Drop_relational_or_xml_or_spatial_indexContext> indicesRel = dropIdxCtx
+                    .drop_relational_or_xml_or_spatial_index();
+            if (indicesRel != null && !indicesRel.isEmpty() && indicesRel.size() == 1) {
+                ids = Arrays.asList(indicesRel.get(0).index_name);
+            } else {
+                List<Drop_backward_compatible_indexContext> indicesBack = dropIdxCtx
+                        .drop_backward_compatible_index();
+                if (indicesBack != null && !indicesBack.isEmpty() && indicesBack.size() == 1) {
+                    ids = Arrays.asList(indicesBack.get(0).index_name);
                 }
             }
-            sb.setLength(sb.length() - 1);
-            return sb.toString();
+            type = DbObjType.INDEX;
+        } else if (ctx.drop_statements() != null) {
+            Pair<DbObjType, List<IdContext>> typeAndQName = dropStmt(ctx.drop_statements());
+            if (typeAndQName != null) {
+                type = typeAndQName.getFirst();
+                ids = typeAndQName.getSecond();
+            }
         }
 
-        return null;
+        return type != null && ids != null
+                ? getStrForStmtAction(ACTION_DROP, type, ids) : getOtherDropAction();
     }
 
-    private Pair<DbObjType, List<String>> dropOtherStmt(Drop_statementsContext dropStmtCtx) {
+    private Pair<DbObjType, List<IdContext>> dropStmt(Drop_statementsContext dropStmtCtx) {
         DbObjType type = null;
-        List<String> qNameList = new ArrayList<>();
 
         if (dropStmtCtx.SCHEMA() != null) {
             type = DbObjType.SCHEMA;
@@ -168,8 +174,7 @@ public class DropMsStatement extends ParserAbstract {
 
         if (type != null) {
             List<Qualified_nameContext> qnames = dropStmtCtx.qualified_name();
-            qNameList.add(qnames.size() != 1 ? "" : qnames.get(0).name.getText());
-            return new Pair<>(type, qNameList);
+            return new Pair<>(type, qnames.size() == 1 ? qnames.get(0).id() : null);
         }
 
         if (dropStmtCtx.FUNCTION() != null) {
@@ -190,15 +195,7 @@ public class DropMsStatement extends ParserAbstract {
 
         if (type != null) {
             List<Qualified_nameContext> qnames = dropStmtCtx.qualified_name();
-            String schemaName = "";
-            String objName = "";
-            if (qnames.size() == 1) {
-                schemaName = qnames.get(0).schema.getText();
-                objName = qnames.get(0).name.getText();
-            }
-            qNameList.add(schemaName);
-            qNameList.add(objName);
-            return new Pair<>(type, qNameList);
+            return new Pair<>(type, qnames.size() == 1 ? qnames.get(0).id() : null);
         }
 
         return null;
