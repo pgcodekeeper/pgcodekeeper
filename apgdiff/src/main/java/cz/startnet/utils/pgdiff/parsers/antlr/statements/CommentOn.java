@@ -62,7 +62,7 @@ public class CommentOn extends ParserAbstract {
         // column (separately because of schema qualification)
         // otherwise schema reference is considered unresolved
         if (obj.COLUMN() != null) {
-            addOutlineRefForCommentOrRule(ACTION_COMMENT, ctx);
+            addOutlineRefForCommentOrRuleOrDrop(ACTION_COMMENT, ctx);
 
             if (isRefMode()) {
                 return;
@@ -220,7 +220,7 @@ public class CommentOn extends ParserAbstract {
             db.getObjDefinitions().values().stream().flatMap(List::stream)
             .filter(ref::compare).forEach(def -> def.setComment(comment));
         } else {
-            addOutlineRefForCommentOrRule(ACTION_COMMENT, ctx);
+            addOutlineRefForCommentOrRuleOrDrop(ACTION_COMMENT, ctx);
         }
     }
 

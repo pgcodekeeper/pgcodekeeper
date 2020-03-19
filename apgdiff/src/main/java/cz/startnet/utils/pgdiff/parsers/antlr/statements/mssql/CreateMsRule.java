@@ -55,7 +55,7 @@ public class CreateMsRule extends ParserAbstract {
 
     @Override
     public void parseObject() {
-        addOutlineRefForCommentOrRule(state, ctx);
+        addOutlineRefForCommentOrRuleOrDrop(state, ctx);
 
         Object_typeContext nameCtx = ctx.object_type();
         // unsupported rules without object names

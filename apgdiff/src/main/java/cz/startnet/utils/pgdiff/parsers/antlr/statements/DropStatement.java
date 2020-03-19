@@ -7,6 +7,7 @@ import java.util.List;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
+import cz.startnet.utils.pgdiff.parsers.antlr.CustomParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_operator_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_rule_statementContext;
@@ -42,7 +43,23 @@ public class DropStatement extends ParserAbstract {
             drop(ctx.drop_statements());
         } else if (ctx.drop_operator_statement() != null) {
             dropOperator(ctx.drop_operator_statement());
+        } else {
+            addOutlineRefForCommentOrRuleOrDrop(getOtherDropAction(), ctx);
         }
+    }
+
+    private String getOtherDropAction() {
+        int descrWordsCount = 1;
+        if (ctx.drop_policy_statement() != null
+                || ctx.drop_cast_statement() != null) {
+            descrWordsCount = 2;
+        } else if(ctx.drop_operator_family_statement() != null
+                || ctx.drop_operator_class_statement() != null
+                || ctx.drop_user_mapping() != null
+                || ctx.drop_owned() != null) {
+            descrWordsCount = 3;
+        }
+        return CustomParserListener.getActionDescription(ctx, descrWordsCount);
     }
 
     public void dropFunction(Drop_function_statementContext ctx) {
@@ -180,6 +197,8 @@ public class DropStatement extends ParserAbstract {
                     : Collections.emptyList();
             type = DbObjType.OPERATOR;
         }
-        return type != null ? getStrForStmtAction(ACTION_DROP, type, ids) : null;
+
+        return type != null && ids != null
+                ? getStrForStmtAction(ACTION_DROP, type, ids) : getOtherDropAction();
     }
 }
