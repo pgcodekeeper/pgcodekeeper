@@ -93,13 +93,13 @@ public class CustomParserListener {
     /**
      *  Returns only the first 'descrWordsCount' words from a query in 'ctx'.
      */
-    public static String getActionDescription(ParserRuleContext ctx, int descrWordsCount) {
+    protected String getActionDescription(ParserRuleContext ctx, int descrWordsCount) {
         StringBuilder descr = new StringBuilder();
         fillActionDescription(ctx, new int[] {descrWordsCount}, descr);
         return descr.toString();
     }
 
-    private static void fillActionDescription(ParserRuleContext ctx, int[] descrWordsCount,
+    private void fillActionDescription(ParserRuleContext ctx, int[] descrWordsCount,
             StringBuilder descr) {
         List<ParseTree> children = ctx.children;
         if (children == null) {

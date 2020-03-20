@@ -48,7 +48,7 @@ public class CreateRule extends ParserAbstract {
 
     @Override
     public void parseObject() {
-        addOutlineRefForCommentOrRuleOrDrop(state, ctx);
+        addOutlineRefForCommentOrRule(state, ctx);
 
         Rule_member_objectContext obj = ctx.rule_member_object();
         // unsupported roles rules, ALL TABLES/SEQUENCES/FUNCTIONS IN SCHENA

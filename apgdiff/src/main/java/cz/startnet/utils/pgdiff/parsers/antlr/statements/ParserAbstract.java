@@ -505,12 +505,11 @@ public abstract class ParserAbstract {
     }
 
     /**
-     * Adds missing COMMENT/RULE/DROP refs for correct showing them in Outline.
+     * Adds missing COMMENT/RULE refs for correct showing them in Outline.
      * (In the case of COMMENT : used for COLUMN comments and comments
      * for objects which undefined in DbObjType).
-     * (In the case of DROP : used for objects which undefined in DbObjType).
      */
-    protected void addOutlineRefForCommentOrRuleOrDrop(String action, ParserRuleContext ctx) {
+    protected void addOutlineRefForCommentOrRule(String action, ParserRuleContext ctx) {
         db.getObjReferences().computeIfAbsent(fileName, k -> new ArrayList<>())
         .add(new PgObjLocation(action, ctx, null));
     }

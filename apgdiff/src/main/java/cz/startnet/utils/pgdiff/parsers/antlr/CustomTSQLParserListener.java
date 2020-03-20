@@ -112,7 +112,7 @@ implements TSqlContextProcessor {
                 safeParseStatement(new DisableMsTrigger(disable, db), disable);
                 addToQueries(disable, getAction(disable));
             } else if ((drop = ddl.schema_drop()) != null) {
-                safeParseStatement(new DropMsStatement(drop, db), drop);
+                drop(drop);
             } else {
                 addToQueries(ddl, getAction(ddl));
             }
@@ -218,6 +218,19 @@ implements TSqlContextProcessor {
         safeParseStatement(p, ctx);
     }
 
+    private void drop(Schema_dropContext ctx) {
+        ParserAbstract p;
+        if (ctx.drop_assembly() != null
+                || ctx.drop_index() != null
+                || ctx.drop_statements() != null) {
+            p = new DropMsStatement(ctx, db);
+        } else {
+            addToQueries(ctx, getAction(ctx));
+            return;
+        }
+        safeParseStatement(p, ctx);
+    }
+
     private void set(Set_statementContext setCtx) {
         Set_specialContext ctx = setCtx.set_special();
         if(ctx == null || ctx.name == null) {
@@ -305,7 +318,7 @@ implements TSqlContextProcessor {
             return getActionDescription(ctx, descrWordsCount);
         } else if (ctx instanceof Schema_alterContext) {
             Schema_alterContext alterCtx = (Schema_alterContext) ctx;
-            int descrWordsCount = 0;
+            int descrWordsCount = 2;
             if (alterCtx.alter_asymmetric_key() != null
                     || alterCtx.alter_application_role() != null
                     || alterCtx.alter_availability_group() != null
@@ -342,8 +355,21 @@ implements TSqlContextProcessor {
                     || alterCtx.alter_service_master_key() != null
                     || alterCtx.alter_xml_schema_collection() != null) {
                 descrWordsCount = 4;
-            } else {
-                descrWordsCount = 2;
+            }
+            return getActionDescription(ctx, descrWordsCount);
+        } else if (ctx instanceof Schema_dropContext) {
+            Schema_dropContext dropCtx = (Schema_dropContext) ctx;
+            int descrWordsCount = 2;
+            if (dropCtx.drop_asymmetric_key() != null
+                    || dropCtx.drop_event_notifications_or_session() != null
+                    || dropCtx.drop_external_library() != null
+                    || dropCtx.drop_master_key() != null
+                    || dropCtx.drop_symmetric_key() != null) {
+                descrWordsCount = 3;
+            } else if (dropCtx.drop_database_encryption_key() != null) {
+                descrWordsCount = 4;
+            } else if (dropCtx.drop_signature() != null) {
+                return "DROP SIGNATURE";
             }
             return getActionDescription(ctx, descrWordsCount);
         }
