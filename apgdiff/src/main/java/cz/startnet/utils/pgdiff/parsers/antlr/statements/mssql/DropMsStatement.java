@@ -138,7 +138,7 @@ public class DropMsStatement extends ParserAbstract {
                 ids = typeAndQName.getSecond();
             }
         }
-        return type != null ? getStrForStmtAction(ACTION_DROP, type, ids) : null;
+        return type != null && ids != null ? getStrForStmtAction(ACTION_DROP, type, ids) : null;
     }
 
     private Pair<DbObjType, List<IdContext>> dropStmt(Drop_statementsContext dropStmtCtx) {
