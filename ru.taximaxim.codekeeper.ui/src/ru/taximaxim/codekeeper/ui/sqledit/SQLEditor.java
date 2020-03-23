@@ -15,7 +15,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.ResourceBundle;
-import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -224,7 +223,7 @@ implements IResourceChangeListener, ITextErrorReporter {
 
     public void setLineBackground() {
         // TODO who deletes stale annotations after editor refresh?
-        Set<PgObjLocation> refs = getParser().getObjsForEditor(getEditorInput());
+        List<PgObjLocation> refs = getParser().getObjsForEditor(getEditorInput());
         IAnnotationModel model = getSourceViewer().getAnnotationModel();
         for (PgObjLocation loc : refs) {
             if (loc.isDanger()) {
