@@ -52,6 +52,7 @@ public class CreateRule extends ParserAbstract {
         // unsupported roles rules, ALL TABLES/SEQUENCES/FUNCTIONS IN SCHENA
         if (db.getArguments().isIgnorePrivileges() || ctx.other_rules() != null
                 || obj.ALL() != null) {
+            addOutlineRefForCommentOrRule(state, ctx);
             return;
         }
 
