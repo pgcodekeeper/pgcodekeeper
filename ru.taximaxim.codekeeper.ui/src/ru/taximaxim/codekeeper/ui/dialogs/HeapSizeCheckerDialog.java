@@ -1,15 +1,12 @@
 package ru.taximaxim.codekeeper.ui.dialogs;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.text.MessageFormat;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -31,7 +28,7 @@ public class HeapSizeCheckerDialog extends Dialog {
 
     private static final String LINK_ECLIPSE_INI_INFO = "https://wiki.eclipse.org/Eclipse.ini"; //$NON-NLS-1$
     private static final String VMARGS = "-vmargs"; //$NON-NLS-1$
-    private static final String XMX = "Xmx"; //$NON-NLS-1$
+    private static final String XMX = "-Xmx"; //$NON-NLS-1$
 
     private Combo combo;
 
@@ -75,39 +72,35 @@ public class HeapSizeCheckerDialog extends Dialog {
         String selectedHeapSizeGb = combo.getItem(combo.getSelectionIndex());
         Path path = Paths.get(System.getProperty("eclipse.launcher")) //$NON-NLS-1$
                 .getParent().resolve("eclipse.ini"); //$NON-NLS-1$
-        try (Stream<String> lineStream = Files.lines(path, StandardCharsets.UTF_8)) {
-            String xmxLineWintNewHeapSizeGb = new StringBuilder()
-                    .append('-').append(XMX)
-                    .append(Integer.parseInt(selectedHeapSizeGb))
-                    .append('G').toString();
+        try {
+            String xmxLineWithNewHeapSizeGb = XMX + Integer.parseInt(selectedHeapSizeGb) + 'G';
 
-            List<String> lines = lineStream.collect(Collectors.toList());
+            List<String> lines = Files.readAllLines(path);
 
-            String xmxLine = lines.stream().filter(l -> l.contains(XMX)).findAny().orElse(null);
+            String xmxLine = lines.stream()
+                    .filter(l -> l.regionMatches(true, 0, XMX, 0, XMX.length()))
+                    .findAny().orElse(null);
 
-            String newEclipseIniTex = null;
             if (xmxLine == null) {
-                int index = lines.indexOf(VMARGS);
+                String vmargsLine = lines.stream()
+                        .filter(l -> l.regionMatches(true, 0, VMARGS, 0, VMARGS.length()))
+                        .findAny().orElse(null);
+                int index = vmargsLine != null ? lines.indexOf(vmargsLine) : -1;
                 if (index != -1) {
-                    lines.add(index, xmxLineWintNewHeapSizeGb);
+                    lines.add(index, xmxLineWithNewHeapSizeGb);
                 } else {
                     lines.add(VMARGS);
-                    lines.add(xmxLineWintNewHeapSizeGb);
+                    lines.add(xmxLineWithNewHeapSizeGb);
                 }
-                newEclipseIniTex = String.join("\n", lines); //$NON-NLS-1$
             } else {
-                newEclipseIniTex = String.join("\n", lines) //$NON-NLS-1$
-                        .replace(xmxLine, xmxLineWintNewHeapSizeGb);
+                lines.set(lines.indexOf(xmxLine), xmxLineWithNewHeapSizeGb);
             }
 
-            try (BufferedWriter writer = Files.newBufferedWriter(path)) {
-                writer.write(newEclipseIniTex);
-                // not dialog with question because of:
-                // "https://bugs.eclipse.org/bugs/show_bug.cgi?id=323565"
-                MessageDialog.openInformation(getShell(),
-                        Messages.HeapSizeCheckerDialog_heap_size_updated,
-                        Messages.HeapSizeCheckerDialog_restart_offer);
-            }
+            Files.write(path, lines, StandardOpenOption.CREATE);
+
+            MessageDialog.openInformation(getShell(),
+                    Messages.HeapSizeCheckerDialog_heap_size_updated,
+                    Messages.HeapSizeCheckerDialog_restart_offer);
         } catch (IOException e) {
             new MessageDialogWithLink(getShell(),
                     Messages.HeapSizeCheckerDialog_manual_heap_editing_title,
