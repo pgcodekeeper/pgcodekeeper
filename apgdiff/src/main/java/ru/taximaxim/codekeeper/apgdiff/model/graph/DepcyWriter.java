@@ -13,6 +13,7 @@ import org.jgrapht.graph.DefaultEdge;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class DepcyWriter {
 
@@ -57,15 +58,21 @@ public class DepcyWriter {
     }
 
     private void printTree(PgStatement st, int level, Set<PgStatement> added) {
+        DbObjType type = st.getStatementType();
+        if (DbObjType.DATABASE == type && START_LEVEL != level) {
+            // do not show database in reverse graph
+            return;
+        }
+
         for (int i = 0; i < level; i++) {
             writer.print("\t");
         }
         if (!added.add(st)) {
-            writer.println(st.getStatementType() + " " + st.getQualifiedName() + " - cyclic dependency");
+            writer.println(type + " " + st.getQualifiedName() + " - cyclic dependency");
             return;
         }
 
-        writer.println(st.getStatementType() + " " + st.getQualifiedName());
+        writer.println(type + " " + st.getQualifiedName());
         if (depth > level + 1) {
             for (DefaultEdge e : graph.outgoingEdgesOf(st)) {
                 printTree(graph.getEdgeTarget(e), level + 1, new HashSet<>(added));

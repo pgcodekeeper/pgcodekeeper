@@ -27,6 +27,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 
         store.setDefault(PG_EDIT_PREF.EDITOR_UPDATE_ACTION, PG_EDIT_PREF.NO_ACTION);
         store.setDefault(PG_EDIT_PREF.SHOW_GIT_USER, true);
+        store.setDefault(PG_EDIT_PREF.SHOW_DIFF_ERRORS, true);
 
         store.setDefault(DB_UPDATE_PREF.ALTER_COLUMN_STATEMENT, true);
         store.setDefault(DB_UPDATE_PREF.DROP_COLUMN_STATEMENT, true);
@@ -43,6 +44,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(USAGE_REPORT_PREF.USAGEREPORT_ENABLED_ID, true);
         store.setDefault(USAGE_REPORT_PREF.ASK_USER_USAGEREPORT_ID, true);
 
+        store.setDefault(SQL_EDITOR_PREF.NUMBER_OF_LINES_LIMIT, 5000);
         store.setDefault(SQL_EDITOR_PREF.MATCHING_BRACKETS, true);
         store.setDefault(SQL_EDITOR_PREF.MATCHING_BRACKETS_COLOR, "127, 0, 85"); //$NON-NLS-1$
         store.setDefault(SQL_EDITOR_PREF.HIGHLIGHT_BRACKET_AT_CARET_LOCATION, true);

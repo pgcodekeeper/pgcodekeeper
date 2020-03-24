@@ -14,6 +14,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateDomain extends ParserAbstract {
 
@@ -34,14 +35,14 @@ public class CreateDomain extends ParserAbstract {
         }
         VexContext exp = ctx.def_value;
         if (exp != null) {
-            db.addAnalysisLauncher(new VexAnalysisLauncher(domain, exp));
+            db.addAnalysisLauncher(new VexAnalysisLauncher(domain, exp, fileName));
             domain.setDefaultValue(getFullCtxText(exp));
         }
         for (Domain_constraintContext constrCtx : ctx.dom_constraint) {
             if (constrCtx.CHECK() != null) {
                 IdentifierContext name = constrCtx.name;
                 AbstractConstraint constr = new PgConstraint(name != null ? name.getText() : "");
-                parseDomainConstraint(domain, constr, constrCtx, db);
+                parseDomainConstraint(domain, constr, constrCtx, db, fileName);
                 domain.addConstraint(constr);
             }
             // вынесено ограничение, т.к. мы привязываем ограничение на нул к
@@ -55,9 +56,14 @@ public class CreateDomain extends ParserAbstract {
     }
 
     public static void parseDomainConstraint(PgDomain domain, AbstractConstraint constr,
-            Domain_constraintContext ctx, PgDatabase db) {
+            Domain_constraintContext ctx, PgDatabase db, String location) {
         VexContext vexCtx = ctx.vex();
         constr.setDefinition("CHECK (" + getFullCtxText(vexCtx) + ")");
-        db.addAnalysisLauncher(new DomainAnalysisLauncher(domain, vexCtx));
+        db.addAnalysisLauncher(new DomainAnalysisLauncher(domain, vexCtx, location));
+    }
+
+    @Override
+    protected String getStmtAction() {
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.DOMAIN, ctx.name.identifier());
     }
 }

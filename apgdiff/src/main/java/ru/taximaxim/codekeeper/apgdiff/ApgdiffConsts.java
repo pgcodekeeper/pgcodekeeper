@@ -19,12 +19,15 @@ public interface ApgdiffConsts {
     String UTC = "UTC";
     String PUBLIC = "public";
     String DBO = "dbo";
+    String HEAP = "heap";
 
     String PG_DEFAULT = "pg_default";
 
     String PG_CATALOG = "pg_catalog";
     String INFORMATION_SCHEMA = "information_schema";
     String SYS = "sys";
+
+    String GO = "GO";
 
     String APGDIFF_PLUGIN_ID = "apgdiff";
 

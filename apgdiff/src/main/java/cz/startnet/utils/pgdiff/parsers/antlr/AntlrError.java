@@ -2,15 +2,15 @@ package cz.startnet.utils.pgdiff.parsers.antlr;
 
 import org.antlr.v4.runtime.Token;
 
-public class AntlrError {
+import cz.startnet.utils.pgdiff.ContextLocation;
 
-    private final int line;
-    private final int charPositionInLine;
+public class AntlrError extends ContextLocation {
+
+    private static final long serialVersionUID = 3290362774294960759L;
+
     private final String msg;
     private final String text;
-    private final int start;
     private final int stop;
-    private final String location;
 
     public AntlrError(Token tokenError, String location, int line, int charPositionInLine, String msg) {
         this(location, line, charPositionInLine, msg,
@@ -19,31 +19,21 @@ public class AntlrError {
                 (tokenError == null ? null : tokenError.getText()));
     }
 
-    private AntlrError(String location, int line, int charPositionInLine, String msg, int start, int stop, String text) {
-        this.location = location;
-        this.line = line;
-        this.charPositionInLine = charPositionInLine;
+    private AntlrError(String location, int line, int charPositionInLine, String msg,
+            int start, int stop, String text) {
+        super(location, start, line, charPositionInLine);
         this.msg = msg;
-        this.start = start;
         this.stop = stop;
         this.text = text;
     }
 
     public AntlrError copyWithOffset(int offset, int lineOffset, int inLineOffset) {
-        return new AntlrError(location, line + lineOffset,
-                (line == 1 ? charPositionInLine + inLineOffset : charPositionInLine),
+        return new AntlrError(getFilePath(), getLineNumber() + lineOffset,
+                (getLineNumber() == 1 ? getCharPositionInLine() + inLineOffset : getCharPositionInLine()),
                 msg,
-                (start == -1 ? -1 : start + offset),
+                (getStart() == -1 ? -1 : getStart() + offset),
                 (stop == -1 ? -1: stop + offset),
                 text);
-    }
-
-    public int getLine() {
-        return line;
-    }
-
-    public int getCharPositionInLine() {
-        return charPositionInLine;
     }
 
     public String getMsg() {
@@ -55,20 +45,16 @@ public class AntlrError {
     }
 
     public int getStart() {
-        return start;
+        return getOffset();
     }
 
     public int getStop() {
         return stop;
     }
 
-    public String getLocation() {
-        return location;
-    }
-
     @Override
     public String toString() {
         // ANTLR position in line is 0-based, GUI's is 1-based
-        return location + " line " + getLine() + ':' + (getCharPositionInLine() + 1) + ' ' + getMsg();
+        return getFilePath() + " line " + getLineNumber() + ':' + (getCharPositionInLine() + 1) + ' ' + getMsg();
     }
 }

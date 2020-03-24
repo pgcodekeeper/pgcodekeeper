@@ -24,7 +24,6 @@ import cz.startnet.utils.pgdiff.loader.JdbcMsConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcMsLoader;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.loader.ProjectLoader;
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.InputStreamProvider;
@@ -46,7 +45,7 @@ public abstract class DbSource {
 
     private final String origin;
     private PgDatabase dbObject;
-    protected List<? extends Object> errors = Collections.emptyList();
+    protected List<Object> errors = Collections.emptyList();
 
     public String getOrigin() {
         return origin;
@@ -197,12 +196,13 @@ class DbSourceDirTree extends DbSource {
             throws InterruptedException, IOException {
         monitor.subTask(Messages.dbSource_loading_tree);
 
-        List<AntlrError> er = new ArrayList<>();
-        PgDatabase db = new ProjectLoader(dirTreePath, getPgDiffArgs(encoding,
-                forceUnixNewlines, isMsSql, null, oneTimePrefs), monitor, er)
-                .loadDatabaseSchemaFromDirTree();
-        errors = er;
-        return db;
+        ProjectLoader loader = new ProjectLoader(dirTreePath, getPgDiffArgs(encoding,
+                forceUnixNewlines, isMsSql, null, oneTimePrefs), monitor, new ArrayList<>());
+        try {
+            return loader.loadDatabaseSchemaFromDirTree();
+        } finally {
+            errors = loader.getErrors();
+        }
     }
 }
 
@@ -227,16 +227,17 @@ class DbSourceProject extends DbSource {
         monitor.setWorkRemaining(UIProjectLoader.countFiles(project));
 
         IEclipsePreferences pref = proj.getPrefs();
-        List<AntlrError> er = new ArrayList<>();
 
         PgDiffArguments arguments = getPgDiffArgs(charset,
                 pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
                 OpenProjectUtils.checkMsSql(project), project, oneTimePrefs);
 
-        PgDatabase db = new UIProjectLoader(project, arguments, monitor, null, er)
-                .loadDatabaseWithLibraries();
-        errors = er;
-        return db;
+        UIProjectLoader loader = new UIProjectLoader(project, arguments, monitor, null);
+        try {
+            return loader.loadDatabaseWithLibraries();
+        } finally {
+            errors = loader.getErrors();
+        }
     }
 }
 
@@ -360,7 +361,7 @@ class DbSourceDb extends DbSource {
         pm.newChild(1).subTask(Messages.dbSource_executing_pg_dump);
 
         byte[] dump;
-        try (IProgressReporter progress = new UiProgressReporter(monitor)) {
+        try (IProgressReporter progress = new UiProgressReporter(monitor, null)) {
             dump = new PgDumper(exePgdump, customParams,
                     host, port, user, pass, dbname, encoding, timezone, progress)
                     .pgDump();
@@ -431,9 +432,11 @@ class DbSourceJdbc extends DbSource {
         }
 
         JdbcLoader loader = new JdbcLoader(jdbcConnector, args, monitor);
-        PgDatabase database = loader.getDbFromJdbc();
-        errors = loader.getErrors();
-        return database;
+        try {
+            return loader.getDbFromJdbc();
+        } finally {
+            errors = loader.getErrors();
+        }
     }
 }
 

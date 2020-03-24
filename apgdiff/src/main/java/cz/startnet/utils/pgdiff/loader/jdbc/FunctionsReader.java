@@ -12,6 +12,7 @@ import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.FuncProcAnalysisLauncher;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.VexAnalysisLauncher;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateAggregate;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
@@ -92,7 +93,8 @@ public class FunctionsReader extends JdbcReader {
                             if (a.getMode().isIn()) {
                                 VexContext vx = vexCtxListIterator.previous();
                                 a.setDefaultExpression(ParserAbstract.getFullCtxText(vx));
-                                db.addAnalysisLauncher(new FuncProcAnalysisLauncher(f, vx));
+                                db.addAnalysisLauncher(new VexAnalysisLauncher(
+                                        f, vx, loader.getCurrentLocation()));
                             }
                         }
                     });
@@ -115,6 +117,13 @@ public class FunctionsReader extends JdbcReader {
                 for (Long s : protrftypes) {
                     function.addTransform(loader.cachedTypesByOid.get(s).getFullName());
                 }
+            }
+        }
+
+        if (SupportedVersion.VERSION_12.isLE(loader.version)) {
+            String supportFunc = res.getString("support_func");
+            if (!"-".equals(supportFunc)) {
+                setFunctionWithDep(AbstractPgFunction::setSupportFunc, function, supportFunc);
             }
         }
 
@@ -213,10 +222,10 @@ public class FunctionsReader extends JdbcReader {
         // Parsing the function definition and adding its result context for analysis.
         if (!"-".equals(definition) && "SQL".equalsIgnoreCase(function.getLanguage())) {
             loader.submitAntlrTask(definition, SQLParser::sql, ctx -> db.addAnalysisLauncher(
-                    new FuncProcAnalysisLauncher(function, ctx, argsQualTypes)));
+                    new FuncProcAnalysisLauncher(function, ctx, loader.getCurrentLocation(), argsQualTypes)));
         } else if (!"-".equals(definition) && "PLPGSQL".equalsIgnoreCase(function.getLanguage())) {
-            loader.submitAntlrTask(definition, SQLParser::plpgsql_function, ctx -> db.addAnalysisLauncher(
-                    new FuncProcAnalysisLauncher(function, ctx, argsQualTypes)));
+            loader.submitPlpgsqlTask(definition, SQLParser::plpgsql_function, ctx -> db.addAnalysisLauncher(
+                    new FuncProcAnalysisLauncher(function, ctx, loader.getCurrentLocation(), argsQualTypes)));
         }
     }
 
@@ -264,8 +273,35 @@ public class FunctionsReader extends JdbcReader {
 
     private void fillAggregate(PgAggregate aggregate, ResultSet res) throws SQLException {
         // 'setDirectCount' must be first at this method, because of using 'directCount' later.
-        aggregate.setDirectCount(AggKinds.NORMAL == aggregate.getKind() ?
-                aggregate.getArguments().size() : res.getInt("aggnumdirectargs"));
+        if (AggKinds.NORMAL == aggregate.getKind()) {
+            aggregate.setDirectCount(aggregate.getArguments().size());
+        } else {
+            int directCount = res.getInt("aggnumdirectargs");
+            aggregate.setDirectCount(directCount);
+
+            if (directCount == res.getInt("pronargs")) {
+                // Explanation from documentation about this special case
+                // (source: "https://www.postgresql.org/docs/11/sql-createaggregate.html").
+                //
+                // The syntax for ordered-set aggregates allows VARIADIC to be specified
+                // for both the last direct parameter and the last aggregated (WITHIN GROUP)
+                // parameter. However, the current implementation restricts use of VARIADIC
+                // in two ways. First, ordered-set aggregates can only use VARIADIC "any",
+                // not other variadic array types. Second, if the last direct parameter is
+                // VARIADIC "any", then there can be only one aggregated parameter and it
+                // must also be VARIADIC "any". (In the representation used in the system
+                // catalogs, these two parameters are merged into a single VARIADIC "any"
+                // item, since pg_proc cannot represent functions with more than one VARIADIC
+                // parameter.) If the aggregate is a hypothetical-set aggregate, the direct
+                // arguments that match the VARIADIC "any" parameter are the hypothetical
+                // ones; any preceding parameters represent additional direct arguments
+                // that are not constrained to match the aggregated arguments.
+
+                // last argument must be VARIADIC "any"
+                List<Argument> args = aggregate.getArguments();
+                aggregate.addArgument(args.get(args.size() - 1));
+            }
+        }
 
         // since 9.6 PostgreSQL
         // parallel mode: s - safe, r - restricted, u - unsafe

@@ -11,15 +11,18 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ClusteredContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_def_table_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_typeContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ExpressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Identity_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_optionsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_restContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_whereContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_constraint_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Type_definitionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.MsExpressionAnalysisLauncher;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.MsColumn;
 import cz.startnet.utils.pgdiff.schema.MsType;
@@ -116,7 +119,7 @@ public class CreateMsType extends ParserAbstract {
             }
 
             for (Column_optionContext option : colCtx.column_option()) {
-                fillColumnOption(option, col);
+                fillColumnOption(option, col, type);
             }
 
             type.addColumn(col.getFullDefinition());
@@ -176,7 +179,7 @@ public class CreateMsType extends ParserAbstract {
         sb.append("\n)");
     }
 
-    private void fillColumnOption(Column_optionContext option, MsColumn col) {
+    private void fillColumnOption(Column_optionContext option, MsColumn col, MsType type) {
         if (option.SPARSE() != null) {
             col.setSparse(true);
         } else if (option.COLLATE() != null) {
@@ -202,7 +205,16 @@ public class CreateMsType extends ParserAbstract {
             if (option.id() != null) {
                 col.setDefaultName(option.id().getText());
             }
-            col.setDefaultValue(getFullCtxText(option.expression()));
+            ExpressionContext exp = option.expression();
+            col.setDefaultValue(getFullCtxText(exp));
+            db.addAnalysisLauncher(new MsExpressionAnalysisLauncher(type, exp, fileName));
         }
+    }
+
+    @Override
+    protected String getStmtAction() {
+        Qualified_nameContext qualNameCtx = ctx.qualified_name();
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.TYPE,
+                Arrays.asList(qualNameCtx.schema, qualNameCtx.name));
     }
 }

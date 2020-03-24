@@ -87,6 +87,10 @@ public class PgFunction extends AbstractPgFunction {
             }
         }
 
+        if (getSupportFunc() != null) {
+            sbSQL.append(" SUPPORT ").append(getSupportFunc());
+        }
+
         for (Entry<String, String> param : configurations.entrySet()) {
             String val = param.getValue();
             sbSQL.append("\n    SET ").append(param.getKey());
@@ -143,6 +147,13 @@ public class PgFunction extends AbstractPgFunction {
             // нельзя менять тип out параметров
             if (ArgMode.OUT == argOld.getMode() &&
                     !Objects.equals(argOld.getDataType(), argNew.getDataType())) {
+                return true;
+            }
+
+            // Covers any difference between modes of arguments, but used only
+            // for cases of changes of 'IN' to 'INOUT' and vice versa.
+            // Other cases are processed in another places.
+            if (argOld.getMode() != argNew.getMode()) {
                 return true;
             }
         }

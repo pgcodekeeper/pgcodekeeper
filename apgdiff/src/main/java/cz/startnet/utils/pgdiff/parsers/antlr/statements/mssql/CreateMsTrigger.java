@@ -9,13 +9,12 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_triggerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsSqlClauses;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.MsFuncProcTrigAnalysisLauncher;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.MsTrigger;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateMsTrigger extends BatchContextProcessor {
@@ -45,7 +44,7 @@ public class CreateMsTrigger extends BatchContextProcessor {
             schemaCtx = ctx.table_name.schema;
         }
         List<IdContext> ids = Arrays.asList(schemaCtx, ctx.table_name.name);
-        addObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
+        addObjReference(ids, DbObjType.TABLE, null);
         getObject(getSchemaSafe(ids), false);
     }
 
@@ -62,23 +61,13 @@ public class CreateMsTrigger extends BatchContextProcessor {
         trigger.setQuotedIdentified(quotedIdentifier);
         setSourceParts(trigger);
 
-        String schemaName;
-        if (schema != null) {
-            schemaName = schema.getName();
-        } else {
+        if (schema == null) {
             List<IdContext> ids = Arrays.asList(schemaCtx, tableNameCtx);
-            schemaName = getSchemaNameSafe(ids);
-            addObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
+            addObjReference(ids, DbObjType.TABLE, null);
         }
 
-        MsSqlClauses clauses;
-        if (db.getArguments().isEnableFunctionBodiesDependencies()) {
-            clauses = new MsSqlClauses(schemaName);
-        } else {
-            clauses = new MsSqlClauses(schemaName, DbObjType.FUNCTION, DbObjType.PROCEDURE);
-        }
-        clauses.analyze(ctx.sql_clauses());
-        trigger.addAllDeps(clauses.getDepcies());
+        db.addAnalysisLauncher(new MsFuncProcTrigAnalysisLauncher(trigger,
+                ctx.sql_clauses(), fileName));
 
         IStatementContainer cont = getSafe(AbstractSchema::getStatementContainer,
                 schema, tableNameCtx);
@@ -90,5 +79,15 @@ public class CreateMsTrigger extends BatchContextProcessor {
                     Arrays.asList(schemaCtx, tableNameCtx, nameCtx));
         }
         return trigger;
+    }
+
+    @Override
+    protected String getStmtAction() {
+        IdContext schemaCtx = ctx.trigger_name.schema;
+        if (schemaCtx == null) {
+            schemaCtx = ctx.table_name.schema;
+        }
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.TRIGGER,
+                Arrays.asList(schemaCtx, ctx.table_name.name, ctx.trigger_name.name));
     }
 }

@@ -30,6 +30,7 @@ import org.osgi.service.prefs.BackingStoreException;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.DB_BIND_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
@@ -56,6 +57,7 @@ public class ProjectProperties extends PropertyPage {
     private DbInfo dbForBind;
 
     private IEclipsePreferences prefs;
+    private IEclipsePreferences dbBindPrefs;
 
     private boolean isMsSql;
 
@@ -66,6 +68,7 @@ public class ProjectProperties extends PropertyPage {
         super.setElement(element);
         IProject project = element.getAdapter(IProject.class);
         prefs = new ProjectScope(project).getNode(UIConsts.PLUGIN_ID.THIS);
+        dbBindPrefs = new ProjectScope(project).getNode(DB_BIND_PREF.DB_BINDING);
         isMsSql = OpenProjectUtils.checkMsSql(project);
     }
 
@@ -88,7 +91,7 @@ public class ProjectProperties extends PropertyPage {
         btnForceUnixNewlines.setLayoutData(new GridData(SWT.DEFAULT, SWT.DEFAULT, false, false, 2, 1));
         btnForceUnixNewlines.setSelection(prefs.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true));
 
-        String nameOfBoundDb = prefs.get(PROJ_PREF.NAME_OF_BOUND_DB, ""); //$NON-NLS-1$
+        String nameOfBoundDb = dbBindPrefs.get(DB_BIND_PREF.NAME_OF_BOUND_DB, ""); //$NON-NLS-1$
         btnBindProjToDb = new Button(panel, SWT.CHECK);
         btnBindProjToDb.setText(Messages.ProjectProperties_binding_to_db_connection + ':');
         btnBindProjToDb.setSelection(!nameOfBoundDb.isEmpty());
@@ -287,12 +290,13 @@ public class ProjectProperties extends PropertyPage {
         prefs.putBoolean(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, btnUseGlobalIgnoreList.getSelection());
         prefs.putBoolean(PROJ_PREF.DISABLE_PARSER_IN_EXTERNAL_FILES, btnDisableParser.getSelection());
         prefs.putBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, btnForceUnixNewlines.getSelection());
-        prefs.put(PROJ_PREF.NAME_OF_BOUND_DB, dbForBind != null ? dbForBind.getName() : ""); //$NON-NLS-1$
+        dbBindPrefs.put(DB_BIND_PREF.NAME_OF_BOUND_DB, dbForBind != null ? dbForBind.getName() : ""); //$NON-NLS-1$
         if (!isMsSql) {
             prefs.put(PROJ_PREF.TIMEZONE, cmbTimezone.getText());
             prefs.putBoolean(PREF.SIMPLIFY_VIEW, btnSimplifyView.getSelection());
         }
         prefs.flush();
+        dbBindPrefs.flush();
         setValid(true);
         setErrorMessage(null);
     }

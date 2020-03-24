@@ -10,7 +10,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -159,8 +158,8 @@ class QuickUpdateJob extends SingletonEditorJob {
         IEclipsePreferences projPrefs = proj.getPrefs();
         String timezone = projPrefs.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC);
 
-        PgDatabase dbProjectFragment = new UIProjectLoader(monitor.newChild(1), null)
-                .buildFiles(Arrays.asList(file), isMsSql);
+        PgDatabase dbProjectFragment = UIProjectLoader
+                .buildFiles(Arrays.asList(file), isMsSql, monitor.newChild(1), null);
         Collection<PgStatement> listPgObjectsFragment = dbProjectFragment.getDescendants().collect(Collectors.toList());
 
         long schemaCount = dbProjectFragment.getSchemas().size();
@@ -222,8 +221,7 @@ class QuickUpdateJob extends SingletonEditorJob {
                 throw new PgCodekeeperUIException(Messages.QuickUpdate_danger);
             }
 
-            List<List<String>> batches = parser.batch();
-            new JdbcRunner(monitor).runBatches(connector, batches, null);
+            new JdbcRunner(monitor).runBatches(connector, parser.batch(), null);
         } catch (SQLException e) {
             throw new PgCodekeeperUIException(Messages.QuickUpdate_migration_failed + e.getLocalizedMessage());
         }

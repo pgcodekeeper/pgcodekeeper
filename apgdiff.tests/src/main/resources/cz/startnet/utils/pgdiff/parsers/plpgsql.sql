@@ -2287,6 +2287,20 @@ begin
   raise notice 'plpgsql.print_strict_params is %', i;
 end;
 
+declare 
+  _id int;
+  _count int;
+begin
+    if _count <> coalesce (array_length (_id, 1), 0) then
+        raise warning 'some text '
+                        'more text '
+                        ' and parameters: '
+                        '% %',
+               _count,
+               coalesce (array_length (_id, 1));
+    end if;
+end;
+
 /*
 DECLARE n bigint = c1 from public.t1 limit 1;
 BEGIN
@@ -2373,3 +2387,27 @@ BEGIN
   RETURN NULL;
 END;
 */
+
+DECLARE
+    rc refcursor;
+    r record;
+BEGIN
+    open rc for explain analyze values (1);
+    close rc;
+    open rc for SHOW ALL;
+    close rc;
+    open rc for select 1 from public.t1;
+    close rc;
+    open rc for insert into public.t1 (c1) select 5 returning *;
+    close rc;
+    open rc for update public.t1 set c1 = 6 where c1 = 5  returning *;
+    close rc;
+    open rc for DELETE from public.t1 where c1 = 6  returning *;
+    close rc;
+
+    FOR r IN show time zone loop 
+        raise notice 'var is %', r;
+    end loop;
+
+    return query explain insert into public.t1 (c1) values (1) returning c1;
+END;

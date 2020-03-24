@@ -162,7 +162,7 @@ public final class Main {
         PgDiff diff = new PgDiff(arguments);
         PgDatabase d;
         try {
-            d = diff.loadNewDatabase();
+            d = diff.loadNewDatabaseWithLibraries();
         } catch (PgCodekeeperException ex) {
             diff.getErrors().forEach(System.err::println);
             return false;

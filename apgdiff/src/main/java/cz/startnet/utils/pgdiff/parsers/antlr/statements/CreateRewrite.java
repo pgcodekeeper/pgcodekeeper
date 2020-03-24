@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -15,7 +16,6 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgRule.PgRuleEventType;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateRewrite extends ParserAbstract {
@@ -29,7 +29,7 @@ public class CreateRewrite extends ParserAbstract {
     @Override
     public void parseObject() {
         List<IdentifierContext> ids = ctx.table_name.identifier();
-        addObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
+        addObjReference(ids, DbObjType.TABLE, null);
 
         PgRule rule = new PgRule(ctx.name.getText());
         rule.setEvent(PgRuleEventType.valueOf(ctx.event.getText().toUpperCase(Locale.ROOT)));
@@ -37,7 +37,7 @@ public class CreateRewrite extends ParserAbstract {
             rule.setInstead(true);
         }
 
-        setConditionAndAddCommands(ctx, rule, db);
+        setConditionAndAddCommands(ctx, rule, db, fileName);
 
         IdentifierContext parent = QNameParser.getFirstNameCtx(ids);
         IStatementContainer cont = getSafe(AbstractSchema::getStatementContainer,
@@ -47,7 +47,7 @@ public class CreateRewrite extends ParserAbstract {
     }
 
     public static void setConditionAndAddCommands(Create_rewrite_statementContext ctx,
-            PgRule rule, PgDatabase db) {
+            PgRule rule, PgDatabase db, String location) {
         rule.setCondition((ctx.WHERE() != null) ? getFullCtxText(ctx.vex()) : null);
 
         // allows to write a common namespace-setup code with no copy-paste for each cmd type
@@ -55,6 +55,13 @@ public class CreateRewrite extends ParserAbstract {
             rule.addCommand(db.getArguments(), getFullCtxText(cmd));
         }
 
-        db.addAnalysisLauncher(new RuleAnalysisLauncher(rule, ctx));
+        db.addAnalysisLauncher(new RuleAnalysisLauncher(rule, ctx, location));
+    }
+
+    @Override
+    protected String getStmtAction() {
+        List<IdentifierContext> ids = new ArrayList<>(ctx.table_name.identifier());
+        ids.add(ctx.name);
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.RULE, ids);
     }
 }

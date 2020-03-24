@@ -9,16 +9,20 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_def_table_constr
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_tableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Data_typeContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ExpressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Identity_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_optionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_optionsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.MsExpressionAnalysisLauncher;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.TableAbstract;
 import cz.startnet.utils.pgdiff.schema.MsColumn;
 import cz.startnet.utils.pgdiff.schema.MsIndex;
 import cz.startnet.utils.pgdiff.schema.MsTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateMsTable extends TableAbstract {
 
@@ -125,7 +129,9 @@ public class CreateMsTable extends TableAbstract {
             if (option.id() != null) {
                 col.setDefaultName(option.id().getText());
             }
-            col.setDefaultValue(getFullCtxText(option.expression()));
+            ExpressionContext exp = option.expression();
+            col.setDefaultValue(getFullCtxText(exp));
+            db.addAnalysisLauncher(new MsExpressionAnalysisLauncher(col, exp, fileName));
         }
     }
 
@@ -135,5 +141,12 @@ public class CreateMsTable extends TableAbstract {
             String value = option.index_option_value().getText();
             table.addOption(key, value);
         }
+    }
+
+    @Override
+    protected String getStmtAction() {
+        Qualified_nameContext qualNameCtx = ctx.qualified_name();
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.TABLE,
+                Arrays.asList(qualNameCtx.schema, qualNameCtx.name));
     }
 }

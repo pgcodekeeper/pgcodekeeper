@@ -8,6 +8,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.MsSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateMsSchema extends ParserAbstract {
 
@@ -28,5 +29,10 @@ public class CreateMsSchema extends ParserAbstract {
         }
 
         addSafe(db, schema, Arrays.asList(nameCtx));
+    }
+
+    @Override
+    protected String getStmtAction() {
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.SCHEMA, Arrays.asList(ctx.schema_name));
     }
 }

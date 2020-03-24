@@ -1,8 +1,6 @@
 package cz.startnet.utils.pgdiff.depcies;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,7 +25,7 @@ public class PgDiffDepciesTest {
 
     @Parameters
     public static Iterable<Object[]> parameters() {
-        List<Object[]> p = Arrays.asList(new Object[][] {
+        return ApgdiffTestUtils.getParameters(new Object[][] {
             {"empty_usr"},
             // изменяется тип колонок у обоих таблиц, пользователь выбирает
             // view v1
@@ -193,6 +191,9 @@ public class PgDiffDepciesTest {
             // зависимости от функции,
             // пользователь выбрал функцию
             {"add_func_with_dep_usr_f1"},
+            // добавление функции с зависимостями
+            // пользователь выбрал функцию f1
+            {"add_function_with_dep_usr_f1"},
             // изменение сиквенсов с зависимостями
             // пользователь выбрал сиквенс s1
             {"change_sequence_usr_s1"},
@@ -217,14 +218,10 @@ public class PgDiffDepciesTest {
             // добавление таблицы с цикличной зависимотью к функции
             // пользователь выбрал таблицу t1
             {"add_table_with_cyclic_dep_usr_t1", true},
+            // изменение функции от которой зависит триггер
+            // пользователь выбрал функцию f1
+            {"modify_trigger_function_usr_f1"}
         });
-
-        int maxLength = p.stream()
-                .mapToInt(oo -> oo.length)
-                .max().getAsInt();
-        return p.stream()
-                .map(oo -> oo.length < maxLength ? Arrays.copyOf(oo, maxLength) : oo)
-                ::iterator;
     }
 
     /**

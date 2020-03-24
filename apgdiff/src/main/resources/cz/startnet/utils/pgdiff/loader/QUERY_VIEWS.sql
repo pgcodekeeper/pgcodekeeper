@@ -23,7 +23,8 @@ SELECT c.oid::bigint,
        subselect.column_defaults,
        subselect.column_acl,
        c.reloptions,
-       c.relnamespace AS schema_oid
+       c.relnamespace AS schema_oid,
+       am.amname AS access_method
 FROM pg_catalog.pg_class c
 LEFT JOIN
     (SELECT attrelid,
@@ -39,6 +40,7 @@ LEFT JOIN
          AND des.objsubid = attr.attnum
      GROUP BY attrelid) subselect ON subselect.attrelid = c.oid
 LEFT JOIN pg_catalog.pg_tablespace tabsp ON tabsp.oid = c.reltablespace
+LEFT JOIN pg_catalog.pg_am am ON am.oid = c.relam
 LEFT JOIN pg_catalog.pg_description d ON c.oid = d.objoid
     AND d.objsubid = 0
 WHERE c.relnamespace NOT IN (SELECT oid FROM sys_schemas)

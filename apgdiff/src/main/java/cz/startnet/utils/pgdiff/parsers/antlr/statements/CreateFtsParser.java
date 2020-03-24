@@ -42,4 +42,9 @@ public class CreateFtsParser extends ParserAbstract {
 
         addSafe(getSchemaSafe(ids), parser, ids);
     }
+
+    @Override
+    protected String getStmtAction() {
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.FTS_PARSER, ctx.name.identifier());
+    }
 }

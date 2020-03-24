@@ -9,7 +9,6 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
-import org.eclipse.jface.viewers.ListViewer;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
@@ -33,9 +32,9 @@ public class PgPassDialog extends Dialog {
 
     private final String path;
     private TableViewer viewer;
-    private final PrefListEditor<DbInfo, ListViewer> editor;
+    private final PrefListEditor<DbInfo> editor;
 
-    public PgPassDialog(Shell shell, String path, PrefListEditor<DbInfo, ListViewer> editor) {
+    public PgPassDialog(Shell shell, String path, PrefListEditor<DbInfo> editor) {
         super(shell);
         this.path = path;
         this.editor = editor;

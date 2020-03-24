@@ -8,8 +8,6 @@ import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
@@ -22,13 +20,13 @@ import com.microsoft.sqlserver.jdbc.SQLServerException;
 import cz.startnet.utils.pgdiff.IProgressReporter;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.jdbc.JdbcType;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.JDBC_CONSTS;
 
 public class QueriesBatchCallable extends StatementCallable<String> {
 
-    private static final Pattern PATTERN_WS = Pattern.compile("\\s+");
-
-    private final List<List<String>> batches;
+    private final List<PgObjLocation> batches;
     private final IProgressMonitor monitor;
     private final Connection connection;
     private final IProgressReporter reporter;
@@ -36,7 +34,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
 
     private boolean isAutoCommitEnabled = true;
 
-    public QueriesBatchCallable(Statement st, List<List<String>> batches,
+    public QueriesBatchCallable(Statement st, List<PgObjLocation> batches,
             IProgressMonitor monitor, IProgressReporter reporter,
             Connection connection, boolean isMsSql) {
         super(st, null);
@@ -50,22 +48,21 @@ public class QueriesBatchCallable extends StatementCallable<String> {
     @Override
     public String call() throws Exception {
         SubMonitor subMonitor = SubMonitor.convert(monitor);
-        String currQuery = null;
+        PgObjLocation currQuery = null;
+
         try {
             if (!isMsSql) {
-                List<String> queries = batches.get(0);
-                subMonitor.setWorkRemaining(queries.size());
-                for (String query : queries) {
+                subMonitor.setWorkRemaining(batches.size());
+                for (PgObjLocation query : batches) {
                     PgDiffUtils.checkCancelled(monitor);
                     currQuery = query;
-
                     executeSingleStatement(query);
-
                     subMonitor.worked(1);
                 }
             } else {
-                subMonitor.setWorkRemaining(batches.size());
-                for (List<String> queriesList : batches) {
+                List<List<PgObjLocation>> batchesList = getListBatchesFromSetBatches();
+                subMonitor.setWorkRemaining(batchesList.size());
+                for (List<PgObjLocation> queriesList : batchesList) {
                     PgDiffUtils.checkCancelled(monitor);
                     // in case we're executing a real batch after a single-statement one
                     currQuery = null;
@@ -89,13 +86,18 @@ public class QueriesBatchCallable extends StatementCallable<String> {
                 throw ex;
             }
             StringBuilder sb = new StringBuilder(sem.toString());
-            int offset = sem.getPosition();
             if (currQuery != null) {
+                int offset = sem.getPosition();
                 if (offset > 0) {
-                    appendPosition(sb, currQuery, offset);
+                    appendPosition(sb, currQuery.getSql(), offset);
                 } else {
-                    sb.append('\n').append(currQuery);
+                    if (currQuery.getLineNumber() > 1) {
+                        sb.append("\n  Line: ").append(currQuery.getLineNumber());
+                    }
+                    sb.append('\n').append(currQuery.getSql());
                 }
+                reporter.reportErrorLocation(currQuery.getOffset(),
+                        currQuery.getSql().length());
             }
 
             reporter.writeError(sb.toString());
@@ -108,8 +110,12 @@ public class QueriesBatchCallable extends StatementCallable<String> {
             if (currQuery != null) {
                 if (err.getLineNumber() > 1) {
                     sb.append("\n  Line: ").append(err.getLineNumber());
+                } else if (currQuery.getLineNumber() > 1) {
+                    sb.append("\n  Line: ").append(currQuery.getLineNumber());
                 }
-                sb.append('\n').append(currQuery);
+                sb.append('\n').append(currQuery.getSql());
+                reporter.reportErrorLocation(currQuery.getOffset(),
+                        currQuery.getSql().length());
             }
 
             reporter.writeError(sb.toString());
@@ -122,23 +128,50 @@ public class QueriesBatchCallable extends StatementCallable<String> {
         return JDBC_CONSTS.JDBC_SUCCESS;
     }
 
-    private void executeSingleStatement(String query) throws SQLException, InterruptedException {
-        if (st.execute(query)) {
-            writeResult(query);
+    private List<List<PgObjLocation>> getListBatchesFromSetBatches() {
+        List<List<PgObjLocation>> batchesList = new ArrayList<>();
+        batchesList.add(new ArrayList<>());
+
+        for (PgObjLocation loc : batches) {
+            if (ApgdiffConsts.GO.equalsIgnoreCase(loc.getAction())) {
+                batchesList.add(new ArrayList<>());
+            } else {
+                batchesList.get(batchesList.size() - 1).add(loc);
+            }
         }
-        writeWarnings();
-        writeStatus(query);
+
+        int lastBatchIdx = batchesList.size() - 1;
+        List<PgObjLocation> lastBatch = batchesList.get(lastBatchIdx);
+        if (lastBatch.isEmpty()) {
+            batchesList.remove(lastBatchIdx);
+        }
+
+        return batchesList;
     }
 
-    private void runBatch(List<String> queriesList) throws SQLException {
+    private void executeSingleStatement(PgObjLocation query)
+            throws SQLException, InterruptedException {
+        if (st.execute(query.getSql())) {
+            writeResult(query.getSql());
+        }
+        writeWarnings();
+        writeStatus(query.getAction());
+    }
+
+    private void runBatch(List<PgObjLocation> queriesList)
+            throws SQLException {
         if (isAutoCommitEnabled) {
             connection.setAutoCommit(false);
             isAutoCommitEnabled = false;
         }
 
-        for (String query : queriesList) {
-            st.addBatch(query);
-            writeStatus(query);
+        if (reporter != null) {
+            reporter.writeMessage("Starting batch");
+        }
+
+        for (PgObjLocation query : queriesList) {
+            st.addBatch(query.getSql());
+            writeStatus(query.getAction());
         }
 
         if (reporter != null) {
@@ -195,31 +228,11 @@ public class QueriesBatchCallable extends StatementCallable<String> {
         }
     }
 
-    private void writeStatus(String query) {
-        if (reporter == null) {
+    private void writeStatus(String msgAction) {
+        if (reporter == null || msgAction == null) {
             return;
         }
-
-        // trim to avoid empty strings at the edges of the array
-        String[] arr = PATTERN_WS.split(query.trim(), 3);
-        if (arr[0].isEmpty()) {
-            // empty or whitespace query, wtf was that
-            return;
-        }
-
-        String message = arr[0].toUpperCase(Locale.ROOT);
-        if (arr.length > 1) {
-            switch (message) {
-            case "CREATE":
-            case "ALTER":
-            case "DROP":
-            case "START":
-            case "BEGIN":
-                message += ' ' + arr[1].toUpperCase(Locale.ROOT);
-            }
-        }
-
-        reporter.writeMessage(message);
+        reporter.writeMessage(msgAction);
     }
 
     private void appendPosition(StringBuilder sb, String query, int offset) {
