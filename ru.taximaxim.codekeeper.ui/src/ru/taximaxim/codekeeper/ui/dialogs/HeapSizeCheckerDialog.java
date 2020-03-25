@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -97,7 +96,7 @@ public class HeapSizeCheckerDialog extends Dialog {
                 lines.set(xmxLineIdx, xmxLineWithNewHeapSizeGb);
             }
 
-            Files.write(path, lines, StandardOpenOption.CREATE);
+            Files.write(path, lines);
 
             MessageDialog.openInformation(getShell(),
                     Messages.HeapSizeCheckerDialog_heap_size_updated,

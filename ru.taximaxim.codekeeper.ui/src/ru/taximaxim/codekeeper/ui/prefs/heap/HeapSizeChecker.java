@@ -47,8 +47,8 @@ public class HeapSizeChecker implements IStartup {
                     shell, Messages.HeapSizeChecker_heap_size_warning_title,
                     MessageFormat.format(Messages.HeapSizeChecker_heap_size_warning,
                             RECOMMENDED_XMX_SIZE_GB),
-                    Messages.HeapSizeChecker_always_check_heap_size,
-                    true, mainPrefs, PREF.HEAP_SIZE_WARNING);
+                    Messages.HeapSizeChecker_do_not_ask_again,
+                    false, mainPrefs, PREF.HEAP_SIZE_WARNING);
 
             if (IDialogConstants.YES_ID == dialog.getReturnCode()) {
                 new HeapSizeCheckerDialog(shell).open();
