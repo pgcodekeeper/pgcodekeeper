@@ -106,7 +106,7 @@ public class HeapSizeCheckerDialog extends Dialog {
             new MessageDialogWithLink(getShell(),
                     Messages.HeapSizeCheckerDialog_manual_heap_editing_title,
                     MessageFormat.format(Messages.HeapSizeCheckerDialog_manual_heap_editing,
-                            selectedHeapSizeGb, path.toAbsolutePath(), e.getMessage()),
+                            selectedHeapSizeGb, path.toAbsolutePath(), e.getLocalizedMessage()),
                     MessageDialog.ERROR,
                     Messages.HeapSizeCheckerDialog_manual_heap_editing_link,
                     LINK_ECLIPSE_INI_INFO).open();
