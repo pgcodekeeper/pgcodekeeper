@@ -23,7 +23,7 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 
-import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import cz.startnet.utils.pgdiff.schema.StatementLocation;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
@@ -54,11 +54,11 @@ public final class FileUtilsUi {
         }
     }
 
-    public static void openFileInSqlEditor(PgObjLocation loc, boolean isMsSql) throws PartInitException {
+    public static void openFileInSqlEditor(StatementLocation loc, boolean isMsSql) throws PartInitException {
         if (loc != null && loc.getFilePath() != null) {
             IEditorPart part = openFileInSqlEditor(Paths.get(loc.getFilePath()), isMsSql);
             if (part instanceof ITextEditor) {
-                ((ITextEditor) part).selectAndReveal(loc.getOffset(), loc.getObjLength());
+                ((ITextEditor) part).selectAndReveal(loc.getOffset(), loc.getLength());
             }
         }
     }

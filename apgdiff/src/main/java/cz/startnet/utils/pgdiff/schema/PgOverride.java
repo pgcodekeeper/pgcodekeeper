@@ -36,11 +36,11 @@ public class PgOverride {
         return oldStatement.getLocation().getFilePath();
     }
 
-    public PgObjLocation getNewLocation() {
+    public StatementLocation getNewLocation() {
         return newStatement.getLocation();
     }
 
-    public PgObjLocation getOldLocation() {
+    public StatementLocation getOldLocation() {
         return oldStatement.getLocation();
     }
 }
