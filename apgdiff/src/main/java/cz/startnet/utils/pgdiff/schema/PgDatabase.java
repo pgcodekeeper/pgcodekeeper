@@ -10,11 +10,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
@@ -42,9 +40,9 @@ public class PgDatabase extends PgStatement {
     private final Map<String, MsUser> users = new LinkedHashMap<>();
 
     // Contains object definitions
-    private final Map<String, Set<PgObjLocation>> objDefinitions = new HashMap<>();
+    private final Map<String, List<PgObjLocation>> objDefinitions = new HashMap<>();
     // Содержит ссылки на объекты
-    private final Map<String, Set<PgObjLocation>> objReferences = new HashMap<>();
+    private final Map<String, List<PgObjLocation>> objReferences = new HashMap<>();
     // Contains analysis launchers for all statements
     // (used for launch analyze and getting dependencies).
     private final ArrayList<AbstractAnalysisLauncher> analysisLaunchers = new ArrayList<>();
@@ -85,17 +83,17 @@ public class PgDatabase extends PgStatement {
         return arguments;
     }
 
-    public Map<String, Set<PgObjLocation>> getObjDefinitions() {
+    public Map<String, List<PgObjLocation>> getObjDefinitions() {
         return objDefinitions;
     }
 
-    public Map<String, Set<PgObjLocation>> getObjReferences() {
+    public Map<String, List<PgObjLocation>> getObjReferences() {
         return objReferences;
     }
 
     public void addToQueries(String fileName, PgObjLocation loc) {
-        objDefinitions.computeIfAbsent(fileName, k -> new LinkedHashSet<>()).add(loc);
-        objReferences.computeIfAbsent(fileName, k -> new LinkedHashSet<>()).add(loc);
+        objDefinitions.computeIfAbsent(fileName, k -> new ArrayList<>()).add(loc);
+        objReferences.computeIfAbsent(fileName, k -> new ArrayList<>()).add(loc);
     }
 
     public List<AbstractAnalysisLauncher> getAnalysisLaunchers() {

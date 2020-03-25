@@ -2,7 +2,6 @@ package ru.taximaxim.codekeeper.ui.views.navigator;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -27,7 +26,7 @@ public class NavigatorOutlineContentProvider implements ITreeContentProvider {
         IFile iFile = (IFile) parentElement;
         IProject iProject = iFile.getProject();
 
-        Set<PgObjLocation> refs = PgDbParser.getParser(iProject).getObjsForPath(iFile.getLocation().toOSString());
+        List<PgObjLocation> refs = PgDbParser.getParser(iProject).getObjsForPath(iFile.getLocation().toOSString());
         List<SegmentsWithParent> segments = new ArrayList<>(refs.size());
 
         refs.stream().filter(e -> e.getAction() != null)
