@@ -19,6 +19,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 /**
@@ -102,10 +103,12 @@ public class HeapSizeCheckerDialog extends Dialog {
                     Messages.HeapSizeCheckerDialog_heap_size_updated,
                     Messages.HeapSizeCheckerDialog_restart_offer);
         } catch (IOException e) {
+            Log.log(e);
             new MessageDialogWithLink(getShell(),
                     Messages.HeapSizeCheckerDialog_manual_heap_editing_title,
                     MessageFormat.format(Messages.HeapSizeCheckerDialog_manual_heap_editing,
-                            selectedHeapSizeGb, path.toAbsolutePath()), MessageDialog.ERROR,
+                            selectedHeapSizeGb, path.toAbsolutePath(), e.getMessage()),
+                    MessageDialog.ERROR,
                     Messages.HeapSizeCheckerDialog_manual_heap_editing_link,
                     LINK_ECLIPSE_INI_INFO).open();
         } finally {
