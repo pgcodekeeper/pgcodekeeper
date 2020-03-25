@@ -7,6 +7,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -78,23 +79,22 @@ public class HeapSizeCheckerDialog extends Dialog {
 
             List<String> lines = Files.readAllLines(path);
 
-            String xmxLine = lines.stream()
-                    .filter(l -> l.regionMatches(true, 0, XMX, 0, XMX.length()))
-                    .findAny().orElse(null);
+            int xmxLineIdx = IntStream.range(0, lines.size())
+                    .filter(i -> lines.get(i).startsWith(XMX))
+                    .findFirst().orElse(-1);
 
-            if (xmxLine == null) {
-                String vmargsLine = lines.stream()
-                        .filter(l -> l.regionMatches(true, 0, VMARGS, 0, VMARGS.length()))
-                        .findAny().orElse(null);
-                int index = vmargsLine != null ? lines.indexOf(vmargsLine) : -1;
-                if (index != -1) {
-                    lines.add(index, xmxLineWithNewHeapSizeGb);
+            if (xmxLineIdx == -1) {
+                int vmargsLineIdx = IntStream.range(0, lines.size())
+                        .filter(i -> lines.get(i).equalsIgnoreCase(VMARGS))
+                        .findFirst().orElse(-1);
+                if (vmargsLineIdx != -1) {
+                    lines.add(vmargsLineIdx + 1, xmxLineWithNewHeapSizeGb);
                 } else {
                     lines.add(VMARGS);
                     lines.add(xmxLineWithNewHeapSizeGb);
                 }
             } else {
-                lines.set(lines.indexOf(xmxLine), xmxLineWithNewHeapSizeGb);
+                lines.set(xmxLineIdx, xmxLineWithNewHeapSizeGb);
             }
 
             Files.write(path, lines, StandardOpenOption.CREATE);
