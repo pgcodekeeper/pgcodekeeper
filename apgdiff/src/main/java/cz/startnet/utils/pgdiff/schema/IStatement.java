@@ -6,6 +6,5 @@ public interface IStatement {
     String getName();
     DbObjType getStatementType();
     IStatement getParent();
-    DbObjNature getStatementNature();
     String getQualifiedName();
 }

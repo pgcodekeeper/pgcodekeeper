@@ -700,9 +700,4 @@ public abstract class PgStatement implements IStatement, IHashable {
         newSt.setParent(parent);
         parent.resetHash();
     }
-
-    @Override
-    public DbObjNature getStatementNature() {
-        return DbObjNature.USER;
-    }
 }
