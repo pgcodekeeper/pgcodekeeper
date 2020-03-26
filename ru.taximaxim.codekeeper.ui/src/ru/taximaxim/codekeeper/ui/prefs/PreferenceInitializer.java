@@ -23,6 +23,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 
         store.setDefault(PREF.FORCE_SHOW_CONSOLE, true);
         store.setDefault(PREF.PARSER_CACHE_CLEANING_INTERVAL, 30);
+        store.setDefault(PREF.HEAP_SIZE_WARNING, true);
 
         store.setDefault(PG_EDIT_PREF.EDITOR_UPDATE_ACTION, PG_EDIT_PREF.NO_ACTION);
         store.setDefault(PG_EDIT_PREF.SHOW_GIT_USER, true);
