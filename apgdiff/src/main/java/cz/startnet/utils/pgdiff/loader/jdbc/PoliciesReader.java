@@ -72,7 +72,7 @@ public class PoliciesReader extends JdbcReader {
                     ctx -> db.addAnalysisLauncher(new VexAnalysisLauncher(p, ctx, loader.getCurrentLocation())));
         }
 
-        String check = res.getString("polqual");
+        String check = res.getString("polwithcheck");
         if (check != null) {
             p.setCheck('(' + check + ')');
             loader.submitAntlrTask(check, parser -> parser.vex_eof().vex().get(0),
