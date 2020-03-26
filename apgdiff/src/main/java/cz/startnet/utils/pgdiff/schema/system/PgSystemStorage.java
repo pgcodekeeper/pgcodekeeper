@@ -9,8 +9,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
+import cz.startnet.utils.pgdiff.schema.IStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
@@ -103,5 +105,16 @@ public class PgSystemStorage implements Serializable {
 
     public PgSystemSchema getInfoSchema() {
         return informationSchema;
+    }
+
+    public final Stream<IStatement> getDescendants() {
+        List<IStatement> l = new ArrayList<>();
+        for (PgSystemSchema s : getSchemas()) {
+            l.add(s);
+            s.getFunctions().forEach(l::add);
+            s.getRelations().forEach(l::add);
+        }
+
+        return l.stream();
     }
 }
