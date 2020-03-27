@@ -27,16 +27,30 @@ public class SegmentsWithParent extends Segments implements IAdaptable {
     }
 
     @Override
-    protected boolean compare(Object obj) {
-        if (super.compare(obj) && obj instanceof SegmentsWithParent) {
-            return parentFile.equals(((SegmentsWithParent) obj).getParentFile());
-        }
-        return false;
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result + ((parentFile == null) ? 0 : parentFile.hashCode());
+        return result;
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        return prime * super.hashCode() + ((parentFile == null) ? 0 : parentFile.hashCode());
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!super.equals(obj)) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        SegmentsWithParent other = (SegmentsWithParent) obj;
+        if (parentFile == null && other.parentFile != null) {
+            return false;
+        } else if (!parentFile.equals(other.parentFile)) {
+            return false;
+        }
+        return true;
     }
 }
