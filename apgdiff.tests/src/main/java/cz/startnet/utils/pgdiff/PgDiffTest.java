@@ -521,7 +521,9 @@ public class PgDiffTest {
                     // Tests scenario where owner and its privileges are both changed
                     {"chg_owner_grant"},
                     // Tests scenario where object definitions are compared
-                    {"compare_definitions"}
+                    {"compare_definitions"},
+                    // Tests scenario where CAST is compared.
+                    {"compare_casts"},
                 });
     }
 
