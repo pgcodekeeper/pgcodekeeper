@@ -410,6 +410,8 @@ public class PgDatabase extends PgStatement {
             l.updateStmt(this);
             analysisLaunchers.add(l);
         });
+
+        overrides.addAll(lib.getOverrides());
     }
 
     private void concat(PgStatement st) {
