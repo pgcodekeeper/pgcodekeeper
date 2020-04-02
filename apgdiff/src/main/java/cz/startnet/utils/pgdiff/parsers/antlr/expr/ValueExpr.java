@@ -60,7 +60,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IFunction;
-import cz.startnet.utils.pgdiff.schema.ISchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
@@ -687,7 +686,7 @@ public class ValueExpr extends AbstractExpr {
                 String sourceType = sourceTypes.get(argN);
                 if (sourceType.equals(arg.getDataType())) {
                     ++exactMatches;
-                } else if (!systemStorage.containsCastImplicit(sourceType, arg.getDataType())) {
+                } else if (!db.containsCastImplicit(sourceType, arg.getDataType())) {
                     signatureApplicable = false;
                     break;
                 }
@@ -729,15 +728,7 @@ public class ValueExpr extends AbstractExpr {
     }
 
     private Collection<? extends IFunction> availableFunctions(String schemaName, ParserRuleContext errorCtx) {
-        if (schemaName != null) {
-            ISchema schema = systemStorage.getSchema(schemaName);
-            if (schema == null) {
-                schema = findSchema(schemaName, errorCtx);
-            }
-            return schema.getFunctions();
-        } else {
-            return systemStorage.getPgCatalog().getFunctions();
-        }
+        return findSchema(schemaName, errorCtx).getFunctions();
     }
 
     private String getFunctionReturns(IFunction f) {

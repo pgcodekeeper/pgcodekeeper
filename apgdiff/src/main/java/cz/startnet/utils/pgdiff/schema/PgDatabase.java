@@ -27,7 +27,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  *
  * @author fordfrog
  */
-public class PgDatabase extends PgStatement {
+public class PgDatabase extends PgStatement implements IDatabase {
     /**
      * Current default schema.
      */
@@ -140,6 +140,7 @@ public class PgDatabase extends PgStatement {
      *
      * @return found schema or null
      */
+    @Override
     public AbstractSchema getSchema(final String name) {
         if (name == null) {
             return getDefaultSchema();
@@ -153,6 +154,7 @@ public class PgDatabase extends PgStatement {
      *
      * @return {@link #schemas}
      */
+    @Override
     public Collection<AbstractSchema> getSchemas() {
         return Collections.unmodifiableCollection(schemas.values());
     }

@@ -44,11 +44,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_queryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectOps;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
-import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
-import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.ModPair;
@@ -367,7 +364,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
                 groupingSet(sub, vex);
             }
         }
-
+        /*
         // add dependencies to primary key
         for (GenericColumn dep : child.getDepcies()) {
             vex.addDepcy(dep);
@@ -384,6 +381,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
                 }
             }
         }
+         */
     }
 
     private void groupingSet(Grouping_element_listContext list, ValueExpr vex) {

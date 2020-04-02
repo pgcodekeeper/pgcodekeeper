@@ -26,13 +26,14 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameCon
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
-import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IFunction;
 import cz.startnet.utils.pgdiff.schema.IRelation;
+import cz.startnet.utils.pgdiff.schema.ISchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgView;
-import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
+import cz.startnet.utils.pgdiff.schema.meta.MetaDatabase;
+import cz.startnet.utils.pgdiff.schema.meta.MetaStorage;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
@@ -49,12 +50,10 @@ public abstract class AbstractExpr {
     // and put it to the 'PgDatabase' as currentPostgreSqlVersion,
     // but I couldn't get it from PgDumpLoader(WRITER), that's why for
     // cases with 'PgDumpLoader(WRITER)' the version was hard-coded in 'PgDatabase'.
-    protected final PgSystemStorage systemStorage;
+    protected final MetaDatabase db;
     private final AbstractExpr parent;
     private final Set<GenericColumn> depcies;
     private final Set<DbObjType> disabledDepcies;
-
-    protected final PgDatabase db;
 
     private FullAnalyze fullAnalyze;
 
@@ -65,8 +64,7 @@ public abstract class AbstractExpr {
     public AbstractExpr(PgDatabase db, DbObjType... disabledDepcies) {
         parent = null;
         depcies = new LinkedHashSet<>();
-        this.db = db;
-        systemStorage = PgSystemStorage.getObjectsFromResources(db.getPostgresVersion());
+        this.db = MetaStorage.createFullDb(db);
         this.disabledDepcies = Arrays.stream(disabledDepcies)
                 .collect(Collectors.toCollection(() -> EnumSet.noneOf(DbObjType.class)));
     }
@@ -79,7 +77,6 @@ public abstract class AbstractExpr {
         this.parent = parent;
         this.depcies = depcies;
         this.db = parent.db;
-        this.systemStorage = parent.systemStorage;
         this.fullAnalyze = parent.fullAnalyze;
         this.disabledDepcies = parent.disabledDepcies;
     }
@@ -365,29 +362,13 @@ public abstract class AbstractExpr {
         addDepcy(new GenericColumn(QNameParser.getFirstName(ids), DbObjType.SCHEMA));
     }
 
-    @SuppressWarnings("resource")
     public IRelation findRelation(String schemaName, String relationName) {
-        Stream<? extends IRelation> foundRelations;
-        if (schemaName != null) {
-            if (ApgdiffUtils.isPgSystemSchema(schemaName)) {
-                foundRelations = systemStorage.getSchema(schemaName).getRelations();
-            } else {
-                foundRelations = findSchema(schemaName, null).getRelations();
-            }
-        } else {
-            foundRelations = systemStorage.getPgCatalog().getRelations();
-        }
-
-        for (IRelation r : PgDiffUtils.sIter(foundRelations)) {
-            if (r.getName().equals(relationName)) {
-                return r;
-            }
-        }
-        return null;
+        return findSchema(schemaName, null).getRelation(relationName);
     }
 
-    protected AbstractSchema findSchema(String schemaName, ParserRuleContext errorCtx) {
-        AbstractSchema foundSchema = db.getSchema(schemaName);
+    protected ISchema findSchema(String schemaName, ParserRuleContext errorCtx) {
+        String name = schemaName == null ? ApgdiffConsts.PG_CATALOG : schemaName;
+        ISchema foundSchema = db.getSchema(name);
         if (foundSchema == null) {
             throw new UnresolvedReferenceException("Schema '" + schemaName + "' not found!",
                     errorCtx != null ? errorCtx.getStart() : null);
