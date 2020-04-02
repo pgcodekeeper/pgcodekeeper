@@ -1,5 +1,7 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
+import java.util.Objects;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IAdaptable;
 
@@ -30,7 +32,7 @@ public class SegmentsWithParent extends Segments implements IAdaptable {
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
-        result = prime * result + ((parentFile == null) ? 0 : parentFile.hashCode());
+        result = prime * result + Objects.hashCode(parentFile);
         return result;
     }
 
@@ -46,11 +48,6 @@ public class SegmentsWithParent extends Segments implements IAdaptable {
             return false;
         }
         SegmentsWithParent other = (SegmentsWithParent) obj;
-        if (parentFile == null && other.parentFile != null) {
-            return false;
-        } else if (!parentFile.equals(other.parentFile)) {
-            return false;
-        }
-        return true;
+        return Objects.equals(parentFile, other.parentFile);
     }
 }
