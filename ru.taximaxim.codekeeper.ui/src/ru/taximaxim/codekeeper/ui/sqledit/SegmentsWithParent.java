@@ -32,7 +32,7 @@ public class SegmentsWithParent extends Segments implements IAdaptable {
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
-        result = prime * result + Objects.hash(parentFile);
+        result = prime * result + Objects.hashCode(parentFile);
         return result;
     }
 

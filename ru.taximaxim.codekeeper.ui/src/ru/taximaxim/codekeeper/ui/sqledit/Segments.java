@@ -39,9 +39,9 @@ public class Segments extends Position {
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
-        result = prime * result + Objects.hash(action);
-        result = prime * result + Objects.hash(name);
-        result = prime * result + Objects.hash(type);
+        result = prime * result + Objects.hashCode(action);
+        result = prime * result + Objects.hashCode(name);
+        result = prime * result + Objects.hashCode(type);
         return result;
     }
 
