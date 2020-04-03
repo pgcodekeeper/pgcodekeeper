@@ -307,9 +307,10 @@ public abstract class ParserAbstract {
             DbObjType type, String action, boolean isDep, String signature) {
         ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
         switch (type) {
+        case CAST:
+            throw new IllegalStateException("Unsupported type: CAST");
         case ASSEMBLY:
         case EXTENSION:
-        case CAST:
         case SCHEMA:
         case ROLE:
         case USER:

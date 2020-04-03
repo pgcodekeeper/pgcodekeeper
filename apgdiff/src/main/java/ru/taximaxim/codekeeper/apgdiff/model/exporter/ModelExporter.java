@@ -338,7 +338,7 @@ public class ModelExporter extends AbstractModelExporter {
 
         // exporting casts
         Path castDir = outDir.resolve(
-                ApgdiffConsts.WORK_DIR_NAMES.EXTENSION.name());
+                ApgdiffConsts.WORK_DIR_NAMES.CAST.name());
 
         for (PgCast cast : newDb.getCasts()) {
             dumpSQL(cast.getCreationSQL(), castDir.resolve(getExportedFilenameSql(cast)));
