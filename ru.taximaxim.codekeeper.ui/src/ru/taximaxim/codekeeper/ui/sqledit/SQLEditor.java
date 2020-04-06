@@ -557,7 +557,8 @@ implements IResourceChangeListener, ITextErrorReporter {
     public void setErrorPosition(int start, int length) {
         UiSync.exec(parentComposite, () -> {
             if (!parentComposite.isDisposed()) {
-                selectAndReveal(start, length);
+                Point point = getSourceViewer().getSelectedRange();
+                selectAndReveal(point.y == 0 ? start : start + point.x, length);
             }
         });
     }
