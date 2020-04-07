@@ -135,6 +135,8 @@ implements IResourceChangeListener, ITextErrorReporter {
 
     private ScriptThreadJobWrapper scriptThreadJobWrapper;
 
+    private IProgressReporter reporter;
+
     private final Listener parserListener = e -> {
         if (parentComposite == null) {
             return;
@@ -583,11 +585,9 @@ implements IResourceChangeListener, ITextErrorReporter {
                             .batch();
                     for (int i = 0; batches.size() > 0; i++) {
                         if (selectedTxtWithError.equals(batches.get(i).getSql())) {
-
-                            // TODO add logic to show previous message in console
-
-                            UiProgressReporter.writeSingleError("Line: " //$NON-NLS-1$
-                                    + batches.get(i).getLineNumber() + " (in full text)"); //$NON-NLS-1$
+                            reporter.writeError("  Line: " //$NON-NLS-1$
+                                    + batches.get(i).getLineNumber()
+                                    + " (in full text)"); //$NON-NLS-1$
                             break;
                         }
                     }
@@ -639,7 +639,7 @@ implements IResourceChangeListener, ITextErrorReporter {
                         dbInfo.isReadOnly(), ApgdiffConsts.UTC);
             }
 
-            IProgressReporter reporter = new UiProgressReporter(monitor, SQLEditor.this);
+            reporter = new UiProgressReporter(monitor, SQLEditor.this);
             try (IProgressReporter toClose = reporter) {
                 new JdbcRunner(monitor).runBatches(connector, parser.batch(), reporter);
                 ProjectEditorDiffer.notifyDbChanged(dbInfo);
