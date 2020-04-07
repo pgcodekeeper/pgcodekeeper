@@ -37,6 +37,7 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.DefaultCharacterPairMatcher;
@@ -44,6 +45,7 @@ import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ICharacterPairMatcher;
 import org.eclipse.jface.viewers.DecorationOverlayIcon;
 import org.eclipse.jface.viewers.IDecoration;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -559,8 +561,47 @@ implements IResourceChangeListener, ITextErrorReporter {
             if (!parentComposite.isDisposed()) {
                 Point point = getSourceViewer().getSelectedRange();
                 selectAndReveal(point.y == 0 ? start : start + point.x, length);
+                if (point.y != 0) {
+                    addFullTextLineNumberToErrorReport();
+                }
             }
         });
+    }
+
+    private void addFullTextLineNumberToErrorReport() {
+        ISelection selection = getSourceViewer().getSelectionProvider().getSelection();
+        if (selection instanceof ITextSelection) {
+            String selectedTxtWithError = ((ITextSelection) selection).getText();
+
+            DbInfo dbInfo = currentDB;
+            String fullTextRetrieved = getSourceViewer().getDocument().get();
+
+            IRunnableWithProgress runnable = monitor -> {
+                try {
+                    List<PgObjLocation> batches = new ScriptParser(
+                            getEditorInput().getName(), fullTextRetrieved, dbInfo.isMsSql())
+                            .batch();
+                    for (int i = 0; batches.size() > 0; i++) {
+                        if (selectedTxtWithError.equals(batches.get(i).getSql())) {
+
+                            // TODO add logic to show previous message in console
+
+                            UiProgressReporter.writeSingleError("Line: " //$NON-NLS-1$
+                                    + batches.get(i).getLineNumber() + " (in full text)"); //$NON-NLS-1$
+                            break;
+                        }
+                    }
+                } catch (InterruptedException | IOException ex) {
+                    UiProgressReporter.writeSingleError(ex.getLocalizedMessage());
+                }
+            };
+
+            try {
+                new ProgressMonitorDialog(parentComposite.getShell()).run(true, true, runnable);
+            } catch (InterruptedException | InvocationTargetException ex) {
+                Log.log(ex);
+            }
+        }
     }
 
     private class ScriptThreadJobWrapper extends SingletonEditorJob {
