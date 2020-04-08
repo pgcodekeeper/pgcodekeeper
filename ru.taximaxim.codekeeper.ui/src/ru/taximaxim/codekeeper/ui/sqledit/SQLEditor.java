@@ -563,45 +563,19 @@ implements IResourceChangeListener, ITextErrorReporter {
             if (!parentComposite.isDisposed()) {
                 Point point = getSourceViewer().getSelectedRange();
                 selectAndReveal(point.y == 0 ? start : start + point.x, length);
+
                 if (point.y != 0) {
-                    addFullTextLineNumberToErrorReport();
+                    ISelection selection = getSourceViewer().getSelectionProvider().getSelection();
+                    if (selection instanceof ITextSelection) {
+                        // In "getStartLine()" method, the line number is counted
+                        // from 0, that's why used "+1".
+                        reporter.writeError("  Line: " //$NON-NLS-1$
+                                + (((ITextSelection) selection).getStartLine() + 1)
+                                + " (in full text)"); //$NON-NLS-1$
+                    }
                 }
             }
         });
-    }
-
-    private void addFullTextLineNumberToErrorReport() {
-        ISelection selection = getSourceViewer().getSelectionProvider().getSelection();
-        if (selection instanceof ITextSelection) {
-            String selectedTxtWithError = ((ITextSelection) selection).getText();
-
-            DbInfo dbInfo = currentDB;
-            String fullTextRetrieved = getSourceViewer().getDocument().get();
-
-            IRunnableWithProgress runnable = monitor -> {
-                try {
-                    List<PgObjLocation> batches = new ScriptParser(
-                            getEditorInput().getName(), fullTextRetrieved, dbInfo.isMsSql())
-                            .batch();
-                    for (int i = 0; batches.size() > 0; i++) {
-                        if (selectedTxtWithError.equals(batches.get(i).getSql())) {
-                            reporter.writeError("  Line: " //$NON-NLS-1$
-                                    + batches.get(i).getLineNumber()
-                                    + " (in full text)"); //$NON-NLS-1$
-                            break;
-                        }
-                    }
-                } catch (InterruptedException | IOException ex) {
-                    UiProgressReporter.writeSingleError(ex.getLocalizedMessage());
-                }
-            };
-
-            try {
-                new ProgressMonitorDialog(parentComposite.getShell()).run(true, true, runnable);
-            } catch (InterruptedException | InvocationTargetException ex) {
-                Log.log(ex);
-            }
-        }
     }
 
     private class ScriptThreadJobWrapper extends SingletonEditorJob {
