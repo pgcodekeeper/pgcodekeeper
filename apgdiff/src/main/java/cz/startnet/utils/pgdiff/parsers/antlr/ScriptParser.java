@@ -21,7 +21,7 @@ public class ScriptParser {
 
     private final String script;
 
-    private final Set<PgObjLocation> batches;
+    private final List<PgObjLocation> batches;
     private final List<Object> errors;
     private final Set<DangerStatement> dangerStatements;
 
@@ -42,7 +42,7 @@ public class ScriptParser {
         errors = loader.getErrors();
     }
 
-    public Set<PgObjLocation> batch() {
+    public List<PgObjLocation> batch() {
         return batches;
     }
 
