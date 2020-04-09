@@ -1,6 +1,8 @@
 package cz.startnet.utils.pgdiff.schema.meta;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +17,7 @@ public class MetaRelation extends MetaStatement implements IRelation {
 
     private static final long serialVersionUID = -3160120843161643684L;
 
-    private final Map<String, MetaStatement> constraints = new LinkedHashMap<>();
+    private final Map<String, MetaConstraint> constraints = new LinkedHashMap<>();
     private final Map<String, MetaStatement> indexes = new LinkedHashMap<>();
     private final Map<String, MetaStatement> triggers = new LinkedHashMap<>();
     private final Map<String, MetaStatement> rules = new LinkedHashMap<>();
@@ -35,6 +37,9 @@ public class MetaRelation extends MetaStatement implements IRelation {
 
     @Override
     public void addChild(MetaStatement st) {
+        if (getStatementType() == DbObjType.SEQUENCE) {
+            throw new IllegalArgumentException("Sequence can't have a child");
+        }
         st.setParent(this);
         DbObjType type = st.getStatementType();
         switch (type) {
@@ -48,7 +53,7 @@ public class MetaRelation extends MetaStatement implements IRelation {
             rules.put(st.getName(), st);
             break;
         case CONSTRAINT:
-            constraints.put(st.getName(), st);
+            constraints.put(st.getName(), (MetaConstraint) st);
             break;
         default:
             throw new IllegalArgumentException("Unsupported child type: " + type);
@@ -57,6 +62,10 @@ public class MetaRelation extends MetaStatement implements IRelation {
 
     @Override
     public MetaStatement getChild(String name, DbObjType type) {
+        if (getStatementType() == DbObjType.SEQUENCE) {
+            return null;
+        }
+
         switch (type) {
         case INDEX:
             return indexes.get(name);
@@ -83,5 +92,9 @@ public class MetaRelation extends MetaStatement implements IRelation {
     @Override
     public MetaSchema getContainingSchema() {
         return (MetaSchema) getParent();
+    }
+
+    public Collection<MetaConstraint> getConstraints() {
+        return Collections.unmodifiableCollection(constraints.values());
     }
 }

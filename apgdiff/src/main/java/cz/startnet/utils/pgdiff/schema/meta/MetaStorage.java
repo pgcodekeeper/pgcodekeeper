@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.IConstraint;
 import cz.startnet.utils.pgdiff.schema.IFunction;
 import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.ISchema;
@@ -84,6 +85,12 @@ public class MetaStorage implements Serializable {
             ((IFunction) st).getReturnsColumns().forEach(func::addReturnsColumn);
             ((IFunction) st).getArguments().forEach(func::addArgument);
             meta = func;
+        } else if (st instanceof IConstraint)  {
+            MetaConstraint con = new MetaConstraint(gc);
+            con.setPrimaryKey(((IConstraint) st).isPrimaryKey());
+            con.setUnique(((IConstraint) st).isUnique());
+            ((IConstraint) st).getColumns().forEach(con::addColumn);
+            meta = con;
         } else {
             meta = new MetaStatement(gc);
         }
@@ -127,7 +134,6 @@ public class MetaStorage implements Serializable {
             break;
         case INDEX:
         case CONSTRAINT:
-        case COLUMN:
         case RULE:
         case TRIGGER:
             tree.getSchema(gc.schema).getRelation(gc.table).addChild(st);
@@ -161,7 +167,6 @@ public class MetaStorage implements Serializable {
             return new GenericColumn(st.getParent().getName(), st.getName(), type);
         case INDEX:
         case CONSTRAINT:
-        case COLUMN:
         case RULE:
         case TRIGGER:
             IStatement parent = st.getParent();

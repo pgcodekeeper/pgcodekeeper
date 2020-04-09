@@ -16,7 +16,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 /**
  * Stores table constraint information.
  */
-public abstract class AbstractConstraint extends PgStatementWithSearchPath {
+public abstract class AbstractConstraint extends PgStatementWithSearchPath implements IConstraint {
 
     private String definition;
     private boolean unique;
@@ -29,6 +29,7 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath {
     /**
      * Список колонок на которых установлен PrimaryKey или Unique
      */
+    @Override
     public Set<String> getColumns() {
         return Collections.unmodifiableSet(columns);
     }
@@ -59,6 +60,7 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath {
         this.refTable = foreignTable;
     }
 
+    @Override
     public boolean isPrimaryKey() {
         return isPrimaryKey;
     }
@@ -67,6 +69,7 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath {
         this.isPrimaryKey = isPrimaryKey;
     }
 
+    @Override
     public boolean isUnique() {
         return unique;
     }
