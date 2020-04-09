@@ -135,7 +135,7 @@ implements IResourceChangeListener, ITextErrorReporter {
 
     private ScriptThreadJobWrapper scriptThreadJobWrapper;
 
-    private IProgressReporter reporter;
+    private Point selectedRange;
 
     private final Listener parserListener = e -> {
         if (parentComposite == null) {
@@ -491,13 +491,13 @@ implements IResourceChangeListener, ITextErrorReporter {
         }
 
         final String textRetrieved;
-        Point point = getSourceViewer().getSelectedRange();
+        selectedRange = getSourceViewer().getSelectedRange();
         IDocument document = getSourceViewer().getDocument();
-        if (point.y == 0) {
+        if (selectedRange.y == 0) {
             textRetrieved = document.get();
         } else {
             try {
-                textRetrieved = document.get(point.x, point.y);
+                textRetrieved = document.get(selectedRange.x, selectedRange.y);
             } catch (BadLocationException ble){
                 Log.log(Log.LOG_WARNING, ble.getMessage());
                 ExceptionNotifier.notifyDefault(Messages.SqlEditor_selected_text_error, ble);
@@ -561,19 +561,7 @@ implements IResourceChangeListener, ITextErrorReporter {
     public void setErrorPosition(int start, int length) {
         UiSync.exec(parentComposite, () -> {
             if (!parentComposite.isDisposed()) {
-                Point point = getSourceViewer().getSelectedRange();
-                selectAndReveal(point.y == 0 ? start : start + point.x, length);
-
-                if (point.y != 0) {
-                    ISelection selection = getSourceViewer().getSelectionProvider().getSelection();
-                    if (selection instanceof ITextSelection) {
-                        // In "getStartLine()" method, the line number is counted
-                        // from 0, that's why used "+1".
-                        reporter.writeError("  Line: " //$NON-NLS-1$
-                                + (((ITextSelection) selection).getStartLine() + 1)
-                                + " (in full text)"); //$NON-NLS-1$
-                    }
-                }
+                selectAndReveal(selectedRange.y == 0 ? start : start + selectedRange.x, length);
             }
         });
     }
@@ -613,10 +601,24 @@ implements IResourceChangeListener, ITextErrorReporter {
                         dbInfo.isReadOnly(), ApgdiffConsts.UTC);
             }
 
-            reporter = new UiProgressReporter(monitor, SQLEditor.this);
+            IProgressReporter reporter = new UiProgressReporter(monitor, SQLEditor.this);
             try (IProgressReporter toClose = reporter) {
                 new JdbcRunner(monitor).runBatches(connector, parser.batch(), reporter);
                 ProjectEditorDiffer.notifyDbChanged(dbInfo);
+                UiSync.exec(parentComposite, () -> {
+                    if (!parentComposite.isDisposed()
+                            && selectedRange.y != 0) {
+                        ISelection selection = getSourceViewer()
+                                .getSelectionProvider().getSelection();
+                        if (selection instanceof ITextSelection) {
+                            // In "getStartLine()" method, the line number is counted
+                            // from 0, that's why used "+1".
+                            reporter.writeError("  Line: " //$NON-NLS-1$
+                                    + (((ITextSelection) selection).getStartLine() + 1)
+                                    + " (in full text)"); //$NON-NLS-1$
+                        }
+                    }
+                });
                 return Status.OK_STATUS;
             } catch (InterruptedException ex) {
                 reporter.writeError(ex.getLocalizedMessage());
