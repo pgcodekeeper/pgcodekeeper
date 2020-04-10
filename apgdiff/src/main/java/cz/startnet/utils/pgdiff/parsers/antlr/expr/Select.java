@@ -392,7 +392,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
 
         for (MetaConstraint con : rel.getConstraints()) {
             if (con.isPrimaryKey() && con.getColumns().contains(dep.getObjName())) {
-                vex.addDepcy(new GenericColumn(con.getParent().getParent().getName(),
+                vex.addDepcy(new GenericColumn(con.getSchemaName(),
                         con.getParent().getName(), con.getName(), DbObjType.CONSTRAINT));
             }
         }

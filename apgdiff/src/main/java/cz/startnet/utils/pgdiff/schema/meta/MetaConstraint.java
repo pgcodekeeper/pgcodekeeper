@@ -46,4 +46,14 @@ public class MetaConstraint extends MetaStatement implements IConstraint {
         columns.add(column);
     }
 
+    @Override
+    public MetaSchema getContainingSchema() {
+        MetaStatement parent = getParent();
+        if (parent != null) {
+            return (MetaSchema) parent.getParent();
+        }
+
+        return null;
+    }
+
 }
