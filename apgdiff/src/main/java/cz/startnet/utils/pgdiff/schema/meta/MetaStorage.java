@@ -173,7 +173,7 @@ public class MetaStorage implements Serializable {
         case TABLE:
         case TYPE:
         case VIEW:
-            return new GenericColumn(st.getParent().getName(), st.getName(), type);
+            return new GenericColumn(st.getParent().getName(), st.getBareName(), type);
         case INDEX:
         case CONSTRAINT:
         case RULE:

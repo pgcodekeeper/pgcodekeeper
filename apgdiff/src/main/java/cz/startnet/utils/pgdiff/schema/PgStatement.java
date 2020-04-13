@@ -89,6 +89,7 @@ public abstract class PgStatement implements IStatement, IHashable {
     /**
      * @return Always returns just the object's name.
      */
+    @Override
     public final String getBareName() {
         return name;
     }

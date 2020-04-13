@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 
 public interface IFunction extends ISearchPath {
-    String getBareName();
     String getReturns();
     Map<String, String> getReturnsColumns();
     List<Argument> getArguments();

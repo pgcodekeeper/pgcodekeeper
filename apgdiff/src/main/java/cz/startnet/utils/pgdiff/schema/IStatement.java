@@ -7,4 +7,8 @@ public interface IStatement {
     DbObjType getStatementType();
     IStatement getParent();
     String getQualifiedName();
+
+    default String getBareName() {
+        return getName();
+    }
 }
