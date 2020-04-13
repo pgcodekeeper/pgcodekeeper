@@ -82,7 +82,7 @@ public class CreateIndex extends ParserAbstract {
 
         if (options != null) {
             for (Storage_parameter_optionContext option : options.storage_parameter().storage_parameter_option()) {
-                String key = option.schema_qualified_name().getText();
+                String key = option.storage_parameter_name().getText();
                 VexContext v = option.vex();
                 String value = v == null ? "" : v.getText();
                 ind.addOption(key, value);
