@@ -37,7 +37,6 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.DefaultCharacterPairMatcher;
@@ -45,7 +44,6 @@ import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ICharacterPairMatcher;
 import org.eclipse.jface.viewers.DecorationOverlayIcon;
 import org.eclipse.jface.viewers.IDecoration;
-import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -134,8 +132,6 @@ implements IResourceChangeListener, ITextErrorReporter {
     private boolean isLargeFile;
 
     private ScriptThreadJobWrapper scriptThreadJobWrapper;
-
-    private Point selectedRange;
 
     private final Listener parserListener = e -> {
         if (parentComposite == null) {
@@ -491,13 +487,13 @@ implements IResourceChangeListener, ITextErrorReporter {
         }
 
         final String textRetrieved;
-        selectedRange = getSourceViewer().getSelectedRange();
+        Point point = getSourceViewer().getSelectedRange();
         IDocument document = getSourceViewer().getDocument();
-        if (selectedRange.y == 0) {
+        if (point.y == 0) {
             textRetrieved = document.get();
         } else {
             try {
-                textRetrieved = document.get(selectedRange.x, selectedRange.y);
+                textRetrieved = document.get(point.x, point.y);
             } catch (BadLocationException ble){
                 Log.log(Log.LOG_WARNING, ble.getMessage());
                 ExceptionNotifier.notifyDefault(Messages.SqlEditor_selected_text_error, ble);
@@ -548,7 +544,8 @@ implements IResourceChangeListener, ITextErrorReporter {
             }
         }
 
-        scriptThreadJobWrapper = new ScriptThreadJobWrapper(dbInfo, parsers[0]);
+        scriptThreadJobWrapper = point.y == 0 ? new ScriptThreadJobWrapper(dbInfo, parsers[0])
+                : new ScriptThreadJobWrapper(dbInfo, parsers[0], point.x);
         scriptThreadJobWrapper.setProperty(IProgressConstants2.SHOW_IN_TASKBAR_ICON_PROPERTY, Boolean.TRUE);
         scriptThreadJobWrapper.setUser(true);
         scriptThreadJobWrapper.schedule();
@@ -561,7 +558,7 @@ implements IResourceChangeListener, ITextErrorReporter {
     public void setErrorPosition(int start, int length) {
         UiSync.exec(parentComposite, () -> {
             if (!parentComposite.isDisposed()) {
-                selectAndReveal(selectedRange.y == 0 ? start : start + selectedRange.x, length);
+                selectAndReveal(start, length);
             }
         });
     }
@@ -570,12 +567,18 @@ implements IResourceChangeListener, ITextErrorReporter {
 
         private final DbInfo dbInfo;
         private final ScriptParser parser;
+        private int offset;
 
         public ScriptThreadJobWrapper(DbInfo dbInfo, ScriptParser parser) {
             super(Messages.SqlEditor_update_ddl + getEditorInput().getName(),
                     SQLEditor.this, UpdateDdlJobTester.EVAL_PROP);
             this.dbInfo = dbInfo;
             this.parser = parser;
+        }
+
+        public ScriptThreadJobWrapper(DbInfo dbInfo, ScriptParser parser, int offset) {
+            this(dbInfo, parser);
+            this.offset = offset;
         }
 
         @Override
@@ -601,24 +604,10 @@ implements IResourceChangeListener, ITextErrorReporter {
                         dbInfo.isReadOnly(), ApgdiffConsts.UTC);
             }
 
-            IProgressReporter reporter = new UiProgressReporter(monitor, SQLEditor.this);
+            IProgressReporter reporter = new UiProgressReporter(monitor, SQLEditor.this, offset);
             try (IProgressReporter toClose = reporter) {
                 new JdbcRunner(monitor).runBatches(connector, parser.batch(), reporter);
                 ProjectEditorDiffer.notifyDbChanged(dbInfo);
-                UiSync.exec(parentComposite, () -> {
-                    if (!parentComposite.isDisposed()
-                            && selectedRange.y != 0) {
-                        ISelection selection = getSourceViewer()
-                                .getSelectionProvider().getSelection();
-                        if (selection instanceof ITextSelection) {
-                            // In "getStartLine()" method, the line number is counted
-                            // from 0, that's why used "+1".
-                            reporter.writeError("  Line: " //$NON-NLS-1$
-                                    + (((ITextSelection) selection).getStartLine() + 1)
-                                    + " (in full text)"); //$NON-NLS-1$
-                        }
-                    }
-                });
                 return Status.OK_STATUS;
             } catch (InterruptedException ex) {
                 reporter.writeError(ex.getLocalizedMessage());
