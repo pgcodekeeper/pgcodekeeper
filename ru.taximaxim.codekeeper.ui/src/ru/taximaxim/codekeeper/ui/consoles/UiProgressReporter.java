@@ -23,18 +23,18 @@ public class UiProgressReporter implements IProgressReporter {
 
     private final CodekeeperConsole console;
     private final ITextErrorReporter errorReporter;
-    private int offset;
+    private final int offset;
 
     public UiProgressReporter(IProgressMonitor monitor, ITextErrorReporter errorReporter) {
-        IConsoleManager manager = ConsolePlugin.getDefault().getConsoleManager();
-        console = CodekeeperConsole.createInstance(monitor);
-        manager.addConsoles(new IConsole[] { console });
-        this.errorReporter = errorReporter;
+        this(monitor, errorReporter, 0);
     }
 
     public UiProgressReporter(IProgressMonitor monitor, ITextErrorReporter errorReporter,
             int offset) {
-        this(monitor, errorReporter);
+        IConsoleManager manager = ConsolePlugin.getDefault().getConsoleManager();
+        console = CodekeeperConsole.createInstance(monitor);
+        manager.addConsoles(new IConsole[] { console });
+        this.errorReporter = errorReporter;
         this.offset = offset;
     }
 

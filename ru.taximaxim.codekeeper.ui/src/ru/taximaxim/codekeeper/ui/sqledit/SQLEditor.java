@@ -544,8 +544,7 @@ implements IResourceChangeListener, ITextErrorReporter {
             }
         }
 
-        scriptThreadJobWrapper = point.y == 0 ? new ScriptThreadJobWrapper(dbInfo, parsers[0])
-                : new ScriptThreadJobWrapper(dbInfo, parsers[0], point.x);
+        scriptThreadJobWrapper = new ScriptThreadJobWrapper(dbInfo, parsers[0], point.y == 0 ? 0 : point.x);
         scriptThreadJobWrapper.setProperty(IProgressConstants2.SHOW_IN_TASKBAR_ICON_PROPERTY, Boolean.TRUE);
         scriptThreadJobWrapper.setUser(true);
         scriptThreadJobWrapper.schedule();
@@ -567,17 +566,13 @@ implements IResourceChangeListener, ITextErrorReporter {
 
         private final DbInfo dbInfo;
         private final ScriptParser parser;
-        private int offset;
+        private final int offset;
 
-        public ScriptThreadJobWrapper(DbInfo dbInfo, ScriptParser parser) {
+        public ScriptThreadJobWrapper(DbInfo dbInfo, ScriptParser parser, int offset) {
             super(Messages.SqlEditor_update_ddl + getEditorInput().getName(),
                     SQLEditor.this, UpdateDdlJobTester.EVAL_PROP);
             this.dbInfo = dbInfo;
             this.parser = parser;
-        }
-
-        public ScriptThreadJobWrapper(DbInfo dbInfo, ScriptParser parser, int offset) {
-            this(dbInfo, parser);
             this.offset = offset;
         }
 
