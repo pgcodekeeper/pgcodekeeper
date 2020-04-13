@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IConstraint;
@@ -18,6 +19,7 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.StatementLocation;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class MetaStorage implements Serializable {
 
@@ -53,7 +55,9 @@ public class MetaStorage implements Serializable {
 
     public static MetaDatabase createFullDb(PgDatabase db) {
         MetaStorage meta = create(db);
-        meta.concat(PgSystemStorage.getObjectsFromResources(db.getPostgresVersion()));
+        if (!db.getArguments().isMsSql()) {
+            meta.concat(PgSystemStorage.getObjectsFromResources(db.getPostgresVersion()));
+        }
         return meta.getTree();
     }
 
@@ -78,7 +82,12 @@ public class MetaStorage implements Serializable {
             meta = new MetaSchema(gc);
         } else if (st instanceof IRelation) {
             MetaRelation rel = new MetaRelation(gc);
-            ((IRelation) st).getRelationColumns().forEach(p -> rel.addColumn(p.getFirst(), p.getSecond()));
+            Stream<Pair<String, String>> columns = ((IRelation) st).getRelationColumns();
+            if (columns != null) {
+                columns.forEach(p -> rel.addColumn(p.getFirst(), p.getSecond()));
+            } else {
+                rel.setInitialized(false);
+            }
             meta = rel;
         } else if (st instanceof IFunction) {
             MetaFunction func = new MetaFunction(gc);

@@ -59,8 +59,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.IDatabase;
 import cz.startnet.utils.pgdiff.schema.IFunction;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -69,7 +69,7 @@ import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class ValueExpr extends AbstractExpr {
 
-    public ValueExpr(PgDatabase db, DbObjType... disabledDepcies) {
+    public ValueExpr(IDatabase db, DbObjType... disabledDepcies) {
         super(db, disabledDepcies);
     }
 
@@ -686,10 +686,12 @@ public class ValueExpr extends AbstractExpr {
                 String sourceType = sourceTypes.get(argN);
                 if (sourceType.equals(arg.getDataType())) {
                     ++exactMatches;
-                } else if (!db.containsCastImplicit(sourceType, arg.getDataType())) {
+                }
+                // TODO wait DbObjType.CAST
+                /* else if (!db.containsCastImplicit(sourceType, arg.getDataType())) {
                     signatureApplicable = false;
                     break;
-                }
+                } */
                 ++argN;
             }
             if (signatureApplicable) {

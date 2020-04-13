@@ -22,6 +22,8 @@ public class MetaRelation extends MetaStatement implements IRelation {
     private final Map<String, MetaStatement> triggers = new LinkedHashMap<>();
     private final Map<String, MetaStatement> rules = new LinkedHashMap<>();
 
+    private boolean initialized = true;
+
     /**
      * Contains columns names and types
      */
@@ -82,7 +84,7 @@ public class MetaRelation extends MetaStatement implements IRelation {
 
     @Override
     public Stream<Pair<String, String>> getRelationColumns() {
-        return columns.stream();
+        return initialized ? columns.stream() : null;
     }
 
     public void addColumn(String name, String type) {
@@ -96,5 +98,13 @@ public class MetaRelation extends MetaStatement implements IRelation {
 
     public Collection<MetaConstraint> getConstraints() {
         return Collections.unmodifiableCollection(constraints.values());
+    }
+
+    public boolean isInitialized() {
+        return initialized;
+    }
+
+    public void setInitialized(boolean initialized) {
+        this.initialized = initialized;
     }
 }

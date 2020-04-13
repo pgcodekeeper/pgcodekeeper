@@ -42,9 +42,6 @@ public class PgView extends AbstractView implements PgOptionContainer  {
     private final Map<String, String> options = new LinkedHashMap<>();
     private final List<String> columnNames = new ArrayList<>();
 
-    private boolean initialized;
-    private final List<Pair<String, String>> relationColumns = new ArrayList<>();
-
     public PgView(String name) {
         super(name);
     }
@@ -459,16 +456,7 @@ public class PgView extends AbstractView implements PgOptionContainer  {
 
     @Override
     public Stream<Pair<String, String>> getRelationColumns() {
-        return relationColumns.stream();
-    }
-
-    public boolean isInitialized() {
-        return initialized;
-    }
-
-    public void addRelationColumns(List<Pair<String, String>> relationColumns) {
-        initialized = true;
-        this.relationColumns.addAll(relationColumns);
+        return null;
     }
 
     @Override
@@ -503,8 +491,6 @@ public class PgView extends AbstractView implements PgOptionContainer  {
     @Override
     protected AbstractView getViewCopy() {
         PgView view = new PgView(getName());
-        view.initialized = initialized;
-        view.relationColumns.addAll(relationColumns);
         view.query = query;
         view.normalizedQuery = normalizedQuery;
         view.setIsWithData(isWithData());

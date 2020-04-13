@@ -9,17 +9,20 @@ import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.AbstractAnalysisLauncher;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.ViewAnalysisLauncher;
+import cz.startnet.utils.pgdiff.schema.IDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgView;
+import cz.startnet.utils.pgdiff.schema.meta.MetaStorage;
 
 public final class FullAnalyze {
 
     private final List<Object> errors;
     private final Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>();
     private final PgDatabase db;
+    private final IDatabase metaDb;
 
     private FullAnalyze(PgDatabase db, List<Object> errors) {
         this.db = db;
+        this.metaDb = MetaStorage.createFullDb(db);
         this.errors = errors;
     }
 
@@ -34,7 +37,7 @@ public final class FullAnalyze {
         for (AbstractAnalysisLauncher l : db.getAnalysisLaunchers()) {
             if (l != null) {
                 AntlrParser.submitAntlrTask(antlrTasks,
-                        () -> l.launchAnalyze(errors),
+                        () -> l.launchAnalyze(errors, metaDb),
                         deps -> l.getStmt().addAllDeps(deps));
             }
         }
@@ -42,17 +45,17 @@ public final class FullAnalyze {
         AntlrParser.finishAntlr(antlrTasks);
     }
 
-    public void analyzeView(PgView st) {
+    public void analyzeView(String name) {
         List<AbstractAnalysisLauncher> launchers = db.getAnalysisLaunchers();
         for (int i = 0; i < launchers.size(); ++i) {
             AbstractAnalysisLauncher l = launchers.get(i);
             if (l instanceof ViewAnalysisLauncher
-                    && (st == null || st.equals(l.getStmt()))) {
+                    && (name == null || name.equals(l.getStmt().getName()))) {
                 // allow GC to reclaim context memory immediately
                 // and protects from infinite recursion
                 launchers.set(i, null);
                 ((ViewAnalysisLauncher) l).setFullAnalyze(this);
-                l.getStmt().addAllDeps(l.launchAnalyze(errors));
+                l.getStmt().addAllDeps(l.launchAnalyze(errors, metaDb));
             }
         }
     }

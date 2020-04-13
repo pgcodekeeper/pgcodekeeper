@@ -27,13 +27,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_no
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.IDatabase;
 import cz.startnet.utils.pgdiff.schema.IFunction;
 import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.ISchema;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgView;
-import cz.startnet.utils.pgdiff.schema.meta.MetaDatabase;
-import cz.startnet.utils.pgdiff.schema.meta.MetaStorage;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
@@ -50,7 +47,7 @@ public abstract class AbstractExpr {
     // and put it to the 'PgDatabase' as currentPostgreSqlVersion,
     // but I couldn't get it from PgDumpLoader(WRITER), that's why for
     // cases with 'PgDumpLoader(WRITER)' the version was hard-coded in 'PgDatabase'.
-    protected final MetaDatabase db;
+    protected final IDatabase db;
     private final AbstractExpr parent;
     private final Set<GenericColumn> depcies;
     private final Set<DbObjType> disabledDepcies;
@@ -61,10 +58,10 @@ public abstract class AbstractExpr {
         return Collections.unmodifiableSet(depcies);
     }
 
-    public AbstractExpr(PgDatabase db, DbObjType... disabledDepcies) {
+    public AbstractExpr(IDatabase db, DbObjType... disabledDepcies) {
         parent = null;
         depcies = new LinkedHashSet<>();
-        this.db = MetaStorage.createFullDb(db);
+        this.db = db;
         this.disabledDepcies = Arrays.stream(disabledDepcies)
                 .collect(Collectors.toCollection(() -> EnumSet.noneOf(DbObjType.class)));
     }
@@ -274,11 +271,13 @@ public abstract class AbstractExpr {
             return Stream.empty();
         }
 
-        if (relation instanceof PgView) {
-            analyzeViewColumns((PgView) relation);
+        Stream<Pair<String, String>> columns = relation.getRelationColumns();
+        if (DbObjType.VIEW == relation.getStatementType() && columns == null) {
+            analyzeViewColumns(relation);
+            columns = relation.getRelationColumns();
         }
 
-        Stream<Pair<String, String>> cols = relation.getRelationColumns()
+        Stream<Pair<String, String>> cols = columns
                 .filter(col -> colNamePredicate.test(col.getFirst()));
 
         String relSchemaName = relation.getSchemaName();
@@ -291,9 +290,9 @@ public abstract class AbstractExpr {
                 relation.getName(), col.getFirst(), DbObjType.COLUMN)));
     }
 
-    protected void analyzeViewColumns(PgView view) {
-        if (!view.isInitialized() && fullAnalyze != null) {
-            fullAnalyze.analyzeView(view);
+    protected void analyzeViewColumns(IRelation rel) {
+        if (fullAnalyze != null) {
+            fullAnalyze.analyzeView(rel.getName());
         }
     }
 

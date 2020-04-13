@@ -45,10 +45,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectOps;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.meta.MetaConstraint;
+import cz.startnet.utils.pgdiff.schema.IConstraint;
+import cz.startnet.utils.pgdiff.schema.IDatabase;
+import cz.startnet.utils.pgdiff.schema.ISchema;
 import cz.startnet.utils.pgdiff.schema.meta.MetaRelation;
-import cz.startnet.utils.pgdiff.schema.meta.MetaSchema;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.ModPair;
@@ -70,7 +70,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
      */
     private boolean lateralAllowed;
 
-    public Select(PgDatabase db, DbObjType... disabledDepcies) {
+    public Select(IDatabase db, DbObjType... disabledDepcies) {
         super(db, disabledDepcies);
     }
 
@@ -380,17 +380,18 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
             return;
         }
 
-        MetaSchema schema = db.getSchema(dep.schema);
+        ISchema schema = db.getSchema(dep.schema);
         if (schema == null) {
             return;
         }
 
-        MetaRelation rel = schema.getRelation(dep.table);
+        // TODO replace with IStatementContainer
+        MetaRelation rel = (MetaRelation) schema.getRelation(dep.table);
         if (rel == null || rel.getRelationColumns().noneMatch(col -> col.getFirst().equals(dep.column))) {
             return;
         }
 
-        for (MetaConstraint con : rel.getConstraints()) {
+        for (IConstraint con : rel.getConstraints()) {
             if (con.isPrimaryKey() && con.getColumns().contains(dep.getObjName())) {
                 vex.addDepcy(new GenericColumn(con.getSchemaName(),
                         con.getParent().getName(), con.getName(), DbObjType.CONSTRAINT));
