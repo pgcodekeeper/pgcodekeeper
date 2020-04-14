@@ -10,8 +10,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
-import cz.startnet.utils.pgdiff.schema.CastContext;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.ICast.CastContext;
 import cz.startnet.utils.pgdiff.schema.PgCast;
 import cz.startnet.utils.pgdiff.schema.PgCast.CastMethod;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -76,7 +76,7 @@ public class CastsReader implements PgCatalogStrings {
         case "f":
             cast.setMethod(CastMethod.FUNCTION);
             String function = res.getString("func");
-            JdbcReader.checkTypeValidity(function);
+            JdbcReader.checkObjectValidity(function, DbObjType.CAST, cast.getName());
             cast.setFunction(function);
             loader.submitAntlrTask(function, SQLParser::function_args_parser, ctx -> {
                 List<IdentifierContext> ids = ctx.schema_qualified_name().identifier();

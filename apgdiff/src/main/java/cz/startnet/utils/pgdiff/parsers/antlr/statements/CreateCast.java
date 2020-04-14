@@ -6,7 +6,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_cast_statementCon
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
-import cz.startnet.utils.pgdiff.schema.CastContext;
+import cz.startnet.utils.pgdiff.schema.ICast.CastContext;
 import cz.startnet.utils.pgdiff.schema.PgCast;
 import cz.startnet.utils.pgdiff.schema.PgCast.CastMethod;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;

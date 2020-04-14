@@ -63,6 +63,7 @@ public class PgCast extends PgStatement implements ICast {
 
     public void setFunction(String function) {
         this.function = function;
+        resetHash();
     }
 
     @Override
