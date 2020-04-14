@@ -81,7 +81,12 @@ public class MetaStorage implements Serializable {
         if (st instanceof ISchema) {
             meta = new MetaSchema(gc);
         } else if (st instanceof IRelation) {
-            MetaRelation rel = new MetaRelation(gc);
+            MetaRelation rel;
+            if (type == DbObjType.TABLE || type == DbObjType.VIEW) {
+                rel = new MetaStatementContainer(gc);
+            } else {
+                rel = new MetaRelation(gc);
+            }
             Stream<Pair<String, String>> columns = ((IRelation) st).getRelationColumns();
             if (columns != null) {
                 columns.forEach(p -> rel.addColumn(p.getFirst(), p.getSecond()));
