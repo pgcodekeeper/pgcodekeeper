@@ -20,8 +20,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceExcep
 import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
+import cz.startnet.utils.pgdiff.schema.ICast;
 import cz.startnet.utils.pgdiff.schema.IStatementContainer;
-import cz.startnet.utils.pgdiff.schema.PgCast;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
@@ -235,7 +235,7 @@ public class CommentOn extends ParserAbstract {
     private void commentCast(Comment_member_objectContext obj, String comment) {
         Data_typeContext source = obj.source;
         Data_typeContext target = obj.target;
-        String castName = PgCast.getSimpleName(getFullCtxText(source), getFullCtxText(target));
+        String castName = ICast.getSimpleName(getFullCtxText(source), getFullCtxText(target));
         PgStatement cast = getSafe(PgDatabase::getCast, db, castName, source.getStart());
         doSafe((s,c) -> s.setComment(db.getArguments(), c), cast, comment);
         PgObjLocation ref = getCastLocation(source, target, ACTION_COMMENT);

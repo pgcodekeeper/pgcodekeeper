@@ -59,6 +59,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.ICast;
+import cz.startnet.utils.pgdiff.schema.ICast.CastContext;
 import cz.startnet.utils.pgdiff.schema.IDatabase;
 import cz.startnet.utils.pgdiff.schema.IFunction;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -686,12 +688,10 @@ public class ValueExpr extends AbstractExpr {
                 String sourceType = sourceTypes.get(argN);
                 if (sourceType.equals(arg.getDataType())) {
                     ++exactMatches;
-                }
-                // TODO wait DbObjType.CAST
-                /* else if (!db.containsCastImplicit(sourceType, arg.getDataType())) {
+                } else if (!containsCastImplicit(sourceType, arg.getDataType())) {
                     signatureApplicable = false;
                     break;
-                } */
+                }
                 ++argN;
             }
             if (signatureApplicable) {
@@ -709,6 +709,17 @@ public class ValueExpr extends AbstractExpr {
         return Collections.max(matches,
                 (m1,m2) -> Integer.compare(m1.getSecond(), m2.getSecond()))
                 .getFirst();
+    }
+
+    private boolean containsCastImplicit(String source, String target) {
+        for (ICast cast : db.getCasts()) {
+            if (CastContext.IMPLICIT == cast.getContext()
+                    && source.equals(cast.getSource())
+                    && target.equals(cast.getTarget())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private String getOperatorToken(Vex vex) {

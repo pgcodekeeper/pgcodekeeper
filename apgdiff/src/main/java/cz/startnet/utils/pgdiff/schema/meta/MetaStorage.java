@@ -9,10 +9,10 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.ICast;
 import cz.startnet.utils.pgdiff.schema.IConstraint;
 import cz.startnet.utils.pgdiff.schema.IFunction;
 import cz.startnet.utils.pgdiff.schema.IRelation;
-import cz.startnet.utils.pgdiff.schema.ISchema;
 import cz.startnet.utils.pgdiff.schema.IStatement;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -78,35 +78,48 @@ public class MetaStorage implements Serializable {
         DbObjType type = st.getStatementType();
         GenericColumn gc = createGenericColumn(st, type);
         MetaStatement meta;
-        if (st instanceof ISchema) {
+
+        switch (type) {
+        case SCHEMA:
             meta = new MetaSchema(gc);
-        } else if (st instanceof IRelation) {
-            MetaRelation rel;
-            if (type == DbObjType.TABLE || type == DbObjType.VIEW) {
-                rel = new MetaStatementContainer(gc);
-            } else {
-                rel = new MetaRelation(gc);
-            }
-            Stream<Pair<String, String>> columns = ((IRelation) st).getRelationColumns();
-            if (columns != null) {
-                columns.forEach(p -> rel.addColumn(p.getFirst(), p.getSecond()));
-            } else {
-                rel.setInitialized(false);
-            }
-            meta = rel;
-        } else if (st instanceof IFunction) {
+            break;
+        case CAST:
+            ICast cast = (ICast) st;
+            meta = new MetaCast(cast.getSource(), cast.getTarget(), cast.getContext());
+            break;
+        case AGGREGATE:
+        case FUNCTION:
+        case PROCEDURE:
             MetaFunction func = new MetaFunction(gc);
             ((IFunction) st).getReturnsColumns().forEach(func::addReturnsColumn);
             ((IFunction) st).getArguments().forEach(func::addArgument);
             meta = func;
-        } else if (st instanceof IConstraint)  {
+            break;
+        case CONSTRAINT:
             MetaConstraint con = new MetaConstraint(gc);
             con.setPrimaryKey(((IConstraint) st).isPrimaryKey());
             con.setUnique(((IConstraint) st).isUnique());
             ((IConstraint) st).getColumns().forEach(con::addColumn);
             meta = con;
-        } else {
+            break;
+        case SEQUENCE:
+            MetaRelation rel = new MetaRelation(gc);
+            ((IRelation) st).getRelationColumns().forEach(p -> rel.addColumn(p.getFirst(), p.getSecond()));
+            meta = rel;
+            break;
+        case TABLE:
+        case VIEW:
+            rel = new MetaStatementContainer(gc);
+            Stream<Pair<String, String>> columns = ((IRelation) st).getRelationColumns();
+            if (columns != null) {
+                columns.forEach(p -> rel.addColumn(p.getFirst(), p.getSecond()));
+                rel.setInitialized(true);
+            }
+            meta = rel;
+            break;
+        default:
             meta = new MetaStatement(gc);
+            break;
         }
 
         String path = OTHER_LOCATION;
@@ -124,6 +137,7 @@ public class MetaStorage implements Serializable {
         GenericColumn gc = st.getObject();
         DbObjType type = gc.type;
         switch (type) {
+        case CAST:
         case SCHEMA:
         case EXTENSION:
         case ROLE:
@@ -159,6 +173,7 @@ public class MetaStorage implements Serializable {
 
     private GenericColumn createGenericColumn(IStatement st, DbObjType type) {
         switch (type) {
+        case CAST:
         case SCHEMA:
         case EXTENSION:
         case ROLE:

@@ -1,6 +1,10 @@
 package cz.startnet.utils.pgdiff.schema;
 
+import java.text.MessageFormat;
+
 public interface ICast extends IStatement {
+
+    String CAST_NAME = "{0} AS {1}";
 
     /**
      * Indicates what contexts the cast can be invoked in.
@@ -23,4 +27,8 @@ public interface ICast extends IStatement {
     String getSource();
     String getTarget();
     CastContext getContext();
+
+    static String getSimpleName(String source, String target) {
+        return MessageFormat.format(CAST_NAME, source, target);
+    }
 }

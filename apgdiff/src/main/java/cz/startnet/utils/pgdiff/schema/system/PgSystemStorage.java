@@ -61,33 +61,8 @@ public class PgSystemStorage implements Serializable {
         return null;
     }
 
-    /**
-     * Checks cast present in storage
-     *
-     * @param source - source type
-     * @param target - target type
-     * @return true if storage contains cast
-     */
-    public boolean containsCastImplicit(String source, String target) {
-        for (PgSystemCast cast : casts) {
-            if (CastContext.IMPLICIT == cast.getContext()
-                    && source.equals(cast.getSource())
-                    && target.equals(cast.getTarget())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public void addCast(PgSystemCast cast) {
         casts.add(cast);
-    }
-
-    /**
-     * @return unmodifiable list of system schemas
-     */
-    public List<PgSystemSchema> getSchemas() {
-        return schemas;
     }
 
     public PgSystemSchema getSchema(String schemaName) {
@@ -109,7 +84,8 @@ public class PgSystemStorage implements Serializable {
 
     public final Stream<IStatement> getDescendants() {
         List<IStatement> l = new ArrayList<>();
-        for (PgSystemSchema s : getSchemas()) {
+        casts.forEach(l::add);
+        for (PgSystemSchema s : schemas) {
             l.add(s);
             s.getFunctions().forEach(l::add);
             s.getRelations().forEach(l::add);

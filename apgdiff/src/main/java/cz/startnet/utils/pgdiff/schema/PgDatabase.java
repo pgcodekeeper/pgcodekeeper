@@ -272,6 +272,7 @@ public class PgDatabase extends PgStatement implements IDatabase {
      *
      * @return found cast or null
      */
+    @Override
     public PgCast getCast(final String name) {
         return casts.get(name);
     }
@@ -281,6 +282,7 @@ public class PgDatabase extends PgStatement implements IDatabase {
      *
      * @return {@link #casts}
      */
+    @Override
     public Collection<PgCast> getCasts() {
         return Collections.unmodifiableCollection(casts.values());
     }

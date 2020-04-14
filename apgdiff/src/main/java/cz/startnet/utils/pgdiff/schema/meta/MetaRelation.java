@@ -13,7 +13,7 @@ public class MetaRelation extends MetaStatement implements IRelation {
 
     private static final long serialVersionUID = -3160120843161643684L;
 
-    private boolean initialized = true;
+    private boolean initialized;
 
     /**
      * Contains columns names and types

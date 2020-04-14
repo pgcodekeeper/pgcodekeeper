@@ -6,11 +6,13 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_cast_statementCon
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
+import cz.startnet.utils.pgdiff.schema.ICast;
 import cz.startnet.utils.pgdiff.schema.ICast.CastContext;
 import cz.startnet.utils.pgdiff.schema.PgCast;
 import cz.startnet.utils.pgdiff.schema.PgCast.CastMethod;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import cz.startnet.utils.pgdiff.schema.StatementLocation;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateCast extends ParserAbstract {
@@ -50,7 +52,8 @@ public class CreateCast extends ParserAbstract {
 
         doSafe(PgDatabase::addCast, db, cast);
         PgObjLocation loc = getCastLocation(source, target, ACTION_CREATE);
-        cast.setLocation(loc);
+        cast.setLocation(new StatementLocation(fileName, loc.getOffset(),
+                loc.getLineNumber(), loc.getCharPositionInLine(), loc.getObjLength()));
         db.addToQueries(fileName, loc);
     }
 
@@ -58,7 +61,7 @@ public class CreateCast extends ParserAbstract {
     protected String getStmtAction() {
         StringBuilder sb = new StringBuilder();
         sb.append(ACTION_CREATE).append(' ').append(DbObjType.CAST).append(" (");
-        sb.append(PgCast.getSimpleName(getFullCtxText(ctx.source), getFullCtxText(ctx.target)));
+        sb.append(ICast.getSimpleName(getFullCtxText(ctx.source), getFullCtxText(ctx.target)));
         sb.append(')');
         return sb.toString();
     }

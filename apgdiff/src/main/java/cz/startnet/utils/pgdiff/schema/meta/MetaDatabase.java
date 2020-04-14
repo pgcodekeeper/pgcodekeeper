@@ -14,7 +14,7 @@ public class MetaDatabase extends MetaStatement implements IDatabase {
     private static final long serialVersionUID = 1782268749545732599L;
 
     private final transient Map<String, MetaSchema> schemas = new LinkedHashMap<>();
-    private final transient Map<String, MetaStatement> casts = new LinkedHashMap<>();
+    private final transient Map<String, MetaCast> casts = new LinkedHashMap<>();
     private final transient Map<String, MetaStatement> extensions = new LinkedHashMap<>();
     private final transient Map<String, MetaStatement> assemblies = new LinkedHashMap<>();
     private final transient Map<String, MetaStatement> roles = new LinkedHashMap<>();
@@ -30,10 +30,13 @@ public class MetaDatabase extends MetaStatement implements IDatabase {
         DbObjType type = st.getStatementType();
         switch (type) {
         case SCHEMA:
-            addSchema((MetaSchema) st);
+            schemas.put(st.getName(), (MetaSchema) st);
             break;
         case EXTENSION:
             extensions.put(st.getName(), st);
+            break;
+        case CAST:
+            casts.put(st.getName(), (MetaCast) st);
             break;
         case ASSEMBLY:
             assemblies.put(st.getName(), st);
@@ -56,6 +59,8 @@ public class MetaDatabase extends MetaStatement implements IDatabase {
             return getSchema(name);
         case EXTENSION:
             return extensions.get(name);
+        case CAST:
+            return casts.get(name);
         case ASSEMBLY:
             return assemblies.get(name);
         case ROLE:
@@ -77,11 +82,13 @@ public class MetaDatabase extends MetaStatement implements IDatabase {
         return schemas.get(name);
     }
 
-    public void addSchema(final MetaSchema schema) {
-        schemas.put(schema.getName(), schema);
+    @Override
+    public Collection<MetaCast> getCasts() {
+        return Collections.unmodifiableCollection(casts.values());
     }
 
-    public boolean containsCastImplicit(String sourceType, String dataType) {
-        return false;
+    @Override
+    public MetaCast getCast(String name) {
+        return casts.get(name);
     }
 }
