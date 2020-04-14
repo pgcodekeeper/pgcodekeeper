@@ -108,7 +108,7 @@ public class CastsReader implements PgCatalogStrings {
     }
 
     private void addDep(PgStatement statement, String objectName) {
-        if (objectName.contains(".")) {
+        if (objectName.indexOf('.') != -1) {
             QNameParser<IdentifierContext> parser = QNameParser.parsePg(objectName);
             String schemaName = parser.getSchemaName();
             if (schemaName != null && !ApgdiffUtils.isPgSystemSchema(schemaName)) {
@@ -116,6 +116,4 @@ public class CastsReader implements PgCatalogStrings {
             }
         }
     }
-
-
 }
