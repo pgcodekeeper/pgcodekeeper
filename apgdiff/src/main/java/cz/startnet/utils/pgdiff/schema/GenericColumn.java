@@ -319,6 +319,11 @@ public class GenericColumn implements Serializable {
     }
 
     protected StringBuilder appendQualifiedName(StringBuilder sb) {
+        if (type == DbObjType.CAST) {
+            sb.append(schema);
+            return sb;
+        }
+
         if (schema != null) {
             sb.append(PgDiffUtils.getQuotedName(schema));
         }

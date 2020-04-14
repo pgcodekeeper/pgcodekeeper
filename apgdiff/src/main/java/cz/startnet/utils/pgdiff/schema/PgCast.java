@@ -9,7 +9,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgCast extends PgStatement implements ICast {
 
-    private static final String CAST_NAME = "{0}➔{1}";
+    private static final String CAST_NAME = "{0} AS {1}";
 
     public enum CastMethod {
         FUNCTION, BINARY, INOUT
