@@ -1,11 +1,7 @@
 package cz.startnet.utils.pgdiff.schema.meta;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -16,11 +12,6 @@ import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 public class MetaRelation extends MetaStatement implements IRelation {
 
     private static final long serialVersionUID = -3160120843161643684L;
-
-    private final Map<String, MetaConstraint> constraints = new LinkedHashMap<>();
-    private final Map<String, MetaStatement> indexes = new LinkedHashMap<>();
-    private final Map<String, MetaStatement> triggers = new LinkedHashMap<>();
-    private final Map<String, MetaStatement> rules = new LinkedHashMap<>();
 
     private boolean initialized = true;
 
@@ -38,51 +29,6 @@ public class MetaRelation extends MetaStatement implements IRelation {
     }
 
     @Override
-    public void addChild(MetaStatement st) {
-        if (getStatementType() == DbObjType.SEQUENCE) {
-            throw new IllegalArgumentException("Sequence can't have a child");
-        }
-        st.setParent(this);
-        DbObjType type = st.getStatementType();
-        switch (type) {
-        case INDEX:
-            indexes.put(st.getName(), st);
-            break;
-        case TRIGGER:
-            triggers.put(st.getName(), st);
-            break;
-        case RULE:
-            rules.put(st.getName(), st);
-            break;
-        case CONSTRAINT:
-            constraints.put(st.getName(), (MetaConstraint) st);
-            break;
-        default:
-            throw new IllegalArgumentException("Unsupported child type: " + type);
-        }
-    }
-
-    @Override
-    public MetaStatement getChild(String name, DbObjType type) {
-        if (getStatementType() == DbObjType.SEQUENCE) {
-            return null;
-        }
-
-        switch (type) {
-        case INDEX:
-            return indexes.get(name);
-        case TRIGGER:
-            return triggers.get(name);
-        case RULE:
-            return rules.get(name);
-        case CONSTRAINT:
-            return constraints.get(name);
-        default:
-            return null;
-        }
-    }
-
-    @Override
     public Stream<Pair<String, String>> getRelationColumns() {
         return initialized ? columns.stream() : null;
     }
@@ -94,10 +40,6 @@ public class MetaRelation extends MetaStatement implements IRelation {
     @Override
     public MetaSchema getContainingSchema() {
         return (MetaSchema) getParent();
-    }
-
-    public Collection<MetaConstraint> getConstraints() {
-        return Collections.unmodifiableCollection(constraints.values());
     }
 
     public boolean isInitialized() {

@@ -263,6 +263,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
     /**
      * @return child-containing element with matching name (either TABLE or VIEW)
      */
+    @Override
     public IStatementContainer getStatementContainer(String name) {
         IStatementContainer container = getTable(name);
         return container == null ? getView(name) : container;

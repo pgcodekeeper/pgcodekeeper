@@ -163,7 +163,7 @@ public class CommentOn extends ParserAbstract {
             type = DbObjType.DATABASE;
         } else if (obj.INDEX() != null) {
 
-            PgStatement commentOn = getSafe((sc,n) -> sc.getStatementContainers()
+            PgStatement commentOn = (PgStatement) getSafe((sc,n) -> sc.getStatementContainers()
                     .flatMap(c -> Stream.concat(c.getIndexes().stream(), c.getConstraints().stream()))
                     .filter(s -> s.getName().equals(n))
                     .collect(Collectors.reducing((a,b) -> b.getStatementType() == DbObjType.INDEX ? b : a))

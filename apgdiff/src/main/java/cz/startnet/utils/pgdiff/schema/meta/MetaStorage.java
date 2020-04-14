@@ -145,7 +145,7 @@ public class MetaStorage implements Serializable {
         case CONSTRAINT:
         case RULE:
         case TRIGGER:
-            tree.getSchema(gc.schema).getRelation(gc.table).addChild(st);
+            tree.getSchema(gc.schema).getStatementContainer(gc.table).addChild(st);
             break;
         default :
             throw new IllegalArgumentException("Unsupported type " + type);

@@ -19,6 +19,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.IConstraint;
 import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.Inherits;
 import cz.startnet.utils.pgdiff.schema.PartitionPgTable;
@@ -191,9 +192,9 @@ public class DepcyGraph {
             PgStatement cont = refTable.getStatement(db);
             if (cont instanceof IStatementContainer) {
                 IStatementContainer c = (IStatementContainer) cont;
-                for (AbstractConstraint refCon : c.getConstraints()) {
+                for (IConstraint refCon : c.getConstraints()) {
                     if ((refCon.isPrimaryKey() || refCon.isUnique()) && refs.equals(refCon.getColumns())) {
-                        graph.addEdge(con, refCon);
+                        graph.addEdge(con, (PgStatement) refCon);
                     }
                 }
                 for (AbstractIndex refInd : c.getIndexes()) {

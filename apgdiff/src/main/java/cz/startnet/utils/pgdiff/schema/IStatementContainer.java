@@ -2,7 +2,7 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.util.Collection;
 
-public interface IStatementContainer extends IStatement {
+public interface IStatementContainer extends IRelation {
 
     void addTrigger(AbstractTrigger trigger);
     AbstractTrigger getTrigger(String name);
@@ -18,5 +18,5 @@ public interface IStatementContainer extends IStatement {
 
     void addConstraint(AbstractConstraint constraint);
     AbstractConstraint getConstraint(String name);
-    Collection<AbstractConstraint> getConstraints();
+    Collection<? extends IConstraint> getConstraints();
 }

@@ -14,7 +14,8 @@ public class MetaSchema extends MetaStatement implements ISchema {
 
     private static final long serialVersionUID = -6836132289662805345L;
 
-    private final transient Map<String, MetaRelation> relations = new LinkedHashMap<>();
+    private final transient Map<String, MetaStatementContainer> containers = new LinkedHashMap<>();
+    private final transient Map<String, MetaRelation> sequences = new LinkedHashMap<>();
     private final transient Map<String, MetaFunction> functions = new LinkedHashMap<>();
     private final transient Map<String, MetaStatement> domains = new LinkedHashMap<>();
     private final transient Map<String, MetaStatement> types = new LinkedHashMap<>();
@@ -40,9 +41,10 @@ public class MetaSchema extends MetaStatement implements ISchema {
         case AGGREGATE:
             return getFunction(name);
         case SEQUENCE:
+            return sequences.get(name);
         case TABLE:
         case VIEW:
-            return getRelation(name);
+            return getStatementContainer(name);
         case TYPE:
             return types.get(name);
         case DOMAIN:
@@ -73,9 +75,11 @@ public class MetaSchema extends MetaStatement implements ISchema {
             addFunction((MetaFunction) st);
             break;
         case SEQUENCE:
+            sequences.put(st.getName(), (MetaRelation) st);
+            break;
         case TABLE:
         case VIEW:
-            addRelation((MetaRelation) st);
+            containers.put(st.getName(), (MetaStatementContainer) st);
             break;
         case TYPE:
             types.put(st.getName(), st);
@@ -105,16 +109,13 @@ public class MetaSchema extends MetaStatement implements ISchema {
 
     @Override
     public Stream<MetaRelation> getRelations() {
-        return relations.values().stream();
+        return Stream.concat(sequences.values().stream(), containers.values().stream());
     }
 
     @Override
     public MetaRelation getRelation(String name) {
-        return relations.get(name);
-    }
-
-    public void addRelation(final MetaRelation relation) {
-        relations.put(relation.getName(), relation);
+        return getRelations().filter(rel -> rel.getName().equals(name))
+                .findAny().orElse(null);
     }
 
     @Override
@@ -129,5 +130,10 @@ public class MetaSchema extends MetaStatement implements ISchema {
 
     public void addFunction(final MetaFunction function) {
         functions.put(function.getName(), function);
+    }
+
+    @Override
+    public MetaStatementContainer getStatementContainer(String name) {
+        return containers.get(name);
     }
 }
