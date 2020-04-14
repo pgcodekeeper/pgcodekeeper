@@ -90,9 +90,11 @@ public class MetaStorage implements Serializable {
         case AGGREGATE:
         case FUNCTION:
         case PROCEDURE:
+            IFunction funcion = (IFunction) st;
             MetaFunction func = new MetaFunction(gc);
-            ((IFunction) st).getReturnsColumns().forEach(func::addReturnsColumn);
-            ((IFunction) st).getArguments().forEach(func::addArgument);
+            funcion.getReturnsColumns().forEach(func::addReturnsColumn);
+            funcion.getArguments().forEach(func::addArgument);
+            func.setReturns(funcion.getReturns());
             meta = func;
             break;
         case CONSTRAINT:

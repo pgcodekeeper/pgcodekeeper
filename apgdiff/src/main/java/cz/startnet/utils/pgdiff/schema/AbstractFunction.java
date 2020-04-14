@@ -25,7 +25,7 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
     @Override
     public String getReturns() {
         // subclasses may override if needed
-        throw new IllegalStateException("Unsupported operation");
+        return null;
     }
 
     @Override
