@@ -81,6 +81,11 @@ public class LibraryContainer {
             readFile(proj, extension);
         }
 
+        Path cast = p.resolve(ApgdiffConsts.WORK_DIR_NAMES.CAST.toString());
+        if (Files.exists(cast)) {
+            readFile(proj, cast);
+        }
+
         Path schema = p.resolve(ApgdiffConsts.WORK_DIR_NAMES.SCHEMA.toString());
         if (Files.exists(schema)) {
             readFile(proj, schema);

@@ -464,6 +464,17 @@ public final class Messages extends NLS {
     public static String getChangesCustomDialog_custom_prefs_description;
     public static String getChangesCustomDialog_run_with_specified_prefs;
 
+    public static String HeapSizeChecker_heap_size_warning_title;
+    public static String HeapSizeChecker_heap_size_warning;
+    public static String HeapSizeChecker_do_not_ask_again;
+    public static String HeapSizeCheckerDialog_set_heap_size;
+    public static String HeapSizeCheckerDialog_new_heap_size;
+    public static String HeapSizeCheckerDialog_heap_size_updated;
+    public static String HeapSizeCheckerDialog_restart_offer;
+    public static String HeapSizeCheckerDialog_manual_heap_editing_title;
+    public static String HeapSizeCheckerDialog_manual_heap_editing_link;
+    public static String HeapSizeCheckerDialog_manual_heap_editing;
+
     public static String IgnoredObjectPrefListEditor_already_present;
 
     public static String IgnoredObjectPrefListEditor_contents;
@@ -873,6 +884,8 @@ public final class Messages extends NLS {
     public static String GeneralPrefPage_enable_body_dependencies;
 
     public static String GeneralPrefPage_ignore_concurrent_modification;
+
+    public static String GeneralPrefPage_alert_if_heap_size_less_then_necessary;
 
     public static String GeneralPrefPage_time_to_clean_parser_cache;
     public static String GeneralPrefPage_clean_parser_cache;
