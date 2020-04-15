@@ -8,7 +8,6 @@ import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
@@ -27,7 +26,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.JDBC_CONSTS;
 
 public class QueriesBatchCallable extends StatementCallable<String> {
 
-    private final Set<PgObjLocation> batches;
+    private final List<PgObjLocation> batches;
     private final IProgressMonitor monitor;
     private final Connection connection;
     private final IProgressReporter reporter;
@@ -35,7 +34,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
 
     private boolean isAutoCommitEnabled = true;
 
-    public QueriesBatchCallable(Statement st, Set<PgObjLocation> batches,
+    public QueriesBatchCallable(Statement st, List<PgObjLocation> batches,
             IProgressMonitor monitor, IProgressReporter reporter,
             Connection connection, boolean isMsSql) {
         super(st, null);

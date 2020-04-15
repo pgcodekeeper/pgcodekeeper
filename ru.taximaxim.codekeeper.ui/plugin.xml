@@ -1428,6 +1428,8 @@
         </startup>
         <startup class="ru.taximaxim.codekeeper.ui.pgdbproject.parser.ParserCacheCleaner">
         </startup>
+        <startup class="ru.taximaxim.codekeeper.ui.prefs.heap.HeapSizeChecker">
+        </startup>
     </extension>
     <extension point="org.eclipse.compare.contentMergeViewers">
         <viewer

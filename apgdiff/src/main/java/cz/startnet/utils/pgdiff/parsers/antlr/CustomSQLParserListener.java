@@ -96,7 +96,7 @@ implements SqlContextProcessor {
             } else if ((alter = schema.schema_alter()) != null) {
                 alter(alter);
             } else if ((drop = schema.schema_drop()) != null) {
-                safeParseStatement(new DropStatement(drop, db), drop);
+                drop(drop);
             }
         } else if ((ds = statement.data_statement()) != null) {
             data(ds);
@@ -144,21 +144,9 @@ implements SqlContextProcessor {
         } else if (ctx.create_fts_dictionary() != null) {
             p = new CreateFtsDictionary(ctx.create_fts_dictionary(), db);
         } else if (ctx.comment_on_statement() != null) {
-            if (ParserListenerMode.SCRIPT != mode) {
-                p = new CommentOn(ctx.comment_on_statement(), db);
-                addToQueries(ctx, getAction(ctx));
-            } else {
-                addToQueries(ctx, getAction(ctx));
-                return;
-            }
+            p = new CommentOn(ctx.comment_on_statement(), db);
         } else if (ctx.rule_common() != null) {
-            if (ParserListenerMode.SCRIPT != mode) {
-                p = new CreateRule(ctx.rule_common(), db);
-                addToQueries(ctx, getAction(ctx));
-            } else {
-                addToQueries(ctx, getAction(ctx));
-                return;
-            }
+            p = new CreateRule(ctx.rule_common(), db);
         } else if (ctx.set_statement() != null) {
             Set_statementContext setCtx = ctx.set_statement();
             set(setCtx);
@@ -193,6 +181,21 @@ implements SqlContextProcessor {
                 || ctx.alter_operator_statement() != null
                 || ctx.alter_extension_statement() != null) {
             p = new AlterOther(ctx, db);
+        } else {
+            addToQueries(ctx, getAction(ctx));
+            return;
+        }
+        safeParseStatement(p, ctx);
+    }
+
+    private void drop(Schema_dropContext ctx) {
+        ParserAbstract p;
+        if (ctx.drop_function_statement() != null
+                || ctx.drop_trigger_statement() != null
+                || ctx.drop_rule_statement() != null
+                || ctx.drop_statements() != null
+                || ctx.drop_operator_statement() != null) {
+            p = new DropStatement(ctx, db);
         } else {
             addToQueries(ctx, getAction(ctx));
             return;
@@ -277,7 +280,7 @@ implements SqlContextProcessor {
             }
         } else if (ctx instanceof Schema_createContext) {
             Schema_createContext createCtx = (Schema_createContext) ctx;
-            int descrWordsCount = 0;
+            int descrWordsCount = 2;
             if (createCtx.create_language_statement() != null) {
                 return "CREATE LANGUAGE";
             } else if (createCtx.create_transform_statement() != null) {
@@ -296,16 +299,11 @@ implements SqlContextProcessor {
             } else if (createCtx.schema_import() != null
                     || createCtx.create_foreign_data_wrapper() != null) {
                 descrWordsCount = 4;
-            } else if (createCtx.comment_on_statement() != null
-                    || createCtx.rule_common() != null) {
-                descrWordsCount = 1;
-            } else {
-                descrWordsCount = 2;
             }
             return getActionDescription(ctx, descrWordsCount);
         } else if (ctx instanceof Schema_alterContext) {
             Schema_alterContext alterCtx = (Schema_alterContext) ctx;
-            int descrWordsCount = 0;
+            int descrWordsCount = 2;
             if (alterCtx.alter_language_statement() != null) {
                 return "ALTER LANGUAGE";
             } else if (alterCtx.alter_foreign_data_wrapper() != null) {
@@ -316,8 +314,16 @@ implements SqlContextProcessor {
                     || alterCtx.alter_operator_family_statement() != null
                     || alterCtx.alter_operator_class_statement() != null) {
                 descrWordsCount = 3;
-            } else {
-                descrWordsCount = 2;
+            }
+            return getActionDescription(ctx, descrWordsCount);
+        } else if (ctx instanceof Schema_dropContext) {
+            Schema_dropContext dropCtx = (Schema_dropContext) ctx;
+            int descrWordsCount = 2;
+            if (dropCtx.drop_operator_family_statement() != null
+                    || dropCtx.drop_operator_class_statement() != null
+                    || dropCtx.drop_user_mapping() != null
+                    || dropCtx.drop_owned() != null) {
+                descrWordsCount = 3;
             }
             return getActionDescription(ctx, descrWordsCount);
         }
