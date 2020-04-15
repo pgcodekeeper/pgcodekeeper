@@ -26,10 +26,6 @@ public class MetaStatementContainer extends MetaRelation implements IStatementCo
         super(object);
     }
 
-    public MetaStatementContainer(String schema, String name, DbObjType type) {
-        super(schema, name, type);
-    }
-
     @Override
     public void addChild(MetaStatement st) {
         st.setParent(this);

@@ -29,10 +29,6 @@ public class MetaSchema extends MetaStatement implements ISchema {
         super(object);
     }
 
-    public MetaSchema(String schema) {
-        super(new GenericColumn(schema, DbObjType.SCHEMA));
-    }
-
     @Override
     public MetaStatement getChild(String name, DbObjType type) {
         switch (type) {

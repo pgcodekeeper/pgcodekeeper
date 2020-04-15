@@ -6,7 +6,6 @@ import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IRelation;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class MetaRelation extends MetaStatement implements IRelation {
@@ -24,10 +23,6 @@ public class MetaRelation extends MetaStatement implements IRelation {
         super(object);
     }
 
-    public MetaRelation(String schema, String name, DbObjType type) {
-        super(new GenericColumn(schema, name, type));
-    }
-
     @Override
     public Stream<Pair<String, String>> getRelationColumns() {
         return initialized ? columns.stream() : null;
@@ -40,10 +35,6 @@ public class MetaRelation extends MetaStatement implements IRelation {
     @Override
     public MetaSchema getContainingSchema() {
         return (MetaSchema) getParent();
-    }
-
-    public boolean isInitialized() {
-        return initialized;
     }
 
     public void setInitialized(boolean initialized) {
