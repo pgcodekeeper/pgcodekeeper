@@ -10,7 +10,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -63,8 +62,8 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
 
     private static final ConcurrentMap<IProject, PgDbParser> PROJ_PARSERS = new ConcurrentHashMap<>();
 
-    private final ConcurrentMap<String, Set<PgObjLocation>> objDefinitions = new ConcurrentHashMap<>();
-    private final ConcurrentMap<String, Set<PgObjLocation>> objReferences = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, List<PgObjLocation>> objDefinitions = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, List<PgObjLocation>> objReferences = new ConcurrentHashMap<>();
     private transient List<Listener> listeners = new ArrayList<>();
 
     public void addListener(Listener e) {
@@ -208,11 +207,11 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
                 }
             }
             if (!newRefs.isEmpty()) {
-                Set<PgObjLocation> refs = objReferences.get(statementBody.getPath());
+                List<PgObjLocation> refs = objReferences.get(statementBody.getPath());
                 if (refs != null) {
                     newRefs.addAll(refs);
                 }
-                objReferences.put(statementBody.getPath(), new HashSet<>(newRefs));
+                objReferences.put(statementBody.getPath(), new ArrayList<>(newRefs));
             }
         }
     }
@@ -258,14 +257,14 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         return getAllObjDefinitions().filter(obj::compare);
     }
 
-    public Set<PgObjLocation> getObjsForEditor(IEditorInput in) {
+    public List<PgObjLocation> getObjsForEditor(IEditorInput in) {
         String path = getPathFromInput(in);
-        return path == null ? Collections.emptySet() : getObjsForPath(path);
+        return path == null ? Collections.emptyList() : getObjsForPath(path);
     }
 
-    public Set<PgObjLocation> getObjsForPath(String pathToFile) {
-        Set<PgObjLocation> refs = objReferences.get(pathToFile);
-        return refs == null ? Collections.emptySet() : Collections.unmodifiableSet(refs);
+    public List<PgObjLocation> getObjsForPath(String pathToFile) {
+        List<PgObjLocation> refs = objReferences.get(pathToFile);
+        return refs == null ? Collections.emptyList() : Collections.unmodifiableList(refs);
     }
 
     public Stream<PgObjLocation> getAllObjDefinitions() {
@@ -276,15 +275,15 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         return getAll(objReferences);
     }
 
-    private Stream<PgObjLocation> getAll(Map<String, Set<PgObjLocation>> refs) {
-        return refs.values().stream().flatMap(Set<PgObjLocation>::stream);
+    private Stream<PgObjLocation> getAll(Map<String, List<PgObjLocation>> refs) {
+        return refs.values().stream().flatMap(List<PgObjLocation>::stream);
     }
 
-    public Map<String, Set<PgObjLocation>> getObjDefinitions() {
+    public Map<String, List<PgObjLocation>> getObjDefinitions() {
         return objDefinitions;
     }
 
-    public Map<String, Set<PgObjLocation>> getObjReferences() {
+    public Map<String, List<PgObjLocation>> getObjReferences() {
         return objReferences;
     }
 

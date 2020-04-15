@@ -56,6 +56,10 @@ implements IWorkbenchPreferencePage  {
                 Messages.GeneralPrefPage_ignore_concurrent_modification,
                 getFieldEditorParent()));
 
+        addField(new BooleanFieldEditor(PREF.HEAP_SIZE_WARNING,
+                Messages.GeneralPrefPage_alert_if_heap_size_less_than_necessary,
+                getFieldEditorParent()));
+
         addField(new IntegerFieldEditor(PREF.PARSER_CACHE_CLEANING_INTERVAL,
                 Messages.GeneralPrefPage_time_to_clean_parser_cache,
                 getFieldEditorParent(), 3));
