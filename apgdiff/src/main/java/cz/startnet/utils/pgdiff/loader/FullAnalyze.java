@@ -20,15 +20,20 @@ public final class FullAnalyze {
     private final PgDatabase db;
     private final IDatabase metaDb;
 
-    private FullAnalyze(PgDatabase db, List<Object> errors) {
+    private FullAnalyze(PgDatabase db, IDatabase metaDb, List<Object> errors) {
         this.db = db;
-        this.metaDb = MetaStorage.createFullDb(db);
+        this.metaDb = metaDb;
         this.errors = errors;
     }
 
     public static void fullAnalyze(PgDatabase db, List<Object> errors)
             throws InterruptedException, IOException {
-        new FullAnalyze(db, errors).fullAnalyze();
+        fullAnalyze(db, MetaStorage.createFullDb(db), errors);
+    }
+
+    public static void fullAnalyze(PgDatabase db, IDatabase metaDb, List<Object> errors)
+            throws InterruptedException, IOException {
+        new FullAnalyze(db, metaDb, errors).fullAnalyze();
     }
 
     private void fullAnalyze() throws InterruptedException, IOException {
