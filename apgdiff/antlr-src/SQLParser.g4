@@ -1625,7 +1625,11 @@ storage_parameter
     ;
 
 storage_parameter_option
-    : schema_qualified_name (EQUAL vex)?
+    : storage_parameter_name (EQUAL vex)?
+    ;
+
+storage_parameter_name
+    : col_label (DOT col_label)?
     ;
 
 with_storage_parameter

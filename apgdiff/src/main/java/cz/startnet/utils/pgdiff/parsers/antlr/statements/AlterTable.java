@@ -185,7 +185,7 @@ public class AlterTable extends TableAbstract {
             for (Storage_parameter_optionContext option : param.storage_parameter_option()) {
                 VexContext opt = option.vex();
                 String value = opt == null ? null : opt.getText();
-                fillOptionParams(value, option.schema_qualified_name().getText(), false, col::addOption);
+                fillOptionParams(value, option.storage_parameter_name().getText(), false, col::addOption);
             }
         }
 

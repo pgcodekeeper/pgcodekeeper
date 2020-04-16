@@ -57,7 +57,7 @@ implements IWorkbenchPreferencePage  {
                 getFieldEditorParent()));
 
         addField(new BooleanFieldEditor(PREF.HEAP_SIZE_WARNING,
-                Messages.GeneralPrefPage_alert_if_heap_size_less_then_necessary,
+                Messages.GeneralPrefPage_alert_if_heap_size_less_than_necessary,
                 getFieldEditorParent()));
 
         addField(new IntegerFieldEditor(PREF.PARSER_CACHE_CLEANING_INTERVAL,

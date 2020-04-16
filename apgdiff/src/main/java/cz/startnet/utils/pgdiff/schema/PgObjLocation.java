@@ -163,7 +163,8 @@ public class PgObjLocation extends ContextLocation {
             return type == DbObjType.TABLE || type == DbObjType.VIEW || type == DbObjType.SEQUENCE;
         case FUNCTION:
         case AGGREGATE:
-            return type == DbObjType.FUNCTION || type == DbObjType.AGGREGATE;
+        case PROCEDURE:
+            return type == DbObjType.FUNCTION || type == DbObjType.AGGREGATE || type == DbObjType.PROCEDURE;
         case TYPE:
         case DOMAIN:
             return type == DbObjType.TYPE || type == DbObjType.DOMAIN;

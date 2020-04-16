@@ -885,7 +885,7 @@ public final class Messages extends NLS {
 
     public static String GeneralPrefPage_ignore_concurrent_modification;
 
-    public static String GeneralPrefPage_alert_if_heap_size_less_then_necessary;
+    public static String GeneralPrefPage_alert_if_heap_size_less_than_necessary;
 
     public static String GeneralPrefPage_time_to_clean_parser_cache;
     public static String GeneralPrefPage_clean_parser_cache;
