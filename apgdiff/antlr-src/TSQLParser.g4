@@ -815,7 +815,7 @@ alter_partition_function
     ;
 
 create_partition_scheme
-    : CREATE PARTITION SCHEME partition_scheme_name=id AS PARTITION partition_function_name=id
+    : PARTITION SCHEME partition_scheme_name=id AS PARTITION partition_function_name=id
     ALL? TO LR_BRACKET id_or_primary (COMMA id_or_primary)* RR_BRACKET 
     ;
 
@@ -1428,10 +1428,12 @@ output_column_name
 
 // https://msdn.microsoft.com/en-ie/library/ms176061.aspx
 create_database
-    : DATABASE (database=id)
+    : DATABASE database = id
     ( CONTAINMENT EQUAL ( NONE | PARTIAL ) )?
-    ( ON PRIMARY? database_file_spec ( COMMA database_file_spec )* )?
-    ( LOG ON database_file_spec ( COMMA database_file_spec )* )?
+    (
+        ON PRIMARY? database_file_spec ( COMMA database_file_spec )*
+        ( LOG ON database_file_spec ( COMMA database_file_spec )* )?
+    )?
     ( COLLATE collation_name = id )?
     ( WITH  create_database_option ( COMMA create_database_option )* )?
     ;
@@ -1725,7 +1727,7 @@ table_action_drop
 
 // https://msdn.microsoft.com/en-us/library/ms174269.aspx
 alter_database
-    : DATABASE (database=id | CURRENT) (MODIFY NAME EQUAL new_name=id | COLLATE collation=id | SET database_optionspec (WITH termination)? )
+    : DATABASE (database=id | CURRENT) (MODIFY NAME EQUAL new_name=id | COLLATE collation=id | file_and_filegroup_options | SET database_optionspec (WITH termination)? )
     ;
 
 alter_database_encryption_key
@@ -2965,15 +2967,44 @@ create_database_option
     : FILESTREAM ( database_filestream_option (COMMA database_filestream_option)* )
     | DEFAULT_LANGUAGE EQUAL ( id | STRING )
     | DEFAULT_FULLTEXT_LANGUAGE EQUAL ( id | STRING )
-    | NESTED_TRIGGERS EQUAL ( OFF | ON )
-    | TRANSFORM_NOISE_WORDS EQUAL ( OFF | ON )
+    | NESTED_TRIGGERS EQUAL on_off
+    | TRANSFORM_NOISE_WORDS EQUAL on_off
     | TWO_DIGIT_YEAR_CUTOFF EQUAL DECIMAL
-    | DB_CHAINING ( OFF | ON )
-    | TRUSTWORTHY ( OFF | ON )
+    | DB_CHAINING on_off
+    | TRUSTWORTHY on_off
+    | PERSISTENT_LOG_BUFFER EQUAL ON LR_BRACKET DIRECTORY_NAME EQUAL STRING RR_BRACKET
     ;
 
 database_filestream_option
     : LR_BRACKET (NON_TRANSACTED_ACCESS EQUAL ( OFF | READ_ONLY | FULL ) | DIRECTORY_NAME EQUAL STRING) RR_BRACKET
+    ;
+
+file_and_filegroup_options
+    : ADD FILE file_spec_alter (COMMA file_spec_alter)* (TO FILEGROUP id)? 
+    | ADD LOG FILE file_spec_alter (COMMA file_spec_alter)*
+    | REMOVE FILE ( id | STRING )
+    | MODIFY FILE file_spec_alter
+    | ADD FILEGROUP id CONTAINS? ( FILESTREAM | MEMORY_OPTIMIZED_DATA )?
+    | REMOVE FILEGROUP id
+    | MODIFY FILEGROUP id filegroup_modify_option
+    ;
+
+file_spec_alter
+    : LR_BRACKET NAME EQUAL ( id | STRING ) (COMMA NEWNAME EQUAL ( id | STRING ))?
+    (COMMA FILENAME EQUAL STRING)? (COMMA SIZE EQUAL file_size)?
+    (COMMA MAXSIZE EQUAL ( file_size | UNLIMITED ))? (COMMA FILEGROWTH EQUAL file_size)? 
+    (COMMA OFFLINE)? RR_BRACKET
+    ;
+
+filegroup_modify_option
+    : READONLY 
+    | READWRITE 
+    | READ_ONLY 
+    | READ_WRITE
+    | DEFAULT
+    | NAME EQUAL id
+    | AUTOGROW_SINGLE_FILE 
+    | AUTOGROW_ALL_FILES
     ;
 
 database_file_spec
@@ -3176,6 +3207,8 @@ simple_id
     | AUTO_UPDATE_STATISTICS_ASYNC
     | AUTO_UPDATE_STATISTICS
     | AUTO
+    | AUTOGROW_ALL_FILES
+    | AUTOGROW_SINGLE_FILE
     | AUTOMATED_BACKUP_PREFERENCE
     | AUTOMATIC
     | AVAILABILITY_MODE
@@ -3469,6 +3502,7 @@ simple_id
     | NEW_ACCOUNT
     | NEW_BROKER
     | NEW_PASSWORD
+    | NEWNAME
     | NEXT
     | NO_CHECKSUM
     | NO_COMPRESSION
@@ -3528,6 +3562,7 @@ simple_id
     | PERMISSION_SET
     | PERSIST_SAMPLE_PERSENT
     | PERSISTED
+    | PERSISTENT_LOG_BUFFER
     | PLATFORM
     | POISON_MESSAGE_HANDLING
     | POLICY
@@ -3570,6 +3605,7 @@ simple_id
     | READ_ONLY
     | READ_WRITE_FILEGROUPS
     | READ_WRITE
+    | READWRITE
     | READONLY
     | REBUILD
     | RECEIVE

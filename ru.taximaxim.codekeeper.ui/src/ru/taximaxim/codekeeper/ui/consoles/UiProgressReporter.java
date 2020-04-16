@@ -12,27 +12,37 @@ import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
 
 import cz.startnet.utils.pgdiff.IProgressReporter;
+import ru.taximaxim.codekeeper.ui.ITextErrorReporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.VIEW;
-import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.UiSync;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.views.ResultSetView;
 
 public class UiProgressReporter implements IProgressReporter {
 
     private final CodekeeperConsole console;
+    private final ITextErrorReporter errorReporter;
+    private final int offset;
 
-    public UiProgressReporter(IProgressMonitor monitor) {
+    public UiProgressReporter(IProgressMonitor monitor, ITextErrorReporter errorReporter) {
+        this(monitor, errorReporter, 0);
+    }
+
+    public UiProgressReporter(IProgressMonitor monitor, ITextErrorReporter errorReporter,
+            int offset) {
         IConsoleManager manager = ConsolePlugin.getDefault().getConsoleManager();
         console = CodekeeperConsole.createInstance(monitor);
         manager.addConsoles(new IConsole[] { console });
+        this.errorReporter = errorReporter;
+        this.offset = offset;
     }
 
     /**
      * Initial, write one error message and terminate console
      */
     public static void writeSingleError(String error) {
-        try (UiProgressReporter reporter = new UiProgressReporter(new NullProgressMonitor())) {
+        try (UiProgressReporter reporter = new UiProgressReporter(new NullProgressMonitor(), null)) {
             reporter.writeError(error);
         }
     }
@@ -69,5 +79,12 @@ public class UiProgressReporter implements IProgressReporter {
             }
         });
 
+    }
+
+    @Override
+    public void reportErrorLocation(int start, int length) {
+        if (errorReporter != null) {
+            errorReporter.setErrorPosition(offset + start, length);
+        }
     }
 }

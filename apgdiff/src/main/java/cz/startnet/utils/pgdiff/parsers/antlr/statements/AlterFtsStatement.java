@@ -11,7 +11,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameCon
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFtsConfiguration;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class AlterFtsStatement extends ParserAbstract {
@@ -38,7 +37,7 @@ public class AlterFtsStatement extends ParserAbstract {
             tt = DbObjType.FTS_CONFIGURATION;
         }
 
-        addObjReference(ids, tt, StatementActions.ALTER);
+        addObjReference(ids, tt, ACTION_ALTER);
 
         if (tt != DbObjType.FTS_CONFIGURATION) {
             return;
@@ -61,5 +60,20 @@ public class AlterFtsStatement extends ParserAbstract {
                         config, null);
             }
         }
+    }
+
+    @Override
+    protected String getStmtAction() {
+        DbObjType ftsType;
+        if (ctx.DICTIONARY() != null) {
+            ftsType = DbObjType.FTS_DICTIONARY;
+        } else if (ctx.TEMPLATE() != null) {
+            ftsType = DbObjType.FTS_TEMPLATE;
+        } else if (ctx.PARSER() != null) {
+            ftsType = DbObjType.FTS_PARSER;
+        } else {
+            ftsType = DbObjType.FTS_CONFIGURATION;
+        }
+        return getStrForStmtAction(ACTION_ALTER, ftsType, ctx.name.identifier());
     }
 }

@@ -14,6 +14,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateDomain extends ParserAbstract {
 
@@ -59,5 +60,10 @@ public class CreateDomain extends ParserAbstract {
         VexContext vexCtx = ctx.vex();
         constr.setDefinition("CHECK (" + getFullCtxText(vexCtx) + ")");
         db.addAnalysisLauncher(new DomainAnalysisLauncher(domain, vexCtx, location));
+    }
+
+    @Override
+    protected String getStmtAction() {
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.DOMAIN, ctx.name.identifier());
     }
 }

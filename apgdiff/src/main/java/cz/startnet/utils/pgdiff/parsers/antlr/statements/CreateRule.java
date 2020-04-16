@@ -25,7 +25,6 @@ import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 import cz.startnet.utils.pgdiff.schema.StatementOverride;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -53,6 +52,7 @@ public class CreateRule extends ParserAbstract {
         // unsupported roles rules, ALL TABLES/SEQUENCES/FUNCTIONS IN SCHENA
         if (db.getArguments().isIgnorePrivileges() || ctx.other_rules() != null
                 || obj.ALL() != null) {
+            addOutlineRefForCommentOrRule(state, ctx);
             return;
         }
 
@@ -88,6 +88,7 @@ public class CreateRule extends ParserAbstract {
         } else if (obj.TYPE() != null) {
             type = DbObjType.TYPE;
         } else {
+            addOutlineRefForCommentOrRule(state, ctx);
             return;
         }
 
@@ -95,7 +96,7 @@ public class CreateRule extends ParserAbstract {
 
         if (type != null) {
             for (Schema_qualified_nameContext name : objName) {
-                addObjReference(name.identifier(), type, StatementActions.NONE);
+                addObjReference(name.identifier(), type, state);
 
                 if (isRefMode()) {
                     continue;
@@ -137,7 +138,7 @@ public class CreateRule extends ParserAbstract {
             StringBuilder sb = new StringBuilder();
             DbObjType type = obj.PROCEDURE() == null ?
                     DbObjType.FUNCTION : DbObjType.PROCEDURE;
-            addObjReference(funcIds, type, StatementActions.NONE);
+            addObjReference(funcIds, type, state);
 
             if (isRefMode()) {
                 continue;
@@ -183,7 +184,7 @@ public class CreateRule extends ParserAbstract {
             Map<String, Entry<IdentifierContext, List<String>>> colPrivs, List<String> roles) {
         List<IdentifierContext> ids = tbl.identifier();
 
-        addObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
+        addObjReference(ids, DbObjType.TABLE, state);
 
         // TODO waits for column references
         // addObjReference(Arrays.asList(QNameParser.getSchemaNameCtx(ids),firstPart, colName),
@@ -269,5 +270,10 @@ public class CreateRule extends ParserAbstract {
             overrides.computeIfAbsent(st,
                     k -> new StatementOverride()).addPrivilege(privilege);
         }
+    }
+
+    @Override
+    protected String getStmtAction() {
+        return state;
     }
 }

@@ -1,7 +1,10 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_function_statementContext;
@@ -16,7 +19,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameCon
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class DropStatement extends ParserAbstract {
@@ -52,14 +54,14 @@ public class DropStatement extends ParserAbstract {
         } else {
             type = DbObjType.AGGREGATE;
         }
-        addObjReference(ctx.name.identifier(), type, StatementActions.DROP);
+        addObjReference(ctx.name.identifier(), type, ACTION_DROP);
     }
 
     public void dropOperator(Drop_operator_statementContext ctx) {
         for (Target_operatorContext targetOperCtx : ctx.target_operator()) {
             Operator_nameContext nameCtx = targetOperCtx.operator_name();
             addObjReference(Arrays.asList(nameCtx.schema_name, nameCtx.operator),
-                    DbObjType.OPERATOR, StatementActions.DROP);
+                    DbObjType.OPERATOR, ACTION_DROP);
         }
     }
 
@@ -73,38 +75,11 @@ public class DropStatement extends ParserAbstract {
 
     public void dropChild(List<IdentifierContext> tableIds, IdentifierContext nameCtx, DbObjType type) {
         tableIds.add(nameCtx);
-        addObjReference(tableIds, type, StatementActions.DROP);
+        addObjReference(tableIds, type, ACTION_DROP);
     }
 
     public void drop(Drop_statementsContext ctx) {
-        DbObjType type = null;
-        if (ctx.DATABASE()!= null) {
-            type = DbObjType.DATABASE;
-        } else if (ctx.TABLE() != null) {
-            type = DbObjType.TABLE;
-        } else if (ctx.EXTENSION() != null) {
-            type = DbObjType.EXTENSION;
-        } else if (ctx.SCHEMA() != null) {
-            type = DbObjType.SCHEMA;
-        } else if (ctx.SEQUENCE() != null) {
-            type = DbObjType.SEQUENCE;
-        } else if (ctx.VIEW() != null) {
-            type = DbObjType.VIEW;
-        } else if (ctx.INDEX() != null) {
-            type = DbObjType.INDEX;
-        } else if (ctx.DOMAIN() != null) {
-            type = DbObjType.DOMAIN;
-        } else if (ctx.TYPE() != null) {
-            type = DbObjType.TYPE;
-        } else if (ctx.DICTIONARY() != null) {
-            type = DbObjType.FTS_DICTIONARY;
-        } else if (ctx.TEMPLATE() != null) {
-            type = DbObjType.FTS_TEMPLATE;
-        } else if (ctx.PARSER() != null) {
-            type = DbObjType.FTS_PARSER;
-        } else if (ctx.CONFIGURATION() != null) {
-            type = DbObjType.FTS_CONFIGURATION;
-        }
+        DbObjType type = getTypeOfDropStmt(ctx);
 
         if (type == null) {
             return;
@@ -113,11 +88,98 @@ public class DropStatement extends ParserAbstract {
         for (Schema_qualified_nameContext objName :
             ctx.if_exist_names_restrict_cascade().names_references().schema_qualified_name()) {
             List<IdentifierContext> ids = objName.identifier();
-            PgObjLocation loc = addObjReference(ids, type, StatementActions.DROP);
+            PgObjLocation loc = addObjReference(ids, type, ACTION_DROP);
 
             if (type == DbObjType.TABLE) {
-                loc.setWarningText(DangerStatement.DROP_TABLE);
+                loc.setWarning(DangerStatement.DROP_TABLE);
             }
         }
+    }
+
+    private DbObjType getTypeOfDropStmt(Drop_statementsContext ctx) {
+        if (ctx.DATABASE()!= null) {
+            return DbObjType.DATABASE;
+        } else if (ctx.TABLE() != null) {
+            return DbObjType.TABLE;
+        } else if (ctx.EXTENSION() != null) {
+            return DbObjType.EXTENSION;
+        } else if (ctx.SCHEMA() != null) {
+            return DbObjType.SCHEMA;
+        } else if (ctx.SEQUENCE() != null) {
+            return DbObjType.SEQUENCE;
+        } else if (ctx.VIEW() != null) {
+            return DbObjType.VIEW;
+        } else if (ctx.INDEX() != null) {
+            return DbObjType.INDEX;
+        } else if (ctx.DOMAIN() != null) {
+            return DbObjType.DOMAIN;
+        } else if (ctx.TYPE() != null) {
+            return DbObjType.TYPE;
+        } else if (ctx.DICTIONARY() != null) {
+            return DbObjType.FTS_DICTIONARY;
+        } else if (ctx.TEMPLATE() != null) {
+            return DbObjType.FTS_TEMPLATE;
+        } else if (ctx.PARSER() != null) {
+            return DbObjType.FTS_PARSER;
+        } else if (ctx.CONFIGURATION() != null) {
+            return DbObjType.FTS_CONFIGURATION;
+        }
+        return null;
+    }
+
+    @Override
+    protected PgObjLocation fillQueryLocation(ParserRuleContext ctx) {
+        PgObjLocation loc = super.fillQueryLocation(ctx);
+        Drop_statementsContext dropSt = ((Schema_dropContext) ctx).drop_statements();
+        if (dropSt != null && dropSt.TABLE() != null) {
+            loc.setWarning(DangerStatement.DROP_TABLE);
+        }
+        return loc;
+    }
+
+    @Override
+    protected String getStmtAction() {
+        List<? extends ParserRuleContext> ids = null;
+        DbObjType type = null;
+        if (ctx.drop_function_statement() != null) {
+            Drop_function_statementContext dropFuncCtx = ctx.drop_function_statement();
+            ids = dropFuncCtx.name.identifier();
+            if (dropFuncCtx.PROCEDURE() != null) {
+                type = DbObjType.PROCEDURE;
+            } else if (dropFuncCtx.FUNCTION() != null) {
+                type = DbObjType.FUNCTION;
+            } else {
+                type = DbObjType.AGGREGATE;
+            }
+        } else if (ctx.drop_trigger_statement() != null) {
+            Drop_trigger_statementContext dropTrigCtx = ctx.drop_trigger_statement();
+            List<IdentifierContext> auxIds = dropTrigCtx.table_name.identifier();
+            auxIds.add(dropTrigCtx.name);
+            ids = auxIds;
+            type = DbObjType.TRIGGER;
+        } else if (ctx.drop_rule_statement() != null) {
+            Drop_rule_statementContext dropRuleCtx = ctx.drop_rule_statement();
+            List<IdentifierContext> auxIds = dropRuleCtx.schema_qualified_name().identifier();
+            auxIds.add(dropRuleCtx.name);
+            ids = auxIds;
+            type = DbObjType.RULE;
+        } else if (ctx.drop_statements() != null) {
+            Drop_statementsContext dropStmtCtx = ctx.drop_statements();
+            type = getTypeOfDropStmt(dropStmtCtx);
+            if (type != null) {
+                List<Schema_qualified_nameContext> objNames = dropStmtCtx
+                        .if_exist_names_restrict_cascade().names_references().schema_qualified_name();
+                ids = objNames.size() == 1 ? objNames.get(0).identifier()
+                        : Collections.emptyList();
+            }
+        } else if (ctx.drop_operator_statement() != null) {
+            Drop_operator_statementContext dropRuleCtx = ctx.drop_operator_statement();
+            List<Target_operatorContext> targetOpers = dropRuleCtx.target_operator();
+            Operator_nameContext nameCtx = targetOpers.get(0).operator_name();
+            ids = targetOpers.size() == 1 ? Arrays.asList(nameCtx.schema_name, nameCtx.operator)
+                    : Collections.emptyList();
+            type = DbObjType.OPERATOR;
+        }
+        return type != null ? getStrForStmtAction(ACTION_DROP, type, ids) : null;
     }
 }

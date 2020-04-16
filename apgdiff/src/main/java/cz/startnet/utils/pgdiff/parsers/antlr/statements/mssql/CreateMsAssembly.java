@@ -11,6 +11,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.MsAssembly;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateMsAssembly extends ParserAbstract {
 
@@ -68,5 +69,10 @@ public class CreateMsAssembly extends ParserAbstract {
         // remove trailing newline
         sb.setLength(sb.length() - 2);
         return sb.toString();
+    }
+
+    @Override
+    protected String getStmtAction() {
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.ASSEMBLY, Arrays.asList(ctx.assembly_name));
     }
 }

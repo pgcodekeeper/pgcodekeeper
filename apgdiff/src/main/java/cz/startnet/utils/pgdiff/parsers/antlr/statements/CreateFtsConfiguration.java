@@ -30,4 +30,10 @@ public class CreateFtsConfiguration extends ParserAbstract {
         }
         addSafe(getSchemaSafe(ids), config, ids);
     }
+
+    @Override
+    protected String getStmtAction() {
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.FTS_CONFIGURATION,
+                ctx.name.identifier());
+    }
 }

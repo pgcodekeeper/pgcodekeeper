@@ -6,6 +6,7 @@ import java.util.Map;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.eclipse.core.runtime.IProgressMonitor;
 
+import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.TSqlContextProcessor;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Another_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.BatchContext;
@@ -30,9 +31,9 @@ implements TSqlContextProcessor {
 
     private final Map<PgStatement, StatementOverride> overrides;
 
-    public TSQLOverridesListener(PgDatabase db, String filename, boolean refMode, List<Object> errors,
-            IProgressMonitor mon, Map<PgStatement, StatementOverride> overrides) {
-        super(db, filename, refMode, errors, mon);
+    public TSQLOverridesListener(PgDatabase db, String filename, ParserListenerMode mode,
+            List<Object> errors, IProgressMonitor mon, Map<PgStatement, StatementOverride> overrides) {
+        super(db, filename, mode, errors, mon);
         this.overrides = overrides;
     }
 

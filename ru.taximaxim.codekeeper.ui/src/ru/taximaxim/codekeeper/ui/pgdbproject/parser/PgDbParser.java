@@ -10,7 +10,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -44,11 +43,11 @@ import org.eclipse.ui.ide.ResourceUtil;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -63,8 +62,8 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
 
     private static final ConcurrentMap<IProject, PgDbParser> PROJ_PARSERS = new ConcurrentHashMap<>();
 
-    private final ConcurrentMap<String, Set<PgObjLocation>> objDefinitions = new ConcurrentHashMap<>();
-    private final ConcurrentMap<String, Set<PgObjLocation>> objReferences = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, List<PgObjLocation>> objDefinitions = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, List<PgObjLocation>> objReferences = new ConcurrentHashMap<>();
     private transient List<Listener> listeners = new ArrayList<>();
 
     public void addListener(Listener e) {
@@ -162,7 +161,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         args.setMsSql(isMsSql);
         args.setInCharsetName(file.getCharset());
         PgUIDumpLoader loader = new PgUIDumpLoader(file, args, monitor);
-        loader.setRefMode(true);
+        loader.setMode(ParserListenerMode.REF);
         PgDatabase db = loader.loadFile(new PgDatabase(args));
         removeResFromRefs(file);
         objDefinitions.putAll(db.getObjDefinitions());
@@ -186,31 +185,33 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         for (StatementBodyContainer statementBody : statementBodies) {
             String body = statementBody.getBody().toLowerCase(Locale.ROOT);
             Set<PgObjLocation> newRefs = new LinkedHashSet<>();
-            getAllObjDefinitions().forEach(def -> {
+            for (PgObjLocation def : (Iterable<PgObjLocation>) getAllObjDefinitions()::iterator) {
+                int lenght = def.getObjLength();
+                if (lenght == 0) {
+                    continue;
+                }
                 String name = def.getObjName().toLowerCase(Locale.ROOT);
                 int index = body.indexOf(name);
                 while (index >= 0) {
-                    int next = index + def.getObjLength();
+                    int next = index + lenght;
                     // check word boundaries, whole words only
                     if ((index == 0 || !PgDiffUtils.isValidIdChar(body.charAt(index - 1))) &&
                             (next >= body.length() || !PgDiffUtils.isValidIdChar(body.charAt(next)))) {
-                        PgObjLocation loc = new PgObjLocation(def.schema,
-                                def.table, def.column, def.type, StatementActions.NONE);
-                        loc.setOffset(statementBody.getOffset() + index);
-                        loc.setFilePath(statementBody.getPath());
-                        loc.setLine(statementBody.getLineNumber());
+                        PgObjLocation loc = new PgObjLocation(def.getObj(), null,
+                                statementBody.getOffset() + index,
+                                statementBody.getLineNumber(),
+                                statementBody.getPath());
                         newRefs.add(loc);
                     }
                     index = body.indexOf(name, index + 1);
                 }
-
-            });
+            }
             if (!newRefs.isEmpty()) {
-                Set<PgObjLocation> refs = objReferences.get(statementBody.getPath());
+                List<PgObjLocation> refs = objReferences.get(statementBody.getPath());
                 if (refs != null) {
                     newRefs.addAll(refs);
                 }
-                objReferences.put(statementBody.getPath(), new HashSet<>(newRefs));
+                objReferences.put(statementBody.getPath(), new ArrayList<>(newRefs));
             }
         }
     }
@@ -243,7 +244,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         PgDiffArguments args = new PgDiffArguments();
         args.setMsSql(isMsSql);
         PgDumpLoader loader = new PgDumpLoader(() -> input, fileName, args, monitor);
-        loader.setRefMode(true);
+        loader.setMode(ParserListenerMode.REF);
         PgDatabase db = loader.load(new PgDatabase(args));
         objDefinitions.clear();
         objDefinitions.putAll(db.getObjDefinitions());
@@ -257,14 +258,14 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         return getAllObjDefinitions().filter(obj::compare);
     }
 
-    public Set<PgObjLocation> getObjsForEditor(IEditorInput in) {
+    public List<PgObjLocation> getObjsForEditor(IEditorInput in) {
         String path = getPathFromInput(in);
-        return path == null ? Collections.emptySet() : getObjsForPath(path);
+        return path == null ? Collections.emptyList() : getObjsForPath(path);
     }
 
-    public Set<PgObjLocation> getObjsForPath(String pathToFile) {
-        Set<PgObjLocation> refs = objReferences.get(pathToFile);
-        return refs == null ? Collections.emptySet() : Collections.unmodifiableSet(refs);
+    public List<PgObjLocation> getObjsForPath(String pathToFile) {
+        List<PgObjLocation> refs = objReferences.get(pathToFile);
+        return refs == null ? Collections.emptyList() : Collections.unmodifiableList(refs);
     }
 
     public Stream<PgObjLocation> getAllObjDefinitions() {
@@ -275,15 +276,15 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         return getAll(objReferences);
     }
 
-    private Stream<PgObjLocation> getAll(Map<String, Set<PgObjLocation>> refs) {
-        return refs.values().stream().flatMap(Set<PgObjLocation>::stream);
+    private Stream<PgObjLocation> getAll(Map<String, List<PgObjLocation>> refs) {
+        return refs.values().stream().flatMap(List<PgObjLocation>::stream);
     }
 
-    public Map<String, Set<PgObjLocation>> getObjDefinitions() {
+    public Map<String, List<PgObjLocation>> getObjDefinitions() {
         return objDefinitions;
     }
 
-    public Map<String, Set<PgObjLocation>> getObjReferences() {
+    public Map<String, List<PgObjLocation>> getObjReferences() {
         return objReferences;
     }
 

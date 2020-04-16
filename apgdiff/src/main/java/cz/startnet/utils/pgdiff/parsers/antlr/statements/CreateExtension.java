@@ -29,4 +29,9 @@ public class CreateExtension extends ParserAbstract {
 
         addSafe(db, ext, Arrays.asList(nameCtx));
     }
+
+    @Override
+    protected String getStmtAction() {
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.EXTENSION, Arrays.asList(ctx.name));
+    }
 }
