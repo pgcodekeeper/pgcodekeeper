@@ -263,7 +263,9 @@ class QuickUpdateJob extends SingletonEditorJob {
         // mark schemas only when there are no schema-nested objects
         boolean markSchemas = listPgObjectsFragment.stream()
                 .map(PgStatement::getStatementType)
-                .allMatch(ty -> ty == DbObjType.SCHEMA || ty == DbObjType.EXTENSION);
+                .allMatch(ty -> ty == DbObjType.SCHEMA
+                || ty == DbObjType.EXTENSION
+                || ty == DbObjType.CAST);
 
         Set<TreeElement> checked = new HashSet<>();
         for (PgStatement st : listPgObjectsFragment){
