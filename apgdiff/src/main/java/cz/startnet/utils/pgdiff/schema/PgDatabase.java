@@ -35,6 +35,7 @@ public class PgDatabase extends PgStatement {
 
     private final Map<String, AbstractSchema> schemas = new LinkedHashMap<>();
     private final Map<String, PgExtension> extensions = new LinkedHashMap<>();
+    private final Map<String, PgCast> casts = new LinkedHashMap<>();
     private final Map<String, MsAssembly> assemblies = new LinkedHashMap<>();
     private final Map<String, MsRole> roles = new LinkedHashMap<>();
     private final Map<String, MsUser> users = new LinkedHashMap<>();
@@ -185,6 +186,7 @@ public class PgDatabase extends PgStatement {
     protected void fillChildrenList(List<Collection<? extends PgStatement>> l) {
         l.add(schemas.values());
         l.add(extensions.values());
+        l.add(casts.values());
         l.add(assemblies.values());
         l.add(roles.values());
         l.add(users.values());
@@ -197,6 +199,8 @@ public class PgDatabase extends PgStatement {
             return getSchema(name);
         case EXTENSION:
             return getExtension(name);
+        case CAST:
+            return getCast(name);
         case ASSEMBLY:
             return getAssembly(name);
         case ROLE:
@@ -217,6 +221,9 @@ public class PgDatabase extends PgStatement {
             break;
         case EXTENSION:
             addExtension((PgExtension) st);
+            break;
+        case CAST:
+            addCast((PgCast) st);
             break;
         case ASSEMBLY:
             addAssembly((MsAssembly) st);
@@ -254,6 +261,30 @@ public class PgDatabase extends PgStatement {
 
     public void addExtension(final PgExtension extension) {
         addUnique(extensions, extension, this);
+    }
+
+    /**
+     * Returns cast of given name or null if the cast has not been found.
+     *
+     * @param name cast name
+     *
+     * @return found cast or null
+     */
+    public PgCast getCast(final String name) {
+        return casts.get(name);
+    }
+
+    /**
+     * Getter for {@link #cast}. The list cannot be modified.
+     *
+     * @return {@link #casts}
+     */
+    public Collection<PgCast> getCasts() {
+        return Collections.unmodifiableCollection(casts.values());
+    }
+
+    public void addCast(final PgCast cast) {
+        addUnique(casts, cast, this);
     }
 
     /**
@@ -369,6 +400,7 @@ public class PgDatabase extends PgStatement {
         if (obj instanceof PgDatabase) {
             PgDatabase db = (PgDatabase) obj;
             return extensions.equals(db.extensions)
+                    && casts.equals(db.casts)
                     && schemas.equals(db.schemas)
                     && assemblies.equals(db.assemblies)
                     && roles.equals(db.roles)
@@ -385,6 +417,7 @@ public class PgDatabase extends PgStatement {
     @Override
     public void computeChildrenHash(Hasher hasher) {
         hasher.putUnordered(extensions);
+        hasher.putUnordered(casts);
         hasher.putUnordered(schemas);
         hasher.putUnordered(assemblies);
         hasher.putUnordered(roles);
@@ -424,6 +457,7 @@ public class PgDatabase extends PgStatement {
         case ASSEMBLY:
         case SCHEMA:
         case EXTENSION:
+        case CAST:
             orig = getChild(name, type);
             if (orig == null) {
                 addChild(st.shallowCopy());

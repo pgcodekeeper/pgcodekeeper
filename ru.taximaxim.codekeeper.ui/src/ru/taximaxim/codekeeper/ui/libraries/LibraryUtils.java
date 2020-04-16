@@ -99,6 +99,11 @@ public class LibraryUtils {
             readFile(parent, extension);
         }
 
+        Path cast = path.resolve(ApgdiffConsts.WORK_DIR_NAMES.CAST.toString());
+        if (Files.exists(cast)) {
+            readFile(parent, cast);
+        }
+
         Path schema = path.resolve(ApgdiffConsts.WORK_DIR_NAMES.SCHEMA.toString());
         if (Files.exists(schema)) {
             readFile(parent, schema);
