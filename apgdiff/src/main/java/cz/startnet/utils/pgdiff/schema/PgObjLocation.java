@@ -14,6 +14,7 @@ public class PgObjLocation extends ContextLocation {
 
     private DangerStatement danger;
     private String comment = "";
+    private int length = -1;
 
     private final String action;
 
@@ -51,7 +52,15 @@ public class PgObjLocation extends ContextLocation {
         return action;
     }
 
+    public void setLength(int length) {
+        this.length = length;
+    }
+
     public int getObjLength() {
+        if (length > 0) {
+            return length;
+        }
+
         return getObjName().length();
     }
 
@@ -158,7 +167,8 @@ public class PgObjLocation extends ContextLocation {
             return type == DbObjType.TABLE || type == DbObjType.VIEW || type == DbObjType.SEQUENCE;
         case FUNCTION:
         case AGGREGATE:
-            return type == DbObjType.FUNCTION || type == DbObjType.AGGREGATE;
+        case PROCEDURE:
+            return type == DbObjType.FUNCTION || type == DbObjType.AGGREGATE || type == DbObjType.PROCEDURE;
         case TYPE:
         case DOMAIN:
             return type == DbObjType.TYPE || type == DbObjType.DOMAIN;

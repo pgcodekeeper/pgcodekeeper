@@ -26,10 +26,9 @@ public class HeapSizeChecker implements IStartup {
     private static final long MINIMAL_XMX_SIZE_BYTE = 1610612736;
     private static final int RECOMMENDED_XMX_SIZE_GB = 2;
 
-    private final IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
-
     @Override
     public void earlyStartup() {
+        IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
         if (!mainPrefs.getBoolean(PREF.HEAP_SIZE_WARNING) ||
                 MINIMAL_XMX_SIZE_BYTE < Runtime.getRuntime().maxMemory()) {
             return;

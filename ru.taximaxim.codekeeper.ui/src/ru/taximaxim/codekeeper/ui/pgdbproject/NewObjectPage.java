@@ -93,7 +93,7 @@ public final class NewObjectPage extends WizardPage {
     private final EnumSet<DbObjType> allowedTypes = EnumSet.complementOf(
             EnumSet.of(DbObjType.COLUMN, DbObjType.DATABASE, DbObjType.SEQUENCE,
                     DbObjType.ASSEMBLY, DbObjType.ROLE, DbObjType.USER,
-                    DbObjType.OPERATOR, DbObjType.AGGREGATE));
+                    DbObjType.OPERATOR, DbObjType.AGGREGATE, DbObjType.CAST));
 
     private ComboViewer viewerProject;
     private ComboViewer viewerType;

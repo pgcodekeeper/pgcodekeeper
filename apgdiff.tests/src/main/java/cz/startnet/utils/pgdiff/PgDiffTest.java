@@ -520,6 +520,10 @@ public class PgDiffTest {
                     {"tabl_to_func_drop"},
                     // Tests scenario where owner and its privileges are both changed.
                     {"chg_owner_grant"},
+                    // Tests scenario where object definitions are compared
+                    {"compare_definitions"},
+                    // Tests scenario where CAST is compared.
+                    {"compare_casts"},
                     // Tests scenario where object definitions are compared.
                     {"compare_definitions"},
                     // Tests scenario where POLICY is compared.

@@ -34,6 +34,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterTable;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterView;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CommentOn;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateAggregate;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateCast;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateDomain;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateExtension;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateForeignTable;
@@ -116,6 +117,8 @@ implements SqlContextProcessor {
             p = new CreateIndex(ctx.create_index_statement(), db, tablespace);
         } else if (ctx.create_extension_statement() != null) {
             p = new CreateExtension(ctx.create_extension_statement(), db);
+        } else if (ctx.create_cast_statement() != null) {
+            p = new CreateCast(ctx.create_cast_statement(), db);
         } else if (ctx.create_trigger_statement() != null) {
             p = new CreateTrigger(ctx.create_trigger_statement(), db);
         } else if (ctx.create_rewrite_statement() != null) {
@@ -197,7 +200,8 @@ implements SqlContextProcessor {
                 || ctx.drop_trigger_statement() != null
                 || ctx.drop_rule_statement() != null
                 || ctx.drop_statements() != null
-                || ctx.drop_operator_statement() != null) {
+                || ctx.drop_operator_statement() != null
+                || ctx.drop_cast_statement() != null) {
             p = new DropStatement(ctx, db);
         } else {
             addToQueries(ctx, getAction(ctx));

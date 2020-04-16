@@ -1,6 +1,14 @@
 COMMENT ON DATABASE comments IS 'comments database';
 COMMENT ON SCHEMA public IS 'public schema';
 
+CREATE EXTENSION test_ext WITH SCHEMA pg_catalog;
+
+COMMENT ON EXTENSION test_ext IS 'test extension';
+
+CREATE CAST (integer AS bigint) WITHOUT FUNCTION;
+
+COMMENT ON CAST (integer AS bigint) IS 'test cast'; 
+
 CREATE TYPE public.typ_composite AS (
     key character varying(80) COLLATE pg_catalog."ru_RU.utf8",
     val text COLLATE pg_catalog."en_GB"

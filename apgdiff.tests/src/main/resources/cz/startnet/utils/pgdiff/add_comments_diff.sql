@@ -2,6 +2,10 @@ SET search_path = pg_catalog;
 
 COMMENT ON DATABASE current_database() IS 'comments database';
 
+COMMENT ON CAST (integer AS bigint) IS 'test cast';
+
+COMMENT ON EXTENSION test_ext IS 'test extension';
+
 COMMENT ON COLUMN public.typ_composite.key IS 'Type composite key comment';
 
 COMMENT ON COLUMN public.typ_composite.val IS 'Type composite val comment';

@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -11,6 +12,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_member_objectContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_on_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
@@ -19,6 +21,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.IStatementContainer;
+import cz.startnet.utils.pgdiff.schema.PgCast;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
@@ -43,6 +46,11 @@ public class CommentOn extends ParserAbstract {
         Character_stringContext str = ctx.character_string();
         String comment = str == null ? null : str.getText();
         Comment_member_objectContext obj = ctx.comment_member_object();
+
+        if (obj.CAST() != null) {
+            commentCast(obj, comment);
+            return;
+        }
 
         List<? extends ParserRuleContext> ids = null;
         if (obj.target_operator() != null) {
@@ -221,6 +229,18 @@ public class CommentOn extends ParserAbstract {
         } else {
             addOutlineRefForCommentOrRule(ACTION_COMMENT, ctx);
         }
+    }
+
+    private void commentCast(Comment_member_objectContext obj, String comment) {
+        Data_typeContext source = obj.source;
+        Data_typeContext target = obj.target;
+        String castName = PgCast.getSimpleName(getFullCtxText(source), getFullCtxText(target));
+        PgStatement cast = getSafe(PgDatabase::getCast, db, castName, source.getStart());
+        doSafe((s,c) -> s.setComment(db.getArguments(), c), cast, comment);
+        PgObjLocation ref = getCastLocation(source, target, ACTION_COMMENT);
+        db.getObjReferences().computeIfAbsent(fileName, k -> new ArrayList<>()).add(ref);
+        db.getObjDefinitions().values().stream().flatMap(List::stream)
+        .filter(ref::compare).forEach(def -> def.setComment(comment));
     }
 
     @Override
