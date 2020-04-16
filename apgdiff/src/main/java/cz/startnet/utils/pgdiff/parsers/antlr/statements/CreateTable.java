@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Col_labelContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_columnsContext;
@@ -11,7 +12,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_tableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Partition_byContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_oidContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
@@ -27,6 +28,7 @@ import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.SimplePgTable;
 import cz.startnet.utils.pgdiff.schema.TypedPgTable;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateTable extends TableAbstract {
     private final Create_table_statementContext ctx;
@@ -141,8 +143,8 @@ public class CreateTable extends TableAbstract {
 
     private void parseOptions(List<Storage_parameter_optionContext> options, AbstractRegularTable table){
         for (Storage_parameter_optionContext option : options){
-            Schema_qualified_nameContext key = option.schema_qualified_name();
-            List <IdentifierContext> optionIds = key.identifier();
+            Storage_parameter_nameContext key = option.storage_parameter_name();
+            List<Col_labelContext> optionIds = key.col_label();
             VexContext valueCtx = option.vex();
             String value = valueCtx == null ? "" : valueCtx.getText();
             String optionText = key.getText();
@@ -156,5 +158,10 @@ public class CreateTable extends TableAbstract {
                 fillOptionParams(value, optionText, false, table::addOption);
             }
         }
+    }
+
+    @Override
+    protected String getStmtAction() {
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.TABLE, ctx.name.identifier());
     }
 }

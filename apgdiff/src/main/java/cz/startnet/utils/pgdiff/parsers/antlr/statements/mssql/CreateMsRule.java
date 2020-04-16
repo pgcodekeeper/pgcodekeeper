@@ -55,6 +55,8 @@ public class CreateMsRule extends ParserAbstract {
 
     @Override
     public void parseObject() {
+        addOutlineRefForCommentOrRule(state, ctx);
+
         Object_typeContext nameCtx = ctx.object_type();
         // unsupported rules without object names
         if (db.getArguments().isIgnorePrivileges() || nameCtx == null) {
@@ -189,5 +191,10 @@ public class CreateMsRule extends ParserAbstract {
             overrides.computeIfAbsent(st,
                     k -> new StatementOverride()).addPrivilege(privilege);
         }
+    }
+
+    @Override
+    protected String getStmtAction() {
+        return state;
     }
 }

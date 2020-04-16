@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -21,7 +22,6 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgTrigger.TgTypes;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateTrigger extends ParserAbstract {
@@ -35,7 +35,7 @@ public class CreateTrigger extends ParserAbstract {
     public void parseObject() {
         List<IdentifierContext> ids = ctx.table_name.identifier();
         String schemaName = getSchemaNameSafe(ids);
-        addObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
+        addObjReference(ids, DbObjType.TABLE, null);
 
         PgTrigger trigger = new PgTrigger(ctx.name.getText());
         if (ctx.AFTER() != null) {
@@ -100,8 +100,10 @@ public class CreateTrigger extends ParserAbstract {
                 .schema_qualified_name_nontype();
         IdentifierContext sch = funcNameCtx.schema;
         if (sch != null) {
+            // TODO add empty signature to function name
+            // when function signatures in refs and defs will be supported
             addDepSafe(trigger, Arrays.asList(sch, funcNameCtx.identifier_nontype()),
-                    DbObjType.FUNCTION, true, "()");
+                    DbObjType.FUNCTION, true);
         }
 
         for (Identifier_listContext column : ctx.identifier_list()) {
@@ -127,5 +129,12 @@ public class CreateTrigger extends ParserAbstract {
             trigger.setWhen(getFullCtxText(vex));
             db.addAnalysisLauncher(new TriggerAnalysisLauncher(trigger, vex, location));
         }
+    }
+
+    @Override
+    protected String getStmtAction() {
+        List<IdentifierContext> ids = new ArrayList<>(ctx.table_name.identifier());
+        ids.add(ctx.name);
+        return getStrForStmtAction(ACTION_ALTER, DbObjType.TRIGGER, ids);
     }
 }

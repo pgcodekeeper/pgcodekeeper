@@ -285,34 +285,6 @@ public class GenericColumn implements Serializable {
         return eq;
     }
 
-    public final boolean compare(GenericColumn col) {
-        return Objects.equals(schema, col.schema)
-                && Objects.equals(table, col.table)
-                && Objects.equals(column, col.column)
-                && compareTypes(col.type);
-    }
-
-    private boolean compareTypes(DbObjType objType) {
-        if (type == objType) {
-            return true;
-        }
-
-        switch (objType) {
-        case TABLE:
-        case VIEW:
-        case SEQUENCE:
-            return type == DbObjType.TABLE || type == DbObjType.VIEW || type == DbObjType.SEQUENCE;
-        case FUNCTION:
-        case AGGREGATE:
-            return type == DbObjType.FUNCTION || type == DbObjType.AGGREGATE;
-        case TYPE:
-        case DOMAIN:
-            return type == DbObjType.TYPE || type == DbObjType.DOMAIN;
-        default:
-            return false;
-        }
-    }
-
     public String getQualifiedName() {
         return appendQualifiedName(new StringBuilder()).toString();
     }

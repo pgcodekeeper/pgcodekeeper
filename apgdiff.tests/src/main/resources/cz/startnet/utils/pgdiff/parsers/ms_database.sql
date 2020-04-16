@@ -142,4 +142,104 @@ GO
 ALTER DATABASE ADVENTUREWORKS2012 SET PARTNER FAILOVER;  
 GO  
 
-ALTER DATABASE AccountsDb1 SET HADR AVAILABILITY GROUP = AccountsAG;  
+ALTER DATABASE AccountsDb1 SET HADR AVAILABILITY GROUP = AccountsAG;
+GO
+
+ALTER DATABASE AdventureWorks 
+ADD FILE 
+(
+    NAME = Test1dat2,
+    FILENAME = 'C:\Program Files\Microsoft SQL Server\MSSQL10.MSSQLSERVER\MSSQL\DATA\t1dat2.ndf',
+    SIZE = 5MB,
+    MAXSIZE = 100MB,
+    FILEGROWTH = 5MB
+
+);
+GO
+
+ALTER DATABASE AdventureWorks
+ADD FILEGROUP Test1FG1;
+GO
+
+ALTER DATABASE AdventureWorks 
+ADD FILE 
+(
+    NAME = test1dat3,
+    FILENAME = 'C:\Program Files\Microsoft SQL Server\MSSQL10.MSSQLSERVER\MSSQL\DATA\t1dat3.ndf',
+    SIZE = 5MB,
+    MAXSIZE = 100MB,
+    FILEGROWTH = 5MB
+),
+(
+    NAME = test1dat4,
+    FILENAME = 'C:\Program Files\Microsoft SQL Server\MSSQL10.MSSQLSERVER\MSSQL\DATA\t1dat4.ndf',
+    SIZE = 5MB,
+    MAXSIZE = 100MB,
+    FILEGROWTH = 5MB
+)
+TO FILEGROUP Test1FG1;
+GO
+
+ALTER DATABASE AdventureWorks 
+ADD LOG FILE 
+(
+    NAME = test1log2,
+    FILENAME = 'C:\Program Files\Microsoft SQL Server\MSSQL10.MSSQLSERVER\MSSQL\DATA\test2log.ldf',
+    SIZE = 5MB,
+    MAXSIZE = 100MB,
+    FILEGROWTH = 5MB
+),
+(
+    NAME = test1log3,
+    FILENAME = 'C:\Program Files\Microsoft SQL Server\MSSQL10.MSSQLSERVER\MSSQL\DATA\test3log.ldf',
+    SIZE = 5MB,
+    MAXSIZE = 100MB,
+    FILEGROWTH = 5MB
+);
+GO
+
+ALTER DATABASE AdventureWorks
+REMOVE FILE test1dat4;
+GO
+
+ALTER DATABASE AdventureWorks 
+MODIFY FILE
+    (NAME = test1dat3,
+    SIZE = 20MB);
+GO
+
+ALTER DATABASE AdventureWorks
+MODIFY FILE
+(
+    NAME = Test1dat2,
+    FILENAME = N'c:\t1dat2.ndf'
+);
+GO
+
+ALTER DATABASE tempdb 
+MODIFY FILE (NAME = tempdev, FILENAME = 'E:\SQLData\tempdb.mdf');
+GO
+
+ALTER DATABASE AdventureWorks 
+MODIFY FILEGROUP Test1FG1 DEFAULT;
+GO
+ALTER DATABASE AdventureWorks 
+MODIFY FILEGROUP [PRIMARY] DEFAULT;
+GO
+
+ALTER database FileStreamPhotoDB
+ADD FILEGROUP TodaysPhotoShoot
+CONTAINS FILESTREAM
+GO
+
+ALTER database FileStreamPhotoDB
+ADD FILE
+(
+    NAME= 'PhotoShoot1',
+    FILENAME = 'C:\Users\Administrator\Pictures\TodaysPhotoShoot.ndf'
+)
+TO FILEGROUP TodaysPhotoShoot
+GO
+
+ALTER DATABASE [dbName] ADD FILEGROUP optimizedDataName CONTAINS MEMORY_OPTIMIZED_DATA
+GO

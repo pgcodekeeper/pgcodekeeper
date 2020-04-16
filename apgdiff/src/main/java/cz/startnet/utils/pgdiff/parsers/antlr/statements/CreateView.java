@@ -20,6 +20,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.ViewAnalysisLauncher;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgView;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateView extends ParserAbstract {
 
@@ -86,7 +87,7 @@ public class CreateView extends ParserAbstract {
         if (storage != null){
             List <Storage_parameter_optionContext> options = storage.storage_parameter_option();
             for (Storage_parameter_optionContext option: options){
-                String key = option.schema_qualified_name().getText();
+                String key = option.storage_parameter_name().getText();
                 VexContext value = option.vex();
                 ParserAbstract.fillOptionParams(value != null ? value.getText() : "", key , false, view::addOption);
             }
@@ -97,5 +98,10 @@ public class CreateView extends ParserAbstract {
         }
 
         addSafe(getSchemaSafe(ids), view, ids);
+    }
+
+    @Override
+    protected String getStmtAction() {
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.VIEW, context.name.identifier());
     }
 }

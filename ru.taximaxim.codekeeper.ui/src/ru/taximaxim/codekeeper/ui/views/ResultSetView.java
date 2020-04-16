@@ -49,9 +49,6 @@ public class ResultSetView extends ViewPart {
     @Override
     public void createPartControl(Composite parent) {
         tabFolder = new CTabFolder(parent, SWT.BOTTOM);
-        GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        gd.widthHint = 700;
-        tabFolder.setLayoutData(gd);
         tabFolder.addMenuDetectListener(event -> {
             clickedQueryTab = tabFolder.getItem(tabFolder.getDisplay()
                     .map(null, tabFolder, new Point(event.x,event.y)));

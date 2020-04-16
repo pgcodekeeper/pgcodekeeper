@@ -21,6 +21,7 @@ import cz.startnet.utils.pgdiff.schema.PartitionForeignPgTable;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.SimpleForeignPgTable;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateForeignTable extends TableAbstract {
 
@@ -80,5 +81,10 @@ public class CreateForeignTable extends TableAbstract {
             }
         }
         return table;
+    }
+
+    @Override
+    protected String getStmtAction() {
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.TABLE, ctx.name.identifier());
     }
 }

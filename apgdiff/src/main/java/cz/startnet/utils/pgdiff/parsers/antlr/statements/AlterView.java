@@ -10,7 +10,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.ViewAnalysisLauncher
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgView;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class AlterView extends ParserAbstract {
@@ -38,6 +37,11 @@ public class AlterView extends ParserAbstract {
             doSafe(PgView::removeColumnDefaultValue, dbView, getFullCtxText(ctx.column_name));
         }
 
-        addObjReference(ids, DbObjType.VIEW, StatementActions.ALTER);
+        addObjReference(ids, DbObjType.VIEW, ACTION_ALTER);
+    }
+
+    @Override
+    protected String getStmtAction() {
+        return getStrForStmtAction(ACTION_ALTER, DbObjType.VIEW, ctx.name.identifier());
     }
 }

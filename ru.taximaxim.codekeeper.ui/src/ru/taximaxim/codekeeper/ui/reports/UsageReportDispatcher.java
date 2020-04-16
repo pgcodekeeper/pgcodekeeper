@@ -3,17 +3,18 @@ package ru.taximaxim.codekeeper.ui.reports;
 import org.eclipse.core.runtime.IBundleGroup;
 import org.eclipse.core.runtime.IBundleGroupProvider;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IStartup;
+import org.eclipse.ui.PlatformUI;
 
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.UiSync;
 
 public class UsageReportDispatcher implements IStartup {
 
     @Override
     public void earlyStartup() {
 
-        Display.getDefault().asyncExec(() -> {
+        UiSync.exec(PlatformUI.getWorkbench().getDisplay(), () -> {
             UsageReporter reporter = UsageReporter.getInstance();
             Activator plugin = Activator.getDefault();
             String version = getVersion();
