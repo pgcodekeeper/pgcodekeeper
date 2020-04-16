@@ -10,6 +10,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.AbstractAnalysisLauncher;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.ViewAnalysisLauncher;
 import cz.startnet.utils.pgdiff.schema.IDatabase;
+import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.meta.MetaStorage;
 
@@ -50,12 +51,14 @@ public final class FullAnalyze {
         AntlrParser.finishAntlr(antlrTasks);
     }
 
-    public void analyzeView(String name) {
+    public void analyzeView(IRelation rel) {
         List<AbstractAnalysisLauncher> launchers = db.getAnalysisLaunchers();
         for (int i = 0; i < launchers.size(); ++i) {
             AbstractAnalysisLauncher l = launchers.get(i);
             if (l instanceof ViewAnalysisLauncher
-                    && (name == null || name.equals(l.getStmt().getName()))) {
+                    && (rel == null
+                    || (rel.getSchemaName().equals(l.getStmt().getSchemaName())
+                            && rel.getName().equals(l.getStmt().getName())))) {
                 // allow GC to reclaim context memory immediately
                 // and protects from infinite recursion
                 launchers.set(i, null);

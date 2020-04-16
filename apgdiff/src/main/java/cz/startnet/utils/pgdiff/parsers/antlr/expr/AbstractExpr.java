@@ -293,7 +293,7 @@ public abstract class AbstractExpr {
 
     protected void analyzeViewColumns(IRelation rel) {
         if (fullAnalyze != null) {
-            fullAnalyze.analyzeView(rel.getName());
+            fullAnalyze.analyzeView(rel);
         }
     }
 
