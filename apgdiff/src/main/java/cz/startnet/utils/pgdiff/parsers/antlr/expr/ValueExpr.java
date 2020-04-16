@@ -740,10 +740,6 @@ public class ValueExpr extends AbstractExpr {
         }
     }
 
-    private Collection<? extends IFunction> availableFunctions(String schemaName, ParserRuleContext errorCtx) {
-        return findSchema(schemaName, errorCtx).getFunctions();
-    }
-
     private String getFunctionReturns(IFunction f) {
         return f.getReturnsColumns().isEmpty() ? f.getReturns() : TypesSetManually.FUNCTION_TABLE;
     }

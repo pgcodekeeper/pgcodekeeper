@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedHashSet;
@@ -339,7 +340,7 @@ public abstract class AbstractExpr {
         }
 
         String functionName = QNameParser.getFirstName(ids);
-        findSchema(schemaName, ids.get(0)).getFunctions().stream()
+        availableFunctions(schemaName, ids.get(0)).stream()
         .filter(f -> functionName.equals(f.getBareName()))
         .findAny().ifPresent(this::addFunctionDepcy);
     }
@@ -361,11 +362,15 @@ public abstract class AbstractExpr {
         addDepcy(new GenericColumn(QNameParser.getFirstName(ids), DbObjType.SCHEMA));
     }
 
-    public IRelation findRelation(String schemaName, String relationName) {
+    protected Collection<? extends IFunction> availableFunctions(String schemaName, ParserRuleContext errorCtx) {
+        return findSchema(schemaName, errorCtx).getFunctions();
+    }
+
+    protected IRelation findRelation(String schemaName, String relationName) {
         return findSchema(schemaName, null).getRelation(relationName);
     }
 
-    protected ISchema findSchema(String schemaName, ParserRuleContext errorCtx) {
+    private ISchema findSchema(String schemaName, ParserRuleContext errorCtx) {
         String name = schemaName == null ? ApgdiffConsts.PG_CATALOG : schemaName;
         ISchema foundSchema = db.getSchema(name);
         if (foundSchema == null) {
