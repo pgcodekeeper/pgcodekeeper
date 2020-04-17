@@ -28,7 +28,7 @@ public class MetaStorage implements Serializable {
     private static final String OTHER_LOCATION = "other_location";
 
     private final ConcurrentMap<String, List<MetaStatement>> definitions = new ConcurrentHashMap<>();
-    private transient MetaDatabase tree;
+    private transient volatile MetaDatabase tree;
 
 
     public void concat(PgSystemStorage db) {

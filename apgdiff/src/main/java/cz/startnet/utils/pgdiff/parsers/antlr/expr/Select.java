@@ -386,7 +386,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
         }
 
         IStatementContainer rel = schema.getStatementContainer(dep.table);
-        if (rel == null || rel.getRelationColumns().noneMatch(col -> col.getFirst().equals(dep.column))) {
+        if (rel == null) {
             return;
         }
 
