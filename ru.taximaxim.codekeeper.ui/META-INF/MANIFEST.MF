@@ -28,8 +28,7 @@ Require-Bundle: org.eclipse.compare;bundle-version="[3.5.0,4.0.0)",
  org.eclipse.jgit;bundle-version="[4.6.0,6.0.0)",
  org.eclipse.equinox.security;bundle-version="[1.2.0,2.0.0)"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Import-Package: org.jgrapht,
- org.osgi.framework;version="[1.6.0,2.0.0)"
+Import-Package: org.osgi.framework;version="[1.6.0,2.0.0)"
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
 Bundle-Vendor: %Bundle-Vendor

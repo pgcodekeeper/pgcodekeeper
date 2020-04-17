@@ -31,10 +31,6 @@ public class SimpleDepcyResolver {
         this.newDepcyGraph = newDatabase == null ? null : new DepcyGraph(newDatabase, true);
     }
 
-    public DirectedGraph<PgStatement, DefaultEdge> getOldGraph() {
-        return oldDepcyGraph.getGraph();
-    }
-
     public Set<PgStatement> getCreateDepcies(PgStatement toCreate) {
         if (newDb == null) {
             throw new IllegalStateException("New database not setted");
@@ -83,5 +79,15 @@ public class SimpleDepcyResolver {
                 depcies.add(statement);
             }
         }
+    }
+
+    public Set<PgStatement> getConnectedTo(PgStatement entity) {
+        Set<PgStatement> connected = new HashSet<>();
+        DirectedGraph<PgStatement, DefaultEdge> currentGraph = oldDepcyGraph.getGraph();
+        for (DefaultEdge e : currentGraph.outgoingEdgesOf(entity)) {
+            connected.add(currentGraph.getEdgeTarget(e));
+        }
+
+        return connected;
     }
 }
