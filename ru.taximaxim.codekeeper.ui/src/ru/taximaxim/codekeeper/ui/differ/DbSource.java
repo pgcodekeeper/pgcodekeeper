@@ -232,7 +232,7 @@ class DbSourceProject extends DbSource {
                 pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
                 OpenProjectUtils.checkMsSql(project), project, oneTimePrefs);
 
-        UIProjectLoader loader = new UIProjectLoader(project, arguments, monitor);
+        UIProjectLoader loader = new UIProjectLoader(project, arguments, monitor, null);
         try {
             return loader.loadDatabaseWithLibraries();
         } finally {

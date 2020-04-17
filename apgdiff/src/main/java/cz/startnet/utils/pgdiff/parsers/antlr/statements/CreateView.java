@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+
 import java.text.MessageFormat;
 import java.util.List;
 
@@ -73,6 +74,7 @@ public class CreateView extends ParserAbstract {
         }
         Select_stmtContext vQuery = ctx.v_query;
         if (vQuery != null) {
+            addStatementBody(vQuery);
             view.setQuery(getFullCtxText(vQuery), AntlrUtils.normalizeWhitespaceUnquoted(vQuery, stream));
             db.addAnalysisLauncher(new ViewAnalysisLauncher(view, vQuery, fileName));
         }

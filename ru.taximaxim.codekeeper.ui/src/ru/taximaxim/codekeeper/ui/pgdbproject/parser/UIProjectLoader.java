@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.eclipse.core.resources.IContainer;
@@ -32,6 +33,7 @@ import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.loader.ProjectLoader;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
@@ -47,10 +49,13 @@ import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 public class UIProjectLoader extends ProjectLoader {
 
     private final IProject iProject;
+    private final List<StatementBodyContainer> statementBodies;
 
-    public UIProjectLoader(IProject iProject, PgDiffArguments arguments, IProgressMonitor monitor) {
+    public UIProjectLoader(IProject iProject, PgDiffArguments arguments, IProgressMonitor monitor,
+            List<StatementBodyContainer> statementBodies) {
         super(null, arguments, monitor, new ArrayList<>());
         this.iProject = iProject;
+        this.statementBodies = statementBodies;
     }
 
     /**
@@ -313,12 +318,16 @@ public class UIProjectLoader extends ProjectLoader {
     @Override
     protected void finishLoader(PgDumpLoader l) {
         super.finishLoader(l);
+        if (statementBodies != null) {
+            statementBodies.addAll(l.getStatementBodyReferences());
+        }
         ((PgUIDumpLoader) l).updateMarkers();
     }
 
-    public static PgDatabase buildFiles(Collection<IFile> files, boolean isMsSql, IProgressMonitor monitor)
-            throws InterruptedException, IOException, CoreException {
-        UIProjectLoader loader = new UIProjectLoader(null, null, monitor);
+    public static PgDatabase buildFiles(Collection<IFile> files, boolean isMsSql,
+            IProgressMonitor monitor, List<StatementBodyContainer> statementBodies)
+                    throws InterruptedException, IOException, CoreException {
+        UIProjectLoader loader = new UIProjectLoader(null, null, monitor, statementBodies);
         SubMonitor mon = SubMonitor.convert(monitor, files.size());
         PgDatabase d = isMsSql ? loader.buildMsFiles(files, mon) : loader.buildPgFiles(files, mon);
         loader.finishLoaders();
@@ -327,7 +336,7 @@ public class UIProjectLoader extends ProjectLoader {
 
     public static PgStatement parseStatement(IFile file, Collection<DbObjType> types)
             throws InterruptedException, IOException, CoreException {
-        return buildFiles(Arrays.asList(file), false, new NullProgressMonitor())
+        return buildFiles(Arrays.asList(file), false, new NullProgressMonitor(), null)
                 .getDescendants()
                 .filter(e -> types.contains(e.getStatementType()))
                 .findAny().orElse(null);

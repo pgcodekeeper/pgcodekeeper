@@ -10,8 +10,11 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
@@ -39,8 +42,10 @@ import org.eclipse.ui.actions.BuildAction;
 import org.eclipse.ui.ide.ResourceUtil;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
+import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
@@ -161,30 +166,70 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         removeResFromRefs(file);
         objDefinitions.putAll(db.getObjDefinitions());
         objReferences.putAll(db.getObjReferences());
+        fillStatementBodies(loader.getStatementBodyReferences());
         notifyListeners();
     }
 
     public void getObjFromProjFiles(Collection<IFile> files, IProgressMonitor monitor, boolean isMsSql)
             throws InterruptedException, IOException, CoreException {
-        PgDatabase db = UIProjectLoader.buildFiles(files, isMsSql, monitor);
+        List<StatementBodyContainer> statementBodies = new ArrayList<>();
+        PgDatabase db = UIProjectLoader.buildFiles(files, isMsSql, monitor, statementBodies);
         files.forEach(this::removeResFromRefs);
         objDefinitions.putAll(db.getObjDefinitions());
         objReferences.putAll(db.getObjReferences());
+        fillStatementBodies(statementBodies);
         notifyListeners();
+    }
+
+    private void fillStatementBodies(List<StatementBodyContainer> statementBodies) {
+        for (StatementBodyContainer statementBody : statementBodies) {
+            String body = statementBody.getBody().toLowerCase(Locale.ROOT);
+            Set<PgObjLocation> newRefs = new LinkedHashSet<>();
+            for (PgObjLocation def : (Iterable<PgObjLocation>) getAllObjDefinitions()::iterator) {
+                int lenght = def.getObjLength();
+                if (lenght == 0) {
+                    continue;
+                }
+                String name = def.getObjName().toLowerCase(Locale.ROOT);
+                int index = body.indexOf(name);
+                while (index >= 0) {
+                    int next = index + lenght;
+                    // check word boundaries, whole words only
+                    if ((index == 0 || !PgDiffUtils.isValidIdChar(body.charAt(index - 1))) &&
+                            (next >= body.length() || !PgDiffUtils.isValidIdChar(body.charAt(next)))) {
+                        PgObjLocation loc = new PgObjLocation(def.getObj(), null,
+                                statementBody.getOffset() + index,
+                                statementBody.getLineNumber(),
+                                statementBody.getPath());
+                        newRefs.add(loc);
+                    }
+                    index = body.indexOf(name, index + 1);
+                }
+            }
+            if (!newRefs.isEmpty()) {
+                List<PgObjLocation> refs = objReferences.get(statementBody.getPath());
+                if (refs != null) {
+                    newRefs.addAll(refs);
+                }
+                objReferences.put(statementBody.getPath(), new ArrayList<>(newRefs));
+            }
+        }
     }
 
     public void getFullDBFromPgDbProject(IProject proj, IProgressMonitor monitor)
             throws InterruptedException, IOException, CoreException {
         SubMonitor mon = SubMonitor.convert(monitor, UIProjectLoader.countFiles(proj));
+        List<StatementBodyContainer> statementBodies = new ArrayList<>();
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(proj.getDefaultCharset(true));
         args.setMsSql(OpenProjectUtils.checkMsSql(proj));
-        PgDatabase db = new UIProjectLoader(proj, args, mon)
+        PgDatabase db = new UIProjectLoader(proj, args, mon, statementBodies)
                 .loadDatabaseSchemaFromProject();
         objDefinitions.clear();
         objDefinitions.putAll(db.getObjDefinitions());
         objReferences.clear();
         objReferences.putAll(db.getObjReferences());
+        fillStatementBodies(statementBodies);
         notifyListeners();
     }
 
@@ -205,6 +250,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         objDefinitions.putAll(db.getObjDefinitions());
         objReferences.clear();
         objReferences.putAll(db.getObjReferences());
+        fillStatementBodies(loader.getStatementBodyReferences());
         notifyListeners();
     }
 
