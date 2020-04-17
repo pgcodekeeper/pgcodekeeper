@@ -522,6 +522,8 @@ public class PgDiffTest {
                     {"chg_owner_grant"},
                     // Tests scenario where object definitions are compared
                     {"compare_definitions"},
+                    // Tests scenario where FUNCTION is compared.
+                    {"compare_functions"},
                     // Tests scenario where CAST is compared.
                     {"compare_casts"},
                 });
