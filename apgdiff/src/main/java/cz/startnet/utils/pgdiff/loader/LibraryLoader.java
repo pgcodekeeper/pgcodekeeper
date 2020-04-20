@@ -22,8 +22,8 @@ import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.libraries.PgLibrary;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.StatementLocation;
 import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
@@ -78,14 +78,14 @@ public class LibraryLoader extends DatabaseLoader {
                 db = new JdbcLoader(JdbcConnector.fromUrl(path, timezone), args).getDbFromJdbc();
             }
 
-            db.getDescendants().forEach(st -> st.setLocation(new StatementLocation(path)));
+            db.getDescendants().forEach(st -> st.setLocation(new PgObjLocation(path)));
             return db;
 
         case URL:
             try {
                 URI uri = new URI(path);
                 db = loadURI(uri, args, isIgnorePriv);
-                db.getDescendants().forEach(st -> st.setLocation(new StatementLocation(path)));
+                db.getDescendants().forEach(st -> st.setLocation(new PgObjLocation(path)));
                 return db;
             } catch (URISyntaxException ex) {
                 // shouldn't happen, already checked by getSource
@@ -153,7 +153,7 @@ public class LibraryLoader extends DatabaseLoader {
         PgDatabase db = getLibrary(unzip(path, metaPath.resolve(name)),
                 args, isIgnorePriv);
 
-        db.getDescendants().forEach(st -> st.setLocation(new StatementLocation(path.toString())));
+        db.getDescendants().forEach(st -> st.setLocation(new PgObjLocation(path.toString())));
         return db;
     }
 

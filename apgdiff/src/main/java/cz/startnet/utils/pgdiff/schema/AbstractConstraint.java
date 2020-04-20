@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import cz.startnet.utils.pgdiff.ContextLocation;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -106,8 +107,8 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath imple
     }
 
     @Override
-    public StatementLocation getLocation() {
-        StatementLocation location = getMeta().getLocation();
+    public ContextLocation getLocation() {
+        ContextLocation location = getMeta().getLocation();
         if (location == null) {
             location = getParent().getLocation();
         }
@@ -115,7 +116,7 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath imple
     }
 
     @Override
-    public void setLocation(StatementLocation location) {
+    public void setLocation(ContextLocation location) {
         getMeta().setLocation(location);
     }
 

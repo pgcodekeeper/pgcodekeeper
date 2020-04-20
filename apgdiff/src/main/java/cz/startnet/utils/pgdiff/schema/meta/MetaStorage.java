@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
 
+import cz.startnet.utils.pgdiff.ContextLocation;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.ICast;
 import cz.startnet.utils.pgdiff.schema.IConstraint;
@@ -16,7 +17,6 @@ import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.IStatement;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.StatementLocation;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
@@ -126,7 +126,7 @@ public class MetaStorage implements Serializable {
 
         String path = OTHER_LOCATION;
         if (st instanceof PgStatement) {
-            StatementLocation loc = ((PgStatement) st).getLocation();
+            ContextLocation loc = ((PgStatement) st).getLocation();
             if (loc != null) {
                 path = loc.getFilePath();
             }

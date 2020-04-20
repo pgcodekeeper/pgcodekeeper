@@ -12,6 +12,8 @@ public abstract class ContextLocation implements Serializable {
     private final int lineNumber;
     private final int charPositionInLine;
 
+    private int length = -1;
+
     public ContextLocation(String filePath, int offset, int lineNumber, int charPositionInLine) {
         this.filePath = filePath;
         this.offset = offset;
@@ -33,6 +35,14 @@ public abstract class ContextLocation implements Serializable {
 
     public int getCharPositionInLine() {
         return charPositionInLine;
+    }
+
+    public void setLength(int length) {
+        this.length = length;
+    }
+
+    public int getLength() {
+        return length;
     }
 
     @Override

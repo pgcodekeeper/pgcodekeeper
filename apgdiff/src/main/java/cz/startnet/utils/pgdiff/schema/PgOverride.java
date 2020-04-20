@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.schema;
 
+import cz.startnet.utils.pgdiff.ContextLocation;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgOverride {
@@ -36,11 +37,11 @@ public class PgOverride {
         return oldStatement.getLocation().getFilePath();
     }
 
-    public StatementLocation getNewLocation() {
+    public ContextLocation getNewLocation() {
         return newStatement.getLocation();
     }
 
-    public StatementLocation getOldLocation() {
+    public ContextLocation getOldLocation() {
         return oldStatement.getLocation();
     }
 }

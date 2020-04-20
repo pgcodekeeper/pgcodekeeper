@@ -14,7 +14,6 @@ public class PgObjLocation extends ContextLocation {
 
     private DangerStatement danger;
     private String comment = "";
-    private int length = -1;
 
     private final String action;
 
@@ -44,15 +43,17 @@ public class PgObjLocation extends ContextLocation {
         this.sql = sql;
     }
 
+    public PgObjLocation(String filePath) {
+        this(null, null, 0, 0, 0, filePath);
+    }
+
     public String getAction() {
         return action;
     }
 
-    public void setLength(int length) {
-        this.length = length;
-    }
-
-    public int getObjLength() {
+    @Override
+    public int getLength() {
+        int length = super.getLength();
         if (length > 0) {
             return length;
         }

@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.util.Objects;
 
+import cz.startnet.utils.pgdiff.ContextLocation;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -73,8 +74,8 @@ public abstract class AbstractColumn extends PgStatementWithSearchPath {
     }
 
     @Override
-    public StatementLocation getLocation() {
-        StatementLocation location = getMeta().getLocation();
+    public ContextLocation getLocation() {
+        ContextLocation location = getMeta().getLocation();
         if (location == null) {
             location = getParent().getLocation();
         }
@@ -82,7 +83,7 @@ public abstract class AbstractColumn extends PgStatementWithSearchPath {
     }
 
     @Override
-    public void setLocation(StatementLocation location) {
+    public void setLocation(ContextLocation location) {
         getMeta().setLocation(location);
     }
 

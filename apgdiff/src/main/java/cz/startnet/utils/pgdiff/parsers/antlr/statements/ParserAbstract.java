@@ -43,7 +43,6 @@ import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgOperator;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.StatementLocation;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -299,8 +298,7 @@ public abstract class ParserAbstract {
         PgObjLocation loc = getLocation(ids, child.getStatementType(),
                 ACTION_CREATE, false, null);
         if (loc != null) {
-            child.setLocation(new StatementLocation(fileName, loc.getOffset(),
-                    loc.getLineNumber(), loc.getCharPositionInLine(), loc.getObjLength()));
+            child.setLocation(loc);
             db.addToQueries(fileName, loc);
         }
     }
