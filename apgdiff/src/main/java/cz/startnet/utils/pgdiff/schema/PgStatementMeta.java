@@ -1,18 +1,15 @@
 package cz.startnet.utils.pgdiff.schema;
 
-import cz.startnet.utils.pgdiff.ContextLocation;
-
 public class PgStatementMeta {
-
-    private ContextLocation location;
+    private PgObjLocation location;
     private String author;
     private boolean isLib;
 
-    public ContextLocation getLocation() {
+    public PgObjLocation getLocation() {
         return location;
     }
 
-    public void setLocation(ContextLocation location) {
+    public void setLocation(PgObjLocation location) {
         this.location = location;
     }
 

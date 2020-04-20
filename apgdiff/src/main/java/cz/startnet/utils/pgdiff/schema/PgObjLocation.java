@@ -20,6 +20,8 @@ public class PgObjLocation extends ContextLocation {
     private final GenericColumn obj;
     private String sql;
 
+    private int length = -1;
+
     public PgObjLocation(GenericColumn obj, String action,
             int offset, int lineNumber, int charPositionInLine, String filePath) {
         super(filePath, offset, lineNumber, charPositionInLine);
@@ -51,9 +53,11 @@ public class PgObjLocation extends ContextLocation {
         return action;
     }
 
-    @Override
-    public int getLength() {
-        int length = super.getLength();
+    public void setLength(int length) {
+        this.length = length;
+    }
+
+    public int getObjLength() {
         if (length > 0) {
             return length;
         }

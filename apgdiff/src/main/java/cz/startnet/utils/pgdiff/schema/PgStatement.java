@@ -12,7 +12,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import cz.startnet.utils.pgdiff.ContextLocation;
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -100,11 +99,11 @@ public abstract class PgStatement implements IStatement, IHashable {
         return parent;
     }
 
-    public ContextLocation getLocation() {
+    public PgObjLocation getLocation() {
         return getMeta().getLocation();
     }
 
-    public void setLocation(ContextLocation location) {
+    public void setLocation(PgObjLocation location) {
         getMeta().setLocation(location);
     }
 
