@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.schema.system;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -11,7 +10,7 @@ import cz.startnet.utils.pgdiff.schema.ISchema;
 import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class PgSystemSchema extends PgSystemStatement implements ISchema, Serializable {
+public class PgSystemSchema extends PgSystemStatement implements ISchema {
 
     private static final long serialVersionUID = -5092245933861789744L;
 
