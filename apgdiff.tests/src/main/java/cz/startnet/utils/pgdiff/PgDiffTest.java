@@ -56,25 +56,13 @@ public class PgDiffTest {
                     {"add_table_with_partition"},
                     // Tests scenario where WITH OIDS is dropped from TABLE.
                     {"drop_with_oids"},
-                    // Tests scenario where INDEX is added.
-                    {"add_index"},
                     // Tests scenario where PARTITION INDEX is added.
                     {"add_partition_index"},
                     // Tests scenario where VIEW INDEX is added.
                     {"add_view_index"},
-                    // Tests scenario where INDEX is dropped.
-                    {"drop_index"},
-                    // Tests scenario where INDEX with including is added.
-                    {"add_index_with_including"},
                     // Tests scenario where INDEX that TABLE CLUSTER is based
                     // on is dropped.
                     {"drop_index_with_cluster"},
-                    // Tests scenario where INDEX definition is modified.
-                    {"modify_index"},
-                    // Tests scenario where INDEX option is modified.
-                    {"modify_index_option"},
-                    // Tests scenario where INDEX tablespace is modified.
-                    {"modify_index_tablespace"},
                     // Tests scenario where PARTITION INDEX is modified.
                     {"modify_partition_index"},
                     // Tests scenario where STATISTICS information is added
