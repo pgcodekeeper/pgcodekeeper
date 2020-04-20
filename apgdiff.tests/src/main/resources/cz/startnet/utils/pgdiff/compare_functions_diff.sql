@@ -92,8 +92,12 @@ CREATE OR REPLACE FUNCTION public.f25(integer) RETURNS void
     LANGUAGE sql IMMUTABLE
     AS $$ $$;
 
-CREATE OR REPLACE FUNCTION public.f29(integer) RETURNS void
+CREATE OR REPLACE FUNCTION public.f28(integer) RETURNS void
     LANGUAGE sql
+    AS $$ $$;
+
+CREATE OR REPLACE FUNCTION public.f29(integer) RETURNS void
+    LANGUAGE sql LEAKPROOF
     AS $$ $$;
 
 CREATE OR REPLACE FUNCTION public.f30(integer) RETURNS void
@@ -110,7 +114,7 @@ CREATE OR REPLACE FUNCTION public.f32(integer) RETURNS void
 
 CREATE OR REPLACE FUNCTION public.f33(integer) RETURNS void
     LANGUAGE sql
-    SET zero_damaged_pages TO false
+    SET zero_damaged_pages FROM CURRENT
     AS $$ $$;
 
 CREATE OR REPLACE FUNCTION public.f34(integer) RETURNS void

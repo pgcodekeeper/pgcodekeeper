@@ -42,8 +42,8 @@ CREATE FUNCTION public.f26(integer) RETURNS void LANGUAGE sql AS $$ $$;
 CREATE FUNCTION public.f27(integer) RETURNS void LANGUAGE sql VOLATILE AS $$ $$;
 
 --leakproof
-CREATE FUNCTION public.f29(integer) RETURNS void LANGUAGE sql AS $$ $$;
-CREATE FUNCTION public.f28(integer) RETURNS void LANGUAGE sql LEAKPROOF AS $$ $$;
+CREATE FUNCTION public.f28(integer) RETURNS void LANGUAGE sql AS $$ $$;
+CREATE FUNCTION public.f29(integer) RETURNS void LANGUAGE sql LEAKPROOF AS $$ $$;
 
 --transform
 CREATE FUNCTION public.f30(integer) RETURNS void LANGUAGE sql AS $$ $$;
@@ -51,7 +51,7 @@ CREATE FUNCTION public.f31(integer) RETURNS void LANGUAGE sql TRANSFORM FOR TYPE
 CREATE FUNCTION public.f32(integer) RETURNS void LANGUAGE sql TRANSFORM FOR TYPE text AS $$ $$;
 
 --configuration
-CREATE FUNCTION public.f33(integer) RETURNS void LANGUAGE sql SET zero_damaged_pages = false AS $$ $$;
+CREATE FUNCTION public.f33(integer) RETURNS void LANGUAGE sql SET zero_damaged_pages FROM CURRENT AS $$ $$;
 CREATE FUNCTION public.f34(integer) RETURNS void LANGUAGE sql SET debug_deadlocks = true AS $$ $$;
 CREATE FUNCTION public.f35(integer) RETURNS void LANGUAGE sql AS $$ $$;
 CREATE FUNCTION public.f36(integer) RETURNS void LANGUAGE sql SET zero_damaged_pages = true AS $$ $$
