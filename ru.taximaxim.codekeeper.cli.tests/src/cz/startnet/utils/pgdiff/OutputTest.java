@@ -402,7 +402,7 @@ class FailConcurrentlyArgumentsProvider extends ArgumentsProvider {
 class ConcurrentlyArgumentsProvider extends ArgumentsProvider {
 
     public ConcurrentlyArgumentsProvider() {
-        super("add_index");
+        super("add_view_index");
     }
 
     @Override
@@ -416,7 +416,7 @@ class ConcurrentlyArgumentsProvider extends ArgumentsProvider {
     @Override
     public String output() {
         return "SET search_path = pg_catalog;\n\n" +
-                "CREATE INDEX CONCURRENTLY testindex3 ON public.testtable USING btree (field3);\n";
+                "CREATE INDEX CONCURRENTLY testindex ON public.testview USING btree (first);\n";
     }
 }
 
