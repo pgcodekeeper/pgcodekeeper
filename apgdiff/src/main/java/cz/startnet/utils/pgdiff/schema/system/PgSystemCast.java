@@ -1,11 +1,9 @@
 package cz.startnet.utils.pgdiff.schema.system;
 
-import java.io.Serializable;
-
 import cz.startnet.utils.pgdiff.schema.ICast;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class PgSystemCast extends PgSystemStatement implements Serializable, ICast {
+public class PgSystemCast extends PgSystemStatement implements ICast {
 
     private static final long serialVersionUID = -5461313864086677218L;
 
