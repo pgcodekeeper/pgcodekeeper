@@ -14,13 +14,12 @@ public class PgObjLocation extends ContextLocation {
 
     private DangerStatement danger;
     private String comment = "";
+    private int length = -1;
 
     private final String action;
 
     private final GenericColumn obj;
     private String sql;
-
-    private int length = -1;
 
     public PgObjLocation(GenericColumn obj, String action,
             int offset, int lineNumber, int charPositionInLine, String filePath) {
