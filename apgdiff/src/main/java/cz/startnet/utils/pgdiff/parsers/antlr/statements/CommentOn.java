@@ -21,12 +21,12 @@ import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.ICast;
-import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.PgStatementContainer;
 import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -145,7 +145,7 @@ public class CommentOn extends ParserAbstract {
             st = getSafe(PgDatabase::getExtension, db, nameCtx);
         } else if (obj.CONSTRAINT() != null) {
             List<IdentifierContext> parentIds = obj.table_name.identifier();
-            IStatementContainer table = getSafe(AbstractSchema::getStatementContainer,
+            PgStatementContainer table = getSafe(AbstractSchema::getStatementContainer,
                     schema, QNameParser.getFirstNameCtx(parentIds));
             addObjReference(parentIds, DbObjType.TABLE, null);
             type = DbObjType.CONSTRAINT;
@@ -155,7 +155,7 @@ public class CommentOn extends ParserAbstract {
                 PgDomain domain = getSafe(AbstractSchema::getDomain, schema, nameCtx);
                 st = getSafe(PgDomain::getConstraint, domain, nameCtx);
             } else {
-                st = getSafe(IStatementContainer::getConstraint, table, nameCtx);
+                st = getSafe(PgStatementContainer::getConstraint, table, nameCtx);
             }
         } else if (obj.TRIGGER() != null && obj.EVENT() == null) {
             type = DbObjType.TRIGGER;
@@ -163,15 +163,15 @@ public class CommentOn extends ParserAbstract {
             addObjReference(parentIds, DbObjType.TABLE, null);
             ids = Arrays.asList(QNameParser.getSchemaNameCtx(parentIds),
                     QNameParser.getFirstNameCtx(parentIds), nameCtx);
-            IStatementContainer c = getSafe(AbstractSchema::getStatementContainer, schema,
+            PgStatementContainer c = getSafe(AbstractSchema::getStatementContainer, schema,
                     QNameParser.getFirstNameCtx(parentIds));
-            st = getSafe(IStatementContainer::getTrigger, c, nameCtx);
+            st = getSafe(PgStatementContainer::getTrigger, c, nameCtx);
         } else if (obj.DATABASE() != null) {
             st = db;
             type = DbObjType.DATABASE;
         } else if (obj.INDEX() != null) {
 
-            PgStatement commentOn = (PgStatement) getSafe((sc,n) -> sc.getStatementContainers()
+            PgStatement commentOn = getSafe((sc,n) -> sc.getStatementContainers()
                     .flatMap(c -> Stream.concat(c.getIndexes().stream(), c.getConstraints().stream()))
                     .filter(s -> s.getName().equals(n))
                     .collect(Collectors.reducing((a,b) -> b.getStatementType() == DbObjType.INDEX ? b : a))
@@ -204,9 +204,9 @@ public class CommentOn extends ParserAbstract {
             addObjReference(parentIds, DbObjType.TABLE, null);
             ids = Arrays.asList(QNameParser.getSchemaNameCtx(parentIds),
                     QNameParser.getFirstNameCtx(parentIds), nameCtx);
-            IStatementContainer c = getSafe(AbstractSchema::getStatementContainer, schema,
+            PgStatementContainer c = getSafe(AbstractSchema::getStatementContainer, schema,
                     QNameParser.getFirstNameCtx(obj.table_name.identifier()));
-            st = getSafe(IStatementContainer::getRule, c, nameCtx);
+            st = getSafe(PgStatementContainer::getRule, c, nameCtx);
         } else if (obj.CONFIGURATION() != null) {
             type = DbObjType.FTS_CONFIGURATION;
             st = getSafe(AbstractSchema::getFtsConfiguration, schema, nameCtx);

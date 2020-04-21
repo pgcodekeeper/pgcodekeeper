@@ -5,12 +5,8 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
-import cz.startnet.utils.pgdiff.schema.AbstractIndex;
-import cz.startnet.utils.pgdiff.schema.AbstractTrigger;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IStatementContainer;
-import cz.startnet.utils.pgdiff.schema.PgRule;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MetaStatementContainer extends MetaRelation implements IStatementContainer {
@@ -64,65 +60,8 @@ public class MetaStatementContainer extends MetaRelation implements IStatementCo
         }
     }
 
-
-    @Override
-    public void addTrigger(AbstractTrigger trigger) {
-
-    }
-
-    @Override
-    public AbstractTrigger getTrigger(String name) {
-        return null;
-    }
-
-    @Override
-    public Collection<AbstractTrigger> getTriggers() {
-        return null;
-    }
-
-    @Override
-    public void addRule(PgRule rule) {
-
-    }
-
-    @Override
-    public PgRule getRule(String name) {
-        return null;
-    }
-
-    @Override
-    public Collection<PgRule> getRules() {
-        return null;
-    }
-
-    @Override
-    public void addIndex(AbstractIndex index) {
-
-    }
-
-    @Override
-    public AbstractIndex getIndex(String name) {
-        return null;
-    }
-
-    @Override
-    public Collection<AbstractIndex> getIndexes() {
-        return null;
-    }
-
-    @Override
-    public void addConstraint(AbstractConstraint constraint) {
-
-    }
-
-    @Override
-    public AbstractConstraint getConstraint(String name) {
-        return null;
-    }
-
     @Override
     public Collection<MetaConstraint> getConstraints() {
         return Collections.unmodifiableCollection(constraints.values());
     }
-
 }
