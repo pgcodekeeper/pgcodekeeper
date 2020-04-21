@@ -6,6 +6,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.IDatabase;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 
 public class ConstraintAnalysisLauncher extends AbstractAnalysisLauncher {
@@ -15,7 +16,7 @@ public class ConstraintAnalysisLauncher extends AbstractAnalysisLauncher {
     }
 
     @Override
-    public Set<GenericColumn> analyze(ParserRuleContext ctx) {
-        return analyzeTableChildVex((VexContext) ctx);
+    public Set<GenericColumn> analyze(ParserRuleContext ctx, IDatabase db) {
+        return analyzeTableChildVex((VexContext) ctx, db);
     }
 }

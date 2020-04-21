@@ -1,4 +1,4 @@
-package cz.startnet.utils.pgdiff.schema.system;
+package cz.startnet.utils.pgdiff.schema.meta;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,12 +9,12 @@ import java.util.Map;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.ArgMode;
 import cz.startnet.utils.pgdiff.schema.Argument;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IFunction;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class PgSystemFunction extends PgSystemStatement implements IFunction {
+public class MetaFunction extends MetaStatement implements IFunction {
 
-    private static final long serialVersionUID = -7905948011960006249L;
+    private static final long serialVersionUID = -585518205768372673L;
 
     private List<Argument> arguments;
     private transient String signatureCache;
@@ -35,8 +35,8 @@ public class PgSystemFunction extends PgSystemStatement implements IFunction {
     private String returns;
     private boolean setof;
 
-    public PgSystemFunction(final String name) {
-        super(name, DbObjType.FUNCTION);
+    public MetaFunction(GenericColumn object) {
+        super(object);
     }
 
     @Override
@@ -53,7 +53,7 @@ public class PgSystemFunction extends PgSystemStatement implements IFunction {
 
     @Override
     public String getBareName() {
-        return name;
+        return super.getName();
     }
 
     @Override
@@ -119,10 +119,10 @@ public class PgSystemFunction extends PgSystemStatement implements IFunction {
         return signatureCache;
     }
 
-    public String getFunctionSignature() {
+    private String getFunctionSignature() {
         StringBuilder sb = new StringBuilder();
 
-        sb.append(PgDiffUtils.getQuotedName(name)).append('(');
+        sb.append(PgDiffUtils.getQuotedName(getBareName())).append('(');
         boolean addComma = false;
         for (final Argument argument : getArguments()) {
             ArgMode mode = argument.getMode();
@@ -147,7 +147,7 @@ public class PgSystemFunction extends PgSystemStatement implements IFunction {
     }
 
     @Override
-    public PgSystemSchema getContainingSchema() {
-        return (PgSystemSchema) getParent();
+    public MetaSchema getContainingSchema() {
+        return (MetaSchema) getParent();
     }
 }

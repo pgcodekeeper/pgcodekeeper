@@ -16,8 +16,7 @@ import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 /**
  * Stores table information.
  */
-public abstract class AbstractTable extends PgStatementWithSearchPath
-implements IStatementContainer, PgOptionContainer, IRelation {
+public abstract class AbstractTable extends PgStatementContainer implements PgOptionContainer {
 
     protected static final String ALTER_COLUMN = " ALTER COLUMN ";
 
@@ -25,9 +24,6 @@ implements IStatementContainer, PgOptionContainer, IRelation {
     protected final Map<String, String> options = new LinkedHashMap<>();
 
     protected final Map<String, AbstractConstraint> constraints = new LinkedHashMap<>();
-    protected final Map<String, AbstractIndex> indexes = new LinkedHashMap<>();
-    protected final Map<String, AbstractTrigger> triggers = new LinkedHashMap<>();
-    protected final Map<String, PgRule> rules = new LinkedHashMap<>();
 
     @Override
     public DbObjType getStatementType() {
@@ -40,47 +36,8 @@ implements IStatementContainer, PgOptionContainer, IRelation {
 
     @Override
     protected void fillChildrenList(List<Collection<? extends PgStatement>> l) {
-        l.add(indexes.values());
-        l.add(triggers.values());
-        l.add(rules.values());
+        super.fillChildrenList(l);
         l.add(constraints.values());
-    }
-
-    @Override
-    public PgStatement getChild(String name, DbObjType type) {
-        switch (type) {
-        case INDEX:
-            return getIndex(name);
-        case TRIGGER:
-            return getTrigger(name);
-        case RULE:
-            return getRule(name);
-        case CONSTRAINT:
-            return getConstraint(name);
-        default:
-            return null;
-        }
-    }
-
-    @Override
-    public void addChild(PgStatement st) {
-        DbObjType type = st.getStatementType();
-        switch (type) {
-        case INDEX:
-            addIndex((AbstractIndex) st);
-            break;
-        case CONSTRAINT:
-            addConstraint((AbstractConstraint) st);
-            break;
-        case TRIGGER:
-            addTrigger((AbstractTrigger) st);
-            break;
-        case RULE:
-            addRule((PgRule) st);
-            break;
-        default:
-            throw new IllegalArgumentException("Unsupported child type: " + type);
-        }
     }
 
     public static Stream<PgStatement> columnAdder(PgStatement st) {
@@ -133,13 +90,6 @@ implements IStatementContainer, PgOptionContainer, IRelation {
                 .map(c -> new Pair<>(c.getName(), c.getType()));
     }
 
-    /**
-     * Finds constraint according to specified constraint {@code name}.
-     *
-     * @param name name of the constraint to be searched
-     *
-     * @return found constraint or null if no such constraint has been found
-     */
     @Override
     public AbstractConstraint getConstraint(final String name) {
         return constraints.get(name);
@@ -247,52 +197,6 @@ implements IStatementContainer, PgOptionContainer, IRelation {
 
     protected abstract boolean isNeedRecreate(AbstractTable newTable);
 
-    /**
-     * Finds index according to specified index {@code name}.
-     *
-     * @param name name of the index to be searched
-     *
-     * @return found index or null if no such index has been found
-     */
-    @Override
-    public AbstractIndex getIndex(final String name) {
-        return indexes.get(name);
-    }
-
-    /**
-     * Finds trigger according to specified trigger {@code name}.
-     *
-     * @param name name of the trigger to be searched
-     *
-     * @return found trigger or null if no such trigger has been found
-     */
-    @Override
-    public AbstractTrigger getTrigger(final String name) {
-        return triggers.get(name);
-    }
-
-    /**
-     * Finds rule according to specified rule {@code name}.
-     *
-     * @param name name of the rule to be searched
-     *
-     * @return found rule or null if no such rule has been found
-     */
-    @Override
-    public PgRule getRule(final String name) {
-        return rules.get(name);
-    }
-
-    /**
-     * Getter for {@link #indexes}. The list cannot be modified.
-     *
-     * @return {@link #indexes}
-     */
-    @Override
-    public Collection<AbstractIndex> getIndexes() {
-        return Collections.unmodifiableCollection(indexes.values());
-    }
-
     @Override
     public Map <String, String> getOptions() {
         return Collections.unmodifiableMap(options);
@@ -302,26 +206,6 @@ implements IStatementContainer, PgOptionContainer, IRelation {
     public void addOption(String option, String value) {
         options.put(option, value);
         resetHash();
-    }
-
-    /**
-     * Getter for {@link #triggers}. The list cannot be modified.
-     *
-     * @return {@link #triggers}
-     */
-    @Override
-    public Collection<AbstractTrigger> getTriggers() {
-        return Collections.unmodifiableCollection(triggers.values());
-    }
-
-    /**
-     * Getter for {@link #rules}. The list cannot be modified.
-     *
-     * @return {@link #rules}
-     */
-    @Override
-    public Collection<PgRule> getRules() {
-        return Collections.unmodifiableCollection(rules.values());
     }
 
     public void addColumn(final AbstractColumn column) {
@@ -334,21 +218,6 @@ implements IStatementContainer, PgOptionContainer, IRelation {
     @Override
     public void addConstraint(final AbstractConstraint constraint) {
         addUnique(constraints, constraint, this);
-    }
-
-    @Override
-    public void addIndex(final AbstractIndex index) {
-        addUnique(indexes, index, this);
-    }
-
-    @Override
-    public void addTrigger(final AbstractTrigger trigger) {
-        addUnique(triggers, trigger, this);
-    }
-
-    @Override
-    public void addRule(final PgRule rule) {
-        addUnique(rules, rule, this);
     }
 
     public boolean containsColumn(final String name) {
@@ -373,14 +242,17 @@ implements IStatementContainer, PgOptionContainer, IRelation {
 
     @Override
     public boolean compareChildren(PgStatement obj) {
-        if (obj instanceof AbstractTable) {
+        if (obj instanceof AbstractTable && super.compareChildren(obj)) {
             AbstractTable table = (AbstractTable) obj;
-            return constraints.equals(table.constraints)
-                    && indexes.equals(table.indexes)
-                    && triggers.equals(table.triggers)
-                    && rules.equals(table.rules);
+            return constraints.equals(table.constraints);
         }
         return false;
+    }
+
+    @Override
+    public void computeChildrenHash(Hasher hasher) {
+        super.computeChildrenHash(hasher);
+        hasher.putUnordered(constraints);
     }
 
     @Override
@@ -390,16 +262,8 @@ implements IStatementContainer, PgOptionContainer, IRelation {
     }
 
     @Override
-    public void computeChildrenHash(Hasher hasher) {
-        hasher.putUnordered(constraints);
-        hasher.putUnordered(indexes);
-        hasher.putUnordered(triggers);
-        hasher.putUnordered(rules);
-    }
-
-    @Override
     public AbstractTable shallowCopy() {
-        AbstractTable tableDst = getTableCopy();
+        AbstractTable tableDst =  (AbstractTable) super.shallowCopy();
         copyBaseFields(tableDst);
         for (AbstractColumn colSrc : columns) {
             tableDst.addColumn((AbstractColumn) colSrc.deepCopy());
@@ -408,10 +272,10 @@ implements IStatementContainer, PgOptionContainer, IRelation {
         return tableDst;
     }
 
-    protected abstract AbstractTable getTableCopy();
-
     @Override
-    public AbstractSchema getContainingSchema() {
-        return (AbstractSchema)this.getParent();
+    protected PgStatementContainer getCopy() {
+        return getTableCopy();
     }
+
+    protected abstract AbstractTable getTableCopy();
 }
