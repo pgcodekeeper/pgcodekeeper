@@ -17,10 +17,10 @@ public class MetaStatementContainer extends MetaRelation implements IStatementCo
 
     private static final long serialVersionUID = 6047324183451899826L;
 
-    private final Map<String, MetaConstraint> constraints = new LinkedHashMap<>();
-    private final Map<String, MetaStatement> indexes = new LinkedHashMap<>();
-    private final Map<String, MetaStatement> triggers = new LinkedHashMap<>();
-    private final Map<String, MetaStatement> rules = new LinkedHashMap<>();
+    private final transient Map<String, MetaConstraint> constraints = new LinkedHashMap<>();
+    private final transient Map<String, MetaStatement> indexes = new LinkedHashMap<>();
+    private final transient Map<String, MetaStatement> triggers = new LinkedHashMap<>();
+    private final transient Map<String, MetaStatement> rules = new LinkedHashMap<>();
 
     public MetaStatementContainer(GenericColumn object) {
         super(object);
