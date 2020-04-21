@@ -42,7 +42,8 @@ public interface ApgdiffConsts {
 
     enum WORK_DIR_NAMES {
         SCHEMA,
-        EXTENSION
+        EXTENSION,
+        CAST
     }
 
     enum MS_WORK_DIR_NAMES {

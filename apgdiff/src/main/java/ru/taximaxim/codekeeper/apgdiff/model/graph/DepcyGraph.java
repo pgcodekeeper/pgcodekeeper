@@ -19,12 +19,12 @@ import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.Inherits;
 import cz.startnet.utils.pgdiff.schema.PartitionPgTable;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
@@ -189,8 +189,8 @@ public class DepcyGraph {
         GenericColumn refTable = con.getForeignTable();
         if (!refs.isEmpty() && refTable != null) {
             PgStatement cont = refTable.getStatement(db);
-            if (cont instanceof IStatementContainer) {
-                IStatementContainer c = (IStatementContainer) cont;
+            if (cont instanceof PgStatementContainer) {
+                PgStatementContainer c = (PgStatementContainer) cont;
                 for (AbstractConstraint refCon : c.getConstraints()) {
                     if ((refCon.isPrimaryKey() || refCon.isUnique()) && refs.equals(refCon.getColumns())) {
                         graph.addEdge(con, refCon);

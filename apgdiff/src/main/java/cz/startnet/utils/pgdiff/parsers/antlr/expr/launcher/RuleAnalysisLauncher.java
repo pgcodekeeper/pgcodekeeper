@@ -18,7 +18,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Update;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExprWithNmspc;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.IDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 
 public class RuleAnalysisLauncher extends AbstractAnalysisLauncher {
@@ -28,25 +28,24 @@ public class RuleAnalysisLauncher extends AbstractAnalysisLauncher {
     }
 
     @Override
-    public Set<GenericColumn> analyze(ParserRuleContext ctx) {
+    public Set<GenericColumn> analyze(ParserRuleContext ctx, IDatabase db) {
         Set<GenericColumn> depcies = new LinkedHashSet<>();
 
         Create_rewrite_statementContext createRewriteCtx = (Create_rewrite_statementContext) ctx;
 
         if (createRewriteCtx.WHERE() != null) {
-            ValueExprWithNmspc vex = new ValueExprWithNmspc(stmt.getDatabase());
+            ValueExprWithNmspc vex = new ValueExprWithNmspc(db);
             depcies.addAll(analyzeTableChild(createRewriteCtx.vex(), vex));
         }
 
         for (Rewrite_commandContext cmd : createRewriteCtx.rewrite_command()) {
-            depcies.addAll(analyzeRulesCommand(cmd));
+            depcies.addAll(analyzeRulesCommand(cmd, db));
         }
 
         return depcies;
     }
 
-    private Set<GenericColumn> analyzeRulesCommand(Rewrite_commandContext cmd) {
-        PgDatabase db = stmt.getDatabase();
+    private Set<GenericColumn> analyzeRulesCommand(Rewrite_commandContext cmd, IDatabase db) {
         Select_stmtContext select;
         if ((select = cmd.select_stmt()) != null) {
             return analyzeTableChild(select, new Select(db));

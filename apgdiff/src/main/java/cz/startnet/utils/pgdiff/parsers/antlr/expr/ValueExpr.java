@@ -59,9 +59,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.ICast;
+import cz.startnet.utils.pgdiff.schema.ICast.CastContext;
+import cz.startnet.utils.pgdiff.schema.IDatabase;
 import cz.startnet.utils.pgdiff.schema.IFunction;
-import cz.startnet.utils.pgdiff.schema.ISchema;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -70,7 +71,7 @@ import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class ValueExpr extends AbstractExpr {
 
-    public ValueExpr(PgDatabase db, DbObjType... disabledDepcies) {
+    public ValueExpr(IDatabase db, DbObjType... disabledDepcies) {
         super(db, disabledDepcies);
     }
 
@@ -687,7 +688,7 @@ public class ValueExpr extends AbstractExpr {
                 String sourceType = sourceTypes.get(argN);
                 if (sourceType.equals(arg.getDataType())) {
                     ++exactMatches;
-                } else if (!systemStorage.containsCastImplicit(sourceType, arg.getDataType())) {
+                } else if (!containsCastImplicit(sourceType, arg.getDataType())) {
                     signatureApplicable = false;
                     break;
                 }
@@ -710,6 +711,17 @@ public class ValueExpr extends AbstractExpr {
                 .getFirst();
     }
 
+    private boolean containsCastImplicit(String source, String target) {
+        for (ICast cast : db.getCasts()) {
+            if (CastContext.IMPLICIT == cast.getContext()
+                    && source.equals(cast.getSource())
+                    && target.equals(cast.getTarget())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private String getOperatorToken(Vex vex) {
         TerminalNode token = vex.getVexCtx().getChild(TerminalNode.class, 0);
         if (token == null) {
@@ -725,18 +737,6 @@ public class ValueExpr extends AbstractExpr {
             return token.getText();
         default:
             return null;
-        }
-    }
-
-    private Collection<? extends IFunction> availableFunctions(String schemaName, ParserRuleContext errorCtx) {
-        if (schemaName != null) {
-            ISchema schema = systemStorage.getSchema(schemaName);
-            if (schema == null) {
-                schema = findSchema(schemaName, errorCtx);
-            }
-            return schema.getFunctions();
-        } else {
-            return systemStorage.getPgCatalog().getFunctions();
         }
     }
 
