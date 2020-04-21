@@ -37,10 +37,11 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject> {
     }
 
     public static IgnoredObjectPrefListEditor create(Composite parent, IgnoreList ignoreList) {
-        return new IgnoredObjectPrefListEditor(createComposite(parent, ignoreList));
+        fillComposite(parent, ignoreList);
+        return new IgnoredObjectPrefListEditor(parent);
     }
 
-    private static Composite createComposite(Composite composite, IgnoreList ignoreList) {
+    private static void fillComposite(Composite composite, IgnoreList ignoreList) {
         Label descriptionLabel = new Label(composite, SWT.NONE);
         descriptionLabel.setText(Messages.IgnoredObjectsPrefPage_these_objects_are_ignored_info);
 
@@ -77,8 +78,6 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject> {
                 composite.layout();
             }
         });
-
-        return composite;
     }
 
     private IgnoredObjectPrefListEditor(Composite parent) {
