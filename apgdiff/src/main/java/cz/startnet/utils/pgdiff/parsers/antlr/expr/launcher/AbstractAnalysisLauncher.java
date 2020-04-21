@@ -19,6 +19,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsAbstractExprWithNmspc;
 import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.IDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
@@ -69,14 +70,14 @@ public abstract class AbstractAnalysisLauncher {
         }
     }
 
-    public Set<GenericColumn> launchAnalyze(List<Object> errors) {
+    public Set<GenericColumn> launchAnalyze(List<Object> errors, IDatabase db) {
         // Duplicated objects don't have parent, skip them
         if (stmt.getParent() == null) {
             return Collections.emptySet();
         }
 
         try {
-            return analyze(ctx);
+            return analyze(ctx, db);
         } catch (UnresolvedReferenceException ex) {
             Token t = ex.getErrorToken();
             if (t != null) {
@@ -97,7 +98,7 @@ public abstract class AbstractAnalysisLauncher {
         return Collections.emptySet();
     }
 
-    protected abstract Set<GenericColumn> analyze(ParserRuleContext ctx);
+    protected abstract Set<GenericColumn> analyze(ParserRuleContext ctx, IDatabase db);
 
     protected <T extends ParserRuleContext> Set<GenericColumn> analyze(
             T ctx, AbstractExprWithNmspc<T> analyzer) {
@@ -125,12 +126,12 @@ public abstract class AbstractAnalysisLauncher {
      * Sets up namespace for Constraint/Index expr analysis
      * @return
      */
-    protected Set<GenericColumn> analyzeTableChildVex(VexContext ctx) {
+    protected Set<GenericColumn> analyzeTableChildVex(VexContext ctx,  IDatabase db) {
         PgStatement table = stmt.getParent();
         String schemaName = table.getParent().getName();
         String rawTableReference = table.getName();
 
-        ValueExprWithNmspc valExptWithNmspc = new ValueExprWithNmspc(stmt.getDatabase());
+        ValueExprWithNmspc valExptWithNmspc = new ValueExprWithNmspc(db);
         valExptWithNmspc.addRawTableReference(
                 new GenericColumn(schemaName, rawTableReference, DbObjType.TABLE));
         return analyze(ctx, valExptWithNmspc);

@@ -9,4 +9,6 @@ public interface ISchema extends IStatement {
 
     Collection<? extends IFunction> getFunctions();
     IFunction getFunction(String signature);
+
+    IStatementContainer getStatementContainer(String name);
 }

@@ -9,7 +9,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Update_stmt_for_psqlCont
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.IDatabase;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.ModPair;
 
@@ -19,7 +19,7 @@ public class Update extends AbstractExprWithNmspc<Update_stmt_for_psqlContext> {
         super(parent);
     }
 
-    public Update(PgDatabase db, DbObjType... disabledDepcies) {
+    public Update(IDatabase db, DbObjType... disabledDepcies) {
         super(db, disabledDepcies);
     }
 

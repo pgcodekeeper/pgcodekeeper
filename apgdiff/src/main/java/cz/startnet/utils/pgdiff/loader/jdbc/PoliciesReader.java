@@ -9,10 +9,10 @@ import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.VexAnalysisLauncher;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgEventType;
 import cz.startnet.utils.pgdiff.schema.PgPolicy;
+import cz.startnet.utils.pgdiff.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PoliciesReader extends JdbcReader {
@@ -24,7 +24,7 @@ public class PoliciesReader extends JdbcReader {
     @Override
     protected void processResult(ResultSet result, AbstractSchema schema) throws SQLException {
         String contName = result.getString(CLASS_RELNAME);
-        IStatementContainer c = schema.getStatementContainer(contName);
+        PgStatementContainer c = schema.getStatementContainer(contName);
         if (c != null) {
             c.addPolicy(getPolicy(result, schema, contName));
         }

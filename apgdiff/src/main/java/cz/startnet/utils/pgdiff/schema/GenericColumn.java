@@ -136,7 +136,7 @@ public class GenericColumn implements Serializable {
         default: break;
         }
 
-        IStatementContainer sc = s.getStatementContainer(table);
+        PgStatementContainer sc = s.getStatementContainer(table);
         switch (type) {
         case CONSTRAINT:
             return sc == null ? null : sc.getConstraint(column);

@@ -36,8 +36,8 @@ import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.ArgMode;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.ICast;
 import cz.startnet.utils.pgdiff.schema.IStatement;
-import cz.startnet.utils.pgdiff.schema.PgCast;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
@@ -371,7 +371,7 @@ public abstract class ParserAbstract {
 
     protected PgObjLocation getCastLocation(Data_typeContext source, Data_typeContext target, String action) {
         PgObjLocation loc = new PgObjLocation(new GenericColumn(
-                PgCast.getSimpleName(getFullCtxText(source), getFullCtxText(target)), DbObjType.CAST),
+                ICast.getSimpleName(getFullCtxText(source), getFullCtxText(target)), DbObjType.CAST),
                 action, source.start.getStartIndex(), source.start.getLine(), fileName);
         loc.setLength(target.stop.getStopIndex() - source.start.getStartIndex() + 1);
         return loc;
