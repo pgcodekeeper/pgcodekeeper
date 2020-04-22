@@ -13,6 +13,7 @@ import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -33,7 +34,7 @@ import ru.taximaxim.codekeeper.ui.prefs.PrefListEditor;
 public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject> {
 
     enum BooleanChangeValues {
-        REGULAR, IGNORE_CONTENT;
+        REGULAR, IGNORE_CONTENT, QUALIFIED;
     }
 
     public static IgnoredObjectPrefListEditor create(Composite parent, IgnoreList ignoreList) {
@@ -88,7 +89,7 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject> {
     @Override
     protected IgnoredObject getNewObject(IgnoredObject oldObject) {
         NewIgnoredObjectDialog d = new NewIgnoredObjectDialog(getShell(), oldObject);
-        return d.open() == NewIgnoredObjectDialog.OK ? d.getIgnoredObject() : null;
+        return d.open() == Window.OK ? d.getIgnoredObject() : null;
     }
 
     @Override
@@ -142,6 +143,19 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject> {
         });
         ignoreContents.setEditingSupport(new CheckEditingSupport(tableViewer, BooleanChangeValues.IGNORE_CONTENT));
 
+        TableViewerColumn isQualified = new TableViewerColumn(tableViewer, SWT.CENTER);
+        isQualified.getColumn().setResizable(true);
+        isQualified.getColumn().setText(Messages.IgnoredObjectPrefListEditor_qualified);
+        isQualified.getColumn().setMoveable(true);
+        isQualified.setLabelProvider(new ColumnLabelProvider() {
+
+            @Override
+            public String getText(Object element) {
+                return ((IgnoredObject) element).isQualified() ? ballotBoxWithCheck : ballotBox;
+            }
+        });
+        isQualified.setEditingSupport(new CheckEditingSupport(tableViewer, BooleanChangeValues.QUALIFIED));
+
         TableViewerColumn objType = new TableViewerColumn(tableViewer, SWT.NONE);
         objType.getColumn().setResizable(true);
         objType.getColumn().setText(Messages.ignoredObjectPrefListEditor_type);
@@ -166,6 +180,7 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject> {
         PixelConverter pc = new PixelConverter(tableViewer.getControl());
         isRegular.getColumn().setWidth(pc.convertWidthInCharsToPixels(10));
         ignoreContents.getColumn().setWidth(pc.convertWidthInCharsToPixels(28));
+        isQualified.getColumn().setWidth(pc.convertWidthInCharsToPixels(18));
         objType.getColumn().setWidth(pc.convertWidthInCharsToPixels(10));
     }
 }
@@ -178,6 +193,7 @@ class NewIgnoredObjectDialog extends InputDialog {
     private IgnoredObject ignoredObject;
     private Button btnPattern;
     private Button btnContent;
+    private Button btnQualified;
     private ComboViewer comboType;
 
     public IgnoredObject getIgnoredObject() {
@@ -196,11 +212,17 @@ class NewIgnoredObjectDialog extends InputDialog {
         Composite composite = (Composite) super.createDialogArea(parent);
 
         Composite c = new Composite(composite, SWT.NONE);
-        c.setLayout(new GridLayout(4,  false));
+        c.setLayout(new GridLayout(2, true));
         c.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        btnPattern = new Button(c, SWT.CHECK);
+        btnPattern.setText(Messages.IgnoredObjectPrefListEditor_pattern);
 
         Label label = new Label(c, SWT.LEFT);
         label.setText(Messages.ignoredObjectPrefListEditor_type);
+
+        btnContent = new Button(c, SWT.CHECK);
+        btnContent.setText(Messages.IgnoredObjectPrefListEditor_contents);
 
         comboType = new ComboViewer(c, SWT.READ_ONLY);
         comboType.setContentProvider(ArrayContentProvider.getInstance());
@@ -208,15 +230,13 @@ class NewIgnoredObjectDialog extends InputDialog {
         comboType.setContentProvider(ArrayContentProvider.getInstance());
         comboType.setSelection(new StructuredSelection(TypesEditingSupport.COMBO_TYPE_ALL));
 
-        btnPattern = new Button(c, SWT.CHECK);
-        btnPattern.setText(Messages.IgnoredObjectPrefListEditor_pattern);
-
-        btnContent = new Button(c, SWT.CHECK);
-        btnContent.setText(Messages.IgnoredObjectPrefListEditor_contents);
+        btnQualified = new Button(c, SWT.CHECK);
+        btnQualified.setText(Messages.IgnoredObjectPrefListEditor_qualified_name);
 
         if (objInitial != null) {
             btnPattern.setSelection(objInitial.isRegular());
             btnContent.setSelection(objInitial.isIgnoreContent());
+            btnContent.setSelection(objInitial.isQualified());
 
             Iterator<DbObjType> iterator = objInitial.getObjTypes().iterator();
             if (iterator.hasNext()) {
@@ -230,7 +250,8 @@ class NewIgnoredObjectDialog extends InputDialog {
     @Override
     protected void okPressed() {
         String selectedType = (String) ((StructuredSelection) comboType.getSelection()).getFirstElement();
-        ignoredObject = new IgnoredObject(getValue(), btnPattern.getSelection(),btnContent.getSelection(),
+        ignoredObject = new IgnoredObject(getValue(), btnPattern.getSelection(),
+                btnContent.getSelection(), btnQualified.getSelection(),
                 TypesEditingSupport.COMBO_TYPE_ALL.equals(selectedType) ?
                         EnumSet.noneOf(DbObjType.class) : EnumSet.of(DbObjType.valueOf(selectedType)));
         super.okPressed();

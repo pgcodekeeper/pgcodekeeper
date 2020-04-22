@@ -67,7 +67,7 @@ public class IgnoreList {
     public AddStatus getNameStatus(String name, String fullName, DbObjType type, boolean inAddSubtree, String... dbNames) {
         AddStatus status = null;
         for (IgnoredObject rule : rules) {
-            if (rule.match(name, type, dbNames) || rule.match(fullName, type, dbNames)) {
+            if (rule.match(name, fullName, type, dbNames)) {
                 AddStatus newStatus = rule.getAddStatus();
                 if (status == null) {
                     status = newStatus;
