@@ -510,6 +510,8 @@ public class PgDiffTest {
                     {"chg_owner_grant"},
                     // Tests scenario where object definitions are compared
                     {"compare_definitions"},
+                    // Tests scenario where TABLE is compared.
+                    {"compare_tables"},
                     // Tests scenario where INDEX is compared.
                     {"compare_indices"},
                     // Tests scenario where FUNCTION is compared.
