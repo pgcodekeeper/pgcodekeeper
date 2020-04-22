@@ -57,3 +57,6 @@ USING hash
 WITH (autovacuum_enabled, fillfactor = 80, oids = true)
 TABLESPACE test_tablespace;
 
+ALTER TABLE ONLY public.t31 ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ONLY public.t31 FORCE ROW LEVEL SECURITY;
+

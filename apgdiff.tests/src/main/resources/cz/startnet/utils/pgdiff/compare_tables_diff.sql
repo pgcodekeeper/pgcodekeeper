@@ -10,6 +10,10 @@ PARTITION BY RANGE (c2 COLLATE public.french varchar_pattern_ops)
 WITH (autovacuum_enabled, fillfactor=80, OIDS=true)
 TABLESPACE test_tablespace;
 
+ALTER TABLE public.t31 ENABLE ROW LEVEL SECURITY;
+
+ALTER TABLE ONLY public.t31 FORCE ROW LEVEL SECURITY;
+
 ALTER TABLE public.t2
 	SET LOGGED;
 

@@ -44,18 +44,10 @@ public class PgDiffTest {
                     {"drop_cluster"},
                     // Tests scenario where CLUSTER is changed on TABLE.
                     {"modify_cluster"},
-                    // Tests scenario where TABLE is modified by addition of an option.
-                    {"add_table_option"},
-                    // Tests scenario where TABLE is modified by removal option.
-                    {"delete_table_option"},
-                    // Tests scenario where TABLE is modified by changing of an option.
-                    {"modify_table_option"},
                     // Tests scenario where access method of TABLE is changed.
                     {"modify_table_access_method"},
                     // Tests scenario where TABLE with partition is added.
                     {"add_table_with_partition"},
-                    // Tests scenario where WITH OIDS is dropped from TABLE.
-                    {"drop_with_oids"},
                     // Tests scenario where PARTITION INDEX is added.
                     {"add_partition_index"},
                     // Tests scenario where VIEW INDEX is added.
@@ -95,8 +87,6 @@ public class PgDiffTest {
                     {"add_column_generated"},
                     // Tests scenario where generated COLUMN is modified.
                     {"modify_column_generated"},
-                    // Tests scenario where new TABLE is added.
-                    {"add_table"},
                     // Tests scenario where new FOREIGN TABLE is added.
                     {"add_foreign_table"},
                     // Tests scenario where new TABLE with new SEQUENCE is added.
@@ -105,8 +95,6 @@ public class PgDiffTest {
                     {"add_table_with_exist_sequence"},
                     // Tests scenario where new TABLE with drop SEQUENCE is added.
                     {"add_table_with_drop_sequence"},
-                    // Tests scenario where TABLE is dropped.
-                    {"drop_table"},
                     // Tests scenario where new TYPED TABLE is added.
                     {"add_table_of_type"},
                     // Tests scenario where in TYPED TABLE new options is added.
@@ -119,10 +107,6 @@ public class PgDiffTest {
                     {"modify_table_of_type_column"},
                     // Tests scenario where TYPED TABLE is dropped.
                     {"drop_table_of_type"},
-                    // Tests scenario where TABLE row security is changed.
-                    {"modify_table_row_security"},
-                    // Tests scenario where TABLE logged status is changed.
-                    {"modify_table_unlogged"},
                     // Tests scenario where new TABLE with generated column is added.
                     {"add_table_with_generated_col"},
                     // Tests scenario where TABLE CONSTRAINT is added.
@@ -141,8 +125,6 @@ public class PgDiffTest {
                     {"read_inherits"},
                     // Tests scenario where TABLE with generated SEQUENCE is added.
                     {"add_generated_sequence"},
-                    // Tests scenario where TABLE with INHERITS is added.
-                    {"add_inherits"},
                     // Tests scenario where original and new TABLE contain
                     //different INHERITS.
                     {"modify_inherits"},
@@ -496,8 +478,6 @@ public class PgDiffTest {
                     {"compare_column_type_aliases"},
                     // Tests scenario where new FUNCTION with specific options is added.
                     {"add_specific_function"},
-                    // Tests scenario where TABLE tablespace is modified.
-                    {"modify_tablespace"},
                     // Tests scenario where generated SEQUENCE is compared.
                     {"compare_generated_sequence"},
                     // Tests scenario where PRIVILEGE added to object with quoted name.
