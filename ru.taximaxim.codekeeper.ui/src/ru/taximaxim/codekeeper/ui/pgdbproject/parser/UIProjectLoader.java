@@ -28,7 +28,6 @@ import org.eclipse.ui.ide.ResourceUtil;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.DatabaseLoader;
-import cz.startnet.utils.pgdiff.loader.FullAnalyze;
 import cz.startnet.utils.pgdiff.loader.LibraryLoader;
 import cz.startnet.utils.pgdiff.loader.ProjectLoader;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
@@ -60,8 +59,8 @@ public class UIProjectLoader extends ProjectLoader {
 
     @Override
     public PgDatabase loadAndAnalyze() throws IOException, InterruptedException {
-        PgDatabase d = load();
-        analyzeAndMark(d);
+        PgDatabase d = super.loadAndAnalyze();
+        markErrors(errors);
         return d;
     }
 
@@ -70,15 +69,11 @@ public class UIProjectLoader extends ProjectLoader {
         try {
             return loadDatabaseWithLibraries();
         } catch (CoreException e) {
-            IOException ex = new IOException("Error while load project structure", e);
-            ex.addSuppressed(e);
-            throw ex;
+            throw new IOException("Error while load project structure", e);
         }
     }
 
-    private void analyzeAndMark(PgDatabase db) throws InterruptedException, IOException {
-        FullAnalyze.fullAnalyze(db, errors);
-
+    private void markErrors(List<Object> errors) {
         for (Object error : errors) {
             if (error instanceof AntlrError) {
                 AntlrError antlrError = (AntlrError) error;
@@ -92,7 +87,7 @@ public class UIProjectLoader extends ProjectLoader {
     }
 
     private void loadPgStructure(IContainer baseDir, PgDatabase db)
-            throws InterruptedException, IOException, CoreException {
+            throws InterruptedException, CoreException {
         if (!baseDir.exists()) {
             return;
         }
@@ -142,7 +137,7 @@ public class UIProjectLoader extends ProjectLoader {
     }
 
     private void loadSubdir(IFolder folder, PgDatabase db)
-            throws InterruptedException, IOException, CoreException {
+            throws InterruptedException, CoreException {
         if (!folder.exists()) {
             return;
         }
@@ -154,7 +149,7 @@ public class UIProjectLoader extends ProjectLoader {
     }
 
     private void loadFile(IFile file, IProgressMonitor monitor, PgDatabase db)
-            throws IOException, CoreException, InterruptedException {
+            throws CoreException, InterruptedException {
         PgDiffArguments arguments = db.getArguments().clone();
         arguments.setInCharsetName(file.getCharset());
 
@@ -217,7 +212,7 @@ public class UIProjectLoader extends ProjectLoader {
     }
 
     private PgDatabase buildPgFiles(Collection<IFile> files, SubMonitor mon)
-            throws InterruptedException, IOException, CoreException {
+            throws InterruptedException, CoreException {
         Set<String> schemaDirnamesLoaded = new HashSet<>();
         IPath schemasPath = new Path(WORK_DIR_NAMES.SCHEMA.name());
         PgDatabase db = new PgDatabase(new PgDiffArguments());
@@ -316,13 +311,11 @@ public class UIProjectLoader extends ProjectLoader {
     @Override
     protected void finishLoader(DatabaseLoader l) {
         super.finishLoader(l);
-        if (l instanceof PgUIDumpLoader) {
-            PgUIDumpLoader loader = (PgUIDumpLoader) l;
-            if (statementBodies != null) {
-                statementBodies.addAll(loader.getStatementBodyReferences());
-            }
-            loader.updateMarkers();
+        PgUIDumpLoader loader = (PgUIDumpLoader) l;
+        if (statementBodies != null) {
+            statementBodies.addAll(loader.getStatementBodyReferences());
         }
+        loader.updateMarkers();
     }
 
     public static PgDatabase buildFiles(Collection<IFile> files, boolean isMsSql,
