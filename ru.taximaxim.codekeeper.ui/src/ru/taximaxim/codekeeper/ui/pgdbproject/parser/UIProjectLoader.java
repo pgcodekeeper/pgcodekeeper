@@ -73,7 +73,7 @@ public class UIProjectLoader extends ProjectLoader {
         }
     }
 
-    private void markErrors(List<Object> errors) {
+    static void markErrors(List<Object> errors) {
         for (Object error : errors) {
             if (error instanceof AntlrError) {
                 AntlrError antlrError = (AntlrError) error;

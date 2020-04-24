@@ -1,9 +1,9 @@
 package cz.startnet.utils.pgdiff.schema.meta;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
@@ -27,38 +27,42 @@ public class MetaStorage implements Serializable {
 
     private static final String OTHER_LOCATION = "other_location";
 
-    private final ConcurrentMap<String, List<MetaStatement>> definitions = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Set<MetaStatement>> definitions = new ConcurrentHashMap<>();
     private transient volatile MetaDatabase tree;
 
+    public MetaStorage() {}
 
-    public void concat(PgSystemStorage db) {
-        tree = null;
-        db.getDescendants().forEach(this::addChild);
-    }
-
-    public void concat(PgDatabase db) {
-        tree = null;
-        db.getDescendants().forEach(this::addChild);
-    }
-
-    public void replace(PgDatabase db, String path) {
-        tree = null;
-        definitions.remove(path);
+    public MetaStorage(PgDatabase db) {
         concat(db);
     }
 
-    public static MetaStorage create(PgDatabase db) {
-        MetaStorage meta = new MetaStorage();
-        db.getDescendants().forEach(meta::addChild);
-        return meta;
+    public void remove(String path) {
+        tree = null;
+        definitions.remove(path);
+    }
+
+    public void append(PgDatabase db, boolean clear) {
+        append(createStorage(db, clear), clear);
+    }
+
+    public void append(MetaStorage storage, boolean clear) {
+        tree = null;
+        if (clear) {
+            definitions.clear();
+        }
+        definitions.putAll(storage.definitions);
     }
 
     public static MetaDatabase createFullDb(PgDatabase db) {
-        MetaStorage meta = create(db);
-        if (!db.getArguments().isMsSql()) {
+        return createStorage(db, true).getTree();
+    }
+
+    private static MetaStorage createStorage(PgDatabase db, boolean addSystem) {
+        MetaStorage meta = new MetaStorage(db);
+        if (addSystem && !db.getArguments().isMsSql()) {
             meta.concat(PgSystemStorage.getObjectsFromResources(db.getPostgresVersion()));
         }
-        return meta.getTree();
+        return meta;
     }
 
     public MetaDatabase getTree() {
@@ -72,6 +76,16 @@ public class MetaStorage implements Serializable {
         }
 
         return tree;
+    }
+
+    private void concat(PgSystemStorage db) {
+        tree = null;
+        db.getDescendants().forEach(this::addChild);
+    }
+
+    private void concat(PgDatabase db) {
+        tree = null;
+        db.getDescendants().forEach(this::addChild);
     }
 
     private void addChild(IStatement st) {
@@ -132,7 +146,7 @@ public class MetaStorage implements Serializable {
             }
         }
 
-        definitions.computeIfAbsent(path, k -> new ArrayList<>()).add(meta);
+        definitions.computeIfAbsent(path, k -> new HashSet<>()).add(meta);
     }
 
     private void addChildToTree(MetaStatement st) {

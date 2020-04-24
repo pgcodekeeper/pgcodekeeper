@@ -43,11 +43,14 @@ import org.eclipse.ui.ide.ResourceUtil;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.loader.DatabaseLoader;
+import cz.startnet.utils.pgdiff.loader.FullAnalyze;
 import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import cz.startnet.utils.pgdiff.schema.meta.MetaStorage;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -58,13 +61,14 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class PgDbParser implements IResourceChangeListener, Serializable {
 
-    private static final long serialVersionUID = 6255755136065669437L;
+    private static final long serialVersionUID = -579209070714251360L;
 
     private static final ConcurrentMap<IProject, PgDbParser> PROJ_PARSERS = new ConcurrentHashMap<>();
 
     private final ConcurrentMap<String, List<PgObjLocation>> objDefinitions = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, List<PgObjLocation>> objReferences = new ConcurrentHashMap<>();
-    private transient List<Listener> listeners = new ArrayList<>();
+    private final MetaStorage storage = new MetaStorage();
+    private final transient List<Listener> listeners = new ArrayList<>();
 
     public void addListener(Listener e) {
         listeners.add(e);
@@ -123,11 +127,11 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
             if (Files.exists(path)) {
                 try (ObjectInputStream oin = new ObjectInputStream(Files.newInputStream(path))) {
                     PgDbParser parser = (PgDbParser) oin.readObject();
-                    parser.listeners = new ArrayList<>();
                     objReferences.clear();
                     objReferences.putAll(parser.getObjReferences());
                     objDefinitions.clear();
                     objDefinitions.putAll(parser.getObjDefinitions());
+                    storage.append(parser.storage, true);
                     notifyListeners();
                     return true;
                 }
@@ -175,6 +179,10 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         List<StatementBodyContainer> statementBodies = new ArrayList<>();
         PgDatabase db = UIProjectLoader.buildFiles(files, isMsSql, monitor, statementBodies);
         files.forEach(this::removeResFromRefs);
+        storage.append(db, false);
+        List<Object> errors = new ArrayList<>();
+        FullAnalyze.fullAnalyze(db, storage.getTree(), errors);
+        UIProjectLoader.markErrors(errors);
         objDefinitions.putAll(db.getObjDefinitions());
         objReferences.putAll(db.getObjReferences());
         fillStatementBodies(statementBodies);
@@ -223,7 +231,10 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(proj.getDefaultCharset(true));
         args.setMsSql(OpenProjectUtils.checkMsSql(proj));
-        PgDatabase db = new UIProjectLoader(proj, args, mon, statementBodies).loadAndAnalyze();
+        DatabaseLoader loader = new UIProjectLoader(proj, args, mon, statementBodies);
+        PgDatabase db = loader.load();
+        storage.append(db, true);
+        FullAnalyze.fullAnalyze(db, storage.getTree(), loader.getErrors());
         objDefinitions.clear();
         objDefinitions.putAll(db.getObjDefinitions());
         objReferences.clear();
@@ -236,6 +247,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         String path = res.getLocation().toOSString();
         objReferences.remove(path);
         objDefinitions.remove(path);
+        storage.remove(path);
     }
 
     public void fillRefsFromInputStream(InputStream input, String fileName,
@@ -245,6 +257,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         PgDumpLoader loader = new PgDumpLoader(() -> input, fileName, args, monitor);
         loader.setMode(ParserListenerMode.REF);
         PgDatabase db = loader.load();
+        storage.append(new MetaStorage(db), true);
         objDefinitions.clear();
         objDefinitions.putAll(db.getObjDefinitions());
         objReferences.clear();
