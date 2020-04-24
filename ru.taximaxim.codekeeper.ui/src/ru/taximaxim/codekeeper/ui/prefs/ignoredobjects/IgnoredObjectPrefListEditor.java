@@ -212,23 +212,23 @@ class NewIgnoredObjectDialog extends InputDialog {
         Composite composite = (Composite) super.createDialogArea(parent);
 
         Composite c = new Composite(composite, SWT.NONE);
-        c.setLayout(new GridLayout(2, true));
+        c.setLayout(new GridLayout());
         c.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-        btnPattern = new Button(c, SWT.CHECK);
-        btnPattern.setText(Messages.IgnoredObjectPrefListEditor_pattern);
 
         Label label = new Label(c, SWT.LEFT);
         label.setText(Messages.ignoredObjectPrefListEditor_type);
-
-        btnContent = new Button(c, SWT.CHECK);
-        btnContent.setText(Messages.IgnoredObjectPrefListEditor_contents);
 
         comboType = new ComboViewer(c, SWT.READ_ONLY);
         comboType.setContentProvider(ArrayContentProvider.getInstance());
         comboType.setInput(TypesEditingSupport.comboTypes());
         comboType.setContentProvider(ArrayContentProvider.getInstance());
         comboType.setSelection(new StructuredSelection(TypesEditingSupport.COMBO_TYPE_ALL));
+
+        btnPattern = new Button(c, SWT.CHECK);
+        btnPattern.setText(Messages.IgnoredObjectPrefListEditor_pattern);
+
+        btnContent = new Button(c, SWT.CHECK);
+        btnContent.setText(Messages.IgnoredObjectPrefListEditor_contents);
 
         btnQualified = new Button(c, SWT.CHECK);
         btnQualified.setText(Messages.IgnoredObjectPrefListEditor_qualified_name);
