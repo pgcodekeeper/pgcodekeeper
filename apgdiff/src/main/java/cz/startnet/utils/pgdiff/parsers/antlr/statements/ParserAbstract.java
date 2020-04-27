@@ -27,7 +27,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Predefined_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
@@ -63,7 +62,6 @@ public abstract class ParserAbstract {
 
     protected final PgDatabase db;
 
-    private List<StatementBodyContainer> statementBodies;
     private boolean refMode;
     protected String fileName;
 
@@ -71,11 +69,9 @@ public abstract class ParserAbstract {
         this.db = db;
     }
 
-    public void parseObject(String fileName, ParserListenerMode mode,
-            List<StatementBodyContainer> statementBodies, ParserRuleContext ctx) {
+    public void parseObject(String fileName, ParserListenerMode mode, ParserRuleContext ctx) {
         this.fileName = fileName;
         refMode = ParserListenerMode.REF == mode;
-        this.statementBodies = statementBodies;
         if (ParserListenerMode.SCRIPT == mode) {
             fillQueryLocation(ctx);
         } else {
@@ -85,12 +81,6 @@ public abstract class ParserAbstract {
 
     protected boolean isRefMode() {
         return refMode;
-    }
-
-    protected void addStatementBody(ParserRuleContext ctx) {
-        if (statementBodies != null) {
-            statementBodies.add(new StatementBodyContainer(fileName, ctx));
-        }
     }
 
     /**
