@@ -5,13 +5,14 @@ import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
+import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Plpgsql_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Function;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Sql;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.IDatabase;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
@@ -37,12 +38,12 @@ public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
     }
 
     @Override
-    public Set<GenericColumn> analyze(ParserRuleContext ctx) {
-        PgDatabase db = stmt.getDatabase();
+    public Set<GenericColumn> analyze(ParserRuleContext ctx, IDatabase db) {
+        PgDiffArguments args = stmt.getDatabase().getArguments();
 
         if (ctx instanceof SqlContext) {
             Sql sql;
-            if (db.getArguments().isEnableFunctionBodiesDependencies()) {
+            if (args.isEnableFunctionBodiesDependencies()) {
                 sql = new Sql(db);
             } else {
                 sql = new Sql(db, DbObjType.FUNCTION, DbObjType.PROCEDURE);
@@ -55,7 +56,7 @@ public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
         }
 
         Function function;
-        if (db.getArguments().isEnableFunctionBodiesDependencies()) {
+        if (args.isEnableFunctionBodiesDependencies()) {
             function = new Function(db);
         } else {
             function = new Function(db, DbObjType.FUNCTION, DbObjType.PROCEDURE);

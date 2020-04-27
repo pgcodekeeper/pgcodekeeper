@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 
+import cz.startnet.utils.pgdiff.loader.DatabaseLoader;
 import cz.startnet.utils.pgdiff.loader.FullAnalyze;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcLoader;
@@ -177,37 +178,28 @@ public class PgDiff {
      */
     private PgDatabase loadDatabaseSchema(String format, String srcPath)
             throws InterruptedException, IOException {
-        PgDatabase db = new PgDatabase(arguments);
-
+        DatabaseLoader loader;
         if ("dump".equals(format)) {
-            PgDumpLoader loader = new PgDumpLoader(new File(srcPath), arguments);
-            try {
-                return loader.load(db);
-            } finally {
-                errors.addAll(loader.getErrors());
-            }
-        }
-
-        if ("parsed".equals(format)) {
-            return new ProjectLoader(srcPath, arguments, null, errors).loadSchemaOnly();
-        }
-
-        if ("db".equals(format)) {
+            loader = new PgDumpLoader(new File(srcPath), arguments);
+        } else if ("parsed".equals(format)) {
+            loader = new ProjectLoader(srcPath, arguments, null, errors);
+        } else if ("db".equals(format)) {
             String timezone = arguments.getTimeZone() == null ? ApgdiffConsts.UTC : arguments.getTimeZone();
             if (arguments.isMsSql()) {
-                return new JdbcMsLoader(JdbcConnector.fromUrl(srcPath), arguments).readDb();
+                loader = new JdbcMsLoader(JdbcConnector.fromUrl(srcPath, timezone), arguments);
             } else {
-                JdbcLoader loader = new JdbcLoader(JdbcConnector.fromUrl(srcPath, timezone), arguments);
-                try {
-                    return loader.getDbFromJdbc();
-                } finally {
-                    errors.addAll(loader.getErrors());
-                }
+                loader = new JdbcLoader(JdbcConnector.fromUrl(srcPath, timezone), arguments);
             }
+        } else {
+            throw new UnsupportedOperationException(
+                    MessageFormat.format(Messages.UnknownDBFormat, format));
         }
 
-        throw new UnsupportedOperationException(
-                MessageFormat.format(Messages.UnknownDBFormat, format));
+        try {
+            return loader.load();
+        } finally {
+            errors.addAll(loader.getErrors());
+        }
     }
 
     public String diffDatabaseSchemas(PgDatabase oldDbFull, PgDatabase newDbFull,

@@ -19,7 +19,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_dropContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
-import cz.startnet.utils.pgdiff.schema.PgCast;
+import cz.startnet.utils.pgdiff.schema.ICast;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -194,7 +194,7 @@ public class DropStatement extends ParserAbstract {
             Drop_cast_statementContext castCtx = ctx.drop_cast_statement();
             StringBuilder sb = new StringBuilder();
             sb.append(ACTION_DROP).append(' ').append(DbObjType.CAST).append(" (");
-            sb.append(PgCast.getSimpleName(getFullCtxText(castCtx.source), getFullCtxText(castCtx.target)));
+            sb.append(ICast.getSimpleName(getFullCtxText(castCtx.source), getFullCtxText(castCtx.target)));
             sb.append(')');
             return sb.toString();
         }

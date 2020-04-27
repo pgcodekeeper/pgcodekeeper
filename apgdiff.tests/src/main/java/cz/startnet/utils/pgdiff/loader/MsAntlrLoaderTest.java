@@ -164,7 +164,7 @@ public class MsAntlrLoaderTest {
             args.setInCharsetName(ENCODING);
             args.setKeepNewlines(true);
             args.setMsSql(true);
-            PgDatabase dbAfterExport = new ProjectLoader(exportDir.toString(), args).loadDatabaseSchemaFromDirTree();
+            PgDatabase dbAfterExport = new ProjectLoader(exportDir.toString(), args).loadAndAnalyze();
 
             // check the same db similarity before and after export
             Assert.assertEquals("ModelExporter: predefined object PgDB" + fileIndex +

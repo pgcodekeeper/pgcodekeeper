@@ -36,7 +36,8 @@ public class JdbcMsLoader extends JdbcLoaderBase {
         super(connector, monitor, args);
     }
 
-    public PgDatabase readDb() throws IOException, InterruptedException {
+    @Override
+    public PgDatabase load() throws IOException, InterruptedException {
         PgDatabase d = new PgDatabase(args);
 
         Log.log(Log.LOG_INFO, "Reading db using JDBC.");
@@ -69,7 +70,7 @@ public class JdbcMsLoader extends JdbcLoaderBase {
             new MsRolesReader(this, d).read();
             new MsUsersReader(this, d).read();
 
-            finishAntlr();
+            finishLoaders();
 
             connection.commit();
 
@@ -81,7 +82,6 @@ public class JdbcMsLoader extends JdbcLoaderBase {
             throw new IOException(MessageFormat.format(Messages.Connection_DatabaseJdbcAccessError,
                     e.getLocalizedMessage(), getCurrentLocation()), e);
         }
-        FullAnalyze.fullAnalyze(d, errors);
         return d;
     }
 }

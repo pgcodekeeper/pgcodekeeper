@@ -8,6 +8,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.TypesSetManually;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExprWithNmspc;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.IDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
@@ -18,8 +19,8 @@ public class DomainAnalysisLauncher extends AbstractAnalysisLauncher {
     }
 
     @Override
-    public Set<GenericColumn> analyze(ParserRuleContext ctx) {
-        ValueExprWithNmspc vex = new ValueExprWithNmspc(stmt.getDatabase());
+    public Set<GenericColumn> analyze(ParserRuleContext ctx, IDatabase db) {
+        ValueExprWithNmspc vex = new ValueExprWithNmspc(db);
         vex.addNamespaceVariable(new Pair<>("VALUE", TypesSetManually.UNKNOWN));
         return analyze((VexContext) ctx, vex);
     }

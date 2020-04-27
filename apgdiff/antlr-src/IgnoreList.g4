@@ -16,7 +16,7 @@ show_rule: SHOW rule_rest;
 rule_rest: flags obj=identifier (DB db=identifier)? (TYPE type+=identifier (COMMA type+=identifier)*)?;
 
 flags: flag (COMMA flag)*;
-flag: CONTENT | REGEX | NONE;
+flag: CONTENT | REGEX | NONE | QUALIFIED;
 
 identifier: Identifier | SQstring | DQstring;
 
@@ -24,6 +24,7 @@ HIDE: 'HIDE';
 SHOW: 'SHOW';
 ALL: 'ALL';
 CONTENT: 'CONTENT';
+QUALIFIED: 'QUALIFIED';
 REGEX: 'REGEX';
 NONE: 'NONE';
 DB: 'db=';

@@ -89,6 +89,7 @@ public abstract class PgStatement implements IStatement, IHashable {
     /**
      * @return Always returns just the object's name.
      */
+    @Override
     public final String getBareName() {
         return name;
     }
@@ -703,10 +704,5 @@ public abstract class PgStatement implements IStatement, IHashable {
         assertUnique(found, newSt);
         newSt.setParent(parent);
         parent.resetHash();
-    }
-
-    @Override
-    public DbObjNature getStatementNature() {
-        return DbObjNature.USER;
     }
 }

@@ -84,11 +84,14 @@ public class IgnoreParser {
     private void ruleRest(Rule_restContext ruleRest, boolean isShow) {
         boolean isRegular = false;
         boolean ignoreContent = false;
+        boolean isQualified = false;
         for (FlagContext flag : ruleRest.flags().flag()) {
             if (flag.CONTENT() != null) {
                 ignoreContent = true;
             } else if (flag.REGEX() != null) {
                 isRegular = true;
+            } else if (flag.QUALIFIED() != null) {
+                isQualified = true;
             }
         }
         String dbRegex = ruleRest.db == null ? null : ruleRest.db.getText();
@@ -98,6 +101,6 @@ public class IgnoreParser {
                 .collect(Collectors.toCollection(() -> EnumSet.noneOf(DbObjType.class)));
 
         list.add(new IgnoredObject(ruleRest.obj.getText(), dbRegex,
-                isShow, isRegular, ignoreContent, objTypes));
+                isShow, isRegular, ignoreContent, isQualified, objTypes));
     }
 }

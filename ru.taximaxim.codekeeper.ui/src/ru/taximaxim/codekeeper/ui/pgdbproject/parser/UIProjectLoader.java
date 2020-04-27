@@ -27,9 +27,8 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.ide.ResourceUtil;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
-import cz.startnet.utils.pgdiff.loader.FullAnalyze;
+import cz.startnet.utils.pgdiff.loader.DatabaseLoader;
 import cz.startnet.utils.pgdiff.loader.LibraryLoader;
-import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.loader.ProjectLoader;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
@@ -58,28 +57,23 @@ public class UIProjectLoader extends ProjectLoader {
         this.statementBodies = statementBodies;
     }
 
-    /**
-     * Loads database schema from a ModelExporter directory tree.
-     *
-     * @return database schema
-     */
-    public PgDatabase loadDatabaseSchemaFromProject()
-            throws InterruptedException, IOException, CoreException {
-        PgDatabase db = new PgDatabase(arguments);
-        if (arguments.isMsSql()) {
-            loadMsStructure(iProject, db);
-        } else {
-            loadPgStructure(iProject, db);
-        }
-        finishLoaders();
-
-        analyzeAndMark(db);
-        return db;
+    @Override
+    public PgDatabase loadAndAnalyze() throws IOException, InterruptedException {
+        PgDatabase d = super.loadAndAnalyze();
+        markErrors(errors);
+        return d;
     }
 
-    private void analyzeAndMark(PgDatabase db) throws InterruptedException, IOException {
-        FullAnalyze.fullAnalyze(db, errors);
+    @Override
+    public PgDatabase load() throws InterruptedException, IOException {
+        try {
+            return loadDatabaseWithLibraries();
+        } catch (CoreException e) {
+            throw new IOException("Error while load project structure", e);
+        }
+    }
 
+    private void markErrors(List<Object> errors) {
         for (Object error : errors) {
             if (error instanceof AntlrError) {
                 AntlrError antlrError = (AntlrError) error;
@@ -93,7 +87,7 @@ public class UIProjectLoader extends ProjectLoader {
     }
 
     private void loadPgStructure(IContainer baseDir, PgDatabase db)
-            throws InterruptedException, IOException, CoreException {
+            throws InterruptedException, CoreException {
         if (!baseDir.exists()) {
             return;
         }
@@ -143,7 +137,7 @@ public class UIProjectLoader extends ProjectLoader {
     }
 
     private void loadSubdir(IFolder folder, PgDatabase db)
-            throws InterruptedException, IOException, CoreException {
+            throws InterruptedException, CoreException {
         if (!folder.exists()) {
             return;
         }
@@ -155,7 +149,7 @@ public class UIProjectLoader extends ProjectLoader {
     }
 
     private void loadFile(IFile file, IProgressMonitor monitor, PgDatabase db)
-            throws IOException, CoreException, InterruptedException {
+            throws CoreException, InterruptedException {
         PgDiffArguments arguments = db.getArguments().clone();
         arguments.setInCharsetName(file.getCharset());
 
@@ -218,7 +212,7 @@ public class UIProjectLoader extends ProjectLoader {
     }
 
     private PgDatabase buildPgFiles(Collection<IFile> files, SubMonitor mon)
-            throws InterruptedException, IOException, CoreException {
+            throws InterruptedException, CoreException {
         Set<String> schemaDirnamesLoaded = new HashSet<>();
         IPath schemasPath = new Path(WORK_DIR_NAMES.SCHEMA.name());
         PgDatabase db = new PgDatabase(new PgDiffArguments());
@@ -274,7 +268,7 @@ public class UIProjectLoader extends ProjectLoader {
         return db;
     }
 
-    public PgDatabase loadDatabaseWithLibraries()
+    private PgDatabase loadDatabaseWithLibraries()
             throws InterruptedException, IOException, CoreException {
         PgDatabase db = new PgDatabase(arguments);
         if (arguments.isMsSql()) {
@@ -303,7 +297,6 @@ public class UIProjectLoader extends ProjectLoader {
             }
         }
         finishLoaders();
-        analyzeAndMark(db);
         return db;
     }
 
@@ -316,12 +309,13 @@ public class UIProjectLoader extends ProjectLoader {
     }
 
     @Override
-    protected void finishLoader(PgDumpLoader l) {
+    protected void finishLoader(DatabaseLoader l) {
         super.finishLoader(l);
+        PgUIDumpLoader loader = (PgUIDumpLoader) l;
         if (statementBodies != null) {
-            statementBodies.addAll(l.getStatementBodyReferences());
+            statementBodies.addAll(loader.getStatementBodyReferences());
         }
-        ((PgUIDumpLoader) l).updateMarkers();
+        loader.updateMarkers();
     }
 
     public static PgDatabase buildFiles(Collection<IFile> files, boolean isMsSql,

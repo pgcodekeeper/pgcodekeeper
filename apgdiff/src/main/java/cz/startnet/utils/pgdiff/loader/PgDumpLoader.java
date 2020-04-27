@@ -9,8 +9,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -45,7 +43,7 @@ import ru.taximaxim.codekeeper.apgdiff.fileutils.InputStreamProvider;
  *
  * @author fordfrog
  */
-public class PgDumpLoader {
+public class PgDumpLoader extends DatabaseLoader {
 
     private final InputStreamProvider input;
     private final String inputObjectName;
@@ -54,15 +52,9 @@ public class PgDumpLoader {
     private final IProgressMonitor monitor;
     private final int monitoringLevel;
 
-    private final List<Object> errors = new ArrayList<>();
-
     private ParserListenerMode mode = ParserListenerMode.NORMAL;
     private List<StatementBodyContainer> statementBodyReferences;
     private Map<PgStatement, StatementOverride> overrides;
-
-    public List<Object> getErrors() {
-        return errors;
-    }
 
     public void setMode(ParserListenerMode mode) {
         this.mode = mode;
@@ -126,16 +118,11 @@ public class PgDumpLoader {
         this(inputFile, args, new NullProgressMonitor(), 0);
     }
 
+    @Override
     public PgDatabase load() throws IOException, InterruptedException {
-        PgDatabase d = load(new PgDatabase(args));
-        FullAnalyze.fullAnalyze(d, errors);
-        return d;
-    }
-
-    public PgDatabase load(PgDatabase d) throws IOException, InterruptedException {
-        Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>(1);
+        PgDatabase d = new PgDatabase(args);
         loadAsync(d, antlrTasks);
-        AntlrParser.finishAntlr(antlrTasks);
+        finishLoaders();
         return d;
     }
 

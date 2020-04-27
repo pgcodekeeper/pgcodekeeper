@@ -21,6 +21,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.libraries.PgLibrary;
 import cz.startnet.utils.pgdiff.libraries.PgLibrarySource;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -37,23 +38,22 @@ public class LibraryLoader extends DatabaseLoader {
         this.metaPath = metaPath;
     }
 
+    @Override
+    public PgDatabase load() throws IOException, InterruptedException {
+        throw new IllegalStateException("Unsupported operation for LibraryLoader");
+    }
+
     public void loadLibraries(PgDiffArguments args, boolean isIgnorePriv,
             Collection<String> paths) throws InterruptedException, IOException {
         for (String path : paths) {
-            PgDatabase db = getLibrary(path, args, isIgnorePriv);
-            database.addLib(db);
+            database.addLib(getLibrary(path, args, isIgnorePriv));
         }
     }
 
     public void loadXml(DependenciesXmlStore xmlStore, PgDiffArguments args)
             throws InterruptedException, IOException {
         for (PgLibrary lib : xmlStore.readObjects()) {
-            String path = lib.getPath();
-            PgDatabase l = getLibrary(path, args, lib.isIgnorePriv());
-            l.getDescendants()
-            // do not override dependent library name
-            .filter(st -> st.getLibName() == null)
-            .forEach(st -> st.setLibName(path));
+            PgDatabase l = getLibrary(lib.getPath(), args, lib.isIgnorePriv());
             String owner = lib.getOwner();
             if (!owner.isEmpty()) {
                 l.getDescendants()
@@ -73,19 +73,12 @@ public class LibraryLoader extends DatabaseLoader {
 
         switch (PgLibrarySource.getSource(path)) {
         case JDBC:
-            String timezone = args.getTimeZone() == null ? ApgdiffConsts.UTC : args.getTimeZone();
-            PgDatabase db;
-            if (path.startsWith("jdbc:sqlserver")) {
-                db = new JdbcMsLoader(JdbcConnector.fromUrl(path, timezone), args).readDb();
-            } else {
-                // TODO add errors from JDBC to list
-                db = new JdbcLoader(JdbcConnector.fromUrl(path, timezone), args).getDbFromJdbc();
-            }
-            return db;
+            return loadJdbc(args, path);
         case URL:
             try {
                 URI uri = new URI(path);
-                db = loadURI(uri, args, isIgnorePriv);
+                PgDatabase db = loadURI(uri, args, isIgnorePriv);
+                db.getDescendants().forEach(st -> st.setLocation(new PgObjLocation(path)));
                 return db;
             } catch (URISyntaxException ex) {
                 // shouldn't happen, already checked by getSource
@@ -104,18 +97,18 @@ public class LibraryLoader extends DatabaseLoader {
 
         if (Files.isDirectory(p)) {
             if (Files.exists(p.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER))) {
-                PgDatabase db = new ProjectLoader(path, args, null, errors).loadSchemaOnly();
+                PgDatabase db = new ProjectLoader(path, args, null, errors).load();
 
                 new LibraryLoader(db, metaPath, errors).loadXml(
                         new DependenciesXmlStore(p.resolve(DependenciesXmlStore.FILE_NAME)), args);
 
                 return db;
-            } else {
-                PgDatabase db = new PgDatabase(args);
-                readStatementsFromDirectory(p, db);
-                finishLoaders();
-                return db;
             }
+
+            PgDatabase db = new PgDatabase(args);
+            readStatementsFromDirectory(p, db);
+            finishLoaders();
+            return db;
         }
 
         if (FileUtils.isZipFile(p)) {
@@ -134,6 +127,26 @@ public class LibraryLoader extends DatabaseLoader {
             throws InterruptedException, IOException {
         Path dir = FileUtils.getUnzippedFilePath(metaPath, path);
         return getLibrary(unzip(path, dir), args, isIgnorePriv);
+    }
+
+    private PgDatabase loadJdbc(PgDiffArguments args, String path) throws IOException, InterruptedException {
+        String timezone = args.getTimeZone() == null ? ApgdiffConsts.UTC : args.getTimeZone();
+        DatabaseLoader loader;
+        if (path.startsWith("jdbc:sqlserver")) {
+            loader = new JdbcMsLoader(JdbcConnector.fromUrl(path, timezone), args);
+        } else {
+            loader = new JdbcLoader(JdbcConnector.fromUrl(path, timezone), args);
+        }
+
+        PgDatabase db;
+        try {
+            db = loader.load();
+        } finally {
+            errors.addAll(loader.getErrors());
+        }
+
+        db.getDescendants().forEach(st -> st.setLocation(new PgObjLocation(path)));
+        return db;
     }
 
     private PgDatabase loadURI(URI uri, PgDiffArguments args, boolean isIgnorePriv)

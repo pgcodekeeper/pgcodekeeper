@@ -8,9 +8,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.dialogs.PropertyPage;
@@ -39,25 +36,17 @@ public class SystemObjectProperties extends PropertyPage {
     }
 
     @Override
-    protected Control createContents(Composite ancestor) {
-        Composite parent = new Composite(ancestor, SWT.NONE);
-        GridLayout gridLayout = new GridLayout();
-        gridLayout.marginHeight = 0;
-        gridLayout.marginWidth = 0;
-        parent.setLayout(gridLayout);
-        parent.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-
+    protected Control createContents(Composite parent) {
         editor = new StoragePrefListEditor(parent);
 
         String storage = prefs.get(PROJ_PREF.STORAGE_LIST, ""); //$NON-NLS-1$
-
         if (storage.isEmpty()) {
             editor.setInputList(new ArrayList<>());
         } else {
             editor.setInputList(new ArrayList<>(Arrays.asList(storage.split(DELIM))));
         }
 
-        return parent;
+        return editor;
     }
 
     @Override

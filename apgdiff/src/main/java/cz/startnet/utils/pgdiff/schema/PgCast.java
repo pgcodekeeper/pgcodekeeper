@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.schema;
 
-import java.text.MessageFormat;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -8,8 +7,6 @@ import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgCast extends PgStatement implements ICast {
-
-    private static final String CAST_NAME = "{0} AS {1}";
 
     public enum CastMethod {
         FUNCTION, BINARY, INOUT
@@ -29,13 +26,9 @@ public class PgCast extends PgStatement implements ICast {
     }
 
     public PgCast(String source, String target) {
-        super(getSimpleName(source, target));
+        super(ICast.getSimpleName(source, target));
         this.source = source;
         this.target = target;
-    }
-
-    public static String getSimpleName(String source, String target) {
-        return MessageFormat.format(CAST_NAME, source, target);
     }
 
     @Override
