@@ -33,6 +33,11 @@ public class PgObjLocation extends ContextLocation {
         this(gObj, action, offset, lineNumber, 1, filePath);
     }
 
+    public PgObjLocation(GenericColumn gObj, ParserRuleContext ctx) {
+        this(gObj, null, ctx.getStart().getStartIndex(), ctx.getStart().getLine(),
+                ctx.getStart().getCharPositionInLine(), null);
+    }
+
     public PgObjLocation(String action, ParserRuleContext ctx, String sql) {
         this(null, action, ctx.getStart().getStartIndex(), ctx.getStart().getLine(),
                 ctx.getStart().getCharPositionInLine(), null);
@@ -175,5 +180,14 @@ public class PgObjLocation extends ContextLocation {
         default:
             return false;
         }
+    }
+
+    public PgObjLocation copyWithOffset(int offset, int lineOffset,
+            int inLineOffset, String filePath) {
+        return new PgObjLocation(obj, getAction(),
+                getOffset() + offset,
+                getLineNumber() + lineOffset,
+                getCharPositionInLine() + inLineOffset,
+                filePath);
     }
 }

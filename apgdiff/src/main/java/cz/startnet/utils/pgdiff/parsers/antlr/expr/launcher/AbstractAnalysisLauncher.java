@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher;
 
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -21,6 +22,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
@@ -47,6 +49,10 @@ public abstract class AbstractAnalysisLauncher {
         this.location = location;
     }
 
+    public String getLocation() {
+        return location;
+    }
+
     public PgStatementWithSearchPath getStmt() {
         return stmt;
     }
@@ -70,14 +76,22 @@ public abstract class AbstractAnalysisLauncher {
         }
     }
 
-    public Set<GenericColumn> launchAnalyze(List<Object> errors, IDatabase db) {
+    public Set<GenericColumn> launchAnalyze(List<Object> errors, List<PgObjLocation> refs, IDatabase db) {
         // Duplicated objects don't have parent, skip them
         if (stmt.getParent() == null) {
             return Collections.emptySet();
         }
 
         try {
-            return analyze(ctx, db);
+            Set<PgObjLocation> locs = analyze(ctx, db);
+            Set<GenericColumn> depcies = new LinkedHashSet<>();
+            for (PgObjLocation loc : locs) {
+                depcies.add(loc.getObj());
+                if (loc.getLineNumber() != 0) {
+                    refs.add(loc.copyWithOffset(offset, lineOffset, inLineOffset, location));
+                }
+            }
+            return depcies;
         } catch (UnresolvedReferenceException ex) {
             Token t = ex.getErrorToken();
             if (t != null) {
@@ -98,26 +112,26 @@ public abstract class AbstractAnalysisLauncher {
         return Collections.emptySet();
     }
 
-    protected abstract Set<GenericColumn> analyze(ParserRuleContext ctx, IDatabase db);
+    protected abstract Set<PgObjLocation> analyze(ParserRuleContext ctx, IDatabase db);
 
-    protected <T extends ParserRuleContext> Set<GenericColumn> analyze(
+    protected <T extends ParserRuleContext> Set<PgObjLocation> analyze(
             T ctx, AbstractExprWithNmspc<T> analyzer) {
         analyzer.analyze(ctx);
         return analyzer.getDepcies();
     }
 
-    protected Set<GenericColumn> analyze(VexContext ctx, ValueExpr analyzer) {
+    protected Set<PgObjLocation> analyze(VexContext ctx, ValueExpr analyzer) {
         analyzer.analyze(new Vex(ctx));
         return analyzer.getDepcies();
     }
 
-    protected <T extends ParserRuleContext> Set<GenericColumn> analyze(
+    protected <T extends ParserRuleContext> Set<PgObjLocation> analyze(
             T ctx, MsAbstractExprWithNmspc<T> analyzer) {
         analyzer.analyze(ctx);
         return analyzer.getDepcies();
     }
 
-    protected Set<GenericColumn> analyze(ExpressionContext ctx, MsValueExpr analyzer) {
+    protected Set<PgObjLocation> analyze(ExpressionContext ctx, MsValueExpr analyzer) {
         analyzer.analyze(ctx);
         return analyzer.getDepcies();
     }
@@ -126,7 +140,7 @@ public abstract class AbstractAnalysisLauncher {
      * Sets up namespace for Constraint/Index expr analysis
      * @return
      */
-    protected Set<GenericColumn> analyzeTableChildVex(VexContext ctx,  IDatabase db) {
+    protected Set<PgObjLocation> analyzeTableChildVex(VexContext ctx,  IDatabase db) {
         PgStatement table = stmt.getParent();
         String schemaName = table.getParent().getName();
         String rawTableReference = table.getName();
@@ -141,7 +155,7 @@ public abstract class AbstractAnalysisLauncher {
      * Sets up namespace for Trigger/Rule expr/command analysis
      * @return
      */
-    protected <T extends ParserRuleContext> Set<GenericColumn> analyzeTableChild(
+    protected <T extends ParserRuleContext> Set<PgObjLocation> analyzeTableChild (
             T ctx, AbstractExprWithNmspc<T> analyzer) {
         PgStatement table = stmt.getParent();
         String schemaName = table.getParent().getName();

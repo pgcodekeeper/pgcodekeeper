@@ -13,6 +13,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.expr.Sql;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IDatabase;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
@@ -38,7 +39,7 @@ public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
     }
 
     @Override
-    public Set<GenericColumn> analyze(ParserRuleContext ctx, IDatabase db) {
+    public Set<PgObjLocation> analyze(ParserRuleContext ctx, IDatabase db) {
         PgDiffArguments args = stmt.getDatabase().getArguments();
 
         if (ctx instanceof SqlContext) {

@@ -31,6 +31,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Frame_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_callContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_constructContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identifier_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IndirectionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_varContext;
@@ -63,6 +64,7 @@ import cz.startnet.utils.pgdiff.schema.ICast;
 import cz.startnet.utils.pgdiff.schema.ICast.CastContext;
 import cz.startnet.utils.pgdiff.schema.IDatabase;
 import cz.startnet.utils.pgdiff.schema.IFunction;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -79,7 +81,7 @@ public class ValueExpr extends AbstractExpr {
         super(parent);
     }
 
-    protected ValueExpr(AbstractExpr parent, Set<GenericColumn> depcies) {
+    protected ValueExpr(AbstractExpr parent, Set<PgObjLocation> depcies) {
         super(parent, depcies);
     }
 
@@ -467,11 +469,13 @@ public class ValueExpr extends AbstractExpr {
         }
 
         String schemaName = null;
-        String functionName = funcNameCtx.identifier_nontype().getText();
+        Identifier_nontypeContext functionCtx = funcNameCtx.identifier_nontype();
+        String functionName = functionCtx.getText();
 
         IdentifierContext id = funcNameCtx.identifier();
-        if (id!= null) {
+        if (id != null) {
             schemaName = id.getText();
+            addDepcy(new GenericColumn(schemaName, DbObjType.SCHEMA), id);
         }
 
         // TODO add processing for named/mixed notation in functions, because
@@ -516,7 +520,7 @@ public class ValueExpr extends AbstractExpr {
             IFunction resultFunction = resolveCall(functionName, argsType, functions);
 
             if (resultFunction != null) {
-                addFunctionDepcy(resultFunction);
+                addFunctionDepcy(resultFunction, functionCtx);
                 return new ModPair<>(functionName, getFunctionReturns(resultFunction));
             }
             return new ModPair<>(functionName, TypesSetManually.FUNCTION_COLUMN);

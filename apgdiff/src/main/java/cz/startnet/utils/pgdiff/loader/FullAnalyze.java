@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.loader;
 
 import java.io.IOException;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 
@@ -12,11 +13,13 @@ import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.ViewAnalysisLauncher
 import cz.startnet.utils.pgdiff.schema.IDatabase;
 import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.meta.MetaStorage;
 
 public final class FullAnalyze {
 
     private final List<Object> errors;
+    private final List<PgObjLocation> refs = new ArrayList<>();
     private final Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>();
     private final PgDatabase db;
     private final IDatabase metaDb;
@@ -43,12 +46,16 @@ public final class FullAnalyze {
         for (AbstractAnalysisLauncher l : db.getAnalysisLaunchers()) {
             if (l != null) {
                 AntlrParser.submitAntlrTask(antlrTasks,
-                        () -> l.launchAnalyze(errors, metaDb),
+                        () -> l.launchAnalyze(errors, refs, metaDb),
                         deps -> l.getStmt().addAllDeps(deps));
             }
         }
         db.clearAnalysisLaunchers();
         AntlrParser.finishAntlr(antlrTasks);
+
+        for (PgObjLocation ref : refs) {
+            db.getObjReferences().computeIfAbsent(ref.getFilePath(), e -> new ArrayList<>()).add(ref);
+        }
     }
 
     public void analyzeView(IRelation rel) {
@@ -63,7 +70,7 @@ public final class FullAnalyze {
                 // and protects from infinite recursion
                 launchers.set(i, null);
                 ((ViewAnalysisLauncher) l).setFullAnalyze(this);
-                l.getStmt().addAllDeps(l.launchAnalyze(errors, metaDb));
+                l.getStmt().addAllDeps(l.launchAnalyze(errors, refs, metaDb));
             }
         }
     }
