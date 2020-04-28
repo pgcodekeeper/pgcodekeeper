@@ -150,4 +150,15 @@ public class MetaFunction extends MetaStatement implements IFunction {
     public MetaSchema getContainingSchema() {
         return (MetaSchema) getParent();
     }
+
+    @Override
+    public MetaStatement getCopy() {
+        MetaFunction copy = new MetaFunction(getObject());
+        getArguments().forEach(copy::addArgument);
+        getOrderBy().forEach(copy::addArgument);
+        getReturnsColumns().forEach(copy::addReturnsColumn);
+        copy.setReturns(getReturns());
+        copy.setSetof(isSetof());
+        return copy;
+    }
 }

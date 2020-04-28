@@ -72,7 +72,7 @@ public class MetaStorage implements Serializable {
             definitions.values().stream()
             .flatMap(Collection::stream)
             .sorted((o1, o2) -> o1.getStatementType().compareTo(o2.getStatementType()))
-            .forEach(this::addChildToTree);
+            .forEach(e -> addChildToTree(e.getCopy()));
         }
 
         return tree;

@@ -13,11 +13,11 @@ public class MetaCast extends MetaStatement implements ICast {
 
     private final CastContext context;
 
-    public MetaCast(String source, String target, CastContext type) {
+    public MetaCast(String source, String target, CastContext context) {
         super(new GenericColumn(ICast.getSimpleName(source, target), DbObjType.CAST));
         this.source = source;
         this.target = target;
-        this.context = type;
+        this.context = context;
     }
 
     @Override
@@ -33,5 +33,11 @@ public class MetaCast extends MetaStatement implements ICast {
     @Override
     public CastContext getContext() {
         return context;
+    }
+
+
+    @Override
+    public MetaStatement getCopy() {
+        return new MetaCast(source, target, context);
     }
 }

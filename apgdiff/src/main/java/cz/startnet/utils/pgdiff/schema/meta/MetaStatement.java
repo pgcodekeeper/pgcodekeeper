@@ -54,4 +54,8 @@ public class MetaStatement implements IStatement, Serializable {
     public String getQualifiedName() {
         return object.getQualifiedName();
     }
+
+    public MetaStatement getCopy() {
+        return new MetaStatement(object);
+    }
 }

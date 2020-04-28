@@ -40,4 +40,16 @@ public class MetaRelation extends MetaStatement implements IRelation {
     public void setInitialized(boolean initialized) {
         this.initialized = initialized;
     }
+
+    protected void copyBaseFields(MetaRelation relation) {
+        relation.setInitialized(initialized);
+        relation.columns.addAll(columns);
+    }
+
+    @Override
+    public MetaStatement getCopy() {
+        MetaRelation copy = new MetaRelation(getObject());
+        copyBaseFields(copy);
+        return copy;
+    }
 }

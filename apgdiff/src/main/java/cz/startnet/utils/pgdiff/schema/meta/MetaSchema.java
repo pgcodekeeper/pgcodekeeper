@@ -132,4 +132,9 @@ public class MetaSchema extends MetaStatement implements ISchema {
     public MetaStatementContainer getStatementContainer(String name) {
         return containers.get(name);
     }
+
+    @Override
+    public MetaStatement getCopy() {
+        return new MetaSchema(getObject());
+    }
 }

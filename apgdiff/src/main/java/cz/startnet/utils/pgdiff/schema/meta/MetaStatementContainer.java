@@ -64,4 +64,11 @@ public class MetaStatementContainer extends MetaRelation implements IStatementCo
     public Collection<MetaConstraint> getConstraints() {
         return Collections.unmodifiableCollection(constraints.values());
     }
+
+    @Override
+    public MetaStatement getCopy() {
+        MetaStatementContainer copy = new MetaStatementContainer(getObject());
+        copyBaseFields(copy);
+        return copy;
+    }
 }
