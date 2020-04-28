@@ -1396,9 +1396,15 @@ copy_statement
 
 copy_from_statement
     : COPY table_cols
-    FROM (PROGRAM? Character_String_Literal | STDIN) 
+    FROM PROGRAM? Character_String_Literal
     (WITH? (LEFT_PAREN copy_option_list RIGHT_PAREN | copy_option_list))?
     (WHERE vex)?
+    | COPY table_cols FROM STDIN SEMI_COLON copy_from_stdin_data?
+    ;
+
+copy_from_stdin_data
+    : Copy_Data_Row+
+    END_OF_DATA
     ;
 
 copy_to_statement
