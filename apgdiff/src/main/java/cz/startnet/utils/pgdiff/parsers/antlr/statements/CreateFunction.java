@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.stream.Collectors;
 
+import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -187,7 +188,7 @@ public class CreateFunction extends ParserAbstract {
                     .map(TerminalNode::getText)
                     .collect(Collectors.joining());
         }
-        TerminalNode start = codeStart;
+        Token start = codeStart.getSymbol();
 
         // Parsing the function definition and adding its result context for analysis.
         // Adding contexts of function arguments for analysis.

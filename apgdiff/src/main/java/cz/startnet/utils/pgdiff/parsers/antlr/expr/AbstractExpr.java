@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Token;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.FullAnalyze;
@@ -125,6 +126,10 @@ public abstract class AbstractExpr {
     }
 
     protected GenericColumn addRelationDepcy(List<IdentifierContext> ids) {
+        return addRelationDepcy(ids, null);
+    }
+
+    protected GenericColumn addRelationDepcy(List<IdentifierContext> ids, Token start) {
         IdentifierContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
         IdentifierContext relationCtx = QNameParser.getFirstNameCtx(ids);
         String relationName = relationCtx.getText();
@@ -135,8 +140,8 @@ public abstract class AbstractExpr {
         String schemaName = schemaCtx.getText();
 
         GenericColumn depcy = new GenericColumn(schemaName, relationName, DbObjType.TABLE);
-        addDepcy(new GenericColumn(schemaName, DbObjType.SCHEMA), schemaCtx);
-        addDepcy(depcy, relationCtx);
+        addDepcy(new GenericColumn(schemaName, DbObjType.SCHEMA), schemaCtx, start);
+        addDepcy(depcy, relationCtx, start);
         return depcy;
     }
 
@@ -167,12 +172,22 @@ public abstract class AbstractExpr {
     }
 
     protected void addDepcy(GenericColumn depcy, ParserRuleContext ctx) {
+        addDepcy(depcy, ctx, null);
+    }
+
+    protected void addDepcy(GenericColumn depcy, ParserRuleContext ctx, Token start) {
         if (!ApgdiffUtils.isPgSystemSchema(depcy.schema) && !disabledDepcies.contains(depcy.type)) {
+            PgObjLocation loc;
             if (ctx == null) {
-                depcies.add(new PgObjLocation(depcy, null, 0, 0, null));
+                loc = new PgObjLocation(depcy, null, 0, 0, null);
+            } else if (start == null) {
+                loc = new PgObjLocation(depcy, ctx);
             } else {
-                depcies.add(new PgObjLocation(depcy, ctx));
+                loc = new PgObjLocation(depcy, ctx).copyWithOffset(
+                        start.getStartIndex(), start.getLine() - 1, start.getCharPositionInLine(), null);
             }
+
+            depcies.add(loc);
         }
     }
 
@@ -352,7 +367,7 @@ public abstract class AbstractExpr {
      * Use only in contexts where function can be pinpointed only by its name.
      * Such as ::regproc casts.
      */
-    protected void addFunctionDepcyNotOverloaded(List<IdentifierContext> ids) {
+    protected void addFunctionDepcyNotOverloaded(List<IdentifierContext> ids, Token start) {
         IdentifierContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
         if (schemaCtx == null) {
             return;
@@ -366,16 +381,13 @@ public abstract class AbstractExpr {
         IdentifierContext nameCtx = QNameParser.getFirstNameCtx(ids);
         String functionName = nameCtx.getText();
 
-        addDepcy(new GenericColumn(schemaName, DbObjType.SCHEMA), schemaCtx);
-        addDepcy(new GenericColumn(schemaName, functionName, DbObjType.FUNCTION), nameCtx);
-
-        // availableFunctions(schemaName, ids.get(0)).stream()
-        // .filter(f -> functionName.equals(f.getBareName()))
-        // .findAny().ifPresent(f -> addFunctionDepcy(f, nameCtx, null));
+        addDepcy(new GenericColumn(schemaName, DbObjType.SCHEMA), schemaCtx, start);
+        addDepcy(new GenericColumn(schemaName, functionName, DbObjType.FUNCTION), nameCtx, start);
     }
 
-    protected void addFunctionSigDepcy(String signature) {
-        SQLParser p = AntlrParser.makeBasicParser(SQLParser.class, signature, "function signature");
+    protected void addFunctionSigDepcy(String signature, Token start) {
+        SQLParser p = AntlrParser.makeBasicParser(SQLParser.class, signature,
+                "function signature", null, start);
         Function_args_parserContext sig = p.function_args_parser();
         List<IdentifierContext> ids = sig.schema_qualified_name().identifier();
 
@@ -392,9 +404,9 @@ public abstract class AbstractExpr {
         }
     }
 
-    protected void addSchemaDepcy(List<IdentifierContext> ids) {
+    protected void addSchemaDepcy(List<IdentifierContext> ids, Token start) {
         IdentifierContext ctx = QNameParser.getFirstNameCtx(ids);
-        addDepcy(new GenericColumn(ctx.getText(), DbObjType.SCHEMA), ctx);
+        addDepcy(new GenericColumn(ctx.getText(), DbObjType.SCHEMA), ctx, start);
     }
 
     protected Collection<? extends IFunction> availableFunctions(String schemaName, ParserRuleContext errorCtx) {

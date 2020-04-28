@@ -7,7 +7,6 @@ import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.tree.TerminalNode;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
@@ -57,10 +56,10 @@ public abstract class AbstractAnalysisLauncher {
         return stmt;
     }
 
-    public void setOffset(TerminalNode codeStart) {
-        offset = codeStart.getSymbol().getStartIndex();
-        lineOffset = codeStart.getSymbol().getLine() - 1;
-        inLineOffset = codeStart.getSymbol().getCharPositionInLine();
+    public void setOffset(Token codeStart) {
+        offset = codeStart.getStartIndex();
+        lineOffset = codeStart.getLine() - 1;
+        inLineOffset = codeStart.getCharPositionInLine();
     }
 
     /**

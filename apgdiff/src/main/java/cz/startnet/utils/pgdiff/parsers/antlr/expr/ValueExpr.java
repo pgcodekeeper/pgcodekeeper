@@ -7,8 +7,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -782,25 +784,39 @@ public class ValueExpr extends AbstractExpr {
         if (!regcast.startsWith("reg")) {
             return;
         }
-        String s = PgDiffUtils.unquoteQuotedString(strCtx.getText());
+
+        String s;
+        TerminalNode codeStart = strCtx.Character_String_Literal();
+        if (codeStart != null) {
+            // TODO support special escaping schemes (maybe in the util itself)
+            s = PgDiffUtils.unquoteQuotedString(codeStart.getText());
+        } else {
+            List<TerminalNode> dollarText = strCtx.Text_between_Dollar();
+            codeStart = dollarText.get(0);
+            s = dollarText.stream()
+                    .map(TerminalNode::getText)
+                    .collect(Collectors.joining());
+        }
+        Token start = codeStart.getSymbol();
+
         switch (regcast) {
         case "regproc":
             // In this case, the function is not overloaded.
-            addFunctionDepcyNotOverloaded(QNameParser.parsePg(s).getIds());
+            addFunctionDepcyNotOverloaded(QNameParser.parsePg(s).getIds(), start);
             break;
         case "regclass":
-            addRelationDepcy(QNameParser.parsePg(s).getIds());
+            addRelationDepcy(QNameParser.parsePg(s).getIds(), start);
             break;
         case "regtype":
             // TODO pending DbObjType.TYPE
             break;
 
         case "regnamespace":
-            addSchemaDepcy(QNameParser.parsePg(s).getIds());
+            addSchemaDepcy(QNameParser.parsePg(s).getIds(), start);
             break;
 
         case "regprocedure":
-            addFunctionSigDepcy(s);
+            addFunctionSigDepcy(s, start);
             break;
 
         case "regoper":

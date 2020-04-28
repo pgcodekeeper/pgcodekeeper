@@ -378,7 +378,7 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
             if (additional.CLUSTER() != null || additional.TABLE() != null || additional.REFRESH() != null) {
                 addRelationDepcy(table.identifier());
             } else if (additional.SCHEMA() != null) {
-                addSchemaDepcy(table.identifier());
+                addSchemaDepcy(table.identifier(), null);
             }
         } else if ((data = additional.data_statement()) != null) {
             new Sql(this).data(data);
