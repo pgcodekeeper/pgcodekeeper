@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -33,6 +34,8 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  */
 public abstract class AbstractAnalysisLauncher {
 
+    private final List<PgObjLocation> references = new ArrayList<>();
+
     protected PgStatementWithSearchPath stmt;
     protected final ParserRuleContext ctx;
     private final String location;
@@ -50,6 +53,10 @@ public abstract class AbstractAnalysisLauncher {
 
     public PgStatementWithSearchPath getStmt() {
         return stmt;
+    }
+
+    public List<PgObjLocation> getReferences() {
+        return Collections.unmodifiableList(references);
     }
 
     public void setOffset(Token codeStart) {
@@ -71,7 +78,7 @@ public abstract class AbstractAnalysisLauncher {
         }
     }
 
-    public Set<GenericColumn> launchAnalyze(List<Object> errors, List<PgObjLocation> refs, IDatabase db) {
+    public Set<GenericColumn> launchAnalyze(List<Object> errors, IDatabase db) {
         // Duplicated objects don't have parent, skip them
         if (stmt.getParent() == null) {
             return Collections.emptySet();
@@ -83,7 +90,7 @@ public abstract class AbstractAnalysisLauncher {
             for (PgObjLocation loc : locs) {
                 depcies.add(loc.getObj());
                 if (loc.getLineNumber() != 0) {
-                    refs.add(loc.copyWithOffset(offset, lineOffset, inLineOffset, location));
+                    references.add(loc.copyWithOffset(offset, lineOffset, inLineOffset, location));
                 }
             }
             return depcies;
