@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.loader;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Queue;
 
@@ -19,7 +20,7 @@ import cz.startnet.utils.pgdiff.schema.meta.MetaStorage;
 public final class FullAnalyze {
 
     private final List<Object> errors;
-    private final List<PgObjLocation> refs = new ArrayList<>();
+    private final List<PgObjLocation> refs = Collections.synchronizedList(new ArrayList<>());
     private final Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>();
     private final PgDatabase db;
     private final IDatabase metaDb;
