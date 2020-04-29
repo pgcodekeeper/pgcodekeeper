@@ -2,7 +2,7 @@ package cz.startnet.utils.pgdiff.schema.meta;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -146,7 +146,7 @@ public class MetaStorage implements Serializable {
             }
         }
 
-        definitions.computeIfAbsent(path, k -> new HashSet<>()).add(meta);
+        definitions.computeIfAbsent(path, k -> new LinkedHashSet<>()).add(meta);
     }
 
     private void addChildToTree(MetaStatement st) {
