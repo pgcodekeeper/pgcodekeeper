@@ -498,6 +498,8 @@ public class PgDiffTest {
                     {"compare_functions"},
                     // Tests scenario where CAST is compared.
                     {"compare_casts"},
+                    // Tests scenario where COLUMN is added to modified table.
+                    {"add_column_and_change_table"},
                 });
     }
 
