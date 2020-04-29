@@ -48,10 +48,6 @@ public abstract class AbstractAnalysisLauncher {
         this.location = location;
     }
 
-    public String getLocation() {
-        return location;
-    }
-
     public PgStatementWithSearchPath getStmt() {
         return stmt;
     }
