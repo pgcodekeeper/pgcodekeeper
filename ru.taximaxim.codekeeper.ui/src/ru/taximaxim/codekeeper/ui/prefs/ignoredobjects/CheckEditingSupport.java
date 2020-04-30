@@ -24,6 +24,8 @@ public class CheckEditingSupport extends CommonEditingSupport<CheckboxCellEditor
                 return data.isIgnoreContent();
             case REGULAR:
                 return data.isRegular();
+            case QUALIFIED:
+                return data.isQualified();
             }
         }
         return null;
@@ -40,6 +42,9 @@ public class CheckEditingSupport extends CommonEditingSupport<CheckboxCellEditor
                 break;
             case REGULAR:
                 data.setRegular(boolValue);
+                break;
+            case QUALIFIED:
+                data.setQualified(boolValue);
                 break;
             }
         }

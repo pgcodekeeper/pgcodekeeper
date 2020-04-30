@@ -282,7 +282,8 @@ public class TreeElement {
      */
     public String getQualifiedName() {
         String qname = getContainerQName();
-        return qname.isEmpty() ? getName() : qname + '.' + getName();
+        String objName = PgDiffUtils.getQuotedName(getName());
+        return qname.isEmpty() ? objName : qname + '.' + objName;
     }
 
     @Override

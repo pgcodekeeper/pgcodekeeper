@@ -4,13 +4,12 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.text.MessageFormat;
-import java.util.Collections;
-import java.util.List;
 
 import org.eclipse.core.runtime.SubMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.loader.jdbc.CastsReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.ConstraintsReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.ExtensionsReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.FtsConfigurationsReader;
@@ -43,17 +42,10 @@ public class JdbcLoader extends JdbcLoaderBase {
         super(connector, monitor, pgDiffArguments);
     }
 
-    public List<Object> getErrors() {
-        return Collections.unmodifiableList(errors);
-    }
+    @Override
+    public PgDatabase load() throws IOException, InterruptedException {
+        PgDatabase d = new PgDatabase(args);
 
-    public PgDatabase getDbFromJdbc() throws IOException, InterruptedException {
-        PgDatabase d = getDbFromJdbc(new PgDatabase(args));
-        FullAnalyze.fullAnalyze(d, errors);
-        return d;
-    }
-
-    public PgDatabase getDbFromJdbc(PgDatabase d) throws IOException, InterruptedException {
         Log.log(Log.LOG_INFO, "Reading db using JDBC.");
         setCurrentOperation("connection setup");
         try (Connection connection = connector.getConnection();
@@ -96,13 +88,14 @@ public class JdbcLoader extends JdbcLoaderBase {
             new OperatorsReader(this).read();
 
             new ExtensionsReader(this, d).read();
+            new CastsReader(this, d).read();
 
             if (!SupportedVersion.VERSION_10.isLE(version)) {
                 SequencesReader.querySequencesData(d, this);
             }
 
             connection.commit();
-            finishAntlr();
+            finishLoaders();
 
             d.sortColumns();
 

@@ -183,7 +183,7 @@ class EmptyArgumentsProvider extends ArgumentsProvider {
 class FailSourceArgumentsProvider extends ArgumentsProvider {
 
     public FailSourceArgumentsProvider() {
-        super("drop_table");
+        super("drop_ms_table");
     }
 
     @Override
@@ -191,7 +191,7 @@ class FailSourceArgumentsProvider extends ArgumentsProvider {
         File fNew = getFile(FILES_POSTFIX.NEW_SQL);
         File fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
 
-        return new String[]{"--safe-mode", "--allow-danger-ddl", "DROP_TABLE",
+        return new String[]{"--safe-mode", "--ms-sql", "--allow-danger-ddl", "DROP_TABLE",
                 "--output", getDiffResultFile().getAbsolutePath(),
                 "-s", fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
     }
@@ -224,7 +224,7 @@ class FailParseArgumentsProvider extends ArgumentsProvider {
 class FailDangerTableArgumentsProvider extends ArgumentsProvider{
 
     public FailDangerTableArgumentsProvider() {
-        super("drop_table");
+        super("drop_ms_table");
     }
 
     @Override
@@ -232,7 +232,7 @@ class FailDangerTableArgumentsProvider extends ArgumentsProvider{
         File fNew = getFile(FILES_POSTFIX.NEW_SQL);
         File fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
 
-        return new String[]{ "-S", "-o", getDiffResultFile().getAbsolutePath(),
+        return new String[]{ "-S", "--ms-sql", "-o", getDiffResultFile().getAbsolutePath(),
                 fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
     }
 
@@ -402,7 +402,7 @@ class FailConcurrentlyArgumentsProvider extends ArgumentsProvider {
 class ConcurrentlyArgumentsProvider extends ArgumentsProvider {
 
     public ConcurrentlyArgumentsProvider() {
-        super("add_index");
+        super("add_view_index");
     }
 
     @Override
@@ -416,7 +416,7 @@ class ConcurrentlyArgumentsProvider extends ArgumentsProvider {
     @Override
     public String output() {
         return "SET search_path = pg_catalog;\n\n" +
-                "CREATE INDEX CONCURRENTLY testindex3 ON public.testtable USING btree (field3);\n";
+                "CREATE INDEX CONCURRENTLY testindex ON public.testview USING btree (first);\n";
     }
 }
 

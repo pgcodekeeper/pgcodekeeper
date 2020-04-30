@@ -14,7 +14,6 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FileDialog;
@@ -53,13 +52,13 @@ public class IgnoreListEditorDialog extends Dialog {
     @Override
     protected Control createDialogArea(Composite parent) {
         Composite composite = (Composite) super.createDialogArea(parent);
-        composite.setLayout(new GridLayout());
         GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
         data.widthHint = 600;
         data.heightHint = 400;
         composite.setLayoutData(data);
 
         listEditor = IgnoredObjectPrefListEditor.create(composite, ignoreList);
+        listEditor.setLayoutData(new GridData(GridData.FILL_BOTH));
         listEditor.setInputList(new ArrayList<>(ignoreList.getList()));
 
         return composite;

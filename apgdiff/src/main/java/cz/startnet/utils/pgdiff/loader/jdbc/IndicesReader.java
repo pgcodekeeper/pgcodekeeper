@@ -9,8 +9,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
+import cz.startnet.utils.pgdiff.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class IndicesReader extends JdbcReader {
@@ -21,7 +21,7 @@ public class IndicesReader extends JdbcReader {
 
     @Override
     protected void processResult(ResultSet result, AbstractSchema schema) throws SQLException {
-        IStatementContainer cont = schema.getStatementContainer(result.getString("table_name"));
+        PgStatementContainer cont = schema.getStatementContainer(result.getString("table_name"));
         if (cont != null) {
             AbstractIndex index = getIndex(result, schema, cont.getName());
             loader.monitor.worked(1);
