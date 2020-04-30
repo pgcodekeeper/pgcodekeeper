@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: apgdiff;singleton:=true
-Bundle-Version: 5.14.0.qualifier
+Bundle-Version: 5.15.0.qualifier
 Export-Package: cz.startnet.utils.pgdiff,
  cz.startnet.utils.pgdiff.libraries,
  cz.startnet.utils.pgdiff.loader,
@@ -10,8 +10,6 @@ Export-Package: cz.startnet.utils.pgdiff,
  cz.startnet.utils.pgdiff.schema,
  cz.startnet.utils.pgdiff.schema.system,
  cz.startnet.utils.pgdiff.xmlstore,
- org.jgrapht,
- org.jgrapht.graph,
  ru.taximaxim.codekeeper.apgdiff,
  ru.taximaxim.codekeeper.apgdiff.fileutils,
  ru.taximaxim.codekeeper.apgdiff.ignoreparser,

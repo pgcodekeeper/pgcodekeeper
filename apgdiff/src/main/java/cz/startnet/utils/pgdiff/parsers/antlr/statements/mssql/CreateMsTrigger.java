@@ -11,10 +11,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_trigger
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.MsFuncProcTrigAnalysisLauncher;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.MsTrigger;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateMsTrigger extends BatchContextProcessor {
@@ -69,7 +69,7 @@ public class CreateMsTrigger extends BatchContextProcessor {
         db.addAnalysisLauncher(new MsFuncProcTrigAnalysisLauncher(trigger,
                 ctx.sql_clauses(), fileName));
 
-        IStatementContainer cont = getSafe(AbstractSchema::getStatementContainer,
+        PgStatementContainer cont = getSafe(AbstractSchema::getStatementContainer,
                 schema, tableNameCtx);
 
         if (isJdbc && schema != null) {

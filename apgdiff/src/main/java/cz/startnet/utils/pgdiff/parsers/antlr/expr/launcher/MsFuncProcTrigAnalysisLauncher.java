@@ -12,6 +12,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsSqlClauses;
 import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsValueExpr;
 import cz.startnet.utils.pgdiff.schema.AbstractMsFunction;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.IDatabase;
 import cz.startnet.utils.pgdiff.schema.MsTrigger;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -38,7 +39,7 @@ public class MsFuncProcTrigAnalysisLauncher extends AbstractAnalysisLauncher {
     }
 
     @Override
-    public Set<GenericColumn> analyze(ParserRuleContext ctx) {
+    public Set<GenericColumn> analyze(ParserRuleContext ctx, IDatabase db) {
         String schema = stmt.getSchemaName();
 
         DbObjType [] disabledDepcies = new DbObjType[] {DbObjType.FUNCTION, DbObjType.PROCEDURE};

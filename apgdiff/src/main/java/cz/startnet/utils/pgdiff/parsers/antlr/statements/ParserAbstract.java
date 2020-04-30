@@ -36,6 +36,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.ArgMode;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.ICast;
 import cz.startnet.utils.pgdiff.schema.IStatement;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
@@ -281,7 +282,7 @@ public abstract class ParserAbstract {
         R statement = getter.apply(container, name);
         if (statement == null) {
             throw new UnresolvedReferenceException("Cannot find object in database: "
-                    + errToken.getText(), errToken);
+                    + name, errToken);
         }
         return statement;
     }
@@ -306,6 +307,8 @@ public abstract class ParserAbstract {
             DbObjType type, String action, boolean isDep, String signature) {
         ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
         switch (type) {
+        case CAST:
+            throw new IllegalStateException("Unsupported type: CAST");
         case ASSEMBLY:
         case EXTENSION:
         case SCHEMA:
@@ -363,6 +366,14 @@ public abstract class ParserAbstract {
         default:
             return null;
         }
+    }
+
+    protected PgObjLocation getCastLocation(Data_typeContext source, Data_typeContext target, String action) {
+        PgObjLocation loc = new PgObjLocation(new GenericColumn(
+                ICast.getSimpleName(getFullCtxText(source), getFullCtxText(target)), DbObjType.CAST),
+                action, source.start.getStartIndex(), source.start.getLine(), fileName);
+        loc.setLength(target.stop.getStopIndex() - source.start.getStartIndex() + 1);
+        return loc;
     }
 
     protected <T extends IStatement, U extends Object> void doSafe(BiConsumer<T, U> adder,

@@ -1,6 +1,5 @@
 package ru.taximaxim.codekeeper.ui.views;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -32,8 +31,6 @@ import org.eclipse.zest.core.viewers.IZoomableWorkbenchPart;
 import org.eclipse.zest.core.widgets.ZestStyles;
 import org.eclipse.zest.layouts.LayoutStyles;
 import org.eclipse.zest.layouts.algorithms.SpringLayoutAlgorithm;
-import org.jgrapht.DirectedGraph;
-import org.jgrapht.graph.DefaultEdge;
 
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -210,13 +207,8 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
 
         @Override
         public Object[] getConnectedTo(Object entity) {
-            DirectedGraph<PgStatement, DefaultEdge> currentGraph = depRes.getOldGraph();
-            if (currentGraph != null && entity instanceof PgStatement) {
-                List<PgStatement> connected = new ArrayList<>();
-                for (DefaultEdge e : currentGraph.outgoingEdgesOf((PgStatement) entity)) {
-                    connected.add(currentGraph.getEdgeTarget(e));
-                }
-                return connected.toArray();
+            if (entity instanceof PgStatement) {
+                return depRes.getConnectedTo((PgStatement) entity).toArray();
             }
             return null;
         }

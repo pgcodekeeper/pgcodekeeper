@@ -10,8 +10,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterTable;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
+import cz.startnet.utils.pgdiff.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class ConstraintsReader extends JdbcReader {
@@ -28,7 +28,7 @@ public class ConstraintsReader extends JdbcReader {
             return;
         }
 
-        IStatementContainer cont = schema.getStatementContainer(result.getString(CLASS_RELNAME));
+        PgStatementContainer cont = schema.getStatementContainer(result.getString(CLASS_RELNAME));
         if (cont != null) {
             cont.addConstraint(getConstraint(result, schema, cont.getName()));
         }

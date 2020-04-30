@@ -93,11 +93,11 @@ public class PgFunction extends AbstractPgFunction {
 
         for (Entry<String, String> param : configurations.entrySet()) {
             String val = param.getValue();
-            sbSQL.append("\n    SET ").append(param.getKey());
+            sbSQL.append("\n    SET ").append(param.getKey()).append(' ');
             if (FROM_CURRENT.equals(val)) {
                 sbSQL.append(val);
             } else {
-                sbSQL.append(" TO ").append(val);
+                sbSQL.append("TO ").append(val);
             }
         }
 
