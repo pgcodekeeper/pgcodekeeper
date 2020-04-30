@@ -1,8 +1,8 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -12,6 +12,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_member_objectContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_on_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
@@ -19,12 +20,13 @@ import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceExcep
 import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
-import cz.startnet.utils.pgdiff.schema.IStatementContainer;
+import cz.startnet.utils.pgdiff.schema.ICast;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.PgStatementContainer;
 import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -45,6 +47,11 @@ public class CommentOn extends ParserAbstract {
         String comment = str == null ? null : str.getText();
         Comment_member_objectContext obj = ctx.comment_member_object();
 
+        if (obj.CAST() != null) {
+            commentCast(obj, comment);
+            return;
+        }
+
         List<? extends ParserRuleContext> ids = null;
         if (obj.target_operator() != null) {
             Operator_nameContext operCtx = obj.target_operator().name;
@@ -63,6 +70,8 @@ public class CommentOn extends ParserAbstract {
         // column (separately because of schema qualification)
         // otherwise schema reference is considered unresolved
         if (obj.COLUMN() != null) {
+            addOutlineRefForCommentOrRule(ACTION_COMMENT, ctx);
+
             if (isRefMode()) {
                 return;
             }
@@ -136,7 +145,7 @@ public class CommentOn extends ParserAbstract {
             st = getSafe(PgDatabase::getExtension, db, nameCtx);
         } else if (obj.CONSTRAINT() != null) {
             List<IdentifierContext> parentIds = obj.table_name.identifier();
-            IStatementContainer table = getSafe(AbstractSchema::getStatementContainer,
+            PgStatementContainer table = getSafe(AbstractSchema::getStatementContainer,
                     schema, QNameParser.getFirstNameCtx(parentIds));
             addObjReference(parentIds, DbObjType.TABLE, null);
             type = DbObjType.CONSTRAINT;
@@ -146,7 +155,7 @@ public class CommentOn extends ParserAbstract {
                 PgDomain domain = getSafe(AbstractSchema::getDomain, schema, nameCtx);
                 st = getSafe(PgDomain::getConstraint, domain, nameCtx);
             } else {
-                st = getSafe(IStatementContainer::getConstraint, table, nameCtx);
+                st = getSafe(PgStatementContainer::getConstraint, table, nameCtx);
             }
         } else if (obj.TRIGGER() != null && obj.EVENT() == null) {
             type = DbObjType.TRIGGER;
@@ -154,9 +163,9 @@ public class CommentOn extends ParserAbstract {
             addObjReference(parentIds, DbObjType.TABLE, null);
             ids = Arrays.asList(QNameParser.getSchemaNameCtx(parentIds),
                     QNameParser.getFirstNameCtx(parentIds), nameCtx);
-            IStatementContainer c = getSafe(AbstractSchema::getStatementContainer, schema,
+            PgStatementContainer c = getSafe(AbstractSchema::getStatementContainer, schema,
                     QNameParser.getFirstNameCtx(parentIds));
-            st = getSafe(IStatementContainer::getTrigger, c, nameCtx);
+            st = getSafe(PgStatementContainer::getTrigger, c, nameCtx);
         } else if (obj.DATABASE() != null) {
             st = db;
             type = DbObjType.DATABASE;
@@ -195,9 +204,9 @@ public class CommentOn extends ParserAbstract {
             addObjReference(parentIds, DbObjType.TABLE, null);
             ids = Arrays.asList(QNameParser.getSchemaNameCtx(parentIds),
                     QNameParser.getFirstNameCtx(parentIds), nameCtx);
-            IStatementContainer c = getSafe(AbstractSchema::getStatementContainer, schema,
+            PgStatementContainer c = getSafe(AbstractSchema::getStatementContainer, schema,
                     QNameParser.getFirstNameCtx(obj.table_name.identifier()));
-            st = getSafe(IStatementContainer::getRule, c, nameCtx);
+            st = getSafe(PgStatementContainer::getRule, c, nameCtx);
         } else if (obj.CONFIGURATION() != null) {
             type = DbObjType.FTS_CONFIGURATION;
             st = getSafe(AbstractSchema::getFtsConfiguration, schema, nameCtx);
@@ -216,9 +225,23 @@ public class CommentOn extends ParserAbstract {
             doSafe((s,c) -> s.setComment(db.getArguments(), c), st, comment);
             PgObjLocation ref = addObjReference(ids, type, ACTION_COMMENT);
 
-            db.getObjDefinitions().values().stream().flatMap(Set::stream)
+            db.getObjDefinitions().values().stream().flatMap(List::stream)
             .filter(ref::compare).forEach(def -> def.setComment(comment));
+        } else {
+            addOutlineRefForCommentOrRule(ACTION_COMMENT, ctx);
         }
+    }
+
+    private void commentCast(Comment_member_objectContext obj, String comment) {
+        Data_typeContext source = obj.source;
+        Data_typeContext target = obj.target;
+        String castName = ICast.getSimpleName(getFullCtxText(source), getFullCtxText(target));
+        PgStatement cast = getSafe(PgDatabase::getCast, db, castName, source.getStart());
+        doSafe((s,c) -> s.setComment(db.getArguments(), c), cast, comment);
+        PgObjLocation ref = getCastLocation(source, target, ACTION_COMMENT);
+        db.getObjReferences().computeIfAbsent(fileName, k -> new ArrayList<>()).add(ref);
+        db.getObjDefinitions().values().stream().flatMap(List::stream)
+        .filter(ref::compare).forEach(def -> def.setComment(comment));
     }
 
     @Override

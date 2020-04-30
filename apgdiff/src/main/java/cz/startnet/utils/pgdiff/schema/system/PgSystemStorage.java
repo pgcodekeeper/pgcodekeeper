@@ -9,8 +9,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
+import cz.startnet.utils.pgdiff.schema.IStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
@@ -59,33 +61,8 @@ public class PgSystemStorage implements Serializable {
         return null;
     }
 
-    /**
-     * Checks cast present in storage
-     *
-     * @param source - source type
-     * @param target - target type
-     * @return true if storage contains cast
-     */
-    public boolean containsCastImplicit(String source, String target) {
-        for (PgSystemCast cast : casts) {
-            if (CastContext.IMPLICIT == cast.getContext()
-                    && source.equals(cast.getSource())
-                    && target.equals(cast.getTarget())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public void addCast(PgSystemCast cast) {
         casts.add(cast);
-    }
-
-    /**
-     * @return unmodifiable list of system schemas
-     */
-    public List<PgSystemSchema> getSchemas() {
-        return schemas;
     }
 
     public PgSystemSchema getSchema(String schemaName) {
@@ -103,5 +80,17 @@ public class PgSystemStorage implements Serializable {
 
     public PgSystemSchema getInfoSchema() {
         return informationSchema;
+    }
+
+    public final Stream<IStatement> getDescendants() {
+        List<IStatement> l = new ArrayList<>();
+        casts.forEach(l::add);
+        for (PgSystemSchema s : schemas) {
+            l.add(s);
+            s.getFunctions().forEach(l::add);
+            s.getRelations().forEach(l::add);
+        }
+
+        return l.stream();
     }
 }

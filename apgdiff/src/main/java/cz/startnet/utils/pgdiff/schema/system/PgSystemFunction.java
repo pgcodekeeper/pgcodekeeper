@@ -114,68 +114,40 @@ public class PgSystemFunction extends PgSystemStatement implements IFunction {
      */
     public String getSignature() {
         if (signatureCache == null) {
-            signatureCache = appendFunctionSignature().toString();
+            signatureCache = getFunctionSignature();
         }
         return signatureCache;
     }
 
-    public StringBuilder appendFunctionSignature() {
+    public String getFunctionSignature() {
         StringBuilder sb = new StringBuilder();
-
-        if (signatureCache != null) {
-            return sb.append(signatureCache);
-        }
-        final int sigStart = sb.length();
 
         sb.append(PgDiffUtils.getQuotedName(name)).append('(');
         boolean addComma = false;
         for (final Argument argument : getArguments()) {
-            if (ArgMode.OUT == argument.getMode()) {
+            ArgMode mode = argument.getMode();
+            if (ArgMode.OUT == mode) {
                 continue;
             }
             if (addComma) {
                 sb.append(", ");
             }
-            sb.append(getDeclaration(argument, false, false));
+
+            if (ArgMode.IN != mode) {
+                sb.append(mode);
+                sb.append(' ');
+            }
+
+            sb.append(argument.getDataType());
             addComma = true;
         }
         sb.append(')');
 
-        signatureCache = sb.substring(sigStart, sb.length());
-
-        return sb;
+        return sb.toString();
     }
 
     @Override
     public PgSystemSchema getContainingSchema() {
         return (PgSystemSchema) getParent();
-    }
-
-    public String getDeclaration(Argument arg, boolean includeDefaultValue, boolean includeArgName) {
-        final StringBuilder sbString = new StringBuilder();
-
-        ArgMode mode = arg.getMode();
-        if (ArgMode.IN != mode) {
-            sbString.append(mode);
-            sbString.append(' ');
-        }
-
-        String name = arg.getName();
-
-        if (name != null && !name.isEmpty() && includeArgName) {
-            sbString.append(PgDiffUtils.getQuotedName(name));
-            sbString.append(' ');
-        }
-
-        sbString.append(arg.getDataType());
-
-        String def = arg.getDefaultExpression();
-
-        if (includeDefaultValue && def != null && !def.isEmpty()) {
-            sbString.append(" = ");
-            sbString.append(def);
-        }
-
-        return sbString.toString();
     }
 }

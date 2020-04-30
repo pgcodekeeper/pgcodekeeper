@@ -22,17 +22,20 @@ public class IgnoredObject {
     private boolean isShow;
     private boolean isRegular;
     private boolean ignoreContent;
+    private boolean isQualified;
 
-    public IgnoredObject(String name, boolean isRegular, boolean ignoreContent, Set<DbObjType> objTypes) {
-        this(name, null, false, isRegular, ignoreContent, objTypes);
+    public IgnoredObject(String name, boolean isRegular,
+            boolean ignoreContent, boolean isQualified, Set<DbObjType> objTypes) {
+        this(name, null, false, isRegular, ignoreContent, isQualified, objTypes);
     }
 
     public IgnoredObject(String name, String dbRegex, boolean isShow, boolean isRegular,
-            boolean ignoreContent, Set<DbObjType> objTypes) {
+            boolean ignoreContent, boolean isQualified, Set<DbObjType> objTypes) {
         this.name = name;
         this.isShow = isShow;
         this.isRegular = isRegular;
         this.ignoreContent = ignoreContent;
+        this.isQualified = isQualified;
         this.objTypes = objTypes;
         this.regex = isRegular ? Pattern.compile(name) : null;
         this.dbRegexStr = dbRegex;
@@ -55,6 +58,10 @@ public class IgnoredObject {
         return ignoreContent;
     }
 
+    public boolean isQualified() {
+        return isQualified;
+    }
+
     public Set<DbObjType> getObjTypes() {
         return objTypes;
     }
@@ -71,24 +78,28 @@ public class IgnoredObject {
         this.ignoreContent = ignoreContent;
     }
 
+    public void setQualified(boolean isQualified) {
+        this.isQualified = isQualified;
+    }
+
     public void setObjTypes(Set<DbObjType> objTypes) {
         this.objTypes = objTypes;
     }
 
     public IgnoredObject copy(String name) {
-        return new IgnoredObject(name, dbRegexStr, isShow, isRegular, ignoreContent,
-                EnumSet.copyOf(objTypes));
+        return new IgnoredObject(name, dbRegexStr, isShow, isRegular,
+                ignoreContent, isQualified, EnumSet.copyOf(objTypes));
     }
 
-    public boolean match(String objName, DbObjType objType, String... dbNames) {
+    public boolean match(TreeElement el, String... dbNames) {
         boolean matches;
         if (isRegular) {
-            matches = regex.matcher(objName).find();
+            matches = regex.matcher(isQualified ? el.getQualifiedName() : el.getName()).find();
         } else {
-            matches = name.equals(objName);
+            matches = name.equals(isQualified ?  el.getQualifiedName() : el.getName());
         }
         if (!objTypes.isEmpty()) {
-            matches = matches && objTypes.contains(objType);
+            matches = matches && objTypes.contains(el.getType());
         }
         if (matches && dbRegex != null) {
             if (dbNames != null && dbNames.length != 0) {
@@ -126,6 +137,7 @@ public class IgnoredObject {
         final int ifalse = 1237;
         int result = 1;
         result = prime * result + (ignoreContent ? itrue : ifalse);
+        result = prime * result + (isQualified ? itrue : ifalse);
         result = prime * result + (isRegular ? itrue : ifalse);
         result = prime * result + (isShow ? itrue : ifalse);
         result = prime * result + ((name == null) ? 0 : name.hashCode());
@@ -140,6 +152,7 @@ public class IgnoredObject {
         if (obj instanceof IgnoredObject) {
             IgnoredObject other = (IgnoredObject) obj;
             eq = ignoreContent == other.ignoreContent
+                    && isQualified == other.isQualified
                     && isRegular == other.isRegular
                     && isShow == other.isShow
                     && Objects.equals(name, other.name)
@@ -157,16 +170,17 @@ public class IgnoredObject {
 
     StringBuilder appendRuleCode(StringBuilder sb) {
         sb.append(isShow ? "SHOW " : "HIDE ");
-        if (isRegular || ignoreContent) {
+        if (ignoreContent || isRegular || isQualified) {
             if (ignoreContent) {
-                sb.append("CONTENT");
-                if (isRegular) {
-                    sb.append(',');
-                }
+                sb.append("CONTENT").append(',');
             }
             if (isRegular) {
-                sb.append("REGEX");
+                sb.append("REGEX").append(',');
             }
+            if (isQualified) {
+                sb.append("QUALIFIED").append(',');
+            }
+            sb.setLength(sb.length() - 1);
         } else {
             sb.append("NONE");
         }

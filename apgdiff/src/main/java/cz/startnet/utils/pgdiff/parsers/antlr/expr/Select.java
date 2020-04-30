@@ -44,11 +44,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_queryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectOps;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
-import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
-import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.IConstraint;
+import cz.startnet.utils.pgdiff.schema.IDatabase;
+import cz.startnet.utils.pgdiff.schema.ISchema;
+import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.ModPair;
@@ -70,7 +70,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
      */
     private boolean lateralAllowed;
 
-    public Select(PgDatabase db, DbObjType... disabledDepcies) {
+    public Select(IDatabase db, DbObjType... disabledDepcies) {
         super(db, disabledDepcies);
     }
 
@@ -371,17 +371,29 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
         // add dependencies to primary key
         for (GenericColumn dep : child.getDepcies()) {
             vex.addDepcy(dep);
-            PgStatement column;
-            if (dep.type == DbObjType.COLUMN && (column = dep.getStatement(db)) != null) {
-                PgStatement table = column.getParent();
-                if (table instanceof AbstractPgTable) {
-                    for (AbstractConstraint con : ((AbstractPgTable) table).getConstraints()) {
-                        if (con.isPrimaryKey() && con.getColumns().contains(dep.getObjName())) {
-                            vex.addDepcy(new GenericColumn(con.getSchemaName(),
-                                    con.getParent().getName(), con.getName(), DbObjType.CONSTRAINT));
-                        }
-                    }
-                }
+            addPrimaryKeyDepcy(dep, vex);
+        }
+    }
+
+    private void addPrimaryKeyDepcy(GenericColumn dep, ValueExpr vex) {
+        if (dep.type != DbObjType.COLUMN) {
+            return;
+        }
+
+        ISchema schema = db.getSchema(dep.schema);
+        if (schema == null) {
+            return;
+        }
+
+        IStatementContainer rel = schema.getStatementContainer(dep.table);
+        if (rel == null) {
+            return;
+        }
+
+        for (IConstraint con : rel.getConstraints()) {
+            if (con.isPrimaryKey() && con.getColumns().contains(dep.getObjName())) {
+                vex.addDepcy(new GenericColumn(con.getSchemaName(),
+                        con.getParent().getName(), con.getName(), DbObjType.CONSTRAINT));
             }
         }
     }

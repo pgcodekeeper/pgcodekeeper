@@ -28,7 +28,7 @@ public final class ApgdiffTestUtils {
             throws IOException, InterruptedException {
         PgDumpLoader loader =  new PgDumpLoader(() -> c.getResourceAsStream(resource),
                 "test:/" + c.getName() + '/' + resource, args);
-        return analysis ? loader.load() : loader.load(new PgDatabase(args));
+        return analysis ? loader.loadAndAnalyze() : loader.load();
     }
 
     public static PgDatabase createDumpDB() {

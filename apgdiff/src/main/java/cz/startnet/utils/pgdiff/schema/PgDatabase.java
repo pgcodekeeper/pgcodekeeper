@@ -10,11 +10,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
@@ -29,7 +27,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  *
  * @author fordfrog
  */
-public class PgDatabase extends PgStatement {
+public class PgDatabase extends PgStatement implements IDatabase {
     /**
      * Current default schema.
      */
@@ -37,14 +35,15 @@ public class PgDatabase extends PgStatement {
 
     private final Map<String, AbstractSchema> schemas = new LinkedHashMap<>();
     private final Map<String, PgExtension> extensions = new LinkedHashMap<>();
+    private final Map<String, PgCast> casts = new LinkedHashMap<>();
     private final Map<String, MsAssembly> assemblies = new LinkedHashMap<>();
     private final Map<String, MsRole> roles = new LinkedHashMap<>();
     private final Map<String, MsUser> users = new LinkedHashMap<>();
 
     // Contains object definitions
-    private final Map<String, Set<PgObjLocation>> objDefinitions = new HashMap<>();
+    private final Map<String, List<PgObjLocation>> objDefinitions = new HashMap<>();
     // Содержит ссылки на объекты
-    private final Map<String, Set<PgObjLocation>> objReferences = new HashMap<>();
+    private final Map<String, List<PgObjLocation>> objReferences = new HashMap<>();
     // Contains analysis launchers for all statements
     // (used for launch analyze and getting dependencies).
     private final ArrayList<AbstractAnalysisLauncher> analysisLaunchers = new ArrayList<>();
@@ -85,17 +84,17 @@ public class PgDatabase extends PgStatement {
         return arguments;
     }
 
-    public Map<String, Set<PgObjLocation>> getObjDefinitions() {
+    public Map<String, List<PgObjLocation>> getObjDefinitions() {
         return objDefinitions;
     }
 
-    public Map<String, Set<PgObjLocation>> getObjReferences() {
+    public Map<String, List<PgObjLocation>> getObjReferences() {
         return objReferences;
     }
 
     public void addToQueries(String fileName, PgObjLocation loc) {
-        objDefinitions.computeIfAbsent(fileName, k -> new LinkedHashSet<>()).add(loc);
-        objReferences.computeIfAbsent(fileName, k -> new LinkedHashSet<>()).add(loc);
+        objDefinitions.computeIfAbsent(fileName, k -> new ArrayList<>()).add(loc);
+        objReferences.computeIfAbsent(fileName, k -> new ArrayList<>()).add(loc);
     }
 
     public List<AbstractAnalysisLauncher> getAnalysisLaunchers() {
@@ -142,6 +141,7 @@ public class PgDatabase extends PgStatement {
      *
      * @return found schema or null
      */
+    @Override
     public AbstractSchema getSchema(final String name) {
         if (name == null) {
             return getDefaultSchema();
@@ -155,6 +155,7 @@ public class PgDatabase extends PgStatement {
      *
      * @return {@link #schemas}
      */
+    @Override
     public Collection<AbstractSchema> getSchemas() {
         return Collections.unmodifiableCollection(schemas.values());
     }
@@ -187,6 +188,7 @@ public class PgDatabase extends PgStatement {
     protected void fillChildrenList(List<Collection<? extends PgStatement>> l) {
         l.add(schemas.values());
         l.add(extensions.values());
+        l.add(casts.values());
         l.add(assemblies.values());
         l.add(roles.values());
         l.add(users.values());
@@ -199,6 +201,8 @@ public class PgDatabase extends PgStatement {
             return getSchema(name);
         case EXTENSION:
             return getExtension(name);
+        case CAST:
+            return getCast(name);
         case ASSEMBLY:
             return getAssembly(name);
         case ROLE:
@@ -219,6 +223,9 @@ public class PgDatabase extends PgStatement {
             break;
         case EXTENSION:
             addExtension((PgExtension) st);
+            break;
+        case CAST:
+            addCast((PgCast) st);
             break;
         case ASSEMBLY:
             addAssembly((MsAssembly) st);
@@ -256,6 +263,32 @@ public class PgDatabase extends PgStatement {
 
     public void addExtension(final PgExtension extension) {
         addUnique(extensions, extension, this);
+    }
+
+    /**
+     * Returns cast of given name or null if the cast has not been found.
+     *
+     * @param name cast name
+     *
+     * @return found cast or null
+     */
+    @Override
+    public PgCast getCast(final String name) {
+        return casts.get(name);
+    }
+
+    /**
+     * Getter for {@link #cast}. The list cannot be modified.
+     *
+     * @return {@link #casts}
+     */
+    @Override
+    public Collection<PgCast> getCasts() {
+        return Collections.unmodifiableCollection(casts.values());
+    }
+
+    public void addCast(final PgCast cast) {
+        addUnique(casts, cast, this);
     }
 
     /**
@@ -371,6 +404,7 @@ public class PgDatabase extends PgStatement {
         if (obj instanceof PgDatabase) {
             PgDatabase db = (PgDatabase) obj;
             return extensions.equals(db.extensions)
+                    && casts.equals(db.casts)
                     && schemas.equals(db.schemas)
                     && assemblies.equals(db.assemblies)
                     && roles.equals(db.roles)
@@ -387,6 +421,7 @@ public class PgDatabase extends PgStatement {
     @Override
     public void computeChildrenHash(Hasher hasher) {
         hasher.putUnordered(extensions);
+        hasher.putUnordered(casts);
         hasher.putUnordered(schemas);
         hasher.putUnordered(assemblies);
         hasher.putUnordered(roles);
@@ -427,6 +462,7 @@ public class PgDatabase extends PgStatement {
         case ASSEMBLY:
         case SCHEMA:
         case EXTENSION:
+        case CAST:
             orig = getChild(name, type);
             if (orig == null) {
                 addChild(st.shallowCopy());

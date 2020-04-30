@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -7,6 +8,7 @@ import java.util.List;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_cast_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_operator_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_rule_statementContext;
@@ -17,6 +19,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_dropContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
+import cz.startnet.utils.pgdiff.schema.ICast;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -42,6 +45,8 @@ public class DropStatement extends ParserAbstract {
             drop(ctx.drop_statements());
         } else if (ctx.drop_operator_statement() != null) {
             dropOperator(ctx.drop_operator_statement());
+        } else if (ctx.drop_cast_statement() != null) {
+            dropCast(ctx.drop_cast_statement());
         }
     }
 
@@ -64,6 +69,12 @@ public class DropStatement extends ParserAbstract {
                     DbObjType.OPERATOR, ACTION_DROP);
         }
     }
+
+    private void dropCast(Drop_cast_statementContext ctx) {
+        PgObjLocation loc = getCastLocation(ctx.source, ctx.target, ACTION_DROP);
+        db.getObjReferences().computeIfAbsent(fileName, k -> new ArrayList<>()).add(loc);
+    }
+
 
     public void dropTrigger(Drop_trigger_statementContext ctx) {
         dropChild(ctx.table_name.identifier(), ctx.name, DbObjType.TRIGGER);
@@ -179,6 +190,13 @@ public class DropStatement extends ParserAbstract {
             ids = targetOpers.size() == 1 ? Arrays.asList(nameCtx.schema_name, nameCtx.operator)
                     : Collections.emptyList();
             type = DbObjType.OPERATOR;
+        } else if (ctx.drop_cast_statement() != null) {
+            Drop_cast_statementContext castCtx = ctx.drop_cast_statement();
+            StringBuilder sb = new StringBuilder();
+            sb.append(ACTION_DROP).append(' ').append(DbObjType.CAST).append(" (");
+            sb.append(ICast.getSimpleName(getFullCtxText(castCtx.source), getFullCtxText(castCtx.target)));
+            sb.append(')');
+            return sb.toString();
         }
         return type != null ? getStrForStmtAction(ACTION_DROP, type, ids) : null;
     }

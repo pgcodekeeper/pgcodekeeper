@@ -1,7 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -36,6 +36,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.ArgMode;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.ICast;
 import cz.startnet.utils.pgdiff.schema.IStatement;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
@@ -244,7 +245,7 @@ public abstract class ParserAbstract {
             DbObjType type, String action) {
         PgObjLocation loc = getLocation(ids, type, action, false, null);
         if (loc != null) {
-            db.getObjReferences().computeIfAbsent(fileName, k -> new LinkedHashSet<>()).add(loc);
+            db.getObjReferences().computeIfAbsent(fileName, k -> new ArrayList<>()).add(loc);
         }
 
         return loc;
@@ -281,7 +282,7 @@ public abstract class ParserAbstract {
         R statement = getter.apply(container, name);
         if (statement == null) {
             throw new UnresolvedReferenceException("Cannot find object in database: "
-                    + errToken.getText(), errToken);
+                    + name, errToken);
         }
         return statement;
     }
@@ -306,6 +307,8 @@ public abstract class ParserAbstract {
             DbObjType type, String action, boolean isDep, String signature) {
         ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
         switch (type) {
+        case CAST:
+            throw new IllegalStateException("Unsupported type: CAST");
         case ASSEMBLY:
         case EXTENSION:
         case SCHEMA:
@@ -365,6 +368,14 @@ public abstract class ParserAbstract {
         }
     }
 
+    protected PgObjLocation getCastLocation(Data_typeContext source, Data_typeContext target, String action) {
+        PgObjLocation loc = new PgObjLocation(new GenericColumn(
+                ICast.getSimpleName(getFullCtxText(source), getFullCtxText(target)), DbObjType.CAST),
+                action, source.start.getStartIndex(), source.start.getLine(), fileName);
+        loc.setLength(target.stop.getStopIndex() - source.start.getStartIndex() + 1);
+        return loc;
+    }
+
     protected <T extends IStatement, U extends Object> void doSafe(BiConsumer<T, U> adder,
             T statement, U object) {
         if (!refMode) {
@@ -384,7 +395,7 @@ public abstract class ParserAbstract {
             if (!refMode) {
                 st.addDep(loc.getObj());
             }
-            db.getObjReferences().computeIfAbsent(fileName, k -> new LinkedHashSet<>()).add(loc);
+            db.getObjReferences().computeIfAbsent(fileName, k -> new ArrayList<>()).add(loc);
         }
     }
 
@@ -502,6 +513,16 @@ public abstract class ParserAbstract {
                         ctx, getFullCtxText(ctx));
         db.addToQueries(fileName, loc);
         return loc;
+    }
+
+    /**
+     * Adds missing COMMENT/RULE refs for correct showing them in Outline.
+     * (In the case of COMMENT : used for COLUMN comments and comments
+     * for objects which undefined in DbObjType).
+     */
+    protected void addOutlineRefForCommentOrRule(String action, ParserRuleContext ctx) {
+        db.getObjReferences().computeIfAbsent(fileName, k -> new ArrayList<>())
+        .add(new PgObjLocation(action, ctx, null));
     }
 
     /**

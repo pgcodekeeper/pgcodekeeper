@@ -94,7 +94,7 @@ public class CreateFunction extends ParserAbstract {
             } else if (action.DEFINER() != null) {
                 function.setSecurityDefiner(true);
             } else if (action.LEAKPROOF() != null) {
-                function.setLeakproof(true);
+                function.setLeakproof(action.NOT() == null);
             } else if (action.LANGUAGE() != null) {
                 language = action.lang_name.getText();
             } else if (action.COST() != null) {
@@ -107,6 +107,7 @@ public class CreateFunction extends ParserAbstract {
             } else if (action.AS() != null) {
                 funcDef = action.function_def();
                 function.setBody(db.getArguments(), getFullCtxText(funcDef));
+                addStatementBody(funcDef);
             } else if (action.TRANSFORM() != null) {
                 for (Transform_for_typeContext transform : action.transform_for_type()) {
                     function.addTransform(ParserAbstract.getFullCtxText(transform.data_type()));

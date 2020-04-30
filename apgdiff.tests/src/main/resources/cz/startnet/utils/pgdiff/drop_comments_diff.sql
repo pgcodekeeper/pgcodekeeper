@@ -2,6 +2,10 @@ SET search_path = pg_catalog;
 
 COMMENT ON DATABASE current_database() IS NULL;
 
+COMMENT ON CAST (integer AS bigint) IS NULL;
+
+COMMENT ON EXTENSION test_ext IS NULL;
+
 COMMENT ON COLUMN public.typ_composite.key IS NULL;
 
 COMMENT ON COLUMN public.typ_composite.val IS NULL;
