@@ -3,10 +3,8 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
-import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.tree.TerminalNode;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
@@ -175,20 +173,9 @@ public class CreateFunction extends ParserAbstract {
 
     private void analyzeFunctionDefinition(AbstractPgFunction function, String language,
             Character_stringContext definition, List<Pair<String, GenericColumn>> funcArgs) {
-
-        String def;
-        TerminalNode codeStart = definition.Character_String_Literal();
-        if (codeStart != null) {
-            // TODO support special escaping schemes (maybe in the util itself)
-            def = PgDiffUtils.unquoteQuotedString(codeStart.getText());
-        } else {
-            List<TerminalNode> dollarText = definition.Text_between_Dollar();
-            codeStart = dollarText.get(0);
-            def = dollarText.stream()
-                    .map(TerminalNode::getText)
-                    .collect(Collectors.joining());
-        }
-        Token start = codeStart.getSymbol();
+        Pair<String, Token> pair = unquoteQuotedString(definition);
+        String def = pair.getFirst();
+        Token start = pair.getSecond();
 
         // Parsing the function definition and adding its result context for analysis.
         // Adding contexts of function arguments for analysis.

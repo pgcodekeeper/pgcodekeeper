@@ -7,15 +7,18 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
@@ -44,6 +47,7 @@ import cz.startnet.utils.pgdiff.schema.PgOperator;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 /**
  * Abstract Class contents common operations for parsing
@@ -229,6 +233,21 @@ public abstract class ParserAbstract {
         }
 
         return ArgMode.of(mode.getText());
+    }
+
+    public static Pair<String, Token> unquoteQuotedString(Character_stringContext ctx) {
+        String s;
+        TerminalNode codeStart = ctx.Character_String_Literal();
+        if (codeStart != null) {
+            // TODO support special escaping schemes (maybe in the util itself)
+            s = PgDiffUtils.unquoteQuotedString(codeStart.getText());
+        } else {
+            List<TerminalNode> dollarText = ctx.Text_between_Dollar();
+            codeStart = dollarText.get(0);
+            s = dollarText.stream().map(TerminalNode::getText).collect(Collectors.joining());
+        }
+
+        return new Pair<>(s, codeStart.getSymbol());
     }
 
     protected PgObjLocation addObjReference(List<? extends ParserRuleContext> ids,
