@@ -135,7 +135,7 @@ public abstract class AbstractExpr {
         String name = nameCtx.getText();
 
         if (schemaCtx == null) {
-            return new GenericColumn(ApgdiffConsts.PG_CATALOG, name, DbObjType.TABLE);
+            return new GenericColumn(ApgdiffConsts.PG_CATALOG, name, type);
         }
         String schemaName = schemaCtx.getText();
 
