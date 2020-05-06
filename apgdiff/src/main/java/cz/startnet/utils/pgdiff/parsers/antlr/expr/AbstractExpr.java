@@ -126,22 +126,22 @@ public abstract class AbstractExpr {
     }
 
     protected GenericColumn addRelationDepcy(List<IdentifierContext> ids) {
-        return addRelationDepcy(ids, null);
+        return addDepcy(ids, DbObjType.TABLE, null);
     }
 
-    protected GenericColumn addRelationDepcy(List<IdentifierContext> ids, Token start) {
+    protected GenericColumn addDepcy(List<IdentifierContext> ids, DbObjType type, Token start) {
         IdentifierContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
-        IdentifierContext relationCtx = QNameParser.getFirstNameCtx(ids);
-        String relationName = relationCtx.getText();
+        IdentifierContext nameCtx = QNameParser.getFirstNameCtx(ids);
+        String name = nameCtx.getText();
 
         if (schemaCtx == null) {
-            return new GenericColumn(ApgdiffConsts.PG_CATALOG, relationName, DbObjType.TABLE);
+            return new GenericColumn(ApgdiffConsts.PG_CATALOG, name, DbObjType.TABLE);
         }
         String schemaName = schemaCtx.getText();
 
-        GenericColumn depcy = new GenericColumn(schemaName, relationName, DbObjType.TABLE);
+        GenericColumn depcy = new GenericColumn(schemaName, name, type);
         addDepcy(new GenericColumn(schemaName, DbObjType.SCHEMA), schemaCtx, start);
-        addDepcy(depcy, relationCtx, start);
+        addDepcy(depcy, nameCtx, start);
         return depcy;
     }
 

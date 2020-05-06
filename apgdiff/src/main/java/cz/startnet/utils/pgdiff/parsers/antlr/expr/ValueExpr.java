@@ -805,23 +805,28 @@ public class ValueExpr extends AbstractExpr {
             addFunctionDepcyNotOverloaded(QNameParser.parsePg(s).getIds(), start);
             break;
         case "regclass":
-            addRelationDepcy(QNameParser.parsePg(s).getIds(), start);
+            addDepcy(QNameParser.parsePg(s).getIds(), DbObjType.TABLE, start);
             break;
         case "regtype":
-            // TODO pending DbObjType.TYPE
+            addDepcy(QNameParser.parsePg(s).getIds(), DbObjType.TYPE, start);
             break;
-
         case "regnamespace":
             addSchemaDepcy(QNameParser.parsePg(s).getIds(), start);
             break;
-
         case "regprocedure":
             addFunctionSigDepcy(s, start);
             break;
-
         case "regoper":
+            // TODO operator without argumnets
         case "regoperator":
-            // TODO pending DbObjType.OPERATOR
+            // TODO operator with argumnets
+            break;
+        case "regconfig":
+            addDepcy(QNameParser.parsePg(s).getIds(), DbObjType.FTS_CONFIGURATION, start);
+            break;
+        case "regdictionary":
+            addDepcy(QNameParser.parsePg(s).getIds(), DbObjType.FTS_DICTIONARY, start);
+            break;
         default:
             break;
         }
