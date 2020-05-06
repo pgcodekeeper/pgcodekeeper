@@ -394,13 +394,13 @@ public abstract class AbstractExpr {
         IdentifierContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
         if (schemaCtx != null) {
             String schemaName = schemaCtx.getText();
-            addDepcy(new GenericColumn(schemaName, DbObjType.SCHEMA), schemaCtx);
+            addDepcy(new GenericColumn(schemaName, DbObjType.SCHEMA), schemaCtx, start);
 
             IdentifierContext nameCtx = QNameParser.getFirstNameCtx(ids);
-            addDepcy(new GenericColumn(schemaName,
-                    PgDiffUtils.getQuotedName(nameCtx.getText()) +
-                    ParserAbstract.getFullCtxText(sig.function_args()), DbObjType.FUNCTION),
-                    nameCtx);
+            String name = PgDiffUtils.getQuotedName(nameCtx.getText()) +
+                    ParserAbstract.getFullCtxText(sig.function_args());
+            addDepcy(new GenericColumn(schemaName, name, DbObjType.FUNCTION),
+                    nameCtx, start);
         }
     }
 
