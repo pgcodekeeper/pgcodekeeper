@@ -18,7 +18,6 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExecutableExtension;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
@@ -40,6 +39,7 @@ import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkingSet;
+import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.dialogs.WizardNewProjectCreationPage;
 import org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard;
 import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
@@ -54,6 +54,7 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_BIND_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF_PAGE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.WIZARD;
 import ru.taximaxim.codekeeper.ui.UIConsts.WORKING_SET;
@@ -70,15 +71,12 @@ implements IExecutableExtension, INewWizard {
     private PageRepo pageRepo;
     private PageDb pageDb;
 
-    private final IPreferenceStore mainPrefStore;
     private boolean isPostgres;
     private IConfigurationElement config;
     private IWorkbench workbench;
     private IStructuredSelection selection;
 
     public NewProjWizard() {
-        this.mainPrefStore = Activator.getDefault().getPreferenceStore();
-
         setWindowTitle(Messages.newProjWizard_new_pg_db_project);
         setDefaultPageImageDescriptor(ImageDescriptor.createFromURL(
                 Activator.getDefault().getBundle().getResource(FILE.ICONAPPWIZ)));
@@ -90,7 +88,7 @@ implements IExecutableExtension, INewWizard {
         // page names shouldn't be localized, use page titles instead
         pageRepo = new PageRepo("main", selection); //$NON-NLS-1$
         addPage(pageRepo);
-        pageDb = new PageDb(isPostgres, "schema", mainPrefStore); //$NON-NLS-1$
+        pageDb = new PageDb(isPostgres, "schema"); //$NON-NLS-1$
         addPage(pageDb);
     }
 
@@ -250,7 +248,6 @@ class PageDb extends WizardPage {
     private static final String QUERY_TZ = "SELECT name, setting FROM pg_catalog.pg_file_settings" //$NON-NLS-1$
             + " WHERE pg_catalog.lower(name) = 'timezone' AND applied AND error IS NULL"; //$NON-NLS-1$
 
-    private final IPreferenceStore mainPrefs;
     private final boolean isPostgres;
 
     private Button btnInit;
@@ -286,9 +283,8 @@ class PageDb extends WizardPage {
         return timezoneCombo.getCombo().getText();
     }
 
-    PageDb(boolean isPostgres, String pageName, IPreferenceStore mainPrefs) {
+    PageDb(boolean isPostgres, String pageName) {
         super(pageName, pageName, null);
-        this.mainPrefs = mainPrefs;
         this.isPostgres = isPostgres;
 
         setTitle(Messages.NewProjWizard_proj_init);
@@ -322,10 +318,27 @@ class PageDb extends WizardPage {
         btnBind.setSelection(false);
         btnBind.setEnabled(false);
 
-        storePicker = new DbStorePicker(group, mainPrefs, true, false, false);
-        storePicker.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
+        Composite source = new Composite(group, SWT.NONE);
+        source.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
+
+        source.setLayout(new GridLayout(3, false));
+
+        new Label(source, SWT.NONE).setText(Messages.DbStorePicker_db_connection);
+
+        storePicker = new DbStorePicker(source, true, false);
         storePicker.filter(!isPostgres);
         storePicker.addListenerToCombo(e -> modifyButtons());
+
+        Button btnEditStore = new Button(source, SWT.PUSH);
+        btnEditStore.setImage(Activator.getRegisteredImage(FILE.ICONEDIT));
+        btnEditStore.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                PreferencesUtil.createPreferenceDialogOn(getShell(),
+                        PREF_PAGE.DB_STORE, null, null).open();
+            }
+        });
 
         //char sets
         new Label(container, SWT.NONE).setText(Messages.NewProjWizard_select_charset);

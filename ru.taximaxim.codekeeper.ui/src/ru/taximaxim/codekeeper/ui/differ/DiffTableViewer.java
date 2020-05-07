@@ -45,14 +45,11 @@ import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
-import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
 import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.jface.layout.PixelConverter;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
@@ -72,6 +69,7 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.dnd.Clipboard;
@@ -150,7 +148,6 @@ public class DiffTableViewer extends Composite {
     private IStructuredSelection oldSelection;
     private IStructuredSelection newSelection;
 
-    private final LocalResourceManager lrm;
     private final Text txtFilterName;
     private final Button useRegEx;
     private Label lblObjectCount;
@@ -201,11 +198,9 @@ public class DiffTableViewer extends Composite {
                 && GitUserReader.checkRepo(location);
 
         PixelConverter pc = new PixelConverter(this);
-        lrm = new LocalResourceManager(JFaceResources.getResources(), this);
         Bundle bundle = Activator.getContext().getBundle();
 
-        iSideBoth = lrm.createImage(ImageDescriptor.createFromURL(bundle
-                .getResource(FILE.ICONEDIT)));
+        iSideBoth = Activator.getRegisteredImage(FILE.ICONEDIT);
         iSideRight = Activator.getEclipseImage(ISharedImages.IMG_OBJ_ADD);
         iSideLeft = Activator.getEclipseImage(ISharedImages.IMG_ETOOL_DELETE);
 
@@ -271,7 +266,7 @@ public class DiffTableViewer extends Composite {
                             viewerFilter.types, viewerFilter.sides,
                             viewerFilter.isLocalChange, viewerFilter.isHideLibs,
                             isApplyToProj);
-                    if (dialog.open() == Dialog.OK) {
+                    if (dialog.open() == Window.OK) {
                         setImageDescriptor(ImageDescriptor.createFromURL(bundle.getResource(
                                 viewerFilter.isAdvancedEmpty() ? FILE.ICONEMPTYFILTER : FILE.ICONFILTER)));
                         viewer.refresh();
@@ -936,7 +931,7 @@ public class DiffTableViewer extends Composite {
                     reader.parseLastChange(metas);
                     return Status.OK_STATUS;
                 } catch (IOException e) {
-                    return new Status(Status.ERROR, PLUGIN_ID.THIS,
+                    return new Status(IStatus.ERROR, PLUGIN_ID.THIS,
                             Messages.DiffTableViewer_error_reading_git_history, e);
                 }
             }

@@ -7,22 +7,27 @@ import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.ui.dialogs.PreferencesUtil;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF_PAGE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStorePicker;
@@ -35,8 +40,7 @@ class DbSourcePicker extends Composite {
     private final DbStorePicker storePicker;
     private final ComboViewer cmbEncoding;
 
-    public DbSourcePicker(Composite parent, String groupTitle, IPreferenceStore mainPrefs,
-            final PageDiff pageDiff) {
+    public DbSourcePicker(Composite parent, String groupTitle, final PageDiff pageDiff) {
         super(parent, SWT.NONE);
 
         this.pageDiff = pageDiff;
@@ -46,11 +50,23 @@ class DbSourcePicker extends Composite {
         setLayout(fl);
 
         Group sourceComp = new Group(this, SWT.NONE);
-        sourceComp.setLayout(new GridLayout(2, false));
+        sourceComp.setLayout(new GridLayout(3, false));
         sourceComp.setText(groupTitle);
 
-        storePicker = new DbStorePicker(sourceComp, mainPrefs, true, true, false);
-        storePicker.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
+        new Label(sourceComp, SWT.NONE).setText(Messages.DbStorePicker_db_schema_source);
+
+        storePicker = new DbStorePicker(sourceComp, true, true);
+
+        Button btnEditStore = new Button(sourceComp, SWT.PUSH);
+        btnEditStore.setImage(Activator.getRegisteredImage(FILE.ICONEDIT));
+        btnEditStore.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                PreferencesUtil.createPreferenceDialogOn(getShell(),
+                        PREF_PAGE.DB_STORE, null, null).open();
+            }
+        });
 
         new Label(sourceComp, SWT.NONE).setText(Messages.diffWizard_target_encoding);
 
