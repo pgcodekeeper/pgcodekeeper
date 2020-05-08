@@ -50,7 +50,10 @@ public class MetaStorage implements Serializable {
         if (clear) {
             definitions.clear();
         }
-        definitions.putAll(storage.definitions);
+        storage.definitions.forEach((k, v) -> definitions.merge(k, v, (v1, v2) -> {
+            v1.addAll(v2);
+            return v1;
+        }));
     }
 
     public static MetaDatabase createFullDb(PgDatabase db) {
