@@ -28,8 +28,8 @@ public class CreateOperator extends ParserAbstract {
     public void parseObject() {
         Operator_nameContext operNameCtx = ctx.name;
         IdentifierContext schemaCtx = operNameCtx.schema_name;
-        List<ParserRuleContext> ids = Arrays.asList(schemaCtx, operNameCtx);
         All_simple_opContext operName = operNameCtx.operator;
+        List<ParserRuleContext> ids = Arrays.asList(schemaCtx, operName);
         PgOperator oper = new PgOperator(operName.getText());
         for (Operator_optionContext option : ctx.operator_option()) {
             if (option.PROCEDURE() != null || option.FUNCTION() != null) {

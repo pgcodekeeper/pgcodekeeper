@@ -138,8 +138,8 @@ public class CommentOn extends ParserAbstract {
             type = DbObjType.OPERATOR;
             Target_operatorContext targetOperCtx = obj.target_operator();
             st = getSafe(AbstractSchema::getOperator, schema,
-                    parseSignature(targetOperCtx.name.operator.getText(),
-                            targetOperCtx), targetOperCtx.getStart());
+                    parseSignature(nameCtx.getText(), targetOperCtx),
+                    nameCtx.getStart());
         } else if (obj.EXTENSION() != null) {
             type = DbObjType.EXTENSION;
             st = getSafe(PgDatabase::getExtension, db, nameCtx);
