@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.IOperator;
 import cz.startnet.utils.pgdiff.schema.ISchema;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -23,10 +24,14 @@ public class MetaSchema extends MetaStatement implements ISchema {
     private final transient Map<String, MetaStatement> templates = new LinkedHashMap<>();
     private final transient Map<String, MetaStatement> dictionaries = new LinkedHashMap<>();
     private final transient Map<String, MetaStatement> configurations = new LinkedHashMap<>();
-    private final transient Map<String, MetaStatement> operators = new LinkedHashMap<>();
+    private final transient Map<String, MetaOperator> operators = new LinkedHashMap<>();
 
     public MetaSchema(GenericColumn object) {
         super(object);
+    }
+
+    public MetaSchema(String schemaName) {
+        super(new GenericColumn(schemaName, DbObjType.SCHEMA));
     }
 
     @Override
@@ -81,7 +86,7 @@ public class MetaSchema extends MetaStatement implements ISchema {
             types.put(st.getName(), st);
             break;
         case OPERATOR:
-            operators.put(st.getName(), st);
+            operators.put(st.getName(), (MetaOperator) st);
             break;
         case DOMAIN:
             domains.put(st.getName(), st);
@@ -136,5 +141,15 @@ public class MetaSchema extends MetaStatement implements ISchema {
     @Override
     public MetaStatement getCopy() {
         return new MetaSchema(getObject());
+    }
+
+    @Override
+    public Collection<? extends IOperator> getOperators() {
+        return Collections.unmodifiableCollection(operators.values());
+    }
+
+    @Override
+    public IOperator getOperator(String signature) {
+        return operators.get(signature);
     }
 }

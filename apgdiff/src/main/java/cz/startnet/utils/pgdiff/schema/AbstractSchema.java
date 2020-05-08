@@ -342,6 +342,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      *
      * @return found operator or null if no such operator has been found
      */
+    @Override
     public PgOperator getOperator(final String signature) {
         return operators.get(signature);
     }
@@ -396,6 +397,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      *
      * @return {@link #operators}
      */
+    @Override
     public Collection<PgOperator> getOperators() {
         return Collections.unmodifiableCollection(operators.values());
     }
