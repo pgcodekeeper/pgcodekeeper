@@ -1,11 +1,11 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -65,6 +65,7 @@ import cz.startnet.utils.pgdiff.schema.ICast;
 import cz.startnet.utils.pgdiff.schema.ICast.CastContext;
 import cz.startnet.utils.pgdiff.schema.IDatabase;
 import cz.startnet.utils.pgdiff.schema.IFunction;
+import cz.startnet.utils.pgdiff.schema.IOperator;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
@@ -218,37 +219,41 @@ public class ValueExpr extends AbstractExpr {
 
     private ModPair<String, String> op(Vex vex, List<ModPair<String, String>> operandsList,
             String operator, OpContext op) {
+        String schema = ApgdiffConsts.PG_CATALOG;
+        ParserRuleContext ctx = null;
         if (op != null) {
             IdentifierContext opSchemaCtx = op.identifier();
             if (opSchemaCtx == null) {
-                operator = op.op_chars().getText();
-            } else if (opSchemaCtx.getText().equals(ApgdiffConsts.PG_CATALOG)) {
-                operator = op.all_simple_op().getText();
-            }
-        }
-        if (operator != null) {
-            String larg = TypesSetManually.EMPTY;
-            String rarg = TypesSetManually.EMPTY;
-            if (operandsList.size() == 2) {
-                larg = operandsList.get(0).getSecond();
-                rarg = operandsList.get(1).getSecond();
-            } else if (op == null || vex.getVexCtx().getChild(0) instanceof OpContext) {
-                rarg = operandsList.get(0).getSecond();
+                ctx = op.op_chars();
+                operator = ctx.getText();
             } else {
-                larg = operandsList.get(0).getSecond();
+                schema = opSchemaCtx.getText();
+                addDepcy(new GenericColumn(schema, DbObjType.SCHEMA), opSchemaCtx);
+                ctx = op.all_simple_op();
+                operator = ctx.getText();
             }
-            // TODO When the user's operators will be also process by codeKeeper,
-            // put in 'findFunctions' operator's schema name instead of 'PgSystemStorage.SCHEMA_PG_CATALOG'.
-            IFunction resultOperFunction = resolveCall(operator, Arrays.asList(larg, rarg),
-                    availableFunctions(ApgdiffConsts.PG_CATALOG, op));
-            return new ModPair<>(NONAME, resultOperFunction != null ? resultOperFunction.getReturns()
-                    : TypesSetManually.FUNCTION_COLUMN);
-        } else {
-            // if we got to this point, operator didn't get filled by the OP_CHARS token
-            // meaning user-schema operator
-            Log.log(Log.LOG_WARNING, "Unsupported user operator!");
-            return new ModPair<>(NONAME, TypesSetManually.UNKNOWN);
         }
+
+        String larg = null;
+        String rarg = null;
+        if (operandsList.size() == 2) {
+            larg = operandsList.get(0).getSecond();
+            rarg = operandsList.get(1).getSecond();
+        } else if (op == null || vex.getVexCtx().getChild(0) instanceof OpContext) {
+            rarg = operandsList.get(0).getSecond();
+        } else {
+            larg = operandsList.get(0).getSecond();
+        }
+        IOperator resultOperFunction = resolveOperatorsCall(operator, larg, rarg,
+                availableOperators(schema, op));
+
+        if (resultOperFunction != null) {
+            addDepcy(new GenericColumn(resultOperFunction.getSchemaName(),
+                    resultOperFunction.getName(), DbObjType.OPERATOR), ctx);
+            return new ModPair<>(NONAME, resultOperFunction.getReturns());
+        }
+
+        return new ModPair<>(NONAME, TypesSetManually.FUNCTION_COLUMN);
     }
 
     /*
@@ -714,6 +719,50 @@ public class ValueExpr extends AbstractExpr {
         return Collections.max(matches,
                 (m1,m2) -> Integer.compare(m1.getSecond(), m2.getSecond()))
                 .getFirst();
+    }
+
+    private IOperator resolveOperatorsCall(String operatorName, String left, String right,
+            Collection<? extends IOperator> availableOperators) {
+        // save each applicable operators with the number of exact type matches
+        // between input args and operator parameters
+        // function that has more exact matches (less casts) wins
+        List<Pair<IOperator, Integer>> matches = new ArrayList<>();
+        for (IOperator f : availableOperators) {
+            if (!f.getBareName().equals(operatorName)) {
+                continue;
+            }
+            int exactMatches = 0;
+            String leftArg = f.getLeftArg();
+            String rightArg = f.getRightArg();
+
+            if (Objects.equals(leftArg, left)) {
+                ++exactMatches;
+            } else if (leftArg == null || left == null || !containsCastImplicit(left, leftArg)) {
+                continue;
+            }
+
+            if (Objects.equals(rightArg, right)) {
+                ++exactMatches;
+            } else if (rightArg == null || right == null || !containsCastImplicit(right, rightArg)) {
+                continue;
+            }
+
+            if (exactMatches == 2) {
+                // fast path for exact signature match
+                return f;
+            }
+
+            matches.add(new Pair<>(f, exactMatches));
+        }
+
+        if (matches.isEmpty()) {
+            return null;
+        }
+
+        return Collections.max(matches,
+                (m1,m2) -> Integer.compare(m1.getSecond(), m2.getSecond()))
+                .getFirst();
+
     }
 
     private boolean containsCastImplicit(String source, String target) {

@@ -32,6 +32,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IDatabase;
 import cz.startnet.utils.pgdiff.schema.IFunction;
+import cz.startnet.utils.pgdiff.schema.IOperator;
 import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.ISchema;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
@@ -411,6 +412,10 @@ public abstract class AbstractExpr {
 
     protected Collection<? extends IFunction> availableFunctions(String schemaName, ParserRuleContext errorCtx) {
         return findSchema(schemaName, errorCtx).getFunctions();
+    }
+
+    protected Collection<? extends IOperator> availableOperators(String schemaName, ParserRuleContext errorCtx) {
+        return findSchema(schemaName, errorCtx).getOperators();
     }
 
     protected IRelation findRelation(String schemaName, String relationName) {
