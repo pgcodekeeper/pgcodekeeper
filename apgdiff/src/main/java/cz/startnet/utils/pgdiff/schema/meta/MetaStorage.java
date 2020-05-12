@@ -78,13 +78,20 @@ public class MetaStorage implements Serializable {
     }
 
     public MetaDatabase getTree() {
-        if (tree == null) {
-            tree = new MetaDatabase();
+        MetaDatabase r = tree;
+        if (r == null) {
+            synchronized (this) {
+                r = tree;
+                if (r == null) {
+                    r = new MetaDatabase();
+                    tree = r;
 
-            definitions.values().stream()
-            .flatMap(Collection::stream)
-            .sorted((o1, o2) -> o1.getStatementType().compareTo(o2.getStatementType()))
-            .forEach(e -> addChildToTree(e.getCopy()));
+                    definitions.values().stream()
+                    .flatMap(Collection::stream)
+                    .sorted((o1, o2) -> o1.getStatementType().compareTo(o2.getStatementType()))
+                    .forEach(e -> addChildToTree(e.getCopy()));
+                }
+            }
         }
 
         return tree;
