@@ -42,7 +42,7 @@ public class MetaStorage implements Serializable {
     public MetaStorage() {}
 
     public MetaStorage(PgDatabase db) {
-        concat(db);
+        db.getDescendants().forEach(this::addChild);
     }
 
     public void remove(String path) {
@@ -51,7 +51,7 @@ public class MetaStorage implements Serializable {
     }
 
     public void append(PgDatabase db, boolean clear) {
-        append(createStorage(db, clear), clear);
+        append(createStorageFromDb(db, clear), clear);
     }
 
     public void append(MetaStorage storage, boolean clear) {
@@ -65,11 +65,11 @@ public class MetaStorage implements Serializable {
         }));
     }
 
-    public static MetaDatabase createFullDb(PgDatabase db) {
-        return createStorage(db, true).getTree();
+    public static MetaDatabase createMetaFromDb(PgDatabase db) {
+        return createStorageFromDb(db, true).getTree();
     }
 
-    private static MetaStorage createStorage(PgDatabase db, boolean addSystem) {
+    private static MetaStorage createStorageFromDb(PgDatabase db, boolean addSystem) {
         MetaStorage meta = new MetaStorage(db);
         if (addSystem && !db.getArguments().isMsSql()) {
             meta.append(getObjectsFromResources(db.getPostgresVersion()), false);
@@ -78,13 +78,13 @@ public class MetaStorage implements Serializable {
     }
 
     public MetaDatabase getTree() {
-        MetaDatabase r = tree;
-        if (r == null) {
+        MetaDatabase temp = tree;
+        if (temp == null) {
             synchronized (this) {
-                r = tree;
-                if (r == null) {
-                    r = new MetaDatabase();
-                    tree = r;
+                temp = tree;
+                if (temp == null) {
+                    temp = new MetaDatabase();
+                    tree = temp;
 
                     definitions.values().stream()
                     .flatMap(Collection::stream)
@@ -97,13 +97,12 @@ public class MetaStorage implements Serializable {
         return tree;
     }
 
-    private void concat(PgDatabase db) {
-        tree = null;
-        db.getDescendants().forEach(this::addChild);
+    public void addMetaChild(MetaStatement meta) {
+        addMetaChild(meta, OTHER_LOCATION);
     }
 
-    public void addMetaChild(MetaStatement meta) {
-        definitions.computeIfAbsent(OTHER_LOCATION, k -> new LinkedHashSet<>()).add(meta);
+    public void addMetaChild(MetaStatement meta, String location) {
+        definitions.computeIfAbsent(location, k -> new LinkedHashSet<>()).add(meta);
     }
 
     private void addChild(IStatement st) {

@@ -33,7 +33,7 @@ public final class FullAnalyze {
 
     public static void fullAnalyze(PgDatabase db, List<Object> errors)
             throws InterruptedException, IOException {
-        fullAnalyze(db, MetaStorage.createFullDb(db), errors);
+        fullAnalyze(db, MetaStorage.createMetaFromDb(db), errors);
     }
 
     public static void fullAnalyze(PgDatabase db, IDatabase metaDb, List<Object> errors)
