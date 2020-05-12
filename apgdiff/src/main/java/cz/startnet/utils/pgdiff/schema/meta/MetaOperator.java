@@ -65,6 +65,7 @@ public class MetaOperator extends MetaStatement implements IOperator {
         this.right = right;
     }
 
+    @Override
     public void setReturns(String returns) {
         this.returns = returns;
     }

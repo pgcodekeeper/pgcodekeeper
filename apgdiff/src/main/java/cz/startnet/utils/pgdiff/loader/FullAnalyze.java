@@ -9,6 +9,7 @@ import java.util.Queue;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.AbstractAnalysisLauncher;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.OperatorAnalysisLaincher;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.ViewAnalysisLauncher;
 import cz.startnet.utils.pgdiff.schema.IDatabase;
 import cz.startnet.utils.pgdiff.schema.IRelation;
@@ -41,6 +42,7 @@ public final class FullAnalyze {
     }
 
     private void fullAnalyze() throws InterruptedException, IOException {
+        analyzeOperators();
         analyzeView(null);
 
         for (AbstractAnalysisLauncher l : db.getAnalysisLaunchers()) {
@@ -75,6 +77,18 @@ public final class FullAnalyze {
                 ((ViewAnalysisLauncher) l).setFullAnalyze(this);
                 l.getStmt().addAllDeps(l.launchAnalyze(errors, metaDb));
                 refs.addAll(l.getReferences());
+            }
+        }
+    }
+
+    private void analyzeOperators() {
+        List<AbstractAnalysisLauncher> launchers = db.getAnalysisLaunchers();
+        for (int i = 0; i < launchers.size(); ++i) {
+            AbstractAnalysisLauncher l = launchers.get(i);
+            if (l instanceof OperatorAnalysisLaincher) {
+                // allow GC to reclaim context memory immediately
+                launchers.set(i, null);
+                l.launchAnalyze(errors, metaDb);
             }
         }
     }

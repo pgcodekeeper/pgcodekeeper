@@ -30,6 +30,7 @@ public class PgOperator extends PgStatementWithSearchPath implements IOperator {
         return DbObjType.OPERATOR;
     }
 
+    @Override
     public void setReturns(String returns) {
         this.returns = returns;
     }

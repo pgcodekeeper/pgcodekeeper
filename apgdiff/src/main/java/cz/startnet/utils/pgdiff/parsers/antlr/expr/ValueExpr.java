@@ -250,7 +250,13 @@ public class ValueExpr extends AbstractExpr {
         if (resultOperFunction != null) {
             addDepcy(new GenericColumn(resultOperFunction.getSchemaName(),
                     resultOperFunction.getName(), DbObjType.OPERATOR), ctx);
-            return new ModPair<>(NONAME, resultOperFunction.getReturns());
+
+            String returns =  resultOperFunction.getReturns();
+            if (returns == null) {
+                returns = TypesSetManually.FUNCTION_COLUMN;
+            }
+
+            return new ModPair<>(NONAME, returns);
         }
 
         return new ModPair<>(NONAME, TypesSetManually.FUNCTION_COLUMN);
@@ -727,13 +733,13 @@ public class ValueExpr extends AbstractExpr {
         // between input args and operator parameters
         // function that has more exact matches (less casts) wins
         List<Pair<IOperator, Integer>> matches = new ArrayList<>();
-        for (IOperator f : availableOperators) {
-            if (!f.getBareName().equals(operatorName)) {
+        for (IOperator oper : availableOperators) {
+            if (!oper.getBareName().equals(operatorName)) {
                 continue;
             }
             int exactMatches = 0;
-            String leftArg = f.getLeftArg();
-            String rightArg = f.getRightArg();
+            String leftArg = oper.getLeftArg();
+            String rightArg = oper.getRightArg();
 
             if (Objects.equals(leftArg, left)) {
                 ++exactMatches;
@@ -749,10 +755,10 @@ public class ValueExpr extends AbstractExpr {
 
             if (exactMatches == 2) {
                 // fast path for exact signature match
-                return f;
+                return oper;
             }
 
-            matches.add(new Pair<>(f, exactMatches));
+            matches.add(new Pair<>(oper, exactMatches));
         }
 
         if (matches.isEmpty()) {
