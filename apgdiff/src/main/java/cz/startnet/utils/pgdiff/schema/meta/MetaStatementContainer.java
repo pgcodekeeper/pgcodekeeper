@@ -5,8 +5,8 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IStatementContainer;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MetaStatementContainer extends MetaRelation implements IStatementContainer {
@@ -18,7 +18,7 @@ public class MetaStatementContainer extends MetaRelation implements IStatementCo
     private final transient Map<String, MetaStatement> triggers = new LinkedHashMap<>();
     private final transient Map<String, MetaStatement> rules = new LinkedHashMap<>();
 
-    public MetaStatementContainer(GenericColumn object) {
+    public MetaStatementContainer(PgObjLocation object) {
         super(object);
     }
 

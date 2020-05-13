@@ -49,7 +49,7 @@ public abstract class BatchContextProcessor extends ParserAbstract {
         PgObjLocation loc = new PgObjLocation(
                 act != null ? act : ctx.getStart().getText().toUpperCase(Locale.ROOT),
                         ctx, getFullCtxTextWithHidden(ctx, stream));
-        db.addToQueries(fileName, loc);
+        db.addReference(fileName, loc);
         return loc;
     }
 }

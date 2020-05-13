@@ -3,8 +3,8 @@ package cz.startnet.utils.pgdiff.schema.meta;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URISyntaxException;
-import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -14,6 +14,7 @@ import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.ICast;
 import cz.startnet.utils.pgdiff.schema.IConstraint;
+import cz.startnet.utils.pgdiff.schema.IDatabase;
 import cz.startnet.utils.pgdiff.schema.IFunction;
 import cz.startnet.utils.pgdiff.schema.IOperator;
 import cz.startnet.utils.pgdiff.schema.IRelation;
@@ -28,99 +29,63 @@ import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class MetaStorage implements Serializable {
 
-    private static final long serialVersionUID = 4042839050043504459L;
+    private static final long serialVersionUID = 7284212113839712191L;
 
     public static final String FILE_NAME = "SYSTEM_OBJECTS_";
 
-    private static final String OTHER_LOCATION = "other_location";
-
     private static final ConcurrentMap<SupportedVersion, MetaStorage> STORAGE_CACHE = new ConcurrentHashMap<>();
 
-    private final ConcurrentMap<String, Set<MetaStatement>> definitions = new ConcurrentHashMap<>();
-    private transient volatile MetaDatabase tree;
+    private final Set<MetaStatement> definitions = new LinkedHashSet<>();
 
-    public MetaStorage() {}
-
-    public MetaStorage(PgDatabase db) {
-        db.getDescendants().forEach(this::addChild);
+    public static IDatabase createTreeFromDb(PgDatabase db) {
+        MetaStorage meta = new MetaStorage();
+        db.getDescendants().map(MetaStorage::createMetaFromStatement).forEach(meta::addMetaChild);
+        return meta.getTree(db.getArguments().isMsSql(), db.getPostgresVersion());
     }
 
-    public void remove(String path) {
-        tree = null;
-        definitions.remove(path);
+    public static IDatabase createTreeFromDefs(Stream<MetaStatement> defs,
+            boolean isMsSql, SupportedVersion version) {
+        MetaStorage meta = new MetaStorage();
+        defs.forEach(meta.definitions::add);
+        return meta.getTree(isMsSql, version);
     }
 
-    public void append(PgDatabase db, boolean clear) {
-        append(createStorageFromDb(db, clear), clear);
-    }
-
-    public void append(MetaStorage storage, boolean clear) {
-        tree = null;
-        if (clear) {
-            definitions.clear();
-        }
-        storage.definitions.forEach((k, v) -> definitions.merge(k, v, (v1, v2) -> {
-            v1.addAll(v2);
-            return v1;
-        }));
-    }
-
-    public static MetaDatabase createMetaFromDb(PgDatabase db) {
-        return createStorageFromDb(db, true).getTree();
-    }
-
-    private static MetaStorage createStorageFromDb(PgDatabase db, boolean addSystem) {
-        MetaStorage meta = new MetaStorage(db);
-        if (addSystem && !db.getArguments().isMsSql()) {
-            meta.append(getObjectsFromResources(db.getPostgresVersion()), false);
-        }
-        return meta;
-    }
-
-    public MetaDatabase getTree() {
-        MetaDatabase temp = tree;
-        if (temp == null) {
-            synchronized (this) {
-                temp = tree;
-                if (temp == null) {
-                    temp = new MetaDatabase();
-                    tree = temp;
-
-                    definitions.values().stream()
-                    .flatMap(Collection::stream)
-                    .sorted((o1, o2) -> o1.getStatementType().compareTo(o2.getStatementType()))
-                    .forEach(e -> addChildToTree(e.getCopy()));
-                }
+    private IDatabase getTree(boolean isMsSql, SupportedVersion version) {
+        if (!isMsSql) {
+            MetaStorage systemStorage = getObjectsFromResources(version);
+            if (systemStorage != null) {
+                definitions.addAll(systemStorage.definitions);
             }
         }
+
+        MetaDatabase tree = new MetaDatabase();
+        definitions.stream()
+        .sorted((o1, o2) -> o1.getStatementType().compareTo(o2.getStatementType()))
+        .forEach(e -> addChildToTree(tree, e.getCopy()));
 
         return tree;
     }
 
     public void addMetaChild(MetaStatement meta) {
-        addMetaChild(meta, OTHER_LOCATION);
+        definitions.add(meta);
     }
 
-    public void addMetaChild(MetaStatement meta, String location) {
-        definitions.computeIfAbsent(location, k -> new LinkedHashSet<>()).add(meta);
-    }
-
-    private void addChild(IStatement st) {
+    public static MetaStatement createMetaFromStatement(PgStatement st) {
         DbObjType type = st.getStatementType();
-        GenericColumn gc = createGenericColumn(st, type);
+        PgObjLocation loc = getLocation(st, type);
         MetaStatement meta;
 
         switch (type) {
         case SCHEMA:
-            meta = new MetaSchema(gc);
+            meta = new MetaSchema(loc);
             break;
         case CAST:
             ICast cast = (ICast) st;
-            meta = new MetaCast(cast.getSource(), cast.getTarget(), cast.getContext());
+            meta = new MetaCast(cast.getSource(), cast.getTarget(), cast.getContext(), loc);
             break;
         case OPERATOR:
             IOperator operator = (IOperator) st;
-            MetaOperator oper = new MetaOperator(gc);
+            MetaOperator oper = new MetaOperator(loc);
             oper.setLeftArg(operator.getLeftArg());
             oper.setRightArg(operator.getRightArg());
             oper.setReturns(operator.getReturns());
@@ -130,27 +95,27 @@ public class MetaStorage implements Serializable {
         case FUNCTION:
         case PROCEDURE:
             IFunction funcion = (IFunction) st;
-            MetaFunction func = new MetaFunction(gc);
+            MetaFunction func = new MetaFunction(loc);
             funcion.getReturnsColumns().forEach(func::addReturnsColumn);
             funcion.getArguments().forEach(func::addArgument);
             func.setReturns(funcion.getReturns());
             meta = func;
             break;
         case CONSTRAINT:
-            MetaConstraint con = new MetaConstraint(gc);
+            MetaConstraint con = new MetaConstraint(loc);
             con.setPrimaryKey(((IConstraint) st).isPrimaryKey());
             con.setUnique(((IConstraint) st).isUnique());
             ((IConstraint) st).getColumns().forEach(con::addColumn);
             meta = con;
             break;
         case SEQUENCE:
-            MetaRelation rel = new MetaRelation(gc);
+            MetaRelation rel = new MetaRelation(loc);
             ((IRelation) st).getRelationColumns().forEach(p -> rel.addColumn(p.getFirst(), p.getSecond()));
             meta = rel;
             break;
         case TABLE:
         case VIEW:
-            rel = new MetaStatementContainer(gc);
+            rel = new MetaStatementContainer(loc);
             Stream<Pair<String, String>> columns = ((IRelation) st).getRelationColumns();
             if (columns != null) {
                 columns.forEach(p -> rel.addColumn(p.getFirst(), p.getSecond()));
@@ -159,23 +124,15 @@ public class MetaStorage implements Serializable {
             meta = rel;
             break;
         default:
-            meta = new MetaStatement(gc);
+            meta = new MetaStatement(loc);
             break;
         }
 
-        String path = OTHER_LOCATION;
-        if (st instanceof PgStatement) {
-            PgObjLocation loc = ((PgStatement) st).getLocation();
-            if (loc != null) {
-                path = loc.getFilePath();
-            }
-        }
-
-        definitions.computeIfAbsent(path, k -> new LinkedHashSet<>()).add(meta);
+        return meta;
     }
 
-    private void addChildToTree(MetaStatement st) {
-        GenericColumn gc = st.getObject();
+    private void addChildToTree(MetaDatabase tree, MetaStatement st) {
+        GenericColumn gc = st.getGenericColumn();
         DbObjType type = gc.type;
         switch (type) {
         case CAST:
@@ -201,18 +158,28 @@ public class MetaStorage implements Serializable {
         case VIEW:
             tree.getSchema(gc.schema).addChild(st);
             break;
-        case INDEX:
         case CONSTRAINT:
         case RULE:
         case TRIGGER:
             tree.getSchema(gc.schema).getStatementContainer(gc.table).addChild(st);
+            break;
+        case INDEX:
+            MetaSchema schema = tree.getSchema(gc.schema);
+            schema.getStatementContainers().map(c -> c.getChild(gc.table, DbObjType.INDEX))
+            .filter(Objects::nonNull).findAny().ifPresent(e -> e.addChild(st));
             break;
         default :
             throw new IllegalArgumentException("Unsupported type " + type);
         }
     }
 
-    private GenericColumn createGenericColumn(IStatement st, DbObjType type) {
+    private static PgObjLocation getLocation(PgStatement st, DbObjType type) {
+        PgObjLocation loc = st.getLocation();
+        // some children may have a parental location
+        if (loc != null && loc.getType() == type) {
+            return loc;
+        }
+        GenericColumn gc;
         switch (type) {
         case CAST:
         case SCHEMA:
@@ -220,7 +187,8 @@ public class MetaStorage implements Serializable {
         case ROLE:
         case USER:
         case ASSEMBLY:
-            return new GenericColumn(st.getName(), type);
+            gc = new GenericColumn(st.getName(), type);
+            break;
         case AGGREGATE:
         case DOMAIN:
         case FTS_CONFIGURATION:
@@ -234,16 +202,20 @@ public class MetaStorage implements Serializable {
         case TABLE:
         case TYPE:
         case VIEW:
-            return new GenericColumn(st.getParent().getName(), st.getBareName(), type);
+            gc = new GenericColumn(st.getParent().getName(), st.getBareName(), type);
+            break;
         case INDEX:
         case CONSTRAINT:
         case RULE:
         case TRIGGER:
             IStatement parent = st.getParent();
-            return new GenericColumn(parent.getParent().getName(), parent.getName(), st.getName(), type);
+            gc = new GenericColumn(parent.getParent().getName(), parent.getName(), st.getName(), type);
+            break;
         default:
             throw new IllegalArgumentException("Unsupported type " + type);
         }
+
+        return new PgObjLocation(gc);
     }
 
     private static MetaStorage getObjectsFromResources(SupportedVersion ver) {

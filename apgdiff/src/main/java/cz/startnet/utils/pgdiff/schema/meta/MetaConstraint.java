@@ -4,8 +4,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IConstraint;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 
 public class MetaConstraint extends MetaStatement implements IConstraint {
 
@@ -15,7 +15,7 @@ public class MetaConstraint extends MetaStatement implements IConstraint {
     private boolean isPrimaryKey;
     private final Set<String> columns = new HashSet<>();
 
-    public MetaConstraint(GenericColumn object) {
+    public MetaConstraint(PgObjLocation object) {
         super(object);
     }
 

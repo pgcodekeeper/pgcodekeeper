@@ -33,6 +33,10 @@ public class PgObjLocation extends ContextLocation {
         this(gObj, action, offset, lineNumber, 1, filePath);
     }
 
+    public PgObjLocation(GenericColumn gObj) {
+        this(gObj, null, 0, 0, null);
+    }
+
     public PgObjLocation(GenericColumn gObj, ParserRuleContext ctx) {
         this(gObj, null, ctx.getStart().getStartIndex(), ctx.getStart().getLine(),
                 ctx.getStart().getCharPositionInLine(), null);

@@ -25,6 +25,7 @@ import org.eclipse.swt.graphics.Image;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import cz.startnet.utils.pgdiff.schema.meta.MetaStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.sql.Keyword;
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -106,11 +107,14 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
         List<ICompletionProposal> partResult = new ArrayList<>();
 
         PgDbParser parser = editor.getParser();
-        Stream<PgObjLocation> loc = parser.getAllObjDefinitions();
+        Stream<PgObjLocation> loc = parser.getAllObjDefinitions().map(MetaStatement::getObject);
         loc
         .filter(o -> text.isEmpty() || o.getObjName().toUpperCase(Locale.ROOT).contains(text))
-        .filter(o -> o.getType() != DbObjType.SEQUENCE && o.getType() != DbObjType.INDEX)
-        .filter(o -> o.getType() != null)
+        .filter(
+                o -> o.getType() != DbObjType.SEQUENCE
+                && o.getType() != DbObjType.INDEX
+                && o.getType() != DbObjType.CAST
+                && o.getType() != null)
         .sorted((o1, o2) -> o1.getFilePath().compareTo(o2.getFilePath()))
         .forEach(obj -> {
             Image img = Activator.getDbObjImage(obj.getType());

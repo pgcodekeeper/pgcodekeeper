@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IOperator;
 import cz.startnet.utils.pgdiff.schema.ISchema;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MetaSchema extends MetaStatement implements ISchema {
@@ -26,8 +27,8 @@ public class MetaSchema extends MetaStatement implements ISchema {
     private final transient Map<String, MetaStatement> configurations = new LinkedHashMap<>();
     private final transient Map<String, MetaOperator> operators = new LinkedHashMap<>();
 
-    public MetaSchema(GenericColumn object) {
-        super(object);
+    public MetaSchema(PgObjLocation loc) {
+        super(loc);
     }
 
     public MetaSchema(String schemaName) {
@@ -136,6 +137,11 @@ public class MetaSchema extends MetaStatement implements ISchema {
     @Override
     public MetaStatementContainer getStatementContainer(String name) {
         return containers.get(name);
+    }
+
+    @Override
+    public Stream<MetaStatementContainer> getStatementContainers() {
+        return containers.values().stream();
     }
 
     @Override
