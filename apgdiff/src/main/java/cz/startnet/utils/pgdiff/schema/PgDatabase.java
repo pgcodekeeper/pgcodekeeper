@@ -452,6 +452,8 @@ public class PgDatabase extends PgStatement implements IDatabase {
             l.updateStmt(this);
             analysisLaunchers.add(l);
         });
+
+        objDefinitions.putAll(lib.objDefinitions);
     }
 
     public void concat(PgStatement st) {
