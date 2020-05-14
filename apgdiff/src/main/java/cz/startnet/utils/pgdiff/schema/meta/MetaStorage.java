@@ -3,9 +3,9 @@ package cz.startnet.utils.pgdiff.schema.meta;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URISyntaxException;
-import java.util.LinkedHashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
@@ -35,7 +35,7 @@ public class MetaStorage implements Serializable {
 
     private static final ConcurrentMap<SupportedVersion, MetaStorage> STORAGE_CACHE = new ConcurrentHashMap<>();
 
-    private final Set<MetaStatement> definitions = new LinkedHashSet<>();
+    private final List<MetaStatement> definitions = new ArrayList<>();
 
     public static IDatabase createTreeFromDb(PgDatabase db) {
         MetaStorage meta = new MetaStorage();
