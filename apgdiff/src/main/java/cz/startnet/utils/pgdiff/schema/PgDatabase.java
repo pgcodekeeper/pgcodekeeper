@@ -93,30 +93,6 @@ public class PgDatabase extends PgStatement implements IDatabase {
         return objReferences;
     }
 
-    public List<PgObjLocation> getObjStatements(String name) {
-        List<PgObjLocation> statements = new ArrayList<>();
-
-        List<MetaStatement> definitions = getObjDefinitions().get(name);
-        if (definitions != null) {
-            for (MetaStatement def : definitions) {
-                statements.add(def.getObject());
-            }
-        }
-
-        List<PgObjLocation> references = getObjReferences().get(name);
-        if (references != null) {
-            for (PgObjLocation ref : references) {
-                if (ref.getAction() != null) {
-                    statements.add(ref);
-                }
-            }
-        }
-
-        statements.sort((a,b) -> Integer.compare(a.getOffset(), b.getOffset()));
-
-        return statements;
-    }
-
     public void addDefinition(String fileName, MetaStatement meta) {
         objDefinitions.computeIfAbsent(fileName, k -> new ArrayList<>()).add(meta);
     }
