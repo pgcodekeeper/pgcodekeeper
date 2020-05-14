@@ -21,11 +21,14 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.StatementOverride;
+import cz.startnet.utils.pgdiff.schema.meta.MetaStorage;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.MS_WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
@@ -141,7 +144,10 @@ public class ProjectLoader extends DatabaseLoader {
 
     protected void addDboSchema(PgDatabase db) {
         if (!db.containsSchema(ApgdiffConsts.DBO)) {
-            db.addSchema(new MsSchema(ApgdiffConsts.DBO));
+            MsSchema schema = new MsSchema(ApgdiffConsts.DBO);
+            schema.setLocation(new PgObjLocation(new GenericColumn(ApgdiffConsts.DBO, DbObjType.SCHEMA)));
+            db.addSchema(schema);
+            db.addDefinition("hidden", MetaStorage.createMetaFromStatement(schema));
             db.setDefaultSchema(ApgdiffConsts.DBO);
         }
     }
