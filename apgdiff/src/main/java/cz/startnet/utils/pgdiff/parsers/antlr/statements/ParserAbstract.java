@@ -9,6 +9,7 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
+import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
@@ -237,18 +238,25 @@ public abstract class ParserAbstract {
     }
 
     public static Pair<String, Token> unquoteQuotedString(Character_stringContext ctx) {
-        String s;
-        TerminalNode codeStart = ctx.Character_String_Literal();
-        if (codeStart != null) {
-            // TODO support special escaping schemes (maybe in the util itself)
-            s = PgDiffUtils.unquoteQuotedString(codeStart.getText());
-        } else {
-            List<TerminalNode> dollarText = ctx.Text_between_Dollar();
-            codeStart = dollarText.get(0);
-            s = dollarText.stream().map(TerminalNode::getText).collect(Collectors.joining());
+        TerminalNode string = ctx.Character_String_Literal();
+        if (string != null) {
+            String text = string.getText();
+            int start = text.indexOf('\'') + 1;
+
+            Token t = string.getSymbol();
+            CommonToken copy = new CommonToken(t);
+
+            copy.setStartIndex(t.getStartIndex() + start);
+            copy.setCharPositionInLine(t.getCharPositionInLine() + start);
+            copy.setStopIndex(t.getStopIndex() - 1);
+
+            return new Pair<>(PgDiffUtils.unquoteQuotedString(string.getText(), start), copy);
         }
 
-        return new Pair<>(s, codeStart.getSymbol());
+        List<TerminalNode> dollarText = ctx.Text_between_Dollar();
+        String s = dollarText.stream().map(TerminalNode::getText).collect(Collectors.joining());
+
+        return new Pair<>(s, dollarText.get(0).getSymbol());
     }
 
     protected PgObjLocation addObjReference(List<? extends ParserRuleContext> ids,
