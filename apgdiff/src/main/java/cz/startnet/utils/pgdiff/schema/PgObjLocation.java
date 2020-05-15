@@ -40,6 +40,7 @@ public class PgObjLocation extends ContextLocation {
     public PgObjLocation(GenericColumn gObj, ParserRuleContext ctx) {
         this(gObj, null, ctx.getStart().getStartIndex(), ctx.getStart().getLine(),
                 ctx.getStart().getCharPositionInLine(), null);
+        setLength(ctx.getStop().getStopIndex() - ctx.getStart().getStartIndex() + 1);
     }
 
     public PgObjLocation(String action, ParserRuleContext ctx, String sql) {
@@ -158,9 +159,24 @@ public class PgObjLocation extends ContextLocation {
             return false;
         }
         return Objects.equals(obj.schema, col.schema)
-                && Objects.equals(obj.table, col.table)
                 && Objects.equals(obj.column, col.column)
-                && compareTypes(col.type);
+                && compareTypes(col.type)
+                && compareNames(col.table);
+    }
+
+    private boolean compareNames(String objName) {
+        String name = obj.table;
+        if (Objects.equals(objName, name)) {
+            return true;
+        }
+
+        DbObjType type = obj.type;
+        if (type != DbObjType.FUNCTION && type != DbObjType.AGGREGATE
+                && type != DbObjType.PROCEDURE && type != DbObjType.OPERATOR) {
+            return false;
+        }
+
+        return (objName.startsWith(name + '(') || name.startsWith(objName + '('));
     }
 
     private boolean compareTypes(DbObjType objType) {
@@ -188,10 +204,12 @@ public class PgObjLocation extends ContextLocation {
 
     public PgObjLocation copyWithOffset(int offset, int lineOffset,
             int inLineOffset, String filePath) {
-        return new PgObjLocation(obj, getAction(),
+        PgObjLocation loc = new PgObjLocation(obj, getAction(),
                 getOffset() + offset,
                 getLineNumber() + lineOffset,
                 getCharPositionInLine() + inLineOffset,
                 filePath);
+        loc.setLength(length);
+        return loc;
     }
 }
