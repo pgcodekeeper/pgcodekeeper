@@ -70,8 +70,8 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
      */
     private boolean lateralAllowed;
 
-    public Select(IDatabase db, DbObjType... disabledDepcies) {
-        super(db, disabledDepcies);
+    public Select(IDatabase db) {
+        super(db);
     }
 
     protected Select(AbstractExpr parent) {

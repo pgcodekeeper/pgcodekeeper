@@ -54,14 +54,13 @@ import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IDatabase;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.ModPair;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
 
-    public Function(IDatabase db, DbObjType... disabledDepcies) {
-        super(db, disabledDepcies);
+    public Function(IDatabase db) {
+        super(db);
     }
 
     protected Function(AbstractExpr parent) {
