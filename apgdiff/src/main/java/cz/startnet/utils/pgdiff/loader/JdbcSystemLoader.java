@@ -25,6 +25,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.expr.TypesSetManually;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.ICast.CastContext;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemCast;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemFunction;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemRelation;
@@ -40,6 +41,11 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
 
     public JdbcSystemLoader(JdbcConnector connector, SubMonitor monitor) {
         super(connector, monitor, null);
+    }
+
+    @Override
+    public PgDatabase load() throws IOException, InterruptedException {
+        throw new IllegalStateException("Unsuppoted operation for JdbcSystemLoader");
     }
 
     public PgSystemStorage getStorageFromJdbc() throws IOException, InterruptedException {
@@ -64,7 +70,7 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
             readCasts(storage);
 
             connection.commit();
-            finishAntlr();
+            finishLoaders();
             Log.log(Log.LOG_INFO, "Database object has been successfully queried from JDBC");
         } catch (InterruptedException ex) {
             throw ex;

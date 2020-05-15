@@ -61,29 +61,8 @@ public class ProjectLoader extends DatabaseLoader {
         this.monitor = monitor;
     }
 
-    /**
-     * Loads database schema from a ModelExporter directory tree.
-     *
-     * @param dirPath path to the directory tree root
-     *
-     * @return database schema
-     * @throws InterruptedException
-     */
-    public PgDatabase loadDatabaseSchemaFromDirTree() throws InterruptedException, IOException {
-        PgDatabase db = loadSchemaOnly();
-        FullAnalyze.fullAnalyze(db, errors);
-        return db;
-    }
-
-    /**
-     * Loads database schema from a ModelExporter directory tree without analyze.
-     *
-     * @param dirPath path to the directory tree root
-     *
-     * @return database schema
-     * @throws InterruptedException
-     */
-    public PgDatabase loadSchemaOnly() throws InterruptedException, IOException {
+    @Override
+    public PgDatabase load() throws InterruptedException, IOException {
         PgDatabase db = new PgDatabase(arguments);
 
         File dir = new File(dirPath);

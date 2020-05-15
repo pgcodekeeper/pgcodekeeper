@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.text.MessageFormat;
-import java.util.Collections;
-import java.util.List;
 
 import org.eclipse.core.runtime.SubMonitor;
 
@@ -45,17 +43,10 @@ public class JdbcLoader extends JdbcLoaderBase {
         super(connector, monitor, pgDiffArguments);
     }
 
-    public List<Object> getErrors() {
-        return Collections.unmodifiableList(errors);
-    }
+    @Override
+    public PgDatabase load() throws IOException, InterruptedException {
+        PgDatabase d = new PgDatabase(args);
 
-    public PgDatabase getDbFromJdbc() throws IOException, InterruptedException {
-        PgDatabase d = getDbFromJdbc(new PgDatabase(args));
-        FullAnalyze.fullAnalyze(d, errors);
-        return d;
-    }
-
-    public PgDatabase getDbFromJdbc(PgDatabase d) throws IOException, InterruptedException {
         Log.log(Log.LOG_INFO, "Reading db using JDBC.");
         setCurrentOperation("connection setup");
         try (Connection connection = connector.getConnection();
@@ -106,7 +97,7 @@ public class JdbcLoader extends JdbcLoaderBase {
             }
 
             connection.commit();
-            finishAntlr();
+            finishLoaders();
 
             d.sortColumns();
 

@@ -18,6 +18,7 @@ import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 
 import cz.startnet.utils.pgdiff.IProgressReporter;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
+import cz.startnet.utils.pgdiff.loader.DatabaseLoader;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcLoader;
 import cz.startnet.utils.pgdiff.loader.JdbcMsConnector;
@@ -45,7 +46,7 @@ public abstract class DbSource {
 
     private final String origin;
     private PgDatabase dbObject;
-    protected List<Object> errors = Collections.emptyList();
+    private List<Object> errors = Collections.emptyList();
 
     public String getOrigin() {
         return origin;
@@ -72,6 +73,14 @@ public abstract class DbSource {
 
         dbObject = this.loadInternal(monitor);
         return dbObject;
+    }
+
+    protected PgDatabase load(DatabaseLoader loader) throws IOException, InterruptedException {
+        try {
+            return loader.loadAndAnalyze();
+        } finally {
+            errors = loader.getErrors();
+        }
     }
 
     public boolean isLoaded(){
@@ -127,7 +136,7 @@ public abstract class DbSource {
     }
 
     public static DbSource fromProject(PgDbProject proj) {
-        return new DbSourceProject(proj, null);
+        return fromProject(proj, null);
     }
 
     public static DbSource fromFile(boolean forceUnixNewlines, File filename,
@@ -138,7 +147,7 @@ public abstract class DbSource {
 
     public static DbSource fromFile(boolean forceUnixNewlines, File filename,
             String encoding, boolean isMsSql, IProject proj) {
-        return new DbSourceFile(forceUnixNewlines, filename, encoding, isMsSql, proj, null);
+        return fromFile(forceUnixNewlines, filename, encoding, isMsSql, proj, null);
     }
 
     public static DbSource fromDbInfo(DbInfo dbinfo, boolean forceUnixNewlines,
@@ -153,11 +162,7 @@ public abstract class DbSource {
 
     public static DbSource fromDbInfo(DbInfo dbinfo, boolean forceUnixNewlines,
             String charset, String timezone, IProject proj) {
-        if (dbinfo.isPgDumpSwitch()) {
-            return new DbSourceDb(forceUnixNewlines, dbinfo, charset, timezone, proj, null);
-        } else {
-            return new DbSourceJdbc(dbinfo, timezone, forceUnixNewlines, proj, null);
-        }
+        return fromDbInfo(dbinfo, forceUnixNewlines, charset, timezone, proj, null);
     }
 
     public static DbSource fromDbObject(PgDatabase db, String origin) {
@@ -196,13 +201,9 @@ class DbSourceDirTree extends DbSource {
             throws InterruptedException, IOException {
         monitor.subTask(Messages.dbSource_loading_tree);
 
-        ProjectLoader loader = new ProjectLoader(dirTreePath, getPgDiffArgs(encoding,
-                forceUnixNewlines, isMsSql, null, oneTimePrefs), monitor, new ArrayList<>());
-        try {
-            return loader.loadDatabaseSchemaFromDirTree();
-        } finally {
-            errors = loader.getErrors();
-        }
+        return load(new ProjectLoader(dirTreePath,
+                getPgDiffArgs(encoding, forceUnixNewlines, isMsSql, null, oneTimePrefs),
+                monitor, new ArrayList<>()));
     }
 }
 
@@ -232,12 +233,7 @@ class DbSourceProject extends DbSource {
                 pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
                 OpenProjectUtils.checkMsSql(project), project, oneTimePrefs);
 
-        UIProjectLoader loader = new UIProjectLoader(project, arguments, monitor, null);
-        try {
-            return loader.loadDatabaseWithLibraries();
-        } finally {
-            errors = loader.getErrors();
-        }
+        return load(new UIProjectLoader(project, arguments, monitor, null));
     }
 }
 
@@ -282,15 +278,8 @@ class DbSourceFile extends DbSource {
             Log.log(Log.LOG_INFO, "Error counting file lines. Setting 1000"); //$NON-NLS-1$
             monitor.setWorkRemaining(1000);
         }
-
-        PgDumpLoader loader = new PgDumpLoader(filename,
-                getPgDiffArgs(encoding, forceUnixNewlines, isMsSql, proj, oneTimePrefs),
-                monitor, 2);
-        try {
-            return loader.load();
-        } finally {
-            errors = loader.getErrors();
-        }
+        PgDiffArguments args = getPgDiffArgs(encoding, forceUnixNewlines, isMsSql, proj, oneTimePrefs);
+        return load(new PgDumpLoader(filename, args, monitor, 2));
     }
 
     private int countLines(File filename) throws IOException {
@@ -370,14 +359,8 @@ class DbSourceDb extends DbSource {
 
         pm.newChild(1).subTask(Messages.dbSource_loading_dump);
 
-        PgDumpLoader loader = new PgDumpLoader(streamProvider, "pg_dump", //$NON-NLS-1$
-                getPgDiffArgs(encoding, forceUnixNewlines, false, proj, oneTimePrefs),
-                monitor);
-        try {
-            return loader.load();
-        } finally {
-            errors = loader.getErrors();
-        }
+        PgDiffArguments args = getPgDiffArgs(encoding, forceUnixNewlines, false, proj, oneTimePrefs);
+        return load(new PgDumpLoader(streamProvider, "pg_dump", args, monitor)); //$NON-NLS-1$
     }
 }
 
@@ -427,16 +410,12 @@ class DbSourceJdbc extends DbSource {
         monitor.subTask(Messages.reading_db_from_jdbc);
         PgDiffArguments args = getPgDiffArgs(ApgdiffConsts.UTF_8, forceUnixNewlines,
                 isMsSql, proj, oneTimePrefs);
+
         if (isMsSql) {
-            return new JdbcMsLoader(jdbcConnector, args, monitor).readDb();
+            return load(new JdbcMsLoader(jdbcConnector, args, monitor));
         }
 
-        JdbcLoader loader = new JdbcLoader(jdbcConnector, args, monitor);
-        try {
-            return loader.getDbFromJdbc();
-        } finally {
-            errors = loader.getErrors();
-        }
+        return load(new JdbcLoader(jdbcConnector, args, monitor));
     }
 }
 
