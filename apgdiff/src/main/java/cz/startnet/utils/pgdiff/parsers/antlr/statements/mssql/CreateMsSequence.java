@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_sequenceContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Data_type_sizeContext;
@@ -31,7 +33,7 @@ public class CreateMsSequence extends ParserAbstract {
         String name = nameCtx.getText();
         MsSequence sequence = new MsSequence(name);
         fillSequence(sequence, ctx.sequence_body());
-        List<IdContext> ids = Arrays.asList(ctx.qualified_name().schema, nameCtx);
+        List<ParserRuleContext> ids = Arrays.asList(ctx.qualified_name().schema, nameCtx);
         AbstractSchema schema = getSchemaSafe(ids);
         addSafe(schema, sequence, ids);
     }
