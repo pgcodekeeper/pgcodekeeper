@@ -326,4 +326,8 @@ public class DbStorePicker {
         this.isMsSql = isMsSql;
         cmbDbNames.refresh();
     }
+
+    public void dispose() {
+        cmbDbNames.getControl().dispose();
+    }
 }

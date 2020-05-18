@@ -89,6 +89,7 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
     @Override
     public void dispose() {
         getWorkbenchWindow().getActivePage().removePartListener(editorPartListener);
+        storePicker.dispose();
     }
 
     private void setSelectionFromPart(IWorkbenchPart part) {
