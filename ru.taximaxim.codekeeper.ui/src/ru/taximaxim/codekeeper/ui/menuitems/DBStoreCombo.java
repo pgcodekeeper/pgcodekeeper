@@ -38,16 +38,17 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
     protected Control createControl(Composite parent) {
         IWorkbenchPage page = getWorkbenchWindow().getActivePage();
 
+        Composite composite = new Composite(parent, SWT.NONE);
+
         IEditorPart editorPart = page.getActiveEditor();
-        storePicker = new DbStorePicker(parent, 40,
+        storePicker = new DbStorePicker(composite, 40,
                 editorPart instanceof ProjectEditorDiffer, false);
 
         GridLayout gl = new GridLayout();
         gl.marginWidth = gl.marginHeight = 0;
-        parent.setLayout(gl);
+        composite.setLayout(gl);
 
         editorPartListener = new EditorPartListener();
-        page.addPartListener(editorPartListener);
 
         storePicker.addListenerToCombo(e -> {
             IEditorPart editor = getWorkbenchWindow().getActivePage().getActiveEditor();
@@ -78,7 +79,7 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
 
         setSelectionFromPart(editorPart);
 
-        return parent;
+        return composite;
     }
 
     @Override
