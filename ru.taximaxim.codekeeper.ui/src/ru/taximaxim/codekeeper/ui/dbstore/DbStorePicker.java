@@ -30,7 +30,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -53,7 +52,7 @@ public class DbStorePicker {
     private boolean useFileSources;
     private Boolean isMsSql;
     private final boolean useDirSources;
-    private final IPreferenceStore prefStore;
+    private final IPreferenceStore prefStore = Activator.getDefault().getPreferenceStore();
     private final List<File> projects = new ArrayList<>();
 
     private final ComboViewer cmbDbNames;
@@ -65,7 +64,6 @@ public class DbStorePicker {
     public DbStorePicker(Composite parent, int chars, boolean useFileSources, boolean useDirSources) {
         this.useFileSources = useFileSources;
         this.useDirSources = useDirSources;
-        this.prefStore = Activator.getDefault().getPreferenceStore();
 
         cmbDbNames = new ComboViewer(parent, SWT.READ_ONLY | SWT.DROP_DOWN);
         cmbDbNames.setContentProvider(ArrayContentProvider.getInstance());
@@ -75,8 +73,8 @@ public class DbStorePicker {
         gd.widthHint = new PixelConverter(cmbDbNames.getControl()).convertWidthInCharsToPixels(chars);
         cmbDbNames.getControl().setLayoutData(gd);
 
-        final IPropertyChangeListener listener = e -> UiSync.exec(parent.getShell(), () -> {
-            if (!parent.getShell().isDisposed()) {
+        final IPropertyChangeListener listener = e -> UiSync.exec(parent, () -> {
+            if (!parent.isDisposed()) {
                 loadStore(null);
             }
         });
@@ -219,7 +217,7 @@ public class DbStorePicker {
                 revertSelection = false;
             } else if (selected instanceof LoadFileElement) {
                 LoadFileElement loadEl = (LoadFileElement) selected;
-                File dumpFile = chooseDbSource(cmbDbNames.getControl().getShell(), prefStore, loadEl.loadDir);
+                File dumpFile = chooseDbSource(loadEl.loadDir);
                 if (dumpFile != null) {
                     loadStore(new StructuredSelection(dumpFile));
                     revertSelection = false;
@@ -236,8 +234,8 @@ public class DbStorePicker {
             }
         }
 
-        private File chooseDbSource(Shell shell, IPreferenceStore prefStore, boolean dir) {
-            String pathToDump = dir ? getDirPath(shell, prefStore) : getFilePath(shell, prefStore);
+        private File chooseDbSource(boolean dir) {
+            String pathToDump = dir ? getDirPath() : getFilePath();
             if (pathToDump == null) {
                 return null;
             }
@@ -254,8 +252,8 @@ public class DbStorePicker {
             return dumpFile;
         }
 
-        private String getFilePath(Shell shell, IPreferenceStore prefStore) {
-            FileDialog dialog = new FileDialog(shell);
+        private String getFilePath() {
+            FileDialog dialog = new FileDialog(cmbDbNames.getControl().getShell());
             dialog.setText(Messages.choose_dump_file_with_changes);
             dialog.setFilterExtensions(new String[] {"*.sql", "*"}); //$NON-NLS-1$ //$NON-NLS-2$
             dialog.setFilterNames(new String[] {
@@ -265,8 +263,8 @@ public class DbStorePicker {
             return dialog.open();
         }
 
-        private String getDirPath(Shell shell, IPreferenceStore prefStore) {
-            DirectoryDialog dialog = new DirectoryDialog(shell);
+        private String getDirPath() {
+            DirectoryDialog dialog = new DirectoryDialog(cmbDbNames.getControl().getShell());
             dialog.setText(Messages.DbStorePicker_choose_dir);
             dialog.setFilterPath(prefStore.getString(PREF.LAST_OPENED_LOCATION));
             return dialog.open();
