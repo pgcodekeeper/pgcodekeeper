@@ -85,6 +85,9 @@ public class Activator extends AbstractUIPlugin {
         reg.put(FILE.ICONAPPSMALL, ImageDescriptor.createFromURL(
                 context.getBundle().getResource(FILE.ICONAPPSMALL)));
 
+        reg.put(FILE.ICONEDIT, ImageDescriptor.createFromURL(
+                context.getBundle().getResource(FILE.ICONEDIT)));
+
         reg.put(FILE.ICONLIB, ImageDescriptor.createFromURL(
                 context.getBundle().getResource(FILE.ICONLIB)));
 
