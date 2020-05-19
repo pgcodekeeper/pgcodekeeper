@@ -107,9 +107,7 @@ public class ProjectProperties extends PropertyPage {
         });
 
         dbForBind = DbInfo.getLastDb(nameOfBoundDb);
-        storePicker = new DbStorePicker(panel, Activator.getDefault().getPreferenceStore(),
-                false, false, true);
-        storePicker.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        storePicker = new DbStorePicker(panel, false, false);
         storePicker.setSelection(dbForBind != null ? new StructuredSelection(dbForBind) : StructuredSelection.EMPTY);
         storePicker.setEnabled(btnBindProjToDb.getSelection());
         storePicker.addListenerToCombo(e -> dbForBind = storePicker.getDbInfo());

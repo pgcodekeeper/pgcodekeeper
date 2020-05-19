@@ -7,6 +7,7 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.MessageBox;
@@ -18,7 +19,6 @@ import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 import org.eclipse.ui.part.FileEditorInput;
 
-import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.IPartAdapter2;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_BIND_PREF;
@@ -38,12 +38,17 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
     protected Control createControl(Composite parent) {
         IWorkbenchPage page = getWorkbenchWindow().getActivePage();
 
+        Composite composite = new Composite(parent, SWT.NONE);
+
         IEditorPart editorPart = page.getActiveEditor();
-        storePicker = new DbStorePicker(parent, Activator.getDefault().getPreferenceStore(),
-                editorPart instanceof ProjectEditorDiffer, false, true);
+        storePicker = new DbStorePicker(composite, 40,
+                editorPart instanceof ProjectEditorDiffer, false);
+
+        GridLayout gl = new GridLayout();
+        gl.marginWidth = gl.marginHeight = 0;
+        composite.setLayout(gl);
 
         editorPartListener = new EditorPartListener();
-        page.addPartListener(editorPartListener);
 
         storePicker.addListenerToCombo(e -> {
             IEditorPart editor = getWorkbenchWindow().getActivePage().getActiveEditor();
@@ -74,7 +79,7 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
 
         setSelectionFromPart(editorPart);
 
-        return storePicker;
+        return composite;
     }
 
     @Override
@@ -127,8 +132,8 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
     }
 
     private void setDbComboEnableState(IEclipsePreferences auxPrefs) {
-        storePicker.setComboEnabled(auxPrefs == null ? true :
-            auxPrefs.get(DB_BIND_PREF.NAME_OF_BOUND_DB, "").isEmpty()); //$NON-NLS-1$
+        storePicker.setComboEnabled(auxPrefs == null ||
+                auxPrefs.get(DB_BIND_PREF.NAME_OF_BOUND_DB, "").isEmpty()); //$NON-NLS-1$
     }
 
     private class EditorPartListener extends IPartAdapter2 {
