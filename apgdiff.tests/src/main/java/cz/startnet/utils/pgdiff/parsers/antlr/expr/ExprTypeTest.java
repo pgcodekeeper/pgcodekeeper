@@ -108,7 +108,7 @@ public class ExprTypeTest {
             throws InterruptedException, IOException {
         PgDatabase dbNew = ApgdiffTestUtils.loadTestDump(
                 fileNameTemplate + postfix, ExprTypeTest.class, args, false);
-        IDatabase metaDb = MetaStorage.createFullDb(dbNew);
+        IDatabase metaDb = MetaStorage.createMetaFromDb(dbNew);
         FullAnalyze.fullAnalyze(dbNew, metaDb, new ArrayList<>());
         return metaDb;
     }
