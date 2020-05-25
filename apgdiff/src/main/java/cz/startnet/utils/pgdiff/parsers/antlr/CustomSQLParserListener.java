@@ -127,7 +127,7 @@ implements SqlContextProcessor {
         } else if (ctx.create_aggregate_statement() != null) {
             p = new CreateAggregate(ctx.create_aggregate_statement(), db);
         } else if (ctx.create_operator_statement() != null) {
-            p = new CreateOperator(ctx.create_operator_statement(), db, antlrTasks);
+            p = new CreateOperator(ctx.create_operator_statement(), db);
         } else if (ctx.create_sequence_statement() != null) {
             p = new CreateSequence(ctx.create_sequence_statement(), db);
         } else if (ctx.create_schema_statement() != null) {

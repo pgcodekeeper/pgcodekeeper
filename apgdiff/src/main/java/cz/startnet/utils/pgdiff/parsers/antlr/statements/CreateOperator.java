@@ -2,13 +2,10 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Queue;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.All_op_refContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.All_simple_opContext;
@@ -27,13 +24,9 @@ public class CreateOperator extends ParserAbstract {
 
     private final Create_operator_statementContext ctx;
 
-    private final Queue<AntlrTask<?>> antlrTasks;
-
-    public CreateOperator(Create_operator_statementContext ctx, PgDatabase db,
-            Queue<AntlrTask<?>> antlrTasks) {
+    public CreateOperator(Create_operator_statementContext ctx, PgDatabase db) {
         super(db);
         this.ctx = ctx;
-        this.antlrTasks = antlrTasks;
     }
 
     @Override
@@ -49,13 +42,8 @@ public class CreateOperator extends ParserAbstract {
                 List<IdentifierContext> funcIds = option.func_name.identifier();
                 addDepSafe(oper, funcIds, DbObjType.FUNCTION, true);
 
-                if (!isRefMode()) {
-                    AntlrParser.submitAntlrTask(antlrTasks,
-                            () -> getOperatorFunction(oper, funcIds),
-                            gc -> db.addAnalysisLauncher(
-                                    new OperatorAnalysisLaincher(oper, gc, fileName))
-                            );
-                }
+                db.addAnalysisLauncher(new OperatorAnalysisLaincher(
+                        oper, getOperatorFunction(oper, funcIds), fileName));
             } else if (option.LEFTARG() != null) {
                 Data_typeContext leftArgTypeCtx = option.type;
                 oper.setLeftArg(getTypeName(leftArgTypeCtx));
