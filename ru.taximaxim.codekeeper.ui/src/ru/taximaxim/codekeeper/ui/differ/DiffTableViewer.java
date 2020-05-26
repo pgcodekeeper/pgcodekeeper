@@ -791,7 +791,7 @@ public class DiffTableViewer extends Composite {
                     .onlyEdits(source, target)
                     .useIgnoreList(ignoreList, dbRemote.getDbName())
                     .flatten(diffTree);
-            cols = DiffTree.getTablesWithColumns(source, target, selected);
+            cols = DiffTree.getColumns(source, target, selected);
         }
 
         setInputCollection(selected, dbProject, dbRemote, cols);

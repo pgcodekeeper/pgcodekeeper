@@ -46,7 +46,7 @@ public final class DiffTree {
         }
     }
 
-    public static Map<TreeElement, List<TreeElement>> getTablesWithColumns(
+    public static Map<TreeElement, List<TreeElement>> getColumns(
             PgDatabase oldDbFull, PgDatabase newDbFull, List<TreeElement> selected) {
 
         Map<TreeElement, List<TreeElement>> tables = new HashMap<>();
