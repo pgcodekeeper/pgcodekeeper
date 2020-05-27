@@ -10,6 +10,7 @@ public interface TypesSetManually {
 
     String QUALIFIED_ASTERISK = "qualifiedAsterisk";
 
+    String BIT = "bit";
     String BOOLEAN = "boolean";
     String INTEGER = "integer";
     String NUMERIC = "numeric";
