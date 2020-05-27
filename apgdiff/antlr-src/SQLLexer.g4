@@ -910,7 +910,7 @@ fragment
 Extended_Control_Characters         :   '\u0080' .. '\u009F';
 
 Character_String_Literal
-    : [eEnN]? Single_String (String_Joiner Single_String)*
+    : [eEnNxXbB]? Single_String (String_Joiner Single_String)*
     ;
 
 fragment
