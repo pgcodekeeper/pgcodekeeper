@@ -1,15 +1,12 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -55,7 +52,6 @@ public abstract class AbstractExpr {
     protected final IDatabase db;
     private final AbstractExpr parent;
     private final Set<PgObjLocation> depcies;
-    private final Set<DbObjType> disabledDepcies;
 
     private FullAnalyze fullAnalyze;
 
@@ -63,12 +59,10 @@ public abstract class AbstractExpr {
         return Collections.unmodifiableSet(depcies);
     }
 
-    public AbstractExpr(IDatabase db, DbObjType... disabledDepcies) {
+    public AbstractExpr(IDatabase db) {
         parent = null;
         depcies = new LinkedHashSet<>();
         this.db = db;
-        this.disabledDepcies = Arrays.stream(disabledDepcies)
-                .collect(Collectors.toCollection(() -> EnumSet.noneOf(DbObjType.class)));
     }
 
     protected AbstractExpr(AbstractExpr parent) {
@@ -80,7 +74,6 @@ public abstract class AbstractExpr {
         this.depcies = depcies;
         this.db = parent.db;
         this.fullAnalyze = parent.fullAnalyze;
-        this.disabledDepcies = parent.disabledDepcies;
     }
 
     public void setFullAnaLyze(FullAnalyze fullAnalyze) {
@@ -177,7 +170,7 @@ public abstract class AbstractExpr {
     }
 
     protected void addDepcy(GenericColumn depcy, ParserRuleContext ctx, Token start) {
-        if (!ApgdiffUtils.isPgSystemSchema(depcy.schema) && !disabledDepcies.contains(depcy.type)) {
+        if (!ApgdiffUtils.isPgSystemSchema(depcy.schema)) {
             PgObjLocation loc;
             if (ctx == null) {
                 loc = new PgObjLocation(depcy, null, 0, 0, null);
@@ -193,7 +186,7 @@ public abstract class AbstractExpr {
     }
 
     protected void addDepcy(PgObjLocation loc) {
-        if (!ApgdiffUtils.isPgSystemSchema(loc.getSchema()) && !disabledDepcies.contains(loc.getType())) {
+        if (!ApgdiffUtils.isPgSystemSchema(loc.getSchema())) {
             depcies.add(loc);
         }
     }

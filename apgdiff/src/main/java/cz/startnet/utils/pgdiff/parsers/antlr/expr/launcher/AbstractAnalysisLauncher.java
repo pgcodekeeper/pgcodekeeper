@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -87,8 +88,12 @@ public abstract class AbstractAnalysisLauncher {
         try {
             Set<PgObjLocation> locs = analyze(ctx, db);
             Set<GenericColumn> depcies = new LinkedHashSet<>();
+            EnumSet<DbObjType> disabledDepcies = getDisabledDepcies();
             for (PgObjLocation loc : locs) {
-                depcies.add(loc.getObj());
+                if (!disabledDepcies.contains(loc.getType())) {
+                    depcies.add(loc.getObj());
+                }
+
                 if (loc.getLineNumber() != 0) {
                     references.add(loc.copyWithOffset(offset, lineOffset, inLineOffset, location));
                 }
@@ -112,6 +117,10 @@ public abstract class AbstractAnalysisLauncher {
         }
 
         return Collections.emptySet();
+    }
+
+    protected EnumSet<DbObjType> getDisabledDepcies() {
+        return EnumSet.noneOf(DbObjType.class);
     }
 
     protected abstract Set<PgObjLocation> analyze(ParserRuleContext ctx, IDatabase db);

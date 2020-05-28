@@ -26,6 +26,7 @@ import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.ICast.CastContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.meta.MetaCast;
 import cz.startnet.utils.pgdiff.schema.meta.MetaFunction;
 import cz.startnet.utils.pgdiff.schema.meta.MetaOperator;
@@ -175,16 +176,16 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                 switch (result.getString("relkind")) {
                 case "v":
                 case "m":
-                    relation = new MetaStatementContainer(new GenericColumn(
-                            schemaName, relationName, DbObjType.VIEW));
+                    relation = new MetaStatementContainer(new PgObjLocation(
+                            new GenericColumn(schemaName, relationName, DbObjType.VIEW)));
                     break;
                 case "S":
-                    relation = new MetaRelation(new GenericColumn(
-                            schemaName, relationName, DbObjType.SEQUENCE));
+                    relation = new MetaRelation(new PgObjLocation(
+                            new GenericColumn(schemaName, relationName, DbObjType.SEQUENCE)));
                     break;
                 default:
-                    relation = new MetaStatementContainer(new GenericColumn(
-                            schemaName, relationName, DbObjType.TABLE));
+                    relation = new MetaStatementContainer(new PgObjLocation(
+                            new GenericColumn(schemaName, relationName, DbObjType.TABLE)));
                     break;
                 }
 

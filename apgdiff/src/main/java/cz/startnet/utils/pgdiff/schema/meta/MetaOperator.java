@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.schema.meta;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IOperator;
 import cz.startnet.utils.pgdiff.schema.ISchema;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MetaOperator extends MetaStatement implements IOperator {
@@ -13,7 +14,7 @@ public class MetaOperator extends MetaStatement implements IOperator {
     private String right;
     private String returns;
 
-    public MetaOperator(GenericColumn object) {
+    public MetaOperator(PgObjLocation object) {
         super(object);
     }
 

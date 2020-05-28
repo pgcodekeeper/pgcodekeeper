@@ -75,8 +75,8 @@ import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class ValueExpr extends AbstractExpr {
 
-    public ValueExpr(IDatabase db, DbObjType... disabledDepcies) {
-        super(db, disabledDepcies);
+    public ValueExpr(IDatabase db) {
+        super(db);
     }
 
     protected ValueExpr(AbstractExpr parent) {

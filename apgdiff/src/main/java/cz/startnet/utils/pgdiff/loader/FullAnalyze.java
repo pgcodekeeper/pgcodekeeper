@@ -15,7 +15,7 @@ import cz.startnet.utils.pgdiff.schema.IDatabase;
 import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
-import cz.startnet.utils.pgdiff.schema.meta.MetaStorage;
+import cz.startnet.utils.pgdiff.schema.meta.MetaUtils;
 
 public final class FullAnalyze {
 
@@ -33,7 +33,7 @@ public final class FullAnalyze {
 
     public static void fullAnalyze(PgDatabase db, List<Object> errors)
             throws InterruptedException, IOException {
-        fullAnalyze(db, MetaStorage.createMetaFromDb(db), errors);
+        fullAnalyze(db, MetaUtils.createTreeFromDb(db), errors);
     }
 
     public static void fullAnalyze(PgDatabase db, IDatabase metaDb, List<Object> errors)

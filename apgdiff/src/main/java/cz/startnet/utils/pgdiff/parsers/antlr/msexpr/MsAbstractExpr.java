@@ -1,12 +1,9 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.msexpr;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -25,27 +22,23 @@ public abstract class MsAbstractExpr {
     private final String schema;
     private final MsAbstractExpr parent;
     private final Set<PgObjLocation> depcies;
-    private final Set<DbObjType> disabledDepcies;
 
     public Set<PgObjLocation> getDepcies() {
         return Collections.unmodifiableSet(depcies);
     }
 
-    public MsAbstractExpr(String schema, DbObjType... disabledDepcies) {
-        this(schema, null, new LinkedHashSet<>(),
-                Arrays.stream(disabledDepcies)
-                .collect(Collectors.toCollection(() -> EnumSet.noneOf(DbObjType.class))));
+    public MsAbstractExpr(String schema) {
+        this(schema, null, new LinkedHashSet<>());
     }
 
     protected MsAbstractExpr(MsAbstractExpr parent) {
-        this(parent.schema, parent, parent.depcies, parent.disabledDepcies);
+        this(parent.schema, parent, parent.depcies);
     }
 
-    private MsAbstractExpr(String schema, MsAbstractExpr parent, Set<PgObjLocation> depcies, Set<DbObjType> disabledDepcies) {
+    private MsAbstractExpr(String schema, MsAbstractExpr parent, Set<PgObjLocation> depcies) {
         this.schema = schema;
         this.parent = parent;
         this.depcies = depcies;
-        this.disabledDepcies = disabledDepcies;
     }
 
     protected MsAbstractExprWithNmspc<?> findCte(String cteName) {
@@ -100,7 +93,7 @@ public abstract class MsAbstractExpr {
     }
 
     protected void addDepcy(GenericColumn depcy, ParserRuleContext ctx) {
-        if (!ApgdiffUtils.isMsSystemSchema(depcy.schema) && !disabledDepcies.contains(depcy.type)) {
+        if (!ApgdiffUtils.isMsSystemSchema(depcy.schema)) {
             depcies.add(new PgObjLocation(depcy, ctx));
         }
     }

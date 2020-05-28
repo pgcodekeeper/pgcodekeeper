@@ -19,6 +19,7 @@ import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.AbstractAnalysisLauncher;
+import cz.startnet.utils.pgdiff.schema.meta.MetaStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -41,7 +42,7 @@ public class PgDatabase extends PgStatement implements IDatabase {
     private final Map<String, MsUser> users = new LinkedHashMap<>();
 
     // Contains object definitions
-    private final Map<String, List<PgObjLocation>> objDefinitions = new HashMap<>();
+    private final Map<String, List<MetaStatement>> objDefinitions = new HashMap<>();
     // Содержит ссылки на объекты
     private final Map<String, List<PgObjLocation>> objReferences = new HashMap<>();
     // Contains analysis launchers for all statements
@@ -84,7 +85,7 @@ public class PgDatabase extends PgStatement implements IDatabase {
         return arguments;
     }
 
-    public Map<String, List<PgObjLocation>> getObjDefinitions() {
+    public Map<String, List<MetaStatement>> getObjDefinitions() {
         return objDefinitions;
     }
 
@@ -92,8 +93,11 @@ public class PgDatabase extends PgStatement implements IDatabase {
         return objReferences;
     }
 
-    public void addToQueries(String fileName, PgObjLocation loc) {
-        objDefinitions.computeIfAbsent(fileName, k -> new ArrayList<>()).add(loc);
+    public void addDefinition(String fileName, MetaStatement meta) {
+        objDefinitions.computeIfAbsent(fileName, k -> new ArrayList<>()).add(meta);
+    }
+
+    public void addReference(String fileName, PgObjLocation loc) {
         objReferences.computeIfAbsent(fileName, k -> new ArrayList<>()).add(loc);
     }
 
@@ -448,6 +452,8 @@ public class PgDatabase extends PgStatement implements IDatabase {
             l.updateStmt(this);
             analysisLaunchers.add(l);
         });
+
+        objDefinitions.putAll(lib.objDefinitions);
     }
 
     public void concat(PgStatement st) {

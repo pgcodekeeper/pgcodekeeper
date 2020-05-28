@@ -269,6 +269,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         return container == null ? getView(name) : container;
     }
 
+    @Override
     public Stream<PgStatementContainer> getStatementContainers() {
         return Stream.concat(getTables().stream(), getViews().stream());
     }
