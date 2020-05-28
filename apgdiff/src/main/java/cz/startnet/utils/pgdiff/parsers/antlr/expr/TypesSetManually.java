@@ -15,6 +15,7 @@ public interface TypesSetManually {
     String INTEGER = "integer";
     String NUMERIC = "numeric";
     String DOUBLE = "double precision";
+    String BPCHAR = "bpchar";
     String TEXT = "text";
     String NAME = "name";
     String XML = "xml";

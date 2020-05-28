@@ -823,6 +823,8 @@ public class ValueExpr extends AbstractExpr {
             String text = charString.getText();
             if (text.regionMatches(true, 0, "B", 0, 1) || text.regionMatches(true, 0, "X", 0, 1)) {
                 ret = TypesSetManually.BIT;
+            } else if (text.regionMatches(true, 0, "N", 0, 1)) {
+                ret = TypesSetManually.BPCHAR;
             } else {
                 ret = TypesSetManually.TEXT;
             }
