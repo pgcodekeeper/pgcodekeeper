@@ -318,7 +318,7 @@ alter_app_role_option
 
 create_app_role_option
     : PASSWORD EQUAL application_role_password=STRING 
-    | DEFAULT_SCHEMA EQUAL app_role_default_schema=id
+    | DEFAULT_SCHEMA EQUAL app_role_default_schema=domain_id
     ;
 
 alter_assembly
@@ -337,7 +337,7 @@ assembly_option
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-assembly-transact-sql
 create_assembly
-    : ASSEMBLY assembly_name=id (AUTHORIZATION owner_name=id)?
+    : ASSEMBLY assembly_name=id (AUTHORIZATION owner_name=domain_id)?
     FROM expression (COMMA expression)*
     (WITH PERMISSION_SET EQUAL assembly_permission)?
     ;
@@ -369,7 +369,7 @@ asymmetric_key_password_change_option
 //https://docs.microsoft.com/en-us/sql/t-sql/statements/create-asymmetric-key-transact-sql
 create_asymmetric_key
     : ASYMMETRIC KEY Asym_Key_Nam=id
-    (AUTHORIZATION database_principal_name=id)?
+    (AUTHORIZATION domain_id)?
     (FROM (FILE EQUAL STRING | EXECUTABLE_FILE EQUAL STRING | ASSEMBLY Assembly_Name=id | PROVIDER Provider_Name=id))?
     (WITH (ALGORITHM EQUAL ( RSA_4096 | RSA_3072 | RSA_2048 | RSA_1024 | RSA_512) | PROVIDER_KEY_NAME EQUAL provider_key_name=STRING | CREATION_DISPOSITION EQUAL (CREATE_NEW | OPEN_EXISTING)))?
     (ENCRYPTION BY PASSWORD EQUAL asymmetric_key_password=STRING )?
@@ -386,7 +386,7 @@ alter_authorization
     ;
 
 authorization_grantee
-    : principal_name=id
+    : domain_id
     | SCHEMA OWNER
     ;
 
@@ -524,10 +524,11 @@ drop_statements
         | DATABASE (AUDIT SPECIFICATION | SCOPED CREDENTIAL)? | DEFAULT | ENDPOINT
         | EXTERNAL (DATA SOURCE | FILE FORMAT | RESOURCE POOL | TABLE)
         | FULLTEXT (CATALOG | INDEX ON | STOPLIST) | LOGIN | MESSAGE TYPE | PARTITION? FUNCTION | PARTITION SCHEME
-        | PROC | PROCEDURE | QUEUE | REMOTE SERVICE BINDING | RESOURCE POOL | ROLE | ROUTE | RULE | SCHEMA | SEARCH PROPERTY LIST
+        | PROC | PROCEDURE | QUEUE | REMOTE SERVICE BINDING | RESOURCE POOL | ROUTE | RULE | SEARCH PROPERTY LIST
         | SECURITY POLICY | SEQUENCE | SERVER AUDIT SPECIFICATION? | SERVER ROLE | SERVICE | STATISTICS | SYNONYM | TABLE
-        | TYPE | TRIGGER | USER | VIEW | WORKLOAD GROUP | XML SCHEMA COLLECTION)
+        | TYPE | TRIGGER | VIEW | WORKLOAD GROUP | XML SCHEMA COLLECTION)
     ( IF EXISTS )? qualified_name (COMMA qualified_name)*
+    | (ROLE | SCHEMA | USER) domain_id (COMMA domain_id)*
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/drop-event-notification-transact-sql
@@ -538,7 +539,7 @@ drop_event_notifications_or_session
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/drop-external-library-transact-sql
 drop_external_library
-    : EXTERNAL LIBRARY id (AUTHORIZATION id)?
+    : EXTERNAL LIBRARY id (AUTHORIZATION domain_id)?
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/drop-master-key-transact-sql
@@ -688,14 +689,14 @@ alter_external_data_source
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-external-library-transact-sql
 alter_external_library
-    : EXTERNAL LIBRARY library_name=id (AUTHORIZATION owner_name=id)?  (SET|ADD) LR_BRACKET 
+    : EXTERNAL LIBRARY library_name=id (AUTHORIZATION domain_id)? (SET|ADD) LR_BRACKET 
     CONTENT EQUAL (client_library=STRING|BINARY|NONE) (COMMA PLATFORM EQUAL (WINDOWS|LINUX)? RR_BRACKET)
     WITH (COMMA? LANGUAGE EQUAL (R_LETTER | PYTHON) | DATA_SOURCE EQUAL external_data_source_name=id)+ RR_BRACKET
    ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-external-library-transact-sql
 create_external_library
-    : EXTERNAL LIBRARY library_name=id (AUTHORIZATION owner_name=id)?
+    : EXTERNAL LIBRARY library_name=id (AUTHORIZATION domain_id)?
     FROM (COMMA? LR_BRACKET? (CONTENT EQUAL)? (client_library=STRING | BINARY | NONE) (COMMA PLATFORM EQUAL (WINDOWS|LINUX)? RR_BRACKET)?) 
     (WITH (COMMA? LANGUAGE EQUAL (R_LETTER|PYTHON) | DATA_SOURCE EQUAL external_data_source_name=id )+ RR_BRACKET)?
     ;
@@ -739,7 +740,7 @@ create_fulltext_catalog
     (IN PATH rootpath=STRING)?
     (WITH ACCENT_SENSITIVITY EQUAL (ON|OFF) )?
     (AS DEFAULT)?
-    (AUTHORIZATION owner_name=id)?
+    (AUTHORIZATION domain_id)?
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-fulltext-stoplist-transact-sql
@@ -751,22 +752,22 @@ alter_fulltext_stoplist
 create_fulltext_stoplist
     : FULLTEXT STOPLIST stoplist_name=id 
     (FROM ((database_name=id DOT)? source_stoplist_name=id |SYSTEM STOPLIST ))?
-    (AUTHORIZATION owner_name=id)?
+    (AUTHORIZATION domain_id)?
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-login-transact-sql
 alter_login_sql_server
-    : LOGIN login_name=id
+    : LOGIN domain_id
        ( (ENABLE|DISABLE)?  | WITH ( (PASSWORD EQUAL ( password=STRING | password_hash=BINARY HASHED ) ) (MUST_CHANGE|UNLOCK)* )? 
        (OLD_PASSWORD EQUAL old_password=STRING (MUST_CHANGE|UNLOCK)* )? 
        (DEFAULT_DATABASE EQUAL default_database=id)? (DEFAULT_LANGUAGE EQUAL default_laguage=id)?  
-       (NAME EQUAL login_name=id)? (CHECK_POLICY EQUAL (ON|OFF) )? (CHECK_EXPIRATION EQUAL (ON|OFF) )? 
+       (NAME EQUAL login_name=domain_id)? (CHECK_POLICY EQUAL (ON|OFF) )? (CHECK_EXPIRATION EQUAL (ON|OFF) )? 
        (CREDENTIAL EQUAL credential_name=id)? (NO CREDENTIAL)? | (ADD|DROP) CREDENTIAL credential_name=id )
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-login-transact-sql
 create_login_sql_server
-    : LOGIN login_name=id (
+    : LOGIN login_name=domain_id (
         WITH ( (PASSWORD EQUAL ( password=STRING | password_hash=BINARY HASHED ) ) (MUST_CHANGE|UNLOCK)* )?
         (COMMA? SID EQUAL sid=BINARY)?
         (COMMA? DEFAULT_DATABASE EQUAL default_database=id)?
@@ -781,7 +782,7 @@ create_login_sql_server
     ;
 
 create_login_pdw
-    : LOGIN loginName=id 
+    : LOGIN loginName=domain_id
         ( FROM WINDOWS
         | WITH (PASSWORD EQUAL password=STRING (MUST_CHANGE)? (SID EQUAL sid=BINARY)? (CHECK_POLICY EQUAL (ON|OFF)? )?))
     ;
@@ -800,7 +801,7 @@ create_master_key_sql_server
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-message-type-transact-sql
 alter_message_type
-    : MESSAGE TYPE message_type_name=id VALIDATION EQUAL (NONE | EMPTY | WELL_FORMED_XML | VALID_XML WITH SCHEMA COLLECTION schema_collection_name=id)
+    : MESSAGE TYPE message_type_name=id VALIDATION EQUAL (NONE | EMPTY | WELL_FORMED_XML | VALID_XML WITH SCHEMA COLLECTION schema_collection_name=domain_id)
     ;
 
 create_partition_function
@@ -826,13 +827,13 @@ alter_partition_scheme
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-remote-service-binding-transact-sql
 alter_remote_service_binding
-    : REMOTE SERVICE BINDING binding_name=id WITH (USER EQUAL user_name=id)? (COMMA ANONYMOUS EQUAL (ON|OFF))?
+    : REMOTE SERVICE BINDING binding_name=id WITH (USER EQUAL domain_id)? (COMMA ANONYMOUS EQUAL (ON|OFF))?
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-remote-service-binding-transact-sql
 create_remote_service_binding
-    : REMOTE SERVICE BINDING binding_name=id (AUTHORIZATION owner_name=id)? TO SERVICE remote_service_name=STRING
-    WITH (USER EQUAL user_name=id)? (COMMA ANONYMOUS EQUAL (ON|OFF))?
+    : REMOTE SERVICE BINDING binding_name=id (AUTHORIZATION domain_id)? TO SERVICE remote_service_name=STRING
+    WITH USER EQUAL domain_id (COMMA ANONYMOUS EQUAL (ON|OFF))?
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-resource-pool-transact-sql
@@ -877,17 +878,17 @@ alter_route
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-role-transact-sql
 alter_db_role
-    : ROLE role_name=id ((ADD|DROP) MEMBER database_principal=id | WITH NAME EQUAL new_role_name=id)
+    : ROLE role_name=domain_id ((ADD|DROP) MEMBER database_principal=domain_id | WITH NAME EQUAL new_role_name=domain_id)
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-role-transact-sql
 create_db_role
-    : ROLE role_name=id (AUTHORIZATION owner_name = id)?
+    : ROLE role_name=domain_id (AUTHORIZATION owner_name=domain_id)?
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-route-transact-sql
 create_route
-    : ROUTE route_name=id (AUTHORIZATION owner_name=id)? WITH
+    : ROUTE route_name=id (AUTHORIZATION domain_id)? WITH
     (COMMA? SERVICE_NAME EQUAL route_service_name=STRING)?
     (COMMA? BROKER_INSTANCE EQUAL broker_instance_identifier=STRING)?
     (COMMA? LIFETIME EQUAL DECIMAL)?
@@ -902,17 +903,17 @@ create_rule
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-schema-transact-sql
 alter_schema_sql
-    : SCHEMA schema_name=id TRANSFER ((OBJECT|TYPE|XML SCHEMA COLLECTION) COLON COLON )? id (DOT id)?
+    : SCHEMA schema_name=domain_id TRANSFER ((OBJECT|TYPE|XML SCHEMA COLLECTION) COLON COLON )? (domain_id DOT)? id
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-schema-transact-sql
 create_schema
-    : SCHEMA schema_name=id (AUTHORIZATION owner_name=id)?
+    : SCHEMA schema_name=domain_id (AUTHORIZATION owner_name=domain_id)?
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-search-property-list-transact-sql
 create_search_property_list
-    : SEARCH PROPERTY LIST new_list_name=id (FROM (database_name=id DOT)? source_list_name=id)? (AUTHORIZATION owner_name=id)?
+    : SEARCH PROPERTY LIST new_list_name=id (FROM (database_name=id DOT)? source_list_name=id)? (AUTHORIZATION domain_id)?
     ;
 
 alter_search_property_list
@@ -1113,18 +1114,18 @@ alter_server_configuration
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-server-role-transact-sql
 alter_server_role
-    : SERVER ROLE server_role_name=id
-      ( (ADD|DROP) MEMBER server_principal=id
-      | WITH NAME EQUAL new_server_role_name=id
+    : SERVER ROLE server_role_name=domain_id
+      ( (ADD|DROP) MEMBER server_principal=domain_id
+      | WITH NAME EQUAL new_server_role_name=domain_id
       )
     ;
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-server-role-transact-sql
 create_server_role
-    : SERVER ROLE server_role=id (AUTHORIZATION server_principal=id)?
+    : SERVER ROLE server_role=id (AUTHORIZATION domain_id)?
     ;
 
 alter_server_role_pdw
-    : SERVER ROLE server_role_name=id (ADD|DROP) MEMBER login=id
+    : SERVER ROLE server_role_name=id (ADD|DROP) MEMBER login=domain_id
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-service-transact-sql
@@ -1134,7 +1135,7 @@ alter_service
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-service-transact-sql
 create_service
-    : SERVICE create_service_name=id (AUTHORIZATION owner_name=id)?
+    : SERVICE create_service_name=id (AUTHORIZATION domain_id)?
     ON QUEUE qualified_name (LR_BRACKET (COMMA? id_or_default)+ RR_BRACKET)?
     ;
 
@@ -1155,7 +1156,7 @@ alter_symmetric_key
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-symmetric-key-transact-sql
 create_symmetric_key
     :  SYMMETRIC KEY key_name=id
-           (AUTHORIZATION owner_name=id)?
+           (AUTHORIZATION domain_id)?
            (FROM PROVIDER provider_name=id)?
            (WITH ( (KEY_SOURCE EQUAL key_pass_phrase=STRING
                    | ALGORITHM EQUAL (DES | TRIPLE_DES | TRIPLE_DES_3KEY | RC2 | RC4 | RC4_128  | DESX | AES_128 | AES_192 | AES_256)
@@ -1175,17 +1176,15 @@ create_symmetric_key
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-synonym-transact-sql
 create_synonym
-    : SYNONYM qualified_name FOR 
-        ((server_name=id DOT)? (database_name=id DOT)? qualified_name
-        | (database_or_schema2=id DOT)? (schema_id_2_or_object_name=id DOT)?)
+    : SYNONYM qualified_name FOR qualified_name
     ;
 
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-user-transact-sql
 alter_user
-    : USER username=id WITH (COMMA? NAME EQUAL newusername=id 
-        | COMMA? DEFAULT_SCHEMA EQUAL ( schema_name=id |NULL ) 
-        | COMMA? LOGIN EQUAL loginame=id 
+    : USER username=domain_id WITH (COMMA? NAME EQUAL newusername=domain_id 
+        | COMMA? DEFAULT_SCHEMA EQUAL ( schema_name=domain_id |NULL ) 
+        | COMMA? LOGIN EQUAL loginame=domain_id 
         | COMMA? PASSWORD EQUAL STRING (OLD_PASSWORD EQUAL STRING)+ 
         | COMMA? DEFAULT_LANGUAGE EQUAL (NONE| lcid=DECIMAL| language_name_or_alias=id) 
         | COMMA? ALLOW_ENCRYPTED_VALUE_MODIFICATIONS EQUAL (ON|OFF) )+
@@ -1193,19 +1192,24 @@ alter_user
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-user-transact-sql
 create_user
-    : USER user_name=id user_login?
+    : USER domain_id user_login?
     (FROM EXTERNAL PROVIDER)?
     (WITH user_option (COMMA user_option)*)?
     ((FOR|FROM) (CERTIFICATE | ASYMMETRIC KEY) cert_or_asym_key_name=id)?
     ;
 
+domain_id
+    : id
+    | DOMAIN_ID
+    ;
+
 user_login
-    : (FOR|FROM) LOGIN login_name=id
+    : (FOR|FROM) LOGIN domain_id
     | WITHOUT LOGIN
     ;
 
 user_option
-    : DEFAULT_SCHEMA EQUAL schema_name=id
+    : DEFAULT_SCHEMA EQUAL schema_name=domain_id
     | DEFAULT_LANGUAGE EQUAL (NONE | DECIMAL | language_name_or_alias=id)
     | SID EQUAL BINARY
     | ALLOW_ENCRYPTED_VALUE_MODIFICATIONS EQUAL (ON|OFF)
@@ -1242,11 +1246,11 @@ create_workload_group
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-xml-schema-collection-transact-sql
 create_xml_schema_collection
-    : XML SCHEMA COLLECTION (relational_schema=id DOT)? sql_identifier=id AS string_id_local_id
+    : XML SCHEMA COLLECTION (domain_id DOT)? id AS string_id_local_id
     ;
 
 alter_xml_schema_collection
-    : XML SCHEMA COLLECTION (relational_schema=id DOT)? sql_identifier=id ADD string_id_local_id
+    : XML SCHEMA COLLECTION (domain_id DOT)? id ADD string_id_local_id
     ;
 
 create_queue
@@ -1280,7 +1284,7 @@ queue_rebuild_options
     ;
 
 create_contract
-    : CONTRACT id_or_expression (AUTHORIZATION owner_name=id)?
+    : CONTRACT id_or_expression (AUTHORIZATION domain_id)?
     LR_BRACKET ((message_type_name=id | DEFAULT) SENT BY (INITIATOR | TARGET | ANY ) COMMA?)+ RR_BRACKET
     ;
 
@@ -1295,8 +1299,8 @@ conversation_statement
     ;
 
 create_message_type
-    : MESSAGE TYPE message_type_name=id (AUTHORIZATION owner_name=id)?
-    VALIDATION EQUAL (NONE | EMPTY | WELL_FORMED_XML | VALID_XML WITH SCHEMA COLLECTION schema_collection_name=id)
+    : MESSAGE TYPE id (AUTHORIZATION domain_id)?
+    VALIDATION EQUAL (NONE | EMPTY | WELL_FORMED_XML | VALID_XML WITH SCHEMA COLLECTION domain_id)
     ;
 
 // DML
@@ -1797,7 +1801,7 @@ cursor_option
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-endpoint-transact-sql
 alter_endpoint
-    : ENDPOINT endpointname=id (AUTHORIZATION login=id)?
+    : ENDPOINT endpointname=id (AUTHORIZATION domain_id)?
         ( STATE EQUAL ( state=STARTED | state=STOPPED | state=DISABLED ) )?
                 AS TCP LR_BRACKET
                 LISTENER_PORT EQUAL port=DECIMAL
@@ -1963,7 +1967,7 @@ drop_relational_or_xml_or_spatial_index
     ;
 
 drop_backward_compatible_index
-    : (owner_name=id DOT)? table_or_view_name=id DOT index_name=id
+    : (owner_name=domain_id DOT)? table_or_view_name=id DOT index_name=id
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/drop-trigger-transact-sql
@@ -2247,7 +2251,7 @@ role_names
     ;
 
 create_certificate
-    : CERTIFICATE certificate_name=id (AUTHORIZATION user_name=id)?
+    : CERTIFICATE certificate_name=id (AUTHORIZATION domain_id)?
     (FROM existing_keys | generate_new_keys)
     (ACTIVE FOR BEGIN DIALOG EQUAL (ON | OFF))?
     ;
@@ -2291,7 +2295,7 @@ cripto_list
 
 create_key
     : MASTER KEY ENCRYPTION BY PASSWORD EQUAL password=STRING
-    | SYMMETRIC KEY key_name=id (AUTHORIZATION user_name=id)? 
+    | SYMMETRIC KEY key_name=id (AUTHORIZATION domain_id)? 
     (FROM PROVIDER provider_name=id)?
     WITH ((key_options | ENCRYPTION BY encryption_mechanism)COMMA?)+
     ;
@@ -3022,9 +3026,9 @@ file_spec
     ;
 
 qualified_name
-    : (id DOT id DOT  schema=id   DOT
-      |       id DOT (schema=id)? DOT
-      |               schema=id   DOT)? name=id
+    : (id DOT id DOT  schema=domain_id   DOT
+      |       id DOT (schema=domain_id)? DOT
+      |               schema=domain_id   DOT)? name=id
     ;
 
 full_column_name

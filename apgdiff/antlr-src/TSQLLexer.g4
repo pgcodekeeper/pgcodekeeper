@@ -859,7 +859,15 @@ SQUARE_BRACKET_ID:  UnterminatedSquareQuotedIdentifier ']'
             setText(__tx.substring(1, __tx.length() - 1).replace("]]", "]"));
         }
     ;
-    
+
+DOMAIN_ID:  UnterminatedDomainIdentifier ']'
+    // unquote so that we may always call getText() and not worry about quotes
+        {
+            String __tx = getText();
+            setText(__tx.substring(1, __tx.length() - 1).replace("]]", "]"));
+        }
+    ;
+
 LOCAL_ID:           '@' ([a-zA-Z_$@#0-9] | FullWidthLetter)+;
 DECIMAL:             DEC_DIGIT+;
 ID:                  ( [a-zA-Z_#] | FullWidthLetter) ( [a-zA-Z_#$@0-9] | FullWidthLetter )*;
@@ -925,6 +933,11 @@ fragment UnterminatedSquareQuotedIdentifier
     ( ']]'
     | ~[\u0000\]]
     )*
+    ;
+
+// This is a quoted user name with domain which only contains valid characters but is not terminated
+fragment UnterminatedDomainIdentifier
+    : '[' (']]' | ~[\u0000\]])* BACKSLASH (']]' | ~[\u0000\]])*
     ;
 
 fragment IPV4_OCTECT:  [0-9]?[0-9]?[0-9];

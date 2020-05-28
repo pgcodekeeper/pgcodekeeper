@@ -8,12 +8,12 @@ import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_triggerContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Domain_idContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.MsFuncProcTrigAnalysisLauncher;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.MsTrigger;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -39,17 +39,17 @@ public class CreateMsTrigger extends BatchContextProcessor {
 
     @Override
     public void parseObject() {
-        IdContext schemaCtx = ctx.trigger_name.schema;
+        Domain_idContext schemaCtx = ctx.trigger_name.schema;
         if (schemaCtx == null) {
             schemaCtx = ctx.table_name.schema;
         }
-        List<IdContext> ids = Arrays.asList(schemaCtx, ctx.table_name.name);
+        List<ParserRuleContext> ids = Arrays.asList(schemaCtx, ctx.table_name.name);
         addObjReference(ids, DbObjType.TABLE, null);
         getObject(getSchemaSafe(ids), false);
     }
 
     public MsTrigger getObject(AbstractSchema schema, boolean isJdbc) {
-        IdContext schemaCtx = ctx.trigger_name.schema;
+        Domain_idContext schemaCtx = ctx.trigger_name.schema;
         if (schemaCtx == null) {
             schemaCtx = ctx.table_name.schema;
         }
@@ -62,8 +62,7 @@ public class CreateMsTrigger extends BatchContextProcessor {
         setSourceParts(trigger);
 
         if (schema == null) {
-            List<IdContext> ids = Arrays.asList(schemaCtx, tableNameCtx);
-            addObjReference(ids, DbObjType.TABLE, null);
+            addObjReference(Arrays.asList(schemaCtx, tableNameCtx), DbObjType.TABLE, null);
         }
 
         db.addAnalysisLauncher(new MsFuncProcTrigAnalysisLauncher(trigger,
@@ -75,7 +74,7 @@ public class CreateMsTrigger extends BatchContextProcessor {
         if (isJdbc && schema != null) {
             cont.addTrigger(trigger);
         } else {
-            addSafe((PgStatement) cont, trigger,
+            addSafe(cont, trigger,
                     Arrays.asList(schemaCtx, tableNameCtx, nameCtx));
         }
         return trigger;
@@ -83,7 +82,7 @@ public class CreateMsTrigger extends BatchContextProcessor {
 
     @Override
     protected String getStmtAction() {
-        IdContext schemaCtx = ctx.trigger_name.schema;
+        Domain_idContext schemaCtx = ctx.trigger_name.schema;
         if (schemaCtx == null) {
             schemaCtx = ctx.table_name.schema;
         }

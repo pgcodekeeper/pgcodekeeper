@@ -3,7 +3,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 import java.util.Arrays;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_userContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Domain_idContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.User_loginContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.User_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
@@ -22,12 +22,11 @@ public class CreateMsUser extends ParserAbstract {
 
     @Override
     public void parseObject() {
-        IdContext nameCtx = ctx.user_name;
-        String name = nameCtx.getText();
-        MsUser user = new MsUser(name);
+        Domain_idContext nameCtx = ctx.domain_id();
+        MsUser user = new MsUser(nameCtx.getText());
         User_loginContext login = ctx.user_login();
-        if (login != null && login.login_name != null) {
-            user.setLogin(login.login_name.getText());
+        if (login != null && login.domain_id() != null) {
+            user.setLogin(login.domain_id().getText());
         }
 
         for (User_optionContext option : ctx.user_option()) {
@@ -41,6 +40,6 @@ public class CreateMsUser extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_CREATE, DbObjType.USER, Arrays.asList(ctx.user_name));
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.USER, Arrays.asList(ctx.domain_id()));
     }
 }
