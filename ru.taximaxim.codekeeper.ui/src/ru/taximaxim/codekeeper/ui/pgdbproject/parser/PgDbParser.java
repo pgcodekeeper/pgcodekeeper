@@ -46,7 +46,7 @@ import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.meta.MetaStatement;
-import cz.startnet.utils.pgdiff.schema.meta.MetaStorage;
+import cz.startnet.utils.pgdiff.schema.meta.MetaUtils;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -173,8 +173,8 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         files.forEach(this::removeResFromRefs);
         objDefinitions.putAll(db.getObjDefinitions());
         List<Object> errors = new ArrayList<>();
-        FullAnalyze.fullAnalyze(db, MetaStorage.createTreeFromDefs(
-                getAllObjDefinitions(), isMsSql, db.getPostgresVersion()), errors);
+        FullAnalyze.fullAnalyze(db, MetaUtils.createTreeFromDefs(
+                getAllObjDefinitions(), !isMsSql, db.getPostgresVersion()), errors);
         UIProjectLoader.markErrors(errors);
         objReferences.putAll(db.getObjReferences());
         notifyListeners();

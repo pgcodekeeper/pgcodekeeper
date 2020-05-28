@@ -46,7 +46,7 @@ import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgOperator;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.meta.MetaStorage;
+import cz.startnet.utils.pgdiff.schema.meta.MetaUtils;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
@@ -317,7 +317,7 @@ public abstract class ParserAbstract {
                 ACTION_CREATE, false, null);
         if (loc != null) {
             child.setLocation(loc);
-            db.addDefinition(fileName, MetaStorage.createMetaFromStatement(child));
+            db.addDefinition(fileName, MetaUtils.createMetaFromStatement(child));
         }
     }
 
