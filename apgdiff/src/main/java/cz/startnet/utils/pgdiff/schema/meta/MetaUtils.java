@@ -23,7 +23,7 @@ public class MetaUtils {
         MetaDatabase tree = new MetaDatabase();
         db.getDescendants()
         .map(MetaUtils::createMetaFromStatement)
-        .forEach(e -> addChild(tree, e.getCopy()));
+        .forEach(e -> addChild(tree, e));
 
         if (!db.getArguments().isMsSql()) {
             appendSystemObjects(tree, db.getPostgresVersion());
