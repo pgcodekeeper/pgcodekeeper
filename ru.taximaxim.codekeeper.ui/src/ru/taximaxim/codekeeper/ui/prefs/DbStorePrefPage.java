@@ -13,6 +13,7 @@ import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -103,7 +104,7 @@ class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
     @Override
     protected DbInfo getNewObject(DbInfo oldObject) {
         DbStoreEditorDialog dialog = new DbStoreEditorDialog(getShell(), oldObject);
-        return dialog.open() == DbStoreEditorDialog.OK ? dialog.getDbInfo() : null;
+        return dialog.open() == Window.OK ? dialog.getDbInfo() : null;
     }
 
     @Override
@@ -132,7 +133,7 @@ class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
     protected void createButtonsForSideBar(Composite parent) {
         createButton(parent, ADD_ID, Messages.add, Activator.getEclipseImage(ISharedImages.IMG_OBJ_ADD));
         createButton(parent, COPY_ID, Messages.copy, Activator.getEclipseImage(ISharedImages.IMG_TOOL_COPY));
-        createButton(parent, EDIT_ID, Messages.edit, FILE.ICONEDIT);
+        createButton(parent, EDIT_ID, Messages.edit, Activator.getRegisteredImage(FILE.ICONEDIT));
         createButton(parent, DELETE_ID, Messages.delete, Activator.getEclipseImage(ISharedImages.IMG_ETOOL_DELETE));
 
         Button btnPgPass = createButton(parent, CLIENT_ID,

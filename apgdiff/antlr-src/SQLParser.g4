@@ -1784,6 +1784,7 @@ col_label
     : id_token
     | tokens_reserved
     | tokens_nonreserved
+    | tokens_reserved_except_function_type
     | tokens_nonreserved_except_function_type
     ;
 

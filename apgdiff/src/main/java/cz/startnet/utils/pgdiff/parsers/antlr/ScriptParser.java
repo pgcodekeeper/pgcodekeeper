@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -34,7 +35,15 @@ public class ScriptParser {
                 () -> new ByteArrayInputStream(script.getBytes(StandardCharsets.UTF_8)),
                 name, args, new NullProgressMonitor(), 0);
         loader.setMode(ParserListenerMode.SCRIPT);
-        batches = loader.load().getObjDefinitions().get(name);
+        // script mode collects only references
+        List<PgObjLocation> batches = loader.load().getObjReferences().get(name);
+
+        // empty script won't add any lists to the definition map
+        if (batches == null) {
+            batches = Collections.emptyList();
+        }
+
+        this.batches = batches;
         dangerStatements = batches.stream()
                 .filter(PgObjLocation::isDanger)
                 .map(PgObjLocation::getDanger)

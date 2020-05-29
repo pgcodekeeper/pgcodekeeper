@@ -1353,3 +1353,27 @@ SELECT array_to_tsvector(ARRAY['foo','bar','baz','bar']);
 SELECT setweight('a:1,3A asd:1C w:5,6,12B,13A zxc:81,222A,567'::tsvector, 'c', '{a,zxc}');
 SELECT setweight('a asd w:5,6,12B,13A zxc'::tsvector, 'c', ARRAY['a', 'zxc', NULL]);
 SELECT ts_filter('base hidden rebel spaceship strike'::tsvector, '{a,b,NULL}');
+SELECT 
+    1 AS AUTHORIZATION,
+    1 AS BINARY,
+    1 AS COLLATION,
+    1 AS CONCURRENTLY,
+    1 AS CROSS,
+    1 AS CURRENT_SCHEMA,
+    1 AS FREEZE,
+    1 AS FULL,
+    1 AS ILIKE,
+    1 AS INNER,
+    1 AS IS,
+    1 AS ISNULL,
+    1 AS JOIN,
+    1 AS LEFT,
+    1 AS LIKE,
+    1 AS NATURAL,
+    1 AS NOTNULL,
+    1 AS OUTER,
+    1 AS OVERLAPS,
+    1 AS RIGHT,
+    1 AS SIMILAR,
+    1 AS TABLESAMPLE,
+    1 AS VERBOSE;

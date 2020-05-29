@@ -22,8 +22,7 @@ public class CreateMsSchema extends ParserAbstract {
     @Override
     public void parseObject() {
         IdContext nameCtx = ctx.schema_name;
-        String name = nameCtx.getText();
-        AbstractSchema schema = new MsSchema(name);
+        AbstractSchema schema = new MsSchema(nameCtx.getText());
         if (ctx.owner_name != null && !db.getArguments().isIgnorePrivileges()) {
             schema.setOwner(ctx.owner_name.getText());
         }

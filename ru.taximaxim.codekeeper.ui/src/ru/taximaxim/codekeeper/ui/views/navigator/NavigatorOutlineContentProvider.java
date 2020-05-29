@@ -30,6 +30,7 @@ public class NavigatorOutlineContentProvider implements ITreeContentProvider {
         List<SegmentsWithParent> segments = new ArrayList<>(refs.size());
 
         refs.stream().filter(e -> e.getAction() != null)
+        .sorted((a, b) -> Integer.compare(a.getOffset(), b.getOffset()))
         .forEach(e -> segments.add(new SegmentsWithParent(e, iFile)));
 
         return segments.toArray();

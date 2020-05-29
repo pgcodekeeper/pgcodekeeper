@@ -3,6 +3,8 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 import java.util.Arrays;
 import java.util.List;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ClusteredContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_with_orderContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_indexContext;
@@ -37,7 +39,7 @@ public class CreateMsIndex extends ParserAbstract {
         IdContext schemaCtx = ctx.qualified_name().schema;
         IdContext tableCtx = ctx.qualified_name().name;
         IdContext nameCtx = ctx.name;
-        List<IdContext> ids = Arrays.asList(schemaCtx, nameCtx);
+        List<ParserRuleContext> ids = Arrays.asList(schemaCtx, nameCtx);
         AbstractSchema schema = getSchemaSafe(ids);
         addObjReference(Arrays.asList(schemaCtx, tableCtx), DbObjType.TABLE, null);
 

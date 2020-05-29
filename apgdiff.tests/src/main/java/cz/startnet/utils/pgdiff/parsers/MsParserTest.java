@@ -57,7 +57,7 @@ public class MsParserTest {
             {"ms_key", 1},
             {"ms_logins", 3},
             {"ms_merge", 2},
-            {"ms_other", 8},
+            {"ms_other", 3},
             {"ms_predicates"},
             {"ms_procedures"},
             {"ms_roles"},

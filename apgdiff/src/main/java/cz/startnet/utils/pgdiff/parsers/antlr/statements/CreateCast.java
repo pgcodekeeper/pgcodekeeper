@@ -12,6 +12,7 @@ import cz.startnet.utils.pgdiff.schema.PgCast;
 import cz.startnet.utils.pgdiff.schema.PgCast.CastMethod;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import cz.startnet.utils.pgdiff.schema.meta.MetaUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateCast extends ParserAbstract {
@@ -52,7 +53,7 @@ public class CreateCast extends ParserAbstract {
         doSafe(PgDatabase::addCast, db, cast);
         PgObjLocation loc = getCastLocation(source, target, ACTION_CREATE);
         cast.setLocation(loc);
-        db.addToQueries(fileName, loc);
+        db.addDefinition(fileName, MetaUtils.createMetaFromStatement(cast));
     }
 
     @Override

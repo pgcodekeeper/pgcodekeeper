@@ -369,7 +369,7 @@ asymmetric_key_password_change_option
 //https://docs.microsoft.com/en-us/sql/t-sql/statements/create-asymmetric-key-transact-sql
 create_asymmetric_key
     : ASYMMETRIC KEY Asym_Key_Nam=id
-    (AUTHORIZATION database_principal_name=id)?
+    (AUTHORIZATION id)?
     (FROM (FILE EQUAL STRING | EXECUTABLE_FILE EQUAL STRING | ASSEMBLY Assembly_Name=id | PROVIDER Provider_Name=id))?
     (WITH (ALGORITHM EQUAL ( RSA_4096 | RSA_3072 | RSA_2048 | RSA_1024 | RSA_512) | PROVIDER_KEY_NAME EQUAL provider_key_name=STRING | CREATION_DISPOSITION EQUAL (CREATE_NEW | OPEN_EXISTING)))?
     (ENCRYPTION BY PASSWORD EQUAL asymmetric_key_password=STRING )?
@@ -386,7 +386,7 @@ alter_authorization
     ;
 
 authorization_grantee
-    : principal_name=id
+    : id
     | SCHEMA OWNER
     ;
 
@@ -688,14 +688,14 @@ alter_external_data_source
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-external-library-transact-sql
 alter_external_library
-    : EXTERNAL LIBRARY library_name=id (AUTHORIZATION owner_name=id)?  (SET|ADD) LR_BRACKET 
+    : EXTERNAL LIBRARY library_name=id (AUTHORIZATION id)? (SET|ADD) LR_BRACKET 
     CONTENT EQUAL (client_library=STRING|BINARY|NONE) (COMMA PLATFORM EQUAL (WINDOWS|LINUX)? RR_BRACKET)
     WITH (COMMA? LANGUAGE EQUAL (R_LETTER | PYTHON) | DATA_SOURCE EQUAL external_data_source_name=id)+ RR_BRACKET
    ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-external-library-transact-sql
 create_external_library
-    : EXTERNAL LIBRARY library_name=id (AUTHORIZATION owner_name=id)?
+    : EXTERNAL LIBRARY library_name=id (AUTHORIZATION id)?
     FROM (COMMA? LR_BRACKET? (CONTENT EQUAL)? (client_library=STRING | BINARY | NONE) (COMMA PLATFORM EQUAL (WINDOWS|LINUX)? RR_BRACKET)?) 
     (WITH (COMMA? LANGUAGE EQUAL (R_LETTER|PYTHON) | DATA_SOURCE EQUAL external_data_source_name=id )+ RR_BRACKET)?
     ;
@@ -739,7 +739,7 @@ create_fulltext_catalog
     (IN PATH rootpath=STRING)?
     (WITH ACCENT_SENSITIVITY EQUAL (ON|OFF) )?
     (AS DEFAULT)?
-    (AUTHORIZATION owner_name=id)?
+    (AUTHORIZATION id)?
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-fulltext-stoplist-transact-sql
@@ -751,12 +751,12 @@ alter_fulltext_stoplist
 create_fulltext_stoplist
     : FULLTEXT STOPLIST stoplist_name=id 
     (FROM ((database_name=id DOT)? source_stoplist_name=id |SYSTEM STOPLIST ))?
-    (AUTHORIZATION owner_name=id)?
+    (AUTHORIZATION id)?
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-login-transact-sql
 alter_login_sql_server
-    : LOGIN login_name=id
+    : LOGIN id
        ( (ENABLE|DISABLE)?  | WITH ( (PASSWORD EQUAL ( password=STRING | password_hash=BINARY HASHED ) ) (MUST_CHANGE|UNLOCK)* )? 
        (OLD_PASSWORD EQUAL old_password=STRING (MUST_CHANGE|UNLOCK)* )? 
        (DEFAULT_DATABASE EQUAL default_database=id)? (DEFAULT_LANGUAGE EQUAL default_laguage=id)?  
@@ -781,7 +781,7 @@ create_login_sql_server
     ;
 
 create_login_pdw
-    : LOGIN loginName=id 
+    : LOGIN loginName=id
         ( FROM WINDOWS
         | WITH (PASSWORD EQUAL password=STRING (MUST_CHANGE)? (SID EQUAL sid=BINARY)? (CHECK_POLICY EQUAL (ON|OFF)? )?))
     ;
@@ -826,13 +826,13 @@ alter_partition_scheme
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-remote-service-binding-transact-sql
 alter_remote_service_binding
-    : REMOTE SERVICE BINDING binding_name=id WITH (USER EQUAL user_name=id)? (COMMA ANONYMOUS EQUAL (ON|OFF))?
+    : REMOTE SERVICE BINDING binding_name=id WITH (USER EQUAL id)? (COMMA ANONYMOUS EQUAL (ON|OFF))?
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-remote-service-binding-transact-sql
 create_remote_service_binding
-    : REMOTE SERVICE BINDING binding_name=id (AUTHORIZATION owner_name=id)? TO SERVICE remote_service_name=STRING
-    WITH (USER EQUAL user_name=id)? (COMMA ANONYMOUS EQUAL (ON|OFF))?
+    : REMOTE SERVICE BINDING binding_name=id (AUTHORIZATION id)? TO SERVICE remote_service_name=STRING
+    WITH USER EQUAL id (COMMA ANONYMOUS EQUAL (ON|OFF))?
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-resource-pool-transact-sql
@@ -882,12 +882,12 @@ alter_db_role
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-role-transact-sql
 create_db_role
-    : ROLE role_name=id (AUTHORIZATION owner_name = id)?
+    : ROLE role_name=id (AUTHORIZATION owner_name=id)?
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-route-transact-sql
 create_route
-    : ROUTE route_name=id (AUTHORIZATION owner_name=id)? WITH
+    : ROUTE route_name=id (AUTHORIZATION id)? WITH
     (COMMA? SERVICE_NAME EQUAL route_service_name=STRING)?
     (COMMA? BROKER_INSTANCE EQUAL broker_instance_identifier=STRING)?
     (COMMA? LIFETIME EQUAL DECIMAL)?
@@ -902,7 +902,7 @@ create_rule
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-schema-transact-sql
 alter_schema_sql
-    : SCHEMA schema_name=id TRANSFER ((OBJECT|TYPE|XML SCHEMA COLLECTION) COLON COLON )? id (DOT id)?
+    : SCHEMA schema_name=id TRANSFER ((OBJECT|TYPE|XML SCHEMA COLLECTION) COLON COLON )? (id DOT)? id
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-schema-transact-sql
@@ -912,7 +912,7 @@ create_schema
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-search-property-list-transact-sql
 create_search_property_list
-    : SEARCH PROPERTY LIST new_list_name=id (FROM (database_name=id DOT)? source_list_name=id)? (AUTHORIZATION owner_name=id)?
+    : SEARCH PROPERTY LIST new_list_name=id (FROM (database_name=id DOT)? source_list_name=id)? (AUTHORIZATION id)?
     ;
 
 alter_search_property_list
@@ -1120,7 +1120,7 @@ alter_server_role
     ;
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-server-role-transact-sql
 create_server_role
-    : SERVER ROLE server_role=id (AUTHORIZATION server_principal=id)?
+    : SERVER ROLE server_role=id (AUTHORIZATION id)?
     ;
 
 alter_server_role_pdw
@@ -1134,7 +1134,7 @@ alter_service
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-service-transact-sql
 create_service
-    : SERVICE create_service_name=id (AUTHORIZATION owner_name=id)?
+    : SERVICE create_service_name=id (AUTHORIZATION id)?
     ON QUEUE qualified_name (LR_BRACKET (COMMA? id_or_default)+ RR_BRACKET)?
     ;
 
@@ -1155,7 +1155,7 @@ alter_symmetric_key
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-symmetric-key-transact-sql
 create_symmetric_key
     :  SYMMETRIC KEY key_name=id
-           (AUTHORIZATION owner_name=id)?
+           (AUTHORIZATION id)?
            (FROM PROVIDER provider_name=id)?
            (WITH ( (KEY_SOURCE EQUAL key_pass_phrase=STRING
                    | ALGORITHM EQUAL (DES | TRIPLE_DES | TRIPLE_DES_3KEY | RC2 | RC4 | RC4_128  | DESX | AES_128 | AES_192 | AES_256)
@@ -1175,9 +1175,7 @@ create_symmetric_key
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-synonym-transact-sql
 create_synonym
-    : SYNONYM qualified_name FOR 
-        ((server_name=id DOT)? (database_name=id DOT)? qualified_name
-        | (database_or_schema2=id DOT)? (schema_id_2_or_object_name=id DOT)?)
+    : SYNONYM qualified_name FOR qualified_name
     ;
 
 
@@ -1200,7 +1198,7 @@ create_user
     ;
 
 user_login
-    : (FOR|FROM) LOGIN login_name=id
+    : (FOR|FROM) LOGIN id
     | WITHOUT LOGIN
     ;
 
@@ -1242,11 +1240,11 @@ create_workload_group
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-xml-schema-collection-transact-sql
 create_xml_schema_collection
-    : XML SCHEMA COLLECTION (relational_schema=id DOT)? sql_identifier=id AS string_id_local_id
+    : XML SCHEMA COLLECTION (id DOT)? id AS string_id_local_id
     ;
 
 alter_xml_schema_collection
-    : XML SCHEMA COLLECTION (relational_schema=id DOT)? sql_identifier=id ADD string_id_local_id
+    : XML SCHEMA COLLECTION (id DOT)? id ADD string_id_local_id
     ;
 
 create_queue
@@ -1280,7 +1278,7 @@ queue_rebuild_options
     ;
 
 create_contract
-    : CONTRACT id_or_expression (AUTHORIZATION owner_name=id)?
+    : CONTRACT id_or_expression (AUTHORIZATION id)?
     LR_BRACKET ((message_type_name=id | DEFAULT) SENT BY (INITIATOR | TARGET | ANY ) COMMA?)+ RR_BRACKET
     ;
 
@@ -1295,8 +1293,8 @@ conversation_statement
     ;
 
 create_message_type
-    : MESSAGE TYPE message_type_name=id (AUTHORIZATION owner_name=id)?
-    VALIDATION EQUAL (NONE | EMPTY | WELL_FORMED_XML | VALID_XML WITH SCHEMA COLLECTION schema_collection_name=id)
+    : MESSAGE TYPE id (AUTHORIZATION id)?
+    VALIDATION EQUAL (NONE | EMPTY | WELL_FORMED_XML | VALID_XML WITH SCHEMA COLLECTION id)
     ;
 
 // DML
@@ -1797,7 +1795,7 @@ cursor_option
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-endpoint-transact-sql
 alter_endpoint
-    : ENDPOINT endpointname=id (AUTHORIZATION login=id)?
+    : ENDPOINT endpointname=id (AUTHORIZATION id)?
         ( STATE EQUAL ( state=STARTED | state=STOPPED | state=DISABLED ) )?
                 AS TCP LR_BRACKET
                 LISTENER_PORT EQUAL port=DECIMAL
@@ -2247,7 +2245,7 @@ role_names
     ;
 
 create_certificate
-    : CERTIFICATE certificate_name=id (AUTHORIZATION user_name=id)?
+    : CERTIFICATE certificate_name=id (AUTHORIZATION id)?
     (FROM existing_keys | generate_new_keys)
     (ACTIVE FOR BEGIN DIALOG EQUAL (ON | OFF))?
     ;
@@ -2291,7 +2289,7 @@ cripto_list
 
 create_key
     : MASTER KEY ENCRYPTION BY PASSWORD EQUAL password=STRING
-    | SYMMETRIC KEY key_name=id (AUTHORIZATION user_name=id)? 
+    | SYMMETRIC KEY key_name=id (AUTHORIZATION id)? 
     (FROM PROVIDER provider_name=id)?
     WITH ((key_options | ENCRYPTION BY encryption_mechanism)COMMA?)+
     ;

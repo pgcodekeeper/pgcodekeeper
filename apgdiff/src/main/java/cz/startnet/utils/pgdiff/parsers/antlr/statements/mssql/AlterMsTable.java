@@ -38,7 +38,7 @@ public class AlterMsTable extends TableAbstract {
     public void parseObject() {
         IdContext schemaCtx = ctx.name.schema;
         IdContext nameCtx = ctx.name.name;
-        List<IdContext> ids = Arrays.asList(schemaCtx, nameCtx);
+        List<ParserRuleContext> ids = Arrays.asList(schemaCtx, nameCtx);
         AbstractSchema schema = getSchemaSafe(ids);
         AbstractTable table = getSafe(AbstractSchema::getTable, schema, nameCtx);
         PgObjLocation ref = addObjReference(Arrays.asList(schemaCtx, nameCtx),

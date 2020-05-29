@@ -28,7 +28,7 @@ public class AlterIndex extends ParserAbstract {
     @Override
     public void parseObject() {
         if (alterIdxAllAction != null) {
-            db.addToQueries(fileName, new PgObjLocation(alterIdxAllAction, ctx.getParent(), null));
+            db.addReference(fileName, new PgObjLocation(alterIdxAllAction, ctx.getParent(), null));
             return;
         }
 
