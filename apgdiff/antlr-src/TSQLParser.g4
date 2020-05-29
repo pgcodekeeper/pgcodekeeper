@@ -2204,7 +2204,7 @@ rule_common
     : (GRANT | DENY | REVOKE (GRANT OPTION FOR)?) 
     (permissions | columns_permissions) object_type?  
     (TO | FROM) role_names 
-    (WITH GRANT OPTION | CASCADE)? (AS as_principal=id)?
+    (WITH GRANT OPTION | CASCADE)? (AS as_principal=domain_id)?
     ;
         
 permissions
@@ -2247,7 +2247,7 @@ object_type
     ;
     
 role_names
-    : to_principal+=id (COMMA to_principal+=id)*
+    : to_principal+=domain_id (COMMA to_principal+=domain_id)*
     ;
 
 create_certificate
