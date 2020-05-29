@@ -7,7 +7,6 @@ import java.util.List;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Domain_idContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Drop_backward_compatible_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Drop_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Drop_relational_or_xml_or_spatial_indexContext;
@@ -40,7 +39,7 @@ public class DropMsStatement extends ParserAbstract {
             for (Drop_relational_or_xml_or_spatial_indexContext ind :
                 ctx.drop_index().drop_relational_or_xml_or_spatial_index()) {
                 Qualified_nameContext tableIds = ind.qualified_name();
-                Domain_idContext schemaCtx = tableIds.schema;
+                IdContext schemaCtx = tableIds.schema;
                 IdContext nameCtx = ind.index_name;
                 addObjReference(Arrays.asList(schemaCtx, nameCtx),
                         DbObjType.INDEX, ACTION_DROP);
@@ -61,8 +60,8 @@ public class DropMsStatement extends ParserAbstract {
         }
 
         if (type != null) {
-            for (Domain_idContext id : ctx.domain_id()) {
-                addObjReference(Arrays.asList(id), type, ACTION_DROP);
+            for (Qualified_nameContext qname : ctx.qualified_name()) {
+                addObjReference(Arrays.asList(qname.name), type, ACTION_DROP);
             }
             return;
         } else if (ctx.TRIGGER() != null) {

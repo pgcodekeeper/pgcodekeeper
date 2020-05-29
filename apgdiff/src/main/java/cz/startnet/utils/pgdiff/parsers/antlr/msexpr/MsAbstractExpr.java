@@ -9,8 +9,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Data_typeContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Domain_idContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Full_column_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
@@ -73,7 +73,7 @@ public abstract class MsAbstractExpr {
 
     protected GenericColumn addObjectDepcy(Qualified_nameContext qualifiedName, DbObjType type) {
         String relationName = qualifiedName.name.getText();
-        Domain_idContext schemaCtx = qualifiedName.schema;
+        IdContext schemaCtx = qualifiedName.schema;
         String schemaName = schemaCtx == null ? schema : schemaCtx.getText();
         GenericColumn depcy = new GenericColumn(schemaName, relationName, type);
         if (!ApgdiffUtils.isMsSystemSchema(schemaName)) {
