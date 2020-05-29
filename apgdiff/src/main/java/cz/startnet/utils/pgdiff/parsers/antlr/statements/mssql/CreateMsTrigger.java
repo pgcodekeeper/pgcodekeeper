@@ -8,7 +8,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_triggerContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Domain_idContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.MsFuncProcTrigAnalysisLauncher;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
@@ -39,7 +38,7 @@ public class CreateMsTrigger extends BatchContextProcessor {
 
     @Override
     public void parseObject() {
-        Domain_idContext schemaCtx = ctx.trigger_name.schema;
+        IdContext schemaCtx = ctx.trigger_name.schema;
         if (schemaCtx == null) {
             schemaCtx = ctx.table_name.schema;
         }
@@ -49,7 +48,7 @@ public class CreateMsTrigger extends BatchContextProcessor {
     }
 
     public MsTrigger getObject(AbstractSchema schema, boolean isJdbc) {
-        Domain_idContext schemaCtx = ctx.trigger_name.schema;
+        IdContext schemaCtx = ctx.trigger_name.schema;
         if (schemaCtx == null) {
             schemaCtx = ctx.table_name.schema;
         }
@@ -82,7 +81,7 @@ public class CreateMsTrigger extends BatchContextProcessor {
 
     @Override
     protected String getStmtAction() {
-        Domain_idContext schemaCtx = ctx.trigger_name.schema;
+        IdContext schemaCtx = ctx.trigger_name.schema;
         if (schemaCtx == null) {
             schemaCtx = ctx.table_name.schema;
         }
