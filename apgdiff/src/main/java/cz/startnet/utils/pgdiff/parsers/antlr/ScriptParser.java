@@ -35,7 +35,8 @@ public class ScriptParser {
                 () -> new ByteArrayInputStream(script.getBytes(StandardCharsets.UTF_8)),
                 name, args, new NullProgressMonitor(), 0);
         loader.setMode(ParserListenerMode.SCRIPT);
-        List<PgObjLocation> batches = loader.load().getObjDefinitions().get(name);
+        // script mode collects only references
+        List<PgObjLocation> batches = loader.load().getObjReferences().get(name);
 
         // empty script won't add any lists to the definition map
         if (batches == null) {

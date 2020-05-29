@@ -7,15 +7,19 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
+import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
@@ -27,7 +31,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Predefined_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
@@ -43,8 +46,10 @@ import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgOperator;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.meta.MetaUtils;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 /**
  * Abstract Class contents common operations for parsing
@@ -63,7 +68,6 @@ public abstract class ParserAbstract {
 
     protected final PgDatabase db;
 
-    private List<StatementBodyContainer> statementBodies;
     private boolean refMode;
     protected String fileName;
 
@@ -71,11 +75,9 @@ public abstract class ParserAbstract {
         this.db = db;
     }
 
-    public void parseObject(String fileName, ParserListenerMode mode,
-            List<StatementBodyContainer> statementBodies, ParserRuleContext ctx) {
+    public void parseObject(String fileName, ParserListenerMode mode, ParserRuleContext ctx) {
         this.fileName = fileName;
         refMode = ParserListenerMode.REF == mode;
-        this.statementBodies = statementBodies;
         if (ParserListenerMode.SCRIPT == mode) {
             fillQueryLocation(ctx);
         } else {
@@ -85,12 +87,6 @@ public abstract class ParserAbstract {
 
     protected boolean isRefMode() {
         return refMode;
-    }
-
-    protected void addStatementBody(ParserRuleContext ctx) {
-        if (statementBodies != null) {
-            statementBodies.add(new StatementBodyContainer(fileName, ctx));
-        }
     }
 
     /**
@@ -241,6 +237,28 @@ public abstract class ParserAbstract {
         return ArgMode.of(mode.getText());
     }
 
+    public static Pair<String, Token> unquoteQuotedString(Character_stringContext ctx) {
+        TerminalNode string = ctx.Character_String_Literal();
+        if (string != null) {
+            String text = string.getText();
+            int start = text.indexOf('\'') + 1;
+
+            Token t = string.getSymbol();
+            CommonToken copy = new CommonToken(t);
+
+            copy.setStartIndex(t.getStartIndex() + start);
+            copy.setCharPositionInLine(t.getCharPositionInLine() + start);
+            copy.setStopIndex(t.getStopIndex() - 1);
+
+            return new Pair<>(PgDiffUtils.unquoteQuotedString(string.getText(), start), copy);
+        }
+
+        List<TerminalNode> dollarText = ctx.Text_between_Dollar();
+        String s = dollarText.stream().map(TerminalNode::getText).collect(Collectors.joining());
+
+        return new Pair<>(s, dollarText.get(0).getSymbol());
+    }
+
     protected PgObjLocation addObjReference(List<? extends ParserRuleContext> ids,
             DbObjType type, String action) {
         PgObjLocation loc = getLocation(ids, type, action, false, null);
@@ -299,7 +317,7 @@ public abstract class ParserAbstract {
                 ACTION_CREATE, false, null);
         if (loc != null) {
             child.setLocation(loc);
-            db.addToQueries(fileName, loc);
+            db.addDefinition(fileName, MetaUtils.createMetaFromStatement(child));
         }
     }
 
@@ -512,7 +530,7 @@ public abstract class ParserAbstract {
         PgObjLocation loc = new PgObjLocation(
                 act != null ? act : ctx.getStart().getText().toUpperCase(Locale.ROOT),
                         ctx, getFullCtxText(ctx));
-        db.addToQueries(fileName, loc);
+        db.addReference(fileName, loc);
         return loc;
     }
 
@@ -539,7 +557,9 @@ public abstract class ParserAbstract {
             List<? extends ParserRuleContext> ids) {
         StringBuilder sb = new StringBuilder(action).append(' ').append(type).append(' ');
         for (ParserRuleContext id : ids) {
-            sb.append(id.getText()).append('.');
+            if (id != null) {
+                sb.append(id.getText()).append('.');
+            }
         }
         sb.setLength(sb.length() - 1);
         return sb.toString();

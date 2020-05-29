@@ -89,7 +89,7 @@ public class DropMsStatement extends ParserAbstract {
 
         if (type != null) {
             for (Qualified_nameContext qname : ctx.qualified_name()) {
-                List<IdContext> ids = Arrays.asList(qname.schema, qname.name);
+                List<ParserRuleContext> ids = Arrays.asList(qname.schema, qname.name);
                 PgObjLocation ref = addObjReference(ids, type, ACTION_DROP);
                 if (type == DbObjType.TABLE) {
                     ref.setWarning(DangerStatement.DROP_TABLE);

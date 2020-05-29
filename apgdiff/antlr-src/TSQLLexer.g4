@@ -859,7 +859,7 @@ SQUARE_BRACKET_ID:  UnterminatedSquareQuotedIdentifier ']'
             setText(__tx.substring(1, __tx.length() - 1).replace("]]", "]"));
         }
     ;
-    
+
 LOCAL_ID:           '@' ([a-zA-Z_$@#0-9] | FullWidthLetter)+;
 DECIMAL:             DEC_DIGIT+;
 ID:                  ( [a-zA-Z_#] | FullWidthLetter) ( [a-zA-Z_#$@0-9] | FullWidthLetter )*;

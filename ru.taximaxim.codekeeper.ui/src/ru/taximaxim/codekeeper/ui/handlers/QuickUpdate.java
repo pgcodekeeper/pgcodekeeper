@@ -139,7 +139,7 @@ class QuickUpdateJob extends SingletonEditorJob {
         } catch (InterruptedException e) {
             return Status.CANCEL_STATUS;
         } catch (IOException | CoreException | PgCodekeeperUIException | InvocationTargetException e) {
-            return new Status(Status.ERROR, PLUGIN_ID.THIS, Messages.QuickUpdate_error, e);
+            return new Status(IStatus.ERROR, PLUGIN_ID.THIS, Messages.QuickUpdate_error, e);
         } finally {
             monitor.done();
         }
@@ -159,7 +159,7 @@ class QuickUpdateJob extends SingletonEditorJob {
         String timezone = projPrefs.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC);
 
         PgDatabase dbProjectFragment = UIProjectLoader
-                .buildFiles(Arrays.asList(file), isMsSql, monitor.newChild(1), null);
+                .buildFiles(Arrays.asList(file), isMsSql, monitor.newChild(1));
         Collection<PgStatement> listPgObjectsFragment = dbProjectFragment.getDescendants().collect(Collectors.toList());
 
         long schemaCount = dbProjectFragment.getSchemas().size();

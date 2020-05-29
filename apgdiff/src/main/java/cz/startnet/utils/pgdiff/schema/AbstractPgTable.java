@@ -221,8 +221,10 @@ public abstract class AbstractPgTable extends AbstractTable {
             String schemaName = inht.getKey();
             AbstractSchema inhtSchema = schemaName == null ? getContainingSchema()
                     : getDatabase().getSchema(schemaName);
-            inhColumns = Stream.concat(inhColumns, inhtSchema
-                    .getTable(inht.getValue()).getRelationColumns());
+            AbstractTable inhtTable = inhtSchema.getTable(inht.getValue());
+            if (inhtTable != null) {
+                inhColumns = Stream.concat(inhColumns, inhtTable.getRelationColumns());
+            }
         }
         return Stream.concat(inhColumns, localColumns);
     }

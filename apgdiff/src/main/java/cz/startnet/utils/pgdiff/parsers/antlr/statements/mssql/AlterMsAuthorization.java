@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_authorizationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Class_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
@@ -32,7 +34,7 @@ public class AlterMsAuthorization extends ParserAbstract {
 
     @Override
     public void parseObject() {
-        IdContext ownerId = ctx.authorization_grantee().principal_name;
+        IdContext ownerId = ctx.authorization_grantee().id();
         if (db.getArguments().isIgnorePrivileges() || ownerId == null) {
             return;
         }
@@ -40,7 +42,7 @@ public class AlterMsAuthorization extends ParserAbstract {
 
         Class_typeContext type = ctx.class_type();
         IdContext nameCtx = ctx.entity.name;
-        List<IdContext> ids = Arrays.asList(ctx.entity.schema, nameCtx);
+        List<ParserRuleContext> ids = Arrays.asList(ctx.entity.schema, nameCtx);
 
         PgStatement st = null;
         if (type == null || type.OBJECT() != null || type.TYPE() != null) {

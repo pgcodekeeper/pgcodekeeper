@@ -215,6 +215,8 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
             }
             if (sortStatements) {
                 stream = stream.sorted((a,b) -> a.getObjName().compareTo(b.getObjName()));
+            } else {
+                stream = stream.sorted((a,b) -> Integer.compare(a.getOffset(), b.getOffset()));
             }
 
             return stream.map(Segments::new).toArray();

@@ -54,7 +54,7 @@ public class MsInsert extends MsAbstractExprWithNmspc<Insert_statementContext> {
             if (gc != null && (columns = insert.column_name_list()) != null) {
                 for (IdContext id : columns.id()) {
                     addDepcy(new GenericColumn(gc.schema, gc.table, id.getText(),
-                            DbObjType.COLUMN));
+                            DbObjType.COLUMN), id);
                 }
             }
         }
