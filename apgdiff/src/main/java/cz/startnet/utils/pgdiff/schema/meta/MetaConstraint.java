@@ -4,18 +4,18 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IConstraint;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 
 public class MetaConstraint extends MetaStatement implements IConstraint {
 
-    private static final long serialVersionUID = -8009680478870666859L;
+    private static final long serialVersionUID = -1456931643343454444L;
 
     private boolean isUnique;
     private boolean isPrimaryKey;
-    private final transient Set<String> columns = new HashSet<>();
+    private final Set<String> columns = new HashSet<>();
 
-    public MetaConstraint(GenericColumn object) {
+    public MetaConstraint(PgObjLocation object) {
         super(object);
     }
 
@@ -56,4 +56,12 @@ public class MetaConstraint extends MetaStatement implements IConstraint {
         return null;
     }
 
+    @Override
+    public MetaStatement getCopy() {
+        MetaConstraint copy = new MetaConstraint(getObject());
+        copy.setUnique(isUnique());
+        copy.setPrimaryKey(isPrimaryKey());
+        copy.columns.addAll(columns);
+        return copy;
+    }
 }

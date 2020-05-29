@@ -13,9 +13,12 @@ import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public final class ApgdiffTestUtils {
 
@@ -40,6 +43,8 @@ public final class ApgdiffTestUtils {
         AbstractSchema schema = new PgSchema(ApgdiffConsts.PUBLIC);
         db.addSchema(schema);
         db.setDefaultSchema(ApgdiffConsts.PUBLIC);
+        schema.setLocation(new PgObjLocation(
+                new GenericColumn(schema.getName(), DbObjType.SCHEMA)));
         return db;
     }
 
@@ -48,6 +53,8 @@ public final class ApgdiffTestUtils {
         AbstractSchema schema = new MsSchema(ApgdiffConsts.DBO);
         db.addSchema(schema);
         db.setDefaultSchema(ApgdiffConsts.DBO);
+        schema.setLocation(new PgObjLocation(
+                new GenericColumn(schema.getName(), DbObjType.SCHEMA)));
         return db;
     }
 

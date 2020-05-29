@@ -91,7 +91,7 @@ implements TSqlContextProcessor {
     }
 
     private void endBatch(Go_statementContext goCtx) {
-        db.addToQueries(filename, new PgObjLocation(ApgdiffConsts.GO,
+        db.addReference(filename, new PgObjLocation(ApgdiffConsts.GO,
                 goCtx, ApgdiffConsts.GO));
     }
 

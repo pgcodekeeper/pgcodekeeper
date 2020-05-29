@@ -10,9 +10,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IDatabase;
 import cz.startnet.utils.pgdiff.schema.IRelation;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgView;
 import cz.startnet.utils.pgdiff.schema.meta.MetaRelation;
 import ru.taximaxim.codekeeper.apgdiff.utils.ModPair;
@@ -30,7 +30,7 @@ public class ViewAnalysisLauncher extends AbstractAnalysisLauncher {
     }
 
     @Override
-    public Set<GenericColumn> analyze(ParserRuleContext ctx, IDatabase db) {
+    public Set<PgObjLocation> analyze(ParserRuleContext ctx, IDatabase db) {
         if (ctx instanceof Select_stmtContext) {
             Select select = new Select(db);
             select.setFullAnaLyze(fullAnalyze);

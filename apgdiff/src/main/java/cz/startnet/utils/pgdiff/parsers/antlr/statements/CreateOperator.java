@@ -6,6 +6,7 @@ import java.util.List;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.All_op_refContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.All_simple_opContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_operator_statementContext;
@@ -13,12 +14,16 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_optionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.OperatorAnalysisLaincher;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgOperator;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateOperator extends ParserAbstract {
+
     private final Create_operator_statementContext ctx;
+
     public CreateOperator(Create_operator_statementContext ctx, PgDatabase db) {
         super(db);
         this.ctx = ctx;
@@ -28,13 +33,17 @@ public class CreateOperator extends ParserAbstract {
     public void parseObject() {
         Operator_nameContext operNameCtx = ctx.name;
         IdentifierContext schemaCtx = operNameCtx.schema_name;
-        List<ParserRuleContext> ids = Arrays.asList(schemaCtx, operNameCtx);
         All_simple_opContext operName = operNameCtx.operator;
+        List<ParserRuleContext> ids = Arrays.asList(schemaCtx, operName);
         PgOperator oper = new PgOperator(operName.getText());
         for (Operator_optionContext option : ctx.operator_option()) {
             if (option.PROCEDURE() != null || option.FUNCTION() != null) {
                 oper.setProcedure(getFullCtxText(option.func_name));
-                addDepSafe(oper, option.func_name.identifier(), DbObjType.FUNCTION, true);
+                List<IdentifierContext> funcIds = option.func_name.identifier();
+                addDepSafe(oper, funcIds, DbObjType.FUNCTION, true);
+
+                db.addAnalysisLauncher(new OperatorAnalysisLaincher(
+                        oper, getOperatorFunction(oper, funcIds), fileName));
             } else if (option.LEFTARG() != null) {
                 Data_typeContext leftArgTypeCtx = option.type;
                 oper.setLeftArg(getTypeName(leftArgTypeCtx));
@@ -76,6 +85,26 @@ public class CreateOperator extends ParserAbstract {
         }
 
         addSafe(getSchemaSafe(ids), oper, ids);
+    }
+
+    private GenericColumn getOperatorFunction(PgOperator oper, List<IdentifierContext> ids) {
+        StringBuilder signature = new StringBuilder();
+        String left = oper.getLeftArg();
+        String right = oper.getRightArg();
+
+        signature.append(QNameParser.getFirstName(ids)).append('(');
+        if (left != null) {
+            signature.append(left);
+            if (right != null) {
+                signature.append(", ").append(right);
+            }
+        } else {
+            signature.append(right);
+        }
+        signature.append(')');
+
+        return new GenericColumn(QNameParser.getSchemaName(ids),
+                signature.toString(), DbObjType.FUNCTION);
     }
 
     @Override

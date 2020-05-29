@@ -8,7 +8,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Insert_stmt_for_psqlCont
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_clauseContext;
 import cz.startnet.utils.pgdiff.schema.IDatabase;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.ModPair;
 
 public class Insert extends AbstractExprWithNmspc<Insert_stmt_for_psqlContext> {
@@ -17,8 +16,8 @@ public class Insert extends AbstractExprWithNmspc<Insert_stmt_for_psqlContext> {
         super(parent);
     }
 
-    public Insert(IDatabase db, DbObjType... disabledDepcies) {
-        super(db, disabledDepcies);
+    public Insert(IDatabase db) {
+        super(db);
     }
 
     @Override

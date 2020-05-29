@@ -29,6 +29,7 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementContainer;
 import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.PgView;
+import cz.startnet.utils.pgdiff.schema.meta.MetaStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -141,8 +142,8 @@ public class CommentOn extends ParserAbstract {
             type = DbObjType.OPERATOR;
             Target_operatorContext targetOperCtx = obj.target_operator();
             st = getSafe(AbstractSchema::getOperator, schema,
-                    parseSignature(targetOperCtx.name.operator.getText(),
-                            targetOperCtx), targetOperCtx.getStart());
+                    parseSignature(nameCtx.getText(), targetOperCtx),
+                    nameCtx.getStart());
         } else if (obj.EXTENSION() != null) {
             type = DbObjType.EXTENSION;
             st = getSafe(PgDatabase::getExtension, db, nameCtx);
@@ -229,7 +230,8 @@ public class CommentOn extends ParserAbstract {
             PgObjLocation ref = addObjReference(ids, type, ACTION_COMMENT);
 
             db.getObjDefinitions().values().stream().flatMap(List::stream)
-            .filter(ref::compare).forEach(def -> def.setComment(comment));
+            .map(MetaStatement::getObject).filter(ref::compare)
+            .forEach(def -> def.setComment(comment));
         } else {
             addOutlineRefForCommentOrRule(ACTION_COMMENT, ctx);
         }
@@ -244,7 +246,8 @@ public class CommentOn extends ParserAbstract {
         PgObjLocation ref = getCastLocation(source, target, ACTION_COMMENT);
         db.getObjReferences().computeIfAbsent(fileName, k -> new ArrayList<>()).add(ref);
         db.getObjDefinitions().values().stream().flatMap(List::stream)
-        .filter(ref::compare).forEach(def -> def.setComment(comment));
+        .map(MetaStatement::getObject).filter(ref::compare)
+        .forEach(def -> def.setComment(comment));
     }
 
     @Override

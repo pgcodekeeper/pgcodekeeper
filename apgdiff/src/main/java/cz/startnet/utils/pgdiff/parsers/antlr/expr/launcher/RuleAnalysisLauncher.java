@@ -17,8 +17,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.expr.Insert;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Update;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExprWithNmspc;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IDatabase;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 
 public class RuleAnalysisLauncher extends AbstractAnalysisLauncher {
@@ -28,8 +28,8 @@ public class RuleAnalysisLauncher extends AbstractAnalysisLauncher {
     }
 
     @Override
-    public Set<GenericColumn> analyze(ParserRuleContext ctx, IDatabase db) {
-        Set<GenericColumn> depcies = new LinkedHashSet<>();
+    public Set<PgObjLocation> analyze(ParserRuleContext ctx, IDatabase db) {
+        Set<PgObjLocation> depcies = new LinkedHashSet<>();
 
         Create_rewrite_statementContext createRewriteCtx = (Create_rewrite_statementContext) ctx;
 
@@ -45,7 +45,7 @@ public class RuleAnalysisLauncher extends AbstractAnalysisLauncher {
         return depcies;
     }
 
-    private Set<GenericColumn> analyzeRulesCommand(Rewrite_commandContext cmd, IDatabase db) {
+    private Set<PgObjLocation> analyzeRulesCommand(Rewrite_commandContext cmd, IDatabase db) {
         Select_stmtContext select;
         if ((select = cmd.select_stmt()) != null) {
             return analyzeTableChild(select, new Select(db));

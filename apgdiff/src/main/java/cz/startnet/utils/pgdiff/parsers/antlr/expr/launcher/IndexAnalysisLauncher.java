@@ -7,9 +7,9 @@ import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_restContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sort_specifierContext;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IDatabase;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 
 public class IndexAnalysisLauncher extends AbstractAnalysisLauncher {
 
@@ -18,8 +18,8 @@ public class IndexAnalysisLauncher extends AbstractAnalysisLauncher {
     }
 
     @Override
-    public Set<GenericColumn> analyze(ParserRuleContext ctx, IDatabase db) {
-        Set<GenericColumn> depcies = new LinkedHashSet<>();
+    public Set<PgObjLocation> analyze(ParserRuleContext ctx, IDatabase db) {
+        Set<PgObjLocation> depcies = new LinkedHashSet<>();
         Index_restContext rest = (Index_restContext) ctx;
 
         for (Sort_specifierContext sort_ctx : rest.index_sort().sort_specifier_list()
