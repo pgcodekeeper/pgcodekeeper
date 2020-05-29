@@ -53,7 +53,7 @@ public class CreateMsView extends BatchContextProcessor {
 
     public MsView getObject(AbstractSchema schema, boolean isJdbc) {
         IdContext nameCtx = ctx.qualified_name().name;
-        List<IdContext> ids = Arrays.asList(ctx.qualified_name().schema, nameCtx);
+        List<ParserRuleContext> ids = Arrays.asList(ctx.qualified_name().schema, nameCtx);
         MsView view = new MsView(nameCtx.getText());
         view.setAnsiNulls(ansiNulls);
         view.setQuotedIdentified(quotedIdentifier);

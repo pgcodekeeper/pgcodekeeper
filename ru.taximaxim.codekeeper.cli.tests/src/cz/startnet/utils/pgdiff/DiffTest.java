@@ -125,7 +125,7 @@ public class DiffTest {
 class SourceTargerArgumentsProvider extends ArgumentsProvider {
 
     protected SourceTargerArgumentsProvider() {
-        super("drop_table");
+        super("drop_ms_table");
     }
 
     @Override
@@ -133,7 +133,7 @@ class SourceTargerArgumentsProvider extends ArgumentsProvider {
         File fNew = getFile(FILES_POSTFIX.NEW_SQL);
         File fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
 
-        return new String[]{"-S", "-D", "DROP_TABLE", "-o", getDiffResultFile().getAbsolutePath(),
+        return new String[]{"-S", "--ms-sql", "-D", "DROP_TABLE", "-o", getDiffResultFile().getAbsolutePath(),
                 "-t", fOriginal.getAbsolutePath(), "-s", fNew.getAbsolutePath()};
     }
 }
@@ -182,7 +182,7 @@ class ModifyTestArgumentsProvider extends ArgumentsProvider {
 class DangerTableArgumentsProvider extends ArgumentsProvider {
 
     public DangerTableArgumentsProvider() {
-        super("drop_table");
+        super("drop_ms_table");
     }
 
     @Override
@@ -190,7 +190,7 @@ class DangerTableArgumentsProvider extends ArgumentsProvider {
         File fNew = getFile(FILES_POSTFIX.NEW_SQL);
         File fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
 
-        return new String[]{"--safe-mode", "--allow-danger-ddl", "DROP_TABLE",
+        return new String[]{"--safe-mode", "--ms-sql", "--allow-danger-ddl", "DROP_TABLE",
                 "-o", getDiffResultFile().getAbsolutePath(),
                 fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
     }

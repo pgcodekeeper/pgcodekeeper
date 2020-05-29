@@ -879,6 +879,7 @@ public class ValueExpr extends AbstractExpr {
     private String literal(Unsigned_value_specificationContext unsignedValue){
         String ret;
         Unsigned_numeric_literalContext unsignedNumeric;
+        Character_stringContext charString;
         Truth_valueContext truthValue;
 
         if ((unsignedNumeric = unsignedValue.unsigned_numeric_literal()) != null) {
@@ -887,8 +888,15 @@ public class ValueExpr extends AbstractExpr {
             } else {
                 ret = TypesSetManually.NUMERIC;
             }
-        } else if (unsignedValue.character_string() != null) {
-            ret = TypesSetManually.TEXT;
+        } else if ((charString = unsignedValue.character_string()) != null) {
+            String text = charString.getText();
+            if (text.regionMatches(true, 0, "B", 0, 1) || text.regionMatches(true, 0, "X", 0, 1)) {
+                ret = TypesSetManually.BIT;
+            } else if (text.regionMatches(true, 0, "N", 0, 1)) {
+                ret = TypesSetManually.BPCHAR;
+            } else {
+                ret = TypesSetManually.TEXT;
+            }
         } else if ((truthValue = unsignedValue.truth_value()) != null) {
             if (truthValue.TRUE() != null || truthValue.FALSE() != null) {
                 ret = TypesSetManually.BOOLEAN;

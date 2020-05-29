@@ -77,7 +77,6 @@ public class CommentOn extends ParserAbstract {
                 return;
             }
             ParserRuleContext schemaCtx = QNameParser.getThirdNameCtx(ids);
-            getSchemaNameSafe(ids);
             if (schemaCtx == null) {
                 throw new UnresolvedReferenceException(
                         "Schema name is missing for commented column!", nameCtx.getStart());
@@ -89,14 +88,17 @@ public class CommentOn extends ParserAbstract {
                 throw new UnresolvedReferenceException(
                         "Table name is missing for commented column!", nameCtx.getStart());
             }
+            List<ParserRuleContext> tableIds = Arrays.asList(schemaCtx, tableCtx);
             String tableName = tableCtx.getText();
             AbstractPgTable table = (AbstractPgTable) schema.getTable(tableName);
             if (table == null) {
                 PgView view = (PgView) schema.getView(tableName);
                 if (view == null) {
                     PgType t = ((PgType) getSafe(AbstractSchema::getType, schema, tableCtx));
+                    addObjReference(tableIds, DbObjType.TYPE, null);
                     t.getAttr(name).setComment(db.getArguments(), comment);
                 } else {
+                    addObjReference(tableIds, DbObjType.VIEW, null);
                     view.addColumnComment(db.getArguments(), name, comment);
                 }
             } else {
@@ -112,6 +114,7 @@ public class CommentOn extends ParserAbstract {
                         table.addColumn(column);
                     }
                 }
+                addObjReference(tableIds, DbObjType.TABLE, null);
                 column.setComment(db.getArguments(), comment);
             }
             return;

@@ -4,8 +4,8 @@ import java.util.Arrays;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Domain_idContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Enable_disable_triggerContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Names_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
@@ -33,7 +33,7 @@ public class DisableMsTrigger extends ParserAbstract {
             return;
         }
 
-        IdContext schemaCtx = parent.schema;
+        Domain_idContext schemaCtx = parent.schema;
         PgStatementContainer cont = getSafe(AbstractSchema::getStatementContainer,
                 getSchemaSafe(Arrays.asList(schemaCtx, parent.name)), parent.name);
         addObjReference(Arrays.asList(parent.schema, parent.name),
@@ -66,7 +66,7 @@ public class DisableMsTrigger extends ParserAbstract {
             return loc;
         }
 
-        IdContext schemaCtx = parent.schema;
+        Domain_idContext schemaCtx = parent.schema;
 
         for (Qualified_nameContext qname : triggers.qualified_name()) {
             sb.append(schemaCtx.getText())

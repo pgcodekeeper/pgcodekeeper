@@ -120,8 +120,8 @@ public class CreateMsRule extends ParserAbstract {
 
         PgStatement st;
         if (type == null || type.OBJECT() != null || type.TYPE() != null) {
-            List<IdContext> ids = Arrays.asList(object.qualified_name().schema, nameCtx);
-            AbstractSchema schema = getSchemaSafe(ids);
+            AbstractSchema schema = getSchemaSafe(
+                    Arrays.asList(object.qualified_name().schema, nameCtx));
             st = getSafe((k, v) -> k.getChildren().filter(
                     e -> e.getBareName().equals(v))
                     .findAny().orElse(null), schema, nameCtx);

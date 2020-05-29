@@ -556,7 +556,9 @@ public abstract class ParserAbstract {
             List<? extends ParserRuleContext> ids) {
         StringBuilder sb = new StringBuilder(action).append(' ').append(type).append(' ');
         for (ParserRuleContext id : ids) {
-            sb.append(id.getText()).append('.');
+            if (id != null) {
+                sb.append(id.getText()).append('.');
+            }
         }
         sb.setLength(sb.length() - 1);
         return sb.toString();

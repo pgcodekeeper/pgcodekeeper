@@ -9,9 +9,6 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 
 import org.eclipse.jface.preference.PreferencePage;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbench;
@@ -36,18 +33,11 @@ implements IWorkbenchPreferencePage {
 
     @Override
     protected Control createContents(Composite parent) {
-        GridLayout gridLayout = new GridLayout();
-        gridLayout.marginHeight = 0;
-        gridLayout.marginWidth = 0;
-        parent.setLayout(gridLayout);
-        parent.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-
         ignore = InternalIgnoreList.readInternalList();
-
         listEditor = IgnoredObjectPrefListEditor.create(parent, ignore);
         listEditor.setInputList(new ArrayList<>(ignore.getList()));
 
-        return parent;
+        return listEditor;
     }
 
     @Override

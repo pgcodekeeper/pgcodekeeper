@@ -93,7 +93,7 @@ public class CreateFunction extends ParserAbstract {
             } else if (action.DEFINER() != null) {
                 function.setSecurityDefiner(true);
             } else if (action.LEAKPROOF() != null) {
-                function.setLeakproof(true);
+                function.setLeakproof(action.NOT() == null);
             } else if (action.LANGUAGE() != null) {
                 language = action.lang_name.getText();
             } else if (action.COST() != null) {
