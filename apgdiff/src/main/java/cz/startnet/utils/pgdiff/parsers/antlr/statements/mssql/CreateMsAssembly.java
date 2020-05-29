@@ -6,7 +6,6 @@ import java.util.regex.Pattern;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Assembly_permissionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_assemblyContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Domain_idContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ExpressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
@@ -30,7 +29,7 @@ public class CreateMsAssembly extends ParserAbstract {
     public void parseObject() {
         IdContext nameCtx = ctx.assembly_name;
         MsAssembly ass = new MsAssembly(ctx.assembly_name.getText());
-        Domain_idContext owner = ctx.domain_id();
+        IdContext owner = ctx.owner_name;
         if (owner != null && !db.getArguments().isIgnorePrivileges()) {
             ass.setOwner(owner.getText());
         }

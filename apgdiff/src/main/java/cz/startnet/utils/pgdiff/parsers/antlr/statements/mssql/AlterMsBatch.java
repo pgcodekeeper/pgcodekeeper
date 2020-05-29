@@ -7,7 +7,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statement_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_triggerContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Domain_idContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -42,8 +42,8 @@ public class AlterMsBatch extends ParserAbstract {
 
     private void alterTrigger(Create_or_alter_triggerContext ctx) {
         Qualified_nameContext qname = ctx.trigger_name;
-        Domain_idContext schemaCtx = qname.schema;
-        Domain_idContext secondCtx = ctx.table_name.schema;
+        IdContext schemaCtx = qname.schema;
+        IdContext secondCtx = ctx.table_name.schema;
         if (schemaCtx == null) {
             schemaCtx = secondCtx;
         }
@@ -83,8 +83,8 @@ public class AlterMsBatch extends ParserAbstract {
         } else if (ctx.create_or_alter_trigger() != null) {
             Create_or_alter_triggerContext trigCtx = ctx.create_or_alter_trigger();
             Qualified_nameContext qname = trigCtx.trigger_name;
-            Domain_idContext schemaCtx = qname.schema;
-            Domain_idContext secondCtx = trigCtx.table_name.schema;
+            IdContext schemaCtx = qname.schema;
+            IdContext secondCtx = trigCtx.table_name.schema;
             if (schemaCtx == null) {
                 schemaCtx = secondCtx;
             }

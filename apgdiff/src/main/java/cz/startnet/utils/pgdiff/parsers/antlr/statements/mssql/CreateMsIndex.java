@@ -8,7 +8,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ClusteredContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_with_orderContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_indexContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Domain_idContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_includeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_optionContext;
@@ -37,7 +36,7 @@ public class CreateMsIndex extends ParserAbstract {
 
     @Override
     public void parseObject() {
-        Domain_idContext schemaCtx = ctx.qualified_name().schema;
+        IdContext schemaCtx = ctx.qualified_name().schema;
         IdContext tableCtx = ctx.qualified_name().name;
         IdContext nameCtx = ctx.name;
         List<ParserRuleContext> ids = Arrays.asList(schemaCtx, nameCtx);

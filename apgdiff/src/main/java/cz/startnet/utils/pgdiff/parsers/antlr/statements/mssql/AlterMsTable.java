@@ -9,7 +9,6 @@ import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_tableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_def_table_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_def_table_constraintsContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Domain_idContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_alterContext;
@@ -37,7 +36,7 @@ public class AlterMsTable extends TableAbstract {
 
     @Override
     public void parseObject() {
-        Domain_idContext schemaCtx = ctx.name.schema;
+        IdContext schemaCtx = ctx.name.schema;
         IdContext nameCtx = ctx.name.name;
         List<ParserRuleContext> ids = Arrays.asList(schemaCtx, nameCtx);
         AbstractSchema schema = getSchemaSafe(ids);

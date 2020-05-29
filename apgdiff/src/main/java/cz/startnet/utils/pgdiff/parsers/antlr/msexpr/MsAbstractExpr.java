@@ -8,7 +8,6 @@ import java.util.Set;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Data_typeContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Domain_idContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Full_column_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
@@ -71,7 +70,7 @@ public abstract class MsAbstractExpr {
     protected GenericColumn addObjectDepcy(Qualified_nameContext qualifiedName, DbObjType type) {
         IdContext nameCtx = qualifiedName.name;
         String relationName = nameCtx.getText();
-        Domain_idContext schemaCtx = qualifiedName.schema;
+        IdContext schemaCtx = qualifiedName.schema;
         String schemaName;
         if (schemaCtx == null) {
             schemaName = schema;
@@ -105,7 +104,7 @@ public abstract class MsAbstractExpr {
             return;
         }
 
-        Domain_idContext schemaCtx = tableName.schema;
+        IdContext schemaCtx = tableName.schema;
 
         String schemaName = null;
         if (schemaCtx != null) {

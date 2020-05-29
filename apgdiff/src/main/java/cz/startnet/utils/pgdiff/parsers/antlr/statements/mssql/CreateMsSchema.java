@@ -3,7 +3,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 import java.util.Arrays;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_schemaContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Domain_idContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.MsSchema;
@@ -21,7 +21,7 @@ public class CreateMsSchema extends ParserAbstract {
 
     @Override
     public void parseObject() {
-        Domain_idContext nameCtx = ctx.schema_name;
+        IdContext nameCtx = ctx.schema_name;
         AbstractSchema schema = new MsSchema(nameCtx.getText());
         if (ctx.owner_name != null && !db.getArguments().isIgnorePrivileges()) {
             schema.setOwner(ctx.owner_name.getText());

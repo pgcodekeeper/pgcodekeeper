@@ -63,7 +63,7 @@ public class CreateMsRule extends ParserAbstract {
             return;
         }
 
-        List<String> roles = ctx.role_names().domain_id().stream()
+        List<String> roles = ctx.role_names().id().stream()
                 .map(ParserRuleContext::getText).map(MsDiffUtils::quoteName).collect(Collectors.toList());
 
         Columns_permissionsContext columnsCtx = ctx.columns_permissions();
