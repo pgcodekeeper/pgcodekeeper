@@ -74,7 +74,9 @@ public final class DiffTree {
 
                 addColumns(oldColumns, newColumns, el, columns);
 
-                tables.put(el, columns);
+                if (!columns.isEmpty()) {
+                    tables.put(el, columns);
+                }
             }
         }
 
