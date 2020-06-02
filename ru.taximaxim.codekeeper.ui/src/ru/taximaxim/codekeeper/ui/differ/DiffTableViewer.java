@@ -144,10 +144,10 @@ public class DiffTableViewer extends Composite {
     private final Path location;
     private final Map<TreeElement, ElementMetaInfo> elementInfoMap = new HashMap<>();
     private final Set<TreeElement> elements = elementInfoMap.keySet();
-    private final Map<TreeElement, List<TreeElement>> columns = new HashMap<>();
     private final DiffContentProvider contentProvider = new DiffContentProvider();
     private final CheckStateProvider checkProvider;
     private final TableViewerComparator comparator = new TableViewerComparator();
+    private Map<TreeElement, List<TreeElement>> columns;
     private IStructuredSelection oldSelection;
     private IStructuredSelection newSelection;
 
@@ -820,8 +820,7 @@ public class DiffTableViewer extends Composite {
         elementInfoMap.clear();
         collection.forEach(el -> this.elementInfoMap.put(el, new ElementMetaInfo()));
 
-        this.columns.clear();
-        this.columns.putAll(columns);
+        this.columns = columns;
 
         if (showGitUser && !elementInfoMap.isEmpty()) {
             readGitUsers();
