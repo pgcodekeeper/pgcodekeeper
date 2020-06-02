@@ -29,6 +29,7 @@ public interface UIConsts {
     interface MARKER {
         String ERROR = PLUGIN_ID.THIS + ".sql.errormarker"; //$NON-NLS-1$
         String DANGER_ANNOTATION = PLUGIN_ID.THIS + ".sql.dangerannotation"; //$NON-NLS-1$
+        String OBJECT_OCCURRENCE = PLUGIN_ID.THIS + ".sql.objectoccurrence"; //$NON-NLS-1$
     }
 
     interface DECORATOR {
