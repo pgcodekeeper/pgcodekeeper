@@ -13,7 +13,6 @@ public class PgObjLocation extends ContextLocation {
     private static final long serialVersionUID = 1560794454982891339L;
 
     private DangerStatement danger;
-    private String comment = "";
     private int length = -1;
 
     private final String action;
@@ -100,14 +99,6 @@ public class PgObjLocation extends ContextLocation {
         result = prime * result + ((getSql() == null) ? 0 : getSql().hashCode());
         result = prime * result + ((getAction() == null) ? 0 : getAction().hashCode());
         return result;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
     }
 
     public String getWarningText() {

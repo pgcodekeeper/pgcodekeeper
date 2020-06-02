@@ -46,6 +46,6 @@ public class MetaCast extends MetaStatement implements ICast {
 
     @Override
     public MetaStatement getCopy() {
-        return new MetaCast(source, target, context);
+        return new MetaCast(source, target, context, getObject());
     }
 }
