@@ -48,9 +48,11 @@ import org.eclipse.jface.text.source.DefaultCharacterPairMatcher;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModelExtension;
 import org.eclipse.jface.text.source.ICharacterPairMatcher;
+import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.viewers.DecorationOverlayIcon;
 import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
@@ -281,52 +283,6 @@ implements IResourceChangeListener, ITextErrorReporter {
             }
         } catch (InterruptedException | IOException | CoreException ex) {
             Log.log(ex);
-        }
-    }
-
-    public void selectionChanged() {
-        if (getSelectionProvider() == null) {
-            return;
-        }
-
-        ISelection selection = getSelectionProvider().getSelection();
-        if (selection instanceof ITextSelection) {
-            ITextSelection textSelection = (ITextSelection) selection;
-            int offset = textSelection.getOffset();
-            List<PgObjLocation> refs = getParser().getObjsForEditor(getEditorInput());
-
-            PgObjLocation selected = refs.stream()
-                    .filter(loc -> loc.getOffset() <= offset && offset <= loc.getOffset() + loc.getObjLength())
-                    .findAny()
-                    .orElse(null);
-
-            if (selected != null) {
-                Map<Annotation, Position> annotations = new HashMap<>();
-
-                for (PgObjLocation loc : refs) {
-                    if (loc.compare(selected)) {
-                        annotations.put(new Annotation(MARKER.OBJECT_OCCURRENCE, false, loc.toString()),
-                                new Position(loc.getOffset(), loc.getObjLength()));
-                    }
-                }
-
-                if (getSourceViewer() != null) {
-                    IAnnotationModel model = getSourceViewer().getAnnotationModel();
-
-                    synchronized (getLock(model)) {
-                        if (model instanceof IAnnotationModelExtension) {
-                            ((IAnnotationModelExtension) model).replaceAnnotations(occurrenceAnnotations, annotations);
-                        } else {
-                            removeOccurrenceAnnotations();
-                            for (Entry<Annotation, Position> entry : annotations.entrySet()) {
-                                model.addAnnotation(entry.getKey(), entry.getValue());
-                            }
-                        }
-
-                        occurrenceAnnotations = annotations.keySet().toArray(new Annotation[annotations.size()]);
-                    }
-                }
-            }
         }
     }
 
@@ -858,7 +814,48 @@ implements IResourceChangeListener, ITextErrorReporter {
 
         @Override
         public void selectionChanged(SelectionChangedEvent event) {
-            SQLEditor.this.selectionChanged();
+            ISelectionProvider provider = getSelectionProvider();
+            if (getSelectionProvider() == null) {
+                return;
+            }
+
+            ISelection selection = provider.getSelection();
+            if (selection instanceof ITextSelection) {
+                ITextSelection textSelection = (ITextSelection) selection;
+                int offset = textSelection.getOffset();
+                List<PgObjLocation> refs = getParser().getObjsForEditor(getEditorInput());
+                ISourceViewer viewer = getSourceViewer();
+
+                PgObjLocation selected = refs.stream()
+                        .filter(loc -> loc.getOffset() <= offset && offset <= loc.getOffset() + loc.getObjLength())
+                        .findAny()
+                        .orElse(null);
+
+                if (selected != null && viewer != null) {
+                    Map<Annotation, Position> annotations = new HashMap<>();
+
+                    for (PgObjLocation loc : refs) {
+                        if (loc.compare(selected)) {
+                            annotations.put(new Annotation(MARKER.OBJECT_OCCURRENCE, false, loc.toString()),
+                                    new Position(loc.getOffset(), loc.getObjLength()));
+                        }
+                    }
+
+                    IAnnotationModel model = viewer.getAnnotationModel();
+                    synchronized (getLock(model)) {
+                        if (model instanceof IAnnotationModelExtension) {
+                            ((IAnnotationModelExtension) model).replaceAnnotations(occurrenceAnnotations, annotations);
+                        } else {
+                            removeOccurrenceAnnotations();
+                            for (Entry<Annotation, Position> entry : annotations.entrySet()) {
+                                model.addAnnotation(entry.getKey(), entry.getValue());
+                            }
+                        }
+
+                        occurrenceAnnotations = annotations.keySet().toArray(new Annotation[annotations.size()]);
+                    }
+                }
+            }
         }
     }
 
