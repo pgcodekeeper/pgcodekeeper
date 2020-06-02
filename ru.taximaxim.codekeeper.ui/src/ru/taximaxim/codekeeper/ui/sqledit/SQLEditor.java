@@ -779,14 +779,6 @@ implements IResourceChangeListener, ITextErrorReporter {
         }
     }
 
-    private class EditorSelectionChangedListener extends AbstractSelectionChangedListener {
-
-        @Override
-        public void selectionChanged(SelectionChangedEvent event) {
-            SQLEditor.this.selectionChanged();
-        }
-    }
-
     @Override
     public void resourceChanged(IResourceChangeEvent event) {
         IResource file = ResourceUtil.getResource(getEditorInput());
@@ -862,6 +854,14 @@ implements IResourceChangeListener, ITextErrorReporter {
         }
     }
 
+    private class EditorSelectionChangedListener extends AbstractSelectionChangedListener {
+
+        @Override
+        public void selectionChanged(SelectionChangedEvent event) {
+            SQLEditor.this.selectionChanged();
+        }
+    }
+
     private class SqlEditorPartListener extends IPartAdapter2 {
 
         @Override
@@ -874,31 +874,31 @@ implements IResourceChangeListener, ITextErrorReporter {
                 }
             }
         }
-    }
 
-    public void askDeleteScript(IFile f) {
-        String mode = mainPrefs.getString(DB_UPDATE_PREF.DELETE_SCRIPT_AFTER_CLOSE);
-        // if select "YES" with toggle
-        if (mode.equals(MessageDialogWithToggle.ALWAYS)) {
-            deleteFile(f);
-            // if not select "NO" with toggle, show choice message dialog
-        } else if (!mode.equals(MessageDialogWithToggle.NEVER)) {
-            MessageDialogWithToggle dialog = MessageDialogWithToggle.openYesNoQuestion(getSite().getShell(),
-                    Messages.SqlEditor_script_delete_dialog_title, MessageFormat.format(
-                            Messages.SqlEditor_script_delete_dialog_message, f.getName()),
-                    Messages.remember_choice_toggle, false, mainPrefs, DB_UPDATE_PREF.DELETE_SCRIPT_AFTER_CLOSE);
-            if (dialog.getReturnCode() == IDialogConstants.YES_ID) {
+        private void askDeleteScript(IFile f) {
+            String mode = mainPrefs.getString(DB_UPDATE_PREF.DELETE_SCRIPT_AFTER_CLOSE);
+            // if select "YES" with toggle
+            if (mode.equals(MessageDialogWithToggle.ALWAYS)) {
                 deleteFile(f);
+                // if not select "NO" with toggle, show choice message dialog
+            } else if (!mode.equals(MessageDialogWithToggle.NEVER)) {
+                MessageDialogWithToggle dialog = MessageDialogWithToggle.openYesNoQuestion(getSite().getShell(),
+                        Messages.SqlEditor_script_delete_dialog_title, MessageFormat.format(
+                                Messages.SqlEditor_script_delete_dialog_message, f.getName()),
+                        Messages.remember_choice_toggle, false, mainPrefs, DB_UPDATE_PREF.DELETE_SCRIPT_AFTER_CLOSE);
+                if (dialog.getReturnCode() == IDialogConstants.YES_ID) {
+                    deleteFile(f);
+                }
             }
         }
-    }
 
-    private void deleteFile(IFile f) {
-        try {
-            Log.log(Log.LOG_INFO, "Deleting file " + f.getName()); //$NON-NLS-1$
-            f.delete(true, null);
-        } catch (CoreException ex) {
-            Log.log(ex);
+        private void deleteFile(IFile f) {
+            try {
+                Log.log(Log.LOG_INFO, "Deleting file " + f.getName()); //$NON-NLS-1$
+                f.delete(true, null);
+            } catch (CoreException ex) {
+                Log.log(ex);
+            }
         }
     }
 }
