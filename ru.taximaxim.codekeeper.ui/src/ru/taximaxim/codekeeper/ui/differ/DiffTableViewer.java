@@ -147,7 +147,7 @@ public class DiffTableViewer extends Composite {
     private final DiffContentProvider contentProvider = new DiffContentProvider();
     private final CheckStateProvider checkProvider;
     private final TableViewerComparator comparator = new TableViewerComparator();
-    private Map<TreeElement, List<TreeElement>> columns;
+    private Set<TreeElement> tables;
     private IStructuredSelection oldSelection;
     private IStructuredSelection newSelection;
 
@@ -780,10 +780,10 @@ public class DiffTableViewer extends Composite {
     public void setInput(DbSource dbProject, DbSource dbRemote,
             TreeElement diffTree, IgnoreList ignoreList) {
         List<TreeElement> selected;
-        Map<TreeElement, List<TreeElement>> cols;
+        Set<TreeElement> tabs;
         if (diffTree == null) {
             selected = Collections.emptyList();
-            cols = Collections.emptyMap();
+            tabs = Collections.emptySet();
         } else {
             PgDatabase source = dbProject.getDbObject();
             PgDatabase target = dbRemote.getDbObject();
@@ -791,10 +791,10 @@ public class DiffTableViewer extends Composite {
                     .onlyEdits(source, target)
                     .useIgnoreList(ignoreList, dbRemote.getDbName())
                     .flatten(diffTree);
-            cols = DiffTree.getColumns(source, target, selected);
+            tabs = DiffTree.getTablesWithChangedColumns(source, target, selected);
         }
 
-        setInputCollection(selected, dbProject, dbRemote, cols);
+        setInputCollection(selected, dbProject, dbRemote, tabs);
     }
 
     /**
@@ -802,8 +802,7 @@ public class DiffTableViewer extends Composite {
      * @param collection элементы для показа
      */
     public void setInputCollection(Collection<TreeElement> collection,
-            DbSource dbProject, DbSource dbRemote,
-            Map<TreeElement, List<TreeElement>> columns) {
+            DbSource dbProject, DbSource dbRemote, Set<TreeElement> tables) {
         this.dbProject = dbProject;
         this.dbRemote = dbRemote;
 
@@ -820,7 +819,7 @@ public class DiffTableViewer extends Composite {
         elementInfoMap.clear();
         collection.forEach(el -> this.elementInfoMap.put(el, new ElementMetaInfo()));
 
-        this.columns = columns;
+        this.tables = tables;
 
         if (showGitUser && !elementInfoMap.isEmpty()) {
             readGitUsers();
@@ -1412,22 +1411,7 @@ public class DiffTableViewer extends Composite {
             TreeElement el = (TreeElement) element;
             boolean isSubElement = isSubElement(el);
 
-            DbObjType type = el.getType();
-            if (type == DbObjType.TABLE) {
-                List<TreeElement> cols = columns.get(el);
-                if (cols != null) {
-                    for (TreeElement col : cols) {
-                        if (select(viewer, el, col)) {
-                            return true;
-                        }
-                    }
-                }
-            }
-
-            if (!types.isEmpty() && !types.contains(type)
-                    && (!isSubElement || !types.contains(el.getParent().getType()))
-                    && (!isContainer(el) || el.getChildren().stream()
-                            .noneMatch(e -> types.contains(e.getType())))) {
+            if (!checkType(el, isSubElement)) {
                 return false;
             }
 
@@ -1465,12 +1449,33 @@ public class DiffTableViewer extends Composite {
                     elementInfoMap, dbProject.getDbObject(), dbRemote.getDbObject()));
         }
 
+        private boolean checkType(TreeElement el, boolean isSubElement) {
+            if (types.isEmpty()) {
+                return true;
+            }
+
+            DbObjType type = el.getType();
+            if (types.contains(type)) {
+                return true;
+            }
+
+            if (isSubElement && types.contains(el.getParent().getType())) {
+                return true;
+            }
+
+            if (isContainer(el) && el.getChildren().stream().anyMatch(e -> types.contains(e.getType()))) {
+                return true;
+            }
+
+            return type == DbObjType.TABLE && types.contains(DbObjType.COLUMN) && tables.contains(el);
+        }
+
         private boolean findName(TreeElement el, boolean isSubElement) {
             Pattern filterRegex = useRegEx ? regExPattern : null;
 
             // show all child, if parent have match
             TreeElement parent = el.getParent();
-            if (isSubElement && getMatchingLocation(parent.getName(), filterName, filterRegex) != null){
+            if (isSubElement && getMatchingLocation(parent.getName(), filterName, filterRegex) != null) {
                 return true;
             }
 

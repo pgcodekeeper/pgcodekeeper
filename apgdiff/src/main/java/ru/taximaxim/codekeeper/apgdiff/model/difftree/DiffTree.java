@@ -2,9 +2,9 @@ package ru.taximaxim.codekeeper.apgdiff.model.difftree;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
@@ -46,10 +46,10 @@ public final class DiffTree {
         }
     }
 
-    public static Map<TreeElement, List<TreeElement>> getColumns(
+    public static Set<TreeElement> getTablesWithChangedColumns(
             PgDatabase oldDbFull, PgDatabase newDbFull, List<TreeElement> selected) {
 
-        Map<TreeElement, List<TreeElement>> tables = new HashMap<>();
+        Set<TreeElement> tables = new HashSet<>();
         for (TreeElement el : selected) {
             if (el.getType() == DbObjType.TABLE) {
                 List<TreeElement> columns = new ArrayList<>();
@@ -75,7 +75,7 @@ public final class DiffTree {
                 addColumns(oldColumns, newColumns, el, columns);
 
                 if (!columns.isEmpty()) {
-                    tables.put(el, columns);
+                    tables.add(el);
                 }
             }
         }
