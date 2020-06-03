@@ -316,9 +316,7 @@ public abstract class ParserAbstract {
                 ACTION_CREATE, false, null);
         if (loc != null) {
             child.setLocation(loc);
-            if (isRefMode()) {
-                db.addReference(fileName, loc);
-            }
+            db.addReference(fileName, loc);
         }
     }
 
