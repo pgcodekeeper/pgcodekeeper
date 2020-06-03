@@ -24,7 +24,7 @@ import cz.startnet.utils.pgdiff.schema.IDatabase;
 import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.ISchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.meta.MetaStorage;
+import cz.startnet.utils.pgdiff.schema.meta.MetaUtils;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
@@ -108,7 +108,7 @@ public class ExprTypeTest {
             throws InterruptedException, IOException {
         PgDatabase dbNew = ApgdiffTestUtils.loadTestDump(
                 fileNameTemplate + postfix, ExprTypeTest.class, args, false);
-        IDatabase metaDb = MetaStorage.createFullDb(dbNew);
+        IDatabase metaDb = MetaUtils.createTreeFromDb(dbNew);
         FullAnalyze.fullAnalyze(dbNew, metaDb, new ArrayList<>());
         return metaDb;
     }

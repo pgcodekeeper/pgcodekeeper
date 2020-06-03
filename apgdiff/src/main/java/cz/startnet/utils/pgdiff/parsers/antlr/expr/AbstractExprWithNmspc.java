@@ -81,8 +81,8 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
      */
     protected final Map<String, List<Pair<String, String>>> complexNamespace = new LinkedHashMap<>();
 
-    public AbstractExprWithNmspc(IDatabase db, DbObjType... disabledDepcies) {
-        super(db, disabledDepcies);
+    public AbstractExprWithNmspc(IDatabase db) {
+        super(db);
     }
 
     protected AbstractExprWithNmspc(AbstractExpr parent) {

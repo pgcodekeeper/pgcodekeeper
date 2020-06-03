@@ -11,6 +11,8 @@ import cz.startnet.utils.pgdiff.schema.ArgMode;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IFunction;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MetaFunction extends MetaStatement implements IFunction {
 
@@ -35,8 +37,12 @@ public class MetaFunction extends MetaStatement implements IFunction {
     private String returns;
     private boolean setof;
 
-    public MetaFunction(GenericColumn object) {
+    public MetaFunction(PgObjLocation object) {
         super(object);
+    }
+
+    public MetaFunction(String schemaName, String name) {
+        super(new GenericColumn(schemaName, name, DbObjType.FUNCTION));
     }
 
     @Override
@@ -149,5 +155,16 @@ public class MetaFunction extends MetaStatement implements IFunction {
     @Override
     public MetaSchema getContainingSchema() {
         return (MetaSchema) getParent();
+    }
+
+    @Override
+    public MetaStatement getCopy() {
+        MetaFunction copy = new MetaFunction(getObject());
+        getArguments().forEach(copy::addArgument);
+        getOrderBy().forEach(copy::addArgument);
+        getReturnsColumns().forEach(copy::addReturnsColumn);
+        copy.setReturns(getReturns());
+        copy.setSetof(isSetof());
+        return copy;
     }
 }

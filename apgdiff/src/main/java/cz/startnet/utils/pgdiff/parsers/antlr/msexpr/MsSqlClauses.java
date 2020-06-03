@@ -22,6 +22,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Execute_moduleContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Execute_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ExpressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Expression_listContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.If_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Insert_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Lock_tableContext;
@@ -53,8 +54,8 @@ public class MsSqlClauses extends MsAbstractExpr {
         super(parent);
     }
 
-    public MsSqlClauses(String schema, DbObjType... disabledDepcies) {
-        super(schema, disabledDepcies);
+    public MsSqlClauses(String schema) {
+        super(schema);
     }
 
     public List<String> analyze(Sql_clausesContext sql) {
@@ -129,8 +130,9 @@ public class MsSqlClauses extends MsAbstractExpr {
             Names_referencesContext names = edt.names_references();
             if (names != null) {
                 for (Qualified_nameContext trig : names.qualified_name()) {
-                    addDepcy(new GenericColumn(cont.schema,
-                            cont.table, trig.name.getText(), DbObjType.TRIGGER));
+                    IdContext nameCtx = trig.name;
+                    addDepcy(new GenericColumn(cont.schema, cont.table,
+                            nameCtx.getText(), DbObjType.TRIGGER), nameCtx);
                 }
             }
         }
@@ -141,12 +143,14 @@ public class MsSqlClauses extends MsAbstractExpr {
         Qualified_nameContext index = us.index_name;
         Names_referencesContext names;
         if (index != null) {
+            IdContext nameCtx = index.name;
             addDepcy(new GenericColumn(cont.schema,
-                    cont.table, index.name.getText(), DbObjType.TRIGGER));
+                    cont.table, nameCtx.getText(), DbObjType.TRIGGER), nameCtx);
         } else if ((names = us.names_references()) != null) {
             for (Qualified_nameContext ind : names.qualified_name()) {
+                IdContext nameCtx = ind.name;
                 addDepcy(new GenericColumn(cont.schema,
-                        cont.table, ind.name.getText(), DbObjType.TRIGGER));
+                        cont.table, nameCtx.getText(), DbObjType.TRIGGER), nameCtx);
             }
         }
     }

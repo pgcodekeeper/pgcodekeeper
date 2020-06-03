@@ -6,8 +6,8 @@ import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExprWithNmspc;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IDatabase;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 
 public class TriggerAnalysisLauncher extends AbstractAnalysisLauncher {
@@ -17,7 +17,7 @@ public class TriggerAnalysisLauncher extends AbstractAnalysisLauncher {
     }
 
     @Override
-    public Set<GenericColumn> analyze(ParserRuleContext ctx, IDatabase db) {
+    public Set<PgObjLocation> analyze(ParserRuleContext ctx, IDatabase db) {
         ValueExprWithNmspc vex = new ValueExprWithNmspc(db);
         return analyzeTableChild((VexContext) ctx, vex);
     }

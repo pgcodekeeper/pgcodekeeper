@@ -49,6 +49,7 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
         composite.setLayout(gl);
 
         editorPartListener = new EditorPartListener();
+        page.addPartListener(editorPartListener);
 
         storePicker.addListenerToCombo(e -> {
             IEditorPart editor = getWorkbenchWindow().getActivePage().getActiveEditor();

@@ -40,8 +40,6 @@ public class PgDatabase extends PgStatement implements IDatabase {
     private final Map<String, MsRole> roles = new LinkedHashMap<>();
     private final Map<String, MsUser> users = new LinkedHashMap<>();
 
-    // Contains object definitions
-    private final Map<String, List<PgObjLocation>> objDefinitions = new HashMap<>();
     // Содержит ссылки на объекты
     private final Map<String, List<PgObjLocation>> objReferences = new HashMap<>();
     // Contains analysis launchers for all statements
@@ -84,16 +82,11 @@ public class PgDatabase extends PgStatement implements IDatabase {
         return arguments;
     }
 
-    public Map<String, List<PgObjLocation>> getObjDefinitions() {
-        return objDefinitions;
-    }
-
     public Map<String, List<PgObjLocation>> getObjReferences() {
         return objReferences;
     }
 
-    public void addToQueries(String fileName, PgObjLocation loc) {
-        objDefinitions.computeIfAbsent(fileName, k -> new ArrayList<>()).add(loc);
+    public void addReference(String fileName, PgObjLocation loc) {
         objReferences.computeIfAbsent(fileName, k -> new ArrayList<>()).add(loc);
     }
 

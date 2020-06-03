@@ -91,4 +91,9 @@ public class MetaDatabase extends MetaStatement implements IDatabase {
     public MetaCast getCast(String name) {
         return casts.get(name);
     }
+
+    @Override
+    public MetaStatement getCopy() {
+        return new MetaDatabase();
+    }
 }

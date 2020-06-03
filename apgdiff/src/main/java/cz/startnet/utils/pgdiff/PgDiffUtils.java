@@ -103,9 +103,8 @@ public final class PgDiffUtils {
         return name.substring(1, name.length() - 1).replace("\"\"", "\"");
     }
 
-    // TODO dollar quotes
-    public static String unquoteQuotedString(String s) {
-        return s.substring(1, s.length() - 1).replace("''", "'");
+    public static String unquoteQuotedString(String s, int start) {
+        return s.substring(start, s.length() - 1).replace("''", "'");
     }
 
     public static byte[] getHash(String s, String instance) {

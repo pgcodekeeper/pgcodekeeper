@@ -92,10 +92,12 @@ import org.osgi.framework.Bundle;
 
 import cz.startnet.utils.pgdiff.libraries.PgLibrary;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
@@ -145,6 +147,7 @@ public class DiffTableViewer extends Composite {
     private final DiffContentProvider contentProvider = new DiffContentProvider();
     private final CheckStateProvider checkProvider;
     private final TableViewerComparator comparator = new TableViewerComparator();
+    private Set<TreeElement> tables;
     private IStructuredSelection oldSelection;
     private IStructuredSelection newSelection;
 
@@ -774,22 +777,32 @@ public class DiffTableViewer extends Composite {
     }
 
 
-    public void setInput(DbSource dbProject, DbSource dbRemote, TreeElement diffTree,
-            IgnoreList ignoreList) {
-        setInputCollection(diffTree == null ? Collections.<TreeElement>emptyList() :
-            new TreeFlattener()
-            .onlyEdits(dbProject.getDbObject(), dbRemote.getDbObject())
-            .useIgnoreList(ignoreList, dbRemote.getDbName())
-            .flatten(diffTree), dbProject, dbRemote);
+    public void setInput(DbSource dbProject, DbSource dbRemote,
+            TreeElement diffTree, IgnoreList ignoreList) {
+        List<TreeElement> selected;
+        Set<TreeElement> tabs;
+        if (diffTree == null) {
+            selected = Collections.emptyList();
+            tabs = Collections.emptySet();
+        } else {
+            PgDatabase source = dbProject.getDbObject();
+            PgDatabase target = dbRemote.getDbObject();
+            selected = new TreeFlattener()
+                    .onlyEdits(source, target)
+                    .useIgnoreList(ignoreList, dbRemote.getDbName())
+                    .flatten(diffTree);
+            tabs = DiffTree.getTablesWithChangedColumns(source, target, selected);
+        }
+
+        setInputCollection(selected, dbProject, dbRemote, tabs);
     }
 
     /**
      * Используется в коммит диалоге для установки элементов
      * @param collection элементы для показа
-     * @param dbTime
      */
     public void setInputCollection(Collection<TreeElement> collection,
-            DbSource dbProject, DbSource dbRemote) {
+            DbSource dbProject, DbSource dbRemote, Set<TreeElement> tables) {
         this.dbProject = dbProject;
         this.dbRemote = dbRemote;
 
@@ -805,6 +818,8 @@ public class DiffTableViewer extends Composite {
 
         elementInfoMap.clear();
         collection.forEach(el -> this.elementInfoMap.put(el, new ElementMetaInfo()));
+
+        this.tables = tables;
 
         if (showGitUser && !elementInfoMap.isEmpty()) {
             readGitUsers();
@@ -1396,15 +1411,11 @@ public class DiffTableViewer extends Composite {
             TreeElement el = (TreeElement) element;
             boolean isSubElement = isSubElement(el);
 
-            if (!types.isEmpty() && !types.contains(el.getType())
-                    && (!isSubElement || !types.contains(el.getParent().getType()))
-                    && (!isContainer(el) || el.getChildren().stream()
-                            .noneMatch(e -> types.contains(e.getType())))) {
+            if (!checkType(el, isSubElement)) {
                 return false;
             }
 
             if (!sides.isEmpty() && !sides.contains(el.getSide())
-                    && (!isSubElement || !sides.contains(el.getParent().getSide()))
                     && (!isContainer(el) || el.getChildren().stream()
                             .noneMatch(e -> sides.contains(e.getSide())))) {
                 return false;
@@ -1438,12 +1449,33 @@ public class DiffTableViewer extends Composite {
                     elementInfoMap, dbProject.getDbObject(), dbRemote.getDbObject()));
         }
 
+        private boolean checkType(TreeElement el, boolean isSubElement) {
+            if (types.isEmpty()) {
+                return true;
+            }
+
+            DbObjType type = el.getType();
+            if (types.contains(type)) {
+                return true;
+            }
+
+            if (isSubElement && types.contains(el.getParent().getType())) {
+                return true;
+            }
+
+            if (isContainer(el) && el.getChildren().stream().anyMatch(e -> types.contains(e.getType()))) {
+                return true;
+            }
+
+            return type == DbObjType.TABLE && types.contains(DbObjType.COLUMN) && tables.contains(el);
+        }
+
         private boolean findName(TreeElement el, boolean isSubElement) {
             Pattern filterRegex = useRegEx ? regExPattern : null;
 
             // show all child, if parent have match
             TreeElement parent = el.getParent();
-            if (isSubElement && getMatchingLocation(parent.getName(), filterName, filterRegex) != null){
+            if (isSubElement && getMatchingLocation(parent.getName(), filterName, filterRegex) != null) {
                 return true;
             }
 

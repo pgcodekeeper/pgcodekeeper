@@ -69,7 +69,7 @@ public class CreateMsType extends ParserAbstract {
             type.setMemoryOptimized(def.WITH() != null && def.on_off().ON() != null);
         }
 
-        List<IdContext> ids = Arrays.asList(ctx.qualified_name().schema, nameCtx);
+        List<ParserRuleContext> ids = Arrays.asList(ctx.qualified_name().schema, nameCtx);
         addSafe(getSchemaSafe(ids), type, ids);
     }
 
