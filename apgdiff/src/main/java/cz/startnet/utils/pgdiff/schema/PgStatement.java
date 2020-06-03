@@ -158,6 +158,7 @@ public abstract class PgStatement implements IStatement, IHashable {
         this.deps.addAll(deps);
     }
 
+    @Override
     public String getComment() {
         return comment;
     }
