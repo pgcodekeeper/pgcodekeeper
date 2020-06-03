@@ -162,7 +162,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         loader.setMode(ParserListenerMode.REF);
         PgDatabase db = loader.loadFile(new PgDatabase(args));
         removeResFromRefs(file);
-        objDefinitions.putAll(db.getObjDefinitions());
+        objDefinitions.putAll(MetaUtils.getObjDefinitions(db));
         objReferences.putAll(db.getObjReferences());
         notifyListeners();
     }
@@ -171,7 +171,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
             throws InterruptedException, IOException, CoreException {
         PgDatabase db = UIProjectLoader.buildFiles(files, isMsSql, monitor);
         files.forEach(this::removeResFromRefs);
-        objDefinitions.putAll(db.getObjDefinitions());
+        objDefinitions.putAll(MetaUtils.getObjDefinitions(db));
         List<Object> errors = new ArrayList<>();
         FullAnalyze.fullAnalyze(db, MetaUtils.createTreeFromDefs(
                 getAllObjDefinitions(), !isMsSql, db.getPostgresVersion()), errors);
@@ -189,7 +189,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         DatabaseLoader loader = new UIProjectLoader(proj, args, mon);
         PgDatabase db = loader.loadAndAnalyze();
         objDefinitions.clear();
-        objDefinitions.putAll(db.getObjDefinitions());
+        objDefinitions.putAll(MetaUtils.getObjDefinitions(db));
         objReferences.clear();
         objReferences.putAll(db.getObjReferences());
         notifyListeners();
@@ -209,14 +209,14 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         loader.setMode(ParserListenerMode.REF);
         PgDatabase db = loader.load();
         objDefinitions.clear();
-        objDefinitions.putAll(db.getObjDefinitions());
+        objDefinitions.putAll(MetaUtils.getObjDefinitions(db));
         objReferences.clear();
         objReferences.putAll(db.getObjReferences());
         notifyListeners();
     }
 
-    public Stream<PgObjLocation> getDefinitionsForObj(PgObjLocation obj) {
-        return getAllObjDefinitions().map(MetaStatement::getObject).filter(obj::compare);
+    public Stream<MetaStatement> getDefinitionsForObj(PgObjLocation obj) {
+        return getAllObjDefinitions().filter(st -> st.getObject().compare(obj));
     }
 
     public List<PgObjLocation> getObjsForEditor(IEditorInput in) {

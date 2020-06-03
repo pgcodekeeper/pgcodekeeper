@@ -29,7 +29,6 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementContainer;
 import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.PgView;
-import cz.startnet.utils.pgdiff.schema.meta.MetaStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -227,11 +226,7 @@ public class CommentOn extends ParserAbstract {
 
         if (type != null) {
             doSafe((s,c) -> s.setComment(db.getArguments(), c), st, comment);
-            PgObjLocation ref = addObjReference(ids, type, ACTION_COMMENT);
-
-            db.getObjDefinitions().values().stream().flatMap(List::stream)
-            .map(MetaStatement::getObject).filter(ref::compare)
-            .forEach(def -> def.setComment(comment));
+            addObjReference(ids, type, ACTION_COMMENT);
         } else {
             addOutlineRefForCommentOrRule(ACTION_COMMENT, ctx);
         }
@@ -245,9 +240,6 @@ public class CommentOn extends ParserAbstract {
         doSafe((s,c) -> s.setComment(db.getArguments(), c), cast, comment);
         PgObjLocation ref = getCastLocation(source, target, ACTION_COMMENT);
         db.getObjReferences().computeIfAbsent(fileName, k -> new ArrayList<>()).add(ref);
-        db.getObjDefinitions().values().stream().flatMap(List::stream)
-        .map(MetaStatement::getObject).filter(ref::compare)
-        .forEach(def -> def.setComment(comment));
     }
 
     @Override

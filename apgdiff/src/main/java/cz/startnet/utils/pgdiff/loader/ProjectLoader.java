@@ -28,7 +28,6 @@ import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.StatementOverride;
-import cz.startnet.utils.pgdiff.schema.meta.MetaUtils;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.MS_WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
@@ -145,9 +144,10 @@ public class ProjectLoader extends DatabaseLoader {
     protected void addDboSchema(PgDatabase db) {
         if (!db.containsSchema(ApgdiffConsts.DBO)) {
             MsSchema schema = new MsSchema(ApgdiffConsts.DBO);
-            schema.setLocation(new PgObjLocation(new GenericColumn(ApgdiffConsts.DBO, DbObjType.SCHEMA)));
+            schema.setLocation(new PgObjLocation(
+                    new GenericColumn(ApgdiffConsts.DBO, DbObjType.SCHEMA),
+                    null, 0, 0, 1, "hidden"));
             db.addSchema(schema);
-            db.addDefinition("hidden", MetaUtils.createMetaFromStatement(schema));
             db.setDefaultSchema(ApgdiffConsts.DBO);
         }
     }

@@ -434,8 +434,10 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
     }
 
     private boolean qualAster(List<? extends ParserRuleContext> ids, List<ModPair<String, String>> cols) {
-        String schema = QNameParser.getSecondName(ids);
-        String relation = QNameParser.getFirstName(ids);
+        ParserRuleContext schemaCtx = QNameParser.getSecondNameCtx(ids);
+        String schema = schemaCtx == null ? null : schemaCtx.getText();
+        ParserRuleContext relationCtx = QNameParser.getFirstNameCtx(ids);
+        String relation = relationCtx.getText();
 
         Entry<String, GenericColumn> ref = findReference(schema, relation, null);
         if (ref == null) {
@@ -444,6 +446,13 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
         }
         GenericColumn relationGc = ref.getValue();
         if (relationGc != null) {
+            if  (schemaCtx != null) {
+                addDepcy(new GenericColumn(relationGc.schema, DbObjType.SCHEMA), schemaCtx);
+            }
+
+            // currently adding a table reference for any alias
+            addDepcy(relationGc, relationCtx);
+
             addFilteredRelationColumnsDepcies(relationGc.schema, relationGc.table, ANY)
             .map(Pair::copyMod)
             .forEach(cols::add);
