@@ -10,7 +10,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgObjLocation extends ContextLocation {
 
-    private static final long serialVersionUID = 1560794454982891339L;
+    private static final long serialVersionUID = -6511243237472584008L;
 
     private DangerStatement danger;
     private int length = -1;
