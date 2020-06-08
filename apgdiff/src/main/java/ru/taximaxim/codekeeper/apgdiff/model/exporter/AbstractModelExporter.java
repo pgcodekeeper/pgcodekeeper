@@ -194,6 +194,7 @@ public abstract class AbstractModelExporter {
             case INDEX:
             case RULE:
             case TRIGGER:
+            case POLICY:
                 elViewChange = elChange.getParent();
                 break;
             default:
@@ -216,29 +217,18 @@ public abstract class AbstractModelExporter {
                 // which it does not contain
                 viewChange = (elChange.getSide() == DiffSide.LEFT ?
                         oldParentSchema : newParentSchema).getView(elChange.getParent().getName());
-                switch (elChange.getType()) {
+                DbObjType type = elChange.getType();
+                switch (type) {
                 case CONSTRAINT:
-                    stChange = viewChange.getConstraint(elChange.getName());
-                    if (elChange.getSide() == DiffSide.BOTH) {
-                        stChangeOld = oldView.getConstraint(elChange.getName());
-                    }
-                    break;
                 case INDEX:
-                    stChange = viewChange.getIndex(elChange.getName());
-                    if (elChange.getSide() == DiffSide.BOTH) {
-                        stChangeOld = oldView.getIndex(elChange.getName());
-                    }
-                    break;
                 case RULE:
-                    stChange = viewChange.getRule(elChange.getName());
-                    if (elChange.getSide() == DiffSide.BOTH) {
-                        stChangeOld = oldView.getRule(elChange.getName());
-                    }
-                    break;
                 case TRIGGER:
-                    stChange = viewChange.getTrigger(elChange.getName());
+                case POLICY:
+                    String name = elChange.getName();
+                    stChange = (PgStatementWithSearchPath) viewChange.getChild(name, type);
+
                     if (elChange.getSide() == DiffSide.BOTH) {
-                        stChangeOld = oldView.getTrigger(elChange.getName());
+                        stChangeOld = (PgStatementWithSearchPath) oldView.getChild(name, type);
                     }
                     break;
                 default:
@@ -314,6 +304,7 @@ public abstract class AbstractModelExporter {
             case INDEX:
             case TRIGGER:
             case RULE:
+            case POLICY:
                 elTableChange = elChange.getParent();
                 break;
             default:
@@ -336,29 +327,18 @@ public abstract class AbstractModelExporter {
                 // which it does not contain
                 tableChange = (elChange.getSide() == DiffSide.LEFT ?
                         oldParentSchema : newParentSchema).getTable(elChange.getParent().getName());
-                switch (elChange.getType()) {
+                DbObjType type = elChange.getType();
+                switch (type) {
                 case CONSTRAINT:
-                    stChange = tableChange.getConstraint(elChange.getName());
-                    if (elChange.getSide() == DiffSide.BOTH) {
-                        stChangeOld = oldTable.getConstraint(elChange.getName());
-                    }
-                    break;
                 case INDEX:
-                    stChange = tableChange.getIndex(elChange.getName());
-                    if (elChange.getSide() == DiffSide.BOTH) {
-                        stChangeOld = oldTable.getIndex(elChange.getName());
-                    }
-                    break;
                 case TRIGGER:
-                    stChange = tableChange.getTrigger(elChange.getName());
-                    if (elChange.getSide() == DiffSide.BOTH) {
-                        stChangeOld = oldTable.getTrigger(elChange.getName());
-                    }
-                    break;
                 case RULE:
-                    stChange = tableChange.getRule(elChange.getName());
+                case POLICY:
+                    String name = elChange.getName();
+                    stChange = (PgStatementWithSearchPath) tableChange.getChild(name, type);
+
                     if (elChange.getSide() == DiffSide.BOTH) {
-                        stChangeOld = oldTable.getRule(elChange.getName());
+                        stChangeOld = (PgStatementWithSearchPath) oldTable.getChild(name, type);
                     }
                     break;
                 default:
@@ -484,6 +464,7 @@ class ExportTableOrder implements Comparator<PgStatementWithSearchPath> {
         case TRIGGER:   return 1;
         case RULE:      return 2;
         case CONSTRAINT:return 3;
+        case POLICY:    return 4;
         default: throw new IllegalArgumentException("Illegal table subelement: " + el.getName());
         }
     }

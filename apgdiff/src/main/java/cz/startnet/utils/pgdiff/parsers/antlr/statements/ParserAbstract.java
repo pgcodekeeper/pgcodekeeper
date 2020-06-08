@@ -376,6 +376,7 @@ public abstract class ParserAbstract {
         case CONSTRAINT:
         case TRIGGER:
         case RULE:
+        case POLICY:
         case COLUMN:
             return new PgObjLocation(new GenericColumn(schemaName,
                     QNameParser.getSecondName(ids), name, type), action,

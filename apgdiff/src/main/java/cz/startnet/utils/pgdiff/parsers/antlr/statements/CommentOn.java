@@ -160,15 +160,6 @@ public class CommentOn extends ParserAbstract {
             } else {
                 st = getSafe(PgStatementContainer::getConstraint, table, nameCtx);
             }
-        } else if (obj.TRIGGER() != null && obj.EVENT() == null) {
-            type = DbObjType.TRIGGER;
-            List<IdentifierContext> parentIds = obj.table_name.identifier();
-            addObjReference(parentIds, DbObjType.TABLE, null);
-            ids = Arrays.asList(QNameParser.getSchemaNameCtx(parentIds),
-                    QNameParser.getFirstNameCtx(parentIds), nameCtx);
-            PgStatementContainer c = getSafe(AbstractSchema::getStatementContainer, schema,
-                    QNameParser.getFirstNameCtx(parentIds));
-            st = getSafe(PgStatementContainer::getTrigger, c, nameCtx);
         } else if (obj.DATABASE() != null) {
             st = db;
             type = DbObjType.DATABASE;
@@ -201,15 +192,23 @@ public class CommentOn extends ParserAbstract {
         } else if (obj.DOMAIN() != null) {
             type = DbObjType.DOMAIN;
             st = getSafe(AbstractSchema::getDomain, schema, nameCtx);
-        } else if (obj.RULE() != null) {
-            type = DbObjType.RULE;
+        } else if ((obj.TRIGGER() != null && obj.EVENT() == null)
+                || obj.POLICY() != null || obj.RULE() != null) {
             List<IdentifierContext> parentIds = obj.table_name.identifier();
             addObjReference(parentIds, DbObjType.TABLE, null);
-            ids = Arrays.asList(QNameParser.getSchemaNameCtx(parentIds),
-                    QNameParser.getFirstNameCtx(parentIds), nameCtx);
-            PgStatementContainer c = getSafe(AbstractSchema::getStatementContainer, schema,
-                    QNameParser.getFirstNameCtx(obj.table_name.identifier()));
-            st = getSafe(PgStatementContainer::getRule, c, nameCtx);
+            IdentifierContext tableCtx = QNameParser.getFirstNameCtx(parentIds);
+            ids = Arrays.asList(QNameParser.getSchemaNameCtx(parentIds), tableCtx, nameCtx);
+            PgStatementContainer c = getSafe(AbstractSchema::getStatementContainer, schema, tableCtx);
+            if (obj.POLICY() != null) {
+                type = DbObjType.POLICY;
+                st = getSafe(PgStatementContainer::getPolicy, c, nameCtx);
+            } else if (obj.RULE() != null) {
+                type = DbObjType.RULE;
+                st = getSafe(PgStatementContainer::getRule, c, nameCtx);
+            } else {
+                type = DbObjType.TRIGGER;
+                st = getSafe(PgStatementContainer::getTrigger, c, nameCtx);
+            }
         } else if (obj.CONFIGURATION() != null) {
             type = DbObjType.FTS_CONFIGURATION;
             st = getSafe(AbstractSchema::getFtsConfiguration, schema, nameCtx);

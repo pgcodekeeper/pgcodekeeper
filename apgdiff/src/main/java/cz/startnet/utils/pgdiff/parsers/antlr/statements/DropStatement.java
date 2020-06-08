@@ -11,6 +11,7 @@ import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_cast_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_operator_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_policy_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_rule_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_statementsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_trigger_statementContext;
@@ -41,6 +42,8 @@ public class DropStatement extends ParserAbstract {
             dropTrigger(ctx.drop_trigger_statement());
         } else if (ctx.drop_rule_statement() != null) {
             dropRule(ctx.drop_rule_statement());
+        } else if (ctx.drop_policy_statement() != null) {
+            dropPolicy(ctx.drop_policy_statement());
         } else if (ctx.drop_statements() != null) {
             drop(ctx.drop_statements());
         } else if (ctx.drop_operator_statement() != null) {
@@ -82,6 +85,10 @@ public class DropStatement extends ParserAbstract {
 
     public void dropRule(Drop_rule_statementContext ctx) {
         dropChild(ctx.schema_qualified_name().identifier(), ctx.name, DbObjType.RULE);
+    }
+
+    private void dropPolicy(Drop_policy_statementContext ctx) {
+        dropChild(ctx.schema_qualified_name().identifier(), ctx.identifier(), DbObjType.POLICY);
     }
 
     public void dropChild(List<IdentifierContext> tableIds, IdentifierContext nameCtx, DbObjType type) {
@@ -174,6 +181,12 @@ public class DropStatement extends ParserAbstract {
             auxIds.add(dropRuleCtx.name);
             ids = auxIds;
             type = DbObjType.RULE;
+        } else if (ctx.drop_policy_statement() != null) {
+            Drop_policy_statementContext dropPolicyCtx = ctx.drop_policy_statement();
+            List<IdentifierContext> auxIds = dropPolicyCtx.schema_qualified_name().identifier();
+            auxIds.add(dropPolicyCtx.identifier());
+            ids = auxIds;
+            type = DbObjType.POLICY;
         } else if (ctx.drop_statements() != null) {
             Drop_statementsContext dropStmtCtx = ctx.drop_statements();
             type = getTypeOfDropStmt(dropStmtCtx);

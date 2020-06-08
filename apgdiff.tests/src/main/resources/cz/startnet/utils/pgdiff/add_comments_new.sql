@@ -90,6 +90,10 @@ CREATE RULE test_rule AS ON DELETE TO public.test DO NOTHING;
 
 COMMENT ON RULE test_rule ON public.test IS 'test rule';
 
+CREATE POLICY test_policy ON public.test;
+
+COMMENT ON POLICY test_policy ON public.test IS 'test policy';
+
 CREATE TEXT SEARCH TEMPLATE public.test_template (
     LEXIZE = dsnowball_lexize );
 

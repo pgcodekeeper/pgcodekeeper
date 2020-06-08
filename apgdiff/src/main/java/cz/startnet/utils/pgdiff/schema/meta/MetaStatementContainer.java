@@ -17,6 +17,7 @@ public class MetaStatementContainer extends MetaRelation implements IStatementCo
     private final transient Map<String, MetaStatement> indexes = new LinkedHashMap<>();
     private final transient Map<String, MetaStatement> triggers = new LinkedHashMap<>();
     private final transient Map<String, MetaStatement> rules = new LinkedHashMap<>();
+    private final transient Map<String, MetaStatement> policies = new LinkedHashMap<>();
 
     public MetaStatementContainer(PgObjLocation object) {
         super(object);
@@ -39,6 +40,9 @@ public class MetaStatementContainer extends MetaRelation implements IStatementCo
         case CONSTRAINT:
             constraints.put(st.getName(), (MetaConstraint) st);
             break;
+        case POLICY:
+            policies.put(st.getName(), st);
+            break;
         default:
             throw new IllegalArgumentException("Unsupported child type: " + type);
         }
@@ -55,6 +59,8 @@ public class MetaStatementContainer extends MetaRelation implements IStatementCo
             return rules.get(name);
         case CONSTRAINT:
             return constraints.get(name);
+        case POLICY:
+            return policies.get(name);
         default:
             return null;
         }

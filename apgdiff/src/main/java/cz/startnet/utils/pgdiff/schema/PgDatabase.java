@@ -469,6 +469,7 @@ public class PgDatabase extends PgStatement implements IDatabase {
         case INDEX:
         case TRIGGER:
         case RULE:
+        case POLICY:
             IStatementContainer cont = getSchema(parent.getParent().getName())
             .getStatementContainer(parentName);
 

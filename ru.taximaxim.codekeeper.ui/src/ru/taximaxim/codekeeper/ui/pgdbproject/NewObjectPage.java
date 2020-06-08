@@ -241,7 +241,7 @@ public final class NewObjectPage extends WizardPage {
 
         viewerType.addSelectionChangedListener(e -> {
             type = (DbObjType) ((StructuredSelection) e.getSelection()).getFirstElement();
-            showGroup(type == DbObjType.TRIGGER || type == DbObjType.RULE);
+            showGroup(isHaveChoise());
             setDefaultName();
             getWizard().getContainer().updateButtons();
         });
@@ -310,6 +310,7 @@ public final class NewObjectPage extends WizardPage {
             break;
         case TRIGGER:
         case RULE:
+        case POLICY:
         case INDEX:
         case CONSTRAINT:
             path = schema + '.' + container + '.' + name;
@@ -370,11 +371,12 @@ public final class NewObjectPage extends WizardPage {
     }
 
     private boolean isHaveChoise() {
-        return type == DbObjType.TRIGGER || type == DbObjType.RULE;
+        return type == DbObjType.TRIGGER || type == DbObjType.RULE
+                || type == DbObjType.INDEX || type == DbObjType.POLICY;
     }
 
     public boolean isSubElement() {
-        return isHaveChoise() || type == DbObjType.CONSTRAINT || type == DbObjType.INDEX;
+        return isHaveChoise() || type == DbObjType.CONSTRAINT;
     }
 
     public boolean createFile() {
