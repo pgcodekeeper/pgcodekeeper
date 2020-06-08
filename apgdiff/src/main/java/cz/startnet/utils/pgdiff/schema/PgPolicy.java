@@ -104,7 +104,6 @@ public class PgPolicy extends PgStatementWithSearchPath {
             appendCommentSql(sbSQL);
         }
 
-
         return sbSQL.toString();
     }
 
