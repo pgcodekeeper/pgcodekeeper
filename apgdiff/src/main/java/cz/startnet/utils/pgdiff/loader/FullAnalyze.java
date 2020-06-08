@@ -59,7 +59,7 @@ public final class FullAnalyze {
         AntlrParser.finishAntlr(antlrTasks);
 
         for (PgObjLocation ref : refs) {
-            db.getObjReferences().computeIfAbsent(ref.getFilePath(), e -> new ArrayList<>()).add(ref);
+            db.addReference(ref.getFilePath(), ref);
         }
     }
 

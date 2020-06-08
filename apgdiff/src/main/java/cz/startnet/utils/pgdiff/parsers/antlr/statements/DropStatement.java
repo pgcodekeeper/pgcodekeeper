@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -74,10 +73,8 @@ public class DropStatement extends ParserAbstract {
     }
 
     private void dropCast(Drop_cast_statementContext ctx) {
-        PgObjLocation loc = getCastLocation(ctx.source, ctx.target, ACTION_DROP);
-        db.getObjReferences().computeIfAbsent(fileName, k -> new ArrayList<>()).add(loc);
+        db.addReference(fileName, getCastLocation(ctx.source, ctx.target, ACTION_DROP));
     }
-
 
     public void dropTrigger(Drop_trigger_statementContext ctx) {
         dropChild(ctx.table_name.identifier(), ctx.name, DbObjType.TRIGGER);

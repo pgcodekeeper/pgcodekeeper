@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,7 +23,6 @@ import cz.startnet.utils.pgdiff.schema.ICast;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
-import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementContainer;
 import cz.startnet.utils.pgdiff.schema.PgType;
@@ -237,8 +235,7 @@ public class CommentOn extends ParserAbstract {
         String castName = ICast.getSimpleName(getFullCtxText(source), getFullCtxText(target));
         PgStatement cast = getSafe(PgDatabase::getCast, db, castName, source.getStart());
         doSafe((s,c) -> s.setComment(db.getArguments(), c), cast, comment);
-        PgObjLocation ref = getCastLocation(source, target, ACTION_COMMENT);
-        db.getObjReferences().computeIfAbsent(fileName, k -> new ArrayList<>()).add(ref);
+        db.addReference(fileName, getCastLocation(source, target, ACTION_COMMENT));
     }
 
     @Override
