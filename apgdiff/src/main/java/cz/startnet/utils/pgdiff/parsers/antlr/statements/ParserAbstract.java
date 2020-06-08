@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -262,7 +261,7 @@ public abstract class ParserAbstract {
             DbObjType type, String action) {
         PgObjLocation loc = getLocation(ids, type, action, false, null);
         if (loc != null) {
-            db.getObjReferences().computeIfAbsent(fileName, k -> new ArrayList<>()).add(loc);
+            db.addReference(fileName, loc);
         }
 
         return loc;
@@ -413,7 +412,7 @@ public abstract class ParserAbstract {
             if (!refMode) {
                 st.addDep(loc.getObj());
             }
-            db.getObjReferences().computeIfAbsent(fileName, k -> new ArrayList<>()).add(loc);
+            db.addReference(fileName, loc);
         }
     }
 
@@ -539,8 +538,7 @@ public abstract class ParserAbstract {
      * for objects which undefined in DbObjType).
      */
     protected void addOutlineRefForCommentOrRule(String action, ParserRuleContext ctx) {
-        db.getObjReferences().computeIfAbsent(fileName, k -> new ArrayList<>())
-        .add(new PgObjLocation(action, ctx, null));
+        db.addReference(fileName, new PgObjLocation(action, ctx, null));
     }
 
     /**
