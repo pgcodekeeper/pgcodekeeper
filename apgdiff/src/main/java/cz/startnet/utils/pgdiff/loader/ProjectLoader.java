@@ -146,7 +146,7 @@ public class ProjectLoader extends DatabaseLoader {
             MsSchema schema = new MsSchema(ApgdiffConsts.DBO);
             schema.setLocation(new PgObjLocation(
                     new GenericColumn(ApgdiffConsts.DBO, DbObjType.SCHEMA),
-                    null, 0, 0, 1, "hidden"));
+                    null, 0, 0, 1, HIDDEN_LOCATION));
             db.addSchema(schema);
             db.setDefaultSchema(ApgdiffConsts.DBO);
         }
