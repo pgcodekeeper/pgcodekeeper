@@ -144,18 +144,18 @@ public class CommentOn extends ParserAbstract {
             st = getSafe(PgDatabase::getExtension, db, nameCtx);
         } else if (obj.CONSTRAINT() != null) {
             List<IdentifierContext> parentIds = obj.table_name.identifier();
-            PgStatementContainer table = getSafe(AbstractSchema::getStatementContainer,
-                    schema, QNameParser.getFirstNameCtx(parentIds));
-            addObjReference(parentIds, DbObjType.TABLE, null);
+            ParserRuleContext parentCtx = QNameParser.getFirstNameCtx(parentIds);
             type = DbObjType.CONSTRAINT;
-            ids = Arrays.asList(QNameParser.getSchemaNameCtx(parentIds),
-                    QNameParser.getFirstNameCtx(parentIds), nameCtx);
-            if (table == null) {
-                PgDomain domain = getSafe(AbstractSchema::getDomain, schema, nameCtx);
+            if (obj.DOMAIN() != null) {
+                addObjReference(parentIds, DbObjType.DOMAIN, null);
+                PgDomain domain = getSafe(AbstractSchema::getDomain, schema, parentCtx);
                 st = getSafe(PgDomain::getConstraint, domain, nameCtx);
             } else {
+                addObjReference(parentIds, DbObjType.TABLE, null);
+                PgStatementContainer table = getSafe(AbstractSchema::getStatementContainer, schema, parentCtx);
                 st = getSafe(PgStatementContainer::getConstraint, table, nameCtx);
             }
+            ids = Arrays.asList(QNameParser.getSchemaNameCtx(parentIds), parentCtx, nameCtx);
         } else if (obj.DATABASE() != null) {
             st = db;
             type = DbObjType.DATABASE;

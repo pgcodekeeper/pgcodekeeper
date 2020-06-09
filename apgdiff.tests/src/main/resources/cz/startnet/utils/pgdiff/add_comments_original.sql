@@ -16,6 +16,10 @@ CREATE FUNCTION public.test_fnc(arg character varying) RETURNS boolean
 RETURN true;
 END;$$;
 
+CREATE PROCEDURE public.test_proc(arg integer)
+    LANGUAGE SQL
+    AS $$ $$;
+
 CREATE FUNCTION public.trigger_fnc() RETURNS trigger
     LANGUAGE plpgsql
     AS $$begin
