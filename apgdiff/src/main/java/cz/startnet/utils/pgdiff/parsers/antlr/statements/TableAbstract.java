@@ -46,6 +46,7 @@ import cz.startnet.utils.pgdiff.schema.MsConstraint;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -72,8 +73,8 @@ public abstract class TableAbstract extends ParserAbstract {
     protected void addTableConstraint(Constraint_commonContext tblConstrCtx,
             AbstractTable table, String schemaName, String tablespace) {
         PgConstraint constrBlank = createTableConstraintBlank(tblConstrCtx);
-        processTableConstraintBlank(tblConstrCtx, constrBlank, db, schemaName,
-                table.getName(), tablespace, fileName, isRefMode());
+        processTableConstraintBlank(tblConstrCtx, constrBlank, schemaName,
+                table.getName(), tablespace, fileName);
         doSafe(AbstractTable::addConstraint, table, constrBlank);
     }
 
@@ -97,7 +98,9 @@ public abstract class TableAbstract extends ParserAbstract {
                 return;
             }
             String refTableName = QNameParser.getFirstName(ids);
-            GenericColumn ftable = new GenericColumn(refSchemaName, refTableName, DbObjType.TABLE);
+            PgObjLocation loc = addObjReference(ids, DbObjType.TABLE, null);
+
+            GenericColumn ftable = loc.getObj();
             IdentifierContext id = ctx.identifier();
             String constrName = id == null ? table.getName() + '_' + colName + "_fkey" : id.getText();
 
@@ -253,9 +256,9 @@ public abstract class TableAbstract extends ParserAbstract {
         return new PgConstraint(constrName);
     }
 
-    protected static void processTableConstraintBlank(Constraint_commonContext ctx,
-            PgConstraint constrBlank, PgDatabase db, String schemaName,
-            String tableName, String tablespace, String location, boolean isRefMode) {
+    protected void processTableConstraintBlank(Constraint_commonContext ctx,
+            PgConstraint constrBlank, String schemaName, String tableName,
+            String tablespace, String location) {
         Constr_bodyContext constrBody = ctx.constr_body();
 
         if (constrBody.REFERENCES() != null) {
@@ -265,19 +268,12 @@ public abstract class TableAbstract extends ParserAbstract {
             String refTableName = QNameParser.getFirstName(ids);
             String refSchemaName = QNameParser.getSchemaName(ids);
 
-            if (refSchemaName == null) {
-                if (isRefMode) {
-                    return;
-                }
-                throw new UnresolvedReferenceException(SCHEMA_ERROR + getFullCtxText(tblRef),
-                        tblRef.start);
-            }
+            PgObjLocation loc = addObjReference(ids, DbObjType.TABLE, null);
+            GenericColumn ftable = loc.getObj();
 
-            GenericColumn ftable = new GenericColumn(refSchemaName, refTableName, DbObjType.TABLE);
             constrBlank.setForeignTable(ftable);
             constrBlank.addDep(ftable);
 
-            // TODO need ref to table
             Names_in_parensContext refs = constrBody.ref;
             if (refs != null) {
                 for (Schema_qualified_nameContext name : refs.names_references().schema_qualified_name()) {
@@ -355,10 +351,13 @@ public abstract class TableAbstract extends ParserAbstract {
 
         if (body.REFERENCES() != null) {
             Qualified_nameContext ref = body.qualified_name();
-            String fschema = getSchemaNameSafe(Arrays.asList(ref.schema, ref.name));
+            List<IdContext> ids = Arrays.asList(ref.schema, ref.name);
+            String fschema = getSchemaNameSafe(ids);
             String ftable = ref.name.getText();
 
-            GenericColumn ftableRef = new GenericColumn(fschema, ftable, DbObjType.TABLE);
+            PgObjLocation loc = addObjReference(ids, DbObjType.TABLE, null);
+
+            GenericColumn ftableRef = loc.getObj();
             con.setForeignTable(ftableRef);
             con.addDep(ftableRef);
 
