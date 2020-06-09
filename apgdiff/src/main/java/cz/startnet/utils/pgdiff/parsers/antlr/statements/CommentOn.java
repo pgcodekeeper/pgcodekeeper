@@ -162,16 +162,13 @@ public class CommentOn extends ParserAbstract {
             st = db;
             type = DbObjType.DATABASE;
         } else if (obj.INDEX() != null) {
-
-            PgStatement commentOn = getSafe((sc,n) -> sc.getStatementContainers()
+            type = DbObjType.INDEX;
+            st = getSafe((sc,n) -> sc.getStatementContainers()
                     .flatMap(c -> Stream.concat(c.getIndexes().stream(), c.getConstraints().stream()))
                     .filter(s -> s.getName().equals(n))
                     .collect(Collectors.reducing((a,b) -> b.getStatementType() == DbObjType.INDEX ? b : a))
                     .orElse(null),
                     schema, nameCtx);
-
-            doSafe((s,c) -> s.setComment(db.getArguments(), c), commentOn, comment);
-
         } else if (obj.SCHEMA() != null && !ApgdiffConsts.PUBLIC.equals(name)) {
             type = DbObjType.SCHEMA;
             st = getSafe(PgDatabase::getSchema, db, nameCtx);
