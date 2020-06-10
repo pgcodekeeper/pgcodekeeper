@@ -12,8 +12,6 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public abstract class DatabaseLoader {
 
-    protected static final String HIDDEN_LOCATION = "hidden location";
-
     protected final List<Object> errors;
 
     protected final Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>();

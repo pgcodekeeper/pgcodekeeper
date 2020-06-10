@@ -126,8 +126,7 @@ public class PgDumpLoader extends DatabaseLoader {
             new PgSchema(ApgdiffConsts.PUBLIC);
         d.addSchema(schema);
         schema.setLocation(new PgObjLocation(
-                new GenericColumn(schema.getName(), DbObjType.SCHEMA),
-                null, 0, 0, 1, HIDDEN_LOCATION));
+                new GenericColumn(schema.getName(), DbObjType.SCHEMA)));
         d.setDefaultSchema(schema.getName());
         loadDatabase(d, antlrTasks);
         return d;
