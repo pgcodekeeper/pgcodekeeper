@@ -37,6 +37,7 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.DefaultCharacterPairMatcher;
@@ -44,6 +45,8 @@ import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ICharacterPairMatcher;
 import org.eclipse.jface.viewers.DecorationOverlayIcon;
 import org.eclipse.jface.viewers.IDecoration;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -253,6 +256,26 @@ implements IResourceChangeListener, ITextErrorReporter {
         ContentAssistAction action = new ContentAssistAction(bundle, "contentAssist.", this); //$NON-NLS-1$
         action.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
         setAction(CONTENT_ASSIST, action);
+    }
+
+    public PgObjLocation getCurrentReference() {
+        ISelectionProvider provider = getSelectionProvider();
+        if (getSelectionProvider() == null) {
+            return null;
+        }
+
+        ISelection selection = provider.getSelection();
+        if (selection instanceof ITextSelection) {
+            ITextSelection textSelection = (ITextSelection) selection;
+            int offset = textSelection.getOffset();
+            List<PgObjLocation> refs = getParser().getObjsForEditor(getEditorInput());
+
+            return refs.stream()
+                    .filter(loc -> loc.getOffset() <= offset && offset <= loc.getOffset() + loc.getObjLength())
+                    .findAny().orElse(null);
+        }
+
+        return null;
     }
 
     public void changeLanguage(String language) {
