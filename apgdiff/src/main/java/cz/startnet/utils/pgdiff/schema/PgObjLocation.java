@@ -42,10 +42,14 @@ public class PgObjLocation extends ContextLocation {
         setLength(ctx.getStop().getStopIndex() - ctx.getStart().getStartIndex() + 1);
     }
 
-    public PgObjLocation(String action, ParserRuleContext ctx, String sql) {
-        this(null, action, ctx.getStart().getStartIndex(), ctx.getStart().getLine(),
-                ctx.getStart().getCharPositionInLine(), null);
+    public PgObjLocation(String action, int offset, int lineNumber, int charPositionInLine, String sql) {
+        this(null, action, offset, lineNumber, charPositionInLine, null);
         this.sql = sql;
+    }
+
+    public PgObjLocation(String action, ParserRuleContext ctx, String sql) {
+        this(action, ctx.getStart().getStartIndex(), ctx.getStart().getLine(),
+                ctx.getStart().getCharPositionInLine(), sql);
     }
 
     public PgObjLocation(String action, String sql) {
