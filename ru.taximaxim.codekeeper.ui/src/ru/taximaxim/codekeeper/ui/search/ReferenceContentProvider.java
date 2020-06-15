@@ -14,6 +14,8 @@ import org.eclipse.search.ui.text.AbstractTextSearchResult;
 
 public class ReferenceContentProvider implements ITreeContentProvider {
 
+    private static final Object[] NO_CHILDREN = new Object[0];
+
     private AbstractTextSearchResult result;
     private final AbstractTreeViewer viewer;
     private Map<Object, Set<Object>> children;
@@ -46,7 +48,8 @@ public class ReferenceContentProvider implements ITreeContentProvider {
                 if (viewer.testFindItem(updatedElement) != null) {
                     viewer.refresh(updatedElement);
                 } else {
-                    viewer.add(updatedElement);
+                    // second parameter for compatibility with neon
+                    viewer.add(updatedElement, NO_CHILDREN);
                 }
             } else {
                 viewer.remove(updatedElement);
@@ -89,7 +92,12 @@ public class ReferenceContentProvider implements ITreeContentProvider {
 
     @Override
     public Object[] getChildren(Object parentElement) {
-        return children.getOrDefault(parentElement, new HashSet<>()).toArray();
+        Set<Object> childElements = children.get(parentElement);
+        if (childElements == null) {
+            return NO_CHILDREN;
+        }
+
+        return childElements.toArray();
     }
 
     @Override
