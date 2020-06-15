@@ -150,7 +150,7 @@ implements TSqlContextProcessor {
         Batch_statement_bodyContext body = ctx.batch_statement_body();
 
         if (ctx.ALTER() != null) {
-            safeParseStatement(new AlterMsBatch(body, db), body);
+            safeParseStatement(new AlterMsBatch(body, db, stream), body);
             return;
         }
 
