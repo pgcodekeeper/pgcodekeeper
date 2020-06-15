@@ -63,12 +63,9 @@ public class CommentOn extends ParserAbstract {
         ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
         String name = nameCtx.getText();
 
-        DbObjType type = null;
-
-        // column (separately because of schema qualification)
-        // otherwise schema reference is considered unresolved
+        // column (separately because of non-real columns)
         if (obj.COLUMN() != null) {
-            addOutlineRefForCommentOrRule(ACTION_COMMENT, ctx);
+            addObjReference(ids, DbObjType.COLUMN, ACTION_COMMENT);
 
             if (isRefMode()) {
                 return;
@@ -85,7 +82,7 @@ public class CommentOn extends ParserAbstract {
                 throw new UnresolvedReferenceException(
                         "Table name is missing for commented column!", nameCtx.getStart());
             }
-            List<ParserRuleContext> tableIds = Arrays.asList(schemaCtx, tableCtx);
+            List<? extends ParserRuleContext> tableIds = ids.subList(0, 2);
             String tableName = tableCtx.getText();
             AbstractPgTable table = (AbstractPgTable) schema.getTable(tableName);
             if (table == null) {
@@ -117,7 +114,6 @@ public class CommentOn extends ParserAbstract {
             return;
         }
 
-        PgStatement st = null;
         AbstractSchema schema = null;
         if (obj.table_name != null) {
             schema = getSchemaSafe(obj.table_name.identifier());
@@ -125,6 +121,8 @@ public class CommentOn extends ParserAbstract {
             schema = getSchemaSafe(ids);
         }
 
+        PgStatement st;
+        DbObjType type;
         if (obj.function_args() != null && obj.ROUTINE() == null) {
             if (obj.PROCEDURE() != null) {
                 type = DbObjType.PROCEDURE;
@@ -146,32 +144,29 @@ public class CommentOn extends ParserAbstract {
             st = getSafe(PgDatabase::getExtension, db, nameCtx);
         } else if (obj.CONSTRAINT() != null) {
             List<IdentifierContext> parentIds = obj.table_name.identifier();
-            PgStatementContainer table = getSafe(AbstractSchema::getStatementContainer,
-                    schema, QNameParser.getFirstNameCtx(parentIds));
-            addObjReference(parentIds, DbObjType.TABLE, null);
+            ParserRuleContext parentCtx = QNameParser.getFirstNameCtx(parentIds);
             type = DbObjType.CONSTRAINT;
-            ids = Arrays.asList(QNameParser.getSchemaNameCtx(parentIds),
-                    QNameParser.getFirstNameCtx(parentIds), nameCtx);
-            if (table == null) {
-                PgDomain domain = getSafe(AbstractSchema::getDomain, schema, nameCtx);
+            if (obj.DOMAIN() != null) {
+                addObjReference(parentIds, DbObjType.DOMAIN, null);
+                PgDomain domain = getSafe(AbstractSchema::getDomain, schema, parentCtx);
                 st = getSafe(PgDomain::getConstraint, domain, nameCtx);
             } else {
+                addObjReference(parentIds, DbObjType.TABLE, null);
+                PgStatementContainer table = getSafe(AbstractSchema::getStatementContainer, schema, parentCtx);
                 st = getSafe(PgStatementContainer::getConstraint, table, nameCtx);
             }
+            ids = Arrays.asList(QNameParser.getSchemaNameCtx(parentIds), parentCtx, nameCtx);
         } else if (obj.DATABASE() != null) {
             st = db;
             type = DbObjType.DATABASE;
         } else if (obj.INDEX() != null) {
-
-            PgStatement commentOn = getSafe((sc,n) -> sc.getStatementContainers()
+            type = DbObjType.INDEX;
+            st = getSafe((sc,n) -> sc.getStatementContainers()
                     .flatMap(c -> Stream.concat(c.getIndexes().stream(), c.getConstraints().stream()))
                     .filter(s -> s.getName().equals(n))
                     .collect(Collectors.reducing((a,b) -> b.getStatementType() == DbObjType.INDEX ? b : a))
                     .orElse(null),
                     schema, nameCtx);
-
-            doSafe((s,c) -> s.setComment(db.getArguments(), c), commentOn, comment);
-
         } else if (obj.SCHEMA() != null && !ApgdiffConsts.PUBLIC.equals(name)) {
             type = DbObjType.SCHEMA;
             st = getSafe(PgDatabase::getSchema, db, nameCtx);
@@ -219,14 +214,13 @@ public class CommentOn extends ParserAbstract {
         } else if (obj.TEMPLATE() != null) {
             type = DbObjType.FTS_TEMPLATE;
             st = getSafe(AbstractSchema::getFtsTemplate, schema, nameCtx);
-        }
-
-        if (type != null) {
-            doSafe((s,c) -> s.setComment(db.getArguments(), c), st, comment);
-            addObjReference(ids, type, ACTION_COMMENT);
         } else {
             addOutlineRefForCommentOrRule(ACTION_COMMENT, ctx);
+            return;
         }
+
+        doSafe((s,c) -> s.setComment(db.getArguments(), c), st, comment);
+        addObjReference(ids, type, ACTION_COMMENT);
     }
 
     private void commentCast(Comment_member_objectContext obj, String comment) {

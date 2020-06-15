@@ -201,9 +201,11 @@ public abstract class PgStatement implements IStatement, IHashable {
         case TRIGGER:
         case RULE:
         case POLICY:
-            sb.append(PgDiffUtils.getQuotedName(getName()))
-            .append(" ON ")
-            .append(getParent().getQualifiedName());
+            sb.append(PgDiffUtils.getQuotedName(getName())).append(" ON ");
+            if (getParent().getStatementType() == DbObjType.DOMAIN) {
+                sb.append("DOMAIN ");
+            }
+            sb.append(getParent().getQualifiedName());
             break;
 
         case DATABASE:

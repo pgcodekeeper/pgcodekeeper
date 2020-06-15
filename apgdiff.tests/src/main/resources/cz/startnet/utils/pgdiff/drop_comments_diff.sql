@@ -12,6 +12,8 @@ COMMENT ON COLUMN public.typ_composite.val IS NULL;
 
 COMMENT ON TYPE public.typ_composite IS NULL;
 
+COMMENT ON CONSTRAINT dom_check ON DOMAIN public.dom IS NULL;
+
 COMMENT ON DOMAIN public.dom IS NULL;
 
 COMMENT ON SEQUENCE public.test_id_seq IS NULL;
@@ -31,6 +33,8 @@ COMMENT ON COLUMN public.test.id IS NULL;
 COMMENT ON COLUMN public.test.text IS NULL;
 
 COMMENT ON FUNCTION public.test_fnc(arg character varying) IS NULL;
+
+COMMENT ON PROCEDURE public.test_proc(arg integer) IS NULL;
 
 COMMENT ON CONSTRAINT text_check ON public.test IS NULL;
 
