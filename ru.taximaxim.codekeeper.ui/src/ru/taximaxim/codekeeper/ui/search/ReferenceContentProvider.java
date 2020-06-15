@@ -7,10 +7,14 @@ import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.search.ui.text.AbstractTextSearchResult;
+
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 
 public class ReferenceContentProvider implements ITreeContentProvider {
 
@@ -113,6 +117,12 @@ public class ReferenceContentProvider implements ITreeContentProvider {
         if (element instanceof IResource) {
             IResource resource = (IResource) element;
             return resource.getParent();
+        }
+
+        if (element instanceof PgObjLocation) {
+            PgObjLocation loc = (PgObjLocation) element;
+            return ResourcesPlugin.getWorkspace().getRoot()
+                    .getFileForLocation(new Path(loc.getFilePath()));
         }
 
         return null;

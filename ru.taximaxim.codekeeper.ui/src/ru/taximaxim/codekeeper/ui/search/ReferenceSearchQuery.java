@@ -3,12 +3,9 @@ package ru.taximaxim.codekeeper.ui.search;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.search.ui.ISearchQuery;
@@ -40,11 +37,7 @@ public class ReferenceSearchQuery implements ISearchQuery {
             List<PgObjLocation> locs = parser.getAllObjReferences().filter(ref::compare).collect(Collectors.toList());
             SubMonitor sub = SubMonitor.convert(monitor, locs.size());
             for (PgObjLocation loc : locs) {
-                IFile file = ResourcesPlugin.getWorkspace().getRoot()
-                        .getFileForLocation(new Path(loc.getFilePath()));
-                if (file != null ) {
-                    res.addMatch(new Match(file, loc.getOffset(), loc.getObjLength()));
-                }
+                res.addMatch(new Match(loc, loc.getOffset(), loc.getObjLength()));
                 sub.worked(1);
             }
         }
