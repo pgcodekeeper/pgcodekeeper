@@ -19,11 +19,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  */
 public class PgRule extends PgStatementWithSearchPath{
 
-    public enum PgRuleEventType {
-        SELECT, INSERT, UPDATE, DELETE
-    }
-
-    private PgRuleEventType event;
+    private PgEventType event;
     private String condition;
     private boolean instead;
     private final List<String> commands = new ArrayList<>();
@@ -37,11 +33,11 @@ public class PgRule extends PgStatementWithSearchPath{
         return DbObjType.RULE;
     }
 
-    public PgRuleEventType getEvent() {
+    public PgEventType getEvent() {
         return event;
     }
 
-    public void setEvent(PgRuleEventType event) {
+    public void setEvent(PgEventType event) {
         this.event = event;
         resetHash();
     }

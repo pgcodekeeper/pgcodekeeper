@@ -180,9 +180,12 @@ public class MetaUtils {
             gc = new GenericColumn(st.getParent().getName(), st.getBareName(), type);
             break;
         case INDEX:
+            gc = new GenericColumn(st.getParent().getParent().getName(), st.getName(), type);
+            break;
         case CONSTRAINT:
         case RULE:
         case TRIGGER:
+        case POLICY:
             IStatement parent = st.getParent();
             gc = new GenericColumn(parent.getParent().getName(), parent.getName(), st.getName(), type);
             break;

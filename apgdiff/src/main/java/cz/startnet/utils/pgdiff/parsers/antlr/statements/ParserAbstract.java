@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -262,7 +261,7 @@ public abstract class ParserAbstract {
             DbObjType type, String action) {
         PgObjLocation loc = getLocation(ids, type, action, false, null);
         if (loc != null) {
-            db.getObjReferences().computeIfAbsent(fileName, k -> new ArrayList<>()).add(loc);
+            db.addReference(fileName, loc);
         }
 
         return loc;
@@ -316,9 +315,7 @@ public abstract class ParserAbstract {
                 ACTION_CREATE, false, null);
         if (loc != null) {
             child.setLocation(loc);
-            if (isRefMode()) {
-                db.addReference(fileName, loc);
-            }
+            db.addReference(fileName, loc);
         }
     }
 
@@ -378,6 +375,7 @@ public abstract class ParserAbstract {
         case CONSTRAINT:
         case TRIGGER:
         case RULE:
+        case POLICY:
         case COLUMN:
             return new PgObjLocation(new GenericColumn(schemaName,
                     QNameParser.getSecondName(ids), name, type), action,
@@ -414,7 +412,7 @@ public abstract class ParserAbstract {
             if (!refMode) {
                 st.addDep(loc.getObj());
             }
-            db.getObjReferences().computeIfAbsent(fileName, k -> new ArrayList<>()).add(loc);
+            db.addReference(fileName, loc);
         }
     }
 
@@ -540,8 +538,7 @@ public abstract class ParserAbstract {
      * for objects which undefined in DbObjType).
      */
     protected void addOutlineRefForCommentOrRule(String action, ParserRuleContext ctx) {
-        db.getObjReferences().computeIfAbsent(fileName, k -> new ArrayList<>())
-        .add(new PgObjLocation(action, ctx, null));
+        db.addReference(fileName, new PgObjLocation(action, ctx, null));
     }
 
     /**

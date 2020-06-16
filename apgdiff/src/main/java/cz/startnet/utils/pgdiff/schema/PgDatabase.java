@@ -87,7 +87,11 @@ public class PgDatabase extends PgStatement implements IDatabase {
     }
 
     public void addReference(String fileName, PgObjLocation loc) {
-        objReferences.computeIfAbsent(fileName, k -> new ArrayList<>()).add(loc);
+        List<PgObjLocation> l = objReferences.computeIfAbsent(fileName, k -> new ArrayList<>());
+        // TODO look for the better alternative
+        if (!l.contains(loc)) {
+            l.add(loc);
+        }
     }
 
     public List<AbstractAnalysisLauncher> getAnalysisLaunchers() {
@@ -468,6 +472,7 @@ public class PgDatabase extends PgStatement implements IDatabase {
         case INDEX:
         case TRIGGER:
         case RULE:
+        case POLICY:
             IStatementContainer cont = getSchema(parent.getParent().getName())
             .getStatementContainer(parentName);
 

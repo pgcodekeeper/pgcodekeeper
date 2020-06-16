@@ -13,8 +13,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.RuleAnalysisLauncher
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgEventType;
 import cz.startnet.utils.pgdiff.schema.PgRule;
-import cz.startnet.utils.pgdiff.schema.PgRule.PgRuleEventType;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -32,7 +32,7 @@ public class CreateRewrite extends ParserAbstract {
         addObjReference(ids, DbObjType.TABLE, null);
 
         PgRule rule = new PgRule(ctx.name.getText());
-        rule.setEvent(PgRuleEventType.valueOf(ctx.event.getText().toUpperCase(Locale.ROOT)));
+        rule.setEvent(PgEventType.valueOf(ctx.event.getText().toUpperCase(Locale.ROOT)));
         if (ctx.INSTEAD() != null){
             rule.setInstead(true);
         }

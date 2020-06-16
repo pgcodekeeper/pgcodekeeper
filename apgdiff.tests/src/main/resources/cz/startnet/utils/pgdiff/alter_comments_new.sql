@@ -23,6 +23,8 @@ CREATE DOMAIN public.dom AS integer NOT NULL DEFAULT (-1)
     
 COMMENT ON DOMAIN public.dom IS 'Domain comment 2';
 
+COMMENT ON CONSTRAINT dom_check ON DOMAIN public.dom IS 'test domain constraint 2';
+
 CREATE FUNCTION public.test_fnc(arg character varying) RETURNS boolean
     LANGUAGE plpgsql
     AS $$BEGIN
@@ -30,6 +32,12 @@ RETURN true;
 END;$$;
 
 COMMENT ON FUNCTION public.test_fnc(arg character varying) IS 'test function 2';
+
+CREATE PROCEDURE public.test_proc(arg integer)
+    LANGUAGE SQL
+    AS $$ $$;
+
+COMMENT ON PROCEDURE public.test_proc(arg integer) IS 'test procedure 2';
 
 CREATE FUNCTION public.trigger_fnc() RETURNS trigger
     LANGUAGE plpgsql
@@ -80,3 +88,11 @@ BEFORE UPDATE ON public.test
 FOR EACH STATEMENT EXECUTE PROCEDURE public.trigger_fnc();
 
 COMMENT ON TRIGGER test_trigger ON public.test IS 'test trigger 2';
+
+CREATE RULE test_rule AS ON DELETE TO public.test DO NOTHING;
+
+COMMENT ON RULE test_rule ON public.test IS 'test rule 2';
+
+CREATE POLICY test_policy ON public.test;
+
+COMMENT ON POLICY test_policy ON public.test IS 'test policy 2';

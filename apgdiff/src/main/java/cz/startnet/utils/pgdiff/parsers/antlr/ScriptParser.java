@@ -36,14 +36,8 @@ public class ScriptParser {
                 name, args, new NullProgressMonitor(), 0);
         loader.setMode(ParserListenerMode.SCRIPT);
         // script mode collects only references
-        List<PgObjLocation> batches = loader.load().getObjReferences().get(name);
+        batches = loader.load().getObjReferences().getOrDefault(name, Collections.emptyList());
 
-        // empty script won't add any lists to the definition map
-        if (batches == null) {
-            batches = Collections.emptyList();
-        }
-
-        this.batches = batches;
         dangerStatements = batches.stream()
                 .filter(PgObjLocation::isDanger)
                 .map(PgObjLocation::getDanger)
