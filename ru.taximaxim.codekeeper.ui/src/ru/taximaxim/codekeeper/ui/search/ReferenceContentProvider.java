@@ -9,7 +9,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.search.ui.text.AbstractTextSearchResult;
@@ -21,12 +20,7 @@ public class ReferenceContentProvider implements ITreeContentProvider {
     private static final Object[] NO_CHILDREN = new Object[0];
 
     private AbstractTextSearchResult result;
-    private final AbstractTreeViewer viewer;
     private Map<Object, Set<Object>> children;
-
-    ReferenceContentProvider(AbstractTreeViewer viewer) {
-        this.viewer = viewer;
-    }
 
     @Override
     public Object[] getElements(Object inputElement) {
@@ -41,45 +35,22 @@ public class ReferenceContentProvider implements ITreeContentProvider {
 
             Object[] elements = result.getElements();
             for (Object element : elements) {
-                insert(element, false);
+                insert(element);
             }
         }
     }
 
-    public void elementsChanged(Object[] updatedElements) {
-        for (Object updatedElement : updatedElements) {
-            if (result.getMatchCount(updatedElement) > 0) {
-                if (viewer.testFindItem(updatedElement) != null) {
-                    viewer.refresh(updatedElement);
-                } else {
-                    // second parameter for compatibility with neon
-                    viewer.add(updatedElement, NO_CHILDREN);
-                }
-            } else {
-                viewer.remove(updatedElement);
-            }
-        }
-    }
-
-    private void insert(Object child, boolean refreshViewer) {
+    private void insert(Object child) {
         Object parent = getParent(child);
         while (parent != null) {
-            if (insertChild(parent, child)) {
-                if (refreshViewer) {
-                    viewer.add(parent, child);
-                }
-            } else {
-                if (refreshViewer) {
-                    viewer.update(parent, null);
-                }
+            if (!insertChild(parent, child)) {
                 return;
             }
             child = parent;
             parent = getParent(child);
         }
-        if (insertChild(result, child) && refreshViewer) {
-            viewer.add(result, child);
-        }
+
+        insertChild(result, child);
     }
 
     /**

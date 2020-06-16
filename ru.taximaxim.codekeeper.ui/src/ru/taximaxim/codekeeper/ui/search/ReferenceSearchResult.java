@@ -19,7 +19,8 @@ import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 
-public class ReferenceSearchResult extends AbstractTextSearchResult implements IEditorMatchAdapter, IFileMatchAdapter {
+public class ReferenceSearchResult extends AbstractTextSearchResult
+implements IEditorMatchAdapter, IFileMatchAdapter {
 
     private static final String RESULT_LABEL = "''{0}'' - {1} matches";
 
@@ -34,7 +35,7 @@ public class ReferenceSearchResult extends AbstractTextSearchResult implements I
     @Override
     public String getLabel() {
         return MessageFormat.format(RESULT_LABEL,
-                query.getReference().getObj().getQualifiedName(), getMatchCount());
+                query.getReference().getQualifiedName(), getMatchCount());
     }
 
     @Override

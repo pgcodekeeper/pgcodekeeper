@@ -144,6 +144,10 @@ public class PgObjLocation extends ContextLocation {
         return obj == null ? null : obj.type;
     }
 
+    public String getQualifiedName() {
+        return obj == null ? null : obj.getQualifiedName();
+    }
+
     public final boolean compare(PgObjLocation loc) {
         GenericColumn col = loc.getObj();
         if (obj == null || col == null) {
