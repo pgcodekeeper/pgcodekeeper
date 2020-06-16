@@ -8,7 +8,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collection;
+import java.util.ArrayList;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -19,12 +19,17 @@ import org.junit.runners.Parameterized.Parameters;
 import cz.startnet.utils.pgdiff.FILES_POSTFIX;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.AbstractView;
+import cz.startnet.utils.pgdiff.loader.FullAnalyze;
+import cz.startnet.utils.pgdiff.schema.IDatabase;
+import cz.startnet.utils.pgdiff.schema.IRelation;
+import cz.startnet.utils.pgdiff.schema.ISchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.meta.MetaUtils;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 /**
@@ -68,24 +73,44 @@ public class ExprTypeTest {
         Log.log(Log.LOG_DEBUG, fileNameTemplate);
     }
 
-    private String getRelationColumnsTypes(PgDatabase db) throws IOException, InterruptedException {
+    private String getRelationColumnsTypes(IDatabase db) {
         StringBuilder cols = new StringBuilder();
-        for (AbstractSchema schema : db.getSchemas()) {
-            Collection<AbstractView> views = schema.getViews();
-            if (views.isEmpty()) {
+        for (ISchema schema : db.getSchemas()) {
+            String schemaName = schema.getName();
+            if (ApgdiffUtils.isPgSystemSchema(schemaName)) {
                 continue;
             }
-            cols.append("\n\nSchema: " + schema.getName());
-            for (AbstractView view : views) {
-                cols.append("\n\n  View: " + view.getName());
+
+            boolean isFirstView = true;
+            for (IRelation rel : PgDiffUtils.sIter(schema.getRelations())) {
+                if (rel.getStatementType() != DbObjType.VIEW) {
+                    continue;
+                }
+
+                if (isFirstView) {
+                    cols.append("\n\nSchema: " + schema.getName());
+                    isFirstView = false;
+                }
+
+                cols.append("\n\n  View: " + rel.getName());
                 cols.append("\n    RelationColumns : ");
 
-                for (Pair<String, String> col : PgDiffUtils.sIter(view.getRelationColumns())) {
+                for (Pair<String, String> col : PgDiffUtils.sIter(rel.getRelationColumns())) {
                     cols.append("\n     " + col.getFirst() + " - " + col.getSecond());
                 }
             }
         }
+
         return cols.toString();
+    }
+
+    private IDatabase loadAndAnalyze(PgDiffArguments args, FILES_POSTFIX postfix)
+            throws InterruptedException, IOException {
+        PgDatabase dbNew = ApgdiffTestUtils.loadTestDump(
+                fileNameTemplate + postfix, ExprTypeTest.class, args, false);
+        IDatabase metaDb = MetaUtils.createTreeFromDb(dbNew);
+        FullAnalyze.fullAnalyze(dbNew, metaDb, new ArrayList<>());
+        return metaDb;
     }
 
     private String getStringFromInpunStream(InputStream inputStream) throws IOException {
@@ -101,8 +126,7 @@ public class ExprTypeTest {
     @Test
     public void runDiff() throws IOException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();
-        PgDatabase dbNew = ApgdiffTestUtils.loadTestDump(
-                fileNameTemplate + FILES_POSTFIX.NEW_SQL, ExprTypeTest.class, args);
+        IDatabase dbNew = loadAndAnalyze(args, FILES_POSTFIX.NEW_SQL);
 
         String typesForCompare = null;
         if (fileNameTemplate.startsWith(CHECK)) {
@@ -111,8 +135,8 @@ public class ExprTypeTest {
                     .getResourceAsStream(fileNameTemplate + FILES_POSTFIX.DIFF_SQL));
         } else if (fileNameTemplate.startsWith(COMPARE)) {
             // compare with types with another SQL representation
-            typesForCompare = getRelationColumnsTypes(ApgdiffTestUtils.loadTestDump(
-                    fileNameTemplate + FILES_POSTFIX.ORIGINAL_SQL, ExprTypeTest.class, args));
+            typesForCompare = getRelationColumnsTypes(
+                    loadAndAnalyze(args, FILES_POSTFIX.ORIGINAL_SQL));
         }
 
         Assert.assertEquals("File: " + fileNameTemplate,

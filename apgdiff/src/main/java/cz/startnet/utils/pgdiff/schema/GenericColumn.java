@@ -101,6 +101,7 @@ public class GenericColumn implements Serializable {
         case DATABASE: return db;
         case SCHEMA: return db.getSchema(schema);
         case EXTENSION: return db.getExtension(schema);
+        case CAST: return db.getCast(schema);
         case ASSEMBLY: return db.getAssembly(schema);
         case USER: return db.getUser(schema);
         case ROLE: return db.getRole(schema);
@@ -135,7 +136,7 @@ public class GenericColumn implements Serializable {
         default: break;
         }
 
-        IStatementContainer sc = s.getStatementContainer(table);
+        PgStatementContainer sc = s.getStatementContainer(table);
         switch (type) {
         case CONSTRAINT:
             return sc == null ? null : sc.getConstraint(column);
@@ -143,6 +144,8 @@ public class GenericColumn implements Serializable {
             return sc == null ? null : sc.getTrigger(column);
         case RULE:
             return sc == null ? null : sc.getRule(column);
+        case POLICY:
+            return sc == null ? null : sc.getPolicy(column);
 
         default: throw new IllegalStateException("Unhandled DbObjType: " + type);
         }
@@ -285,39 +288,16 @@ public class GenericColumn implements Serializable {
         return eq;
     }
 
-    public final boolean compare(GenericColumn col) {
-        return Objects.equals(schema, col.schema)
-                && Objects.equals(table, col.table)
-                && Objects.equals(column, col.column)
-                && compareTypes(col.type);
-    }
-
-    private boolean compareTypes(DbObjType objType) {
-        if (type == objType) {
-            return true;
-        }
-
-        switch (objType) {
-        case TABLE:
-        case VIEW:
-        case SEQUENCE:
-            return type == DbObjType.TABLE || type == DbObjType.VIEW || type == DbObjType.SEQUENCE;
-        case FUNCTION:
-        case AGGREGATE:
-            return type == DbObjType.FUNCTION || type == DbObjType.AGGREGATE;
-        case TYPE:
-        case DOMAIN:
-            return type == DbObjType.TYPE || type == DbObjType.DOMAIN;
-        default:
-            return false;
-        }
-    }
-
     public String getQualifiedName() {
         return appendQualifiedName(new StringBuilder()).toString();
     }
 
     protected StringBuilder appendQualifiedName(StringBuilder sb) {
+        if (type == DbObjType.CAST) {
+            sb.append(schema);
+            return sb;
+        }
+
         if (schema != null) {
             sb.append(PgDiffUtils.getQuotedName(schema));
         }

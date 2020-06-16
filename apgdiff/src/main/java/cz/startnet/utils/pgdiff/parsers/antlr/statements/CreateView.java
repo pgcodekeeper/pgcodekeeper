@@ -74,7 +74,6 @@ public class CreateView extends ParserAbstract {
         }
         Select_stmtContext vQuery = ctx.v_query;
         if (vQuery != null) {
-            addStatementBody(vQuery);
             view.setQuery(getFullCtxText(vQuery), AntlrUtils.normalizeWhitespaceUnquoted(vQuery, stream));
             db.addAnalysisLauncher(new ViewAnalysisLauncher(view, vQuery, fileName));
         }
@@ -87,7 +86,7 @@ public class CreateView extends ParserAbstract {
         if (storage != null){
             List <Storage_parameter_optionContext> options = storage.storage_parameter_option();
             for (Storage_parameter_optionContext option: options){
-                String key = option.schema_qualified_name().getText();
+                String key = option.storage_parameter_name().getText();
                 VexContext value = option.vex();
                 ParserAbstract.fillOptionParams(value != null ? value.getText() : "", key , false, view::addOption);
             }

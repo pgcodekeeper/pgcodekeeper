@@ -3,23 +3,23 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 import java.util.Arrays;
 import java.util.List;
 
+import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statement_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_triggerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class AlterMsBatch extends ParserAbstract {
+public class AlterMsBatch extends BatchContextProcessor {
 
     private final Batch_statement_bodyContext ctx;
 
-    public AlterMsBatch(Batch_statement_bodyContext ctx, PgDatabase db) {
-        super(db);
+    public AlterMsBatch(Batch_statement_bodyContext ctx, PgDatabase db, CommonTokenStream stream) {
+        super(db, ctx, stream);
         this.ctx = ctx;
     }
 
@@ -66,8 +66,8 @@ public class AlterMsBatch extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        DbObjType type = null;
-        List<? extends ParserRuleContext> ids = null;
+        DbObjType type;
+        List<? extends ParserRuleContext> ids;
         if (ctx.create_or_alter_procedure() != null) {
             Qualified_nameContext qname = ctx.create_or_alter_procedure().qualified_name();
             ids = Arrays.asList(qname.schema, qname.name);
@@ -90,7 +90,15 @@ public class AlterMsBatch extends ParserAbstract {
             }
             ids = Arrays.asList(schemaCtx, trigCtx.table_name.name, qname.name);
             type = DbObjType.TRIGGER;
+        } else {
+            return null;
         }
-        return type != null ? getStrForStmtAction(ACTION_ALTER, type, ids) : null;
+
+        return getStrForStmtAction(ACTION_ALTER, type, ids);
+    }
+
+    @Override
+    protected ParserRuleContext getDelimiterCtx() {
+        throw new IllegalStateException("Unsupported operation for AlterMsBatch");
     }
 }

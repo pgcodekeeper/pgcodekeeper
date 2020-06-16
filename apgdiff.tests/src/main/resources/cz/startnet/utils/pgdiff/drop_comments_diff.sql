@@ -2,11 +2,17 @@ SET search_path = pg_catalog;
 
 COMMENT ON DATABASE current_database() IS NULL;
 
+COMMENT ON CAST (integer AS bigint) IS NULL;
+
+COMMENT ON EXTENSION test_ext IS NULL;
+
 COMMENT ON COLUMN public.typ_composite.key IS NULL;
 
 COMMENT ON COLUMN public.typ_composite.val IS NULL;
 
 COMMENT ON TYPE public.typ_composite IS NULL;
+
+COMMENT ON CONSTRAINT dom_check ON DOMAIN public.dom IS NULL;
 
 COMMENT ON DOMAIN public.dom IS NULL;
 
@@ -28,6 +34,8 @@ COMMENT ON COLUMN public.test.text IS NULL;
 
 COMMENT ON FUNCTION public.test_fnc(arg character varying) IS NULL;
 
+COMMENT ON PROCEDURE public.test_proc(arg integer) IS NULL;
+
 COMMENT ON CONSTRAINT text_check ON public.test IS NULL;
 
 COMMENT ON CONSTRAINT test_pkey ON public.test IS NULL;
@@ -41,3 +49,5 @@ COMMENT ON INDEX public.test_index IS NULL;
 COMMENT ON TRIGGER test_trigger ON public.test IS NULL;
 
 COMMENT ON RULE test_rule ON public.test IS NULL;
+
+COMMENT ON POLICY test_policy ON public.test IS NULL;

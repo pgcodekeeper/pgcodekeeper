@@ -4,11 +4,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 
+import org.eclipse.jface.layout.TableColumnLayout;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.ColumnWeightData;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.ViewerDropAdapter;
@@ -21,6 +23,7 @@ import org.eclipse.swt.dnd.TransferData;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -58,25 +61,28 @@ public abstract class PrefListEditor<T> extends Composite {
         gridLayout.marginHeight = 0;
         gridLayout.marginWidth = 0;
         setLayout(gridLayout);
-        setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
+        Composite viewerCont = new Composite(this, SWT.NONE);
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        gd.widthHint = WIDTH_HINT_PX;
+        gd.heightHint = HEIGHT_HINT_PX;
+        viewerCont.setLayoutData(gd);
 
         viewerObjs = new TableViewer(
-                this, SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
+                viewerCont, SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
         viewerObjs.setContentProvider(ArrayContentProvider.getInstance());
 
         addColumns(viewerObjs);
 
-        GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        viewerObjs.getTable().setLayoutData(gd);
         if (viewerObjs.getTable().getColumnCount() > 1) {
+            viewerCont.setLayout(new FillLayout());
             viewerObjs.getTable().setLinesVisible(true);
             viewerObjs.getTable().setHeaderVisible(true);
         } else {
-            // set nonzero width to make column visible
-            viewerObjs.getTable().getColumn(0).setWidth(WIDTH_HINT_PX);
+            TableColumnLayout colLayout = new TableColumnLayout();
+            viewerCont.setLayout(colLayout);
+            colLayout.setColumnData(viewerObjs.getTable().getColumn(0), new ColumnWeightData(1));
         }
-        gd.widthHint = WIDTH_HINT_PX;
-        gd.heightHint = HEIGHT_HINT_PX;
 
         Transfer[] transferTypes = {LocalSelectionTransfer.getTransfer()};
         viewerObjs.addDragSupport(DND.DROP_MOVE, transferTypes, new DragListener());

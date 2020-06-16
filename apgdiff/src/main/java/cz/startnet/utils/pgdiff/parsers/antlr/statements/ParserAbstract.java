@@ -1,21 +1,24 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.Arrays;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
+import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
@@ -27,7 +30,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Predefined_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
@@ -36,6 +38,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.ArgMode;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.ICast;
 import cz.startnet.utils.pgdiff.schema.IStatement;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
@@ -44,6 +47,7 @@ import cz.startnet.utils.pgdiff.schema.PgOperator;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 /**
  * Abstract Class contents common operations for parsing
@@ -62,7 +66,6 @@ public abstract class ParserAbstract {
 
     protected final PgDatabase db;
 
-    private List<StatementBodyContainer> statementBodies;
     private boolean refMode;
     protected String fileName;
 
@@ -70,11 +73,9 @@ public abstract class ParserAbstract {
         this.db = db;
     }
 
-    public void parseObject(String fileName, ParserListenerMode mode,
-            List<StatementBodyContainer> statementBodies, ParserRuleContext ctx) {
+    public void parseObject(String fileName, ParserListenerMode mode, ParserRuleContext ctx) {
         this.fileName = fileName;
         refMode = ParserListenerMode.REF == mode;
-        this.statementBodies = statementBodies;
         if (ParserListenerMode.SCRIPT == mode) {
             fillQueryLocation(ctx);
         } else {
@@ -84,12 +85,6 @@ public abstract class ParserAbstract {
 
     protected boolean isRefMode() {
         return refMode;
-    }
-
-    protected void addStatementBody(ParserRuleContext ctx) {
-        if (statementBodies != null) {
-            statementBodies.add(new StatementBodyContainer(fileName, ctx));
-        }
     }
 
     /**
@@ -240,11 +235,33 @@ public abstract class ParserAbstract {
         return ArgMode.of(mode.getText());
     }
 
+    public static Pair<String, Token> unquoteQuotedString(Character_stringContext ctx) {
+        TerminalNode string = ctx.Character_String_Literal();
+        if (string != null) {
+            String text = string.getText();
+            int start = text.indexOf('\'') + 1;
+
+            Token t = string.getSymbol();
+            CommonToken copy = new CommonToken(t);
+
+            copy.setStartIndex(t.getStartIndex() + start);
+            copy.setCharPositionInLine(t.getCharPositionInLine() + start);
+            copy.setStopIndex(t.getStopIndex() - 1);
+
+            return new Pair<>(PgDiffUtils.unquoteQuotedString(string.getText(), start), copy);
+        }
+
+        List<TerminalNode> dollarText = ctx.Text_between_Dollar();
+        String s = dollarText.stream().map(TerminalNode::getText).collect(Collectors.joining());
+
+        return new Pair<>(s, dollarText.get(0).getSymbol());
+    }
+
     protected PgObjLocation addObjReference(List<? extends ParserRuleContext> ids,
             DbObjType type, String action) {
         PgObjLocation loc = getLocation(ids, type, action, false, null);
         if (loc != null) {
-            db.getObjReferences().computeIfAbsent(fileName, k -> new LinkedHashSet<>()).add(loc);
+            db.addReference(fileName, loc);
         }
 
         return loc;
@@ -281,7 +298,7 @@ public abstract class ParserAbstract {
         R statement = getter.apply(container, name);
         if (statement == null) {
             throw new UnresolvedReferenceException("Cannot find object in database: "
-                    + errToken.getText(), errToken);
+                    + name, errToken);
         }
         return statement;
     }
@@ -298,7 +315,7 @@ public abstract class ParserAbstract {
                 ACTION_CREATE, false, null);
         if (loc != null) {
             child.setLocation(loc);
-            db.addToQueries(fileName, loc);
+            db.addReference(fileName, loc);
         }
     }
 
@@ -306,6 +323,8 @@ public abstract class ParserAbstract {
             DbObjType type, String action, boolean isDep, String signature) {
         ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
         switch (type) {
+        case CAST:
+            throw new IllegalStateException("Unsupported type: CAST");
         case ASSEMBLY:
         case EXTENSION:
         case SCHEMA:
@@ -356,6 +375,7 @@ public abstract class ParserAbstract {
         case CONSTRAINT:
         case TRIGGER:
         case RULE:
+        case POLICY:
         case COLUMN:
             return new PgObjLocation(new GenericColumn(schemaName,
                     QNameParser.getSecondName(ids), name, type), action,
@@ -363,6 +383,14 @@ public abstract class ParserAbstract {
         default:
             return null;
         }
+    }
+
+    protected PgObjLocation getCastLocation(Data_typeContext source, Data_typeContext target, String action) {
+        PgObjLocation loc = new PgObjLocation(new GenericColumn(
+                ICast.getSimpleName(getFullCtxText(source), getFullCtxText(target)), DbObjType.CAST),
+                action, source.start.getStartIndex(), source.start.getLine(), fileName);
+        loc.setLength(target.stop.getStopIndex() - source.start.getStartIndex() + 1);
+        return loc;
     }
 
     protected <T extends IStatement, U extends Object> void doSafe(BiConsumer<T, U> adder,
@@ -384,7 +412,7 @@ public abstract class ParserAbstract {
             if (!refMode) {
                 st.addDep(loc.getObj());
             }
-            db.getObjReferences().computeIfAbsent(fileName, k -> new LinkedHashSet<>()).add(loc);
+            db.addReference(fileName, loc);
         }
     }
 
@@ -500,8 +528,17 @@ public abstract class ParserAbstract {
         PgObjLocation loc = new PgObjLocation(
                 act != null ? act : ctx.getStart().getText().toUpperCase(Locale.ROOT),
                         ctx, getFullCtxText(ctx));
-        db.addToQueries(fileName, loc);
+        db.addReference(fileName, loc);
         return loc;
+    }
+
+    /**
+     * Adds missing COMMENT/RULE refs for correct showing them in Outline.
+     * (In the case of COMMENT : used for COLUMN comments and comments
+     * for objects which undefined in DbObjType).
+     */
+    protected void addOutlineRefForCommentOrRule(String action, ParserRuleContext ctx) {
+        db.addReference(fileName, new PgObjLocation(action, ctx, null));
     }
 
     /**
@@ -517,7 +554,9 @@ public abstract class ParserAbstract {
             List<? extends ParserRuleContext> ids) {
         StringBuilder sb = new StringBuilder(action).append(' ').append(type).append(' ');
         for (ParserRuleContext id : ids) {
-            sb.append(id.getText()).append('.');
+            if (id != null) {
+                sb.append(id.getText()).append('.');
+            }
         }
         sb.setLength(sb.length() - 1);
         return sb.toString();

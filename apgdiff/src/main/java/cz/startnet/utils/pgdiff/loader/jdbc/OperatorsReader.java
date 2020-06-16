@@ -49,6 +49,10 @@ public class OperatorsReader extends JdbcReader {
             rightType.addTypeDepcy(oper);
         }
 
+        long resultType = res.getLong("result");
+        JdbcType returnsType = loader.cachedTypesByOid.get(resultType);
+        oper.setReturns(returnsType.getFullName());
+
         oper.setProcedure(getProcessedName(oper, res.getString("procedure_nsp"),
                 res.getString("procedure")));
 

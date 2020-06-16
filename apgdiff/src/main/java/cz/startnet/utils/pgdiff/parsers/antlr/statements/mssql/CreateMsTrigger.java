@@ -11,10 +11,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_trigger
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.MsFuncProcTrigAnalysisLauncher;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.MsTrigger;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateMsTrigger extends BatchContextProcessor {
@@ -43,7 +42,7 @@ public class CreateMsTrigger extends BatchContextProcessor {
         if (schemaCtx == null) {
             schemaCtx = ctx.table_name.schema;
         }
-        List<IdContext> ids = Arrays.asList(schemaCtx, ctx.table_name.name);
+        List<ParserRuleContext> ids = Arrays.asList(schemaCtx, ctx.table_name.name);
         addObjReference(ids, DbObjType.TABLE, null);
         getObject(getSchemaSafe(ids), false);
     }
@@ -62,20 +61,19 @@ public class CreateMsTrigger extends BatchContextProcessor {
         setSourceParts(trigger);
 
         if (schema == null) {
-            List<IdContext> ids = Arrays.asList(schemaCtx, tableNameCtx);
-            addObjReference(ids, DbObjType.TABLE, null);
+            addObjReference(Arrays.asList(schemaCtx, tableNameCtx), DbObjType.TABLE, null);
         }
 
         db.addAnalysisLauncher(new MsFuncProcTrigAnalysisLauncher(trigger,
                 ctx.sql_clauses(), fileName));
 
-        IStatementContainer cont = getSafe(AbstractSchema::getStatementContainer,
+        PgStatementContainer cont = getSafe(AbstractSchema::getStatementContainer,
                 schema, tableNameCtx);
 
         if (isJdbc && schema != null) {
             cont.addTrigger(trigger);
         } else {
-            addSafe((PgStatement) cont, trigger,
+            addSafe(cont, trigger,
                     Arrays.asList(schemaCtx, tableNameCtx, nameCtx));
         }
         return trigger;

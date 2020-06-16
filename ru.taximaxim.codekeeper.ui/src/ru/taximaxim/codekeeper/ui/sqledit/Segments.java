@@ -1,5 +1,7 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
+import java.util.Objects;
+
 import org.eclipse.jface.text.Position;
 
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
@@ -31,5 +33,31 @@ public class Segments extends Position {
     @Override
     public String toString() {
         return action + ' ' + name;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result + Objects.hashCode(action);
+        result = prime * result + Objects.hashCode(name);
+        result = prime * result + Objects.hashCode(type);
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!super.equals(obj)) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        Segments other = (Segments) obj;
+        return Objects.equals(action, other.action)
+                && Objects.equals(name, other.name) && type == other.type;
     }
 }

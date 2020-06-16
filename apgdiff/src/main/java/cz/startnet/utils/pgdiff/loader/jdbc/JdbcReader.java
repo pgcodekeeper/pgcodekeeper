@@ -95,7 +95,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
 
     protected <T extends PgStatement> void setFunctionWithDep(
             BiConsumer<T, String> setter, T statement, String function) {
-        if (function.contains(".")) {
+        if (function.indexOf('.') != -1) {
             QNameParser<IdentifierContext> parser = QNameParser.parsePg(function);
             String schemaName = parser.getSchemaName();
             if (schemaName != null && !ApgdiffUtils.isPgSystemSchema(schemaName)) {

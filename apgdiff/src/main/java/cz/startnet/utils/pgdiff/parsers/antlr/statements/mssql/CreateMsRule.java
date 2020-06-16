@@ -55,6 +55,8 @@ public class CreateMsRule extends ParserAbstract {
 
     @Override
     public void parseObject() {
+        addOutlineRefForCommentOrRule(state, ctx);
+
         Object_typeContext nameCtx = ctx.object_type();
         // unsupported rules without object names
         if (db.getArguments().isIgnorePrivileges() || nameCtx == null) {
@@ -118,8 +120,8 @@ public class CreateMsRule extends ParserAbstract {
 
         PgStatement st;
         if (type == null || type.OBJECT() != null || type.TYPE() != null) {
-            List<IdContext> ids = Arrays.asList(object.qualified_name().schema, nameCtx);
-            AbstractSchema schema = getSchemaSafe(ids);
+            AbstractSchema schema = getSchemaSafe(
+                    Arrays.asList(object.qualified_name().schema, nameCtx));
             st = getSafe((k, v) -> k.getChildren().filter(
                     e -> e.getBareName().equals(v))
                     .findAny().orElse(null), schema, nameCtx);
@@ -193,6 +195,6 @@ public class CreateMsRule extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        return null;
+        return state;
     }
 }

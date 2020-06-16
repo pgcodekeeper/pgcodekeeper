@@ -21,14 +21,20 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identifier_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.TypesSetManually;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.Argument;
-import cz.startnet.utils.pgdiff.schema.system.CastContext;
-import cz.startnet.utils.pgdiff.schema.system.PgSystemCast;
-import cz.startnet.utils.pgdiff.schema.system.PgSystemFunction;
-import cz.startnet.utils.pgdiff.schema.system.PgSystemRelation;
-import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.ICast.CastContext;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import cz.startnet.utils.pgdiff.schema.meta.MetaCast;
+import cz.startnet.utils.pgdiff.schema.meta.MetaFunction;
+import cz.startnet.utils.pgdiff.schema.meta.MetaOperator;
+import cz.startnet.utils.pgdiff.schema.meta.MetaRelation;
+import cz.startnet.utils.pgdiff.schema.meta.MetaSchema;
+import cz.startnet.utils.pgdiff.schema.meta.MetaStatementContainer;
+import cz.startnet.utils.pgdiff.schema.meta.MetaStorage;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -42,8 +48,15 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
         super(connector, monitor, null);
     }
 
-    public PgSystemStorage getStorageFromJdbc() throws IOException, InterruptedException {
-        PgSystemStorage storage = new PgSystemStorage();
+    @Override
+    public PgDatabase load() throws IOException, InterruptedException {
+        throw new IllegalStateException("Unsuppoted operation for JdbcSystemLoader");
+    }
+
+    public MetaStorage getStorageFromJdbc() throws IOException, InterruptedException {
+        MetaStorage storage = new MetaStorage();
+        storage.addMetaChild(new MetaSchema(ApgdiffConsts.PG_CATALOG));
+        storage.addMetaChild(new MetaSchema(ApgdiffConsts.INFORMATION_SCHEMA));
 
         Log.log(Log.LOG_INFO, "Reading db using JDBC.");
         setCurrentOperation("connection setup");
@@ -64,7 +77,7 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
             readCasts(storage);
 
             connection.commit();
-            finishAntlr();
+            finishLoaders();
             Log.log(Log.LOG_INFO, "Database object has been successfully queried from JDBC");
         } catch (InterruptedException ex) {
             throw ex;
@@ -77,7 +90,7 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
         return storage;
     }
 
-    private void readFunctions(PgSystemStorage storage)
+    private void readFunctions(MetaStorage storage)
             throws InterruptedException, SQLException {
         try (ResultSet result = statement.executeQuery(JdbcQueries.QUERY_SYSTEM_FUNCTIONS)) {
             while (result.next()) {
@@ -85,7 +98,7 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                 String functionName = result.getString(NAME);
                 String schemaName = result.getString(NAMESPACE_NAME);
 
-                PgSystemFunction function = new PgSystemFunction(functionName);
+                MetaFunction function = new MetaFunction(schemaName, functionName);
 
                 Array arr = result.getArray("proargmodes");
                 if (arr != null) {
@@ -117,16 +130,16 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                             p -> p.function_args_parser().function_args(),
                             ctx -> {
                                 fillArguments(ctx, function);
-                                storage.getSchema(schemaName).addFunction(function);
+                                storage.addMetaChild(function);
                             });
                 } else {
-                    storage.getSchema(schemaName).addFunction(function);
+                    storage.addMetaChild(function);
                 }
             }
         }
     }
 
-    private void fillArguments(Function_argsContext ctx, PgSystemFunction func) {
+    private void fillArguments(Function_argsContext ctx, MetaFunction func) {
         for (Function_argumentsContext argument : ctx.function_arguments()) {
             func.addArgument(getArgument(argument));
         }
@@ -151,28 +164,30 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
         return arg;
     }
 
-    private void readRelations(PgSystemStorage storage)
+    private void readRelations(MetaStorage storage)
             throws InterruptedException, SQLException {
         try (ResultSet result = statement.executeQuery(JdbcQueries.QUERY_SYSTEM_RELATIONS)) {
             while (result.next()) {
                 PgDiffUtils.checkCancelled(monitor);
+                String schemaName = result.getString(NAMESPACE_NAME);
                 String relationName = result.getString(NAME);
-                DbObjType type;
 
+                MetaRelation relation;
                 switch (result.getString("relkind")) {
                 case "v":
                 case "m":
-                    type = DbObjType.VIEW;
+                    relation = new MetaStatementContainer(new PgObjLocation(
+                            new GenericColumn(schemaName, relationName, DbObjType.VIEW)));
                     break;
                 case "S":
-                    type = DbObjType.SEQUENCE;
+                    relation = new MetaRelation(new PgObjLocation(
+                            new GenericColumn(schemaName, relationName, DbObjType.SEQUENCE)));
                     break;
                 default:
-                    type = DbObjType.TABLE;
+                    relation = new MetaStatementContainer(new PgObjLocation(
+                            new GenericColumn(schemaName, relationName, DbObjType.TABLE)));
                     break;
                 }
-
-                PgSystemRelation relation = new PgSystemRelation(relationName, type);
 
                 Array arr = result.getArray("col_names");
                 if (arr != null) {
@@ -184,13 +199,14 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                     }
                 }
 
-                storage.getSchema(result.getString(NAMESPACE_NAME)).addRelation(relation);
+                relation.setInitialized(true);
+
+                storage.addMetaChild(relation);
             }
         }
     }
 
-    private void readOperators(PgSystemStorage storage)
-            throws InterruptedException, SQLException {
+    private void readOperators(MetaStorage storage) throws InterruptedException, SQLException {
         try (ResultSet result = statement.executeQuery(JdbcQueries.QUERY_SYSTEM_OPERATORS)) {
             while (result.next()) {
                 PgDiffUtils.checkCancelled(monitor);
@@ -198,8 +214,8 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                 String schemaName = result.getString(NAMESPACE_NAME);
                 long leftType = result.getLong("left");
                 long rightType = result.getLong("right");
-                String left = TypesSetManually.EMPTY;
-                String right = TypesSetManually.EMPTY;
+                String left = null;
+                String right = null;
                 if (leftType > 0) {
                     left = cachedTypesByOid.get(leftType).getFullName(schemaName);
                 }
@@ -207,20 +223,17 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                     right = cachedTypesByOid.get(rightType).getFullName(schemaName);
                 }
 
-                PgSystemFunction operator = new PgSystemFunction(name);
-                Argument firstArg = new Argument(null, left);
-                Argument secondArg = new Argument(null, right);
-                operator.addArgument(firstArg);
-                operator.addArgument(secondArg);
+                MetaOperator operator = new MetaOperator(schemaName, name);
+                operator.setLeftArg(left);
+                operator.setRightArg(right);
                 operator.setReturns(cachedTypesByOid.get(result.getLong("result")).getFullName(schemaName));
 
-                storage.getSchema(schemaName).addFunction(operator);
+                storage.addMetaChild(operator);
             }
         }
     }
 
-    private void readCasts(PgSystemStorage storage)
-            throws InterruptedException, SQLException {
+    private void readCasts(MetaStorage storage) throws InterruptedException, SQLException {
         try (ResultSet result = statement.executeQuery(JdbcQueries.QUERY_SYSTEM_CASTS)) {
             while (result.next()) {
                 PgDiffUtils.checkCancelled(monitor);
@@ -243,7 +256,7 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                 default:
                     throw new IllegalStateException("Unknown cast context: " + type);
                 }
-                storage.addCast(new PgSystemCast(source, target, ctx));
+                storage.addMetaChild(new MetaCast(source, target, ctx));
             }
         }
     }

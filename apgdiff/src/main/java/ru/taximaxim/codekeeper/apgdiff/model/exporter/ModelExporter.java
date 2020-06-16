@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.PgCast;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -65,6 +66,7 @@ public class ModelExporter extends AbstractModelExporter {
         case INDEX:
         case TRIGGER:
         case RULE:
+        case POLICY:
             TreeElement elParent = el.getParent();
             if (elParent.getType() == DbObjType.TABLE){
                 processTableAndContents(elParent, elParent.getPgStatement(oldDb), el);
@@ -85,6 +87,7 @@ public class ModelExporter extends AbstractModelExporter {
         switch (stInNew.getStatementType()) {
         case SCHEMA:
         case EXTENSION:
+        case CAST:
             // delete sql file
             deleteStatementIfExists(stInNew);
 
@@ -103,6 +106,7 @@ public class ModelExporter extends AbstractModelExporter {
         case INDEX:
         case TRIGGER:
         case RULE:
+        case POLICY:
             createParentSchema(elParent.getParent());
             if (elParent.getType() == DbObjType.TABLE) {
                 processTableAndContents(elParent, elParent.getPgStatement(newDb), el);
@@ -159,6 +163,7 @@ public class ModelExporter extends AbstractModelExporter {
             deleteStatementIfExists(stInNew);
             // $FALL-THROUGH$
         case EXTENSION:
+        case CAST:
             // export schema/extension sql file
             dumpSQL(stInNew.getFullSQL(), outDir.resolve(getRelativeFilePath(stInNew, true)));
             break;
@@ -173,6 +178,7 @@ public class ModelExporter extends AbstractModelExporter {
         case RULE:
         case INDEX:
         case CONSTRAINT:
+        case POLICY:
             createParentSchema(elParent.getParent());
             // table actually, not schema
             createParentSchema(elParent);
@@ -333,6 +339,14 @@ public class ModelExporter extends AbstractModelExporter {
             dumpSQL(ext.getCreationSQL(), extensionsDir.resolve(getExportedFilenameSql(ext)));
         }
 
+        // exporting casts
+        Path castDir = outDir.resolve(
+                ApgdiffConsts.WORK_DIR_NAMES.CAST.name());
+
+        for (PgCast cast : newDb.getCasts()) {
+            dumpSQL(cast.getCreationSQL(), castDir.resolve(getExportedFilenameSql(cast)));
+        }
+
         // exporting schemas
         Path schemasSharedDir = outDir.resolve(ApgdiffConsts.WORK_DIR_NAMES.SCHEMA.name());
 
@@ -417,13 +431,14 @@ public class ModelExporter extends AbstractModelExporter {
     static Path getRelativeFilePath(PgStatement st, Path baseDir, boolean addExtension) {
         PgStatement parentSt = st.getParent();
         String parentExportedFileName = parentSt == null ?
-                null : ModelExporter.getExportedFilename(parentSt);
+                null : getExportedFilename(parentSt);
 
         Path path = baseDir.resolve("SCHEMA");
         DbObjType type = st.getStatementType();
         String schemaName;
         switch (type) {
         case EXTENSION:
+        case CAST:
             path = baseDir.resolve(type.name());
             break;
 
@@ -455,9 +470,10 @@ public class ModelExporter extends AbstractModelExporter {
         case INDEX:
         case RULE:
         case TRIGGER:
+        case POLICY:
         case COLUMN:
             st = parentSt;
-            schemaName = ModelExporter.getExportedFilename(parentSt.getParent());
+            schemaName = AbstractModelExporter.getExportedFilename(parentSt.getParent());
             path = path.resolve(schemaName).resolve(parentSt.getStatementType().name());
             break;
         default:

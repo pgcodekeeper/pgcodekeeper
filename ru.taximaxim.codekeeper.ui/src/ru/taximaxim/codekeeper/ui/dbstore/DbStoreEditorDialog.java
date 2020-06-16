@@ -336,6 +336,7 @@ public class DbStoreEditorDialog extends TrayDialog {
 
         ignoreListEditor = new IgnoreListEditor(createTabItemWithComposite(tabFolder,
                 Messages.DbStoreEditorDialog_ignore_file_list, new GridLayout()));
+        ignoreListEditor.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         //// Creating tab item "Connection properties" and fill it by components.
 
@@ -351,6 +352,7 @@ public class DbStoreEditorDialog extends TrayDialog {
                 "https://docs.microsoft.com/sql/connect/jdbc/setting-the-connection-properties"); //$NON-NLS-1$
 
         propertyListEditor = new DbPropertyListEditor(tabAreaProperties);
+        propertyListEditor.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         Composite tabPGDupmConfigProperties = createTabItemWithComposite(tabFolder,
                 Messages.DbStoreEditorDialog_dump_properties, new GridLayout(3, false));
@@ -408,7 +410,6 @@ public class DbStoreEditorDialog extends TrayDialog {
             GridLayout gl) {
         Composite tabComposite = new Composite(tabFolder, SWT.NONE);
         tabComposite.setLayout(gl);
-        tabComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
         TabItem tabItem = new TabItem(tabFolder, SWT.NONE);
         tabItem.setText(tabText);

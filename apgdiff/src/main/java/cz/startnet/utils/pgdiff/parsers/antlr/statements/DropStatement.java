@@ -7,8 +7,10 @@ import java.util.List;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_cast_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_operator_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_policy_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_rule_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_statementsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_trigger_statementContext;
@@ -17,6 +19,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_dropContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
+import cz.startnet.utils.pgdiff.schema.ICast;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -38,10 +41,14 @@ public class DropStatement extends ParserAbstract {
             dropTrigger(ctx.drop_trigger_statement());
         } else if (ctx.drop_rule_statement() != null) {
             dropRule(ctx.drop_rule_statement());
+        } else if (ctx.drop_policy_statement() != null) {
+            dropPolicy(ctx.drop_policy_statement());
         } else if (ctx.drop_statements() != null) {
             drop(ctx.drop_statements());
         } else if (ctx.drop_operator_statement() != null) {
             dropOperator(ctx.drop_operator_statement());
+        } else if (ctx.drop_cast_statement() != null) {
+            dropCast(ctx.drop_cast_statement());
         }
     }
 
@@ -65,12 +72,20 @@ public class DropStatement extends ParserAbstract {
         }
     }
 
+    private void dropCast(Drop_cast_statementContext ctx) {
+        db.addReference(fileName, getCastLocation(ctx.source, ctx.target, ACTION_DROP));
+    }
+
     public void dropTrigger(Drop_trigger_statementContext ctx) {
         dropChild(ctx.table_name.identifier(), ctx.name, DbObjType.TRIGGER);
     }
 
     public void dropRule(Drop_rule_statementContext ctx) {
         dropChild(ctx.schema_qualified_name().identifier(), ctx.name, DbObjType.RULE);
+    }
+
+    private void dropPolicy(Drop_policy_statementContext ctx) {
+        dropChild(ctx.schema_qualified_name().identifier(), ctx.identifier(), DbObjType.POLICY);
     }
 
     public void dropChild(List<IdentifierContext> tableIds, IdentifierContext nameCtx, DbObjType type) {
@@ -163,6 +178,12 @@ public class DropStatement extends ParserAbstract {
             auxIds.add(dropRuleCtx.name);
             ids = auxIds;
             type = DbObjType.RULE;
+        } else if (ctx.drop_policy_statement() != null) {
+            Drop_policy_statementContext dropPolicyCtx = ctx.drop_policy_statement();
+            List<IdentifierContext> auxIds = dropPolicyCtx.schema_qualified_name().identifier();
+            auxIds.add(dropPolicyCtx.identifier());
+            ids = auxIds;
+            type = DbObjType.POLICY;
         } else if (ctx.drop_statements() != null) {
             Drop_statementsContext dropStmtCtx = ctx.drop_statements();
             type = getTypeOfDropStmt(dropStmtCtx);
@@ -179,6 +200,13 @@ public class DropStatement extends ParserAbstract {
             ids = targetOpers.size() == 1 ? Arrays.asList(nameCtx.schema_name, nameCtx.operator)
                     : Collections.emptyList();
             type = DbObjType.OPERATOR;
+        } else if (ctx.drop_cast_statement() != null) {
+            Drop_cast_statementContext castCtx = ctx.drop_cast_statement();
+            StringBuilder sb = new StringBuilder();
+            sb.append(ACTION_DROP).append(' ').append(DbObjType.CAST).append(" (");
+            sb.append(ICast.getSimpleName(getFullCtxText(castCtx.source), getFullCtxText(castCtx.target)));
+            sb.append(')');
+            return sb.toString();
         }
         return type != null ? getStrForStmtAction(ACTION_DROP, type, ids) : null;
     }

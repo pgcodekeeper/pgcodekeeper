@@ -15,7 +15,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.ResourceBundle;
-import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -226,7 +225,7 @@ implements IResourceChangeListener, ITextErrorReporter {
 
     public void setLineBackground() {
         // TODO who deletes stale annotations after editor refresh?
-        Set<PgObjLocation> refs = getParser().getObjsForEditor(getEditorInput());
+        List<PgObjLocation> refs = getParser().getObjsForEditor(getEditorInput());
         IAnnotationModel model = getSourceViewer().getAnnotationModel();
         for (PgObjLocation loc : refs) {
             if (loc.isDanger()) {
@@ -420,8 +419,7 @@ implements IResourceChangeListener, ITextErrorReporter {
             throws InterruptedException, IOException, CoreException {
         checkFileSize();
         if (isLargeFile()) {
-            parser.getObjDefinitions().clear();
-            parser.getObjReferences().clear();
+            parser.clear();
             parser.notifyListeners();
             return;
         }
@@ -551,7 +549,7 @@ implements IResourceChangeListener, ITextErrorReporter {
             }
         }
 
-        scriptThreadJobWrapper = new ScriptThreadJobWrapper(dbInfo, parsers[0]);
+        scriptThreadJobWrapper = new ScriptThreadJobWrapper(dbInfo, parsers[0], point.y == 0 ? 0 : point.x);
         scriptThreadJobWrapper.setProperty(IProgressConstants2.SHOW_IN_TASKBAR_ICON_PROPERTY, Boolean.TRUE);
         scriptThreadJobWrapper.setUser(true);
         scriptThreadJobWrapper.schedule();
@@ -573,12 +571,14 @@ implements IResourceChangeListener, ITextErrorReporter {
 
         private final DbInfo dbInfo;
         private final ScriptParser parser;
+        private final int offset;
 
-        public ScriptThreadJobWrapper(DbInfo dbInfo, ScriptParser parser) {
+        public ScriptThreadJobWrapper(DbInfo dbInfo, ScriptParser parser, int offset) {
             super(Messages.SqlEditor_update_ddl + getEditorInput().getName(),
                     SQLEditor.this, UpdateDdlJobTester.EVAL_PROP);
             this.dbInfo = dbInfo;
             this.parser = parser;
+            this.offset = offset;
         }
 
         @Override
@@ -604,7 +604,7 @@ implements IResourceChangeListener, ITextErrorReporter {
                         dbInfo.isReadOnly(), ApgdiffConsts.UTC);
             }
 
-            IProgressReporter reporter = new UiProgressReporter(monitor, SQLEditor.this);
+            IProgressReporter reporter = new UiProgressReporter(monitor, SQLEditor.this, offset);
             try (IProgressReporter toClose = reporter) {
                 new JdbcRunner(monitor).runBatches(connector, parser.batch(), reporter);
                 ProjectEditorDiffer.notifyDbChanged(dbInfo);

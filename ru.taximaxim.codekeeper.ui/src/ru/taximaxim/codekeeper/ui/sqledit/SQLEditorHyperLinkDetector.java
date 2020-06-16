@@ -1,6 +1,6 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
-import java.util.Set;
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.eclipse.jface.text.IRegion;
@@ -21,7 +21,7 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
         PgDbParser parser = editor.getParser();
 
         int offset = region.getOffset();
-        Set<PgObjLocation> refs = parser.getObjsForEditor(editor.getEditorInput());
+        List<PgObjLocation> refs = parser.getObjsForEditor(editor.getEditorInput());
 
         Stream<IHyperlink> links = Stream.empty();
 

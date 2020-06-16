@@ -8,6 +8,7 @@ package ru.taximaxim.codekeeper.apgdiff.model.difftree;
  */
 public enum DbObjType {
     DATABASE,
+    CAST,
     USER,
     ROLE,
     ASSEMBLY,
@@ -30,5 +31,6 @@ public enum DbObjType {
     VIEW,
     INDEX,
     TRIGGER,
-    RULE
+    RULE,
+    POLICY
 }

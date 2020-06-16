@@ -1,18 +1,18 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.msexpr;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.stream.Collectors;
+
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Full_column_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -21,28 +21,24 @@ public abstract class MsAbstractExpr {
 
     private final String schema;
     private final MsAbstractExpr parent;
-    private final Set<GenericColumn> depcies;
-    private final Set<DbObjType> disabledDepcies;
+    private final Set<PgObjLocation> depcies;
 
-    public Set<GenericColumn> getDepcies() {
+    public Set<PgObjLocation> getDepcies() {
         return Collections.unmodifiableSet(depcies);
     }
 
-    public MsAbstractExpr(String schema, DbObjType... disabledDepcies) {
-        this(schema, null, new LinkedHashSet<>(),
-                Arrays.stream(disabledDepcies)
-                .collect(Collectors.toCollection(() -> EnumSet.noneOf(DbObjType.class))));
+    public MsAbstractExpr(String schema) {
+        this(schema, null, new LinkedHashSet<>());
     }
 
     protected MsAbstractExpr(MsAbstractExpr parent) {
-        this(parent.schema, parent, parent.depcies, parent.disabledDepcies);
+        this(parent.schema, parent, parent.depcies);
     }
 
-    private MsAbstractExpr(String schema, MsAbstractExpr parent, Set<GenericColumn> depcies, Set<DbObjType> disabledDepcies) {
+    private MsAbstractExpr(String schema, MsAbstractExpr parent, Set<PgObjLocation> depcies) {
         this.schema = schema;
         this.parent = parent;
         this.depcies = depcies;
-        this.disabledDepcies = disabledDepcies;
     }
 
     protected MsAbstractExprWithNmspc<?> findCte(String cteName) {
@@ -72,13 +68,19 @@ public abstract class MsAbstractExpr {
     }
 
     protected GenericColumn addObjectDepcy(Qualified_nameContext qualifiedName, DbObjType type) {
-        String relationName = qualifiedName.name.getText();
+        IdContext nameCtx = qualifiedName.name;
+        String relationName = nameCtx.getText();
         IdContext schemaCtx = qualifiedName.schema;
-        String schemaName = schemaCtx == null ? schema : schemaCtx.getText();
-        GenericColumn depcy = new GenericColumn(schemaName, relationName, type);
-        if (!ApgdiffUtils.isMsSystemSchema(schemaName)) {
-            addDepcy(depcy);
+        String schemaName;
+        if (schemaCtx == null) {
+            schemaName = schema;
+        }  else {
+            schemaName = schemaCtx.getText();
+            addDepcy(new GenericColumn(schemaName, DbObjType.SCHEMA), schemaCtx);
         }
+
+        GenericColumn depcy = new GenericColumn(schemaName, relationName, type);
+        addDepcy(depcy, nameCtx);
         return depcy;
     }
 
@@ -90,9 +92,9 @@ public abstract class MsAbstractExpr {
         }
     }
 
-    protected void addDepcy(GenericColumn depcy) {
-        if (!disabledDepcies.contains(depcy.type)) {
-            depcies.add(depcy);
+    protected void addDepcy(GenericColumn depcy, ParserRuleContext ctx) {
+        if (!ApgdiffUtils.isMsSystemSchema(depcy.schema)) {
+            depcies.add(new PgObjLocation(depcy, ctx));
         }
     }
 
@@ -101,16 +103,27 @@ public abstract class MsAbstractExpr {
         if (tableName == null) {
             return;
         }
-        String relationName = tableName.name.getText();
-        String schemaName = tableName.schema == null ? null : tableName.schema.getText();
-        String columnName = fcn.id().getText();
+
+        IdContext schemaCtx = tableName.schema;
+
+        String schemaName = null;
+        if (schemaCtx != null) {
+            schemaName = schemaCtx.getText();
+            addDepcy(new GenericColumn(schemaName, DbObjType.COLUMN), schemaCtx);
+        }
+
+        IdContext relationCtx = tableName.name;
+        String relationName = relationCtx.getText();
+
+        IdContext columnCtx = fcn.id();
+        String columnName = columnCtx.getText();
 
         Entry<String, GenericColumn> ref = findReference(schemaName, relationName);
         if (ref != null) {
             GenericColumn referencedTable = ref.getValue();
-            if (referencedTable != null && !ApgdiffUtils.isMsSystemSchema(referencedTable.schema)) {
-                addDepcy(new GenericColumn(referencedTable.schema,
-                        referencedTable.table, columnName, DbObjType.COLUMN));
+            if (referencedTable != null) {
+                addDepcy(new GenericColumn(schemaName, relationName, DbObjType.TABLE), relationCtx);
+                addDepcy(new GenericColumn(schemaName, relationName, columnName, DbObjType.COLUMN), columnCtx);
             }
         } else {
             Log.log(Log.LOG_WARNING, "Unknown column reference: "

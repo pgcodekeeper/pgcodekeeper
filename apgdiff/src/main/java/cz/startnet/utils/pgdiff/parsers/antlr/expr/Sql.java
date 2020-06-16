@@ -10,8 +10,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.StatementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Update_stmt_for_psqlContext;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import cz.startnet.utils.pgdiff.schema.IDatabase;
 import ru.taximaxim.codekeeper.apgdiff.utils.ModPair;
 
 public class Sql extends AbstractExprWithNmspc<SqlContext> {
@@ -20,8 +19,8 @@ public class Sql extends AbstractExprWithNmspc<SqlContext> {
         super(parent);
     }
 
-    public Sql(PgDatabase db, DbObjType... disabledDepcies) {
-        super(db, disabledDepcies);
+    public Sql(IDatabase db) {
+        super(db);
     }
 
     @Override

@@ -31,7 +31,7 @@ import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgRule;
-import cz.startnet.utils.pgdiff.schema.PgRule.PgRuleEventType;
+import cz.startnet.utils.pgdiff.schema.PgEventType;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
@@ -169,7 +169,7 @@ public class PgAntlrLoaderTest {
             args = new PgDiffArguments();
             args.setInCharsetName(ENCODING);
             args.setKeepNewlines(true);
-            PgDatabase dbAfterExport = new ProjectLoader(exportDir.toString(), args).loadDatabaseSchemaFromDirTree();
+            PgDatabase dbAfterExport = new ProjectLoader(exportDir.toString(), args).loadAndAnalyze();
 
             // check the same db similarity before and after export
             Assert.assertEquals("ModelExporter: predefined object PgDB" + fileIndex +
@@ -661,7 +661,7 @@ class PgDB9 implements PgDatabaseObjectCreator {
         table.setOwner("postgres");
 
         PgRule rule = new PgRule("on_select");
-        rule.setEvent(PgRuleEventType.SELECT);
+        rule.setEvent(PgEventType.SELECT);
         rule.setCondition("(1=1)");
         rule.setInstead(true);
         table.addRule(rule);
@@ -689,19 +689,19 @@ class PgDB9 implements PgDatabaseObjectCreator {
         view.setOwner("postgres");
 
         rule = new PgRule("on_delete");
-        rule.setEvent(PgRuleEventType.DELETE);
+        rule.setEvent(PgEventType.DELETE);
         rule.addCommand("DELETE FROM public.user_data WHERE (user_data.id = old.id)");
         view.addRule(rule);
 
         rule = new PgRule("on_insert");
-        rule.setEvent(PgRuleEventType.INSERT);
+        rule.setEvent(PgEventType.INSERT);
         rule.setInstead(true);
         rule.addCommand("INSERT INTO public.user_data (id, email, created) VALUES (new.id, new.email, new.created)");
         rule.addCommand("INSERT INTO public.t1(c1) DEFAULT VALUES");
         view.addRule(rule);
 
         rule = new PgRule("on_update");
-        rule.setEvent(PgRuleEventType.UPDATE);
+        rule.setEvent(PgEventType.UPDATE);
         rule.setInstead(true);
         rule.addCommand("UPDATE public.user_data SET id = new.id, email = new.email, created = new.created WHERE (user_data.id = old.id)");
         view.addRule(rule);

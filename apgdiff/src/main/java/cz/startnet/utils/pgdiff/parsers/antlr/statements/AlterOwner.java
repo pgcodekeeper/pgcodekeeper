@@ -7,6 +7,7 @@ import java.util.Map;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.All_simple_opContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_ownerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
@@ -49,10 +50,11 @@ public class AlterOwner extends ParserAbstract {
             Target_operatorContext targetOperCtx = ctx.target_operator();
             Operator_nameContext operNameCtx = targetOperCtx.name;
             IdentifierContext schemaCtx = operNameCtx.schema_name;
-            List<ParserRuleContext> ids = Arrays.asList(schemaCtx, operNameCtx);
+            All_simple_opContext nameCtx = operNameCtx.operator;
+            List<ParserRuleContext> ids = Arrays.asList(schemaCtx, nameCtx);
             st = getSafe(AbstractSchema::getOperator, getSchemaSafe(ids),
-                    parseSignature(operNameCtx.operator.getText(), targetOperCtx),
-                    operNameCtx.operator.getStart());
+                    parseSignature(nameCtx.getText(), targetOperCtx),
+                    nameCtx.getStart());
             setOwner(st, owner);
             addObjReference(ids, DbObjType.OPERATOR, ACTION_ALTER);
             return;

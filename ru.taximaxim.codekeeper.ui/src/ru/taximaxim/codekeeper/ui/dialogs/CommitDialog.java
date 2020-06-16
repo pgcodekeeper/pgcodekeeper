@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.ui.dialogs;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -110,7 +111,7 @@ public class CommitDialog extends TrayDialog {
 
         dtvTop.setAutoExpand(true);
         List<TreeElement> result = new TreeFlattener().onlySelected().flatten(diffTree);
-        dtvTop.setInputCollection(result, dbProject, dbRemote);
+        dtvTop.setInputCollection(result, dbProject, dbRemote, Collections.emptySet());
 
         Group gBottom = new Group(container, SWT.NONE);
         gBottom.setLayout(new GridLayout());
@@ -130,7 +131,7 @@ public class CommitDialog extends TrayDialog {
             el.setSelected(true);
         }
         dtvTop.setAutoExpand(true);
-        dtvBottom.setInputCollection(depcyElementsSet, dbProject, dbRemote);
+        dtvBottom.setInputCollection(depcyElementsSet, dbProject, dbRemote, Collections.emptySet());
 
         dtvBottom.addCheckStateListener(new ValidationCheckStateListener());
         warningLbl = new Label(gBottom, SWT.NONE);
@@ -296,7 +297,7 @@ public class CommitDialog extends TrayDialog {
                         checked, proj, isOverridesOnly).updatePartial();
                 monitor.done();
             } catch (IOException | CoreException e) {
-                return new Status(Status.ERROR, PLUGIN_ID.THIS,
+                return new Status(IStatus.ERROR, PLUGIN_ID.THIS,
                         Messages.ProjectEditorDiffer_commit_error, e);
             }
             return Status.OK_STATUS;

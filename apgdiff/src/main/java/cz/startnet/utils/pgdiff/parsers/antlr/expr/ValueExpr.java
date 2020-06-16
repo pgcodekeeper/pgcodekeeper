@@ -1,14 +1,15 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -31,6 +32,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Frame_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_callContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_constructContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identifier_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IndirectionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_varContext;
@@ -59,9 +61,12 @@ import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.ICast;
+import cz.startnet.utils.pgdiff.schema.ICast.CastContext;
+import cz.startnet.utils.pgdiff.schema.IDatabase;
 import cz.startnet.utils.pgdiff.schema.IFunction;
-import cz.startnet.utils.pgdiff.schema.ISchema;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.IOperator;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -70,15 +75,15 @@ import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class ValueExpr extends AbstractExpr {
 
-    public ValueExpr(PgDatabase db, DbObjType... disabledDepcies) {
-        super(db, disabledDepcies);
+    public ValueExpr(IDatabase db) {
+        super(db);
     }
 
     protected ValueExpr(AbstractExpr parent) {
         super(parent);
     }
 
-    protected ValueExpr(AbstractExpr parent, Set<GenericColumn> depcies) {
+    protected ValueExpr(AbstractExpr parent, Set<PgObjLocation> depcies) {
         super(parent, depcies);
     }
 
@@ -214,37 +219,47 @@ public class ValueExpr extends AbstractExpr {
 
     private ModPair<String, String> op(Vex vex, List<ModPair<String, String>> operandsList,
             String operator, OpContext op) {
+        String schema = ApgdiffConsts.PG_CATALOG;
+        ParserRuleContext ctx = null;
         if (op != null) {
             IdentifierContext opSchemaCtx = op.identifier();
             if (opSchemaCtx == null) {
-                operator = op.op_chars().getText();
-            } else if (opSchemaCtx.getText().equals(ApgdiffConsts.PG_CATALOG)) {
-                operator = op.all_simple_op().getText();
-            }
-        }
-        if (operator != null) {
-            String larg = TypesSetManually.EMPTY;
-            String rarg = TypesSetManually.EMPTY;
-            if (operandsList.size() == 2) {
-                larg = operandsList.get(0).getSecond();
-                rarg = operandsList.get(1).getSecond();
-            } else if (op == null || vex.getVexCtx().getChild(0) instanceof OpContext) {
-                rarg = operandsList.get(0).getSecond();
+                ctx = op.op_chars();
+                operator = ctx.getText();
             } else {
-                larg = operandsList.get(0).getSecond();
+                schema = opSchemaCtx.getText();
+                addDepcy(new GenericColumn(schema, DbObjType.SCHEMA), opSchemaCtx);
+                ctx = op.all_simple_op();
+                operator = ctx.getText();
             }
-            // TODO When the user's operators will be also process by codeKeeper,
-            // put in 'findFunctions' operator's schema name instead of 'PgSystemStorage.SCHEMA_PG_CATALOG'.
-            IFunction resultOperFunction = resolveCall(operator, Arrays.asList(larg, rarg),
-                    availableFunctions(ApgdiffConsts.PG_CATALOG, op));
-            return new ModPair<>(NONAME, resultOperFunction != null ? resultOperFunction.getReturns()
-                    : TypesSetManually.FUNCTION_COLUMN);
-        } else {
-            // if we got to this point, operator didn't get filled by the OP_CHARS token
-            // meaning user-schema operator
-            Log.log(Log.LOG_WARNING, "Unsupported user operator!");
-            return new ModPair<>(NONAME, TypesSetManually.UNKNOWN);
         }
+
+        String larg = null;
+        String rarg = null;
+        if (operandsList.size() == 2) {
+            larg = operandsList.get(0).getSecond();
+            rarg = operandsList.get(1).getSecond();
+        } else if (op == null || vex.getVexCtx().getChild(0) instanceof OpContext) {
+            rarg = operandsList.get(0).getSecond();
+        } else {
+            larg = operandsList.get(0).getSecond();
+        }
+        IOperator resultOperFunction = resolveOperatorsCall(operator, larg, rarg,
+                availableOperators(schema, op));
+
+        if (resultOperFunction != null) {
+            addDepcy(new GenericColumn(resultOperFunction.getSchemaName(),
+                    resultOperFunction.getName(), DbObjType.OPERATOR), ctx);
+
+            String returns =  resultOperFunction.getReturns();
+            if (returns == null) {
+                returns = TypesSetManually.FUNCTION_COLUMN;
+            }
+
+            return new ModPair<>(NONAME, returns);
+        }
+
+        return new ModPair<>(NONAME, TypesSetManually.FUNCTION_COLUMN);
     }
 
     /*
@@ -466,11 +481,13 @@ public class ValueExpr extends AbstractExpr {
         }
 
         String schemaName = null;
-        String functionName = funcNameCtx.identifier_nontype().getText();
+        Identifier_nontypeContext functionCtx = funcNameCtx.identifier_nontype();
+        String functionName = functionCtx.getText();
 
         IdentifierContext id = funcNameCtx.identifier();
-        if (id!= null) {
+        if (id != null) {
             schemaName = id.getText();
+            addDepcy(new GenericColumn(schemaName, DbObjType.SCHEMA), id);
         }
 
         // TODO add processing for named/mixed notation in functions, because
@@ -515,7 +532,7 @@ public class ValueExpr extends AbstractExpr {
             IFunction resultFunction = resolveCall(functionName, argsType, functions);
 
             if (resultFunction != null) {
-                addFunctionDepcy(resultFunction);
+                addFunctionDepcy(resultFunction, functionCtx);
                 return new ModPair<>(functionName, getFunctionReturns(resultFunction));
             }
             return new ModPair<>(functionName, TypesSetManually.FUNCTION_COLUMN);
@@ -687,7 +704,7 @@ public class ValueExpr extends AbstractExpr {
                 String sourceType = sourceTypes.get(argN);
                 if (sourceType.equals(arg.getDataType())) {
                     ++exactMatches;
-                } else if (!systemStorage.containsCastImplicit(sourceType, arg.getDataType())) {
+                } else if (!containsCastImplicit(sourceType, arg.getDataType())) {
                     signatureApplicable = false;
                     break;
                 }
@@ -710,6 +727,61 @@ public class ValueExpr extends AbstractExpr {
                 .getFirst();
     }
 
+    private IOperator resolveOperatorsCall(String operatorName, String left, String right,
+            Collection<? extends IOperator> availableOperators) {
+        // save each applicable operators with the number of exact type matches
+        // between input args and operator parameters
+        // function that has more exact matches (less casts) wins
+        List<Pair<IOperator, Integer>> matches = new ArrayList<>();
+        for (IOperator oper : availableOperators) {
+            if (!oper.getBareName().equals(operatorName)) {
+                continue;
+            }
+            int exactMatches = 0;
+            String leftArg = oper.getLeftArg();
+            String rightArg = oper.getRightArg();
+
+            if (Objects.equals(leftArg, left)) {
+                ++exactMatches;
+            } else if (leftArg == null || left == null || !containsCastImplicit(left, leftArg)) {
+                continue;
+            }
+
+            if (Objects.equals(rightArg, right)) {
+                ++exactMatches;
+            } else if (rightArg == null || right == null || !containsCastImplicit(right, rightArg)) {
+                continue;
+            }
+
+            if (exactMatches == 2) {
+                // fast path for exact signature match
+                return oper;
+            }
+
+            matches.add(new Pair<>(oper, exactMatches));
+        }
+
+        if (matches.isEmpty()) {
+            return null;
+        }
+
+        return Collections.max(matches,
+                (m1,m2) -> Integer.compare(m1.getSecond(), m2.getSecond()))
+                .getFirst();
+
+    }
+
+    private boolean containsCastImplicit(String source, String target) {
+        for (ICast cast : db.getCasts()) {
+            if (CastContext.IMPLICIT == cast.getContext()
+                    && source.equals(cast.getSource())
+                    && target.equals(cast.getTarget())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private String getOperatorToken(Vex vex) {
         TerminalNode token = vex.getVexCtx().getChild(TerminalNode.class, 0);
         if (token == null) {
@@ -725,18 +797,6 @@ public class ValueExpr extends AbstractExpr {
             return token.getText();
         default:
             return null;
-        }
-    }
-
-    private Collection<? extends IFunction> availableFunctions(String schemaName, ParserRuleContext errorCtx) {
-        if (schemaName != null) {
-            ISchema schema = systemStorage.getSchema(schemaName);
-            if (schema == null) {
-                schema = findSchema(schemaName, errorCtx);
-            }
-            return schema.getFunctions();
-        } else {
-            return systemStorage.getPgCatalog().getFunctions();
         }
     }
 
@@ -778,30 +838,39 @@ public class ValueExpr extends AbstractExpr {
         if (!regcast.startsWith("reg")) {
             return;
         }
-        String s = PgDiffUtils.unquoteQuotedString(strCtx.getText());
+
+        Pair<String, Token> pair = ParserAbstract.unquoteQuotedString(strCtx);
+        String s = pair.getFirst();
+        Token start = pair.getSecond();
+
         switch (regcast) {
         case "regproc":
             // In this case, the function is not overloaded.
-            addFunctionDepcyNotOverloaded(QNameParser.parsePg(s).getIds());
+            addFunctionDepcyNotOverloaded(QNameParser.parsePg(s).getIds(), start);
             break;
         case "regclass":
-            addRelationDepcy(QNameParser.parsePg(s).getIds());
+            addDepcy(QNameParser.parsePg(s).getIds(), DbObjType.TABLE, start);
             break;
         case "regtype":
-            // TODO pending DbObjType.TYPE
+            addDepcy(QNameParser.parsePg(s).getIds(), DbObjType.TYPE, start);
             break;
-
         case "regnamespace":
-            addSchemaDepcy(QNameParser.parsePg(s).getIds());
+            addSchemaDepcy(QNameParser.parsePg(s).getIds(), start);
             break;
-
         case "regprocedure":
-            addFunctionSigDepcy(s);
+            addFunctionSigDepcy(s, start);
             break;
-
         case "regoper":
+            // TODO operator without argumnets
         case "regoperator":
-            // TODO pending DbObjType.OPERATOR
+            // TODO operator with argumnets
+            break;
+        case "regconfig":
+            addDepcy(QNameParser.parsePg(s).getIds(), DbObjType.FTS_CONFIGURATION, start);
+            break;
+        case "regdictionary":
+            addDepcy(QNameParser.parsePg(s).getIds(), DbObjType.FTS_DICTIONARY, start);
+            break;
         default:
             break;
         }
@@ -810,6 +879,7 @@ public class ValueExpr extends AbstractExpr {
     private String literal(Unsigned_value_specificationContext unsignedValue){
         String ret;
         Unsigned_numeric_literalContext unsignedNumeric;
+        Character_stringContext charString;
         Truth_valueContext truthValue;
 
         if ((unsignedNumeric = unsignedValue.unsigned_numeric_literal()) != null) {
@@ -818,8 +888,15 @@ public class ValueExpr extends AbstractExpr {
             } else {
                 ret = TypesSetManually.NUMERIC;
             }
-        } else if (unsignedValue.character_string() != null) {
-            ret = TypesSetManually.TEXT;
+        } else if ((charString = unsignedValue.character_string()) != null) {
+            String text = charString.getText();
+            if (text.regionMatches(true, 0, "B", 0, 1) || text.regionMatches(true, 0, "X", 0, 1)) {
+                ret = TypesSetManually.BIT;
+            } else if (text.regionMatches(true, 0, "N", 0, 1)) {
+                ret = TypesSetManually.BPCHAR;
+            } else {
+                ret = TypesSetManually.TEXT;
+            }
         } else if ((truthValue = unsignedValue.truth_value()) != null) {
             if (truthValue.TRUE() != null || truthValue.FALSE() != null) {
                 ret = TypesSetManually.BOOLEAN;

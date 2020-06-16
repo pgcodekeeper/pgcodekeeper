@@ -12,6 +12,7 @@ import java.util.stream.Stream;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 /**
@@ -221,8 +222,17 @@ public abstract class AbstractPgTable extends AbstractTable {
             String schemaName = inht.getKey();
             AbstractSchema inhtSchema = schemaName == null ? getContainingSchema()
                     : getDatabase().getSchema(schemaName);
-            inhColumns = Stream.concat(inhColumns, inhtSchema
-                    .getTable(inht.getValue()).getRelationColumns());
+            if (inhtSchema != null) {
+                String tableName = inht.getValue();
+                AbstractTable inhtTable = inhtSchema.getTable(tableName);
+                if (inhtTable != null) {
+                    inhColumns = Stream.concat(inhColumns, inhtTable.getRelationColumns());
+                } else {
+                    Log.log(Log.LOG_WARNING, "Inherit table not found: " + schemaName + '.' + tableName);
+                }
+            } else {
+                Log.log(Log.LOG_WARNING, "Inherit schema not found: " + schemaName);
+            }
         }
         return Stream.concat(inhColumns, localColumns);
     }

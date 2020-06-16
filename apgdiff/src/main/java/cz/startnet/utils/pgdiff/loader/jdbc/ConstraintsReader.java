@@ -10,8 +10,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterTable;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
+import cz.startnet.utils.pgdiff.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class ConstraintsReader extends JdbcReader {
@@ -28,7 +28,7 @@ public class ConstraintsReader extends JdbcReader {
             return;
         }
 
-        IStatementContainer cont = schema.getStatementContainer(result.getString(CLASS_RELNAME));
+        PgStatementContainer cont = schema.getStatementContainer(result.getString(CLASS_RELNAME));
         if (cont != null) {
             cont.addConstraint(getConstraint(result, schema, cont.getName()));
         }
@@ -61,8 +61,8 @@ public class ConstraintsReader extends JdbcReader {
         loader.submitAntlrTask(ADD_CONSTRAINT + definition + ';',
                 p -> p.sql().statement(0).schema_statement().schema_alter()
                 .alter_table_statement().table_action(0),
-                ctx -> AlterTable.parseAlterTableConstraint(ctx, c, schema.getDatabase(),
-                        schemaName, tableName, tablespace, loader.getCurrentLocation(), false));
+                ctx -> new AlterTable(null, schema.getDatabase(), tablespace).parseAlterTableConstraint(
+                        ctx, c, schemaName, tableName, loader.getCurrentLocation()));
         loader.setAuthor(c, res);
 
         String comment = res.getString("description");

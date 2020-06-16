@@ -56,6 +56,8 @@ class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvi
         if (element instanceof PgStatement) {
             PgStatement st = (PgStatement) element;
             switch (st.getStatementType()) {
+            case CAST:
+                return "CAST " + st.getBareName(); //$NON-NLS-1$
             case COLUMN:
                 // just for tests
                 return "COL " + st.getBareName(); //$NON-NLS-1$
@@ -96,6 +98,8 @@ class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvi
                 return "TRG " + st.getBareName(); //$NON-NLS-1$
             case RULE:
                 return "RULE " + st.getBareName(); //$NON-NLS-1$
+            case POLICY:
+                return "POLICY " + st.getBareName(); //$NON-NLS-1$
             case TYPE:
                 return "TYPE " + st.getBareName(); //$NON-NLS-1$
             case VIEW:

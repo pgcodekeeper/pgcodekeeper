@@ -50,7 +50,7 @@ public class CreateMsProcedure extends BatchContextProcessor {
 
     public AbstractFunction getObject(AbstractSchema schema, boolean isJdbc) {
         IdContext nameCtx = ctx.qualified_name().name;
-        List<IdContext> ids = Arrays.asList(ctx.qualified_name().schema, nameCtx);
+        List<ParserRuleContext> ids = Arrays.asList(ctx.qualified_name().schema, nameCtx);
         if (ctx.proc_body().EXTERNAL() != null) {
             Assembly_specifierContext assemblyCtx = ctx.proc_body().assembly_specifier();
             String assembly = assemblyCtx.assembly_name.getText();

@@ -5,12 +5,14 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
@@ -18,8 +20,6 @@ import java.util.stream.Stream;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
-import cz.startnet.utils.pgdiff.hashers.IHashable;
-import cz.startnet.utils.pgdiff.hashers.JavaHasher;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
@@ -30,6 +30,7 @@ import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
  */
 public class PgView extends AbstractView implements PgOptionContainer  {
 
+    public static final String COLUMN_COMMENT = "\n\nCOMMENT ON COLUMN {0}.{1} IS {2};";
     public static final String CHECK_OPTION = "check_option";
 
     private String query;
@@ -37,13 +38,10 @@ public class PgView extends AbstractView implements PgOptionContainer  {
     private String method = ApgdiffConsts.HEAP;
     private String tablespace;
     private Boolean isWithData;
-    private final List<DefaultValue> defaultValues = new ArrayList<>();
-    private final List<ColumnComment> columnComments = new ArrayList<>();
+    private final Map<String, String> defaultValues = new LinkedHashMap<>();
+    private final Map<String, String> columnComments = new LinkedHashMap<>();
     private final Map<String, String> options = new LinkedHashMap<>();
     private final List<String> columnNames = new ArrayList<>();
-
-    private boolean initialized;
-    private final List<Pair<String, String>> relationColumns = new ArrayList<>();
 
     public PgView(String name) {
         super(name);
@@ -117,14 +115,14 @@ public class PgView extends AbstractView implements PgOptionContainer  {
         appendOwnerSQL(sbSQL);
         appendPrivileges(sbSQL);
 
-        for (final DefaultValue defaultValue : getDefaultValues()) {
+        for (final Entry<String, String> defaultValue : getDefaultValues().entrySet()) {
             sbSQL.append("\n\nALTER VIEW ");
             sbSQL.append(getQualifiedName());
             sbSQL.append(" ALTER COLUMN ");
             sbSQL.append(
-                    PgDiffUtils.getQuotedName(defaultValue.getColumnName()));
+                    PgDiffUtils.getQuotedName(defaultValue.getKey()));
             sbSQL.append(" SET DEFAULT ");
-            sbSQL.append(defaultValue.getDefaultValue());
+            sbSQL.append(defaultValue.getValue());
             sbSQL.append(';');
         }
 
@@ -133,17 +131,9 @@ public class PgView extends AbstractView implements PgOptionContainer  {
             appendCommentSql(sbSQL);
         }
 
-        for (final ColumnComment columnComment : getColumnComments()) {
-            if (columnComment.getComment() != null
-                    && !columnComment.getComment().isEmpty()) {
-                sbSQL.append("\n\nCOMMENT ON COLUMN ");
-                sbSQL.append(getQualifiedName());
-                sbSQL.append('.');
-                sbSQL.append(PgDiffUtils.getQuotedName(columnComment.getColumnName()));
-                sbSQL.append(" IS ");
-                sbSQL.append(columnComment.getComment());
-                sbSQL.append(';');
-            }
+        for (final Entry<String, String> columnComment : columnComments.entrySet()) {
+            sbSQL.append(MessageFormat.format(COLUMN_COMMENT, getQualifiedName(),
+                    PgDiffUtils.getQuotedName(columnComment.getKey()), columnComment.getValue()));
         }
 
         return sbSQL.toString();
@@ -184,7 +174,7 @@ public class PgView extends AbstractView implements PgOptionContainer  {
             sb.append(';');
         }
 
-        diffDefaultValues(sb, newView);
+        alterDefaultValues(sb, newView);
 
         if (!Objects.equals(getOwner(), newView.getOwner())) {
             newView.alterOwnerSQL(sb);
@@ -196,58 +186,34 @@ public class PgView extends AbstractView implements PgOptionContainer  {
             sb.append("\n\n");
             newView.appendCommentSql(sb);
         }
-        final List<String> newColumnNames = new ArrayList<>(newView
-                .getColumnComments().size());
 
-        for (final ColumnComment columnComment : newView.getColumnComments()) {
-            newColumnNames.add(columnComment.getColumnName());
-        }
-
-        for (final ColumnComment columnComment : getColumnComments()) {
-            if (!newColumnNames.contains(columnComment.getColumnName())) {
-                newColumnNames.add(columnComment.getColumnName());
-            }
-        }
-
-        for (final String columnName : newColumnNames) {
-            ColumnComment oldColumnComment = null;
-            ColumnComment newColumnComment = null;
-
-            for (final ColumnComment columnComment : getColumnComments()) {
-                if (columnName.equals(columnComment.getColumnName())) {
-                    oldColumnComment = columnComment;
-                    break;
-                }
-            }
-
-            for (final ColumnComment columnComment : newView.getColumnComments()) {
-                if (columnName.equals(columnComment.getColumnName())) {
-                    newColumnComment = columnComment;
-                    break;
-                }
-            }
-
-            if (oldColumnComment == null
-                    && newColumnComment != null
-                    || oldColumnComment != null
-                    && newColumnComment != null
-                    && !oldColumnComment.getComment().equals(
-                            newColumnComment.getComment())) {
-
-                sb.append("\n\nCOMMENT ON COLUMN " + getQualifiedName() + '.'
-                        + PgDiffUtils.getQuotedName(newColumnComment
-                                .getColumnName()) + " IS "
-                                + newColumnComment.getComment() + ';');
-            } else if (oldColumnComment != null && newColumnComment == null) {
-                sb.append("\n\nCOMMENT ON COLUMN " + getQualifiedName() + '.'
-                        + PgDiffUtils.getQuotedName(oldColumnComment
-                                .getColumnName()) + " IS NULL;");
-            }
-        }
+        alterColumnComments(sb, newView);
 
         compareOptions(newView, sb);
 
         return sb.length() > startLength;
+    }
+
+    private void alterColumnComments(final StringBuilder sb, final PgView newView) {
+        for (final Entry<String, String> columnComment : newView.columnComments.entrySet()) {
+            String newColumn = columnComment.getKey();
+            String newValue = columnComment.getValue();
+
+            String oldValue = columnComments.get(newColumn);
+            if (!Objects.equals(oldValue, newValue)) {
+                sb.append(MessageFormat.format(COLUMN_COMMENT, getQualifiedName(),
+                        PgDiffUtils.getQuotedName(newColumn), newValue));
+            }
+        }
+
+        for (final Entry<String, String> columnComment : columnComments.entrySet()) {
+            String oldColumn = columnComment.getKey();
+
+            if (!newView.columnComments.containsKey(oldColumn)) {
+                sb.append(MessageFormat.format(COLUMN_COMMENT, getQualifiedName(),
+                        PgDiffUtils.getQuotedName(oldColumn), "NULL"));
+            }
+        }
     }
 
     /**
@@ -256,53 +222,27 @@ public class PgView extends AbstractView implements PgOptionContainer  {
      * @param sb               writer
      * @param newView          new view
      */
-    private void diffDefaultValues(final StringBuilder sb, final PgView newView) {
-        final List<DefaultValue> oldValues = getDefaultValues();
-        final List<DefaultValue> newValues =
-                newView.getDefaultValues();
+    private void alterDefaultValues(final StringBuilder sb, final PgView newView) {
+        for (final Entry<String, String> columnComment : newView.defaultValues.entrySet()) {
+            String newColumn = columnComment.getKey();
+            String newValue = columnComment.getValue();
 
-        // modify defaults that are in old view
-        for (final DefaultValue oldValue : oldValues) {
-            boolean found = false;
-
-            for (final DefaultValue newValue : newValues) {
-                if (oldValue.getColumnName().equals(newValue.getColumnName())) {
-                    found = true;
-                    if (!oldValue.getDefaultValue().equals(newValue.getDefaultValue())) {
-                        sb.append("\n\nALTER TABLE ").append(getQualifiedName())
-                        .append(" ALTER COLUMN ").append(PgDiffUtils.getQuotedName(newValue.getColumnName()))
-                        .append(" SET DEFAULT ").append(newValue.getDefaultValue()).append(';');
-                    }
-
-                    break;
-                }
-            }
-
-            if (!found) {
-                sb.append("\n\nALTER TABLE ").append(getQualifiedName()).append(" ALTER COLUMN ")
-                .append(PgDiffUtils.getQuotedName(oldValue.getColumnName()))
-                .append(" DROP DEFAULT;");
+            String oldValue = defaultValues.get(newColumn);
+            if (!Objects.equals(oldValue, newValue)) {
+                sb.append("\n\nALTER TABLE ").append(getQualifiedName())
+                .append(" ALTER COLUMN ").append(PgDiffUtils.getQuotedName(newColumn))
+                .append(" SET DEFAULT ").append(newValue).append(';');
             }
         }
 
-        // add new defaults
-        for (final DefaultValue newValue : newValues) {
-            boolean found = false;
+        for (final Entry<String, String> columnComment : defaultValues.entrySet()) {
+            String oldColumn = columnComment.getKey();
 
-            for (final DefaultValue oldValue : oldValues) {
-                if (newValue.getColumnName().equals(oldValue.getColumnName())) {
-                    found = true;
-                    break;
-                }
+            if (!newView.defaultValues.containsKey(oldColumn)) {
+                sb.append("\n\nALTER TABLE ").append(getQualifiedName()).append(" ALTER COLUMN ")
+                .append(PgDiffUtils.getQuotedName(oldColumn))
+                .append(" DROP DEFAULT;");
             }
-
-            if (found) {
-                continue;
-            }
-
-            sb.append("\n\nALTER TABLE ").append(getQualifiedName())
-            .append(" ALTER COLUMN ").append(PgDiffUtils.getQuotedName(newValue.getColumnName()))
-            .append(" SET DEFAULT ").append(newValue.getDefaultValue()).append(';');
         }
     }
 
@@ -393,19 +333,13 @@ public class PgView extends AbstractView implements PgOptionContainer  {
      */
     public void addColumnDefaultValue(final String columnName,
             final String defaultValue) {
-        removeColumnDefaultValue(columnName);
-        defaultValues.add(new DefaultValue(columnName, defaultValue));
+        defaultValues.put(columnName, defaultValue);
         resetHash();
     }
 
     public void removeColumnDefaultValue(final String columnName) {
-        for (final DefaultValue item : defaultValues) {
-            if (item.getColumnName().equals(columnName)) {
-                defaultValues.remove(item);
-                resetHash();
-                return;
-            }
-        }
+        defaultValues.remove(columnName);
+        resetHash();
     }
 
     @Override
@@ -424,51 +358,38 @@ public class PgView extends AbstractView implements PgOptionContainer  {
      *
      * @return {@link #defaultValues}
      */
-    public List<DefaultValue> getDefaultValues() {
-        return Collections.unmodifiableList(defaultValues);
+    public Map<String, String> getDefaultValues() {
+        return Collections.unmodifiableMap(defaultValues);
     }
 
     /**
      * Adds/replaces column comment.
      */
     public void addColumnComment(String columnName, String comment) {
-        removeColumnComment(columnName);
-        columnComments.add(new ColumnComment(columnName, comment));
+        if (comment == null || comment.isEmpty()) {
+            return;
+        }
+
+        columnComments.put(columnName, comment);
         resetHash();
     }
 
     public void addColumnComment(PgDiffArguments args, String columnName, String comment) {
-        removeColumnComment(columnName);
-        columnComments.add(new ColumnComment(columnName,
-                args.isKeepNewlines() ? comment : comment.replace("\r", "")));
+        if (comment == null || comment.isEmpty()) {
+            return;
+        }
+
+        columnComments.put(columnName, args.isKeepNewlines() ? comment : comment.replace("\r", ""));
         resetHash();
     }
 
-    private void removeColumnComment(final String columnName) {
-        for (final ColumnComment item : columnComments) {
-            if (item.getColumnName().equals(columnName)) {
-                columnComments.remove(item);
-                return;
-            }
-        }
-    }
-
-    public List<ColumnComment> getColumnComments() {
-        return Collections.unmodifiableList(columnComments);
+    public Map<String, String> getColumnComments() {
+        return Collections.unmodifiableMap(columnComments);
     }
 
     @Override
     public Stream<Pair<String, String>> getRelationColumns() {
-        return relationColumns.stream();
-    }
-
-    public boolean isInitialized() {
-        return initialized;
-    }
-
-    public void addRelationColumns(List<Pair<String, String>> relationColumns) {
-        initialized = true;
-        this.relationColumns.addAll(relationColumns);
+        return null;
     }
 
     @Override
@@ -480,7 +401,7 @@ public class PgView extends AbstractView implements PgOptionContainer  {
                     && Objects.equals(method, view.getMethod())
                     && Objects.equals(tablespace, view.getTablespace())
                     && columnNames.equals(view.columnNames)
-                    && PgDiffUtils.setlikeEquals(defaultValues, view.defaultValues)
+                    && defaultValues.equals(view.defaultValues)
                     && columnComments.equals(view.columnComments)
                     && options.equals(view.options);
         }
@@ -491,9 +412,9 @@ public class PgView extends AbstractView implements PgOptionContainer  {
     @Override
     public void computeHash(Hasher hasher) {
         hasher.put(columnNames);
-        hasher.putUnordered(defaultValues);
+        hasher.put(defaultValues);
         hasher.put(normalizedQuery);
-        hasher.putOrdered(columnComments);
+        hasher.put(columnComments);
         hasher.put(options);
         hasher.put(isWithData);
         hasher.put(method);
@@ -503,117 +424,15 @@ public class PgView extends AbstractView implements PgOptionContainer  {
     @Override
     protected AbstractView getViewCopy() {
         PgView view = new PgView(getName());
-        view.initialized = initialized;
-        view.relationColumns.addAll(relationColumns);
         view.query = query;
         view.normalizedQuery = normalizedQuery;
         view.setIsWithData(isWithData());
         view.setMethod(getMethod());
         view.setTablespace(getTablespace());
         view.columnNames.addAll(columnNames);
-        view.defaultValues.addAll(defaultValues);
-        view.columnComments.addAll(columnComments);
+        view.defaultValues.putAll(defaultValues);
+        view.columnComments.putAll(columnComments);
         view.options.putAll(options);
         return view;
-    }
-
-    /**
-     * Contains information about column comment.
-     */
-    public static class ColumnComment implements IHashable {
-
-        private final String columnName;
-        private final String comment;
-
-        ColumnComment(final String columnName, final String comment) {
-            this.columnName = columnName;
-            this.comment = comment;
-        }
-
-        public String getColumnName() {
-            return columnName;
-        }
-
-        public String getComment() {
-            return comment;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            boolean eq = false;
-
-            if (this == obj) {
-                eq = true;
-            } else if(obj instanceof ColumnComment) {
-                ColumnComment val = (ColumnComment) obj;
-                eq = Objects.equals(columnName, val.getColumnName())
-                        && Objects.equals(comment, val.getComment());
-            }
-
-            return eq;
-        }
-
-        @Override
-        public int hashCode() {
-            JavaHasher hasher = new JavaHasher();
-            computeHash(hasher);
-            return hasher.getResult();
-        }
-
-        @Override
-        public void computeHash(Hasher hasher) {
-            hasher.put(columnName);
-            hasher.put(comment);
-        }
-    }
-
-    /**
-     * Contains information about default value of column.
-     */
-    private static class DefaultValue implements IHashable {
-
-        private final String columnName;
-        private final String defaultVal;
-
-        DefaultValue(final String columnName, final String defaultValue) {
-            this.columnName = columnName;
-            this.defaultVal = defaultValue;
-        }
-
-        public String getColumnName() {
-            return columnName;
-        }
-
-        public String getDefaultValue() {
-            return defaultVal;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            boolean eq = false;
-
-            if(this == obj) {
-                eq = true;
-            } else if(obj instanceof DefaultValue) {
-                DefaultValue val = (DefaultValue) obj;
-                eq = Objects.equals(columnName, val.getColumnName())
-                        && Objects.equals(defaultVal, val.getDefaultValue());
-            }
-
-            return eq;
-        }
-
-        @Override
-        public int hashCode() {
-            JavaHasher hasher = new JavaHasher();
-            computeHash(hasher);
-            return hasher.getResult();
-        }
-
-        @Override
-        public void computeHash(Hasher hasher) {
-            hasher.put(columnName);
-            hasher.put(defaultVal);
-        }
     }
 }

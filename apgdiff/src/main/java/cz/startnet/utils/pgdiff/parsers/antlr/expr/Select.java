@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.function.Predicate;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -44,11 +43,12 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_queryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectOps;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
-import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
-import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.IConstraint;
+import cz.startnet.utils.pgdiff.schema.IDatabase;
+import cz.startnet.utils.pgdiff.schema.ISchema;
+import cz.startnet.utils.pgdiff.schema.IStatementContainer;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.ModPair;
@@ -70,8 +70,8 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
      */
     private boolean lateralAllowed;
 
-    public Select(PgDatabase db, DbObjType... disabledDepcies) {
-        super(db, disabledDepcies);
+    public Select(IDatabase db) {
+        super(db);
     }
 
     protected Select(AbstractExpr parent) {
@@ -355,8 +355,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
     }
 
     private void groupBy(Grouping_element_listContext list, ValueExpr vex) {
-        Set<GenericColumn> subSet = new HashSet<>();
-        ValueExpr child = new ValueExpr(this, subSet);
+        ValueExpr child = new ValueExpr(this, new HashSet<>());
 
         for (Grouping_elementContext el : list.grouping_element()) {
             VexContext vexCtx = el.vex();
@@ -369,19 +368,32 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
         }
 
         // add dependencies to primary key
-        for (GenericColumn dep : child.getDepcies()) {
+        for (PgObjLocation dep : child.getDepcies()) {
             vex.addDepcy(dep);
-            PgStatement column;
-            if (dep.type == DbObjType.COLUMN && (column = dep.getStatement(db)) != null) {
-                PgStatement table = column.getParent();
-                if (table instanceof AbstractPgTable) {
-                    for (AbstractConstraint con : ((AbstractPgTable) table).getConstraints()) {
-                        if (con.isPrimaryKey() && con.getColumns().contains(dep.getObjName())) {
-                            vex.addDepcy(new GenericColumn(con.getSchemaName(),
-                                    con.getParent().getName(), con.getName(), DbObjType.CONSTRAINT));
-                        }
-                    }
-                }
+            addPrimaryKeyDepcy(dep, vex);
+        }
+    }
+
+    private void addPrimaryKeyDepcy(PgObjLocation dep, ValueExpr vex) {
+        if (dep.getType() != DbObjType.COLUMN) {
+            return;
+        }
+
+        ISchema schema = db.getSchema(dep.getSchema());
+        if (schema == null) {
+            return;
+        }
+
+        IStatementContainer rel = schema.getStatementContainer(dep.getObj().table);
+        if (rel == null) {
+            return;
+        }
+
+        for (IConstraint con : rel.getConstraints()) {
+            if (con.isPrimaryKey() && con.getColumns().contains(dep.getObjName())) {
+                // implicit reference
+                vex.addDepcy(new GenericColumn(con.getSchemaName(),
+                        con.getParent().getName(), con.getName(), DbObjType.CONSTRAINT), null);
             }
         }
     }
@@ -422,8 +434,10 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
     }
 
     private boolean qualAster(List<? extends ParserRuleContext> ids, List<ModPair<String, String>> cols) {
-        String schema = QNameParser.getSecondName(ids);
-        String relation = QNameParser.getFirstName(ids);
+        ParserRuleContext schemaCtx = QNameParser.getSecondNameCtx(ids);
+        String schema = schemaCtx == null ? null : schemaCtx.getText();
+        ParserRuleContext relationCtx = QNameParser.getFirstNameCtx(ids);
+        String relation = relationCtx.getText();
 
         Entry<String, GenericColumn> ref = findReference(schema, relation, null);
         if (ref == null) {
@@ -432,6 +446,13 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
         }
         GenericColumn relationGc = ref.getValue();
         if (relationGc != null) {
+            if  (schemaCtx != null) {
+                addDepcy(new GenericColumn(relationGc.schema, DbObjType.SCHEMA), schemaCtx);
+            }
+
+            // currently adding a table reference for any alias
+            addDepcy(relationGc, relationCtx);
+
             addFilteredRelationColumnsDepcies(relationGc.schema, relationGc.table, ANY)
             .map(Pair::copyMod)
             .forEach(cols::add);

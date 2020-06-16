@@ -1,6 +1,13 @@
 COMMENT ON DATABASE comments IS 'comments database';
 COMMENT ON SCHEMA public IS 'public schema';
 
+CREATE CAST (integer AS bigint) WITHOUT FUNCTION;
+
+COMMENT ON CAST (integer AS bigint) IS 'test cast'; 
+
+CREATE EXTENSION test_ext WITH SCHEMA pg_catalog;
+
+COMMENT ON EXTENSION test_ext IS 'test extension';
 CREATE TYPE public.typ_composite AS (
     key character varying(80) COLLATE pg_catalog."ru_RU.utf8",
     val text COLLATE pg_catalog."en_GB"
@@ -15,6 +22,8 @@ CREATE DOMAIN public.dom AS integer NOT NULL DEFAULT (-1)
     
 COMMENT ON DOMAIN public.dom IS 'Domain comment';
 
+COMMENT ON CONSTRAINT dom_check ON DOMAIN public.dom IS 'test domain constraint';
+
 CREATE FUNCTION public.test_fnc(arg character varying) RETURNS boolean
     LANGUAGE plpgsql
     AS $$BEGIN
@@ -22,6 +31,12 @@ RETURN true;
 END;$$;
 
 COMMENT ON FUNCTION public.test_fnc(arg character varying) IS 'test function';
+
+CREATE PROCEDURE public.test_proc(arg integer)
+    LANGUAGE SQL
+    AS $$ $$;
+
+COMMENT ON PROCEDURE public.test_proc(arg integer) IS 'test procedure';
 
 CREATE FUNCTION public.trigger_fnc() RETURNS trigger
     LANGUAGE plpgsql
@@ -72,3 +87,11 @@ BEFORE UPDATE ON public.test
 FOR EACH STATEMENT EXECUTE PROCEDURE public.trigger_fnc();
 
 COMMENT ON TRIGGER test_trigger ON public.test IS 'test trigger';
+
+CREATE RULE test_rule AS ON DELETE TO public.test DO NOTHING;
+
+COMMENT ON RULE test_rule ON public.test IS 'test rule';
+
+CREATE POLICY test_policy ON public.test;
+
+COMMENT ON POLICY test_policy ON public.test IS 'test policy';

@@ -1,3 +1,7 @@
+CREATE EXTENSION test_ext WITH SCHEMA pg_catalog;
+
+CREATE CAST (integer AS bigint) WITHOUT FUNCTION;
+
 CREATE TYPE public.typ_composite AS (
     key character varying(80) COLLATE pg_catalog."ru_RU.utf8",
     val text COLLATE pg_catalog."en_GB"
@@ -11,6 +15,10 @@ CREATE FUNCTION public.test_fnc(arg character varying) RETURNS boolean
     AS $$BEGIN
 RETURN true;
 END;$$;
+
+CREATE PROCEDURE public.test_proc(arg integer)
+    LANGUAGE SQL
+    AS $$ $$;
 
 CREATE FUNCTION public.trigger_fnc() RETURNS trigger
     LANGUAGE plpgsql
@@ -47,6 +55,8 @@ CREATE TRIGGER test_trigger BEFORE UPDATE ON public.test
 FOR EACH STATEMENT EXECUTE PROCEDURE trigger_fnc();
 
 CREATE RULE test_rule AS ON DELETE TO public.test DO NOTHING;
+
+CREATE POLICY test_policy ON public.test;
 
 CREATE TEXT SEARCH TEMPLATE public.test_template (
     LEXIZE = dsnowball_lexize );

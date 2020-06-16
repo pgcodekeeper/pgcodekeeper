@@ -135,7 +135,8 @@ public class IgnoreListProperties extends PropertyPage {
         protected void createButtonsForSideBar(Composite parent) {
             super.createButtonsForSideBar(parent);
 
-            Button btnEdit = createButton(parent, CLIENT_ID, Messages.edit, FILE.ICONEDIT);
+            Button btnEdit = createButton(parent, CLIENT_ID, Messages.edit,
+                    Activator.getRegisteredImage(FILE.ICONEDIT));
             btnEdit.addSelectionListener(new SelectionAdapter() {
 
                 @Override

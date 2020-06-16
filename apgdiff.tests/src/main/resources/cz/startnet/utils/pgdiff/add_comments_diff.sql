@@ -2,11 +2,17 @@ SET search_path = pg_catalog;
 
 COMMENT ON DATABASE current_database() IS 'comments database';
 
+COMMENT ON CAST (integer AS bigint) IS 'test cast';
+
+COMMENT ON EXTENSION test_ext IS 'test extension';
+
 COMMENT ON COLUMN public.typ_composite.key IS 'Type composite key comment';
 
 COMMENT ON COLUMN public.typ_composite.val IS 'Type composite val comment';
 
 COMMENT ON TYPE public.typ_composite IS 'test type';
+
+COMMENT ON CONSTRAINT dom_check ON DOMAIN public.dom IS 'test domain constraint';
 
 COMMENT ON DOMAIN public.dom IS 'test domain';
 
@@ -28,6 +34,8 @@ COMMENT ON COLUMN public.test.text IS 'text column';
 
 COMMENT ON FUNCTION public.test_fnc(arg character varying) IS 'test function';
 
+COMMENT ON PROCEDURE public.test_proc(arg integer) IS 'test procedure';
+
 COMMENT ON CONSTRAINT text_check ON public.test IS 'text check';
 
 COMMENT ON CONSTRAINT test_pkey ON public.test IS 'primary key';
@@ -41,3 +49,5 @@ COMMENT ON INDEX public.test_index IS 'test table index';
 COMMENT ON TRIGGER test_trigger ON public.test IS 'test trigger';
 
 COMMENT ON RULE test_rule ON public.test IS 'test rule';
+
+COMMENT ON POLICY test_policy ON public.test IS 'test policy';

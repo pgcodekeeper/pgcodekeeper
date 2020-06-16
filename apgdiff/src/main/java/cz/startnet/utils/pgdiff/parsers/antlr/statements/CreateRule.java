@@ -52,6 +52,7 @@ public class CreateRule extends ParserAbstract {
         // unsupported roles rules, ALL TABLES/SEQUENCES/FUNCTIONS IN SCHENA
         if (db.getArguments().isIgnorePrivileges() || ctx.other_rules() != null
                 || obj.ALL() != null) {
+            addOutlineRefForCommentOrRule(state, ctx);
             return;
         }
 
@@ -87,6 +88,7 @@ public class CreateRule extends ParserAbstract {
         } else if (obj.TYPE() != null) {
             type = DbObjType.TYPE;
         } else {
+            addOutlineRefForCommentOrRule(state, ctx);
             return;
         }
 
@@ -94,7 +96,7 @@ public class CreateRule extends ParserAbstract {
 
         if (type != null) {
             for (Schema_qualified_nameContext name : objName) {
-                addObjReference(name.identifier(), type, null);
+                addObjReference(name.identifier(), type, state);
 
                 if (isRefMode()) {
                     continue;
@@ -136,7 +138,7 @@ public class CreateRule extends ParserAbstract {
             StringBuilder sb = new StringBuilder();
             DbObjType type = obj.PROCEDURE() == null ?
                     DbObjType.FUNCTION : DbObjType.PROCEDURE;
-            addObjReference(funcIds, type, null);
+            addObjReference(funcIds, type, state);
 
             if (isRefMode()) {
                 continue;
@@ -182,7 +184,7 @@ public class CreateRule extends ParserAbstract {
             Map<String, Entry<IdentifierContext, List<String>>> colPrivs, List<String> roles) {
         List<IdentifierContext> ids = tbl.identifier();
 
-        addObjReference(ids, DbObjType.TABLE, null);
+        addObjReference(ids, DbObjType.TABLE, state);
 
         // TODO waits for column references
         // addObjReference(Arrays.asList(QNameParser.getSchemaNameCtx(ids),firstPart, colName),
@@ -272,6 +274,6 @@ public class CreateRule extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        return null;
+        return state;
     }
 }

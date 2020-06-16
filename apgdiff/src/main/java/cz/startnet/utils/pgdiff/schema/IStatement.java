@@ -6,6 +6,10 @@ public interface IStatement {
     String getName();
     DbObjType getStatementType();
     IStatement getParent();
-    DbObjNature getStatementNature();
     String getQualifiedName();
+    String getComment();
+
+    default String getBareName() {
+        return getName();
+    }
 }

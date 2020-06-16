@@ -208,10 +208,10 @@ class PageDiff extends WizardPage implements Listener {
         dbContainer.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         dbContainer.setLayout(new GridLayout(2, true));
 
-        dbSource = new DbSourcePicker(dbContainer, Messages.DiffWizard_source, mainPrefs, this);
+        dbSource = new DbSourcePicker(dbContainer, Messages.DiffWizard_source, this);
         dbSource.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        dbTarget = new DbSourcePicker(dbContainer, Messages.DiffWizard_target, mainPrefs, this);
+        dbTarget = new DbSourcePicker(dbContainer, Messages.DiffWizard_target, this);
         dbTarget.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         Composite compTz = new Composite(container, SWT.NONE);

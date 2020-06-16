@@ -21,8 +21,10 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.StatementOverride;
@@ -61,29 +63,8 @@ public class ProjectLoader extends DatabaseLoader {
         this.monitor = monitor;
     }
 
-    /**
-     * Loads database schema from a ModelExporter directory tree.
-     *
-     * @param dirPath path to the directory tree root
-     *
-     * @return database schema
-     * @throws InterruptedException
-     */
-    public PgDatabase loadDatabaseSchemaFromDirTree() throws InterruptedException, IOException {
-        PgDatabase db = loadSchemaOnly();
-        FullAnalyze.fullAnalyze(db, errors);
-        return db;
-    }
-
-    /**
-     * Loads database schema from a ModelExporter directory tree without analyze.
-     *
-     * @param dirPath path to the directory tree root
-     *
-     * @return database schema
-     * @throws InterruptedException
-     */
-    public PgDatabase loadSchemaOnly() throws InterruptedException, IOException {
+    @Override
+    public PgDatabase load() throws InterruptedException, IOException {
         PgDatabase db = new PgDatabase(arguments);
 
         File dir = new File(dirPath);
@@ -162,13 +143,15 @@ public class ProjectLoader extends DatabaseLoader {
 
     protected void addDboSchema(PgDatabase db) {
         if (!db.containsSchema(ApgdiffConsts.DBO)) {
-            db.addSchema(new MsSchema(ApgdiffConsts.DBO));
+            MsSchema schema = new MsSchema(ApgdiffConsts.DBO);
+            schema.setLocation(new PgObjLocation(
+                    new GenericColumn(ApgdiffConsts.DBO, DbObjType.SCHEMA)));
+            db.addSchema(schema);
             db.setDefaultSchema(ApgdiffConsts.DBO);
         }
     }
 
-    private void loadSubdir(File dir, String sub, PgDatabase db)
-            throws InterruptedException, IOException {
+    private void loadSubdir(File dir, String sub, PgDatabase db) throws InterruptedException {
         File subDir = new File(dir, sub);
         if (subDir.exists() && subDir.isDirectory()) {
             File[] files = subDir.listFiles();
