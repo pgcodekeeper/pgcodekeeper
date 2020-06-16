@@ -3,14 +3,12 @@ package cz.startnet.utils.pgdiff.formatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
-import org.antlr.v4.runtime.tree.TerminalNode;
+import org.antlr.v4.runtime.Token;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLLexer;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
@@ -22,6 +20,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_createContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.StatementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class FileFormatter {
 
@@ -92,21 +92,14 @@ public class FileFormatter {
             return;
         }
 
-        String definition;
         List<Character_stringContext> funcContent = funcDef.character_string();
 
-        TerminalNode codeStart = funcContent.get(0).Character_String_Literal();
-        if (codeStart != null) {
-            // TODO support special escaping schemes (maybe in the util itself)
-            definition = PgDiffUtils.unquoteQuotedString(codeStart.getText());
-        } else {
-            List<TerminalNode> dollarText = funcContent.get(0).Text_between_Dollar();
-            codeStart = dollarText.get(0);
-            definition = dollarText.stream().map(TerminalNode::getText).collect(Collectors.joining());
-        }
+        Pair<String, Token> pair = ParserAbstract.unquoteQuotedString(funcContent.get(0));
+        String definition = pair.getFirst();
+        Token codeStart = pair.getSecond();
 
         StatementFormatter sf = new StatementFormatter(start, stop, config);
-        sf.parseDefsToFormat(definition, language, codeStart.getSymbol().getStartIndex());
+        sf.parseDefsToFormat(definition, language, codeStart.getStartIndex());
         changes.addAll(sf.getChanges());
     }
 }
