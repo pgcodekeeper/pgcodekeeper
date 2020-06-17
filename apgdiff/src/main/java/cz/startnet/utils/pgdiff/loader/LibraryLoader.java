@@ -5,16 +5,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -196,33 +200,37 @@ public class LibraryLoader extends DatabaseLoader {
         }
 
         Files.createDirectories(dir);
-        dir = dir.toRealPath();
+        Path destDir = dir.toRealPath();
 
-        try (InputStream fis = Files.newInputStream(zip);
-                ZipInputStream zis = new ZipInputStream(fis)) {
-            ZipEntry ze = zis.getNextEntry();
-            while (ze != null) {
-                Path newFile = dir.resolve(ze.getName()).normalize();
-                if (!newFile.startsWith(dir)) {
-                    throw new SecurityException("Malicious zip-archive attempting to write outside target directory: "
-                            + newFile);
+        try (FileSystem fs = FileSystems.newFileSystem(zip, null)) {
+            final Path root = fs.getPath("/");
+
+            // walk the zip file tree and copy files to the destination
+            Files.walkFileTree(root, new SimpleFileVisitor<Path>(){
+
+                @Override
+                public FileVisitResult visitFile(Path file,
+                        BasicFileAttributes attrs) throws IOException {
+                    Path destFile = Paths.get(destDir.toString(), file.toString());
+                    Files.copy(file, destFile, StandardCopyOption.REPLACE_EXISTING);
+                    return FileVisitResult.CONTINUE;
                 }
 
-                //create directories for sub directories in zip
-                if (!ze.isDirectory()) {
-                    Files.createDirectories(newFile.getParent());
-                    Files.copy(zis, newFile);
-                }
-                //close this ZipEntry
-                zis.closeEntry();
-                ze = zis.getNextEntry();
-            }
+                @Override
+                public FileVisitResult preVisitDirectory(Path dir,
+                        BasicFileAttributes attrs) throws IOException {
+                    Path dirToCreate = Paths.get(destDir.toString(), dir.toString());
 
-            //close last ZipEntry
-            zis.closeEntry();
+                    if (Files.notExists(dirToCreate)){
+                        Files.createDirectory(dirToCreate);
+                    }
+
+                    return FileVisitResult.CONTINUE;
+                }
+            });
         }
 
-        return dir.toString();
+        return destDir.toString();
     }
 
     private void readStatementsFromDirectory(Path f, PgDatabase db)
