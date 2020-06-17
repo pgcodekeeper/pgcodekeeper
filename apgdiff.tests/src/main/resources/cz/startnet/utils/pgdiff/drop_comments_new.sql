@@ -16,6 +16,10 @@ CREATE FUNCTION public.test_fnc(arg character varying) RETURNS boolean
 RETURN true;
 END;$$;
 
+CREATE PROCEDURE public.test_proc(arg integer)
+    LANGUAGE SQL
+    AS $$ $$;
+
 CREATE FUNCTION public.trigger_fnc() RETURNS trigger
     LANGUAGE plpgsql
     AS $$begin
@@ -51,6 +55,8 @@ CREATE TRIGGER test_trigger BEFORE UPDATE ON public.test
 FOR EACH STATEMENT EXECUTE PROCEDURE trigger_fnc();
 
 CREATE RULE test_rule AS ON DELETE TO public.test DO NOTHING;
+
+CREATE POLICY test_policy ON public.test;
 
 CREATE TEXT SEARCH TEMPLATE public.test_template (
     LEXIZE = dsnowball_lexize );

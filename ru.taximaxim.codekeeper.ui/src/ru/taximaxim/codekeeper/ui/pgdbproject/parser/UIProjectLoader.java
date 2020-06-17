@@ -203,7 +203,6 @@ public class UIProjectLoader extends ProjectLoader {
                 || sc.hasChildren())
         .forEach(st -> newDb.addChild(st.deepCopy()));
         newDb.getObjReferences().putAll(db.getObjReferences());
-        newDb.getObjDefinitions().putAll(db.getObjDefinitions());
         return newDb;
     }
 

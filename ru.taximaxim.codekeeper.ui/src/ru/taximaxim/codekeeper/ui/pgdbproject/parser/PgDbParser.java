@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
@@ -123,9 +122,9 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
                 try (ObjectInputStream oin = new ObjectInputStream(Files.newInputStream(path))) {
                     PgDbParser parser = (PgDbParser) oin.readObject();
                     objReferences.clear();
-                    objReferences.putAll(parser.getObjReferences());
+                    objReferences.putAll(parser.objReferences);
                     objDefinitions.clear();
-                    objDefinitions.putAll(parser.getObjDefinitions());
+                    objDefinitions.putAll(parser.objDefinitions);
                     notifyListeners();
                     return true;
                 }
@@ -162,7 +161,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         loader.setMode(ParserListenerMode.REF);
         PgDatabase db = loader.loadFile(new PgDatabase(args));
         removeResFromRefs(file);
-        objDefinitions.putAll(db.getObjDefinitions());
+        objDefinitions.putAll(MetaUtils.getObjDefinitions(db));
         objReferences.putAll(db.getObjReferences());
         notifyListeners();
     }
@@ -171,7 +170,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
             throws InterruptedException, IOException, CoreException {
         PgDatabase db = UIProjectLoader.buildFiles(files, isMsSql, monitor);
         files.forEach(this::removeResFromRefs);
-        objDefinitions.putAll(db.getObjDefinitions());
+        objDefinitions.putAll(MetaUtils.getObjDefinitions(db));
         List<Object> errors = new ArrayList<>();
         FullAnalyze.fullAnalyze(db, MetaUtils.createTreeFromDefs(
                 getAllObjDefinitions(), !isMsSql, db.getPostgresVersion()), errors);
@@ -189,7 +188,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         DatabaseLoader loader = new UIProjectLoader(proj, args, mon);
         PgDatabase db = loader.loadAndAnalyze();
         objDefinitions.clear();
-        objDefinitions.putAll(db.getObjDefinitions());
+        objDefinitions.putAll(MetaUtils.getObjDefinitions(db));
         objReferences.clear();
         objReferences.putAll(db.getObjReferences());
         notifyListeners();
@@ -209,14 +208,14 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         loader.setMode(ParserListenerMode.REF);
         PgDatabase db = loader.load();
         objDefinitions.clear();
-        objDefinitions.putAll(db.getObjDefinitions());
+        objDefinitions.putAll(MetaUtils.getObjDefinitions(db));
         objReferences.clear();
         objReferences.putAll(db.getObjReferences());
         notifyListeners();
     }
 
-    public Stream<PgObjLocation> getDefinitionsForObj(PgObjLocation obj) {
-        return getAllObjDefinitions().map(MetaStatement::getObject).filter(obj::compare);
+    public Stream<MetaStatement> getDefinitionsForObj(PgObjLocation obj) {
+        return getAllObjDefinitions().filter(st -> st.getObject().compare(obj));
     }
 
     public List<PgObjLocation> getObjsForEditor(IEditorInput in) {
@@ -225,23 +224,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
     }
 
     public List<PgObjLocation> getObjsForPath(String pathToFile) {
-        List<PgObjLocation> statements = new ArrayList<>();
-
-        List<MetaStatement> definitions = objDefinitions.get(pathToFile);
-        if (definitions != null) {
-            for (MetaStatement def : definitions) {
-                statements.add(def.getObject());
-            }
-        }
-
-        List<PgObjLocation> references = objReferences.get(pathToFile);
-        if (references != null) {
-            for (PgObjLocation ref : references) {
-                statements.add(ref);
-            }
-        }
-
-        return statements;
+        return objReferences.getOrDefault(pathToFile, Collections.emptyList());
     }
 
     public Stream<MetaStatement> getAllObjDefinitions() {
@@ -252,12 +235,9 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         return objReferences.values().stream().flatMap(List<PgObjLocation>::stream);
     }
 
-    public Map<String, List<MetaStatement>> getObjDefinitions() {
-        return objDefinitions;
-    }
-
-    public Map<String, List<PgObjLocation>> getObjReferences() {
-        return objReferences;
+    public void clear() {
+        objDefinitions.clear();
+        objReferences.clear();
     }
 
     public void notifyListeners() {

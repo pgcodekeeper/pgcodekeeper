@@ -200,18 +200,24 @@ public abstract class AbstractExpr {
         }
 
         String columnName = QNameParser.getFirstName(ids);
-        String columnParent = QNameParser.getSecondName(ids);
-        String schemaName = QNameParser.getThirdName(ids);
-        return processColumn(schemaName, columnParent, columnName);
-    }
+        ParserRuleContext columnParentCtx = QNameParser.getSecondNameCtx(ids);
+        String columnParent = columnParentCtx.getText();
+        ParserRuleContext schemaNameCtx = QNameParser.getThirdNameCtx(ids);
+        String schemaName = schemaNameCtx == null ? null : schemaNameCtx.getText();
 
-    protected ModPair<String, String> processColumn(String schemaName, String columnParent, String columnName) {
         String columnType = TypesSetManually.COLUMN;
         Entry<String, GenericColumn> ref = findReference(schemaName, columnParent, columnName);
         List<Pair<String, String>> refComplex;
         if (ref != null) {
             GenericColumn referencedTable = ref.getValue();
             if (referencedTable != null) {
+                if (schemaNameCtx != null) {
+                    addDepcy(new GenericColumn(referencedTable.schema, DbObjType.SCHEMA), schemaNameCtx);
+                }
+
+                // currently adding a table reference for any alias
+                addDepcy(referencedTable, columnParentCtx);
+
                 columnType = addFilteredColumnDepcy(
                         referencedTable.schema, referencedTable.table, columnName);
             } else if ((refComplex = findReferenceComplex(columnParent)) != null) {

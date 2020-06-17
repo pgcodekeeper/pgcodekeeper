@@ -206,7 +206,7 @@ public class FilterDialog extends Dialog {
         new Label(container, SWT.NONE).setText(Messages.FilterDialog_show_change_types);
 
         objViewer = CheckboxTableViewer.newCheckList(container, SWT.BORDER);
-        objViewer.add(EnumSet.complementOf(EnumSet.of(DbObjType.COLUMN, DbObjType.DATABASE)).toArray());
+        objViewer.add(EnumSet.complementOf(EnumSet.of(DbObjType.DATABASE)).toArray());
         objViewer.setCheckedElements(types.toArray());
         objViewer.getControl().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 

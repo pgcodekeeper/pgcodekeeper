@@ -10,10 +10,9 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgObjLocation extends ContextLocation {
 
-    private static final long serialVersionUID = 1560794454982891339L;
+    private static final long serialVersionUID = -6511243237472584008L;
 
     private DangerStatement danger;
-    private String comment = "";
     private int length = -1;
 
     private final String action;
@@ -43,10 +42,14 @@ public class PgObjLocation extends ContextLocation {
         setLength(ctx.getStop().getStopIndex() - ctx.getStart().getStartIndex() + 1);
     }
 
-    public PgObjLocation(String action, ParserRuleContext ctx, String sql) {
-        this(null, action, ctx.getStart().getStartIndex(), ctx.getStart().getLine(),
-                ctx.getStart().getCharPositionInLine(), null);
+    public PgObjLocation(String action, int offset, int lineNumber, int charPositionInLine, String sql) {
+        this(null, action, offset, lineNumber, charPositionInLine, null);
         this.sql = sql;
+    }
+
+    public PgObjLocation(String action, ParserRuleContext ctx, String sql) {
+        this(action, ctx.getStart().getStartIndex(), ctx.getStart().getLine(),
+                ctx.getStart().getCharPositionInLine(), sql);
     }
 
     public PgObjLocation(String action, String sql) {
@@ -100,14 +103,6 @@ public class PgObjLocation extends ContextLocation {
         result = prime * result + ((getSql() == null) ? 0 : getSql().hashCode());
         result = prime * result + ((getAction() == null) ? 0 : getAction().hashCode());
         return result;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
     }
 
     public String getWarningText() {

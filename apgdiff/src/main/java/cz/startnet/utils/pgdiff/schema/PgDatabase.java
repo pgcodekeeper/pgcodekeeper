@@ -19,7 +19,6 @@ import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.AbstractAnalysisLauncher;
-import cz.startnet.utils.pgdiff.schema.meta.MetaStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -41,8 +40,6 @@ public class PgDatabase extends PgStatement implements IDatabase {
     private final Map<String, MsRole> roles = new LinkedHashMap<>();
     private final Map<String, MsUser> users = new LinkedHashMap<>();
 
-    // Contains object definitions
-    private final Map<String, List<MetaStatement>> objDefinitions = new HashMap<>();
     // Содержит ссылки на объекты
     private final Map<String, List<PgObjLocation>> objReferences = new HashMap<>();
     // Contains analysis launchers for all statements
@@ -85,20 +82,16 @@ public class PgDatabase extends PgStatement implements IDatabase {
         return arguments;
     }
 
-    public Map<String, List<MetaStatement>> getObjDefinitions() {
-        return objDefinitions;
-    }
-
     public Map<String, List<PgObjLocation>> getObjReferences() {
         return objReferences;
     }
 
-    public void addDefinition(String fileName, MetaStatement meta) {
-        objDefinitions.computeIfAbsent(fileName, k -> new ArrayList<>()).add(meta);
-    }
-
     public void addReference(String fileName, PgObjLocation loc) {
-        objReferences.computeIfAbsent(fileName, k -> new ArrayList<>()).add(loc);
+        List<PgObjLocation> l = objReferences.computeIfAbsent(fileName, k -> new ArrayList<>());
+        // TODO look for the better alternative
+        if (!l.contains(loc)) {
+            l.add(loc);
+        }
     }
 
     public List<AbstractAnalysisLauncher> getAnalysisLaunchers() {
@@ -452,8 +445,6 @@ public class PgDatabase extends PgStatement implements IDatabase {
             l.updateStmt(this);
             analysisLaunchers.add(l);
         });
-
-        objDefinitions.putAll(lib.objDefinitions);
     }
 
     public void concat(PgStatement st) {
@@ -482,6 +473,7 @@ public class PgDatabase extends PgStatement implements IDatabase {
         case INDEX:
         case TRIGGER:
         case RULE:
+        case POLICY:
             IStatementContainer cont = getSchema(parent.getParent().getName())
             .getStatementContainer(parentName);
 

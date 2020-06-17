@@ -140,7 +140,6 @@ public class MsModelExporter extends AbstractModelExporter {
         case CONSTRAINT:
         case INDEX:
         case TRIGGER:
-        case RULE:
             TreeElement elParent = el.getParent();
             if (elParent.getType() == DbObjType.TABLE){
                 processTableAndContents(elParent, elParent.getPgStatement(oldDb), el);
@@ -178,7 +177,6 @@ public class MsModelExporter extends AbstractModelExporter {
         case CONSTRAINT:
         case INDEX:
         case TRIGGER:
-        case RULE:
             if (elParent.getType() == DbObjType.TABLE) {
                 processTableAndContents(elParent, elParent.getPgStatement(newDb), el);
             } else {
@@ -218,7 +216,6 @@ public class MsModelExporter extends AbstractModelExporter {
         case CONSTRAINT:
         case INDEX:
         case TRIGGER:
-        case RULE:
             if (elParent.getType() == DbObjType.TABLE) {
                 processTableAndContents(elParent, elParent.getPgStatement(newDb), el);
             } else {

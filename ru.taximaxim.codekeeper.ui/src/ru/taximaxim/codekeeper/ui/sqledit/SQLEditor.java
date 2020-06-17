@@ -454,8 +454,7 @@ implements IResourceChangeListener, ITextErrorReporter {
             throws InterruptedException, IOException, CoreException {
         checkFileSize();
         if (isLargeFile()) {
-            parser.getObjDefinitions().clear();
-            parser.getObjReferences().clear();
+            parser.clear();
             parser.notifyListeners();
             return;
         }

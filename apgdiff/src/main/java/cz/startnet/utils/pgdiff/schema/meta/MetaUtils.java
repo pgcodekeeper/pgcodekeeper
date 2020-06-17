@@ -1,5 +1,9 @@
 package cz.startnet.utils.pgdiff.schema.meta;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
@@ -136,6 +140,11 @@ public class MetaUtils {
             break;
         }
 
+        String commnent = st.getComment();
+        if (commnent != null) {
+            meta.setComment(commnent);
+        }
+
         return meta;
     }
 
@@ -171,9 +180,12 @@ public class MetaUtils {
             gc = new GenericColumn(st.getParent().getName(), st.getBareName(), type);
             break;
         case INDEX:
+            gc = new GenericColumn(st.getParent().getParent().getName(), st.getName(), type);
+            break;
         case CONSTRAINT:
         case RULE:
         case TRIGGER:
+        case POLICY:
             IStatement parent = st.getParent();
             gc = new GenericColumn(parent.getParent().getName(), parent.getName(), st.getName(), type);
             break;
@@ -183,6 +195,24 @@ public class MetaUtils {
 
         return new PgObjLocation(gc);
     }
+
+    public static Map<String, List<MetaStatement>> getObjDefinitions(PgDatabase db) {
+        Map<String, List<MetaStatement>> definitions = new HashMap<>();
+
+        db.getDescendants().forEach(st -> {
+            PgObjLocation loc = st.getLocation();
+            if (loc != null) {
+                String filePath = loc.getFilePath();
+                if (filePath != null) {
+                    definitions.computeIfAbsent(filePath, k -> new ArrayList<>())
+                    .add(MetaUtils.createMetaFromStatement(st));
+                }
+            }
+        });
+
+        return definitions;
+    }
+
 
     private MetaUtils() {}
 }
