@@ -311,6 +311,11 @@ public abstract class AbstractExpr {
             columns = relation.getRelationColumns();
         }
 
+        if (columns == null) {
+            log(Log.LOG_WARNING, "Columns not found: " + schemaName + '.' + relationName);
+            return Stream.empty();
+        }
+
         Stream<Pair<String, String>> cols = columns
                 .filter(col -> colNamePredicate.test(col.getFirst()));
 
