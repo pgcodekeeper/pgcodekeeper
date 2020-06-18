@@ -14,6 +14,7 @@ import cz.startnet.utils.pgdiff.schema.IDatabase;
 import cz.startnet.utils.pgdiff.schema.IFunction;
 import cz.startnet.utils.pgdiff.schema.IOperator;
 import cz.startnet.utils.pgdiff.schema.IRelation;
+import cz.startnet.utils.pgdiff.schema.ISchema;
 import cz.startnet.utils.pgdiff.schema.IStatement;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
@@ -72,10 +73,19 @@ public class MetaUtils {
         case TABLE:
         case TYPE:
         case VIEW:
-            tree.getSchema(gc.schema).addChild(st);
+            MetaSchema schema = tree.getSchema(gc.schema);
+            if (schema != null) {
+                schema.addChild(st);
+            }
             break;
         case CONSTRAINT:
-            tree.getSchema(gc.schema).getStatementContainer(gc.table).addChild(st);
+            schema = tree.getSchema(gc.schema);
+            if (schema != null) {
+                MetaStatementContainer container = schema.getStatementContainer(gc.table);
+                if (container != null) {
+                    container.addChild(st);
+                }
+            }
             break;
         default :
             break;
@@ -213,6 +223,18 @@ public class MetaUtils {
         return definitions;
     }
 
+    public static void initializeView(IDatabase db, String schemaName,
+            String name, List<? extends Pair<String, String>> columns) {
+        ISchema schema = db.getSchema(schemaName);
+        if (schema != null) {
+            IRelation rel = schema.getRelation(name);
+            if (rel instanceof MetaRelation) {
+                MetaRelation meta = (MetaRelation) rel;
+                columns.forEach(col -> meta.addColumn(col.getFirst(), col.getSecond()));
+                meta.setInitialized(true);
+            }
+        }
+    }
 
     private MetaUtils() {}
 }
