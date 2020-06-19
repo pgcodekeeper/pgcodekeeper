@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_view_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_view_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
@@ -26,15 +27,16 @@ public class AlterView extends ParserAbstract {
         List<IdentifierContext> ids = ctx.name.identifier();
         PgView dbView = (PgView) getSafe(AbstractSchema::getView,
                 getSchemaSafe(ids), QNameParser.getFirstNameCtx(ids));
-        if (ctx.set_def_column() != null) {
-            VexContext exp = ctx.set_def_column().vex();
+        Alter_view_actionContext action = ctx.alter_view_action();
+        if (action.set_def_column() != null) {
+            VexContext exp = action.set_def_column().vex();
             doSafe((s,o) -> {
-                s.addColumnDefaultValue(getFullCtxText(ctx.column_name), getFullCtxText(exp));
+                s.addColumnDefaultValue(getFullCtxText(action.column_name), getFullCtxText(exp));
                 db.addAnalysisLauncher(new ViewAnalysisLauncher(s, exp, fileName));
             }, dbView, null);
         }
-        if (ctx.drop_def() != null) {
-            doSafe(PgView::removeColumnDefaultValue, dbView, getFullCtxText(ctx.column_name));
+        if (action.drop_def() != null) {
+            doSafe(PgView::removeColumnDefaultValue, dbView, getFullCtxText(action.column_name));
         }
 
         addObjReference(ids, DbObjType.VIEW, ACTION_ALTER);

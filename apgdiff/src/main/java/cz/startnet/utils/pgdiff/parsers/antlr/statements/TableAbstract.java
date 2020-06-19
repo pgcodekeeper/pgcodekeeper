@@ -16,12 +16,13 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Foreign_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identity_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Including_indexContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_columnContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_parametersContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.List_of_type_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Names_in_parensContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Option_with_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sequence_bodyContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sort_specifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_deferrableContext;
@@ -331,8 +332,12 @@ public abstract class TableAbstract extends ParserAbstract {
 
         constrBlank.setDefinition(sb.toString());
 
-        for (Sort_specifierContext s : constrBody.sort_specifier()) {
-            db.addAnalysisLauncher(new ConstraintAnalysisLauncher(constrBlank, s.vex(), location));
+        for (Index_columnContext c : constrBody.index_column()) {
+            db.addAnalysisLauncher(new ConstraintAnalysisLauncher(constrBlank, c.vex(), location));
+
+            for (Option_with_valueContext o : c.option_with_value()) {
+                db.addAnalysisLauncher(new ConstraintAnalysisLauncher(constrBlank, o.vex(), location));
+            }
         }
 
         VexContext exp = constrBody.vex();

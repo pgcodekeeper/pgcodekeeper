@@ -7,11 +7,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_index_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Including_indexContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_columnContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_restContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_sortContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_whereContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_varContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sort_specifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Value_expression_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
@@ -102,8 +102,8 @@ public class CreateIndex extends ParserAbstract {
     }
 
     private static void parseColumns(Index_sortContext sort, AbstractIndex ind) {
-        for (Sort_specifierContext sort_ctx : sort.sort_specifier_list().sort_specifier()) {
-            Value_expression_primaryContext vexPrimary = sort_ctx.key.value_expression_primary();
+        for (Index_columnContext sort_ctx : sort.index_column()) {
+            Value_expression_primaryContext vexPrimary = sort_ctx.column.value_expression_primary();
             if (vexPrimary != null) {
                 Indirection_varContext colName = vexPrimary.indirection_var();
                 if (colName != null) {

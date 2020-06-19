@@ -172,6 +172,7 @@ public class Keyword {
         keywords.put("execute", new Keyword("execute", UNRESERVED_KEYWORD));
         keywords.put("exists", new Keyword("exists", COL_NAME_KEYWORD));
         keywords.put("explain", new Keyword("explain", UNRESERVED_KEYWORD));
+        keywords.put("expression", new Keyword("expression", UNRESERVED_KEYWORD));
         keywords.put("extension", new Keyword("extension", UNRESERVED_KEYWORD));
         keywords.put("external", new Keyword("external", UNRESERVED_KEYWORD));
         keywords.put("extract", new Keyword("extract", COL_NAME_KEYWORD));
@@ -276,8 +277,14 @@ public class Keyword {
         keywords.put("nchar", new Keyword("nchar", COL_NAME_KEYWORD));
         keywords.put("new", new Keyword("new", UNRESERVED_KEYWORD));
         keywords.put("next", new Keyword("next", UNRESERVED_KEYWORD));
+        keywords.put("nfc", new Keyword("nfc", UNRESERVED_KEYWORD));
+        keywords.put("nfd", new Keyword("nfd", UNRESERVED_KEYWORD));
+        keywords.put("nfkc", new Keyword("nfkc", UNRESERVED_KEYWORD));
+        keywords.put("nfkd", new Keyword("nfkd", UNRESERVED_KEYWORD));
         keywords.put("no", new Keyword("no", UNRESERVED_KEYWORD));
         keywords.put("none", new Keyword("none", COL_NAME_KEYWORD));
+        keywords.put("normalize", new Keyword("normalize", COL_NAME_KEYWORD));
+        keywords.put("normalized", new Keyword("normalized", UNRESERVED_KEYWORD));
         keywords.put("not", new Keyword("not", RESERVED_KEYWORD));
         keywords.put("nothing", new Keyword("nothing", UNRESERVED_KEYWORD));
         keywords.put("notify", new Keyword("notify", UNRESERVED_KEYWORD));
@@ -433,6 +440,7 @@ public class Keyword {
         keywords.put("trusted", new Keyword("trusted", UNRESERVED_KEYWORD));
         keywords.put("type", new Keyword("type", UNRESERVED_KEYWORD));
         keywords.put("types", new Keyword("types", UNRESERVED_KEYWORD));
+        keywords.put("uescape", new Keyword("uescape", UNRESERVED_KEYWORD));
         keywords.put("unbounded", new Keyword("unbounded", UNRESERVED_KEYWORD));
         keywords.put("uncommitted", new Keyword("uncommitted", UNRESERVED_KEYWORD));
         keywords.put("unencrypted", new Keyword("unencrypted", UNRESERVED_KEYWORD));
