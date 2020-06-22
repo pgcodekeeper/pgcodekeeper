@@ -622,7 +622,7 @@ type_action
     ;
 
 type_property
-    : (RECEIVE | SEND | TYPMOD_IN | TYPMOD_OUT | ANALYZE) EQUAL (schema_qualified_name | NONE)
+    : (RECEIVE | SEND | TYPMOD_IN | TYPMOD_OUT | ANALYZE) EQUAL schema_qualified_name
     | STORAGE EQUAL storage=storage_option
     ;
 
