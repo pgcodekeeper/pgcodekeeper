@@ -547,8 +547,8 @@ alter_materialized_view_action
 
 materialized_view_action
     : ALTER COLUMN? identifier set_statistics
-    | ALTER COLUMN? SET storage_parameter identifier
-    | ALTER COLUMN? RESET names_in_parens 
+    | ALTER COLUMN? identifier SET storage_parameter
+    | ALTER COLUMN? identifier RESET names_in_parens
     | ALTER COLUMN? identifier SET STORAGE storage_option
     | CLUSTER ON index_name=schema_qualified_name
     | SET WITHOUT CLUSTER
