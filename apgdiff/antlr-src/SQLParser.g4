@@ -175,6 +175,7 @@ boolean_value
     | OFF 
     | ON 
     | NUMBER_LITERAL
+    | character_string // 'true', 'false', 'on', 'off'
     ;
 
 fetch_move_direction
@@ -1511,8 +1512,7 @@ create_database_statement
     ;
 
 create_database_option
-    : (OWNER | TEMPLATE | ENCODING | TABLESPACE) EQUAL? (identifier | DEFAULT)
-    | (LOCALE | LC_COLLATE) EQUAL? (character_string | identifier | DEFAULT)
+    : (OWNER | TEMPLATE | ENCODING | LOCALE | LC_COLLATE | LC_CTYPE | TABLESPACE) EQUAL? (character_string | identifier | DEFAULT)
     | (ALLOW_CONNECTIONS | IS_TEMPLATE) EQUAL? (boolean_value | DEFAULT)
     | CONNECTION LIMIT EQUAL? (signed_number_literal | DEFAULT)
     ;
@@ -1522,7 +1522,8 @@ alter_database_statement
     ;
 
 alter_database_action
-    : (WITH? alter_database_option+)
+    : WITH? alter_database_option+
+    | WITH? TABLESPACE EQUAL? (character_string | identifier | DEFAULT)
     | rename_to
     | owner_to
     | set_tablespace
@@ -1795,7 +1796,7 @@ indirection
 */
 
 drop_database_statement
-    : DATABASE if_exists? identifier (WITH? FORCE)?
+    : DATABASE if_exists? identifier (WITH? LEFT_PAREN FORCE RIGHT_PAREN)?
     ;
 
 drop_function_statement
