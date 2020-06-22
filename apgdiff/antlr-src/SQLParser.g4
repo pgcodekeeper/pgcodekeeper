@@ -487,7 +487,7 @@ index_def_action
     | ALTER COLUMN? (NUMBER_LITERAL | identifier) set_statistics
     | RESET LEFT_PAREN identifier_list RIGHT_PAREN
     | set_tablespace
-    | SET LEFT_PAREN option_with_value (COMMA option_with_value)* RIGHT_PAREN
+    | SET storage_parameter
     ;
 
 alter_default_privileges_statement
