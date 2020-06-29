@@ -352,7 +352,7 @@ public abstract class ParserAbstract {
             dirs = Arrays.stream(ApgdiffConsts.WORK_DIR_NAMES.values())
                     .map(Enum::name);
         } else {
-            dirs = Arrays.stream(ApgdiffConsts.MS_WORK_DIR_NAMES.values())
+            dirs = Arrays.stream(MS_WORK_DIR_NAMES.values())
                     .map(MS_WORK_DIR_NAMES::getDirName);
         }
 
