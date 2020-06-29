@@ -477,7 +477,7 @@ function_def
 
 alter_index_statement
     : INDEX if_exists? schema_qualified_name index_def_action
-    | INDEX ALL IN TABLESPACE identifier (OWNED BY identifier_list)? set_tablespace?
+    | INDEX ALL IN TABLESPACE identifier (OWNED BY identifier_list)? set_tablespace
     ;
 
 index_def_action
