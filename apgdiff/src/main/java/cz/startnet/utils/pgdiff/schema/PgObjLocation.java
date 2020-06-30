@@ -207,4 +207,14 @@ public class PgObjLocation extends ContextLocation {
         loc.setLength(length);
         return loc;
     }
+
+    @Override
+    public String toString() {
+        GenericColumn gc = getObj();
+        if (gc != null) {
+            return gc.toString();
+        }
+
+        return super.toString();
+    }
 }
