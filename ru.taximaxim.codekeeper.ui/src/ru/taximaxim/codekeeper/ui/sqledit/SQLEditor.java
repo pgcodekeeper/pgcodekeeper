@@ -12,7 +12,6 @@ import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
@@ -144,8 +143,6 @@ implements IResourceChangeListener, ITextErrorReporter {
 
     private Annotation[] occurrenceAnnotations = null;
 
-    private List<PgObjLocation> currentRefs = Collections.emptyList();
-
     private ScriptThreadJobWrapper scriptThreadJobWrapper;
 
     private EditorSelectionChangedListener changedListener;
@@ -244,14 +241,18 @@ implements IResourceChangeListener, ITextErrorReporter {
 
     public void setLineBackground() {
         // TODO who deletes stale annotations after editor refresh?
-        currentRefs = getParser().getObjsForEditor(getEditorInput());
+        List<PgObjLocation> refs = getReferences();
         IAnnotationModel model = getSourceViewer().getAnnotationModel();
-        for (PgObjLocation loc : currentRefs) {
+        for (PgObjLocation loc : refs) {
             if (loc.isDanger()) {
                 model.addAnnotation(new Annotation(MARKER.DANGER_ANNOTATION, false, loc.getWarningText()),
                         new Position(loc.getOffset(), loc.getObjLength()));
             }
         }
+    }
+
+    private List<PgObjLocation> getReferences() {
+        return getParser().getObjsForEditor(getEditorInput());
     }
 
     @Override
@@ -287,7 +288,7 @@ implements IResourceChangeListener, ITextErrorReporter {
             ITextSelection textSelection = (ITextSelection) selection;
             int offset = textSelection.getOffset();
 
-            return currentRefs.stream()
+            return getReferences().stream()
                     .filter(loc -> loc.getOffset() <= offset && offset <= loc.getOffset() + loc.getObjLength())
                     .findAny().orElse(null);
         }
@@ -536,7 +537,7 @@ implements IResourceChangeListener, ITextErrorReporter {
 
     private Object getLock(IAnnotationModel model) {
         if (model instanceof ISynchronizable) {
-            Object lock= ((ISynchronizable) model).getLockObject();
+            Object lock = ((ISynchronizable) model).getLockObject();
             if (lock != null) {
                 return lock;
             }
@@ -846,7 +847,7 @@ implements IResourceChangeListener, ITextErrorReporter {
             if (selected != null && provider != null) {
                 Map<Annotation, Position> annotations = new HashMap<>();
 
-                for (PgObjLocation loc : currentRefs) {
+                for (PgObjLocation loc : getReferences()) {
                     if (loc.compare(selected)) {
                         annotations.put(new Annotation(MARKER.OBJECT_OCCURRENCE, false, loc.toString()),
                                 new Position(loc.getOffset(), loc.getObjLength()));
