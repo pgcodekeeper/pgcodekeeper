@@ -49,7 +49,6 @@ import org.eclipse.jface.text.source.DefaultCharacterPairMatcher;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModelExtension;
 import org.eclipse.jface.text.source.ICharacterPairMatcher;
-import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.viewers.DecorationOverlayIcon;
 import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.jface.viewers.ISelection;
@@ -842,9 +841,9 @@ implements IResourceChangeListener, ITextErrorReporter {
             }
 
             PgObjLocation selected = getCurrentReference();
-            ISourceViewer viewer = getSourceViewer();
+            IDocumentProvider provider = getDocumentProvider();
 
-            if (selected != null && viewer != null) {
+            if (selected != null && provider != null) {
                 Map<Annotation, Position> annotations = new HashMap<>();
 
                 for (PgObjLocation loc : currentRefs) {
@@ -854,7 +853,11 @@ implements IResourceChangeListener, ITextErrorReporter {
                     }
                 }
 
-                IAnnotationModel model = viewer.getAnnotationModel();
+                IAnnotationModel model = provider.getAnnotationModel(getEditorInput());
+                if (model == null) {
+                    return;
+                }
+
                 synchronized (getLock(model)) {
                     if (model instanceof IAnnotationModelExtension) {
                         ((IAnnotationModelExtension) model).replaceAnnotations(occurrenceAnnotations, annotations);
