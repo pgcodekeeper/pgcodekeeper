@@ -1340,6 +1340,9 @@
             markerSeverity="1"
             super="org.eclipse.ui.workbench.texteditor.warning"
             name="ru.taximaxim.codekeeper.ui.sql.dangerannotation" />
+        <type
+              name="ru.taximaxim.codekeeper.ui.sql.objectoccurrence">
+        </type>
     </extension>
     <extension point="org.eclipse.ui.editors.markerAnnotationSpecification">
         <specification
@@ -1360,6 +1363,24 @@
             textStylePreferenceValue="BOX"
             verticalRulerPreferenceKey="clvertical"
             verticalRulerPreferenceValue="true" />
+        <specification
+            annotationType="ru.taximaxim.codekeeper.ui.sql.objectoccurrence"
+            colorPreferenceKey="occurrenceColor"
+            colorPreferenceValue="212,212,212"
+            contributesToHeader="false"
+            highlightPreferenceKey="occurrenceHighlight"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="true"
+            label="%annotation.objectoccurrence.label"
+            overviewRulerPreferenceKey="occurrenceOverview"
+            overviewRulerPreferenceValue="true"
+            presentationLayer="4"
+            textPreferenceKey="occurrenceIndication"
+            textPreferenceValue="false"
+            textStylePreferenceKey="occurrenceTextStyle"
+            textStylePreferenceValue="NONE" 
+            verticalRulerPreferenceKey="occurrenceVertical"
+            verticalRulerPreferenceValue="false" />
     </extension>
     <extension point="org.eclipse.ui.editors.markerUpdaters">
         <updater

@@ -46,9 +46,17 @@ public abstract class BatchContextProcessor extends ParserAbstract {
     @Override
     protected PgObjLocation fillQueryLocation(ParserRuleContext ctx) {
         String act = getStmtAction();
-        PgObjLocation loc = new PgObjLocation(
-                act != null ? act : ctx.getStart().getText().toUpperCase(Locale.ROOT),
-                        ctx, getFullCtxTextWithHidden(ctx, stream));
+        List<Token> startTokens = stream.getHiddenTokensToLeft(ctx.getStart().getTokenIndex());
+        List<Token> stopTokens = stream.getHiddenTokensToRight(ctx.getStop().getTokenIndex());
+        Token start = startTokens != null ? startTokens.get(0) : ctx.getStart();
+        Token stop = stopTokens != null ? stopTokens.get(stopTokens.size() - 1) : ctx.getStop();
+        String sql = getFullCtxText(start, stop);
+        String action = act != null ? act : ctx.getStart().getText().toUpperCase(Locale.ROOT);
+        int offset = start.getStartIndex();
+        int lineNumber = start.getLine();
+        int charPositionInLine = start.getCharPositionInLine();
+
+        PgObjLocation loc = new PgObjLocation(action, offset, lineNumber, charPositionInLine, sql);
         db.addReference(fileName, loc);
         return loc;
     }

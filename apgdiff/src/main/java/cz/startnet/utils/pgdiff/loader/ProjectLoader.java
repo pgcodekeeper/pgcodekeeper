@@ -145,15 +145,13 @@ public class ProjectLoader extends DatabaseLoader {
         if (!db.containsSchema(ApgdiffConsts.DBO)) {
             MsSchema schema = new MsSchema(ApgdiffConsts.DBO);
             schema.setLocation(new PgObjLocation(
-                    new GenericColumn(ApgdiffConsts.DBO, DbObjType.SCHEMA),
-                    null, 0, 0, 1, "hidden"));
+                    new GenericColumn(ApgdiffConsts.DBO, DbObjType.SCHEMA)));
             db.addSchema(schema);
             db.setDefaultSchema(ApgdiffConsts.DBO);
         }
     }
 
-    private void loadSubdir(File dir, String sub, PgDatabase db)
-            throws InterruptedException, IOException {
+    private void loadSubdir(File dir, String sub, PgDatabase db) throws InterruptedException {
         File subDir = new File(dir, sub);
         if (subDir.exists() && subDir.isDirectory()) {
             File[] files = subDir.listFiles();
