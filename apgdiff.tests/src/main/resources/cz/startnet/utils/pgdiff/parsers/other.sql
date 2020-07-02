@@ -132,3 +132,4 @@ TRUNCATE TABLE truncate_a RESTRICT; -- fail
 TRUNCATE TABLE truncate_a CASCADE;  -- ok
 TRUNCATE ONLY trunc_fb, trunc_fa;
 TRUNCATE truncate_b RESTART IDENTITY;
+/* a /* b /* c */ d /* e */ f */ g /* h */ i */ -- nested comments
