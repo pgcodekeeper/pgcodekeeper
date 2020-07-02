@@ -51,7 +51,6 @@ import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgOperator;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.MS_WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
@@ -350,10 +349,10 @@ public abstract class ParserAbstract {
         Stream<String> dirs;
         if (isPostgres) {
             dirs = Arrays.stream(ApgdiffConsts.WORK_DIR_NAMES.values())
-                    .map(Enum::name);
+                    .map(e -> '/' + e.name() + '/');
         } else {
-            dirs = Arrays.stream(MS_WORK_DIR_NAMES.values())
-                    .map(MS_WORK_DIR_NAMES::getDirName);
+            dirs = Arrays.stream(ApgdiffConsts.MS_WORK_DIR_NAMES.values())
+                    .map(e -> '/' + e.getDirName() + '/');
         }
 
         if (dirs.noneMatch(fileName::contains)) {
