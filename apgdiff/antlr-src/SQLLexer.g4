@@ -798,7 +798,7 @@ DOUBLE_DOT: '..';
 HASH_SIGN: '#';              // last operator rule, sync with CustomSQLAntlrErrorStrategy
 
 BlockComment
-    :   '/*' .*? '*/' -> channel(HIDDEN)
+    :   '/*' (BlockComment |.)*? '*/' -> channel(HIDDEN)
     ;
 
 LineComment
