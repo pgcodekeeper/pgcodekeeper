@@ -34,9 +34,6 @@ public class MetaRelation extends MetaStatement implements IRelation {
     }
 
     public void addColumns(List<? extends Pair<String, String>> columns) {
-        if (this.columns != null) {
-            throw new IllegalStateException("Meta relation already have columns");
-        }
         this.columns = new ArrayList<>();
         this.columns.addAll(columns);
     }
