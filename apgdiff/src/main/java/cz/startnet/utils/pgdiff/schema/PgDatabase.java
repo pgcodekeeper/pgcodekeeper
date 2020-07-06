@@ -474,12 +474,12 @@ public class PgDatabase extends PgStatement implements IDatabase {
         case TRIGGER:
         case RULE:
         case POLICY:
-            IStatementContainer cont = getSchema(parent.getParent().getName())
+            PgStatementContainer cont = getSchema(parent.getParent().getName())
             .getStatementContainer(parentName);
 
-            orig = ((PgStatement) cont).getChild(name, type);
+            orig = cont.getChild(name, type);
             if (orig == null) {
-                ((PgStatement) cont).addChild(st.shallowCopy());
+                cont.addChild(st.shallowCopy());
             }
             break;
         default :
