@@ -6,6 +6,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.IDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
@@ -18,6 +19,8 @@ public class VexAnalysisLauncher extends AbstractAnalysisLauncher {
 
     @Override
     public Set<PgObjLocation> analyze(ParserRuleContext ctx, IDatabase db) {
-        return analyze((VexContext) ctx, new ValueExpr(db));
+        ValueExpr expr = new ValueExpr(db);
+        expr.analyze(new Vex((VexContext) ctx));
+        return expr.getDepcies();
     }
 }
