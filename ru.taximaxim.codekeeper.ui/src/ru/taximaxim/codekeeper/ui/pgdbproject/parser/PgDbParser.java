@@ -170,6 +170,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
             throws InterruptedException, IOException, CoreException {
         PgDatabase db = UIProjectLoader.buildFiles(files, isMsSql, monitor);
         files.forEach(this::removeResFromRefs);
+        // fill definitions, view columns will be filled in the analysis
         objDefinitions.putAll(MetaUtils.getObjDefinitions(db));
         List<Object> errors = new ArrayList<>();
         FullAnalyze.fullAnalyze(db, MetaUtils.createTreeFromDefs(
@@ -186,10 +187,14 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         args.setInCharsetName(proj.getDefaultCharset(true));
         args.setMsSql(OpenProjectUtils.checkMsSql(proj));
         DatabaseLoader loader = new UIProjectLoader(proj, args, mon);
-        PgDatabase db = loader.loadAndAnalyze();
-        objDefinitions.clear();
+        PgDatabase db = loader.load();
+        clear();
+        // fill definitions, view columns will be filled in the analysis
         objDefinitions.putAll(MetaUtils.getObjDefinitions(db));
-        objReferences.clear();
+        FullAnalyze.fullAnalyze(db,
+                MetaUtils.createTreeFromDefs(getAllObjDefinitions(),
+                        !args.isMsSql(), db.getPostgresVersion()),
+                loader.getErrors());
         objReferences.putAll(db.getObjReferences());
         notifyListeners();
     }
