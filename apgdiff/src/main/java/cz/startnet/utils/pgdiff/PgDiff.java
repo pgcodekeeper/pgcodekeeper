@@ -330,6 +330,11 @@ public class PgDiff {
                 break;
             }
         }
+
+        if (arguments.isScriptFromSelectedObjs()) {
+            depRes.leaveInScriptOnlySelected(selected);
+        }
+
         depRes.recreateDrops();
     }
 

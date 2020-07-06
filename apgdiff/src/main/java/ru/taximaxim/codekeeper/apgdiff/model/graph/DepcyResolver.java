@@ -4,6 +4,7 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
@@ -11,6 +12,7 @@ import java.util.Objects;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
@@ -34,6 +36,7 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.SourceStatement;
 import cz.startnet.utils.pgdiff.schema.TypedPgTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 
 /**
  * Служит для отслеживания зависимостей, при этом старое состояние хранится в
@@ -69,6 +72,52 @@ public class DepcyResolver {
     public void addCustomDepciesToNew(
             List<Entry<PgStatement, PgStatement>> depcies) {
         newDepcyGraph.addCustomDepcies(depcies);
+    }
+
+    /**
+     * Оставить в скрипте только те элементы, которые были выбраны пользователем
+     * <br />
+     * (из {@link ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver#actions actions}
+     * удалится все, кроме того, что соответствует List&lt;TreeElement&gt; selected).
+     * @param selected выбранные элементы
+     */
+    public void leaveInScriptOnlySelected(List<TreeElement> selected) {
+        BiPredicate<PgStatement, List<TreeElement>> isSelectedElement = (obj, selElems) -> {
+            for (TreeElement sel : selElems) {
+                if (obj.getName().equals(sel.getName())
+                        && obj.getStatementType().equals(sel.getType())
+                        && Objects.equals(obj.getParent() != null ? obj.getParent().getName() : null,
+                                sel.getParent() != null ? sel.getParent().getName() : null)) {
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        Iterator<ActionContainer> actsIter = actions.iterator();
+        while (actsIter.hasNext()) {
+            ActionContainer act = actsIter.next();
+            switch (act.getAction()) {
+            case CREATE:
+                if (!isSelectedElement.test(act.getNewObj(), selected)) {
+                    actsIter.remove();
+                }
+                break;
+            case ALTER:
+                if (!isSelectedElement.test(act.getNewObj(), selected)
+                        && !isSelectedElement.test(act.getOldObj(), selected)) {
+                    actsIter.remove();
+                }
+                break;
+            case DROP:
+                if (!isSelectedElement.test(act.getOldObj(), selected)) {
+                    actsIter.remove();
+                }
+                break;
+            default:
+                throw new IllegalStateException("Not implemented action");
+            }
+        }
     }
 
     public Set<ActionContainer> getActions() {
