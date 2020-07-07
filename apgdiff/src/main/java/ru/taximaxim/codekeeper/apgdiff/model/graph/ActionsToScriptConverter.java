@@ -5,9 +5,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiPredicate;
 
 import cz.startnet.utils.pgdiff.NotAllowedObjectException;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
@@ -17,6 +19,7 @@ import cz.startnet.utils.pgdiff.schema.MsView;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 
 public class ActionsToScriptConverter {
 
@@ -48,8 +51,9 @@ public class ActionsToScriptConverter {
     /**
      * Заполняет скрипт объектами с учетом их порядка по зависимостям
      * @param script скрипт для печати
+     * @param selected коллекция выбранных элементов в панели сравнения
      */
-    public void fillScript(PgDiffScript script) {
+    public void fillScript(PgDiffScript script, List<TreeElement> selected) {
         Collection<DbObjType> allowedTypes = arguments.getAllowedTypes();
         Set<PgStatement> refreshed = new HashSet<>(toRefresh.size());
         for (ActionContainer action : actions) {
@@ -57,7 +61,10 @@ public class ActionsToScriptConverter {
             if(type == DbObjType.COLUMN){
                 type = DbObjType.TABLE;
             }
-            if (allowedTypes.isEmpty() || allowedTypes.contains(type)){
+            if ((allowedTypes.isEmpty() || allowedTypes.contains(type))
+                    && (!arguments.isScriptFromSelectedObjs()
+                            || (arguments.isScriptFromSelectedObjs()
+                                    && isSelectedAction(action, selected)))) {
                 processSequence(action);
                 PgStatement oldObj = action.getOldObj();
                 String depcy = getComment(action, oldObj);
@@ -107,8 +114,13 @@ public class ActionsToScriptConverter {
                     throw new NotAllowedObjectException(old.getQualifiedName()
                             + " (" + type + ") is not an allowed script object. Stopping.");
                 }
-                script.addStatement(MessageFormat.format(HIDDEN_OBJECT,
+
+                StringBuilder sb = new StringBuilder(MessageFormat.format(HIDDEN_OBJECT,
                         old.getQualifiedName(), old.getStatementType()));
+                if (arguments.isScriptFromSelectedObjs()) {
+                    sb.append(" (action ").append(action.getAction()).append(")");
+                }
+                script.addStatement(sb.toString());
             }
         }
 
@@ -160,6 +172,40 @@ public class ActionsToScriptConverter {
                     !Objects.equals(newSeq.getOwnedBy(), oldSeq.getOwnedBy()))) {
                 sequencesOwnedBy.add(newSeq);
             }
+        }
+    }
+
+    /**
+     * Determines whether an action object has been selected in the diff panel.
+     *
+     * @param action script action element
+     * @param selected collection of selected elements in diff panel
+     *
+     * @return TRUE if the action object was selected in the diff panel, otherwise FALSE
+     */
+    private boolean isSelectedAction(ActionContainer action, List<TreeElement> selected) {
+        BiPredicate<PgStatement, List<TreeElement>> isSelectedObj = (obj, selElems) -> {
+            for (TreeElement sel : selElems) {
+                if (obj.getName().equals(sel.getName())
+                        && obj.getStatementType().equals(sel.getType())
+                        && Objects.equals(obj.getParent() != null ? obj.getParent().getName() : null,
+                                sel.getParent() != null ? sel.getParent().getName() : null)) {
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        switch (action.getAction()) {
+        case CREATE:
+            return isSelectedObj.test(action.getNewObj(), selected);
+        case ALTER:
+            return isSelectedObj.test(action.getNewObj(), selected)
+                    && isSelectedObj.test(action.getOldObj(), selected);
+        case DROP:
+            return isSelectedObj.test(action.getOldObj(), selected);
+        default:
+            throw new IllegalStateException("Not implemented action");
         }
     }
 }
