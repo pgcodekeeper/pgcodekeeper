@@ -330,7 +330,6 @@ public class PgDiff {
                 break;
             }
         }
-
         depRes.recreateDrops();
 
         if (arguments.isScriptFromSelectedObjs()) {
