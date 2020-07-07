@@ -82,7 +82,7 @@ public class OutputTest {
 
             System.out.flush();
             assertEquals(args.getClass().getSimpleName() + " - Output is not as expected",
-                    args.output(), baos.toString());
+                    args.output(), baos.toString().replace("\r\n", "\n"));
         } finally {
             System.setOut(old);
             System.setErr(olde);
