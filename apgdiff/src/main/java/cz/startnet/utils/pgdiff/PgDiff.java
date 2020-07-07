@@ -331,11 +331,11 @@ public class PgDiff {
             }
         }
 
+        depRes.recreateDrops();
+
         if (arguments.isScriptFromSelectedObjs()) {
             depRes.leaveInScriptOnlySelected(selected);
         }
-
-        depRes.recreateDrops();
     }
 
 
