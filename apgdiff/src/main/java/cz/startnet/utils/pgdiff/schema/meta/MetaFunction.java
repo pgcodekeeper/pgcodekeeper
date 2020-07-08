@@ -58,11 +58,6 @@ public class MetaFunction extends MetaStatement implements IFunction {
     }
 
     @Override
-    public String getBareName() {
-        return super.getName();
-    }
-
-    @Override
     public List<Argument> getArguments() {
         return arguments == null ? Collections.emptyList() : Collections.unmodifiableList(arguments);
     }

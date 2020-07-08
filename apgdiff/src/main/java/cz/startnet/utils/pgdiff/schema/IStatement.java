@@ -9,7 +9,5 @@ public interface IStatement {
     String getQualifiedName();
     String getComment();
 
-    default String getBareName() {
-        return getName();
-    }
+    String getBareName();
 }

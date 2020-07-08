@@ -312,7 +312,7 @@ public abstract class AbstractExpr {
         }
 
         if (columns == null) {
-            log(Log.LOG_WARNING, "Columns not found: " + schemaName + '.' + relationName);
+            Log.log(Log.LOG_ERROR, "Columns not found: " + schemaName + '.' + relationName);
             return Stream.empty();
         }
 

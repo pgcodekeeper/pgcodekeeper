@@ -1,5 +1,9 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -7,6 +11,7 @@ import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -45,8 +50,10 @@ import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgOperator;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 /**
@@ -55,6 +62,7 @@ import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 public abstract class ParserAbstract {
 
     protected static final String SCHEMA_ERROR = "Object must be schema qualified: ";
+    protected static final String LOCATION_ERROR  = "The object {0} must be defined in the file: {1}";
 
     protected static final String ACTION_CREATE = "CREATE";
     protected static final String ACTION_ALTER = "ALTER";
@@ -317,6 +325,51 @@ public abstract class ParserAbstract {
             child.setLocation(loc);
             db.addReference(fileName, loc);
         }
+
+        // TODO move to beginning of the method later
+        // TODO add to alter statements
+        checkLocation(child, QNameParser.getFirstNameCtx(ids).getStart());
+    }
+
+    private void checkLocation(PgStatement statement, Token errToken) {
+        if (isRefMode()) {
+            return;
+        }
+
+        String filePath = ModelExporter.getRelativeFilePath(statement).toString();
+        if (!fileName.endsWith(filePath) && isInProject(statement.isPostgres())) {
+            throw new UnresolvedReferenceException(
+                    MessageFormat.format(LOCATION_ERROR, statement.getBareName(), filePath),
+                    errToken);
+        }
+    }
+
+    private boolean isInProject(boolean isPostgres) {
+        // exclude external directories
+        Stream<String> dirs;
+        if (isPostgres) {
+            dirs = Arrays.stream(ApgdiffConsts.WORK_DIR_NAMES.values())
+                    .map(e -> '/' + e.name() + '/');
+        } else {
+            dirs = Arrays.stream(ApgdiffConsts.MS_WORK_DIR_NAMES.values())
+                    .map(e -> '/' + e.getDirName() + '/');
+        }
+
+        if (dirs.noneMatch(fileName::contains)) {
+            return false;
+        }
+
+        // search project marker
+        Path parent = Paths.get(fileName).getParent();
+        while (parent != null) {
+            if (Files.exists(parent.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER))) {
+                return true;
+            }
+
+            parent = parent.getParent();
+        }
+
+        return false;
     }
 
     private PgObjLocation getLocation(List<? extends ParserRuleContext> ids,

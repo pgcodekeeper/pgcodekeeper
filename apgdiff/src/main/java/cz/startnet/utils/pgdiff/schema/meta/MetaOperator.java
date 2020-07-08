@@ -23,11 +23,6 @@ public class MetaOperator extends MetaStatement implements IOperator {
     }
 
     @Override
-    public String getBareName() {
-        return super.getName();
-    }
-
-    @Override
     public String getName() {
         return getSignature();
     }
