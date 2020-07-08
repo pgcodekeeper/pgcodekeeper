@@ -329,7 +329,7 @@ public abstract class ParserAbstract {
         }
 
         String filePath = ModelExporter.getRelativeFilePath(statement).toString();
-        if (!fileName.endsWith(filePath) && isInProject(statement.isPostgres())) {
+        if (!PgDiffUtils.endsWithIgnoreCase(fileName, filePath) && isInProject(statement.isPostgres())) {
             throw new UnresolvedReferenceException(
                     MessageFormat.format(LOCATION_ERROR, statement.getBareName(), filePath),
                     errToken);
