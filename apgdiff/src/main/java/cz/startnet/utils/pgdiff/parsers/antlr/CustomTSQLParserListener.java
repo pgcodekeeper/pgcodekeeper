@@ -59,7 +59,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.UpdateMsStatement
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.log.Log;
 
 public class CustomTSQLParserListener extends CustomParserListener
 implements TSqlContextProcessor {
@@ -94,16 +93,6 @@ implements TSqlContextProcessor {
     private void endBatch(Go_statementContext goCtx) {
         safeParseStatement(() -> db.addReference(filename,
                 new PgObjLocation(ApgdiffConsts.GO, goCtx, ApgdiffConsts.GO)), goCtx);
-    }
-
-    @Override
-    protected AntlrError handleParserContextException(Exception ex, String filename,
-            ParserRuleContext ctx) {
-        if (ctx != null) {
-            return super.handleParserContextException(ex, filename, ctx);
-        }
-        Log.log(Log.LOG_ERROR, "Go_statementContext is missing");
-        return new AntlrError(null, filename, 1, 0, ex.getMessage());
     }
 
     public void clause(St_clauseContext st) {

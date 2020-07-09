@@ -52,7 +52,11 @@ public class CustomParserListener {
         } catch (InterruptedException ex) {
             throw new MonitorCancelledRuntimeException();
         } catch (Exception e) {
-            errors.add(handleParserContextException(e, filename, ctx));
+            if (ctx != null) {
+                errors.add(handleParserContextException(e, filename, ctx));
+            } else {
+                Log.log(Log.LOG_ERROR, "Statement context is missing");
+            }
         }
     }
 
@@ -63,7 +67,7 @@ public class CustomParserListener {
         return err;
     }
 
-    protected AntlrError handleParserContextException(Exception ex, String filename, ParserRuleContext ctx) {
+    private AntlrError handleParserContextException(Exception ex, String filename, ParserRuleContext ctx) {
         Token t = ctx.getStart();
         AntlrError err = new AntlrError(t, filename, t.getLine(), t.getCharPositionInLine(),  ex.getMessage());
         Log.log(ex instanceof ObjectCreationException ? Log.LOG_WARNING : Log.LOG_ERROR,
