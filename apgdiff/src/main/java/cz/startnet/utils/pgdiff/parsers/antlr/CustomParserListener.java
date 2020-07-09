@@ -63,7 +63,7 @@ public class CustomParserListener {
         return err;
     }
 
-    private AntlrError handleParserContextException(Exception ex, String filename, ParserRuleContext ctx) {
+    protected AntlrError handleParserContextException(Exception ex, String filename, ParserRuleContext ctx) {
         Token t = ctx.getStart();
         AntlrError err = new AntlrError(t, filename, t.getLine(), t.getCharPositionInLine(),  ex.getMessage());
         Log.log(ex instanceof ObjectCreationException ? Log.LOG_WARNING : Log.LOG_ERROR,
