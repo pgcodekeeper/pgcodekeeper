@@ -247,13 +247,9 @@ public class PgDiff {
         }
 
         DepcyResolver depRes = new DepcyResolver(oldDbFull, newDbFull);
-        List<TreeElement> selected = new TreeFlattener()
-                .onlySelected()
-                .useIgnoreList(ignoreList)
-                .onlyTypes(arguments.getAllowedTypes())
-                .flatten(root);
+        List<TreeElement> selected = getSelectedElements(root, ignoreList);
         createScript(depRes, selected, oldDbFull, newDbFull,
-                additionalDepciesSource, additionalDepciesTarget, ignoreList);
+                additionalDepciesSource, additionalDepciesTarget);
 
         if (!depRes.getActions().isEmpty()) {
             script.addStatement("SET search_path = pg_catalog;");
@@ -278,13 +274,9 @@ public class PgDiff {
         }
 
         DepcyResolver depRes = new DepcyResolver(oldDbFull, newDbFull);
-        List<TreeElement> selected = new TreeFlattener()
-                .onlySelected()
-                .useIgnoreList(ignoreList)
-                .onlyTypes(arguments.getAllowedTypes())
-                .flatten(root);
+        List<TreeElement> selected = getSelectedElements(root, ignoreList);
         createScript(depRes, selected, oldDbFull, newDbFull,
-                additionalDepciesSource, additionalDepciesTarget, ignoreList);
+                additionalDepciesSource, additionalDepciesTarget);
 
         new ActionsToScriptConverter(depRes.getActions(),
                 depRes.getToRefresh(), arguments).fillScript(script, selected);
@@ -296,11 +288,18 @@ public class PgDiff {
         return script.getText();
     }
 
+    private List<TreeElement> getSelectedElements(TreeElement root, IgnoreList ignoreList) {
+        return new TreeFlattener()
+                .onlySelected()
+                .useIgnoreList(ignoreList)
+                .onlyTypes(arguments.getAllowedTypes())
+                .flatten(root);
+    }
+
     private void createScript(DepcyResolver depRes, List<TreeElement> selected,
             PgDatabase oldDbFull, PgDatabase newDbFull,
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
-            List<Entry<PgStatement, PgStatement>> additionalDepciesTarget,
-            IgnoreList ignoreList) {
+            List<Entry<PgStatement, PgStatement>> additionalDepciesTarget) {
         if (additionalDepciesSource != null) {
             depRes.addCustomDepciesToOld(additionalDepciesSource);
         }

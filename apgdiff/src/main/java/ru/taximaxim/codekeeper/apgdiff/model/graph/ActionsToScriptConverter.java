@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 
 import cz.startnet.utils.pgdiff.NotAllowedObjectException;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
@@ -183,26 +183,21 @@ public class ActionsToScriptConverter {
      * @return TRUE if the action object was selected in the diff panel, otherwise FALSE
      */
     private boolean isSelectedAction(ActionContainer action, List<TreeElement> selected) {
-        BiPredicate<PgStatement, List<TreeElement>> isSelectedObj = (obj, selElems) -> {
-            for (TreeElement sel : selElems) {
-                if (obj.getName().equals(sel.getName())
-                        && obj.getStatementType().equals(sel.getType())
-                        && Objects.equals(obj.getParent() != null ? obj.getParent().getName() : null,
-                                sel.getParent() != null ? sel.getParent().getName() : null)) {
-                    return true;
-                }
-            }
-            return false;
-        };
+        Predicate<PgStatement> isSelectedObj = obj ->
+        selected.stream()
+        .filter(e -> e.getName().equals(obj.getName()))
+        .filter(e -> e.getType().equals(obj.getStatementType()))
+        .map(e -> e.getPgStatement(obj.getDatabase()))
+        .anyMatch(obj::equals);
 
         switch (action.getAction()) {
         case CREATE:
-            return isSelectedObj.test(action.getNewObj(), selected);
+            return isSelectedObj.test(action.getNewObj());
         case ALTER:
-            return isSelectedObj.test(action.getNewObj(), selected)
-                    && isSelectedObj.test(action.getOldObj(), selected);
+            return isSelectedObj.test(action.getNewObj())
+                    && isSelectedObj.test(action.getOldObj());
         case DROP:
-            return isSelectedObj.test(action.getOldObj(), selected);
+            return isSelectedObj.test(action.getOldObj());
         default:
             throw new IllegalStateException("Not implemented action");
         }
