@@ -63,8 +63,7 @@ public class ActionsToScriptConverter {
             }
             if ((allowedTypes.isEmpty() || allowedTypes.contains(type))
                     && (!arguments.isScriptFromSelectedObjs()
-                            || (arguments.isScriptFromSelectedObjs()
-                                    && isSelectedAction(action, selected)))) {
+                            || isSelectedAction(action, selected))) {
                 processSequence(action);
                 PgStatement oldObj = action.getOldObj();
                 String depcy = getComment(action, oldObj);
