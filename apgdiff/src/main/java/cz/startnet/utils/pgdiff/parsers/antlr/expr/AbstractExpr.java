@@ -173,7 +173,7 @@ public abstract class AbstractExpr {
         if (!ApgdiffUtils.isPgSystemSchema(depcy.schema)) {
             PgObjLocation loc;
             if (ctx == null) {
-                loc = new PgObjLocation(depcy, null, 0, 0, null);
+                loc = new PgObjLocation(depcy);
             } else if (start == null) {
                 loc = new PgObjLocation(depcy, ctx);
             } else {

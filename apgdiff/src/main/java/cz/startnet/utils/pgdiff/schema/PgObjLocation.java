@@ -20,26 +20,25 @@ public class PgObjLocation extends ContextLocation {
     private final GenericColumn obj;
     private String sql;
 
-    public PgObjLocation(GenericColumn obj, String action,
+    private PgObjLocation(GenericColumn obj, String action,
             int offset, int lineNumber, int charPositionInLine, String filePath) {
         super(filePath, offset, lineNumber, charPositionInLine);
         this.obj = obj;
         this.action = action;
     }
 
-    public PgObjLocation(GenericColumn gObj, String action,
-            int offset, int lineNumber, String filePath) {
-        this(gObj, action, offset, lineNumber, 1, filePath);
-    }
-
     public PgObjLocation(GenericColumn gObj) {
-        this(gObj, null, 0, 0, null);
+        this(gObj, null, 0, 0, 0, null);
     }
 
-    public PgObjLocation(GenericColumn gObj, ParserRuleContext ctx) {
-        this(gObj, null, ctx.getStart().getStartIndex(), ctx.getStart().getLine(),
-                ctx.getStart().getCharPositionInLine(), null);
+    public PgObjLocation(GenericColumn obj, String action, ParserRuleContext ctx, String fileName) {
+        this(obj, action, ctx.getStart().getStartIndex(), ctx.getStart().getLine(),
+                ctx.getStart().getCharPositionInLine(), fileName);
         setLength(ctx.getStop().getStopIndex() - ctx.getStart().getStartIndex() + 1);
+    }
+
+    public PgObjLocation(GenericColumn obj, ParserRuleContext ctx) {
+        this(obj, null, ctx, null);
     }
 
     public PgObjLocation(String action, int offset, int lineNumber, int charPositionInLine, String sql) {
@@ -48,8 +47,8 @@ public class PgObjLocation extends ContextLocation {
     }
 
     public PgObjLocation(String action, ParserRuleContext ctx, String sql) {
-        this(action, ctx.getStart().getStartIndex(), ctx.getStart().getLine(),
-                ctx.getStart().getCharPositionInLine(), sql);
+        this(null, action, ctx, null);
+        this.sql = sql;
     }
 
     public PgObjLocation(String action, String sql) {
@@ -203,10 +202,11 @@ public class PgObjLocation extends ContextLocation {
 
     public PgObjLocation copyWithOffset(int offset, int lineOffset,
             int inLineOffset, String filePath) {
+        int newCharPosition = getLineNumber() == 1 ? getCharPositionInLine() + inLineOffset : getCharPositionInLine();
         PgObjLocation loc = new PgObjLocation(obj, getAction(),
                 getOffset() + offset,
                 getLineNumber() + lineOffset,
-                getCharPositionInLine() + inLineOffset,
+                newCharPosition,
                 filePath);
         loc.setLength(length);
         return loc;

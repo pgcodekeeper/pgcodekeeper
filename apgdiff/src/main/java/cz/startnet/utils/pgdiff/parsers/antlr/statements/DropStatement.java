@@ -19,7 +19,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_dropContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
-import cz.startnet.utils.pgdiff.schema.ICast;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -73,7 +72,7 @@ public class DropStatement extends ParserAbstract {
     }
 
     private void dropCast(Drop_cast_statementContext ctx) {
-        db.addReference(fileName, getCastLocation(ctx.source, ctx.target, ACTION_DROP));
+        addObjReference(Arrays.asList(ctx.cast_name()), DbObjType.CAST, ACTION_DROP);
     }
 
     public void dropTrigger(Drop_trigger_statementContext ctx) {
@@ -201,10 +200,9 @@ public class DropStatement extends ParserAbstract {
                     : Collections.emptyList();
             type = DbObjType.OPERATOR;
         } else if (ctx.drop_cast_statement() != null) {
-            Drop_cast_statementContext castCtx = ctx.drop_cast_statement();
             StringBuilder sb = new StringBuilder();
             sb.append(ACTION_DROP).append(' ').append(DbObjType.CAST).append(" (");
-            sb.append(ICast.getSimpleName(getFullCtxText(castCtx.source), getFullCtxText(castCtx.target)));
+            sb.append(getCastName(ctx.drop_cast_statement().cast_name()));
             sb.append(')');
             return sb.toString();
         }
