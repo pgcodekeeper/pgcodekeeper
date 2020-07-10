@@ -61,9 +61,12 @@ public class ActionsToScriptConverter {
             if(type == DbObjType.COLUMN){
                 type = DbObjType.TABLE;
             }
-            if ((allowedTypes.isEmpty() || allowedTypes.contains(type))
-                    && (!arguments.isScriptFromSelectedObjs()
-                            || isSelectedAction(action, selected))) {
+            if (allowedTypes.isEmpty() || allowedTypes.contains(type)) {
+                if (arguments.isScriptFromSelectedObjs()
+                        && !isSelectedAction(action, selected)) {
+                    addHiddenObj(script, action);
+                    continue;
+                }
                 processSequence(action);
                 PgStatement oldObj = action.getOldObj();
                 String depcy = getComment(action, oldObj);
@@ -108,18 +111,11 @@ public class ActionsToScriptConverter {
                     throw new IllegalStateException("Not implemented action");
                 }
             } else {
-                PgStatement old = action.getOldObj();
                 if (arguments.isStopNotAllowed()) {
-                    throw new NotAllowedObjectException(old.getQualifiedName()
+                    throw new NotAllowedObjectException(action.getOldObj().getQualifiedName()
                             + " (" + type + ") is not an allowed script object. Stopping.");
                 }
-
-                StringBuilder sb = new StringBuilder(MessageFormat.format(HIDDEN_OBJECT,
-                        old.getQualifiedName(), old.getStatementType()));
-                if (arguments.isScriptFromSelectedObjs()) {
-                    sb.append(" (action ").append(action.getAction()).append(")");
-                }
-                script.addStatement(sb.toString());
+                addHiddenObj(script, action);
             }
         }
 
@@ -139,6 +135,16 @@ public class ActionsToScriptConverter {
             script.addStatement(MessageFormat.format(REFRESH_MODULE,
                     PgDiffUtils.quoteString(orphanRefreshes[i].getQualifiedName())));
         }
+    }
+
+    private void addHiddenObj(PgDiffScript script, ActionContainer action) {
+        PgStatement old = action.getOldObj();
+        StringBuilder sb = new StringBuilder(MessageFormat.format(HIDDEN_OBJECT,
+                old.getQualifiedName(), old.getStatementType()));
+        if (arguments.isScriptFromSelectedObjs()) {
+            sb.append(" (action ").append(action.getAction()).append(")");
+        }
+        script.addStatement(sb.toString());
     }
 
     private String getComment(ActionContainer action, PgStatement oldObj) {
