@@ -92,8 +92,12 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
         boolean mergeDefaultNotNull = false;
         if (getType() != null && getParentCol((AbstractPgTable) getParent()) == null) {
             sb.append(getAlterTable(false, false));
-            sb.append("\n\tADD COLUMN ")
-            .append(PgDiffUtils.getQuotedName(name))
+            sb.append("\n\tADD COLUMN ");
+            PgDiffArguments args = getDatabase().getArguments();
+            if (args != null && args.isOptionExisting()) {
+                sb.append("IF NOT EXISTS ");
+            }
+            sb.append(PgDiffUtils.getQuotedName(name))
             .append(' ')
             .append(getType());
             if (getCollation() != null) {
@@ -155,9 +159,15 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
             if (getParent() instanceof AbstractRegularTable) {
                 addOnly = ((AbstractRegularTable) getParent()).getPartitionBy() == null;
             }
-
-            return getAlterTable(false, addOnly) + "\n\tDROP COLUMN "
-            + PgDiffUtils.getQuotedName(getName()) + ';';
+            StringBuilder dropSb = new StringBuilder();
+            dropSb.append(getAlterTable(false, addOnly))
+            .append("\n\tDROP COLUMN ");
+            PgDiffArguments args = getDatabase().getArguments();
+            if (args != null && args.isOptionExisting()) {
+                dropSb.append("IF EXISTS ");
+            }
+            dropSb.append(PgDiffUtils.getQuotedName(getName())).append(";");
+            return dropSb.toString();
         }
 
         StringBuilder sb = new StringBuilder();

@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -119,7 +120,14 @@ public class PgCast extends PgStatement implements ICast {
 
     @Override
     public String getDropSQL() {
-        return "DROP CAST " + getQualifiedName() + ';';
+        StringBuilder dropSb = new StringBuilder();
+        dropSb.append("DROP CAST ");
+        PgDiffArguments args = getDatabase().getArguments();
+        if (args != null && args.isOptionExisting()) {
+            dropSb.append("IF EXISTS ");
+        }
+        dropSb.append(getQualifiedName()).append(";");
+        return dropSb.toString();
     }
 
     @Override

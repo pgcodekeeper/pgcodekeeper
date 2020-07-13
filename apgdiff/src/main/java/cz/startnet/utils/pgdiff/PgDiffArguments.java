@@ -53,6 +53,16 @@ public class PgDiffArguments implements Cloneable {
     private boolean graphReverse;
     private final List<String> graphNames = new ArrayList<>();
     private boolean ignoreErrors;
+    private boolean optionExisting;
+
+
+    public boolean isOptionExisting() {
+        return optionExisting;
+    }
+
+    public void setOptionExisting(boolean optionExisting) {
+        this.optionExisting = optionExisting;
+    }
 
     public void setModeParse(final boolean modeParse) {
         this.modeParse = modeParse;

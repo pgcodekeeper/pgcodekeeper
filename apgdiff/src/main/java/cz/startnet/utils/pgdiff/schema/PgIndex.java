@@ -47,7 +47,7 @@ public class PgIndex extends AbstractIndex {
         if (args != null && args.isConcurrentlyMode()) {
             sbSQL.append("CONCURRENTLY ");
         }
-        if (inherit != null) {
+        if (inherit != null || (args != null && args.isOptionExisting())) {
             sbSQL.append("IF NOT EXISTS ");
         }
         sbSQL.append(PgDiffUtils.getQuotedName(name));
@@ -118,7 +118,14 @@ public class PgIndex extends AbstractIndex {
 
     @Override
     public String getDropSQL() {
-        return "DROP INDEX " + getQualifiedName() + ";";
+        StringBuilder dropSb = new StringBuilder();
+        dropSb.append("DROP INDEX ");
+        PgDiffArguments args = getDatabase().getArguments();
+        if (args != null && args.isOptionExisting()) {
+            dropSb.append("IF EXISTS ");
+        }
+        dropSb.append(getQualifiedName()).append(";");
+        return dropSb.toString();
     }
 
     @Override

@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -104,6 +105,10 @@ public class PgOperator extends PgStatementWithSearchPath implements IOperator {
     public String getDropSQL() {
         final StringBuilder sbString = new StringBuilder();
         sbString.append("DROP OPERATOR ");
+        PgDiffArguments args = getDatabase().getArguments();
+        if (args != null && args.isOptionExisting()) {
+            sbString.append("IF EXISTS ");
+        }
         sbString.append(PgDiffUtils.getQuotedName(getSchemaName())).append('.');
         appendOperatorSignature(sbString);
         sbString.append(';');

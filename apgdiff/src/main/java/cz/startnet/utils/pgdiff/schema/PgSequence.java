@@ -9,6 +9,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 
 /**
@@ -26,7 +27,13 @@ public class PgSequence extends AbstractSequence {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
-        sbSQL.append("CREATE SEQUENCE ").append(getQualifiedName());
+        sbSQL.append("CREATE SEQUENCE ");
+
+        PgDiffArguments args = getDatabase().getArguments();
+        if (args != null && args.isOptionExisting()) {
+            sbSQL.append("IF NOT EXISTS ");
+        }
+        sbSQL.append(getQualifiedName());
 
         if (!BIGINT.equals(getDataType())) {
             sbSQL.append("\n\tAS ").append(getDataType());
@@ -111,7 +118,14 @@ public class PgSequence extends AbstractSequence {
 
     @Override
     public String getDropSQL() {
-        return "DROP SEQUENCE " + getQualifiedName() + ";";
+        StringBuilder dropSb = new StringBuilder();
+        dropSb.append("DROP SEQUENCE ");
+        PgDiffArguments args = getDatabase().getArguments();
+        if (args != null && args.isOptionExisting()) {
+            dropSb.append("IF EXISTS ");
+        }
+        dropSb.append(getQualifiedName()).append(";");
+        return dropSb.toString();
     }
 
     @Override
@@ -122,8 +136,8 @@ public class PgSequence extends AbstractSequence {
         StringBuilder sbSQL = new StringBuilder();
 
         if (compareSequenceBody(newSequence, sbSQL)) {
-            sb.append("\n\nALTER SEQUENCE ").append(newSequence.getQualifiedName()).
-            append(sbSQL).append(';');
+            sb.append("\n\nALTER SEQUENCE ").append(newSequence.getQualifiedName())
+            .append(sbSQL).append(';');
         }
 
         if (!Objects.equals(getOwner(), newSequence.getOwner())) {
@@ -150,8 +164,7 @@ public class PgSequence extends AbstractSequence {
         }
 
         final String newIncrement = newSequence.getIncrement();
-        if (newIncrement != null
-                && !newIncrement.equals(getIncrement())) {
+        if (newIncrement != null && !newIncrement.equals(getIncrement())) {
             sbSQL.append("\n\tINCREMENT BY ");
             sbSQL.append(newIncrement);
         }
@@ -159,8 +172,7 @@ public class PgSequence extends AbstractSequence {
         final String newMinValue = newSequence.getMinValue();
         if (newMinValue == null && getMinValue() != null) {
             sbSQL.append("\n\tNO MINVALUE");
-        } else if (newMinValue != null
-                && !newMinValue.equals(getMinValue())) {
+        } else if (newMinValue != null && !newMinValue.equals(getMinValue())) {
             sbSQL.append("\n\tMINVALUE ");
             sbSQL.append(newMinValue);
         }
@@ -168,8 +180,7 @@ public class PgSequence extends AbstractSequence {
         final String newMaxValue = newSequence.getMaxValue();
         if (newMaxValue == null && getMaxValue() != null) {
             sbSQL.append("\n\tNO MAXVALUE");
-        } else if (newMaxValue != null
-                && !newMaxValue.equals(getMaxValue())) {
+        } else if (newMaxValue != null && !newMaxValue.equals(getMaxValue())) {
             sbSQL.append("\n\tMAXVALUE ");
             sbSQL.append(newMaxValue);
         }
@@ -203,7 +214,8 @@ public class PgSequence extends AbstractSequence {
     }
 
     @Override
-    public void setMinMaxInc(long inc, Long max, Long min, String dataType, long precision) {
+    public void setMinMaxInc(long inc, Long max, Long min, String dataType,
+            long precision) {
         String type = dataType != null ? dataType : BIGINT;
         this.increment = Long.toString(inc);
         if (max == null || (inc > 0 && max == getBoundaryTypeVal(type, true, 0L))
@@ -234,7 +246,6 @@ public class PgSequence extends AbstractSequence {
         return obj instanceof PgSequence && super.compare(obj)
                 && Objects.equals(ownedBy, ((PgSequence) obj).getOwnedBy());
     }
-
 
     public GenericColumn getOwnedBy() {
         return ownedBy;

@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -65,7 +66,14 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
 
     @Override
     public String getDropSQL() {
-        return "DROP TEXT SEARCH CONFIGURATION " + getQualifiedName() + ';';
+        StringBuilder dropSb = new StringBuilder();
+        dropSb.append("DROP TEXT SEARCH CONFIGURATION ");
+        PgDiffArguments args = getDatabase().getArguments();
+        if (args != null && args.isOptionExisting()) {
+            dropSb.append("IF EXISTS ");
+        }
+        dropSb.append(getQualifiedName()).append(";");
+        return dropSb.toString();
     }
 
     @Override

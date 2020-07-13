@@ -11,6 +11,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 
@@ -160,8 +161,15 @@ public class PgTrigger extends AbstractTrigger {
 
     @Override
     public String getDropSQL() {
-        return "DROP TRIGGER " + PgDiffUtils.getQuotedName(getName()) + " ON "
-                + getParent().getQualifiedName() + ";";
+        StringBuilder dropSb = new StringBuilder();
+        dropSb.append("DROP TRIGGER ");
+        PgDiffArguments args = getDatabase().getArguments();
+        if (args != null && args.isOptionExisting()) {
+            dropSb.append("IF EXISTS ");
+        }
+        dropSb.append(PgDiffUtils.getQuotedName(getName())).append(" ON ");
+        dropSb.append(getParent().getQualifiedName()).append(";");
+        return dropSb.toString();
     }
 
     @Override

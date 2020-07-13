@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -43,6 +44,10 @@ public class PgExtension extends PgStatement {
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE EXTENSION ");
+        PgDiffArguments args = getDatabase().getArguments();
+        if (args != null && args.isOptionExisting()) {
+            sbSQL.append("IF NOT EXISTS ");
+        }
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));
 
         if(getSchema() != null && !getSchema().isEmpty()) {
@@ -62,7 +67,14 @@ public class PgExtension extends PgStatement {
 
     @Override
     public String getDropSQL() {
-        return "DROP EXTENSION " + PgDiffUtils.getQuotedName(getName()) + ';';
+        StringBuilder dropSb = new StringBuilder();
+        dropSb.append("DROP EXTENSION ");
+        PgDiffArguments args = getDatabase().getArguments();
+        if (args != null && args.isOptionExisting()) {
+            dropSb.append("IF EXISTS ");
+        }
+        dropSb.append(PgDiffUtils.getQuotedName(getName())).append(";");
+        return dropSb.toString();
     }
 
     @Override

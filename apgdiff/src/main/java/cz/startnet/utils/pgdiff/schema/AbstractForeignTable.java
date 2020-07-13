@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 
+import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 
@@ -41,7 +42,14 @@ public abstract class AbstractForeignTable extends AbstractPgTable {
 
     @Override
     public String getDropSQL() {
-        return "DROP FOREIGN TABLE " + getQualifiedName() + ';';
+        StringBuilder dropSb = new StringBuilder();
+        dropSb.append("DROP FOREIGN TABLE ");
+        PgDiffArguments args = getDatabase().getArguments();
+        if (args != null && args.isOptionExisting()) {
+            dropSb.append("IF EXISTS ");
+        }
+        dropSb.append(getQualifiedName()).append(";");
+        return dropSb.toString();
     }
 
     @Override
@@ -104,7 +112,12 @@ public abstract class AbstractForeignTable extends AbstractPgTable {
 
     @Override
     protected void appendName(StringBuilder sbSQL) {
-        sbSQL.append("CREATE FOREIGN TABLE ").append(getQualifiedName());
+        sbSQL.append("CREATE FOREIGN TABLE ");
+        PgDiffArguments args = getDatabase().getArguments();
+        if (args != null && args.isOptionExisting()) {
+            sbSQL.append("IF NOT EXISTS ");
+        }
+        sbSQL.append(getQualifiedName());
     }
 
     @Override
