@@ -17,12 +17,13 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 
 public class ReferenceSearchQuery implements ISearchQuery {
 
-    private ReferenceSearchResult result;
+    private final ReferenceSearchResult result;
 
     private final PgObjLocation ref;
     private final IProject proj;
 
     public ReferenceSearchQuery(PgObjLocation ref, IProject proj) {
+        this.result = new ReferenceSearchResult(this);
         this.ref = ref;
         this.proj = proj;
     }
@@ -66,12 +67,6 @@ public class ReferenceSearchQuery implements ISearchQuery {
 
     @Override
     public ISearchResult getSearchResult() {
-        if (result == null) {
-            ReferenceSearchResult r = new ReferenceSearchResult(this);
-            new ReferenceSearchResultUpdater(r);
-            result = r;
-        }
-
         return result;
     }
 }
