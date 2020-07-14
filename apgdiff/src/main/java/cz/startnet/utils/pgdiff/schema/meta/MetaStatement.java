@@ -24,6 +24,11 @@ public class MetaStatement implements IStatement, Serializable {
 
     @Override
     public String getName() {
+        return getBareName();
+    }
+
+    @Override
+    public final String getBareName() {
         return object.getObjName();
     }
 
@@ -38,10 +43,6 @@ public class MetaStatement implements IStatement, Serializable {
 
     public PgObjLocation getObject() {
         return object;
-    }
-
-    public void setParent(MetaStatement parent) {
-        throw new IllegalStateException("Unsupported operation");
     }
 
     @Override

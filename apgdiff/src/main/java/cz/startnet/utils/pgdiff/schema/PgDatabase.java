@@ -392,8 +392,7 @@ public class PgDatabase extends PgStatement implements IDatabase {
 
     @Override
     public boolean compare(PgStatement obj) {
-        // for now all instances of PgDatabase considered to be shallow equal
-        return obj instanceof PgDatabase;
+        return obj instanceof PgDatabase && super.compare(obj);
     }
 
     @Override
