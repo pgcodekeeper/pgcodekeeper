@@ -55,7 +55,7 @@ public class CustomParserListener {
             if (ctx != null) {
                 errors.add(handleParserContextException(e, filename, ctx));
             } else {
-                Log.log(Log.LOG_ERROR, "Statement context is missing");
+                Log.log(Log.LOG_ERROR, "Statement context is missing", e);
             }
         }
     }
