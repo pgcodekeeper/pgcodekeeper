@@ -9,8 +9,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -93,7 +93,7 @@ public class PgDatabase extends PgStatement implements IDatabase {
     }
 
     public void addReference(String fileName, PgObjLocation loc) {
-        objReferences.computeIfAbsent(fileName, k -> new HashSet<>()).add(loc);
+        objReferences.computeIfAbsent(fileName, k -> new LinkedHashSet<>()).add(loc);
     }
 
     public List<AbstractAnalysisLauncher> getAnalysisLaunchers() {
