@@ -244,7 +244,10 @@ public final class PgDiffUtils {
         return text.startsWith(id, offset);
     }
 
-
+    public static boolean endsWithIgnoreCase(String str, String suffix) {
+        int suffixLength = suffix.length();
+        return str.regionMatches(true, str.length() - suffixLength, suffix, 0, suffixLength);
+    }
 
     public static <T> Iterable<T> sIter(Stream<T> stream) {
         return stream::iterator;

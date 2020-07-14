@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.ICast;
 import cz.startnet.utils.pgdiff.schema.IConstraint;
-import cz.startnet.utils.pgdiff.schema.IDatabase;
 import cz.startnet.utils.pgdiff.schema.IFunction;
 import cz.startnet.utils.pgdiff.schema.IOperator;
 import cz.startnet.utils.pgdiff.schema.IRelation;
@@ -23,63 +23,27 @@ import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class MetaUtils {
 
-    public static IDatabase createTreeFromDb(PgDatabase db) {
-        MetaDatabase tree = new MetaDatabase();
+    public static MetaContainer createTreeFromDb(PgDatabase db) {
+        MetaContainer tree = new MetaContainer();
         db.getDescendants()
         .map(MetaUtils::createMetaFromStatement)
-        .forEach(e -> addChild(tree, e));
+        .forEach(tree::addStatement);
 
         if (!db.getArguments().isMsSql()) {
-            appendSystemObjects(tree, db.getPostgresVersion());
+            MetaStorage.getSystemObjects(db.getPostgresVersion()).forEach(tree::addStatement);
         }
         return tree;
     }
 
-    public static IDatabase createTreeFromDefs(Stream<MetaStatement> defs,
+    public static MetaContainer createTreeFromDefs(Stream<MetaStatement> defs,
             boolean addSystem, SupportedVersion version) {
-        MetaDatabase tree = new MetaDatabase();
-        defs
-        .sorted((o1, o2) -> o1.getStatementType().compareTo(o2.getStatementType()))
-        .forEach(e -> addChild(tree, e.getCopy()));
+        MetaContainer tree = new MetaContainer();
+        defs.forEach(tree::addStatement);
 
         if (addSystem) {
-            appendSystemObjects(tree, version);
+            MetaStorage.getSystemObjects(version).forEach(tree::addStatement);
         }
         return tree;
-    }
-
-    private static void appendSystemObjects(MetaDatabase tree, SupportedVersion version) {
-        MetaDatabase systemStorage = MetaStorage.getObjectsFromResources(version);
-        if (systemStorage != null) {
-            systemStorage.getSchemas().forEach(tree::addChild);
-            systemStorage.getCasts().forEach(tree::addChild);
-        }
-    }
-
-    public static void addChild(MetaDatabase tree, MetaStatement st) {
-        GenericColumn gc = st.getGenericColumn();
-        DbObjType type = gc.type;
-        switch (type) {
-        case CAST:
-        case SCHEMA:
-            tree.addChild(st);
-            break;
-        case AGGREGATE:
-        case FUNCTION:
-        case OPERATOR:
-        case PROCEDURE:
-        case SEQUENCE:
-        case TABLE:
-        case TYPE:
-        case VIEW:
-            tree.getSchema(gc.schema).addChild(st);
-            break;
-        case CONSTRAINT:
-            tree.getSchema(gc.schema).getStatementContainer(gc.table).addChild(st);
-            break;
-        default :
-            break;
-        }
     }
 
     public static MetaStatement createMetaFromStatement(PgStatement st) {
@@ -88,9 +52,6 @@ public class MetaUtils {
         MetaStatement meta;
 
         switch (type) {
-        case SCHEMA:
-            meta = new MetaSchema(loc);
-            break;
         case CAST:
             ICast cast = (ICast) st;
             meta = new MetaCast(cast.getSource(), cast.getTarget(), cast.getContext(), loc);
@@ -121,17 +82,12 @@ public class MetaUtils {
             meta = con;
             break;
         case SEQUENCE:
-            MetaRelation rel = new MetaRelation(loc);
-            ((IRelation) st).getRelationColumns().forEach(p -> rel.addColumn(p.getFirst(), p.getSecond()));
-            meta = rel;
-            break;
         case TABLE:
         case VIEW:
-            rel = new MetaStatementContainer(loc);
+            MetaRelation rel = new MetaRelation(loc);
             Stream<Pair<String, String>> columns = ((IRelation) st).getRelationColumns();
             if (columns != null) {
-                columns.forEach(p -> rel.addColumn(p.getFirst(), p.getSecond()));
-                rel.setInitialized(true);
+                rel.addColumns(columns.collect(Collectors.toList()));
             }
             meta = rel;
             break;
@@ -213,6 +169,13 @@ public class MetaUtils {
         return definitions;
     }
 
+    public static void initializeView(MetaContainer meta, String schemaName,
+            String name, List<? extends Pair<String, String>> columns) {
+        IRelation rel = meta.findRelation(schemaName, name);
+        if (rel instanceof MetaRelation) {
+            ((MetaRelation) rel).addColumns(columns);
+        }
+    }
 
     private MetaUtils() {}
 }

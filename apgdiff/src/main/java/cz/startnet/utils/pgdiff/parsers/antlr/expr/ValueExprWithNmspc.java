@@ -6,7 +6,7 @@ import java.util.List;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Vex_bContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
-import cz.startnet.utils.pgdiff.schema.IDatabase;
+import cz.startnet.utils.pgdiff.schema.meta.MetaContainer;
 import ru.taximaxim.codekeeper.apgdiff.utils.ModPair;
 
 /**
@@ -17,8 +17,8 @@ public class ValueExprWithNmspc extends AbstractExprWithNmspc<VexContext> {
 
     private final ValueExpr vex;
 
-    public ValueExprWithNmspc(IDatabase db) {
-        super(db);
+    public ValueExprWithNmspc(MetaContainer meta) {
+        super(meta);
         vex = new ValueExpr(this);
     }
 

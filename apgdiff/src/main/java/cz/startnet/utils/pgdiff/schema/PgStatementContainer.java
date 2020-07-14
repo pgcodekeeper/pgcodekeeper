@@ -10,7 +10,7 @@ import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public abstract class PgStatementContainer extends PgStatementWithSearchPath
-implements IStatementContainer {
+implements IRelation {
 
     protected final Map<String, AbstractIndex> indexes = new LinkedHashMap<>();
     protected final Map<String, AbstractTrigger> triggers = new LinkedHashMap<>();
@@ -124,7 +124,6 @@ implements IStatementContainer {
         return policies.get(name);
     }
 
-    @Override
     public abstract Collection<AbstractConstraint> getConstraints();
 
     /**
