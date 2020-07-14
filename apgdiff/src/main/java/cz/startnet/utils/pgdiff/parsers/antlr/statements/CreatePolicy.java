@@ -12,11 +12,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.User_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.VexAnalysisLauncher;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgEventType;
 import cz.startnet.utils.pgdiff.schema.PgPolicy;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreatePolicy extends ParserAbstract {
@@ -58,10 +57,9 @@ public class CreatePolicy extends ParserAbstract {
         }
 
         IdentifierContext parent = QNameParser.getFirstNameCtx(ids);
-        IStatementContainer cont = getSafe(
+        PgStatementContainer cont = getSafe(
                 AbstractSchema::getStatementContainer, getSchemaSafe(ids), parent);
-        addSafe((PgStatement) cont, policy, Arrays.asList(
-                QNameParser.getSchemaNameCtx(ids), parent, ctx.identifier()));
+        addSafe(cont, policy, Arrays.asList(QNameParser.getSchemaNameCtx(ids), parent, ctx.identifier()));
     }
 
     @Override
