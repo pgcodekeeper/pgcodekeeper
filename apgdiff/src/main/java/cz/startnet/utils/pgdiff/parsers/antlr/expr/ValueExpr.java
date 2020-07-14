@@ -61,12 +61,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.ICast;
-import cz.startnet.utils.pgdiff.schema.ICast.CastContext;
-import cz.startnet.utils.pgdiff.schema.IDatabase;
 import cz.startnet.utils.pgdiff.schema.IFunction;
 import cz.startnet.utils.pgdiff.schema.IOperator;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import cz.startnet.utils.pgdiff.schema.meta.MetaContainer;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -75,8 +73,8 @@ import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class ValueExpr extends AbstractExpr {
 
-    public ValueExpr(IDatabase db) {
-        super(db);
+    public ValueExpr(MetaContainer meta) {
+        super(meta);
     }
 
     protected ValueExpr(AbstractExpr parent) {
@@ -245,7 +243,7 @@ public class ValueExpr extends AbstractExpr {
             larg = operandsList.get(0).getSecond();
         }
         IOperator resultOperFunction = resolveOperatorsCall(operator, larg, rarg,
-                availableOperators(schema, op));
+                availableOperators(schema));
 
         if (resultOperFunction != null) {
             addDepcy(new GenericColumn(resultOperFunction.getSchemaName(),
@@ -507,7 +505,7 @@ public class ValueExpr extends AbstractExpr {
             argsType.add(stripParens(argType));
         }
 
-        Collection<? extends IFunction> functions = availableFunctions(schemaName, function);
+        Collection<IFunction> functions = availableFunctions(schemaName);
 
         if (args.size() == 1 && TypesSetManually.QUALIFIED_ASTERISK.equals(argsType.get(0))) {
             //// In this case function's argument is '*' or 'source.*'.
@@ -728,7 +726,7 @@ public class ValueExpr extends AbstractExpr {
     }
 
     private IOperator resolveOperatorsCall(String operatorName, String left, String right,
-            Collection<? extends IOperator> availableOperators) {
+            Collection<IOperator> availableOperators) {
         // save each applicable operators with the number of exact type matches
         // between input args and operator parameters
         // function that has more exact matches (less casts) wins
@@ -772,14 +770,7 @@ public class ValueExpr extends AbstractExpr {
     }
 
     private boolean containsCastImplicit(String source, String target) {
-        for (ICast cast : db.getCasts()) {
-            if (CastContext.IMPLICIT == cast.getContext()
-                    && source.equals(cast.getSource())
-                    && target.equals(cast.getTarget())) {
-                return true;
-            }
-        }
-        return false;
+        return meta.containsCastImplicit(source, target);
     }
 
     private String getOperatorToken(Vex vex) {

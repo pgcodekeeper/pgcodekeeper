@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import cz.startnet.utils.pgdiff.schema.IConstraint;
+import cz.startnet.utils.pgdiff.schema.ISchema;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 
 public class MetaConstraint extends MetaStatement implements IConstraint {
@@ -47,21 +48,17 @@ public class MetaConstraint extends MetaStatement implements IConstraint {
     }
 
     @Override
-    public MetaSchema getContainingSchema() {
-        MetaStatement parent = getParent();
-        if (parent != null) {
-            return (MetaSchema) parent.getParent();
-        }
-
-        return null;
+    public ISchema getContainingSchema() {
+        throw new IllegalStateException("Unsupported operation");
     }
 
     @Override
-    public MetaStatement getCopy() {
-        MetaConstraint copy = new MetaConstraint(getObject());
-        copy.setUnique(isUnique());
-        copy.setPrimaryKey(isPrimaryKey());
-        copy.columns.addAll(columns);
-        return copy;
+    public String getSchemaName() {
+        return getObject().getSchema();
+    }
+
+    @Override
+    public String getTableName() {
+        return getObject().getTable();
     }
 }

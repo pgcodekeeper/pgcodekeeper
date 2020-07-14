@@ -8,9 +8,9 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_columnContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_restContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Option_with_valueContext;
-import cz.startnet.utils.pgdiff.schema.IDatabase;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import cz.startnet.utils.pgdiff.schema.meta.MetaContainer;
 
 public class IndexAnalysisLauncher extends AbstractAnalysisLauncher {
 
@@ -19,20 +19,20 @@ public class IndexAnalysisLauncher extends AbstractAnalysisLauncher {
     }
 
     @Override
-    public Set<PgObjLocation> analyze(ParserRuleContext ctx, IDatabase db) {
+    public Set<PgObjLocation> analyze(ParserRuleContext ctx, MetaContainer meta) {
         Set<PgObjLocation> depcies = new LinkedHashSet<>();
         Index_restContext rest = (Index_restContext) ctx;
 
         for (Index_columnContext c : rest.index_sort().index_column()) {
-            depcies.addAll(analyzeTableChildVex(c.column, db));
+            depcies.addAll(analyzeTableChildVex(c.column, meta));
 
             for (Option_with_valueContext o : c.option_with_value()) {
-                depcies.addAll(analyzeTableChildVex(o.vex(), db));
+                depcies.addAll(analyzeTableChildVex(o.vex(), meta));
             }
         }
 
         if (rest.index_where() != null){
-            depcies.addAll(analyzeTableChildVex(rest.index_where().vex(), db));
+            depcies.addAll(analyzeTableChildVex(rest.index_where().vex(), meta));
         }
 
         return depcies;
