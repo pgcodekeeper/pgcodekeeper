@@ -7,7 +7,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_view_actionContext
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_view_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.ViewAnalysisLauncher;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.VexAnalysisLauncher;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgView;
@@ -32,7 +32,7 @@ public class AlterView extends ParserAbstract {
             VexContext exp = action.set_def_column().vex();
             doSafe((s,o) -> {
                 s.addColumnDefaultValue(getFullCtxText(action.column_name), getFullCtxText(exp));
-                db.addAnalysisLauncher(new ViewAnalysisLauncher(s, exp, fileName));
+                db.addAnalysisLauncher(new VexAnalysisLauncher(s, exp, fileName));
             }, dbView, null);
         }
         if (action.drop_def() != null) {
