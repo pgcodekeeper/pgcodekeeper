@@ -31,14 +31,19 @@ public class PgObjLocation extends ContextLocation {
         this(gObj, null, 0, 0, 0, null);
     }
 
-    public PgObjLocation(GenericColumn obj, String action, ParserRuleContext ctx, String fileName) {
+    public PgObjLocation(GenericColumn obj, String action, ParserRuleContext ctx, String filePath) {
         this(obj, action, ctx.getStart().getStartIndex(), ctx.getStart().getLine(),
-                ctx.getStart().getCharPositionInLine(), fileName);
+                ctx.getStart().getCharPositionInLine(), filePath);
         setLength(ctx.getStop().getStopIndex() - ctx.getStart().getStartIndex() + 1);
     }
 
     public PgObjLocation(GenericColumn obj, ParserRuleContext ctx) {
         this(obj, null, ctx, null);
+    }
+
+    public PgObjLocation(int offset, int lineNumber, int charPositionInLine, String sql, String filePath) {
+        this(null, null, offset, lineNumber, charPositionInLine, filePath);
+        this.sql = sql;
     }
 
     public PgObjLocation(String action, int offset, int lineNumber, int charPositionInLine, String sql) {

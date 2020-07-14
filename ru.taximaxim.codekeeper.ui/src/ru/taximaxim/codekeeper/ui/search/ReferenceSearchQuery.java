@@ -1,7 +1,11 @@
 package ru.taximaxim.codekeeper.ui.search;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -13,6 +17,7 @@ import org.eclipse.search.ui.ISearchResult;
 import org.eclipse.search.ui.text.Match;
 
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 
 public class ReferenceSearchQuery implements ISearchQuery {
@@ -20,12 +25,12 @@ public class ReferenceSearchQuery implements ISearchQuery {
     private final ReferenceSearchResult result;
 
     private final PgObjLocation ref;
-    private final IProject proj;
+    private final PgDbParser parser;
 
     public ReferenceSearchQuery(PgObjLocation ref, IProject proj) {
         this.result = new ReferenceSearchResult(this);
         this.ref = ref;
-        this.proj = proj;
+        this.parser = PgDbParser.getParser(proj);
     }
 
     @Override
@@ -33,17 +38,39 @@ public class ReferenceSearchQuery implements ISearchQuery {
         ReferenceSearchResult res = (ReferenceSearchResult) getSearchResult();
         res.removeAll();
 
-        PgDbParser parser = PgDbParser.getParser(proj);
-        if (parser != null) {
-            List<PgObjLocation> locs = parser.getAllObjReferences().filter(ref::compare).collect(Collectors.toList());
-            SubMonitor sub = SubMonitor.convert(monitor, locs.size());
-            for (PgObjLocation loc : locs) {
-                res.addMatch(new Match(loc, loc.getOffset(), loc.getObjLength()));
+        List<PgObjLocation> locs = parser.getAllObjReferences().filter(ref::compare).collect(Collectors.toList());
+        SubMonitor sub = SubMonitor.convert(monitor, locs.size());
+        for (PgObjLocation loc : locs) {
+            PgObjLocation copy = getLocationCopy(loc);
+            if (copy != null) {
+                res.addMatch(new Match(copy, loc.getOffset(), loc.getObjLength()));
                 sub.worked(1);
             }
         }
 
         return Status.OK_STATUS;
+    }
+
+    private PgObjLocation getLocationCopy(PgObjLocation loc) {
+        String sql = getLineFromFile(loc.getFilePath(), loc.getLineNumber());
+        if (sql == null) {
+            return null;
+        }
+
+        PgObjLocation copy = new PgObjLocation(loc.getOffset(), loc.getLineNumber(),
+                loc.getCharPositionInLine(), sql, loc.getFilePath());
+        copy.setLength(loc.getObjLength());
+        return copy;
+    }
+
+    private String getLineFromFile(String filePath, int lineNumber) {
+        try (Stream<String> lines = Files.lines(Paths.get(filePath))) {
+            int skip = lineNumber - 1;
+            return lines.skip(skip).findFirst().orElse(null);
+        } catch (IOException e) {
+            Log.log(e);
+            return null;
+        }
     }
 
     public PgObjLocation getReference() {
