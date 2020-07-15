@@ -104,8 +104,7 @@ public class PgOperator extends PgStatementWithSearchPath implements IOperator {
     public String getDropSQL() {
         final StringBuilder sbString = new StringBuilder();
         sbString.append("DROP OPERATOR ");
-        sbString.append(PgDiffUtils.getQuotedName(getSchemaName())).append('.');
-        appendOperatorSignature(sbString);
+        appendFullName(sbString);
         sbString.append(';');
         return sbString.toString();
     }
