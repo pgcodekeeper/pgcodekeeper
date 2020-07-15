@@ -55,13 +55,16 @@ public class PgDiffArguments implements Cloneable {
     private boolean ignoreErrors;
     private boolean optionExisting;
 
-
     public boolean isOptionExisting() {
         return optionExisting;
     }
 
     public void setOptionExisting(boolean optionExisting) {
         this.optionExisting = optionExisting;
+    }
+
+    public boolean getOptionExisting(boolean optionExisting) {
+        return optionExisting;
     }
 
     public void setModeParse(final boolean modeParse) {

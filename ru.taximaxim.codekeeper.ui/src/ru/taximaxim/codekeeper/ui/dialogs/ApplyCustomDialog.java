@@ -29,6 +29,8 @@ public class ApplyCustomDialog extends Dialog {
     private Button btnCheckFuncBodies;
     private Button btnAlterColUsingExpr;
     private Button btnCreateIdxConcurrent;
+    private Button btnOptionExists;
+
 
     private final OverridablePrefs prefs;
     private final boolean isMsSql;
@@ -74,6 +76,14 @@ public class ApplyCustomDialog extends Dialog {
         btnCreateIdxConcurrent.setSelection(prefs.getBooleanOfDbUpdatePref(
                 DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY));
 
+        btnOptionExists = new Button(panel, SWT.CHECK);
+        btnOptionExists.setText(Messages.DbUpdatePrefPage_optionIfExists);
+        gd = new GridData();
+        gd.horizontalIndent = 10;
+        btnOptionExists.setLayoutData(gd);
+        btnOptionExists.setSelection(prefs.getBooleanOfDbUpdatePref(
+                DB_UPDATE_PREF.OPTION_EXISTS));
+
         if (!isMsSql) {
             btnCheckFuncBodies = new Button(panel, SWT.CHECK);
             btnCheckFuncBodies.setText(Messages.dbUpdatePrefPage_check_function_bodies);
@@ -110,6 +120,8 @@ public class ApplyCustomDialog extends Dialog {
                 btnScriptAddTransact.getSelection());
         customSettings.put(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY,
                 btnCreateIdxConcurrent.getSelection());
+        customSettings.put(DB_UPDATE_PREF.OPTION_EXISTS,
+                btnOptionExists.getSelection());
         if (!isMsSql) {
             customSettings.put(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES,
                     btnCheckFuncBodies.getSelection());

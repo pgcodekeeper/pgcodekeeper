@@ -72,6 +72,12 @@ public class DbUpdatePrefPage extends FieldEditorPreferencePage implements IWork
         addField(new BooleanFieldEditor(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY,
                 Messages.DbUpdatePrefPage_print_index_with_concurrently, getFieldEditorParent()));
 
+        BooleanFieldEditor optionExisting = new BooleanFieldEditor(
+                DB_UPDATE_PREF.OPTION_EXISTS,
+                Messages.DbUpdatePrefPage_optionIfExists,
+                getFieldEditorParent());
+        addField(optionExisting);
+
         BooleanFieldEditor commandLineDdlUpdate = new BooleanFieldEditor(DB_UPDATE_PREF.COMMAND_LINE_DDL_UPDATE,
                 Messages.dbUpdatePrefPage_use_command_for_ddl_update, getFieldEditorParent());
         addField(commandLineDdlUpdate);

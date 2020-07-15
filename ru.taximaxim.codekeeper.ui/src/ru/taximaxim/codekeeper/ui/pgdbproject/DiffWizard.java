@@ -162,6 +162,7 @@ class PageDiff extends WizardPage implements Listener {
     private Button btnCheckFuncBodies;
     private Button btnAlterColUsingExpr;
     private Button btnCreateIdxConcurrent;
+    private Button btnOptionExists;
 
     public PageDiff(String pageName, IPreferenceStore mainPrefs, PgDbProject proj) {
         super(pageName, pageName, null);
@@ -259,6 +260,7 @@ class PageDiff extends WizardPage implements Listener {
                 btnCheckFuncBodies.setVisible(selected);
                 btnAlterColUsingExpr.setVisible(selected);
                 btnCreateIdxConcurrent.setVisible(selected);
+                btnOptionExists.setVisible(selected);
 
                 UiSync.exec(getShell(), () -> getShell().pack());
             }
@@ -304,6 +306,11 @@ class PageDiff extends WizardPage implements Listener {
         btnCreateIdxConcurrent.setText(Messages.DbUpdatePrefPage_print_index_with_concurrently);
         btnCreateIdxConcurrent.setSelection(mainPrefs.getBoolean(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY));
         btnCreateIdxConcurrent.setVisible(false);
+
+        btnOptionExists = new Button(container, SWT.CHECK);
+        btnOptionExists.setText(Messages.DbUpdatePrefPage_optionIfExists);
+        btnOptionExists.setSelection(mainPrefs.getBoolean(DB_UPDATE_PREF.OPTION_EXISTS));
+        btnOptionExists.setVisible(false);
 
         if (proj != null) {
             dbTarget.setDbStore(new StructuredSelection(proj.getProject().getLocation().toFile()));
@@ -372,6 +379,7 @@ class PageDiff extends WizardPage implements Listener {
         oneTimePrefs.put(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES, btnCheckFuncBodies.getSelection());
         oneTimePrefs.put(DB_UPDATE_PREF.USING_ON_OFF, btnAlterColUsingExpr.getSelection());
         oneTimePrefs.put(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY, btnCreateIdxConcurrent.getSelection());
+        oneTimePrefs.put(DB_UPDATE_PREF.OPTION_EXISTS, btnOptionExists.getSelection());
         oneTimePrefs.put(PREF.SIMPLIFY_VIEW, btnSimplifyView.getSelection());
 
         return oneTimePrefs;

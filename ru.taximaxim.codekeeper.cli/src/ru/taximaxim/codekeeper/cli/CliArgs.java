@@ -230,6 +230,10 @@ public class CliArgs extends PgDiffArguments {
                     + "\nspecify multiple times to use several names")
     private List<String> graphNames;
 
+    @Option(name="--option-exist", forbids={"--parse"},
+            usage="to enable option IF EXISTS/IF NOT EXISTS in CREATE, DROP statements")
+    private boolean optionExisting;
+
     @Option(name="--simplify-views", forbids="--ms-sql",
             usage="simple formatting for VIEWs when reading via JDBC (not recomended by PostgreSQL)")
     private boolean simplifyView;
@@ -488,6 +492,21 @@ public class CliArgs extends PgDiffArguments {
     }
 
     @Override
+    public void setOptionExisting(boolean optionExisting) {
+        this.optionExisting = optionExisting;
+    }
+
+    @Override
+    public boolean getOptionExisting(boolean optionExisting) {
+        return optionExisting;
+    }
+
+    @Override
+    public boolean isOptionExisting() {
+        return optionExisting;
+    }
+
+    @Override
     public void setKeepNewlines(boolean keepNewlines) {
         this.keepNewlines = keepNewlines;
     }
@@ -531,6 +550,7 @@ public class CliArgs extends PgDiffArguments {
     public int getGraphDepth() {
         return graphDepth;
     }
+
 
     @Override
     public boolean isGraphReverse() {

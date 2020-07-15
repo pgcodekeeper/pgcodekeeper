@@ -102,6 +102,8 @@ Usage
  --simplify-views                       : simple formatting for VIEWs when
                                           reading via JDBC (not recomended by
                                           PostgreSQL)
+ --option-exist                         : allow to enable option IF EXISTS/IF NOT EXISTS 
+                                          in CREATE, DROP statements
 
 DANGER_STATEMENT : [DROP_TABLE | ALTER_COLUMN | DROP_COLUMN | RESTART_WITH | UPDATE]
 OBJECT_TYPE : [CAST | USER | ROLE | ASSEMBLY | SCHEMA | EXTENSION | TYPE | DOMAIN | SEQUENCE | OPERATOR | FTS_PARSER | FTS_TEMPLATE | FTS_DICTIONARY | FTS_CONFIGURATION | TABLE | FUNCTION | PROCEDURE | AGGREGATE | CONSTRAINT | VIEW | INDEX | TRIGGER | RULE | POLICY]
