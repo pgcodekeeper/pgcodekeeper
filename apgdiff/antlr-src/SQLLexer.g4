@@ -492,7 +492,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     ==================================================
     */
 
-    ALL: [aA] [lL] [lL];
+    ALL: [aA] [lL] [lL];   // first RESERVED_KEYWORD, sync with AntlrUtils.normalizeWhitespaceUnquoted
     ANALYSE: [aA] [nN] [aA] [lL] [yY] [sS] [eE];
     ANALYZE: [aA] [nN] [aA] [lL] [yY] [zZ] [eE];
     AND: [aA] [nN] [dD];
