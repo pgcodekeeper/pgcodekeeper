@@ -253,7 +253,7 @@ public class MsColumn extends AbstractColumn {
     }
 
     @Override
-    public String getDropSQL() {
+    public String getDropSQL(boolean optionExists) {
         return getAlterTable(false, false) + "\n\tDROP COLUMN " + MsDiffUtils.getQuotedName(getName()) + GO;
     }
 

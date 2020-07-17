@@ -33,7 +33,7 @@ public class MsClrFunction extends AbstractMsClrFunction {
     }
 
     @Override
-    public String getDropSQL() {
+    public String getDropSQL(boolean optionExists) {
         return "DROP FUNCTION " + getQualifiedName() + GO;
     }
 

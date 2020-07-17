@@ -231,8 +231,22 @@ public class CliArgs extends PgDiffArguments {
     private List<String> graphNames;
 
     @Option(name="--option-exist", forbids={"--parse"},
-            usage="to enable option IF EXISTS/IF NOT EXISTS in CREATE, DROP statements")
+            usage="to enable option to print IF EXISTS/IF NOT EXISTS in CREATE, DROP statements")
     private boolean optionExisting;
+
+    @Option(name="--option-drop-object", forbids={"--parse"},
+            usage="to enable option to print DROP statement before CREATE")
+    private boolean optionDropObject;
+
+    @Override
+    public boolean isOptionDropObject() {
+        return optionDropObject;
+    }
+
+    @Override
+    public void setOptionDropObject(boolean optionDropObject) {
+        this.optionDropObject = optionDropObject;
+    }
 
     @Option(name="--simplify-views", forbids="--ms-sql",
             usage="simple formatting for VIEWs when reading via JDBC (not recomended by PostgreSQL)")

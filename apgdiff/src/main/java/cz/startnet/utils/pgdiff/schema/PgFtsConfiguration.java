@@ -37,6 +37,11 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
     @Override
     public String getCreationSQL() {
         StringBuilder sbSql = new StringBuilder();
+        PgDiffArguments args = getDatabase().getArguments();
+        if (args.isOptionDropObject()) {
+            sbSql.append(getDropSQL(true));
+            sbSql.append("\n\n");
+        }
         sbSql.append("CREATE TEXT SEARCH CONFIGURATION ")
         .append(getQualifiedName()).append(" (\n\t");
         sbSql.append("PARSER = ").append(parser).append(" );");
@@ -65,11 +70,10 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
     }
 
     @Override
-    public String getDropSQL() {
+    public String getDropSQL(boolean optionExists) {
         StringBuilder dropSb = new StringBuilder();
         dropSb.append("DROP TEXT SEARCH CONFIGURATION ");
-        PgDiffArguments args = getDatabase().getArguments();
-        if (args != null && args.isOptionExisting()) {
+        if (optionExists) {
             dropSb.append("IF EXISTS ");
         }
         dropSb.append(getQualifiedName()).append(";");

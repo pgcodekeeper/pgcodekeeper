@@ -63,7 +63,7 @@ public class MsView extends AbstractView implements SourceStatement {
     }
 
     @Override
-    public String getDropSQL() {
+    public String getDropSQL(boolean optionExists) {
         return "DROP VIEW " + getQualifiedName() + GO;
     }
 

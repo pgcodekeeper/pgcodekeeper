@@ -56,7 +56,7 @@ public class MsFunction extends AbstractMsFunction {
     }
 
     @Override
-    public String getDropSQL() {
+    public String getDropSQL(boolean optionExists) {
         return "DROP FUNCTION " + getQualifiedName() + GO;
     }
 

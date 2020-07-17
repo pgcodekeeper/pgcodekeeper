@@ -45,7 +45,11 @@ public abstract class AbstractPgTable extends AbstractTable {
     public String getCreationSQL() {
         final StringBuilder sbOption = new StringBuilder();
         final StringBuilder sbSQL = new StringBuilder();
-
+        PgDiffArguments args = getDatabase().getArguments();
+        if (args.isOptionDropObject()) {
+            sbSQL.append(getDropSQL(true));
+            sbSQL.append("\n\n");
+        }
         appendName(sbSQL);
         appendColumns(sbSQL, sbOption);
         appendInherit(sbSQL);
@@ -180,11 +184,10 @@ public abstract class AbstractPgTable extends AbstractTable {
     }
 
     @Override
-    public String getDropSQL() {
+    public String getDropSQL(boolean optionExists) {
         StringBuilder dropSb = new StringBuilder();
         dropSb.append("DROP TABLE ");
-        PgDiffArguments args = getDatabase().getArguments();
-        if (args != null && args.isOptionExisting()) {
+        if (optionExists) {
             dropSb.append("IF EXISTS ");
         }
         dropSb.append(getQualifiedName()).append(";");

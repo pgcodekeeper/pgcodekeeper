@@ -54,6 +54,19 @@ public class PgDiffArguments implements Cloneable {
     private final List<String> graphNames = new ArrayList<>();
     private boolean ignoreErrors;
     private boolean optionExisting;
+    private boolean optionDropObject;
+
+    public boolean isOptionDropObject() {
+        return optionDropObject;
+    }
+
+    public void setOptionDropObject(boolean optionDropObject) {
+        this.optionDropObject = optionDropObject;
+    }
+
+    public boolean getOptionDropObject(boolean optionDropObject) {
+        return optionDropObject;
+    }
 
     public boolean isOptionExisting() {
         return optionExisting;

@@ -374,7 +374,7 @@ public class PgDatabase extends PgStatement implements IDatabase {
     }
 
     @Override
-    public String getDropSQL() {
+    public String getDropSQL(boolean optionExists) {
         return null;
     }
 

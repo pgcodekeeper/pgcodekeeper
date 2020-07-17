@@ -117,7 +117,7 @@ public class MsType extends AbstractType {
     }
 
     @Override
-    public String getDropSQL() {
+    public String getDropSQL(boolean optionExists) {
         return "DROP TYPE " + getQualifiedName() + GO;
     }
 

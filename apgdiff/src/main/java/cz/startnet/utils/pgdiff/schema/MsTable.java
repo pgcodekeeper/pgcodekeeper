@@ -208,7 +208,7 @@ public class MsTable extends AbstractTable {
     }
 
     @Override
-    public String getDropSQL() {
+    public String getDropSQL(boolean optionExists) {
         return "DROP TABLE " + getQualifiedName() + GO;
     }
 

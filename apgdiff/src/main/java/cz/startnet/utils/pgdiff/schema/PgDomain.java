@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -87,6 +86,7 @@ public class PgDomain extends PgStatementWithSearchPath {
     @Override
     public String getCreationSQL() {
         StringBuilder sb = new StringBuilder();
+
         sb.append("CREATE DOMAIN ").append(getQualifiedName())
         .append(" AS ").append(dataType);
         if (collation != null && !collation.isEmpty()) {
@@ -132,11 +132,10 @@ public class PgDomain extends PgStatementWithSearchPath {
     }
 
     @Override
-    public String getDropSQL() {
+    public String getDropSQL(boolean optionExists) {
         StringBuilder dropSb = new StringBuilder();
         dropSb.append("DROP DOMAIN ");
-        PgDiffArguments args = getDatabase().getArguments();
-        if (args != null && args.isOptionExisting()) {
+        if (optionExists) {
             dropSb.append("IF EXISTS ");
         }
         dropSb.append(getQualifiedName()).append(";");

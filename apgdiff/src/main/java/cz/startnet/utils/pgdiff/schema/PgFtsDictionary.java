@@ -32,6 +32,11 @@ implements PgOptionContainer {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSql = new StringBuilder();
+        PgDiffArguments args = getDatabase().getArguments();
+        if (args.isOptionDropObject()) {
+            sbSql.append(getDropSQL(true));
+            sbSql.append("\n\n");
+        }
         sbSql.append("CREATE TEXT SEARCH DICTIONARY ")
         .append(getQualifiedName());
         sbSql.append(" (\n\tTEMPLATE = ").append(template);
@@ -59,11 +64,10 @@ implements PgOptionContainer {
     }
 
     @Override
-    public String getDropSQL() {
+    public String getDropSQL(boolean optionExists) {
         StringBuilder dropSb = new StringBuilder();
         dropSb.append("DROP TEXT SEARCH DICTIONARY ");
-        PgDiffArguments args = getDatabase().getArguments();
-        if (args != null && args.isOptionExisting()) {
+        if (optionExists) {
             dropSb.append("IF EXISTS ");
         }
         dropSb.append(getQualifiedName()).append(";");

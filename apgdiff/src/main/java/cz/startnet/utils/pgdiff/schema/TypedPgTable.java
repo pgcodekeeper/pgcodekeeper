@@ -95,4 +95,9 @@ public class TypedPgTable extends AbstractRegularTable {
         sb.append(getAlterTable(true, false))
         .append(" OF ").append(getOfType()).append(';');
     }
+
+    @Override
+    public String getDropSQL(boolean optionExists) {
+        return null;
+    }
 }

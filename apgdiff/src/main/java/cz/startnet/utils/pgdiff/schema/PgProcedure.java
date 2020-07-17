@@ -98,4 +98,9 @@ public class PgProcedure extends AbstractPgFunction {
     protected AbstractPgFunction getFunctionCopy() {
         return new PgProcedure(getBareName());
     }
+
+    @Override
+    public String getDropSQL(boolean optionExists) {
+        return null;
+    }
 }

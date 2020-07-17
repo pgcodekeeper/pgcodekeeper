@@ -48,7 +48,7 @@ public class MsUser extends PgStatement {
     }
 
     @Override
-    public String getDropSQL() {
+    public String getDropSQL(boolean optionExists) {
         return "DROP USER " + MsDiffUtils.quoteName(name) + GO;
     }
 

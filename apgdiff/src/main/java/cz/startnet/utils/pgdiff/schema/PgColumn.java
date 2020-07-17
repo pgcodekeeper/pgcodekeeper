@@ -94,6 +94,7 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
             sb.append(getAlterTable(false, false));
             sb.append("\n\tADD COLUMN ");
             PgDiffArguments args = getDatabase().getArguments();
+
             if (args != null && args.isOptionExisting()) {
                 sb.append("IF NOT EXISTS ");
             }
@@ -146,7 +147,7 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
     }
 
     @Override
-    public String getDropSQL() {
+    public String getDropSQL(boolean optionExists) {
         if (getType() != null && getParentCol((AbstractPgTable) getParent()) == null) {
             boolean addOnly = true;
 
@@ -162,8 +163,7 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
             StringBuilder dropSb = new StringBuilder();
             dropSb.append(getAlterTable(false, addOnly))
             .append("\n\tDROP COLUMN ");
-            PgDiffArguments args = getDatabase().getArguments();
-            if (args != null && args.isOptionExisting()) {
+            if (optionExists) {
                 dropSb.append("IF EXISTS ");
             }
             dropSb.append(PgDiffUtils.getQuotedName(getName())).append(";");

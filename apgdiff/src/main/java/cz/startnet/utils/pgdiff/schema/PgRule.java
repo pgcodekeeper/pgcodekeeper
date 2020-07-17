@@ -92,6 +92,11 @@ public class PgRule extends PgStatementWithSearchPath{
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
+        PgDiffArguments args = getDatabase().getArguments();
+        if (args.isOptionDropObject()) {
+            sbSQL.append(getDropSQL(true));
+            sbSQL.append("\n\n");
+        }
         sbSQL.append("CREATE RULE ");
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));
         sbSQL.append(" AS\n    ON ").append(getEvent());
@@ -138,10 +143,9 @@ public class PgRule extends PgStatementWithSearchPath{
     }
 
     @Override
-    public String getDropSQL() {
+    public String getDropSQL(boolean optionExists) {
         StringBuilder sbSQL = new StringBuilder("DROP RULE ");
-        PgDiffArguments args = getDatabase().getArguments();
-        if (args != null && args.isOptionExisting()) {
+        if (optionExists) {
             sbSQL.append("IF EXISTS ");
         }
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));

@@ -152,7 +152,7 @@ public class MsSequence extends AbstractSequence {
     }
 
     @Override
-    public String getDropSQL() {
+    public String getDropSQL(boolean optionExists) {
         return "DROP SEQUENCE " + getQualifiedName() + GO;
     }
 

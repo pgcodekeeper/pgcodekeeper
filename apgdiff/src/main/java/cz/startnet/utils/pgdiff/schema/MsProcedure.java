@@ -39,7 +39,7 @@ public class MsProcedure extends AbstractMsFunction {
     }
 
     @Override
-    public String getDropSQL() {
+    public String getDropSQL(boolean optionExists) {
         return "DROP PROCEDURE " + getQualifiedName() + GO;
     }
 

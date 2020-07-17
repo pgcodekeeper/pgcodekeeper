@@ -82,7 +82,7 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
     }
 
     @Override
-    public String getDropSQL() {
+    public String getDropSQL(boolean optionExists) {
         return "DROP TRIGGER " + MsDiffUtils.quoteName(getSchemaName()) +
                 '.' + MsDiffUtils.quoteName(getName()) + GO;
     }

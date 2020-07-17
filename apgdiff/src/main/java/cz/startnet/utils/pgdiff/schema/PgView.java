@@ -50,13 +50,17 @@ public class PgView extends AbstractView implements PgOptionContainer  {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder(getQuery().length() * 2);
+        PgDiffArguments args = getDatabase().getArguments();
+        if (args.isOptionDropObject()) {
+            sbSQL.append(getDropSQL(true));
+            sbSQL.append("\n\n");
+        }
         sbSQL.append("CREATE");
         if (isMatView()) {
             sbSQL.append(" MATERIALIZED");
         }
         sbSQL.append(" VIEW ");
         if (isMatView()) {
-            PgDiffArguments args = getDatabase().getArguments();
             if (args != null && args.isOptionExisting()) {
                 sbSQL.append("IF NOT EXISTS ");
             }
@@ -147,7 +151,7 @@ public class PgView extends AbstractView implements PgOptionContainer  {
     }
 
     @Override
-    public String getDropSQL() {
+    public String getDropSQL(boolean optionExists) {
         StringBuilder dropSb = new StringBuilder();
         dropSb.append("DROP ");
 
@@ -156,8 +160,7 @@ public class PgView extends AbstractView implements PgOptionContainer  {
         }
         dropSb.append("VIEW ");
         if (isMatView()) {
-            PgDiffArguments args = getDatabase().getArguments();
-            if (args != null && args.isOptionExisting()) {
+            if (optionExists) {
                 dropSb.append("IF EXISTS ");
             }
         }

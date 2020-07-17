@@ -41,11 +41,10 @@ public abstract class AbstractForeignTable extends AbstractPgTable {
     }
 
     @Override
-    public String getDropSQL() {
+    public String getDropSQL(boolean optionExists) {
         StringBuilder dropSb = new StringBuilder();
         dropSb.append("DROP FOREIGN TABLE ");
-        PgDiffArguments args = getDatabase().getArguments();
-        if (args != null && args.isOptionExisting()) {
+        if (optionExists) {
             dropSb.append("IF EXISTS ");
         }
         dropSb.append(getQualifiedName()).append(";");
@@ -114,6 +113,10 @@ public abstract class AbstractForeignTable extends AbstractPgTable {
     protected void appendName(StringBuilder sbSQL) {
         sbSQL.append("CREATE FOREIGN TABLE ");
         PgDiffArguments args = getDatabase().getArguments();
+        if (args.isOptionDropObject()) {
+            sbSQL.append(getDropSQL(true));
+            sbSQL.append("\n\n");
+        }
         if (args != null && args.isOptionExisting()) {
             sbSQL.append("IF NOT EXISTS ");
         }

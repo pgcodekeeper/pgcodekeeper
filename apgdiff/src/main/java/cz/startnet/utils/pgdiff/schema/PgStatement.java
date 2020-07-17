@@ -427,7 +427,12 @@ public abstract class PgStatement implements IStatement, IHashable {
         return getCreationSQL();
     }
 
-    public abstract String getDropSQL();
+    public final String getDropSQL() {
+        PgDiffArguments args = getDatabase().getArguments();
+        return getDropSQL(args != null && args.isOptionExisting());
+    }
+
+    public abstract String getDropSQL(boolean optionExists);
 
     /**
      * Метод заполняет sb выражением изменения объекта, можно ли изменить объект

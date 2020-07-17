@@ -40,7 +40,7 @@ public class MsSchema extends AbstractSchema {
     }
 
     @Override
-    public String getDropSQL() {
+    public String getDropSQL(boolean optionExists) {
         return "DROP SCHEMA " + MsDiffUtils.quoteName(getName()) + GO;
     }
 

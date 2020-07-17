@@ -486,4 +486,9 @@ public class PgAggregate extends AbstractPgFunction {
         copy.setParallel(getParallel());
         return copy;
     }
+
+    @Override
+    public String getDropSQL(boolean optionExists) {
+        return null;
+    }
 }

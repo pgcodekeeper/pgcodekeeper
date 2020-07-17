@@ -23,8 +23,12 @@ public class PgSchema extends AbstractSchema {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
-        sbSQL.append("CREATE SCHEMA ");
         PgDiffArguments args = getDatabase().getArguments();
+        if (args.isOptionDropObject()) {
+            sbSQL.append(getDropSQL(true));
+            sbSQL.append("\n\n");
+        }
+        sbSQL.append("CREATE SCHEMA ");
         if  (args != null && args.isOptionExisting()) {
             sbSQL.append("IF NOT EXISTS ");
         }
@@ -44,11 +48,10 @@ public class PgSchema extends AbstractSchema {
     }
 
     @Override
-    public String getDropSQL() {
+    public String getDropSQL(boolean optionExists) {
         StringBuilder dropSb = new StringBuilder();
         dropSb.append("DROP SCHEMA ");
-        PgDiffArguments args = getDatabase().getArguments();
-        if (args != null && args.isOptionExisting()) {
+        if (optionExists) {
             dropSb.append("IF EXISTS ");
         }
         dropSb.append(PgDiffUtils.getQuotedName(getName())).append(";");

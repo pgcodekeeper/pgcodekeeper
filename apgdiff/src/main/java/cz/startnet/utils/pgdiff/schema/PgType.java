@@ -449,7 +449,7 @@ public class PgType extends AbstractType {
     }
 
     @Override
-    public String getDropSQL() {
+    public String getDropSQL(boolean optionExists) {
         return "DROP TYPE " + PgDiffUtils.getQuotedName(getContainingSchema().getName()) + '.'
                 + PgDiffUtils.getQuotedName(getName()) + ';';
     }

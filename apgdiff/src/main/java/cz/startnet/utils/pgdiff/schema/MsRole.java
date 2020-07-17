@@ -50,7 +50,7 @@ public class MsRole extends PgStatement {
     }
 
     @Override
-    public String getDropSQL() {
+    public String getDropSQL(boolean optionExists) {
         StringBuilder sb = new StringBuilder();
 
         for (String member : members) {

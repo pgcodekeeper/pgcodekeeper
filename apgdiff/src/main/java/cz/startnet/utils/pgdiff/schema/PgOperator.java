@@ -44,6 +44,11 @@ public class PgOperator extends PgStatementWithSearchPath implements IOperator {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
+        PgDiffArguments args = getDatabase().getArguments();
+        if (args.isOptionDropObject()) {
+            sbSQL.append(getDropSQL(true));
+            sbSQL.append("\n\n");
+        }
         sbSQL.append("CREATE OPERATOR ");
         sbSQL.append(PgDiffUtils.getQuotedName(getSchemaName())).append('.');
         sbSQL.append(getBareName());
@@ -102,11 +107,10 @@ public class PgOperator extends PgStatementWithSearchPath implements IOperator {
     }
 
     @Override
-    public String getDropSQL() {
+    public String getDropSQL(boolean optionExists) {
         final StringBuilder sbString = new StringBuilder();
         sbString.append("DROP OPERATOR ");
-        PgDiffArguments args = getDatabase().getArguments();
-        if (args != null && args.isOptionExisting()) {
+        if (optionExists) {
             sbString.append("IF EXISTS ");
         }
         sbString.append(PgDiffUtils.getQuotedName(getSchemaName())).append('.');

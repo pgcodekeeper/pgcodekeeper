@@ -75,6 +75,11 @@ public class PgPolicy extends PgStatementWithSearchPath {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
+        PgDiffArguments args = getDatabase().getArguments();
+        if (args.isOptionDropObject()) {
+            sbSQL.append(getDropSQL(true));
+            sbSQL.append("\n\n");
+        }
         sbSQL.append("CREATE POLICY ");
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));
         sbSQL.append(" ON ").append(getParent().getQualifiedName());
@@ -109,10 +114,9 @@ public class PgPolicy extends PgStatementWithSearchPath {
     }
 
     @Override
-    public String getDropSQL() {
+    public String getDropSQL(boolean optionExists) {
         StringBuilder sbSQL = new StringBuilder("DROP POLICY ");
-        PgDiffArguments args = getDatabase().getArguments();
-        if (args != null && args.isOptionExisting()) {
+        if (optionExists) {
             sbSQL.append("IF EXISTS ");
         }
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));

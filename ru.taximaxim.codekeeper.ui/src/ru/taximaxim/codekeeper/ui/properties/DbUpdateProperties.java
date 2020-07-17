@@ -33,6 +33,7 @@ public class DbUpdateProperties extends PropertyPage {
     private Button btnAlterColUsingExpr;
     private Button btnCreateIdxConcurrent;
     private Button btnOptionExists;
+    private Button btnOptionDropObject;
 
     private IEclipsePreferences prefs;
 
@@ -65,6 +66,7 @@ public class DbUpdateProperties extends PropertyPage {
                 btnAlterColUsingExpr.setEnabled(btnEnableProjPref.getSelection());
                 btnCreateIdxConcurrent.setEnabled(btnEnableProjPref.getSelection());
                 btnOptionExists.setEnabled(btnEnableProjPref.getSelection());
+                btnOptionDropObject.setEnabled(btnEnableProjPref.getSelection());
             }
         });
 
@@ -112,6 +114,13 @@ public class DbUpdateProperties extends PropertyPage {
         btnOptionExists.setSelection(prefs.getBoolean(DB_UPDATE_PREF.OPTION_EXISTS, false));
         btnOptionExists.setEnabled(overridePref);
 
+        btnOptionDropObject = new Button(panel, SWT.CHECK);
+        btnOptionDropObject.setText(Messages.DbUpdatePrefPage_optionDropObject1);
+        gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
+        gd.horizontalIndent = 10;
+        btnOptionDropObject.setLayoutData(gd);
+        btnOptionDropObject.setSelection(prefs.getBoolean(DB_UPDATE_PREF.OPTION_DROP_OBJECT, false));
+        btnOptionDropObject.setEnabled(overridePref);
         return panel;
     }
 
@@ -124,6 +133,7 @@ public class DbUpdateProperties extends PropertyPage {
         setDefault(mainPS, btnAlterColUsingExpr, DB_UPDATE_PREF.USING_ON_OFF);
         setDefault(mainPS, btnCreateIdxConcurrent, DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY);
         setDefault(mainPS, btnOptionExists, DB_UPDATE_PREF.OPTION_EXISTS);
+        setDefault(mainPS, btnOptionDropObject, DB_UPDATE_PREF.OPTION_DROP_OBJECT);
 
         try {
             fillPrefs();
@@ -161,6 +171,7 @@ public class DbUpdateProperties extends PropertyPage {
         prefs.putBoolean(DB_UPDATE_PREF.USING_ON_OFF, btnAlterColUsingExpr.getSelection());
         prefs.putBoolean(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY, btnCreateIdxConcurrent.getSelection());
         prefs.putBoolean(DB_UPDATE_PREF.OPTION_EXISTS, btnOptionExists.getSelection());
+        prefs.putBoolean(DB_UPDATE_PREF.OPTION_DROP_OBJECT, btnOptionDropObject.getSelection());
         prefs.flush();
         setValid(true);
         setErrorMessage(null);

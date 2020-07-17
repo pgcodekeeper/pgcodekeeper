@@ -78,6 +78,12 @@ public class DbUpdatePrefPage extends FieldEditorPreferencePage implements IWork
                 getFieldEditorParent());
         addField(optionExisting);
 
+        BooleanFieldEditor optionDropObject = new BooleanFieldEditor(
+                DB_UPDATE_PREF.OPTION_DROP_OBJECT,
+                Messages.DbUpdatePrefPage_optionDropObject1,
+                getFieldEditorParent());
+        addField(optionDropObject);
+
         BooleanFieldEditor commandLineDdlUpdate = new BooleanFieldEditor(DB_UPDATE_PREF.COMMAND_LINE_DDL_UPDATE,
                 Messages.dbUpdatePrefPage_use_command_for_ddl_update, getFieldEditorParent());
         addField(commandLineDdlUpdate);

@@ -163,6 +163,8 @@ class PageDiff extends WizardPage implements Listener {
     private Button btnAlterColUsingExpr;
     private Button btnCreateIdxConcurrent;
     private Button btnOptionExists;
+    private Button btnOptionDropObject;
+
 
     public PageDiff(String pageName, IPreferenceStore mainPrefs, PgDbProject proj) {
         super(pageName, pageName, null);
@@ -261,6 +263,7 @@ class PageDiff extends WizardPage implements Listener {
                 btnAlterColUsingExpr.setVisible(selected);
                 btnCreateIdxConcurrent.setVisible(selected);
                 btnOptionExists.setVisible(selected);
+                btnOptionDropObject.setVisible(selected);
 
                 UiSync.exec(getShell(), () -> getShell().pack());
             }
@@ -311,6 +314,11 @@ class PageDiff extends WizardPage implements Listener {
         btnOptionExists.setText(Messages.DbUpdatePrefPage_optionIfExists);
         btnOptionExists.setSelection(mainPrefs.getBoolean(DB_UPDATE_PREF.OPTION_EXISTS));
         btnOptionExists.setVisible(false);
+
+        btnOptionDropObject = new Button(container, SWT.CHECK);
+        btnOptionDropObject.setText(Messages.DbUpdatePrefPage_optionDropObject1);
+        btnOptionDropObject.setSelection(mainPrefs.getBoolean(DB_UPDATE_PREF.OPTION_DROP_OBJECT));
+        btnOptionDropObject.setVisible(false);
 
         if (proj != null) {
             dbTarget.setDbStore(new StructuredSelection(proj.getProject().getLocation().toFile()));
@@ -380,6 +388,7 @@ class PageDiff extends WizardPage implements Listener {
         oneTimePrefs.put(DB_UPDATE_PREF.USING_ON_OFF, btnAlterColUsingExpr.getSelection());
         oneTimePrefs.put(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY, btnCreateIdxConcurrent.getSelection());
         oneTimePrefs.put(DB_UPDATE_PREF.OPTION_EXISTS, btnOptionExists.getSelection());
+        oneTimePrefs.put(DB_UPDATE_PREF.OPTION_DROP_OBJECT, btnOptionDropObject.getSelection());
         oneTimePrefs.put(PREF.SIMPLIFY_VIEW, btnSimplifyView.getSelection());
 
         return oneTimePrefs;

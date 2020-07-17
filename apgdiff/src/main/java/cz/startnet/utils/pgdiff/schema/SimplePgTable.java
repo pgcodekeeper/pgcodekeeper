@@ -46,4 +46,9 @@ public class SimplePgTable extends AbstractRegularTable {
     protected void convertTable(StringBuilder sb) {
         // no implements
     }
+
+    @Override
+    public String getDropSQL(boolean optionExists) {
+        return null;
+    }
 }

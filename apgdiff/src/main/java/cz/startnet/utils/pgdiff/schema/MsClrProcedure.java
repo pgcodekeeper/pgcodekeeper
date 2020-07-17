@@ -60,7 +60,7 @@ public class MsClrProcedure extends AbstractMsClrFunction {
     }
 
     @Override
-    public String getDropSQL() {
+    public String getDropSQL(boolean optionExists) {
         return "DROP PROCEDURE " + getQualifiedName() + GO;
     }
 

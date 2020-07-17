@@ -30,6 +30,7 @@ public class ApplyCustomDialog extends Dialog {
     private Button btnAlterColUsingExpr;
     private Button btnCreateIdxConcurrent;
     private Button btnOptionExists;
+    private Button btnOptionDropObject;
 
 
     private final OverridablePrefs prefs;
@@ -84,6 +85,14 @@ public class ApplyCustomDialog extends Dialog {
         btnOptionExists.setSelection(prefs.getBooleanOfDbUpdatePref(
                 DB_UPDATE_PREF.OPTION_EXISTS));
 
+        btnOptionDropObject = new Button(panel, SWT.CHECK);
+        btnOptionDropObject.setText(Messages.DbUpdatePrefPage_optionDropObject1);
+        gd = new GridData();
+        gd.horizontalIndent = 10;
+        btnOptionDropObject.setLayoutData(gd);
+        btnOptionDropObject.setSelection(prefs.getBooleanOfDbUpdatePref(
+                DB_UPDATE_PREF.OPTION_DROP_OBJECT));
+
         if (!isMsSql) {
             btnCheckFuncBodies = new Button(panel, SWT.CHECK);
             btnCheckFuncBodies.setText(Messages.dbUpdatePrefPage_check_function_bodies);
@@ -122,6 +131,8 @@ public class ApplyCustomDialog extends Dialog {
                 btnCreateIdxConcurrent.getSelection());
         customSettings.put(DB_UPDATE_PREF.OPTION_EXISTS,
                 btnOptionExists.getSelection());
+        customSettings.put(DB_UPDATE_PREF.OPTION_DROP_OBJECT,
+                btnOptionDropObject.getSelection());
         if (!isMsSql) {
             customSettings.put(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES,
                     btnCheckFuncBodies.getSelection());

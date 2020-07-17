@@ -45,13 +45,12 @@ public abstract class AbstractPgFunction extends AbstractFunction {
     }
 
     @Override
-    public String getDropSQL() {
+    public String getDropSQL(boolean optionExists) {
         final StringBuilder sbString = new StringBuilder();
         sbString.append("DROP ");
         sbString.append(getStatementType().name());
         sbString.append(' ');
-        PgDiffArguments args = getDatabase().getArguments();
-        if (args != null && args.isOptionExisting()) {
+        if (optionExists) {
             sbString.append("IF EXISTS ");
         }
         sbString.append(PgDiffUtils.getQuotedName(getSchemaName())).append('.');

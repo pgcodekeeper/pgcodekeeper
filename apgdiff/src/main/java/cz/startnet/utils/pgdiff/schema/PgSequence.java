@@ -27,9 +27,13 @@ public class PgSequence extends AbstractSequence {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
+        PgDiffArguments args = getDatabase().getArguments();
+        if (args.isOptionDropObject()) {
+            sbSQL.append(getDropSQL(true));
+            sbSQL.append("\n\n");
+        }
         sbSQL.append("CREATE SEQUENCE ");
 
-        PgDiffArguments args = getDatabase().getArguments();
         if (args != null && args.isOptionExisting()) {
             sbSQL.append("IF NOT EXISTS ");
         }
@@ -117,11 +121,10 @@ public class PgSequence extends AbstractSequence {
     }
 
     @Override
-    public String getDropSQL() {
+    public String getDropSQL(boolean optionExists) {
         StringBuilder dropSb = new StringBuilder();
         dropSb.append("DROP SEQUENCE ");
-        PgDiffArguments args = getDatabase().getArguments();
-        if (args != null && args.isOptionExisting()) {
+        if (optionExists) {
             dropSb.append("IF EXISTS ");
         }
         dropSb.append(getQualifiedName()).append(";");

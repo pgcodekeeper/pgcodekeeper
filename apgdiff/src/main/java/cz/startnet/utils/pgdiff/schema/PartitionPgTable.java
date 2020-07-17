@@ -142,4 +142,9 @@ public class PartitionPgTable extends AbstractRegularTable {
         super.computeHash(hasher);
         hasher.put(partitionBounds);
     }
+
+    @Override
+    public String getDropSQL(boolean optionExists) {
+        return null;
+    }
 }
