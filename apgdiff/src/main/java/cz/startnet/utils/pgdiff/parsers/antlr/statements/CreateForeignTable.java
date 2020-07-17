@@ -2,6 +2,8 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_foreign_table_statementContext;
@@ -10,7 +12,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_foreign_optionsCo
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_partitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_serverContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Foreign_optionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractForeignTable;
 import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
@@ -34,7 +35,7 @@ public class CreateForeignTable extends TableAbstract {
 
     @Override
     public void parseObject() {
-        List<IdentifierContext> ids = ctx.name.identifier();
+        List<ParserRuleContext> ids = getIdentifiers(ctx.name);
         String tableName = QNameParser.getFirstName(ids);
         AbstractSchema schema = getSchemaSafe(ids);
         AbstractTable table = defineTable(tableName, getSchemaNameSafe(ids));
@@ -65,7 +66,7 @@ public class CreateForeignTable extends TableAbstract {
                     tableName, srvCtx.identifier().getText(), partBound));
 
             fillTypeColumns(partCtx.list_of_type_column_def(), table, schemaName, null);
-            addInherit(table, partCtx.parent_table.identifier());
+            addInherit(table, getIdentifiers(partCtx.parent_table));
         }
 
         return table;
@@ -85,6 +86,6 @@ public class CreateForeignTable extends TableAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_CREATE, DbObjType.TABLE, ctx.name.identifier());
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.TABLE, getIdentifiers(ctx.name));
     }
 }

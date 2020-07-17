@@ -4,11 +4,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.ICast.CastContext;
@@ -79,7 +80,7 @@ public class CastsReader implements PgCatalogStrings {
             JdbcReader.checkObjectValidity(function, DbObjType.CAST, cast.getName());
             cast.setFunction(function);
             loader.submitAntlrTask(function, SQLParser::function_args_parser, ctx -> {
-                List<IdentifierContext> ids = ctx.schema_qualified_name().identifier();
+                List<ParserRuleContext> ids = ParserAbstract.getIdentifiers(ctx.schema_qualified_name());
                 String schemaName = QNameParser.getSchemaName(ids);
                 if (schemaName != null && !ApgdiffUtils.isPgSystemSchema(schemaName)) {
                     String funcName = ParserAbstract.parseSignature(
@@ -109,7 +110,7 @@ public class CastsReader implements PgCatalogStrings {
 
     private void addDep(PgStatement statement, String objectName) {
         if (objectName.indexOf('.') != -1) {
-            QNameParser<IdentifierContext> parser = QNameParser.parsePg(objectName);
+            QNameParser<ParserRuleContext> parser = QNameParser.parsePg(objectName);
             String schemaName = parser.getSchemaName();
             if (schemaName != null && !ApgdiffUtils.isPgSystemSchema(schemaName)) {
                 statement.addDep(new GenericColumn(schemaName, parser.getFirstName(), DbObjType.TYPE));

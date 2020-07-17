@@ -50,7 +50,7 @@ public class AlterOther extends ParserAbstract {
             type = DbObjType.AGGREGATE;
         }
 
-        addObjReference(ctx.function_parameters().schema_qualified_name().identifier(),
+        addObjReference(getIdentifiers(ctx.function_parameters().schema_qualified_name()),
                 type, ACTION_ALTER);
     }
 
@@ -59,7 +59,7 @@ public class AlterOther extends ParserAbstract {
     }
 
     public void alterType(Alter_type_statementContext ctx) {
-        addObjReference(ctx.name.identifier(), DbObjType.TYPE, ACTION_ALTER);
+        addObjReference(getIdentifiers(ctx.name), DbObjType.TYPE, ACTION_ALTER);
     }
 
     private void alterOperator(Alter_operator_statementContext ctx) {
@@ -102,12 +102,12 @@ public class AlterOther extends ParserAbstract {
             Operator_nameContext nameCtx = alterOperCtx.target_operator().operator_name();
             return Arrays.asList(nameCtx.schema_name, nameCtx.operator);
         } else if (ctx.alter_function_statement() != null) {
-            return ctx.alter_function_statement().function_parameters()
-                    .schema_qualified_name().identifier();
+            return getIdentifiers(ctx.alter_function_statement().function_parameters()
+                    .schema_qualified_name());
         } else if (ctx.alter_schema_statement() != null) {
             return Arrays.asList(ctx.alter_schema_statement().identifier());
         } else if (ctx.alter_type_statement() != null) {
-            return ctx.alter_type_statement().name.identifier();
+            return getIdentifiers(ctx.alter_type_statement().name);
         } else if (ctx.alter_extension_statement() != null) {
             return Arrays.asList(ctx.alter_extension_statement().identifier());
         }

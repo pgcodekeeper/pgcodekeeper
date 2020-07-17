@@ -60,8 +60,8 @@ public class AlterOwner extends ParserAbstract {
             return;
         }
 
-        List<IdentifierContext> ids = ctx.name.identifier();
-        IdentifierContext nameCtx = QNameParser.getFirstNameCtx(ids);
+        List<ParserRuleContext> ids = getIdentifiers(ctx.name);
+        ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
 
         DbObjType type = null;
         if (ctx.SCHEMA() != null) {
@@ -155,7 +155,7 @@ public class AlterOwner extends ParserAbstract {
         String objName = null;
         Target_operatorContext targetOperCtx;
         if (ctx.name != null) {
-            List<IdentifierContext> ids = ctx.name.identifier();
+            List<ParserRuleContext> ids = getIdentifiers(ctx.name);
             schemaName = QNameParser.getSchemaName(ids);
             objName = QNameParser.getFirstName(ids);
         } else if ((targetOperCtx = ctx.target_operator()) != null) {

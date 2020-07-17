@@ -30,6 +30,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Update_stmt_for_psqlCont
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_queryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.meta.MetaContainer;
@@ -303,7 +304,7 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
 
     protected void addNameReference(Schema_qualified_nameContext name, IdentifierContext alias,
             List<IdentifierContext> columnAliases) {
-        List<IdentifierContext> ids = name.identifier();
+        List<ParserRuleContext> ids = ParserAbstract.getIdentifiers(name);
         String firstName = QNameParser.getFirstName(ids);
 
         List<Pair<String, String>> cteList = null;

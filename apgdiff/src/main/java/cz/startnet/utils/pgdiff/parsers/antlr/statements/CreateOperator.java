@@ -39,7 +39,7 @@ public class CreateOperator extends ParserAbstract {
         for (Operator_optionContext option : ctx.operator_option()) {
             if (option.PROCEDURE() != null || option.FUNCTION() != null) {
                 oper.setProcedure(getFullCtxText(option.func_name));
-                List<IdentifierContext> funcIds = option.func_name.identifier();
+                List<ParserRuleContext> funcIds = getIdentifiers(option.func_name);
                 addDepSafe(oper, funcIds, DbObjType.FUNCTION, true);
 
                 db.addAnalysisLauncher(new OperatorAnalysisLaincher(
@@ -77,17 +77,17 @@ public class CreateOperator extends ParserAbstract {
                 oper.setHashes(true);
             } else if (option.RESTRICT() != null) {
                 oper.setRestrict(getFullCtxText(option.restr_name));
-                addDepSafe(oper, option.restr_name.identifier(), DbObjType.FUNCTION, true);
+                addDepSafe(oper, getIdentifiers(option.restr_name), DbObjType.FUNCTION, true);
             } else if (option.JOIN() != null) {
                 oper.setJoin(getFullCtxText(option.join_name));
-                addDepSafe(oper, option.join_name.identifier(), DbObjType.FUNCTION, true);
+                addDepSafe(oper, getIdentifiers(option.join_name), DbObjType.FUNCTION, true);
             }
         }
 
         addSafe(getSchemaSafe(ids), oper, ids);
     }
 
-    private GenericColumn getOperatorFunction(PgOperator oper, List<IdentifierContext> ids) {
+    private GenericColumn getOperatorFunction(PgOperator oper, List<ParserRuleContext> ids) {
         StringBuilder signature = new StringBuilder();
         String left = oper.getLeftArg();
         String right = oper.getRightArg();

@@ -43,6 +43,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_queryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectOps;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IConstraint;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
@@ -163,7 +164,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
             }
 
             for (Schema_qualified_nameContext tableLock : after.schema_qualified_name()) {
-                addRelationDepcy(tableLock.identifier());
+                addRelationDepcy(ParserAbstract.getIdentifiers(tableLock));
             }
         }
     }
@@ -264,7 +265,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
             Schema_qualified_nameContext table = primary.schema_qualified_name();
             addNameReference(table, null);
             ret = new ArrayList<>();
-            qualAster(table.identifier(), ret);
+            qualAster(ParserAbstract.getIdentifiers(table), ret);
         } else if ((values = primary.values_stmt()) != null) {
             ret = new ArrayList<>();
             ValueExpr vex = new ValueExpr(this);

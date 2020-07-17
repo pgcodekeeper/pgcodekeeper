@@ -15,13 +15,13 @@ public class InsertStatement extends ParserAbstract {
 
     @Override
     public void parseObject() {
-        addObjReference(ctx.insert_table_name.identifier(), DbObjType.TABLE, ACTION_INSERT);
+        addObjReference(getIdentifiers(ctx.insert_table_name), DbObjType.TABLE, ACTION_INSERT);
     }
 
     @Override
     protected String getStmtAction() {
         return getStrForStmtAction(
                 new StringBuilder(ACTION_INSERT).append(' ').append("INTO").toString(),
-                DbObjType.TABLE, ctx.insert_table_name.identifier());
+                DbObjType.TABLE, getIdentifiers(ctx.insert_table_name));
     }
 }

@@ -32,7 +32,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Frame_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_callContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_constructContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identifier_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IndirectionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_varContext;
@@ -479,7 +478,7 @@ public class ValueExpr extends AbstractExpr {
         }
 
         String schemaName = null;
-        Identifier_nontypeContext functionCtx = funcNameCtx.identifier_nontype();
+        ParserRuleContext functionCtx = ParserAbstract.getIdentifierNonType(funcNameCtx);
         String functionName = functionCtx.getText();
 
         IdentifierContext id = funcNameCtx.identifier();

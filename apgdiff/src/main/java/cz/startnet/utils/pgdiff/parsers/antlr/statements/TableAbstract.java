@@ -3,6 +3,8 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 import java.util.Arrays;
 import java.util.List;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
@@ -92,7 +94,7 @@ public abstract class TableAbstract extends ParserAbstract {
             col.setNullValue(body.NOT() == null);
         } else if (body.REFERENCES() != null) {
             Schema_qualified_nameContext tblRef = body.schema_qualified_name();
-            List<IdentifierContext> ids = tblRef.identifier();
+            List<ParserRuleContext> ids = getIdentifiers(tblRef);
             String refSchemaName = QNameParser.getSchemaName(ids);
             if (refSchemaName == null) {
                 return;
@@ -168,7 +170,7 @@ public abstract class TableAbstract extends ParserAbstract {
             String name = table.getName() + '_' + col.getName() + "_seq";
             for (Sequence_bodyContext bodyCtx : identity.sequence_body()) {
                 if (bodyCtx.NAME() != null) {
-                    name = QNameParser.getFirstName(bodyCtx.name.identifier());
+                    name = QNameParser.getFirstName(getIdentifiers(bodyCtx.name));
                 }
             }
             PgSequence sequence = new PgSequence(name);
@@ -205,7 +207,7 @@ public abstract class TableAbstract extends ParserAbstract {
         Names_in_parensContext parentTable = columnsCtx.names_in_parens();
         if (parentTable != null) {
             for (Schema_qualified_nameContext nameInher : parentTable.names_references().schema_qualified_name()) {
-                addInherit(table, nameInher.identifier());
+                addInherit(table, getIdentifiers(nameInher));
             }
         }
     }
@@ -243,7 +245,7 @@ public abstract class TableAbstract extends ParserAbstract {
         addColumn(columnName, null, null, constraints, null, table);
     }
 
-    protected void addInherit(AbstractPgTable table, List<IdentifierContext> idsInh) {
+    protected void addInherit(AbstractPgTable table, List<ParserRuleContext> idsInh) {
         String inhSchemaName = getSchemaNameSafe(idsInh);
         String inhTableName = QNameParser.getFirstName(idsInh);
         table.addInherits(inhSchemaName, inhTableName);
@@ -264,7 +266,7 @@ public abstract class TableAbstract extends ParserAbstract {
         if (constrBody.REFERENCES() != null) {
             Schema_qualified_nameContext tblRef = constrBody.schema_qualified_name();
 
-            List<IdentifierContext> ids = tblRef.identifier();
+            List<ParserRuleContext> ids = getIdentifiers(tblRef);
             String refTableName = QNameParser.getFirstName(ids);
             String refSchemaName = QNameParser.getSchemaName(ids);
 
@@ -277,7 +279,7 @@ public abstract class TableAbstract extends ParserAbstract {
             Names_in_parensContext refs = constrBody.ref;
             if (refs != null) {
                 for (Schema_qualified_nameContext name : refs.names_references().schema_qualified_name()) {
-                    String colName = QNameParser.getFirstName(name.identifier());
+                    String colName = QNameParser.getFirstName(getIdentifiers(name));
                     constrBlank.addForeignColumn(colName);
                     constrBlank.addDep(new GenericColumn(refSchemaName, refTableName, colName, DbObjType.COLUMN));
                 }
@@ -290,7 +292,7 @@ public abstract class TableAbstract extends ParserAbstract {
             Names_in_parensContext cols = constrBody.col;
             if (cols != null) {
                 for (Schema_qualified_nameContext name : cols.names_references().schema_qualified_name()) {
-                    constrBlank.addColumn(QNameParser.getFirstName(name.identifier()));
+                    constrBlank.addColumn(QNameParser.getFirstName(getIdentifiers(name)));
                 }
             }
             Including_indexContext incl = constrBody.index_parameters().including_index();

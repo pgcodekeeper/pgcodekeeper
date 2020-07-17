@@ -3,6 +3,8 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_fts_configurationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_fts_statementContext;
@@ -24,7 +26,7 @@ public class AlterFtsStatement extends ParserAbstract {
 
     @Override
     public void parseObject() {
-        List<IdentifierContext> ids = ctx.name.identifier();
+        List<ParserRuleContext> ids = getIdentifiers(ctx.name);
 
         DbObjType tt;
         if (ctx.DICTIONARY() != null) {
@@ -51,7 +53,7 @@ public class AlterFtsStatement extends ParserAbstract {
             for (IdentifierContext type : afc.identifier_list().identifier()) {
                 List<String> dics = new ArrayList<>();
                 for (Schema_qualified_nameContext dictionary : afc.schema_qualified_name()) {
-                    List<IdentifierContext> dIds = dictionary.identifier();
+                    List<ParserRuleContext> dIds = getIdentifiers(dictionary);
                     dics.add(getFullCtxText(dictionary));
                     addDepSafe(config, dIds, DbObjType.FTS_DICTIONARY, true);
                 }
@@ -74,6 +76,6 @@ public class AlterFtsStatement extends ParserAbstract {
         } else {
             ftsType = DbObjType.FTS_CONFIGURATION;
         }
-        return getStrForStmtAction(ACTION_ALTER, ftsType, ctx.name.identifier());
+        return getStrForStmtAction(ACTION_ALTER, ftsType, getIdentifiers(ctx.name));
     }
 }

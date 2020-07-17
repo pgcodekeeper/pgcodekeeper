@@ -5,6 +5,7 @@ import java.text.MessageFormat;
 import java.util.List;
 
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrUtils;
@@ -47,8 +48,8 @@ public class CreateView extends ParserAbstract {
     @Override
     public void parseObject() {
         Create_view_statementContext ctx = context;
-        List<IdentifierContext> ids = ctx.name.identifier();
-        IdentifierContext name = QNameParser.getFirstNameCtx(ids);
+        List<ParserRuleContext> ids = getIdentifiers(ctx.name);
+        ParserRuleContext name = QNameParser.getFirstNameCtx(ids);
         PgView view = new PgView(name.getText());
         if (ctx.MATERIALIZED() != null) {
             view.setIsWithData(ctx.NO() == null);
@@ -101,6 +102,6 @@ public class CreateView extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_CREATE, DbObjType.VIEW, context.name.identifier());
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.VIEW, getIdentifiers(context.name));
     }
 }

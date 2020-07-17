@@ -5,9 +5,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.RuleAnalysisLauncher;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
@@ -27,7 +28,7 @@ public class CreateRewrite extends ParserAbstract {
 
     @Override
     public void parseObject() {
-        List<IdentifierContext> ids = ctx.table_name.identifier();
+        List<ParserRuleContext> ids = getIdentifiers(ctx.table_name);
         addObjReference(ids, DbObjType.TABLE, null);
 
         PgRule rule = new PgRule(ctx.name.getText());
@@ -38,7 +39,7 @@ public class CreateRewrite extends ParserAbstract {
 
         setConditionAndAddCommands(ctx, rule, db, fileName);
 
-        IdentifierContext parent = QNameParser.getFirstNameCtx(ids);
+        ParserRuleContext parent = QNameParser.getFirstNameCtx(ids);
         PgStatementContainer cont = getSafe(AbstractSchema::getStatementContainer,
                 getSchemaSafe(ids), parent);
         addSafe(cont, rule, Arrays.asList(QNameParser.getSchemaNameCtx(ids), parent, ctx.name));
@@ -58,7 +59,7 @@ public class CreateRewrite extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        List<IdentifierContext> ids = new ArrayList<>(ctx.table_name.identifier());
+        List<ParserRuleContext> ids = new ArrayList<>(getIdentifiers(ctx.table_name));
         ids.add(ctx.name);
         return getStrForStmtAction(ACTION_CREATE, DbObjType.RULE, ids);
     }

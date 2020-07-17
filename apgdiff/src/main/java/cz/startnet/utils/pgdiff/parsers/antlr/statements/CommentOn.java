@@ -12,7 +12,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_member_objectContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_on_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
@@ -55,7 +54,7 @@ public class CommentOn extends ParserAbstract {
             Operator_nameContext operCtx = obj.target_operator().name;
             ids = Arrays.asList(operCtx.schema_name, operCtx.operator);
         } else if (obj.name != null) {
-            ids = obj.name.identifier();
+            ids = getIdentifiers(obj.name);
         } else {
             ids = Arrays.asList(obj.identifier());
         }
@@ -112,7 +111,7 @@ public class CommentOn extends ParserAbstract {
 
         AbstractSchema schema = null;
         if (obj.table_name != null) {
-            schema = getSchemaSafe(obj.table_name.identifier());
+            schema = getSchemaSafe(getIdentifiers(obj.table_name));
         } else if (obj.EXTENSION() == null && obj.SCHEMA() == null && obj.DATABASE() == null) {
             schema = getSchemaSafe(ids);
         }
@@ -139,7 +138,7 @@ public class CommentOn extends ParserAbstract {
             type = DbObjType.EXTENSION;
             st = getSafe(PgDatabase::getExtension, db, nameCtx);
         } else if (obj.CONSTRAINT() != null) {
-            List<IdentifierContext> parentIds = obj.table_name.identifier();
+            List<ParserRuleContext> parentIds = getIdentifiers(obj.table_name);
             ParserRuleContext parentCtx = QNameParser.getFirstNameCtx(parentIds);
             type = DbObjType.CONSTRAINT;
             if (obj.DOMAIN() != null) {
@@ -183,9 +182,9 @@ public class CommentOn extends ParserAbstract {
             st = getSafe(AbstractSchema::getDomain, schema, nameCtx);
         } else if ((obj.TRIGGER() != null && obj.EVENT() == null)
                 || obj.POLICY() != null || obj.RULE() != null) {
-            List<IdentifierContext> parentIds = obj.table_name.identifier();
+            List<ParserRuleContext> parentIds = getIdentifiers(obj.table_name);
             addObjReference(parentIds, DbObjType.TABLE, null);
-            IdentifierContext tableCtx = QNameParser.getFirstNameCtx(parentIds);
+            ParserRuleContext tableCtx = QNameParser.getFirstNameCtx(parentIds);
             ids = Arrays.asList(QNameParser.getSchemaNameCtx(parentIds), tableCtx, nameCtx);
             PgStatementContainer c = getSafe(AbstractSchema::getStatementContainer, schema, tableCtx);
             if (obj.POLICY() != null) {

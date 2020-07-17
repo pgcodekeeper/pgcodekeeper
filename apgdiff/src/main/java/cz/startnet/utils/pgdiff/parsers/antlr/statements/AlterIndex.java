@@ -2,9 +2,10 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_index_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -32,13 +33,13 @@ public class AlterIndex extends ParserAbstract {
             return;
         }
 
-        List<IdentifierContext> ids = ctx.schema_qualified_name().identifier();
+        List<ParserRuleContext> ids = getIdentifiers(ctx.schema_qualified_name());
 
         Schema_qualified_nameContext inherit = ctx.index_def_action().index;
 
         if (inherit != null) {
             // in this case inherit is real index name
-            List<IdentifierContext> idsInh = inherit.identifier();
+            List<ParserRuleContext> idsInh = getIdentifiers(inherit);
 
             PgIndex index = (PgIndex) getSafe(AbstractSchema::getIndexByName,
                     getSchemaSafe(idsInh), QNameParser.getFirstNameCtx(idsInh));
@@ -58,6 +59,6 @@ public class AlterIndex extends ParserAbstract {
     protected String getStmtAction() {
         return alterIdxAllAction != null ? alterIdxAllAction
                 : getStrForStmtAction(ACTION_ALTER, DbObjType.INDEX,
-                        ctx.schema_qualified_name().identifier());
+                        getIdentifiers(ctx.schema_qualified_name()));
     }
 }

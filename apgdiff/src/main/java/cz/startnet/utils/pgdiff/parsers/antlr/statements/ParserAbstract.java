@@ -33,6 +33,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identifier_nontypeContex
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Including_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Predefined_typeContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
@@ -263,6 +264,16 @@ public abstract class ParserAbstract {
         String s = dollarText.stream().map(TerminalNode::getText).collect(Collectors.joining());
 
         return new Pair<>(s, dollarText.get(0).getSymbol());
+    }
+
+    public static List<ParserRuleContext> getIdentifiers(Schema_qualified_nameContext qNameCtx) {
+        return qNameCtx.getRuleContexts(ParserRuleContext.class);
+    }
+
+    public static ParserRuleContext getIdentifierNonType(Schema_qualified_name_nontypeContext qNameNonTypeCtx) {
+        List<ParserRuleContext> qNameNonTypeChildren = qNameNonTypeCtx.getRuleContexts(ParserRuleContext.class);
+        return qNameNonTypeChildren.size() == 1 ? qNameNonTypeChildren.get(0)
+                : qNameNonTypeChildren.get(1);
     }
 
     protected PgObjLocation addObjReference(List<? extends ParserRuleContext> ids,
@@ -512,7 +523,7 @@ public abstract class ParserAbstract {
     protected void addPgTypeDepcy(Data_typeContext ctx, PgStatement st) {
         Schema_qualified_name_nontypeContext qname = ctx.predefined_type().schema_qualified_name_nontype();
         if (qname != null && qname.identifier() != null) {
-            addDepSafe(st, Arrays.asList(qname.identifier(), qname.identifier_nontype()),
+            addDepSafe(st, Arrays.asList(qname.identifier(), getIdentifierNonType(qname)),
                     DbObjType.TYPE, true);
         }
     }

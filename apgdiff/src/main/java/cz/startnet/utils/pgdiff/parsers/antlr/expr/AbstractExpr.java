@@ -20,7 +20,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_args_parserContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identifier_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_identifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
@@ -117,13 +116,13 @@ public abstract class AbstractExpr {
         return parent == null ? null : parent.findColumnInComplex(name);
     }
 
-    protected GenericColumn addRelationDepcy(List<IdentifierContext> ids) {
+    protected GenericColumn addRelationDepcy(List<ParserRuleContext> ids) {
         return addDepcy(ids, DbObjType.TABLE, null);
     }
 
-    protected GenericColumn addDepcy(List<IdentifierContext> ids, DbObjType type, Token start) {
-        IdentifierContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
-        IdentifierContext nameCtx = QNameParser.getFirstNameCtx(ids);
+    protected GenericColumn addDepcy(List<ParserRuleContext> ids, DbObjType type, Token start) {
+        ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
+        ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
         String name = nameCtx.getText();
 
         if (schemaCtx == null) {
@@ -148,7 +147,7 @@ public abstract class AbstractExpr {
 
     protected GenericColumn addTypeDepcy(Schema_qualified_name_nontypeContext typeName) {
         IdentifierContext schemaCtx = typeName.identifier();
-        Identifier_nontypeContext nameCtx = typeName.identifier_nontype();
+        ParserRuleContext nameCtx = ParserAbstract.getIdentifierNonType(typeName);
         String name = nameCtx.getText();
 
         if (schemaCtx == null) {
@@ -347,7 +346,7 @@ public abstract class AbstractExpr {
 
     protected void addColumnsDepcies(Schema_qualified_nameContext table,
             List<Indirection_identifierContext> columns) {
-        List<IdentifierContext> ids = table.identifier();
+        List<ParserRuleContext> ids = ParserAbstract.getIdentifiers(table);
         String schemaName = QNameParser.getSchemaName(ids);
         String tableName = QNameParser.getFirstName(ids);
         for (Indirection_identifierContext col : columns) {
@@ -365,8 +364,8 @@ public abstract class AbstractExpr {
      * Use only in contexts where function can be pinpointed only by its name.
      * Such as ::regproc casts.
      */
-    protected void addFunctionDepcyNotOverloaded(List<IdentifierContext> ids, Token start) {
-        IdentifierContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
+    protected void addFunctionDepcyNotOverloaded(List<ParserRuleContext> ids, Token start) {
+        ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
         if (schemaCtx == null) {
             return;
         }
@@ -376,7 +375,7 @@ public abstract class AbstractExpr {
             return;
         }
 
-        IdentifierContext nameCtx = QNameParser.getFirstNameCtx(ids);
+        ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
         String functionName = nameCtx.getText();
 
         addDepcy(new GenericColumn(schemaName, DbObjType.SCHEMA), schemaCtx, start);
@@ -387,14 +386,14 @@ public abstract class AbstractExpr {
         SQLParser p = AntlrParser.makeBasicParser(SQLParser.class, signature,
                 "function signature", null, start);
         Function_args_parserContext sig = p.function_args_parser();
-        List<IdentifierContext> ids = sig.schema_qualified_name().identifier();
+        List<ParserRuleContext> ids = ParserAbstract.getIdentifiers(sig.schema_qualified_name());
 
-        IdentifierContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
+        ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
         if (schemaCtx != null) {
             String schemaName = schemaCtx.getText();
             addDepcy(new GenericColumn(schemaName, DbObjType.SCHEMA), schemaCtx, start);
 
-            IdentifierContext nameCtx = QNameParser.getFirstNameCtx(ids);
+            ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
             String name = PgDiffUtils.getQuotedName(nameCtx.getText()) +
                     ParserAbstract.getFullCtxText(sig.function_args());
             addDepcy(new GenericColumn(schemaName, name, DbObjType.FUNCTION),
@@ -402,8 +401,8 @@ public abstract class AbstractExpr {
         }
     }
 
-    protected void addSchemaDepcy(List<IdentifierContext> ids, Token start) {
-        IdentifierContext ctx = QNameParser.getFirstNameCtx(ids);
+    protected void addSchemaDepcy(List<ParserRuleContext> ids, Token start) {
+        ParserRuleContext ctx = QNameParser.getFirstNameCtx(ids);
         addDepcy(new GenericColumn(ctx.getText(), DbObjType.SCHEMA), ctx, start);
     }
 
