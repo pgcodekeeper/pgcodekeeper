@@ -99,6 +99,9 @@ public class PgDiffTest {
                     {"add_table_of_type"},
                     // Tests scenario where in TYPED TABLE new options is added.
                     {"add_table_of_type_options"},
+                    // Tests scenario where TABLE and FUNCTION with reserved
+                    // keyword without quotes in names is added.
+                    {"add_tbl_and_func_with_keyword_name_no_quotes"},
                     // Tests scenario where options of TYPED TABLE is modified.
                     {"modify_table_of_type_options"},
                     // Tests scenario where FOREIGN TABLE is modified.
@@ -107,6 +110,9 @@ public class PgDiffTest {
                     {"modify_table_of_type_column"},
                     // Tests scenario where TYPED TABLE is dropped.
                     {"drop_table_of_type"},
+                    // Tests scenario where TABLE and FUNCTION with reserved
+                    // keyword without quotes in names is dropped.
+                    {"drop_tbl_and_func_with_keyword_name_no_quotes"},
                     // Tests scenario where new TABLE with generated column is added.
                     {"add_table_with_generated_col"},
                     // Tests scenario where TABLE CONSTRAINT is added.
