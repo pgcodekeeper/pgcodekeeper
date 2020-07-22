@@ -118,6 +118,10 @@ public class CliArgs extends PgDiffArguments {
             usage="do not stop on parse errors")
     private boolean ignoreErrors;
 
+    @Option(name="--ignore-column-order",
+            usage="ignore differences in table column order")
+    private boolean ignoreColumnOrder;
+
     @Option(name="-P", aliases="--no-privileges",
             usage="ignore privileges and owners of database objects")
     private boolean ignorePrivileges;
@@ -420,6 +424,16 @@ public class CliArgs extends PgDiffArguments {
     @Override
     public void setIgnoreErrors(boolean ignoreErrors) {
         this.ignoreErrors = ignoreErrors;
+    }
+
+    @Override
+    public boolean isIgnoreColumnOrder() {
+        return ignoreColumnOrder;
+    }
+
+    @Override
+    public void setIgnoreColumnOrder(boolean ignoreColumnOrder) {
+        this.ignoreColumnOrder = ignoreColumnOrder;
     }
 
     @Override

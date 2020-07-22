@@ -37,6 +37,10 @@ implements IWorkbenchPreferencePage  {
                 Messages.dbUpdatePrefPage_ignore_privileges,
                 getFieldEditorParent()));
 
+        addField(new BooleanFieldEditor(PREF.IGNORE_COLUMN_ORDER,
+                Messages.GeneralPrefPage_ignore_column_order,
+                getFieldEditorParent()));
+
         BooleanFieldEditor bodyDeps = new BooleanFieldEditor(PREF.ENABLE_BODY_DEPENDENCIES,
                 Messages.GeneralPrefPage_enable_body_dependencies,
                 getFieldEditorParent());
