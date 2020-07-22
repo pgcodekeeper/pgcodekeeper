@@ -5,12 +5,11 @@
     <parent>
         <groupId>ru.taximaxim.codeKeeper</groupId>
         <artifactId>ru.taximaxim.codeKeeper</artifactId>
-        <version>5.10.0-SNAPSHOT</version>
+        <version>5.10.4-SNAPSHOT</version>
         <relativePath>../ru.taximaxim.codekeeper.mainapp/ru.taximaxim.codeKeeper/</relativePath>
     </parent>
 
     <groupId>ru.taximaxim.codeKeeper</groupId>
     <artifactId>ru.taximaxim.codekeeper.cli</artifactId>
-    <version>5.10.4-SNAPSHOT</version>
     <packaging>eclipse-plugin</packaging>
 </project>
