@@ -91,8 +91,8 @@ implements TSqlContextProcessor {
     }
 
     private void endBatch(Go_statementContext goCtx) {
-        db.addReference(filename, new PgObjLocation(ApgdiffConsts.GO,
-                goCtx, ApgdiffConsts.GO));
+        safeParseStatement(() -> db.addReference(filename,
+                new PgObjLocation(ApgdiffConsts.GO, goCtx, ApgdiffConsts.GO)), goCtx);
     }
 
     public void clause(St_clauseContext st) {
@@ -150,7 +150,7 @@ implements TSqlContextProcessor {
         Batch_statement_bodyContext body = ctx.batch_statement_body();
 
         if (ctx.ALTER() != null) {
-            safeParseStatement(new AlterMsBatch(body, db), body);
+            safeParseStatement(new AlterMsBatch(body, db, stream), body);
             return;
         }
 

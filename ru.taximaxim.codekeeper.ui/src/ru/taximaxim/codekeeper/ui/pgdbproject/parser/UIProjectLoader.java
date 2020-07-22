@@ -28,6 +28,7 @@ import org.eclipse.ui.ide.ResourceUtil;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.DatabaseLoader;
+import cz.startnet.utils.pgdiff.loader.FullAnalyze;
 import cz.startnet.utils.pgdiff.loader.LibraryLoader;
 import cz.startnet.utils.pgdiff.loader.ProjectLoader;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
@@ -55,8 +56,11 @@ public class UIProjectLoader extends ProjectLoader {
 
     @Override
     public PgDatabase loadAndAnalyze() throws IOException, InterruptedException {
-        PgDatabase d = super.loadAndAnalyze();
-        markErrors(errors);
+        PgDatabase d = load();
+        List<Object> analyzeErrors = new ArrayList<>();
+        FullAnalyze.fullAnalyze(d, analyzeErrors);
+        markErrors(analyzeErrors);
+        errors.addAll(analyzeErrors);
         return d;
     }
 

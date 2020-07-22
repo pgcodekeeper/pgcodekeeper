@@ -87,6 +87,13 @@ $$$$;</template>
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createrule.protected"
     >CREATE RULE ${objectName} AS
     ON UPDATE TO ${schemaName}.${parentName} DO NOTHING;</template>
+    
+<template 
+    name="create_policy"
+    description="%create.policy.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createpolicy.protected"
+    >CREATE POLICY ${objectName} ON ${schemaName}.${parentName};</template>
 
 <template 
     name="create_table"

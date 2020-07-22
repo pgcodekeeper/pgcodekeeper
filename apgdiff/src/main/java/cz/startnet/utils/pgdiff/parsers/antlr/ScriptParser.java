@@ -3,8 +3,8 @@ package cz.startnet.utils.pgdiff.parsers.antlr;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -36,14 +36,8 @@ public class ScriptParser {
                 name, args, new NullProgressMonitor(), 0);
         loader.setMode(ParserListenerMode.SCRIPT);
         // script mode collects only references
-        List<PgObjLocation> batches = loader.load().getObjReferences().get(name);
+        batches = new ArrayList<>(loader.load().getObjReferences(name));
 
-        // empty script won't add any lists to the definition map
-        if (batches == null) {
-            batches = Collections.emptyList();
-        }
-
-        this.batches = batches;
         dangerStatements = batches.stream()
                 .filter(PgObjLocation::isDanger)
                 .map(PgObjLocation::getDanger)

@@ -10,11 +10,12 @@ import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public abstract class PgStatementContainer extends PgStatementWithSearchPath
-implements IStatementContainer {
+implements IRelation {
 
     protected final Map<String, AbstractIndex> indexes = new LinkedHashMap<>();
     protected final Map<String, AbstractTrigger> triggers = new LinkedHashMap<>();
     protected final Map<String, PgRule> rules = new LinkedHashMap<>();
+    protected final Map<String, PgPolicy> policies = new LinkedHashMap<>();
 
     public PgStatementContainer(String name) {
         super(name);
@@ -25,6 +26,7 @@ implements IStatementContainer {
         l.add(indexes.values());
         l.add(triggers.values());
         l.add(rules.values());
+        l.add(policies.values());
     }
 
     @Override
@@ -38,6 +40,8 @@ implements IStatementContainer {
             return getRule(name);
         case CONSTRAINT:
             return getConstraint(name);
+        case POLICY:
+            return getPolicy(name);
         default:
             return null;
         }
@@ -58,6 +62,9 @@ implements IStatementContainer {
             break;
         case RULE:
             addRule((PgRule) st);
+            break;
+        case POLICY:
+            addPolicy((PgPolicy) st);
             break;
         default:
             throw new IllegalArgumentException("Unsupported child type: " + type);
@@ -106,7 +113,17 @@ implements IStatementContainer {
         return rules.get(name);
     }
 
-    @Override
+    /**
+     * Finds policy according to specified policy {@code name}.
+     *
+     * @param name name of the policy to be searched
+     *
+     * @return found policy or null if no such policy has been found
+     */
+    public PgPolicy getPolicy(String name) {
+        return policies.get(name);
+    }
+
     public abstract Collection<AbstractConstraint> getConstraints();
 
     /**
@@ -136,6 +153,15 @@ implements IStatementContainer {
         return Collections.unmodifiableCollection(rules.values());
     }
 
+    /**
+     * Getter for {@link #policies}. The list cannot be modified.
+     *
+     * @return {@link #policies}
+     */
+    public Collection<PgPolicy> getPolicies() {
+        return Collections.unmodifiableCollection(policies.values());
+    }
+
     public abstract void addConstraint(final AbstractConstraint constraint);
 
     public void addIndex(final AbstractIndex index) {
@@ -150,13 +176,18 @@ implements IStatementContainer {
         addUnique(rules, rule, this);
     }
 
+    public void addPolicy(PgPolicy policy) {
+        addUnique(policies, policy, this);
+    }
+
     @Override
     public boolean compareChildren(PgStatement obj) {
         if (obj instanceof PgStatementContainer) {
             PgStatementContainer table = (PgStatementContainer) obj;
             return indexes.equals(table.indexes)
                     && triggers.equals(table.triggers)
-                    && rules.equals(table.rules);
+                    && rules.equals(table.rules)
+                    && policies.equals(table.policies);
         }
         return false;
     }
@@ -166,6 +197,7 @@ implements IStatementContainer {
         hasher.putUnordered(indexes);
         hasher.putUnordered(triggers);
         hasher.putUnordered(rules);
+        hasher.putUnordered(policies);
     }
 
     @Override

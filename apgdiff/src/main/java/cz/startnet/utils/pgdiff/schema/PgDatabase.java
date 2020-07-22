@@ -10,9 +10,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
@@ -41,7 +43,7 @@ public class PgDatabase extends PgStatement implements IDatabase {
     private final Map<String, MsUser> users = new LinkedHashMap<>();
 
     // Содержит ссылки на объекты
-    private final Map<String, List<PgObjLocation>> objReferences = new HashMap<>();
+    private final Map<String, Set<PgObjLocation>> objReferences = new HashMap<>();
     // Contains analysis launchers for all statements
     // (used for launch analyze and getting dependencies).
     private final ArrayList<AbstractAnalysisLauncher> analysisLaunchers = new ArrayList<>();
@@ -82,12 +84,16 @@ public class PgDatabase extends PgStatement implements IDatabase {
         return arguments;
     }
 
-    public Map<String, List<PgObjLocation>> getObjReferences() {
+    public Map<String, Set<PgObjLocation>> getObjReferences() {
         return objReferences;
     }
 
+    public Set<PgObjLocation> getObjReferences(String name) {
+        return objReferences.getOrDefault(name, Collections.emptySet());
+    }
+
     public void addReference(String fileName, PgObjLocation loc) {
-        objReferences.computeIfAbsent(fileName, k -> new ArrayList<>()).add(loc);
+        objReferences.computeIfAbsent(fileName, k -> new LinkedHashSet<>()).add(loc);
     }
 
     public List<AbstractAnalysisLauncher> getAnalysisLaunchers() {
@@ -388,8 +394,7 @@ public class PgDatabase extends PgStatement implements IDatabase {
 
     @Override
     public boolean compare(PgStatement obj) {
-        // for now all instances of PgDatabase considered to be shallow equal
-        return obj instanceof PgDatabase;
+        return obj instanceof PgDatabase && super.compare(obj);
     }
 
     @Override
@@ -469,12 +474,13 @@ public class PgDatabase extends PgStatement implements IDatabase {
         case INDEX:
         case TRIGGER:
         case RULE:
-            IStatementContainer cont = getSchema(parent.getParent().getName())
+        case POLICY:
+            PgStatementContainer cont = getSchema(parent.getParent().getName())
             .getStatementContainer(parentName);
 
-            orig = ((PgStatement) cont).getChild(name, type);
+            orig = cont.getChild(name, type);
             if (orig == null) {
-                ((PgStatement) cont).addChild(st.shallowCopy());
+                cont.addChild(st.shallowCopy());
             }
             break;
         default :

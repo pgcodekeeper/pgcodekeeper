@@ -12,9 +12,13 @@ import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.ResourceBundle;
+import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -37,13 +41,19 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.ISynchronizable;
+import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.DefaultCharacterPairMatcher;
 import org.eclipse.jface.text.source.IAnnotationModel;
+import org.eclipse.jface.text.source.IAnnotationModelExtension;
 import org.eclipse.jface.text.source.ICharacterPairMatcher;
 import org.eclipse.jface.viewers.DecorationOverlayIcon;
 import org.eclipse.jface.viewers.IDecoration;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -70,6 +80,7 @@ import org.eclipse.ui.progress.IProgressConstants2;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
 import org.eclipse.ui.texteditor.ChainedPreferenceStore;
 import org.eclipse.ui.texteditor.ContentAssistAction;
+import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
@@ -131,7 +142,11 @@ implements IResourceChangeListener, ITextErrorReporter {
     private boolean isMsSql;
     private boolean isLargeFile;
 
+    private Annotation[] occurrenceAnnotations = null;
+
     private ScriptThreadJobWrapper scriptThreadJobWrapper;
+
+    private EditorSelectionChangedListener changedListener;
 
     private final Listener parserListener = e -> {
         if (parentComposite == null) {
@@ -218,19 +233,26 @@ implements IResourceChangeListener, ITextErrorReporter {
         parentComposite = parent;
         super.createPartControl(parent);
         setLineBackground();
+
+        changedListener = new EditorSelectionChangedListener();
+        changedListener.install(getSelectionProvider());
+
         getSite().getService(IContextService.class).activateContext(CONTEXT.EDITOR);
     }
 
     public void setLineBackground() {
         // TODO who deletes stale annotations after editor refresh?
-        List<PgObjLocation> refs = getParser().getObjsForEditor(getEditorInput());
         IAnnotationModel model = getSourceViewer().getAnnotationModel();
-        for (PgObjLocation loc : refs) {
+        for (PgObjLocation loc : getReferences()) {
             if (loc.isDanger()) {
                 model.addAnnotation(new Annotation(MARKER.DANGER_ANNOTATION, false, loc.getWarningText()),
                         new Position(loc.getOffset(), loc.getObjLength()));
             }
         }
+    }
+
+    private Set<PgObjLocation> getReferences() {
+        return getParser().getObjsForEditor(getEditorInput());
     }
 
     @Override
@@ -253,6 +275,25 @@ implements IResourceChangeListener, ITextErrorReporter {
         ContentAssistAction action = new ContentAssistAction(bundle, "contentAssist.", this); //$NON-NLS-1$
         action.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
         setAction(CONTENT_ASSIST, action);
+    }
+
+    public PgObjLocation getCurrentReference() {
+        ISelectionProvider provider = getSelectionProvider();
+        if (provider == null) {
+            return null;
+        }
+
+        ISelection selection = provider.getSelection();
+        if (selection instanceof ITextSelection) {
+            ITextSelection textSelection = (ITextSelection) selection;
+            int offset = textSelection.getOffset();
+
+            return getReferences().stream()
+                    .filter(loc -> loc.getOffset() <= offset && offset <= loc.getOffset() + loc.getObjLength())
+                    .findAny().orElse(null);
+        }
+
+        return null;
     }
 
     public void changeLanguage(String language) {
@@ -413,8 +454,7 @@ implements IResourceChangeListener, ITextErrorReporter {
             throws InterruptedException, IOException, CoreException {
         checkFileSize();
         if (isLargeFile()) {
-            parser.getObjDefinitions().clear();
-            parser.getObjReferences().clear();
+            parser.clear();
             parser.notifyListeners();
             return;
         }
@@ -460,7 +500,50 @@ implements IResourceChangeListener, ITextErrorReporter {
         if (errorTitleImage != null) {
             errorTitleImage.dispose();
         }
+
+        if (changedListener != null)  {
+            changedListener.uninstall(getSelectionProvider());
+            changedListener = null;
+        }
+
+        removeOccurrenceAnnotations();
+
         super.dispose();
+    }
+
+    private void removeOccurrenceAnnotations() {
+        IDocumentProvider provider = getDocumentProvider();
+        if (provider == null) {
+            return;
+        }
+
+        IAnnotationModel model = provider.getAnnotationModel(getEditorInput());
+        if (model == null || occurrenceAnnotations == null) {
+            return;
+        }
+
+        synchronized (getLock(model)) {
+            if (model instanceof IAnnotationModelExtension) {
+                ((IAnnotationModelExtension) model).replaceAnnotations(occurrenceAnnotations, null);
+            } else {
+                for (Annotation annotation : occurrenceAnnotations) {
+                    model.removeAnnotation(annotation);
+                }
+            }
+
+            occurrenceAnnotations = null;
+        }
+    }
+
+    private Object getLock(IAnnotationModel model) {
+        if (model instanceof ISynchronizable) {
+            Object lock = ((ISynchronizable) model).getLockObject();
+            if (lock != null) {
+                return lock;
+            }
+        }
+
+        return model;
     }
 
     private void afterScriptFinished() {
@@ -744,6 +827,50 @@ implements IResourceChangeListener, ITextErrorReporter {
             } finally {
                 reporter.terminate();
                 afterScriptFinished();
+            }
+        }
+    }
+
+    private class EditorSelectionChangedListener extends AbstractSelectionChangedListener {
+
+        @Override
+        public void selectionChanged(SelectionChangedEvent event) {
+            // remove occurrences in modified file
+            if (isDirty()) {
+                removeOccurrenceAnnotations();
+                return;
+            }
+
+            PgObjLocation selected = getCurrentReference();
+            IDocumentProvider provider = getDocumentProvider();
+
+            if (selected != null && provider != null) {
+                Map<Annotation, Position> annotations = new HashMap<>();
+
+                for (PgObjLocation loc : getReferences()) {
+                    if (loc.compare(selected)) {
+                        annotations.put(new Annotation(MARKER.OBJECT_OCCURRENCE, false, loc.toString()),
+                                new Position(loc.getOffset(), loc.getObjLength()));
+                    }
+                }
+
+                IAnnotationModel model = provider.getAnnotationModel(getEditorInput());
+                if (model == null) {
+                    return;
+                }
+
+                synchronized (getLock(model)) {
+                    if (model instanceof IAnnotationModelExtension) {
+                        ((IAnnotationModelExtension) model).replaceAnnotations(occurrenceAnnotations, annotations);
+                    } else {
+                        removeOccurrenceAnnotations();
+                        for (Entry<Annotation, Position> entry : annotations.entrySet()) {
+                            model.addAnnotation(entry.getKey(), entry.getValue());
+                        }
+                    }
+
+                    occurrenceAnnotations = annotations.keySet().toArray(new Annotation[annotations.size()]);
+                }
             }
         }
     }

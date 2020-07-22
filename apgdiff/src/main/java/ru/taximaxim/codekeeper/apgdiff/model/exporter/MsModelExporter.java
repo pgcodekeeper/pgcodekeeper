@@ -89,6 +89,7 @@ public class MsModelExporter extends AbstractModelExporter {
             }
 
             dumpObjects(schema.getSequences(), outDir.resolve(MS_WORK_DIR_NAMES.SEQUENCES.getDirName()));
+            dumpObjects(schema.getTypes(), outDir.resolve(MS_WORK_DIR_NAMES.TYPES.getDirName()));
             dumpObjects(schema.getTables(), outDir.resolve(MS_WORK_DIR_NAMES.TABLES.getDirName()));
             dumpObjects(schema.getViews(), outDir.resolve(MS_WORK_DIR_NAMES.VIEWS.getDirName()));
 
@@ -140,7 +141,6 @@ public class MsModelExporter extends AbstractModelExporter {
         case CONSTRAINT:
         case INDEX:
         case TRIGGER:
-        case RULE:
             TreeElement elParent = el.getParent();
             if (elParent.getType() == DbObjType.TABLE){
                 processTableAndContents(elParent, elParent.getPgStatement(oldDb), el);
@@ -178,7 +178,6 @@ public class MsModelExporter extends AbstractModelExporter {
         case CONSTRAINT:
         case INDEX:
         case TRIGGER:
-        case RULE:
             if (elParent.getType() == DbObjType.TABLE) {
                 processTableAndContents(elParent, elParent.getPgStatement(newDb), el);
             } else {
@@ -218,7 +217,6 @@ public class MsModelExporter extends AbstractModelExporter {
         case CONSTRAINT:
         case INDEX:
         case TRIGGER:
-        case RULE:
             if (elParent.getType() == DbObjType.TABLE) {
                 processTableAndContents(elParent, elParent.getPgStatement(newDb), el);
             } else {

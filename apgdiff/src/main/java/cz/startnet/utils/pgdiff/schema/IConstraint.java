@@ -6,4 +6,5 @@ public interface IConstraint extends ISearchPath {
     boolean isUnique();
     boolean isPrimaryKey();
     Set<String> getColumns();
+    String getTableName();
 }

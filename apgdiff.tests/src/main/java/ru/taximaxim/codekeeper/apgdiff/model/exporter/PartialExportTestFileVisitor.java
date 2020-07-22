@@ -29,7 +29,6 @@ public class PartialExportTestFileVisitor extends SimpleFileVisitor<Path>{
     public PartialExportTestFileVisitor(Path pathToBeCompared, Path pathToCompareTo,
             Map<String, String> modifiedFiles, List<String> newFiles, List<String> deletedFiles,
             boolean isInSource) {
-        super();
         this.pathToBeCompared = pathToBeCompared;
         this.pathToCompareTo = pathToCompareTo;
 
@@ -46,7 +45,7 @@ public class PartialExportTestFileVisitor extends SimpleFileVisitor<Path>{
 
     @Override
     public FileVisitResult visitFile(Path file1, BasicFileAttributes attrs) throws IOException{
-        String relativeFilePath = pathToBeCompared.relativize(file1).toString();
+        String relativeFilePath = pathToBeCompared.relativize(file1).toString().replace('\\', '/');
         File file2 = new File(pathToCompareTo.toFile(), relativeFilePath);
 
         if (!file2.exists() && isInSource){

@@ -20,6 +20,7 @@ import cz.startnet.utils.pgdiff.loader.jdbc.FunctionsReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.IndicesReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.JdbcLoaderBase;
 import cz.startnet.utils.pgdiff.loader.jdbc.OperatorsReader;
+import cz.startnet.utils.pgdiff.loader.jdbc.PoliciesReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.RulesReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.SchemasReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.SequencesReader;
@@ -68,13 +69,15 @@ public class JdbcLoader extends JdbcLoaderBase {
 
             // NOTE: order of readers has been changed to move the heaviest ANTLR tasks to the beginning
             // to give them a chance to finish while JDBC processes other non-ANTLR stuff
+            new FunctionsReader(this).read();
             new ViewsReader(this).read();
             new TablesReader(this).read();
             new RulesReader(this).read();
+            if (SupportedVersion.VERSION_9_5.isLE(version)) {
+                new PoliciesReader(this).read();
+            }
             new TriggersReader(this).read();
             new IndicesReader(this).read();
-            // Reads FUNCTIONs, PROCEDUREs and AGGREGATEs from JDBC.
-            new FunctionsReader(this).read();
             // non-ANTLR tasks
             new ConstraintsReader(this).read();
             new TypesReader(this).read();
