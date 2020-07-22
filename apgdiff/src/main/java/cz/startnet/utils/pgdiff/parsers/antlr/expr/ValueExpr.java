@@ -478,10 +478,10 @@ public class ValueExpr extends AbstractExpr {
         }
 
         String schemaName = null;
-        ParserRuleContext functionCtx = ParserAbstract.getIdentifierNonType(funcNameCtx);
-        String functionName = functionCtx.getText();
+        List<ParserRuleContext> ids = ParserAbstract.getIdentifiers(funcNameCtx);
+        String functionName = QNameParser.getFirstName(ids);
 
-        IdentifierContext id = funcNameCtx.identifier();
+        ParserRuleContext id = QNameParser.getSchemaNameCtx(ids);
         if (id != null) {
             schemaName = id.getText();
             addDepcy(new GenericColumn(schemaName, DbObjType.SCHEMA), id);
@@ -529,7 +529,7 @@ public class ValueExpr extends AbstractExpr {
             IFunction resultFunction = resolveCall(functionName, argsType, functions);
 
             if (resultFunction != null) {
-                addFunctionDepcy(resultFunction, functionCtx);
+                addFunctionDepcy(resultFunction, QNameParser.getFirstNameCtx(ids));
                 return new ModPair<>(functionName, getFunctionReturns(resultFunction));
             }
             return new ModPair<>(functionName, TypesSetManually.FUNCTION_COLUMN);

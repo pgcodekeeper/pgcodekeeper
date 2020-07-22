@@ -35,7 +35,6 @@ public class CreateTrigger extends ParserAbstract {
     @Override
     public void parseObject() {
         List<ParserRuleContext> ids = getIdentifiers(ctx.table_name);
-        String schemaName = getSchemaNameSafe(ids);
         addObjReference(ids, DbObjType.TABLE, null);
 
         PgTrigger trigger = new PgTrigger(ctx.name.getText());
@@ -75,7 +74,7 @@ public class CreateTrigger extends ParserAbstract {
 
                 StringBuilder sb = new StringBuilder();
                 if (refSchemaName == null) {
-                    refSchemaName = schemaName;
+                    refSchemaName = getSchemaNameSafe(ids);
                 }
 
                 if (refSchemaName != null) {
@@ -99,27 +98,27 @@ public class CreateTrigger extends ParserAbstract {
 
         Schema_qualified_name_nontypeContext funcNameCtx = ctx.func_name
                 .schema_qualified_name_nontype();
-        IdentifierContext sch = funcNameCtx.schema;
-        if (sch != null) {
+        if (funcNameCtx.schema != null) {
             // TODO add empty signature to function name
             // when function signatures in refs and defs will be supported
-            addDepSafe(trigger, Arrays.asList(sch, getIdentifierNonType(funcNameCtx)),
-                    DbObjType.FUNCTION, true);
+            addDepSafe(trigger, getIdentifiers(funcNameCtx), DbObjType.FUNCTION, true);
         }
+
+        ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
+        ParserRuleContext parentCtx = QNameParser.getFirstNameCtx(ids);
 
         for (Identifier_listContext column : ctx.identifier_list()) {
             for (IdentifierContext nameCol : column.identifier()) {
                 trigger.addUpdateColumn(nameCol.getText());
-                addDepSafe(trigger, Arrays.asList(sch, QNameParser.getFirstNameCtx(ids), nameCol),
+                addDepSafe(trigger, Arrays.asList(schemaCtx, parentCtx, nameCol),
                         DbObjType.COLUMN, true);
             }
         }
         parseWhen(ctx.when_trigger(), trigger, db, fileName);
 
-        ParserRuleContext parent = QNameParser.getFirstNameCtx(ids);
         PgStatementContainer cont = getSafe(AbstractSchema::getStatementContainer,
-                getSchemaSafe(ids), parent);
-        addSafe(cont, trigger, Arrays.asList(QNameParser.getSchemaNameCtx(ids), parent, ctx.name));
+                getSchemaSafe(ids), parentCtx);
+        addSafe(cont, trigger, Arrays.asList(schemaCtx, parentCtx, ctx.name));
     }
 
     public static void parseWhen(When_triggerContext whenCtx, PgTrigger trigger,

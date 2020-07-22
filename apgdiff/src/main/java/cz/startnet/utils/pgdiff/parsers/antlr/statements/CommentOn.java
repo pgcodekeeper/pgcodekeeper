@@ -12,7 +12,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_member_objectContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_on_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
@@ -49,10 +48,9 @@ public class CommentOn extends ParserAbstract {
             return;
         }
 
-        List<? extends ParserRuleContext> ids = null;
+        List<ParserRuleContext> ids = null;
         if (obj.target_operator() != null) {
-            Operator_nameContext operCtx = obj.target_operator().name;
-            ids = Arrays.asList(operCtx.schema_name, operCtx.operator);
+            ids = getIdentifiers(obj.target_operator().name);
         } else if (obj.name != null) {
             ids = getIdentifiers(obj.name);
         } else {

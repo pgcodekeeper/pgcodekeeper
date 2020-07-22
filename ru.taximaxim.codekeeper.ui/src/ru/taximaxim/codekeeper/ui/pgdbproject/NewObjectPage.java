@@ -9,7 +9,6 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
 
-import org.antlr.v4.runtime.ParserRuleContext;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -339,7 +338,7 @@ public final class NewObjectPage extends WizardPage {
             setDescription(Messages.PgObject_empty_name);
             return false;
         } else {
-            QNameParser<ParserRuleContext> parser = QNameParser.parsePg(fullName);
+            QNameParser<?> parser = QNameParser.parsePg(fullName);
             if (parser.hasErrors()) {
                 err = Messages.NewObjectWizard_invalid_input_format + expectedFormat;
             } else {

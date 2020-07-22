@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -8,11 +7,9 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.All_op_refContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.All_simple_opContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_operator_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.OperatorAnalysisLaincher;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -31,11 +28,8 @@ public class CreateOperator extends ParserAbstract {
 
     @Override
     public void parseObject() {
-        Operator_nameContext operNameCtx = ctx.name;
-        IdentifierContext schemaCtx = operNameCtx.schema_name;
-        All_simple_opContext operName = operNameCtx.operator;
-        List<ParserRuleContext> ids = Arrays.asList(schemaCtx, operName);
-        PgOperator oper = new PgOperator(operName.getText());
+        List<ParserRuleContext> ids = getIdentifiers(ctx.name);
+        PgOperator oper = new PgOperator(QNameParser.getFirstName(ids));
         for (Operator_optionContext option : ctx.operator_option()) {
             if (option.PROCEDURE() != null || option.FUNCTION() != null) {
                 oper.setProcedure(getFullCtxText(option.func_name));
@@ -109,8 +103,6 @@ public class CreateOperator extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        Operator_nameContext operNameCtx = ctx.name;
-        return getStrForStmtAction(ACTION_CREATE, DbObjType.OPERATOR,
-                Arrays.asList(operNameCtx.schema_name, operNameCtx.operator));
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.OPERATOR, getIdentifiers(ctx.name));
     }
 }

@@ -19,7 +19,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_args_parserContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_identifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
@@ -146,20 +145,7 @@ public abstract class AbstractExpr {
     }
 
     protected GenericColumn addTypeDepcy(Schema_qualified_name_nontypeContext typeName) {
-        IdentifierContext schemaCtx = typeName.identifier();
-        ParserRuleContext nameCtx = ParserAbstract.getIdentifierNonType(typeName);
-        String name = nameCtx.getText();
-
-        if (schemaCtx == null) {
-            return new GenericColumn(ApgdiffConsts.PG_CATALOG, name, DbObjType.TYPE);
-        }
-
-        String schemaName = schemaCtx.getText();
-
-        GenericColumn gc = new GenericColumn(schemaName, name, DbObjType.TYPE);
-        addDepcy(new GenericColumn(schemaName, DbObjType.SCHEMA), schemaCtx);
-        addDepcy(gc, nameCtx);
-        return gc;
+        return addDepcy(ParserAbstract.getIdentifiers(typeName), DbObjType.TYPE, null);
     }
 
     protected void addDepcy(GenericColumn depcy, ParserRuleContext ctx) {

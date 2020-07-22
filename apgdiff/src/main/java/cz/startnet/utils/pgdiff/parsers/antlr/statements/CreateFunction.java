@@ -229,10 +229,9 @@ public class CreateFunction extends ParserAbstract {
             Schema_qualified_name_nontypeContext typeQname = dataType.predefined_type()
                     .schema_qualified_name_nontype();
             if (typeQname != null) {
-                if (typeQname.schema != null) {
-                    typeSchema = typeQname.schema.getText();
-                }
-                typeName = getIdentifierNonType(typeQname).getText();
+                List<ParserRuleContext> typeIds = getIdentifiers(typeQname);
+                typeSchema = QNameParser.getSchemaName(typeIds);
+                typeName = QNameParser.getFirstName(typeIds);
             } else {
                 typeName = getFullCtxText(dataType);
             }

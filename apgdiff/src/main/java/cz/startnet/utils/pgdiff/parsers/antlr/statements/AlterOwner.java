@@ -1,16 +1,12 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.All_simple_opContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_ownerContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
@@ -44,26 +40,17 @@ public class AlterOwner extends ParserAbstract {
             return;
         }
 
-        PgStatement st = null;
-
+        List<ParserRuleContext> ids;
         if (ctx.OPERATOR() != null) {
-            Target_operatorContext targetOperCtx = ctx.target_operator();
-            Operator_nameContext operNameCtx = targetOperCtx.name;
-            IdentifierContext schemaCtx = operNameCtx.schema_name;
-            All_simple_opContext nameCtx = operNameCtx.operator;
-            List<ParserRuleContext> ids = Arrays.asList(schemaCtx, nameCtx);
-            st = getSafe(AbstractSchema::getOperator, getSchemaSafe(ids),
-                    parseSignature(nameCtx.getText(), targetOperCtx),
-                    nameCtx.getStart());
-            setOwner(st, owner);
-            addObjReference(ids, DbObjType.OPERATOR, ACTION_ALTER);
-            return;
+            ids = getIdentifiers(ctx.target_operator().name);
+        } else {
+            ids = getIdentifiers(ctx.name);
         }
 
-        List<ParserRuleContext> ids = getIdentifiers(ctx.name);
         ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
 
         DbObjType type = null;
+        PgStatement st = null;
         if (ctx.SCHEMA() != null) {
             st = getSafe(PgDatabase::getSchema, db, nameCtx);
             type = DbObjType.SCHEMA;
@@ -87,6 +74,11 @@ public class AlterOwner extends ParserAbstract {
             } else if (ctx.TYPE() != null) {
                 st = getSafe(AbstractSchema::getType, schema, nameCtx);
                 type = DbObjType.TYPE;
+            } else if (ctx.OPERATOR() != null) {
+                st = getSafe(AbstractSchema::getOperator, schema,
+                        parseSignature(nameCtx.getText(), ctx.target_operator()),
+                        nameCtx.getStart());
+                type = DbObjType.OPERATOR;
             } else if (ctx.PROCEDURE() != null || ctx.FUNCTION() != null || ctx.AGGREGATE() != null) {
                 st = getSafe(AbstractSchema::getFunction, schema, parseSignature(nameCtx.getText(),
                         ctx.function_args()), nameCtx.getStart());
@@ -151,22 +143,16 @@ public class AlterOwner extends ParserAbstract {
             return null;
         }
 
-        String schemaName = null;
-        String objName = null;
         Target_operatorContext targetOperCtx;
+        List<ParserRuleContext> ids;
         if (ctx.name != null) {
-            List<ParserRuleContext> ids = getIdentifiers(ctx.name);
-            schemaName = QNameParser.getSchemaName(ids);
-            objName = QNameParser.getFirstName(ids);
+            ids = getIdentifiers(ctx.name);
         } else if ((targetOperCtx = ctx.target_operator()) != null) {
-            Operator_nameContext operNameCtx = targetOperCtx.name;
-            schemaName = operNameCtx.schema_name.getText();
-            objName = operNameCtx.operator.getText();
+            ids = getIdentifiers(targetOperCtx.name);
         } else {
             return null;
         }
 
-        return new StringBuilder(ACTION_ALTER).append(' ').append(type).append(' ')
-                .append(schemaName).append('.').append(objName).toString();
+        return getStrForStmtAction(ACTION_ALTER, type, ids);
     }
 }

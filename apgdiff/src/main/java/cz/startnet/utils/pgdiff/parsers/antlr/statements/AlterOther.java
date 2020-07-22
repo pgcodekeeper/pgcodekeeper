@@ -11,7 +11,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_function_statement
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_operator_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_schema_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_type_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_alterContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -63,9 +62,7 @@ public class AlterOther extends ParserAbstract {
     }
 
     private void alterOperator(Alter_operator_statementContext ctx) {
-        Operator_nameContext nameCtx = ctx.target_operator().operator_name();
-        addObjReference(Arrays.asList(nameCtx.schema_name, nameCtx.operator),
-                DbObjType.OPERATOR, ACTION_ALTER);
+        addObjReference(getIdentifiers(ctx.target_operator().name), DbObjType.OPERATOR, ACTION_ALTER);
     }
 
     private void alterExtension(Alter_extension_statementContext ctx) {
@@ -99,8 +96,7 @@ public class AlterOther extends ParserAbstract {
     private List<? extends ParserRuleContext> getIds() {
         Alter_operator_statementContext alterOperCtx = ctx.alter_operator_statement();
         if (alterOperCtx != null) {
-            Operator_nameContext nameCtx = alterOperCtx.target_operator().operator_name();
-            return Arrays.asList(nameCtx.schema_name, nameCtx.operator);
+            return getIdentifiers(alterOperCtx.target_operator().name);
         } else if (ctx.alter_function_statement() != null) {
             return getIdentifiers(ctx.alter_function_statement().function_parameters()
                     .schema_qualified_name());

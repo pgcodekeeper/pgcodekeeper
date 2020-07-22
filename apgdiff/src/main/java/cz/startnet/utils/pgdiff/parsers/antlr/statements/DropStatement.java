@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -66,9 +65,7 @@ public class DropStatement extends ParserAbstract {
 
     public void dropOperator(Drop_operator_statementContext ctx) {
         for (Target_operatorContext targetOperCtx : ctx.target_operator()) {
-            Operator_nameContext nameCtx = targetOperCtx.operator_name();
-            addObjReference(Arrays.asList(nameCtx.schema_name, nameCtx.operator),
-                    DbObjType.OPERATOR, ACTION_DROP);
+            addObjReference(getIdentifiers(targetOperCtx.name), DbObjType.OPERATOR, ACTION_DROP);
         }
     }
 
@@ -196,9 +193,8 @@ public class DropStatement extends ParserAbstract {
         } else if (ctx.drop_operator_statement() != null) {
             Drop_operator_statementContext dropRuleCtx = ctx.drop_operator_statement();
             List<Target_operatorContext> targetOpers = dropRuleCtx.target_operator();
-            Operator_nameContext nameCtx = targetOpers.get(0).operator_name();
-            ids = targetOpers.size() == 1 ? Arrays.asList(nameCtx.schema_name, nameCtx.operator)
-                    : Collections.emptyList();
+            Operator_nameContext nameCtx = targetOpers.get(0).name;
+            ids = targetOpers.size() == 1 ? getIdentifiers(nameCtx) : Collections.emptyList();
             type = DbObjType.OPERATOR;
         } else if (ctx.drop_cast_statement() != null) {
             Drop_cast_statementContext castCtx = ctx.drop_cast_statement();
