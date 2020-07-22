@@ -1,0 +1,109 @@
+<project
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <artifactId>ru.taximaxim.codeKeeper</artifactId>
+        <groupId>ru.taximaxim.codeKeeper</groupId>
+        <version>5.10.0-SNAPSHOT</version>
+        <relativePath>../ru.taximaxim.codeKeeper/</relativePath>
+    </parent>
+
+    <groupId>ru.taximaxim.codeKeeper</groupId>
+    <artifactId>ru.taximaxim.codekeeper.deploy</artifactId>
+    <version>5.10.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <properties>
+        <!-- used by deploy-ant.xml -->
+        <site-repo>git@github.com:pgcodekeeper/pgcodekeeper.github.io.git</site-repo>
+        <site-dir>${project.build.directory}/pgcodekeeper.github.io</site-dir>
+        <updatesite-dir>${project.basedir}/../updatesite/target</updatesite-dir>
+    </properties>
+
+    <profiles>
+        <profile>
+            <id>deploy-product-github</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.ragedunicorn.tools.maven</groupId>
+                        <artifactId>github-release-maven-plugin</artifactId>
+                        <version>1.0.2</version>
+                        <executions>
+                            <execution>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>github-release</goal>
+                                </goals>
+                                <configuration>
+                                    <owner>pgcodekeeper</owner>
+                                    <repository>pgcodekeeper</repository>
+                                    <authToken>${env.GITHUB_TOKEN}</authToken>
+                                    <tagName>v${unqualifiedVersion}</tagName>
+                                    <name>pgCodeKeeper ${unqualifiedVersion}</name>
+                                    <assets>
+                                        <asset>../product/rcp/target/products/pgCodeKeeper-${unqualifiedVersion}-win32.win32.x86_64.zip</asset>
+                                        <asset>../product/rcp/target/products/pgCodeKeeper-${unqualifiedVersion}-linux.gtk.x86_64.tar.gz</asset>
+                                        <asset>../product/rcp/target/products/pgCodeKeeper-${unqualifiedVersion}-macosx.cocoa.x86_64.tar.gz</asset>
+                                        <asset>../product/standalone/target/products/pgCodeKeeper-cli-${unqualifiedVersion}.zip</asset>
+                                        <asset>${updatesite-dir}/pgCodeKeeper-updatesite-${unqualifiedVersion}.zip</asset>
+                                    </assets>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>deploy-github</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>3.0.0</version>
+                        <executions>
+                            <execution>
+                                <id>deploy-site</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <ant antfile="deploy-ant.xml" />
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-packaging-plugin</artifactId>
+                <version>${tycho.version}</version>
+                <executions>
+                    <execution>
+                        <id>default-build-qualifier-aggregator</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>build-qualifier-aggregator</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="project" default="default">
+	<description>
+	    Deploy to p2 site on github.
+	</description>
+
+	<target name="default">
+		<sequential>
+			<echo message="cloning site repo" />
+			<exec executable="git" failonerror="true">
+				<arg value="clone" />
+				<arg value="--depth=1" />
+				<arg value="--no-tags" />
+				<arg value="--single-branch" />
+				<arg value="${site-repo}" />
+				<arg value="${site-dir}" />
+			</exec>
+
+			<echo message="updating p2 site" />
+			<delete includeemptydirs="true">
+				<fileset dir="${site-dir}/update" includes="**/*" />
+			</delete>
+			<copy todir="${site-dir}/update">
+				<fileset dir="${updatesite-dir}//repository" />
+			</copy>
+
+			<echo message="adding to repo index" />
+			<exec executable="git" dir="${site-dir}" failonerror="true">
+				<arg value="add" />
+				<arg value="update" />
+			</exec>
+
+			<echo message="committing site repo" />
+			<exec executable="git" dir="${site-dir}" failonerror="true">
+				<arg value="commit" />
+				<arg value="-m" />
+				<arg value="Deploy ${unqualifiedVersion}.${buildQualifier} into update site" />
+			</exec>
+
+			<echo message="pushing site repo" />
+			<exec executable="git" dir="${site-dir}" failonerror="true">
+				<arg value="push" />
+				<arg value="${site-repo}" />
+				<arg value="HEAD" />
+			</exec>
+		</sequential>
+	</target>
+</project>
