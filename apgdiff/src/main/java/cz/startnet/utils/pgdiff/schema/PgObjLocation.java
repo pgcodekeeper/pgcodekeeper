@@ -10,10 +10,9 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgObjLocation extends ContextLocation {
 
-    private static final long serialVersionUID = 1560794454982891339L;
+    private static final long serialVersionUID = -6511243237472584008L;
 
     private DangerStatement danger;
-    private String comment = "";
     private int length = -1;
 
     private final String action;
@@ -33,10 +32,24 @@ public class PgObjLocation extends ContextLocation {
         this(gObj, action, offset, lineNumber, 1, filePath);
     }
 
-    public PgObjLocation(String action, ParserRuleContext ctx, String sql) {
-        this(null, action, ctx.getStart().getStartIndex(), ctx.getStart().getLine(),
+    public PgObjLocation(GenericColumn gObj) {
+        this(gObj, null, 0, 0, null);
+    }
+
+    public PgObjLocation(GenericColumn gObj, ParserRuleContext ctx) {
+        this(gObj, null, ctx.getStart().getStartIndex(), ctx.getStart().getLine(),
                 ctx.getStart().getCharPositionInLine(), null);
+        setLength(ctx.getStop().getStopIndex() - ctx.getStart().getStartIndex() + 1);
+    }
+
+    public PgObjLocation(String action, int offset, int lineNumber, int charPositionInLine, String sql) {
+        this(null, action, offset, lineNumber, charPositionInLine, null);
         this.sql = sql;
+    }
+
+    public PgObjLocation(String action, ParserRuleContext ctx, String sql) {
+        this(action, ctx.getStart().getStartIndex(), ctx.getStart().getLine(),
+                ctx.getStart().getCharPositionInLine(), sql);
     }
 
     public PgObjLocation(String action, String sql) {
@@ -92,14 +105,6 @@ public class PgObjLocation extends ContextLocation {
         return result;
     }
 
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
-
     public String getWarningText() {
         switch (danger) {
         case ALTER_COLUMN: return "ALTER COLUMN ... TYPE statement";
@@ -139,6 +144,10 @@ public class PgObjLocation extends ContextLocation {
         return obj == null ? null : obj.schema;
     }
 
+    public String getTable() {
+        return obj == null ? null : obj.table;
+    }
+
     public DbObjType getType() {
         return obj == null ? null : obj.type;
     }
@@ -149,9 +158,24 @@ public class PgObjLocation extends ContextLocation {
             return false;
         }
         return Objects.equals(obj.schema, col.schema)
-                && Objects.equals(obj.table, col.table)
                 && Objects.equals(obj.column, col.column)
-                && compareTypes(col.type);
+                && compareTypes(col.type)
+                && compareNames(col.table);
+    }
+
+    private boolean compareNames(String objName) {
+        String name = obj.table;
+        if (Objects.equals(objName, name)) {
+            return true;
+        }
+
+        DbObjType type = obj.type;
+        if (type != DbObjType.FUNCTION && type != DbObjType.AGGREGATE
+                && type != DbObjType.PROCEDURE && type != DbObjType.OPERATOR) {
+            return false;
+        }
+
+        return (objName.startsWith(name + '(') || name.startsWith(objName + '('));
     }
 
     private boolean compareTypes(DbObjType objType) {
@@ -175,5 +199,26 @@ public class PgObjLocation extends ContextLocation {
         default:
             return false;
         }
+    }
+
+    public PgObjLocation copyWithOffset(int offset, int lineOffset,
+            int inLineOffset, String filePath) {
+        PgObjLocation loc = new PgObjLocation(obj, getAction(),
+                getOffset() + offset,
+                getLineNumber() + lineOffset,
+                getCharPositionInLine() + inLineOffset,
+                filePath);
+        loc.setLength(length);
+        return loc;
+    }
+
+    @Override
+    public String toString() {
+        GenericColumn gc = getObj();
+        if (gc != null) {
+            return gc.toString();
+        }
+
+        return super.toString();
     }
 }

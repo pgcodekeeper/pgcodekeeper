@@ -1,13 +1,17 @@
 package ru.taximaxim.codekeeper.apgdiff.model.difftree;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
@@ -40,6 +44,43 @@ public final class DiffTree {
                 list.add(col);
             }
         }
+    }
+
+    public static Set<TreeElement> getTablesWithChangedColumns(
+            PgDatabase oldDbFull, PgDatabase newDbFull, List<TreeElement> selected) {
+
+        Set<TreeElement> tables = new HashSet<>();
+        for (TreeElement el : selected) {
+            if (el.getType() == DbObjType.TABLE) {
+                List<TreeElement> columns = new ArrayList<>();
+                DiffSide side = el.getSide();
+
+                List<AbstractColumn> oldColumns;
+
+                if (side == DiffSide.LEFT || side == DiffSide.BOTH) {
+                    AbstractTable oldTbl = (AbstractTable) el.getPgStatement(oldDbFull);
+                    oldColumns = oldTbl.getColumns();
+                } else {
+                    oldColumns = Collections.emptyList();
+                }
+
+                List<AbstractColumn> newColumns;
+                if (side == DiffSide.RIGHT || side == DiffSide.BOTH) {
+                    AbstractTable newTbl = (AbstractTable) el.getPgStatement(newDbFull);
+                    newColumns = newTbl.getColumns();
+                } else {
+                    newColumns = Collections.emptyList();
+                }
+
+                addColumns(oldColumns, newColumns, el, columns);
+
+                if (!columns.isEmpty()) {
+                    tables.add(el);
+                }
+            }
+        }
+
+        return tables;
     }
 
     private final IProgressMonitor monitor;

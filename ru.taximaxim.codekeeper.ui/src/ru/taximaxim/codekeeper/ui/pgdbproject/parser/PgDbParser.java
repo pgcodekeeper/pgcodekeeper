@@ -10,10 +10,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -42,12 +39,14 @@ import org.eclipse.ui.actions.BuildAction;
 import org.eclipse.ui.ide.ResourceUtil;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
-import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.loader.DatabaseLoader;
+import cz.startnet.utils.pgdiff.loader.FullAnalyze;
 import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
-import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import cz.startnet.utils.pgdiff.schema.meta.MetaStatement;
+import cz.startnet.utils.pgdiff.schema.meta.MetaUtils;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -58,13 +57,13 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class PgDbParser implements IResourceChangeListener, Serializable {
 
-    private static final long serialVersionUID = 6255755136065669437L;
+    private static final long serialVersionUID = -234872770125300447L;
 
     private static final ConcurrentMap<IProject, PgDbParser> PROJ_PARSERS = new ConcurrentHashMap<>();
 
-    private final ConcurrentMap<String, List<PgObjLocation>> objDefinitions = new ConcurrentHashMap<>();
-    private final ConcurrentMap<String, List<PgObjLocation>> objReferences = new ConcurrentHashMap<>();
-    private transient List<Listener> listeners = new ArrayList<>();
+    private final ConcurrentMap<String, List<MetaStatement>> objDefinitions = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Set<PgObjLocation>> objReferences = new ConcurrentHashMap<>();
+    private final transient List<Listener> listeners = new ArrayList<>();
 
     public void addListener(Listener e) {
         listeners.add(e);
@@ -123,11 +122,10 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
             if (Files.exists(path)) {
                 try (ObjectInputStream oin = new ObjectInputStream(Files.newInputStream(path))) {
                     PgDbParser parser = (PgDbParser) oin.readObject();
-                    parser.listeners = new ArrayList<>();
                     objReferences.clear();
-                    objReferences.putAll(parser.getObjReferences());
+                    objReferences.putAll(parser.objReferences);
                     objDefinitions.clear();
-                    objDefinitions.putAll(parser.getObjDefinitions());
+                    objDefinitions.putAll(parser.objDefinitions);
                     notifyListeners();
                     return true;
                 }
@@ -164,71 +162,41 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         loader.setMode(ParserListenerMode.REF);
         PgDatabase db = loader.loadFile(new PgDatabase(args));
         removeResFromRefs(file);
-        objDefinitions.putAll(db.getObjDefinitions());
+        objDefinitions.putAll(MetaUtils.getObjDefinitions(db));
         objReferences.putAll(db.getObjReferences());
-        fillStatementBodies(loader.getStatementBodyReferences());
         notifyListeners();
     }
 
     public void getObjFromProjFiles(Collection<IFile> files, IProgressMonitor monitor, boolean isMsSql)
             throws InterruptedException, IOException, CoreException {
-        List<StatementBodyContainer> statementBodies = new ArrayList<>();
-        PgDatabase db = UIProjectLoader.buildFiles(files, isMsSql, monitor, statementBodies);
+        PgDatabase db = UIProjectLoader.buildFiles(files, isMsSql, monitor);
         files.forEach(this::removeResFromRefs);
-        objDefinitions.putAll(db.getObjDefinitions());
+        // fill definitions, view columns will be filled in the analysis
+        objDefinitions.putAll(MetaUtils.getObjDefinitions(db));
+        List<Object> errors = new ArrayList<>();
+        FullAnalyze.fullAnalyze(db, MetaUtils.createTreeFromDefs(
+                getAllObjDefinitions(), !isMsSql, db.getPostgresVersion()), errors);
+        UIProjectLoader.markErrors(errors);
         objReferences.putAll(db.getObjReferences());
-        fillStatementBodies(statementBodies);
         notifyListeners();
-    }
-
-    private void fillStatementBodies(List<StatementBodyContainer> statementBodies) {
-        for (StatementBodyContainer statementBody : statementBodies) {
-            String body = statementBody.getBody().toLowerCase(Locale.ROOT);
-            Set<PgObjLocation> newRefs = new LinkedHashSet<>();
-            for (PgObjLocation def : (Iterable<PgObjLocation>) getAllObjDefinitions()::iterator) {
-                int lenght = def.getObjLength();
-                if (lenght == 0) {
-                    continue;
-                }
-                String name = def.getObjName().toLowerCase(Locale.ROOT);
-                int index = body.indexOf(name);
-                while (index >= 0) {
-                    int next = index + lenght;
-                    // check word boundaries, whole words only
-                    if ((index == 0 || !PgDiffUtils.isValidIdChar(body.charAt(index - 1))) &&
-                            (next >= body.length() || !PgDiffUtils.isValidIdChar(body.charAt(next)))) {
-                        PgObjLocation loc = new PgObjLocation(def.getObj(), null,
-                                statementBody.getOffset() + index,
-                                statementBody.getLineNumber(),
-                                statementBody.getPath());
-                        newRefs.add(loc);
-                    }
-                    index = body.indexOf(name, index + 1);
-                }
-            }
-            if (!newRefs.isEmpty()) {
-                List<PgObjLocation> refs = objReferences.get(statementBody.getPath());
-                if (refs != null) {
-                    newRefs.addAll(refs);
-                }
-                objReferences.put(statementBody.getPath(), new ArrayList<>(newRefs));
-            }
-        }
     }
 
     public void getFullDBFromPgDbProject(IProject proj, IProgressMonitor monitor)
             throws InterruptedException, IOException, CoreException {
         SubMonitor mon = SubMonitor.convert(monitor, UIProjectLoader.countFiles(proj));
-        List<StatementBodyContainer> statementBodies = new ArrayList<>();
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(proj.getDefaultCharset(true));
         args.setMsSql(OpenProjectUtils.checkMsSql(proj));
-        PgDatabase db = new UIProjectLoader(proj, args, mon, statementBodies).loadAndAnalyze();
-        objDefinitions.clear();
-        objDefinitions.putAll(db.getObjDefinitions());
-        objReferences.clear();
+        DatabaseLoader loader = new UIProjectLoader(proj, args, mon);
+        PgDatabase db = loader.load();
+        clear();
+        // fill definitions, view columns will be filled in the analysis
+        objDefinitions.putAll(MetaUtils.getObjDefinitions(db));
+        FullAnalyze.fullAnalyze(db,
+                MetaUtils.createTreeFromDefs(getAllObjDefinitions(),
+                        !args.isMsSql(), db.getPostgresVersion()),
+                loader.getErrors());
         objReferences.putAll(db.getObjReferences());
-        fillStatementBodies(statementBodies);
         notifyListeners();
     }
 
@@ -246,45 +214,36 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         loader.setMode(ParserListenerMode.REF);
         PgDatabase db = loader.load();
         objDefinitions.clear();
-        objDefinitions.putAll(db.getObjDefinitions());
+        objDefinitions.putAll(MetaUtils.getObjDefinitions(db));
         objReferences.clear();
         objReferences.putAll(db.getObjReferences());
-        fillStatementBodies(loader.getStatementBodyReferences());
         notifyListeners();
     }
 
-    public Stream<PgObjLocation> getDefinitionsForObj(PgObjLocation obj) {
-        return getAllObjDefinitions().filter(obj::compare);
+    public Stream<MetaStatement> getDefinitionsForObj(PgObjLocation obj) {
+        return getAllObjDefinitions().filter(st -> st.getObject().compare(obj));
     }
 
-    public List<PgObjLocation> getObjsForEditor(IEditorInput in) {
+    public Set<PgObjLocation> getObjsForEditor(IEditorInput in) {
         String path = getPathFromInput(in);
-        return path == null ? Collections.emptyList() : getObjsForPath(path);
+        return path == null ? Collections.emptySet() : getObjsForPath(path);
     }
 
-    public List<PgObjLocation> getObjsForPath(String pathToFile) {
-        List<PgObjLocation> refs = objReferences.get(pathToFile);
-        return refs == null ? Collections.emptyList() : Collections.unmodifiableList(refs);
+    public Set<PgObjLocation> getObjsForPath(String pathToFile) {
+        return objReferences.getOrDefault(pathToFile, Collections.emptySet());
     }
 
-    public Stream<PgObjLocation> getAllObjDefinitions() {
-        return getAll(objDefinitions);
+    public Stream<MetaStatement> getAllObjDefinitions() {
+        return objDefinitions.values().stream().flatMap(List<MetaStatement>::stream);
     }
 
     public Stream<PgObjLocation> getAllObjReferences() {
-        return getAll(objReferences);
+        return objReferences.values().stream().flatMap(Set<PgObjLocation>::stream);
     }
 
-    private Stream<PgObjLocation> getAll(Map<String, List<PgObjLocation>> refs) {
-        return refs.values().stream().flatMap(List<PgObjLocation>::stream);
-    }
-
-    public Map<String, List<PgObjLocation>> getObjDefinitions() {
-        return objDefinitions;
-    }
-
-    public Map<String, List<PgObjLocation>> getObjReferences() {
-        return objReferences;
+    public void clear() {
+        objDefinitions.clear();
+        objReferences.clear();
     }
 
     public void notifyListeners() {

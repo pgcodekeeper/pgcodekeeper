@@ -9,6 +9,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -20,11 +22,10 @@ import cz.startnet.utils.pgdiff.FILES_POSTFIX;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.FullAnalyze;
-import cz.startnet.utils.pgdiff.schema.IDatabase;
 import cz.startnet.utils.pgdiff.schema.IRelation;
-import cz.startnet.utils.pgdiff.schema.ISchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.meta.MetaStorage;
+import cz.startnet.utils.pgdiff.schema.meta.MetaContainer;
+import cz.startnet.utils.pgdiff.schema.meta.MetaUtils;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
@@ -73,22 +74,24 @@ public class ExprTypeTest {
         Log.log(Log.LOG_DEBUG, fileNameTemplate);
     }
 
-    private String getRelationColumnsTypes(IDatabase db) {
+    private String getRelationColumnsTypes(MetaContainer meta) {
         StringBuilder cols = new StringBuilder();
-        for (ISchema schema : db.getSchemas()) {
-            String schemaName = schema.getName();
+
+        for (Entry<String, Map<String, IRelation>> entry : meta.getRelations().entrySet()) {
+            String schemaName = entry.getKey();
             if (ApgdiffUtils.isPgSystemSchema(schemaName)) {
                 continue;
             }
 
             boolean isFirstView = true;
-            for (IRelation rel : PgDiffUtils.sIter(schema.getRelations())) {
+            Map<String, IRelation> relations = entry.getValue();
+            for (IRelation rel : relations.values()) {
                 if (rel.getStatementType() != DbObjType.VIEW) {
                     continue;
                 }
 
                 if (isFirstView) {
-                    cols.append("\n\nSchema: " + schema.getName());
+                    cols.append("\n\nSchema: " + schemaName);
                     isFirstView = false;
                 }
 
@@ -104,11 +107,11 @@ public class ExprTypeTest {
         return cols.toString();
     }
 
-    private IDatabase loadAndAnalyze(PgDiffArguments args, FILES_POSTFIX postfix)
+    private MetaContainer loadAndAnalyze(PgDiffArguments args, FILES_POSTFIX postfix)
             throws InterruptedException, IOException {
         PgDatabase dbNew = ApgdiffTestUtils.loadTestDump(
                 fileNameTemplate + postfix, ExprTypeTest.class, args, false);
-        IDatabase metaDb = MetaStorage.createFullDb(dbNew);
+        MetaContainer metaDb = MetaUtils.createTreeFromDb(dbNew);
         FullAnalyze.fullAnalyze(dbNew, metaDb, new ArrayList<>());
         return metaDb;
     }
@@ -126,7 +129,7 @@ public class ExprTypeTest {
     @Test
     public void runDiff() throws IOException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();
-        IDatabase dbNew = loadAndAnalyze(args, FILES_POSTFIX.NEW_SQL);
+        MetaContainer dbNew = loadAndAnalyze(args, FILES_POSTFIX.NEW_SQL);
 
         String typesForCompare = null;
         if (fileNameTemplate.startsWith(CHECK)) {

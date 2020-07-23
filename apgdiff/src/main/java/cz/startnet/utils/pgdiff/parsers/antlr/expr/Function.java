@@ -52,16 +52,15 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.IDatabase;
+import cz.startnet.utils.pgdiff.schema.meta.MetaContainer;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.ModPair;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
 
-    public Function(IDatabase db, DbObjType... disabledDepcies) {
-        super(db, disabledDepcies);
+    public Function(MetaContainer meta) {
+        super(meta);
     }
 
     protected Function(AbstractExpr parent) {
@@ -378,7 +377,7 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
             if (additional.CLUSTER() != null || additional.TABLE() != null || additional.REFRESH() != null) {
                 addRelationDepcy(table.identifier());
             } else if (additional.SCHEMA() != null) {
-                addSchemaDepcy(table.identifier());
+                addSchemaDepcy(table.identifier(), null);
             }
         } else if ((data = additional.data_statement()) != null) {
             new Sql(this).data(data);

@@ -103,9 +103,8 @@ public final class PgDiffUtils {
         return name.substring(1, name.length() - 1).replace("\"\"", "\"");
     }
 
-    // TODO dollar quotes
-    public static String unquoteQuotedString(String s) {
-        return s.substring(1, s.length() - 1).replace("''", "'");
+    public static String unquoteQuotedString(String s, int start) {
+        return s.substring(start, s.length() - 1).replace("''", "'");
     }
 
     public static byte[] getHash(String s, String instance) {
@@ -245,7 +244,10 @@ public final class PgDiffUtils {
         return text.startsWith(id, offset);
     }
 
-
+    public static boolean endsWithIgnoreCase(String str, String suffix) {
+        int suffixLength = suffix.length();
+        return str.regionMatches(true, str.length() - suffixLength, suffix, 0, suffixLength);
+    }
 
     public static <T> Iterable<T> sIter(Stream<T> stream) {
         return stream::iterator;

@@ -11,6 +11,9 @@ import cz.startnet.utils.pgdiff.schema.ArgMode;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IFunction;
+import cz.startnet.utils.pgdiff.schema.ISchema;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MetaFunction extends MetaStatement implements IFunction {
 
@@ -35,8 +38,12 @@ public class MetaFunction extends MetaStatement implements IFunction {
     private String returns;
     private boolean setof;
 
-    public MetaFunction(GenericColumn object) {
+    public MetaFunction(PgObjLocation object) {
         super(object);
+    }
+
+    public MetaFunction(String schemaName, String name) {
+        super(new GenericColumn(schemaName, name, DbObjType.FUNCTION));
     }
 
     @Override
@@ -49,11 +56,6 @@ public class MetaFunction extends MetaStatement implements IFunction {
             returnsColumns = new LinkedHashMap<>();
         }
         returnsColumns.put(name, type);
-    }
-
-    @Override
-    public String getBareName() {
-        return super.getName();
     }
 
     @Override
@@ -147,7 +149,12 @@ public class MetaFunction extends MetaStatement implements IFunction {
     }
 
     @Override
-    public MetaSchema getContainingSchema() {
-        return (MetaSchema) getParent();
+    public ISchema getContainingSchema() {
+        throw new IllegalStateException("Unsupported operation");
+    }
+
+    @Override
+    public String getSchemaName() {
+        return getObject().getSchema();
     }
 }

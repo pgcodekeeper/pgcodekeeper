@@ -4,18 +4,19 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IConstraint;
+import cz.startnet.utils.pgdiff.schema.ISchema;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 
 public class MetaConstraint extends MetaStatement implements IConstraint {
 
-    private static final long serialVersionUID = -8009680478870666859L;
+    private static final long serialVersionUID = -1456931643343454444L;
 
     private boolean isUnique;
     private boolean isPrimaryKey;
-    private final transient Set<String> columns = new HashSet<>();
+    private final Set<String> columns = new HashSet<>();
 
-    public MetaConstraint(GenericColumn object) {
+    public MetaConstraint(PgObjLocation object) {
         super(object);
     }
 
@@ -47,13 +48,17 @@ public class MetaConstraint extends MetaStatement implements IConstraint {
     }
 
     @Override
-    public MetaSchema getContainingSchema() {
-        MetaStatement parent = getParent();
-        if (parent != null) {
-            return (MetaSchema) parent.getParent();
-        }
-
-        return null;
+    public ISchema getContainingSchema() {
+        throw new IllegalStateException("Unsupported operation");
     }
 
+    @Override
+    public String getSchemaName() {
+        return getObject().getSchema();
+    }
+
+    @Override
+    public String getTableName() {
+        return getObject().getTable();
+    }
 }

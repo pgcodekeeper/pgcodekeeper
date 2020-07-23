@@ -6,38 +6,45 @@ import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IRelation;
+import cz.startnet.utils.pgdiff.schema.ISchema;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class MetaRelation extends MetaStatement implements IRelation {
 
     private static final long serialVersionUID = -3160120843161643684L;
 
-    private boolean initialized;
-
     /**
      * Contains columns names and types
      */
-    private final List<Pair<String, String>> columns = new ArrayList<>();
+    private List<Pair<String, String>> columns;
 
-    public MetaRelation(GenericColumn object) {
+    public MetaRelation(PgObjLocation object) {
         super(object);
+    }
+
+    public MetaRelation(String schemaName, String relationName, DbObjType type) {
+        this(new PgObjLocation(new GenericColumn(schemaName, relationName, type)));
     }
 
     @Override
     public Stream<Pair<String, String>> getRelationColumns() {
-        return initialized ? columns.stream() : null;
+        return columns == null ? null : columns.stream();
     }
 
-    public void addColumn(String name, String type) {
-        columns.add(new Pair<>(name, type));
+    public void addColumns(List<? extends Pair<String, String>> columns) {
+        this.columns = new ArrayList<>();
+        this.columns.addAll(columns);
     }
 
     @Override
-    public MetaSchema getContainingSchema() {
-        return (MetaSchema) getParent();
+    public ISchema getContainingSchema() {
+        throw new IllegalStateException("Unsupported operation");
     }
 
-    public void setInitialized(boolean initialized) {
-        this.initialized = initialized;
+    @Override
+    public String getSchemaName() {
+        return getObject().getSchema();
     }
 }

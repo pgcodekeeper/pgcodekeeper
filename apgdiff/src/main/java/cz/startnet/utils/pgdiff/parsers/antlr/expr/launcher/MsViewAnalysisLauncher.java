@@ -6,9 +6,9 @@ import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Select_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsSelect;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.IDatabase;
 import cz.startnet.utils.pgdiff.schema.MsView;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import cz.startnet.utils.pgdiff.schema.meta.MetaContainer;
 
 public class MsViewAnalysisLauncher extends AbstractAnalysisLauncher {
 
@@ -18,7 +18,7 @@ public class MsViewAnalysisLauncher extends AbstractAnalysisLauncher {
     }
 
     @Override
-    public Set<GenericColumn> analyze(ParserRuleContext ctx, IDatabase db) {
+    public Set<PgObjLocation> analyze(ParserRuleContext ctx, MetaContainer meta) {
         MsSelect select = new MsSelect(stmt.getSchemaName());
         return analyze((Select_statementContext) ctx, select);
     }

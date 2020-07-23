@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -21,10 +22,12 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.StatementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.User_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterOwner;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateRule;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.IRelation;
+import cz.startnet.utils.pgdiff.schema.IStatement;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.StatementOverride;
@@ -85,7 +88,7 @@ implements SqlContextProcessor {
             return;
         }
 
-        PgStatement st = ParserAbstract.getSafe(PgDatabase::getSchema, db, ctx.name, false);
+        PgStatement st = getSafe(PgDatabase::getSchema, db, ctx.name);
         if (st.getName().equals(ApgdiffConsts.PUBLIC) && "postgres".equals(owner.getText())) {
             return;
         }
@@ -97,26 +100,29 @@ implements SqlContextProcessor {
         List<IdentifierContext> ids = ctx.name.identifier();
         IdentifierContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
         AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() :
-            ParserAbstract.getSafe(PgDatabase::getSchema, db, schemaCtx, false);
+            getSafe(PgDatabase::getSchema, db, schemaCtx);
 
         IdentifierContext nameCtx = QNameParser.getFirstNameCtx(ids);
 
         for (Table_actionContext tablAction : ctx.table_action()) {
             Owner_toContext owner = tablAction.owner_to();
             if (owner != null && owner.name != null) {
-                String name = nameCtx.getText();
-                PgStatement st = schema.getTable(name);
-                if (st == null) {
-                    st = schema.getSequence(name);
-                }
-
-                if (st == null) {
-                    st = ParserAbstract.getSafe(AbstractSchema::getView, schema, nameCtx, false);
-                }
-
-                overrides.computeIfAbsent(st,
+                IRelation st = getSafe(AbstractSchema::getRelation, schema, nameCtx);
+                overrides.computeIfAbsent((PgStatement) st,
                         k -> new StatementOverride()).setOwner(owner.name.getText());
             }
         }
+    }
+
+    private <T extends IStatement, R extends IStatement> R getSafe(
+            BiFunction<T, String, R> getter, T container, IdentifierContext ctx) {
+        String name = ctx.getText();
+        R statement = getter.apply(container, name);
+        if (statement == null) {
+            throw new UnresolvedReferenceException("Cannot find object in database: "
+                    + name, ctx.getStart());
+        }
+
+        return statement;
     }
 }

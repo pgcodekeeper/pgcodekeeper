@@ -89,6 +89,7 @@ public abstract class PgStatement implements IStatement, IHashable {
     /**
      * @return Always returns just the object's name.
      */
+    // TODO super?
     @Override
     public final String getBareName() {
         return name;
@@ -158,6 +159,7 @@ public abstract class PgStatement implements IStatement, IHashable {
         this.deps.addAll(deps);
     }
 
+    @Override
     public String getComment() {
         return comment;
     }
@@ -199,9 +201,12 @@ public abstract class PgStatement implements IStatement, IHashable {
         case CONSTRAINT:
         case TRIGGER:
         case RULE:
-            sb.append(PgDiffUtils.getQuotedName(getName()))
-            .append(" ON ")
-            .append(getParent().getQualifiedName());
+        case POLICY:
+            sb.append(PgDiffUtils.getQuotedName(getName())).append(" ON ");
+            if (getParent().getStatementType() == DbObjType.DOMAIN) {
+                sb.append("DOMAIN ");
+            }
+            sb.append(getParent().getQualifiedName());
             break;
 
         case DATABASE:

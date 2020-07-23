@@ -1,6 +1,5 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.eclipse.jface.text.DefaultInformationControl;
@@ -15,6 +14,7 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.ui.editors.text.EditorsUI;
 
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import cz.startnet.utils.pgdiff.schema.meta.MetaStatement;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 
 final class SQLEditorTextHover extends DefaultTextHover implements ITextHoverExtension  {
@@ -31,11 +31,10 @@ final class SQLEditorTextHover extends DefaultTextHover implements ITextHoverExt
     @Override
     public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
         PgDbParser parser = editor.getParser();
-        List<PgObjLocation> refs = parser.getObjsForEditor(editor.getEditorInput());
-        for (PgObjLocation obj : refs) {
+        for (PgObjLocation obj : parser.getObjsForEditor(editor.getEditorInput())) {
             if (offset > obj.getOffset()
                     && offset < (obj.getOffset() + obj.getObjLength())) {
-                Optional<PgObjLocation> loc = parser.getDefinitionsForObj(obj).findAny();
+                Optional<MetaStatement> loc = parser.getDefinitionsForObj(obj).findAny();
                 if (loc.isPresent()) {
                     SQLEditorMyRegion region = new SQLEditorMyRegion(obj.getOffset(), obj.getObjLength());
                     region.setComment(loc.get().getComment());

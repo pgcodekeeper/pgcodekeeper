@@ -14,6 +14,15 @@
          <property name="startupMessageRect" value="20,250,410,20"/>
          <property name="startupProgressRect" value="20,270,410,10"/>
          <property name="preferenceCustomization" value="plugin_customization.ini"/>
+         <property name="introBrandingImage" value="product:icons/product48.png"/>
+         <property name="introTitle" value="%product.intro"/>
       </product>
+    </extension>
+    <extension
+          point="org.eclipse.ui.intro">
+      <introProductBinding
+          introId="org.eclipse.ui.intro.universal"
+          productId="ru.taximaxim.codekeeper.mainapp.product">
+      </introProductBinding>
     </extension>
 </plugin>

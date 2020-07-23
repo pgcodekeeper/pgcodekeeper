@@ -52,7 +52,7 @@ public class CreateCast extends ParserAbstract {
         doSafe(PgDatabase::addCast, db, cast);
         PgObjLocation loc = getCastLocation(source, target, ACTION_CREATE);
         cast.setLocation(loc);
-        db.addToQueries(fileName, loc);
+        db.addReference(fileName, loc);
     }
 
     @Override

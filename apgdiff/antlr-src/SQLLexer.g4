@@ -798,7 +798,7 @@ DOUBLE_DOT: '..';
 HASH_SIGN: '#';              // last operator rule, sync with CustomSQLAntlrErrorStrategy
 
 BlockComment
-    :   '/*' .*? '*/' -> channel(HIDDEN)
+    :   '/*' (BlockComment |.)*? '*/' -> channel(HIDDEN)
     ;
 
 LineComment
@@ -893,9 +893,7 @@ QuotedIdentifier
 // This is a quoted identifier which only contains valid characters but is not terminated
 fragment UnterminatedQuotedIdentifier
     : '"'
-    ( '""'
-    | ~[\u0000"]
-    )*
+    ( '""' | ~[\u0000"] )*
     ;
 /*
 ===============================================================================
@@ -910,12 +908,12 @@ fragment
 Extended_Control_Characters         :   '\u0080' .. '\u009F';
 
 Character_String_Literal
-    : [eEnN]? Single_String (String_Joiner Single_String)*
+    : [eEnNxXbB]? Single_String (String_Joiner Single_String)*
     ;
 
 fragment
 Single_String
-    : QUOTE_CHAR ( ESC_SEQ | ~('\'') )* QUOTE_CHAR
+    : QUOTE_CHAR ( ~'\'' | '\'\'')* QUOTE_CHAR
     ;
 
 fragment
@@ -925,29 +923,6 @@ String_Joiner
 
 fragment
 EXPONENT : ('e'|'E') ('+'|'-')? Digit+ ;
-
-fragment
-HEX_DIGIT : ('0'..'9'|'a'..'f'|'A'..'F') ;
-
-fragment
-ESC_SEQ
-    :   '\\' ('b'|'t'|'n'|'f'|'r'|'"'|'\\')
-    |   UNICODE_ESC
-    |   OCTAL_ESC
-    | ('\'\'')
-    ;
-
-fragment
-OCTAL_ESC
-    :   '\\' ('0'..'3') ('0'..'7') ('0'..'7')
-    |   '\\' ('0'..'7') ('0'..'7')
-    |   '\\' ('0'..'7')
-    ;
-
-fragment
-UNICODE_ESC
-    :   '\\' 'u' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT
-    ;
 
 // Dollar-quoted String Constants (§4.1.2.4)
 BeginDollarStringConstant

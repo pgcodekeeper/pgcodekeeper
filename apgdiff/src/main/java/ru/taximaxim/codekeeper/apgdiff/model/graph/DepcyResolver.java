@@ -1,6 +1,5 @@
 package ru.taximaxim.codekeeper.apgdiff.model.graph;
 
-import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -49,9 +48,13 @@ public class DepcyResolver {
     private final Set<ActionContainer> actions = new LinkedHashSet<>();
     private final Set<PgStatement> toRefresh = new LinkedHashSet<>();
     /**
-     * Хранит запущенные итерации, используется для предотвращения циклического прохода по графу
+     * Хранит запущенные итерации по удалению объектов, используется для предотвращения циклического прохода по графу
      */
-    private final Set<Entry<PgStatement, StatementActions>> sKippedObjects = new HashSet<>();
+    private final Set<PgStatement> droppedObjects = new HashSet<>();
+    /**
+     * Хранит запущенные итерации по добавлению объектов, используется для предотвращения циклического прохода по графу
+     */
+    private final Set<PgStatement> createdObjects = new HashSet<>();
 
     /**
      * Добавить ручную зависимость к старому графу
@@ -101,8 +104,7 @@ public class DepcyResolver {
      */
     public void addDropStatements(PgStatement toDrop) {
         PgStatement statement = toDrop.getTwin(oldDb);
-        Entry<PgStatement, StatementActions> guard = new SimpleEntry<>(statement, StatementActions.DROP);
-        if (oldDepcyGraph.getReversedGraph().containsVertex(statement) && sKippedObjects.add(guard)) {
+        if (oldDepcyGraph.getReversedGraph().containsVertex(statement) && droppedObjects.add(statement)) {
             DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
                     oldDepcyGraph.getReversedGraph(), statement);
             customIteration(dfi, new DropTraversalAdapter(statement));
@@ -125,8 +127,7 @@ public class DepcyResolver {
      */
     public void addCreateStatements(PgStatement toCreate) {
         PgStatement statement = toCreate.getTwin(newDb);
-        Entry<PgStatement, StatementActions> guard = new SimpleEntry<>(statement, StatementActions.CREATE);
-        if (newDepcyGraph.getGraph().containsVertex(statement) && sKippedObjects.add(guard)) {
+        if (newDepcyGraph.getGraph().containsVertex(statement) && createdObjects.add(statement)) {
             DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
                     newDepcyGraph.getGraph(), statement);
             customIteration(dfi, new CreateTraversalAdapter(statement));
@@ -316,8 +317,11 @@ public class DepcyResolver {
                 // зависимостями нужно сначала создать объект с зависимостями,
                 // потом изменить его
                 if (isNeedDepcies.get() && action == StatementActions.ALTER) {
-                    addCreateStatements(newObj);
-                    addToList(oldObj);
+                    // не добавлять объект, если уже есть в списке
+                    if (!createdObjects.contains(newObj)) {
+                        addCreateStatements(newObj);
+                        addToList(oldObj);
+                    }
                     return true;
                 }
             }
@@ -431,7 +435,9 @@ public class DepcyResolver {
 
             // если объект (таблица) создается, запускаем создание зависимостей ее колонок
             // сами колонки создадутся неявно вместе с таблицей
-            createColumnDependencies(newObj);
+            if (action == StatementActions.CREATE) {
+                createColumnDependencies(newObj);
+            }
 
             // создать колонку при создании сиквенса с owned by
             if (newObj instanceof PgSequence) {

@@ -342,14 +342,10 @@ public class PgDiff {
             List<TreeElement> selected) {
         List<TreeElement> tempColumns = new ArrayList<>();
         for (TreeElement el : selected) {
-            if (el.getType() == DbObjType.TABLE && el.getSide() != DiffSide.LEFT) {
-                AbstractTable oldTbl = null;
-                AbstractTable newTbl =(AbstractTable) el.getPgStatement(newDbFull);
-                if (el.getSide() == DiffSide.BOTH) {
-                    oldTbl =(AbstractTable) el.getPgStatement(oldDbFull);
-                }
-                DiffTree.addColumns(oldTbl == null ? Collections.emptyList() : oldTbl.getColumns(),
-                        newTbl.getColumns(), el, tempColumns);
+            if (el.getType() == DbObjType.TABLE && el.getSide() == DiffSide.BOTH) {
+                AbstractTable oldTbl = (AbstractTable) el.getPgStatement(oldDbFull);
+                AbstractTable newTbl = (AbstractTable) el.getPgStatement(newDbFull);
+                DiffTree.addColumns(oldTbl.getColumns(), newTbl.getColumns(), el, tempColumns);
             }
         }
         selected.addAll(tempColumns);

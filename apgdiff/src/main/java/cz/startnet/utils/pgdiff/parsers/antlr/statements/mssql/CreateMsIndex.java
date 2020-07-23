@@ -3,6 +3,8 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 import java.util.Arrays;
 import java.util.List;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ClusteredContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_with_orderContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_indexContext;
@@ -17,10 +19,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.MsIndex;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateMsIndex extends ParserAbstract {
@@ -37,7 +38,7 @@ public class CreateMsIndex extends ParserAbstract {
         IdContext schemaCtx = ctx.qualified_name().schema;
         IdContext tableCtx = ctx.qualified_name().name;
         IdContext nameCtx = ctx.name;
-        List<IdContext> ids = Arrays.asList(schemaCtx, nameCtx);
+        List<ParserRuleContext> ids = Arrays.asList(schemaCtx, nameCtx);
         AbstractSchema schema = getSchemaSafe(ids);
         addObjReference(Arrays.asList(schemaCtx, tableCtx), DbObjType.TABLE, null);
 
@@ -48,9 +49,8 @@ public class CreateMsIndex extends ParserAbstract {
 
         parseIndex(ctx.index_rest(), ind);
 
-        IStatementContainer table = getSafe(AbstractSchema::getStatementContainer, schema, tableCtx);
-        addSafe((PgStatement) table, ind,
-                Arrays.asList(schemaCtx, tableCtx, nameCtx));
+        PgStatementContainer table = getSafe(AbstractSchema::getStatementContainer, schema, tableCtx);
+        addSafe(table, ind, Arrays.asList(schemaCtx, tableCtx, nameCtx));
     }
 
     static void parseIndex(Index_restContext rest, AbstractIndex ind) {

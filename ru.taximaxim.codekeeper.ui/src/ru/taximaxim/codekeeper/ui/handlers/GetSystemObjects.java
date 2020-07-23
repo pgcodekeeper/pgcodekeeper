@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui.handlers;
 
 import java.io.IOException;
+import java.io.Serializable;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -16,7 +17,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcSystemLoader;
-import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
+import cz.startnet.utils.pgdiff.schema.meta.MetaStorage;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
@@ -36,7 +37,7 @@ public class GetSystemObjects extends AbstractHandler {
                 DbInfo info = ((DbInfo) db);
                 FileDialog fd = new FileDialog(HandlerUtil.getActiveShell(event), SWT.SAVE);
                 fd.setText(Messages.GetSystemObjects_save_dialog_title);
-                fd.setFileName(PgSystemStorage.FILE_NAME + info.getDbName() + ".ser"); //$NON-NLS-1$
+                fd.setFileName(MetaStorage.FILE_NAME + info.getDbName() + ".ser"); //$NON-NLS-1$
                 String select = fd.open();
                 if (select != null) {
                     JdbcConnector jdbcConnector = new JdbcConnector(info.getDbHost(),
@@ -44,7 +45,7 @@ public class GetSystemObjects extends AbstractHandler {
                             info.getDbName(), info.getProperties(), info.isReadOnly(),
                             ApgdiffConsts.UTC);
                     try {
-                        PgSystemStorage storage = new JdbcSystemLoader(jdbcConnector,
+                        Serializable storage = new JdbcSystemLoader(jdbcConnector,
                                 SubMonitor.convert(new NullProgressMonitor())).getStorageFromJdbc();
 
                         ApgdiffUtils.serialize(select, storage);

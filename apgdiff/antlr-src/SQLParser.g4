@@ -1127,7 +1127,7 @@ comment_member_object
     | MATERIALIZED? VIEW name=schema_qualified_name
     | OPERATOR target_operator
     | OPERATOR (FAMILY| CLASS) name=schema_qualified_name USING index_method=identifier
-    | POLICY identifier ON name=schema_qualified_name
+    | POLICY identifier ON table_name=schema_qualified_name
     | PROCEDURAL? LANGUAGE name=schema_qualified_name
     | PUBLICATION identifier
     | ROLE identifier
@@ -1253,9 +1253,9 @@ create_schema_statement
 create_policy_statement
     : POLICY identifier ON schema_qualified_name 
     (AS (PERMISSIVE | RESTRICTIVE))?
-    (FOR (ALL | SELECT | INSERT | UPDATE | DELETE))?
+    (FOR event=(ALL | SELECT | INSERT | UPDATE | DELETE))?
     (TO user_name (COMMA user_name)*)?
-    (USING vex)? (WITH CHECK vex)?
+    (USING using=vex)? (WITH CHECK check=vex)?
     ;
 
 alter_policy_statement
@@ -1784,6 +1784,7 @@ col_label
     : id_token
     | tokens_reserved
     | tokens_nonreserved
+    | tokens_reserved_except_function_type
     | tokens_nonreserved_except_function_type
     ;
 

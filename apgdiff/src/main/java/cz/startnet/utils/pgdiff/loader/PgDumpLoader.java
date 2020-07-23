@@ -9,8 +9,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
@@ -26,9 +24,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomTSQLParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLOverridesListener;
-import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLOverridesListener;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
@@ -37,6 +35,7 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.StatementOverride;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.InputStreamProvider;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
  * Loads PostgreSQL dump into classes.
@@ -53,7 +52,6 @@ public class PgDumpLoader extends DatabaseLoader {
     private final int monitoringLevel;
 
     private ParserListenerMode mode = ParserListenerMode.NORMAL;
-    private List<StatementBodyContainer> statementBodyReferences;
     private Map<PgStatement, StatementOverride> overrides;
 
     public void setMode(ParserListenerMode mode) {
@@ -62,10 +60,6 @@ public class PgDumpLoader extends DatabaseLoader {
 
     public void setOverridesMap(Map<PgStatement, StatementOverride> overrides) {
         this.overrides = overrides;
-    }
-
-    public List<StatementBodyContainer> getStatementBodyReferences() {
-        return statementBodyReferences;
     }
 
     public PgDumpLoader(InputStreamProvider input, String inputObjectName,
@@ -131,7 +125,8 @@ public class PgDumpLoader extends DatabaseLoader {
         AbstractSchema schema = args.isMsSql() ? new MsSchema(ApgdiffConsts.DBO) :
             new PgSchema(ApgdiffConsts.PUBLIC);
         d.addSchema(schema);
-        schema.setLocation(new PgObjLocation(inputObjectName));
+        schema.setLocation(new PgObjLocation(
+                new GenericColumn(schema.getName(), DbObjType.SCHEMA)));
         d.setDefaultSchema(schema.getName());
         loadDatabase(d, antlrTasks);
         return d;
@@ -149,7 +144,6 @@ public class PgDumpLoader extends DatabaseLoader {
             } else {
                 listener = new CustomTSQLParserListener(
                         intoDb, inputObjectName, mode, errors, monitor);
-                statementBodyReferences = Collections.emptyList();
             }
             AntlrParser.parseTSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
                     monitor, monitoringLevel, listener, antlrTasks);
@@ -159,10 +153,8 @@ public class PgDumpLoader extends DatabaseLoader {
                 listener = new SQLOverridesListener(
                         intoDb, inputObjectName, mode, errors, monitor, overrides);
             } else {
-                CustomSQLParserListener cust = new CustomSQLParserListener(intoDb,
+                listener = new CustomSQLParserListener(intoDb,
                         inputObjectName, mode, errors, antlrTasks, monitor);
-                statementBodyReferences = cust.getStatementBodies();
-                listener = cust;
             }
 
             AntlrParser.parseSqlStream(input, args.getInCharsetName(), inputObjectName, errors,

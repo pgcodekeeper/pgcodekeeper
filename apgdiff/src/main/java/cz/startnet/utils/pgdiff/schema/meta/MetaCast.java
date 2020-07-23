@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.schema.meta;
 
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.ICast;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MetaCast extends MetaStatement implements ICast {
@@ -13,11 +14,18 @@ public class MetaCast extends MetaStatement implements ICast {
 
     private final CastContext context;
 
-    public MetaCast(String source, String target, CastContext type) {
+    public MetaCast(String source, String target, CastContext context) {
         super(new GenericColumn(ICast.getSimpleName(source, target), DbObjType.CAST));
         this.source = source;
         this.target = target;
-        this.context = type;
+        this.context = context;
+    }
+
+    public MetaCast(String source, String target, CastContext context, PgObjLocation object) {
+        super(object);
+        this.source = source;
+        this.target = target;
+        this.context = context;
     }
 
     @Override

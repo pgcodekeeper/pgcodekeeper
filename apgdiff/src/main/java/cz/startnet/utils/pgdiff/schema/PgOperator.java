@@ -7,7 +7,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class PgOperator extends PgStatementWithSearchPath {
+public class PgOperator extends PgStatementWithSearchPath implements IOperator {
 
     private String procedure;
     private String leftArg;
@@ -19,6 +19,8 @@ public class PgOperator extends PgStatementWithSearchPath {
     private String restrict;
     private String join;
 
+    private String returns;
+
     public PgOperator(String name) {
         super(name);
     }
@@ -26,6 +28,16 @@ public class PgOperator extends PgStatementWithSearchPath {
     @Override
     public DbObjType getStatementType() {
         return DbObjType.OPERATOR;
+    }
+
+    @Override
+    public void setReturns(String returns) {
+        this.returns = returns;
+    }
+
+    @Override
+    public String getReturns() {
+        return returns;
     }
 
     @Override
@@ -221,6 +233,7 @@ public class PgOperator extends PgStatementWithSearchPath {
         resetHash();
     }
 
+    @Override
     public String getLeftArg() {
         return leftArg;
     }
@@ -230,6 +243,7 @@ public class PgOperator extends PgStatementWithSearchPath {
         resetHash();
     }
 
+    @Override
     public String getRightArg() {
         return rightArg;
     }

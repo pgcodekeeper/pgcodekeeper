@@ -120,17 +120,19 @@ public class FilterDialog extends Dialog {
     @Override
     protected Control createDialogArea(Composite parent) {
         Composite container = new Composite(parent, SWT.NONE);
-        container.setLayout(new GridLayout(2, true));
+        container.setLayout(new GridLayout(2, false));
         container.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         Composite leftComposite = new Composite(container, SWT.NONE);
-        leftComposite.setLayout(new GridLayout(2, false));
+        leftComposite.setLayout(new GridLayout());
+        leftComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
         createTypesPart(leftComposite);
 
         Composite rightComposite = new Composite(container, SWT.NONE);
         rightComposite.setLayout(new GridLayout(2, false));
         rightComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
+        createChangePart(rightComposite);
         createCodePart(rightComposite);
         createSchemaPart(rightComposite);
         createDbUserPart(rightComposite);
@@ -147,6 +149,29 @@ public class FilterDialog extends Dialog {
         btnIsNonLibrary.setLayoutData(new GridData(SWT.DEFAULT, SWT.DEFAULT, false, false, 2, 1));
 
         return container;
+    }
+
+    private void createChangePart(Composite rightComposite) {
+        createFilterLabel(rightComposite, Messages.FilterDialog_show_change_types);
+
+        chgViewer = CheckboxTableViewer.newCheckList(rightComposite, SWT.BORDER);
+        chgViewer.getControl().setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1));
+        chgViewer.setContentProvider(ArrayContentProvider.getInstance());
+        chgViewer.setLabelProvider(new LabelProvider() {
+
+            @Override
+            public String getText(Object element) {
+                switch (((DiffSide) element)) {
+                case BOTH: return isApplyToProj ? "edit" : "ALTER"; //$NON-NLS-1$ //$NON-NLS-2$
+                case LEFT: return isApplyToProj ? "delete" : "CREATE"; //$NON-NLS-1$ //$NON-NLS-2$
+                case RIGHT: return isApplyToProj ? "add" : "DROP"; //$NON-NLS-1$ //$NON-NLS-2$
+                default: return null;
+                }
+            }
+        });
+
+        chgViewer.setInput(DiffSide.values());
+        chgViewer.setCheckedElements(sides.toArray());
     }
 
     private void createCodePart(Composite container) {
@@ -177,7 +202,6 @@ public class FilterDialog extends Dialog {
         btnGitUserRegEx = createRegexButton(container, gitUserFilter.isUseRegex());
     }
 
-
     private void createFilterLabel(Composite container, String text) {
         Label lbl = new Label(container, SWT.NONE);
         lbl.setText(text);
@@ -203,31 +227,10 @@ public class FilterDialog extends Dialog {
     private void createTypesPart(Composite container) {
         new Label(container, SWT.NONE).setText(Messages.FilterDialog_show_object_types);
 
-        new Label(container, SWT.NONE).setText(Messages.FilterDialog_show_change_types);
-
         objViewer = CheckboxTableViewer.newCheckList(container, SWT.BORDER);
-        objViewer.add(EnumSet.complementOf(EnumSet.of(DbObjType.COLUMN, DbObjType.DATABASE)).toArray());
+        objViewer.add(EnumSet.complementOf(EnumSet.of(DbObjType.DATABASE)).toArray());
         objViewer.setCheckedElements(types.toArray());
         objViewer.getControl().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-
-        chgViewer = CheckboxTableViewer.newCheckList(container, SWT.BORDER);
-        chgViewer.getControl().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-        chgViewer.setContentProvider(ArrayContentProvider.getInstance());
-        chgViewer.setLabelProvider(new LabelProvider() {
-
-            @Override
-            public String getText(Object element) {
-                switch (((DiffSide) element)) {
-                case BOTH: return isApplyToProj ? "edit" : "ALTER"; //$NON-NLS-1$ //$NON-NLS-2$
-                case LEFT: return isApplyToProj ? "delete" : "CREATE"; //$NON-NLS-1$ //$NON-NLS-2$
-                case RIGHT: return isApplyToProj ? "add" : "DROP"; //$NON-NLS-1$ //$NON-NLS-2$
-                default: return null;
-                }
-            }
-        });
-
-        chgViewer.setInput(DiffSide.values());
-        chgViewer.setCheckedElements(sides.toArray());
     }
 
     @Override
