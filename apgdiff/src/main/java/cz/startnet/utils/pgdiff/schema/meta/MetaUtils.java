@@ -149,7 +149,7 @@ public class MetaUtils {
             throw new IllegalArgumentException("Unsupported type " + type);
         }
 
-        return new PgObjLocation(gc);
+        return new PgObjLocation.Builder().setObject(gc).build();
     }
 
     public static Map<String, List<MetaStatement>> getObjDefinitions(PgDatabase db) {

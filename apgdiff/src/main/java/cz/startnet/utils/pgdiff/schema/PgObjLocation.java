@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.Objects;
 
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Token;
 
 import cz.startnet.utils.pgdiff.ContextLocation;
 import cz.startnet.utils.pgdiff.DangerStatement;
@@ -18,63 +19,15 @@ public class PgObjLocation extends ContextLocation {
     private final String action;
 
     private final GenericColumn obj;
-    private String sql;
+    private final String sql;
 
-    public PgObjLocation(GenericColumn obj, String action,
-            int offset, int lineNumber, int charPositionInLine, String filePath) {
+    PgObjLocation(String filePath, int offset, int lineNumber, int charPositionInLine,
+            GenericColumn obj, String action, String sql, int length) {
         super(filePath, offset, lineNumber, charPositionInLine);
         this.obj = obj;
+        this.sql = sql;
         this.action = action;
-    }
-
-    public PgObjLocation(GenericColumn gObj, String action,
-            int offset, int lineNumber, String filePath) {
-        this(gObj, action, offset, lineNumber, 1, filePath);
-    }
-
-    public PgObjLocation(GenericColumn gObj) {
-        this(gObj, null, 0, 0, null);
-    }
-
-    public PgObjLocation(GenericColumn gObj, ParserRuleContext ctx) {
-        this(gObj, null, ctx.getStart().getStartIndex(), ctx.getStart().getLine(),
-                ctx.getStart().getCharPositionInLine(), null);
-        setLength(ctx.getStop().getStopIndex() - ctx.getStart().getStartIndex() + 1);
-    }
-
-    public PgObjLocation(String action, int offset, int lineNumber, int charPositionInLine, String sql) {
-        this(null, action, offset, lineNumber, charPositionInLine, null);
-        this.sql = sql;
-    }
-
-    public PgObjLocation(String action, ParserRuleContext ctx, String sql) {
-        this(action, ctx.getStart().getStartIndex(), ctx.getStart().getLine(),
-                ctx.getStart().getCharPositionInLine(), sql);
-    }
-
-    public PgObjLocation(String action, String sql) {
-        this(null, action, 0, 0, 0, null);
-        this.sql = sql;
-    }
-
-    public PgObjLocation(String filePath) {
-        this(null, null, 0, 0, 0, filePath);
-    }
-
-    public String getAction() {
-        return action;
-    }
-
-    public void setLength(int length) {
         this.length = length;
-    }
-
-    public int getObjLength() {
-        if (length > 0) {
-            return length;
-        }
-
-        return getObjName().length();
     }
 
     @Override
@@ -130,6 +83,14 @@ public class PgObjLocation extends ContextLocation {
 
     public GenericColumn getObj() {
         return obj;
+    }
+
+    public int getObjLength() {
+        return length;
+    }
+
+    public String getAction() {
+        return action;
     }
 
     public String getSql() {
@@ -203,13 +164,11 @@ public class PgObjLocation extends ContextLocation {
 
     public PgObjLocation copyWithOffset(int offset, int lineOffset,
             int inLineOffset, String filePath) {
-        PgObjLocation loc = new PgObjLocation(obj, getAction(),
+        return new PgObjLocation(filePath,
                 getOffset() + offset,
                 getLineNumber() + lineOffset,
                 getCharPositionInLine() + inLineOffset,
-                filePath);
-        loc.setLength(length);
-        return loc;
+                obj, action, sql, length);
     }
 
     @Override
@@ -220,5 +179,75 @@ public class PgObjLocation extends ContextLocation {
         }
 
         return super.toString();
+    }
+
+    public static final class Builder {
+
+        private String filePath;
+        private String action;
+        private String sql;
+        private int offset;
+        private int lineNumber;
+        private int charPositionInLine;
+        private GenericColumn object;
+        private ParserRuleContext ctx;
+
+        public Builder setFilePath(String filePath) {
+            this.filePath = filePath;
+            return this;
+        }
+
+        public Builder setAction(String action) {
+            this.action = action;
+            return this;
+        }
+
+        public Builder setSql(String sql) {
+            this.sql = sql;
+            return this;
+        }
+
+        public Builder setOffset(int offset) {
+            this.offset = offset;
+            return this;
+        }
+
+        public Builder setLineNumber(int lineNumber) {
+            this.lineNumber = lineNumber;
+            return this;
+        }
+
+        public Builder setCharPositionInLine(int charPositionInLine) {
+            this.charPositionInLine = charPositionInLine;
+            return this;
+        }
+
+        public Builder setObject(GenericColumn object) {
+            this.object = object;
+            return this;
+        }
+
+        public Builder setCtx(ParserRuleContext ctx) {
+            this.ctx = ctx;
+            return this;
+        }
+
+        public PgObjLocation build() {
+            if (ctx != null) {
+                Token start = ctx.getStart();
+                int offset = start.getStartIndex();
+                int line = start.getLine();
+                int position = start.getCharPositionInLine();
+                int length = ctx.getStop().getStopIndex() - offset + 1;
+
+                return new PgObjLocation(filePath, offset, line, position,
+                        object, action, sql, length);
+            }
+
+            int length = object == null ? 0 : object.getObjName().length();
+
+            return new PgObjLocation(filePath, offset, lineNumber, charPositionInLine,
+                    object, action, sql, length);
+        }
     }
 }

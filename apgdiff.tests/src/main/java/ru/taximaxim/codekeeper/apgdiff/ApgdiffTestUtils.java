@@ -38,23 +38,20 @@ public final class ApgdiffTestUtils {
         return db;
     }
 
-    public static PgDatabase createDumpDB() {
+    public static PgDatabase createDumpDB(boolean isPostgres) {
         PgDatabase db = new PgDatabase();
-        AbstractSchema schema = new PgSchema(ApgdiffConsts.PUBLIC);
+        AbstractSchema schema;
+        if (isPostgres) {
+            schema = new PgSchema(ApgdiffConsts.PUBLIC);
+        } else {
+            schema = new MsSchema(ApgdiffConsts.DBO);
+        }
         db.addSchema(schema);
-        db.setDefaultSchema(ApgdiffConsts.PUBLIC);
-        schema.setLocation(new PgObjLocation(
-                new GenericColumn(schema.getName(), DbObjType.SCHEMA)));
-        return db;
-    }
-
-    public static PgDatabase createDumpMsDB() {
-        PgDatabase db = new PgDatabase();
-        AbstractSchema schema = new MsSchema(ApgdiffConsts.DBO);
-        db.addSchema(schema);
-        db.setDefaultSchema(ApgdiffConsts.DBO);
-        schema.setLocation(new PgObjLocation(
-                new GenericColumn(schema.getName(), DbObjType.SCHEMA)));
+        db.setDefaultSchema(schema.getName());
+        PgObjLocation loc = new PgObjLocation.Builder()
+                .setObject(new GenericColumn(schema.getName(), DbObjType.SCHEMA))
+                .build();
+        schema.setLocation(loc);
         return db;
     }
 

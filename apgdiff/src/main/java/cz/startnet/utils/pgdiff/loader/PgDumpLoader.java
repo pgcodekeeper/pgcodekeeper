@@ -125,8 +125,11 @@ public class PgDumpLoader extends DatabaseLoader {
         AbstractSchema schema = args.isMsSql() ? new MsSchema(ApgdiffConsts.DBO) :
             new PgSchema(ApgdiffConsts.PUBLIC);
         d.addSchema(schema);
-        schema.setLocation(new PgObjLocation(
-                new GenericColumn(schema.getName(), DbObjType.SCHEMA)));
+        PgObjLocation loc = new PgObjLocation.Builder()
+                .setObject(new GenericColumn(schema.getName(), DbObjType.SCHEMA))
+                .build();
+
+        schema.setLocation(loc);
         d.setDefaultSchema(schema.getName());
         loadDatabase(d, antlrTasks);
         return d;

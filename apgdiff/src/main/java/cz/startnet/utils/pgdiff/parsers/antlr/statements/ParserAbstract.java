@@ -27,7 +27,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Id_tokenContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identifier_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Including_indexContext;
@@ -35,7 +34,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Predefined_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
@@ -275,19 +273,6 @@ public abstract class ParserAbstract {
         return loc;
     }
 
-    private int getStart(ParserRuleContext ctx) {
-        int start = ctx.start.getStartIndex();
-        if (ctx instanceof IdentifierContext) {
-            Id_tokenContext id = ((IdentifierContext) ctx).id_token();
-            if (id != null && id.QuotedIdentifier() != null) {
-                start++;
-            }
-        } else if (ctx instanceof IdContext && ((IdContext) ctx).SQUARE_BRACKET_ID() != null) {
-            start++;
-        }
-        return start;
-    }
-
     public <T extends IStatement, R extends IStatement> R getSafe(
             BiFunction<T, String, R> getter, T container, ParserRuleContext ctx) {
         return getSafe(getter, container, ctx.getText(), ctx.start);
@@ -376,8 +361,13 @@ public abstract class ParserAbstract {
         case ROLE:
         case USER:
         case DATABASE:
-            return new PgObjLocation(new GenericColumn(nameCtx.getText(), type),
-                    action, getStart(nameCtx), nameCtx.start.getLine(), fileName);
+            GenericColumn object = new GenericColumn(nameCtx.getText(), type);
+            return new PgObjLocation.Builder()
+                    .setFilePath(fileName)
+                    .setCtx(nameCtx)
+                    .setObject(object)
+                    .setAction(action)
+                    .build();
         default:
             break;
         }
@@ -415,27 +405,41 @@ public abstract class ParserAbstract {
         case TYPE:
         case VIEW:
         case INDEX:
-            return new PgObjLocation(new GenericColumn(schemaName, name, type),
-                    action, getStart(nameCtx), nameCtx.start.getLine(), fileName);
+            GenericColumn object = new GenericColumn(schemaName, name, type);
+            return new PgObjLocation.Builder()
+                    .setFilePath(fileName)
+                    .setCtx(nameCtx)
+                    .setObject(object)
+                    .setAction(action)
+                    .build();
         case CONSTRAINT:
         case TRIGGER:
         case RULE:
         case POLICY:
         case COLUMN:
-            return new PgObjLocation(new GenericColumn(schemaName,
-                    QNameParser.getSecondName(ids), name, type), action,
-                    getStart(nameCtx), nameCtx.start.getLine(), fileName);
+            object = new GenericColumn(schemaName, QNameParser.getSecondName(ids), name, type);
+            return new PgObjLocation.Builder()
+                    .setFilePath(fileName)
+                    .setCtx(nameCtx)
+                    .setObject(object)
+                    .setAction(action)
+                    .build();
         default:
             return null;
         }
     }
 
     protected PgObjLocation getCastLocation(Data_typeContext source, Data_typeContext target, String action) {
-        PgObjLocation loc = new PgObjLocation(new GenericColumn(
-                ICast.getSimpleName(getFullCtxText(source), getFullCtxText(target)), DbObjType.CAST),
-                action, source.start.getStartIndex(), source.start.getLine(), fileName);
-        loc.setLength(target.stop.getStopIndex() - source.start.getStartIndex() + 1);
-        return loc;
+        GenericColumn object = new GenericColumn(
+                ICast.getSimpleName(getFullCtxText(source), getFullCtxText(target)),
+                DbObjType.CAST);
+
+        return new PgObjLocation.Builder()
+                .setFilePath(fileName)
+                .setCtx(source)
+                .setObject(object)
+                .setAction(action)
+                .build();
     }
 
     protected <T extends IStatement, U extends Object> void doSafe(BiConsumer<T, U> adder,
@@ -570,9 +574,12 @@ public abstract class ParserAbstract {
      */
     protected PgObjLocation fillQueryLocation(ParserRuleContext ctx) {
         String act = getStmtAction();
-        PgObjLocation loc = new PgObjLocation(
-                act != null ? act : ctx.getStart().getText().toUpperCase(Locale.ROOT),
-                        ctx, getFullCtxText(ctx));
+        PgObjLocation loc = new PgObjLocation.Builder()
+                .setAction(act != null ? act : ctx.getStart().getText().toUpperCase(Locale.ROOT))
+                .setSql(getFullCtxText(ctx))
+                .setCtx(ctx)
+                .build();
+
         db.addReference(fileName, loc);
         return loc;
     }
@@ -583,7 +590,11 @@ public abstract class ParserAbstract {
      * for objects which undefined in DbObjType).
      */
     protected void addOutlineRefForCommentOrRule(String action, ParserRuleContext ctx) {
-        db.addReference(fileName, new PgObjLocation(action, ctx, null));
+        PgObjLocation loc = new PgObjLocation.Builder()
+                .setAction(action)
+                .setCtx(ctx)
+                .build();
+        db.addReference(fileName, loc);
     }
 
     /**

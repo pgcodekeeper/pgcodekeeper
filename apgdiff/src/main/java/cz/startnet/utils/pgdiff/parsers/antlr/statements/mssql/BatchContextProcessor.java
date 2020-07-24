@@ -56,7 +56,14 @@ public abstract class BatchContextProcessor extends ParserAbstract {
         int lineNumber = start.getLine();
         int charPositionInLine = start.getCharPositionInLine();
 
-        PgObjLocation loc = new PgObjLocation(action, offset, lineNumber, charPositionInLine, sql);
+        PgObjLocation loc = new PgObjLocation.Builder()
+                .setAction(action)
+                .setOffset(offset)
+                .setLineNumber(lineNumber)
+                .setCharPositionInLine(charPositionInLine)
+                .setSql(sql)
+                .build();
+
         db.addReference(fileName, loc);
         return loc;
     }

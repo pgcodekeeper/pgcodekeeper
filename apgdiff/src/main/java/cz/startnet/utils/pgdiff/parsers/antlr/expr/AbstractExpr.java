@@ -169,14 +169,13 @@ public abstract class AbstractExpr {
 
     protected void addDepcy(GenericColumn depcy, ParserRuleContext ctx, Token start) {
         if (!ApgdiffUtils.isPgSystemSchema(depcy.schema)) {
-            PgObjLocation loc;
-            if (ctx == null) {
-                loc = new PgObjLocation(depcy, null, 0, 0, null);
-            } else if (start == null) {
-                loc = new PgObjLocation(depcy, ctx);
-            } else {
-                loc = new PgObjLocation(depcy, ctx).copyWithOffset(
-                        start.getStartIndex(), start.getLine() - 1, start.getCharPositionInLine(), null);
+            PgObjLocation loc = new PgObjLocation.Builder()
+                    .setObject(depcy)
+                    .setCtx(ctx)
+                    .build();
+            if (start != null) {
+                loc = loc.copyWithOffset(start.getStartIndex(),
+                        start.getLine() - 1, start.getCharPositionInLine(), null);
             }
 
             depcies.add(loc);

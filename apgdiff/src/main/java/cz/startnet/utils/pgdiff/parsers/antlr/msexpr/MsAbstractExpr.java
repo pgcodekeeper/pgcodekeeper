@@ -94,7 +94,11 @@ public abstract class MsAbstractExpr {
 
     protected void addDepcy(GenericColumn depcy, ParserRuleContext ctx) {
         if (!ApgdiffUtils.isMsSystemSchema(depcy.schema)) {
-            depcies.add(new PgObjLocation(depcy, ctx));
+            PgObjLocation dep = new PgObjLocation.Builder()
+                    .setObject(depcy)
+                    .setCtx(ctx)
+                    .build();
+            depcies.add(dep);
         }
     }
 
