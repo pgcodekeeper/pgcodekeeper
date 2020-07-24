@@ -41,6 +41,7 @@ public class DiffTest {
             {new IgnoreListsArgumentsProvider()},
             {new AllowedObjectsArgumentsProvider()},
             {new LibrariesArgumentsProvider()},
+            {new ScriptFromObjsWithDiffArgumentsProvider()},
         });
 
         return p.stream()::iterator;
@@ -322,5 +323,25 @@ class LibrariesArgumentsProvider extends ArgumentsProvider {
         return new String[] {"-o", getDiffResultFile().getAbsolutePath(),
                 "-t", fOriginal.getAbsolutePath(), "-s", fNew.getAbsolutePath(),
                 "--tgt-lib", lib.getAbsolutePath()};
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation for test the use in script only
+ * objects with difference
+ */
+class ScriptFromObjsWithDiffArgumentsProvider extends ArgumentsProvider {
+
+    public ScriptFromObjsWithDiffArgumentsProvider() {
+        super("script_from_objs_with_difference");
+    }
+
+    @Override
+    protected String[] args() throws URISyntaxException, IOException {
+        File fNew = getFile(FILES_POSTFIX.NEW_SQL);
+        File fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
+        return new String[]{"--script-from-objs-with-diff", "-o",
+                getDiffResultFile().getAbsolutePath(),
+                fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
     }
 }
