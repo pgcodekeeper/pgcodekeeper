@@ -54,6 +54,8 @@ Usage
  -O (--allowed-object) <OBJECT_TYPE>    : build the script using these object
                                           types only
                                           hide statements of other objects
+ --script-from-objs-with-diff           : use in script only objects with 
+                                          difference
  --stop-not-allowed                     : exit with an error when
                                           --allowed-object hides a dependency
                                           statement from the script

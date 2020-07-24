@@ -165,6 +165,10 @@ public class CliArgs extends PgDiffArguments {
                     + "\nhide statements of other objects")
     private List<DbObjType> allowedTypes;
 
+    @Option(name="--script-from-objs-with-diff", forbids={"--graph", "--parse"},
+            usage="use in script only objects with difference")
+    private boolean scriptFromSelectedObjs;
+
     @Option(name="--stop-not-allowed", forbids={"--graph", "--parse"},
             usage="exit with an error when --allowed-object hides a dependency statement from the script")
     private boolean stopNotAllowed;
@@ -495,6 +499,16 @@ public class CliArgs extends PgDiffArguments {
     @Override
     public Collection<DbObjType> getAllowedTypes() {
         return Collections.unmodifiableCollection(allowedTypes);
+    }
+
+    @Override
+    public boolean isScriptFromSelectedObjs() {
+        return scriptFromSelectedObjs;
+    }
+
+    @Override
+    public void setScriptFromSelectedObjs(boolean scriptFromSelectedObjs) {
+        this.scriptFromSelectedObjs = scriptFromSelectedObjs;
     }
 
     @Override
