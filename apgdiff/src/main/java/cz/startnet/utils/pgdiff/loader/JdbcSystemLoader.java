@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -23,21 +24,17 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identifier_nontypeContex
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.Argument;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.ICast.CastContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.meta.MetaCast;
 import cz.startnet.utils.pgdiff.schema.meta.MetaFunction;
 import cz.startnet.utils.pgdiff.schema.meta.MetaOperator;
 import cz.startnet.utils.pgdiff.schema.meta.MetaRelation;
-import cz.startnet.utils.pgdiff.schema.meta.MetaSchema;
-import cz.startnet.utils.pgdiff.schema.meta.MetaStatementContainer;
 import cz.startnet.utils.pgdiff.schema.meta.MetaStorage;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class JdbcSystemLoader extends JdbcLoaderBase {
 
@@ -55,9 +52,6 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
 
     public MetaStorage getStorageFromJdbc() throws IOException, InterruptedException {
         MetaStorage storage = new MetaStorage();
-        storage.addMetaChild(new MetaSchema(ApgdiffConsts.PG_CATALOG));
-        storage.addMetaChild(new MetaSchema(ApgdiffConsts.INFORMATION_SCHEMA));
-
         Log.log(Log.LOG_INFO, "Reading db using JDBC.");
         setCurrentOperation("connection setup");
 
@@ -172,34 +166,33 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                 String schemaName = result.getString(NAMESPACE_NAME);
                 String relationName = result.getString(NAME);
 
-                MetaRelation relation;
+                DbObjType type;
                 switch (result.getString("relkind")) {
                 case "v":
                 case "m":
-                    relation = new MetaStatementContainer(new PgObjLocation(
-                            new GenericColumn(schemaName, relationName, DbObjType.VIEW)));
+                    type = DbObjType.VIEW;
                     break;
                 case "S":
-                    relation = new MetaRelation(new PgObjLocation(
-                            new GenericColumn(schemaName, relationName, DbObjType.SEQUENCE)));
+                    type = DbObjType.SEQUENCE;
                     break;
                 default:
-                    relation = new MetaStatementContainer(new PgObjLocation(
-                            new GenericColumn(schemaName, relationName, DbObjType.TABLE)));
+                    type = DbObjType.TABLE;
                     break;
                 }
+                MetaRelation relation = new MetaRelation(schemaName, relationName, type);
 
                 Array arr = result.getArray("col_names");
                 if (arr != null) {
                     String[] colNames = (String[]) arr.getArray();
                     String[] colTypes = (String[]) result.getArray("col_types").getArray();
+                    List<Pair<String, String>> columns = new ArrayList<>(colNames.length);
                     for (int i = 0; i < colNames.length; i++) {
                         JdbcReader.checkTypeValidity(colTypes[i]);
-                        relation.addColumn(colNames[i], colTypes[i]);
+                        columns.add(new Pair<>(colNames[i], colTypes[i]));
                     }
-                }
 
-                relation.setInitialized(true);
+                    relation.addColumns(columns);
+                }
 
                 storage.addMetaChild(relation);
             }

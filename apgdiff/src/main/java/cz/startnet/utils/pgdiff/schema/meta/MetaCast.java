@@ -42,10 +42,4 @@ public class MetaCast extends MetaStatement implements ICast {
     public CastContext getContext() {
         return context;
     }
-
-
-    @Override
-    public MetaStatement getCopy() {
-        return new MetaCast(source, target, context, getObject());
-    }
 }

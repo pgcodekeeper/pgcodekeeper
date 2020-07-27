@@ -11,10 +11,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.AbstractAnalysisLauncher;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.OperatorAnalysisLaincher;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.ViewAnalysisLauncher;
-import cz.startnet.utils.pgdiff.schema.IDatabase;
 import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import cz.startnet.utils.pgdiff.schema.meta.MetaContainer;
 import cz.startnet.utils.pgdiff.schema.meta.MetaUtils;
 
 public final class FullAnalyze {
@@ -23,11 +23,11 @@ public final class FullAnalyze {
     private final List<PgObjLocation> refs = new ArrayList<>();
     private final Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>();
     private final PgDatabase db;
-    private final IDatabase metaDb;
+    private final MetaContainer meta;
 
-    private FullAnalyze(PgDatabase db, IDatabase metaDb, List<Object> errors) {
+    private FullAnalyze(PgDatabase db, MetaContainer meta, List<Object> errors) {
         this.db = db;
-        this.metaDb = metaDb;
+        this.meta = meta;
         this.errors = errors;
     }
 
@@ -36,7 +36,7 @@ public final class FullAnalyze {
         fullAnalyze(db, MetaUtils.createTreeFromDb(db), errors);
     }
 
-    public static void fullAnalyze(PgDatabase db, IDatabase metaDb, List<Object> errors)
+    public static void fullAnalyze(PgDatabase db, MetaContainer metaDb, List<Object> errors)
             throws InterruptedException, IOException {
         new FullAnalyze(db, metaDb, errors).fullAnalyze();
     }
@@ -48,7 +48,7 @@ public final class FullAnalyze {
         for (AbstractAnalysisLauncher l : db.getAnalysisLaunchers()) {
             if (l != null) {
                 AntlrParser.submitAntlrTask(antlrTasks,
-                        () -> l.launchAnalyze(errors, metaDb),
+                        () -> l.launchAnalyze(errors, meta),
                         deps -> {
                             l.getStmt().addAllDeps(deps);
                             refs.addAll(l.getReferences());
@@ -75,7 +75,7 @@ public final class FullAnalyze {
                 // and protects from infinite recursion
                 launchers.set(i, null);
                 ((ViewAnalysisLauncher) l).setFullAnalyze(this);
-                l.getStmt().addAllDeps(l.launchAnalyze(errors, metaDb));
+                l.getStmt().addAllDeps(l.launchAnalyze(errors, meta));
                 refs.addAll(l.getReferences());
             }
         }
@@ -88,7 +88,7 @@ public final class FullAnalyze {
             if (l instanceof OperatorAnalysisLaincher) {
                 // allow GC to reclaim context memory immediately
                 launchers.set(i, null);
-                l.launchAnalyze(errors, metaDb);
+                l.launchAnalyze(errors, meta);
             }
         }
     }

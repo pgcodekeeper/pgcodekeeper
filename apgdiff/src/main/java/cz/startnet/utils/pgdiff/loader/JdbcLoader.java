@@ -69,14 +69,15 @@ public class JdbcLoader extends JdbcLoaderBase {
 
             // NOTE: order of readers has been changed to move the heaviest ANTLR tasks to the beginning
             // to give them a chance to finish while JDBC processes other non-ANTLR stuff
+            new FunctionsReader(this).read();
             new ViewsReader(this).read();
             new TablesReader(this).read();
             new RulesReader(this).read();
-            new PoliciesReader(this).read();
+            if (SupportedVersion.VERSION_9_5.isLE(version)) {
+                new PoliciesReader(this).read();
+            }
             new TriggersReader(this).read();
             new IndicesReader(this).read();
-            // Reads FUNCTIONs, PROCEDUREs and AGGREGATEs from JDBC.
-            new FunctionsReader(this).read();
             // non-ANTLR tasks
             new ConstraintsReader(this).read();
             new TypesReader(this).read();

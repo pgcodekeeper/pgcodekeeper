@@ -23,11 +23,6 @@ public class MetaOperator extends MetaStatement implements IOperator {
     }
 
     @Override
-    public String getBareName() {
-        return super.getName();
-    }
-
-    @Override
     public String getName() {
         return getSignature();
     }
@@ -73,15 +68,11 @@ public class MetaOperator extends MetaStatement implements IOperator {
 
     @Override
     public ISchema getContainingSchema() {
-        return (MetaSchema) getParent();
+        throw new IllegalStateException("Unsupported operation");
     }
 
     @Override
-    public MetaStatement getCopy() {
-        MetaOperator operator = new MetaOperator(getObject());
-        operator.setLeftArg(getLeftArg());
-        operator.setRightArg(getRightArg());
-        operator.setReturns(getReturns());
-        return operator;
+    public String getSchemaName() {
+        return getObject().getSchema();
     }
 }
