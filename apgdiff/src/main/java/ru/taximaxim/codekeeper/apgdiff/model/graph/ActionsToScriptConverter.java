@@ -191,8 +191,8 @@ public class ActionsToScriptConverter {
     private boolean isSelectedAction(ActionContainer action, List<TreeElement> selected) {
         Predicate<PgStatement> isSelectedObj = obj ->
         selected.stream()
-        .filter(e -> e.getName().equals(obj.getName()))
         .filter(e -> e.getType().equals(obj.getStatementType()))
+        .filter(e -> e.getName().equals(obj.getName()))
         .map(e -> e.getPgStatement(obj.getDatabase()))
         .anyMatch(obj::equals);
 
