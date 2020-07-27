@@ -58,64 +58,57 @@ public class ActionsToScriptConverter {
         Set<PgStatement> refreshed = new HashSet<>(toRefresh.size());
         for (ActionContainer action : actions) {
             DbObjType type = action.getOldObj().getStatementType();
-            if(type == DbObjType.COLUMN){
+            if (type == DbObjType.COLUMN) {
                 type = DbObjType.TABLE;
             }
-            if (allowedTypes.isEmpty() || allowedTypes.contains(type)) {
-                if (arguments.isScriptFromSelectedObjs()
-                        && !isSelectedAction(action, selected)) {
-                    addHiddenObj(script, action);
-                    continue;
-                }
-                processSequence(action);
-                PgStatement oldObj = action.getOldObj();
-                String depcy = getComment(action, oldObj);
-                switch (action.getAction()) {
-                case CREATE:
-                    if (toRefresh.contains(oldObj)) {
-                        // emit refreshes for views only
-                        // refreshes for other objects serve as markers
-                        // that allow us to skip unmodified drop+create pairs
-                        if (oldObj instanceof MsView) {
-                            script.addStatement(MessageFormat.format(REFRESH_MODULE,
-                                    PgDiffUtils.quoteString(oldObj.getQualifiedName())));
-                        }
-                        refreshed.add(oldObj);
-                    } else {
-                        if (depcy != null) {
-                            script.addStatement(depcy);
-                        }
-                        script.addCreate(oldObj, null, oldObj.getCreationSQL(), true);
-                    }
-                    break;
-                case DROP:
-                    if (!toRefresh.contains(oldObj) && oldObj.canDrop()) {
-                        if (depcy != null) {
-                            script.addStatement(depcy);
-                        }
-                        script.addDrop(oldObj, null, oldObj.getDropSQL());
-                    }
-                    break;
-                case ALTER:
-                    StringBuilder sb = new StringBuilder();
-                    oldObj.appendAlterSQL(action.getNewObj(), sb,
-                            new AtomicBoolean());
-                    if (sb.length() > 0) {
-                        if (depcy != null) {
-                            script.addStatement(depcy);
-                        }
-                        script.addStatement(sb.toString());
-                    }
-                    break;
-                default:
-                    throw new IllegalStateException("Not implemented action");
-                }
-            } else {
-                if (arguments.isStopNotAllowed()) {
-                    throw new NotAllowedObjectException(action.getOldObj().getQualifiedName()
-                            + " (" + type + ") is not an allowed script object. Stopping.");
-                }
+
+            if (!isAllowedAction(action, type, allowedTypes, selected)) {
                 addHiddenObj(script, action);
+                continue;
+            }
+
+            processSequence(action);
+            PgStatement oldObj = action.getOldObj();
+            String depcy = getComment(action, oldObj);
+            switch (action.getAction()) {
+            case CREATE:
+                if (toRefresh.contains(oldObj)) {
+                    // emit refreshes for views only
+                    // refreshes for other objects serve as markers
+                    // that allow us to skip unmodified drop+create pairs
+                    if (oldObj instanceof MsView) {
+                        script.addStatement(MessageFormat.format(REFRESH_MODULE,
+                                PgDiffUtils.quoteString(oldObj.getQualifiedName())));
+                    }
+                    refreshed.add(oldObj);
+                } else {
+                    if (depcy != null) {
+                        script.addStatement(depcy);
+                    }
+                    script.addCreate(oldObj, null, oldObj.getCreationSQL(), true);
+                }
+                break;
+            case DROP:
+                if (!toRefresh.contains(oldObj) && oldObj.canDrop()) {
+                    if (depcy != null) {
+                        script.addStatement(depcy);
+                    }
+                    script.addDrop(oldObj, null, oldObj.getDropSQL());
+                }
+                break;
+            case ALTER:
+                StringBuilder sb = new StringBuilder();
+                oldObj.appendAlterSQL(action.getNewObj(), sb,
+                        new AtomicBoolean());
+                if (sb.length() > 0) {
+                    if (depcy != null) {
+                        script.addStatement(depcy);
+                    }
+                    script.addStatement(sb.toString());
+                }
+                break;
+            default:
+                throw new IllegalStateException("Not implemented action");
             }
         }
 
@@ -135,6 +128,24 @@ public class ActionsToScriptConverter {
             script.addStatement(MessageFormat.format(REFRESH_MODULE,
                     PgDiffUtils.quoteString(orphanRefreshes[i].getQualifiedName())));
         }
+    }
+
+    private boolean isAllowedAction(ActionContainer action, DbObjType type,
+            Collection<DbObjType> allowedTypes, List<TreeElement> selected) {
+        if (arguments.isScriptFromSelectedObjs() && !isSelectedAction(action, selected)) {
+            return false;
+        }
+
+        if (!allowedTypes.isEmpty() && !allowedTypes.contains(type)) {
+            if (arguments.isStopNotAllowed()) {
+                throw new NotAllowedObjectException(action.getOldObj().getQualifiedName()
+                        + " (" + type + ") is not an allowed script object. Stopping.");
+            }
+
+            return false;
+        }
+
+        return true;
     }
 
     private void addHiddenObj(PgDiffScript script, ActionContainer action) {
