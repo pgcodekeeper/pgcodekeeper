@@ -161,17 +161,17 @@ public class CliArgs extends PgDiffArguments {
 
     @Option(name="-O", aliases="--allowed-object", forbids={"--graph", "--parse"},
             handler=DbObjTypeOptionHandler.class,
-            usage="build the script using these object types only"
-                    + "\nhide statements of other objects")
+            usage="build the script using these object types only, hide statements of other objects")
     private List<DbObjType> allowedTypes;
-
-    @Option(name="--script-from-objs-with-diff", forbids={"--graph", "--parse"},
-            usage="use in script only objects with difference")
-    private boolean scriptFromSelectedObjs;
 
     @Option(name="--stop-not-allowed", forbids={"--graph", "--parse"},
             usage="exit with an error when --allowed-object hides a dependency statement from the script")
     private boolean stopNotAllowed;
+
+    @Option(name="--selected-only", forbids={"--graph", "--parse"},
+            usage="build the script using 'selected' objects only, hide statements of other objects"
+                    + "\nin CLI, selected means included by --allowed-object and ignore lists")
+    private boolean selectedOnly;
 
     @Option(name="-I", aliases="--ignore-list", metaVar="<path>", forbids={"--graph", "--parse"},
             usage="use an ignore list to include/exclude objects from diff"
@@ -502,13 +502,13 @@ public class CliArgs extends PgDiffArguments {
     }
 
     @Override
-    public boolean isScriptFromSelectedObjs() {
-        return scriptFromSelectedObjs;
+    public boolean isSelectedOnly() {
+        return selectedOnly;
     }
 
     @Override
-    public void setScriptFromSelectedObjs(boolean scriptFromSelectedObjs) {
-        this.scriptFromSelectedObjs = scriptFromSelectedObjs;
+    public void setSelectedOnly(boolean selectedOnly) {
+        this.selectedOnly = selectedOnly;
     }
 
     @Override

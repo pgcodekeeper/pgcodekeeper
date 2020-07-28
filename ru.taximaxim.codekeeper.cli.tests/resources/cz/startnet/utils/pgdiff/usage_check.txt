@@ -52,13 +52,16 @@ Usage
  -D (--allow-danger-ddl)                : allows dangerous statements in
  <DANGER_STATEMENT>                       safe-mode scripts
  -O (--allowed-object) <OBJECT_TYPE>    : build the script using these object
-                                          types only
-                                          hide statements of other objects
- --script-from-objs-with-diff           : use in script only objects with
-                                          difference
+                                          types only, hide statements of other
+                                          objects
  --stop-not-allowed                     : exit with an error when
                                           --allowed-object hides a dependency
                                           statement from the script
+ --selected-only                        : build the script using 'selected'
+                                          objects only, hide statements of
+                                          other objects
+                                          in CLI, selected means included by
+                                          --allowed-object and ignore lists
  -I (--ignore-list) <path>              : use an ignore list to include/exclude
                                           objects from diff
                                           specify multiple times to use several

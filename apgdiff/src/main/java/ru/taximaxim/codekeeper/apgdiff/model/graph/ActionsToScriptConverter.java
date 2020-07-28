@@ -132,7 +132,7 @@ public class ActionsToScriptConverter {
 
     private boolean isAllowedAction(ActionContainer action, DbObjType type,
             Collection<DbObjType> allowedTypes, List<TreeElement> selected) {
-        if (arguments.isScriptFromSelectedObjs() && !isSelectedAction(action, selected)) {
+        if (arguments.isSelectedOnly() && !isSelectedAction(action, selected)) {
             return false;
         }
 
@@ -152,7 +152,7 @@ public class ActionsToScriptConverter {
         PgStatement old = action.getOldObj();
         StringBuilder sb = new StringBuilder(MessageFormat.format(HIDDEN_OBJECT,
                 old.getQualifiedName(), old.getStatementType()));
-        if (arguments.isScriptFromSelectedObjs()) {
+        if (arguments.isSelectedOnly()) {
             sb.append(" (action ").append(action.getAction()).append(")");
         }
         script.addStatement(sb.toString());
