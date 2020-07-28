@@ -120,6 +120,25 @@ public class PgOperator extends PgStatementWithSearchPath implements IOperator {
         return sb.toString();
     }
 
+    public String getArguments() {
+        StringBuilder signature = new StringBuilder();
+        String left = getLeftArg();
+        String right = getRightArg();
+
+        signature.append('(');
+        if (left != null) {
+            signature.append(left);
+            if (right != null) {
+                signature.append(", ").append(right);
+            }
+        } else {
+            signature.append(right);
+        }
+        signature.append(')');
+
+        return signature.toString();
+    }
+
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
