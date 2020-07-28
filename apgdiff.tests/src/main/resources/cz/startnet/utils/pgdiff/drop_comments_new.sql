@@ -25,6 +25,11 @@ CREATE FUNCTION public.trigger_fnc() RETURNS trigger
     AS $$begin
 end;$$;
 
+CREATE FOREIGN TABLE public.test_ft (
+    c1 integer,
+    c2 text
+) SERVER myserver;
+
 CREATE TABLE public.test (
     id integer NOT NULL,
     text character varying(20) NOT NULL,
@@ -41,6 +46,9 @@ CREATE SEQUENCE public.test_id_seq
     CACHE 1;
 
 ALTER SEQUENCE public.test_id_seq OWNED BY public.test.id;
+
+CREATE MATERIALIZED VIEW public.test_mat_view AS
+    SELECT 1 AS c1 WITH DATA;
 
 CREATE VIEW public.test_view AS
     SELECT test.id, test.text FROM public.test;
