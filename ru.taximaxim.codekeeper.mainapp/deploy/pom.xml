@@ -20,6 +20,7 @@
         <site-repo>git@github.com:pgcodekeeper/pgcodekeeper.github.io.git</site-repo>
         <site-dir>${project.build.directory}/pgcodekeeper.github.io</site-dir>
         <updatesite-dir>${project.basedir}/../updatesite/target</updatesite-dir>
+        <product-dir>${project.basedir}/../product</product-dir>
     </properties>
 
     <profiles>
@@ -44,10 +45,10 @@
                                     <tagName>v${unqualifiedVersion}</tagName>
                                     <name>pgCodeKeeper ${unqualifiedVersion}</name>
                                     <assets>
-                                        <asset>../product/rcp/target/products/pgCodeKeeper-${unqualifiedVersion}-win32.win32.x86_64.zip</asset>
-                                        <asset>../product/rcp/target/products/pgCodeKeeper-${unqualifiedVersion}-linux.gtk.x86_64.tar.gz</asset>
-                                        <asset>../product/rcp/target/products/pgCodeKeeper-${unqualifiedVersion}-macosx.cocoa.x86_64.tar.gz</asset>
-                                        <asset>../product/standalone/target/products/pgCodeKeeper-cli-${unqualifiedVersion}.zip</asset>
+                                        <asset>${product-dir}/rcp/target/products/pgCodeKeeper-${unqualifiedVersion}-win32.win32.x86_64.zip</asset>
+                                        <asset>${product-dir}/rcp/target/products/pgCodeKeeper-${unqualifiedVersion}-linux.gtk.x86_64.tar.gz</asset>
+                                        <asset>${product-dir}/rcp/target/products/pgCodeKeeper-${unqualifiedVersion}-macosx.cocoa.x86_64.tar.gz</asset>
+                                        <asset>${product-dir}/standalone/target/products/pgCodeKeeper-cli-${unqualifiedVersion}.zip</asset>
                                         <asset>${updatesite-dir}/pgCodeKeeper-updatesite-${unqualifiedVersion}.zip</asset>
                                     </assets>
                                 </configuration>
