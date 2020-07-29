@@ -162,6 +162,7 @@ class PageDiff extends WizardPage implements Listener {
     private Button btnCheckFuncBodies;
     private Button btnAlterColUsingExpr;
     private Button btnCreateIdxConcurrent;
+    private Button btnScriptFromSelObjs;
 
     public PageDiff(String pageName, IPreferenceStore mainPrefs, PgDbProject proj) {
         super(pageName, pageName, null);
@@ -259,6 +260,7 @@ class PageDiff extends WizardPage implements Listener {
                 btnCheckFuncBodies.setVisible(selected);
                 btnAlterColUsingExpr.setVisible(selected);
                 btnCreateIdxConcurrent.setVisible(selected);
+                btnScriptFromSelObjs.setVisible(selected);
 
                 UiSync.exec(getShell(), () -> getShell().pack());
             }
@@ -304,6 +306,11 @@ class PageDiff extends WizardPage implements Listener {
         btnCreateIdxConcurrent.setText(Messages.DbUpdatePrefPage_print_index_with_concurrently);
         btnCreateIdxConcurrent.setSelection(mainPrefs.getBoolean(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY));
         btnCreateIdxConcurrent.setVisible(false);
+
+        btnScriptFromSelObjs = new Button(container, SWT.CHECK);
+        btnScriptFromSelObjs.setText(Messages.DbUpdatePrefPage_script_from_selected_objs);
+        btnScriptFromSelObjs.setSelection(mainPrefs.getBoolean(DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS));
+        btnScriptFromSelObjs.setVisible(false);
 
         if (proj != null) {
             dbTarget.setDbStore(new StructuredSelection(proj.getProject().getLocation().toFile()));
@@ -373,6 +380,7 @@ class PageDiff extends WizardPage implements Listener {
         oneTimePrefs.put(DB_UPDATE_PREF.USING_ON_OFF, btnAlterColUsingExpr.getSelection());
         oneTimePrefs.put(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY, btnCreateIdxConcurrent.getSelection());
         oneTimePrefs.put(PREF.SIMPLIFY_VIEW, btnSimplifyView.getSelection());
+        oneTimePrefs.put(DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS, btnScriptFromSelObjs.getSelection());
 
         return oneTimePrefs;
     }

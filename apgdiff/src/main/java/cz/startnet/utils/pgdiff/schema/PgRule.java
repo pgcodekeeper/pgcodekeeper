@@ -140,8 +140,8 @@ public class PgRule extends PgStatementWithSearchPath{
     @Override
     public String getDropSQL() {
         StringBuilder sbSQL = new StringBuilder("DROP RULE ");
-        sbSQL.append(PgDiffUtils.getQuotedName(getName()));
-        sbSQL.append(" ON ").append(getParent().getQualifiedName()).append(';');
+        appendFullName(sbSQL);
+        sbSQL.append(';');
         return sbSQL.toString();
     }
 
@@ -172,6 +172,13 @@ public class PgRule extends PgStatementWithSearchPath{
             newRule.appendCommentSql(sb);
         }
         return sb.length() > startLength;
+    }
+
+    @Override
+    protected StringBuilder appendFullName(StringBuilder sb) {
+        sb.append(PgDiffUtils.getQuotedName(getName())).append(" ON ");
+        sb.append(getParent().getQualifiedName());
+        return sb;
     }
 
     @Override

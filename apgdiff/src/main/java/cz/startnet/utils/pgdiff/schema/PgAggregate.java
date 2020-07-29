@@ -58,9 +58,7 @@ public class PgAggregate extends AbstractPgFunction {
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE AGGREGATE ");
-        sbSQL.append(PgDiffUtils.getQuotedName(getSchemaName())).append('.');
-
-        appendAggSignature(sbSQL);
+        appendFullName(sbSQL);
 
         sbSQL.append(" (\n\tSFUNC").append(" = ");
         sbSQL.append(sFunc);
@@ -177,17 +175,9 @@ public class PgAggregate extends AbstractPgFunction {
         return true;
     }
 
-    /**
-     * Appends signature of aggregate to sb.<br />
-     *
-     * Used for CREATE, ALTER, DROP, COMMENT operations in Aggregates.<br /><br />
-     *
-     * (For PRIVILEGES in Aggregates used common method
-     * {@link AbstractPgFunction#appendFunctionSignature(StringBuilder,
-            includeDefaultValues, includeArgNames)}.)
-     *
-     */
-    public StringBuilder appendAggSignature(StringBuilder sb) {
+    @Override
+    public StringBuilder appendFullName(StringBuilder sb) {
+        sb.append(PgDiffUtils.getQuotedName(getSchemaName())).append('.');
         sb.append(PgDiffUtils.getQuotedName(name)).append('(');
         if (arguments.isEmpty()) {
             sb.append('*');

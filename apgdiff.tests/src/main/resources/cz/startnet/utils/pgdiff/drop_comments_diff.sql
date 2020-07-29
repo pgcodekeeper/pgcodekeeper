@@ -18,13 +18,15 @@ COMMENT ON DOMAIN public.dom IS NULL;
 
 COMMENT ON SEQUENCE public.test_id_seq IS NULL;
 
-COMMENT ON TEXT SEARCH PARSER public.test_parser IS null;
+COMMENT ON TEXT SEARCH PARSER public.test_parser IS NULL;
 
-COMMENT ON TEXT SEARCH TEMPLATE public.test_template IS null;
+COMMENT ON TEXT SEARCH TEMPLATE public.test_template IS NULL;
 
 COMMENT ON TEXT SEARCH DICTIONARY public.test_dictionary IS NULL;
 
-COMMENT ON TEXT SEARCH CONFIGURATION public.test_config IS null;
+COMMENT ON TEXT SEARCH CONFIGURATION public.test_config IS NULL;
+
+COMMENT ON FOREIGN TABLE public.test_ft IS NULL;
 
 COMMENT ON TABLE public.test IS NULL;
 
@@ -39,6 +41,8 @@ COMMENT ON PROCEDURE public.test_proc(arg integer) IS NULL;
 COMMENT ON CONSTRAINT text_check ON public.test IS NULL;
 
 COMMENT ON CONSTRAINT test_pkey ON public.test IS NULL;
+
+COMMENT ON MATERIALIZED VIEW public.test_mat_view IS NULL;
 
 COMMENT ON VIEW public.test_view IS NULL;
 

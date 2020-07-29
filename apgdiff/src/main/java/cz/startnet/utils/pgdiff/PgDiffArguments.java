@@ -31,6 +31,7 @@ public class PgDiffArguments implements Cloneable {
     private boolean enableFunctionBodiesDependencies;
     private String timeZone;
     private boolean usingTypeCastOff;
+    private boolean selectedOnly;
     private boolean concurrentlyMode;
     private boolean safeMode;
     private boolean runOnTarget;
@@ -280,6 +281,14 @@ public class PgDiffArguments implements Cloneable {
 
     public void setUsingTypeCastOff(boolean usingTypeCastOff) {
         this.usingTypeCastOff = usingTypeCastOff;
+    }
+
+    public boolean isSelectedOnly() {
+        return selectedOnly;
+    }
+
+    public void setSelectedOnly(boolean selectedOnly) {
+        this.selectedOnly = selectedOnly;
     }
 
     public boolean isConcurrentlyMode() {
