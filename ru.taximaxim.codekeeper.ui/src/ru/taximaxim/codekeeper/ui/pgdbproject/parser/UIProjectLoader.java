@@ -15,7 +15,6 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -44,6 +43,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.exporter.AbstractModelExporter;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
+import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
 
 public class UIProjectLoader extends ProjectLoader {
 
@@ -77,8 +77,7 @@ public class UIProjectLoader extends ProjectLoader {
         for (Object error : errors) {
             if (error instanceof AntlrError) {
                 AntlrError antlrError = (AntlrError) error;
-                IPath path = new Path(antlrError.getFilePath());
-                IFile file = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(path);
+                IFile file = FileUtilsUi.getFileForLocation(antlrError);
                 if (file != null) {
                     PgUIDumpLoader.addMarker(file, antlrError);
                 }
