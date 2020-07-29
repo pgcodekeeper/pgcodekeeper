@@ -12,7 +12,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>ru.taximaxim.codeKeeper</groupId>
     <artifactId>ru.taximaxim.codeKeeper</artifactId>
-    <version>5.10.4-SNAPSHOT</version>
+    <version>5.10.5-SNAPSHOT</version>
     <packaging>pom</packaging>
     <modules>
         <module>..</module>
@@ -127,7 +127,7 @@
                         <artifact>
                             <groupId>ru.taximaxim.codeKeeper</groupId>
                             <artifactId>ru.taximaxim.codeKeeper</artifactId>
-                            <version>5.10.4-SNAPSHOT</version>
+                            <version>5.10.5-SNAPSHOT</version>
                             <classifier>../${target.definition.file}</classifier>
                         </artifact>
                     </target>
