@@ -119,6 +119,7 @@ public abstract class DbSource {
         args.setUsingTypeCastOff(!prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.USING_ON_OFF));
         args.setSelectedOnly(prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS));
         args.setIgnorePrivileges(prefs.getBooleanOfRootPref(PREF.NO_PRIVILEGES));
+        args.setIgnoreColumnOrder(prefs.getBooleanOfRootPref(PREF.IGNORE_COLUMN_ORDER));
         args.setSimplifyView(prefs.getBooleanOfRootPref(PREF.SIMPLIFY_VIEW));
         args.setTimeZone(timeZone);
         args.setKeepNewlines(!forceUnixNewlines);

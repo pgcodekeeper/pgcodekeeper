@@ -154,6 +154,7 @@ class PageDiff extends WizardPage implements Listener {
     private CLabel lblWarnPosix;
 
     private Button btnNoPrivileges;
+    private Button btnIgnoreColumnOrder;
     private Button btnEnableFuncDep;
     private Button btnSimplifyView;
     private Button btnUseGlobalIgnoreList;
@@ -253,6 +254,7 @@ class PageDiff extends WizardPage implements Listener {
             public void widgetSelected(SelectionEvent e) {
                 boolean selected = btnShowPrefs.getSelection();
                 btnNoPrivileges.setVisible(selected);
+                btnIgnoreColumnOrder.setVisible(selected);
                 btnEnableFuncDep.setVisible(selected);
                 btnSimplifyView.setVisible(selected);
                 btnUseGlobalIgnoreList.setVisible(selected);
@@ -270,6 +272,11 @@ class PageDiff extends WizardPage implements Listener {
         btnNoPrivileges.setText(Messages.dbUpdatePrefPage_ignore_privileges);
         btnNoPrivileges.setSelection(mainPrefs.getBoolean(PREF.NO_PRIVILEGES));
         btnNoPrivileges.setVisible(false);
+
+        btnIgnoreColumnOrder = new Button(container, SWT.CHECK);
+        btnIgnoreColumnOrder.setText(Messages.GeneralPrefPage_ignore_column_order);
+        btnIgnoreColumnOrder.setSelection(mainPrefs.getBoolean(PREF.IGNORE_COLUMN_ORDER));
+        btnIgnoreColumnOrder.setVisible(false);
 
         btnEnableFuncDep = new Button(container, SWT.CHECK);
         btnEnableFuncDep.setText(Messages.GeneralPrefPage_enable_body_dependencies);
@@ -374,6 +381,7 @@ class PageDiff extends WizardPage implements Listener {
 
         oneTimePrefs.put(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION, btnScriptAddTransact.getSelection());
         oneTimePrefs.put(PREF.NO_PRIVILEGES, btnNoPrivileges.getSelection());
+        oneTimePrefs.put(PREF.IGNORE_COLUMN_ORDER, btnIgnoreColumnOrder.getSelection());
         oneTimePrefs.put(PREF.ENABLE_BODY_DEPENDENCIES, btnEnableFuncDep.getSelection());
         oneTimePrefs.put(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, btnUseGlobalIgnoreList.getSelection());
         oneTimePrefs.put(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES, btnCheckFuncBodies.getSelection());

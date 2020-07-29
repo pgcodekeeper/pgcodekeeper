@@ -37,6 +37,10 @@ implements IWorkbenchPreferencePage  {
                 Messages.dbUpdatePrefPage_ignore_privileges,
                 getFieldEditorParent()));
 
+        addField(new BooleanFieldEditor(PREF.IGNORE_COLUMN_ORDER,
+                Messages.GeneralPrefPage_ignore_column_order,
+                getFieldEditorParent()));
+
         BooleanFieldEditor bodyDeps = new BooleanFieldEditor(PREF.ENABLE_BODY_DEPENDENCIES,
                 Messages.GeneralPrefPage_enable_body_dependencies,
                 getFieldEditorParent());
@@ -48,12 +52,12 @@ implements IWorkbenchPreferencePage  {
                 Messages.GeneralPrefPage_simplify_view,
                 getFieldEditorParent()));
 
-        addField(new BooleanFieldEditor(PREF.REUSE_OPEN_COMPARE_EDITOR,
-                Messages.GeneralPrefPage_reuse_open_compare_editor,
-                getFieldEditorParent()));
-
         addField(new BooleanFieldEditor(PREF.IGNORE_CONCURRENT_MODIFICATION,
                 Messages.GeneralPrefPage_ignore_concurrent_modification,
+                getFieldEditorParent()));
+
+        addField(new BooleanFieldEditor(PREF.REUSE_OPEN_COMPARE_EDITOR,
+                Messages.GeneralPrefPage_reuse_open_compare_editor,
                 getFieldEditorParent()));
 
         addField(new BooleanFieldEditor(PREF.HEAP_SIZE_WARNING,
