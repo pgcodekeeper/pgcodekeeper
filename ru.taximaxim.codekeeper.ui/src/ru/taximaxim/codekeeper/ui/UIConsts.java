@@ -29,6 +29,7 @@ public interface UIConsts {
     interface MARKER {
         String ERROR = PLUGIN_ID.THIS + ".sql.errormarker"; //$NON-NLS-1$
         String DANGER_ANNOTATION = PLUGIN_ID.THIS + ".sql.dangerannotation"; //$NON-NLS-1$
+        String OBJECT_OCCURRENCE = PLUGIN_ID.THIS + ".sql.objectoccurrence"; //$NON-NLS-1$
     }
 
     interface DECORATOR {
@@ -61,6 +62,7 @@ public interface UIConsts {
         String FORCE_SHOW_CONSOLE = "prefForceShowConsole"; //$NON-NLS-1$
         String DB_STORE_FILES = "prefDbStoreHistory"; //$NON-NLS-1$
         String NO_PRIVILEGES = "prefNoPrivileges"; //$NON-NLS-1$
+        String IGNORE_COLUMN_ORDER = "prefIgnoreColumnOrder"; //$NON-NLS-1$
         String SIMPLIFY_VIEW = "prefSimplifyView"; //$NON-NLS-1$
         String ENABLE_BODY_DEPENDENCIES = "prefEnableBodyDependencies"; //$NON-NLS-1$
         String LAST_OPENED_LOCATION = "prefLastOpenedLocation"; //$NON-NLS-1$
@@ -87,6 +89,7 @@ public interface UIConsts {
         String COMMAND_LINE_DDL_UPDATE = "prefCommandLineDdlUpdate"; //$NON-NLS-1$;
         String MIGRATION_COMMAND = "prefMigrationCommand"; //$NON-NLS-1$;
         String PRINT_INDEX_WITH_CONCURRENTLY = "prefPrintIndexWithConcurrently"; //$NON-NLS-1$;
+        String SCRIPT_FROM_SELECTED_OBJS = "prefScriptFromSelectedObjs"; //$NON-NLS-1$;
     }
 
     interface PG_EDIT_PREF {

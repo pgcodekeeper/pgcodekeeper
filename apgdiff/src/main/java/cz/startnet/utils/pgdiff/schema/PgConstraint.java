@@ -9,6 +9,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgConstraint extends AbstractConstraint {
 
@@ -80,6 +81,19 @@ public class PgConstraint extends AbstractConstraint {
         }
 
         return sb.length() > startLength;
+    }
+
+    @Override
+    protected StringBuilder appendCommentSql(StringBuilder sb) {
+        sb.append("COMMENT ON CONSTRAINT ");
+        sb.append(PgDiffUtils.getQuotedName(getName())).append(" ON ");
+        if (getParent().getStatementType() == DbObjType.DOMAIN) {
+            sb.append("DOMAIN ");
+        }
+        sb.append(getParent().getQualifiedName());
+        return sb.append(" IS ")
+                .append(comment == null || comment.isEmpty() ? "NULL" : comment)
+                .append(';');
     }
 
     @Override

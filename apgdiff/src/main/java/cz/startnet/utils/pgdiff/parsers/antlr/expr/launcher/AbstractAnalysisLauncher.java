@@ -15,17 +15,15 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ExpressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.AbstractExprWithNmspc;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExprWithNmspc;
 import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsAbstractExprWithNmspc;
 import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsValueExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.IDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
+import cz.startnet.utils.pgdiff.schema.meta.MetaContainer;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -79,14 +77,14 @@ public abstract class AbstractAnalysisLauncher {
         }
     }
 
-    public Set<GenericColumn> launchAnalyze(List<Object> errors, IDatabase db) {
+    public Set<GenericColumn> launchAnalyze(List<Object> errors, MetaContainer meta) {
         // Duplicated objects don't have parent, skip them
         if (stmt.getParent() == null) {
             return Collections.emptySet();
         }
 
         try {
-            Set<PgObjLocation> locs = analyze(ctx, db);
+            Set<PgObjLocation> locs = analyze(ctx, meta);
             Set<GenericColumn> depcies = new LinkedHashSet<>();
             EnumSet<DbObjType> disabledDepcies = getDisabledDepcies();
             for (PgObjLocation loc : locs) {
@@ -123,16 +121,11 @@ public abstract class AbstractAnalysisLauncher {
         return EnumSet.noneOf(DbObjType.class);
     }
 
-    protected abstract Set<PgObjLocation> analyze(ParserRuleContext ctx, IDatabase db);
+    protected abstract Set<PgObjLocation> analyze(ParserRuleContext ctx, MetaContainer meta);
 
     protected <T extends ParserRuleContext> Set<PgObjLocation> analyze(
             T ctx, AbstractExprWithNmspc<T> analyzer) {
         analyzer.analyze(ctx);
-        return analyzer.getDepcies();
-    }
-
-    protected Set<PgObjLocation> analyze(VexContext ctx, ValueExpr analyzer) {
-        analyzer.analyze(new Vex(ctx));
         return analyzer.getDepcies();
     }
 
@@ -151,12 +144,12 @@ public abstract class AbstractAnalysisLauncher {
      * Sets up namespace for Constraint/Index expr analysis
      * @return
      */
-    protected Set<PgObjLocation> analyzeTableChildVex(VexContext ctx,  IDatabase db) {
+    protected Set<PgObjLocation> analyzeTableChildVex(VexContext ctx, MetaContainer meta) {
         PgStatement table = stmt.getParent();
         String schemaName = table.getParent().getName();
         String rawTableReference = table.getName();
 
-        ValueExprWithNmspc valExptWithNmspc = new ValueExprWithNmspc(db);
+        ValueExprWithNmspc valExptWithNmspc = new ValueExprWithNmspc(meta);
         valExptWithNmspc.addRawTableReference(
                 new GenericColumn(schemaName, rawTableReference, DbObjType.TABLE));
         return analyze(ctx, valExptWithNmspc);

@@ -13,8 +13,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.expr.Function;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Sql;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.IDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import cz.startnet.utils.pgdiff.schema.meta.MetaContainer;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
@@ -40,9 +40,9 @@ public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
     }
 
     @Override
-    public Set<PgObjLocation> analyze(ParserRuleContext ctx, IDatabase db) {
+    public Set<PgObjLocation> analyze(ParserRuleContext ctx, MetaContainer meta) {
         if (ctx instanceof SqlContext) {
-            Sql sql = new Sql(db);
+            Sql sql = new Sql(meta);
             for (int i = 0; i < funcArgs.size(); i++) {
                 Pair<String, GenericColumn> arg = funcArgs.get(i);
                 sql.declareNamespaceVar("$" + (i + 1), arg.getFirst(), arg.getSecond());
@@ -50,7 +50,7 @@ public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
             return analyze((SqlContext) ctx, sql);
         }
 
-        Function function = new Function(db);
+        Function function = new Function(meta);
         for (int i = 0; i < funcArgs.size(); i++) {
             Pair<String, GenericColumn> arg = funcArgs.get(i);
             function.declareNamespaceVar("$" + (i + 1), arg.getFirst(), arg.getSecond());

@@ -8,7 +8,6 @@ import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgOperator;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -94,12 +93,13 @@ public class OperatorsReader extends JdbcReader {
         schema.addOperator(oper);
     }
 
-    protected String getProcessedName(PgStatement st, String schemaName, String funcName) {
+    private String getProcessedName(PgOperator oper, String schemaName, String funcName) {
         StringBuilder sb = new StringBuilder();
         if (!ApgdiffConsts.PG_CATALOG.equalsIgnoreCase(schemaName)) {
             sb.append(PgDiffUtils.getQuotedName(schemaName)).append('.');
             if (!ApgdiffUtils.isPgSystemSchema(schemaName)) {
-                st.addDep(new GenericColumn(schemaName, funcName, DbObjType.FUNCTION));
+                String name = funcName + oper.getArguments();
+                oper.addDep(new GenericColumn(schemaName, name, DbObjType.FUNCTION));
             }
         }
         sb.append(PgDiffUtils.getQuotedName(funcName));

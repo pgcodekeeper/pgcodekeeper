@@ -144,6 +144,10 @@ public class PgObjLocation extends ContextLocation {
         return obj == null ? null : obj.schema;
     }
 
+    public String getTable() {
+        return obj == null ? null : obj.table;
+    }
+
     public DbObjType getType() {
         return obj == null ? null : obj.type;
     }
@@ -206,5 +210,15 @@ public class PgObjLocation extends ContextLocation {
                 filePath);
         loc.setLength(length);
         return loc;
+    }
+
+    @Override
+    public String toString() {
+        GenericColumn gc = getObj();
+        if (gc != null) {
+            return gc.toString();
+        }
+
+        return super.toString();
     }
 }

@@ -5,9 +5,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Predicate;
 
 import cz.startnet.utils.pgdiff.NotAllowedObjectException;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
@@ -17,6 +19,7 @@ import cz.startnet.utils.pgdiff.schema.MsView;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 
 public class ActionsToScriptConverter {
 
@@ -48,67 +51,64 @@ public class ActionsToScriptConverter {
     /**
      * Заполняет скрипт объектами с учетом их порядка по зависимостям
      * @param script скрипт для печати
+     * @param selected коллекция выбранных элементов в панели сравнения
      */
-    public void fillScript(PgDiffScript script) {
+    public void fillScript(PgDiffScript script, List<TreeElement> selected) {
         Collection<DbObjType> allowedTypes = arguments.getAllowedTypes();
         Set<PgStatement> refreshed = new HashSet<>(toRefresh.size());
         for (ActionContainer action : actions) {
             DbObjType type = action.getOldObj().getStatementType();
-            if(type == DbObjType.COLUMN){
+            if (type == DbObjType.COLUMN) {
                 type = DbObjType.TABLE;
             }
-            if (allowedTypes.isEmpty() || allowedTypes.contains(type)){
-                processSequence(action);
-                PgStatement oldObj = action.getOldObj();
-                String depcy = getComment(action, oldObj);
-                switch (action.getAction()) {
-                case CREATE:
-                    if (toRefresh.contains(oldObj)) {
-                        // emit refreshes for views only
-                        // refreshes for other objects serve as markers
-                        // that allow us to skip unmodified drop+create pairs
-                        if (oldObj instanceof MsView) {
-                            script.addStatement(MessageFormat.format(REFRESH_MODULE,
-                                    PgDiffUtils.quoteString(oldObj.getQualifiedName())));
-                        }
-                        refreshed.add(oldObj);
-                    } else {
-                        if (depcy != null) {
-                            script.addStatement(depcy);
-                        }
-                        script.addCreate(oldObj, null, oldObj.getCreationSQL(), true);
+
+            if (!isAllowedAction(action, type, allowedTypes, selected)) {
+                addHiddenObj(script, action);
+                continue;
+            }
+
+            processSequence(action);
+            PgStatement oldObj = action.getOldObj();
+            String depcy = getComment(action, oldObj);
+            switch (action.getAction()) {
+            case CREATE:
+                if (toRefresh.contains(oldObj)) {
+                    // emit refreshes for views only
+                    // refreshes for other objects serve as markers
+                    // that allow us to skip unmodified drop+create pairs
+                    if (oldObj instanceof MsView) {
+                        script.addStatement(MessageFormat.format(REFRESH_MODULE,
+                                PgDiffUtils.quoteString(oldObj.getQualifiedName())));
                     }
-                    break;
-                case DROP:
-                    if (!toRefresh.contains(oldObj) && oldObj.canDrop()) {
-                        if (depcy != null) {
-                            script.addStatement(depcy);
-                        }
-                        script.addDrop(oldObj, null, oldObj.getDropSQL());
+                    refreshed.add(oldObj);
+                } else {
+                    if (depcy != null) {
+                        script.addStatement(depcy);
                     }
-                    break;
-                case ALTER:
-                    StringBuilder sb = new StringBuilder();
-                    oldObj.appendAlterSQL(action.getNewObj(), sb,
-                            new AtomicBoolean());
-                    if (sb.length() > 0) {
-                        if (depcy != null) {
-                            script.addStatement(depcy);
-                        }
-                        script.addStatement(sb.toString());
-                    }
-                    break;
-                default:
-                    throw new IllegalStateException("Not implemented action");
+                    script.addCreate(oldObj, null, oldObj.getCreationSQL(), true);
                 }
-            } else {
-                PgStatement old = action.getOldObj();
-                if (arguments.isStopNotAllowed()) {
-                    throw new NotAllowedObjectException(old.getQualifiedName()
-                            + " (" + type + ") is not an allowed script object. Stopping.");
+                break;
+            case DROP:
+                if (!toRefresh.contains(oldObj) && oldObj.canDrop()) {
+                    if (depcy != null) {
+                        script.addStatement(depcy);
+                    }
+                    script.addDrop(oldObj, null, oldObj.getDropSQL());
                 }
-                script.addStatement(MessageFormat.format(HIDDEN_OBJECT,
-                        old.getQualifiedName(), old.getStatementType()));
+                break;
+            case ALTER:
+                StringBuilder sb = new StringBuilder();
+                oldObj.appendAlterSQL(action.getNewObj(), sb,
+                        new AtomicBoolean());
+                if (sb.length() > 0) {
+                    if (depcy != null) {
+                        script.addStatement(depcy);
+                    }
+                    script.addStatement(sb.toString());
+                }
+                break;
+            default:
+                throw new IllegalStateException("Not implemented action");
             }
         }
 
@@ -128,6 +128,34 @@ public class ActionsToScriptConverter {
             script.addStatement(MessageFormat.format(REFRESH_MODULE,
                     PgDiffUtils.quoteString(orphanRefreshes[i].getQualifiedName())));
         }
+    }
+
+    private boolean isAllowedAction(ActionContainer action, DbObjType type,
+            Collection<DbObjType> allowedTypes, List<TreeElement> selected) {
+        if (arguments.isSelectedOnly() && !isSelectedAction(action, selected)) {
+            return false;
+        }
+
+        if (!allowedTypes.isEmpty() && !allowedTypes.contains(type)) {
+            if (arguments.isStopNotAllowed()) {
+                throw new NotAllowedObjectException(action.getOldObj().getQualifiedName()
+                        + " (" + type + ") is not an allowed script object. Stopping.");
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private void addHiddenObj(PgDiffScript script, ActionContainer action) {
+        PgStatement old = action.getOldObj();
+        StringBuilder sb = new StringBuilder(MessageFormat.format(HIDDEN_OBJECT,
+                old.getQualifiedName(), old.getStatementType()));
+        if (arguments.isSelectedOnly()) {
+            sb.append(" (action ").append(action.getAction()).append(")");
+        }
+        script.addStatement(sb.toString());
     }
 
     private String getComment(ActionContainer action, PgStatement oldObj) {
@@ -160,6 +188,35 @@ public class ActionsToScriptConverter {
                     !Objects.equals(newSeq.getOwnedBy(), oldSeq.getOwnedBy()))) {
                 sequencesOwnedBy.add(newSeq);
             }
+        }
+    }
+
+    /**
+     * Determines whether an action object has been selected in the diff panel.
+     *
+     * @param action script action element
+     * @param selected collection of selected elements in diff panel
+     *
+     * @return TRUE if the action object was selected in the diff panel, otherwise FALSE
+     */
+    private boolean isSelectedAction(ActionContainer action, List<TreeElement> selected) {
+        Predicate<PgStatement> isSelectedObj = obj ->
+        selected.stream()
+        .filter(e -> e.getType().equals(obj.getStatementType()))
+        .filter(e -> e.getName().equals(obj.getName()))
+        .map(e -> e.getPgStatement(obj.getDatabase()))
+        .anyMatch(obj::equals);
+
+        switch (action.getAction()) {
+        case CREATE:
+            return isSelectedObj.test(action.getNewObj());
+        case ALTER:
+            return isSelectedObj.test(action.getNewObj())
+                    && isSelectedObj.test(action.getOldObj());
+        case DROP:
+            return isSelectedObj.test(action.getOldObj());
+        default:
+            throw new IllegalStateException("Not implemented action");
         }
     }
 }

@@ -240,6 +240,11 @@ public class QueriesBatchCallable extends StatementCallable<String> {
         int begin = query.lastIndexOf('\n', offset) + 1;
         int end = query.indexOf('\n', offset);
 
+        if (end == offset) {
+            // error in last character in previous line
+            begin = query.lastIndexOf('\n', offset - 1) + 1;
+        }
+
         String line;
         if (end == -1) {
             line = query.substring(begin);
