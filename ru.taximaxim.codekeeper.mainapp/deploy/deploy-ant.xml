@@ -21,7 +21,7 @@
 				<fileset dir="${site-dir}/update" includes="**/*" />
 			</delete>
 			<copy todir="${site-dir}/update">
-				<fileset dir="${updatesite-dir}//repository" />
+				<fileset dir="${updatesite-dir}/repository" />
 			</copy>
 
 			<echo message="adding to repo index" />

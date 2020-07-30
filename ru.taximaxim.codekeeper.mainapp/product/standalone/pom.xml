@@ -7,12 +7,13 @@
     <parent>
         <artifactId>ru.taximaxim.codeKeeper</artifactId>
         <groupId>ru.taximaxim.codeKeeper</groupId>
-        <version>5.10.4-SNAPSHOT</version>
+        <version>${revision}</version>
         <relativePath>../../../</relativePath>
     </parent>
 
     <groupId>ru.taximaxim.codeKeeper</groupId>
     <artifactId>ru.taximaxim.codekeeper.standalone.product</artifactId>
+    <version>5.10.5-SNAPSHOT</version>
     <packaging>eclipse-repository</packaging>
 
     <properties>

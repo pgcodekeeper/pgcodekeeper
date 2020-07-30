@@ -16,6 +16,8 @@ COMMENT ON DOMAIN public.dom IS 'Domain comment 2';
 
 COMMENT ON SEQUENCE public.test_id_seq IS 'test table sequence 2';
 
+COMMENT ON FOREIGN TABLE public.test_ft IS 'test foreign table 2';
+
 COMMENT ON TABLE public.test IS 'test table 2';
 
 COMMENT ON COLUMN public.test.id IS 'id column 2';
@@ -29,6 +31,8 @@ COMMENT ON PROCEDURE public.test_proc(arg integer) IS 'test procedure 2';
 COMMENT ON CONSTRAINT text_check ON public.test IS 'text check 2';
 
 COMMENT ON CONSTRAINT test_pkey ON public.test IS 'primary key 2';
+
+COMMENT ON MATERIALIZED VIEW public.test_mat_view IS 'test mat view 2';
 
 COMMENT ON VIEW public.test_view IS 'test view 2';
 

@@ -393,6 +393,11 @@ public class PgDatabase extends PgStatement implements IDatabase {
     }
 
     @Override
+    protected StringBuilder appendFullName(StringBuilder sb) {
+        return sb.append("current_database()");
+    }
+
+    @Override
     public boolean compare(PgStatement obj) {
         return obj instanceof PgDatabase && super.compare(obj);
     }

@@ -49,12 +49,8 @@ implements PgOptionContainer {
     }
 
     @Override
-    protected StringBuilder appendCommentSql(StringBuilder sb) {
-        sb.append("COMMENT ON TEXT SEARCH DICTIONARY ");
-        sb.append(getQualifiedName());
-        return sb.append(" IS ")
-                .append(comment == null || comment.isEmpty() ? "NULL" : comment)
-                .append(';');
+    protected String getTypeName() {
+        return "TEXT SEARCH DICTIONARY";
     }
 
     @Override
