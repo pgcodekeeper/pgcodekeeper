@@ -32,6 +32,7 @@ public class PgDiffArguments implements Cloneable {
     private String timeZone;
     private boolean usingTypeCastOff;
     private boolean selectedOnly;
+    private boolean dataMovementMode;
     private boolean concurrentlyMode;
     private boolean safeMode;
     private boolean runOnTarget;
@@ -289,6 +290,14 @@ public class PgDiffArguments implements Cloneable {
 
     public void setSelectedOnly(boolean selectedOnly) {
         this.selectedOnly = selectedOnly;
+    }
+
+    public boolean isDataMovementMode() {
+        return dataMovementMode;
+    }
+
+    public void setDataMovementMode(boolean dataMovementMode) {
+        this.dataMovementMode = dataMovementMode;
     }
 
     public boolean isConcurrentlyMode() {

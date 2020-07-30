@@ -330,6 +330,8 @@ public final class Messages extends NLS {
 
     public static String DbStorePrefPage_secure_storage_error_title;
 
+    public static String DbUpdatePrefPage_allow_data_movement;
+
     public static String DbUpdatePrefPage_alter_seq_restart_statement;
 
     public static String DbUpdatePrefPage_print_index_with_concurrently;
