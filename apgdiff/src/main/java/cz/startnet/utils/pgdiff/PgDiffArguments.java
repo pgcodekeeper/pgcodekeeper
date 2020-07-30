@@ -54,6 +54,7 @@ public class PgDiffArguments implements Cloneable {
     private boolean graphReverse;
     private final List<String> graphNames = new ArrayList<>();
     private boolean ignoreErrors;
+    private boolean ignoreColumnOrder;
 
     public void setModeParse(final boolean modeParse) {
         this.modeParse = modeParse;
@@ -213,6 +214,14 @@ public class PgDiffArguments implements Cloneable {
 
     public void setIgnoreErrors(boolean ignoreErrors) {
         this.ignoreErrors = ignoreErrors;
+    }
+
+    public boolean isIgnoreColumnOrder() {
+        return ignoreColumnOrder;
+    }
+
+    public void setIgnoreColumnOrder(boolean ignoreColumnOrder) {
+        this.ignoreColumnOrder = ignoreColumnOrder;
     }
 
     public String getInCharsetName() {
