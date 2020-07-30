@@ -31,8 +31,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Id_tokenContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identifier_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Including_indexContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Predefined_typeContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
@@ -265,8 +267,16 @@ public abstract class ParserAbstract {
         return new Pair<>(s, dollarText.get(0).getSymbol());
     }
 
-    public static List<ParserRuleContext> getIdentifiers(ParserRuleContext qNameCtx) {
+    public static List<ParserRuleContext> getIdentifiers(Schema_qualified_nameContext qNameCtx) {
         return qNameCtx.getRuleContexts(ParserRuleContext.class);
+    }
+
+    public static List<ParserRuleContext> getIdentifiers(Schema_qualified_name_nontypeContext qNameNonTypeCtx) {
+        return qNameNonTypeCtx.getRuleContexts(ParserRuleContext.class);
+    }
+
+    public static List<ParserRuleContext> getIdentifiers(Operator_nameContext operQNameCtx) {
+        return operQNameCtx.getRuleContexts(ParserRuleContext.class);
     }
 
     protected PgObjLocation addObjReference(List<? extends ParserRuleContext> ids,
