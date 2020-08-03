@@ -111,7 +111,7 @@ public class MsModelExporter extends AbstractModelExporter {
             if (obj.hasChildren()) {
                 StringBuilder groupSql = new StringBuilder(dump);
                 // only tables and views can be here
-                obj.getChildren().map(st -> (PgStatementWithSearchPath)st).sorted(new ExportTableOrder())
+                obj.getChildren().sorted(ExportTableOrder.INSTANCE)
                 .forEach(st -> groupSql.append(GROUP_DELIMITER).append(getDumpSql(st)));
                 dump = groupSql.toString();
             }
@@ -142,11 +142,7 @@ public class MsModelExporter extends AbstractModelExporter {
         case INDEX:
         case TRIGGER:
             TreeElement elParent = el.getParent();
-            if (elParent.getType() == DbObjType.TABLE){
-                processTableAndContents(elParent, elParent.getPgStatement(oldDb), el);
-            } else {
-                processViewAndContents(elParent, elParent.getPgStatement(oldDb), el);
-            }
+            processContainer(elParent, elParent.getPgStatement(oldDb), el);
             break;
         default:
             deleteStatementIfExists(st);
@@ -178,17 +174,11 @@ public class MsModelExporter extends AbstractModelExporter {
         case CONSTRAINT:
         case INDEX:
         case TRIGGER:
-            if (elParent.getType() == DbObjType.TABLE) {
-                processTableAndContents(elParent, elParent.getPgStatement(newDb), el);
-            } else {
-                processViewAndContents(elParent, elParent.getPgStatement(newDb), el);
-            }
+            processContainer(elParent, elParent.getPgStatement(newDb), el);
             break;
         case TABLE:
-            processTableAndContents(el, stInNew, el);
-            break;
         case VIEW:
-            processViewAndContents(el, stInNew, el);
+            processContainer(el, stInNew, el);
             break;
         default:
             throw new IllegalStateException("Unsupported export type: " + stInNew.getStatementType());
@@ -217,17 +207,11 @@ public class MsModelExporter extends AbstractModelExporter {
         case CONSTRAINT:
         case INDEX:
         case TRIGGER:
-            if (elParent.getType() == DbObjType.TABLE) {
-                processTableAndContents(elParent, elParent.getPgStatement(newDb), el);
-            } else {
-                processViewAndContents(elParent, elParent.getPgStatement(newDb), el);
-            }
+            processContainer(elParent, elParent.getPgStatement(newDb), el);
             break;
         case TABLE:
-            processTableAndContents(el, stInNew, el);
-            break;
         case VIEW:
-            processViewAndContents(el, stInNew, el);
+            processContainer(el, stInNew, el);
             break;
         default:
             throw new IllegalStateException("Unsupported export type: " + stInNew.getStatementType());

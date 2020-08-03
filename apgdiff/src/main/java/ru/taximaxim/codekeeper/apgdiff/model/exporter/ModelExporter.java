@@ -68,11 +68,7 @@ public class ModelExporter extends AbstractModelExporter {
         case RULE:
         case POLICY:
             TreeElement elParent = el.getParent();
-            if (elParent.getType() == DbObjType.TABLE){
-                processTableAndContents(elParent, elParent.getPgStatement(oldDb), el);
-            } else {
-                processViewAndContents(elParent, elParent.getPgStatement(oldDb), el);
-            }
+            processContainer(elParent, elParent.getPgStatement(oldDb), el);
             break;
         default:
             deleteStatementIfExists(st);
@@ -108,19 +104,12 @@ public class ModelExporter extends AbstractModelExporter {
         case RULE:
         case POLICY:
             createParentSchema(elParent.getParent());
-            if (elParent.getType() == DbObjType.TABLE) {
-                processTableAndContents(elParent, elParent.getPgStatement(newDb), el);
-            } else {
-                processViewAndContents(elParent, elParent.getPgStatement(newDb), el);
-            }
+            processContainer(elParent, elParent.getPgStatement(newDb), el);
             break;
         case TABLE:
-            createParentSchema(elParent);
-            processTableAndContents(el, stInNew, el);
-            break;
         case VIEW:
             createParentSchema(elParent);
-            processViewAndContents(el, stInNew, el);
+            processContainer(el, stInNew, el);
             break;
         default:
             // remove old version
@@ -182,20 +171,12 @@ public class ModelExporter extends AbstractModelExporter {
             createParentSchema(elParent.getParent());
             // table actually, not schema
             createParentSchema(elParent);
-            if (elParent.getType() == DbObjType.TABLE){
-                processTableAndContents(elParent, elParent.getPgStatement(newDb), el);
-            } else {
-                processViewAndContents(elParent, elParent.getPgStatement(newDb), el);
-            }
+            processContainer(elParent, elParent.getPgStatement(newDb), el);
             break;
-
         case TABLE:
-            createParentSchema(elParent);
-            processTableAndContents(el, stInNew, el);
-            break;
         case VIEW:
             createParentSchema(elParent);
-            processViewAndContents(el, stInNew, el);
+            processContainer(el, stInNew, el);
             break;
         default:
             createParentSchema(elParent);
@@ -413,7 +394,7 @@ public class ModelExporter extends AbstractModelExporter {
                 if (obj.hasChildren()) {
                     StringBuilder groupSql = new StringBuilder(dump);
                     // only tables and views can be here
-                    obj.getChildren().map(st -> (PgStatementWithSearchPath)st).sorted(new ExportTableOrder())
+                    obj.getChildren().sorted(ExportTableOrder.INSTANCE)
                     .forEach(st -> groupSql.append(GROUP_DELIMITER).append(getDumpSql(st)));
                     dump = groupSql.toString();
                 }

@@ -14,17 +14,15 @@ import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
-import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
+import cz.startnet.utils.pgdiff.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
@@ -145,120 +143,10 @@ public abstract class AbstractModelExporter {
     }
 
     /**
-     * @param elCause The element that caused the table processing.
+     * @param elCause The element that caused the container processing.
      * It is expected to be popped from the {@link #changeList}.
      */
-    protected void processViewAndContents(TreeElement el, PgStatement st,
-            TreeElement elCause) throws IOException{
-        if (el.getSide() == DiffSide.LEFT && el.isSelected()) {
-            // view is dropped entirely
-            return;
-        }
-        TreeElement elParent = el.getParent();
-        if (elParent.getSide() == DiffSide.LEFT && elParent.isSelected()) {
-            // the entire schema is dropped
-            return;
-        }
-
-        // same as in processFunction
-        // we need to have every related element on the list
-        changeList.push(elCause);
-
-        deleteStatementIfExists(st);
-
-        // prepare the dump data, old state
-        List<PgStatementWithSearchPath> contents = new LinkedList<>();
-        AbstractSchema newParentSchema = newDb.getSchema(st.getParent().getName());
-        AbstractSchema oldParentSchema = oldDb.getSchema(st.getParent().getName());
-        AbstractView oldView = null;
-        if (oldParentSchema != null) {
-            oldView = oldParentSchema.getView(st.getName());
-            if (oldView != null) {
-                contents.addAll(oldView.getChildren().map(
-                        e -> (PgStatementWithSearchPath)e).collect(Collectors.toList()));
-            }
-        }
-        // view to dump, initially assume old unmodified state
-        AbstractView viewPrimary = oldView;
-
-        // modify the dump state as requested by the changeList elements
-        Iterator<TreeElement> it = changeList.iterator();
-        while (it.hasNext()) {
-            TreeElement elChange = it.next();
-            TreeElement elViewChange;
-            switch (elChange.getType()) {
-            case VIEW:
-                elViewChange = elChange;
-                break;
-            case CONSTRAINT:
-            case INDEX:
-            case RULE:
-            case TRIGGER:
-            case POLICY:
-                elViewChange = elChange.getParent();
-                break;
-            default:
-                continue;
-            }
-            AbstractView viewChange = (elViewChange.getSide() == DiffSide.LEFT ?
-                    oldParentSchema : newParentSchema).getView(elViewChange.getName());
-            if (viewChange == null || !viewChange.getName().equals(st.getName())
-                    || !viewChange.getParent().getName().equals(elViewChange.getParent().getName())) {
-                continue;
-            }
-
-            if (elChange.getType() == DbObjType.VIEW) {
-                viewPrimary = viewChange;
-            } else {
-                PgStatementWithSearchPath stChange = null;
-                PgStatementWithSearchPath stChangeOld = null;
-                // now get the view based on the child's DiffSide
-                // otherwise BOTH (new) view may be chosen to get LEFT children
-                // which it does not contain
-                viewChange = (elChange.getSide() == DiffSide.LEFT ?
-                        oldParentSchema : newParentSchema).getView(elChange.getParent().getName());
-                DbObjType type = elChange.getType();
-                switch (type) {
-                case CONSTRAINT:
-                case INDEX:
-                case RULE:
-                case TRIGGER:
-                case POLICY:
-                    String name = elChange.getName();
-                    stChange = (PgStatementWithSearchPath) viewChange.getChild(name, type);
-
-                    if (elChange.getSide() == DiffSide.BOTH) {
-                        stChangeOld = (PgStatementWithSearchPath) oldView.getChild(name, type);
-                    }
-                    break;
-                default:
-                    continue;
-                }
-
-                switch (elChange.getSide()) {
-                case LEFT:
-                    contents.remove(stChange);
-                    break;
-                case RIGHT:
-                    contents.add(stChange);
-                    break;
-                case BOTH:
-                    contents.set(contents.indexOf(stChangeOld), stChange);
-                    break;
-                }
-            }
-
-            it.remove();
-        }
-
-        dumpContainer(viewPrimary, contents);
-    }
-
-    /**
-     * @param elCause The element that caused the table processing.
-     * It is expected to be popped from the {@link #changeList}.
-     */
-    protected void processTableAndContents(TreeElement el, PgStatement st,
+    protected void processContainer(TreeElement el, PgStatement st,
             TreeElement elCause) throws IOException {
         if (el.getSide() == DiffSide.LEFT && el.isSelected()) {
             // table is dropped entirely
@@ -276,57 +164,72 @@ public abstract class AbstractModelExporter {
 
         deleteStatementIfExists(st);
 
-        // prepare the dump data, old state
-        List<PgStatementWithSearchPath> contents = new LinkedList<>();
-        AbstractSchema newParentSchema = newDb.getSchema(st.getParent().getName());
-        AbstractSchema oldParentSchema = oldDb.getSchema(st.getParent().getName());
-        AbstractTable oldTable = null;
-        if (oldParentSchema != null) {
-            oldTable = oldParentSchema.getTable(st.getName());
-            if (oldTable != null) {
-                contents.addAll(oldTable.getChildren().map(
-                        e -> (PgStatementWithSearchPath)e).collect(Collectors.toList()));
-            }
+        PgStatementContainer oldContainer = getOldContainer(st);
+
+        List<PgStatement> contents = new LinkedList<>();
+        if (oldContainer != null) {
+            oldContainer.getChildren().forEach(contents::add);
         }
-        // table to dump, initially assume old unmodified state
-        AbstractTable tablePrimary = oldTable;
+
+        processChanges(st, oldContainer, contents);
+    }
+
+    private PgStatementContainer getOldContainer(PgStatement st) {
+        AbstractSchema oldSchema = oldDb.getSchema(st.getParent().getName());
+        if (oldSchema != null) {
+            return oldSchema.getStatementContainer(st.getName());
+        }
+
+        return null;
+    }
+
+    private void processChanges(PgStatement st, PgStatementContainer oldContainer,
+            List<PgStatement> contents) throws IOException {
+
+        AbstractSchema newSchema = newDb.getSchema(st.getParent().getName());
+        AbstractSchema oldSchema = oldDb.getSchema(st.getParent().getName());
+
+        // container to dump, initially assume old unmodified state
+        PgStatementContainer containerPrimary = oldContainer;
 
         // modify the dump state as requested by the changeList elements
         Iterator<TreeElement> it = changeList.iterator();
         while (it.hasNext()) {
             TreeElement elChange = it.next();
-            TreeElement elTableChange;
+            TreeElement elContainerChange;
             switch (elChange.getType()) {
             case TABLE:
-                elTableChange = elChange;
+            case VIEW:
+                elContainerChange = elChange;
                 break;
             case CONSTRAINT:
             case INDEX:
             case TRIGGER:
             case RULE:
             case POLICY:
-                elTableChange = elChange.getParent();
+                elContainerChange = elChange.getParent();
                 break;
             default:
                 continue;
             }
-            AbstractTable tableChange = (elTableChange.getSide() == DiffSide.LEFT ?
-                    oldParentSchema : newParentSchema).getTable(elTableChange.getName());
-            if (tableChange == null || !tableChange.getName().equals(st.getName())
-                    || !tableChange.getParent().getName().equals(elTableChange.getParent().getName())) {
+
+            PgStatementContainer containerChange = (elContainerChange.getSide() == DiffSide.LEFT ?
+                    oldSchema : newSchema).getStatementContainer(elContainerChange.getName());
+            if (containerChange == null || !containerChange.getName().equals(st.getName())
+                    || !containerChange.getParent().getName().equals(elContainerChange.getParent().getName())) {
                 continue;
             }
 
-            if (elChange.getType() == DbObjType.TABLE) {
-                tablePrimary = tableChange;
+            if (elChange.getType() == DbObjType.TABLE || elChange.getType() == DbObjType.VIEW) {
+                containerPrimary = containerChange;
             } else {
-                PgStatementWithSearchPath stChange = null;
-                PgStatementWithSearchPath stChangeOld = null;
+                PgStatement stChange = null;
+                PgStatement stChangeOld = null;
                 // now get the table based on the child's DiffSide
                 // otherwise BOTH (new) table may be chosen to get LEFT children
                 // which it does not contain
-                tableChange = (elChange.getSide() == DiffSide.LEFT ?
-                        oldParentSchema : newParentSchema).getTable(elChange.getParent().getName());
+                containerChange = (elChange.getSide() == DiffSide.LEFT ?
+                        oldSchema : newSchema).getTable(elChange.getParent().getName());
                 DbObjType type = elChange.getType();
                 switch (type) {
                 case CONSTRAINT:
@@ -335,10 +238,10 @@ public abstract class AbstractModelExporter {
                 case RULE:
                 case POLICY:
                     String name = elChange.getName();
-                    stChange = (PgStatementWithSearchPath) tableChange.getChild(name, type);
+                    stChange = containerChange.getChild(name, type);
 
                     if (elChange.getSide() == DiffSide.BOTH) {
-                        stChangeOld = (PgStatementWithSearchPath) oldTable.getChild(name, type);
+                        stChangeOld = oldContainer.getChild(name, type);
                     }
                     break;
                 default:
@@ -361,16 +264,16 @@ public abstract class AbstractModelExporter {
             it.remove();
         }
 
-        dumpContainer(tablePrimary, contents);
+        dumpContainer(containerPrimary, contents);
     }
 
-    protected void dumpContainer(PgStatement obj, List<PgStatementWithSearchPath> contents)
+    private void dumpContainer(PgStatementContainer obj, List<PgStatement> contents)
             throws IOException {
         Collections.sort(contents, ExportTableOrder.INSTANCE);
 
         StringBuilder groupSql = new StringBuilder(getDumpSql(obj));
 
-        for (PgStatementWithSearchPath st : contents) {
+        for (PgStatement st : contents) {
             groupSql.append(GROUP_DELIMITER).append(getDumpSql(st));
         }
 
@@ -449,16 +352,16 @@ public abstract class AbstractModelExporter {
 /**
  * Sets fixed order for table subelements export as historically defined by DiffTree.create().
  */
-class ExportTableOrder implements Comparator<PgStatementWithSearchPath> {
+class ExportTableOrder implements Comparator<PgStatement> {
 
     public static final ExportTableOrder INSTANCE = new ExportTableOrder();
 
     @Override
-    public int compare(PgStatementWithSearchPath o1, PgStatementWithSearchPath o2) {
+    public int compare(PgStatement o1, PgStatement o2) {
         return getTableSubelementRank(o1) - getTableSubelementRank(o2);
     }
 
-    private int getTableSubelementRank(PgStatementWithSearchPath el) {
+    private int getTableSubelementRank(PgStatement el) {
         switch (el.getStatementType()) {
         case INDEX:     return 0;
         case TRIGGER:   return 1;
@@ -468,4 +371,6 @@ class ExportTableOrder implements Comparator<PgStatementWithSearchPath> {
         default: throw new IllegalArgumentException("Illegal table subelement: " + el.getName());
         }
     }
+
+    private ExportTableOrder() {}
 }
