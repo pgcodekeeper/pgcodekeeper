@@ -81,8 +81,7 @@ public class PgPolicy extends PgStatementWithSearchPath {
             sbSQL.append("\n\n");
         }
         sbSQL.append("CREATE POLICY ");
-        sbSQL.append(PgDiffUtils.getQuotedName(getName()));
-        sbSQL.append(" ON ").append(getParent().getQualifiedName());
+        appendFullName(sbSQL);
 
         if (!isPermissive()) {
             sbSQL.append("\n  AS RESTRICTIVE");
@@ -119,8 +118,8 @@ public class PgPolicy extends PgStatementWithSearchPath {
         if (optionExists) {
             sbSQL.append("IF EXISTS ");
         }
-        sbSQL.append(PgDiffUtils.getQuotedName(getName()));
-        sbSQL.append(" ON ").append(getParent().getQualifiedName()).append(';');
+       appendFullName(sbSQL);
+        sbSQL.append(';');
         return sbSQL.toString();
     }
 
@@ -141,8 +140,8 @@ public class PgPolicy extends PgStatementWithSearchPath {
         if (!Objects.equals(roles, newRoles) || !Objects.equals(using, newUsing)
                 || !Objects.equals(check, newCheck)) {
 
-            sb.append("\n\nALTER POLICY ").append(PgDiffUtils.getQuotedName(getName()));
-            sb.append(" ON ").append(getParent().getQualifiedName());
+            sb.append("\n\nALTER POLICY ");
+            appendFullName(sb);
 
             if (!Objects.equals(roles, newRoles)) {
                 sb.append("\n  TO ");
@@ -169,6 +168,13 @@ public class PgPolicy extends PgStatementWithSearchPath {
         }
 
         return sb.length() > startLength;
+    }
+
+    @Override
+    protected StringBuilder appendFullName(StringBuilder sb) {
+        sb.append(PgDiffUtils.getQuotedName(getName()));
+        sb.append(" ON ").append(getParent().getQualifiedName());
+        return sb;
     }
 
     @Override

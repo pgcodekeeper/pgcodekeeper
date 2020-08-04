@@ -63,10 +63,8 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
     }
 
     @Override
-    protected StringBuilder appendCommentSql(StringBuilder sb) {
-        sb.append("COMMENT ON TEXT SEARCH CONFIGURATION ");
-        sb.append(getQualifiedName());
-        return sb.append(" IS ").append(comment).append(';');
+    protected String getTypeName() {
+        return "TEXT SEARCH CONFIGURATION";
     }
 
     @Override

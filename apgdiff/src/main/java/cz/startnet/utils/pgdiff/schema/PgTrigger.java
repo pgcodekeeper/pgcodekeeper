@@ -165,15 +165,15 @@ public class PgTrigger extends AbstractTrigger {
     }
 
     @Override
-    public String getDropSQL(boolean optionExists) {
-        StringBuilder dropSb = new StringBuilder();
-        dropSb.append("DROP TRIGGER ");
+    public final String getDropSQL(boolean optionExists) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("DROP ").append(getTypeName()).append(' ');
         if (optionExists) {
-            dropSb.append("IF EXISTS ");
+            sb.append("IF EXISTS ");
         }
-        dropSb.append(PgDiffUtils.getQuotedName(getName())).append(" ON ");
-        dropSb.append(getParent().getQualifiedName()).append(";");
-        return dropSb.toString();
+        appendFullName(sb);
+        sb.append(';');
+        return sb.toString();
     }
 
     @Override
@@ -190,6 +190,13 @@ public class PgTrigger extends AbstractTrigger {
             newTrg.appendCommentSql(sb);
         }
         return sb.length() > startLength;
+    }
+
+    @Override
+    protected StringBuilder appendFullName(StringBuilder sb) {
+        sb.append(PgDiffUtils.getQuotedName(getName())).append(" ON ");
+        sb.append(getParent().getQualifiedName());
+        return sb;
     }
 
     public void setType(final TgTypes tgType) {

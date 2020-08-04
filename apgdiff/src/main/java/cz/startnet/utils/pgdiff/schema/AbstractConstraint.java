@@ -156,4 +156,9 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath imple
     public AbstractSchema getContainingSchema() {
         return (AbstractSchema) getParent().getParent();
     }
+
+    @Override
+    public String getTableName() {
+        return getParent().getName();
+    }
 }

@@ -126,6 +126,10 @@ public class CliArgs extends PgDiffArguments {
             usage="keep newline characters as is (don't convert to Unix newlines)")
     private boolean keepNewlines;
 
+    @Option(name="--simplify-views", forbids="--ms-sql",
+            usage="simple formatting for VIEWs when reading via JDBC (not recomended by PostgreSQL)")
+    private boolean simplifyView;
+
     @Option(name="-X", aliases="--add-transaction", forbids={"--graph", "--parse"},
             usage="wrap generated script with transaction statements")
     private boolean addTransaction;
@@ -141,6 +145,10 @@ public class CliArgs extends PgDiffArguments {
     @Option(name="-Z", aliases="--time-zone", metaVar="<timezone>",forbids={"--graph", "--parse", "--ms-sql"},
             usage="use this timezone when working with database, also add SET TIMEZONE statement to the script")
     private String timeZone;
+
+    @Option(name="--ignore-column-order",
+            usage="ignore differences in table column order")
+    private boolean ignoreColumnOrder;
 
     @Option(name="--using-off", forbids={"--graph", "--parse"},
             usage="do not print USING expression for ALTER COLUMN TYPE")
@@ -161,13 +169,17 @@ public class CliArgs extends PgDiffArguments {
 
     @Option(name="-O", aliases="--allowed-object", forbids={"--graph", "--parse"},
             handler=DbObjTypeOptionHandler.class,
-            usage="build the script using these object types only"
-                    + "\nhide statements of other objects")
+            usage="build the script using these object types only, hide statements of other objects")
     private List<DbObjType> allowedTypes;
 
     @Option(name="--stop-not-allowed", forbids={"--graph", "--parse"},
             usage="exit with an error when --allowed-object hides a dependency statement from the script")
     private boolean stopNotAllowed;
+
+    @Option(name="--selected-only", forbids={"--graph", "--parse"},
+            usage="build the script using 'selected' objects only, hide statements of other objects"
+                    + "\nin CLI, selected means included by --allowed-object and ignore lists")
+    private boolean selectedOnly;
 
     @Option(name="-I", aliases="--ignore-list", metaVar="<path>", forbids={"--graph", "--parse"},
             usage="use an ignore list to include/exclude objects from diff"
@@ -247,10 +259,6 @@ public class CliArgs extends PgDiffArguments {
     public void setOptionDropObject(boolean optionDropObject) {
         this.optionDropObject = optionDropObject;
     }
-
-    @Option(name="--simplify-views", forbids="--ms-sql",
-            usage="simple formatting for VIEWs when reading via JDBC (not recomended by PostgreSQL)")
-    private boolean simplifyView;
 
     @Override
     public boolean isModeParse() {
@@ -441,6 +449,16 @@ public class CliArgs extends PgDiffArguments {
     }
 
     @Override
+    public boolean isIgnoreColumnOrder() {
+        return ignoreColumnOrder;
+    }
+
+    @Override
+    public void setIgnoreColumnOrder(boolean ignoreColumnOrder) {
+        this.ignoreColumnOrder = ignoreColumnOrder;
+    }
+
+    @Override
     public String getInCharsetName() {
         return inCharsetName;
     }
@@ -506,6 +524,16 @@ public class CliArgs extends PgDiffArguments {
     }
 
     @Override
+    public void setKeepNewlines(boolean keepNewlines) {
+        this.keepNewlines = keepNewlines;
+    }
+
+    @Override
+    public Collection<DbObjType> getAllowedTypes() {
+        return Collections.unmodifiableCollection(allowedTypes);
+    }
+
+    @Override
     public void setOptionExisting(boolean optionExisting) {
         this.optionExisting = optionExisting;
     }
@@ -521,13 +549,13 @@ public class CliArgs extends PgDiffArguments {
     }
 
     @Override
-    public void setKeepNewlines(boolean keepNewlines) {
-        this.keepNewlines = keepNewlines;
+    public boolean isSelectedOnly() {
+        return selectedOnly;
     }
 
     @Override
-    public Collection<DbObjType> getAllowedTypes() {
-        return Collections.unmodifiableCollection(allowedTypes);
+    public void setSelectedOnly(boolean selectedOnly) {
+        this.selectedOnly = selectedOnly;
     }
 
     @Override
@@ -564,7 +592,6 @@ public class CliArgs extends PgDiffArguments {
     public int getGraphDepth() {
         return graphDepth;
     }
-
 
     @Override
     public boolean isGraphReverse() {

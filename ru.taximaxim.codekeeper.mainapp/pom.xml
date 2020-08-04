@@ -6,12 +6,25 @@
     <parent>
         <groupId>ru.taximaxim.codeKeeper</groupId>
         <artifactId>ru.taximaxim.codeKeeper</artifactId>
-        <version>${global.version}</version>
+        <version>${revision}</version>
         <relativePath>ru.taximaxim.codeKeeper/</relativePath>
     </parent>
   
     <groupId>ru.taximaxim.codeKeeper</groupId>
     <artifactId>ru.taximaxim.codekeeper.mainapp</artifactId>
-    <version>5.10.3-SNAPSHOT</version>
+    <version>5.10.5-SNAPSHOT</version>
     <packaging>eclipse-plugin</packaging>
+    
+    <build>
+        <resources>
+            <resource>
+                <!-- replace properties in about.mapping l10n file -->
+                <filtering>true</filtering>
+                <directory>${project.basedir}</directory>
+                <includes>
+                    <include>about.mappings</include>
+                </includes>
+            </resource>
+        </resources>
+    </build>
 </project>

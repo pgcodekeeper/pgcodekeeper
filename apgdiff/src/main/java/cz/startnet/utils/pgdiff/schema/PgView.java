@@ -55,11 +55,8 @@ public class PgView extends AbstractView implements PgOptionContainer  {
             sbSQL.append(getDropSQL(true));
             sbSQL.append("\n\n");
         }
-        sbSQL.append("CREATE");
-        if (isMatView()) {
-            sbSQL.append(" MATERIALIZED");
-        }
-        sbSQL.append(" VIEW ");
+        sbSQL.append("CREATE ");
+        sbSQL.append(getTypeName()).append(' ');
         if (isMatView()) {
             if (args != null && args.isOptionExisting()) {
                 sbSQL.append("IF NOT EXISTS ");
@@ -151,21 +148,22 @@ public class PgView extends AbstractView implements PgOptionContainer  {
     }
 
     @Override
-    public String getDropSQL(boolean optionExists) {
-        StringBuilder dropSb = new StringBuilder();
-        dropSb.append("DROP ");
+    protected String getTypeName() {
+        return isMatView() ? "MATERIALIZED VIEW" : "VIEW";
+    }
 
-        if (isMatView()) {
-            dropSb.append("MATERIALIZED ");
-        }
-        dropSb.append("VIEW ");
+    @Override
+    public String getDropSQL(boolean optionExists) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("DROP ").append(getTypeName()).append(' ');
         if (isMatView()) {
             if (optionExists) {
-                dropSb.append("IF EXISTS ");
+                sb.append("IF EXISTS ");
             }
         }
-        dropSb.append(getQualifiedName()).append(";");
-        return dropSb.toString();
+        appendFullName(sb);
+        sb.append(';');
+        return sb.toString();
     }
 
     @Override

@@ -24,15 +24,13 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identifier_nontypeContex
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_identifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.IDatabase;
 import cz.startnet.utils.pgdiff.schema.IFunction;
 import cz.startnet.utils.pgdiff.schema.IOperator;
 import cz.startnet.utils.pgdiff.schema.IRelation;
-import cz.startnet.utils.pgdiff.schema.ISchema;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import cz.startnet.utils.pgdiff.schema.meta.MetaContainer;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
@@ -49,7 +47,7 @@ public abstract class AbstractExpr {
     // and put it to the 'PgDatabase' as currentPostgreSqlVersion,
     // but I couldn't get it from PgDumpLoader(WRITER), that's why for
     // cases with 'PgDumpLoader(WRITER)' the version was hard-coded in 'PgDatabase'.
-    protected final IDatabase db;
+    protected final MetaContainer meta;
     private final AbstractExpr parent;
     private final Set<PgObjLocation> depcies;
 
@@ -59,10 +57,10 @@ public abstract class AbstractExpr {
         return Collections.unmodifiableSet(depcies);
     }
 
-    public AbstractExpr(IDatabase db) {
+    public AbstractExpr(MetaContainer meta) {
         parent = null;
         depcies = new LinkedHashSet<>();
-        this.db = db;
+        this.meta = meta;
     }
 
     protected AbstractExpr(AbstractExpr parent) {
@@ -72,7 +70,7 @@ public abstract class AbstractExpr {
     protected AbstractExpr(AbstractExpr parent, Set<PgObjLocation> depcies) {
         this.parent = parent;
         this.depcies = depcies;
-        this.db = parent.db;
+        this.meta = parent.meta;
         this.fullAnalyze = parent.fullAnalyze;
     }
 
@@ -311,11 +309,6 @@ public abstract class AbstractExpr {
             columns = relation.getRelationColumns();
         }
 
-        if (columns == null) {
-            Log.log(Log.LOG_ERROR, "Columns not found: " + schemaName + '.' + relationName);
-            return Stream.empty();
-        }
-
         Stream<Pair<String, String>> cols = columns
                 .filter(col -> colNamePredicate.test(col.getFirst()));
 
@@ -414,26 +407,20 @@ public abstract class AbstractExpr {
         addDepcy(new GenericColumn(ctx.getText(), DbObjType.SCHEMA), ctx, start);
     }
 
-    protected Collection<? extends IFunction> availableFunctions(String schemaName, ParserRuleContext errorCtx) {
-        return findSchema(schemaName, errorCtx).getFunctions();
+    protected Collection<IFunction> availableFunctions(String schemaName) {
+        return meta.availableFunctions(getSchemaName(schemaName));
     }
 
-    protected Collection<? extends IOperator> availableOperators(String schemaName, ParserRuleContext errorCtx) {
-        return findSchema(schemaName, errorCtx).getOperators();
+    protected Collection<IOperator> availableOperators(String schemaName) {
+        return meta.availableOperators(getSchemaName(schemaName));
     }
 
     protected IRelation findRelation(String schemaName, String relationName) {
-        return findSchema(schemaName, null).getRelation(relationName);
+        return meta.findRelation(getSchemaName(schemaName), relationName);
     }
 
-    private ISchema findSchema(String schemaName, ParserRuleContext errorCtx) {
-        String name = schemaName == null ? ApgdiffConsts.PG_CATALOG : schemaName;
-        ISchema foundSchema = db.getSchema(name);
-        if (foundSchema == null) {
-            throw new UnresolvedReferenceException("Schema '" + schemaName + "' not found!",
-                    errorCtx != null ? errorCtx.getStart() : null);
-        }
-        return foundSchema;
+    private String getSchemaName(String schemaName) {
+        return schemaName == null ? ApgdiffConsts.PG_CATALOG : schemaName;
     }
 
     protected void log(int level, String msg) {

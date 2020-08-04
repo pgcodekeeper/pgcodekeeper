@@ -19,10 +19,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.MsIndex;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateMsIndex extends ParserAbstract {
@@ -50,9 +49,8 @@ public class CreateMsIndex extends ParserAbstract {
 
         parseIndex(ctx.index_rest(), ind);
 
-        IStatementContainer table = getSafe(AbstractSchema::getStatementContainer, schema, tableCtx);
-        addSafe((PgStatement) table, ind,
-                Arrays.asList(schemaCtx, tableCtx, nameCtx));
+        PgStatementContainer table = getSafe(AbstractSchema::getStatementContainer, schema, tableCtx);
+        addSafe(table, ind, Arrays.asList(schemaCtx, tableCtx, nameCtx));
     }
 
     static void parseIndex(Index_restContext rest, AbstractIndex ind) {

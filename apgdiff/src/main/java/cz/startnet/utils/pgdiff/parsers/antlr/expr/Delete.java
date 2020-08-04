@@ -7,7 +7,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Delete_stmt_for_psqlCont
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
-import cz.startnet.utils.pgdiff.schema.IDatabase;
+import cz.startnet.utils.pgdiff.schema.meta.MetaContainer;
 import ru.taximaxim.codekeeper.apgdiff.utils.ModPair;
 
 public class Delete extends AbstractExprWithNmspc<Delete_stmt_for_psqlContext> {
@@ -16,8 +16,8 @@ public class Delete extends AbstractExprWithNmspc<Delete_stmt_for_psqlContext> {
         super(parent);
     }
 
-    public Delete(IDatabase db) {
-        super(db);
+    public Delete(MetaContainer meta) {
+        super(meta);
     }
 
     @Override

@@ -47,18 +47,11 @@ public abstract class AbstractPgFunction extends AbstractFunction {
     @Override
     public String getDropSQL(boolean optionExists) {
         final StringBuilder sbString = new StringBuilder();
-        sbString.append("DROP ");
-        sbString.append(getStatementType().name());
-        sbString.append(' ');
+        sbString.append("DROP ").append(getTypeName()).append(' ');
         if (optionExists) {
             sbString.append("IF EXISTS ");
         }
-        sbString.append(PgDiffUtils.getQuotedName(getSchemaName())).append('.');
-        if (getStatementType() == DbObjType.AGGREGATE) {
-            ((PgAggregate) this).appendAggSignature(sbString);
-        } else {
-            appendFunctionSignature(sbString, false, true);
-        }
+        appendFullName(sbString);
         sbString.append(';');
         return sbString.toString();
     }
@@ -78,16 +71,15 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         return getSignature();
     }
 
+    @Override
+    protected StringBuilder appendFullName(StringBuilder sb) {
+        sb.append(PgDiffUtils.getQuotedName(getParent().getName())).append('.');
+        appendFunctionSignature(sb, false, true);
+        return sb;
+    }
+
     /**
-     * Appends signature of statement to sb.<br />
-     *
-     * Used for PRIVILEGES in Functions, Procedures, Aggregates.<br />
-     *
-     * Used for CREATE, ALTER, DROP, COMMENT operations in Functions and Procedures.<br /><br />
-     *
-     * (For CREATE, ALTER, DROP, COMMENT operations in Aggregates used own method
-     * {@link PgAggregate#appendAggSignature(StringBuilder)}.)
-     *
+     * Appends signature of statement to sb.
      */
     public StringBuilder appendFunctionSignature(StringBuilder sb,
             boolean includeDefaultValues, boolean includeArgNames) {

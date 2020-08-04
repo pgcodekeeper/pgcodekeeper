@@ -154,6 +154,7 @@ class PageDiff extends WizardPage implements Listener {
     private CLabel lblWarnPosix;
 
     private Button btnNoPrivileges;
+    private Button btnIgnoreColumnOrder;
     private Button btnEnableFuncDep;
     private Button btnSimplifyView;
     private Button btnUseGlobalIgnoreList;
@@ -162,6 +163,7 @@ class PageDiff extends WizardPage implements Listener {
     private Button btnCheckFuncBodies;
     private Button btnAlterColUsingExpr;
     private Button btnCreateIdxConcurrent;
+    private Button btnScriptFromSelObjs;
     private Button btnOptionExists;
     private Button btnOptionDropObject;
 
@@ -255,6 +257,7 @@ class PageDiff extends WizardPage implements Listener {
             public void widgetSelected(SelectionEvent e) {
                 boolean selected = btnShowPrefs.getSelection();
                 btnNoPrivileges.setVisible(selected);
+                btnIgnoreColumnOrder.setVisible(selected);
                 btnEnableFuncDep.setVisible(selected);
                 btnSimplifyView.setVisible(selected);
                 btnUseGlobalIgnoreList.setVisible(selected);
@@ -262,6 +265,7 @@ class PageDiff extends WizardPage implements Listener {
                 btnCheckFuncBodies.setVisible(selected);
                 btnAlterColUsingExpr.setVisible(selected);
                 btnCreateIdxConcurrent.setVisible(selected);
+                btnScriptFromSelObjs.setVisible(selected);
                 btnOptionExists.setVisible(selected);
                 btnOptionDropObject.setVisible(selected);
 
@@ -273,6 +277,11 @@ class PageDiff extends WizardPage implements Listener {
         btnNoPrivileges.setText(Messages.dbUpdatePrefPage_ignore_privileges);
         btnNoPrivileges.setSelection(mainPrefs.getBoolean(PREF.NO_PRIVILEGES));
         btnNoPrivileges.setVisible(false);
+
+        btnIgnoreColumnOrder = new Button(container, SWT.CHECK);
+        btnIgnoreColumnOrder.setText(Messages.GeneralPrefPage_ignore_column_order);
+        btnIgnoreColumnOrder.setSelection(mainPrefs.getBoolean(PREF.IGNORE_COLUMN_ORDER));
+        btnIgnoreColumnOrder.setVisible(false);
 
         btnEnableFuncDep = new Button(container, SWT.CHECK);
         btnEnableFuncDep.setText(Messages.GeneralPrefPage_enable_body_dependencies);
@@ -310,6 +319,10 @@ class PageDiff extends WizardPage implements Listener {
         btnCreateIdxConcurrent.setSelection(mainPrefs.getBoolean(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY));
         btnCreateIdxConcurrent.setVisible(false);
 
+        btnScriptFromSelObjs = new Button(container, SWT.CHECK);
+        btnScriptFromSelObjs.setText(Messages.DbUpdatePrefPage_script_from_selected_objs);
+        btnScriptFromSelObjs.setSelection(mainPrefs.getBoolean(DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS));
+        btnScriptFromSelObjs.setVisible(false);
         btnOptionExists = new Button(container, SWT.CHECK);
         btnOptionExists.setText(Messages.DbUpdatePrefPage_optionIfExists);
         btnOptionExists.setSelection(mainPrefs.getBoolean(DB_UPDATE_PREF.OPTION_EXISTS));
@@ -382,6 +395,7 @@ class PageDiff extends WizardPage implements Listener {
 
         oneTimePrefs.put(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION, btnScriptAddTransact.getSelection());
         oneTimePrefs.put(PREF.NO_PRIVILEGES, btnNoPrivileges.getSelection());
+        oneTimePrefs.put(PREF.IGNORE_COLUMN_ORDER, btnIgnoreColumnOrder.getSelection());
         oneTimePrefs.put(PREF.ENABLE_BODY_DEPENDENCIES, btnEnableFuncDep.getSelection());
         oneTimePrefs.put(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, btnUseGlobalIgnoreList.getSelection());
         oneTimePrefs.put(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES, btnCheckFuncBodies.getSelection());
@@ -390,6 +404,7 @@ class PageDiff extends WizardPage implements Listener {
         oneTimePrefs.put(DB_UPDATE_PREF.OPTION_EXISTS, btnOptionExists.getSelection());
         oneTimePrefs.put(DB_UPDATE_PREF.OPTION_DROP_OBJECT, btnOptionDropObject.getSelection());
         oneTimePrefs.put(PREF.SIMPLIFY_VIEW, btnSimplifyView.getSelection());
+        oneTimePrefs.put(DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS, btnScriptFromSelObjs.getSelection());
 
         return oneTimePrefs;
     }

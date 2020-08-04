@@ -11,6 +11,7 @@ import cz.startnet.utils.pgdiff.schema.ArgMode;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IFunction;
+import cz.startnet.utils.pgdiff.schema.ISchema;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -148,18 +149,12 @@ public class MetaFunction extends MetaStatement implements IFunction {
     }
 
     @Override
-    public MetaSchema getContainingSchema() {
-        return (MetaSchema) getParent();
+    public ISchema getContainingSchema() {
+        throw new IllegalStateException("Unsupported operation");
     }
 
     @Override
-    public MetaStatement getCopy() {
-        MetaFunction copy = new MetaFunction(getObject());
-        getArguments().forEach(copy::addArgument);
-        getOrderBy().forEach(copy::addArgument);
-        getReturnsColumns().forEach(copy::addReturnsColumn);
-        copy.setReturns(getReturns());
-        copy.setSetof(isSetof());
-        return copy;
+    public String getSchemaName() {
+        return getObject().getSchema();
     }
 }

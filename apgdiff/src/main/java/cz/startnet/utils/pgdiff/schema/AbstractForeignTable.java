@@ -83,6 +83,11 @@ public abstract class AbstractForeignTable extends AbstractPgTable {
     }
 
     @Override
+    protected String getTypeName() {
+        return "FOREIGN TABLE";
+    }
+
+    @Override
     public void compareOptions(PgOptionContainer newContainer, StringBuilder sb) {
         Map <String, String> oldForeignOptions = getOptions();
         Map <String, String> newForeignOptions = newContainer.getOptions();

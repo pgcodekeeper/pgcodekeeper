@@ -45,10 +45,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IConstraint;
-import cz.startnet.utils.pgdiff.schema.IDatabase;
-import cz.startnet.utils.pgdiff.schema.ISchema;
-import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import cz.startnet.utils.pgdiff.schema.meta.MetaContainer;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.ModPair;
@@ -70,7 +68,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
      */
     private boolean lateralAllowed;
 
-    public Select(IDatabase db) {
+    public Select(MetaContainer db) {
         super(db);
     }
 
@@ -379,21 +377,11 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
             return;
         }
 
-        ISchema schema = db.getSchema(dep.getSchema());
-        if (schema == null) {
-            return;
-        }
-
-        IStatementContainer rel = schema.getStatementContainer(dep.getObj().table);
-        if (rel == null) {
-            return;
-        }
-
-        for (IConstraint con : rel.getConstraints()) {
+        for (IConstraint con : meta.getConstraints(dep.getSchema(), dep.getTable())) {
             if (con.isPrimaryKey() && con.getColumns().contains(dep.getObjName())) {
                 // implicit reference
                 vex.addDepcy(new GenericColumn(con.getSchemaName(),
-                        con.getParent().getName(), con.getName(), DbObjType.CONSTRAINT), null);
+                        con.getTableName(), con.getName(), DbObjType.CONSTRAINT), null);
             }
         }
     }

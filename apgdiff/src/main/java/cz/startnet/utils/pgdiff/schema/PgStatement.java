@@ -169,6 +169,14 @@ public abstract class PgStatement implements IStatement, IHashable {
         resetHash();
     }
 
+    protected String getTypeName() {
+        return getStatementType().toString();
+    }
+
+    protected StringBuilder appendFullName(StringBuilder sb) {
+        return sb.append(getQualifiedName());
+    }
+
     /**
      * Sets {@link #comment} with newlines as requested in arguments.
      */
@@ -177,46 +185,8 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     protected StringBuilder appendCommentSql(StringBuilder sb) {
-        sb.append("COMMENT ON ");
-        DbObjType type = getStatementType();
-        sb.append(type).append(' ');
-        switch (type) {
-        case FUNCTION:
-        case PROCEDURE:
-            sb.append(PgDiffUtils.getQuotedName(getParent().getName()))
-            .append('.');
-            ((AbstractPgFunction) this).appendFunctionSignature(sb, false, true);
-            break;
-        case AGGREGATE:
-            sb.append(PgDiffUtils.getQuotedName(getParent().getName()))
-            .append('.');
-            ((PgAggregate) this).appendAggSignature(sb);
-            break;
-        case OPERATOR:
-            sb.append(PgDiffUtils.getQuotedName(getParent().getName()))
-            .append('.');
-            ((PgOperator) this).appendOperatorSignature(sb);
-            break;
-
-        case CONSTRAINT:
-        case TRIGGER:
-        case RULE:
-        case POLICY:
-            sb.append(PgDiffUtils.getQuotedName(getName())).append(" ON ");
-            if (getParent().getStatementType() == DbObjType.DOMAIN) {
-                sb.append("DOMAIN ");
-            }
-            sb.append(getParent().getQualifiedName());
-            break;
-
-        case DATABASE:
-            sb.append("current_database()");
-            break;
-
-        default:
-            sb.append(getQualifiedName());
-        }
-
+        sb.append("COMMENT ON ").append(getTypeName()).append(' ');
+        appendFullName(sb);
         return sb.append(" IS ")
                 .append(comment == null || comment.isEmpty() ? "NULL" : comment)
                 .append(';');
@@ -365,44 +335,8 @@ public abstract class PgStatement implements IStatement, IHashable {
         }
         sb.append("ALTER ");
         if (st.isPostgres()) {
-            DbObjType type = st.getStatementType();
-            switch (type) {
-            case FTS_CONFIGURATION:
-                sb.append("TEXT SEARCH CONFIGURATION ");
-                break;
-            case FTS_DICTIONARY:
-                sb.append("TEXT SEARCH DICTIONARY ");
-                break;
-            case TABLE:
-                if (st instanceof AbstractForeignTable) {
-                    sb.append("FOREIGN ");
-                }
-                sb.append("TABLE ");
-                break;
-            case VIEW:
-                if (((PgView) st).isMatView()) {
-                    sb.append("MATERIALIZED ");
-                }
-                sb.append("VIEW ");
-                break;
-            default :
-                sb.append(type).append(' ');
-            }
-
-            if (type == DbObjType.SCHEMA) {
-                sb.append(PgDiffUtils.getQuotedName(st.getName()));
-            } else {
-                sb.append(PgDiffUtils.getQuotedName(st.getParent().getName())).append('.');
-                if (type == DbObjType.FUNCTION || type == DbObjType.PROCEDURE) {
-                    ((AbstractPgFunction) st).appendFunctionSignature(sb, false, true);
-                } else if (type == DbObjType.AGGREGATE) {
-                    ((PgAggregate) st).appendAggSignature(sb);
-                } else if (type == DbObjType.OPERATOR) {
-                    ((PgOperator) st).appendOperatorSignature(sb);
-                } else {
-                    sb.append(PgDiffUtils.getQuotedName(st.getName()));
-                }
-            }
+            sb.append(st.getTypeName()).append(' ');
+            st.appendFullName(sb);
             sb.append(" OWNER TO ")
             .append(PgDiffUtils.getQuotedName(owner))
             .append(';');

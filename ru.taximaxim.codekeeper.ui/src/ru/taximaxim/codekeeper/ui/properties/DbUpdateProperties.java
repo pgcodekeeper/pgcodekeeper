@@ -32,6 +32,7 @@ public class DbUpdateProperties extends PropertyPage {
     private Button btnCheckFuncBodies;
     private Button btnAlterColUsingExpr;
     private Button btnCreateIdxConcurrent;
+    private Button btnScriptFromSelObjs;
     private Button btnOptionExists;
     private Button btnOptionDropObject;
 
@@ -65,6 +66,7 @@ public class DbUpdateProperties extends PropertyPage {
                 btnCheckFuncBodies.setEnabled(btnEnableProjPref.getSelection());
                 btnAlterColUsingExpr.setEnabled(btnEnableProjPref.getSelection());
                 btnCreateIdxConcurrent.setEnabled(btnEnableProjPref.getSelection());
+                btnScriptFromSelObjs.setEnabled(btnEnableProjPref.getSelection());
                 btnOptionExists.setEnabled(btnEnableProjPref.getSelection());
                 btnOptionDropObject.setEnabled(btnEnableProjPref.getSelection());
             }
@@ -106,6 +108,14 @@ public class DbUpdateProperties extends PropertyPage {
                 .PRINT_INDEX_WITH_CONCURRENTLY, false));
         btnCreateIdxConcurrent.setEnabled(overridePref);
 
+        btnScriptFromSelObjs = new Button(panel, SWT.CHECK);
+        btnScriptFromSelObjs.setText(Messages.DbUpdatePrefPage_script_from_selected_objs);
+        gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
+        gd.horizontalIndent = 10;
+        btnScriptFromSelObjs.setLayoutData(gd);
+        btnScriptFromSelObjs.setSelection(prefs.getBoolean(DB_UPDATE_PREF
+                .SCRIPT_FROM_SELECTED_OBJS, false));
+        btnScriptFromSelObjs.setEnabled(overridePref);
         btnOptionExists = new Button(panel, SWT.CHECK);
         btnOptionExists.setText(Messages.DbUpdatePrefPage_optionIfExists);
         gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
@@ -132,6 +142,7 @@ public class DbUpdateProperties extends PropertyPage {
         setDefault(mainPS, btnCheckFuncBodies, DB_UPDATE_PREF.CHECK_FUNCTION_BODIES);
         setDefault(mainPS, btnAlterColUsingExpr, DB_UPDATE_PREF.USING_ON_OFF);
         setDefault(mainPS, btnCreateIdxConcurrent, DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY);
+        setDefault(mainPS, btnScriptFromSelObjs, DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS);
         setDefault(mainPS, btnOptionExists, DB_UPDATE_PREF.OPTION_EXISTS);
         setDefault(mainPS, btnOptionDropObject, DB_UPDATE_PREF.OPTION_DROP_OBJECT);
 
@@ -170,6 +181,7 @@ public class DbUpdateProperties extends PropertyPage {
         prefs.putBoolean(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES, btnCheckFuncBodies.getSelection());
         prefs.putBoolean(DB_UPDATE_PREF.USING_ON_OFF, btnAlterColUsingExpr.getSelection());
         prefs.putBoolean(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY, btnCreateIdxConcurrent.getSelection());
+        prefs.putBoolean(DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS, btnScriptFromSelObjs.getSelection());
         prefs.putBoolean(DB_UPDATE_PREF.OPTION_EXISTS, btnOptionExists.getSelection());
         prefs.putBoolean(DB_UPDATE_PREF.OPTION_DROP_OBJECT, btnOptionDropObject.getSelection());
         prefs.flush();

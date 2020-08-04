@@ -12,8 +12,4 @@ public interface ISchema extends IStatement {
 
     Collection<? extends IOperator> getOperators();
     IOperator getOperator(String signature);
-
-
-    Stream<? extends IStatementContainer> getStatementContainers();
-    IStatementContainer getStatementContainer(String name);
 }

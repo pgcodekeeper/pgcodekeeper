@@ -14,6 +14,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_optionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.OperatorAnalysisLaincher;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -36,14 +37,12 @@ public class CreateOperator extends ParserAbstract {
         All_simple_opContext operName = operNameCtx.operator;
         List<ParserRuleContext> ids = Arrays.asList(schemaCtx, operName);
         PgOperator oper = new PgOperator(operName.getText());
+        Schema_qualified_nameContext funcCtx = null;
+        Schema_qualified_nameContext restCtx = null;
+        Schema_qualified_nameContext joinCtx = null;
         for (Operator_optionContext option : ctx.operator_option()) {
             if (option.PROCEDURE() != null || option.FUNCTION() != null) {
-                oper.setProcedure(getFullCtxText(option.func_name));
-                List<IdentifierContext> funcIds = option.func_name.identifier();
-                addDepSafe(oper, funcIds, DbObjType.FUNCTION, true);
-
-                db.addAnalysisLauncher(new OperatorAnalysisLaincher(
-                        oper, getOperatorFunction(oper, funcIds), fileName));
+                funcCtx = option.func_name;
             } else if (option.LEFTARG() != null) {
                 Data_typeContext leftArgTypeCtx = option.type;
                 oper.setLeftArg(getTypeName(leftArgTypeCtx));
@@ -76,35 +75,42 @@ public class CreateOperator extends ParserAbstract {
             } else if (option.HASHES() != null) {
                 oper.setHashes(true);
             } else if (option.RESTRICT() != null) {
-                oper.setRestrict(getFullCtxText(option.restr_name));
-                addDepSafe(oper, option.restr_name.identifier(), DbObjType.FUNCTION, true);
+                restCtx = option.restr_name;
             } else if (option.JOIN() != null) {
-                oper.setJoin(getFullCtxText(option.join_name));
-                addDepSafe(oper, option.join_name.identifier(), DbObjType.FUNCTION, true);
+                joinCtx = option.join_name;
             }
         }
+
+        // waits for operator arguments to add the correct dependency
+        String arguments = oper.getArguments();
+        if (funcCtx != null) {
+            oper.setProcedure(getFullCtxText(funcCtx));
+            List<IdentifierContext> funcIds = funcCtx.identifier();
+            addDepSafe(oper, funcIds, DbObjType.FUNCTION, true, arguments);
+            db.addAnalysisLauncher(new OperatorAnalysisLaincher(
+                    oper, getOperatorFunction(oper, funcIds), fileName));
+        }
+
+        if (restCtx != null) {
+            oper.setRestrict(getFullCtxText(restCtx));
+            List<IdentifierContext> funcIds = restCtx.identifier();
+            addDepSafe(oper, funcIds, DbObjType.FUNCTION, true, arguments);
+        }
+
+        if (joinCtx != null) {
+            oper.setJoin(getFullCtxText(joinCtx));
+            List<IdentifierContext> funcIds = joinCtx.identifier();
+            addDepSafe(oper, funcIds, DbObjType.FUNCTION, true, arguments);
+        }
+
 
         addSafe(getSchemaSafe(ids), oper, ids);
     }
 
     private GenericColumn getOperatorFunction(PgOperator oper, List<IdentifierContext> ids) {
-        StringBuilder signature = new StringBuilder();
-        String left = oper.getLeftArg();
-        String right = oper.getRightArg();
-
-        signature.append(QNameParser.getFirstName(ids)).append('(');
-        if (left != null) {
-            signature.append(left);
-            if (right != null) {
-                signature.append(", ").append(right);
-            }
-        } else {
-            signature.append(right);
-        }
-        signature.append(')');
-
+        String name = QNameParser.getFirstName(ids) + oper.getArguments();
         return new GenericColumn(QNameParser.getSchemaName(ids),
-                signature.toString(), DbObjType.FUNCTION);
+                name, DbObjType.FUNCTION);
     }
 
     @Override

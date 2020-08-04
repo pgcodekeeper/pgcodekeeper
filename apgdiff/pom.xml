@@ -8,13 +8,13 @@
     <parent>
         <groupId>ru.taximaxim.codeKeeper</groupId>
         <artifactId>ru.taximaxim.codeKeeper</artifactId>
-        <version>${global.version}</version>
+        <version>${revision}</version>
         <relativePath>../ru.taximaxim.codekeeper.mainapp/ru.taximaxim.codeKeeper/</relativePath>
     </parent>
 
     <groupId>ru.taximaxim.codeKeeper</groupId>
     <artifactId>apgdiff</artifactId>
-    <version>5.16.3-SNAPSHOT</version>
+    <version>5.16.5-SNAPSHOT</version>
     <packaging>eclipse-plugin</packaging>
 
     <properties>
