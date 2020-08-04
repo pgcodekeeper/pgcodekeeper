@@ -40,7 +40,14 @@ public class MsProcedure extends AbstractMsFunction {
 
     @Override
     public String getDropSQL(boolean optionExists) {
-        return "DROP PROCEDURE " + getQualifiedName() + GO;
+        StringBuilder dropSb = new StringBuilder();
+        dropSb.append("DROP PROCEDURE ");
+        if (optionExists) {
+            dropSb.append("IF EXISTS ");
+        }
+        dropSb.append(getQualifiedName())
+        .append(GO);
+        return dropSb.toString();
     }
 
     @Override

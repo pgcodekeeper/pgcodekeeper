@@ -76,7 +76,15 @@ public class MsAssembly extends PgStatement {
 
     @Override
     public String getDropSQL(boolean optionExists) {
-        return "DROP ASSEMBLY " + MsDiffUtils.quoteName(name) + " WITH NO DEPENDENTS" + GO;
+        StringBuilder dropSb = new StringBuilder();
+        dropSb.append("DROP ASSEMBLY ");
+        if (optionExists) {
+            dropSb.append("IF EXISTS ");
+        }
+        dropSb.append(MsDiffUtils.quoteName(name))
+        .append(" WITH NO DEPENDENTS")
+        .append(GO);
+        return dropSb.toString();
     }
 
     @Override

@@ -209,7 +209,14 @@ public class MsTable extends AbstractTable {
 
     @Override
     public String getDropSQL(boolean optionExists) {
-        return "DROP TABLE " + getQualifiedName() + GO;
+        StringBuilder dropSb = new StringBuilder();
+        dropSb.append("DROP TABLE ");
+        if (optionExists) {
+            dropSb.append("IF EXISTS ");
+        }
+        dropSb.append(getQualifiedName())
+        .append(GO);
+        return dropSb.toString();
     }
 
     @Override

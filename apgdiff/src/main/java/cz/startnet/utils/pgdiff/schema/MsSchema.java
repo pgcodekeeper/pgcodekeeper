@@ -41,7 +41,14 @@ public class MsSchema extends AbstractSchema {
 
     @Override
     public String getDropSQL(boolean optionExists) {
-        return "DROP SCHEMA " + MsDiffUtils.quoteName(getName()) + GO;
+        StringBuilder dropSb = new StringBuilder();
+        dropSb.append("DROP SCHEMA ");
+        if (optionExists) {
+            dropSb.append("IF EXISTS ");
+        }
+        dropSb.append(MsDiffUtils.quoteName(getName()))
+        .append(GO);
+        return dropSb.toString();
     }
 
     @Override

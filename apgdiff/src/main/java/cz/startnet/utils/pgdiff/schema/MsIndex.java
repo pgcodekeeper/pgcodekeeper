@@ -107,8 +107,16 @@ public class MsIndex extends AbstractIndex {
 
     @Override
     public String getDropSQL(boolean optionExists) {
-        return "DROP INDEX " + MsDiffUtils.quoteName(getName()) + " ON "
-                + getParent().getQualifiedName() + GO;
+        StringBuilder dropSb = new StringBuilder();
+        dropSb.append("DROP INDEX ");
+        if (optionExists) {
+            dropSb.append("IF EXISTS ");
+        }
+        dropSb.append(MsDiffUtils.quoteName(getName()))
+        .append(" ON ")
+        .append(getParent().getQualifiedName())
+        .append(GO);
+        return dropSb.toString();
     }
 
     @Override

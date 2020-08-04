@@ -251,16 +251,6 @@ public class CliArgs extends PgDiffArguments {
     private boolean optionDropObject;
 
     @Override
-    public boolean isOptionDropObject() {
-        return optionDropObject;
-    }
-
-    @Override
-    public void setOptionDropObject(boolean optionDropObject) {
-        this.optionDropObject = optionDropObject;
-    }
-
-    @Override
     public boolean isModeParse() {
         return modeParse;
     }
@@ -539,13 +529,18 @@ public class CliArgs extends PgDiffArguments {
     }
 
     @Override
-    public boolean getOptionExisting(boolean optionExisting) {
+    public boolean isOptionExisting() {
         return optionExisting;
     }
 
     @Override
-    public boolean isOptionExisting() {
-        return optionExisting;
+    public boolean isOptionDropObject() {
+        return optionDropObject;
+    }
+
+    @Override
+    public void setOptionDropObject(boolean optionDropObject) {
+        this.optionDropObject = optionDropObject;
     }
 
     @Override

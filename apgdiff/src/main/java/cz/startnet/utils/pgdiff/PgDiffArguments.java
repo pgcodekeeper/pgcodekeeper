@@ -66,20 +66,12 @@ public class PgDiffArguments implements Cloneable {
         this.optionDropObject = optionDropObject;
     }
 
-    public boolean getOptionDropObject(boolean optionDropObject) {
-        return optionDropObject;
-    }
-
     public boolean isOptionExisting() {
         return optionExisting;
     }
 
     public void setOptionExisting(boolean optionExisting) {
         this.optionExisting = optionExisting;
-    }
-
-    public boolean getOptionExisting(boolean optionExisting) {
-        return optionExisting;
     }
 
     public void setModeParse(final boolean modeParse) {

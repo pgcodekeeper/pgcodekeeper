@@ -79,8 +79,4 @@ public class PartitionForeignPgTable extends AbstractForeignTable {
         hasher.put(partitionBounds);
     }
 
-    @Override
-    public String getDropSQL(boolean optionExists) {
-        return null;
-    }
 }

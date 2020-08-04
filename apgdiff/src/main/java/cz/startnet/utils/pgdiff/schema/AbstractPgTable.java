@@ -46,7 +46,7 @@ public abstract class AbstractPgTable extends AbstractTable {
         final StringBuilder sbOption = new StringBuilder();
         final StringBuilder sbSQL = new StringBuilder();
         PgDiffArguments args = getDatabase().getArguments();
-        if (args.isOptionDropObject()) {
+        if ( args != null && args.isOptionDropObject()) {
             sbSQL.append(getDropSQL(true));
             sbSQL.append("\n\n");
         }
