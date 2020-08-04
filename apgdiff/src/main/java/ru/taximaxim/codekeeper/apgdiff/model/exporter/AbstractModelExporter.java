@@ -7,29 +7,28 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Deque;
-import java.util.Iterator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
-import cz.startnet.utils.pgdiff.schema.AbstractColumn;
-import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 
 /**
  * Exports PgDatabase model as a directory tree with
@@ -95,10 +94,23 @@ public abstract class AbstractModelExporter {
     /**
      * Starts the {@link #newDb} export process.
      */
-    public abstract void exportFull() throws IOException;
+    public void exportFull() throws IOException {
+        createOutDir();
+
+        Map<Path, StringBuilder> dumps = new HashMap<>();
+        newDb.getDescendants().sorted(ExportTableOrder.INSTANCE).forEach(st -> dumpStatement(st, dumps));
+
+        for (Entry<Path, StringBuilder> dump : dumps.entrySet()) {
+            dumpSQL(dump.getValue(), dump.getKey());
+        }
+
+        writeProjVersion(outDir.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER));
+    }
+
+    protected abstract void createOutDir() throws IOException;
 
     public void exportPartial() throws IOException, PgCodekeeperException {
-        if (oldDb == null){
+        if (oldDb == null) {
             throw new PgCodekeeperException("Old database should not be null for partial export.");
         }
         if (Files.notExists(outDir) || !Files.isDirectory(outDir)) {
@@ -107,28 +119,75 @@ public abstract class AbstractModelExporter {
                     outDir.toAbsolutePath()));
         }
 
+        Set<PgStatement> toRemove = new HashSet<>();
+        List<PgStatement> toAdd = new ArrayList<>();
+        Set<Path> paths = new HashSet<>();
+
         while (!changeList.isEmpty()) {
             TreeElement el = changeList.pop();
             switch(el.getSide()) {
             case LEFT:
-                deleteObject(el);
-                break;
-            case BOTH:
-                editObject(el);
+                PgStatement stInOld = el.getPgStatement(oldDb);
+                toRemove.add(stInOld);
+                stInOld.getChildren().forEach(toRemove::add);
+                paths.add(getRelativeFilePath(stInOld, true));
                 break;
             case RIGHT:
-                createObject(el);
+                PgStatement stInNew = el.getPgStatement(newDb);
+                toAdd.add(stInNew);
+                paths.add(getRelativeFilePath(stInNew, true));
+                break;
+            case BOTH:
+                stInNew = el.getPgStatement(newDb);
+                stInOld = el.getPgStatement(oldDb);
+                toAdd.add(stInNew);
+                toRemove.add(stInOld);
+                paths.add(getRelativeFilePath(stInNew, true));
                 break;
             }
         }
+
+        List<PgStatement> list = oldDb.getDescendants()
+                .filter(st -> paths.contains(getRelativeFilePath(st, true)))
+                .collect(Collectors.toList());
+
+        list.addAll(toAdd);
+        for (PgStatement st : toAdd) {
+            deleteStatementIfExists(st);
+        }
+
+        list.removeAll(toRemove);
+        for (PgStatement st : toRemove) {
+            deleteStatementIfExists(st);
+        }
+
+        Collections.sort(list, ExportTableOrder.INSTANCE);
+
+        Map<Path, StringBuilder> dumps = new HashMap<>();
+        list.forEach(st -> dumpStatement(st, dumps));
+
+        for (Entry<Path, StringBuilder> dump : dumps.entrySet()) {
+            dumpSQL(dump.getValue(), dump.getKey());
+        }
+
         writeProjVersion(outDir.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER));
     }
 
-    protected abstract void deleteObject(TreeElement el) throws IOException;
+    protected void dumpStatement(PgStatement st, Map<Path, StringBuilder> dumps) {
+        Path path = outDir.resolve(getRelativeFilePath(st, true));
+        StringBuilder sb = dumps.computeIfAbsent(path, e -> new StringBuilder());
+        String dump = getDumpSql(st);
 
-    protected abstract void editObject(TreeElement el) throws IOException, PgCodekeeperException;
+        if (dump.isEmpty()) {
+            return;
+        }
 
-    protected abstract void createObject(TreeElement el) throws IOException, PgCodekeeperException;
+        if (sb.length() != 0) {
+            sb.append(GROUP_DELIMITER);
+        }
+
+        sb.append(dump);
+    }
 
     protected void dumpSQL(CharSequence sql, Path path) throws IOException {
         Files.createDirectories(path.getParent());
@@ -140,163 +199,6 @@ public abstract class AbstractModelExporter {
 
     protected String getDumpSql(PgStatement statement) {
         return statement.getFullSQL();
-    }
-
-    /**
-     * @param elCause The element that caused the container processing.
-     * It is expected to be popped from the {@link #changeList}.
-     */
-    protected void processContainer(TreeElement el, PgStatement st,
-            TreeElement elCause) throws IOException {
-        if (el.getSide() == DiffSide.LEFT && el.isSelected()) {
-            // table is dropped entirely
-            return;
-        }
-        TreeElement elParent = el.getParent();
-        if (elParent.getSide() == DiffSide.LEFT && elParent.isSelected()) {
-            // the entire schema is dropped
-            return;
-        }
-
-        // same as in processFunction
-        // we need to have every related element on the list
-        changeList.push(elCause);
-
-        deleteStatementIfExists(st);
-
-        PgStatementContainer oldContainer = getOldContainer(st);
-
-        List<PgStatement> contents = new LinkedList<>();
-        if (oldContainer != null) {
-            oldContainer.getChildren().forEach(contents::add);
-        }
-
-        processChanges(st, oldContainer, contents);
-    }
-
-    private PgStatementContainer getOldContainer(PgStatement st) {
-        AbstractSchema oldSchema = oldDb.getSchema(st.getParent().getName());
-        if (oldSchema != null) {
-            return oldSchema.getStatementContainer(st.getName());
-        }
-
-        return null;
-    }
-
-    private void processChanges(PgStatement st, PgStatementContainer oldContainer,
-            List<PgStatement> contents) throws IOException {
-
-        AbstractSchema newSchema = newDb.getSchema(st.getParent().getName());
-        AbstractSchema oldSchema = oldDb.getSchema(st.getParent().getName());
-
-        // container to dump, initially assume old unmodified state
-        PgStatementContainer containerPrimary = oldContainer;
-
-        // modify the dump state as requested by the changeList elements
-        Iterator<TreeElement> it = changeList.iterator();
-        while (it.hasNext()) {
-            TreeElement elChange = it.next();
-            TreeElement elContainerChange;
-            switch (elChange.getType()) {
-            case TABLE:
-            case VIEW:
-                elContainerChange = elChange;
-                break;
-            case CONSTRAINT:
-            case INDEX:
-            case TRIGGER:
-            case RULE:
-            case POLICY:
-                elContainerChange = elChange.getParent();
-                break;
-            default:
-                continue;
-            }
-
-            PgStatementContainer containerChange = (elContainerChange.getSide() == DiffSide.LEFT ?
-                    oldSchema : newSchema).getStatementContainer(elContainerChange.getName());
-            if (containerChange == null || !containerChange.getName().equals(st.getName())
-                    || !containerChange.getParent().getName().equals(elContainerChange.getParent().getName())) {
-                continue;
-            }
-
-            if (elChange.getType() == DbObjType.TABLE || elChange.getType() == DbObjType.VIEW) {
-                containerPrimary = containerChange;
-            } else {
-                PgStatement stChange = null;
-                PgStatement stChangeOld = null;
-                // now get the table based on the child's DiffSide
-                // otherwise BOTH (new) table may be chosen to get LEFT children
-                // which it does not contain
-                containerChange = (elChange.getSide() == DiffSide.LEFT ?
-                        oldSchema : newSchema).getTable(elChange.getParent().getName());
-                DbObjType type = elChange.getType();
-                switch (type) {
-                case CONSTRAINT:
-                case INDEX:
-                case TRIGGER:
-                case RULE:
-                case POLICY:
-                    String name = elChange.getName();
-                    stChange = containerChange.getChild(name, type);
-
-                    if (elChange.getSide() == DiffSide.BOTH) {
-                        stChangeOld = oldContainer.getChild(name, type);
-                    }
-                    break;
-                default:
-                    continue;
-                }
-
-                switch (elChange.getSide()) {
-                case LEFT:
-                    contents.remove(stChange);
-                    break;
-                case RIGHT:
-                    contents.add(stChange);
-                    break;
-                case BOTH:
-                    contents.set(contents.indexOf(stChangeOld), stChange);
-                    break;
-                }
-            }
-
-            it.remove();
-        }
-
-        dumpContainer(containerPrimary, contents);
-    }
-
-    private void dumpContainer(PgStatementContainer obj, List<PgStatement> contents)
-            throws IOException {
-        Collections.sort(contents, ExportTableOrder.INSTANCE);
-
-        StringBuilder groupSql = new StringBuilder(getDumpSql(obj));
-
-        for (PgStatement st : contents) {
-            groupSql.append(GROUP_DELIMITER).append(getDumpSql(st));
-        }
-
-        dumpSQL(groupSql, outDir.resolve(getRelativeFilePath(obj, true)));
-    }
-
-    protected void dumpOverrides(PgStatement st) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        PgStatement.appendOwnerSQL(st, st.getOwner(), false, sb);
-        PgPrivilege.appendPrivileges(st.getPrivileges(), st.isPostgres(), sb);
-        if (st.getPrivileges().isEmpty()) {
-            PgPrivilege.appendDefaultPrivileges(st, sb);
-        }
-
-        if (DbObjType.TABLE == st.getStatementType()) {
-            for (AbstractColumn col : ((AbstractTable)st).getColumns()) {
-                PgPrivilege.appendPrivileges(col.getPrivileges(), col.isPostgres(), sb);
-            }
-        }
-
-        if (sb.length() > 0) {
-            dumpSQL(sb.toString(), outDir.resolve(getRelativeFilePath(st, true)));
-        }
     }
 
     /**
@@ -363,12 +265,12 @@ class ExportTableOrder implements Comparator<PgStatement> {
 
     private int getTableSubelementRank(PgStatement el) {
         switch (el.getStatementType()) {
-        case INDEX:     return 0;
-        case TRIGGER:   return 1;
-        case RULE:      return 2;
-        case CONSTRAINT:return 3;
-        case POLICY:    return 4;
-        default: throw new IllegalArgumentException("Illegal table subelement: " + el.getName());
+        case INDEX:     return 1;
+        case TRIGGER:   return 2;
+        case RULE:      return 3;
+        case CONSTRAINT:return 4;
+        case POLICY:    return 5;
+        default:        return 0;
         }
     }
 
