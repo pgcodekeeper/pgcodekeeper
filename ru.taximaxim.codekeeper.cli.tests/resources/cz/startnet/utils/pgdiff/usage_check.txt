@@ -67,6 +67,8 @@ Usage
                                           other objects
                                           in CLI, selected means included by
                                           --allowed-object and ignore lists
+ --move-data                            : add data movement commands for
+                                          modified tables
  -I (--ignore-list) <path>              : use an ignore list to include/exclude
                                           objects from diff
                                           specify multiple times to use several

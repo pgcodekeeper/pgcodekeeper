@@ -181,6 +181,10 @@ public class CliArgs extends PgDiffArguments {
                     + "\nin CLI, selected means included by --allowed-object and ignore lists")
     private boolean selectedOnly;
 
+    @Option(name="--move-data", forbids={"--graph", "--parse"},
+            usage="add data movement commands for modified tables")
+    private boolean dataMovementMode;
+
     @Option(name="-I", aliases="--ignore-list", metaVar="<path>", forbids={"--graph", "--parse"},
             usage="use an ignore list to include/exclude objects from diff"
                     + "\nspecify multiple times to use several lists")
@@ -523,6 +527,16 @@ public class CliArgs extends PgDiffArguments {
     @Override
     public void setSelectedOnly(boolean selectedOnly) {
         this.selectedOnly = selectedOnly;
+    }
+
+    @Override
+    public boolean isDataMovementMode() {
+        return dataMovementMode;
+    }
+
+    @Override
+    public void setDataMovementMode(boolean dataMovementMode) {
+        this.dataMovementMode = dataMovementMode;
     }
 
     @Override
