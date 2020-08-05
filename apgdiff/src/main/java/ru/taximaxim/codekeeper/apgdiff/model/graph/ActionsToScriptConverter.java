@@ -3,18 +3,25 @@ package ru.taximaxim.codekeeper.apgdiff.model.graph;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import cz.startnet.utils.pgdiff.NotAllowedObjectException;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.schema.AbstractColumn;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.MsView;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -56,6 +63,8 @@ public class ActionsToScriptConverter {
     public void fillScript(PgDiffScript script, List<TreeElement> selected) {
         Collection<DbObjType> allowedTypes = arguments.getAllowedTypes();
         Set<PgStatement> refreshed = new HashSet<>(toRefresh.size());
+        Map<String, AbstractTable> tmpTblsMapping = !arguments.isDataMovementMode() ? null
+                : new HashMap<>();
         for (ActionContainer action : actions) {
             DbObjType type = action.getOldObj().getStatementType();
             if (type == DbObjType.COLUMN) {
@@ -93,7 +102,16 @@ public class ActionsToScriptConverter {
                     if (depcy != null) {
                         script.addStatement(depcy);
                     }
-                    script.addDrop(oldObj, null, oldObj.getDropSQL());
+                    if (arguments.isDataMovementMode()
+                            && DbObjType.TABLE == oldObj.getStatementType()) {
+                        String tmpTblName = oldObj.getName() + '_'
+                                + UUID.randomUUID().toString().replace("-", "");
+                        script.addStatement("ALTER TABLE " + oldObj.getQualifiedName()
+                        + " RENAME TO " + tmpTblName + ";");
+                        tmpTblsMapping.put(tmpTblName, (AbstractTable) oldObj);
+                    } else {
+                        script.addDrop(oldObj, null, oldObj.getDropSQL());
+                    }
                 }
                 break;
             case ALTER:
@@ -127,6 +145,24 @@ public class ActionsToScriptConverter {
         for (int i = orphanRefreshes.length - 1; i >= 0; --i) {
             script.addStatement(MessageFormat.format(REFRESH_MODULE,
                     PgDiffUtils.quoteString(orphanRefreshes[i].getQualifiedName())));
+        }
+
+        if (arguments.isDataMovementMode()) {
+            for (Entry<String, AbstractTable> tmpTblMapping : tmpTblsMapping.entrySet()) {
+                AbstractTable oldTbl = tmpTblMapping.getValue();
+                String tmpTblName = tmpTblMapping.getKey();
+                String tmpTblQualifiedName = oldTbl.getSchemaName() + '.' + tmpTblName;
+                String cols = oldTbl.getColumns().stream().map(AbstractColumn::getName)
+                        .collect(Collectors.joining(", "));
+
+                StringBuilder sb = new StringBuilder();
+                sb.append("INSERT INTO ").append(oldTbl.getQualifiedName())
+                .append('(').append(cols).append(") SELECT ").append(cols)
+                .append(" FROM ").append(tmpTblQualifiedName).append(';')
+                .append("\n\nDROP TABLE ").append(tmpTblQualifiedName).append(';');
+
+                script.addStatement(sb.toString());
+            }
         }
     }
 
