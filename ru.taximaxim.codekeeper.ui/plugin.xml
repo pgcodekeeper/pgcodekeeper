@@ -123,6 +123,12 @@
         </command>
         <command
             categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.RenameReference"
+            id="ru.taximaxim.codekeeper.ui.command.RenameReference"
+            name="%command.commandname.RenameReference">
+        </command>
+        <command
+            categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
             defaultHandler="ru.taximaxim.codekeeper.ui.handlers.OpenDocs"
             id="ru.taximaxim.codekeeper.ui.openDocs"
             name="%command.commandname.OpenDocs">
@@ -590,6 +596,11 @@
                         </adapt>
                     </with>
                 </visibleWhen>
+            </command>
+            <command commandId="ru.taximaxim.codekeeper.ui.command.RenameReference">
+               <visibleWhen
+                     checkEnabled="true">
+               </visibleWhen>
             </command>
         </menuContribution>
         <menuContribution locationURI="popup:org.eclipse.ui.projectConfigure?after=additions">
@@ -1430,6 +1441,12 @@
             contextId="ru.taximaxim.codekeeper.ui.pgCodeKeeperEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+M3+E">
+        </key>
+        <key
+            commandId="ru.taximaxim.codekeeper.ui.command.RenameReference"
+            contextId="ru.taximaxim.codekeeper.ui.pgCodeKeeperEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M2+M3+R">
         </key>
         <key
             commandId="ru.taximaxim.codekeeper.ui.command.OpenObjectWizard"
