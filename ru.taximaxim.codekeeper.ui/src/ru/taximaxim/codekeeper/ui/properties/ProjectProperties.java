@@ -42,6 +42,7 @@ public class ProjectProperties extends PropertyPage {
 
     private Button btnEnableProjPref;
     private Button btnNoPrivileges;
+    private Button btnIgnoreColumnOrder;
     private Button btnEnableFuncDep;
     private Button btnSimplifyView;
     private Button btnUseGlobalIgnoreList;
@@ -152,6 +153,7 @@ public class ProjectProperties extends PropertyPage {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 btnNoPrivileges.setEnabled(btnEnableProjPref.getSelection());
+                btnIgnoreColumnOrder.setEnabled(btnEnableProjPref.getSelection());
                 btnEnableFuncDep.setEnabled(btnEnableProjPref.getSelection());
                 btnUseGlobalIgnoreList.setEnabled(btnEnableProjPref.getSelection());
                 if (!isMsSql) {
@@ -160,42 +162,36 @@ public class ProjectProperties extends PropertyPage {
             }
         });
 
-        btnNoPrivileges = new Button(panel, SWT.CHECK);
-        btnNoPrivileges.setText(Messages.dbUpdatePrefPage_ignore_privileges);
-        GridData gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
-        gd.horizontalIndent = 10;
-        btnNoPrivileges.setLayoutData(gd);
-        btnNoPrivileges.setSelection(prefs.getBoolean(PREF.NO_PRIVILEGES, false));
-        btnNoPrivileges.setEnabled(overridePref);
+        btnNoPrivileges = createButton(panel, Messages.dbUpdatePrefPage_ignore_privileges,
+                prefs.getBoolean(PREF.NO_PRIVILEGES, false), overridePref);
 
-        btnEnableFuncDep = new Button(panel, SWT.CHECK);
-        btnEnableFuncDep.setText(Messages.GeneralPrefPage_enable_body_dependencies);
+        btnIgnoreColumnOrder = createButton(panel, Messages.GeneralPrefPage_ignore_column_order,
+                prefs.getBoolean(PREF.IGNORE_COLUMN_ORDER, false), overridePref);
+
+        btnEnableFuncDep = createButton(panel, Messages.GeneralPrefPage_enable_body_dependencies,
+                prefs.getBoolean(PREF.ENABLE_BODY_DEPENDENCIES, false), overridePref);
         btnEnableFuncDep.setToolTipText(Messages.GeneralPrefPage_body_depcy_tooltip);
-        gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
-        gd.horizontalIndent = 10;
-        btnEnableFuncDep.setLayoutData(gd);
-        btnEnableFuncDep.setSelection(prefs.getBoolean(PREF.ENABLE_BODY_DEPENDENCIES, false));
-        btnEnableFuncDep.setEnabled(overridePref);
 
         if (!isMsSql) {
-            btnSimplifyView = new Button(panel, SWT.CHECK);
-            btnSimplifyView.setText(Messages.GeneralPrefPage_simplify_view);
-            gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
-            gd.horizontalIndent = 10;
-            btnSimplifyView.setLayoutData(gd);
-            btnSimplifyView.setSelection(prefs.getBoolean(PREF.SIMPLIFY_VIEW, false));
-            btnSimplifyView.setEnabled(overridePref);
+            btnSimplifyView = createButton(panel, Messages.GeneralPrefPage_simplify_view,
+                    prefs.getBoolean(PREF.SIMPLIFY_VIEW, false), overridePref);
         }
 
-        btnUseGlobalIgnoreList = new Button(panel, SWT.CHECK);
-        btnUseGlobalIgnoreList.setText(Messages.ProjectProperties_use_global_ignore_list);
-        gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
-        gd.horizontalIndent = 10;
-        btnUseGlobalIgnoreList.setLayoutData(gd);
-        btnUseGlobalIgnoreList.setSelection(prefs.getBoolean(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, true));
-        btnUseGlobalIgnoreList.setEnabled(overridePref);
+        btnUseGlobalIgnoreList = createButton(panel, Messages.ProjectProperties_use_global_ignore_list,
+                prefs.getBoolean(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, true), overridePref);
 
         return panel;
+    }
+
+    private Button createButton(Composite parent, String text, boolean selection, boolean enable) {
+        Button button = new Button(parent, SWT.CHECK);
+        button.setText(text);
+        GridData gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
+        gd.horizontalIndent = 10;
+        button.setLayoutData(gd);
+        button.setSelection(selection);
+        button.setEnabled(enable);
+        return button;
     }
 
     private void checkSwitchWarnLbl() {
@@ -284,6 +280,7 @@ public class ProjectProperties extends PropertyPage {
     private void fillPrefs() throws BackingStoreException {
         prefs.putBoolean(PROJ_PREF.ENABLE_PROJ_PREF_ROOT, btnEnableProjPref.getSelection());
         prefs.putBoolean(PREF.NO_PRIVILEGES, btnNoPrivileges.getSelection());
+        prefs.putBoolean(PREF.IGNORE_COLUMN_ORDER, btnIgnoreColumnOrder.getSelection());
         prefs.putBoolean(PREF.ENABLE_BODY_DEPENDENCIES, btnEnableFuncDep.getSelection());
         prefs.putBoolean(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, btnUseGlobalIgnoreList.getSelection());
         prefs.putBoolean(PROJ_PREF.DISABLE_PARSER_IN_EXTERNAL_FILES, btnDisableParser.getSelection());

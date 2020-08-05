@@ -126,6 +126,10 @@ public class CliArgs extends PgDiffArguments {
             usage="keep newline characters as is (don't convert to Unix newlines)")
     private boolean keepNewlines;
 
+    @Option(name="--simplify-views", forbids="--ms-sql",
+            usage="simple formatting for VIEWs when reading via JDBC (not recomended by PostgreSQL)")
+    private boolean simplifyView;
+
     @Option(name="-X", aliases="--add-transaction", forbids={"--graph", "--parse"},
             usage="wrap generated script with transaction statements")
     private boolean addTransaction;
@@ -141,6 +145,10 @@ public class CliArgs extends PgDiffArguments {
     @Option(name="-Z", aliases="--time-zone", metaVar="<timezone>",forbids={"--graph", "--parse", "--ms-sql"},
             usage="use this timezone when working with database, also add SET TIMEZONE statement to the script")
     private String timeZone;
+
+    @Option(name="--ignore-column-order",
+            usage="ignore differences in table column order")
+    private boolean ignoreColumnOrder;
 
     @Option(name="--using-off", forbids={"--graph", "--parse"},
             usage="do not print USING expression for ALTER COLUMN TYPE")
@@ -233,10 +241,6 @@ public class CliArgs extends PgDiffArguments {
             usage="name of start object in graph mode"
                     + "\nspecify multiple times to use several names")
     private List<String> graphNames;
-
-    @Option(name="--simplify-views", forbids="--ms-sql",
-            usage="simple formatting for VIEWs when reading via JDBC (not recomended by PostgreSQL)")
-    private boolean simplifyView;
 
     @Override
     public boolean isModeParse() {
@@ -424,6 +428,16 @@ public class CliArgs extends PgDiffArguments {
     @Override
     public void setIgnoreErrors(boolean ignoreErrors) {
         this.ignoreErrors = ignoreErrors;
+    }
+
+    @Override
+    public boolean isIgnoreColumnOrder() {
+        return ignoreColumnOrder;
+    }
+
+    @Override
+    public void setIgnoreColumnOrder(boolean ignoreColumnOrder) {
+        this.ignoreColumnOrder = ignoreColumnOrder;
     }
 
     @Override

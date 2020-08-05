@@ -5,7 +5,7 @@
     <parent>
         <groupId>ru.taximaxim.codeKeeper</groupId>
         <artifactId>ru.taximaxim.codeKeeper</artifactId>
-        <version>5.10.4-SNAPSHOT</version>
+        <version>${revision}</version>
         <relativePath>../ru.taximaxim.codekeeper.mainapp/ru.taximaxim.codeKeeper/</relativePath>
     </parent>
 
