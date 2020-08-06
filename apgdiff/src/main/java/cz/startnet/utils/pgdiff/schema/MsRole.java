@@ -58,13 +58,7 @@ public class MsRole extends PgStatement {
             sb.append(" DROP MEMBER ").append(MsDiffUtils.quoteName(member));
             sb.append(GO).append('\n');
         }
-
-        sb.append("DROP ROLE ");
-        if (optionExists) {
-            sb.append("IF EXISTS ");
-        }
-        sb.append(MsDiffUtils.quoteName(name))
-        .append(GO);
+        sb.append(super.getDropSQL(optionExists));
         return sb.toString();
     }
 

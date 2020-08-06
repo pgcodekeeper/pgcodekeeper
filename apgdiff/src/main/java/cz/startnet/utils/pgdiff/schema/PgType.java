@@ -296,9 +296,9 @@ public class PgType extends AbstractType {
 
     @Override
     public String getCreationSQL() {
-        StringBuilder sb = new StringBuilder("CREATE TYPE ")
-                .append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.')
-                .append(PgDiffUtils.getQuotedName(getName()));
+        StringBuilder sb = new StringBuilder();
+        appendDropBeforeCreate(sb);
+        sb.append("CREATE TYPE ").append(getQualifiedName());
 
         switch(form) {
         case COMPOSITE:
@@ -449,12 +449,8 @@ public class PgType extends AbstractType {
     }
 
     @Override
-    public final String getDropSQL(boolean optionExists) {
-        final StringBuilder sb = new StringBuilder();
-        sb.append("DROP ").append(getTypeName()).append(' ');
-        appendFullName(sb);
-        sb.append(';');
-        return sb.toString();
+    protected boolean hasExistingOption() {
+        return false;
     }
 
     @Override

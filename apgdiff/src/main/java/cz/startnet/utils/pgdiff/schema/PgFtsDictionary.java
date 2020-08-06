@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -32,11 +31,7 @@ implements PgOptionContainer {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSql = new StringBuilder();
-        PgDiffArguments args = getDatabase().getArguments();
-        if (args.isOptionDropObject()) {
-            sbSql.append(getDropSQL(true));
-            sbSql.append("\n\n");
-        }
+        appendDropBeforeCreate(sbSql);
         sbSql.append("CREATE TEXT SEARCH DICTIONARY ")
         .append(getQualifiedName());
         sbSql.append(" (\n\tTEMPLATE = ").append(template);
@@ -57,17 +52,6 @@ implements PgOptionContainer {
     @Override
     protected String getTypeName() {
         return "TEXT SEARCH DICTIONARY";
-    }
-
-    @Override
-    public String getDropSQL(boolean optionExists) {
-        StringBuilder dropSb = new StringBuilder();
-        dropSb.append("DROP TEXT SEARCH DICTIONARY ");
-        if (optionExists) {
-            dropSb.append("IF EXISTS ");
-        }
-        dropSb.append(getQualifiedName()).append(";");
-        return dropSb.toString();
     }
 
     @Override

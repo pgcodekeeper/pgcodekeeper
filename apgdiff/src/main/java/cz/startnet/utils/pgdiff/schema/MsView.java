@@ -63,18 +63,6 @@ public class MsView extends AbstractView implements SourceStatement {
     }
 
     @Override
-    public String getDropSQL(boolean optionExists) {
-        StringBuilder dropSb = new StringBuilder();
-        dropSb.append("DROP VIEW ");
-        if (optionExists) {
-            dropSb.append("IF EXISTS ");
-        }
-        dropSb.append(getQualifiedName())
-        .append(GO);
-        return dropSb.toString();
-    }
-
-    @Override
     public boolean isPostgres() {
         return false;
     }

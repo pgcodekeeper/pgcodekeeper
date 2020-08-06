@@ -35,8 +35,4 @@ public class SimpleForeignPgTable extends AbstractForeignTable {
         sbSQL.append(')');
     }
 
-    @Override
-    public String getDropSQL(boolean optionExists) {
-        return null;
-    }
 }

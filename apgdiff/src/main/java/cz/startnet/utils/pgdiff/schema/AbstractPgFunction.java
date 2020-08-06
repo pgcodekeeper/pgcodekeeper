@@ -11,7 +11,6 @@ import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public abstract class AbstractPgFunction extends AbstractFunction {
 
@@ -42,18 +41,6 @@ public abstract class AbstractPgFunction extends AbstractFunction {
 
     public AbstractPgFunction(String name) {
         super(name);
-    }
-
-    @Override
-    public String getDropSQL(boolean optionExists) {
-        final StringBuilder sbString = new StringBuilder();
-        sbString.append("DROP ").append(getTypeName()).append(' ');
-        if (optionExists) {
-            sbString.append("IF EXISTS ");
-        }
-        appendFullName(sbString);
-        sbString.append(';');
-        return sbString.toString();
     }
 
     @Override

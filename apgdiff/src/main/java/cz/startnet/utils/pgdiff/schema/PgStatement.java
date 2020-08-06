@@ -363,11 +363,36 @@ public abstract class PgStatement implements IStatement, IHashable {
 
     public final String getDropSQL() {
         PgDiffArguments args = getDatabase().getArguments();
-        return getDropSQL(args != null && args.isOptionExisting());
+        return getDropSQL(args != null && args.isOptionExisting() && hasExistingOption());
     }
 
-    public abstract String getDropSQL(boolean optionExists);
+    public String getDropSQL(boolean optionExists) {
+        final StringBuilder sbString = new StringBuilder();
+        sbString.append("DROP ").append(getTypeName()).append(' ');
+        if (optionExists) {
+            appendExistingOption(sbString);
+        }
+        appendFullName(sbString);
+        sbString.append(isPostgres() ? ';' : GO);
+        return sbString.toString();
+    }
 
+    protected void appendExistingOption(StringBuilder sbString) {
+        // override where necessary
+        sbString.append("IF EXISTS ");
+    }
+    protected boolean hasExistingOption() {
+        // override where necessary
+        return true;
+    }
+    protected void appendDropBeforeCreate(StringBuilder sb) {
+        PgDiffArguments args = getDatabase().getArguments();
+        if (args != null && args.isOptionDropObject()) {
+            sb.append(getDropSQL(true));
+            sb.append("\n\n");
+        }
+
+    }
     /**
      * Метод заполняет sb выражением изменения объекта, можно ли изменить объект
      * ALTER.<br><br>

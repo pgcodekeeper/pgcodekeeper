@@ -6,7 +6,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -75,11 +74,7 @@ public class PgPolicy extends PgStatementWithSearchPath {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
-        PgDiffArguments args = getDatabase().getArguments();
-        if (args.isOptionDropObject()) {
-            sbSQL.append(getDropSQL(true));
-            sbSQL.append("\n\n");
-        }
+        appendDropBeforeCreate(sbSQL);
         sbSQL.append("CREATE POLICY ");
         appendFullName(sbSQL);
 
@@ -109,17 +104,6 @@ public class PgPolicy extends PgStatementWithSearchPath {
             appendCommentSql(sbSQL);
         }
 
-        return sbSQL.toString();
-    }
-
-    @Override
-    public String getDropSQL(boolean optionExists) {
-        StringBuilder sbSQL = new StringBuilder("DROP POLICY ");
-        if (optionExists) {
-            sbSQL.append("IF EXISTS ");
-        }
-       appendFullName(sbSQL);
-        sbSQL.append(';');
         return sbSQL.toString();
     }
 

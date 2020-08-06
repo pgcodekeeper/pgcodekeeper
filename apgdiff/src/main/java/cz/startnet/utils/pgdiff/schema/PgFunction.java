@@ -29,6 +29,7 @@ public class PgFunction extends AbstractPgFunction {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
+        appendDropBeforeCreate(sbSQL);
         sbSQL.append("CREATE OR REPLACE FUNCTION ");
         sbSQL.append(PgDiffUtils.getQuotedName(getSchemaName())).append('.');
         appendFunctionSignature(sbSQL, true, true);
@@ -178,8 +179,4 @@ public class PgFunction extends AbstractPgFunction {
         return new PgFunction(getBareName());
     }
 
-    @Override
-    public String getDropSQL(boolean optionExists) {
-        return null;
-    }
 }

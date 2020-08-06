@@ -3,7 +3,6 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -44,11 +43,7 @@ public class PgOperator extends PgStatementWithSearchPath implements IOperator {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
-        PgDiffArguments args = getDatabase().getArguments();
-        if (args.isOptionDropObject()) {
-            sbSQL.append(getDropSQL(true));
-            sbSQL.append("\n\n");
-        }
+        appendDropBeforeCreate(sbSQL);
         sbSQL.append("CREATE OPERATOR ");
         sbSQL.append(PgDiffUtils.getQuotedName(getSchemaName())).append('.');
         sbSQL.append(getBareName());
@@ -104,18 +99,6 @@ public class PgOperator extends PgStatementWithSearchPath implements IOperator {
         }
 
         return sbSQL.toString();
-    }
-
-    @Override
-    public String getDropSQL(boolean optionExists) {
-        final StringBuilder sbString = new StringBuilder();
-        sbString.append("DROP OPERATOR ");
-        if (optionExists) {
-            sbString.append("IF EXISTS ");
-        }
-        appendFullName(sbString);
-        sbString.append(';');
-        return sbString.toString();
     }
 
     public String getSignature() {

@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -37,11 +36,7 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
     @Override
     public String getCreationSQL() {
         StringBuilder sbSql = new StringBuilder();
-        PgDiffArguments args = getDatabase().getArguments();
-        if (args.isOptionDropObject()) {
-            sbSql.append(getDropSQL(true));
-            sbSql.append("\n\n");
-        }
+        appendDropBeforeCreate(sbSql);
         sbSql.append("CREATE TEXT SEARCH CONFIGURATION ")
         .append(getQualifiedName()).append(" (\n\t");
         sbSql.append("PARSER = ").append(parser).append(" );");
@@ -65,17 +60,6 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
     @Override
     protected String getTypeName() {
         return "TEXT SEARCH CONFIGURATION";
-    }
-
-    @Override
-    public String getDropSQL(boolean optionExists) {
-        StringBuilder dropSb = new StringBuilder();
-        dropSb.append("DROP TEXT SEARCH CONFIGURATION ");
-        if (optionExists) {
-            dropSb.append("IF EXISTS ");
-        }
-        dropSb.append(getQualifiedName()).append(";");
-        return dropSb.toString();
     }
 
     @Override

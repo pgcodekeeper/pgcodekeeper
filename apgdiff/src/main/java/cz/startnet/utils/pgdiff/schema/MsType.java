@@ -117,18 +117,6 @@ public class MsType extends AbstractType {
     }
 
     @Override
-    public String getDropSQL(boolean optionExists) {
-        StringBuilder dropSb = new StringBuilder();
-        dropSb.append("DROP TYPE ");
-        if (optionExists) {
-            dropSb.append("IF EXISTS ");
-        }
-        dropSb.append(getQualifiedName())
-        .append(GO);
-        return dropSb.toString();
-    }
-
-    @Override
     protected AbstractType getTypeCopy() {
         MsType copy = new MsType(getName());
         copy.setNotNull(isNotNull());

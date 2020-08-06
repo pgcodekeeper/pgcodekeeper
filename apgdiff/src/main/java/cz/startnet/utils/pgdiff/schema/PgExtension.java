@@ -43,12 +43,9 @@ public class PgExtension extends PgStatement {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
-        PgDiffArguments args = getDatabase().getArguments();
-        if (args.isOptionDropObject()) {
-            sbSQL.append(getDropSQL(true));
-            sbSQL.append("\n\n");
-        }
+        appendDropBeforeCreate(sbSQL);
         sbSQL.append("CREATE EXTENSION ");
+        PgDiffArguments args = getDatabase().getArguments();
         if (args != null && args.isOptionExisting()) {
             sbSQL.append("IF NOT EXISTS ");
         }
@@ -67,17 +64,6 @@ public class PgExtension extends PgStatement {
         }
 
         return sbSQL.toString();
-    }
-
-    @Override
-    public String getDropSQL(boolean optionExists) {
-        StringBuilder dropSb = new StringBuilder();
-        dropSb.append("DROP EXTENSION ");
-        if (optionExists) {
-            dropSb.append("IF EXISTS ");
-        }
-        dropSb.append(PgDiffUtils.getQuotedName(getName())).append(";");
-        return dropSb.toString();
     }
 
     @Override

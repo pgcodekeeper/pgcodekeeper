@@ -36,11 +36,7 @@ public class PgIndex extends AbstractIndex {
 
     private String getCreationSQL(String name) {
         final StringBuilder sbSQL = new StringBuilder();
-        PgDiffArguments args = getDatabase().getArguments();
-        if (args.isOptionDropObject()) {
-            sbSQL.append(getDropSQL(true));
-            sbSQL.append("\n\n");
-        }
+        appendDropBeforeCreate(sbSQL);
         sbSQL.append("CREATE ");
 
         if (isUnique()) {
@@ -48,6 +44,7 @@ public class PgIndex extends AbstractIndex {
         }
 
         sbSQL.append("INDEX ");
+        PgDiffArguments args = getDatabase().getArguments();
         if (args != null && args.isConcurrentlyMode()) {
             sbSQL.append("CONCURRENTLY ");
         }
@@ -119,17 +116,6 @@ public class PgIndex extends AbstractIndex {
     @Override
     public String getQualifiedName() {
         return PgDiffUtils.getQuotedName(getSchemaName()) + '.' + PgDiffUtils.getQuotedName(getName());
-    }
-
-    @Override
-    public String getDropSQL(boolean optionExists) {
-        StringBuilder dropSb = new StringBuilder();
-        dropSb.append("DROP INDEX ");
-        if (optionExists) {
-            dropSb.append("IF EXISTS ");
-        }
-        dropSb.append(getQualifiedName()).append(";");
-        return dropSb.toString();
     }
 
     @Override

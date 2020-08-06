@@ -28,6 +28,7 @@ public class PgProcedure extends AbstractPgFunction {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
+        appendDropBeforeCreate(sbSQL);
         sbSQL.append("CREATE OR REPLACE PROCEDURE ");
         sbSQL.append(PgDiffUtils.getQuotedName(getSchemaName())).append('.');
         appendFunctionSignature(sbSQL, true, true);
@@ -99,8 +100,4 @@ public class PgProcedure extends AbstractPgFunction {
         return new PgProcedure(getBareName());
     }
 
-    @Override
-    public String getDropSQL(boolean optionExists) {
-        return null;
-    }
 }

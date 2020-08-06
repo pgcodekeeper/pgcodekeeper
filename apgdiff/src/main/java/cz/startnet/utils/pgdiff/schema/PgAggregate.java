@@ -477,8 +477,4 @@ public class PgAggregate extends AbstractPgFunction {
         return copy;
     }
 
-    @Override
-    public String getDropSQL(boolean optionExists) {
-        return null;
-    }
 }

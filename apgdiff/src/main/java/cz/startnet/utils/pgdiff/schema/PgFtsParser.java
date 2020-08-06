@@ -3,7 +3,6 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -32,11 +31,7 @@ public class PgFtsParser extends PgStatementWithSearchPath {
     @Override
     public String getCreationSQL() {
         StringBuilder sbSql = new StringBuilder();
-        PgDiffArguments args = getDatabase().getArguments();
-        if (args.isOptionDropObject()) {
-            sbSql.append(getDropSQL(true));
-            sbSql.append("\n\n");
-        }
+        appendDropBeforeCreate(sbSql);
         sbSql.append("CREATE TEXT SEARCH PARSER ")
         .append(getQualifiedName()).append(" (\n\t")
         .append("START = ").append(startFunction).append(",\n\t")
@@ -60,17 +55,6 @@ public class PgFtsParser extends PgStatementWithSearchPath {
     @Override
     protected String getTypeName() {
         return "TEXT SEARCH PARSER";
-    }
-
-    @Override
-    public String getDropSQL(boolean optionExists) {
-        StringBuilder dropSb = new StringBuilder();
-        dropSb.append("DROP TEXT SEARCH PARSER ");
-        if (optionExists) {
-            dropSb.append("IF EXISTS ");
-        }
-        dropSb.append(getQualifiedName()).append(";");
-        return dropSb.toString();
     }
 
     @Override

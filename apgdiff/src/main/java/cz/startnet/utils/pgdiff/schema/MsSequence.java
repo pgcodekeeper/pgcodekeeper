@@ -152,18 +152,6 @@ public class MsSequence extends AbstractSequence {
     }
 
     @Override
-    public String getDropSQL(boolean optionExists) {
-        StringBuilder dropSb = new StringBuilder();
-        dropSb.append("DROP SEQUENCE ");
-        if (optionExists) {
-            dropSb.append("IF EXISTS ");
-        }
-        dropSb.append(getQualifiedName())
-        .append(GO);
-        return dropSb.toString();
-    }
-
-    @Override
     public void setDataType(String dataType) {
         String type = dataType.toLowerCase(Locale.ROOT);
         switch (type) {

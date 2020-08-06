@@ -82,17 +82,11 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
     }
 
     @Override
-    public String getDropSQL(boolean optionExists) {
-        StringBuilder dropSb = new StringBuilder();
-        dropSb.append("DROP TRIGGER ");
-        if (optionExists) {
-            dropSb.append("IF EXISTS ");
-        }
-        dropSb.append(MsDiffUtils.quoteName(getSchemaName()))
+    protected StringBuilder appendFullName(StringBuilder sb) {
+        sb.append(MsDiffUtils.quoteName(getSchemaName()))
         .append('.')
-        .append(MsDiffUtils.quoteName(getName()))
-        .append(GO);
-        return dropSb.toString();
+        .append(MsDiffUtils.quoteName(getName()));
+        return sb;
     }
 
     @Override
