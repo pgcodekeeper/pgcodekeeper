@@ -21,8 +21,11 @@ import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
+import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractSequence;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.MsView;
+import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -35,6 +38,8 @@ public class ActionsToScriptConverter {
     private static final String DROP_COMMENT = "-- DEPCY: This {0} depends on the {1}: {2}";
     private static final String CREATE_COMMENT = "-- DEPCY: This {0} is a dependency of {1}: {2}";
     private static final String HIDDEN_OBJECT = "-- HIDDEN: Object {0} of type {1}";
+
+    private static final String RENAME_OBJECT = "ALTER {0} {1} RENAME TO {2};";
 
     private final Set<ActionContainer> actions;
     private final Set<PgSequence> sequencesOwnedBy = new LinkedHashSet<>();
@@ -61,10 +66,14 @@ public class ActionsToScriptConverter {
      * @param selected коллекция выбранных элементов в панели сравнения
      */
     public void fillScript(PgDiffScript script, List<TreeElement> selected) {
+        Map<String, AbstractTable> tmpTblsMapping = null;
+        Map<String, String> tblColIdMapping = null;
+        if (arguments.isDataMovementMode()) {
+            tmpTblsMapping = new HashMap<>();
+            tblColIdMapping = new HashMap<>();
+        }
         Collection<DbObjType> allowedTypes = arguments.getAllowedTypes();
         Set<PgStatement> refreshed = new HashSet<>(toRefresh.size());
-        Map<String, AbstractTable> tmpTblsMapping = !arguments.isDataMovementMode() ? null
-                : new HashMap<>();
         for (ActionContainer action : actions) {
             DbObjType type = action.getOldObj().getStatementType();
             if (type == DbObjType.COLUMN) {
@@ -104,11 +113,29 @@ public class ActionsToScriptConverter {
                     }
                     if (arguments.isDataMovementMode()
                             && DbObjType.TABLE == oldObj.getStatementType()) {
-                        String tmpTblName = oldObj.getName() + '_'
-                                + UUID.randomUUID().toString().replace("-", "");
-                        script.addStatement("ALTER TABLE " + oldObj.getQualifiedName()
-                        + " RENAME TO " + tmpTblName + ";");
-                        tmpTblsMapping.put(tmpTblName, (AbstractTable) oldObj);
+                        String tmpSuffix = '_' + UUID.randomUUID().toString()
+                                .replace("-", "");
+                        AbstractTable oldTbl = (AbstractTable) oldObj;
+                        String tmpTblName = oldTbl.getName() + tmpSuffix;
+                        script.addStatement(MessageFormat.format(RENAME_OBJECT,
+                                oldTbl.getStatementType(), oldTbl.getQualifiedName(),
+                                tmpTblName));
+                        tmpTblsMapping.put(tmpTblName, oldTbl);
+
+                        if (oldTbl instanceof AbstractPgTable) {
+                            for (AbstractColumn col : oldTbl.getColumns()) {
+                                PgColumn pgCol = (PgColumn) col;
+                                AbstractSequence seq = pgCol.getSequence();
+                                if (seq != null) {
+                                    script.addStatement(MessageFormat.format(RENAME_OBJECT,
+                                            seq.getStatementType(),
+                                            seq.getQualifiedName(),
+                                            seq.getName() + tmpSuffix));
+                                    tblColIdMapping.put(oldTbl.getQualifiedName(),
+                                            pgCol.getName());
+                                }
+                            }
+                        }
                     } else {
                         script.addDrop(oldObj, null, oldObj.getDropSQL());
                     }
@@ -150,16 +177,31 @@ public class ActionsToScriptConverter {
         if (arguments.isDataMovementMode()) {
             for (Entry<String, AbstractTable> tmpTblMapping : tmpTblsMapping.entrySet()) {
                 AbstractTable oldTbl = tmpTblMapping.getValue();
-                String tmpTblName = tmpTblMapping.getKey();
-                String tmpTblQualifiedName = oldTbl.getSchemaName() + '.' + tmpTblName;
+                String tmpTblQName = oldTbl.getSchemaName() + '.' + tmpTblMapping.getKey();
                 String cols = oldTbl.getColumns().stream().map(AbstractColumn::getName)
                         .collect(Collectors.joining(", "));
 
                 StringBuilder sb = new StringBuilder();
                 sb.append("INSERT INTO ").append(oldTbl.getQualifiedName())
                 .append('(').append(cols).append(") SELECT ").append(cols)
-                .append(" FROM ").append(tmpTblQualifiedName).append(';')
-                .append("\n\nDROP TABLE ").append(tmpTblQualifiedName).append(';');
+                .append(" FROM ").append(tmpTblQName).append(';')
+                .append("\n\nDROP TABLE ").append(tmpTblQName).append(';');
+
+                if (oldTbl instanceof AbstractPgTable) {
+                    String oldTblQName = oldTbl.getQualifiedName();
+                    String colName = tblColIdMapping.get(oldTblQName);
+                    if (colName != null) {
+                        String idVarName = "current_tbl_id"
+                                + tmpTblQName.replace(oldTblQName, "");
+                        sb.append("\n\nDO $$ DECLARE ").append(idVarName)
+                        .append(" integer = (SELECT MAX(").append(colName)
+                        .append(")+1 FROM ").append(oldTblQName)
+                        .append(");\nBEGIN\n\texecute 'ALTER TABLE ")
+                        .append(oldTblQName).append(" ALTER COLUMN ").append(colName)
+                        .append(" RESTART WITH ' || ").append(idVarName)
+                        .append(" || ';';\nEND\n$$;");
+                    }
+                }
 
                 script.addStatement(sb.toString());
             }
