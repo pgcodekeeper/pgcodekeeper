@@ -17,6 +17,7 @@ public class MsSchema extends AbstractSchema {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
+        appendDropBeforeCreate(sbSQL);
         sbSQL.append("CREATE SCHEMA ");
         sbSQL.append(MsDiffUtils.quoteName(getName()));
         if (owner != null) {

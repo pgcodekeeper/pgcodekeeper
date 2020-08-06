@@ -46,6 +46,7 @@ public class MsAssembly extends PgStatement {
 
     private String getAssemblyFullSQL(boolean isPreview) {
         StringBuilder sb = new StringBuilder();
+        appendDropBeforeCreate(sb);
         sb.append("CREATE ASSEMBLY ").append(MsDiffUtils.quoteName(name));
         if (owner != null) {
             sb.append("\nAUTHORIZATION ").append(MsDiffUtils.quoteName(owner));

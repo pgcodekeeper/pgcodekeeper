@@ -33,7 +33,9 @@ public class MsType extends AbstractType {
 
     @Override
     public String getCreationSQL() {
-        StringBuilder sb = new StringBuilder("CREATE TYPE ").append(getQualifiedName());
+        StringBuilder sb = new StringBuilder();
+        appendDropBeforeCreate(sb);
+        sb.append("CREATE TYPE ").append(getQualifiedName());
 
         if (getBaseType() != null) {
             sb.append(" FROM ").append(getBaseType());

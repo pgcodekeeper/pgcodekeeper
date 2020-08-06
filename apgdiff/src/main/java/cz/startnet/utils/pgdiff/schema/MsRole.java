@@ -31,6 +31,7 @@ public class MsRole extends PgStatement {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
+        appendDropBeforeCreate(sbSQL);
         sbSQL.append("CREATE ROLE ");
         sbSQL.append(MsDiffUtils.quoteName(getName()));
         if (owner != null) {

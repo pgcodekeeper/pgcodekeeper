@@ -20,6 +20,7 @@ public class MsView extends AbstractView implements SourceStatement {
     @Override
     public String getCreationSQL() {
         StringBuilder sbSQL = new StringBuilder();
+        appendDropBeforeCreate(sbSQL);
         sbSQL.append(getViewFullSQL(true));
 
         appendOwnerSQL(sbSQL);

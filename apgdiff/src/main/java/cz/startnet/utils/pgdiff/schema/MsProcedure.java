@@ -16,6 +16,7 @@ public class MsProcedure extends AbstractMsFunction {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
+        appendDropBeforeCreate(sbSQL);
         sbSQL.append(getFunctionFullSQL(true));
 
         appendOwnerSQL(sbSQL);

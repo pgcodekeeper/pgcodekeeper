@@ -20,6 +20,7 @@ public class MsClrProcedure extends AbstractMsClrFunction {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
+        appendDropBeforeCreate(sbSQL);
         sbSQL.append(getFunctionFullSQL(true));
 
         appendOwnerSQL(sbSQL);

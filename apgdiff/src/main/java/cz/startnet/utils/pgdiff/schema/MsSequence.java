@@ -18,6 +18,7 @@ public class MsSequence extends AbstractSequence {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
+        appendDropBeforeCreate(sbSQL);
         sbSQL.append("CREATE SEQUENCE ");
         sbSQL.append(getQualifiedName());
 
