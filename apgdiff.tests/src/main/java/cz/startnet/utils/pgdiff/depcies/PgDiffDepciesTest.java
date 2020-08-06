@@ -220,7 +220,10 @@ public class PgDiffDepciesTest {
             {"add_table_with_cyclic_dep_usr_t1", true},
             // изменение функции от которой зависит триггер
             // пользователь выбрал функцию f1
-            {"modify_trigger_function_usr_f1"}
+            {"modify_trigger_function_usr_f1"},
+            // добавление оператора с перегруженными функциями
+            // пользователь выбрал оператор
+            {"add_operator_usr_op"},
         });
     }
 

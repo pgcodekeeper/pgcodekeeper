@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="project" default="default">
 	<description>
-	    Deploy to p2 site on github.
+		Deploy to p2 site on github.
 	</description>
 
 	<target name="default">
@@ -18,10 +18,10 @@
 
 			<echo message="updating p2 site" />
 			<delete includeemptydirs="true">
-				<fileset dir="${site-dir}/update" includes="**/*" />
+				<fileset dir="${site-dir}/update" includes="**/*" excludes="index.html" />
 			</delete>
 			<copy todir="${site-dir}/update">
-				<fileset dir="${updatesite-dir}//repository" />
+				<fileset dir="${updatesite-dir}/repository" />
 			</copy>
 
 			<echo message="adding to repo index" />

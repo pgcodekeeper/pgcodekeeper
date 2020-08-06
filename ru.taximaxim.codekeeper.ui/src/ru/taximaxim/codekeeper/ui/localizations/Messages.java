@@ -334,6 +334,8 @@ public final class Messages extends NLS {
 
     public static String DbUpdatePrefPage_print_index_with_concurrently;
 
+    public static String DbUpdatePrefPage_script_from_selected_objs;
+
     public static String DbUpdatePrefPage_update_statement;
 
     public static String dbUpdatePrefPage_create_script_project_directory;
@@ -886,6 +888,8 @@ public final class Messages extends NLS {
     public static String GeneralPrefPage_body_depcy_tooltip;
 
     public static String GeneralPrefPage_enable_body_dependencies;
+
+    public static String GeneralPrefPage_ignore_column_order;
 
     public static String GeneralPrefPage_ignore_concurrent_modification;
 
