@@ -46,6 +46,7 @@ import cz.startnet.utils.pgdiff.schema.IStatement;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation.LocationType;
 import cz.startnet.utils.pgdiff.schema.PgOperator;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -265,7 +266,7 @@ public abstract class ParserAbstract {
 
     protected PgObjLocation addObjReference(List<? extends ParserRuleContext> ids,
             DbObjType type, String action) {
-        PgObjLocation loc = getLocation(ids, type, action, false, null);
+        PgObjLocation loc = getLocation(ids, type, action, false, null, LocationType.REFERENCE);
         if (loc != null) {
             db.addReference(fileName, loc);
         }
@@ -298,7 +299,7 @@ public abstract class ParserAbstract {
             List<? extends ParserRuleContext> ids) {
         doSafe(PgStatement::addChild, parent, child);
         PgObjLocation loc = getLocation(ids, child.getStatementType(),
-                ACTION_CREATE, false, null);
+                ACTION_CREATE, false, null, LocationType.DEFINITION);
         if (loc != null) {
             child.setLocation(loc);
             db.addReference(fileName, loc);
@@ -350,7 +351,8 @@ public abstract class ParserAbstract {
     }
 
     private PgObjLocation getLocation(List<? extends ParserRuleContext> ids,
-            DbObjType type, String action, boolean isDep, String signature) {
+            DbObjType type, String action, boolean isDep, String signature,
+            LocationType locationType) {
         ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
         switch (type) {
         case CAST:
@@ -367,6 +369,7 @@ public abstract class ParserAbstract {
                     .setCtx(nameCtx)
                     .setObject(object)
                     .setAction(action)
+                    .setLocationType(locationType)
                     .build();
         default:
             break;
@@ -411,6 +414,7 @@ public abstract class ParserAbstract {
                     .setCtx(nameCtx)
                     .setObject(object)
                     .setAction(action)
+                    .setLocationType(locationType)
                     .build();
         case CONSTRAINT:
         case TRIGGER:
@@ -423,6 +427,7 @@ public abstract class ParserAbstract {
                     .setCtx(nameCtx)
                     .setObject(object)
                     .setAction(action)
+                    .setLocationType(locationType)
                     .build();
         default:
             return null;
@@ -456,7 +461,7 @@ public abstract class ParserAbstract {
 
     protected void addDepSafe(PgStatement st, List<? extends ParserRuleContext> ids,
             DbObjType type, boolean isPostgres, String signature) {
-        PgObjLocation loc = getLocation(ids, type, null, true, signature);
+        PgObjLocation loc = getLocation(ids, type, null, true, signature, LocationType.REFERENCE);
         if (loc != null && !ApgdiffUtils.isSystemSchema(loc.getSchema(), isPostgres)) {
             if (!refMode) {
                 st.addDep(loc.getObj());

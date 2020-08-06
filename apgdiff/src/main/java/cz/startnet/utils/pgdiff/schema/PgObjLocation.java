@@ -13,21 +13,30 @@ public class PgObjLocation extends ContextLocation {
 
     private static final long serialVersionUID = -6511243237472584008L;
 
+    public enum LocationType {
+        DEFINITION,
+        REFERENCE,
+        VARIABLE,
+        LOCAL_REF
+    }
+
     private DangerStatement danger;
-    private int length = -1;
 
+    private final int length;
     private final String action;
-
-    private final GenericColumn obj;
     private final String sql;
+    private final GenericColumn obj;
+    private final LocationType locationType;
 
-    PgObjLocation(String filePath, int offset, int lineNumber, int charPositionInLine,
-            GenericColumn obj, String action, String sql, int length) {
+    private PgObjLocation(String filePath, int offset, int lineNumber,
+            int charPositionInLine, GenericColumn obj, String action,
+            String sql, int length, LocationType locationType) {
         super(filePath, offset, lineNumber, charPositionInLine);
         this.obj = obj;
         this.sql = sql;
         this.action = action;
         this.length = length;
+        this.locationType = locationType;
     }
 
     @Override
@@ -58,17 +67,6 @@ public class PgObjLocation extends ContextLocation {
         return result;
     }
 
-    public String getWarningText() {
-        switch (danger) {
-        case ALTER_COLUMN: return "ALTER COLUMN ... TYPE statement";
-        case DROP_COLUMN: return "DROP COLUMN statement";
-        case DROP_TABLE: return "DROP TABLE statement";
-        case RESTART_WITH: return "ALTER SEQUENCE ... RESTART WITH statement";
-        case UPDATE: return "UPDATE statement";
-        default: return null;
-        }
-    }
-
     public void setWarning(DangerStatement danger) {
         this.danger = danger;
     }
@@ -95,6 +93,10 @@ public class PgObjLocation extends ContextLocation {
 
     public String getSql() {
         return sql;
+    }
+
+    public LocationType getLocationType() {
+        return locationType;
     }
 
     public String getObjName() {
@@ -164,11 +166,14 @@ public class PgObjLocation extends ContextLocation {
 
     public PgObjLocation copyWithOffset(int offset, int lineOffset,
             int inLineOffset, String filePath) {
-        return new PgObjLocation(filePath,
+        PgObjLocation loc = new PgObjLocation(filePath,
                 getOffset() + offset,
                 getLineNumber() + lineOffset,
                 getCharPositionInLine() + inLineOffset,
-                obj, action, sql, length);
+                obj, action, sql, length, locationType);
+        loc.setWarning(danger);
+        return loc;
+
     }
 
     @Override
@@ -191,6 +196,7 @@ public class PgObjLocation extends ContextLocation {
         private int charPositionInLine;
         private GenericColumn object;
         private ParserRuleContext ctx;
+        private LocationType locationType = LocationType.REFERENCE;
 
         public Builder setFilePath(String filePath) {
             this.filePath = filePath;
@@ -232,6 +238,11 @@ public class PgObjLocation extends ContextLocation {
             return this;
         }
 
+        public Builder setLocationType(LocationType locationType) {
+            this.locationType = locationType;
+            return this;
+        }
+
         public PgObjLocation build() {
             if (ctx != null) {
                 Token start = ctx.getStart();
@@ -241,13 +252,13 @@ public class PgObjLocation extends ContextLocation {
                 int length = ctx.getStop().getStopIndex() - offset + 1;
 
                 return new PgObjLocation(filePath, offset, line, position,
-                        object, action, sql, length);
+                        object, action, sql, length, locationType);
             }
 
             int length = object == null ? 0 : object.getObjName().length();
 
             return new PgObjLocation(filePath, offset, lineNumber, charPositionInLine,
-                    object, action, sql, length);
+                    object, action, sql, length, locationType);
         }
     }
 }
