@@ -316,7 +316,13 @@ public final class Messages extends NLS {
 
     public static String DbStorePicker_load_from_file;
 
+    public static String DbStorePrefPage_add_new0;
+
     public static String DbStorePrefPage_already_present;
+
+    public static String DbStorePrefPage_copy0;
+
+    public static String DbStorePrefPage_edit0;
 
     public static String DbStorePrefPage_pg_pass_file_filter;
 
