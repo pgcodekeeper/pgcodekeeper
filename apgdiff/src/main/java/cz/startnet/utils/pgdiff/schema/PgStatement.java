@@ -363,7 +363,7 @@ public abstract class PgStatement implements IStatement, IHashable {
 
     public final String getDropSQL() {
         PgDiffArguments args = getDatabase().getArguments();
-        return getDropSQL(args != null && args.isOptionExisting() && hasExistingOption());
+        return getDropSQL(args != null && args.isOptionExisting());
     }
 
     public String getDropSQL(boolean optionExists) {
@@ -381,10 +381,7 @@ public abstract class PgStatement implements IStatement, IHashable {
         // override where necessary
         sbString.append("IF EXISTS ");
     }
-    protected boolean hasExistingOption() {
-        // override where necessary
-        return true;
-    }
+
     protected void appendDropBeforeCreate(StringBuilder sb) {
         PgDiffArguments args = getDatabase().getArguments();
         if (args != null && args.isOptionDropObject()) {

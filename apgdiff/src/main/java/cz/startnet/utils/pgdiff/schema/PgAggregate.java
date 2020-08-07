@@ -476,5 +476,4 @@ public class PgAggregate extends AbstractPgFunction {
         copy.setParallel(getParallel());
         return copy;
     }
-
 }

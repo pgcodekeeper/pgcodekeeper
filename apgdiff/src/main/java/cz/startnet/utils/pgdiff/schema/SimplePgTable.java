@@ -46,5 +46,4 @@ public class SimplePgTable extends AbstractRegularTable {
     protected void convertTable(StringBuilder sb) {
         // no implements
     }
-
 }

@@ -78,5 +78,4 @@ public class PartitionForeignPgTable extends AbstractForeignTable {
         super.computeHash(hasher);
         hasher.put(partitionBounds);
     }
-
 }

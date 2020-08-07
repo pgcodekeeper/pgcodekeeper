@@ -34,5 +34,4 @@ public class SimpleForeignPgTable extends AbstractForeignTable {
 
         sbSQL.append(')');
     }
-
 }

@@ -449,11 +449,6 @@ public class PgType extends AbstractType {
     }
 
     @Override
-    protected boolean hasExistingOption() {
-        return false;
-    }
-
-    @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();

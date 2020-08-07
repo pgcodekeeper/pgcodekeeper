@@ -107,10 +107,6 @@ public abstract class AbstractForeignTable extends AbstractPgTable {
     protected void appendName(StringBuilder sbSQL) {
         sbSQL.append("CREATE FOREIGN TABLE ");
         PgDiffArguments args = getDatabase().getArguments();
-        if (args.isOptionDropObject()) {
-            sbSQL.append(getDropSQL(true));
-            sbSQL.append("\n\n");
-        }
         if (args != null && args.isOptionExisting()) {
             sbSQL.append("IF NOT EXISTS ");
         }
