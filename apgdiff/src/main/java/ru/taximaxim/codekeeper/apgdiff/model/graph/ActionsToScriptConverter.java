@@ -69,7 +69,7 @@ public class ActionsToScriptConverter {
     public void fillScript(PgDiffScript script, List<TreeElement> selected) {
         BiConsumer<PgStatement, String> addRenameToScript = null;
         Map<String, AbstractTable> tmpTblsMapping = null;
-        Map<String, String> tblIdentityColsMapping = null;
+        Map<String, Set<String>> tblIdentityColsMapping = null;
         if (arguments.isDataMovementMode()) {
             addRenameToScript = (st, newName) -> script.addStatement(
                     MessageFormat.format(RENAME_OBJECT, st.getStatementType(),
@@ -130,8 +130,9 @@ public class ActionsToScriptConverter {
                                 AbstractSequence seq = ((PgColumn) col).getSequence();
                                 if (seq != null) {
                                     addRenameToScript.accept(seq, seq.getName() + tmpSuffix);
-                                    tblIdentityColsMapping.put(oldTbl.getQualifiedName(),
-                                            col.getName());
+                                    tblIdentityColsMapping.computeIfAbsent(
+                                            oldTbl.getQualifiedName(),
+                                            k -> new LinkedHashSet<>()).add(col.getName());
                                 }
                             }
                         }
@@ -176,29 +177,31 @@ public class ActionsToScriptConverter {
         if (arguments.isDataMovementMode()) {
             for (Entry<String, AbstractTable> tmpTblMapping : tmpTblsMapping.entrySet()) {
                 AbstractTable oldTbl = tmpTblMapping.getValue();
+                String oldTblQName = oldTbl.getQualifiedName();
                 String tmpTblQName = oldTbl.getSchemaName() + '.' + tmpTblMapping.getKey();
                 String cols = oldTbl.getColumns().stream().map(AbstractColumn::getName)
                         .collect(Collectors.joining(", "));
 
                 StringBuilder sb = new StringBuilder();
-                sb.append("INSERT INTO ").append(oldTbl.getQualifiedName())
-                .append('(').append(cols).append(") SELECT ").append(cols)
-                .append(" FROM ").append(tmpTblQName).append(';')
-                .append("\n\nDROP TABLE ").append(tmpTblQName).append(';');
+                sb.append("INSERT INTO ").append(oldTblQName).append('(')
+                .append(cols).append(") SELECT ").append(cols).append(" FROM ")
+                .append(tmpTblQName).append(';').append("\n\nDROP TABLE ")
+                .append(tmpTblQName).append(';');
 
                 if (oldTbl instanceof AbstractPgTable) {
-                    String oldTblQName = oldTbl.getQualifiedName();
-                    String colName = tblIdentityColsMapping.get(oldTblQName);
-                    if (colName != null) {
-                        String idVarName = "current_tbl_id"
-                                + tmpTblQName.replace(oldTblQName, "");
-                        sb.append("\n\nDO $$ DECLARE ").append(idVarName)
-                        .append(" integer = (SELECT MAX(").append(colName)
-                        .append(")+1 FROM ").append(oldTblQName)
-                        .append(");\nBEGIN\n\texecute 'ALTER TABLE ")
-                        .append(oldTblQName).append(" ALTER COLUMN ").append(colName)
-                        .append(" RESTART WITH ' || ").append(idVarName)
-                        .append(" || ';';\nEND\n$$;");
+                    Set<String> identityCols = tblIdentityColsMapping.get(oldTblQName);
+                    if (identityCols != null) {
+                        for (String colName : identityCols) {
+                            String restartVarName = oldTbl.getSchemaName() + '_'
+                                    + oldTbl.getName() + '_' + colName + "_restart_value";
+                            sb.append("\n\nDO $$ DECLARE ").append(restartVarName)
+                            .append(" integer = (SELECT MAX(").append(colName)
+                            .append(")+1 FROM ").append(oldTblQName)
+                            .append(");\nBEGIN\n\texecute 'ALTER TABLE ")
+                            .append(oldTblQName).append(" ALTER COLUMN ").append(colName)
+                            .append(" RESTART WITH ' || ").append(restartVarName)
+                            .append(" || ';';\nEND\n$$;");
+                        }
                     }
                 }
 
