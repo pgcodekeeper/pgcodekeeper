@@ -438,7 +438,7 @@ implements IResourceChangeListener, ITextErrorReporter {
         }
 
         if (res != null && UIProjectLoader.isInProject(res)) {
-            return PgDbParser.getParser(res.getProject());
+            return PgDbParser.getParser(res);
         }
 
         PgDbParser parser = new PgDbParser();

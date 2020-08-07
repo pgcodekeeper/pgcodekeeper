@@ -99,6 +99,14 @@ public class PgObjLocation extends ContextLocation {
         return locationType;
     }
 
+    public boolean isGlobal() {
+        return locationType == LocationType.DEFINITION || locationType == LocationType.REFERENCE;
+    }
+
+    public boolean isDefinition() {
+        return locationType == LocationType.DEFINITION || locationType == LocationType.VARIABLE;
+    }
+
     public String getObjName() {
         return obj != null ? obj.getObjName() : "";
     }
@@ -116,6 +124,10 @@ public class PgObjLocation extends ContextLocation {
     }
 
     public final boolean compare(PgObjLocation loc) {
+        if (isGlobal() != loc.isGlobal()) {
+            return false;
+        }
+
         GenericColumn col = loc.getObj();
         if (obj == null || col == null) {
             return false;

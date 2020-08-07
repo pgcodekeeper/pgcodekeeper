@@ -46,6 +46,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IConstraint;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation.LocationType;
 import cz.startnet.utils.pgdiff.schema.meta.MetaContainer;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -438,8 +439,11 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
                 addDepcy(new GenericColumn(relationGc.schema, DbObjType.SCHEMA), schemaCtx);
             }
 
-            // currently adding a table reference for any alias
-            addDepcy(relationGc, relationCtx);
+            if (relationGc.getObjName().equals(relation)) {
+                addDepcy(relationGc, relationCtx);
+            } else {
+                addDepcy(relationGc, relationCtx, null, LocationType.LOCAL_REF);
+            }
 
             addFilteredRelationColumnsDepcies(relationGc.schema, relationGc.table, ANY)
             .map(Pair::copyMod)

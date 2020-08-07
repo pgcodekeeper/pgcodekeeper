@@ -16,22 +16,35 @@ import org.eclipse.ltk.core.refactoring.participants.CheckConditionsContext;
 import org.eclipse.ltk.core.refactoring.participants.RefactoringParticipant;
 import org.eclipse.ltk.core.refactoring.participants.RenameProcessor;
 import org.eclipse.ltk.core.refactoring.participants.SharableParticipants;
+import org.eclipse.ltk.core.refactoring.resource.RenameResourceChange;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
+import cz.startnet.utils.pgdiff.MsDiffUtils;
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation.LocationType;
+import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.model.exporter.AbstractModelExporter;
 import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
+import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 
 public class RenameDefinitionProcessor extends RenameProcessor {
 
     private static final String IDENTIFIER = "ru.taximaxim.codekeeper.ui.renameDefinitionProcessor"; //$NON-NLS-1$
 
-    private final PgObjLocation selection;
     private String newName;
+
+    private final PgObjLocation selection;
+    private final boolean isMsSql;
+    private final IFile file;
 
     public RenameDefinitionProcessor(PgObjLocation selection) {
         this.selection = selection;
+        this.file = FileUtilsUi.getFileForLocation(selection);
+        this.isMsSql = file != null && OpenProjectUtils.checkMsSql(file.getProject());
     }
 
     public void setNewName(String newName) {
@@ -44,13 +57,11 @@ public class RenameDefinitionProcessor extends RenameProcessor {
     }
 
     private List<PgObjLocation> getReferences() {
-        IFile file = FileUtilsUi.getFileForLocation(selection);
-
         if (file == null) {
             return new ArrayList<>();
         }
 
-        return PgDbParser.getParser(file.getProject()).getAllObjReferences()
+        return PgDbParser.getParser(file).getAllObjReferences()
                 .filter(selection::compare).sorted((o1, o2) -> {
 
                     int result = o1.getFilePath().compareTo(o2.getFilePath());
@@ -95,16 +106,22 @@ public class RenameDefinitionProcessor extends RenameProcessor {
     @Override
     public Change createChange(IProgressMonitor pm) {
         CompositeChange change = new CompositeChange(getProcessorName());
+        String quotedName = isMsSql ? MsDiffUtils.quoteName(newName) : PgDiffUtils.getQuotedName(newName);
 
         IFile file = null;
         TextFileChange fileChange = null;
         MultiTextEdit multiEdit = null;
+        List<RenameResourceChange> fileRenames = new ArrayList<>();
 
         for (PgObjLocation ref : getReferences()) {
             IFile mfile = FileUtilsUi.getFileForLocation(ref);
 
             if (mfile == null) {
                 continue;
+            }
+
+            if (ref.getLocationType() == LocationType.DEFINITION) {
+                addFileRenames(mfile, ref, fileRenames);
             }
 
             if (!Objects.equals(file, mfile)) {
@@ -117,10 +134,46 @@ public class RenameDefinitionProcessor extends RenameProcessor {
             }
 
             multiEdit.addChild(new ReplaceEdit(ref.getOffset(), ref.getObjLength(),
-                    newName));
+                    quotedName));
         }
 
+        fileRenames.forEach(change::add);
+
         return change;
+    }
+
+    private void addFileRenames(IFile file, PgObjLocation ref,
+            List<RenameResourceChange> fileRenames) {
+        switch (ref.getType()) {
+        case TRIGGER:
+        case RULE:
+        case CONSTRAINT:
+        case INDEX:
+        case POLICY:
+            return;
+        default:
+            break;
+        }
+
+        if (isMsSql) {
+            String name;
+            if (ref.getTable() != null) {
+                name = ref.getSchema() + '.' + newName;
+            } else {
+                name = newName;
+            }
+
+            fileRenames.add(new RenameResourceChange(file.getFullPath(),
+                    AbstractModelExporter.getExportedFilenameSql(name)));
+        } else {
+            fileRenames.add(new RenameResourceChange(file.getFullPath(),
+                    AbstractModelExporter.getExportedFilenameSql(newName)));
+            if (ref.getType() == DbObjType.SCHEMA) {
+                // rename schema folder for PG
+                fileRenames.add(new RenameResourceChange(file.getParent().getFullPath(),
+                        FileUtils.getValidFilename(newName)));
+            }
+        }
     }
 
     @Override

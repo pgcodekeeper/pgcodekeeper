@@ -30,6 +30,7 @@ import cz.startnet.utils.pgdiff.schema.IFunction;
 import cz.startnet.utils.pgdiff.schema.IOperator;
 import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation.LocationType;
 import cz.startnet.utils.pgdiff.schema.meta.MetaContainer;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
@@ -168,10 +169,15 @@ public abstract class AbstractExpr {
     }
 
     protected void addDepcy(GenericColumn depcy, ParserRuleContext ctx, Token start) {
+        addDepcy(depcy, ctx, start, LocationType.REFERENCE);
+    }
+
+    protected void addDepcy(GenericColumn depcy, ParserRuleContext ctx, Token start, LocationType type) {
         if (!ApgdiffUtils.isPgSystemSchema(depcy.schema)) {
             PgObjLocation loc = new PgObjLocation.Builder()
                     .setObject(depcy)
                     .setCtx(ctx)
+                    .setLocationType(type)
                     .build();
             if (start != null) {
                 loc = loc.copyWithOffset(start.getStartIndex(),
@@ -213,7 +219,11 @@ public abstract class AbstractExpr {
                 }
 
                 // currently adding a table reference for any alias
-                addDepcy(referencedTable, columnParentCtx);
+                if (referencedTable.getObjName().equals(columnParent)) {
+                    addDepcy(referencedTable, columnParentCtx);
+                } else {
+                    addDepcy(referencedTable, columnParentCtx, null, LocationType.LOCAL_REF);
+                }
 
                 columnType = addFilteredColumnDepcy(
                         referencedTable.schema, referencedTable.table, columnName);
