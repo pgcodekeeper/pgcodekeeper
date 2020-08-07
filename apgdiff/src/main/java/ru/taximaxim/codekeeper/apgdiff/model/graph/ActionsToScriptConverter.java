@@ -13,6 +13,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -66,11 +67,15 @@ public class ActionsToScriptConverter {
      * @param selected коллекция выбранных элементов в панели сравнения
      */
     public void fillScript(PgDiffScript script, List<TreeElement> selected) {
+        BiConsumer<PgStatement, String> addRenameToScript = null;
         Map<String, AbstractTable> tmpTblsMapping = null;
-        Map<String, String> tblColIdMapping = null;
+        Map<String, String> tblIdentityColsMapping = null;
         if (arguments.isDataMovementMode()) {
+            addRenameToScript = (st, newName) -> script.addStatement(
+                    MessageFormat.format(RENAME_OBJECT, st.getStatementType(),
+                            st.getQualifiedName(), newName));
             tmpTblsMapping = new HashMap<>();
-            tblColIdMapping = new HashMap<>();
+            tblIdentityColsMapping = new HashMap<>();
         }
         Collection<DbObjType> allowedTypes = arguments.getAllowedTypes();
         Set<PgStatement> refreshed = new HashSet<>(toRefresh.size());
@@ -117,22 +122,16 @@ public class ActionsToScriptConverter {
                                 .replace("-", "");
                         AbstractTable oldTbl = (AbstractTable) oldObj;
                         String tmpTblName = oldTbl.getName() + tmpSuffix;
-                        script.addStatement(MessageFormat.format(RENAME_OBJECT,
-                                oldTbl.getStatementType(), oldTbl.getQualifiedName(),
-                                tmpTblName));
+                        addRenameToScript.accept(oldTbl, tmpTblName);
                         tmpTblsMapping.put(tmpTblName, oldTbl);
 
                         if (oldTbl instanceof AbstractPgTable) {
                             for (AbstractColumn col : oldTbl.getColumns()) {
-                                PgColumn pgCol = (PgColumn) col;
-                                AbstractSequence seq = pgCol.getSequence();
+                                AbstractSequence seq = ((PgColumn) col).getSequence();
                                 if (seq != null) {
-                                    script.addStatement(MessageFormat.format(RENAME_OBJECT,
-                                            seq.getStatementType(),
-                                            seq.getQualifiedName(),
-                                            seq.getName() + tmpSuffix));
-                                    tblColIdMapping.put(oldTbl.getQualifiedName(),
-                                            pgCol.getName());
+                                    addRenameToScript.accept(seq, seq.getName() + tmpSuffix);
+                                    tblIdentityColsMapping.put(oldTbl.getQualifiedName(),
+                                            col.getName());
                                 }
                             }
                         }
@@ -189,7 +188,7 @@ public class ActionsToScriptConverter {
 
                 if (oldTbl instanceof AbstractPgTable) {
                     String oldTblQName = oldTbl.getQualifiedName();
-                    String colName = tblColIdMapping.get(oldTblQName);
+                    String colName = tblIdentityColsMapping.get(oldTblQName);
                     if (colName != null) {
                         String idVarName = "current_tbl_id"
                                 + tmpTblQName.replace(oldTblQName, "");
