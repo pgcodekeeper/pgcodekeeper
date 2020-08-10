@@ -337,14 +337,15 @@ public abstract class ParserAbstract {
     }
 
     private boolean isInProject(boolean isPostgres) {
+        String fs = System.getProperty("file.separator");
         // exclude external directories
         Stream<String> dirs;
         if (isPostgres) {
             dirs = Arrays.stream(ApgdiffConsts.WORK_DIR_NAMES.values())
-                    .map(e -> '/' + e.name() + '/');
+                    .map(e -> fs + e.name() + fs);
         } else {
             dirs = Arrays.stream(ApgdiffConsts.MS_WORK_DIR_NAMES.values())
-                    .map(e -> '/' + e.getDirName() + '/');
+                    .map(e -> fs + e.getDirName() + fs);
         }
 
         if (dirs.noneMatch(fileName::contains)) {
