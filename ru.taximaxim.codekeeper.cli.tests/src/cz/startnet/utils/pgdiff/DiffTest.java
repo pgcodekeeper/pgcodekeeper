@@ -15,6 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.junit.After;
 import org.junit.Test;
@@ -42,10 +43,18 @@ public class DiffTest {
             {new AllowedObjectsArgumentsProvider()},
             {new LibrariesArgumentsProvider()},
             {new SelectedOnlyArgumentsProvider()},
+            {new MoveDataArgumentsProvider()},
+            {new MoveDataIdentityArgumentsProvider()},
         });
 
         return p.stream()::iterator;
     }
+
+    // Used in tests with randomly generated part as replacement for random part.
+    private static final String REPLACEMENT_FOR_RANDOM = "randomly_generated_part";
+
+    // The command that contains a randomly generated part on its line.
+    private static final String COMMAND_FOR_SEARCH = "ALTER TABLE public.tbl RENAME TO tbl_";
 
     private final ArgumentsProvider args;
 
@@ -71,15 +80,31 @@ public class DiffTest {
         assertFalse(name + " - Resulting file is a directory: "
                 + resFile.getAbsolutePath(), resFile.isDirectory());
         if (!filesEqualIgnoreNewLines(predefined, resFile)) {
+            String actual = new String(Files.readAllBytes(resFile.toPath()), StandardCharsets.UTF_8);
             assertEquals(name + " - Predefined and resulting script differ",
                     new String(Files.readAllBytes(predefined.toPath()), StandardCharsets.UTF_8),
-                    new String(Files.readAllBytes(resFile.toPath()), StandardCharsets.UTF_8));
+                    isTestWithRandomPart() ? replaceRandomPart(actual) : actual);
         }
     }
 
     @After
     public void closeResources() {
         args.close();
+    }
+
+    private boolean isTestWithRandomPart() {
+        return args instanceof MoveDataArgumentsProvider
+                || args instanceof MoveDataIdentityArgumentsProvider;
+    }
+
+    private String replaceRandomPart(String script) {
+        return script.replace(Arrays.stream(script.split("\\r?\\n"))
+                .filter(str -> str.contains(COMMAND_FOR_SEARCH)).findAny()
+                .orElseThrow(() -> new NoSuchElementException(
+                        "The command that contains a randomly generated part on "
+                                + "its line could not be found."))
+                .replace(COMMAND_FOR_SEARCH, "").replace(";", "").trim(),
+                REPLACEMENT_FOR_RANDOM);
     }
 
     private boolean filesEqualIgnoreNewLines(File f1, File f2) throws IOException {
@@ -341,6 +366,46 @@ class SelectedOnlyArgumentsProvider extends ArgumentsProvider {
         File fNew = getFile(FILES_POSTFIX.NEW_SQL);
         File fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
         return new String[]{"--selected-only", "-o",
+                getDiffResultFile().getAbsolutePath(),
+                fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation for data movement
+ * (without identity columns) test
+ */
+class MoveDataArgumentsProvider extends ArgumentsProvider {
+
+    public MoveDataArgumentsProvider() {
+        super("move_data");
+    }
+
+    @Override
+    protected String[] args() throws URISyntaxException, IOException {
+        File fNew = getFile(FILES_POSTFIX.NEW_SQL);
+        File fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
+        return new String[]{"--move-data", "-o",
+                getDiffResultFile().getAbsolutePath(),
+                fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation for data movement
+ * (with identity columns) test
+ */
+class MoveDataIdentityArgumentsProvider extends ArgumentsProvider {
+
+    public MoveDataIdentityArgumentsProvider() {
+        super("move_data_identity");
+    }
+
+    @Override
+    protected String[] args() throws URISyntaxException, IOException {
+        File fNew = getFile(FILES_POSTFIX.NEW_SQL);
+        File fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
+        return new String[]{"--move-data", "-o",
                 getDiffResultFile().getAbsolutePath(),
                 fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
     }
