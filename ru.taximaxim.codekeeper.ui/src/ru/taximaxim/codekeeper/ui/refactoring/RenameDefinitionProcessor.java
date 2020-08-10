@@ -62,7 +62,9 @@ public class RenameDefinitionProcessor extends RenameProcessor {
         }
 
         return PgDbParser.getParser(file).getAllObjReferences()
-                .filter(selection::compare).sorted((o1, o2) -> {
+                .filter(selection::compare)
+                .filter(def -> def.isGlobal() || def.getFilePath().equals(selection.getFilePath()))
+                .sorted((o1, o2) -> {
 
                     int result = o1.getFilePath().compareTo(o2.getFilePath());
                     if (result != 0) {

@@ -32,6 +32,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_queryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IRelation;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation.LocationType;
 import cz.startnet.utils.pgdiff.schema.meta.MetaContainer;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
@@ -316,6 +317,10 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
         }
 
         if (alias != null) {
+            if (depcy != null) {
+                // add alias definition
+                addDepcy(depcy, alias, null, LocationType.VARIABLE);
+            }
             String aliasName = alias.getText();
             boolean added = addReference(aliasName, depcy);
             if (!added && cteList == null && columnAliases != null && !columnAliases.isEmpty()) {
