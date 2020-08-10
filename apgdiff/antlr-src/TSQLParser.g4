@@ -1414,11 +1414,11 @@ output_clause
     ;
 
 output_dml_list_elem
-    : (output_column_name | expression) (AS? column_alias)?  // TODO: scalar_expression
+    : output_column_name (AS? column_alias)?  // TODO: scalar_expression
     ;
 
 output_column_name
-    : (DELETED | INSERTED | qualified_name) DOT (STAR | id)
+    : expression (DOT STAR)?
     | DOLLAR ACTION
     ;
 
@@ -2520,7 +2520,7 @@ expression
     | op=(PLUS | MINUS | BIT_NOT) expression
     | expression op=(STAR | DIVIDE | MODULE) expression
     | expression op=(PLUS | MINUS | BIT_AND | BIT_XOR | BIT_OR) expression
-    | expression comparison_operator expression
+    | expression EQUAL expression
     | expression assignment_operator expression
     | function_call
     | expression COLLATE id
@@ -2643,7 +2643,7 @@ from_item
     | from_item CROSS JOIN from_item
     | from_item CROSS APPLY from_item
     | from_item OUTER APPLY from_item
-    | from_item PIVOT LR_BRACKET aggregate_windowed_function FOR full_column_name IN column_alias_list RR_BRACKET as_table_alias
+    | from_item PIVOT LR_BRACKET function_call FOR full_column_name IN column_alias_list RR_BRACKET as_table_alias
     | from_item UNPIVOT LR_BRACKET expression FOR full_column_name IN LR_BRACKET full_column_name_list RR_BRACKET RR_BRACKET as_table_alias
     | from_primary
     ;
@@ -2787,20 +2787,13 @@ derived_table
     ;
 
 function_call
-    : ranking_windowed_function
-    | aggregate_windowed_function
-    | analytic_windowed_function
-    | scalar_function_name LR_BRACKET expression_list? RR_BRACKET
-    // https://msdn.microsoft.com/en-us/library/ms173784.aspx
-    | BINARY_CHECKSUM LR_BRACKET STAR RR_BRACKET
+    : scalar_function_name LR_BRACKET (STAR | all_distinct_expression | expression_list?) RR_BRACKET over_clause?
     // https://msdn.microsoft.com/en-us/library/hh231076.aspx
     | CAST LR_BRACKET expression AS data_type RR_BRACKET
     // https://msdn.microsoft.com/en-us/library/ms187928.aspx
     | CONVERT LR_BRACKET convert_data_type=data_type COMMA convert_expression=expression (COMMA style=expression)? RR_BRACKET
     // https://docs.microsoft.com/en-us/sql/t-sql/functions/parse-transact-sql
     | PARSE LR_BRACKET expression AS data_type (USING expression)? RR_BRACKET
-    // https://msdn.microsoft.com/en-us/library/ms189788.aspx
-    | CHECKSUM LR_BRACKET STAR RR_BRACKET
     // https://msdn.microsoft.com/en-us/library/ms190349.aspx
     | COALESCE LR_BRACKET expression_list RR_BRACKET
     // https://msdn.microsoft.com/en-us/library/ms188751.aspx
@@ -2809,6 +2802,7 @@ function_call
     | CURRENT_USER
     // https://msdn.microsoft.com/en-us/library/ms189838.aspx
     | IDENTITY LR_BRACKET data_type (COMMA seed=DECIMAL)? (COMMA increment=DECIMAL)? RR_BRACKET
+    | IIF LR_BRACKET search_condition COMMA expression COMMA expression RR_BRACKET
     // https://msdn.microsoft.com/en-us/library/bb839514.aspx
     | MIN_ACTIVE_ROWVERSION
     // https://docs.microsoft.com/en-us/sql/t-sql/xml/nodes-method-xml-data-type
@@ -2846,7 +2840,7 @@ function_call
     // https://docs.microsoft.com/en-us/sql/t-sql/functions/string-agg-transact-sql
     | STRING_AGG LR_BRACKET expression COMMA expression RR_BRACKET WITHIN_GROUP LR_BRACKET order_by_clause RR_BRACKET
     // https://docs.microsoft.com/en-us/sql/t-sql/functions/trim-transact-sql
-    | TRIM LR_BRACKET (expression FROM)? expression RR_BRACKET
+    | TRIM LR_BRACKET expression FROM expression RR_BRACKET
     // https://docs.microsoft.com/en-us/sql/t-sql/functions/partition-transact-sql
     | (id DOT)? DOLLAR PARTITION DOT function_call
     ;
@@ -2906,29 +2900,8 @@ expression_list
     : expression (COMMA expression)*
     ;
 
-// https://msdn.microsoft.com/en-us/library/ms189798.aspx
-ranking_windowed_function
-    : (RANK | DENSE_RANK | ROW_NUMBER) LR_BRACKET RR_BRACKET over_clause
-    | NTILE LR_BRACKET expression RR_BRACKET over_clause
-    ;
-
-// https://msdn.microsoft.com/en-us/library/ms173454.aspx
-aggregate_windowed_function
-    : (AVG | MAX | MIN | SUM | STDEV | STDEVP | VAR | VARP) LR_BRACKET all_distinct_expression RR_BRACKET over_clause?
-    | (COUNT | COUNT_BIG)  LR_BRACKET (STAR | all_distinct_expression) RR_BRACKET over_clause?
-    | CHECKSUM_AGG LR_BRACKET all_distinct_expression RR_BRACKET
-    | GROUPING LR_BRACKET expression RR_BRACKET
-    | GROUPING_ID LR_BRACKET expression_list RR_BRACKET
-    ;
-
-// https://docs.microsoft.com/en-us/sql/t-sql/functions/analytic-functions-transact-sql
-analytic_windowed_function
-    : (FIRST_VALUE | LAST_VALUE) LR_BRACKET expression RR_BRACKET over_clause
-    | (LAG | LEAD) LR_BRACKET expression  (COMMA expression (COMMA expression)? )? RR_BRACKET over_clause
-    ;
-
 all_distinct_expression
-    : (ALL | DISTINCT)? expression
+    : (ALL | DISTINCT) expression
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms189461.aspx
@@ -3066,8 +3039,6 @@ scalar_function_name
     : qualified_name
     | RIGHT
     | LEFT
-    | BINARY_CHECKSUM
-    | CHECKSUM
     ;
 
 begin_conversation_timer
@@ -3211,13 +3182,11 @@ simple_id
     | AUTOMATIC
     | AVAILABILITY_MODE
     | AVAILABILITY
-    | AVG
     | BACKUP_PRIORITY
     | BEFORE
     | BEGIN_DIALOG
     | BIGINT
     | BINARY_BASE64
-    | BINARY_CHECKSUM
     | BINDING
     | BLOB_STORAGE
     | BLOCK
@@ -3244,7 +3213,6 @@ simple_id
     | CHARACTER
     | CHECK_EXPIRATION
     | CHECK_POLICY
-    | CHECKSUM_AGG
     | CHECKSUM
     | CLASSIFIER_FUNCTION
     | CLEANUP
@@ -3268,8 +3236,6 @@ simple_id
     | CONVERSATION
     | COOKIE
     | COPY_ONLY
-    | COUNT_BIG
-    | COUNT
     | COUNTER
     | CPU
     | CREATE_NEW
@@ -3298,8 +3264,6 @@ simple_id
     | DEFAULT_SCHEMA
     | DELAY
     | DELAYED_DURABILITY
-    | DELETED
-    | DENSE_RANK
     | DEPENDENTS
     | DES
     | DESCRIPTION
@@ -3359,7 +3323,6 @@ simple_id
     | FILESTREAM
     | FILLFACTOR
     | FILTER
-    | FIRST_VALUE
     | FIRST
     | FOLLOWING
     | FORCE_FAILOVER_ALLOW_DATA_LOSS
@@ -3378,8 +3341,6 @@ simple_id
     | GLOBAL
     | GOVERNOR
     | GROUP_MAX_REQUESTS
-    | GROUPING_ID
-    | GROUPING
     | HADR
     | HASH
     | HASHED
@@ -3389,6 +3350,7 @@ simple_id
     | HONOR_BROKER_PRIORITY
     | HOURS
     | IDENTITY_VALUE
+    | IIF
     | IGNORE_NONCLUSTERED_COLUMNSTORE_INDEX
     | IMMEDIATE
     | IMPERSONATE
@@ -3402,7 +3364,6 @@ simple_id
     | INITIATOR
     | INPUT
     | INSENSITIVE
-    | INSERTED
     | INSTEAD
     | INT
     | IO
@@ -3418,11 +3379,8 @@ simple_id
     | KEY_STORE_PROVIDER_NAME
     | KEYS
     | KEYSET
-    | LAG
     | LANGUAGE
-    | LAST_VALUE
     | LAST
-    | LEAD
     | LEVEL
     | LIBRARY
     | LIFETIME
@@ -3482,7 +3440,6 @@ simple_id
     | MIN_CPU_PERCENT
     | MIN_IOPS_PER_VOLUME
     | MIN_MEMORY_PERCENT
-    | MIN
     | MINUTES
     | MINVALUE
     | MIRROR_ADDRESS
@@ -3593,7 +3550,6 @@ simple_id
     | QUOTED_IDENTIFIER
     | R_LETTER
     | RANGE
-    | RANK
     | RAW
     | RC2
     | RC4_128
@@ -3717,8 +3673,6 @@ simple_id
     | STATS_STREAM
     | STATS
     | STATUS
-    | STDEV
-    | STDEVP
     | STOP_ON_ERROR
     | STOP
     | STOPLIST
@@ -3726,7 +3680,6 @@ simple_id
     | STRING_AGG
     | STUFF
     | SUBJECT
-    | SUM
     | SUPPORTED
     | SUSPEND
     | SYMMETRIC
@@ -3775,8 +3728,6 @@ simple_id
     | VALID_XML
     | VALIDATION
     | VALUE
-    | VAR
-    | VARP
     | VERBOSELOGGING
     | VERSION
     | VIEW_METADATA
