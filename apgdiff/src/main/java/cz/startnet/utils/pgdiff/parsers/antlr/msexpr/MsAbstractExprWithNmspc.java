@@ -126,6 +126,10 @@ public abstract class MsAbstractExprWithNmspc<T> extends MsAbstractExpr {
         }
 
         if (alias != null) {
+            if (depcy != null) {
+                // add alias definition
+                addVariable(depcy, alias.id());
+            }
             String aliasName = alias.id().getText();
             addReference(aliasName, depcy);
         } else if (isCte) {

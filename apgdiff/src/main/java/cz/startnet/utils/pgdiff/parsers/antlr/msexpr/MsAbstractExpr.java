@@ -13,6 +13,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation.LocationType;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -102,6 +103,24 @@ public abstract class MsAbstractExpr {
         }
     }
 
+    protected void addAlias(GenericColumn depcy, ParserRuleContext ctx) {
+        depcies.add(new PgObjLocation.Builder()
+                .setObject(depcy)
+                .setCtx(ctx)
+                .setLocationType(LocationType.LOCAL_REF)
+                .setAlias(ctx.getText())
+                .build());
+    }
+
+    protected void addVariable(GenericColumn depcy, ParserRuleContext ctx) {
+        depcies.add(new PgObjLocation.Builder()
+                .setObject(depcy)
+                .setCtx(ctx)
+                .setLocationType(LocationType.VARIABLE)
+                .setAlias(ctx.getText())
+                .build());
+    }
+
     protected void addColumnDepcy(Full_column_nameContext fcn) {
         Qualified_nameContext tableName = fcn.qualified_name();
         if (tableName == null) {
@@ -113,7 +132,7 @@ public abstract class MsAbstractExpr {
         String schemaName = null;
         if (schemaCtx != null) {
             schemaName = schemaCtx.getText();
-            addDepcy(new GenericColumn(schemaName, DbObjType.COLUMN), schemaCtx);
+            addDepcy(new GenericColumn(schemaName, DbObjType.SCHEMA), schemaCtx);
         }
 
         IdContext relationCtx = tableName.name;
@@ -124,10 +143,16 @@ public abstract class MsAbstractExpr {
 
         Entry<String, GenericColumn> ref = findReference(schemaName, relationName);
         if (ref != null) {
-            GenericColumn referencedTable = ref.getValue();
-            if (referencedTable != null) {
-                addDepcy(new GenericColumn(schemaName, relationName, DbObjType.TABLE), relationCtx);
-                addDepcy(new GenericColumn(schemaName, relationName, columnName, DbObjType.COLUMN), columnCtx);
+            GenericColumn table = ref.getValue();
+            if (table != null) {
+                if (relationName.equals(table.table)) {
+                    addDepcy(table, relationCtx);
+                } else {
+                    addAlias(table, relationCtx);
+                }
+
+                addDepcy(new GenericColumn(table.schema, table.table,
+                        columnName, DbObjType.COLUMN), columnCtx);
             }
         } else {
             Log.log(Log.LOG_WARNING, "Unknown column reference: "
