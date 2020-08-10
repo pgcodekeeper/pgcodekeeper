@@ -169,15 +169,10 @@ public abstract class AbstractExpr {
     }
 
     protected void addDepcy(GenericColumn depcy, ParserRuleContext ctx, Token start) {
-        addDepcy(depcy, ctx, start, LocationType.REFERENCE);
-    }
-
-    protected void addDepcy(GenericColumn depcy, ParserRuleContext ctx, Token start, LocationType type) {
         if (!ApgdiffUtils.isPgSystemSchema(depcy.schema)) {
             PgObjLocation loc = new PgObjLocation.Builder()
                     .setObject(depcy)
                     .setCtx(ctx)
-                    .setLocationType(type)
                     .build();
             if (start != null) {
                 loc = loc.copyWithOffset(start.getStartIndex(),
@@ -186,6 +181,24 @@ public abstract class AbstractExpr {
 
             depcies.add(loc);
         }
+    }
+
+    protected void addAlias(GenericColumn depcy, ParserRuleContext ctx) {
+        depcies.add(new PgObjLocation.Builder()
+                .setObject(depcy)
+                .setCtx(ctx)
+                .setLocationType(LocationType.LOCAL_REF)
+                .setAlias(ctx.getText())
+                .build());
+    }
+
+    protected void addVariable(GenericColumn depcy, ParserRuleContext ctx) {
+        depcies.add(new PgObjLocation.Builder()
+                .setObject(depcy)
+                .setCtx(ctx)
+                .setLocationType(LocationType.VARIABLE)
+                .setAlias(ctx.getText())
+                .build());
     }
 
     protected void addDepcy(PgObjLocation loc) {
@@ -222,7 +235,7 @@ public abstract class AbstractExpr {
                 if (referencedTable.getObjName().equals(columnParent)) {
                     addDepcy(referencedTable, columnParentCtx);
                 } else {
-                    addDepcy(referencedTable, columnParentCtx, null, LocationType.LOCAL_REF);
+                    addAlias(referencedTable, columnParentCtx);
                 }
 
                 columnType = addFilteredColumnDepcy(

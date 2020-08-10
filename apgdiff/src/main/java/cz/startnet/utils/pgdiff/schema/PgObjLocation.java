@@ -25,18 +25,20 @@ public class PgObjLocation extends ContextLocation {
     private final int length;
     private final String action;
     private final String sql;
+    private final String alias;
     private final GenericColumn obj;
     private final LocationType locationType;
 
     private PgObjLocation(String filePath, int offset, int lineNumber,
             int charPositionInLine, GenericColumn obj, String action,
-            String sql, int length, LocationType locationType) {
+            String sql, String alias, int length, LocationType locationType) {
         super(filePath, offset, lineNumber, charPositionInLine);
         this.obj = obj;
         this.sql = sql;
         this.action = action;
         this.length = length;
         this.locationType = locationType;
+        this.alias = alias;
     }
 
     @Override
@@ -103,10 +105,6 @@ public class PgObjLocation extends ContextLocation {
         return locationType == LocationType.DEFINITION || locationType == LocationType.REFERENCE;
     }
 
-    public boolean isDefinition() {
-        return locationType == LocationType.DEFINITION || locationType == LocationType.VARIABLE;
-    }
-
     public String getObjName() {
         return obj != null ? obj.getObjName() : "";
     }
@@ -123,8 +121,12 @@ public class PgObjLocation extends ContextLocation {
         return obj == null ? null : obj.type;
     }
 
+    public String getText() {
+        return alias != null ? alias : getObjName();
+    }
+
     public final boolean compare(PgObjLocation loc) {
-        if (isGlobal() != loc.isGlobal()) {
+        if (isGlobal() != loc.isGlobal() || !Objects.equals(alias, loc.alias)) {
             return false;
         }
 
@@ -182,7 +184,7 @@ public class PgObjLocation extends ContextLocation {
                 getOffset() + offset,
                 getLineNumber() + lineOffset,
                 getCharPositionInLine() + inLineOffset,
-                obj, action, sql, length, locationType);
+                obj, action, sql, alias, length, locationType);
         loc.setWarning(danger);
         return loc;
 
@@ -203,6 +205,7 @@ public class PgObjLocation extends ContextLocation {
         private String filePath;
         private String action;
         private String sql;
+        private String alias;
         private int offset;
         private int lineNumber;
         private int charPositionInLine;
@@ -222,6 +225,11 @@ public class PgObjLocation extends ContextLocation {
 
         public Builder setSql(String sql) {
             this.sql = sql;
+            return this;
+        }
+
+        public Builder setAlias(String alias) {
+            this.alias = alias;
             return this;
         }
 
@@ -264,13 +272,13 @@ public class PgObjLocation extends ContextLocation {
                 int length = ctx.getStop().getStopIndex() - offset + 1;
 
                 return new PgObjLocation(filePath, offset, line, position,
-                        object, action, sql, length, locationType);
+                        object, action, sql, alias, length, locationType);
             }
 
             int length = object == null ? 0 : object.getObjName().length();
 
             return new PgObjLocation(filePath, offset, lineNumber, charPositionInLine,
-                    object, action, sql, length, locationType);
+                    object, action, sql, alias, length, locationType);
         }
     }
 }

@@ -76,7 +76,7 @@ public class RenameDefinitionProcessor extends RenameProcessor {
     }
 
     public String getOldName() {
-        return selection.getObjName();
+        return selection.getText();
     }
 
     @Override
@@ -108,7 +108,15 @@ public class RenameDefinitionProcessor extends RenameProcessor {
     @Override
     public Change createChange(IProgressMonitor pm) {
         CompositeChange change = new CompositeChange(getProcessorName());
-        String quotedName = isMsSql ? MsDiffUtils.quoteName(newName) : PgDiffUtils.getQuotedName(newName);
+        String quotedName;
+        if (!selection.isGlobal()) {
+            // do not quote alias
+            quotedName = newName;
+        } else if (isMsSql) {
+            quotedName = MsDiffUtils.quoteName(newName);
+        } else {
+            quotedName = PgDiffUtils.getQuotedName(newName);
+        }
 
         IFile file = null;
         TextFileChange fileChange = null;
