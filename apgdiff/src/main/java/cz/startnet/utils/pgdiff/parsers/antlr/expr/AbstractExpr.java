@@ -231,7 +231,6 @@ public abstract class AbstractExpr {
                     addDepcy(new GenericColumn(referencedTable.schema, DbObjType.SCHEMA), schemaNameCtx);
                 }
 
-                // currently adding a table reference for any alias
                 if (referencedTable.getObjName().equals(columnParent)) {
                     addDepcy(referencedTable, columnParentCtx);
                 } else {
