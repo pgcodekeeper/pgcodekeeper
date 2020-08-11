@@ -26,6 +26,7 @@ import ru.taximaxim.codekeeper.ui.properties.OverridablePrefs;
 public class GetChangesCustomDialog extends Dialog {
 
     private Button btnNoPrivileges;
+    private Button btnIgnoreColumnOrder;
     private Button btnEnableFuncDep;
     private Button btnSimplifyView;
     private Button btnUseGlobalIgnoreList;
@@ -64,6 +65,13 @@ public class GetChangesCustomDialog extends Dialog {
         gd.horizontalIndent = 10;
         btnNoPrivileges.setLayoutData(gd);
         btnNoPrivileges.setSelection(prefs.getBooleanOfRootPref(PREF.NO_PRIVILEGES));
+
+        btnIgnoreColumnOrder = new Button(panel, SWT.CHECK);
+        btnIgnoreColumnOrder.setText(Messages.GeneralPrefPage_ignore_column_order);
+        gd = new GridData();
+        gd.horizontalIndent = 10;
+        btnIgnoreColumnOrder.setLayoutData(gd);
+        btnIgnoreColumnOrder.setSelection(prefs.getBooleanOfRootPref(PREF.IGNORE_COLUMN_ORDER));
 
         btnEnableFuncDep = new Button(panel, SWT.CHECK);
         btnEnableFuncDep.setText(Messages.GeneralPrefPage_enable_body_dependencies);
@@ -104,6 +112,7 @@ public class GetChangesCustomDialog extends Dialog {
     protected void okPressed() {
         customSettings.put(PROJ_PREF.ENABLE_PROJ_PREF_ROOT, true);
         customSettings.put(PREF.NO_PRIVILEGES, btnNoPrivileges.getSelection());
+        customSettings.put(PREF.IGNORE_COLUMN_ORDER, btnIgnoreColumnOrder.getSelection());
         customSettings.put(PREF.ENABLE_BODY_DEPENDENCIES, btnEnableFuncDep.getSelection());
         if (!isMsSql) {
             customSettings.put(PREF.SIMPLIFY_VIEW, btnSimplifyView.getSelection());
