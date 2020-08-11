@@ -510,8 +510,6 @@ public class PgDatabase extends PgStatement implements IDatabase {
     }
 
     public void copyLaunchers(PgDatabase db) {
-        for (AbstractAnalysisLauncher launcher : db.getAnalysisLaunchers()) {
-            addAnalysisLauncher(launcher);
-        }
+        analysisLaunchers.addAll(db.analysisLaunchers);
     }
 }
