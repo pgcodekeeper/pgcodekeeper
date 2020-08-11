@@ -4,7 +4,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -338,24 +337,7 @@ public abstract class ParserAbstract {
     }
 
     private boolean isInProject(boolean isPostgres) {
-        Path parent = Paths.get(fileName).getParent();
-        List<String> parentDirs = new ArrayList<>(parent.getNameCount());
-        boolean isWorkingDir = false;
-        while (parent != null) {
-            if (Files.exists(parent.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER))) {
-                isWorkingDir = true;
-            }
-            Path dirPath = parent.getFileName();
-            if (dirPath != null) {
-                parentDirs.add(parent.getFileName().toString());
-            }
-            parent = parent.getParent();
-        }
-
-        if (!isWorkingDir) {
-            return false;
-        }
-
+        // exclude external directories
         Stream<String> dirs;
         if (isPostgres) {
             dirs = Arrays.stream(ApgdiffConsts.WORK_DIR_NAMES.values())
@@ -364,8 +346,30 @@ public abstract class ParserAbstract {
             dirs = Arrays.stream(ApgdiffConsts.MS_WORK_DIR_NAMES.values())
                     .map(e -> e.getDirName());
         }
+        List<String> projDirs = dirs.collect(Collectors.toList());
 
-        return dirs.anyMatch(d -> parentDirs.contains(d));
+        Path parent = Paths.get(fileName).getParent();
+        boolean isMatchesProjDirs = false;
+        for (Path pathEl : parent) {
+            isMatchesProjDirs = projDirs.contains(pathEl.toString());
+            if (isMatchesProjDirs) {
+                break;
+            }
+        }
+        if (!isMatchesProjDirs) {
+            return false;
+        }
+
+        // search project marker
+        while (parent != null) {
+            if (Files.exists(parent.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER))) {
+                return true;
+            }
+
+            parent = parent.getParent();
+        }
+
+        return false;
     }
 
     private PgObjLocation getLocation(List<? extends ParserRuleContext> ids,
