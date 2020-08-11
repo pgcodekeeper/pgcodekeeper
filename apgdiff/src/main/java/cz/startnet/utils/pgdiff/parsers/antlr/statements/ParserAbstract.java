@@ -4,6 +4,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -337,32 +338,34 @@ public abstract class ParserAbstract {
     }
 
     private boolean isInProject(boolean isPostgres) {
-        String fs = System.getProperty("file.separator");
-        // exclude external directories
-        Stream<String> dirs;
-        if (isPostgres) {
-            dirs = Arrays.stream(ApgdiffConsts.WORK_DIR_NAMES.values())
-                    .map(e -> fs + e.name() + fs);
-        } else {
-            dirs = Arrays.stream(ApgdiffConsts.MS_WORK_DIR_NAMES.values())
-                    .map(e -> fs + e.getDirName() + fs);
-        }
-
-        if (dirs.noneMatch(fileName::contains)) {
-            return false;
-        }
-
-        // search project marker
         Path parent = Paths.get(fileName).getParent();
+        List<String> parentDirs = new ArrayList<>(parent.getNameCount());
+        boolean isWorkingDir = false;
         while (parent != null) {
             if (Files.exists(parent.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER))) {
-                return true;
+                isWorkingDir = true;
             }
-
+            Path dirPath = parent.getFileName();
+            if (dirPath != null) {
+                parentDirs.add(parent.getFileName().toString());
+            }
             parent = parent.getParent();
         }
 
-        return false;
+        if (!isWorkingDir) {
+            return false;
+        }
+
+        Stream<String> dirs;
+        if (isPostgres) {
+            dirs = Arrays.stream(ApgdiffConsts.WORK_DIR_NAMES.values())
+                    .map(e -> e.name());
+        } else {
+            dirs = Arrays.stream(ApgdiffConsts.MS_WORK_DIR_NAMES.values())
+                    .map(e -> e.getDirName());
+        }
+
+        return dirs.anyMatch(d -> parentDirs.contains(d));
     }
 
     private PgObjLocation getLocation(List<? extends ParserRuleContext> ids,
