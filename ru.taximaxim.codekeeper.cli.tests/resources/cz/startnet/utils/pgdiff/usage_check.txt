@@ -109,10 +109,10 @@ Usage
  --graph-name <name>                    : name of start object in graph mode
                                           specify multiple times to use several
                                           names
- --option-exist                         : allow to enable option IF EXISTS/IF NOT EXISTS 
-                                          in CREATE, DROP statements
- --option-drop-object                   : allow to enable to print DROP before 
-                                          CREATE statements
+ --option-exist                         : enable printing IF EXISTS/IF NOT
+                                          EXISTS in CREATE and DROP statements
+ --option-drop-object                   : enable printing DROP statement before
+                                          CREATE
 
 DANGER_STATEMENT : [DROP_TABLE | ALTER_COLUMN | DROP_COLUMN | RESTART_WITH | UPDATE]
 OBJECT_TYPE : [CAST | USER | ROLE | ASSEMBLY | SCHEMA | EXTENSION | TYPE | DOMAIN | SEQUENCE | OPERATOR | FTS_PARSER | FTS_TEMPLATE | FTS_DICTIONARY | FTS_CONFIGURATION | TABLE | FUNCTION | PROCEDURE | AGGREGATE | CONSTRAINT | VIEW | INDEX | TRIGGER | RULE | POLICY]

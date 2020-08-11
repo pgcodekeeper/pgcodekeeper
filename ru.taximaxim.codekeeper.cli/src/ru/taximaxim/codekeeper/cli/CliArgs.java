@@ -243,11 +243,11 @@ public class CliArgs extends PgDiffArguments {
     private List<String> graphNames;
 
     @Option(name="--option-exist", forbids={"--parse"},
-            usage="to enable option to print IF EXISTS/IF NOT EXISTS in CREATE, DROP statements")
+            usage="enable printing IF EXISTS/IF NOT EXISTS in CREATE and DROP statements")
     private boolean optionExisting;
 
     @Option(name="--option-drop-object", forbids={"--parse"},
-            usage="to enable option to print DROP statement before CREATE")
+            usage="enable printing DROP statement before CREATE")
     private boolean optionDropObject;
 
     @Override
