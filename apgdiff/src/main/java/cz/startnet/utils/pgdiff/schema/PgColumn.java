@@ -93,11 +93,7 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
         if (getType() != null && getParentCol((AbstractPgTable) getParent()) == null) {
             sb.append(getAlterTable(false, false));
             sb.append("\n\tADD COLUMN ");
-            PgDiffArguments args = getDatabase().getArguments();
-
-            if (args != null && args.isOptionExisting()) {
-                sb.append("IF NOT EXISTS ");
-            }
+            appendIfNotExists(sb);
             sb.append(PgDiffUtils.getQuotedName(name))
             .append(' ')
             .append(getType());

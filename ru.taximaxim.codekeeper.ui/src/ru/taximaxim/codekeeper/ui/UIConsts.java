@@ -92,7 +92,6 @@ public interface UIConsts {
         String SCRIPT_FROM_SELECTED_OBJS = "prefScriptFromSelectedObjs"; //$NON-NLS-1$;
         String OPTION_EXISTS = "prefOptionExist"; //$NON-NLS-1$;
         String OPTION_DROP_OBJECT = "prefOptionDropObject"; //$NON-NLS-1$;
-
     }
 
     interface PG_EDIT_PREF {

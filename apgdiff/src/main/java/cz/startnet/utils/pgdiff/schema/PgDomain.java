@@ -86,7 +86,6 @@ public class PgDomain extends PgStatementWithSearchPath {
     @Override
     public String getCreationSQL() {
         StringBuilder sb = new StringBuilder();
-
         sb.append("CREATE DOMAIN ").append(getQualifiedName())
         .append(" AS ").append(dataType);
         if (collation != null && !collation.isEmpty()) {

@@ -9,7 +9,6 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 
 /**
@@ -27,13 +26,9 @@ public class PgSequence extends AbstractSequence {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
-        PgDiffArguments args = getDatabase().getArguments();
         appendDropBeforeCreate(sbSQL);
         sbSQL.append("CREATE SEQUENCE ");
-
-        if (args != null && args.isOptionExisting()) {
-            sbSQL.append("IF NOT EXISTS ");
-        }
+        appendIfNotExists(sbSQL);
         sbSQL.append(getQualifiedName());
 
         if (!BIGINT.equals(getDataType())) {

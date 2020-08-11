@@ -3,7 +3,6 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.Map.Entry;
 import java.util.Objects;
 
-import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 
@@ -33,10 +32,7 @@ public abstract class AbstractRegularTable extends AbstractPgTable {
             sbSQL.append("UNLOGGED ");
         }
         sbSQL.append("TABLE ");
-        PgDiffArguments args = getDatabase().getArguments();
-        if (args != null && args.isOptionExisting()) {
-            sbSQL.append("IF NOT EXISTS ");
-        }
+        appendIfNotExists(sbSQL);
         sbSQL.append(getQualifiedName());
     }
 

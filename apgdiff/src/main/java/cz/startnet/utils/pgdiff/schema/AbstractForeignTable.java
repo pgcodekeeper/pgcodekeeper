@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 
-import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 
@@ -106,10 +105,7 @@ public abstract class AbstractForeignTable extends AbstractPgTable {
     @Override
     protected void appendName(StringBuilder sbSQL) {
         sbSQL.append("CREATE FOREIGN TABLE ");
-        PgDiffArguments args = getDatabase().getArguments();
-        if (args != null && args.isOptionExisting()) {
-            sbSQL.append("IF NOT EXISTS ");
-        }
+        appendIfNotExists(sbSQL);
         sbSQL.append(getQualifiedName());
     }
 

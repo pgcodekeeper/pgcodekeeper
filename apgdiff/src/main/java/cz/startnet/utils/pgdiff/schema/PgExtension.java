@@ -3,7 +3,6 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -45,13 +44,10 @@ public class PgExtension extends PgStatement {
         final StringBuilder sbSQL = new StringBuilder();
         appendDropBeforeCreate(sbSQL);
         sbSQL.append("CREATE EXTENSION ");
-        PgDiffArguments args = getDatabase().getArguments();
-        if (args != null && args.isOptionExisting()) {
-            sbSQL.append("IF NOT EXISTS ");
-        }
-        sbSQL.append(PgDiffUtils.getQuotedName(getName()));
+        appendIfNotExists(sbSQL);
+        sbSQL.append(getQualifiedName());
 
-        if(getSchema() != null && !getSchema().isEmpty()) {
+        if (getSchema() != null && !getSchema().isEmpty()) {
             sbSQL.append(" SCHEMA ");
             sbSQL.append(getSchema());
         }

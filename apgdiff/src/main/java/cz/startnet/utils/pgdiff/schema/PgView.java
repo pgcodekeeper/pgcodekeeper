@@ -54,10 +54,7 @@ public class PgView extends AbstractView implements PgOptionContainer  {
         sbSQL.append("CREATE ");
         sbSQL.append(getTypeName()).append(' ');
         if (isMatView()) {
-            PgDiffArguments args = getDatabase().getArguments();
-            if (args != null && args.isOptionExisting()) {
-                sbSQL.append("IF NOT EXISTS ");
-            }
+            appendIfNotExists(sbSQL);
         }
 
         sbSQL.append(getQualifiedName());

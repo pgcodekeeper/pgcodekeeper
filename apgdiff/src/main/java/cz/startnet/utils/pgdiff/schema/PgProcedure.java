@@ -99,5 +99,4 @@ public class PgProcedure extends AbstractPgFunction {
     protected AbstractPgFunction getFunctionCopy() {
         return new PgProcedure(getBareName());
     }
-
 }

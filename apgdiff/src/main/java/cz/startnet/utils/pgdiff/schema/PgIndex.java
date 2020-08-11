@@ -112,7 +112,6 @@ public class PgIndex extends AbstractIndex {
         return sbSQL.toString();
     }
 
-
     @Override
     public String getQualifiedName() {
         return PgDiffUtils.getQuotedName(getSchemaName()) + '.' + PgDiffUtils.getQuotedName(getName());
