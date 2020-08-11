@@ -332,9 +332,9 @@ public final class Messages extends NLS {
 
     public static String DbUpdatePrefPage_alter_seq_restart_statement;
 
-    public static String DbUpdatePrefPage_optionDropObject1;
+    public static String DbUpdatePrefPage_option_drop_object;
 
-    public static String DbUpdatePrefPage_optionIfExists;
+    public static String DbUpdatePrefPage_option_if_exists;
 
     public static String DbUpdatePrefPage_print_index_with_concurrently;
 

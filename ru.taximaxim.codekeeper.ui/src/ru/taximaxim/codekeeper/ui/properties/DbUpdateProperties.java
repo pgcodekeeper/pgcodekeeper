@@ -117,7 +117,7 @@ public class DbUpdateProperties extends PropertyPage {
                 .SCRIPT_FROM_SELECTED_OBJS, false));
         btnScriptFromSelObjs.setEnabled(overridePref);
         btnOptionExists = new Button(panel, SWT.CHECK);
-        btnOptionExists.setText(Messages.DbUpdatePrefPage_optionIfExists);
+        btnOptionExists.setText(Messages.DbUpdatePrefPage_option_if_exists);
         gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
         gd.horizontalIndent = 10;
         btnOptionExists.setLayoutData(gd);
@@ -125,7 +125,7 @@ public class DbUpdateProperties extends PropertyPage {
         btnOptionExists.setEnabled(overridePref);
 
         btnOptionDropObject = new Button(panel, SWT.CHECK);
-        btnOptionDropObject.setText(Messages.DbUpdatePrefPage_optionDropObject1);
+        btnOptionDropObject.setText(Messages.DbUpdatePrefPage_option_drop_object);
         gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
         gd.horizontalIndent = 10;
         btnOptionDropObject.setLayoutData(gd);

@@ -79,7 +79,7 @@ public class ApplyCustomDialog extends Dialog {
                 DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY));
 
         btnOptionExists = new Button(panel, SWT.CHECK);
-        btnOptionExists.setText(Messages.DbUpdatePrefPage_optionIfExists);
+        btnOptionExists.setText(Messages.DbUpdatePrefPage_option_if_exists);
         gd = new GridData();
         gd.horizontalIndent = 10;
         btnOptionExists.setLayoutData(gd);
@@ -87,7 +87,7 @@ public class ApplyCustomDialog extends Dialog {
                 DB_UPDATE_PREF.OPTION_EXISTS));
 
         btnOptionDropObject = new Button(panel, SWT.CHECK);
-        btnOptionDropObject.setText(Messages.DbUpdatePrefPage_optionDropObject1);
+        btnOptionDropObject.setText(Messages.DbUpdatePrefPage_option_drop_object);
         gd = new GridData();
         gd.horizontalIndent = 10;
         btnOptionDropObject.setLayoutData(gd);

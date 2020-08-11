@@ -324,12 +324,12 @@ class PageDiff extends WizardPage implements Listener {
         btnScriptFromSelObjs.setSelection(mainPrefs.getBoolean(DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS));
         btnScriptFromSelObjs.setVisible(false);
         btnOptionExists = new Button(container, SWT.CHECK);
-        btnOptionExists.setText(Messages.DbUpdatePrefPage_optionIfExists);
+        btnOptionExists.setText(Messages.DbUpdatePrefPage_option_if_exists);
         btnOptionExists.setSelection(mainPrefs.getBoolean(DB_UPDATE_PREF.OPTION_EXISTS));
         btnOptionExists.setVisible(false);
 
         btnOptionDropObject = new Button(container, SWT.CHECK);
-        btnOptionDropObject.setText(Messages.DbUpdatePrefPage_optionDropObject1);
+        btnOptionDropObject.setText(Messages.DbUpdatePrefPage_option_drop_object);
         btnOptionDropObject.setSelection(mainPrefs.getBoolean(DB_UPDATE_PREF.OPTION_DROP_OBJECT));
         btnOptionDropObject.setVisible(false);
 
