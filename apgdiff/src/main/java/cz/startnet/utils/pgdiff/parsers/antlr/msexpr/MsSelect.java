@@ -104,7 +104,7 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
                 ret = select(query);
             }
         } else {
-            Log.log(Log.LOG_WARNING, "No alternative in SelectOps!");
+            log(Log.LOG_WARNING, "No alternative in SelectOps!");
         }
         return ret;
     }
@@ -226,7 +226,7 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
         } else if ((primary = item.from_primary()) != null) {
             primary(primary);
         } else {
-            Log.log(Log.LOG_WARNING, "No alternative in from_item!");
+            log(Log.LOG_WARNING, "No alternative in from_item!");
         }
     }
 

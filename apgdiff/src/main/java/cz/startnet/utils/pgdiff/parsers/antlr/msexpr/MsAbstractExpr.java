@@ -126,8 +126,13 @@ public abstract class MsAbstractExpr {
                 addDepcy(new GenericColumn(schemaName, relationName, columnName, DbObjType.COLUMN), columnCtx);
             }
         } else {
-            Log.log(Log.LOG_WARNING, "Unknown column reference: "
+            log(Log.LOG_WARNING, "Unknown column reference: "
                     + schemaName + ' ' + relationName + ' ' + columnName);
         }
+    }
+
+    protected void log(int level, String msg) {
+        // debug method
+        // Log.log(level, msg);
     }
 }
