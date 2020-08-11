@@ -508,4 +508,8 @@ public class PgDatabase extends PgStatement implements IDatabase {
         .forEach(st -> statements.put(st.getQualifiedName(), st));
         return statements;
     }
+
+    public void copyLaunchers(PgDatabase db) {
+        analysisLaunchers.addAll(db.analysisLaunchers);
+    }
 }
