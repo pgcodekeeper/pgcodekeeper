@@ -3185,7 +3185,6 @@ simple_id
     | BACKUP_PRIORITY
     | BEFORE
     | BEGIN_DIALOG
-    | BIGINT
     | BINARY_BASE64
     | BINDING
     | BLOB_STORAGE
@@ -3250,10 +3249,6 @@ simple_id
     | DATA
     | DATABASE_MIRRORING
     | DATE_CORRELATION_OPTIMIZATION
-    | DATEADD
-    | DATEDIFF
-    | DATENAME
-    | DATEPART
     | DAYS
     | DB_CHAINING
     | DB_FAILOVER
@@ -3293,11 +3288,9 @@ simple_id
     | ERROR
     | EVENT_RETENTION_MODE
     | EVENT
-    | EVENTDATA
     | EXCLUSIVE
     | EXECUTABLE_FILE
     | EXECUTABLE
-    | EXIST
     | EXPAND
     | EXPIREDATE
     | EXPIRY_DATE
@@ -3308,7 +3301,6 @@ simple_id
     | FAILOVER_MODE
     | FAILOVER
     | FAILURE_CONDITION_LEVEL
-    | FAILURE
     | FAILURECONDITIONLEVEL
     | FALSE
     | FAN_IN
@@ -3336,8 +3328,6 @@ simple_id
     | FULLTEXT
     | GB
     | GET
-    | GETDATE
-    | GETUTCDATE
     | GLOBAL
     | GOVERNOR
     | GROUP_MAX_REQUESTS
@@ -3365,15 +3355,14 @@ simple_id
     | INPUT
     | INSENSITIVE
     | INSTEAD
-    | INT
     | IO
     | IP
-    | ISNULL
     | ISOLATION
     | JSON
     | KB
     | KEEP
     | KEEPFIXED
+    | KERBEROS
     | KEY_PATH
     | KEY_SOURCE
     | KEY_STORE_PROVIDER_NAME
@@ -3465,7 +3454,6 @@ simple_id
     | NO_TRUNCATE
     | NO_WAIT
     | NO
-    | NOCOUNT
     | NODES
     | NOEXPAND
     | NOFORMAT
@@ -3479,10 +3467,8 @@ simple_id
     | NOTIFICATION
     | NOUNLOAD
     | NOWAIT
-    | NTILE
     | NTLM
     | NUMANODE
-    | NUMBER
     | NUMERIC_ROUNDABORT
     | OBJECT
     | OFFLINE
@@ -3500,8 +3486,6 @@ simple_id
     | OUTPUT
     | OWNER
     | PAGE_VERIFY
-    | PAGE
-    | PARAM_NODE
     | PARAMETERIZATION
     | PARSE
     | PARTIAL
@@ -3543,7 +3527,6 @@ simple_id
     | PROPERTY
     | PROVIDER_KEY_NAME
     | PROVIDER
-    | QUERY
     | QUERYTRACEON
     | QUEUE_DELAY
     | QUEUE
@@ -3598,7 +3581,6 @@ simple_id
     | ROLE
     | ROOT
     | ROUTE
-    | ROW_NUMBER
     | ROW
     | ROWGUID
     | ROWS
@@ -3649,7 +3631,6 @@ simple_id
     | SINGLETON
     | SIZE
     | SKIP_KEYWORD
-    | SMALLINT
     | SNAPSHOT
     | SOFTNUMA
     | SOURCE
@@ -3661,7 +3642,6 @@ simple_id
     | SQLDUMPERFLAGS
     | SQLDUMPERPATH
     | SQLDUMPERTIMEOUT
-    | SQLDUMPERTIMEOUTS
     | STANDBY
     | START_DATE
     | START
@@ -3670,7 +3650,6 @@ simple_id
     | STATE
     | STATIC
     | STATISTICAL_SEMANTICS
-    | STATS_STREAM
     | STATS
     | STATUS
     | STOP_ON_ERROR
@@ -3678,7 +3657,6 @@ simple_id
     | STOPLIST
     | STOPPED
     | STRING_AGG
-    | STUFF
     | SUBJECT
     | SUPPORTED
     | SUSPEND
@@ -3698,7 +3676,6 @@ simple_id
     | TIME
     | TIMEOUT
     | TIMER
-    | TINYINT
     | TORN_PAGE_DETECTION
     | TRACK_CAUSALITY
     | TRACK_COLUMNS_UPDATED
