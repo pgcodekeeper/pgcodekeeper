@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import cz.startnet.utils.pgdiff.PgDiffArguments;
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
@@ -137,10 +139,15 @@ public abstract class AbstractTable extends PgStatementContainer implements PgOp
      * we must return true, but we cannot track this right now. Method will return false. <br><br>
      *
      * @param newTable - new table
-     * @return true if order was changed
+     * @return true if order was changed or order is ignored
      * @since 5.1.7
      */
     protected boolean isColumnsOrderChanged(AbstractTable newTable) {
+        PgDiffArguments args = getDatabase().getArguments();
+        if (args != null && args.isIgnoreColumnOrder()) {
+            return false;
+        }
+
         // last founded column
         int i = -1;
         for (AbstractColumn col : newTable.getColumns()) {
@@ -232,8 +239,16 @@ public abstract class AbstractTable extends PgStatementContainer implements PgOp
 
         if (obj instanceof AbstractTable && super.compare(obj)) {
             AbstractTable table = (AbstractTable) obj;
-            return getClass().equals(table.getClass())
-                    && columns.equals(table.columns)
+            boolean isColumnsEqual;
+            PgDiffArguments args = getDatabase().getArguments();
+            if (args != null && args.isIgnoreColumnOrder()) {
+                isColumnsEqual = PgDiffUtils.setlikeEquals(columns, table.columns);
+            } else {
+                isColumnsEqual = columns.equals(table.columns);
+            }
+
+            return isColumnsEqual
+                    && getClass().equals(table.getClass())
                     && options.equals(table.options);
         }
 
@@ -257,7 +272,12 @@ public abstract class AbstractTable extends PgStatementContainer implements PgOp
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.putOrdered(columns);
+        PgDiffArguments args = getDatabase().getArguments();
+        if (args != null && args.isIgnoreColumnOrder()) {
+            hasher.putUnordered(columns);
+        } else {
+            hasher.putOrdered(columns);
+        }
         hasher.put(options);
     }
 

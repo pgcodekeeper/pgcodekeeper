@@ -104,7 +104,7 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
                 ret = select(query);
             }
         } else {
-            Log.log(Log.LOG_WARNING, "No alternative in SelectOps!");
+            log(Log.LOG_WARNING, "No alternative in SelectOps!");
         }
         return ret;
     }
@@ -180,7 +180,7 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
         if (item.sub_item != null) {
             from(item.sub_item);
         } else if (item.PIVOT() != null) {
-            new MsValueExpr(this).aggregate(item.aggregate_windowed_function());
+            new MsValueExpr(this).functionCall(item.function_call());
             addReference(item.as_table_alias().id().getText(), null);
             from(item.from_item(0));
             addColumnDepcy(item.full_column_name());
@@ -226,7 +226,7 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
         } else if ((primary = item.from_primary()) != null) {
             primary(primary);
         } else {
-            Log.log(Log.LOG_WARNING, "No alternative in from_item!");
+            log(Log.LOG_WARNING, "No alternative in from_item!");
         }
     }
 

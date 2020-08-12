@@ -81,7 +81,7 @@ public class ConvertProject extends AbstractHandler {
         } else {
             weirdProject = Arrays.stream(WORK_DIR_NAMES.values())
                     .map(e -> path.resolve(e.name()))
-                    .anyMatch(Files::notExists);
+                    .allMatch(Files::notExists);
         }
         if (weirdProject) {
             MessageBox message = new MessageBox(shell, SWT.ICON_WARNING | SWT.YES | SWT.NO);

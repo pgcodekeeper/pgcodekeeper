@@ -45,6 +45,8 @@ import ru.taximaxim.codekeeper.ui.properties.IgnoreListProperties.IgnoreListEdit
 
 public class DbStoreEditorDialog extends TrayDialog {
 
+    private final String action;
+
     private static final String DEFAULT_HOST = "127.0.0.1"; //$NON-NLS-1$
     private static final String DEFAULT_PORT = "5432"; //$NON-NLS-1$
 
@@ -92,15 +94,17 @@ public class DbStoreEditorDialog extends TrayDialog {
         return btnWinAuth != null && btnWinAuth.getSelection();
     }
 
-    public DbStoreEditorDialog(Shell shell, DbInfo dbInitial) {
+    public DbStoreEditorDialog(Shell shell, DbInfo dbInitial, String action) {
         super(shell);
         this.dbInitial = dbInitial;
+        this.action = action;
     }
 
     @Override
     protected void configureShell(final Shell newShell) {
         super.configureShell(newShell);
-        newShell.setText(Messages.dbStoreEditorDialog_db_store_editor);
+        String dialogName = (dbInitial != null) ? action + ": " + dbInitial.getName() : action; //$NON-NLS-1$
+        newShell.setText(dialogName);
         newShell.addShellListener(new ShellAdapter() {
 
             @Override

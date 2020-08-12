@@ -31,6 +31,7 @@ public class PgDiffArguments implements Cloneable {
     private boolean enableFunctionBodiesDependencies;
     private String timeZone;
     private boolean usingTypeCastOff;
+    private boolean selectedOnly;
     private boolean concurrentlyMode;
     private boolean safeMode;
     private boolean runOnTarget;
@@ -53,6 +54,7 @@ public class PgDiffArguments implements Cloneable {
     private boolean graphReverse;
     private final List<String> graphNames = new ArrayList<>();
     private boolean ignoreErrors;
+    private boolean ignoreColumnOrder;
 
     public void setModeParse(final boolean modeParse) {
         this.modeParse = modeParse;
@@ -214,6 +216,14 @@ public class PgDiffArguments implements Cloneable {
         this.ignoreErrors = ignoreErrors;
     }
 
+    public boolean isIgnoreColumnOrder() {
+        return ignoreColumnOrder;
+    }
+
+    public void setIgnoreColumnOrder(boolean ignoreColumnOrder) {
+        this.ignoreColumnOrder = ignoreColumnOrder;
+    }
+
     public String getInCharsetName() {
         return inCharsetName;
     }
@@ -280,6 +290,14 @@ public class PgDiffArguments implements Cloneable {
 
     public void setUsingTypeCastOff(boolean usingTypeCastOff) {
         this.usingTypeCastOff = usingTypeCastOff;
+    }
+
+    public boolean isSelectedOnly() {
+        return selectedOnly;
+    }
+
+    public void setSelectedOnly(boolean selectedOnly) {
+        this.selectedOnly = selectedOnly;
     }
 
     public boolean isConcurrentlyMode() {
