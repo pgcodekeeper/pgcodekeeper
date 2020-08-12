@@ -63,8 +63,7 @@ public abstract class AbstractModelExporter {
     protected final String sqlEncoding;
 
     /**
-     * Objects that we need to operate on.<br>
-     * Remove the entry from this list after it has been processed.
+     * Objects that we need to operate on.
      */
     protected final Collection<TreeElement> changeList;
 
