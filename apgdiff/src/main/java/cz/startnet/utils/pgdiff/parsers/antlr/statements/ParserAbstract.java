@@ -11,7 +11,6 @@ import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -339,39 +338,32 @@ public abstract class ParserAbstract {
     }
 
     private boolean isInProject(boolean isPostgres) {
-        // exclude external directories
-        Stream<String> dirs;
+        // collect working directories
+        List<String> dirs;
         if (isPostgres) {
             dirs = Arrays.stream(ApgdiffConsts.WORK_DIR_NAMES.values())
-                    .map(WORK_DIR_NAMES::name);
+                    .map(WORK_DIR_NAMES::name).collect(Collectors.toList());
         } else {
             dirs = Arrays.stream(ApgdiffConsts.MS_WORK_DIR_NAMES.values())
-                    .map(MS_WORK_DIR_NAMES::getDirName);
+                    .map(MS_WORK_DIR_NAMES::getDirName).collect(Collectors.toList());
         }
-        List<String> projDirs = dirs.collect(Collectors.toList());
 
         Path parent = Paths.get(fileName).getParent();
-        boolean isMatchesProjDirs = false;
-        for (Path pathEl : parent) {
-            isMatchesProjDirs = projDirs.contains(pathEl.toString());
-            if (isMatchesProjDirs) {
-                break;
-            }
-        }
-        if (!isMatchesProjDirs) {
-            return false;
-        }
+        while (true) {
+            Path folder = parent.getFileName();
+            parent = parent.getParent();
 
-        // search project marker
-        while (parent != null) {
-            if (Files.exists(parent.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER))) {
+            // file name for root is null
+            if (folder == null || parent == null) {
+                return false;
+            }
+
+            // if we find the project directory, then we check the marker at the level above
+            if (dirs.contains(folder.toString())
+                    && Files.exists(parent.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER))) {
                 return true;
             }
-
-            parent = parent.getParent();
         }
-
-        return false;
     }
 
     private PgObjLocation getLocation(List<? extends ParserRuleContext> ids,
