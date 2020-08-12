@@ -5,9 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -53,12 +51,10 @@ public class OverridesModelExporter extends AbstractModelExporter {
                     outDir.toAbsolutePath()));
         }
 
-        List<PgStatement> toAdd = new ArrayList<>();
-        List<PgStatement> toRemove = new ArrayList<>();
+        List<PgStatement> list = oldDb.getDescendants().collect(Collectors.toList());
         Set<Path> paths = new HashSet<>();
 
-        while (!changeList.isEmpty()) {
-            TreeElement el = changeList.pop();
+        for (TreeElement el : changeList) {
             if (el.getSide() == DiffSide.BOTH) {
                 switch (el.getType()) {
                 case CONSTRAINT:
@@ -73,32 +69,17 @@ public class OverridesModelExporter extends AbstractModelExporter {
                 default:
                     PgStatement stInNew = el.getPgStatement(newDb);
                     PgStatement stInOld = el.getPgStatement(oldDb);
-                    toAdd.add(stInNew);
-                    toRemove.add(stInOld);
+                    list.set(list.indexOf(stInOld), stInNew);
                     paths.add(getRelativeFilePath(stInNew, true));
+                    deleteStatementIfExists(stInNew);
                 }
             }
         }
 
-        List<PgStatement> list = oldDb.getDescendants().filter(st -> {
-            Path path = getRelativeFilePath(st, true);
-            return paths.contains(path) && Files.exists(outDir.resolve(path));
-        }).collect(Collectors.toList());
-
-        list.addAll(toAdd);
-        for (PgStatement st : toAdd) {
-            deleteStatementIfExists(st);
-        }
-
-        list.removeAll(toRemove);
-        for (PgStatement st : toRemove) {
-            deleteStatementIfExists(st);
-        }
-
-        Collections.sort(list, ExportTableOrder.INSTANCE);
-
         Map<Path, StringBuilder> dumps = new HashMap<>();
-        list.forEach(st -> dumpStatement(st, dumps));
+        list.stream()
+        .filter(st -> paths.contains(getRelativeFilePath(st, true)))
+        .forEach(st -> dumpStatement(st, dumps));
 
         for (Entry<Path, StringBuilder> dump : dumps.entrySet()) {
             dumpSQL(dump.getValue(), dump.getKey());

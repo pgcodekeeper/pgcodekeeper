@@ -7,14 +7,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -22,6 +18,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -69,7 +66,7 @@ public abstract class AbstractModelExporter {
      * Objects that we need to operate on.<br>
      * Remove the entry from this list after it has been processed.
      */
-    protected final Deque<TreeElement> changeList;
+    protected final Collection<TreeElement> changeList;
 
     /**
      * Creates a new ModelExporter object with set {@link #outDir} and {@link #newDb}
@@ -88,7 +85,7 @@ public abstract class AbstractModelExporter {
         this.newDb = newDb;
         this.oldDb = oldDb;
         this.sqlEncoding = sqlEncoding;
-        this.changeList = changedObjects == null ? null : new LinkedList<>(changedObjects);
+        this.changeList = changedObjects;
     }
 
     /**
@@ -119,52 +116,42 @@ public abstract class AbstractModelExporter {
                     outDir.toAbsolutePath()));
         }
 
-        Set<PgStatement> toRemove = new HashSet<>();
-        List<PgStatement> toAdd = new ArrayList<>();
+        List<PgStatement> list = oldDb.getDescendants().collect(Collectors.toList());
         Set<Path> paths = new HashSet<>();
 
-        while (!changeList.isEmpty()) {
-            TreeElement el = changeList.pop();
+        for (TreeElement el : changeList) {
             switch(el.getSide()) {
             case LEFT:
                 PgStatement stInOld = el.getPgStatement(oldDb);
-                toRemove.add(stInOld);
-                stInOld.getChildren().forEach(toRemove::add);
+                list.remove(stInOld);
+                for (PgStatement child : PgDiffUtils.sIter(stInOld.getChildren())) {
+                    list.remove(child);
+                    deleteStatementIfExists(child);
+                }
                 paths.add(getRelativeFilePath(stInOld, true));
+                deleteStatementIfExists(stInOld);
                 break;
             case RIGHT:
                 PgStatement stInNew = el.getPgStatement(newDb);
-                toAdd.add(stInNew);
+                list.add(stInNew);
                 paths.add(getRelativeFilePath(stInNew, true));
+                deleteStatementIfExists(stInNew);
                 break;
             case BOTH:
                 stInNew = el.getPgStatement(newDb);
                 stInOld = el.getPgStatement(oldDb);
-                toAdd.add(stInNew);
-                toRemove.add(stInOld);
+                list.set(list.indexOf(stInOld), stInNew);
                 paths.add(getRelativeFilePath(stInNew, true));
+                deleteStatementIfExists(stInNew);
                 break;
             }
         }
 
-        List<PgStatement> list = oldDb.getDescendants()
-                .filter(st -> paths.contains(getRelativeFilePath(st, true)))
-                .collect(Collectors.toList());
-
-        list.addAll(toAdd);
-        for (PgStatement st : toAdd) {
-            deleteStatementIfExists(st);
-        }
-
-        list.removeAll(toRemove);
-        for (PgStatement st : toRemove) {
-            deleteStatementIfExists(st);
-        }
-
-        Collections.sort(list, ExportTableOrder.INSTANCE);
-
         Map<Path, StringBuilder> dumps = new HashMap<>();
-        list.forEach(st -> dumpStatement(st, dumps));
+        list.stream()
+        .filter(st -> paths.contains(getRelativeFilePath(st, true)))
+        .sorted(ExportTableOrder.INSTANCE)
+        .forEach(st -> dumpStatement(st, dumps));
 
         for (Entry<Path, StringBuilder> dump : dumps.entrySet()) {
             dumpSQL(dump.getValue(), dump.getKey());
