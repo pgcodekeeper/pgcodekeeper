@@ -103,7 +103,7 @@ public class DbStoreEditorDialog extends TrayDialog {
     @Override
     protected void configureShell(final Shell newShell) {
         super.configureShell(newShell);
-        String dialogName = (dbInitial != null) ? action + ": " + dbInitial.getName() : action;
+        String dialogName = (dbInitial != null) ? action + ": " + dbInitial.getName() : action; //$NON-NLS-1$
         newShell.setText(dialogName);
         newShell.addShellListener(new ShellAdapter() {
 

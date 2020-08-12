@@ -6,6 +6,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.security.storage.StorageException;
 import org.eclipse.jface.preference.PreferencePage;
@@ -104,7 +105,7 @@ class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
 
     @Override
     protected DbInfo getNewObject(DbInfo oldObject) {
-        DbStoreEditorDialog dialog = new DbStoreEditorDialog(getShell(), oldObject, action );
+        DbStoreEditorDialog dialog = new DbStoreEditorDialog(getShell(), oldObject, action);
         return dialog.open() == Window.OK ? dialog.getDbInfo() : null;
     }
 
@@ -161,21 +162,22 @@ class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
             }
         });
     }
+
     @Override
     protected void editObject() {
-        action = Messages.DbStorePrefPage_edit0;
+        action = Messages.DbStorePrefPage_action_edit;
         super.editObject();
     }
 
     @Override
     protected void copyObject() {
-        action = Messages.DbStorePrefPage_copy0;
+        action = Messages.DbStorePrefPage_action_copy;
         super.copyObject();
     }
 
     @Override
     public void addNewObject(DbInfo oldObject) {
-        action = Messages.DbStorePrefPage_add_new0;
+        action = Messages.DbStorePrefPage_action_add_new;
         super.addNewObject(oldObject);
     }
 }
