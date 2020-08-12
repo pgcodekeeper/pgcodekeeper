@@ -66,7 +66,7 @@ SELECT  -- GENERAL
    
    c.relnamespace AS schema_oid
 FROM pg_catalog.pg_class c
-LEFT JOIN pg_catalog.pg_foreign_table ftbl ON ftbl.ftrelid = c.relfilenode
+LEFT JOIN pg_catalog.pg_foreign_table ftbl ON ftbl.ftrelid = c.oid
 LEFT JOIN pg_catalog.pg_foreign_server ser ON ser.oid = ftbl.ftserver
 LEFT JOIN pg_catalog.pg_tablespace tabsp ON tabsp.oid = c.reltablespace
 LEFT JOIN pg_catalog.pg_description d ON d.objoid = c.oid AND d.objsubid = 0

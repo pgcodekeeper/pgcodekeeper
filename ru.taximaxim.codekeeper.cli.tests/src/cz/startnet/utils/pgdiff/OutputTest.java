@@ -58,6 +58,7 @@ public class OutputTest {
             {new FailGraphDepthArgumentsProvider()},
             {new FailGraphNameArgumentsProvider()},
             {new FailGraphArgumentsProvider()},
+            {new IgnoreColumnOrderArgumentsProvider()},
         });
 
         return p.stream()::iterator;
@@ -82,7 +83,7 @@ public class OutputTest {
 
             System.out.flush();
             assertEquals(args.getClass().getSimpleName() + " - Output is not as expected",
-                    args.output(), baos.toString());
+                    args.output(), baos.toString().replace("\r\n", "\n"));
         } finally {
             System.setOut(old);
             System.setErr(olde);
@@ -607,5 +608,29 @@ class FailGraphArgumentsProvider extends ArgumentsProvider {
     @Override
     public String output() {
         return "option \"--graph-reverse\" requires the option(s) [--graph-name]\n";
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing table column order
+ */
+class IgnoreColumnOrderArgumentsProvider extends ArgumentsProvider {
+
+    public IgnoreColumnOrderArgumentsProvider() {
+        super("modify_column_order");
+    }
+
+    @Override
+    public String[] args() throws URISyntaxException, IOException {
+        File fNew = getFile(FILES_POSTFIX.NEW_SQL);
+        File fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
+
+        return new String[]{"--ignore-column-order", fNew.getAbsolutePath(), fOriginal.getAbsolutePath()
+        };
+    }
+
+    @Override
+    public String output() {
+        return "\n";
     }
 }

@@ -1,10 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="pgCodeKeeper cli" uid="ru.taximaxim.codekeeper.standalone.product" id="ru.taximaxim.codekeeper.cli.product-codekeeper-standalone" application="ru.taximaxim.codekeeper.cli.application-standalone" version="5.10.2.qualifier" useFeatures="false" includeLaunchers="false">
+<product name="pgCodeKeeper" uid="ru.taximaxim.codekeeper.rcp.product" id="ru.taximaxim.codekeeper.mainapp.product" application="org.eclipse.ui.ide.workbench" version="5.10.5.qualifier" useFeatures="true" includeLaunchers="true">
 
    <configIni use="default">
    </configIni>
+
+   <launcherArgs>
+      <vmArgs>-Dosgi.requiredJavaVersion=1.8
+-XX:+UseG1GC
+-Xms512m
+-Xmx2048m
+      </vmArgs>
+      <vmArgsMac>-XstartOnFirstThread
+-Dorg.eclipse.swt.internal.carbon.smallFonts
+      </vmArgsMac>
+   </launcherArgs>
+
+   <splash
+      location="ru.taximaxim.codekeeper.mainapp" />
+   <launcher name="pgcodekeeper">
+      <linux icon="/icons/product.xpm"/>
+      <macosx icon="/icons/product.icns"/>
+      <win useIco="true">
+         <ico path="/icons/product.ico"/>
+         <bmp/>
+      </win>
+   </launcher>
+
+   <vm>
+   </vm>
 
    <license>
         <text>
@@ -196,7 +221,7 @@
       same &quot;printed page&quot; as the copyright notice for easier
       identification within third-party archives.
 
-   Copyright 2017 Technology, LLC
+   Copyright 2017-2020 Technology, LLC
 
    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
    you may not use this file except in compliance with the License.
@@ -213,36 +238,34 @@
    </license>
 
    <plugins>
-      <plugin id="apgdiff"/>
-      <plugin id="org.apache.felix.gogo.command"/>
-      <plugin id="org.apache.felix.gogo.runtime"/>
-      <plugin id="org.eclipse.core.contenttype"/>
-      <plugin id="org.eclipse.core.jobs"/>
-      <plugin id="org.eclipse.core.runtime"/>
-      <plugin id="org.eclipse.equinox.app"/>
-      <plugin id="org.eclipse.equinox.common"/>
-      <plugin id="org.eclipse.equinox.launcher"/>
-      <plugin id="org.eclipse.equinox.preferences"/>
-      <plugin id="org.eclipse.equinox.region" fragment="true"/>
-      <plugin id="org.eclipse.equinox.registry"/>
-      <plugin id="org.eclipse.equinox.transforms.hook" fragment="true"/>
-      <plugin id="org.eclipse.equinox.weaving.hook" fragment="true"/>
-      <plugin id="org.eclipse.osgi"/>
-      <plugin id="org.eclipse.osgi.compatibility.state" fragment="true"/>
-      <plugin id="org.kohsuke.args4j"/>
-      <plugin id="ru.taximaxim.codekeeper.cli"/>
-      <plugin id="ru.taximaxim.codekeeper.mainapp"/>
    </plugins>
 
+   <features>
+      <feature id="org.eclipse.platform"/>
+      <feature id="org.eclipse.egit" installMode="root"/>
+      <feature id="org.eclipse.epp.mpc" installMode="root"/>
+      <feature id="ru.taximaxim.codekeeper.feature"/>
+   </features>
+
    <configurations>
-      <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="0" />
+      <plugin id="org.apache.felix.scr" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
-      <property name="eclipse.log.level" value="INFO" />
-      <property name="osgi.instance.area" value="@user.home/.pgcodekeeper-cli" />
+      <plugin id="org.eclipse.equinox.event" autoStart="true" startLevel="3" />
+      <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
    </configurations>
+
+   <repositories>
+      <repository location="https://download.eclipse.org/releases/latest/" enabled="true" />
+      <repository location="https://pgcodekeeper.org/update/" enabled="true" />
+      <repository location="http://download.eclipse.org/egit/updates/" enabled="true" />
+   </repositories>
 
    <preferencesInfo>
       <targetfile overwrite="false"/>
    </preferencesInfo>
+
+   <cssInfo>
+   </cssInfo>
 
 </product>

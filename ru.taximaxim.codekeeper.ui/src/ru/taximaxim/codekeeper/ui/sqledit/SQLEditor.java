@@ -18,6 +18,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ResourceBundle;
+import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -241,9 +242,8 @@ implements IResourceChangeListener, ITextErrorReporter {
 
     public void setLineBackground() {
         // TODO who deletes stale annotations after editor refresh?
-        List<PgObjLocation> refs = getReferences();
         IAnnotationModel model = getSourceViewer().getAnnotationModel();
-        for (PgObjLocation loc : refs) {
+        for (PgObjLocation loc : getReferences()) {
             if (loc.isDanger()) {
                 model.addAnnotation(new Annotation(MARKER.DANGER_ANNOTATION, false, loc.getWarningText()),
                         new Position(loc.getOffset(), loc.getObjLength()));
@@ -251,7 +251,7 @@ implements IResourceChangeListener, ITextErrorReporter {
         }
     }
 
-    private List<PgObjLocation> getReferences() {
+    private Set<PgObjLocation> getReferences() {
         return getParser().getObjsForEditor(getEditorInput());
     }
 

@@ -32,6 +32,7 @@ public class DbUpdateProperties extends PropertyPage {
     private Button btnCheckFuncBodies;
     private Button btnAlterColUsingExpr;
     private Button btnCreateIdxConcurrent;
+    private Button btnScriptFromSelObjs;
 
     private IEclipsePreferences prefs;
 
@@ -63,6 +64,7 @@ public class DbUpdateProperties extends PropertyPage {
                 btnCheckFuncBodies.setEnabled(btnEnableProjPref.getSelection());
                 btnAlterColUsingExpr.setEnabled(btnEnableProjPref.getSelection());
                 btnCreateIdxConcurrent.setEnabled(btnEnableProjPref.getSelection());
+                btnScriptFromSelObjs.setEnabled(btnEnableProjPref.getSelection());
             }
         });
 
@@ -102,6 +104,15 @@ public class DbUpdateProperties extends PropertyPage {
                 .PRINT_INDEX_WITH_CONCURRENTLY, false));
         btnCreateIdxConcurrent.setEnabled(overridePref);
 
+        btnScriptFromSelObjs = new Button(panel, SWT.CHECK);
+        btnScriptFromSelObjs.setText(Messages.DbUpdatePrefPage_script_from_selected_objs);
+        gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
+        gd.horizontalIndent = 10;
+        btnScriptFromSelObjs.setLayoutData(gd);
+        btnScriptFromSelObjs.setSelection(prefs.getBoolean(DB_UPDATE_PREF
+                .SCRIPT_FROM_SELECTED_OBJS, false));
+        btnScriptFromSelObjs.setEnabled(overridePref);
+
         return panel;
     }
 
@@ -113,6 +124,7 @@ public class DbUpdateProperties extends PropertyPage {
         setDefault(mainPS, btnCheckFuncBodies, DB_UPDATE_PREF.CHECK_FUNCTION_BODIES);
         setDefault(mainPS, btnAlterColUsingExpr, DB_UPDATE_PREF.USING_ON_OFF);
         setDefault(mainPS, btnCreateIdxConcurrent, DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY);
+        setDefault(mainPS, btnScriptFromSelObjs, DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS);
         try {
             fillPrefs();
         } catch (BackingStoreException e) {
@@ -148,6 +160,7 @@ public class DbUpdateProperties extends PropertyPage {
         prefs.putBoolean(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES, btnCheckFuncBodies.getSelection());
         prefs.putBoolean(DB_UPDATE_PREF.USING_ON_OFF, btnAlterColUsingExpr.getSelection());
         prefs.putBoolean(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY, btnCreateIdxConcurrent.getSelection());
+        prefs.putBoolean(DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS, btnScriptFromSelObjs.getSelection());
         prefs.flush();
         setValid(true);
         setErrorMessage(null);

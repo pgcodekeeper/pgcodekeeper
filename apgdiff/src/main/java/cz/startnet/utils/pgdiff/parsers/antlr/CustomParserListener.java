@@ -52,7 +52,11 @@ public class CustomParserListener {
         } catch (InterruptedException ex) {
             throw new MonitorCancelledRuntimeException();
         } catch (Exception e) {
-            errors.add(handleParserContextException(e, filename, ctx));
+            if (ctx != null) {
+                errors.add(handleParserContextException(e, filename, ctx));
+            } else {
+                Log.log(Log.LOG_ERROR, "Statement context is missing", e);
+            }
         }
     }
 

@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -14,13 +15,14 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_assemblyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_schemaContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Ddl_clauseContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_alterContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_createContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Security_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Sql_clausesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.St_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Tsql_fileContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.AlterMsAuthorization;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsRule;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -74,10 +76,7 @@ implements TSqlContextProcessor {
     private void create(Schema_createContext ctx) {
         Create_assemblyContext ass = ctx.create_assembly();
         if (ass!= null && ass.owner_name != null) {
-            PgStatement st = ParserAbstract.getSafe(
-                    PgDatabase::getAssembly, db, ass.assembly_name, false);
-            String owner = ass.owner_name.getText();
-            overrides.computeIfAbsent(st, k -> new StatementOverride()).setOwner(owner);
+            computeOverride(PgDatabase::getAssembly, ass.assembly_name, ass.owner_name);
         }
     }
 
@@ -91,10 +90,20 @@ implements TSqlContextProcessor {
     private void batch(Batch_statementContext batch) {
         Create_schemaContext schema = batch.create_schema();
         if (schema != null && schema.owner_name != null) {
-            PgStatement st = ParserAbstract.getSafe(
-                    PgDatabase::getSchema, db, schema.schema_name, false);
-            String owner = schema.owner_name.getText();
-            overrides.computeIfAbsent(st, k -> new StatementOverride()).setOwner(owner);
+            computeOverride(PgDatabase::getSchema, schema.schema_name, schema.owner_name);
         }
+    }
+
+    private <R extends PgStatement> void computeOverride(
+            BiFunction<PgDatabase, String, R> getter, IdContext nameCtx, IdContext ownerCtx) {
+        String name = nameCtx.getText();
+        R statement = getter.apply(db, name);
+        if (statement == null) {
+            throw new UnresolvedReferenceException("Cannot find object in database: "
+                    + name, nameCtx.getStart());
+        }
+
+        String owner = ownerCtx.getText();
+        overrides.computeIfAbsent(statement, k -> new StatementOverride()).setOwner(owner);
     }
 }

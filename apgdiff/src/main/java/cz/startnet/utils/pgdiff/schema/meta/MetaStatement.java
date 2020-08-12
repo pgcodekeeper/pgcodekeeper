@@ -14,8 +14,6 @@ public class MetaStatement implements IStatement, Serializable {
     private final PgObjLocation object;
     private String comment = "";
 
-    private transient MetaStatement parent;
-
     public MetaStatement(PgObjLocation object) {
         this.object = object;
     }
@@ -26,6 +24,11 @@ public class MetaStatement implements IStatement, Serializable {
 
     @Override
     public String getName() {
+        return getBareName();
+    }
+
+    @Override
+    public final String getBareName() {
         return object.getObjName();
     }
 
@@ -42,31 +45,14 @@ public class MetaStatement implements IStatement, Serializable {
         return object;
     }
 
-    public void setParent(MetaStatement parent) {
-        this.parent = parent;
-    }
-
     @Override
     public MetaStatement getParent() {
-        return parent;
-    }
-
-    public void addChild(MetaStatement st) {
-        // subclasses may override if needed
-    }
-
-    public MetaStatement getChild(String name, DbObjType type) {
-        // subclasses may override if needed
-        return null;
+        throw new IllegalStateException("Unsupported operation");
     }
 
     @Override
     public String getQualifiedName() {
         return getGenericColumn().getQualifiedName();
-    }
-
-    public MetaStatement getCopy() {
-        return new MetaStatement(object);
     }
 
     @Override

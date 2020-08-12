@@ -11,7 +11,6 @@ import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -50,6 +49,8 @@ import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgOperator;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.MS_WORK_DIR_NAMES;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
@@ -279,14 +280,9 @@ public abstract class ParserAbstract {
         return getSafe(getter, container, ctx.getText(), ctx.start);
     }
 
-    public static <T extends IStatement, R extends IStatement> R getSafe(BiFunction<T, String, R> getter,
-            T container, ParserRuleContext ctx, boolean refMode) {
-        return getSafe(getter, container, ctx.getText(), ctx.getStart(), refMode);
-    }
-
-    public static <T extends IStatement, R extends IStatement> R getSafe(BiFunction<T, String, R> getter,
-            T container, String name, Token errToken, boolean refMode) {
-        if (refMode) {
+    public <T extends IStatement, R extends IStatement> R getSafe(BiFunction<T, String, R> getter,
+            T container, String name, Token errToken) {
+        if (isRefMode()) {
             return null;
         }
         R statement = getter.apply(container, name);
@@ -294,12 +290,10 @@ public abstract class ParserAbstract {
             throw new UnresolvedReferenceException("Cannot find object in database: "
                     + name, errToken);
         }
-        return statement;
-    }
 
-    public <T extends IStatement, R extends IStatement> R getSafe(
-            BiFunction<T, String, R> getter, T container, String name, Token errToken) {
-        return getSafe(getter, container, name, errToken, refMode);
+        checkLocation((PgStatement) statement, errToken);
+
+        return statement;
     }
 
     protected void addSafe(PgStatement parent, PgStatement child,
@@ -313,17 +307,16 @@ public abstract class ParserAbstract {
         }
 
         // TODO move to beginning of the method later
-        // TODO add to alter statements
         checkLocation(child, QNameParser.getFirstNameCtx(ids).getStart());
     }
 
     private void checkLocation(PgStatement statement, Token errToken) {
-        if (isRefMode()) {
+        if (isRefMode() || fileName == null) {
             return;
         }
 
         String filePath = ModelExporter.getRelativeFilePath(statement).toString();
-        if (!fileName.endsWith(filePath) && isInProject(statement.isPostgres())) {
+        if (!PgDiffUtils.endsWithIgnoreCase(fileName, filePath) && isInProject(statement.isPostgres())) {
             throw new UnresolvedReferenceException(
                     MessageFormat.format(LOCATION_ERROR, statement.getBareName(), filePath),
                     errToken);
@@ -331,31 +324,32 @@ public abstract class ParserAbstract {
     }
 
     private boolean isInProject(boolean isPostgres) {
-        // exclude external directories
-        Stream<String> dirs;
+        // collect working directories
+        List<String> dirs;
         if (isPostgres) {
             dirs = Arrays.stream(ApgdiffConsts.WORK_DIR_NAMES.values())
-                    .map(e -> '/' + e.name() + '/');
+                    .map(WORK_DIR_NAMES::name).collect(Collectors.toList());
         } else {
             dirs = Arrays.stream(ApgdiffConsts.MS_WORK_DIR_NAMES.values())
-                    .map(e -> '/' + e.getDirName() + '/');
+                    .map(MS_WORK_DIR_NAMES::getDirName).collect(Collectors.toList());
         }
 
-        if (dirs.noneMatch(fileName::contains)) {
-            return false;
-        }
-
-        // search project marker
         Path parent = Paths.get(fileName).getParent();
-        while (parent != null) {
-            if (Files.exists(parent.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER))) {
-                return true;
+        while (true) {
+            Path folder = parent.getFileName();
+            parent = parent.getParent();
+
+            // file name for root is null
+            if (folder == null || parent == null) {
+                return false;
             }
 
-            parent = parent.getParent();
+            // if we find the project directory, then we check the marker at the level above
+            if (dirs.contains(folder.toString())
+                    && Files.exists(parent.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER))) {
+                return true;
+            }
         }
-
-        return false;
     }
 
     private PgObjLocation getLocation(List<? extends ParserRuleContext> ids,
@@ -467,7 +461,7 @@ public abstract class ParserAbstract {
                     QNameParser.getFirstNameCtx(ids).start);
         }
 
-        AbstractSchema schema = getSafe(PgDatabase::getSchema, db, schemaCtx);
+        AbstractSchema schema = db.getSchema(schemaCtx.getText());
 
         if (schema != null || refMode) {
             return schema;

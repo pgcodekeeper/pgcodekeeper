@@ -26,6 +26,8 @@ COMMENT ON TEXT SEARCH DICTIONARY public.test_dictionary IS 'test_dictionary';
 
 COMMENT ON TEXT SEARCH CONFIGURATION public.test_config IS 'test_config';
 
+COMMENT ON FOREIGN TABLE public.test_ft IS 'test foreign table';
+
 COMMENT ON TABLE public.test IS 'test table';
 
 COMMENT ON COLUMN public.test.id IS 'id column';
@@ -39,6 +41,8 @@ COMMENT ON PROCEDURE public.test_proc(arg integer) IS 'test procedure';
 COMMENT ON CONSTRAINT text_check ON public.test IS 'text check';
 
 COMMENT ON CONSTRAINT test_pkey ON public.test IS 'primary key';
+
+COMMENT ON MATERIALIZED VIEW public.test_mat_view IS 'test mat view';
 
 COMMENT ON VIEW public.test_view IS 'test view';
 

@@ -148,6 +148,10 @@ public class PgObjLocation extends ContextLocation {
         return obj == null ? null : obj.schema;
     }
 
+    public String getTable() {
+        return obj == null ? null : obj.table;
+    }
+
     public DbObjType getType() {
         return obj == null ? null : obj.type;
     }

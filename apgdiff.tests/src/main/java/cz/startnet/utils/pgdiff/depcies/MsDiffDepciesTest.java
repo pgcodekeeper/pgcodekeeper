@@ -27,15 +27,21 @@ public class MsDiffDepciesTest {
     public static Iterable<Object[]> parameters() {
         return ApgdiffTestUtils.getParameters(new Object[][] {
             {"empty_usr"},
-            // создаются две функции f1 и f2, в f2 через 'EXECUTE' вызвается f1,
-            // пользователь выбирает функцию f2
+            // f1 <- f2
+            // added: f1, f2
+            // user: f2
             {"add_ms_func_exec_usr_f2", true},
-            // создаются процедура p1 и функция f2, в f2 через 'EXECUTE' вызвается p1,
-            // пользователь выбирает функцию f2
+            // p1 <- f2
+            // added: p1, f2
+            // user: f2
             {"add_ms_proc_exec_usr_f2", true},
+            // f1 <- f2 <- f3
+            // changed: f1, f2, f3
+            // user: f2
+            {"change_ms_func_arg_usr_f2", true},
             // t1 <- v1 <- v2 <- v3 <- v4
-            // изменяются t1, v1, v2, v4
-            // пользователь выбирает t1
+            // changed: t1, v1, v2, v4
+            // user: t1
             {"change_ms_table_usr_t1" }
         });
     }

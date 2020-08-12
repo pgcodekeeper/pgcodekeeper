@@ -5,12 +5,12 @@
     <parent>
         <groupId>ru.taximaxim.codeKeeper</groupId>
         <artifactId>ru.taximaxim.codeKeeper</artifactId>
-        <version>${global.version}</version>
+        <version>${revision}</version>
         <relativePath>../ru.taximaxim.codeKeeper/</relativePath>
     </parent>
   
     <groupId>ru.taximaxim.codeKeeper</groupId>
     <artifactId>ru.taximaxim.codekeeper.feature</artifactId>
-    <version>5.10.2-SNAPSHOT</version>
+    <version>5.10.5-SNAPSHOT</version>
     <packaging>eclipse-feature</packaging>
 </project>
