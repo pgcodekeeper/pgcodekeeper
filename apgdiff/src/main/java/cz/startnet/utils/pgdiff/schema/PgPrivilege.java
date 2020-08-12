@@ -61,10 +61,15 @@ public class PgPrivilege implements IHashable {
             return sb;
         }
 
-        sb.append('\n');
-        for (PgPrivilege priv : privileges) {
-            sb.append('\n').append(priv.getCreationSQL()).append(isPostgres ? ';' : "\nGO");
+        if (sb.length() != 0) {
+            sb.append("\n\n");
         }
+
+        for (PgPrivilege priv : privileges) {
+            sb.append(priv.getCreationSQL()).append(isPostgres ? ';' : "\nGO").append('\n');
+        }
+
+        sb.setLength(sb.length() - 1);
 
         return sb;
     }
@@ -90,7 +95,7 @@ public class PgPrivilege implements IHashable {
         StringBuilder sbName = new StringBuilder()
                 .append(type.name())
                 .append(' ');
-        if (type == DbObjType.FUNCTION || type == DbObjType.PROCEDURE) {
+        if (newObj instanceof AbstractPgFunction) {
             AbstractPgFunction func = (AbstractPgFunction) newObj;
             sbName.append(PgDiffUtils.getQuotedName(func.getParent().getName()))
             .append('.');
