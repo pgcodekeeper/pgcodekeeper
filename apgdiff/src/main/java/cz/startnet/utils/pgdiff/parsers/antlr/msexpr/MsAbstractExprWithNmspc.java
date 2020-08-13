@@ -52,8 +52,8 @@ public abstract class MsAbstractExprWithNmspc<T> extends MsAbstractExpr {
     }
 
     @Override
-    protected MsAbstractExprWithNmspc<?> findCte(String cteName) {
-        return cte.contains(cteName) ? this : super.findCte(cteName);
+    protected boolean hasCte(String cteName) {
+        return cte.contains(cteName) || super.hasCte(cteName);
     }
 
     @Override
