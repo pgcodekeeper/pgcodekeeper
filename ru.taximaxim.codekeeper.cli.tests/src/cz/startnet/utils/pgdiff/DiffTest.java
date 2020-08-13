@@ -13,8 +13,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Objects;
 
 import org.junit.After;
 import org.junit.Test;
@@ -22,6 +21,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.cli.Main;
 
@@ -29,8 +29,8 @@ import ru.taximaxim.codekeeper.cli.Main;
 public class DiffTest {
 
     @Parameters
-    public static Iterable<ArgumentsProvider[]> parameters() {
-        List<ArgumentsProvider[]> p = Arrays.asList(new ArgumentsProvider[][] {
+    public static Iterable<Object[]> parameters() {
+        return ApgdiffTestUtils.getParameters(new Object[][] {
             {new SourceTargerArgumentsProvider()},
             {new AddTestArgumentsProvider()},
             {new ModifyTestArgumentsProvider()},
@@ -43,8 +43,6 @@ public class DiffTest {
             {new LibrariesArgumentsProvider()},
             {new SelectedOnlyArgumentsProvider()},
         });
-
-        return p.stream()::iterator;
     }
 
     private final ArgumentsProvider args;
@@ -83,25 +81,23 @@ public class DiffTest {
     }
 
     private boolean filesEqualIgnoreNewLines(File f1, File f2) throws IOException {
-        try (InputStreamReader isr1 = new InputStreamReader(new FileInputStream(f1), "UTF-8");
+        try (InputStreamReader isr1 = new InputStreamReader(new FileInputStream(f1), StandardCharsets.UTF_8);
                 BufferedReader reader1 = new BufferedReader(isr1);
-                InputStreamReader isr2 = new InputStreamReader(new FileInputStream(f2), "UTF-8");
+                InputStreamReader isr2 = new InputStreamReader(new FileInputStream(f2), StandardCharsets.UTF_8);
                 BufferedReader reader2 = new BufferedReader(isr2);) {
 
-            String line1;
-            String line2;
-            while ((line1 = getNextLine(reader1)) != null & (line2 = getNextLine(reader2)) != null) {
-                if (!line1.equals(line2)){
+            while (true) {
+                String line1 = getNextLine(reader1);
+                String line2 = getNextLine(reader2);
+                if (!Objects.equals(line1, line2)) {
                     return false;
                 }
-            }
 
-            if (line1 == line2){
-                return true;
+                if (line1 == null || line2 == null) {
+                    return line1 == line2;
+                }
             }
         }
-
-        return true;
     }
 
     /**

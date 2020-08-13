@@ -3,8 +3,10 @@ package ru.taximaxim.codekeeper.apgdiff;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 
@@ -66,20 +68,19 @@ public final class ApgdiffTestUtils {
 
     public static void compareResult(String script, String template,
             Class<?> clazz) throws IOException {
-        StringBuilder sbExpDiff;
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                clazz.getResourceAsStream(template + FILES_POSTFIX.DIFF_SQL)))) {
-            sbExpDiff = new StringBuilder(1024);
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                sbExpDiff.append(line);
-                sbExpDiff.append('\n');
-            }
-        }
+        String sbExpDiff = getResourceFileAsString(template + FILES_POSTFIX.DIFF_SQL, clazz);
 
         Assert.assertEquals("File name template: " + template,
-                sbExpDiff.toString().trim(), script.trim());
+                sbExpDiff.trim(), script.trim());
+    }
+
+    public static String getResourceFileAsString(String resource, Class<?> clazz)
+            throws IOException {
+        try (InputStreamReader isr = new InputStreamReader(
+                clazz.getResourceAsStream(resource), StandardCharsets.UTF_8);
+                BufferedReader reader = new BufferedReader(isr)) {
+            return reader.lines().collect(Collectors.joining(System.lineSeparator()));
+        }
     }
 
     public static Iterable<Object[]> getParameters(Object[][] objects) {
