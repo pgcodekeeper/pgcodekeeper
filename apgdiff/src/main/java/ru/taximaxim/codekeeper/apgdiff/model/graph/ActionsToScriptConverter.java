@@ -13,18 +13,20 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.NotAllowedObjectException;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
-import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import cz.startnet.utils.pgdiff.schema.AbstractSequence;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
+import cz.startnet.utils.pgdiff.schema.MsColumn;
+import cz.startnet.utils.pgdiff.schema.MsTable;
 import cz.startnet.utils.pgdiff.schema.MsView;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
@@ -40,7 +42,8 @@ public class ActionsToScriptConverter {
     private static final String CREATE_COMMENT = "-- DEPCY: This {0} is a dependency of {1}: {2}";
     private static final String HIDDEN_OBJECT = "-- HIDDEN: Object {0} of type {1}";
 
-    private static final String RENAME_OBJECT = "ALTER {0} {1} RENAME TO {2};";
+    private static final String RENAME_PG_OBJECT = "ALTER {0} {1} RENAME TO {2};";
+    private static final String RENAME_MS_OBJECT = "EXEC sp_rename {0}, {1}\nGO";
 
     private final Set<ActionContainer> actions;
     private final Set<PgSequence> sequencesOwnedBy = new LinkedHashSet<>();
@@ -67,16 +70,20 @@ public class ActionsToScriptConverter {
      * @param selected коллекция выбранных элементов в панели сравнения
      */
     public void fillScript(PgDiffScript script, List<TreeElement> selected) {
-        BiConsumer<PgStatement, String> addRenameToScript = null;
         Map<String, AbstractTable> tmpTblsMapping = null;
         Map<String, Set<String>> tblIdentityColsMapping = null;
+        BiFunction<PgStatement, String, String> renameCommand = null;
         if (arguments.isDataMovementMode()) {
-            addRenameToScript = (st, newName) -> script.addStatement(
-                    MessageFormat.format(RENAME_OBJECT, st.getStatementType(),
-                            st.getQualifiedName(), newName));
             tmpTblsMapping = new HashMap<>();
             tblIdentityColsMapping = new HashMap<>();
+            renameCommand = (st, newName) -> arguments.isMsSql() ?
+                    MessageFormat.format(RENAME_MS_OBJECT,
+                            PgDiffUtils.quoteString(st.getQualifiedName()),
+                            PgDiffUtils.quoteString(newName))
+                    : MessageFormat.format(RENAME_PG_OBJECT, st.getStatementType(),
+                            st.getQualifiedName(), newName);
         }
+
         Collection<DbObjType> allowedTypes = arguments.getAllowedTypes();
         Set<PgStatement> refreshed = new HashSet<>(toRefresh.size());
         for (ActionContainer action : actions) {
@@ -122,14 +129,29 @@ public class ActionsToScriptConverter {
                                 .replace("-", "");
                         AbstractTable oldTbl = (AbstractTable) oldObj;
                         String tmpTblName = oldTbl.getName() + tmpSuffix;
-                        addRenameToScript.accept(oldTbl, tmpTblName);
+
+                        script.addStatement(renameCommand.apply(oldTbl, tmpTblName));
                         tmpTblsMapping.put(tmpTblName, oldTbl);
 
-                        if (oldTbl instanceof AbstractPgTable) {
+                        if (arguments.isMsSql()) {
+                            MsTable mT = (MsTable) oldTbl;
+                            for (AbstractColumn cl : mT.getColumns()) {
+                                MsColumn mCol = (MsColumn) cl;
+                                String defName = mCol.getDefaultName();
+                                if (defName != null) {
+                                    script.addStatement("ALTER TABLE "
+                                            + MsDiffUtils.quoteName(oldTbl.getSchemaName())
+                                            + '.' + MsDiffUtils.quoteName(tmpTblName)
+                                            + " DROP CONSTRAINT " + MsDiffUtils.quoteName(defName)
+                                            + "\nGO");
+                                }
+                            }
+                        } else {
                             for (AbstractColumn col : oldTbl.getColumns()) {
                                 AbstractSequence seq = ((PgColumn) col).getSequence();
                                 if (seq != null) {
-                                    addRenameToScript.accept(seq, seq.getName() + tmpSuffix);
+                                    script.addStatement(renameCommand
+                                            .apply(seq, seq.getName() + tmpSuffix));
                                     tblIdentityColsMapping.computeIfAbsent(
                                             oldTbl.getQualifiedName(),
                                             k -> new LinkedHashSet<>()).add(col.getName());
@@ -178,7 +200,10 @@ public class ActionsToScriptConverter {
             for (Entry<String, AbstractTable> tmpTblMapping : tmpTblsMapping.entrySet()) {
                 AbstractTable oldTbl = tmpTblMapping.getValue();
                 String oldTblQName = oldTbl.getQualifiedName();
-                String tmpTblQName = oldTbl.getSchemaName() + '.' + tmpTblMapping.getKey();
+                String tmpTblQName = arguments.isMsSql() ? String.join(".",
+                        MsDiffUtils.quoteName(oldTbl.getSchemaName()),
+                        MsDiffUtils.quoteName(tmpTblMapping.getKey()))
+                        : String.join(".", oldTbl.getSchemaName(), tmpTblMapping.getKey());
                 String cols = oldTbl.getColumns().stream().map(AbstractColumn::getName)
                         .collect(Collectors.joining(", "));
 
@@ -188,7 +213,7 @@ public class ActionsToScriptConverter {
                 .append(tmpTblQName).append(';').append("\n\nDROP TABLE ")
                 .append(tmpTblQName).append(';');
 
-                if (oldTbl instanceof AbstractPgTable) {
+                if (arguments.isMsSql()) {
                     Set<String> identityCols = tblIdentityColsMapping.get(oldTblQName);
                     if (identityCols != null) {
                         for (String colName : identityCols) {
