@@ -213,7 +213,7 @@ public class ActionsToScriptConverter {
                 .append(tmpTblQName).append(';').append("\n\nDROP TABLE ")
                 .append(tmpTblQName).append(';');
 
-                if (arguments.isMsSql()) {
+                if (!arguments.isMsSql()) {
                     Set<String> identityCols = tblIdentityColsMapping.get(oldTblQName);
                     if (identityCols != null) {
                         for (String colName : identityCols) {
