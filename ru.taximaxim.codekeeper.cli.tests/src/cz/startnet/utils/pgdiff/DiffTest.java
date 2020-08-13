@@ -45,16 +45,18 @@ public class DiffTest {
             {new SelectedOnlyArgumentsProvider()},
             {new MoveDataArgumentsProvider()},
             {new MoveDataIdentityArgumentsProvider()},
+            {new MoveDataMSArgumentsProvider()},
         });
 
         return p.stream()::iterator;
     }
 
-    // Used in tests with randomly generated part as replacement for random part.
     private static final String REPLACEMENT_FOR_RANDOM = "randomly_generated_part";
 
-    // The command that contains a randomly generated part on its line.
-    private static final String COMMAND_FOR_SEARCH = "ALTER TABLE public.tbl RENAME TO tbl_";
+    // Beginning of commands that contain a randomly generated part in their lines.
+    // Used in tests with a randomly generated part to find them.
+    private static final String COMMAND_WITH_RANDOM_PG = "ALTER TABLE public.tbl RENAME TO tbl_";
+    private static final String COMMAND_WITH_RANDOM_MS = "EXEC sp_rename '[dbo].[tbl]', 'tbl_";
 
     private final ArgumentsProvider args;
 
@@ -80,10 +82,11 @@ public class DiffTest {
         assertFalse(name + " - Resulting file is a directory: "
                 + resFile.getAbsolutePath(), resFile.isDirectory());
         if (!filesEqualIgnoreNewLines(predefined, resFile)) {
-            String actual = new String(Files.readAllBytes(resFile.toPath()), StandardCharsets.UTF_8);
             assertEquals(name + " - Predefined and resulting script differ",
-                    new String(Files.readAllBytes(predefined.toPath()), StandardCharsets.UTF_8),
-                    isTestWithRandomPart() ? replaceRandomPart(actual) : actual);
+                    new String(Files.readAllBytes(predefined.toPath()),
+                            StandardCharsets.UTF_8),
+                    checkForRandomParts(new String(Files.readAllBytes(resFile.toPath()),
+                            StandardCharsets.UTF_8)));
         }
     }
 
@@ -92,19 +95,25 @@ public class DiffTest {
         args.close();
     }
 
-    private boolean isTestWithRandomPart() {
-        return args instanceof MoveDataArgumentsProvider
-                || args instanceof MoveDataIdentityArgumentsProvider;
+    private String checkForRandomParts(String actualScript) {
+        if (args instanceof MoveDataArgumentsProvider
+                || args instanceof MoveDataIdentityArgumentsProvider) {
+            return replaceRandomParts(actualScript, COMMAND_WITH_RANDOM_PG);
+        } else if (args instanceof MoveDataMSArgumentsProvider) {
+            return replaceRandomParts(actualScript, COMMAND_WITH_RANDOM_MS);
+        }
+        return actualScript;
     }
 
-    private String replaceRandomPart(String script) {
-        return script.replace(Arrays.stream(script.split("\\r?\\n"))
-                .filter(str -> str.contains(COMMAND_FOR_SEARCH)).findAny()
+    private String replaceRandomParts(String script, String strWithRandomPart) {
+        String auxRandomStr = Arrays.stream(script.split("\\r?\\n"))
+                .filter(str -> str.contains(strWithRandomPart)).findAny()
                 .orElseThrow(() -> new NoSuchElementException(
                         "The command that contains a randomly generated part on "
                                 + "its line could not be found."))
-                .replace(COMMAND_FOR_SEARCH, "").replace(";", "").trim(),
-                REPLACEMENT_FOR_RANDOM);
+                .replace(strWithRandomPart, "").trim();
+        String randomPart = auxRandomStr.substring(0, auxRandomStr.length() - 1);
+        return script.replace(randomPart, REPLACEMENT_FOR_RANDOM);
     }
 
     private boolean filesEqualIgnoreNewLines(File f1, File f2) throws IOException {
@@ -372,8 +381,8 @@ class SelectedOnlyArgumentsProvider extends ArgumentsProvider {
 }
 
 /**
- * {@link ArgumentsProvider} implementation for data movement
- * (without identity columns) test
+ * {@link ArgumentsProvider} implementation for data movement test in PG
+ * (without identity columns)
  */
 class MoveDataArgumentsProvider extends ArgumentsProvider {
 
@@ -392,8 +401,8 @@ class MoveDataArgumentsProvider extends ArgumentsProvider {
 }
 
 /**
- * {@link ArgumentsProvider} implementation for data movement
- * (with identity columns) test
+ * {@link ArgumentsProvider} implementation for data movement test in PG
+ * (with identity columns)
  */
 class MoveDataIdentityArgumentsProvider extends ArgumentsProvider {
 
@@ -406,6 +415,26 @@ class MoveDataIdentityArgumentsProvider extends ArgumentsProvider {
         File fNew = getFile(FILES_POSTFIX.NEW_SQL);
         File fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
         return new String[]{"--move-data", "-o",
+                getDiffResultFile().getAbsolutePath(),
+                fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation for data movement test in MS
+ *  (without identity columns)
+ */
+class MoveDataMSArgumentsProvider extends ArgumentsProvider {
+
+    public MoveDataMSArgumentsProvider() {
+        super("move_data_ms");
+    }
+
+    @Override
+    protected String[] args() throws URISyntaxException, IOException {
+        File fNew = getFile(FILES_POSTFIX.NEW_SQL);
+        File fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
+        return new String[]{"--move-data", "--ms-sql", "-o",
                 getDiffResultFile().getAbsolutePath(),
                 fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
     }
