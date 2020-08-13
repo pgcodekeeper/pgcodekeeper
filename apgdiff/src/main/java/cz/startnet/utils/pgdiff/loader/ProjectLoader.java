@@ -108,17 +108,19 @@ public class ProjectLoader extends DatabaseLoader {
 
         File schemasCommonDir = new File(dir, WORK_DIR_NAMES.SCHEMA.name());
         // skip walking SCHEMA folder if it does not exist
-        if (schemasCommonDir.isDirectory()) {
-            // new schemas + content
-            // step 2
-            // read out schemas names, and work in loop on each
-            try (Stream<Path> schemas = Files.list(schemasCommonDir.toPath())) {
-                for (Path schemaDir : PgDiffUtils.sIter(schemas)) {
-                    if (Files.isDirectory(schemaDir)) {
-                        loadSubdir(schemasCommonDir, schemaDir.getFileName().toString(), db);
-                        for (String dirSub : DIR_LOAD_ORDER) {
-                            loadSubdir(schemaDir.toFile(), dirSub, db);
-                        }
+        if (!schemasCommonDir.isDirectory()) {
+            return;
+        }
+
+        // new schemas + content
+        // step 2
+        // read out schemas names, and work in loop on each
+        try (Stream<Path> schemas = Files.list(schemasCommonDir.toPath())) {
+            for (Path schemaDir : PgDiffUtils.sIter(schemas)) {
+                if (Files.isDirectory(schemaDir)) {
+                    loadSubdir(schemasCommonDir, schemaDir.getFileName().toString(), db);
+                    for (String dirSub : DIR_LOAD_ORDER) {
+                        loadSubdir(schemaDir.toFile(), dirSub, db);
                     }
                 }
             }

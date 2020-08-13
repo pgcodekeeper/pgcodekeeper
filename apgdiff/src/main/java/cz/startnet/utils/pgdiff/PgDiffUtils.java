@@ -62,10 +62,19 @@ public final class PgDiffUtils {
     }
 
     public static boolean isValidIdChar(char c, boolean allowCaps, boolean allowDigits) {
-        return (c >= 'a' && c <= 'z') ||
-                (allowCaps && c >= 'A' && c <= 'Z') ||
-                (allowDigits && c >= '0' && c <= '9') ||
-                c == '_';
+        if (c >= 'a' && c <= 'z') {
+            return true;
+        }
+
+        if (allowCaps && c >= 'A' && c <= 'Z') {
+            return true;
+        }
+
+        if (allowDigits && c >= '0' && c <= '9') {
+            return true;
+        }
+
+        return c == '_';
     }
 
     /**
@@ -107,30 +116,24 @@ public final class PgDiffUtils {
         return s.substring(start, s.length() - 1).replace("''", "'");
     }
 
-    public static byte[] getHash(String s, String instance) {
-        try {
-            return MessageDigest.getInstance(instance)
-                    .digest(s.getBytes(StandardCharsets.UTF_8));
-        } catch (NoSuchAlgorithmException ex) {
-            Log.log(ex);
-            return null;
-        }
+    public static byte[] getHash(String s, String instance) throws NoSuchAlgorithmException {
+        return MessageDigest.getInstance(instance)
+                .digest(s.getBytes(StandardCharsets.UTF_8));
     }
 
-
     public static String hash (String s, String instance) {
-        byte[] hash = getHash(s, instance);
-        if (hash == null) {
+        try {
+            byte[] hash = getHash(s, instance);
+            StringBuilder sb = new StringBuilder(2 * hash.length);
+            for (byte b : hash) {
+                sb.append(HEX_CHARS[(b & 0xff) >> 4]);
+                sb.append(HEX_CHARS[(b & 0x0f)]);
+            }
+            return sb.toString();
+        } catch (NoSuchAlgorithmException e) {
+            Log.log(e);
             return instance +"_ERROR_" + new Random().nextInt();
         }
-
-        StringBuilder sb = new StringBuilder(2 * hash.length);
-        for (byte b : hash) {
-            sb.append(HEX_CHARS[(b & 0xff) >> 4]);
-            sb.append(HEX_CHARS[(b & 0x0f)]);
-        }
-        return sb.toString();
-
     }
 
     /**
@@ -143,14 +146,7 @@ public final class PgDiffUtils {
     /**
      * @return lowercase hex SHA-256 for UTF-8 representation of given string.
      */
-    public static byte[] sha(String s) {
-        return getHash(s, "SHA-256");
-    }
-
-    /**
-     * @return lowercase hex SHA-256 for UTF-8 representation of given string.
-     */
-    public static String shaString(String s) {
+    public static String sha(String s) {
         return hash(s, "SHA-256");
     }
 
