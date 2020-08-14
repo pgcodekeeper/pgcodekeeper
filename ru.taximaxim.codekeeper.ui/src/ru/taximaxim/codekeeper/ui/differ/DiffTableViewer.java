@@ -675,10 +675,10 @@ public class DiffTableViewer extends Composite {
     private void updateColumnsWidth() {
         PixelConverter pc = new PixelConverter(viewer.getControl());
         columnCheck.getColumn().setWidth(viewOnly ? 0 : pc.convertWidthInCharsToPixels(10));
-        columnType.getColumn().setWidth(pc.convertWidthInCharsToPixels(25));
-        columnChange.getColumn().setWidth(pc.convertWidthInCharsToPixels(35));
-        // name column will take half of the space
-        int width = (int)(viewer.getControl().getSize().x * 0.4f);
+        columnType.getColumn().setWidth(pc.convertWidthInCharsToPixels(19));
+        columnChange.getColumn().setWidth(pc.convertWidthInCharsToPixels(30));
+        // name column will take third of the space
+        int width = (int)(viewer.getControl().getSize().x * 0.35f);
         columnName.getColumn().setWidth(Math.max(width, 200));
         columnLocation.getColumn().setWidth(pc.convertWidthInCharsToPixels(20));
         columnGitUser.getColumn().setWidth(showGitUser && !viewOnly ? pc.convertWidthInCharsToPixels(20) : 0);
