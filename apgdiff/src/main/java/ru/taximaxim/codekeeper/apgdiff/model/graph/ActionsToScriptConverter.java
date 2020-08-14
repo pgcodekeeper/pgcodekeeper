@@ -135,8 +135,13 @@ public class ActionsToScriptConverter {
 
                         if (arguments.isMsSql()) {
                             MsTable mT = (MsTable) oldTbl;
-                            for (AbstractColumn cl : mT.getColumns()) {
-                                MsColumn mCol = (MsColumn) cl;
+                            for (AbstractColumn col : mT.getColumns()) {
+                                MsColumn mCol = (MsColumn) col;
+                                if (mCol.isIdentity()) {
+                                    tblIdentityColsMapping.computeIfAbsent(
+                                            oldTbl.getQualifiedName(),
+                                            k -> new LinkedHashSet<>()).add(col.getName());
+                                }
                                 String defName = mCol.getDefaultName();
                                 if (defName != null) {
                                     script.addStatement("ALTER TABLE "
@@ -208,10 +213,27 @@ public class ActionsToScriptConverter {
                         .collect(Collectors.joining(", "));
 
                 StringBuilder sb = new StringBuilder();
+
+                if (arguments.isMsSql()
+                        && tblIdentityColsMapping.containsKey(oldTblQName)) {
+                    // There can only be one IDENTITY column per table in MSSQL.
+                    sb.append("SET IDENTITY_INSERT ").append(oldTblQName)
+                    .append(" ON\nGO\n\n");
+                }
+
                 sb.append("INSERT INTO ").append(oldTblQName).append('(')
                 .append(cols).append(") SELECT ").append(cols).append(" FROM ")
-                .append(tmpTblQName).append(';').append("\n\nDROP TABLE ")
-                .append(tmpTblQName).append(';');
+                .append(tmpTblQName).append(arguments.isMsSql() ? "\nGO" : ';');
+
+                if (arguments.isMsSql()
+                        && tblIdentityColsMapping.containsKey(oldTblQName)) {
+                    // There can only be one IDENTITY column per table in MSSQL.
+                    sb.append("\n\nSET IDENTITY_INSERT ").append(oldTblQName)
+                    .append(" OFF\nGO");
+                }
+
+                sb.append("\n\nDROP TABLE ").append(tmpTblQName)
+                .append(arguments.isMsSql() ? "\nGO" : ';');
 
                 if (!arguments.isMsSql()) {
                     Set<String> identityCols = tblIdentityColsMapping.get(oldTblQName);
