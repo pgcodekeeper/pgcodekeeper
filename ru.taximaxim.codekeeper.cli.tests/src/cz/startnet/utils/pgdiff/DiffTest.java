@@ -46,6 +46,7 @@ public class DiffTest {
             {new MoveDataArgumentsProvider()},
             {new MoveDataIdentityArgumentsProvider()},
             {new MoveDataMSArgumentsProvider()},
+            {new MoveDataMSIdentityArgumentsProvider()},
         });
 
         return p.stream()::iterator;
@@ -99,7 +100,8 @@ public class DiffTest {
         if (args instanceof MoveDataArgumentsProvider
                 || args instanceof MoveDataIdentityArgumentsProvider) {
             return replaceRandomParts(actualScript, COMMAND_WITH_RANDOM_PG);
-        } else if (args instanceof MoveDataMSArgumentsProvider) {
+        } else if (args instanceof MoveDataMSArgumentsProvider
+                || args instanceof MoveDataMSIdentityArgumentsProvider) {
             return replaceRandomParts(actualScript, COMMAND_WITH_RANDOM_MS);
         }
         return actualScript;
@@ -428,6 +430,26 @@ class MoveDataMSArgumentsProvider extends ArgumentsProvider {
 
     public MoveDataMSArgumentsProvider() {
         super("move_data_ms");
+    }
+
+    @Override
+    protected String[] args() throws URISyntaxException, IOException {
+        File fNew = getFile(FILES_POSTFIX.NEW_SQL);
+        File fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
+        return new String[]{"--move-data", "--ms-sql", "-o",
+                getDiffResultFile().getAbsolutePath(),
+                fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation for data movement test in MS
+ * (with identity column)
+ */
+class MoveDataMSIdentityArgumentsProvider extends ArgumentsProvider {
+
+    public MoveDataMSIdentityArgumentsProvider() {
+        super("move_data_ms_identity");
     }
 
     @Override

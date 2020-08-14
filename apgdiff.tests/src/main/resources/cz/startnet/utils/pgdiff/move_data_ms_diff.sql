@@ -33,6 +33,8 @@ ALTER TABLE [dbo].[tbl]
 	ADD CONSTRAINT [PK_tbl] PRIMARY KEY CLUSTERED  ([c1]) ON [PRIMARY]
 GO
 
-INSERT INTO [dbo].[tbl](c1, c2, c3, c5, c6) SELECT c1, c2, c3, c5, c6 FROM [dbo].[tbl_randomly_generated_part];
+INSERT INTO [dbo].[tbl](c1, c2, c3, c5, c6) SELECT c1, c2, c3, c5, c6 FROM [dbo].[tbl_randomly_generated_part]
+GO
 
-DROP TABLE [dbo].[tbl_randomly_generated_part];
+DROP TABLE [dbo].[tbl_randomly_generated_part]
+GO
