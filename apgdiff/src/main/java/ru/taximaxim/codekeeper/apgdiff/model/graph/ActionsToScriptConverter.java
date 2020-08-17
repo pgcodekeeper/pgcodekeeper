@@ -13,7 +13,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -23,7 +22,6 @@ import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
-import cz.startnet.utils.pgdiff.schema.AbstractSequence;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.MsColumn;
 import cz.startnet.utils.pgdiff.schema.MsTable;
@@ -70,18 +68,15 @@ public class ActionsToScriptConverter {
      * @param selected коллекция выбранных элементов в панели сравнения
      */
     public void fillScript(PgDiffScript script, List<TreeElement> selected) {
+        // for storing pairs of temporary table name as key and table object
+        // with original name as key value
         Map<String, AbstractTable> tmpTblsMapping = null;
+        // for storing pairs of original table name as a key and a set of identity
+        // column names of that table as a value
         Map<String, Set<String>> tblIdentityColsMapping = null;
-        BiFunction<PgStatement, String, String> renameCommand = null;
         if (arguments.isDataMovementMode()) {
             tmpTblsMapping = new HashMap<>();
             tblIdentityColsMapping = new HashMap<>();
-            renameCommand = (st, newName) -> arguments.isMsSql() ?
-                    MessageFormat.format(RENAME_MS_OBJECT,
-                            PgDiffUtils.quoteString(st.getQualifiedName()),
-                            PgDiffUtils.quoteString(newName))
-                    : MessageFormat.format(RENAME_PG_OBJECT, st.getStatementType(),
-                            st.getQualifiedName(), newName);
         }
 
         Collection<DbObjType> allowedTypes = arguments.getAllowedTypes();
@@ -125,44 +120,8 @@ public class ActionsToScriptConverter {
                     }
                     if (arguments.isDataMovementMode()
                             && DbObjType.TABLE == oldObj.getStatementType()) {
-                        String tmpSuffix = '_' + UUID.randomUUID().toString()
-                                .replace("-", "");
-                        AbstractTable oldTbl = (AbstractTable) oldObj;
-                        String tmpTblName = oldTbl.getName() + tmpSuffix;
-
-                        script.addStatement(renameCommand.apply(oldTbl, tmpTblName));
-                        tmpTblsMapping.put(tmpTblName, oldTbl);
-
-                        if (arguments.isMsSql()) {
-                            MsTable mT = (MsTable) oldTbl;
-                            for (AbstractColumn col : mT.getColumns()) {
-                                MsColumn mCol = (MsColumn) col;
-                                if (mCol.isIdentity()) {
-                                    tblIdentityColsMapping.computeIfAbsent(
-                                            oldTbl.getQualifiedName(),
-                                            k -> new LinkedHashSet<>()).add(col.getName());
-                                }
-                                String defName = mCol.getDefaultName();
-                                if (defName != null) {
-                                    script.addStatement("ALTER TABLE "
-                                            + MsDiffUtils.quoteName(oldTbl.getSchemaName())
-                                            + '.' + MsDiffUtils.quoteName(tmpTblName)
-                                            + " DROP CONSTRAINT " + MsDiffUtils.quoteName(defName)
-                                            + "\nGO");
-                                }
-                            }
-                        } else {
-                            for (AbstractColumn col : oldTbl.getColumns()) {
-                                AbstractSequence seq = ((PgColumn) col).getSequence();
-                                if (seq != null) {
-                                    script.addStatement(renameCommand
-                                            .apply(seq, seq.getName() + tmpSuffix));
-                                    tblIdentityColsMapping.computeIfAbsent(
-                                            oldTbl.getQualifiedName(),
-                                            k -> new LinkedHashSet<>()).add(col.getName());
-                                }
-                            }
-                        }
+                        addCommandsForRenameTbl(script, oldObj, tmpTblsMapping,
+                                tblIdentityColsMapping);
                     } else {
                         script.addDrop(oldObj, null, oldObj.getDropSQL());
                     }
@@ -202,58 +161,7 @@ public class ActionsToScriptConverter {
         }
 
         if (arguments.isDataMovementMode()) {
-            for (Entry<String, AbstractTable> tmpTblMapping : tmpTblsMapping.entrySet()) {
-                AbstractTable oldTbl = tmpTblMapping.getValue();
-                String oldTblQName = oldTbl.getQualifiedName();
-                String tmpTblQName = arguments.isMsSql() ? String.join(".",
-                        MsDiffUtils.quoteName(oldTbl.getSchemaName()),
-                        MsDiffUtils.quoteName(tmpTblMapping.getKey()))
-                        : String.join(".", oldTbl.getSchemaName(), tmpTblMapping.getKey());
-                String cols = oldTbl.getColumns().stream().map(AbstractColumn::getName)
-                        .collect(Collectors.joining(", "));
-
-                StringBuilder sb = new StringBuilder();
-
-                if (arguments.isMsSql()
-                        && tblIdentityColsMapping.containsKey(oldTblQName)) {
-                    // There can only be one IDENTITY column per table in MSSQL.
-                    sb.append("SET IDENTITY_INSERT ").append(oldTblQName)
-                    .append(" ON\nGO\n\n");
-                }
-
-                sb.append("INSERT INTO ").append(oldTblQName).append('(')
-                .append(cols).append(") SELECT ").append(cols).append(" FROM ")
-                .append(tmpTblQName).append(arguments.isMsSql() ? "\nGO" : ';');
-
-                if (arguments.isMsSql()
-                        && tblIdentityColsMapping.containsKey(oldTblQName)) {
-                    // There can only be one IDENTITY column per table in MSSQL.
-                    sb.append("\n\nSET IDENTITY_INSERT ").append(oldTblQName)
-                    .append(" OFF\nGO");
-                }
-
-                sb.append("\n\nDROP TABLE ").append(tmpTblQName)
-                .append(arguments.isMsSql() ? "\nGO" : ';');
-
-                if (!arguments.isMsSql()) {
-                    Set<String> identityCols = tblIdentityColsMapping.get(oldTblQName);
-                    if (identityCols != null) {
-                        for (String colName : identityCols) {
-                            String restartVarName = oldTbl.getSchemaName() + '_'
-                                    + oldTbl.getName() + '_' + colName + "_restart_value";
-                            sb.append("\n\nDO $$ DECLARE ").append(restartVarName)
-                            .append(" integer = (SELECT MAX(").append(colName)
-                            .append(")+1 FROM ").append(oldTblQName)
-                            .append(");\nBEGIN\n\texecute 'ALTER TABLE ")
-                            .append(oldTblQName).append(" ALTER COLUMN ").append(colName)
-                            .append(" RESTART WITH ' || ").append(restartVarName)
-                            .append(" || ';';\nEND\n$$;");
-                        }
-                    }
-                }
-
-                script.addStatement(sb.toString());
-            }
+            addCommandsForMoveData(script, tmpTblsMapping, tblIdentityColsMapping);
         }
     }
 
@@ -344,6 +252,142 @@ public class ActionsToScriptConverter {
             return isSelectedObj.test(action.getOldObj());
         default:
             throw new IllegalStateException("Not implemented action");
+        }
+    }
+
+    /**
+     * Adds commands to the script for rename the original table name to a
+     * temporary name, given the constraints. Fills the maps 'tmpTblsMapping'
+     * and 'tblIdentityColsMapping' for use them later (when adding commands to
+     * move data from a temporary table to a new table).
+     *
+     * @param script script represented as a list of SQL statements
+     * @param oldObj original table object
+     * @param tmpTblsMapping map for placing pairs of temporary table name as
+     * key and table object with original name as key value
+     * @param tblIdentityColsMapping map for placing pairs of original table name
+     * as a key and a set of identity column names of that table as a value
+     */
+    private void addCommandsForRenameTbl(PgDiffScript script, PgStatement oldObj,
+            Map<String, AbstractTable> tmpTblsMapping,
+            Map<String, Set<String>> tblIdentityColsMapping) {
+        String tmpSuffix = '_' + UUID.randomUUID().toString()
+                .replace("-", "");
+        AbstractTable oldTbl = (AbstractTable) oldObj;
+        String tmpTblName = oldTbl.getName() + tmpSuffix;
+
+        script.addStatement(getRenameCommand(oldTbl, tmpTblName));
+        tmpTblsMapping.put(tmpTblName, oldTbl);
+
+        if (arguments.isMsSql()) {
+            for (MsColumn msCol : PgDiffUtils.sIter(((MsTable) oldTbl)
+                    .getColumns().stream().map(col -> (MsColumn) col))) {
+                if (msCol.isIdentity()) {
+                    tblIdentityColsMapping.computeIfAbsent(
+                            oldTbl.getQualifiedName(),
+                            k -> new LinkedHashSet<>()).add(msCol.getName());
+                }
+                if (msCol.getDefaultName() != null) {
+                    script.addStatement("ALTER TABLE "
+                            + MsDiffUtils.quoteName(oldTbl.getSchemaName()) + '.'
+                            + MsDiffUtils.quoteName(tmpTblName) + " DROP CONSTRAINT "
+                            + MsDiffUtils.quoteName(msCol.getDefaultName()) + "\nGO");
+                }
+            }
+        } else {
+            for (PgColumn pgCol : PgDiffUtils.sIter(oldTbl.getColumns()
+                    .stream().map(col -> (PgColumn) col)
+                    .filter(pgCol -> pgCol.getSequence() != null))) {
+                script.addStatement(getRenameCommand(pgCol.getSequence(),
+                        pgCol.getSequence().getName() + tmpSuffix));
+                tblIdentityColsMapping.computeIfAbsent(
+                        oldTbl.getQualifiedName(),
+                        k -> new LinkedHashSet<>()).add(pgCol.getName());
+            }
+        }
+    }
+
+    /**
+     * Returns sql command to rename the given object.
+     *
+     * @param st object for rename
+     * @param newName the new name for given object
+     * @return sql command to rename the given object
+     */
+    private String getRenameCommand(PgStatement st, String newName) {
+        return arguments.isMsSql() ?
+                MessageFormat.format(RENAME_MS_OBJECT,
+                        PgDiffUtils.quoteString(st.getQualifiedName()),
+                        PgDiffUtils.quoteString(newName))
+                : MessageFormat.format(RENAME_PG_OBJECT, st.getStatementType(),
+                        st.getQualifiedName(), newName);
+    }
+
+    /**
+     * Adds commands to the script for move data from a temporary table
+     * to a new table, given the identity columns, and a command to delete
+     * the temporary table.
+     *
+     * @param script script represented as a list of SQL statements
+     * @param tmpTblsMapping the map containing the temporary table name as a
+     * key and a table object with the original name as the key value
+     * @param tblIdentityColsMapping the map that contains the original table
+     * name as a key and a set of identity column names of that table as a value
+     */
+    private void addCommandsForMoveData(PgDiffScript script,
+            Map<String, AbstractTable> tmpTblsMapping,
+            Map<String, Set<String>> tblIdentityColsMapping) {
+        for (Entry<String, AbstractTable> tmpTblMapping : tmpTblsMapping.entrySet()) {
+            AbstractTable oldTbl = tmpTblMapping.getValue();
+            String oldTblQName = oldTbl.getQualifiedName();
+            String tmpTblQName = arguments.isMsSql() ? String.join(".",
+                    MsDiffUtils.quoteName(oldTbl.getSchemaName()),
+                    MsDiffUtils.quoteName(tmpTblMapping.getKey()))
+                    : String.join(".", oldTbl.getSchemaName(), tmpTblMapping.getKey());
+            String cols = oldTbl.getColumns().stream().map(AbstractColumn::getName)
+                    .collect(Collectors.joining(", "));
+
+            StringBuilder sb = new StringBuilder();
+
+            if (arguments.isMsSql()
+                    && tblIdentityColsMapping.containsKey(oldTblQName)) {
+                // There can only be one IDENTITY column per table in MSSQL.
+                sb.append("SET IDENTITY_INSERT ").append(oldTblQName)
+                .append(" ON\nGO\n\n");
+            }
+
+            sb.append("INSERT INTO ").append(oldTblQName).append('(')
+            .append(cols).append(") SELECT ").append(cols).append(" FROM ")
+            .append(tmpTblQName).append(arguments.isMsSql() ? "\nGO" : ';');
+
+            if (arguments.isMsSql()
+                    && tblIdentityColsMapping.containsKey(oldTblQName)) {
+                // There can only be one IDENTITY column per table in MSSQL.
+                sb.append("\n\nSET IDENTITY_INSERT ").append(oldTblQName)
+                .append(" OFF\nGO");
+            }
+
+            sb.append("\n\nDROP TABLE ").append(tmpTblQName)
+            .append(arguments.isMsSql() ? "\nGO" : ';');
+
+            if (!arguments.isMsSql()) {
+                Set<String> identityCols = tblIdentityColsMapping.get(oldTblQName);
+                if (identityCols != null) {
+                    for (String colName : identityCols) {
+                        String restartVarName = oldTbl.getSchemaName() + '_'
+                                + oldTbl.getName() + '_' + colName + "_restart_value";
+                        sb.append("\n\nDO $$ DECLARE ").append(restartVarName)
+                        .append(" integer = (SELECT MAX(").append(colName)
+                        .append(")+1 FROM ").append(oldTblQName)
+                        .append(");\nBEGIN\n\texecute 'ALTER TABLE ")
+                        .append(oldTblQName).append(" ALTER COLUMN ").append(colName)
+                        .append(" RESTART WITH ' || ").append(restartVarName)
+                        .append(" || ';';\nEND\n$$;");
+                    }
+                }
+            }
+
+            script.addStatement(sb.toString());
         }
     }
 }
