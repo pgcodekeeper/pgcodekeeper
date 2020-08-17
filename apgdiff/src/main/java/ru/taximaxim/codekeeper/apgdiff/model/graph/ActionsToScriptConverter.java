@@ -15,6 +15,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.NotAllowedObjectException;
@@ -344,8 +345,7 @@ public class ActionsToScriptConverter {
                     MsDiffUtils.quoteName(oldTbl.getSchemaName()),
                     MsDiffUtils.quoteName(tmpTblMapping.getKey()))
                     : String.join(".", oldTbl.getSchemaName(), tmpTblMapping.getKey());
-            String cols = oldTbl.getColumns().stream().map(AbstractColumn::getName)
-                    .collect(Collectors.joining(", "));
+            String cols = getColsForMovingData(oldTbl);
 
             StringBuilder sb = new StringBuilder();
 
@@ -389,5 +389,21 @@ public class ActionsToScriptConverter {
 
             script.addStatement(sb.toString());
         }
+    }
+
+    /**
+     * Returns the names of the columns from which data will be moved to another
+     * table, excluding calculated columns.
+     */
+    private String getColsForMovingData(AbstractTable tbl) {
+        Stream<? extends AbstractColumn> cols = tbl.getColumns().stream();
+        if (arguments.isMsSql()) {
+            cols = cols.map(col -> (MsColumn) col)
+                    .filter(msCol -> msCol.getExpression() == null);
+        } else {
+            cols = cols.map(col -> (PgColumn) col)
+                    .filter(pgCol -> !pgCol.isGenerated());
+        }
+        return cols.map(AbstractColumn::getName).collect(Collectors.joining(", "));
     }
 }
