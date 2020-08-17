@@ -19,7 +19,9 @@ CREATE TABLE [dbo].[tbl](
     [c4] [varchar] (100) COLLATE Cyrillic_General_CI_AS NULL,
     [c6] [int] NOT NULL CONSTRAINT [DF__tbl__c6__32AB8735] DEFAULT ((555777)),
     [c5] [int] NOT NULL CONSTRAINT [DF__tbl__c5__31B762FC] DEFAULT ((333999)),
-    [c7] [int] NULL
+    [c7] [int] NULL,
+    [c8] AS ([c1]+(2000)),
+    [c9] AS ([c1]+(3000)) PERSISTED
 ) ON [PRIMARY]
 GO
 
