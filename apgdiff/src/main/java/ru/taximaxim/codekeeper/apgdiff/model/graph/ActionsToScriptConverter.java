@@ -380,7 +380,7 @@ public class ActionsToScriptConverter {
                     .append(" integer = (SELECT MAX(")
                     .append(MsDiffUtils.quoteName(colName))
                     .append(") FROM ").append(oldTblQName)
-                    .append(");\nBEGIN\n\tEXECUTE ('DBCC CHECKIDENT ( ''")
+                    .append(");\nBEGIN\n\tEXECUTE ('DBCC CHECKIDENT (''")
                     .append(oldTblQName).append("'', RESEED, ' + @")
                     .append(restartVarName).append(" + ');');\nEND\nGO");
                 } else {
@@ -389,7 +389,7 @@ public class ActionsToScriptConverter {
                         sb.append("\n\nDO $$ DECLARE ").append(restartVarName)
                         .append(" integer = (SELECT MAX(").append(colName)
                         .append(")+1 FROM ").append(oldTblQName)
-                        .append(");\nBEGIN\n\texecute 'ALTER TABLE ")
+                        .append(");\nBEGIN\n\tEXECUTE 'ALTER TABLE ")
                         .append(oldTblQName).append(" ALTER COLUMN ").append(colName)
                         .append(" RESTART WITH ' || ").append(restartVarName)
                         .append(" || ';';\nEND\n$$;");
