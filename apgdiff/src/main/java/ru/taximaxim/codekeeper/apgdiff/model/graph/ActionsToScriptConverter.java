@@ -370,12 +370,22 @@ public class ActionsToScriptConverter {
             sb.append("\n\nDROP TABLE ").append(tmpTblQName)
             .append(arguments.isMsSql() ? "\nGO" : ';');
 
-            if (!arguments.isMsSql()) {
-                Set<String> identityCols = tblIdentityColsMapping.get(oldTblQName);
-                if (identityCols != null) {
+            Set<String> identityCols = tblIdentityColsMapping.get(oldTblQName);
+            if (identityCols != null) {
+                if (arguments.isMsSql()) {
+                    // There can only be one IDENTITY column per table in MSSQL.
+                    String colName = identityCols.iterator().next();
+                    String restartVarName = getRestartVarName(oldTbl, colName);
+                    sb.append("\n\nDECLARE @").append(restartVarName)
+                    .append(" integer = (SELECT MAX(")
+                    .append(MsDiffUtils.quoteName(colName))
+                    .append(") FROM ").append(oldTblQName)
+                    .append(");\nBEGIN\n\tEXECUTE ('DBCC CHECKIDENT ( ''")
+                    .append(oldTblQName).append("'', RESEED, ' + @")
+                    .append(restartVarName).append(" + ');');\nEND\nGO");
+                } else {
                     for (String colName : identityCols) {
-                        String restartVarName = oldTbl.getSchemaName() + '_'
-                                + oldTbl.getName() + '_' + colName + "_restart_value";
+                        String restartVarName = getRestartVarName(oldTbl, colName);
                         sb.append("\n\nDO $$ DECLARE ").append(restartVarName)
                         .append(" integer = (SELECT MAX(").append(colName)
                         .append(")+1 FROM ").append(oldTblQName)
@@ -405,5 +415,13 @@ public class ActionsToScriptConverter {
                     .filter(pgCol -> !pgCol.isGenerated());
         }
         return cols.map(AbstractColumn::getName).collect(Collectors.joining(", "));
+    }
+
+    /**
+     * Returns the name of the variable in the SQL command that will contain
+     * the identity column value for the new table.
+     */
+    private String getRestartVarName(AbstractTable tbl, String colName) {
+        return tbl.getSchemaName() + '_' + tbl.getName() + '_' + colName + "_restart_value";
     }
 }
