@@ -59,11 +59,11 @@ GO
 SET IDENTITY_INSERT [dbo].[tbl] OFF
 GO
 
-DROP TABLE [dbo].[tbl_randomly_generated_part]
-GO
-
-DECLARE @dbo_tbl_c1_restart_value integer = (SELECT MAX([c1]) FROM [dbo].[tbl]);
+DECLARE @dbo_tbl_c1_restart_value integer = (SELECT IDENT_CURRENT ('[dbo].[tbl_randomly_generated_part]'));
 BEGIN
 	EXECUTE ('DBCC CHECKIDENT (''[dbo].[tbl]'', RESEED, ' + @dbo_tbl_c1_restart_value + ');');
 END
+GO
+
+DROP TABLE [dbo].[tbl_randomly_generated_part]
 GO

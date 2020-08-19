@@ -61,16 +61,16 @@ ALTER TABLE public.tbl
 
 INSERT INTO public.tbl(did, did_2, name22, description, event_time) SELECT did, did_2, name22, description, event_time FROM public.tbl_randomly_generated_part;
 
-DROP TABLE public.tbl_randomly_generated_part;
-
-DO $$ DECLARE public_tbl_did_restart_value integer = (SELECT MAX(did)+1 FROM public.tbl);
+DO $$ DECLARE public_tbl_did_restart_value integer = (SELECT nextval(pg_get_serial_sequence('public.tbl_randomly_generated_part', 'did')));
 BEGIN
 	EXECUTE 'ALTER TABLE public.tbl ALTER COLUMN did RESTART WITH ' || public_tbl_did_restart_value || ';';
 END
 $$;
 
-DO $$ DECLARE public_tbl_did_2_restart_value integer = (SELECT MAX(did_2)+1 FROM public.tbl);
+DO $$ DECLARE public_tbl_did_2_restart_value integer = (SELECT nextval(pg_get_serial_sequence('public.tbl_randomly_generated_part', 'did_2')));
 BEGIN
 	EXECUTE 'ALTER TABLE public.tbl ALTER COLUMN did_2 RESTART WITH ' || public_tbl_did_2_restart_value || ';';
 END
 $$;
+
+DROP TABLE public.tbl_randomly_generated_part;
