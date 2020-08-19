@@ -367,9 +367,6 @@ public class ActionsToScriptConverter {
                 .append(" OFF\nGO");
             }
 
-            sb.append("\n\nDROP TABLE ").append(tmpTblQName)
-            .append(arguments.isMsSql() ? "\nGO" : ';');
-
             Set<String> identityCols = tblIdentityColsMapping.get(oldTblQName);
             if (identityCols != null) {
                 if (arguments.isMsSql()) {
@@ -377,25 +374,26 @@ public class ActionsToScriptConverter {
                     String colName = identityCols.iterator().next();
                     String restartVarName = getRestartVarName(oldTbl, colName);
                     sb.append("\n\nDECLARE @").append(restartVarName)
-                    .append(" integer = (SELECT MAX(")
-                    .append(MsDiffUtils.quoteName(colName))
-                    .append(") FROM ").append(oldTblQName)
-                    .append(");\nBEGIN\n\tEXECUTE ('DBCC CHECKIDENT (''")
+                    .append(" integer = (SELECT IDENT_CURRENT ('").append(tmpTblQName)
+                    .append("'));\nBEGIN\n\tEXECUTE ('DBCC CHECKIDENT (''")
                     .append(oldTblQName).append("'', RESEED, ' + @")
                     .append(restartVarName).append(" + ');');\nEND\nGO");
                 } else {
                     for (String colName : identityCols) {
                         String restartVarName = getRestartVarName(oldTbl, colName);
                         sb.append("\n\nDO $$ DECLARE ").append(restartVarName)
-                        .append(" integer = (SELECT MAX(").append(colName)
-                        .append(")+1 FROM ").append(oldTblQName)
-                        .append(");\nBEGIN\n\tEXECUTE 'ALTER TABLE ")
+                        .append(" integer = (SELECT nextval(pg_get_serial_sequence('")
+                        .append(tmpTblQName).append("', '").append(colName)
+                        .append("')));\nBEGIN\n\tEXECUTE 'ALTER TABLE ")
                         .append(oldTblQName).append(" ALTER COLUMN ").append(colName)
                         .append(" RESTART WITH ' || ").append(restartVarName)
                         .append(" || ';';\nEND\n$$;");
                     }
                 }
             }
+
+            sb.append("\n\nDROP TABLE ").append(tmpTblQName)
+            .append(arguments.isMsSql() ? "\nGO" : ';');
 
             script.addStatement(sb.toString());
         }
