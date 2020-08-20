@@ -2,11 +2,15 @@ SET search_path = pg_catalog;
 
 -- DEPCY: This VIEW depends on the TABLE: public.tbl
 
-DROP VIEW public.v2;
-
--- DEPCY: This VIEW depends on the TABLE: public.tbl
-
 DROP VIEW public.v;
+
+-- DEPCY: This TRIGGER depends on the TABLE: public.tbl
+
+DROP TRIGGER events_before_insert ON public.tbl;
+
+-- DEPCY: This FUNCTION depends on the TABLE: public.tbl
+
+DROP FUNCTION public.events_insert_trigger();
 
 -- DEPCY: This CONSTRAINT depends on the TABLE: public.tbl
 
@@ -20,11 +24,7 @@ ALTER TABLE public.tbl
 
 -- DEPCY: This RULE depends on the TABLE: public.tbl
 
-DROP RULE notify_tbl ON public.tbl;
-
--- DEPCY: This TRIGGER depends on the TABLE: public.tbl
-
-DROP TRIGGER events_before_delete ON public.tbl;
+DROP RULE notify_me_tbl ON public.tbl;
 
 -- DEPCY: This INDEX depends on the TABLE: public.tbl
 
@@ -33,8 +33,8 @@ DROP INDEX public.tbl_idx;
 ALTER TABLE public.tbl RENAME TO tbl_randomly_generated_part;
 
 CREATE TABLE public.tbl (
-	tbl_id bigint DEFAULT nextval('public.tbl_id_seq'::regclass) NOT NULL,
-	tbl_id_2 bigint DEFAULT nextval('public.tbl_id_2_seq'::regclass) NOT NULL,
+	id bigint DEFAULT nextval('public.seq_tbl_id'::regclass) NOT NULL,
+	id_2 bigint DEFAULT nextval('public.seq_tbl_id_2'::regclass) NOT NULL,
 	name text,
 	population double precision,
 	description integer DEFAULT 55777,
@@ -42,35 +42,42 @@ CREATE TABLE public.tbl (
 	event_time timestamp without time zone DEFAULT now() NOT NULL
 );
 
--- DEPCY: This VIEW is a dependency of VIEW: public.v2
+GRANT INSERT ON TABLE public.tbl TO test_user;
 
 CREATE VIEW public.v AS
 	SELECT tbl.name,
     tbl.altitude,
-    1 AS qwe
+    1 AS qwerty
    FROM public.tbl;
 
-CREATE VIEW public.v2 AS
-	SELECT a.name,
-    4 AS zxc
-   FROM public.v a;
+-- DEPCY: This FUNCTION is a dependency of TRIGGER: public.tbl.events_before_insert
+
+CREATE OR REPLACE FUNCTION public.events_insert_trigger() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  INSERT INTO public.tbl(id, id_2, name, population, altitude, description, event_time) 
+  VALUES (DEFAULT, DEFAULT, 'Yojimbo', 106.23, DEFAULT, DEFAULT, DEFAULT);
+  RETURN NULL;
+END;
+$$;
+
+CREATE TRIGGER events_before_insert
+	AFTER UPDATE ON public.tbl
+	FOR EACH ROW
+	EXECUTE PROCEDURE public.events_insert_trigger();
 
 ALTER TABLE public.tbl
-	ADD CONSTRAINT tbl_pkey PRIMARY KEY (tbl_id);
+	ADD CONSTRAINT tbl_pkey PRIMARY KEY (id);
 
 ALTER TABLE public.tbl
 	ADD CONSTRAINT tbl_event_time_check CHECK (((event_time >= '2020-01-01 00:00:00'::timestamp without time zone) AND (event_time < '2021-01-01 00:00:00'::timestamp without time zone)));
 
-CREATE RULE notify_tbl AS
+CREATE RULE notify_me_tbl AS
     ON DELETE TO public.tbl DO  NOTIFY tbl;
-
-CREATE TRIGGER events_before_delete
-	BEFORE DELETE ON public.tbl
-	FOR EACH ROW
-	EXECUTE PROCEDURE public.events_delete_trigger();
 
 CREATE INDEX tbl_idx ON public.tbl USING btree (event_time);
 
-INSERT INTO public.tbl(tbl_id, tbl_id_2, name, population, altitude, description, event_time) SELECT tbl_id, tbl_id_2, name, population, altitude, description, event_time FROM public.tbl_randomly_generated_part;
+INSERT INTO public.tbl(id, id_2, name, population, altitude, description, event_time) SELECT id, id_2, name, population, altitude, description, event_time FROM public.tbl_randomly_generated_part;
 
 DROP TABLE public.tbl_randomly_generated_part;
