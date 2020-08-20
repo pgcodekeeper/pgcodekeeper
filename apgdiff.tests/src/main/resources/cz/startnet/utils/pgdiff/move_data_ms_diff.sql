@@ -4,6 +4,11 @@ ALTER TABLE [dbo].[tbl]
 	DROP CONSTRAINT [PK_tbl]
 GO
 
+-- DEPCY: This INDEX depends on the TABLE: [dbo].[tbl]
+
+DROP INDEX [idx_dbo_tbl_c2] ON [dbo].[tbl]
+GO
+
 EXEC sp_rename '[dbo].[tbl]', 'tbl_randomly_generated_part'
 GO
 
@@ -26,11 +31,18 @@ CREATE TABLE [dbo].[tbl](
 ) ON [PRIMARY]
 GO
 
+GRANT SELECT ON [dbo].[tbl] TO [test_user]
+GO
+
 EXEC sys.sp_refreshsqlmodule '[dbo].[v]' 
 GO
 
 ALTER TABLE [dbo].[tbl]
 	ADD CONSTRAINT [PK_tbl] PRIMARY KEY CLUSTERED  ([c1]) ON [PRIMARY]
+GO
+
+CREATE UNIQUE NONCLUSTERED INDEX [idx_dbo_tbl_c2] ON [dbo].[tbl] ([c2])
+ON [PRIMARY]
 GO
 
 INSERT INTO [dbo].[tbl](c1, c2, c3, c5, c6) SELECT c1, c2, c3, c5, c6 FROM [dbo].[tbl_randomly_generated_part]
