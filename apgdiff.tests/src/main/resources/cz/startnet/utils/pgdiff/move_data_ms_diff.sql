@@ -4,6 +4,11 @@ ALTER TABLE [dbo].[tbl]
 	DROP CONSTRAINT [PK_tbl]
 GO
 
+-- DEPCY: This TRIGGER depends on the TABLE: [dbo].[tbl]
+
+DROP TRIGGER [dbo].[trg]
+GO
+
 -- DEPCY: This INDEX depends on the TABLE: [dbo].[tbl]
 
 DROP INDEX [idx_dbo_tbl_c2] ON [dbo].[tbl]
@@ -39,6 +44,15 @@ GO
 
 ALTER TABLE [dbo].[tbl]
 	ADD CONSTRAINT [PK_tbl] PRIMARY KEY CLUSTERED  ([c1]) ON [PRIMARY]
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+CREATE TRIGGER [dbo].[trg] ON [dbo].[tbl]  
+AFTER UPDATE   
+AS EXECUTE [dbo].[prc] @first = 4
 GO
 
 CREATE UNIQUE NONCLUSTERED INDEX [idx_dbo_tbl_c2] ON [dbo].[tbl] ([c2])
