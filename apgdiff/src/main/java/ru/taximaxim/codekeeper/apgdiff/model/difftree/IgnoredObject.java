@@ -195,22 +195,37 @@ public class IgnoredObject {
 
         if (!objTypes.isEmpty()) {
             sb.append(" type=");
-            sb.append(objTypes.stream().map(Enum::toString).map(IgnoredObject::getValidId)
+            sb.append(objTypes.stream().map(Enum::toString).map(this::getValidId)
                     .collect(Collectors.joining(",")));
         }
 
         return sb;
     }
 
-    private static String getValidId(String id) {
-        if (PgDiffUtils.isValidId(id, true, true)) {
+    private String getValidId(String id) {
+        if (PgDiffUtils.isValidId(id, true, true) && !isKeyword(id)) {
             return id;
-        } else {
-            return quoteWithDq(id) ? PgDiffUtils.quoteName(id) : PgDiffUtils.quoteString(id);
+        }
+
+        return quoteWithDq(id) ? PgDiffUtils.quoteName(id) : PgDiffUtils.quoteString(id);
+    }
+
+    private boolean isKeyword(String id) {
+        switch (id) {
+        case "QUALIFIED":
+        case "HIDE":
+        case "SHOW":
+        case "ALL":
+        case "CONTENT":
+        case "REGEX":
+        case "NONE":
+            return true;
+        default:
+            return false;
         }
     }
 
-    private static boolean quoteWithDq(String str) {
+    private boolean quoteWithDq(String str) {
         int dq = 0;
         int sq = 0;
         for (int i = 0; i < str.length(); ++i) {
