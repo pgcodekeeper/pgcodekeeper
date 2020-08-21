@@ -41,6 +41,8 @@ public class DropMsStatement extends ParserAbstract {
                 Qualified_nameContext tableIds = ind.qualified_name();
                 IdContext schemaCtx = tableIds.schema;
                 IdContext nameCtx = ind.index_name;
+                addObjReference(Arrays.asList(schemaCtx, tableIds.name),
+                        DbObjType.TABLE, null);
                 addObjReference(Arrays.asList(schemaCtx, nameCtx),
                         DbObjType.INDEX, ACTION_DROP);
             }
