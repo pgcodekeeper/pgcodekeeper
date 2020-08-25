@@ -55,14 +55,15 @@ CREATE OR REPLACE FUNCTION public.events_insert_trigger() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
 BEGIN
-  INSERT INTO public.tbl(id, id_2, name, population, altitude, description, event_time) 
-  VALUES (DEFAULT, DEFAULT, 'Yojimbo', 106.23, DEFAULT, DEFAULT, DEFAULT);
+  UPDATE public.tbl
+  SET description = (SELECT trunc(random() * 100 + 1)) 
+  WHERE id_2 = 2;
   RETURN NULL;
 END;
 $$;
 
-CREATE TRIGGER events_before_insert
-    AFTER UPDATE ON public.tbl
+CREATE TRIGGER events_insert
+    AFTER INSERT ON public.tbl
     FOR EACH ROW
     EXECUTE PROCEDURE public.events_insert_trigger();
 

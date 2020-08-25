@@ -39,6 +39,23 @@ ALTER TABLE public.tbl
     ADD CONSTRAINT tbl_name22_check CHECK (((name22)::text <> ''::text));
 
 
+CREATE OR REPLACE FUNCTION public.events_insert_trigger() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  UPDATE public.tbl
+  SET description = (SELECT trunc(random() * 100 + 1)) 
+  WHERE did_2 = 2;
+  RETURN NULL;
+END;
+$$;
+
+CREATE TRIGGER events_insert
+    AFTER INSERT ON public.tbl
+    FOR EACH ROW
+    EXECUTE PROCEDURE public.events_insert_trigger();
+
+
 CREATE VIEW public.v AS
     SELECT tbl.name22,
     tbl.description,

@@ -2,21 +2,6 @@ SET QUOTED_IDENTIFIER ON
 GO
 SET ANSI_NULLS ON
 GO
-CREATE PROCEDURE [dbo].[prc]
-@first integer
-AS
-    SELECT (@first + @first) AS val;
-    INSERT INTO [dbo].[tbl] (c1, c2, c3, c5, c6)
-    VALUES (9, 99, 'Yahoo', DEFAULT, DEFAULT);
-    GO
-GO
-
-
-
-SET QUOTED_IDENTIFIER ON
-GO
-SET ANSI_NULLS ON
-GO
 CREATE TABLE [dbo].[tbl](
     [c1] [int] NOT NULL,
     [c2] [int] NOT NULL,
@@ -41,8 +26,21 @@ SET QUOTED_IDENTIFIER ON
 GO
 SET ANSI_NULLS ON
 GO
-CREATE TRIGGER [dbo].[trg] ON [dbo].[tbl]  
-AFTER UPDATE   
+CREATE PROCEDURE [dbo].[prc]
+@first integer
+AS
+    SELECT 1 AS trigger_action;
+    UPDATE [dbo].[tbl]
+    SET c5 = ((SELECT MAX(c1) FROM [dbo].[tbl]) + 1000)
+    WHERE c1 = 2;
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+CREATE TRIGGER [dbo].[trg] ON [dbo].[tbl]
+AFTER INSERT
 AS EXECUTE [dbo].[prc] @first = 4
 GO
 

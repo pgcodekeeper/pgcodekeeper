@@ -39,6 +39,12 @@ GO
 GRANT SELECT ON [dbo].[tbl] TO [test_user]
 GO
 
+INSERT INTO [dbo].[tbl](c1, c2, c3, c5, c6) SELECT c1, c2, c3, c5, c6 FROM [dbo].[tbl_randomly_generated_part]
+GO
+
+DROP TABLE [dbo].[tbl_randomly_generated_part]
+GO
+
 EXEC sys.sp_refreshsqlmodule '[dbo].[v]' 
 GO
 
@@ -50,17 +56,11 @@ SET QUOTED_IDENTIFIER ON
 GO
 SET ANSI_NULLS ON
 GO
-CREATE TRIGGER [dbo].[trg] ON [dbo].[tbl]  
-AFTER UPDATE   
+CREATE TRIGGER [dbo].[trg] ON [dbo].[tbl]
+AFTER INSERT
 AS EXECUTE [dbo].[prc] @first = 4
 GO
 
 CREATE UNIQUE NONCLUSTERED INDEX [idx_dbo_tbl_c2] ON [dbo].[tbl] ([c2])
 ON [PRIMARY]
-GO
-
-INSERT INTO [dbo].[tbl](c1, c2, c3, c5, c6) SELECT c1, c2, c3, c5, c6 FROM [dbo].[tbl_randomly_generated_part]
-GO
-
-DROP TABLE [dbo].[tbl_randomly_generated_part]
 GO

@@ -10,6 +10,11 @@ ALTER TABLE [dbo].[tbl]
 	DROP CONSTRAINT [CHK_c7_tbl]
 GO
 
+-- DEPCY: This TRIGGER depends on the TABLE: [dbo].[tbl]
+
+DROP TRIGGER [dbo].[trg]
+GO
+
 EXEC sp_rename '[dbo].[tbl]', 'tbl_randomly_generated_part'
 GO
 
@@ -39,17 +44,6 @@ CREATE TABLE [dbo].[tbl](
 ) ON [PRIMARY]
 GO
 
-EXEC sys.sp_refreshsqlmodule '[dbo].[v]' 
-GO
-
-ALTER TABLE [dbo].[tbl]
-	ADD CONSTRAINT [PK_tbl] PRIMARY KEY CLUSTERED  ([c1]) ON [PRIMARY]
-GO
-
-ALTER TABLE [dbo].[tbl]
-	ADD CONSTRAINT [CHK_c7_tbl] CHECK  (([c7]>(1) AND [c7]<(999999)))
-GO
-
 SET IDENTITY_INSERT [dbo].[tbl] ON
 GO
 
@@ -66,4 +60,24 @@ END
 GO
 
 DROP TABLE [dbo].[tbl_randomly_generated_part]
+GO
+
+EXEC sys.sp_refreshsqlmodule '[dbo].[v]' 
+GO
+
+ALTER TABLE [dbo].[tbl]
+	ADD CONSTRAINT [PK_tbl] PRIMARY KEY CLUSTERED  ([c1]) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[tbl]
+	ADD CONSTRAINT [CHK_c7_tbl] CHECK  (([c7]>(1) AND [c7]<(999999)))
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+CREATE TRIGGER [dbo].[trg] ON [dbo].[tbl]
+AFTER INSERT
+AS EXECUTE [dbo].[prc] @first = 4
 GO
