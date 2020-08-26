@@ -16,6 +16,7 @@ import java.util.Map;
 import org.junit.Assert;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 
 public class PartialExportTestFileVisitor extends SimpleFileVisitor<Path>{
     private final Path pathToBeCompared;
@@ -71,7 +72,7 @@ public class PartialExportTestFileVisitor extends SimpleFileVisitor<Path>{
             }
             String hash = modifiedFiles.remove(relativeFilePath);
             File file = isInSource ? file2 : file1.toFile();
-            String partialFile = new String(Files.readAllBytes(file.toPath()), PartialExporterTest.UTF_8);
+            String partialFile = new String(Files.readAllBytes(file.toPath()), ApgdiffConsts.UTF_8);
 
             Assert.assertEquals("Files differ, and partial file has unexpected hash"
                     + "\nPartial file:\n" + partialFile,

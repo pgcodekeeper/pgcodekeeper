@@ -119,7 +119,6 @@ public final class Messages extends NLS {
     public static String dbPicker_port;
     public static String dbStoreEditorDialog_cannot_save_entry;
     public static String dbStoreEditorDialog_db_info;
-    public static String dbStoreEditorDialog_db_store_editor;
     public static String dbStoreEditorDialog_not_valid_port_number;
     public static String dbStoreEditorDialog_empty_name;
 
@@ -131,9 +130,8 @@ public final class Messages extends NLS {
     public static String differ_direct_diff;
     public static String differ_get_differ;
     public static String differ_reverse_diff;
-    public static String diffTableViewer_change_type;
-    public static String diffTableViewer_for_database;
-    public static String diffTableViewer_for_project;
+    public static String diffTableViewer_change_type_for_database;
+    public static String diffTableViewer_change_type_for_project;
     public static String diffTableViewer_container;
     public static String diffTableViewer_db_user;
     public static String diffTableViewer_deselect_child_elements;
@@ -316,7 +314,13 @@ public final class Messages extends NLS {
 
     public static String DbStorePicker_load_from_file;
 
+    public static String DbStorePrefPage_action_add_new;
+
     public static String DbStorePrefPage_already_present;
+
+    public static String DbStorePrefPage_action_copy;
+
+    public static String DbStorePrefPage_action_edit;
 
     public static String DbStorePrefPage_pg_pass_file_filter;
 

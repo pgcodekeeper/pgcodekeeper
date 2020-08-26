@@ -119,6 +119,11 @@ public class ActionsToScriptConverter {
             }
         }
 
+        // As a result of discussion with the SQL database developers, it was
+        // decided that, in pgCodeKeeper, refresh operations are required only
+        // for MsView objects. This is why a filter is used here that only
+        // leaves refresh operations for MsView objects.
+        //
         // if any refreshes were not emitted as statement replacements
         // add them explicitly in reverse order (the resolver adds them in "drop order")
         PgStatement[] orphanRefreshes = toRefresh.stream()
