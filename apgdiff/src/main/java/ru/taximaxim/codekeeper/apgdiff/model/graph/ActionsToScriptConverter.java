@@ -9,7 +9,6 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -49,9 +48,10 @@ public class ActionsToScriptConverter {
     private final Set<PgStatement> toRefresh;
     private final PgDiffArguments arguments;
 
-    // for storing pairs of a table object as a key and its temporary name as a value
-    private Map<AbstractTable, String> tblTmpNamesMapping;
-    // for storing pairs of table name as a key and a list of identity
+    // for storing pairs of a table qualified name as a key and its temporary
+    // name as a value
+    private Map<String, String> tblTmpNamesMapping;
+    // for storing pairs of table qualified name as a key and a list of identity
     // column names of that table as a value
     private Map<String, List<String>> tblIdentityColsMapping;
 
@@ -270,7 +270,7 @@ public class ActionsToScriptConverter {
         String tmpTblName = oldTbl.getName() + tmpSuffix;
 
         script.addStatement(getRenameCommand(oldTbl, tmpTblName));
-        tblTmpNamesMapping.put(oldTbl, tmpTblName);
+        tblTmpNamesMapping.put(oldTbl.getQualifiedName(), tmpTblName);
 
         if (arguments.isMsSql()) {
             for (AbstractColumn col : oldTbl.getColumns()) {
@@ -325,24 +325,22 @@ public class ActionsToScriptConverter {
      * @param oldObj original table object
      */
     private void addCommandsForMoveData(PgDiffScript script, PgStatement oldObj) {
-        Entry<AbstractTable, String> tblTmpNameMapping = tblTmpNamesMapping.entrySet().stream()
-                .filter(e -> e.getKey().getQualifiedName().equals(oldObj.getQualifiedName()))
-                .findAny().orElse(null);
+        String oldTblQName = oldObj.getQualifiedName();
+        String tblTmpBareName = tblTmpNamesMapping.get(oldTblQName);
 
-        if (tblTmpNameMapping == null) {
+        if (tblTmpBareName == null) {
             return;
         }
 
-        AbstractTable oldTbl = tblTmpNameMapping.getKey();
-        String oldTblQName = oldTbl.getQualifiedName();
+        AbstractTable oldTbl = (AbstractTable) oldObj;
 
         String tmpTblQName = null;
         if (arguments.isMsSql()) {
             tmpTblQName = MsDiffUtils.quoteName(oldTbl.getSchemaName()) + '.'
-                    + MsDiffUtils.quoteName(tblTmpNameMapping.getValue());
+                    + MsDiffUtils.quoteName(tblTmpBareName);
         } else {
             tmpTblQName = oldTbl.getSchemaName() + '.'
-                    + PgDiffUtils.getQuotedName(tblTmpNameMapping.getValue());
+                    + PgDiffUtils.getQuotedName(tblTmpBareName);
         }
 
         String cols = getColsForMovingData(oldTbl);
