@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.apgdiff.model.graph;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,7 +26,6 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.MsColumn;
-import cz.startnet.utils.pgdiff.schema.MsTable;
 import cz.startnet.utils.pgdiff.schema.MsView;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
@@ -49,6 +49,12 @@ public class ActionsToScriptConverter {
     private final Set<PgStatement> toRefresh;
     private final PgDiffArguments arguments;
 
+    // for storing pairs of a table object as a key and its temporary name as a value
+    private Map<AbstractTable, String> tblTmpNamesMapping;
+    // for storing pairs of table name as a key and a list of identity
+    // column names of that table as a value
+    private Map<String, List<String>> tblIdentityColsMapping;
+
     public ActionsToScriptConverter(Set<ActionContainer> actions, PgDiffArguments arguments) {
         this(actions, Collections.emptySet(), arguments);
     }
@@ -61,6 +67,10 @@ public class ActionsToScriptConverter {
         this.actions = actions;
         this.arguments = arguments;
         this.toRefresh = toRefresh;
+        if (arguments.isDataMovementMode()) {
+            tblTmpNamesMapping = new HashMap<>();
+            tblIdentityColsMapping = new HashMap<>();
+        }
     }
 
     /**
@@ -69,17 +79,6 @@ public class ActionsToScriptConverter {
      * @param selected коллекция выбранных элементов в панели сравнения
      */
     public void fillScript(PgDiffScript script, List<TreeElement> selected) {
-        // for storing pairs of temporary table name as key and table object
-        // with original name as key value
-        Map<String, AbstractTable> tmpTblsMapping = null;
-        // for storing pairs of original table name as a key and a set of identity
-        // column names of that table as a value
-        Map<String, Set<String>> tblIdentityColsMapping = null;
-        if (arguments.isDataMovementMode()) {
-            tmpTblsMapping = new HashMap<>();
-            tblIdentityColsMapping = new HashMap<>();
-        }
-
         Collection<DbObjType> allowedTypes = arguments.getAllowedTypes();
         Set<PgStatement> refreshed = new HashSet<>(toRefresh.size());
         for (ActionContainer action : actions) {
@@ -115,8 +114,7 @@ public class ActionsToScriptConverter {
 
                     if (arguments.isDataMovementMode()
                             && DbObjType.TABLE == oldObj.getStatementType()) {
-                        addCommandsForMoveData(script, oldObj, tmpTblsMapping,
-                                tblIdentityColsMapping);
+                        addCommandsForMoveData(script, oldObj);
                     }
                 }
                 break;
@@ -127,8 +125,7 @@ public class ActionsToScriptConverter {
                     }
                     if (arguments.isDataMovementMode()
                             && DbObjType.TABLE == oldObj.getStatementType()) {
-                        addCommandsForRenameTbl(script, oldObj, tmpTblsMapping,
-                                tblIdentityColsMapping);
+                        addCommandsForRenameTbl(script, oldObj);
                     } else {
                         script.addDrop(oldObj, null, oldObj.getDropSQL());
                     }
@@ -260,34 +257,28 @@ public class ActionsToScriptConverter {
 
     /**
      * Adds commands to the script for rename the original table name to a
-     * temporary name, given the constraints. Fills the maps 'tmpTblsMapping'
+     * temporary name, given the constraints. Fills the maps 'tblTmpNamesMapping'
      * and 'tblIdentityColsMapping' for use them later (when adding commands to
      * move data from a temporary table to a new table).
      *
      * @param script script represented as a list of SQL statements
      * @param oldObj original table object
-     * @param tmpTblsMapping map for placing pairs of temporary table name as
-     * key and table object with original name as key value
-     * @param tblIdentityColsMapping map for placing pairs of original table name
-     * as a key and a set of identity column names of that table as a value
      */
-    private void addCommandsForRenameTbl(PgDiffScript script, PgStatement oldObj,
-            Map<String, AbstractTable> tmpTblsMapping,
-            Map<String, Set<String>> tblIdentityColsMapping) {
+    private void addCommandsForRenameTbl(PgDiffScript script, PgStatement oldObj) {
         String tmpSuffix = '_' + UUID.randomUUID().toString().replace("-", "");
         AbstractTable oldTbl = (AbstractTable) oldObj;
         String tmpTblName = oldTbl.getName() + tmpSuffix;
 
         script.addStatement(getRenameCommand(oldTbl, tmpTblName));
-        tmpTblsMapping.put(tmpTblName, oldTbl);
+        tblTmpNamesMapping.put(oldTbl, tmpTblName);
 
         if (arguments.isMsSql()) {
-            for (MsColumn msCol : PgDiffUtils.sIter(((MsTable) oldTbl)
-                    .getColumns().stream().map(col -> (MsColumn) col))) {
+            for (AbstractColumn col : oldTbl.getColumns()) {
+                MsColumn msCol = (MsColumn) col;
                 if (msCol.isIdentity()) {
                     tblIdentityColsMapping.computeIfAbsent(
                             oldTbl.getQualifiedName(),
-                            k -> new LinkedHashSet<>()).add(msCol.getName());
+                            k -> new ArrayList<>()).add(msCol.getName());
                 }
                 if (msCol.getDefaultName() != null) {
                     script.addStatement("ALTER TABLE "
@@ -304,7 +295,7 @@ public class ActionsToScriptConverter {
                         pgCol.getSequence().getName() + tmpSuffix));
                 tblIdentityColsMapping.computeIfAbsent(
                         oldTbl.getQualifiedName(),
-                        k -> new LinkedHashSet<>()).add(pgCol.getName());
+                        k -> new ArrayList<>()).add(pgCol.getName());
             }
         }
     }
@@ -322,7 +313,7 @@ public class ActionsToScriptConverter {
                         PgDiffUtils.quoteString(st.getQualifiedName()),
                         PgDiffUtils.quoteString(newName))
                 : MessageFormat.format(RENAME_PG_OBJECT, st.getStatementType(),
-                        st.getQualifiedName(), newName);
+                        st.getQualifiedName(), PgDiffUtils.getQuotedName(newName));
     }
 
     /**
@@ -332,28 +323,28 @@ public class ActionsToScriptConverter {
      *
      * @param script script represented as a list of SQL statements
      * @param oldObj original table object
-     * @param tmpTblsMapping the map containing the temporary table name as a
-     * key and a table object with the original name as the key value
-     * @param tblIdentityColsMapping the map that contains the original table
-     * name as a key and a set of identity column names of that table as a value
      */
-    private void addCommandsForMoveData(PgDiffScript script, PgStatement oldObj,
-            Map<String, AbstractTable> tmpTblsMapping,
-            Map<String, Set<String>> tblIdentityColsMapping) {
-        Entry<String, AbstractTable> tmpTblMapping = tmpTblsMapping.entrySet().stream()
-                .filter(e -> e.getValue().getQualifiedName().equals(oldObj.getQualifiedName()))
+    private void addCommandsForMoveData(PgDiffScript script, PgStatement oldObj) {
+        Entry<AbstractTable, String> tblTmpNameMapping = tblTmpNamesMapping.entrySet().stream()
+                .filter(e -> e.getKey().getQualifiedName().equals(oldObj.getQualifiedName()))
                 .findAny().orElse(null);
 
-        if (tmpTblMapping == null) {
+        if (tblTmpNameMapping == null) {
             return;
         }
 
-        AbstractTable oldTbl = tmpTblMapping.getValue();
+        AbstractTable oldTbl = tblTmpNameMapping.getKey();
         String oldTblQName = oldTbl.getQualifiedName();
-        String tmpTblQName = arguments.isMsSql() ? String.join(".",
-                MsDiffUtils.quoteName(oldTbl.getSchemaName()),
-                MsDiffUtils.quoteName(tmpTblMapping.getKey()))
-                : String.join(".", oldTbl.getSchemaName(), tmpTblMapping.getKey());
+
+        String tmpTblQName = null;
+        if (arguments.isMsSql()) {
+            tmpTblQName = MsDiffUtils.quoteName(oldTbl.getSchemaName()) + '.'
+                    + MsDiffUtils.quoteName(tblTmpNameMapping.getValue());
+        } else {
+            tmpTblQName = oldTbl.getSchemaName() + '.'
+                    + PgDiffUtils.getQuotedName(tblTmpNameMapping.getValue());
+        }
+
         String cols = getColsForMovingData(oldTbl);
 
         StringBuilder sb = new StringBuilder();
@@ -376,11 +367,11 @@ public class ActionsToScriptConverter {
             .append(" OFF\nGO");
         }
 
-        Set<String> identityCols = tblIdentityColsMapping.get(oldTblQName);
+        List<String> identityCols = tblIdentityColsMapping.get(oldTblQName);
         if (identityCols != null) {
             if (arguments.isMsSql()) {
                 // There can only be one IDENTITY column per table in MSSQL.
-                String colName = identityCols.iterator().next();
+                String colName = identityCols.get(0);
                 String restartVarName = getRestartVarName(oldTbl, colName);
                 sb.append("\n\nDECLARE @").append(restartVarName)
                 .append(" integer = (SELECT IDENT_CURRENT ('").append(tmpTblQName)
