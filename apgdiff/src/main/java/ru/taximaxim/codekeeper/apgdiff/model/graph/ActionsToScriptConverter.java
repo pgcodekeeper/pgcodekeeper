@@ -349,32 +349,34 @@ public class ActionsToScriptConverter {
 
         String tblQName = newTbl.getQualifiedName();
         List<String> colsForMovingData = getColsForMovingData(newTbl);
-        String cols = colsForMovingData.stream().collect(Collectors.joining(", "));
+
+        List<String> identityCols = tblIdentityColsMapping.get(tblQName);
+        List<String> identityColsForMovingData = identityCols == null ? null
+                : identityCols.stream().filter(colsForMovingData::contains)
+                .collect(Collectors.toList());
+        boolean hasIdentityColsForMovingData = identityColsForMovingData != null
+                && !identityColsForMovingData.isEmpty();
 
         StringBuilder sb = new StringBuilder();
 
-        if (arguments.isMsSql()
-                && tblIdentityColsMapping.containsKey(tblQName)) {
+        if (arguments.isMsSql() && hasIdentityColsForMovingData) {
             // There can only be one IDENTITY column per table in MSSQL.
             sb.append("SET IDENTITY_INSERT ").append(tblQName)
             .append(" ON\nGO\n\n");
         }
 
+        String cols = colsForMovingData.stream().collect(Collectors.joining(", "));
         sb.append("INSERT INTO ").append(tblQName).append('(')
         .append(cols).append(") SELECT ").append(cols).append(" FROM ")
         .append(tmpTblQName).append(arguments.isMsSql() ? "\nGO" : ';');
 
-        if (arguments.isMsSql()
-                && tblIdentityColsMapping.containsKey(tblQName)) {
+        if (arguments.isMsSql() && hasIdentityColsForMovingData) {
             // There can only be one IDENTITY column per table in MSSQL.
             sb.append("\n\nSET IDENTITY_INSERT ").append(tblQName)
             .append(" OFF\nGO");
         }
 
-        List<String> identityCols = tblIdentityColsMapping.get(tblQName);
-        if (identityCols != null) {
-            List<String> identityColsForMovingData = identityCols.stream()
-                    .filter(colsForMovingData::contains).collect(Collectors.toList());
+        if (hasIdentityColsForMovingData) {
             if (arguments.isMsSql()) {
                 // There can only be one IDENTITY column per table in MSSQL.
                 String colName = identityColsForMovingData.get(0);
