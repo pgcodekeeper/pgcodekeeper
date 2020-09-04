@@ -27,6 +27,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.MsColumn;
 import cz.startnet.utils.pgdiff.schema.MsView;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -48,25 +49,28 @@ public class ActionsToScriptConverter {
     private final Set<PgStatement> toRefresh;
     private final PgDiffArguments arguments;
 
-    // for storing pairs of a table qualified name as a key and its temporary
-    // name as a value
-    private Map<String, String> tblTmpNamesMapping;
+    private final PgDatabase oldDbFull;
+
+    // for storing pairs of a table object as a key and its temporary name as a value
+    private Map<AbstractTable, String> tblTmpNamesMapping;
     // for storing pairs of table qualified name as a key and a list of identity
     // column names of that table as a value
     private Map<String, List<String>> tblIdentityColsMapping;
 
-    public ActionsToScriptConverter(Set<ActionContainer> actions, PgDiffArguments arguments) {
-        this(actions, Collections.emptySet(), arguments);
+    public ActionsToScriptConverter(Set<ActionContainer> actions,
+            PgDiffArguments arguments, PgDatabase oldDbFull) {
+        this(actions, Collections.emptySet(), arguments, oldDbFull);
     }
 
     /**
      * @param toRefresh an ordered set of refreshed statements in reverse order
      */
     public ActionsToScriptConverter(Set<ActionContainer> actions, Set<PgStatement> toRefresh,
-            PgDiffArguments arguments) {
+            PgDiffArguments arguments, PgDatabase oldDbFull) {
         this.actions = actions;
         this.arguments = arguments;
         this.toRefresh = toRefresh;
+        this.oldDbFull = oldDbFull;
         if (arguments.isDataMovementMode()) {
             tblTmpNamesMapping = new HashMap<>();
             tblIdentityColsMapping = new HashMap<>();
@@ -270,7 +274,7 @@ public class ActionsToScriptConverter {
         String tmpTblName = oldTbl.getName() + tmpSuffix;
 
         script.addStatement(getRenameCommand(oldTbl, tmpTblName));
-        tblTmpNamesMapping.put(oldTbl.getQualifiedName(), tmpTblName);
+        tblTmpNamesMapping.put(oldTbl, tmpTblName);
 
         if (arguments.isMsSql()) {
             for (AbstractColumn col : oldTbl.getColumns()) {
@@ -317,22 +321,22 @@ public class ActionsToScriptConverter {
     }
 
     /**
-     * Adds commands to the script for move data from a temporary table
-     * to a new table, given the identity columns, and a command to delete
+     * Adds commands to the script for move data from the temporary table
+     * to the new table, given the identity columns, and a command to delete
      * the temporary table.
      *
      * @param script script represented as a list of SQL statements
-     * @param oldObj original table object
+     * @param createdObj created table object
      */
-    private void addCommandsForMoveData(PgDiffScript script, PgStatement oldObj) {
-        String oldTblQName = oldObj.getQualifiedName();
-        String tblTmpBareName = tblTmpNamesMapping.get(oldTblQName);
+    private void addCommandsForMoveData(PgDiffScript script, PgStatement newObj) {
+        AbstractTable oldTbl = (AbstractTable) newObj.getTwin(oldDbFull);
+        String tblTmpBareName = tblTmpNamesMapping.get(oldTbl);
 
         if (tblTmpBareName == null) {
             return;
         }
 
-        AbstractTable oldTbl = (AbstractTable) oldObj;
+        AbstractTable newTbl = (AbstractTable) newObj;
 
         String tmpTblQName = null;
         if (arguments.isMsSql()) {
@@ -343,47 +347,51 @@ public class ActionsToScriptConverter {
                     + PgDiffUtils.getQuotedName(tblTmpBareName);
         }
 
-        String cols = getColsForMovingData(oldTbl);
+        String tblQName = newTbl.getQualifiedName();
+        List<String> colsForMovingData = getColsForMovingData(newTbl);
+        String cols = colsForMovingData.stream().collect(Collectors.joining(", "));
 
         StringBuilder sb = new StringBuilder();
 
         if (arguments.isMsSql()
-                && tblIdentityColsMapping.containsKey(oldTblQName)) {
+                && tblIdentityColsMapping.containsKey(tblQName)) {
             // There can only be one IDENTITY column per table in MSSQL.
-            sb.append("SET IDENTITY_INSERT ").append(oldTblQName)
+            sb.append("SET IDENTITY_INSERT ").append(tblQName)
             .append(" ON\nGO\n\n");
         }
 
-        sb.append("INSERT INTO ").append(oldTblQName).append('(')
+        sb.append("INSERT INTO ").append(tblQName).append('(')
         .append(cols).append(") SELECT ").append(cols).append(" FROM ")
         .append(tmpTblQName).append(arguments.isMsSql() ? "\nGO" : ';');
 
         if (arguments.isMsSql()
-                && tblIdentityColsMapping.containsKey(oldTblQName)) {
+                && tblIdentityColsMapping.containsKey(tblQName)) {
             // There can only be one IDENTITY column per table in MSSQL.
-            sb.append("\n\nSET IDENTITY_INSERT ").append(oldTblQName)
+            sb.append("\n\nSET IDENTITY_INSERT ").append(tblQName)
             .append(" OFF\nGO");
         }
 
-        List<String> identityCols = tblIdentityColsMapping.get(oldTblQName);
+        List<String> identityCols = tblIdentityColsMapping.get(tblQName);
         if (identityCols != null) {
+            List<String> identityColsForMovingData = identityCols.stream()
+                    .filter(colsForMovingData::contains).collect(Collectors.toList());
             if (arguments.isMsSql()) {
                 // There can only be one IDENTITY column per table in MSSQL.
-                String colName = identityCols.get(0);
-                String restartVarName = getRestartVarName(oldTbl, colName);
+                String colName = identityColsForMovingData.get(0);
+                String restartVarName = getRestartVarName(newTbl, colName);
                 sb.append("\n\nDECLARE @").append(restartVarName)
                 .append(" integer = (SELECT IDENT_CURRENT ('").append(tmpTblQName)
                 .append("'));\nBEGIN\n\tEXECUTE ('DBCC CHECKIDENT (''")
-                .append(oldTblQName).append("'', RESEED, ' + @")
+                .append(tblQName).append("'', RESEED, ' + @")
                 .append(restartVarName).append(" + ');');\nEND\nGO");
             } else {
-                for (String colName : identityCols) {
-                    String restartVarName = getRestartVarName(oldTbl, colName);
+                for (String colName : identityColsForMovingData) {
+                    String restartVarName = getRestartVarName(newTbl, colName);
                     sb.append("\n\nDO $$ DECLARE ").append(restartVarName)
                     .append(" integer = (SELECT nextval(pg_get_serial_sequence('")
                     .append(tmpTblQName).append("', '").append(colName)
                     .append("')));\nBEGIN\n\tEXECUTE 'ALTER TABLE ")
-                    .append(oldTblQName).append(" ALTER COLUMN ").append(colName)
+                    .append(tblQName).append(" ALTER COLUMN ").append(colName)
                     .append(" RESTART WITH ' || ").append(restartVarName)
                     .append(" || ';';\nEND\n$$;");
                 }
@@ -400,8 +408,10 @@ public class ActionsToScriptConverter {
      * Returns the names of the columns from which data will be moved to another
      * table, excluding calculated columns.
      */
-    private String getColsForMovingData(AbstractTable tbl) {
-        Stream<? extends AbstractColumn> cols = tbl.getColumns().stream();
+    private List<String> getColsForMovingData(AbstractTable newTbl) {
+        Stream<? extends AbstractColumn> cols = newTbl.getColumns().stream()
+                .filter(col -> ((AbstractTable) newTbl.getTwin(oldDbFull)).getColumns()
+                        .contains(col));
         if (arguments.isMsSql()) {
             cols = cols.map(col -> (MsColumn) col)
                     .filter(msCol -> msCol.getExpression() == null);
@@ -409,7 +419,7 @@ public class ActionsToScriptConverter {
             cols = cols.map(col -> (PgColumn) col)
                     .filter(pgCol -> !pgCol.isGenerated());
         }
-        return cols.map(AbstractColumn::getName).collect(Collectors.joining(", "));
+        return cols.map(AbstractColumn::getName).collect(Collectors.toList());
     }
 
     /**
