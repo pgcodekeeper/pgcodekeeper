@@ -47,6 +47,7 @@ public class DiffTest {
             {new MoveDataIdentityArgumentsProvider()},
             {new MoveDataMSArgumentsProvider()},
             {new MoveDataMSIdentityArgumentsProvider()},
+            {new MoveDataDiffColsIdentityArgumentsProvider()},
         });
 
         return p.stream()::iterator;
@@ -98,7 +99,8 @@ public class DiffTest {
 
     private String checkForRandomParts(String actualScript) {
         if (args instanceof MoveDataArgumentsProvider
-                || args instanceof MoveDataIdentityArgumentsProvider) {
+                || args instanceof MoveDataIdentityArgumentsProvider
+                || args instanceof MoveDataDiffColsIdentityArgumentsProvider) {
             return replaceRandomParts(actualScript, COMMAND_WITH_RANDOM_PG);
         } else if (args instanceof MoveDataMSArgumentsProvider
                 || args instanceof MoveDataMSIdentityArgumentsProvider) {
@@ -457,6 +459,27 @@ class MoveDataMSIdentityArgumentsProvider extends ArgumentsProvider {
         File fNew = getFile(FILES_POSTFIX.NEW_SQL);
         File fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
         return new String[]{"--move-data", "--ms-sql", "-o",
+                getDiffResultFile().getAbsolutePath(),
+                fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation for data movement test in PG
+ * for case with different columns
+ * (with identity columns)
+ */
+class MoveDataDiffColsIdentityArgumentsProvider extends ArgumentsProvider {
+
+    public MoveDataDiffColsIdentityArgumentsProvider() {
+        super("move_data_diff_cols_identity");
+    }
+
+    @Override
+    protected String[] args() throws URISyntaxException, IOException {
+        File fNew = getFile(FILES_POSTFIX.NEW_SQL);
+        File fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
+        return new String[]{"--move-data", "-o",
                 getDiffResultFile().getAbsolutePath(),
                 fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
     }
