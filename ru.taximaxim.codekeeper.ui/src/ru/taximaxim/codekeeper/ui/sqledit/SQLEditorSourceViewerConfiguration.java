@@ -53,6 +53,8 @@ import org.eclipse.ui.texteditor.spelling.SpellingProblem;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.copiedclasses.CompletionProposal;
+import ru.taximaxim.codekeeper.ui.sqledit.it_is_only_example.could_be_removed.JavaHoverInformationControl;
+import ru.taximaxim.codekeeper.ui.sqledit.it_is_only_example.could_be_removed.JavaTextHover;
 
 public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfiguration {
 
@@ -110,7 +112,8 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
 
     @Override
     public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
-        return editor == null ? null : new SQLEditorTextHover(sourceViewer, editor);
+        // TODO replace it by "SQLEditorTextHover(sourceViewer, editor)", after fix in "SQLEditorTextHover"
+        return new JavaTextHover();
     }
 
     /**
@@ -127,7 +130,8 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         return new IInformationControlCreator() {
             @Override
             public IInformationControl createInformationControl(Shell parent) {
-                return new SQLHoverInformationControl(parent);
+                // TODO replace it by "SQLHoverInformationControl(parent)", after fix in "SQLHoverInformationControl"
+                return new JavaHoverInformationControl(parent);
             }
         };
     }
