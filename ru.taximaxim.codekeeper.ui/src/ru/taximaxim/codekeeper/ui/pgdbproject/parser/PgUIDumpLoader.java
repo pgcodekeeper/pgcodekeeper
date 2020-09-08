@@ -104,6 +104,24 @@ public class PgUIDumpLoader extends PgDumpLoader {
             }
             marker.setAttribute(IMarker.CHAR_START, start);
             marker.setAttribute(IMarker.CHAR_END, stop + 1);
+
+            //////////
+            //            StringBuilder sb = new StringBuilder();
+            //            IWorkspace workspace = ResourcesPlugin.getWorkspace();
+            //            IResource resource = workspace.getRoot();
+            //            IMarker[] markers = resource.findMarkers(IMarker.MARKER, true, IResource.DEPTH_INFINITE);
+            //            for (IMarker m : markers) {
+            //                sb.append("\n\n >>>");
+            //                sb.append("\nId: " + m.getId());
+            //                sb.append("\nMessage: " + m.getAttribute(IMarker.MESSAGE));
+            //                sb.append("\nSource ID: " + m.getAttribute(IMarker.SOURCE_ID));
+            //                sb.append("\nLocation: " + m.getAttribute(IMarker.LOCATION));
+            //                sb.append("\nLine Number: " + m.getAttribute(IMarker.LINE_NUMBER));
+            //                sb.append("\nMarker: " + m.getAttribute(IMarker.MARKER));
+            //            }
+            //            System.err.println(sb.toString());
+            //////////
+
         } catch (BadLocationException | CoreException ex) {
             Log.log(ex);
         }

@@ -7,6 +7,7 @@ import org.eclipse.jface.text.DefaultTextHover;
 import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextHoverExtension;
+import org.eclipse.jface.text.ITextHoverExtension2;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.source.Annotation;
@@ -17,7 +18,7 @@ import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.meta.MetaStatement;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 
-final class SQLEditorTextHover extends DefaultTextHover implements ITextHoverExtension  {
+final class SQLEditorTextHover extends DefaultTextHover implements ITextHoverExtension, ITextHoverExtension2 {
 
     private static final String QUICKDIFF = "org.eclipse.ui.workbench.texteditor.quickdiff"; //$NON-NLS-1$
 
@@ -60,12 +61,42 @@ final class SQLEditorTextHover extends DefaultTextHover implements ITextHoverExt
     public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
         @SuppressWarnings("deprecation")
         String msg = super.getHoverInfo(textViewer, hoverRegion);
+        System.err.println(" >>> getHoverInfo : ");
         if (msg != null) {
+            System.err.println("    >>> getHoverInfo - msg : " + msg);
             return msg;
         }
         if (hoverRegion instanceof SQLEditorMyRegion) {
             return ((SQLEditorMyRegion) hoverRegion).getComment();
         }
         return "";  //$NON-NLS-1$
+    }
+
+    @Override
+    public Object getHoverInfo2(ITextViewer textViewer, IRegion hoverRegion) {
+
+        System.err.println("\n\n --- getHoverInfo2");
+
+        // Start with the string returned by the older getHoverInfo()
+        final String selection = getHoverInfo(textViewer, hoverRegion);
+
+        // If text is selected in the editor window, it's returned as the
+        // hover string. If no text is selected, then the returned hover is
+        // a URL pointing to www.outofwhatbox.com/blog.
+        return new SQLHoverInformationControl.IHTMLHoverInfo() {
+
+            @Override
+            public boolean isURL() {
+                return selection.length() == 0;
+            }
+
+            @Override
+            public String getHTMLString() {
+                if (isURL()){
+                    return "http://www.outofwhatbox.com/blog";             //$NON-NLS-1$
+                }
+                return selection;
+            }
+        };
     }
 }
