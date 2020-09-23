@@ -31,6 +31,7 @@ import cz.startnet.utils.pgdiff.schema.PgOverride;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.apgdiff.ignoreparser.IgnoreParser;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.CompareTree;
@@ -176,7 +177,7 @@ public class PgDiff {
      *
      * @return the loaded database
      */
-    private PgDatabase loadDatabaseSchema(String format, String srcPath)
+    public PgDatabase loadDatabaseSchema(String format, String srcPath)
             throws InterruptedException, IOException {
         DatabaseLoader loader;
         if ("dump".equals(format)) {
@@ -294,6 +295,27 @@ public class PgDiff {
                 .useIgnoreList(ignoreList)
                 .onlyTypes(arguments.getAllowedTypes())
                 .flatten(root);
+    }
+
+    public void updateProject()
+            throws IOException, InterruptedException, PgCodekeeperException {
+
+        PgDatabase oldDatabase = loadOldDatabaseWithLibraries();
+        PgDatabase newDatabase = loadNewDatabaseWithLibraries();
+
+        IgnoreParser ignoreParser = new IgnoreParser();
+        for (String listFilename : arguments.getIgnoreLists()) {
+            ignoreParser.parse(Paths.get(listFilename));
+        }
+        TreeElement root = DiffTree.create(oldDatabase, newDatabase, null);
+        root.setAllChecked();
+
+        List<TreeElement> selected = getSelectedElements(root,
+                ignoreParser.getIgnoreList());
+
+        new ProjectUpdater(newDatabase, oldDatabase, selected, arguments.isMsSql(),
+                arguments.getOutCharsetName(), Paths.get(arguments.getOutputTarget()),
+                false).updatePartial();
     }
 
     private void createScript(DepcyResolver depRes, List<TreeElement> selected,

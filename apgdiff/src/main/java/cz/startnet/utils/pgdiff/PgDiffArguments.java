@@ -55,6 +55,7 @@ public class PgDiffArguments implements Cloneable {
     private final List<String> graphNames = new ArrayList<>();
     private boolean ignoreErrors;
     private boolean ignoreColumnOrder;
+    private boolean projUpdate;
 
     public void setModeParse(final boolean modeParse) {
         this.modeParse = modeParse;
@@ -343,5 +344,13 @@ public class PgDiffArguments implements Cloneable {
         } catch (CloneNotSupportedException e) {
             throw new RuntimeException("Impossible error", e);
         }
+    }
+
+    public boolean isProjUpdate() {
+        return projUpdate;
+    }
+
+    public void setProjUpdate(boolean projUpdate) {
+        this.projUpdate = projUpdate;
     }
 }

@@ -50,6 +50,7 @@ public final class Main {
     public static boolean main(String[] args) {
         PrintWriter writer = new PrintWriter(System.out, true);
         CliArgs arguments = new CliArgs();
+        PgDiff diff = new PgDiff(arguments);
         try {
             if (!arguments.parse(writer, args)) {
                 return true;
@@ -59,9 +60,13 @@ public final class Main {
             } else if (arguments.isModeGraph()) {
                 return graph(writer, arguments);
             } else {
-                return diff(writer, arguments);
+                return diff( writer, arguments);
             }
-        } catch (CmdLineException | NotAllowedObjectException ex) {
+        }
+        catch (PgCodekeeperException ex) {
+            diff.getErrors().forEach(System.err::println);
+            return false;        }
+        catch (CmdLineException | NotAllowedObjectException ex) {
             System.err.println(ex.getLocalizedMessage());
             return false;
         } catch (Exception e) {
@@ -80,17 +85,11 @@ public final class Main {
     }
 
     private static boolean diff(PrintWriter writer, PgDiffArguments arguments)
-            throws InterruptedException, IOException, SQLException {
+            throws InterruptedException, IOException, SQLException, PgCodekeeperException {
         try (PrintWriter encodedWriter = getDiffWriter(arguments)) {
             PgDiff diff = new PgDiff(arguments);
             String text;
-            try {
-                text = diff.createDiff();
-            } catch (PgCodekeeperException ex) {
-                diff.getErrors().forEach(System.err::println);
-                return false;
-            }
-
+            text = diff.createDiff();
             ScriptParser parser = new ScriptParser("CLI", text, arguments.isMsSql());
 
             if (arguments.isSafeMode()) {
@@ -136,22 +135,20 @@ public final class Main {
     }
 
     private static boolean parse(PgDiffArguments arguments)
-            throws IOException, InterruptedException {
+            throws IOException, InterruptedException, PgCodekeeperException {
         PgDiff diff = new PgDiff(arguments);
         PgDatabase d;
-        try {
-            d = diff.loadNewDatabase();
-        } catch (PgCodekeeperException ex) {
-            diff.getErrors().forEach(System.err::println);
-            return false;
-        }
-
-        if (arguments.isMsSql()) {
-            new MsModelExporter(Paths.get(arguments.getOutputTarget()),
-                    d, arguments.getOutCharsetName()).exportFull();
+        if (arguments.isProjUpdate()) {
+            diff.updateProject();
         } else {
-            new ModelExporter(Paths.get(arguments.getOutputTarget()),
-                    d, arguments.getOutCharsetName()).exportFull();
+            d = diff.loadNewDatabase();
+            if (arguments.isMsSql()) {
+                new MsModelExporter(Paths.get(arguments.getOutputTarget()),
+                        d, arguments.getOutCharsetName()).exportFull();
+            } else {
+                new ModelExporter(Paths.get(arguments.getOutputTarget()),
+                        d, arguments.getOutCharsetName()).exportFull();
+            }
         }
 
         return true;

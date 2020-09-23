@@ -142,7 +142,7 @@ public class CliArgs extends PgDiffArguments {
             usage="enable dependencies from bodies of functions and procedures to other functions or procedures")
     private boolean enableFunctionBodiesDependencies;
 
-    @Option(name="-Z", aliases="--time-zone", metaVar="<timezone>",forbids={"--graph", "--parse", "--ms-sql"},
+    @Option(name="-Z", aliases="--time-zone", metaVar="<timezone>",forbids={"--graph", "--ms-sql"},
             usage="use this timezone when working with database, also add SET TIMEZONE statement to the script")
     private String timeZone;
 
@@ -167,7 +167,7 @@ public class CliArgs extends PgDiffArguments {
             usage="allows dangerous statements in safe-mode scripts")
     private List<DangerStatement> allowedDangers;
 
-    @Option(name="-O", aliases="--allowed-object", forbids={"--graph", "--parse"},
+    @Option(name="-O", aliases="--allowed-object", forbids={"--graph"},
             handler=DbObjTypeOptionHandler.class,
             usage="build the script using these object types only, hide statements of other objects")
     private List<DbObjType> allowedTypes;
@@ -176,47 +176,47 @@ public class CliArgs extends PgDiffArguments {
             usage="exit with an error when --allowed-object hides a dependency statement from the script")
     private boolean stopNotAllowed;
 
-    @Option(name="--selected-only", forbids={"--graph", "--parse"},
+    @Option(name="--selected-only", forbids={"--graph"},
             usage="build the script using 'selected' objects only, hide statements of other objects"
                     + "\nin CLI, selected means included by --allowed-object and ignore lists")
     private boolean selectedOnly;
 
-    @Option(name="-I", aliases="--ignore-list", metaVar="<path>", forbids={"--graph", "--parse"},
+    @Option(name="-I", aliases="--ignore-list", metaVar="<path>", forbids={"--graph"},
             usage="use an ignore list to include/exclude objects from diff"
                     + "\nspecify multiple times to use several lists")
     private List<String> ignoreLists;
 
-    @Option(name="--src-lib-xml", metaVar="<path>", forbids={"--parse"},
+    @Option(name="--src-lib-xml", metaVar="<path>",
             usage="add xml with library dependencies to source"
                     + "\nspecify multiple times to use several library xml's")
     private List<String> targetLibXmls;
 
-    @Option(name="--src-lib", metaVar="<path or JDBC>", forbids={"--parse"},
+    @Option(name="--src-lib", metaVar="<path or JDBC>",
             usage="add library dependency to source"
                     + "\nspecify multiple times to use several libraries")
     private List<String> targetLibs;
 
-    @Option(name="--src-lib-no-priv", metaVar="<path or JDBC>", forbids={"--parse"},
+    @Option(name="--src-lib-no-priv", metaVar="<path or JDBC>",
             usage="add library dependency to source without privileges"
                     + "\nspecify multiple times to use several libraries")
     private List<String> targetLibsWithoutPriv;
 
-    @Option(name="--tgt-lib-xml", metaVar="<path>", forbids={"--parse"},
+    @Option(name="--tgt-lib-xml", metaVar="<path>",
             usage="add xml with library dependencies to target"
                     + "\nspecify multiple times to use several library xml's")
     private List<String> sourceLibXmls;
 
-    @Option(name="--tgt-lib", metaVar="<path or JDBC>", forbids={"--parse"},
+    @Option(name="--tgt-lib", metaVar="<path or JDBC>",
             usage="add library dependency to destination"
                     + "\nspecify multiple times to use several libraries")
     private List<String> sourceLibs;
 
-    @Option(name="--tgt-lib-no-priv", metaVar="<path or JDBC>", forbids={"--parse"},
+    @Option(name="--tgt-lib-no-priv", metaVar="<path or JDBC>",
             usage="add library dependency to destination without privileges"
                     + "\nspecify multiple times to use several libraries")
     private List<String> sourceLibsWithoutPriv;
 
-    @Option(name="--lib-safe-mode", forbids={"--parse"},
+    @Option(name="--lib-safe-mode",
             usage="exit with an error if a library object conflicts with other schema or library objects"
                     + " otherwise, in case of conflicts objects loaded first have priority")
     private boolean libSafeMode;
@@ -242,6 +242,20 @@ public class CliArgs extends PgDiffArguments {
                     + "\nspecify multiple times to use several names")
     private List<String> graphNames;
 
+    @Option(name="--project-update",
+            usage="update project in parse mode")
+    private boolean projUpdate;
+
+    @Override
+    public boolean isProjUpdate() {
+        return projUpdate;
+    }
+
+    @Override
+    public void setProjUpdate(boolean projUpdate) {
+        this.projUpdate = projUpdate;
+    }
+
     @Override
     public boolean isModeParse() {
         return modeParse;
@@ -264,6 +278,7 @@ public class CliArgs extends PgDiffArguments {
 
     @Override
     public String getNewSrc() {
+
         return newSrc;
     }
 
@@ -617,12 +632,17 @@ public class CliArgs extends PgDiffArguments {
         String msJdbcStart = "jdbc:sqlserver:";
         String pgJdbcStart = "jdbc:postgresql:";
 
+        if(isModeParse() && isProjUpdate()) {
+            setOldSrc(getOutputTarget());
+            setOldSrcFormat(parsePath(getOldSrc()));
+        }
+
         if (isModeParse() || isModeGraph()) {
             if (getNewSrc() == null) {
                 badArgs("Please specify SCHEMA.");
             }
-            if (getOldSrc() != null) {
-                badArgs("DEST argument doesn't require.");
+            if (getOldSrc() != null && !isProjUpdate()) {
+                badArgs("DEST argument isn't required.");
             }
             if (isMsSql() && getNewSrc().startsWith(pgJdbcStart)) {
                 badArgs("Cannot work with PostgerSQL database as MS SQL project.");

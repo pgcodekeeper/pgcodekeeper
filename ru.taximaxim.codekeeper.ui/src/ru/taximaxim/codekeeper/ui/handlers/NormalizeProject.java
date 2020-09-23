@@ -28,7 +28,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
-import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
+import ru.taximaxim.codekeeper.ui.fileutils.UIProjectUpdater;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
@@ -60,7 +60,7 @@ public class NormalizeProject extends AbstractHandler {
                 try {
                     PgDatabase db = DbSource.fromProject(proj).get(mon.newChild(1));
                     mon.newChild(1).subTask(Messages.NormalizeProject_exporting_project);
-                    new ProjectUpdater(db, proj).updateFull();
+                    new UIProjectUpdater(db, proj).updateFull();
                 } catch (IOException | CoreException ex) {
                     return new Status(IStatus.ERROR, PLUGIN_ID.THIS,
                             Messages.NormalizeProject_error_while_updating_project, ex);
