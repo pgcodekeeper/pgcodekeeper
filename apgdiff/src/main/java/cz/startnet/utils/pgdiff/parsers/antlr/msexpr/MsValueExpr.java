@@ -1,8 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.msexpr;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Aggregate_windowed_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.All_distinct_expressionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Analytic_windowed_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Case_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_declarationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Data_typeContext;
@@ -17,7 +15,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Order_by_expressionCont
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Over_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.PredicateContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Ranking_windowed_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Scalar_function_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Search_conditionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Search_condition_andContext;
@@ -75,9 +72,6 @@ public class MsValueExpr extends MsAbstractExpr {
     }
 
     public GenericColumn functionCall(Function_callContext functionCall) {
-        Ranking_windowed_functionContext rwf;
-        Analytic_windowed_functionContext awf;
-        Aggregate_windowed_functionContext agg;
         Scalar_function_nameContext sfn;
         Qualified_nameContext seq;
         Function_callContext fc;
@@ -88,21 +82,13 @@ public class MsValueExpr extends MsAbstractExpr {
             analyze(exp);
         }
 
-        if ((rwf = functionCall.ranking_windowed_function()) != null) {
-            overClause(rwf.over_clause());
-            ExpressionContext exp = rwf.expression();
-            if (exp != null) {
-                analyze(exp);
-            }
-        } else if ((awf = functionCall.analytic_windowed_function()) != null) {
-            overClause(awf.over_clause());
-            for (ExpressionContext exp : awf.expression()) {
-                analyze(exp);
-            }
-        } else if ((agg = functionCall.aggregate_windowed_function()) != null) {
-            aggregate(agg);
-        } else if ((sfn = functionCall.scalar_function_name()) != null) {
+        if ((sfn = functionCall.scalar_function_name()) != null) {
             expressionList(functionCall.expression_list());
+            All_distinct_expressionContext distinct = functionCall.all_distinct_expression();
+            if (distinct != null) {
+                analyze(distinct.expression());
+            }
+            overClause(functionCall.over_clause());
             return function(sfn);
         } else if ((seq = functionCall.sequence_name)!= null) {
             addObjectDepcy(seq, DbObjType.SEQUENCE);
@@ -117,6 +103,8 @@ public class MsValueExpr extends MsAbstractExpr {
             for (Column_declarationContext col : functionCall.column_declaration()) {
                 addTypeDepcy(col.data_type());
             }
+        } else if (functionCall.IIF() != null) {
+            search(functionCall.search_condition());
         } else {
             expressionList(functionCall.expression_list());
         }
@@ -137,20 +125,6 @@ public class MsValueExpr extends MsAbstractExpr {
             for (Search_condition_notContext scn : sca.search_condition_not()) {
                 predicate(scn.predicate());
             }
-        }
-    }
-
-    public void aggregate(Aggregate_windowed_functionContext agg) {
-        overClause(agg.over_clause());
-        expressionList(agg.expression_list());
-        All_distinct_expressionContext distinct = agg.all_distinct_expression();
-        if (distinct != null) {
-            analyze(distinct.expression());
-        }
-
-        ExpressionContext exp = agg.expression();
-        if (exp != null) {
-            analyze(exp);
         }
     }
 

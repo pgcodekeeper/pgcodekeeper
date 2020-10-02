@@ -81,6 +81,9 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeFlattener;
  *      (CONSTRAINT)    public.t3.constr_t3
  *      (TRIGGER)       public.t3.t3_trigger
  *      (VIEW)          public.v1
+ *      (TABLE)         public.t/1
+ *      (TABLE)         public.t_1
+ *      (TABLE)         public.t?1
  *  -->
  *
  * @author ryabinin_av
@@ -89,47 +92,40 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeFlattener;
 @RunWith(value = Parameterized.class)
 public class PartialExporterTest {
 
-    static final String UTF_8 = ApgdiffConsts.UTF_8;
-    private final int index;
-
     private static PgDatabase dbSource;
     private static PgDatabase dbTarget;
 
     @Parameters
     public static Iterable<Object[]> parameters() {
-        return ApgdiffTestUtils.getParameters(new Object[][] {
-            // SONAR-OFF
-            {1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},
-            {16},{17},{18},{19},{20}
-            // SONAR-ON
+        return ApgdiffTestUtils.getParameters(new PartialExportInfo[][] {
+            { new PartialExportInfoImpl1() },
+            { new PartialExportInfoImpl2() },
+            { new PartialExportInfoImpl3() },
+            { new PartialExportInfoImpl4() },
+            { new PartialExportInfoImpl5() },
+            { new PartialExportInfoImpl6() },
+            { new PartialExportInfoImpl7() },
+            { new PartialExportInfoImpl8() },
+            { new PartialExportInfoImpl9() },
+            { new PartialExportInfoImpl10() },
+            { new PartialExportInfoImpl11() },
+            { new PartialExportInfoImpl12() },
+            { new PartialExportInfoImpl13() },
+            { new PartialExportInfoImpl14() },
+            { new PartialExportInfoImpl15() },
+            { new PartialExportInfoImpl16() },
+            { new PartialExportInfoImpl17() },
+            { new PartialExportInfoImpl18() },
+            { new PartialExportInfoImpl19() },
+            { new PartialExportInfoImpl20() },
+            { new PartialExportInfoImpl21() },
         });
     }
 
-    private static final PartialExportInfo[] EXPORT_PRESETS = {
-            new PartialExportInfoImpl1(),
-            new PartialExportInfoImpl2(),
-            new PartialExportInfoImpl3(),
-            new PartialExportInfoImpl4(),
-            new PartialExportInfoImpl5(),
-            new PartialExportInfoImpl6(),
-            new PartialExportInfoImpl7(),
-            new PartialExportInfoImpl8(),
-            new PartialExportInfoImpl9(),
-            new PartialExportInfoImpl10(),
-            new PartialExportInfoImpl11(),
-            new PartialExportInfoImpl12(),
-            new PartialExportInfoImpl13(),
-            new PartialExportInfoImpl14(),
-            new PartialExportInfoImpl15(),
-            new PartialExportInfoImpl16(),
-            new PartialExportInfoImpl17(),
-            new PartialExportInfoImpl18(),
-            new PartialExportInfoImpl19(),
-            new PartialExportInfoImpl20()
-    };
+    private final PartialExportInfo info;
 
-    public PartialExporterTest(int index) {
-        this.index = index;
+    public PartialExporterTest(PartialExportInfo info) {
+        this.info = info;
     }
 
     @BeforeClass
@@ -137,11 +133,11 @@ public class PartialExporterTest {
         String sourceFilename = "TestPartialExportSource.sql";
         String targetFilename = "TestPartialExportTarget.sql";
         PgDiffArguments args = new PgDiffArguments();
-        args.setInCharsetName(UTF_8);
+        args.setInCharsetName(ApgdiffConsts.UTF_8);
         dbSource = ApgdiffTestUtils.loadTestDump(
                 sourceFilename, PartialExporterTest.class, args, false);
         args = new PgDiffArguments();
-        args.setInCharsetName(UTF_8);
+        args.setInCharsetName(ApgdiffConsts.UTF_8);
         dbTarget = ApgdiffTestUtils.loadTestDump(
                 targetFilename, PartialExporterTest.class, args, false);
 
@@ -151,13 +147,11 @@ public class PartialExporterTest {
 
     @Before
     public void beforeTest() throws InterruptedException {
-        EXPORT_PRESETS[index-1].setDiffTree(DiffTree.create(dbSource, dbTarget, null));
+        info.setDiffTree(DiffTree.create(dbSource, dbTarget, null));
     }
 
     @Test
     public void testExportPartial() throws IOException, PgCodekeeperException {
-        PartialExportInfo preset = EXPORT_PRESETS[index-1];
-
         Path exportDirFull = null;
         Path exportDirPartial = null;
         try  (TempDir dirFull = new TempDir("pgCodekeeper-test-files");
@@ -166,29 +160,29 @@ public class PartialExporterTest {
             exportDirPartial = dirPartial.get();
 
             // full export of source
-            new ModelExporter(exportDirFull, dbSource, UTF_8).exportFull();
+            new ModelExporter(exportDirFull, dbSource, ApgdiffConsts.UTF_8).exportFull();
             // full export of source to target directory
-            new ModelExporter(exportDirPartial, dbSource, UTF_8).exportFull();
+            new ModelExporter(exportDirPartial, dbSource, ApgdiffConsts.UTF_8).exportFull();
 
             // get new db with selected changes
-            preset.setUserSelection();
+            info.setUserSelection();
             Collection<TreeElement> list = new TreeFlattener()
                     .onlySelected()
                     .onlyEdits(dbSource, dbTarget)
-                    .flatten(preset.getDiffTree());
+                    .flatten(info.getDiffTree());
             // накатываем на полную базу частичные изменения
             new ModelExporter(exportDirPartial, dbTarget, dbSource,
-                    list, UTF_8).exportPartial();
+                    list, ApgdiffConsts.UTF_8).exportPartial();
 
-            walkAndComare(exportDirFull, exportDirPartial, preset);
+            walkAndComare(exportDirFull, exportDirPartial);
         }
     }
 
-    private void walkAndComare(Path exportDirFull, Path exportDirPartial, PartialExportInfo preset) throws IOException {
+    private void walkAndComare(Path exportDirFull, Path exportDirPartial) throws IOException {
         // first compare full export to partial
-        Map<String, String> modifiedFiles = preset.modifiedFiles();
-        List<String> newFiles = preset.newFiles();
-        List<String> deletedFiles = preset.deletedFiles();
+        Map<String, String> modifiedFiles = info.modifiedFiles();
+        List<String> newFiles = info.newFiles();
+        List<String> deletedFiles = info.deletedFiles();
         Files.walkFileTree(exportDirFull, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
                 new PartialExportTestFileVisitor(
                         exportDirFull, exportDirPartial,
@@ -199,9 +193,9 @@ public class PartialExporterTest {
                 modifiedFiles.isEmpty() && deletedFiles.isEmpty());
 
         // then compare partial export to full
-        modifiedFiles = preset.modifiedFiles();
-        newFiles = preset.newFiles();
-        deletedFiles = preset.deletedFiles();
+        modifiedFiles = info.modifiedFiles();
+        newFiles = info.newFiles();
+        deletedFiles = info.deletedFiles();
 
         Files.walkFileTree(exportDirPartial, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
                 new PartialExportTestFileVisitor(
@@ -594,5 +588,24 @@ class PartialExportInfoImpl20 extends PartialExportInfo {
     @Override
     public List<String> deletedFiles() {
         return new LinkedList<>(Arrays.asList("SCHEMA/public/TABLE/t2.sql"));
+    }
+}
+
+/**
+ * Select new tables
+ */
+class PartialExportInfoImpl21 extends PartialExportInfo {
+
+    @Override
+    public void setUserSelection() {
+        TreeElement schema = diffTree.getChild("public");
+        schema.getChild("t?1").setSelected(true);
+        schema.getChild("t/1").setSelected(true);
+        schema.getChild("t_1").setSelected(true);
+    }
+
+    @Override
+    public List<String> newFiles() {
+        return new LinkedList<>(Arrays.asList("SCHEMA/public/TABLE/t_1.sql"));
     }
 }

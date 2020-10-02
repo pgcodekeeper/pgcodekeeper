@@ -203,10 +203,25 @@ public class IgnoredObject {
     }
 
     private static String getValidId(String id) {
-        if (PgDiffUtils.isValidId(id, true, true)) {
+        if (PgDiffUtils.isValidId(id, true, true) && !isKeyword(id)) {
             return id;
-        } else {
-            return quoteWithDq(id) ? PgDiffUtils.quoteName(id) : PgDiffUtils.quoteString(id);
+        }
+
+        return quoteWithDq(id) ? PgDiffUtils.quoteName(id) : PgDiffUtils.quoteString(id);
+    }
+
+    private static boolean isKeyword(String id) {
+        switch (id) {
+        case "QUALIFIED":
+        case "HIDE":
+        case "SHOW":
+        case "ALL":
+        case "CONTENT":
+        case "REGEX":
+        case "NONE":
+            return true;
+        default:
+            return false;
         }
     }
 

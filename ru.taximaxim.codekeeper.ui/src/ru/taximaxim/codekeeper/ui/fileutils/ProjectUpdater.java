@@ -22,8 +22,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.AbstractModelExporter;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.MsModelExporter;
-import ru.taximaxim.codekeeper.apgdiff.model.exporter.MsOverridesModelExporter;
-import ru.taximaxim.codekeeper.apgdiff.model.exporter.PgOverridesModelExporter;
+import ru.taximaxim.codekeeper.apgdiff.model.exporter.OverridesModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -70,31 +69,26 @@ public class ProjectUpdater {
 
             try {
                 AbstractModelExporter exporter;
-                if (isMsSql) {
+                if (overridesOnly) {
+                    updateFolder(dirTmp, ApgdiffConsts.OVERRIDES_DIR);
+
+                    exporter = new OverridesModelExporter(dirExport, dbNew, dbOld,
+                            changedObjects, encoding, isMsSql);
+                } else if (isMsSql) {
                     for (MS_WORK_DIR_NAMES subdir : MS_WORK_DIR_NAMES.values()) {
                         updateFolder(dirTmp, subdir.getDirName());
                     }
-                    if (overridesOnly) {
-                        exporter = new MsOverridesModelExporter(dirExport, dbNew, dbOld,
-                                changedObjects, encoding);
-                    } else {
-                        exporter = new MsModelExporter(dirExport, dbNew, dbOld,
-                                changedObjects, encoding);
-                    }
+
+                    exporter = new MsModelExporter(dirExport, dbNew, dbOld,
+                            changedObjects, encoding);
                 } else {
                     for (WORK_DIR_NAMES subdir : WORK_DIR_NAMES.values()) {
                         updateFolder(dirTmp, subdir.toString());
                     }
 
-                    if (overridesOnly) {
-                        exporter = new PgOverridesModelExporter(dirExport, dbNew, dbOld,
-                                changedObjects, encoding);
-                    } else {
-                        exporter = new ModelExporter(dirExport, dbNew, dbOld,
-                                changedObjects, encoding);
-                    }
+                    exporter = new ModelExporter(dirExport, dbNew, dbOld,
+                            changedObjects, encoding);
                 }
-                updateFolder(dirTmp, ApgdiffConsts.OVERRIDES_DIR);
                 exporter.exportPartial();
             } catch (Exception ex) {
                 caughtProcessingEx = true;
