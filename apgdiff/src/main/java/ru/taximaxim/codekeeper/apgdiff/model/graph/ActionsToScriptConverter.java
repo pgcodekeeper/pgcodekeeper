@@ -13,6 +13,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -44,36 +45,40 @@ public class ActionsToScriptConverter {
     private static final String RENAME_PG_OBJECT = "ALTER {0} {1} RENAME TO {2};";
     private static final String RENAME_MS_OBJECT = "EXEC sp_rename {0}, {1}\nGO";
 
+    private final PgDiffScript script;
     private final Set<ActionContainer> actions;
-    private final Set<PgSequence> sequencesOwnedBy = new LinkedHashSet<>();
     private final Set<PgStatement> toRefresh;
     private final PgDiffArguments arguments;
-
     private final PgDatabase oldDbFull;
 
-    // for storing pairs of a table object as a key and its temporary name as a value
-    private Map<AbstractTable, String> tblTmpNamesMapping;
-    // for storing pairs of table qualified name as a key and a list of identity
-    // column names of that table as a value
-    private Map<String, List<String>> tblIdentityColsMapping;
+    private final Set<PgSequence> sequencesOwnedBy = new LinkedHashSet<>();
+    /**
+     * renamed table qualified names and their temporary (simple) names
+     */
+    private Map<String, String> tblTmpNames;
+    /**
+     * old tables q-names (before rename) and their identity columns' names
+     */
+    private Map<String, List<String>> tblIdentityCols;
 
-    public ActionsToScriptConverter(Set<ActionContainer> actions,
+    public ActionsToScriptConverter(PgDiffScript script, Set<ActionContainer> actions,
             PgDiffArguments arguments, PgDatabase oldDbFull) {
-        this(actions, Collections.emptySet(), arguments, oldDbFull);
+        this(script, actions, Collections.emptySet(), arguments, oldDbFull);
     }
 
     /**
      * @param toRefresh an ordered set of refreshed statements in reverse order
      */
-    public ActionsToScriptConverter(Set<ActionContainer> actions, Set<PgStatement> toRefresh,
-            PgDiffArguments arguments, PgDatabase oldDbFull) {
+    public ActionsToScriptConverter(PgDiffScript script, Set<ActionContainer> actions,
+            Set<PgStatement> toRefresh, PgDiffArguments arguments, PgDatabase oldDbFull) {
+        this.script = script;
         this.actions = actions;
         this.arguments = arguments;
         this.toRefresh = toRefresh;
         this.oldDbFull = oldDbFull;
         if (arguments.isDataMovementMode()) {
-            tblTmpNamesMapping = new HashMap<>();
-            tblIdentityColsMapping = new HashMap<>();
+            tblTmpNames = new HashMap<>();
+            tblIdentityCols = new HashMap<>();
         }
     }
 
@@ -82,7 +87,7 @@ public class ActionsToScriptConverter {
      * @param script скрипт для печати
      * @param selected коллекция выбранных элементов в панели сравнения
      */
-    public void fillScript(PgDiffScript script, List<TreeElement> selected) {
+    public void fillScript(List<TreeElement> selected) {
         Collection<DbObjType> allowedTypes = arguments.getAllowedTypes();
         Set<PgStatement> refreshed = new HashSet<>(toRefresh.size());
         for (ActionContainer action : actions) {
@@ -92,7 +97,7 @@ public class ActionsToScriptConverter {
             }
 
             if (!isAllowedAction(action, type, allowedTypes, selected)) {
-                addHiddenObj(script, action);
+                addHiddenObj(action);
                 continue;
             }
 
@@ -118,7 +123,7 @@ public class ActionsToScriptConverter {
 
                     if (arguments.isDataMovementMode()
                             && DbObjType.TABLE == oldObj.getStatementType()) {
-                        addCommandsForMoveData(script, oldObj);
+                        addCommandsForMoveData((AbstractTable) oldObj);
                     }
                 }
                 break;
@@ -129,7 +134,7 @@ public class ActionsToScriptConverter {
                     }
                     if (arguments.isDataMovementMode()
                             && DbObjType.TABLE == oldObj.getStatementType()) {
-                        addCommandsForRenameTbl(script, oldObj);
+                        addCommandsForRenameTbl((AbstractTable) oldObj);
                     } else {
                         script.addDrop(oldObj, null, oldObj.getDropSQL());
                     }
@@ -192,7 +197,7 @@ public class ActionsToScriptConverter {
         return true;
     }
 
-    private void addHiddenObj(PgDiffScript script, ActionContainer action) {
+    private void addHiddenObj(ActionContainer action) {
         PgStatement old = action.getOldObj();
         StringBuilder sb = new StringBuilder(MessageFormat.format(HIDDEN_OBJECT,
                 old.getQualifiedName(), old.getStatementType()));
@@ -266,45 +271,40 @@ public class ActionsToScriptConverter {
 
     /**
      * Adds commands to the script for rename the original table name to a
-     * temporary name, given the constraints. Fills the maps 'tblTmpNamesMapping'
-     * and 'tblIdentityColsMapping' for use them later (when adding commands to
+     * temporary name, given the constraints. Fills the maps {@link #tblTmpNames}
+     * and {@link #tblIdentityCols} for use them later (when adding commands to
      * move data from a temporary table to a new table).
-     *
-     * @param script script represented as a list of SQL statements
-     * @param oldObj original table object
      */
-    private void addCommandsForRenameTbl(PgDiffScript script, PgStatement oldObj) {
+    private void addCommandsForRenameTbl(AbstractTable oldTbl) {
         String tmpSuffix = '_' + UUID.randomUUID().toString().replace("-", "");
-        AbstractTable oldTbl = (AbstractTable) oldObj;
+        String qname = oldTbl.getQualifiedName();
         String tmpTblName = oldTbl.getName() + tmpSuffix;
 
         script.addStatement(getRenameCommand(oldTbl, tmpTblName));
-        tblTmpNamesMapping.put(oldTbl, tmpTblName);
+        tblTmpNames.put(qname, tmpTblName);
 
-        if (arguments.isMsSql()) {
-            for (AbstractColumn col : oldTbl.getColumns()) {
+        for (AbstractColumn col : oldTbl.getColumns()) {
+            if (arguments.isMsSql()) {
                 MsColumn msCol = (MsColumn) col;
                 if (msCol.isIdentity()) {
-                    tblIdentityColsMapping.computeIfAbsent(
-                            oldTbl.getQualifiedName(),
-                            k -> new ArrayList<>()).add(msCol.getName());
+                    tblIdentityCols.computeIfAbsent(qname, k -> new ArrayList<>())
+                    .add(msCol.getName());
                 }
                 if (msCol.getDefaultName() != null) {
                     script.addStatement("ALTER TABLE "
                             + MsDiffUtils.quoteName(oldTbl.getSchemaName()) + '.'
                             + MsDiffUtils.quoteName(tmpTblName) + " DROP CONSTRAINT "
-                            + MsDiffUtils.quoteName(msCol.getDefaultName()) + "\nGO");
+                            + MsDiffUtils.quoteName(msCol.getDefaultName())
+                            + PgStatement.GO);
                 }
-            }
-        } else {
-            for (PgColumn pgCol : PgDiffUtils.sIter(oldTbl.getColumns()
-                    .stream().map(col -> (PgColumn) col)
-                    .filter(pgCol -> pgCol.getSequence() != null))) {
-                script.addStatement(getRenameCommand(pgCol.getSequence(),
-                        pgCol.getSequence().getName() + tmpSuffix));
-                tblIdentityColsMapping.computeIfAbsent(
-                        oldTbl.getQualifiedName(),
-                        k -> new ArrayList<>()).add(pgCol.getName());
+            } else {
+                PgColumn pgCol = (PgColumn) col;
+                if (pgCol.getSequence() != null) {
+                    script.addStatement(getRenameCommand(pgCol.getSequence(),
+                            pgCol.getSequence().getName() + tmpSuffix));
+                    tblIdentityCols.computeIfAbsent(qname, k -> new ArrayList<>())
+                    .add(pgCol.getName());
+                }
             }
         }
     }
@@ -329,84 +329,80 @@ public class ActionsToScriptConverter {
      * Adds commands to the script for move data from the temporary table
      * to the new table, given the identity columns, and a command to delete
      * the temporary table.
-     *
-     * @param script script represented as a list of SQL statements
-     * @param createdObj created table object
      */
-    private void addCommandsForMoveData(PgDiffScript script, PgStatement newObj) {
-        AbstractTable oldTbl = (AbstractTable) newObj.getTwin(oldDbFull);
-        String tblTmpBareName = tblTmpNamesMapping.get(oldTbl);
+    private void addCommandsForMoveData(AbstractTable newTbl) {
+        AbstractTable oldTbl = (AbstractTable) newTbl.getTwin(oldDbFull);
+        String tblQName = newTbl.getQualifiedName();
+        String tblTmpBareName = tblTmpNames.get(tblQName);
 
         if (tblTmpBareName == null) {
             return;
         }
 
-        AbstractTable newTbl = (AbstractTable) newObj;
+        Function<String, String> quoter = arguments.isMsSql() ?
+                MsDiffUtils::quoteName : PgDiffUtils::getQuotedName;
+        String tblTmpQName = quoter.apply(oldTbl.getSchemaName()) + '.'
+                + quoter.apply(tblTmpBareName);
 
-        String tmpTblQName = null;
-        if (arguments.isMsSql()) {
-            tmpTblQName = MsDiffUtils.quoteName(oldTbl.getSchemaName()) + '.'
-                    + MsDiffUtils.quoteName(tblTmpBareName);
-        } else {
-            tmpTblQName = oldTbl.getSchemaName() + '.'
-                    + PgDiffUtils.getQuotedName(tblTmpBareName);
-        }
-
-        String tblQName = newTbl.getQualifiedName();
         List<String> colsForMovingData = getColsForMovingData(newTbl);
-
-        List<String> identityCols = tblIdentityColsMapping.get(tblQName);
-        List<String> identityColsForMovingData = identityCols == null ? null
+        List<String> identityCols = tblIdentityCols.get(tblQName);
+        List<String> identityColsForMovingData = identityCols == null ? Collections.emptyList()
                 : identityCols.stream().filter(colsForMovingData::contains)
                 .collect(Collectors.toList());
-        boolean hasIdentityColsForMovingData = identityColsForMovingData != null
-                && !identityColsForMovingData.isEmpty();
 
         StringBuilder sb = new StringBuilder();
 
-        if (arguments.isMsSql() && hasIdentityColsForMovingData) {
+        if (arguments.isMsSql() && !identityColsForMovingData.isEmpty()) {
             // There can only be one IDENTITY column per table in MSSQL.
             sb.append("SET IDENTITY_INSERT ").append(tblQName)
-            .append(" ON\nGO\n\n");
+            .append(" ON").append(PgStatement.GO).append("\n\n");
         }
 
-        String cols = colsForMovingData.stream().collect(Collectors.joining(", "));
+        String cols = colsForMovingData.stream()
+                .map(MsDiffUtils::getQuotedName)
+                .collect(Collectors.joining(", "));
         sb.append("INSERT INTO ").append(tblQName).append('(')
         .append(cols).append(") SELECT ").append(cols).append(" FROM ")
-        .append(tmpTblQName).append(arguments.isMsSql() ? "\nGO" : ';');
+        .append(tblTmpQName).append(arguments.isMsSql() ? PgStatement.GO : ";");
 
-        if (arguments.isMsSql() && hasIdentityColsForMovingData) {
+        if (arguments.isMsSql() && !identityColsForMovingData.isEmpty()) {
             // There can only be one IDENTITY column per table in MSSQL.
             sb.append("\n\nSET IDENTITY_INSERT ").append(tblQName)
-            .append(" OFF\nGO");
+            .append(" OFF").append(PgStatement.GO);
         }
 
-        if (hasIdentityColsForMovingData) {
+        if (!identityColsForMovingData.isEmpty()) {
             if (arguments.isMsSql()) {
                 // There can only be one IDENTITY column per table in MSSQL.
-                String colName = identityColsForMovingData.get(0);
-                String restartVarName = getRestartVarName(newTbl, colName);
-                sb.append("\n\nDECLARE @").append(restartVarName)
-                .append(" integer = (SELECT IDENT_CURRENT ('").append(tmpTblQName)
-                .append("'));\nBEGIN\n\tEXECUTE ('DBCC CHECKIDENT (''")
-                .append(tblQName).append("'', RESEED, ' + @")
-                .append(restartVarName).append(" + ');');\nEND\nGO");
+                // DECLARE'd var is only visible within its batch
+                // so we shouldn't need unique names for them here
+                // use the largest numeric type to fit any possible identity value
+                sb.append("\n\nDECLARE @restart_var numeric(38,0) = (SELECT IDENT_CURRENT (")
+                .append(PgDiffUtils.quoteString(tblTmpQName))
+                .append("));\nDBCC CHECKIDENT (")
+                .append(PgDiffUtils.quoteString(tblQName))
+                .append(", RESEED, @restart_var);")
+                .append(PgStatement.GO);
             } else {
                 for (String colName : identityColsForMovingData) {
-                    String restartVarName = getRestartVarName(newTbl, colName);
-                    sb.append("\n\nDO $$ DECLARE ").append(restartVarName)
-                    .append(" integer = (SELECT nextval(pg_get_serial_sequence('")
-                    .append(tmpTblQName).append("', '").append(colName)
-                    .append("')));\nBEGIN\n\tEXECUTE 'ALTER TABLE ")
-                    .append(tblQName).append(" ALTER COLUMN ").append(colName)
-                    .append(" RESTART WITH ' || ").append(restartVarName)
-                    .append(" || ';';\nEND\n$$;");
+                    String restartWith = " ALTER TABLE " + tblQName + " ALTER COLUMN "
+                            + PgDiffUtils.getQuotedName(colName)
+                            + " RESTART WITH ";
+                    restartWith = PgDiffUtils.quoteStringDollar(restartWith)
+                            + " || restart_var || ';'";
+                    String doBody = "\nDECLARE restart_var bigint = (SELECT nextval(pg_get_serial_sequence("
+                            + PgDiffUtils.quoteString(tblTmpQName) + ", "
+                            + PgDiffUtils.quoteString(PgDiffUtils.getQuotedName(colName))
+                            + ")));\nBEGIN\n\tEXECUTE " + restartWith + " ;\nEND;\n";
+                    sb.append("\n\nDO LANGUAGE plpgsql ")
+                    .append(PgDiffUtils.quoteStringDollar(doBody))
+                    .append(';');
                 }
             }
         }
 
-        sb.append("\n\nDROP TABLE ").append(tmpTblQName)
-        .append(arguments.isMsSql() ? "\nGO" : ';');
+        sb.append("\n\nDROP TABLE ").append(tblTmpQName)
+        .append(arguments.isMsSql() ? PgStatement.GO : ';');
 
         script.addStatement(sb.toString());
     }
@@ -416,9 +412,9 @@ public class ActionsToScriptConverter {
      * table, excluding calculated columns.
      */
     private List<String> getColsForMovingData(AbstractTable newTbl) {
+        List<AbstractColumn> oldCols = ((AbstractTable) newTbl.getTwin(oldDbFull)).getColumns();
         Stream<? extends AbstractColumn> cols = newTbl.getColumns().stream()
-                .filter(col -> ((AbstractTable) newTbl.getTwin(oldDbFull)).getColumns()
-                        .contains(col));
+                .filter(oldCols::contains);
         if (arguments.isMsSql()) {
             cols = cols.map(col -> (MsColumn) col)
                     .filter(msCol -> msCol.getExpression() == null);
@@ -427,13 +423,5 @@ public class ActionsToScriptConverter {
                     .filter(pgCol -> !pgCol.isGenerated());
         }
         return cols.map(AbstractColumn::getName).collect(Collectors.toList());
-    }
-
-    /**
-     * Returns the name of the variable in the SQL command that will contain
-     * the identity column value for the new table.
-     */
-    private String getRestartVarName(AbstractTable tbl, String colName) {
-        return tbl.getSchemaName() + '_' + tbl.getName() + '_' + colName + "_restart_value";
     }
 }

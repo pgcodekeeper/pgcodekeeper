@@ -154,6 +154,10 @@ public class CliArgs extends PgDiffArguments {
             usage="do not print USING expression for ALTER COLUMN TYPE")
     private boolean usingTypeCastOff;
 
+    @Option(name="--migrate-data", forbids={"--graph", "--parse"},
+            usage="migrate data when re-creating tables")
+    private boolean dataMovementMode;
+
     @Option(name="-C", aliases="--concurrently-mode", forbids={"--graph", "--parse"},
             usage="print CREATE INDEX with CONCURRENTLY option for PostgreSQL and WITH ONLINE = ON for MS SQL")
     private boolean concurrentlyMode;
@@ -180,10 +184,6 @@ public class CliArgs extends PgDiffArguments {
             usage="build the script using 'selected' objects only, hide statements of other objects"
                     + "\nin CLI, selected means included by --allowed-object and ignore lists")
     private boolean selectedOnly;
-
-    @Option(name="--move-data", forbids={"--graph", "--parse"},
-            usage="add data movement commands for modified tables")
-    private boolean dataMovementMode;
 
     @Option(name="-I", aliases="--ignore-list", metaVar="<path>", forbids={"--graph", "--parse"},
             usage="use an ignore list to include/exclude objects from diff"

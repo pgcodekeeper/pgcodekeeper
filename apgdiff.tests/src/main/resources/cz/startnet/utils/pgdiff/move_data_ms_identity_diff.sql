@@ -53,10 +53,8 @@ GO
 SET IDENTITY_INSERT [dbo].[tbl] OFF
 GO
 
-DECLARE @dbo_tbl_c1_restart_value integer = (SELECT IDENT_CURRENT ('[dbo].[tbl_randomly_generated_part]'));
-BEGIN
-	EXECUTE ('DBCC CHECKIDENT (''[dbo].[tbl]'', RESEED, ' + @dbo_tbl_c1_restart_value + ');');
-END
+DECLARE @restart_var numeric(38,0) = (SELECT IDENT_CURRENT ('[dbo].[tbl_randomly_generated_part]'));
+DBCC CHECKIDENT ('[dbo].[tbl]', RESEED, @restart_var);
 GO
 
 DROP TABLE [dbo].[tbl_randomly_generated_part]

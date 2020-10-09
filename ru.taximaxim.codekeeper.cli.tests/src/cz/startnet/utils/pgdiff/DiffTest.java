@@ -398,7 +398,7 @@ class MoveDataArgumentsProvider extends ArgumentsProvider {
     protected String[] args() throws URISyntaxException, IOException {
         File fNew = getFile(FILES_POSTFIX.NEW_SQL);
         File fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
-        return new String[]{"--move-data", "-o",
+        return new String[]{"--migrate-data", "-o",
                 getDiffResultFile().getAbsolutePath(),
                 fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
     }
@@ -418,7 +418,7 @@ class MoveDataIdentityArgumentsProvider extends ArgumentsProvider {
     protected String[] args() throws URISyntaxException, IOException {
         File fNew = getFile(FILES_POSTFIX.NEW_SQL);
         File fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
-        return new String[]{"--move-data", "-o",
+        return new String[]{"--migrate-data", "-o",
                 getDiffResultFile().getAbsolutePath(),
                 fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
     }
@@ -438,7 +438,7 @@ class MoveDataMSArgumentsProvider extends ArgumentsProvider {
     protected String[] args() throws URISyntaxException, IOException {
         File fNew = getFile(FILES_POSTFIX.NEW_SQL);
         File fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
-        return new String[]{"--move-data", "--ms-sql", "-o",
+        return new String[]{"--migrate-data", "--ms-sql", "-o",
                 getDiffResultFile().getAbsolutePath(),
                 fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
     }
@@ -458,7 +458,7 @@ class MoveDataMSIdentityArgumentsProvider extends ArgumentsProvider {
     protected String[] args() throws URISyntaxException, IOException {
         File fNew = getFile(FILES_POSTFIX.NEW_SQL);
         File fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
-        return new String[]{"--move-data", "--ms-sql", "-o",
+        return new String[]{"--migrate-data", "--ms-sql", "-o",
                 getDiffResultFile().getAbsolutePath(),
                 fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
     }
@@ -479,7 +479,7 @@ class MoveDataDiffColsIdentityArgumentsProvider extends ArgumentsProvider {
     protected String[] args() throws URISyntaxException, IOException {
         File fNew = getFile(FILES_POSTFIX.NEW_SQL);
         File fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
-        return new String[]{"--move-data", "-o",
+        return new String[]{"--migrate-data", "-o",
                 getDiffResultFile().getAbsolutePath(),
                 fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
     }
