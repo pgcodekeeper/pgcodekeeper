@@ -47,6 +47,7 @@ public class DiffTest {
             {new MoveDataMSArgumentsProvider()},
             {new MoveDataMSIdentityArgumentsProvider()},
             {new MoveDataDiffColsIdentityArgumentsProvider()},
+            {new MoveDataDropTableWithoutRename()},
         });
 
         return p.stream()::iterator;
@@ -214,7 +215,7 @@ class DangerTableArgumentsProvider extends ArgumentsProvider {
         Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
         Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
 
-        return new String[]{"--safe-mode", "--ms-sql", "--allow-danger-ddl", "DROP_TABLE",
+        return new String[]{"--safe-mode", "--ms-sql", "--allow-danger-ddl", "DROP_TABLE", //
                 "-o", getDiffResultFile().toString(),
                 fNew.toString(), fOriginal.toString()};
     }
@@ -465,6 +466,22 @@ class MoveDataDiffColsIdentityArgumentsProvider extends DataMovementArgumentsPro
         Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
         Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
         return new String[]{"--migrate-data", "-o",
+                getDiffResultFile().toString(),
+                fNew.toString(), fOriginal.toString()};
+    }
+}
+
+class MoveDataDropTableWithoutRename extends ArgumentsProvider {
+
+    public MoveDataDropTableWithoutRename() {
+        super("drop_ms_table");
+    }
+
+    @Override
+    protected String[] args() throws URISyntaxException, IOException {
+        Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
+        Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
+        return new String[]{"--migrate-data", "--ms-sql", "-o",
                 getDiffResultFile().toString(),
                 fNew.toString(), fOriginal.toString()};
     }

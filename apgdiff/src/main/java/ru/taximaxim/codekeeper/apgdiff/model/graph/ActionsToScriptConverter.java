@@ -50,6 +50,7 @@ public class ActionsToScriptConverter {
     private final Set<PgStatement> toRefresh;
     private final PgDiffArguments arguments;
     private final PgDatabase oldDbFull;
+    private final PgDatabase newDbFull;
 
     private final Set<PgSequence> sequencesOwnedBy = new LinkedHashSet<>();
     /**
@@ -62,20 +63,21 @@ public class ActionsToScriptConverter {
     private Map<String, List<String>> tblIdentityCols;
 
     public ActionsToScriptConverter(PgDiffScript script, Set<ActionContainer> actions,
-            PgDiffArguments arguments, PgDatabase oldDbFull) {
-        this(script, actions, Collections.emptySet(), arguments, oldDbFull);
+            PgDiffArguments arguments, PgDatabase oldDbFull, PgDatabase newDbFull) {
+        this(script, actions, Collections.emptySet(), arguments, oldDbFull, newDbFull);
     }
 
     /**
      * @param toRefresh an ordered set of refreshed statements in reverse order
      */
     public ActionsToScriptConverter(PgDiffScript script, Set<ActionContainer> actions,
-            Set<PgStatement> toRefresh, PgDiffArguments arguments, PgDatabase oldDbFull) {
+            Set<PgStatement> toRefresh, PgDiffArguments arguments, PgDatabase oldDbFull, PgDatabase newDbFull) {
         this.script = script;
         this.actions = actions;
         this.arguments = arguments;
         this.toRefresh = toRefresh;
         this.oldDbFull = oldDbFull;
+        this.newDbFull = newDbFull;
         if (arguments.isDataMovementMode()) {
             tblTmpNames = new HashMap<>();
             tblIdentityCols = new HashMap<>();
@@ -122,7 +124,8 @@ public class ActionsToScriptConverter {
                     script.addCreate(oldObj, null, oldObj.getCreationSQL(), true);
 
                     if (arguments.isDataMovementMode()
-                            && DbObjType.TABLE == oldObj.getStatementType()) {
+                            && DbObjType.TABLE == oldObj.getStatementType()
+                            && oldObj.getTwin(newDbFull) != null) {
                         addCommandsForMoveData((AbstractTable) oldObj);
                     }
                 }
@@ -133,7 +136,8 @@ public class ActionsToScriptConverter {
                         script.addStatement(depcy);
                     }
                     if (arguments.isDataMovementMode()
-                            && DbObjType.TABLE == oldObj.getStatementType()) {
+                            && DbObjType.TABLE == oldObj.getStatementType()
+                            && oldObj.getTwin(newDbFull) != null) {
                         addCommandsForRenameTbl((AbstractTable) oldObj);
                     } else {
                         script.addDrop(oldObj, null, oldObj.getDropSQL());
