@@ -1071,7 +1071,7 @@ public class DiffTableViewer extends Composite {
 
     private void setSubTreeChecked(TreeElement element, boolean selected, boolean isChild) {
     	if(isChild) {
-        setChecked(element, selected);
+    		setChecked(element, selected);
     	}
         for (TreeElement child : element.getChildren()) {
         	setSubTreeChecked(child, selected, true);
