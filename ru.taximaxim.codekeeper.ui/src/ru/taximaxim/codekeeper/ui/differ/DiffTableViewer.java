@@ -1064,17 +1064,20 @@ public class DiffTableViewer extends Composite {
     private void setSelectionSubtreesChecked(IStructuredSelection selection, boolean checked) {
         for (Object o : selection.toList()) {
             TreeElement el = (TreeElement) o;
-            setSubTreeChecked(el, checked);
+            setSubTreeChecked(el, checked, false);
         }
         viewerChecksUpdated();
     }
 
-    private void setSubTreeChecked(TreeElement element, boolean selected) {
+    private void setSubTreeChecked(TreeElement element, boolean selected, boolean isChild) {
+    	if(isChild) {
         setChecked(element, selected);
+    	}
         for (TreeElement child : element.getChildren()) {
-            setSubTreeChecked(child, selected);
+        	setSubTreeChecked(child, selected, true);
         }
     }
+    
     public boolean isApplyToProj() {
         return isApplyToProj;
     }
@@ -1171,7 +1174,7 @@ public class DiffTableViewer extends Composite {
         private void setChecked(Object element, boolean checked) {
             TreeElement el = (TreeElement) element;
             if (isContainer(el)) {
-                setSubTreeChecked(el, checked);
+                setSubTreeChecked(el, checked, true);
             }
             // explicitly check root even when using setSubTreeChecked
             // in case it's not in the viewer's input set
