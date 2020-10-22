@@ -36,6 +36,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_no
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.exception.MisplacedObjectException;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
@@ -315,7 +316,7 @@ public abstract class ParserAbstract {
         doSafe(PgStatement::addChild, parent, child);
         PgObjLocation loc = getLocation(ids, child.getStatementType(),
                 ACTION_CREATE, false, null);
-        if (loc != null) {
+        if (loc != null) {;
             child.setLocation(loc);
             db.addReference(fileName, loc);
         }
@@ -330,10 +331,10 @@ public abstract class ParserAbstract {
         }
 
         String filePath = ModelExporter.getRelativeFilePath(statement).toString();
-        if (!PgDiffUtils.endsWithIgnoreCase(fileName, filePath) && isInProject(statement.isPostgres())) {
-            throw new UnresolvedReferenceException(
-                    MessageFormat.format(LOCATION_ERROR, statement.getBareName(), filePath),
-                    errToken);
+        if (!PgDiffUtils.endsWithIgnoreCase(fileName, filePath)
+                && isInProject(statement.isPostgres())) {
+            throw new MisplacedObjectException(MessageFormat.format(LOCATION_ERROR,
+                    statement.getBareName(), filePath), errToken);
         }
     }
 

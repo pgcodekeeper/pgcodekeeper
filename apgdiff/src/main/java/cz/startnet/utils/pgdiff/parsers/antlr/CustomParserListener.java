@@ -11,6 +11,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
+import cz.startnet.utils.pgdiff.parsers.antlr.exception.MisplacedObjectException;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.MonitorCancelledRuntimeException;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.ObjectCreationException;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
@@ -60,9 +61,18 @@ public class CustomParserListener {
         }
     }
 
-    public static AntlrError handleUnresolvedReference(UnresolvedReferenceException ex, String filename) {
+    public static AntlrError handleUnresolvedReference(UnresolvedReferenceException ex,
+            String filename) {
         Token t = ex.getErrorToken();
-        AntlrError err = new AntlrError(t, filename, t.getLine(), t.getCharPositionInLine(), ex.getMessage());
+        ErrorTypes errorType;
+        if (ex instanceof MisplacedObjectException) {
+            errorType= ErrorTypes.MISPLACEERROR;
+        }
+        else {
+            errorType = ErrorTypes.OTHER;
+        }
+        AntlrError err = new AntlrError(t, filename, t.getLine(),
+                t.getCharPositionInLine(), ex.getMessage(), errorType);
         Log.log(Log.LOG_WARNING, err.toString(), ex);
         return err;
     }

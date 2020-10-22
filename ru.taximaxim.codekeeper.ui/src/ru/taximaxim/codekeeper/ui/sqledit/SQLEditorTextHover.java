@@ -1,24 +1,28 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
+import java.util.Iterator;
 import java.util.Optional;
 
-import org.eclipse.jface.text.DefaultInformationControl;
 import org.eclipse.jface.text.DefaultTextHover;
 import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.ITextHoverExtension;
 import org.eclipse.jface.text.ITextHoverExtension2;
 import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.source.Annotation;
+import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.ui.editors.text.EditorsUI;
 
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.meta.MetaStatement;
+import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 
-final class SQLEditorTextHover extends DefaultTextHover implements ITextHoverExtension, ITextHoverExtension2 {
+final class SQLEditorTextHover extends DefaultTextHover implements ITextHoverExtension, ITextHoverExtension2, ITextHover {
 
     private static final String QUICKDIFF = "org.eclipse.ui.workbench.texteditor.quickdiff"; //$NON-NLS-1$
 
@@ -48,55 +52,47 @@ final class SQLEditorTextHover extends DefaultTextHover implements ITextHoverExt
 
     @Override
     public IInformationControlCreator getHoverControlCreator() {
-        return parent -> new DefaultInformationControl(parent, EditorsUI.getTooltipAffordanceString());
+        //return parent -> new DefaultInformationControl(parent, EditorsUI.getTooltipAffordanceString());
+        return parent -> new SQLEditorControl(parent, EditorsUI.getTooltipAffordanceString());
+
     }
 
     @Override
     protected boolean isIncluded(Annotation annotation) {
         // exclude text change annotations
-        return !annotation.getType().startsWith(QUICKDIFF);
+        return !annotation.getType().startsWith(QUICKDIFF)
+                && !annotation.getType().equals(MARKER.OBJECT_OCCURRENCE);
     }
 
     @Override
     public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
-        @SuppressWarnings("deprecation")
-        String msg = super.getHoverInfo(textViewer, hoverRegion);
-        System.err.println(" >>> getHoverInfo : ");
-        if (msg != null) {
-            System.err.println("    >>> getHoverInfo - msg : " + msg);
-            return msg;
-        }
-        if (hoverRegion instanceof SQLEditorMyRegion) {
-            return ((SQLEditorMyRegion) hoverRegion).getComment();
-        }
-        return "";  //$NON-NLS-1$
+        return null;
     }
 
     @Override
     public Object getHoverInfo2(ITextViewer textViewer, IRegion hoverRegion) {
-
-        System.err.println("\n\n --- getHoverInfo2");
-
-        // Start with the string returned by the older getHoverInfo()
-        final String selection = getHoverInfo(textViewer, hoverRegion);
-
-        // If text is selected in the editor window, it's returned as the
-        // hover string. If no text is selected, then the returned hover is
-        // a URL pointing to www.outofwhatbox.com/blog.
-        return new SQLHoverInformationControl.IHTMLHoverInfo() {
-
-            @Override
-            public boolean isURL() {
-                return selection.length() == 0;
-            }
-
-            @Override
-            public String getHTMLString() {
-                if (isURL()){
-                    return "http://www.outofwhatbox.com/blog";             //$NON-NLS-1$
+        IAnnotationModel model;
+        model = ((ISourceViewer) textViewer).getAnnotationModel();
+        if (model == null) {
+            return null;
+        }
+        Iterator<Annotation> iter = model.getAnnotationIterator();
+        while (iter.hasNext()) {
+            Annotation a = iter.next();
+            if (isIncluded(a)) {
+                Position p = model.getPosition(a);
+                if (p != null && p.overlapsWith(hoverRegion.getOffset(),
+                        hoverRegion.getLength())) {
+                    return createAnnotationInfo(a, p, textViewer);
                 }
-                return selection;
             }
-        };
+        }
+        return null;
     }
+
+    protected SQLAnnotationInfo createAnnotationInfo(Annotation annotation,
+            Position position, ITextViewer textViewer) {
+        return new SQLAnnotationInfo(annotation, position, textViewer);
+    }
+
 }

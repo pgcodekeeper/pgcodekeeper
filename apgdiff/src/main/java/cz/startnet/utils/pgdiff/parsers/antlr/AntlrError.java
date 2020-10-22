@@ -11,20 +11,27 @@ public class AntlrError extends ContextLocation {
     private final String msg;
     private final String text;
     private final int stop;
+    private final ErrorTypes errorType;
 
     public AntlrError(Token tokenError, String location, int line, int charPositionInLine, String msg) {
+        this(tokenError, location, line, charPositionInLine, msg, ErrorTypes.OTHER);
+    }
+
+    public AntlrError(Token tokenError, String location, int line, int charPositionInLine, String msg, ErrorTypes errorType) {
         this(location, line, charPositionInLine, msg,
                 (tokenError == null ? -1 : tokenError.getStartIndex()),
                 (tokenError == null ? -1 : tokenError.getStopIndex()),
-                (tokenError == null ? null : tokenError.getText()));
+                (tokenError == null ? null : tokenError.getText()),
+                errorType);
     }
 
     private AntlrError(String location, int line, int charPositionInLine, String msg,
-            int start, int stop, String text) {
+            int start, int stop, String text, ErrorTypes errorType) {
         super(location, start, line, charPositionInLine);
         this.msg = msg;
         this.stop = stop;
         this.text = text;
+        this.errorType = errorType;
     }
 
     public AntlrError copyWithOffset(int offset, int lineOffset, int inLineOffset) {
@@ -33,7 +40,7 @@ public class AntlrError extends ContextLocation {
                 msg,
                 (getStart() == -1 ? -1 : getStart() + offset),
                 (stop == -1 ? -1: stop + offset),
-                text);
+                text, errorType);
     }
 
     public String getMsg() {
@@ -50,6 +57,10 @@ public class AntlrError extends ContextLocation {
 
     public int getStop() {
         return stop;
+    }
+
+    public ErrorTypes getErrorType() {
+        return errorType;
     }
 
     @Override
