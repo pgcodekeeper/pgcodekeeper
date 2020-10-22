@@ -104,49 +104,49 @@ public class ActionsToScriptConverter {
             }
 
             processSequence(action);
-            PgStatement oldObj = action.getOldObj();
-            String depcy = getComment(action, oldObj);
+            PgStatement obj = action.getOldObj();
+            String depcy = getComment(action, obj);
             switch (action.getAction()) {
             case CREATE:
-                if (toRefresh.contains(oldObj)) {
+                if (toRefresh.contains(obj)) {
                     // emit refreshes for views only
                     // refreshes for other objects serve as markers
                     // that allow us to skip unmodified drop+create pairs
-                    if (oldObj instanceof MsView) {
+                    if (obj instanceof MsView) {
                         script.addStatement(MessageFormat.format(REFRESH_MODULE,
-                                PgDiffUtils.quoteString(oldObj.getQualifiedName())));
+                                PgDiffUtils.quoteString(obj.getQualifiedName())));
                     }
-                    refreshed.add(oldObj);
+                    refreshed.add(obj);
                 } else {
                     if (depcy != null) {
                         script.addStatement(depcy);
                     }
-                    script.addCreate(oldObj, null, oldObj.getCreationSQL(), true);
+                    script.addCreate(obj, null, obj.getCreationSQL(), true);
 
                     if (arguments.isDataMovementMode()
-                            && DbObjType.TABLE == oldObj.getStatementType()
-                            && oldObj.getTwin(newDbFull) != null) {
-                        addCommandsForMoveData((AbstractTable) oldObj);
+                            && DbObjType.TABLE == obj.getStatementType()
+                            && obj.getTwin(oldDbFull) != null) {
+                        addCommandsForMoveData((AbstractTable) obj);
                     }
                 }
                 break;
             case DROP:
-                if (!toRefresh.contains(oldObj) && oldObj.canDrop()) {
+                if (!toRefresh.contains(obj) && obj.canDrop()) {
                     if (depcy != null) {
                         script.addStatement(depcy);
                     }
                     if (arguments.isDataMovementMode()
-                            && DbObjType.TABLE == oldObj.getStatementType()
-                            && oldObj.getTwin(newDbFull) != null) {
-                        addCommandsForRenameTbl((AbstractTable) oldObj);
+                            && DbObjType.TABLE == obj.getStatementType()
+                            && obj.getTwin(newDbFull) != null) {
+                        addCommandsForRenameTbl((AbstractTable) obj);
                     } else {
-                        script.addDrop(oldObj, null, oldObj.getDropSQL());
+                        script.addDrop(obj, null, obj.getDropSQL());
                     }
                 }
                 break;
             case ALTER:
                 StringBuilder sb = new StringBuilder();
-                oldObj.appendAlterSQL(action.getNewObj(), sb,
+                obj.appendAlterSQL(action.getNewObj(), sb,
                         new AtomicBoolean());
                 if (sb.length() > 0) {
                     if (depcy != null) {
