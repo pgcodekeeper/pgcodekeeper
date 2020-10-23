@@ -154,6 +154,10 @@ public class CliArgs extends PgDiffArguments {
             usage="do not print USING expression for ALTER COLUMN TYPE")
     private boolean usingTypeCastOff;
 
+    @Option(name="--migrate-data", forbids={"--graph", "--parse"},
+            usage="migrate data when re-creating tables")
+    private boolean dataMovementMode;
+
     @Option(name="-C", aliases="--concurrently-mode", forbids={"--graph", "--parse"},
             usage="print CREATE INDEX with CONCURRENTLY option for PostgreSQL and WITH ONLINE = ON for MS SQL")
     private boolean concurrentlyMode;
@@ -523,6 +527,16 @@ public class CliArgs extends PgDiffArguments {
     @Override
     public void setSelectedOnly(boolean selectedOnly) {
         this.selectedOnly = selectedOnly;
+    }
+
+    @Override
+    public boolean isDataMovementMode() {
+        return dataMovementMode;
+    }
+
+    @Override
+    public void setDataMovementMode(boolean dataMovementMode) {
+        this.dataMovementMode = dataMovementMode;
     }
 
     @Override
