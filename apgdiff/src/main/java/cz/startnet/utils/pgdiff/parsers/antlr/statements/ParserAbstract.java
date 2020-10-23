@@ -316,7 +316,7 @@ public abstract class ParserAbstract {
         doSafe(PgStatement::addChild, parent, child);
         PgObjLocation loc = getLocation(ids, child.getStatementType(),
                 ACTION_CREATE, false, null);
-        if (loc != null) {;
+        if (loc != null) {
             child.setLocation(loc);
             db.addReference(fileName, loc);
         }

@@ -27,17 +27,17 @@ import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.editors.text.EditorsUI;
 
-public class SQLEditorControl extends AbstractInformationControl
+public class SQLEditorInformationControl extends AbstractInformationControl
         implements IInformationControlExtension2 {
 
     private Composite fParent;
     private SQLAnnotationInfo fInput;
-    public SQLEditorControl(Shell parentShell, String statusFieldText) {
+    public SQLEditorInformationControl(Shell parentShell, String statusFieldText) {
         super(parentShell, statusFieldText);
         create();
     }
 
-    public SQLEditorControl(Shell parent) {
+    public SQLEditorInformationControl(Shell parent) {
         super(parent, (String) null);
         create();
     }
@@ -281,7 +281,7 @@ public class SQLEditorControl extends AbstractInformationControl
             @Override
             public IInformationControl createInformationControl(Shell parent) {
 
-                return new SQLEditorControl(parent,
+                return new SQLEditorInformationControl(parent,
                         EditorsUI.getTooltipAffordanceString());
             }
         };

@@ -8,8 +8,6 @@ import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.jface.bindings.keys.KeySequence;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.DefaultIndentLineAutoEditStrategy;
-import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IInformationControl;
 import org.eclipse.jface.text.IInformationControlCreator;
@@ -97,13 +95,6 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     }
 
     @Override
-    public IAutoEditStrategy[] getAutoEditStrategies(ISourceViewer sourceViewer, String contentType) {
-        // TODO remove "SQLAutoIndentStrategy" if its not need,
-        // if "SQLAutoIndentStrategy" need then correct it
-        return new IAutoEditStrategy[] { new DefaultIndentLineAutoEditStrategy() };
-    }
-
-    @Override
     public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
         return new SQLEditorTextHover(sourceViewer, editor);
     }
@@ -122,7 +113,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         return new IInformationControlCreator() {
             @Override
             public IInformationControl createInformationControl(Shell parent) {
-                return new SQLEditorControl(parent);
+                return new SQLEditorInformationControl(parent);
             }
         };
     }
@@ -153,28 +144,12 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
 
         return assistant;
     }
-
-    @Override
-    public String[] getDefaultPrefixes(ISourceViewer sourceViewer,
-            String contentType) {
-        String pref = getDefaultPrefix(sourceViewer, contentType);
-        if (pref != null) {
-            String[] arr = new String[1];
-            arr[0] = pref;
-            return arr;
-        }
-        return null;
-    }
-
-    public String getDefaultPrefix(ISourceViewer sourceViewer, String contentType) {
-        return (IDocument.DEFAULT_CONTENT_TYPE.equals(contentType) ? "//" : null); //$NON-NLS-1$
-    }
-
+    /*
     @Override
     public String[] getIndentPrefixes(ISourceViewer sourceViewer, String contentType) {
         return new String[] { "\t", "    " }; //$NON-NLS-1$ //$NON-NLS-2$
     }
-
+     */
     private KeySequence getIterationBinding() {
         final IBindingService bindingSvc= PlatformUI.getWorkbench().getService(IBindingService.class);
         TriggerSequence binding= bindingSvc.getBestActiveBindingFor(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
@@ -291,11 +266,6 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         addDamagerRepairer(reconciler, createQuotedIdentifierScanner(), SQLEditorCommonDocumentProvider.SQL_QUOTED_IDENTIFIER);
         addDamagerRepairer(reconciler, createRecipeScanner(), SQLEditorCommonDocumentProvider.SQL_CODE);
         return reconciler;
-    }
-
-    @Override
-    public int getTabWidth(ISourceViewer sourceViewer) {
-        return 4;
     }
 
     @Override

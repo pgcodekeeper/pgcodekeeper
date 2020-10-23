@@ -53,7 +53,7 @@ final class SQLEditorTextHover extends DefaultTextHover implements ITextHoverExt
     @Override
     public IInformationControlCreator getHoverControlCreator() {
         //return parent -> new DefaultInformationControl(parent, EditorsUI.getTooltipAffordanceString());
-        return parent -> new SQLEditorControl(parent, EditorsUI.getTooltipAffordanceString());
+        return parent -> new SQLEditorInformationControl(parent, EditorsUI.getTooltipAffordanceString());
 
     }
 
