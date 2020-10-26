@@ -3,8 +3,6 @@ package ru.taximaxim.codekeeper.ui.sqledit;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.jface.preference.JFacePreferences;
-import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.AbstractInformationControl;
 import org.eclipse.jface.text.IInformationControl;
@@ -28,7 +26,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.editors.text.EditorsUI;
 
 public class SQLEditorInformationControl extends AbstractInformationControl
-        implements IInformationControlExtension2 {
+implements IInformationControlExtension2 {
 
     private Composite fParent;
     private SQLAnnotationInfo fInput;
@@ -67,8 +65,9 @@ public class SQLEditorInformationControl extends AbstractInformationControl
         Point preferedSize = getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
 
         Point constrains = getSizeConstraints();
-        if (constrains == null)
+        if (constrains == null) {
             return preferedSize;
+        }
 
         int trimWidth = getShell().computeTrim(0, 0, 0, 0).width;
         Point constrainedSize = getShell().computeSize(constrains.x - trimWidth,
@@ -101,23 +100,13 @@ public class SQLEditorInformationControl extends AbstractInformationControl
     protected void deferredCreateContent() {
         createAnnotationInformation(getSQLAnnotationInfo().annotation);
 
-        ColorRegistry colorRegistry = JFaceResources.getColorRegistry();
-        Color foreground = colorRegistry
-                .get(JFacePreferences.INFORMATION_FOREGROUND_COLOR);
-
-        if (foreground == null) {
-            foreground = fParent.getForeground();
-        }
-        Color background = colorRegistry
-                .get(JFacePreferences.INFORMATION_BACKGROUND_COLOR);
-        if (background == null) {
-            background = fParent.getBackground();
-        }
+        Color foreground = fParent.getForeground();
+        Color background = fParent.getBackground();
 
         setForegroundColor(foreground); // For main composite.
         setBackgroundColor(background);
         setColorAndFont(fParent, foreground, background, JFaceResources.getDialogFont()); // For child elements.
-        
+
         MisplaceProposal misplProposal = new MisplaceProposal(
                 getSQLAnnotationInfo().annotation);
         if (misplProposal.getMisplaceProposals() != null) {
@@ -145,8 +134,9 @@ public class SQLEditorInformationControl extends AbstractInformationControl
         text.setLayoutData(data);
         text.setAlwaysShowScrollBars(false);
         String annotationText = annotation.getText();
-        if (annotationText != null)
+        if (annotationText != null) {
             text.setText(annotationText);
+        }
     }
 
     private void createCompletionProposalsControl(
@@ -168,11 +158,11 @@ public class SQLEditorInformationControl extends AbstractInformationControl
         layoutData.horizontalIndent = 4;
         quickFixLabel.setLayoutData(layoutData);
         String text;
-            if (proposals.length == 1) {
-                text = "Quick fix available:";
-            } else {
-                text = String.valueOf(proposals.length) + " quick fixes available:";
-            }
+        if (proposals.length == 1) {
+            text = "Quick fix available:";
+        } else {
+            text = String.valueOf(proposals.length) + " quick fixes available:";
+        }
         quickFixLabel.setText(text);
 
         setColorAndFont(composite, fParent.getForeground(), fParent.getBackground(),
