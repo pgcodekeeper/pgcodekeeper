@@ -66,7 +66,7 @@ public class PgPrivilege implements IHashable {
         }
 
         for (PgPrivilege priv : privileges) {
-            sb.append(priv.getCreationSQL()).append(isPostgres ? ';' : "\nGO").append('\n');
+            sb.append(priv.getCreationSQL()).append(isPostgres ? ';' : PgStatement.GO).append('\n');
         }
 
         sb.setLength(sb.length() - 1);

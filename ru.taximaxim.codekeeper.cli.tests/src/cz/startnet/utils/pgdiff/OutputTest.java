@@ -3,13 +3,13 @@ package cz.startnet.utils.pgdiff;
 import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.List;
@@ -189,12 +189,12 @@ class FailSourceArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String[] args() throws URISyntaxException, IOException {
-        File fNew = getFile(FILES_POSTFIX.NEW_SQL);
-        File fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
+        Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
+        Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
 
         return new String[]{"--safe-mode", "--ms-sql", "--allow-danger-ddl", "DROP_TABLE",
-                "--output", getDiffResultFile().getAbsolutePath(),
-                "-s", fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
+                "--output", getDiffResultFile().toString(),
+                "-s", fNew.toString(), fOriginal.toString()};
     }
 
     @Override
@@ -230,11 +230,11 @@ class FailDangerTableArgumentsProvider extends ArgumentsProvider{
 
     @Override
     public String[] args() throws URISyntaxException, IOException {
-        File fNew = getFile(FILES_POSTFIX.NEW_SQL);
-        File fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
+        Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
+        Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
 
-        return new String[]{ "-S", "--ms-sql", "-o", getDiffResultFile().getAbsolutePath(),
-                fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
+        return new String[]{ "-S", "--ms-sql", "-o", getDiffResultFile().toString(),
+                fNew.toString(), fOriginal.toString()};
     }
 
     @Override
@@ -254,11 +254,11 @@ class FailDangerDropColArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String[] args() throws URISyntaxException, IOException {
-        File fNew = getFile(FILES_POSTFIX.NEW_SQL);
-        File fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
+        Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
+        Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
 
-        return new String[]{"-S", "-o", getDiffResultFile().getAbsolutePath(),
-                fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
+        return new String[]{"-S", "-o", getDiffResultFile().toString(),
+                fNew.toString(), fOriginal.toString()};
     }
 
     @Override
@@ -278,11 +278,11 @@ class FailDangerAlterColArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String[] args() throws URISyntaxException, IOException {
-        File fNew = getFile(FILES_POSTFIX.NEW_SQL);
-        File fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
+        Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
+        Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
 
-        return new String[]{"--safe-mode", "--output", getDiffResultFile().getAbsolutePath(),
-                fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
+        return new String[]{"--safe-mode", "--output", getDiffResultFile().toString(),
+                fNew.toString(), fOriginal.toString()};
     }
 
     @Override
@@ -303,11 +303,11 @@ class FailDangerRestartArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String[] args() throws URISyntaxException, IOException {
-        File fNew = getFile(FILES_POSTFIX.NEW_SQL);
-        File fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
+        Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
+        Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
 
-        return new String[]{"--safe-mode", "-o", getDiffResultFile().getAbsolutePath(),
-                fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
+        return new String[]{"--safe-mode", "-o", getDiffResultFile().toString(),
+                fNew.toString(), fOriginal.toString()};
     }
 
     @Override
@@ -328,12 +328,12 @@ class DangerRestartArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String[] args() throws URISyntaxException, IOException {
-        File fNew = getFile(FILES_POSTFIX.NEW_SQL);
-        File fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
+        Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
+        Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
 
         return new String[]{"--safe-mode", "--allow-danger-ddl",
-                "RESTART_WITH", "-o", getDiffResultFile().getAbsolutePath(),
-                fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
+                "RESTART_WITH", "-o", getDiffResultFile().toString(),
+                fNew.toString(), fOriginal.toString()};
     }
 }
 
@@ -348,11 +348,11 @@ class FailDangerUpdateArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String[] args() throws URISyntaxException, IOException {
-        File fNew = getFile(FILES_POSTFIX.NEW_SQL);
-        File fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
+        Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
+        Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
 
-        return new String[]{"--safe-mode", "-o", getDiffResultFile().getAbsolutePath(),
-                fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
+        return new String[]{"--safe-mode", "-o", getDiffResultFile().toString(),
+                fNew.toString(), fOriginal.toString()};
     }
 
     @Override
@@ -372,12 +372,12 @@ class DangerUpdateArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String[] args() throws URISyntaxException, IOException {
-        File fNew = getFile(FILES_POSTFIX.NEW_SQL);
-        File fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
+        Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
+        Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
 
         return new String[]{"--safe-mode", "--allow-danger-ddl",
-                "UPDATE", "-o", getDiffResultFile().getAbsolutePath(),
-                fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
+                "UPDATE", "-o", getDiffResultFile().toString(),
+                fNew.toString(), fOriginal.toString()};
     }
 }
 
@@ -408,10 +408,10 @@ class ConcurrentlyArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String[] args() throws URISyntaxException, IOException {
-        File fNew = getFile(FILES_POSTFIX.NEW_SQL);
-        File fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
+        Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
+        Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
 
-        return new String[]{"-C", fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
+        return new String[]{"-C", fNew.toString(), fOriginal.toString()};
     }
 
     @Override
@@ -433,10 +433,10 @@ class MsConcurrentlyArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String[] args() throws URISyntaxException, IOException {
-        File fNew = getFile(FILES_POSTFIX.NEW_SQL);
-        File fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
+        Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
+        Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
 
-        return new String[]{"-C", "-X", "--ms-sql", fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
+        return new String[]{"-C", "-X", "--ms-sql", fNew.toString(), fOriginal.toString()};
     }
 
     @Override
@@ -537,13 +537,13 @@ class OverrideArgumentsProvider extends ArgumentsProvider {
 
     @Override
     protected String[] args() throws URISyntaxException, IOException {
-        File fNew = getFile(FILES_POSTFIX.NEW_SQL);
-        File fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
-        File lib = ApgdiffUtils.getFileFromOsgiRes(OutputTest.class.getResource("lib.sql"));
+        Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
+        Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
+        Path lib = ApgdiffUtils.getFileFromOsgiRes(OutputTest.class.getResource("lib.sql")).toPath();
 
-        return new String[] {"-o", getDiffResultFile().getAbsolutePath(),
-                "-t", fOriginal.getAbsolutePath(), "-s", fNew.getAbsolutePath(),
-                "--src-lib", lib.getAbsolutePath()};
+        return new String[] {"-o", getDiffResultFile().toString(),
+                "-t", fOriginal.toString(), "-s", fNew.toString(),
+                "--src-lib", lib.toString()};
     }
 }
 
@@ -622,10 +622,10 @@ class IgnoreColumnOrderArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String[] args() throws URISyntaxException, IOException {
-        File fNew = getFile(FILES_POSTFIX.NEW_SQL);
-        File fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
+        Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
+        Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
 
-        return new String[]{"--ignore-column-order", fNew.getAbsolutePath(), fOriginal.getAbsolutePath()
+        return new String[]{"--ignore-column-order", fNew.toString(), fOriginal.toString()
         };
     }
 
