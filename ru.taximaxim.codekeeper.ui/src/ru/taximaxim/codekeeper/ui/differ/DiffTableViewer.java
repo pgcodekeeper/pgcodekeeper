@@ -379,6 +379,7 @@ public class DiffTableViewer extends Composite {
             public void keyPressed(KeyEvent e) {
                 if ((e.stateMask & SWT.CTRL) == SWT.CTRL && e.keyCode == 'c') {
                     copyObjectNamesToClipboard();
+                    e.doit = false;
                 }
             }
         });
@@ -470,7 +471,7 @@ public class DiffTableViewer extends Composite {
             }
         });
         menuMgr.add(new Separator());
-        menuMgr.add(new Action(Messages.DiffTableViewer_copy_object_names) {
+        menuMgr.add(new Action(Messages.DiffTableViewer_copy_object_names + "\tCtrl+C") {
 
             @Override
             public void run() {
