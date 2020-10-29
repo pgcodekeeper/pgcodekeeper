@@ -17,6 +17,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
+import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -597,15 +598,22 @@ public abstract class ParserAbstract {
     /**
      * Used in general cases in {@link #getStmtAction()} for get action information.
      */
-    protected String getStrForStmtAction(String action, DbObjType type,
-            List<? extends ParserRuleContext> ids) {
-        StringBuilder sb = new StringBuilder(action).append(' ').append(type).append(' ');
+    protected static String getStrForStmtAction(String action, DbObjType type, List<? extends ParserRuleContext> ids) {
+        StringBuilder sb = new StringBuilder();
         for (ParserRuleContext id : ids) {
             if (id != null) {
                 sb.append(id.getText()).append('.');
             }
         }
         sb.setLength(sb.length() - 1);
-        return sb.toString();
+        return getStrForStmtAction(action, type, sb.toString());
+    }
+
+    protected static String getStrForStmtAction(String action, DbObjType type, ParseTree id) {
+        return getStrForStmtAction(action, type, id.getText());
+    }
+
+    protected static String getStrForStmtAction(String action, DbObjType type, String id) {
+        return action + ' ' + type + ' ' + id;
     }
 }

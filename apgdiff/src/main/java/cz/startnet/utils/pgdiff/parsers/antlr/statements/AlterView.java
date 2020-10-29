@@ -42,6 +42,6 @@ public class AlterView extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_ALTER, DbObjType.VIEW, ctx.name.identifier());
+        return getStrForStmtAction(ACTION_ALTER, DbObjType.VIEW, ctx.name);
     }
 }

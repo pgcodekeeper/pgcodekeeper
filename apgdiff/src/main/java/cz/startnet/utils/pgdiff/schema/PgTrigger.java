@@ -41,7 +41,7 @@ public class PgTrigger extends AbstractTrigger {
     /**
      * Optional list of columns for UPDATE event.
      */
-    protected final Set<String> updateColumns = new HashSet<>();
+    private final Set<String> updateColumns = new HashSet<>();
     private String when;
 
     /**
@@ -88,7 +88,11 @@ public class PgTrigger extends AbstractTrigger {
 
             if (!updateColumns.isEmpty()) {
                 sbSQL.append(" OF ");
-                sbSQL.append(String.join(", ", updateColumns));
+                for (String updateColumn : updateColumns) {
+                    sbSQL.append(PgDiffUtils.getQuotedName(updateColumn));
+                    sbSQL.append(", ");
+                }
+                sbSQL.setLength(sbSQL.length() - 2);
             }
         }
 

@@ -254,7 +254,8 @@ public class PgDiff {
         if (!depRes.getActions().isEmpty()) {
             script.addStatement("SET search_path = pg_catalog;");
         }
-        new ActionsToScriptConverter(depRes.getActions(), arguments).fillScript(script, selected);
+        new ActionsToScriptConverter(script, depRes.getActions(), arguments, oldDbFull, newDbFull)
+        .fillScript(selected);
         if (arguments.isAddTransaction()) {
             script.addStatement("COMMIT TRANSACTION;");
         }
@@ -278,8 +279,8 @@ public class PgDiff {
         createScript(depRes, selected, oldDbFull, newDbFull,
                 additionalDepciesSource, additionalDepciesTarget);
 
-        new ActionsToScriptConverter(depRes.getActions(),
-                depRes.getToRefresh(), arguments).fillScript(script, selected);
+        new ActionsToScriptConverter(script, depRes.getActions(),
+                depRes.getToRefresh(), arguments, oldDbFull, newDbFull).fillScript(selected);
 
         if (arguments.isAddTransaction()) {
             script.addStatement("COMMIT\nGO");
