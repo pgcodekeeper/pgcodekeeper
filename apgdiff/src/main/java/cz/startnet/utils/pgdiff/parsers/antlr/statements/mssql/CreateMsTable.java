@@ -15,7 +15,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ExpressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Identity_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_optionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_optionsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.MsExpressionAnalysisLauncher;
@@ -149,8 +148,6 @@ public class CreateMsTable extends MsTableAbstract {
 
     @Override
     protected String getStmtAction() {
-        Qualified_nameContext qualNameCtx = ctx.qualified_name();
-        return getStrForStmtAction(ACTION_CREATE, DbObjType.TABLE,
-                Arrays.asList(qualNameCtx.schema, qualNameCtx.name));
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.TABLE, ctx.qualified_name());
     }
 }

@@ -10,7 +10,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_tableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_def_table_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_def_table_constraintsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_alterContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_action_dropContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_constraintContext;
@@ -101,8 +100,6 @@ public class AlterMsTable extends MsTableAbstract {
 
     @Override
     protected String getStmtAction() {
-        Qualified_nameContext qualNameCtx = ctx.name;
-        return getStrForStmtAction(ACTION_ALTER, DbObjType.TABLE,
-                Arrays.asList(qualNameCtx.schema, qualNameCtx.name));
+        return getStrForStmtAction(ACTION_ALTER, DbObjType.TABLE, ctx.name);
     }
 }

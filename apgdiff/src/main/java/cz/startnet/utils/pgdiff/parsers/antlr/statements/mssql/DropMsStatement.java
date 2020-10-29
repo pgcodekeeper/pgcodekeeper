@@ -150,14 +150,7 @@ public class DropMsStatement extends ParserAbstract {
             type = DbObjType.ROLE;
         } else if (dropStmtCtx.USER() != null) {
             type = DbObjType.USER;
-        }
-
-        if (type != null) {
-            List<Qualified_nameContext> qnames = dropStmtCtx.qualified_name();
-            return new Pair<>(type, qnames.size() == 1 ? qnames.get(0).id() : null);
-        }
-
-        if (dropStmtCtx.FUNCTION() != null) {
+        } else if (dropStmtCtx.FUNCTION() != null) {
             type = DbObjType.FUNCTION;
         } else if (dropStmtCtx.PROCEDURE() != null || dropStmtCtx.PROC() != null) {
             type = DbObjType.PROCEDURE;

@@ -70,17 +70,17 @@ public class AlterMsBatch extends BatchContextProcessor {
         List<? extends ParserRuleContext> ids;
         if (ctx.create_or_alter_procedure() != null) {
             Qualified_nameContext qname = ctx.create_or_alter_procedure().qualified_name();
-            ids = Arrays.asList(qname.schema, qname.name);
-            type = DbObjType.PROCEDURE;
-        } else if (ctx.create_or_alter_function() != null) {
+            return getStrForStmtAction(ACTION_ALTER, DbObjType.PROCEDURE, qname);
+        }
+        if (ctx.create_or_alter_function() != null) {
             Qualified_nameContext qname = ctx.create_or_alter_function().qualified_name();
-            ids = Arrays.asList(qname.schema, qname.name);
-            type = DbObjType.FUNCTION;
-        } else if (ctx.create_or_alter_view() != null) {
+            return getStrForStmtAction(ACTION_ALTER, DbObjType.FUNCTION, qname);
+        }
+        if (ctx.create_or_alter_view() != null) {
             Qualified_nameContext qname = ctx.create_or_alter_view().qualified_name();
-            ids = Arrays.asList(qname.schema, qname.name);
-            type = DbObjType.VIEW;
-        } else if (ctx.create_or_alter_trigger() != null) {
+            return getStrForStmtAction(ACTION_ALTER, DbObjType.VIEW, qname);
+        }
+        if (ctx.create_or_alter_trigger() != null) {
             Create_or_alter_triggerContext trigCtx = ctx.create_or_alter_trigger();
             Qualified_nameContext qname = trigCtx.trigger_name;
             IdContext schemaCtx = qname.schema;
@@ -89,12 +89,9 @@ public class AlterMsBatch extends BatchContextProcessor {
                 schemaCtx = secondCtx;
             }
             ids = Arrays.asList(schemaCtx, trigCtx.table_name.name, qname.name);
-            type = DbObjType.TRIGGER;
-        } else {
-            return null;
+            return getStrForStmtAction(ACTION_ALTER, DbObjType.TRIGGER, ids);
         }
-
-        return getStrForStmtAction(ACTION_ALTER, type, ids);
+        return null;
     }
 
     @Override

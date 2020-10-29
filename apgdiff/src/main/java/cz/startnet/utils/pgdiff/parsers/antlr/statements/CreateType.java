@@ -159,6 +159,6 @@ public class CreateType extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_CREATE, DbObjType.TYPE, ctx.name.identifier());
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.TYPE, ctx.name);
     }
 }

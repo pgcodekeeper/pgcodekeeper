@@ -56,8 +56,7 @@ public class AlterIndex extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        return alterIdxAllAction != null ? alterIdxAllAction
-                : getStrForStmtAction(ACTION_ALTER, DbObjType.INDEX,
-                        ctx.schema_qualified_name().identifier());
+        return alterIdxAllAction != null ? alterIdxAllAction : getStrForStmtAction(
+                ACTION_ALTER, DbObjType.INDEX, ctx.schema_qualified_name());
     }
 }
