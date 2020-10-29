@@ -2781,7 +2781,7 @@ from_primary
         | AS? alias=identifier (LEFT_PAREN column_alias+=identifier (COMMA column_alias+=identifier)* RIGHT_PAREN | from_function_column_def)?
         )?
     | LATERAL? ROWS FROM LEFT_PAREN function_call (AS from_function_column_def)? (COMMA function_call (AS from_function_column_def)?)* RIGHT_PAREN
-    (WITH ORDINALITY)? (AS? alias=identifier (LEFT_PAREN column_alias+=identifier (COMMA column_alias+=identifier)* RIGHT_PAREN)?)?
+    (WITH ORDINALITY)? (AS? identifier (LEFT_PAREN identifier (COMMA identifier)* RIGHT_PAREN)?)?
     ;
 
 alias_clause
