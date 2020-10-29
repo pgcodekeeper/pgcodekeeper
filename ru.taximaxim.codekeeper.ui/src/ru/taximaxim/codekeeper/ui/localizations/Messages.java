@@ -412,6 +412,8 @@ public final class Messages extends NLS {
 
     public static String DiffTableViewer_copy_as_regex;
 
+    public static String DiffTableViewer_copy_object_names;
+
     public static String DiffTableViewer_database;
 
     public static String DiffTableViewer_directory;
