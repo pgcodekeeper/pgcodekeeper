@@ -30,11 +30,13 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.FileDialog;
-
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.dialogs.PreferencesUtil;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF_PAGE;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.xmlstore.DbXmlStore;
@@ -47,6 +49,8 @@ public class DbStorePicker {
 
     private static final LoadFileElement LOAD_FILE = new LoadFileElement(false);
     private static final LoadFileElement LOAD_DIR = new LoadFileElement(true);
+    private static OpenDbStore Open_DB = new OpenDbStore();
+    private Shell shell;
     private static final int MAX_FILES_HISTORY = 10;
 
     private boolean useFileSources;
@@ -133,6 +137,7 @@ public class DbStorePicker {
 
         List<Object> input = new ArrayList<>(store.size() + files.size() + projects.size() + 4);
         input.addAll(store);
+        input.add(Open_DB);
         if (useFileSources) {
             input.add("─────────────────"); //$NON-NLS-1$
             input.add(LOAD_FILE);
@@ -224,6 +229,11 @@ public class DbStorePicker {
                 } else {
                     revertSelection = true;
                 }
+            } else if (selected instanceof OpenDbStore) {
+                PreferencesUtil
+                .createPreferenceDialogOn(shell, PREF_PAGE.DB_STORE, null, null)
+                .open();
+                revertSelection = true;
             } else {
                 // string or some other "unselectable" selection
                 revertSelection = true;
@@ -307,6 +317,13 @@ public class DbStorePicker {
         @Override
         public String toString() {
             return loadDir ? Messages.DbStorePicker_load_from_dir : Messages.DbStorePicker_load_from_file;
+        }
+    }
+
+    private static class OpenDbStore {
+        @Override
+        public String toString() {
+            return Messages.DbStorePicker_open_db_store;
         }
     }
 

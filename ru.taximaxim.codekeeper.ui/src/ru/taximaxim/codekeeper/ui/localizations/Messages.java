@@ -314,6 +314,8 @@ public final class Messages extends NLS {
 
     public static String DbStorePicker_load_from_file;
 
+    public static String DbStorePicker_open_db_store;
+
     public static String DbStorePrefPage_action_add_new;
 
     public static String DbStorePrefPage_already_present;
