@@ -116,8 +116,8 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PATH;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.VIEW;
 import ru.taximaxim.codekeeper.ui.UiSync;
+import ru.taximaxim.codekeeper.ui.dbstore.DBStoreMenu;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
-import ru.taximaxim.codekeeper.ui.dbstore.DbStorePicker;
 import ru.taximaxim.codekeeper.ui.dialogs.ApplyCustomDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.CommitDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
@@ -165,7 +165,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
     private DiffTableViewer diffTable;
     private DiffPaneViewer diffPane;
-    private boolean dbActionChecked;
     private boolean isDBLoaded;
     private boolean isCommitCommandAvailable;
     private List<Entry<PgStatement, PgStatement>> manualDepciesSource = new ArrayList<>();
@@ -178,14 +177,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         return proj.getProject();
     }
 
-    public boolean getDbActionChecked() {
-        return dbActionChecked;
-    }
-
-    public void setDbActionChecked(boolean dbActionChecked) {
-        this.dbActionChecked = dbActionChecked;
-    }
-
     public void changeMigrationDireciton(boolean isApplyToProj, boolean showWarning) {
         if (showWarning && isApplyToProj != diffTable.isApplyToProj()) {
             MessageBox mb = new MessageBox(parent.getShell(), SWT.ICON_WARNING);
@@ -194,8 +185,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                     isApplyToProj ? Messages.ProjectEditorDiffer_project
                             : Messages.ProjectEditorDiffer_database));
             mb.open();
-            /*  actionToProj.setChecked(isApplyToProj);
-            actionToDb.setChecked(!isApplyToProj);*/
         }
         diffTable.setApplyToProj(isApplyToProj);
         diffTable.getViewer().refresh();
@@ -259,8 +248,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
                 mgrTblBtn.createControl(container).setLayoutData(
                         new GridData(SWT.END, SWT.CENTER, true, false));
-                DbStorePicker storePicker= new DbStorePicker(container, true, false);
-                storePicker.loadStore(true);
+                //DbStorePicker storePicker= new DbStorePicker(container, true, false);
+                // storePicker.loadStore(true);
             }
         };
 
@@ -359,7 +348,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
             @Override
             public void run() {
-                if (getDbActionChecked()) {
+                if (actionToDb.isChecked()) {
                     diff();
                 } else {
                     commit();
@@ -400,13 +389,12 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                     }
                 };
 
-                actionToProj = new Action(Messages.DiffTableViewer_to_project) {
+                actionToProj = new Action(Messages.DiffTableViewer_to_project, IAction.AS_RADIO_BUTTON) {
                     @Override
                     public void run() {
                         changeMigrationDireciton(true, false);
                         applyAction.setText(Messages.DiffTableViewer_apply_to + " "+ Messages.DiffTableViewer_to_project);
                         container.layout();
-                        setDbActionChecked(false);
                     }
                 };
                 actionToProj.setImageDescriptor(ImageDescriptor
@@ -415,24 +403,27 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 ActionContributionItem itemToProj = new ActionContributionItem(actionToProj);
                 itemToProj.setMode(ActionContributionItem.MODE_FORCE_TEXT);
 
-                actionToDb = new Action(Messages.DiffTableViewer_to_database) {
+                actionToDb = new Action(Messages.DiffTableViewer_to_database, IAction.AS_RADIO_BUTTON) {
                     @Override
                     public void run() {
                         changeMigrationDireciton(false, false);
                         applyAction.setText(Messages.DiffTableViewer_apply_to + " " + Messages.DiffTableViewer_to_database);
                         container.layout();
-                        setDbActionChecked(true);
                     }
                 };
                 actionToDb.setImageDescriptor(ImageDescriptor.createFromURL(
                         Activator.getContext().getBundle().getResource(FILE.ICONDATABASE)));
                 ActionContributionItem itemToDb = new ActionContributionItem(actionToDb);
                 itemToDb.setMode(ActionContributionItem.MODE_FORCE_TEXT);
-
+                if (diffTable.isApplyToProj()) {
+                    actionToProj.setChecked(true);
+                } else {
+                    actionToDb.setChecked(true);
+                }
                 menuMgrApplyCustom.add(actionToProj);
                 menuMgrApplyCustom.add(actionToDb);
                 menuMgrApplyCustom.add(new Separator());
-                applyCustomAction.setEnabled(getDbActionChecked());
+                applyCustomAction.setEnabled(actionToDb.isChecked());
 
                 menuMgrApplyCustom.add(applyCustomAction);
                 return menuMgrApplyCustom.createContextMenu(parent);
@@ -462,7 +453,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 getChanges();
             }
         };
-
         getChangesAction.setImageDescriptor(ImageDescriptor.createFromURL(Activator.getContext()
                 .getBundle().getResource(FILE.ICONREFRESH)));
         getChangesAction.setToolTipText(Messages.DiffTableViewer_get_changes);
@@ -498,6 +488,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                         }
                     }
                 });
+                DBStoreMenu dbStoreMenu = new DBStoreMenu(menuMgrGetChangesCustom);
+                dbStoreMenu.loadStore();
                 return menuMgrGetChangesCustom.createContextMenu(parent);
             }
 
