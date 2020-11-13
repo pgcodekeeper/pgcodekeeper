@@ -14,6 +14,7 @@ public enum DbObjType {
     ASSEMBLY,
     SCHEMA,
     EXTENSION,
+    COLLATION,
     TYPE,
     DOMAIN,
     SEQUENCE,
