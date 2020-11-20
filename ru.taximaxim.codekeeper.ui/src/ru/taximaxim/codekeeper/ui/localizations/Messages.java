@@ -435,6 +435,11 @@ public final class Messages extends NLS {
     public static String DiffTableViewer_reading_git_history;
 
     public static String DiffTableViewer_reset_sorting;
+   
+    public static String DiffTableViewer_save_to_DB;
+
+    public static String DiffTableViewer_save_to_project;
+
     public static String DiffTableViewer_selected;
 
     public static String DiffTableViewer_selected_count;

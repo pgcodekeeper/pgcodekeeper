@@ -392,7 +392,7 @@
                 </separator>
                 <command
                     commandId="ru.taximaxim.codekeeper.ui.command.OpenSQLEditor"
-                    icon="IMG_OBJ_FILE"
+                    icon="icons/menu_new_sql_file.png"
                     label="%command.commandname.OpenSQLEditor"
                     style="push">
                 </command>
@@ -528,7 +528,7 @@
                 </control>
                 <command
                     commandId="ru.taximaxim.codekeeper.ui.command.OpenSQLEditor"
-                    icon="IMG_OBJ_FILE"
+                    icon="icons/new_sql_file.png"
                     label="%command.commandname.OpenSQLEditor"
                     style="push">
                     <visibleWhen>

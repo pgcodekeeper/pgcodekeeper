@@ -3,6 +3,8 @@ package ru.taximaxim.codekeeper.ui.handlers;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.PartInitException;
@@ -14,6 +16,7 @@ import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorInput;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
 import ru.taximaxim.codekeeper.ui.propertytests.ChangesJobTester;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
@@ -32,6 +35,13 @@ public class GetChanges extends AbstractHandler {
                 IProject proj = ((IFileEditorInput) sqlEditor.getEditorInput()).getFile().getProject();
 
                 DbInfo remote = sqlEditor.getCurrentDb();
+                if (remote == null) {
+                    MessageBox mb = new MessageBox(HandlerUtil.getActiveShell(event), SWT.ICON_INFORMATION);
+                    mb.setText(Messages.UpdateDdl_select_source);
+                    mb.setMessage(Messages.UpdateDdl_select_source_msg);
+                    mb.open();
+                    return null;
+                }
                 ProjectEditorDiffer editor = ChangesJobTester.findProjectEditor(proj);
                 if (editor == null) {
                     ProjectEditorDiffer.saveLastDb(remote, proj);
