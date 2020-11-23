@@ -13,8 +13,8 @@ public class PgCollation extends PgStatementWithSearchPath {
     }
 
     protected String locale;
-    protected String lc_collate;
-    protected String lc_ctype;
+    protected String lcCollate;
+    protected String lcCtype;
     protected String provider;
     protected String version;
     protected boolean deterministic = true;
@@ -27,8 +27,8 @@ public class PgCollation extends PgStatementWithSearchPath {
     @Override
     public void computeHash(Hasher hasher) {
         hasher.put(locale);
-        hasher.put(lc_collate);
-        hasher.put(lc_ctype);
+        hasher.put(lcCollate);
+        hasher.put(lcCtype);
         hasher.put(provider);
         hasher.put(version);
         hasher.put(deterministic);
@@ -44,8 +44,8 @@ public class PgCollation extends PgStatementWithSearchPath {
     public PgStatement shallowCopy() {
         PgCollation collationDst = getCollationCopy();
         collationDst.locale = getILocale();
-        collationDst.lc_collate = getLcCollate();
-        collationDst.lc_ctype = getLcCtype();
+        collationDst.lcCollate = getLcCollate();
+        collationDst.lcCtype = getLcCtype();
         collationDst.provider = getProvider();
         collationDst.version = getVersion();
         collationDst.deterministic = isDeterministic();
@@ -57,11 +57,11 @@ public class PgCollation extends PgStatementWithSearchPath {
     }
 
     public String getLcCollate() {
-        return lc_collate;
+        return lcCollate;
     }
 
     public String getLcCtype() {
-        return lc_ctype;
+        return lcCtype;
     }
 
     public String getProvider() {
@@ -86,12 +86,12 @@ public class PgCollation extends PgStatementWithSearchPath {
         resetHash();
     }
     public void setLcCollate(final String lcCollate) {
-        this.lc_collate = lcCollate;
+        this.lcCollate = lcCollate;
         resetHash();
     }
 
     public void setLcCtype(final String lcCtype) {
-        this.lc_ctype = lcCtype;
+        this.lcCtype = lcCtype;
         resetHash();
     }
 
@@ -113,8 +113,8 @@ public class PgCollation extends PgStatementWithSearchPath {
         if (obj instanceof PgCollation && super.compare(obj)) {
             PgCollation coll = (PgCollation) obj;
             return deterministic == coll.isDeterministic()
-                    && Objects.equals(lc_collate, coll.getLcCollate())
-                    && Objects.equals(lc_ctype, coll.getLcCtype())
+                    && Objects.equals(lcCollate, coll.getLcCollate())
+                    && Objects.equals(lcCtype, coll.getLcCtype())
                     && Objects.equals(provider, coll.getProvider())
                     && Objects.equals(version, coll.getVersion())
                     && Objects.equals(locale, coll.getLocation());
