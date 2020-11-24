@@ -77,6 +77,7 @@ public abstract class PgStatement implements IStatement, IHashable {
         case PROCEDURE:
         case AGGREGATE:
         case SEQUENCE:
+        case COLLATION:
         case TYPE:
         case DOMAIN:
         case ASSEMBLY:

@@ -16,6 +16,7 @@ implements IRelation {
     protected final Map<String, AbstractTrigger> triggers = new LinkedHashMap<>();
     protected final Map<String, PgRule> rules = new LinkedHashMap<>();
     protected final Map<String, PgPolicy> policies = new LinkedHashMap<>();
+    protected final Map<String, PgCollation> collations = new LinkedHashMap<>();
 
     public PgStatementContainer(String name) {
         super(name);
@@ -178,6 +179,10 @@ implements IRelation {
 
     public void addPolicy(PgPolicy policy) {
         addUnique(policies, policy, this);
+    }
+
+    public void addCollation(PgCollation collation) {
+        addUnique(collations, collation, this);
     }
 
     @Override
