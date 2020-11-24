@@ -85,6 +85,7 @@ public class PgCollation extends PgStatementWithSearchPath {
         this.locale = locale;
         resetHash();
     }
+
     public void setLcCollate(final String lcCollate) {
         this.lcCollate = lcCollate;
         resetHash();
@@ -104,6 +105,7 @@ public class PgCollation extends PgStatementWithSearchPath {
         this.version = version;
         resetHash();
     }
+
     @Override
     public boolean compare(PgStatement obj) {
         if (this == obj) {
@@ -157,16 +159,18 @@ public class PgCollation extends PgStatementWithSearchPath {
     public String getDropSQL() {
         return "DROP COLLATION " + getQualifiedName() + ";";
     }
+
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
 
-        final int startLength = sb.length();
         PgCollation newCollation = (PgCollation) newCondition;
-        StringBuilder sbSQL = new StringBuilder();
 
-        if (compareCollationBody(newCollation, sbSQL)) {
-            sb.append("\n\nALTER COLLATION ").append(newCollation.getQualifiedName()).
-            append(sbSQL).append(';');
+        if (newCollation.getLcCtype().equals(getLcCtype()) ||
+                newCollation.getLcCollate().equals(getLcCollate()) ||
+                newCollation.getProvider().equals(getProvider()) ||
+                newCollation.isDeterministic() == isDeterministic()) {
+            isNeedDepcies.set(true);
+            return true;
         }
 
         if (!Objects.equals(getOwner(), newCollation.getOwner())) {
@@ -175,53 +179,6 @@ public class PgCollation extends PgStatementWithSearchPath {
 
         alterPrivileges(newCollation, sb);
 
-        if (!Objects.equals(getComment(), newCollation.getComment())) {
-            sb.append("\n\n");
-            newCollation.appendCommentSql(sb);
-        }
-
-        return sb.length() > startLength;
+        return false;
     }
-
-    private boolean compareCollationBody(PgCollation newCollation, StringBuilder sbSQL) {
-
-        final String newILocale = newCollation.getILocale() ;
-        if (newILocale != null && !newILocale.equals(getILocale())) {
-            sbSQL.append("\n\tILOCALE = ");
-            sbSQL.append(newILocale);
-        }
-
-        final String newLcCollate = newCollation.getLcCollate();
-        if (newLcCollate != null && !newLcCollate.equals(getLcCollate())) {
-            sbSQL.append("\n\tLCCOLLATE = ");
-            sbSQL.append(newLcCollate);
-        }
-
-        final String newLcCtype = newCollation.getLcCtype();
-        if (newLcCtype != null && !newLcCtype.equals(getLcCtype())) {
-            sbSQL.append("\n\tLCCTYPE = ");
-            sbSQL.append(newLcCtype);
-        }
-
-        final String newProvider = newCollation.getProvider();
-        if (newProvider != null && !(newProvider.equals(getProvider()))) {
-            sbSQL.append("\n\tPROVIDER ");
-            sbSQL.append(newProvider);
-        }
-
-        final String newVersion = newCollation.getVersion();
-        if (newVersion != null && !newVersion.equals(getVersion())) {
-            sbSQL.append("\n\tVERSION ");
-            sbSQL.append(newVersion);
-        }
-
-        final boolean newDeterministic = newCollation.isDeterministic();
-        if (!isDeterministic() && newDeterministic) {
-            sbSQL.append("\n\tDETERMINISTIC = ");
-            sbSQL.append(newDeterministic);
-        }
-
-        return sbSQL.length() > 0;
-    }
-
 }
