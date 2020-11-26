@@ -1,12 +1,11 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.util.List;
+import java.util.Arrays;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Collation_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_collationContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.schema.PgCollation;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -21,9 +20,8 @@ public class CreateCollation extends ParserAbstract{
 
     @Override
     public void parseObject() {
-        List<IdentifierContext> ids = ctx.name.identifier();
-        IdentifierContext name = QNameParser.getFirstNameCtx(ids);
-        PgCollation collation = new PgCollation(name.getText());
+        Schema_qualified_nameContext nameCtx = ctx.name;
+        PgCollation collation = new PgCollation( nameCtx.getText());
 
         for (Collation_optionContext body : ctx.collation_option()) {
             String res = null;
@@ -103,7 +101,7 @@ public class CreateCollation extends ParserAbstract{
             }
         }
 
-        addSafe(getSchemaSafe(ids), collation, ids);
+        addSafe(db, collation, Arrays.asList(nameCtx));
     }
     @Override
     protected String getStmtAction() {

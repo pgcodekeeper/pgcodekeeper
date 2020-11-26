@@ -8,7 +8,6 @@ import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgCollation;
-import cz.startnet.utils.pgdiff.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CollationReader extends JdbcReader {
@@ -19,18 +18,14 @@ public class CollationReader extends JdbcReader {
 
     @Override
     protected void processResult(ResultSet result, AbstractSchema schema) throws SQLException, XmlReaderException {
-        String tableName = result.getString(CLASS_RELNAME);
-        PgStatementContainer c = schema.getStatementContainer(tableName);
-        if (c != null) {
-            c.addCollation(getCollation(result, schema, tableName));
-        }
+        schema.addColletion(getCollation(result, schema));
     }
 
-    private PgCollation getCollation(ResultSet res, AbstractSchema schema, String tableName) throws SQLException {
+    private PgCollation getCollation(ResultSet res, AbstractSchema schema) throws SQLException {
         String schemaName = schema.getName();
         String collName = res.getString("collname");
-        loader.setCurrentObject(new GenericColumn(schemaName, tableName, collName, DbObjType.COLLATION));
         PgCollation p = new PgCollation(collName);
+        loader.setCurrentObject(new GenericColumn(schemaName, p.getName(), collName, DbObjType.COLLATION));
 
         p.setLcCollate(res.getString("collcollate"));
         p.setLcCtype(res.getString("collctype"));
