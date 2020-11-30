@@ -22,17 +22,17 @@ public class DepcyWriter {
     private final DirectedGraph<PgStatement, DefaultEdge> graph;
     private final int depth;
     private final PrintWriter writer;
-    private final Collection<DbObjType> filtrObjTypes;
-    private final boolean isInverseFiltr;
+    private final Collection<DbObjType> filterObjTypes;
+    private final boolean isInvertFilter;
 
-    public DepcyWriter(PgDatabase db, int depth, PrintWriter writer, boolean isReverse, Collection<DbObjType> filtrObjTypes, boolean isInverseFiltr) {
+    public DepcyWriter(PgDatabase db, int depth, PrintWriter writer, boolean isReverse, Collection<DbObjType> filterObjTypes, boolean isInvertFilter) {
         this.db = db;
         DepcyGraph dg = new DepcyGraph(db);
         this.graph = isReverse ? dg.getGraph() : dg.getReversedGraph();
         this.writer = writer;
         this.depth = depth;
-        this.filtrObjTypes = filtrObjTypes;
-        this.isInverseFiltr = isInverseFiltr;
+        this.filterObjTypes = filterObjTypes;
+        this.isInvertFilter = isInvertFilter;
     }
 
     public void write(Collection<String> names) {
@@ -56,13 +56,13 @@ public class DepcyWriter {
     }
 
     private void printIndents(DbObjType type, int level) {
-        if (!filtrObjTypes.isEmpty()) {
-            if (!isInverseFiltr) {
-                if (filtrObjTypes.contains(type)) {
+        if (!filterObjTypes.isEmpty()) {
+            if (!isInvertFilter) {
+                if (filterObjTypes.contains(type)) {
                     printIndent(level);
                 }
             } else {
-                if ((!filtrObjTypes.contains(type))) {
+                if ((!filterObjTypes.contains(type))) {
                     printIndent(level);
                 }
             }
@@ -85,16 +85,16 @@ public class DepcyWriter {
 
     private int printObj(PgStatement st, int level) {
         DbObjType type = st.getStatementType();
-        if (!filtrObjTypes.isEmpty()) {
-            if (!isInverseFiltr) {
-                if (filtrObjTypes.contains(type)) {
+        if (!filterObjTypes.isEmpty()) {
+            if (!isInvertFilter) {
+                if (filterObjTypes.contains(type)) {
                     printType(type, st);
                     level++;
                 } else {
                     hiddenObj++;
                 }
             } else {
-                if (!filtrObjTypes.contains(type)) {
+                if (!filterObjTypes.contains(type)) {
                     printType(type, st);
                     level++;
                 } else {

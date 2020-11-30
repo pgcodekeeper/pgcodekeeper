@@ -267,7 +267,7 @@ public class PgDiffArguments implements Cloneable {
         return null;
     }
 
-    public boolean isGraphInverseFiltr() {
+    public boolean isGraphInvertFilter() {
         return false;
     }
 
