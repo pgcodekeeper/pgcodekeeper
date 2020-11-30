@@ -169,7 +169,8 @@ public final class Main {
 
         try (PrintWriter pw = getDiffWriter(arguments)) {
             new DepcyWriter(d, arguments.getGraphDepth(),
-                    pw != null ?  pw : writer, arguments.isGraphReverse())
+                    pw != null ?  pw : writer, arguments.isGraphReverse(),
+                            arguments.getGraphFilterTypes(), arguments.isGraphInverseFiltr())
             .write(arguments.getGraphNames());
         }
         return true;

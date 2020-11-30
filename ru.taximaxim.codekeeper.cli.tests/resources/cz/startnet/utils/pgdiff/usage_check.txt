@@ -110,6 +110,11 @@ Usage
  --graph-name <name>                    : name of start object in graph mode
                                           specify multiple times to use several
                                           names
+ -f (--graph-filter-object) <OBJECT_TYPE> : show these object types,
+                                          hide  other objects 
+ -i (--inverse-filtr)                   : hide these --graph-filter-object types,
+                                          show other objects. Use this parameter
+                                          with --graph-filter-object parameter
 
 DANGER_STATEMENT : [DROP_TABLE | ALTER_COLUMN | DROP_COLUMN | RESTART_WITH | UPDATE]
 OBJECT_TYPE : [CAST | USER | ROLE | ASSEMBLY | SCHEMA | EXTENSION | TYPE | DOMAIN | SEQUENCE | OPERATOR | FTS_PARSER | FTS_TEMPLATE | FTS_DICTIONARY | FTS_CONFIGURATION | TABLE | FUNCTION | PROCEDURE | AGGREGATE | CONSTRAINT | VIEW | INDEX | TRIGGER | RULE | POLICY]

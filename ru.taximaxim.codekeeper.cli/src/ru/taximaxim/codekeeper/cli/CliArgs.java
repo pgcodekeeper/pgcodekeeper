@@ -45,6 +45,7 @@ public class CliArgs extends PgDiffArguments {
         // otherwise args4j breaks
         this.allowedDangers = new ArrayList<>();
         this.allowedTypes = new ArrayList<>();
+        this.graphFilterTypes = new ArrayList<>();
         this.ignoreLists = new ArrayList<>();
         this.sourceLibXmls = new ArrayList<>();
         this.sourceLibs = new ArrayList<>();
@@ -245,6 +246,15 @@ public class CliArgs extends PgDiffArguments {
             usage="name of start object in graph mode"
                     + "\nspecify multiple times to use several names")
     private List<String> graphNames;
+
+    @Option(name="-f", aliases="--graph-filter-object", forbids={ "--parse"},
+            handler=DbObjTypeOptionHandler.class,
+            usage="show these object types, hide  other objects types")
+    private List<DbObjType> graphFilterTypes;
+
+    @Option(name="-i", aliases="--inverse-filtr", forbids={"--parse"},
+            usage="inverse the graph filter object types")
+    private boolean graphInverseFiltr;
 
     public boolean isModeParse() {
         return modeParse;
@@ -502,6 +512,16 @@ public class CliArgs extends PgDiffArguments {
     @Override
     public Collection<DbObjType> getAllowedTypes() {
         return Collections.unmodifiableCollection(allowedTypes);
+    }
+
+    @Override
+    public Collection<DbObjType> getGraphFilterTypes() {
+        return Collections.unmodifiableCollection(graphFilterTypes);
+    }
+
+    @Override
+    public boolean isGraphInverseFiltr() {
+        return graphInverseFiltr;
     }
 
     @Override
