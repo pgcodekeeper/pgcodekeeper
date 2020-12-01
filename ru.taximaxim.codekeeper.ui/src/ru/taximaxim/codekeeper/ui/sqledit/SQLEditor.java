@@ -245,9 +245,21 @@ implements IResourceChangeListener, ITextErrorReporter {
         IAnnotationModel model = getSourceViewer().getAnnotationModel();
         for (PgObjLocation loc : getReferences()) {
             if (loc.isDanger()) {
-                model.addAnnotation(new Annotation(MARKER.DANGER_ANNOTATION, false, loc.getWarningText()),
+                model.addAnnotation(new Annotation(MARKER.DANGER_ANNOTATION, false,
+                        getWarningText(loc.getDanger())),
                         new Position(loc.getOffset(), loc.getObjLength()));
             }
+        }
+    }
+
+    private String getWarningText(DangerStatement danger) {
+        switch (danger) {
+        case ALTER_COLUMN: return "ALTER COLUMN ... TYPE statement"; //$NON-NLS-1$
+        case DROP_COLUMN: return "DROP COLUMN statement"; //$NON-NLS-1$
+        case DROP_TABLE: return "DROP TABLE statement"; //$NON-NLS-1$
+        case RESTART_WITH: return "ALTER SEQUENCE ... RESTART WITH statement"; //$NON-NLS-1$
+        case UPDATE: return "UPDATE statement"; //$NON-NLS-1$
+        default: return null;
         }
     }
 
@@ -426,7 +438,7 @@ implements IResourceChangeListener, ITextErrorReporter {
         }
 
         if (res != null && UIProjectLoader.isInProject(res)) {
-            return PgDbParser.getParser(res.getProject());
+            return PgDbParser.getParser(res);
         }
 
         PgDbParser parser = new PgDbParser();

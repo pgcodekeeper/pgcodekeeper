@@ -40,6 +40,6 @@ public class CreateSchema extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_CREATE, DbObjType.SCHEMA, Arrays.asList(ctx.name));
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.SCHEMA, ctx.name);
     }
 }

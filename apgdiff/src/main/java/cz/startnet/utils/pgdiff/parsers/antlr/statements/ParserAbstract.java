@@ -17,6 +17,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
+import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -26,7 +27,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Id_tokenContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identifier_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Including_indexContext;
@@ -34,7 +34,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Predefined_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.MisplacedObjectException;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
@@ -48,6 +47,7 @@ import cz.startnet.utils.pgdiff.schema.IStatement;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation.LocationType;
 import cz.startnet.utils.pgdiff.schema.PgOperator;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -269,25 +269,12 @@ public abstract class ParserAbstract {
 
     protected PgObjLocation addObjReference(List<? extends ParserRuleContext> ids,
             DbObjType type, String action) {
-        PgObjLocation loc = getLocation(ids, type, action, false, null);
+        PgObjLocation loc = getLocation(ids, type, action, false, null, LocationType.REFERENCE);
         if (loc != null) {
             db.addReference(fileName, loc);
         }
 
         return loc;
-    }
-
-    private int getStart(ParserRuleContext ctx) {
-        int start = ctx.start.getStartIndex();
-        if (ctx instanceof IdentifierContext) {
-            Id_tokenContext id = ((IdentifierContext) ctx).id_token();
-            if (id != null && id.QuotedIdentifier() != null) {
-                start++;
-            }
-        } else if (ctx instanceof IdContext && ((IdContext) ctx).SQUARE_BRACKET_ID() != null) {
-            start++;
-        }
-        return start;
     }
 
     public <T extends IStatement, R extends IStatement> R getSafe(
@@ -315,7 +302,7 @@ public abstract class ParserAbstract {
             List<? extends ParserRuleContext> ids) {
         doSafe(PgStatement::addChild, parent, child);
         PgObjLocation loc = getLocation(ids, child.getStatementType(),
-                ACTION_CREATE, false, null);
+                ACTION_CREATE, false, null, LocationType.DEFINITION);
         if (loc != null) {
             child.setLocation(loc);
             db.addReference(fileName, loc);
@@ -368,7 +355,8 @@ public abstract class ParserAbstract {
     }
 
     private PgObjLocation getLocation(List<? extends ParserRuleContext> ids,
-            DbObjType type, String action, boolean isDep, String signature) {
+            DbObjType type, String action, boolean isDep, String signature,
+            LocationType locationType) {
         ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
         switch (type) {
         case CAST:
@@ -379,8 +367,14 @@ public abstract class ParserAbstract {
         case ROLE:
         case USER:
         case DATABASE:
-            return new PgObjLocation(new GenericColumn(nameCtx.getText(), type),
-                    action, getStart(nameCtx), nameCtx.start.getLine(), fileName);
+            GenericColumn object = new GenericColumn(nameCtx.getText(), type);
+            return new PgObjLocation.Builder()
+                    .setFilePath(fileName)
+                    .setCtx(nameCtx)
+                    .setObject(object)
+                    .setAction(action)
+                    .setLocationType(locationType)
+                    .build();
         default:
             break;
         }
@@ -418,27 +412,43 @@ public abstract class ParserAbstract {
         case TYPE:
         case VIEW:
         case INDEX:
-            return new PgObjLocation(new GenericColumn(schemaName, name, type),
-                    action, getStart(nameCtx), nameCtx.start.getLine(), fileName);
+            GenericColumn object = new GenericColumn(schemaName, name, type);
+            return new PgObjLocation.Builder()
+                    .setFilePath(fileName)
+                    .setCtx(nameCtx)
+                    .setObject(object)
+                    .setAction(action)
+                    .setLocationType(locationType)
+                    .build();
         case CONSTRAINT:
         case TRIGGER:
         case RULE:
         case POLICY:
         case COLUMN:
-            return new PgObjLocation(new GenericColumn(schemaName,
-                    QNameParser.getSecondName(ids), name, type), action,
-                    getStart(nameCtx), nameCtx.start.getLine(), fileName);
+            object = new GenericColumn(schemaName, QNameParser.getSecondName(ids), name, type);
+            return new PgObjLocation.Builder()
+                    .setFilePath(fileName)
+                    .setCtx(nameCtx)
+                    .setObject(object)
+                    .setAction(action)
+                    .setLocationType(locationType)
+                    .build();
         default:
             return null;
         }
     }
 
     protected PgObjLocation getCastLocation(Data_typeContext source, Data_typeContext target, String action) {
-        PgObjLocation loc = new PgObjLocation(new GenericColumn(
-                ICast.getSimpleName(getFullCtxText(source), getFullCtxText(target)), DbObjType.CAST),
-                action, source.start.getStartIndex(), source.start.getLine(), fileName);
-        loc.setLength(target.stop.getStopIndex() - source.start.getStartIndex() + 1);
-        return loc;
+        GenericColumn object = new GenericColumn(
+                ICast.getSimpleName(getFullCtxText(source), getFullCtxText(target)),
+                DbObjType.CAST);
+
+        return new PgObjLocation.Builder()
+                .setFilePath(fileName)
+                .setCtx(source)
+                .setObject(object)
+                .setAction(action)
+                .build();
     }
 
     protected <T extends IStatement, U extends Object> void doSafe(BiConsumer<T, U> adder,
@@ -455,7 +465,7 @@ public abstract class ParserAbstract {
 
     protected void addDepSafe(PgStatement st, List<? extends ParserRuleContext> ids,
             DbObjType type, boolean isPostgres, String signature) {
-        PgObjLocation loc = getLocation(ids, type, null, true, signature);
+        PgObjLocation loc = getLocation(ids, type, null, true, signature, LocationType.REFERENCE);
         if (loc != null && !ApgdiffUtils.isSystemSchema(loc.getSchema(), isPostgres)) {
             if (!refMode) {
                 st.addDep(loc.getObj());
@@ -573,9 +583,12 @@ public abstract class ParserAbstract {
      */
     protected PgObjLocation fillQueryLocation(ParserRuleContext ctx) {
         String act = getStmtAction();
-        PgObjLocation loc = new PgObjLocation(
-                act != null ? act : ctx.getStart().getText().toUpperCase(Locale.ROOT),
-                        ctx, getFullCtxText(ctx));
+        PgObjLocation loc = new PgObjLocation.Builder()
+                .setAction(act != null ? act : ctx.getStart().getText().toUpperCase(Locale.ROOT))
+                .setSql(getFullCtxText(ctx))
+                .setCtx(ctx)
+                .build();
+
         db.addReference(fileName, loc);
         return loc;
     }
@@ -586,7 +599,11 @@ public abstract class ParserAbstract {
      * for objects which undefined in DbObjType).
      */
     protected void addOutlineRefForCommentOrRule(String action, ParserRuleContext ctx) {
-        db.addReference(fileName, new PgObjLocation(action, ctx, null));
+        PgObjLocation loc = new PgObjLocation.Builder()
+                .setAction(action)
+                .setCtx(ctx)
+                .build();
+        db.addReference(fileName, loc);
     }
 
     /**
@@ -598,15 +615,22 @@ public abstract class ParserAbstract {
     /**
      * Used in general cases in {@link #getStmtAction()} for get action information.
      */
-    protected String getStrForStmtAction(String action, DbObjType type,
-            List<? extends ParserRuleContext> ids) {
-        StringBuilder sb = new StringBuilder(action).append(' ').append(type).append(' ');
+    protected static String getStrForStmtAction(String action, DbObjType type, List<? extends ParserRuleContext> ids) {
+        StringBuilder sb = new StringBuilder();
         for (ParserRuleContext id : ids) {
             if (id != null) {
                 sb.append(id.getText()).append('.');
             }
         }
         sb.setLength(sb.length() - 1);
-        return sb.toString();
+        return getStrForStmtAction(action, type, sb.toString());
+    }
+
+    protected static String getStrForStmtAction(String action, DbObjType type, ParseTree id) {
+        return getStrForStmtAction(action, type, id.getText());
+    }
+
+    protected static String getStrForStmtAction(String action, DbObjType type, String id) {
+        return action + ' ' + type + ' ' + id;
     }
 }

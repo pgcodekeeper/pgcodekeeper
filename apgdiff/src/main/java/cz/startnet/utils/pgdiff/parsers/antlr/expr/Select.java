@@ -438,8 +438,11 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
                 addDepcy(new GenericColumn(relationGc.schema, DbObjType.SCHEMA), schemaCtx);
             }
 
-            // currently adding a table reference for any alias
-            addDepcy(relationGc, relationCtx);
+            if (relationGc.getObjName().equals(relation)) {
+                addDepcy(relationGc, relationCtx);
+            } else {
+                addAlias(relationGc, relationCtx);
+            }
 
             addFilteredRelationColumnsDepcies(relationGc.schema, relationGc.table, ANY)
             .map(Pair::copyMod)

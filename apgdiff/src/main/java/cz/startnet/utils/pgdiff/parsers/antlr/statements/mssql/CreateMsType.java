@@ -18,7 +18,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_optionsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_restContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_whereContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_constraint_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Type_definitionContext;
@@ -213,8 +212,6 @@ public class CreateMsType extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        Qualified_nameContext qualNameCtx = ctx.qualified_name();
-        return getStrForStmtAction(ACTION_CREATE, DbObjType.TYPE,
-                Arrays.asList(qualNameCtx.schema, qualNameCtx.name));
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.TYPE, ctx.qualified_name());
     }
 }

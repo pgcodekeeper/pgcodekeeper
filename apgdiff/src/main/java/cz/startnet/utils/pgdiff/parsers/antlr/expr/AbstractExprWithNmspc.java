@@ -316,6 +316,10 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
         }
 
         if (alias != null) {
+            if (depcy != null) {
+                // add alias definition
+                addVariable(depcy, alias);
+            }
             String aliasName = alias.getText();
             boolean added = addReference(aliasName, depcy);
             if (!added && cteList == null && columnAliases != null && !columnAliases.isEmpty()) {

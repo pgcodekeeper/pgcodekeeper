@@ -93,8 +93,13 @@ public class CustomParserListener {
      * {@link cz.startnet.utils.pgdiff.schema.PgStatement}.
      */
     protected void addToQueries(ParserRuleContext ctx, String acton) {
-        safeParseStatement(() -> db.addReference(filename, new PgObjLocation(acton, ctx,
-                ParserListenerMode.SCRIPT == mode ? ParserAbstract.getFullCtxText(ctx) : null)), ctx);
+        PgObjLocation loc = new PgObjLocation.Builder()
+                .setAction(acton)
+                .setCtx(ctx)
+                .setSql(ParserListenerMode.SCRIPT == mode ? ParserAbstract.getFullCtxText(ctx) : null)
+                .build();
+
+        safeParseStatement(() -> db.addReference(filename, loc), ctx);
     }
 
     /**

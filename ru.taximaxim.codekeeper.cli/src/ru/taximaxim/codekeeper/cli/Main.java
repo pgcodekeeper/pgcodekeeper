@@ -24,7 +24,6 @@ import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.NotAllowedObjectException;
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.PgDiff;
-import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcRunner;
 import cz.startnet.utils.pgdiff.parsers.antlr.ScriptParser;
@@ -79,7 +78,7 @@ public final class Main {
         }
     }
 
-    private static boolean diff(PrintWriter writer, PgDiffArguments arguments)
+    private static boolean diff(PrintWriter writer, CliArgs arguments)
             throws InterruptedException, IOException, SQLException {
         try (PrintWriter encodedWriter = getDiffWriter(arguments)) {
             PgDiff diff = new PgDiff(arguments);
@@ -128,14 +127,14 @@ public final class Main {
         return true;
     }
 
-    private static PrintWriter getDiffWriter(PgDiffArguments arguments)
+    private static PrintWriter getDiffWriter(CliArgs arguments)
             throws FileNotFoundException, UnsupportedEncodingException {
         String outFile = arguments.getOutputTarget();
         return outFile == null ? null : new UnixPrintWriter(
-                arguments.getOutputTarget(), arguments.getOutCharsetName());
+                outFile, arguments.getOutCharsetName());
     }
 
-    private static boolean parse(PgDiffArguments arguments)
+    private static boolean parse(CliArgs arguments)
             throws IOException, InterruptedException {
         PgDiff diff = new PgDiff(arguments);
         PgDatabase d;
@@ -157,7 +156,7 @@ public final class Main {
         return true;
     }
 
-    private static boolean graph(PrintWriter writer, PgDiffArguments arguments)
+    private static boolean graph(PrintWriter writer, CliArgs arguments)
             throws IOException, InterruptedException {
         PgDiff diff = new PgDiff(arguments);
         PgDatabase d;

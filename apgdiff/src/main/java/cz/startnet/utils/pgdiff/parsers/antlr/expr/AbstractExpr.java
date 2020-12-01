@@ -30,6 +30,7 @@ import cz.startnet.utils.pgdiff.schema.IFunction;
 import cz.startnet.utils.pgdiff.schema.IOperator;
 import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation.LocationType;
 import cz.startnet.utils.pgdiff.schema.meta.MetaContainer;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
@@ -169,18 +170,35 @@ public abstract class AbstractExpr {
 
     protected void addDepcy(GenericColumn depcy, ParserRuleContext ctx, Token start) {
         if (!ApgdiffUtils.isPgSystemSchema(depcy.schema)) {
-            PgObjLocation loc;
-            if (ctx == null) {
-                loc = new PgObjLocation(depcy, null, 0, 0, null);
-            } else if (start == null) {
-                loc = new PgObjLocation(depcy, ctx);
-            } else {
-                loc = new PgObjLocation(depcy, ctx).copyWithOffset(
-                        start.getStartIndex(), start.getLine() - 1, start.getCharPositionInLine(), null);
+            PgObjLocation loc = new PgObjLocation.Builder()
+                    .setObject(depcy)
+                    .setCtx(ctx)
+                    .build();
+            if (start != null) {
+                loc = loc.copyWithOffset(start.getStartIndex(),
+                        start.getLine() - 1, start.getCharPositionInLine(), null);
             }
 
             depcies.add(loc);
         }
+    }
+
+    protected void addAlias(GenericColumn depcy, ParserRuleContext ctx) {
+        depcies.add(new PgObjLocation.Builder()
+                .setObject(depcy)
+                .setCtx(ctx)
+                .setLocationType(LocationType.LOCAL_REF)
+                .setAlias(ctx.getText())
+                .build());
+    }
+
+    protected void addVariable(GenericColumn depcy, ParserRuleContext ctx) {
+        depcies.add(new PgObjLocation.Builder()
+                .setObject(depcy)
+                .setCtx(ctx)
+                .setLocationType(LocationType.VARIABLE)
+                .setAlias(ctx.getText())
+                .build());
     }
 
     protected void addDepcy(PgObjLocation loc) {
@@ -213,8 +231,11 @@ public abstract class AbstractExpr {
                     addDepcy(new GenericColumn(referencedTable.schema, DbObjType.SCHEMA), schemaNameCtx);
                 }
 
-                // currently adding a table reference for any alias
-                addDepcy(referencedTable, columnParentCtx);
+                if (referencedTable.getObjName().equals(columnParent)) {
+                    addDepcy(referencedTable, columnParentCtx);
+                } else {
+                    addAlias(referencedTable, columnParentCtx);
+                }
 
                 columnType = addFilteredColumnDepcy(
                         referencedTable.schema, referencedTable.table, columnName);

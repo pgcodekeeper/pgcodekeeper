@@ -20,8 +20,6 @@ public class DeleteStatement extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(
-                new StringBuilder(ACTION_DELETE).append(' ').append("FROM").toString(),
-                DbObjType.TABLE, ctx.delete_table_name.identifier());
+        return getStrForStmtAction(ACTION_DELETE + " FROM", DbObjType.TABLE, ctx.delete_table_name);
     }
 }

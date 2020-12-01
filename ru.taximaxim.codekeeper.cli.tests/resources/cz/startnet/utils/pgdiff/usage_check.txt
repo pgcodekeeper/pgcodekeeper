@@ -48,6 +48,7 @@ Usage
                                           order
  --using-off                            : do not print USING expression for
                                           ALTER COLUMN TYPE
+ --migrate-data                         : migrate data when re-creating tables
  -C (--concurrently-mode)               : print CREATE INDEX with CONCURRENTLY
                                           option for PostgreSQL and WITH ONLINE
                                           = ON for MS SQL
