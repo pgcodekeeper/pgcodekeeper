@@ -1,7 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
 import java.util.Arrays;
-import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -57,19 +56,15 @@ public class AlterMsOther extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        DbObjType type = null;
-        List<? extends ParserRuleContext> ids = null;
         if (ctx.alter_schema_sql() != null) {
-            type = DbObjType.SCHEMA;
-            ids = Arrays.asList(ctx.alter_schema_sql().schema_name);
-        } else if (ctx.alter_user() != null) {
-            type = DbObjType.USER;
-            ids = Arrays.asList(ctx.alter_user().username);
-        } else if (ctx.alter_sequence() != null) {
-            type = DbObjType.SEQUENCE;
-            Qualified_nameContext qname = ctx.alter_sequence().qualified_name();
-            ids = Arrays.asList(qname.schema, qname.name);
+            return getStrForStmtAction(ACTION_ALTER, DbObjType.SCHEMA, ctx.alter_schema_sql().schema_name);
         }
-        return type != null ? getStrForStmtAction(ACTION_ALTER, type, ids) : null;
+        if (ctx.alter_user() != null) {
+            return getStrForStmtAction(ACTION_ALTER, DbObjType.USER, ctx.alter_user().username);
+        }
+        if (ctx.alter_sequence() != null) {
+            return getStrForStmtAction(ACTION_ALTER, DbObjType.SEQUENCE, ctx.alter_sequence().qualified_name());
+        }
+        return null;
     }
 }

@@ -11,13 +11,13 @@ import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
+import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -50,6 +50,8 @@ import cz.startnet.utils.pgdiff.schema.PgObjLocation.LocationType;
 import cz.startnet.utils.pgdiff.schema.PgOperator;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.MS_WORK_DIR_NAMES;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
@@ -323,31 +325,32 @@ public abstract class ParserAbstract {
     }
 
     private boolean isInProject(boolean isPostgres) {
-        // exclude external directories
-        Stream<String> dirs;
+        // collect working directories
+        List<String> dirs;
         if (isPostgres) {
             dirs = Arrays.stream(ApgdiffConsts.WORK_DIR_NAMES.values())
-                    .map(e -> '/' + e.name() + '/');
+                    .map(WORK_DIR_NAMES::name).collect(Collectors.toList());
         } else {
             dirs = Arrays.stream(ApgdiffConsts.MS_WORK_DIR_NAMES.values())
-                    .map(e -> '/' + e.getDirName() + '/');
+                    .map(MS_WORK_DIR_NAMES::getDirName).collect(Collectors.toList());
         }
 
-        if (dirs.noneMatch(fileName::contains)) {
-            return false;
-        }
-
-        // search project marker
         Path parent = Paths.get(fileName).getParent();
-        while (parent != null) {
-            if (Files.exists(parent.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER))) {
-                return true;
+        while (true) {
+            Path folder = parent.getFileName();
+            parent = parent.getParent();
+
+            // file name for root is null
+            if (folder == null || parent == null) {
+                return false;
             }
 
-            parent = parent.getParent();
+            // if we find the project directory, then we check the marker at the level above
+            if (dirs.contains(folder.toString())
+                    && Files.exists(parent.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER))) {
+                return true;
+            }
         }
-
-        return false;
     }
 
     private PgObjLocation getLocation(List<? extends ParserRuleContext> ids,
@@ -611,15 +614,22 @@ public abstract class ParserAbstract {
     /**
      * Used in general cases in {@link #getStmtAction()} for get action information.
      */
-    protected String getStrForStmtAction(String action, DbObjType type,
-            List<? extends ParserRuleContext> ids) {
-        StringBuilder sb = new StringBuilder(action).append(' ').append(type).append(' ');
+    protected static String getStrForStmtAction(String action, DbObjType type, List<? extends ParserRuleContext> ids) {
+        StringBuilder sb = new StringBuilder();
         for (ParserRuleContext id : ids) {
             if (id != null) {
                 sb.append(id.getText()).append('.');
             }
         }
         sb.setLength(sb.length() - 1);
-        return sb.toString();
+        return getStrForStmtAction(action, type, sb.toString());
+    }
+
+    protected static String getStrForStmtAction(String action, DbObjType type, ParseTree id) {
+        return getStrForStmtAction(action, type, id.getText());
+    }
+
+    protected static String getStrForStmtAction(String action, DbObjType type, String id) {
+        return action + ' ' + type + ' ' + id;
     }
 }

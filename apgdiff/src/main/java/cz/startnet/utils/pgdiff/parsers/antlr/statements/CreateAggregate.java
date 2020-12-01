@@ -284,6 +284,6 @@ public class CreateAggregate extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_CREATE, DbObjType.AGGREGATE, ctx.name.identifier());
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.AGGREGATE, ctx.name);
     }
 }

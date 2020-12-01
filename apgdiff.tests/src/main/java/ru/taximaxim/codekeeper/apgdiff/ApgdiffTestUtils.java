@@ -30,7 +30,7 @@ public final class ApgdiffTestUtils {
     public static PgDatabase loadTestDump(String resource, Class<?> c, PgDiffArguments args, boolean analysis)
             throws IOException, InterruptedException {
         PgDumpLoader loader =  new PgDumpLoader(() -> c.getResourceAsStream(resource),
-                "test:/" + c.getName() + '/' + resource, args);
+                "test/" + c.getName() + '/' + resource, args);
         PgDatabase db = analysis ? loader.loadAndAnalyze() : loader.load();
         if (!loader.getErrors().isEmpty()) {
             throw new IOException("Test resource caused  loader errors!");

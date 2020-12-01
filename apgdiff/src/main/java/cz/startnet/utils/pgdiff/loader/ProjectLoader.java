@@ -176,18 +176,6 @@ public class ProjectLoader extends DatabaseLoader {
         }
     }
 
-    public Map<PgStatement, StatementOverride> getOverridesFromPath(Path path, PgDatabase db)
-            throws IOException, InterruptedException {
-        isOverrideMode = true;
-        try {
-            loadFiles(new File[] {path.toFile()}, db);
-            AntlrParser.finishAntlr(antlrTasks);
-        } finally {
-            isOverrideMode = false;
-        }
-        return overrides;
-    }
-
     protected void replaceOverrides() {
         Iterator<Entry<PgStatement, StatementOverride>> iterator = overrides.entrySet().iterator();
         while (iterator.hasNext()) {

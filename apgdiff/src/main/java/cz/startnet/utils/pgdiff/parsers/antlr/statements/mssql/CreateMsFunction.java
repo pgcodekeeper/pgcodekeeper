@@ -172,8 +172,6 @@ public class CreateMsFunction extends BatchContextProcessor {
 
     @Override
     protected String getStmtAction() {
-        Qualified_nameContext qualName = ctx.qualified_name();
-        return getStrForStmtAction(ACTION_CREATE, DbObjType.FUNCTION,
-                Arrays.asList(qualName.schema, qualName.name));
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.FUNCTION, ctx.qualified_name());
     }
 }

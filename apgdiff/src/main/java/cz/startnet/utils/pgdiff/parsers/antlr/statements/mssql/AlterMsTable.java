@@ -10,11 +10,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_tableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_def_table_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_def_table_constraintsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_alterContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_action_dropContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_constraintContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.TableAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
@@ -25,7 +23,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class AlterMsTable extends TableAbstract {
+public class AlterMsTable extends MsTableAbstract {
 
     private final Alter_tableContext ctx;
 
@@ -49,7 +47,7 @@ public class AlterMsTable extends TableAbstract {
             for (Column_def_table_constraintContext colCtx : constrs.column_def_table_constraint()) {
                 Table_constraintContext constrCtx;
                 if (colCtx != null && (constrCtx = colCtx.table_constraint()) != null) {
-                    AbstractConstraint con = getMsConstraint(constrCtx);
+                    AbstractConstraint con = getMsConstraint(constrCtx, schemaCtx.getText(), nameCtx.getText());
                     con.setNotValid(ctx.nocheck_add != null);
                     IdContext id = constrCtx.id();
                     if (id != null) {
@@ -102,8 +100,6 @@ public class AlterMsTable extends TableAbstract {
 
     @Override
     protected String getStmtAction() {
-        Qualified_nameContext qualNameCtx = ctx.name;
-        return getStrForStmtAction(ACTION_ALTER, DbObjType.TABLE,
-                Arrays.asList(qualNameCtx.schema, qualNameCtx.name));
+        return getStrForStmtAction(ACTION_ALTER, DbObjType.TABLE, ctx.name);
     }
 }

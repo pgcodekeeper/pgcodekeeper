@@ -74,8 +74,6 @@ public class CreateMsView extends BatchContextProcessor {
 
     @Override
     protected String getStmtAction() {
-        Qualified_nameContext qualNameCtx = ctx.qualified_name();
-        return getStrForStmtAction(ACTION_CREATE, DbObjType.VIEW,
-                Arrays.asList(qualNameCtx.schema, qualNameCtx.name));
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.VIEW, ctx.qualified_name());
     }
 }

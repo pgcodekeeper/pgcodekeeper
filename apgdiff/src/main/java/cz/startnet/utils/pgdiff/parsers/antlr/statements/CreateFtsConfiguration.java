@@ -33,7 +33,6 @@ public class CreateFtsConfiguration extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_CREATE, DbObjType.FTS_CONFIGURATION,
-                ctx.name.identifier());
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.FTS_CONFIGURATION, ctx.name);
     }
 }

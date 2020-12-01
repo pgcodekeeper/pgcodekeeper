@@ -241,6 +241,18 @@ CREATE TRIGGER t1_trigger AFTER INSERT ON public.t1 FOR EACH ROW EXECUTE PROCEDU
 CREATE TRIGGER t3_trigger AFTER INSERT ON public.t3 FOR EACH ROW EXECUTE PROCEDURE public.fun3();
 
 
+CREATE TABLE public."t/1" (
+    c1 integer
+);
+
+CREATE TABLE public."t_1" (
+    c1 integer
+);
+
+CREATE TABLE public."t?1" (
+    c1 integer
+);
+
 --
 -- PostgreSQL database dump complete
 --

@@ -74,6 +74,9 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -106,6 +109,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.exporter.AbstractModelExporter;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.AggregatingListener;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PG_EDIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
@@ -369,6 +373,17 @@ public class DiffTableViewer extends Composite {
             newSelection = (IStructuredSelection)event.getSelection();
         });
 
+        viewer.getControl().addKeyListener(new KeyAdapter() {
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if ((e.stateMask & SWT.CTRL) == SWT.CTRL && e.keyCode == 'c') {
+                    copyObjectNamesToClipboard();
+                    e.doit = false;
+                }
+            }
+        });
+
         viewer.getControl().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         viewer.getTree().setLinesVisible(true);
         viewer.getTree().setHeaderVisible(true);
@@ -456,6 +471,14 @@ public class DiffTableViewer extends Composite {
             }
         });
         menuMgr.add(new Separator());
+        menuMgr.add(new Action(Messages.DiffTableViewer_copy_object_names + "\tCtrl+C") {
+
+            @Override
+            public void run() {
+                copyObjectNamesToClipboard();
+            }
+        });
+        menuMgr.add(new Separator());
         menuMgr.add(new Action(Messages.diffTableViewer_open_diff_in_new_window) {
 
             @Override
@@ -481,6 +504,24 @@ public class DiffTableViewer extends Composite {
         });
 
         return menuMgr;
+    }
+
+    private void copyObjectNamesToClipboard() {
+        IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
+        if (selection.isEmpty()) {
+            return;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (Object r : selection.toList()) {
+            TreeElement element = (TreeElement) r;
+            sb.append(element.getQualifiedName());
+            sb.append(UIConsts._NL);
+        }
+
+        Clipboard cb = new Clipboard(viewer.getControl().getDisplay());
+        cb.setContents(new Object[] { sb.toString() },
+                new Transfer[] { TextTransfer.getInstance() });
     }
 
     private void initColumns() {
@@ -658,19 +699,27 @@ public class DiffTableViewer extends Composite {
         columnCheck.getColumn().setText("✓"); //$NON-NLS-1$
         columnName.getColumn().setText(Messages.diffTableViewer_object_name);
         columnType.getColumn().setText(Messages.diffTableViewer_object_type);
-        columnChange.getColumn().setText(Messages.diffTableViewer_change_type);
+        columnChange.getColumn().setText(getChangeTypeMessage());
         columnLocation.getColumn().setText(Messages.diffTableViewer_container);
         columnGitUser.getColumn().setText(Messages.diffTableViewer_git_user);
         columnDbUser.getColumn().setText(Messages.diffTableViewer_db_user);
     }
 
+    private String getChangeTypeMessage() {
+        if (isApplyToProj) {
+            return Messages.diffTableViewer_change_type_for_project;
+        }
+
+        return Messages.diffTableViewer_change_type_for_database;
+    }
+
     private void updateColumnsWidth() {
         PixelConverter pc = new PixelConverter(viewer.getControl());
         columnCheck.getColumn().setWidth(viewOnly ? 0 : pc.convertWidthInCharsToPixels(10));
-        columnType.getColumn().setWidth(pc.convertWidthInCharsToPixels(25));
-        columnChange.getColumn().setWidth(pc.convertWidthInCharsToPixels(35));
-        // name column will take half of the space
-        int width = (int)(viewer.getControl().getSize().x * 0.4f);
+        columnType.getColumn().setWidth(pc.convertWidthInCharsToPixels(19));
+        columnChange.getColumn().setWidth(pc.convertWidthInCharsToPixels(30));
+        // name column will take third of the space
+        int width = (int)(viewer.getControl().getSize().x * 0.35f);
         columnName.getColumn().setWidth(Math.max(width, 200));
         columnLocation.getColumn().setWidth(pc.convertWidthInCharsToPixels(20));
         columnGitUser.getColumn().setWidth(showGitUser && !viewOnly ? pc.convertWidthInCharsToPixels(20) : 0);
@@ -715,10 +764,7 @@ public class DiffTableViewer extends Composite {
                 columnType.getColumn().setText(sb.append(Messages.diffTableViewer_object_type).toString());
                 break;
             case CHANGE:
-                sb.append(Messages.diffTableViewer_change_type);
-                sb.append(isApplyToProj ? Messages.diffTableViewer_for_project
-                        : Messages.diffTableViewer_for_database);
-                columnChange.getColumn().setText(sb.toString());
+                columnChange.getColumn().setText(sb.append(getChangeTypeMessage()).toString());
                 break;
             case NAME:
                 columnName.getColumn().setText(sb.append(Messages.diffTableViewer_object_name).toString());
@@ -1059,17 +1105,20 @@ public class DiffTableViewer extends Composite {
     private void setSelectionSubtreesChecked(IStructuredSelection selection, boolean checked) {
         for (Object o : selection.toList()) {
             TreeElement el = (TreeElement) o;
-            setSubTreeChecked(el, checked);
+            setSubTreeChecked(el, checked, false);
         }
         viewerChecksUpdated();
     }
 
-    private void setSubTreeChecked(TreeElement element, boolean selected) {
-        setChecked(element, selected);
+    private void setSubTreeChecked(TreeElement element, boolean selected, boolean isChild) {
+        if (isChild) {
+            setChecked(element, selected);
+        }
         for (TreeElement child : element.getChildren()) {
-            setSubTreeChecked(child, selected);
+            setSubTreeChecked(child, selected, true);
         }
     }
+
     public boolean isApplyToProj() {
         return isApplyToProj;
     }
@@ -1166,7 +1215,7 @@ public class DiffTableViewer extends Composite {
         private void setChecked(Object element, boolean checked) {
             TreeElement el = (TreeElement) element;
             if (isContainer(el)) {
-                setSubTreeChecked(el, checked);
+                setSubTreeChecked(el, checked, true);
             }
             // explicitly check root even when using setSubTreeChecked
             // in case it's not in the viewer's input set
