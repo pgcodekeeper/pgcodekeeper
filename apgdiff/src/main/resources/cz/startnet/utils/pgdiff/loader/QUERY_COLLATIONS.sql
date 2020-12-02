@@ -10,9 +10,7 @@ SELECT  c.collnamespace AS schema_oid,
         c.oid::bigint,
         c.collcollate,
         c.collctype,
-        c.collowner::bigint,
-        c.collprovider,
-        c.collisdeterministic
+        c.collowner::bigint
        
 FROM pg_catalog.pg_collation c
 WHERE c.collnamespace NOT IN (SELECT oid FROM sys_schemas)
