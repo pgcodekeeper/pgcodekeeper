@@ -559,7 +559,7 @@ class FailGraphReverseArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String output() {
-        return "option \"--graph-reverse\" requires the option(s) [--graph-name, --graph]\n";
+        return "option \"--graph-name\" requires the option(s) [--graph]\n";
     }
 }
 
