@@ -13,7 +13,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 public class CollationReader extends JdbcReader {
 
     public CollationReader(JdbcLoaderBase loader) {
-        super(JdbcQueries.QUERY_COLLATION, loader);
+        super(JdbcQueries.QUERY_COLLATIONS, loader);
     }
 
     @Override
