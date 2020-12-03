@@ -17,11 +17,7 @@ public class CollationReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSet result, AbstractSchema schema) throws SQLException, XmlReaderException {
-        schema.addColletion(getCollation(result, schema));
-    }
-
-    private PgCollation getCollation(ResultSet res, AbstractSchema schema) throws SQLException {
+    protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException {
         String schemaName = schema.getName();
         String collName = res.getString("collname");
         PgCollation p = new PgCollation(collName);
@@ -45,6 +41,5 @@ public class CollationReader extends JdbcReader {
             p.setDeterministic(true);
         }
         schema.addColletion(p);
-        return p;
     }
 }

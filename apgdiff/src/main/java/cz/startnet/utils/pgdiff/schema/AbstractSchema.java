@@ -153,6 +153,8 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
             return getFtsConfiguration(name);
         case OPERATOR:
             return getOperator(name);
+        case COLLATION:
+            return getCollation(name);
         default:
             return null;
         }
