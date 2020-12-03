@@ -7,6 +7,7 @@ WITH sys_schemas AS (
 )
 
 SELECT  c.collnamespace AS schema_oid,
+        c.collname,
         c.oid::bigint,
         c.collcollate,
         c.collctype,
