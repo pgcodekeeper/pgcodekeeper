@@ -982,6 +982,8 @@ public final class Messages extends NLS {
 
     public static String QuickUpdate_updating_project;
 
+    public static String RenameDefinitionChange_error_resource_already_exists;
+
     // SONAR-ON
 
     static {

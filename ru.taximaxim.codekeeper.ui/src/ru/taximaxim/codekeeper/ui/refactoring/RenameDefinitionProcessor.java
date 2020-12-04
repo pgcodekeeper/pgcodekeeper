@@ -16,7 +16,6 @@ import org.eclipse.ltk.core.refactoring.participants.CheckConditionsContext;
 import org.eclipse.ltk.core.refactoring.participants.RefactoringParticipant;
 import org.eclipse.ltk.core.refactoring.participants.RenameProcessor;
 import org.eclipse.ltk.core.refactoring.participants.SharableParticipants;
-import org.eclipse.ltk.core.refactoring.resource.RenameResourceChange;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
@@ -121,7 +120,7 @@ public class RenameDefinitionProcessor extends RenameProcessor {
         IFile file = null;
         TextFileChange fileChange = null;
         MultiTextEdit multiEdit = null;
-        List<RenameResourceChange> fileRenames = new ArrayList<>();
+        List<RenameDefinitionChange> fileRenames = new ArrayList<>();
 
         for (PgObjLocation ref : getReferences()) {
             IFile mfile = FileUtilsUi.getFileForLocation(ref);
@@ -142,7 +141,7 @@ public class RenameDefinitionProcessor extends RenameProcessor {
                 fileChange.setEdit(multiEdit);
                 change.add(fileChange);
             }
-
+ 
             multiEdit.addChild(new ReplaceEdit(ref.getOffset(), ref.getObjLength(),
                     quotedName));
         }
@@ -153,7 +152,7 @@ public class RenameDefinitionProcessor extends RenameProcessor {
     }
 
     private void addFileRenames(IFile file, PgObjLocation ref,
-            List<RenameResourceChange> fileRenames) {
+            List<RenameDefinitionChange> fileRenames) {
         switch (ref.getType()) {
         case TRIGGER:
         case RULE:
@@ -173,14 +172,14 @@ public class RenameDefinitionProcessor extends RenameProcessor {
                 name = newName;
             }
 
-            fileRenames.add(new RenameResourceChange(file.getFullPath(),
+            fileRenames.add(new RenameDefinitionChange(file.getFullPath(),
                     AbstractModelExporter.getExportedFilenameSql(name)));
         } else {
-            fileRenames.add(new RenameResourceChange(file.getFullPath(),
+            fileRenames.add(new RenameDefinitionChange(file.getFullPath(),
                     AbstractModelExporter.getExportedFilenameSql(newName)));
             if (ref.getType() == DbObjType.SCHEMA) {
                 // rename schema folder for PG
-                fileRenames.add(new RenameResourceChange(file.getParent().getFullPath(),
+                fileRenames.add(new RenameDefinitionChange(file.getParent().getFullPath(),
                         FileUtils.getValidFilename(newName)));
             }
         }
