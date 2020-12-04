@@ -102,7 +102,6 @@ public class CreateCollation extends ParserAbstract{
                 collation.setDeterministic(deterministic);
             }
         }
-        //addSafe(getSchemaSafe(ids), view, ids);
         addSafe(getSchemaSafe(ids), collation, ids);
     }
     @Override
