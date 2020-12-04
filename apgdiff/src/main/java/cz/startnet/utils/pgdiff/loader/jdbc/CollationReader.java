@@ -40,6 +40,6 @@ public class CollationReader extends JdbcReader {
         } else {
             p.setDeterministic(true);
         }
-        schema.addColletion(p);
+        schema.addCollation(p);
     }
 }

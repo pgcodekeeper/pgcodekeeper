@@ -199,6 +199,9 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         case VIEW:
             addView((AbstractView) st);
             break;
+        case COLLATION:
+            addCollation((PgCollation) st);
+            break;
         default:
             throw new IllegalArgumentException("Unsupported child type: " + type);
         }
@@ -437,7 +440,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         addUnique(sequences, sequence, this);
     }
 
-    public void addColletion(final PgCollation collation) {
+    public void addCollation(final PgCollation collation) {
         addUnique(collations, collation, this);
     }
 

@@ -375,6 +375,7 @@ public abstract class ParserAbstract {
             throw new IllegalStateException("Unsupported type: CAST");
         case ASSEMBLY:
         case EXTENSION:
+        case COLLATION:
         case SCHEMA:
         case ROLE:
         case USER:
