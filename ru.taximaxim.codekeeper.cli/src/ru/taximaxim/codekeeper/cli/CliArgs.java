@@ -514,12 +514,10 @@ public class CliArgs extends PgDiffArguments {
         return Collections.unmodifiableCollection(allowedTypes);
     }
 
-    @Override
     public Collection<DbObjType> getGraphFilterTypes() {
         return Collections.unmodifiableCollection(graphFilterTypes);
     }
 
-    @Override
     public boolean isGraphInvertFilter() {
         return graphInvertFilter;
     }

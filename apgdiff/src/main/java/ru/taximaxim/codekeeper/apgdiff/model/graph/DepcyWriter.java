@@ -16,7 +16,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 public class DepcyWriter {
 
     private static final int START_LEVEL = 0;
-    private static int hiddenObj = 0;
+    private int hiddenObj = 0;
 
     private final PgDatabase db;
     private final DirectedGraph<PgStatement, DefaultEdge> graph;
@@ -51,24 +51,7 @@ public class DepcyWriter {
                 return true;
             }
         }
-
         return false;
-    }
-
-    private void printIndents(DbObjType type, int level) {
-        if (!filterObjTypes.isEmpty()) {
-            if (!isInvertFilter) {
-                if (filterObjTypes.contains(type)) {
-                    printIndent(level);
-                }
-            } else {
-                if ((!filterObjTypes.contains(type))) {
-                    printIndent(level);
-                }
-            }
-        } else {
-            printIndent(level);
-        }
     }
 
     private void printIndent(int level) {
@@ -77,35 +60,25 @@ public class DepcyWriter {
         }
     }
 
-    private void printType(DbObjType type, PgStatement st) {
-        writer.println(type + " " + st.getQualifiedName() + " (hidden "
-                + hiddenObj + " objects)");
-        hiddenObj = 0;
-    }
-
-    private int printObj(PgStatement st, int level) {
+    private boolean isPrintObj(PgStatement st) {
         DbObjType type = st.getStatementType();
         if (!filterObjTypes.isEmpty()) {
             if (!isInvertFilter) {
                 if (filterObjTypes.contains(type)) {
-                    printType(type, st);
-                    level++;
+                    return true;
                 } else {
-                    hiddenObj++;
+                    return false;
                 }
             } else {
                 if (!filterObjTypes.contains(type)) {
-                    printType(type, st);
-                    level++;
+                    return true;
                 } else {
-                    hiddenObj++;
+                    return false;
                 }
             }
         } else {
-            writer.println(type + " " + st.getQualifiedName());
-            level++;
+            return false;
         }
-        return level;
     }
 
     private void printTree(PgStatement st, int level, Set<PgStatement> added) {
@@ -114,14 +87,33 @@ public class DepcyWriter {
             // do not show database in reverse graph
             return;
         }
+        if (isPrintObj(st)) {
+            printIndent(level);
+        } else {
+            if (filterObjTypes.isEmpty()) {
+                printIndent(level);
+            }
+        }
 
-        printIndents(type, level);
         if (!added.add(st)) {
             writer.println(type + " " + st.getQualifiedName() + " - cyclic dependency");
             return;
         }
 
-        level = printObj(st, level);
+        if (isPrintObj(st)) {
+            writer.println(type + " " + st.getQualifiedName() + " (hidden " + hiddenObj
+                    + " objects)");
+            hiddenObj = 0;
+            level++;
+        } else {
+            if (filterObjTypes.isEmpty()) {
+                writer.println(type + " " + st.getQualifiedName());
+                level++;
+            } else {
+                hiddenObj++;
+            }
+        }
+
         if (depth > level) {
             for (DefaultEdge e : graph.outgoingEdgesOf(st)) {
                 printTree(graph.getEdgeTarget(e), level, new HashSet<>(added));

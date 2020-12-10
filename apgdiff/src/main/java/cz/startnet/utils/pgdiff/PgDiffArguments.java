@@ -262,13 +262,4 @@ public class PgDiffArguments implements Cloneable {
             throw new RuntimeException("Impossible error", e);
         }
     }
-
-    public Collection<DbObjType> getGraphFilterTypes() {
-        return null;
-    }
-
-    public boolean isGraphInvertFilter() {
-        return false;
-    }
-
 }
