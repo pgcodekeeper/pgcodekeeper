@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.Arrays;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
@@ -102,7 +103,7 @@ public class CreateCollation extends ParserAbstract{
                 collation.setDeterministic(deterministic);
             }
         }
-        addSafe(getSchemaSafe(ids), collation, ids);
+        addSafe(getSchemaSafe(ids), collation, Arrays.asList(name));
     }
     @Override
     protected String getStmtAction() {

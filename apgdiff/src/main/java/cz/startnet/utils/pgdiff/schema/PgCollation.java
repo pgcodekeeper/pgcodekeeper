@@ -42,8 +42,8 @@ public class PgCollation extends PgStatementWithSearchPath {
 
     @Override
     public PgStatement shallowCopy() {
-        PgCollation collationDst = getCollationCopy();
-        collationDst.locale = getILocale();
+        PgCollation collationDst = new PgCollation(getName());
+        collationDst.locale = getLocale();
         collationDst.lcCollate = getLcCollate();
         collationDst.lcCtype = getLcCtype();
         collationDst.provider = getProvider();
@@ -52,7 +52,7 @@ public class PgCollation extends PgStatementWithSearchPath {
         return collationDst;
     }
 
-    public String getILocale() {
+    public String getLocale() {
         return locale;
     }
 
@@ -119,14 +119,9 @@ public class PgCollation extends PgStatementWithSearchPath {
                     && Objects.equals(lcCtype, coll.getLcCtype())
                     && Objects.equals(provider, coll.getProvider())
                     && Objects.equals(version, coll.getVersion())
-                    && Objects.equals(locale, coll.getLocation());
+                    && Objects.equals(locale, coll.getLocale());
         }
         return false;
-    }
-
-    protected PgCollation getCollationCopy() {
-        PgCollation collation = new PgCollation(getName());
-        return collation;
     }
 
     @Override
@@ -134,13 +129,13 @@ public class PgCollation extends PgStatementWithSearchPath {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE COLLATION ").append(getQualifiedName());
         sbSQL.append(" (");
-        if (getILocale() != null) {
-            sbSQL.append(" locale = '").append(getILocale()).append("'");
+        if (getLocale() != null) {
+            sbSQL.append(" locale = '").append(getLocale()).append("'");
         } else {
             sbSQL.append(" lc_collate = '").append(getLcCollate()).append("', ");
             sbSQL.append(" lc_ctype = '").append(getLcCtype()).append("'");
         }
-        if (getILocale() != null) {
+        if (getLocale() != null) {
             sbSQL.append(", provider = '").append(getProvider()).append("'");
         }
         if (getVersion() != null) {
