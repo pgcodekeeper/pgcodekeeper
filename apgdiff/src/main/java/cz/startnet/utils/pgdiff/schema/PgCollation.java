@@ -146,6 +146,11 @@ public class PgCollation extends PgStatementWithSearchPath {
         }
         sbSQL.append(");");
 
+        if (comment != null && !comment.isEmpty()) {
+            sbSQL.append("\n\n");
+            appendCommentSql(sbSQL);
+        }
+
         appendOwnerSQL(sbSQL);
         appendPrivileges(sbSQL);
 
@@ -174,6 +179,11 @@ public class PgCollation extends PgStatementWithSearchPath {
         if (!Objects.equals(getOwner(), newCollation.getOwner())) {
             newCollation.alterOwnerSQL(sb);
         }
+        if (!Objects.equals(getComment(), newCollation.getComment())) {
+            sb.append("\n\n");
+            newCollation.appendCommentSql(sb);
+        }
+
 
         return sb.length() > startLength;
     }
