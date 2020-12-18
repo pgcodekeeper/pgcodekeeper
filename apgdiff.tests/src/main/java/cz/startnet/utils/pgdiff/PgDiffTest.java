@@ -500,6 +500,8 @@ public class PgDiffTest {
                     {"compare_casts"},
                     // Tests scenario where POLICY is compared.
                     {"compare_policies"},
+                    // Tests scenario where COLLATION is compared.
+                    {"compare_collation"},
                     // Tests scenario where COLUMN is added to modified table.
                     {"add_column_and_change_table"},
                     // Tests scenario where view column comments is reordered.
