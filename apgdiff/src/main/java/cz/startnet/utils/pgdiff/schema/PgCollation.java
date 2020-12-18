@@ -12,12 +12,12 @@ public class PgCollation extends PgStatementWithSearchPath {
         super(name);
     }
 
-    protected String locale;
-    protected String lcCollate;
-    protected String lcCtype;
-    protected String provider;
-    protected String version;
-    protected boolean deterministic = true;
+    private String locale;
+    private String lcCollate;
+    private String lcCtype;
+    private String provider;
+    private String version;
+    private boolean deterministic = true;
 
     @Override
     public DbObjType getStatementType() {
@@ -109,7 +109,7 @@ public class PgCollation extends PgStatementWithSearchPath {
     @Override
     public boolean compare(PgStatement obj) {
         if (this == obj) {
-            return this == obj;
+            return true;
         }
 
         if (obj instanceof PgCollation && super.compare(obj)) {
@@ -130,19 +130,21 @@ public class PgCollation extends PgStatementWithSearchPath {
         sbSQL.append("CREATE COLLATION ").append(getQualifiedName());
         sbSQL.append(" (");
         if (getLocale() != null) {
-            sbSQL.append(" locale = '").append(getLocale()).append("'");
+            sbSQL.append(" LOCALE = '").append(getLocale()).append("'");
         } else {
-            sbSQL.append(" lc_collate = '").append(getLcCollate()).append("', ");
-            sbSQL.append(" lc_ctype = '").append(getLcCtype()).append("'");
+            sbSQL.append(" LC_COLLATE = '").append(getLcCollate()).append("', ");
+            sbSQL.append(" LC_CTYPE = '").append(getLcCtype()).append("'");
         }
-        if (getLocale() != null) {
-            sbSQL.append(", provider = '").append(getProvider()).append("'");
+        if (getProvider() != null) {
+            sbSQL.append(", PROVIDER = '").append(getProvider()).append("'");
         }
         if (getVersion() != null) {
-            sbSQL.append(", version = '").append(getVersion()).append("'");
+            sbSQL.append(", VERSION = '").append(getVersion()).append("'");
         }
-        sbSQL.append(", deterministic = '").append(isDeterministic()).append("'");
-        sbSQL.append(" );");
+        if(!isDeterministic()) {
+            sbSQL.append(", DETERMINISTIC = FALSE");
+        }
+        sbSQL.append(");");
 
         appendOwnerSQL(sbSQL);
         appendPrivileges(sbSQL);
@@ -157,13 +159,14 @@ public class PgCollation extends PgStatementWithSearchPath {
 
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
-
+        final int startLength = sb.length();
         PgCollation newCollation = (PgCollation) newCondition;
 
-        if (newCollation.getLcCtype().equals(getLcCtype()) ||
-                newCollation.getLcCollate().equals(getLcCollate()) ||
-                newCollation.getProvider().equals(getProvider()) ||
-                newCollation.isDeterministic() == isDeterministic()) {
+        if (!Objects.equals(newCollation.getLocale(), getLocale())
+                || !Objects.equals(newCollation.getLcCtype(), getLcCtype())
+                || !Objects.equals(newCollation.getLcCollate(), getLcCollate())
+                || !Objects.equals(newCollation.getProvider(), getProvider())
+                || !(newCollation.isDeterministic() == isDeterministic())) {
             isNeedDepcies.set(true);
             return true;
         }
@@ -172,8 +175,6 @@ public class PgCollation extends PgStatementWithSearchPath {
             newCollation.alterOwnerSQL(sb);
         }
 
-        alterPrivileges(newCollation, sb);
-
-        return false;
+        return sb.length() > startLength;
     }
 }

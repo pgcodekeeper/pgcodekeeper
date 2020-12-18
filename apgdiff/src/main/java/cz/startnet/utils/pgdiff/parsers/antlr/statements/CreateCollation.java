@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
@@ -12,7 +13,7 @@ import cz.startnet.utils.pgdiff.schema.PgCollation;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class CreateCollation extends ParserAbstract{
+public class CreateCollation extends ParserAbstract {
     private final Create_collationContext ctx;
 
     public CreateCollation(Create_collationContext ctx, PgDatabase db) {
@@ -24,87 +25,45 @@ public class CreateCollation extends ParserAbstract{
     public void parseObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
         IdentifierContext name = QNameParser.getFirstNameCtx(ids);
-        PgCollation collation = new PgCollation( name.getText());
+        PgCollation collation = new PgCollation(name.getText());
 
         for (Collation_optionContext body : ctx.collation_option()) {
-            String res = null;
-            Character_stringContext val = null;
             if (body.LOCALE() != null) {
-                val = body.character_string();
-                if(val == null) {
-                    res = body.identifier().getText();
-                } else {
-                    res = val.getText();
-                }
-                collation.setLocale(res);
-            } else if (body.LC_COLLATE() != null){
-                val = body.character_string();
-                res = null;
-                if(val == null) {
-                    res = body.identifier().getText();
-                } else {
-                    res = val.getText();
-                }
-                collation.setLcCollate(res);
-            } else if (body.LC_CTYPE() != null){
-                val = body.character_string();
-                res = null;
-                if(val == null) {
-                    res = body.identifier().getText();
-                } else {
-                    res = val.getText();
-                }
-                collation.setLcCtype(res);
-            } else if (body.PROVIDER() != null){
-                val = body.character_string();
-                res = null;
-                if(val == null) {
-                    res = body.identifier().getText();
-                } else {
-                    res = val.getText();
-                }
-                collation.setProvider(res);
-            } else if (body.VERSION() != null){
-                val = body.character_string();
-                res = null;
-                if(val == null) {
-                    res = body.identifier().getText();
-                } else {
-                    res = val.getText();
-                }
-                collation.setVersion(res);
-            }
-            else if (body.DETERMINISTIC() != null){
-                val = body.character_string();
-                boolean deterministic = true;
-                res = null;
-                if(val == null) {
-                    res = body.identifier().getText().toLowerCase();
-                } else {
-                    res = val.getText().toLowerCase();
-                }
-                if (res != null)
-                {
-                    switch (res){
-                    case ("1"):
-                        deterministic = true;
+                collation.setLocale(getValue(body));
+            } else if (body.LC_COLLATE() != null) {
+                collation.setLcCollate(getValue(body));
+            } else if (body.LC_CTYPE() != null) {
+                collation.setLcCtype(getValue(body));
+            } else if (body.PROVIDER() != null) {
+                collation.setProvider(getValue(body));
+            } else if (body.VERSION() != null) {
+                collation.setVersion(getValue(body));
+            } else if (body.DETERMINISTIC() != null) {
+                String res = body.boolean_value().getText().toLowerCase(Locale.ROOT);
+                switch (res) {
+                case ("1"):
+                case ("true"):
+                case ("on"):
                     break;
-                    case ("true"):
-                        deterministic = true;
+                default:
+                    collation.setDeterministic(false);
                     break;
-                    case ("on"):
-                        deterministic = true;
-                    break;
-                    default:
-                        deterministic = false;
-                        break;
-                    }
                 }
-                collation.setDeterministic(deterministic);
+
             }
         }
         addSafe(getSchemaSafe(ids), collation, Arrays.asList(name));
     }
+
+    private String getValue(Collation_optionContext body) {
+        Character_stringContext val = body.character_string();
+        if (val == null) {
+            return body.identifier().getText();
+        }
+        return val.getText();
+
+    }
+
     @Override
     protected String getStmtAction() {
         return getStrForStmtAction(ACTION_CREATE, DbObjType.VIEW, ctx.name);

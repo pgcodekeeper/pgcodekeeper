@@ -729,7 +729,7 @@ create_collation
     ;
 
 alter_collation
-    : COLLATION name=schema_qualified_name (REFRESH VERSION | rename_to | owner_to | set_schema)
+    : COLLATION name=schema_qualified_name (REFRESH VERSION | rename_to | set_schema)
     ;
 
 collation_option
@@ -777,7 +777,7 @@ alter_owner
     : (OPERATOR target_operator
         | LARGE OBJECT NUMBER_LITERAL
         | (FUNCTION | PROCEDURE | AGGREGATE) name=schema_qualified_name function_args
-        | (TEXT SEARCH DICTIONARY | TEXT SEARCH CONFIGURATION | DOMAIN | SCHEMA | SEQUENCE | TYPE | MATERIALIZED? VIEW)
+        | (TEXT SEARCH DICTIONARY | TEXT SEARCH CONFIGURATION | DOMAIN | SCHEMA | SEQUENCE | TYPE | COLLATION | MATERIALIZED? VIEW)
         if_exists? name=schema_qualified_name) owner_to
     ;
 
