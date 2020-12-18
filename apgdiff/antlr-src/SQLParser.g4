@@ -1112,7 +1112,7 @@ comment_member_object
     : ACCESS METHOD identifier 
     | (AGGREGATE | PROCEDURE | FUNCTION | ROUTINE) name=schema_qualified_name function_args
     | CAST LEFT_PAREN source=data_type AS target=data_type RIGHT_PAREN
-    | COLLATION identifier
+    | COLLATION name=schema_qualified_name
     | COLUMN name=schema_qualified_name
     | CONSTRAINT identifier ON DOMAIN? table_name=schema_qualified_name
     | CONVERSION name=schema_qualified_name
