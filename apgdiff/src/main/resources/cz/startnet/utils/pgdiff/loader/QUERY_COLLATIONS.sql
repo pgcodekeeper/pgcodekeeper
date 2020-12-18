@@ -12,8 +12,8 @@ SELECT  c.collnamespace AS schema_oid,
         c.collcollate,
         c.collctype,
         c.collowner::bigint,
-        d.description AS comment,
+        d.description AS comment
        
 FROM pg_catalog.pg_collation c
-LEFT JOIN pg_catalog.pg_description d ON p.oid = d.objoid
+LEFT JOIN pg_catalog.pg_description d ON c.oid = d.objoid
 WHERE c.collnamespace NOT IN (SELECT oid FROM sys_schemas)

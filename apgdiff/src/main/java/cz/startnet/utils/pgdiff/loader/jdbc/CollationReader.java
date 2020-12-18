@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
@@ -25,6 +26,11 @@ public class CollationReader extends JdbcReader {
 
         p.setLcCollate(res.getString("collcollate"));
         p.setLcCtype(res.getString("collctype"));
+
+        String comment = res.getString("comment");
+        if (comment != null && !comment.isEmpty()) {
+            p.setComment(loader.args, PgDiffUtils.quoteString(comment));
+        }
 
         if (SupportedVersion.VERSION_10.isLE(loader.version)) {
             if (res.getString("collprovider") != null && res.getString("collprovider").equals("i")) {

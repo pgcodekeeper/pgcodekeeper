@@ -179,6 +179,7 @@ public class PgCollation extends PgStatementWithSearchPath {
         if (!Objects.equals(getOwner(), newCollation.getOwner())) {
             newCollation.alterOwnerSQL(sb);
         }
+
         if (!Objects.equals(getComment(), newCollation.getComment())) {
             sb.append("\n\n");
             newCollation.appendCommentSql(sb);
