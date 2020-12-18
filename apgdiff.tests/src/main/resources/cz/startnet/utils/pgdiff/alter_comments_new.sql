@@ -108,3 +108,7 @@ COMMENT ON RULE test_rule ON public.test IS 'test rule 2';
 CREATE POLICY test_policy ON public.test;
 
 COMMENT ON POLICY test_policy ON public.test IS 'test policy 2';
+
+CREATE COLLATION public.test_collation (LOCALE = 'ru_RU.utf8');
+
+COMMENT ON COLLATION  public.test_collation IS 'ru Ru';

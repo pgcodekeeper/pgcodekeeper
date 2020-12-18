@@ -6,6 +6,8 @@ COMMENT ON CAST (integer AS bigint) IS NULL;
 
 COMMENT ON EXTENSION test_ext IS NULL;
 
+COMMENT ON COLLATION public.test_collation IS NULL;
+
 COMMENT ON COLUMN public.typ_composite.key IS NULL;
 
 COMMENT ON COLUMN public.typ_composite.val IS NULL;

@@ -6,6 +6,8 @@ COMMENT ON CAST (integer AS bigint) IS 'test cast';
 
 COMMENT ON EXTENSION test_ext IS 'test extension';
 
+COMMENT ON COLLATION public.test_collation IS 'ru Ru';
+
 COMMENT ON COLUMN public.typ_composite.key IS 'Type composite key comment';
 
 COMMENT ON COLUMN public.typ_composite.val IS 'Type composite val comment';

@@ -114,6 +114,10 @@ CREATE POLICY test_policy ON public.test;
 
 COMMENT ON POLICY test_policy ON public.test IS 'test policy';
 
+CREATE COLLATION public.test_collation (LOCALE = 'ru_RU.utf8');
+
+COMMENT ON COLLATION  public.test_collation IS 'ru Ru';
+
 CREATE TEXT SEARCH TEMPLATE public.test_template (
     LEXIZE = dsnowball_lexize );
 
