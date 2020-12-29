@@ -136,8 +136,6 @@ public class Differ implements IRunnableWithProgress {
             // forceUnixNewLines has no effect on diff operaiton, just pass true
             PgDiffArguments args =
                     DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone, true, msSql, proj, oneTimePrefs);
-            OverridablePrefs overPrefs = new OverridablePrefs(proj, oneTimePrefs);
-            args.setConcurrentlyMode(overPrefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY));
             diffDirect = new PgDiff(args).diffDatabaseSchemasAdditionalDepcies(
                     root,
                     sourceDbFull, targetDbFull,
