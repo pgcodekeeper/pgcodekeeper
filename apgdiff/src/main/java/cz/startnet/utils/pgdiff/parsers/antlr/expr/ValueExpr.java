@@ -311,7 +311,7 @@ public class ValueExpr extends AbstractExpr {
             ret = new ModPair<>("exists", TypesSetManually.BOOLEAN);
         } else if ((subSelectStmt = primary.select_stmt_no_parens()) != null) {
             Select select = new Select(this);
-            ret = select.analyze(subSelectStmt).get(0);
+            ret = getRetElement(select.analyze(subSelectStmt));
             Indirection_listContext indir = primary.indirection_list();
             if (indir != null) {
                 indirection(indir.indirection(), ret);
@@ -334,7 +334,8 @@ public class ValueExpr extends AbstractExpr {
             if (elements != null) {
                 ret = arrayElements(elements);
             } else {
-                ret = new Select(this).analyze(array.table_subquery().select_stmt()).get(0);
+                Select select = new Select(this);
+                ret = getRetElement(select.analyze(array.table_subquery().select_stmt()));
             }
             ret.setFirst("array");
             ret.setSecond(ret.getSecond() + "[]");
@@ -361,6 +362,17 @@ public class ValueExpr extends AbstractExpr {
         } else {
             Log.log(Log.LOG_WARNING, "No alternative in Vex Primary!");
             ret = new ModPair<>(NONAME, TypesSetManually.UNKNOWN);
+        }
+        return ret;
+    }
+
+    private ModPair<String, String> getRetElement(List<ModPair<String, String>> list) {
+        ModPair<String, String> ret;
+        if (list.isEmpty()) {
+            ret = new ModPair<>(NONAME, TypesSetManually.UNKNOWN);
+            Log.log(Log.LOG_WARNING, "Subselect return 0 element");
+        } else {
+            ret = list.get(0);
         }
         return ret;
     }
