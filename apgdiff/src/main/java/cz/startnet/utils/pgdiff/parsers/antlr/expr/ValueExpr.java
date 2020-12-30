@@ -311,7 +311,7 @@ public class ValueExpr extends AbstractExpr {
             ret = new ModPair<>("exists", TypesSetManually.BOOLEAN);
         } else if ((subSelectStmt = primary.select_stmt_no_parens()) != null) {
             Select select = new Select(this);
-            ret = getRetElement(select.analyze(subSelectStmt));
+            ret = getSubselectColumn(select.analyze(subSelectStmt));
             Indirection_listContext indir = primary.indirection_list();
             if (indir != null) {
                 indirection(indir.indirection(), ret);
@@ -335,7 +335,7 @@ public class ValueExpr extends AbstractExpr {
                 ret = arrayElements(elements);
             } else {
                 Select select = new Select(this);
-                ret = getRetElement(select.analyze(array.table_subquery().select_stmt()));
+                ret = getSubselectColumn(select.analyze(array.table_subquery().select_stmt()));
             }
             ret.setFirst("array");
             ret.setSecond(ret.getSecond() + "[]");
@@ -366,15 +366,14 @@ public class ValueExpr extends AbstractExpr {
         return ret;
     }
 
-    private ModPair<String, String> getRetElement(List<ModPair<String, String>> list) {
-        ModPair<String, String> ret;
+    private ModPair<String, String> getSubselectColumn(
+            List<ModPair<String, String>> list) {
         if (list.isEmpty()) {
-            ret = new ModPair<>(NONAME, TypesSetManually.UNKNOWN);
             Log.log(Log.LOG_WARNING, "Subselect return 0 element");
+            return new ModPair<>(NONAME, TypesSetManually.UNKNOWN);
         } else {
-            ret = list.get(0);
+            return list.get(0);
         }
-        return ret;
     }
 
     private ModPair<String, String> indirectionVar(Indirection_varContext indirection) {
