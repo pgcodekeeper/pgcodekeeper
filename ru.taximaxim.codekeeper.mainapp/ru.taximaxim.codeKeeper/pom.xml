@@ -40,6 +40,7 @@
         <sonar.language>java</sonar.language>
         <sonar.java.binaries>${project.build.directory}/classes</sonar.java.binaries>
         <sonar.java.source>1.8</sonar.java.source>
+        <sonar.java.target>1.8</sonar.java.target>
         <sonar.core.coveragePlugin>jacoco</sonar.core.coveragePlugin>
         <sonar.junit.reportPath>${project.build.directory}/surefire-reports/</sonar.junit.reportPath>
     </properties>
@@ -78,6 +79,9 @@
                     </plugin>
                 </plugins>
             </build>
+            <properties>
+                <target.definition.file>app_202006</target.definition.file>
+            </properties>
         </profile>
         <profile>
             <id>internal</id>
