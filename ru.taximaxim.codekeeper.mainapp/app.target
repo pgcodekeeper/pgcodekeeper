@@ -2,22 +2,20 @@
 <?pde version="3.8"?>
 <target includeMode="feature" name="app" sequenceNumber="128">
 <locations>
-  <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-    <repository location="https://download.eclipse.org/releases/2020-09"/>
-    <unit id="org.eclipse.egit.feature.group" version="5.9.0.202009080501-r"/>
-    <unit id="org.eclipse.equinox.sdk.feature.group" version="3.20.300.v20200828-1034"/>
-    <unit id="org.eclipse.platform.feature.group" version="4.17.0.v20200902-1800"/>
-    <unit id="org.eclipse.jdt.feature.group" version="3.18.500.v20200902-1800"/>
-    <unit id="org.eclipse.zest.feature.group" version="1.7.0.201606061308"/>
-    <unit id="org.eclipse.pde.feature.group" version="3.14.500.v20200902-1800"/>
-  </location>
-  <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-    <repository location="https://download.eclipse.org/tools/orbit/downloads/drops/R20200831200620/repository"/>
-    <unit id="org.apache.httpcomponents.httpclient" version="4.5.10.v20200830-2311"/>
-    <unit id="org.apache.httpcomponents.httpcore" version="4.4.12.v20200108-1212"/>
-    <unit id="org.hamcrest.core" version="1.3.0.v20180420-1519"/>
-    <unit id="org.junit" version="4.13.0.v20200204-1500"/>
-    <unit id="org.kohsuke.args4j" version="2.33.0.v20160323-2218"/>
-  </location>
+    <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
+        <repository location="https://download.eclipse.org/releases/2020-12"/>
+        <unit id="org.eclipse.egit.feature.group" version="5.10.0.202012080955-r"/>
+        <unit id="org.eclipse.equinox.sdk.feature.group" version="3.21.0.v20201128-0731"/>
+        <unit id="org.eclipse.platform.feature.group" version="4.18.0.v20201202-1800"/>
+        <unit id="org.eclipse.zest.feature.group" version="1.7.0.201606061308"/>
+    </location>
+    <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
+        <repository location="https://download.eclipse.org/tools/orbit/downloads/drops/R20201130205003/repository"/>
+        <unit id="org.apache.httpcomponents.httpclient" version="4.5.10.v20200830-2311"/>
+        <unit id="org.apache.httpcomponents.httpcore" version="4.4.12.v20200108-1212"/>
+        <unit id="org.hamcrest.core" version="1.3.0.v20180420-1519"/>
+        <unit id="org.junit" version="4.13.0.v20200204-1500"/>
+        <unit id="org.kohsuke.args4j" version="2.33.0.v20160323-2218"/>
+    </location>
 </locations>
 </target>
