@@ -115,7 +115,6 @@ public abstract class DbSource {
         args.setEnableFunctionBodiesDependencies(prefs.getBooleanOfRootPref(PREF.ENABLE_BODY_DEPENDENCIES));
         args.setIgnoreConcurrentModification(Activator.getDefault().getPreferenceStore()
                 .getBoolean(PREF.IGNORE_CONCURRENT_MODIFICATION));
-        args.setConcurrentlyMode(prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY));
         args.setUsingTypeCastOff(!prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.USING_ON_OFF));
         args.setSelectedOnly(prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS));
         args.setDataMovementMode(prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.DATA_MOVEMENT_MODE));

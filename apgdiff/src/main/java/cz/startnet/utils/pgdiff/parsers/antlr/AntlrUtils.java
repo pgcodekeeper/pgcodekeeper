@@ -152,7 +152,7 @@ public class AntlrUtils {
     }
 
     private static boolean isIdentifier(int type) {
-        return SQLLexer.ABORT <= type || type <= SQLLexer.WHILE
+        return SQLLexer.ABORT <= type && type <= SQLLexer.WHILE
                 || type == SQLLexer.Identifier || type == SQLLexer.QuotedIdentifier;
     }
 
