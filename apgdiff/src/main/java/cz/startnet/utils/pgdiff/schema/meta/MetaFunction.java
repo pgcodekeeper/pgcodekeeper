@@ -123,9 +123,6 @@ public class MetaFunction extends MetaStatement implements IFunction {
 
     private String getFunctionSignature() {
         StringBuilder sb = new StringBuilder();
-        if ( signatureCache != null) {
-            return sb.append(signatureCache).toString();
-        }
 
         sb.append(PgDiffUtils.getQuotedName(getBareName())).append('(');
         boolean addComma = false;
