@@ -7,6 +7,10 @@ CREATE TABLE public.testtable (
     f           char(5)[],
     g           varchar(5)[]
 );
+  
+  CREATE FUNCTION public.f2(_id_base text, _number anyelement, _need_confirm integer) RETURNS anyelement
+    LANGUAGE plpgsql
+    AS $_$ begin return _number; end;$_$;
 
 CREATE VIEW public.testview1 AS
  SELECT *
@@ -34,3 +38,9 @@ CREATE VIEW public.testview4 AS
 CREATE VIEW public.testview5 AS
  select array_agg(distinct ar order by ar desc)
   from (select array[i / 2] from generate_series(1,10) a(i)) b(ar);
+
+ CREATE VIEW public.testview6 AS
+ SELECT * FROM public.f2(null, '123', 1);
+
+ CREATE VIEW public.testview7 AS
+  SELECT * FROM public.f2('text', 90, 3::anyelement);

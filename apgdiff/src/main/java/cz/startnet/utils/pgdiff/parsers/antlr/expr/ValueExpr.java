@@ -294,7 +294,7 @@ public class ValueExpr extends AbstractExpr {
         } else if ((function = primary.function_call()) != null) {
             ret = function(function);
         } else if (primary.NULL() != null) {
-            ret = new ModPair<>(NONAME, TypesSetManually.UNKNOWN);
+            ret = new ModPair<>(NONAME, TypesSetManually.ANYTYPE);
         } else if ((caseExpr = primary.case_expression()) != null) {
             ret = null;
             for (VexContext v : caseExpr.vex()) {
