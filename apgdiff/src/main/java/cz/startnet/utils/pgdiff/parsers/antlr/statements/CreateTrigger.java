@@ -102,7 +102,7 @@ public class CreateTrigger extends ParserAbstract {
             // TODO add empty signature to function name
             // when function signatures in refs and defs will be supported
             addDepSafe(trigger, Arrays.asList(sch, funcNameCtx.identifier_nontype()),
-                    DbObjType.FUNCTION, true);
+                    DbObjType.FUNCTION, true, CreateFunction.getFuncSignature(null) );
         }
 
         for (Identifier_listContext column : ctx.identifier_list()) {

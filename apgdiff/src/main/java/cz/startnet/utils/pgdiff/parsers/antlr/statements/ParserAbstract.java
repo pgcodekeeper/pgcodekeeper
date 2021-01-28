@@ -268,13 +268,18 @@ public abstract class ParserAbstract {
     }
 
     protected PgObjLocation addObjReference(List<? extends ParserRuleContext> ids,
-            DbObjType type, String action) {
-        PgObjLocation loc = getLocation(ids, type, action, false, null);
+            DbObjType type, String action, String signature) {
+        PgObjLocation loc = getLocation(ids, type, action, false, signature);
         if (loc != null) {
             db.addReference(fileName, loc);
         }
 
         return loc;
+    }
+
+    protected PgObjLocation addObjReference(List<? extends ParserRuleContext> ids,
+            DbObjType type, String action) {
+        return addObjReference(ids, type, action, null);
     }
 
     private int getStart(ParserRuleContext ctx) {
@@ -313,16 +318,17 @@ public abstract class ParserAbstract {
 
     protected void addSafe(PgStatement parent, PgStatement child,
             List<? extends ParserRuleContext> ids) {
+        addSafe(parent, child, ids, null);
+    }
+
+    protected void addSafe(PgStatement parent, PgStatement child,
+            List<? extends ParserRuleContext> ids, String signature){
         doSafe(PgStatement::addChild, parent, child);
         PgObjLocation loc = getLocation(ids, child.getStatementType(),
-                ACTION_CREATE, false, null);
+                ACTION_CREATE, false, signature);
         if (loc != null) {
             child.setLocation(loc);
-            db.addReference(fileName, loc);
-        }
-
-        // TODO move to beginning of the method later
-        checkLocation(child, QNameParser.getFirstNameCtx(ids).getStart());
+            db.addReference(fileName, loc);}
     }
 
     private void checkLocation(PgStatement statement, Token errToken) {

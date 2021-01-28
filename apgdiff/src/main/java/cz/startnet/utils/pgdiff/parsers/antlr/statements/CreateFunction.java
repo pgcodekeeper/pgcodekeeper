@@ -17,6 +17,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_funct_paramsConte
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_actions_commonContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_column_name_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_defContext;
@@ -74,7 +75,30 @@ public class CreateFunction extends ParserAbstract {
             function.setReturns(getTypeName(ctx.rettype_data));
             addPgTypeDepcy(ctx.rettype_data, function);
         }
-        addSafe(getSchemaSafe(ids), function, ids);
+        addSafe(getSchemaSafe(ids), function, ids, getFuncSignature(ctx.function_parameters().function_args()));
+    }
+
+    public static String getFuncSignature(Function_argsContext funcArgs) {
+        StringBuilder params = new StringBuilder();
+        params.append("(");
+        if (funcArgs != null) {
+            for (Function_argumentsContext argument : funcArgs.function_arguments()) {
+                params.append(getTypeName(argument.data_type()));
+                params.append(", ");
+            }
+            if (funcArgs.agg_order() != null) {
+                for (Function_argumentsContext argument : funcArgs.agg_order()
+                        .function_arguments()) {
+                    params.append(getTypeName(argument.data_type()));
+                    params.append(", ");
+                }
+            }
+            if (params.length()>1) {
+                params.setLength(params.length() - 2);
+            }
+        }
+        params.append(")");
+        return params.toString();
     }
 
     private void fillFunction(Create_funct_paramsContext params, AbstractPgFunction function) {

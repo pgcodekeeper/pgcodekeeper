@@ -53,8 +53,7 @@ public class CreateAggregate extends ParserAbstract {
         addFuncAsDepcy(AggFuncs.SFUNC, sFuncCtx, aggregate);
 
         fillAggregate(ctx.aggregate_param(), aggregate);
-
-        addSafe(getSchemaSafe(ids), aggregate, ids);
+        addSafe(getSchemaSafe(ids), aggregate, ids, CreateFunction.getFuncSignature(ctx.function_args()));
     }
 
     private void fillAllArguments(PgAggregate aggregate) {

@@ -109,8 +109,7 @@ public class MetaUtils {
         // some children may have a parental location
         if (loc != null && loc.getType() == type) {
             return loc;
-        }
-        GenericColumn gc;
+        }        GenericColumn gc;
         switch (type) {
         case CAST:
         case SCHEMA:
@@ -133,7 +132,7 @@ public class MetaUtils {
         case TABLE:
         case TYPE:
         case VIEW:
-            gc = new GenericColumn(st.getParent().getName(), st.getBareName(), type);
+            gc = new GenericColumn(st.getParent().getName(), st.getName(), type);
             break;
         case INDEX:
             gc = new GenericColumn(st.getParent().getParent().getName(), st.getName(), type);

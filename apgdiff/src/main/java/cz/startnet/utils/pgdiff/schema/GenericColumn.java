@@ -204,13 +204,6 @@ public class GenericColumn implements Serializable {
             return func;
         }
 
-        int found = 0;
-        for (AbstractFunction f : schema.getFunctions()) {
-            if (f.getBareName().equals(table)) {
-                ++found;
-                func = f;
-            }
-        }
         /*
         Map<String, Integer> m;
         if (found != 1) {
@@ -226,7 +219,7 @@ public class GenericColumn implements Serializable {
          */
         // TODO right now we don't have means to resolve overloaded function calls
         // to avoid false dependencies skip resolving overloaded calls completely
-        return found == 1 ? func : null;
+        return func;
     }
 
     private PgOperator resolveOperatorCall(AbstractSchema schema) {
