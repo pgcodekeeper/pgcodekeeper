@@ -7,3 +7,6 @@ CREATE VIEW public.testview6 AS
 
 CREATE VIEW public.testview7 AS
   SELECT * FROM public.f2('text', 90, 3::anyelement);
+
+CREATE VIEW public.testview8 AS
+  SELECT * FROM public.f2(123, null, 'no match test');
