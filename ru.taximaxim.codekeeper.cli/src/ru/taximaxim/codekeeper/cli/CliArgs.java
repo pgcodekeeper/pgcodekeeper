@@ -222,7 +222,7 @@ public class CliArgs extends PgDiffArguments {
 
     @Option(name="--lib-safe-mode", forbids={"--parse"},
             usage="exit with an error if a library object conflicts with other schema or library objects"
-                    + " otherwise, in case of conflicts objects loaded first have priority")
+                    + "\notherwise, in case of conflicts objects loaded first have priority")
     private boolean libSafeMode;
 
     @Option(name="--ignore-concurrent-modification",
@@ -246,22 +246,18 @@ public class CliArgs extends PgDiffArguments {
                     + "\nspecify multiple times to use several names")
     private List<String> graphNames;
 
-    @Override
     public boolean isModeParse() {
         return modeParse;
     }
 
-    @Override
     public void setModeParse(boolean modeParse) {
         this.modeParse = modeParse;
     }
 
-    @Override
     public boolean isModeGraph() {
         return modeGraph;
     }
 
-    @Override
     public void setModeGraph(boolean modeGraph) {
         this.modeGraph = modeGraph;
     }
@@ -286,12 +282,10 @@ public class CliArgs extends PgDiffArguments {
         this.oldSrc = oldSrc;
     }
 
-    @Override
     public String getOutputTarget() {
         return this.outputTarget;
     }
 
-    @Override
     public void setOutputTarget(String outputTarget) {
         this.outputTarget = outputTarget;
     }
@@ -316,37 +310,30 @@ public class CliArgs extends PgDiffArguments {
         this.stopNotAllowed = stopNotAllowed;
     }
 
-    @Override
     public boolean isSafeMode() {
         return safeMode;
     }
 
-    @Override
     public void setSafeMode(boolean safeMode) {
         this.safeMode = safeMode;
     }
 
-    @Override
     public boolean isRunOnTarget() {
         return runOnTarget;
     }
 
-    @Override
     public void setRunOnTarget(boolean runOnTarget) {
         this.runOnTarget = runOnTarget;
     }
 
-    @Override
     public String getRunOnDb() {
         return runOnDb;
     }
 
-    @Override
     public void setRunOnDb(String runOnDb) {
         this.runOnDb = runOnDb;
     }
 
-    @Override
     public Collection<DangerStatement> getAllowedDangers() {
         return Collections.unmodifiableCollection(allowedDangers);
     }
@@ -454,12 +441,10 @@ public class CliArgs extends PgDiffArguments {
         this.inCharsetName = inCharsetName;
     }
 
-    @Override
     public String getOutCharsetName() {
         return outCharsetName;
     }
 
-    @Override
     public void setOutCharsetName(String outCharsetName) {
         this.outCharsetName = outCharsetName;
     }
@@ -569,27 +554,22 @@ public class CliArgs extends PgDiffArguments {
         this.simplifyView = simplifyView;
     }
 
-    @Override
     public int getGraphDepth() {
         return graphDepth;
     }
 
-    @Override
     public boolean isGraphReverse() {
         return graphReverse;
     }
 
-    @Override
     public void setGraphReverse(boolean graphReverse) {
         this.graphReverse = graphReverse;
     }
 
-    @Override
     public void setGraphDepth(int graphDepth) {
         this.graphDepth = graphDepth;
     }
 
-    @Override
     public Collection<String> getGraphNames() {
         return Collections.unmodifiableCollection(graphNames);
     }

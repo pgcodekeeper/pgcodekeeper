@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 import java.util.Arrays;
 
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.tree.ParseTree;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
@@ -40,8 +41,13 @@ public class UpdateMsStatement extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        Qualified_nameContext qname = ctx.qualified_name();
-        return getStrForStmtAction(ACTION_UPDATE, DbObjType.TABLE,
-                Arrays.asList(qname.schema, qname.name));
+        ParseTree id = ctx.qualified_name();
+        if (id == null) {
+            id = ctx.rowset_function_limited();
+        }
+        if (id == null) {
+            id = ctx.LOCAL_ID(0);
+        }
+        return getStrForStmtAction(ACTION_UPDATE, DbObjType.TABLE, id);
     }
 }

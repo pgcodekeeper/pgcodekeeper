@@ -64,6 +64,6 @@ public class CreateDomain extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_CREATE, DbObjType.DOMAIN, ctx.name.identifier());
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.DOMAIN, ctx.name);
     }
 }

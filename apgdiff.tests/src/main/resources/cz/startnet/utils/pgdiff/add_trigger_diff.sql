@@ -8,10 +8,13 @@ begin
 end;
 $$;
 
-ALTER FUNCTION public.test_table_trigger() OWNER TO fordfrog;
-
 CREATE TRIGGER test_table_trigger
 	BEFORE INSERT OR UPDATE ON public.test_table
+	FOR EACH ROW
+	EXECUTE PROCEDURE public.test_table_trigger();
+
+CREATE TRIGGER test_view_trigger2
+	BEFORE UPDATE OF id, "BALANCE" ON public.test_table
 	FOR EACH ROW
 	EXECUTE PROCEDURE public.test_table_trigger();
 

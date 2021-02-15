@@ -101,6 +101,6 @@ public class CreateView extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_CREATE, DbObjType.VIEW, context.name.identifier());
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.VIEW, context.name);
     }
 }

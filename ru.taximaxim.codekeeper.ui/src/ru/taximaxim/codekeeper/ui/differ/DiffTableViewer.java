@@ -74,6 +74,9 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -106,6 +109,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.exporter.AbstractModelExporter;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.AggregatingListener;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PG_EDIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
@@ -382,6 +386,17 @@ public class DiffTableViewer extends Composite {
             newSelection = (IStructuredSelection) event.getSelection();
         });
 
+        viewer.getControl().addKeyListener(new KeyAdapter() {
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if ((e.stateMask & SWT.CTRL) == SWT.CTRL && e.keyCode == 'c') {
+                    copyObjectNamesToClipboard();
+                    e.doit = false;
+                }
+            }
+        });
+
         viewer.getControl().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         viewer.getTree().setLinesVisible(true);
         viewer.getTree().setHeaderVisible(true);
@@ -475,6 +490,14 @@ public class DiffTableViewer extends Composite {
             }
         });
         menuMgr.add(new Separator());
+        menuMgr.add(new Action(Messages.DiffTableViewer_copy_object_names + "\tCtrl+C") {
+
+            @Override
+            public void run() {
+                copyObjectNamesToClipboard();
+            }
+        });
+        menuMgr.add(new Separator());
         menuMgr.add(new Action(Messages.diffTableViewer_open_diff_in_new_window) {
 
             @Override
@@ -500,6 +523,24 @@ public class DiffTableViewer extends Composite {
         });
 
         return menuMgr;
+    }
+
+    private void copyObjectNamesToClipboard() {
+        IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
+        if (selection.isEmpty()) {
+            return;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (Object r : selection.toList()) {
+            TreeElement element = (TreeElement) r;
+            sb.append(element.getQualifiedName());
+            sb.append(UIConsts._NL);
+        }
+
+        Clipboard cb = new Clipboard(viewer.getControl().getDisplay());
+        cb.setContents(new Object[] { sb.toString() },
+                new Transfer[] { TextTransfer.getInstance() });
     }
 
     private void initColumns() {
@@ -1117,15 +1158,17 @@ public class DiffTableViewer extends Composite {
             boolean checked) {
         for (Object o : selection.toList()) {
             TreeElement el = (TreeElement) o;
-            setSubTreeChecked(el, checked);
+            setSubTreeChecked(el, checked, false);
         }
         viewerChecksUpdated();
     }
 
-    private void setSubTreeChecked(TreeElement element, boolean selected) {
-        setChecked(element, selected);
+    private void setSubTreeChecked(TreeElement element, boolean selected, boolean isChild) {
+        if (isChild) {
+            setChecked(element, selected);
+        }
         for (TreeElement child : element.getChildren()) {
-            setSubTreeChecked(child, selected);
+            setSubTreeChecked(child, selected, true);
         }
     }
 
@@ -1225,7 +1268,7 @@ public class DiffTableViewer extends Composite {
         private void setChecked(Object element, boolean checked) {
             TreeElement el = (TreeElement) element;
             if (isContainer(el)) {
-                setSubTreeChecked(el, checked);
+                setSubTreeChecked(el, checked, true);
             }
             // explicitly check root even when using setSubTreeChecked
             // in case it's not in the viewer's input set

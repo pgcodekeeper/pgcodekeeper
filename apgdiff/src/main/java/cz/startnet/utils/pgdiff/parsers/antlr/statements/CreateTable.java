@@ -162,6 +162,6 @@ public class CreateTable extends TableAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_CREATE, DbObjType.TABLE, ctx.name.identifier());
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.TABLE, ctx.name);
     }
 }
