@@ -19,6 +19,7 @@ public interface TypesSetManually {
     String TEXT = "text";
     String NAME = "name";
     String XML = "xml";
+    String ANY = "any";
     String ANYTYPE = "anyelement";
     String ANYARRAY = "anyarray";
     String ANYENUM = "anyenum";

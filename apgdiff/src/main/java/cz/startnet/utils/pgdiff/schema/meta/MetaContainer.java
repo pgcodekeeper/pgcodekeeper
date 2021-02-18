@@ -7,7 +7,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.TypesSetManually;
 import cz.startnet.utils.pgdiff.schema.ICast;
 import cz.startnet.utils.pgdiff.schema.ICast.CastContext;
 import cz.startnet.utils.pgdiff.schema.IConstraint;
@@ -73,20 +72,7 @@ public class MetaContainer {
         }
     }
 
-    public static boolean isAnyTypes(String type) {
-        if (type.equalsIgnoreCase(TypesSetManually.ANYTYPE)
-                || type.equalsIgnoreCase(TypesSetManually.ANYARRAY)
-                || type.equalsIgnoreCase(TypesSetManually.ANYRANGE)
-                || type.equalsIgnoreCase(TypesSetManually.ANYENUM)
-                || type.equalsIgnoreCase(TypesSetManually.ANYNOARRAY)) {
-        }
-        return true;
-    }
-
     public boolean containsCastImplicit(String source, String target) {
-        if (isAnyTypes(source) || isAnyTypes(target)) {
-            return true;
-        }
         for (ICast cast : casts) {
             if (CastContext.IMPLICIT == cast.getContext()
                     && source.equals(cast.getSource())

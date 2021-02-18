@@ -702,7 +702,7 @@ public class ValueExpr extends AbstractExpr {
                 String sourceType = sourceTypes.get(argN);
                 if (sourceType.equals(arg.getDataType())) {
                     ++exactMatches;
-                } else if (!containsCastImplicit(sourceType, arg.getDataType())) {
+                } else if (!typesMatch(sourceType, arg.getDataType())) {
                     signatureApplicable = false;
                     break;
                 }
@@ -741,13 +741,13 @@ public class ValueExpr extends AbstractExpr {
 
             if (Objects.equals(leftArg, left)) {
                 ++exactMatches;
-            } else if (leftArg == null || left == null || !containsCastImplicit(left, leftArg)) {
+            } else if (leftArg == null || left == null || !typesMatch(left, leftArg)) {
                 continue;
             }
 
             if (Objects.equals(rightArg, right)) {
                 ++exactMatches;
-            } else if (rightArg == null || right == null || !containsCastImplicit(right, rightArg)) {
+            } else if (rightArg == null || right == null || !typesMatch(right, rightArg)) {
                 continue;
             }
 
@@ -769,8 +769,24 @@ public class ValueExpr extends AbstractExpr {
 
     }
 
-    private boolean containsCastImplicit(String source, String target) {
+    private boolean typesMatch(String source, String target) {
+        if (isAnyTypes(source) || isAnyTypes(target)) {
+            return true;
+        }
         return meta.containsCastImplicit(source, target);
+    }
+
+    public static boolean isAnyTypes(String type) {
+        if (type.equalsIgnoreCase(TypesSetManually.ANYTYPE)
+                || type.equalsIgnoreCase(TypesSetManually.ANY)
+                || type.equalsIgnoreCase(TypesSetManually.ANYARRAY)
+                || type.equalsIgnoreCase(TypesSetManually.ANYRANGE)
+                || type.equalsIgnoreCase(TypesSetManually.ANYENUM)
+                || type.equalsIgnoreCase(TypesSetManually.ANYNOARRAY)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private String getOperatorToken(Vex vex) {
