@@ -2168,7 +2168,6 @@ tokens_reserved_except_function_type
 
 tokens_reserved
     : ALL
-    | ANALYSE
     | ANALYZE
     | AND
     | ANY
