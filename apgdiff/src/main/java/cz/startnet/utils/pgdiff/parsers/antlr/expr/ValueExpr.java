@@ -776,17 +776,13 @@ public class ValueExpr extends AbstractExpr {
         return meta.containsCastImplicit(source, target);
     }
 
-    public static boolean isAnyTypes(String type) {
-        if (type.equalsIgnoreCase(TypesSetManually.ANYTYPE)
+    private static boolean isAnyTypes(String type) {
+        return type.equalsIgnoreCase(TypesSetManually.ANYTYPE)
                 || type.equalsIgnoreCase(TypesSetManually.ANY)
                 || type.equalsIgnoreCase(TypesSetManually.ANYARRAY)
                 || type.equalsIgnoreCase(TypesSetManually.ANYRANGE)
                 || type.equalsIgnoreCase(TypesSetManually.ANYENUM)
-                || type.equalsIgnoreCase(TypesSetManually.ANYNOARRAY)) {
-            return true;
-        } else {
-            return false;
-        }
+                || type.equalsIgnoreCase(TypesSetManually.ANYNOARRAY);
     }
 
     private String getOperatorToken(Vex vex) {
