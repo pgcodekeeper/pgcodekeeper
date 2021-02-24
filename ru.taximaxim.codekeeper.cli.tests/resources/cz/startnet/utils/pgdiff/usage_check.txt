@@ -96,9 +96,9 @@ Usage
                                           libraries
  --lib-safe-mode                        : exit with an error if a library
                                           object conflicts with other schema or
-                                          library objects otherwise, in case of
-                                          conflicts objects loaded first have
-                                          priority
+                                          library objects
+                                          otherwise, in case of conflicts
+                                          objects loaded first have priority
  --ignore-concurrent-modification       : ignore concurrent modification errors
                                           of database objects
  --ms-sql                               : work with MS SQL
