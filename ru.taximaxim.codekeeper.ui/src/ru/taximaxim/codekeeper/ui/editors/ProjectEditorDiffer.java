@@ -63,7 +63,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -151,7 +150,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private PgDbProject proj;
     private ProjectEditorSelectionProvider sp;
     private Composite parent;
-
     private Object currentRemote;
     private DbSource dbProject;
     private DbSource dbRemote;
@@ -163,13 +161,10 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private Link linkRefresh;
 
     private Action getChangesAction;
-    private Action actionToProj;
-    private Action actionToDb;
     private DiffTableViewer diffTable;
     private DiffPaneViewer diffPane;
     private boolean isDBLoaded;
     private boolean isCommitCommandAvailable;
-    private Image  image;
     private List<Entry<PgStatement, PgStatement>> manualDepciesSource = new ArrayList<>();
     private List<Entry<PgStatement, PgStatement>> manualDepciesTarget = new ArrayList<>();
 
@@ -238,7 +233,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
             @Override
             public void createRightSide(Composite container) {
-                GridLayout layout = new GridLayout(2, false);
+                GridLayout layout = new GridLayout();
                 layout.marginHeight = 0;
                 layout.marginWidth = 0;
                 container.setLayout(layout);
@@ -358,7 +353,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 IAction.AS_DROP_DOWN_MENU) {
             @Override
             public void run() {
-                if (actionToDb.isChecked()) {
+                if (!diffTable.isApplyToProj()) {
                     diff();
                 } else {
                     commit();
@@ -366,42 +361,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             }
         };
         applyAction.setToolTipText(Messages.DiffTableViewer_apply_to + " "+ Messages.DiffTableViewer_to_project);
-        image = new DecorationOverlayIcon(imgDescrApplyIcon.createImage(),
-                imgDescrProj, IDecoration.TOP_RIGHT).createImage();
-        applyAction.setImageDescriptor(ImageDescriptor.createFromImage(image));
-
-        actionToProj = new Action(Messages.DiffTableViewer_to_project, IAction.AS_RADIO_BUTTON) {
-            @Override
-            public void run() {
-                changeMigrationDireciton(true, false);
-                applyAction.setToolTipText(Messages.DiffTableViewer_apply_to + " "+ Messages.DiffTableViewer_to_project);
-                image = new DecorationOverlayIcon(imgDescrApplyIcon.createImage(),
-                        imgDescrProj, IDecoration.TOP_RIGHT).createImage();
-                applyAction.setImageDescriptor(ImageDescriptor.createFromImage(image));
-            }
-        };
-        actionToProj.setImageDescriptor(ImageDescriptor
-                .createFromImage(Activator.getRegisteredImage(FILE.ICONAPPSMALL)));
-
-        ActionContributionItem itemToProj = new ActionContributionItem(actionToProj);
-        itemToProj.setMode(ActionContributionItem.MODE_FORCE_TEXT);
-
-        actionToDb = new Action(Messages.DiffTableViewer_to_database, IAction.AS_RADIO_BUTTON) {
-            @Override
-            public void run() {
-                changeMigrationDireciton(false, false);
-                applyAction.setToolTipText(Messages.DiffTableViewer_apply_to + " " + Messages.DiffTableViewer_to_database);
-                image = new DecorationOverlayIcon(imgDescrApplyIcon.createImage(),
-                        imgDescrDb,
-                        IDecoration.TOP_RIGHT).createImage();
-                applyAction.setImageDescriptor(ImageDescriptor.createFromImage(image));
-            }
-
-        };
-        actionToDb.setImageDescriptor(ImageDescriptor.createFromURL(
-                Activator.getContext().getBundle().getResource(FILE.ICONDATABASE)));
-        ActionContributionItem itemToDb = new ActionContributionItem(actionToDb);
-        itemToDb.setMode(ActionContributionItem.MODE_FORCE_TEXT);
+        applyAction.setImageDescriptor(new DecorationOverlayIcon(imgDescrApplyIcon,
+                imgDescrProj, IDecoration.TOP_RIGHT));
 
         applyAction.setMenuCreator(new IMenuCreator() {
 
@@ -417,6 +378,38 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
             @Override
             public Menu getMenu(Control parent) {
+                Action actionToProj = new Action(Messages.DiffTableViewer_to_project, IAction.AS_RADIO_BUTTON) {
+                    @Override
+                    public void run() {
+                        changeMigrationDireciton(true, false);
+                        applyAction.setToolTipText(Messages.DiffTableViewer_apply_to + " "+ Messages.DiffTableViewer_to_project);
+                        applyAction.setImageDescriptor(new DecorationOverlayIcon(imgDescrApplyIcon,
+                                imgDescrProj, IDecoration.TOP_RIGHT));
+                    }
+                };
+                actionToProj.setImageDescriptor(ImageDescriptor.createFromImage(
+                        Activator.getRegisteredImage(FILE.ICONAPPSMALL)));
+                ActionContributionItem itemToProj = new ActionContributionItem(
+                        actionToProj);
+                itemToProj.setMode(ActionContributionItem.MODE_FORCE_TEXT);
+
+                Action actionToDb = new Action(Messages.DiffTableViewer_to_database, IAction.AS_RADIO_BUTTON) {
+                    @Override
+                    public void run() {
+                        changeMigrationDireciton(false, false);
+                        applyAction.setToolTipText(Messages.DiffTableViewer_apply_to + " " + Messages.DiffTableViewer_to_database);
+
+                        applyAction.setImageDescriptor(new DecorationOverlayIcon(imgDescrApplyIcon,
+                                imgDescrDb,
+                                IDecoration.TOP_RIGHT));
+                    }
+
+                };
+                actionToDb.setImageDescriptor(ImageDescriptor.createFromURL(Activator
+                        .getContext().getBundle().getResource(FILE.ICONDATABASE)));
+                ActionContributionItem itemToDb = new ActionContributionItem(actionToDb);
+                itemToDb.setMode(ActionContributionItem.MODE_FORCE_TEXT);
+
                 if (menuMgrApplyCustom != null) {
                     menuMgrApplyCustom.dispose();
                 }
@@ -514,8 +507,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                         }
                     }
                 });
-                DBStoreMenu dbStoreMenu = new DBStoreMenu(menuMgrGetChangesCustom);
-                dbStoreMenu.loadStore();
+                DBStoreMenu dbStoreMenu = new DBStoreMenu(menuMgrGetChangesCustom, ProjectEditorDiffer.this, mainPrefs);
+                dbStoreMenu.fillMenu();
                 return menuMgrGetChangesCustom.createContextMenu(parent);
             }
 
@@ -528,6 +521,10 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         ActionContributionItem getChangesItem = new ActionContributionItem(getChangesAction);
         getChangesItem.setMode(ActionContributionItem.MODE_FORCE_TEXT);
         mgrTblBtn.add(getChangesItem);
+    }
+
+    public void setEditorName(String partName) {
+        setPartName(partName);
     }
 
     public void addDependency() {
@@ -584,7 +581,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     @Override
     public void dispose() {
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
-        image.dispose();
         super.dispose();
     }
 

@@ -171,11 +171,12 @@ public interface UIConsts {
         String PGPASS = "/icons/pg_pass.png"; //$NON-NLS-1$
         String PG_ICON = "/icons/postgresql_icon.png"; //$NON-NLS-1$
         String MS_ICON = "/icons/mssql_icon.png"; //$NON-NLS-1$
+        String DECORDATABASE = "/icons/db_decorator.png"; //$NON-NLS-1$
+        String DECORPGCODEKEEPER = "/icons/nature_decorator.png"; //$NON-NLS-1$
 
         // pgadmin icons
         String ICONPGADMIN = "/icons/pgadmin/"; //$NON-NLS-1$
         String ICONDATABASE = ICONPGADMIN + "database.png"; //$NON-NLS-1$
-        String DECORDATABASE = ICONPGADMIN + "db_decorator.png"; //$NON-NLS-1$
 
         // copies of inaccessible Eclipse icons
         String ICONUP = "/icons/search_prev.gif"; //$NON-NLS-1$
@@ -185,7 +186,6 @@ public interface UIConsts {
         String ICONSELECTNONE = "/icons/uncheck_all.gif"; //$NON-NLS-1$
         String ICONINVERTSELECTION = "/icons/loop_obj.png"; //$NON-NLS-1$
         String ICONAPPLYTO = "/icons/save_edit.png"; //$NON-NLS-1$
-        String DECORPGCODEKEEPER = "icons/nature_decorator.png"; //$NON-NLS-1$
         String ICONREFRESH = "/icons/refresh.png"; //$NON-NLS-1$
         String ICONWRITEOUTCONSOLE = "/icons/writeout_co.png"; //$NON-NLS-1$
         String ICONCHECK = "/icons/header_complete.gif"; //$NON-NLS-1$

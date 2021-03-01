@@ -32,6 +32,7 @@ import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.dialogs.PreferencesUtil;
+
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
@@ -49,8 +50,7 @@ public class DbStorePicker {
 
     private static final LoadFileElement LOAD_FILE = new LoadFileElement(false);
     private static final LoadFileElement LOAD_DIR = new LoadFileElement(true);
-    private static OpenDbStore Open_DB = new OpenDbStore();
-    private Shell shell;
+    private static OpenDbStore openDB = new OpenDbStore();
     private static final int MAX_FILES_HISTORY = 10;
 
     private boolean useFileSources;
@@ -137,7 +137,7 @@ public class DbStorePicker {
 
         List<Object> input = new ArrayList<>(store.size() + files.size() + projects.size() + 4);
         input.addAll(store);
-        input.add(Open_DB);
+        input.add(openDB);
         if (useFileSources) {
             input.add("─────────────────"); //$NON-NLS-1$
             input.add(LOAD_FILE);
@@ -204,6 +204,45 @@ public class DbStorePicker {
         cmbDbNames.getCombo().setEnabled(enabled);
     }
 
+    public static File chooseDbSource(IPreferenceStore prefStore, Shell shell) {
+        String pathToDump = getFilePath(prefStore, shell);
+        if (pathToDump == null) {
+            return null;
+        }
+
+        File dumpFile = new File(pathToDump);
+        Deque<File> dumpHistory = stringToDumpFileHistory(prefStore.getString(PREF.DB_STORE_FILES));
+        dumpHistory.addFirst(dumpFile);
+        while (dumpHistory.size() > MAX_FILES_HISTORY) {
+            dumpHistory.removeLast();
+        }
+        prefStore.setValue(PREF.DB_STORE_FILES, dumpFileHistoryToPreference(dumpHistory));
+        prefStore.setValue(PREF.LAST_OPENED_LOCATION,
+                dumpFile.getParent());
+        return dumpFile;
+    }
+
+    public static String getFilePath(IPreferenceStore prefStore, Shell shell) {
+        FileDialog dialog = new FileDialog(shell);
+        dialog.setText(Messages.choose_dump_file_with_changes);
+        dialog.setFilterExtensions(new String[] {"*.sql", "*"}); //$NON-NLS-1$ //$NON-NLS-2$
+        dialog.setFilterNames(new String[] {
+                Messages.DiffPresentationPane_sql_file_filter,
+                Messages.DiffPresentationPane_any_file_filter});
+        dialog.setFilterPath(prefStore.getString(PREF.LAST_OPENED_LOCATION));
+        return dialog.open();
+    }
+
+    public static String dumpFileHistoryToPreference(Collection<File> dumps) {
+        StringBuilder sb = new StringBuilder();
+        for (File path : dumps){
+            sb.append(path.getAbsolutePath());
+            sb.append(DELIM_ENTRY);
+        }
+        sb.setLength(sb.length() - 1);
+        return sb.toString();
+    }
+
     private class DbStoreSelectionListener implements ISelectionChangedListener {
 
         private ISelection previous = StructuredSelection.EMPTY;
@@ -231,7 +270,7 @@ public class DbStorePicker {
                 }
             } else if (selected instanceof OpenDbStore) {
                 PreferencesUtil
-                .createPreferenceDialogOn(shell, PREF_PAGE.DB_STORE, null, null)
+                .createPreferenceDialogOn(cmbDbNames.getControl().getShell(), PREF_PAGE.DB_STORE, null, null)
                 .open();
                 revertSelection = true;
             } else {
@@ -327,18 +366,6 @@ public class DbStorePicker {
         }
     }
 
-    private Deque<File> stringToDumpFileHistory(String preference) {
-        String[] coordStrings = preference.split(DELIM_ENTRY);
-        Deque<File> paths = new LinkedList<>();
-        for (String path : coordStrings){
-            File f = new File(path);
-            if (f.exists() && !paths.contains(f)) {
-                paths.add(f);
-            }
-        }
-        return paths;
-    }
-
     public void filter(Boolean isMsSql) {
         this.isMsSql = isMsSql;
         cmbDbNames.refresh();
@@ -346,5 +373,16 @@ public class DbStorePicker {
 
     public void dispose() {
         cmbDbNames.getControl().dispose();
+    }
+    public static Deque<File> stringToDumpFileHistory(String preference) {
+        String[] coordStrings = preference.split(DELIM_ENTRY);
+        Deque<File> paths = new LinkedList<>();
+        for (String path : coordStrings) {
+            File f = new File(path);
+            if (f.exists() && !paths.contains(f)) {
+                paths.add(f);
+            }
+        }
+        return paths;
     }
 }
