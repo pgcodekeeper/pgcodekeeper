@@ -382,7 +382,7 @@
                 </separator>
                 <command
                     commandId="ru.taximaxim.codekeeper.ui.command.GetChanges"
-                    icon="icons/refresh.png"
+                    icon="icons/refresh_16x16.png"
                     label="%command.commandname.GetChanges"
                     style="push">
                 </command>
@@ -504,7 +504,7 @@
                 </command>
                 <command
                     commandId="ru.taximaxim.codekeeper.ui.command.GetChanges"
-                    icon="icons/refresh.png"
+                    icon="icons/refresh_16x16.png"
                     label="%command.commandname.GetChanges"
                     style="push">
                     <visibleWhen>
