@@ -85,14 +85,13 @@ public class DBStoreMenu{
     }
 
     private void addAction(DbInfo dbInfo, String title){
-        Action dbAction = new Action(dbInfo.getName(), IAction.AS_RADIO_BUTTON) {
+        Action dbAction = new Action(dbInfo.getName() + "@", IAction.AS_RADIO_BUTTON) {
             @Override
             public void run() {
                 editor.setCurrentDb(dbInfo);
                 editor.setEditorName(title+dbInfo.getName());
             }
         };
-
         menuMgrGetChangesCustom.add(dbAction);
         if (dbInfo.equals(editor.getCurrentDb())) {
             dbAction.setChecked(true);
