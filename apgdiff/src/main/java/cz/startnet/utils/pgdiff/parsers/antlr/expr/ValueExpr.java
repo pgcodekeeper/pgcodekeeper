@@ -505,6 +505,15 @@ public class ValueExpr extends AbstractExpr {
             argsType.add(stripParens(argType));
         }
 
+        List<String> namesType = new ArrayList<>(args.size());
+        for (Vex_or_named_notationContext arg : args) {
+            if (arg.argname == null) {
+                namesType.add(null);
+            } else {
+                namesType.add(arg.argname.getText());
+            }
+        }
+
         Collection<IFunction> functions = availableFunctions(schemaName);
 
         if (args.size() == 1 && TypesSetManually.QUALIFIED_ASTERISK.equals(argsType.get(0))) {
@@ -527,7 +536,7 @@ public class ValueExpr extends AbstractExpr {
             return new ModPair<>(functionName, func != null ?
                     getFunctionReturns(func) : TypesSetManually.FUNCTION_COLUMN);
         } else {
-            IFunction resultFunction = resolveCall(functionName, argsType, functions);
+            IFunction resultFunction = resolveCall(functionName, argsType, namesType, functions);
 
             if (resultFunction != null) {
                 addFunctionDepcy(resultFunction, functionCtx);
@@ -668,11 +677,14 @@ public class ValueExpr extends AbstractExpr {
     /**
      * @param functionName called function bare name
      * @param sourceTypes call argument types
+     * @param namesType call name types
      * @param availableFunctions functions from applicable schemas
      * @return most suitable function to call or null,
      *      if none were found or an ambiguity was detected
      */
-    private IFunction resolveCall(String functionName, List<String> sourceTypes,
+    private IFunction resolveCall(String functionName,
+            List<String> sourceTypes,
+            List<String> namesType,
             Collection<? extends IFunction> availableFunctions) {
         // save each applicable function with the number of exact type matches
         // between input args and function parameters
@@ -685,6 +697,45 @@ public class ValueExpr extends AbstractExpr {
             int argN = 0;
             int exactMatches = 0;
             boolean signatureApplicable = true;
+            boolean isByNameNotation = false;
+            for (String str : namesType) {
+                if (str != null) {
+                    isByNameNotation = true;
+                }
+            }
+            List<String> newSourceTypes = null;
+            boolean isHasArg = true; // a label that all arguments are among the possible arguments
+            if (isByNameNotation) {
+                newSourceTypes = new ArrayList<>(Collections.nCopies(f.getArguments().size(), null));
+                // filling default type arguments
+                for (int i = 0; i < newSourceTypes.size(); i++) {
+                    if (f.getArguments().get(i).getDefaultExpression() != null) {
+                        newSourceTypes.set(i, f.getArguments().get(i).getDataType());
+                    }
+                }
+                List<String> availableName = new ArrayList<>(f.getArguments().size());
+                for (int i = 0; i < f.getArguments().size(); i++) {
+                    availableName.add(f.getArguments().get(i).getName());
+                }
+                // filling by our type
+                for (int i = 0; i < namesType.size(); i++) {
+                    if (namesType.get(i) != null) {
+                        int ind = availableName.indexOf(namesType.get(i));
+                        if (ind > -1) {
+                            newSourceTypes.set(ind, sourceTypes.get(i));
+                        } else {
+                            isHasArg = false;
+                            break;
+                        }
+                    } else {
+                        newSourceTypes.set(i, sourceTypes.get(i));
+                    }
+                }
+                if (!isHasArg || newSourceTypes.isEmpty() || newSourceTypes.contains(null)) { // isEmpty mb delete it
+                    continue;
+                }
+                sourceTypes = newSourceTypes;
+            }
             for (Argument arg : f.getArguments()) {
                 if (!arg.getMode().isIn()) {
                     continue;
