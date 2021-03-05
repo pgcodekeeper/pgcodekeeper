@@ -222,7 +222,7 @@ public class CliArgs extends PgDiffArguments {
 
     @Option(name="--lib-safe-mode", forbids={"--parse"},
             usage="exit with an error if a library object conflicts with other schema or library objects"
-                    + " otherwise, in case of conflicts objects loaded first have priority")
+                    + "\notherwise, in case of conflicts objects loaded first have priority")
     private boolean libSafeMode;
 
     @Option(name="--ignore-concurrent-modification",

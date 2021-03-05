@@ -94,12 +94,12 @@
             </modules>
         </profile>
         <profile>
-            <id>neon</id>
+            <id>compat_check</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
             <properties>
-                <target.definition.file>app_neon</target.definition.file>
+                <target.definition.file>app_202006</target.definition.file>
             </properties>
         </profile>
     </profiles>

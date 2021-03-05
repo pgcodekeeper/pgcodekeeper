@@ -294,7 +294,7 @@ public class ValueExpr extends AbstractExpr {
         } else if ((function = primary.function_call()) != null) {
             ret = function(function);
         } else if (primary.NULL() != null) {
-            ret = new ModPair<>(NONAME, TypesSetManually.UNKNOWN);
+            ret = new ModPair<>(NONAME, TypesSetManually.ANYTYPE);
         } else if ((caseExpr = primary.case_expression()) != null) {
             ret = null;
             for (VexContext v : caseExpr.vex()) {
@@ -311,7 +311,7 @@ public class ValueExpr extends AbstractExpr {
             ret = new ModPair<>("exists", TypesSetManually.BOOLEAN);
         } else if ((subSelectStmt = primary.select_stmt_no_parens()) != null) {
             Select select = new Select(this);
-            ret = select.analyze(subSelectStmt).get(0);
+            ret = getSubselectColumn(select.analyze(subSelectStmt));
             Indirection_listContext indir = primary.indirection_list();
             if (indir != null) {
                 indirection(indir.indirection(), ret);
@@ -334,7 +334,8 @@ public class ValueExpr extends AbstractExpr {
             if (elements != null) {
                 ret = arrayElements(elements);
             } else {
-                ret = new Select(this).analyze(array.table_subquery().select_stmt()).get(0);
+                Select select = new Select(this);
+                ret = getSubselectColumn(select.analyze(array.table_subquery().select_stmt()));
             }
             ret.setFirst("array");
             ret.setSecond(ret.getSecond() + "[]");
@@ -363,6 +364,16 @@ public class ValueExpr extends AbstractExpr {
             ret = new ModPair<>(NONAME, TypesSetManually.UNKNOWN);
         }
         return ret;
+    }
+
+    private ModPair<String, String> getSubselectColumn(
+            List<ModPair<String, String>> list) {
+        if (list.isEmpty()) {
+            Log.log(Log.LOG_WARNING, "Subselect return 0 element");
+            return new ModPair<>(NONAME, TypesSetManually.UNKNOWN);
+        } else {
+            return list.get(0);
+        }
     }
 
     private ModPair<String, String> indirectionVar(Indirection_varContext indirection) {
@@ -753,7 +764,7 @@ public class ValueExpr extends AbstractExpr {
                 String sourceType = sourceTypes.get(argN);
                 if (sourceType.equals(arg.getDataType())) {
                     ++exactMatches;
-                } else if (!containsCastImplicit(sourceType, arg.getDataType())) {
+                } else if (!typesMatch(sourceType, arg.getDataType())) {
                     signatureApplicable = false;
                     break;
                 }
@@ -792,13 +803,13 @@ public class ValueExpr extends AbstractExpr {
 
             if (Objects.equals(leftArg, left)) {
                 ++exactMatches;
-            } else if (leftArg == null || left == null || !containsCastImplicit(left, leftArg)) {
+            } else if (leftArg == null || left == null || !typesMatch(left, leftArg)) {
                 continue;
             }
 
             if (Objects.equals(rightArg, right)) {
                 ++exactMatches;
-            } else if (rightArg == null || right == null || !containsCastImplicit(right, rightArg)) {
+            } else if (rightArg == null || right == null || !typesMatch(right, rightArg)) {
                 continue;
             }
 
@@ -820,8 +831,20 @@ public class ValueExpr extends AbstractExpr {
 
     }
 
-    private boolean containsCastImplicit(String source, String target) {
+    private boolean typesMatch(String source, String target) {
+        if (isAnyTypes(source) || isAnyTypes(target)) {
+            return true;
+        }
         return meta.containsCastImplicit(source, target);
+    }
+
+    private static boolean isAnyTypes(String type) {
+        return type.equalsIgnoreCase(TypesSetManually.ANYTYPE)
+                || type.equalsIgnoreCase(TypesSetManually.ANY)
+                || type.equalsIgnoreCase(TypesSetManually.ANYARRAY)
+                || type.equalsIgnoreCase(TypesSetManually.ANYRANGE)
+                || type.equalsIgnoreCase(TypesSetManually.ANYENUM)
+                || type.equalsIgnoreCase(TypesSetManually.ANYNOARRAY);
     }
 
     private String getOperatorToken(Vex vex) {
