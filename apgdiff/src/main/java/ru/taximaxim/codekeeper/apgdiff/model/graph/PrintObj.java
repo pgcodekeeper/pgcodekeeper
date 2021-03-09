@@ -3,24 +3,24 @@ package ru.taximaxim.codekeeper.apgdiff.model.graph;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class PrintObj {
-    private final PgStatement actualSt;
-    private final PgStatement previousSt;
+    private final PgStatement statement;
+    private final PgStatement parentSt;
     private final int indent;
     private final int hiddenObj;
 
     public PrintObj(PgStatement actualSt, PgStatement previousSt, int indent, int hiddenObj) {
-        this.actualSt = actualSt;
-        this.previousSt = previousSt;
+        this.statement = actualSt;
+        this.parentSt = previousSt;
         this.indent = indent;
         this.hiddenObj = hiddenObj;
     }
 
-    public PgStatement getActualStSt() {
-        return actualSt;
+    public PgStatement getStatement() {
+        return statement;
     }
 
-    public PgStatement getPreviousSt() {
-        return previousSt;
+    public PgStatement getParentSt() {
+        return parentSt;
     }
 
     public int getIndent() {
@@ -35,9 +35,9 @@ public class PrintObj {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((actualSt == null) ? 0 : actualSt.hashCode());
+        result = prime * result + ((statement == null) ? 0 : statement.hashCode());
         result = prime * result + indent;
-        result = prime * result + ((previousSt == null) ? 0 : previousSt.hashCode());
+        result = prime * result + ((parentSt == null) ? 0 : parentSt.hashCode());
         return result;
     }
     @Override
@@ -52,21 +52,21 @@ public class PrintObj {
             return false;
         }
         PrintObj other = (PrintObj) obj;
-        if (actualSt == null) {
-            if (other.actualSt != null) {
+        if (statement == null) {
+            if (other.statement != null) {
                 return false;
             }
-        } else if (!actualSt.equals(other.actualSt)) {
+        } else if (!statement.equals(other.statement)) {
             return false;
         }
         if (indent != other.indent) {
             return false;
         }
-        if (previousSt == null) {
-            if (other.previousSt != null) {
+        if (parentSt == null) {
+            if (other.parentSt != null) {
                 return false;
             }
-        } else if (!previousSt.equals(other.previousSt)) {
+        } else if (!parentSt.equals(other.parentSt)) {
             return false;
         }
         return true;
