@@ -30,20 +30,12 @@ public class DBStoreMenu{
 
     public void fillMenu() {
         String title = editor.getEditorInput().getName() + " - ";
-        menuMgrGetChangesCustom.add(new Separator());
         List<DbInfo> store = DbInfo.readStoreFromXml();
-        Collection<File> files;
-        files = DbStorePicker.stringToDumpFileHistory(prefStore.getString(PREF.DB_STORE_FILES));
+        Collection<File> files = DbStorePicker.stringToDumpFileHistory(prefStore.getString(PREF.DB_STORE_FILES));
         boolean isMsProj = OpenProjectUtils.checkMsSql(editor.getProject());
         for (DbInfo dbInfo : store) {
-            if (isMsProj) {
-                if (dbInfo.isMsSql()) {
-                    addAction(dbInfo, title);
-                }
-            } else {
-                if (!dbInfo.isMsSql()) {
-                    addAction(dbInfo, title);
-                }
+            if (isMsProj == dbInfo.isMsSql()) {
+                addAction(dbInfo, title);
             }
         }
 

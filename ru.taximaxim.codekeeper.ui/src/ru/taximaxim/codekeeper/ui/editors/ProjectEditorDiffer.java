@@ -507,6 +507,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                         }
                     }
                 });
+                menuMgrGetChangesCustom.add(new Separator());
                 DBStoreMenu dbStoreMenu = new DBStoreMenu(menuMgrGetChangesCustom, ProjectEditorDiffer.this, mainPrefs);
                 dbStoreMenu.fillMenu();
                 return menuMgrGetChangesCustom.createContextMenu(parent);
