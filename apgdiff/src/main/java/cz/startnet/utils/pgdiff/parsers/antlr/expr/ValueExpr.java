@@ -499,13 +499,6 @@ public class ValueExpr extends AbstractExpr {
             addDepcy(new GenericColumn(schemaName, DbObjType.SCHEMA), id);
         }
 
-        // TODO add processing for named/mixed notation in functions, because
-        // of order the arguments in function call (if order of arguments
-        // are not the same as in original - the current analysis will fail)
-        //
-        // (4.3.2. Using Named Notation / 4.3.3. Using Mixed Notation)
-        // https://www.postgresql.org/docs/11/sql-syntax-calling-funcs.html
-
         List<Vex_or_named_notationContext> args = function.vex_or_named_notation();
 
         List<String> argsType = new ArrayList<>(args.size());
