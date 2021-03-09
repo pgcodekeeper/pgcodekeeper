@@ -59,6 +59,8 @@ public class ExprTypeTest {
             {CHECK + "tableless_cols_types"},
             // Check array types.
             {CHECK + "array_types"},
+            // Check ANY type-matching
+            {CHECK + "anytype_resolution"},
         });
     }
 

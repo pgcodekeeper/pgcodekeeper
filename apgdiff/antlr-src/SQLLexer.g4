@@ -46,7 +46,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     ==================================================
     */
     
-    ABORT: [aA] [bB] [oO] [rR] [tT];    // first identifier rule, sync with CustomSQLAntlrErrorStrategy
+    ABORT: [aA] [bB] [oO] [rR] [tT];    // first identifier rule, sync with CustomSQLAntlrErrorStrategy & AntlrUtils
     ABSOLUTE: [aA] [bB] [sS] [oO] [lL] [uU] [tT] [eE];
     ACCESS: [aA] [cC] [cC] [eE] [sS] [sS];
     ACTION: [aA] [cC] [tT] [iI] [oO] [nN];
@@ -485,8 +485,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     */
     
     ALL: [aA] [lL] [lL];   // first RESERVED_KEYWORD, sync with AntlrUtils.normalizeWhitespaceUnquoted
-    ANALYSE: [aA] [nN] [aA] [lL] [yY] [sS] [eE];
-    ANALYZE: [aA] [nN] [aA] [lL] [yY] [zZ] [eE];
+    ANALYZE: [aA] [nN] [aA] [lL] [yY] [zZsS] [eE];
     AND: [aA] [nN] [dD];
     ANY: [aA] [nN] [yY];
     ARRAY: [aA] [rR] [rR] [aA] [yY];
@@ -755,7 +754,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     STACKED: [sS] [tT] [aA] [cC] [kK] [eE] [dD];
 
     WARNING: [wW] [aA] [rR] [nN] [iI] [nN] [gG];
-    WHILE: [wW] [hH] [iI] [lL] [eE];     // last identifier rule, sync with CustomSQLAntlrErrorStrategy
+    WHILE: [wW] [hH] [iI] [lL] [eE];     // last identifier rule, sync with CustomSQLAntlrErrorStrategy & AntlrUtils
 
 fragment UNDERLINE : '_';
 
