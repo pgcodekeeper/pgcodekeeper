@@ -8,6 +8,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsConstraint;
+import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MsCheckConstraintsReader extends JdbcReader {
@@ -24,6 +25,7 @@ public class MsCheckConstraintsReader extends JdbcReader {
 
         AbstractTable table = schema.getTable(res.getString("table_name"));
         if (table == null) {
+            Log.log(Log.LOG_WARNING, "schema return null table");
             return;
         }
 

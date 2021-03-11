@@ -18,6 +18,7 @@ import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.SimpleForeignPgTable;
 import cz.startnet.utils.pgdiff.schema.SimplePgTable;
 import cz.startnet.utils.pgdiff.schema.TypedPgTable;
+import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class TablesReader extends JdbcReader {
@@ -30,6 +31,10 @@ public class TablesReader extends JdbcReader {
     protected void processResult(ResultSet result, AbstractSchema schema) throws SQLException {
         AbstractPgTable table = getTable(result, schema);
         loader.monitor.worked(1);
+        if (table == null) {
+            Log.log(Log.LOG_WARNING, "schema return null table");
+            return;
+        }
         schema.addTable(table);
     }
 

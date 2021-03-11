@@ -18,6 +18,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgView;
+import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
@@ -31,6 +32,10 @@ public class ViewsReader extends JdbcReader {
     protected void processResult(ResultSet result, AbstractSchema schema) throws SQLException {
         AbstractView view = getView(result, schema);
         loader.monitor.worked(1);
+        if (view == null) {
+            Log.log(Log.LOG_WARNING, "schema return null view");
+            return;
+        }
         schema.addView(view);
     }
 
