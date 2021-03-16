@@ -379,6 +379,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             @Override
             public Menu getMenu(Control parent) {
                 Action actionToProj = new Action(Messages.DiffTableViewer_to_project, IAction.AS_RADIO_BUTTON) {
+
                     @Override
                     public void run() {
                         changeMigrationDireciton(true, false);
@@ -387,13 +388,10 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                                 imgDescrProj, IDecoration.TOP_RIGHT));
                     }
                 };
-                actionToProj.setImageDescriptor(ImageDescriptor.createFromImage(
-                        Activator.getRegisteredImage(FILE.ICONAPPSMALL)));
-                ActionContributionItem itemToProj = new ActionContributionItem(
-                        actionToProj);
-                itemToProj.setMode(ActionContributionItem.MODE_FORCE_TEXT);
 
+                actionToProj.setImageDescriptor(Activator.getRegisteredDescriptor(FILE.ICONAPPSMALL));
                 Action actionToDb = new Action(Messages.DiffTableViewer_to_database, IAction.AS_RADIO_BUTTON) {
+
                     @Override
                     public void run() {
                         changeMigrationDireciton(false, false);
@@ -407,8 +405,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 };
                 actionToDb.setImageDescriptor(ImageDescriptor.createFromURL(Activator
                         .getContext().getBundle().getResource(FILE.ICONDATABASE)));
-                ActionContributionItem itemToDb = new ActionContributionItem(actionToDb);
-                itemToDb.setMode(ActionContributionItem.MODE_FORCE_TEXT);
 
                 if (menuMgrApplyCustom != null) {
                     menuMgrApplyCustom.dispose();

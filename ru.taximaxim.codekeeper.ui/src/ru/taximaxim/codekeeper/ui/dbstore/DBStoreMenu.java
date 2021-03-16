@@ -40,6 +40,7 @@ public class DBStoreMenu{
         }
 
         menuMgrGetChangesCustom.add(new Action(Messages.DbStorePicker_open_db_store) {
+
             @Override
             public void run() {
                 PreferencesUtil
@@ -48,10 +49,11 @@ public class DBStoreMenu{
             }
         });
         menuMgrGetChangesCustom.add(new Separator());
-        menuMgrGetChangesCustom.add(new Action(Messages.DbStorePicker_load_from_file, IAction.AS_RADIO_BUTTON) {
+        menuMgrGetChangesCustom.add(new Action(Messages.DbStorePicker_load_from_file) {
+
             @Override
             public void run() {
-                File dumpFile = DbStorePicker.chooseDbSource(prefStore, editor.getEditorSite().getShell());
+                File dumpFile = DbStorePicker.chooseDbSource(prefStore, editor.getEditorSite().getShell(), false);
                 if (dumpFile != null) {
                     editor.setCurrentDb(dumpFile);
                     editor.setEditorName(title + dumpFile.getName());
@@ -62,6 +64,7 @@ public class DBStoreMenu{
         for (File f : files) {
             if (f.isFile()) {
                 Action fileAction = new Action(f.getName(), IAction.AS_RADIO_BUTTON) {
+
                     @Override
                     public void run() {
                         editor.setCurrentDb(f);
@@ -78,6 +81,7 @@ public class DBStoreMenu{
 
     private void addAction(DbInfo dbInfo, String title){
         Action dbAction = new Action(dbInfo.getName() + "@", IAction.AS_RADIO_BUTTON) {
+
             @Override
             public void run() {
                 editor.setCurrentDb(dbInfo);

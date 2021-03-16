@@ -58,8 +58,7 @@ class DbSourcePicker extends Composite {
         cmbEncoding.setLabelProvider(new LabelProvider());
         cmbEncoding.setInput(UIConsts.ENCODINGS);
         cmbEncoding.getCombo().setText(ApgdiffConsts.UTF_8);
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        cmbEncoding.getControl().setLayoutData(gd);
+        cmbEncoding.getControl().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         storePicker.addListenerToCombo(event -> {
             pageDiff.getWizard().getContainer().updateButtons();
