@@ -30,11 +30,14 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.dialogs.PreferencesUtil;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF_PAGE;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.xmlstore.DbXmlStore;
@@ -47,6 +50,7 @@ public class DbStorePicker {
 
     private static final LoadFileElement LOAD_FILE = new LoadFileElement(false);
     private static final LoadFileElement LOAD_DIR = new LoadFileElement(true);
+    private static final OpenDbStore OPENDB = new OpenDbStore();
     private static final int MAX_FILES_HISTORY = 10;
 
     private boolean useFileSources;
@@ -133,6 +137,7 @@ public class DbStorePicker {
 
         List<Object> input = new ArrayList<>(store.size() + files.size() + projects.size() + 4);
         input.addAll(store);
+        input.add(OPENDB);
         if (useFileSources) {
             input.add("─────────────────"); //$NON-NLS-1$
             input.add(LOAD_FILE);
@@ -199,6 +204,61 @@ public class DbStorePicker {
         cmbDbNames.getCombo().setEnabled(enabled);
     }
 
+    public void filter(Boolean isMsSql) {
+        this.isMsSql = isMsSql;
+        cmbDbNames.refresh();
+    }
+
+    public void dispose() {
+        cmbDbNames.getControl().dispose();
+    }
+
+    public static File chooseDbSource(IPreferenceStore prefStore, Shell shell, boolean dir) {
+        String pathToDump = dir ? DbStorePicker.getDirPath(prefStore, shell) : DbStorePicker.getFilePath(prefStore, shell);
+        if (pathToDump == null) {
+            return null;
+        }
+
+        File dumpFile = new File(pathToDump);
+        Deque<File> dumpHistory = stringToDumpFileHistory(prefStore.getString(PREF.DB_STORE_FILES));
+        dumpHistory.addFirst(dumpFile);
+        while (dumpHistory.size() > MAX_FILES_HISTORY) {
+            dumpHistory.removeLast();
+        }
+        prefStore.setValue(PREF.DB_STORE_FILES, dumpFileHistoryToPreference(dumpHistory));
+        prefStore.setValue(PREF.LAST_OPENED_LOCATION,
+                dir ? dumpFile.getAbsolutePath() : dumpFile.getParent());
+        return dumpFile;
+    }
+
+    private static String getDirPath(IPreferenceStore prefStore, Shell shell) {
+        DirectoryDialog dialog = new DirectoryDialog(shell);
+        dialog.setText(Messages.DbStorePicker_choose_dir);
+        dialog.setFilterPath(prefStore.getString(PREF.LAST_OPENED_LOCATION));
+        return dialog.open();
+    }
+
+    public static String getFilePath(IPreferenceStore prefStore, Shell shell) {
+        FileDialog dialog = new FileDialog(shell);
+        dialog.setText(Messages.choose_dump_file_with_changes);
+        dialog.setFilterExtensions(new String[] {"*.sql", "*"}); //$NON-NLS-1$ //$NON-NLS-2$
+        dialog.setFilterNames(new String[] {
+                Messages.DiffPresentationPane_sql_file_filter,
+                Messages.DiffPresentationPane_any_file_filter});
+        dialog.setFilterPath(prefStore.getString(PREF.LAST_OPENED_LOCATION));
+        return dialog.open();
+    }
+
+    public static String dumpFileHistoryToPreference(Collection<File> dumps) {
+        StringBuilder sb = new StringBuilder();
+        for (File path : dumps){
+            sb.append(path.getAbsolutePath());
+            sb.append(DELIM_ENTRY);
+        }
+        sb.setLength(sb.length() - 1);
+        return sb.toString();
+    }
+
     private class DbStoreSelectionListener implements ISelectionChangedListener {
 
         private ISelection previous = StructuredSelection.EMPTY;
@@ -217,13 +277,19 @@ public class DbStorePicker {
                 revertSelection = false;
             } else if (selected instanceof LoadFileElement) {
                 LoadFileElement loadEl = (LoadFileElement) selected;
-                File dumpFile = chooseDbSource(loadEl.loadDir);
+                File dumpFile = DbStorePicker.chooseDbSource(prefStore, cmbDbNames.getControl().getShell(), loadEl.loadDir);
+
                 if (dumpFile != null) {
                     loadStore(new StructuredSelection(dumpFile));
                     revertSelection = false;
                 } else {
                     revertSelection = true;
                 }
+            } else if (selected instanceof OpenDbStore) {
+                PreferencesUtil
+                .createPreferenceDialogOn(cmbDbNames.getControl().getShell(), PREF_PAGE.DB_STORE, null, null)
+                .open();
+                revertSelection = true;
             } else {
                 // string or some other "unselectable" selection
                 revertSelection = true;
@@ -232,52 +298,6 @@ public class DbStorePicker {
             if (revertSelection) {
                 cmbDbNames.setSelection(previous);
             }
-        }
-
-        private File chooseDbSource(boolean dir) {
-            String pathToDump = dir ? getDirPath() : getFilePath();
-            if (pathToDump == null) {
-                return null;
-            }
-
-            File dumpFile = new File(pathToDump);
-            Deque<File> dumpHistory = stringToDumpFileHistory(prefStore.getString(PREF.DB_STORE_FILES));
-            dumpHistory.addFirst(dumpFile);
-            while (dumpHistory.size() > MAX_FILES_HISTORY) {
-                dumpHistory.removeLast();
-            }
-            prefStore.setValue(PREF.DB_STORE_FILES, dumpFileHistoryToPreference(dumpHistory));
-            prefStore.setValue(PREF.LAST_OPENED_LOCATION,
-                    dir ? dumpFile.getAbsolutePath() : dumpFile.getParent());
-            return dumpFile;
-        }
-
-        private String getFilePath() {
-            FileDialog dialog = new FileDialog(cmbDbNames.getControl().getShell());
-            dialog.setText(Messages.choose_dump_file_with_changes);
-            dialog.setFilterExtensions(new String[] {"*.sql", "*"}); //$NON-NLS-1$ //$NON-NLS-2$
-            dialog.setFilterNames(new String[] {
-                    Messages.DiffPresentationPane_sql_file_filter,
-                    Messages.DiffPresentationPane_any_file_filter});
-            dialog.setFilterPath(prefStore.getString(PREF.LAST_OPENED_LOCATION));
-            return dialog.open();
-        }
-
-        private String getDirPath() {
-            DirectoryDialog dialog = new DirectoryDialog(cmbDbNames.getControl().getShell());
-            dialog.setText(Messages.DbStorePicker_choose_dir);
-            dialog.setFilterPath(prefStore.getString(PREF.LAST_OPENED_LOCATION));
-            return dialog.open();
-        }
-
-        private String dumpFileHistoryToPreference(Collection<File> dumps) {
-            StringBuilder sb = new StringBuilder();
-            for (File path : dumps){
-                sb.append(path.getAbsolutePath());
-                sb.append(DELIM_ENTRY);
-            }
-            sb.setLength(sb.length() - 1);
-            return sb.toString();
         }
     }
 
@@ -310,24 +330,22 @@ public class DbStorePicker {
         }
     }
 
-    private Deque<File> stringToDumpFileHistory(String preference) {
+    private static class OpenDbStore {
+        @Override
+        public String toString() {
+            return Messages.DbStorePicker_open_db_store;
+        }
+    }
+
+    public static Deque<File> stringToDumpFileHistory(String preference) {
         String[] coordStrings = preference.split(DELIM_ENTRY);
         Deque<File> paths = new LinkedList<>();
-        for (String path : coordStrings){
+        for (String path : coordStrings) {
             File f = new File(path);
             if (f.exists() && !paths.contains(f)) {
                 paths.add(f);
             }
         }
         return paths;
-    }
-
-    public void filter(Boolean isMsSql) {
-        this.isMsSql = isMsSql;
-        cmbDbNames.refresh();
-    }
-
-    public void dispose() {
-        cmbDbNames.getControl().dispose();
     }
 }

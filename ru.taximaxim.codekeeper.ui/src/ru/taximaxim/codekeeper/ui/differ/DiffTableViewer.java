@@ -1052,9 +1052,17 @@ public class DiffTableViewer extends Composite {
     public void updateObjectsLabels() {
         int count = elementInfoMap.size();
         int checked = getCheckedElementsCount();
+        Image image = Activator.getRegisteredImage(FILE.ICONAPPSMALL);
+        String text = Messages.DiffTableViewer_selected_count;
+
         if (lineManager != null) {
-            lineManager.setMessage(Activator.getRegisteredImage(FILE.ICONAPPSMALL),
-                    MessageFormat.format(Messages.DiffTableViewer_selected_count, checked, count));
+            if (isApplyToProj) {
+                lineManager.setMessage(image, MessageFormat.format(text, checked, count,
+                        Messages.DiffTableViewer_save_to_project));
+            } else {
+                lineManager.setMessage(image, MessageFormat.format(text, checked, count,
+                        Messages.DiffTableViewer_save_to_DB));
+            }
         } else {
             lblObjectCount.setText(MessageFormat.format(Messages.diffTableViewer_objects, count));
             if (!viewOnly) {

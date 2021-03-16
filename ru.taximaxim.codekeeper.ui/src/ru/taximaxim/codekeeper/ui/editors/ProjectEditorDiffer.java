@@ -53,6 +53,8 @@ import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
+import org.eclipse.jface.viewers.DecorationOverlayIcon;
+import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -116,6 +118,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PATH;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.VIEW;
 import ru.taximaxim.codekeeper.ui.UiSync;
+import ru.taximaxim.codekeeper.ui.dbstore.DBStoreMenu;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dialogs.ApplyCustomDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.CommitDialog;
@@ -147,7 +150,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private PgDbProject proj;
     private ProjectEditorSelectionProvider sp;
     private Composite parent;
-
     private Object currentRemote;
     private DbSource dbProject;
     private DbSource dbRemote;
@@ -159,12 +161,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private Link linkRefresh;
 
     private Action getChangesAction;
-    private Action actionToProj;
-    private Action actionToDb;
-
     private DiffTableViewer diffTable;
     private DiffPaneViewer diffPane;
-
     private boolean isDBLoaded;
     private boolean isCommitCommandAvailable;
     private List<Entry<PgStatement, PgStatement>> manualDepciesSource = new ArrayList<>();
@@ -185,12 +183,10 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                     isApplyToProj ? Messages.ProjectEditorDiffer_project
                             : Messages.ProjectEditorDiffer_database));
             mb.open();
-
-            actionToProj.setChecked(isApplyToProj);
-            actionToDb.setChecked(!isApplyToProj);
         }
         diffTable.setApplyToProj(isApplyToProj);
         diffTable.getViewer().refresh();
+        diffTable.updateObjectsLabels();
     }
 
     @Override
@@ -245,37 +241,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 final ToolBarManager mgrTblBtn = new ToolBarManager(SWT.FLAT | SWT.RIGHT);
 
                 addBtnApplyWithMenu(container, mgrTblBtn);
-
-                actionToProj = new Action(Messages.DiffTableViewer_to_project,
-                        IAction.AS_RADIO_BUTTON) {
-
-                    @Override
-                    public void run() {
-                        changeMigrationDireciton(true, false);
-                    }
-                };
-                actionToProj.setImageDescriptor(ImageDescriptor
-                        .createFromImage(Activator.getRegisteredImage(FILE.ICONAPPSMALL)));
-                actionToProj.setChecked(true);
-                ActionContributionItem itemToProj = new ActionContributionItem(actionToProj);
-                itemToProj.setMode(ActionContributionItem.MODE_FORCE_TEXT);
-                mgrTblBtn.add(itemToProj);
-
-                actionToDb = new Action(Messages.DiffTableViewer_to_database,
-                        IAction.AS_RADIO_BUTTON) {
-
-                    @Override
-                    public void run() {
-                        changeMigrationDireciton(false, false);
-                    }
-                };
-                actionToDb.setImageDescriptor(ImageDescriptor.createFromURL(
-                        Activator.getContext().getBundle().getResource(FILE.ICONDATABASE)));
-                actionToDb.setChecked(false);
-                ActionContributionItem itemToDb = new ActionContributionItem(actionToDb);
-                itemToDb.setMode(ActionContributionItem.MODE_FORCE_TEXT);
-                mgrTblBtn.add(itemToDb);
-
                 mgrTblBtn.add(new Separator());
 
                 addBtnGetChangesWithMenu(container, mgrTblBtn);
@@ -375,18 +340,29 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
      * with custom settings.
      */
     private void addBtnApplyWithMenu(Composite container, ToolBarManager mgrTblBtn) {
-        Action applyAction = new Action(Messages.DiffTableViewer_apply_to,
-                IAction.AS_DROP_DOWN_MENU) {
 
+        ImageDescriptor imgDescrApplyIcon = ImageDescriptor.createFromURL(
+                Activator.getContext().getBundle().getResource(FILE.ICONAPPLYTO));
+
+        ImageDescriptor imgDescrProj = ImageDescriptor.createFromURL(
+                Activator.getContext().getBundle().getResource(FILE.DECORPGCODEKEEPER));
+        ImageDescriptor imgDescrDb = ImageDescriptor.createFromURL(
+                Activator.getContext().getBundle().getResource(FILE.DECORDATABASE));
+
+        Action applyAction = new Action("",
+                IAction.AS_DROP_DOWN_MENU) {
             @Override
             public void run() {
-                if (actionToDb.isChecked()) {
+                if (!diffTable.isApplyToProj()) {
                     diff();
                 } else {
                     commit();
                 }
             }
         };
+        applyAction.setToolTipText(Messages.DiffTableViewer_apply_to + " "+ Messages.DiffTableViewer_to_project);
+        applyAction.setImageDescriptor(new DecorationOverlayIcon(imgDescrApplyIcon,
+                imgDescrProj, IDecoration.TOP_RIGHT));
 
         applyAction.setMenuCreator(new IMenuCreator() {
 
@@ -402,6 +378,34 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
             @Override
             public Menu getMenu(Control parent) {
+                Action actionToProj = new Action(Messages.DiffTableViewer_to_project, IAction.AS_RADIO_BUTTON) {
+
+                    @Override
+                    public void run() {
+                        changeMigrationDireciton(true, false);
+                        applyAction.setToolTipText(Messages.DiffTableViewer_apply_to + " "+ Messages.DiffTableViewer_to_project);
+                        applyAction.setImageDescriptor(new DecorationOverlayIcon(imgDescrApplyIcon,
+                                imgDescrProj, IDecoration.TOP_RIGHT));
+                    }
+                };
+
+                actionToProj.setImageDescriptor(Activator.getRegisteredDescriptor(FILE.ICONAPPSMALL));
+                Action actionToDb = new Action(Messages.DiffTableViewer_to_database, IAction.AS_RADIO_BUTTON) {
+
+                    @Override
+                    public void run() {
+                        changeMigrationDireciton(false, false);
+                        applyAction.setToolTipText(Messages.DiffTableViewer_apply_to + " " + Messages.DiffTableViewer_to_database);
+
+                        applyAction.setImageDescriptor(new DecorationOverlayIcon(imgDescrApplyIcon,
+                                imgDescrDb,
+                                IDecoration.TOP_RIGHT));
+                    }
+
+                };
+                actionToDb.setImageDescriptor(ImageDescriptor.createFromURL(Activator
+                        .getContext().getBundle().getResource(FILE.ICONDATABASE)));
+
                 if (menuMgrApplyCustom != null) {
                     menuMgrApplyCustom.dispose();
                 }
@@ -420,7 +424,22 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                         }
                     }
                 };
+
+                if (diffTable.isApplyToProj()) {
+                    actionToProj.setChecked(true);
+                } else {
+                    actionToDb.setChecked(true);
+                }
+                Action applyTitle = new Action(Messages.DiffTableViewer_apply_to) {
+                };
+                applyTitle.setEnabled(false);
+                menuMgrApplyCustom.add(applyTitle);
+
+                menuMgrApplyCustom.add(actionToProj);
+                menuMgrApplyCustom.add(actionToDb);
+                menuMgrApplyCustom.add(new Separator());
                 applyCustomAction.setEnabled(actionToDb.isChecked());
+
                 menuMgrApplyCustom.add(applyCustomAction);
                 return menuMgrApplyCustom.createContextMenu(parent);
             }
@@ -442,18 +461,16 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
      * changes with custom settings.
      */
     private void addBtnGetChangesWithMenu(Composite container, ToolBarManager mgrTblBtn) {
-        getChangesAction = new Action(Messages.DiffTableViewer_get_changes,
-                IAction.AS_DROP_DOWN_MENU) {
+        getChangesAction = new Action("", IAction.AS_DROP_DOWN_MENU) {
 
             @Override
             public void run() {
                 getChanges();
             }
         };
-
         getChangesAction.setImageDescriptor(ImageDescriptor.createFromURL(Activator.getContext()
                 .getBundle().getResource(FILE.ICONREFRESH)));
-
+        getChangesAction.setToolTipText(Messages.DiffTableViewer_get_changes);
         getChangesAction.setMenuCreator(new IMenuCreator() {
 
             private MenuManager menuMgrGetChangesCustom;
@@ -486,6 +503,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                         }
                     }
                 });
+                menuMgrGetChangesCustom.add(new Separator());
+                DBStoreMenu dbStoreMenu = new DBStoreMenu(menuMgrGetChangesCustom, ProjectEditorDiffer.this, mainPrefs);
+                dbStoreMenu.fillMenu();
                 return menuMgrGetChangesCustom.createContextMenu(parent);
             }
 
@@ -498,6 +518,10 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         ActionContributionItem getChangesItem = new ActionContributionItem(getChangesAction);
         getChangesItem.setMode(ActionContributionItem.MODE_FORCE_TEXT);
         mgrTblBtn.add(getChangesItem);
+    }
+
+    public void setEditorName(String partName) {
+        setPartName(partName);
     }
 
     public void addDependency() {
