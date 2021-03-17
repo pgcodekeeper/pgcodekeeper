@@ -314,6 +314,8 @@ public final class Messages extends NLS {
 
     public static String DbStorePicker_load_from_file;
 
+    public static String DbStorePicker_open_db_store;
+
     public static String DbStorePrefPage_action_add_new;
 
     public static String DbStorePrefPage_already_present;
@@ -435,6 +437,11 @@ public final class Messages extends NLS {
     public static String DiffTableViewer_reading_git_history;
 
     public static String DiffTableViewer_reset_sorting;
+   
+    public static String DiffTableViewer_save_to_DB;
+
+    public static String DiffTableViewer_save_to_project;
+
     public static String DiffTableViewer_selected;
 
     public static String DiffTableViewer_selected_count;
