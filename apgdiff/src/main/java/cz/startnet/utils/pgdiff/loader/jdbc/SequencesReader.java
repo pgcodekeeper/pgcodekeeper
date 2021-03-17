@@ -79,7 +79,7 @@ public class SequencesReader extends JdbcReader {
         if ("d".equals(identityType) || "a".equals(identityType)) {
             AbstractTable table = schema.getTable(refTable);
             if (table == null) {
-                Log.log(Log.LOG_WARNING, "schema return null table");
+                Log.log(Log.LOG_ERROR, "Not found table " + table + " for sequence " + s);
                 return;
             }
             PgColumn column = (PgColumn) table.getColumn(refColumn);
