@@ -19,7 +19,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 public class DepcyWriter {
 
     private static final int START_LEVEL = 0;
-    private int hiddenObj = 0;
 
     private final PgDatabase db;
     private final DirectedGraph<PgStatement, DefaultEdge> graph;
@@ -47,16 +46,16 @@ public class DepcyWriter {
         if (!names.isEmpty()) {
             db.getDescendants().flatMap(AbstractTable::columnAdder)
             .filter(st -> find(names, st.getQualifiedName()))
-            .forEach(st ->  printTree(st, START_LEVEL, new HashSet<>(), st));
+            .forEach(st ->  printTree(st, START_LEVEL, new HashSet<>(), null, 0));
         } else {
-            printTree(db, START_LEVEL, new HashSet<>(), null);
+            printTree(db, START_LEVEL, new HashSet<>(), null, 0);
         }
 
         for (PrintObj prObj : printObjects) {
             printIndent(prObj.getIndent());
             writer.println(prObj.getStatement().getStatementType() + " "
-                    + prObj.getStatement().getQualifiedName() + " (hidden "
-                    + prObj.getHiddenObj() + " objects)");
+                    + prObj.getStatement().getQualifiedName() + (prObj.getHiddenObj() != 0 ?
+                            " (hidden " + prObj.getHiddenObj() + " objects)" : ""));
         }
     }
 
@@ -88,7 +87,7 @@ public class DepcyWriter {
         }
     }
 
-    private void printTree(PgStatement st, int level, Set<PgStatement> added, PgStatement parentSt) {
+    private void printTree(PgStatement st, int level, Set<PgStatement> added, PgStatement parentSt, int hiddenObj) {
         DbObjType type = st.getStatementType();
 
         if (DbObjType.DATABASE == type && START_LEVEL != level) {
@@ -101,21 +100,23 @@ public class DepcyWriter {
             return;
         }
 
+        final PgStatement finalParentSt;
         if (isPrintObj(st)) {
             printObjects.add(new PrintObj(st, parentSt, level, hiddenObj));
-            parentSt = st;
+            finalParentSt = st;
             hiddenObj = 0;
             level++;
         } else {
             hiddenObj++;
+            finalParentSt = parentSt;
         }
         if (depth > level) {
             final int finalLevel = level;
-            final PgStatement finalParentSt = parentSt;
+            final int finalHiddenObj = hiddenObj;
 
             graph.outgoingEdgesOf(st).stream().map(defEdg -> graph.getEdgeTarget(defEdg))
             .sorted(Comparator.comparing(PgStatement::getStatementType))
-            .forEach(pgSt -> printTree(pgSt, finalLevel, new HashSet<>(added), finalParentSt));
+            .forEach(pgSt -> printTree(pgSt, finalLevel, new HashSet<>(added), finalParentSt, finalHiddenObj));
         }
     }
 }

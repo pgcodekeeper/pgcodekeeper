@@ -8,9 +8,9 @@ public class PrintObj {
     private final int indent;
     private final int hiddenObj;
 
-    public PrintObj(PgStatement actualSt, PgStatement previousSt, int indent, int hiddenObj) {
-        this.statement = actualSt;
-        this.parentSt = previousSt;
+    public PrintObj(PgStatement statement, PgStatement parentSt, int indent, int hiddenObj) {
+        this.statement = statement;
+        this.parentSt = parentSt;
         this.indent = indent;
         this.hiddenObj = hiddenObj;
     }
