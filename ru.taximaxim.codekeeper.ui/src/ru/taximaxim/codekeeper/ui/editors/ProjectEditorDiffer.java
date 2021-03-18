@@ -150,6 +150,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private PgDbProject proj;
     private ProjectEditorSelectionProvider sp;
     private Composite parent;
+    /**
+     * do not read directly, use {@link #getCurrentDb()}
+     */
     private Object currentRemote;
     private DbSource dbProject;
     private DbSource dbRemote;
@@ -635,7 +638,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     }
 
     public void getChanges() {
-        Object currentRemote = this.currentRemote;
+        Object currentRemote = getCurrentDb();
         if (currentRemote == null) {
             MessageBox mb = new MessageBox(parent.getShell(), SWT.ICON_INFORMATION);
             mb.setText(Messages.GetChanges_select_source);
@@ -834,6 +837,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         }
     }
 
+    /**
+     * @return currently set remote for this editor
+     */
     public Object getCurrentDb() {
         IEclipsePreferences prefs = proj.getDbBindPrefs();
         DbInfo boundDb = DbInfo.getLastDb(prefs.get(DB_BIND_PREF.NAME_OF_BOUND_DB, "")); //$NON-NLS-1$
@@ -1166,7 +1172,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
     private static void notifyDbChanged(DbInfo dbinfo, ProjectEditorDiffer editor, boolean update) {
         UiSync.exec(editor.parent, () -> {
-            if (dbinfo.equals(editor.currentRemote)) {
+            if (dbinfo.equals(editor.getCurrentDb())) {
                 if (update) {
                     editor.updateRemoteChanged();
                 } else {
