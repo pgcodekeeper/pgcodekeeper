@@ -554,7 +554,7 @@ class FailGraphReverseArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String[] args() throws URISyntaxException, IOException {
-        return new String[]{"--graph-reverse", "--graph-name", "t1", "fisrt", "second"};
+        return new String[]{"--graph-name", "t1", "--graph-reverse", "fisrt", "second"};
     }
 
     @Override

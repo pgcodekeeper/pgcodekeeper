@@ -253,7 +253,7 @@ public class CliArgs extends PgDiffArguments {
     private List<DbObjType> graphFilterTypes;
 
     @Option(name="--graph-invert-filter", forbids={"--parse"}, depends={"--graph", "--graph-filter-object"},
-            usage="inverse the graph filter object types")
+            usage="invert graph filter object types: hide objects specified by the filter")
     private boolean graphInvertFilter;
 
     public boolean isModeParse() {
