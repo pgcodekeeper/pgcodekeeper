@@ -120,7 +120,7 @@ Library load order
 		2. Explicitly specified libraries.
 		3. Explicitly specified libraries without privileges.
 	In each group order is defined by the given argument order. Within XMLs entry order is used.
-	Objects loaded later in this sequence may override ones loaded earlier (if --lib-safe-mode is off).
+	Objects loaded first in this sequence may override ones loaded later (if --lib-safe-mode is off).
 
 Live database connections
 	Use JDBC connection URL to specify live databases
