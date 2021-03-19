@@ -96,6 +96,8 @@ public final class Messages extends NLS {
 
     public static String UiProgressReporter_warning;
 
+    public static String UIProjectLoader_error_loading_structure;
+
     public static String UpdateDdl_read_only_db_message;
 
     public static String UpdateDdl_read_only_db_title;
@@ -730,6 +732,12 @@ public final class Messages extends NLS {
 
     public static String PrefListEditor_cannot_add;
 
+    public static String ProjectEditorDiffer_apply_db;
+
+    public static String ProjectEditorDiffer_apply_project;
+
+    public static String ProjectEditorDiffer_apply_to;
+
     public static String ProjectEditorDiffer_changed_direction_of_roll_on_title;
     public static String ProjectEditorDiffer_changed_direction_of_roll_on;
 
@@ -753,6 +761,8 @@ public final class Messages extends NLS {
 
     public static String ProjectEditorDiffer_no_differences;
 
+    public static String ProjectEditorDiffer_not_selected;
+
     public static String ProjectEditorDiffer_database;
 
     public static String ProjectEditorDiffer_project;
@@ -768,6 +778,8 @@ public final class Messages extends NLS {
     public static String ProjectEditorDiffer_override_objects;
 
     public static String ProjectEditorDiffer_override_privileges;
+
+    public static String ProjectEditorDiffer_work_with;
 
     public static String ProjectEditorInput_pgcodekeeper_project;
 

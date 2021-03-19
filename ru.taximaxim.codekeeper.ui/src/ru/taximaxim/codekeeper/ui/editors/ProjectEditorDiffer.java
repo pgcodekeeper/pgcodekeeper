@@ -37,7 +37,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuCreator;
 import org.eclipse.jface.action.IStatusLineManager;
@@ -48,6 +47,7 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
+import org.eclipse.jface.layout.PixelConverter;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -72,6 +72,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
@@ -159,6 +160,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private TreeElement diffTree;
     private Object loadedRemote;
 
+    private Label lblCurrentRemote;
+    private Label lblApplyTo;
+
     private Composite contNotifications;
     private Label lblNotificationText;
     private Link linkRefresh;
@@ -190,6 +194,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         diffTable.setApplyToProj(isApplyToProj);
         diffTable.getViewer().refresh();
         diffTable.updateObjectsLabels();
+        updateWorkWith();
     }
 
     @Override
@@ -236,20 +241,46 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
             @Override
             public void createRightSide(Composite container) {
-                GridLayout layout = new GridLayout();
+                GridLayout layout = new GridLayout(2, false);
                 layout.marginHeight = 0;
                 layout.marginWidth = 0;
                 container.setLayout(layout);
 
-                final ToolBarManager mgrTblBtn = new ToolBarManager(SWT.FLAT | SWT.RIGHT);
+                Composite labelCont = new Composite(container, SWT.NONE);
+                GridLayout labelLayout = new GridLayout(4, false);
+                labelLayout.marginHeight = 0;
+                labelLayout.marginWidth = 0;
+                labelCont.setLayout(labelLayout);
 
+                PixelConverter pc = new PixelConverter(labelCont);
+                GridData gd = new GridData(SWT.END, SWT.CENTER, true, false);
+                gd.horizontalIndent = pc.convertWidthInCharsToPixels(4);
+                labelCont.setLayoutData(gd);
+
+                Label l = new Label(labelCont, SWT.NONE);
+                l.setText(Messages.ProjectEditorDiffer_work_with);
+                l.setEnabled(false);
+
+                lblCurrentRemote = new Label(labelCont, SWT.NONE);
+
+                l = new Label(labelCont, SWT.NONE);
+                l.setText(Messages.ProjectEditorDiffer_apply_to);
+                l.setEnabled(false);
+
+                lblApplyTo = new Label(labelCont, SWT.NONE);
+
+                final ToolBarManager mgrTblBtn = new ToolBarManager(SWT.FLAT | SWT.RIGHT);
                 addBtnApplyWithMenu(container, mgrTblBtn);
                 mgrTblBtn.add(new Separator());
-
                 addBtnGetChangesWithMenu(container, mgrTblBtn);
 
-                mgrTblBtn.createControl(container).setLayoutData(
-                        new GridData(SWT.END, SWT.CENTER, true, false));
+                ToolBar toolbar = mgrTblBtn.createControl(container);
+                gd = new GridData(SWT.END, SWT.CENTER, false, false);
+                gd.horizontalIndent = pc.convertWidthInCharsToPixels(2);
+                toolbar.setLayoutData(gd);
+
+                // ensure toolbar is never hidden
+                gd.minimumWidth = toolbar.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
             }
         };
 
@@ -324,6 +355,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         });
         // end notifications container
 
+        updateWorkWith();
+
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this,
                 IResourceChangeEvent.PRE_CLOSE | IResourceChangeEvent.PRE_DELETE
                 | IResourceChangeEvent.POST_CHANGE);
@@ -352,8 +385,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         ImageDescriptor imgDescrDb = ImageDescriptor.createFromURL(
                 Activator.getContext().getBundle().getResource(FILE.DECORDATABASE));
 
-        Action applyAction = new Action("",
-                IAction.AS_DROP_DOWN_MENU) {
+        Action applyAction = new Action("", IAction.AS_DROP_DOWN_MENU) { //$NON-NLS-1$
             @Override
             public void run() {
                 if (!diffTable.isApplyToProj()) {
@@ -363,7 +395,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 }
             }
         };
-        applyAction.setToolTipText(Messages.DiffTableViewer_apply_to + " "+ Messages.DiffTableViewer_to_project);
+        applyAction.setToolTipText(Messages.DiffTableViewer_apply_to + ' ' + Messages.DiffTableViewer_to_project);
         applyAction.setImageDescriptor(new DecorationOverlayIcon(imgDescrApplyIcon,
                 imgDescrProj, IDecoration.TOP_RIGHT));
 
@@ -386,7 +418,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                     @Override
                     public void run() {
                         changeMigrationDireciton(true, false);
-                        applyAction.setToolTipText(Messages.DiffTableViewer_apply_to + " "+ Messages.DiffTableViewer_to_project);
+                        applyAction.setToolTipText(Messages.DiffTableViewer_apply_to + ' ' + Messages.DiffTableViewer_to_project);
                         applyAction.setImageDescriptor(new DecorationOverlayIcon(imgDescrApplyIcon,
                                 imgDescrProj, IDecoration.TOP_RIGHT));
                     }
@@ -398,7 +430,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                     @Override
                     public void run() {
                         changeMigrationDireciton(false, false);
-                        applyAction.setToolTipText(Messages.DiffTableViewer_apply_to + " " + Messages.DiffTableViewer_to_database);
+                        applyAction.setToolTipText(Messages.DiffTableViewer_apply_to + ' ' + Messages.DiffTableViewer_to_database);
 
                         applyAction.setImageDescriptor(new DecorationOverlayIcon(imgDescrApplyIcon,
                                 imgDescrDb,
@@ -452,10 +484,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 return null;
             }
         });
-
-        ActionContributionItem applyItem = new ActionContributionItem(applyAction);
-        applyItem.setMode(ActionContributionItem.MODE_FORCE_TEXT);
-        mgrTblBtn.add(applyItem);
+        mgrTblBtn.add(applyAction);
     }
 
     /**
@@ -464,7 +493,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
      * changes with custom settings.
      */
     private void addBtnGetChangesWithMenu(Composite container, ToolBarManager mgrTblBtn) {
-        getChangesAction = new Action("", IAction.AS_DROP_DOWN_MENU) {
+        getChangesAction = new Action("", IAction.AS_DROP_DOWN_MENU) { //$NON-NLS-1$
 
             @Override
             public void run() {
@@ -517,14 +546,27 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 return null;
             }
         });
-
-        ActionContributionItem getChangesItem = new ActionContributionItem(getChangesAction);
-        getChangesItem.setMode(ActionContributionItem.MODE_FORCE_TEXT);
-        mgrTblBtn.add(getChangesItem);
+        mgrTblBtn.add(getChangesAction);
     }
 
-    public void setEditorName(String partName) {
-        setPartName(partName);
+    private void updateWorkWith() {
+        Object remote = getCurrentDb();
+        String remoteName;
+        if (remote instanceof DbInfo) {
+            remoteName = ((DbInfo) remote).getName();
+        } else if (remote instanceof File) {
+            remoteName = ((File) remote).getName();
+        } else {
+            remoteName = ""; //$NON-NLS-1$
+        }
+
+        if (remoteName.isEmpty()) {
+            remoteName = Messages.ProjectEditorDiffer_not_selected;
+        }
+        lblCurrentRemote.setText(remoteName);
+        lblApplyTo.setText(diffTable.isApplyToProj() ? Messages.ProjectEditorDiffer_apply_project
+                : Messages.ProjectEditorDiffer_apply_db);
+        diffTable.layout(true, true);
     }
 
     public void addDependency() {
@@ -671,7 +713,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         DbSource dbProject = DbSource.fromProject(proj, oneTimePrefs);
 
         TreeDiffer newDiffer;
-        String name;
 
         if (isDbInfo) {
             DbInfo dbInfo = (DbInfo) currentRemote;
@@ -679,19 +720,13 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                     charset, projProps.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC),
                     getProject(), oneTimePrefs);
             newDiffer = new TreeDiffer(dbProject, dbRemote);
-            name = dbInfo.getName();
             saveLastDb(dbInfo);
         } else {
             File file = (File) currentRemote;
-            name = file.getName();
             DbSource dbRemote = DbSource.fromFile(forceUnixNewlines, file, charset,
                     isMsProj, getProject(), oneTimePrefs);
             newDiffer = new TreeDiffer(dbProject, dbRemote);
         }
-
-        String title = getEditorInput().getName() + " - " + name; //$NON-NLS-1$
-        ((ProjectEditorInput)getEditorInput()).setToolTipText(title);
-        setPartName(title);
 
         if (!OpenProjectUtils.checkVersionAndWarn(getProject(), parent.getShell(), true)) {
             return;
@@ -835,6 +870,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         } else {
             throw new IllegalArgumentException("Remote is not a File or DbInfo!"); //$NON-NLS-1$
         }
+
+        updateWorkWith();
     }
 
     /**

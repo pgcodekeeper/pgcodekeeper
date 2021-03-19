@@ -319,7 +319,7 @@ public class DiffTableViewer extends Composite {
         });
 
         Composite container = new Composite(upperComp, SWT.NONE);
-        container.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+        container.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
         if (lineManager != null) {
             createRightSide(container);
         } else {
@@ -471,7 +471,7 @@ public class DiffTableViewer extends Composite {
             }
         });
         menuMgr.add(new Separator());
-        menuMgr.add(new Action(Messages.DiffTableViewer_copy_object_names + "\tCtrl+C") {
+        menuMgr.add(new Action(Messages.DiffTableViewer_copy_object_names + "\tCtrl+C") { //$NON-NLS-1$
 
             @Override
             public void run() {

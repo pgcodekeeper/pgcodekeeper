@@ -29,13 +29,12 @@ public class DBStoreMenu{
     }
 
     public void fillMenu() {
-        String title = editor.getEditorInput().getName() + " - ";
         List<DbInfo> store = DbInfo.readStoreFromXml();
         Collection<File> files = DbStorePicker.stringToDumpFileHistory(prefStore.getString(PREF.DB_STORE_FILES));
         boolean isMsProj = OpenProjectUtils.checkMsSql(editor.getProject());
         for (DbInfo dbInfo : store) {
             if (isMsProj == dbInfo.isMsSql()) {
-                addAction(dbInfo, title);
+                addAction(dbInfo);
             }
         }
 
@@ -56,7 +55,6 @@ public class DBStoreMenu{
                 File dumpFile = DbStorePicker.chooseDbSource(prefStore, editor.getEditorSite().getShell(), false);
                 if (dumpFile != null) {
                     editor.setCurrentDb(dumpFile);
-                    editor.setEditorName(title + dumpFile.getName());
                 }
             }
         });
@@ -68,7 +66,6 @@ public class DBStoreMenu{
                     @Override
                     public void run() {
                         editor.setCurrentDb(f);
-                        editor.setEditorName(title + f.getName());
                     }
                 };
                 menuMgrGetChangesCustom.add(fileAction);
@@ -79,13 +76,12 @@ public class DBStoreMenu{
         }
     }
 
-    private void addAction(DbInfo dbInfo, String title){
-        Action dbAction = new Action(dbInfo.getName() + "@", IAction.AS_RADIO_BUTTON) {
+    private void addAction(DbInfo dbInfo){
+        Action dbAction = new Action(dbInfo.getName() + "@", IAction.AS_RADIO_BUTTON) { //$NON-NLS-1$
 
             @Override
             public void run() {
                 editor.setCurrentDb(dbInfo);
-                editor.setEditorName(title+dbInfo.getName());
             }
         };
         menuMgrGetChangesCustom.add(dbAction);
