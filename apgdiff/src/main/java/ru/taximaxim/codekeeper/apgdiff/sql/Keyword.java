@@ -19,7 +19,7 @@ import java.util.Map;
  * kwlist.h</a>, use your desired stable branch.</li>
  * <li>Paste it into {@link #addKeywords(Map)}, replacing the code there.</li>
  * <li>In pasted code, replace <code>PG_KEYWORD\(("\w+"), \w+, (\w+)\)</code> by
- * <code>keywords.put($1, new Keyword($1, $2));</code> using regular expressions.</li>
+ * <code>keywords.put\($1, new Keyword\($1, $2\)\);</code> using regular expressions.</li>
  * </ol>
  *
  * @author levsha_aa
@@ -39,7 +39,7 @@ public class Keyword {
      * Regex search and replacement strings for kwlist.h -> Java transformation:
      *
      * PG_KEYWORD\(("\w+"), \w+, (\w+)\)
-     * keywords.put($1, new Keyword($1, $2));
+     * keywords.put\($1, new Keyword\($1, $2\)\);
      */
     private static void addKeywords(Map<String, Keyword> keywords) {
         keywords.put("abort", new Keyword("abort", UNRESERVED_KEYWORD));
@@ -54,7 +54,7 @@ public class Keyword {
         keywords.put("also", new Keyword("also", UNRESERVED_KEYWORD));
         keywords.put("alter", new Keyword("alter", UNRESERVED_KEYWORD));
         keywords.put("always", new Keyword("always", UNRESERVED_KEYWORD));
-        keywords.put("analyse", new Keyword("analyse", RESERVED_KEYWORD));        /* British spelling */
+        keywords.put("analyse", new Keyword("analyse", RESERVED_KEYWORD));      /* British spelling */
         keywords.put("analyze", new Keyword("analyze", RESERVED_KEYWORD));
         keywords.put("and", new Keyword("and", RESERVED_KEYWORD));
         keywords.put("any", new Keyword("any", RESERVED_KEYWORD));
@@ -516,7 +516,13 @@ public class Keyword {
         return category;
     }
 
-    public static void getAllTokensByGroups () {
+    /*
+     * ======== Service methods for parser maintenance ========
+     * Use only to generate lexer token lists.
+     * Do not call from project's code.
+     */
+
+    public static void getAllTokensByGroups() {
         Map<KeywordCategory, StringBuilder> map = new EnumMap<>(KeywordCategory.class);
         KEYWORDS.values().stream()
         .sorted((v1,v2) -> v1.getKeyword().compareTo(v2.getKeyword()))
@@ -549,7 +555,7 @@ public class Keyword {
         // SONAR-ON
     }
 
-    public static void getAllWordsByGroups () {
+    public static void getAllWordsByGroups() {
         Map<KeywordCategory, StringBuilder> map = new EnumMap<>(KeywordCategory.class);
         KEYWORDS.values().stream()
         .sorted((v1,v2) -> v1.getKeyword().compareTo(v2.getKeyword()))

@@ -1513,8 +1513,7 @@ create_database_statement
 
 create_database_option
     : (OWNER | TEMPLATE | ENCODING | LOCALE | LC_COLLATE | LC_CTYPE | TABLESPACE) EQUAL? (character_string | identifier | DEFAULT)
-    | (ALLOW_CONNECTIONS | IS_TEMPLATE) EQUAL? (boolean_value | DEFAULT)
-    | CONNECTION LIMIT EQUAL? (signed_number_literal | DEFAULT)
+    | alter_database_option
     ;
 
 alter_database_statement
@@ -2342,6 +2341,7 @@ tokens_reserved
 
 tokens_nonkeyword
     : ALIGNMENT
+    | ALLOW_CONNECTIONS
     | BASETYPE
     | BUFFERS
     | BYPASSRLS
@@ -2375,14 +2375,15 @@ tokens_nonkeyword
     | INIT
     | INITCOND
     | INTERNALLENGTH
+    | IS_TEMPLATE
     | JSON
     | LC_COLLATE
-    | LC_CTYPE 
+    | LC_CTYPE
     | LEFTARG
     | LEXIZE
     | LEXTYPES
     | LIST
-    | LOCALE 
+    | LOCALE
     | LOGIN
     | MAIN
     | MERGES
@@ -2413,8 +2414,8 @@ tokens_nonkeyword
     | READ_ONLY
     | READ_WRITE
     | RECEIVE
-    | REPLICATION
     | REMAINDER
+    | REPLICATION
     | RESTRICTED
     | RESTRICTIVE
     | RIGHTARG
@@ -2428,9 +2429,9 @@ tokens_nonkeyword
     | SORTOP
     | SSPACE
     | STYPE
-    | SUBTYPE
     | SUBTYPE_DIFF
     | SUBTYPE_OPCLASS
+    | SUBTYPE
     | SUMMARY
     | SUPERUSER
     | TIMING
@@ -2439,6 +2440,7 @@ tokens_nonkeyword
     | UNSAFE
     | USAGE
     | VARIABLE
+    | WAL
     | YAML
 
     // plpgsql tokens
