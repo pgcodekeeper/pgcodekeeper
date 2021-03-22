@@ -1377,3 +1377,29 @@ SELECT
     1 AS SIMILAR,
     1 AS TABLESAMPLE,
     1 AS VERBOSE;
+SELECT xmlcomment('test');
+SELECT xmlconcat('hello', 'you');
+SELECT xmlelement(name element, xmlattributes (1 as ":one:", 'deuce' as two), 'content&');
+SELECT xmlelement(name employee, xmlforest(name, age, salary as pay)) FROM emp;
+SELECT xmlparse(content '<abc>x</abc>');
+SELECT xmlpi(name foo, 'bar');
+SELECT xmlroot(xml '<foo/>', version no value, standalone yes);
+SELECT xmlserialize(content 'good' as char(10));
+SELECT xmlserialize(content 'good' as text);
+SELECT  xmltable.*
+   FROM (SELECT data FROM xmldata) x,
+        LATERAL XMLTABLE('/ROWS/ROW'
+                         PASSING data
+                         COLUMNS id int PATH '@id',
+                                  _id FOR ORDINALITY,
+                                  country_name text PATH 'COUNTRY_NAME/text()' NOT NULL,
+                                  country_id text PATH 'COUNTRY_ID',
+                                  region_id int PATH 'REGION_ID',
+                                  size float PATH 'SIZE',
+                                  unit text PATH 'SIZE/@unit',
+                                  premier_name text PATH 'PREMIER_NAME' DEFAULT 'not specified');
+SELECT * FROM XMLTABLE(XMLNAMESPACES('http://x.y' AS zz),
+                      '/zz:rows/zz:row'
+                      PASSING '<rows xmlns="http://x.y"><row><a>10</a></row></rows>'
+                      COLUMNS a int PATH 'zz:a');
+SELECT 1 INTO b;

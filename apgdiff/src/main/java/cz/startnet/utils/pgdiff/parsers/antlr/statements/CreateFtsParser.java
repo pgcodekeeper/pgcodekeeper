@@ -3,7 +3,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_fts_parserContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_fts_parser_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFtsParser;
@@ -11,9 +11,9 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateFtsParser extends ParserAbstract {
 
-    private final Create_fts_parserContext ctx;
+    private final Create_fts_parser_statementContext ctx;
 
-    public CreateFtsParser(Create_fts_parserContext ctx, PgDatabase db) {
+    public CreateFtsParser(Create_fts_parser_statementContext ctx, PgDatabase db) {
         super(db);
         this.ctx = ctx;
     }
