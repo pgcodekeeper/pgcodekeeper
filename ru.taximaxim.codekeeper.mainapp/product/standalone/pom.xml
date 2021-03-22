@@ -7,65 +7,33 @@
     <parent>
         <artifactId>ru.taximaxim.codeKeeper</artifactId>
         <groupId>ru.taximaxim.codeKeeper</groupId>
-        <version>${global.version}</version>
-        <relativePath>../ru.taximaxim.codeKeeper/</relativePath>
+        <version>${revision}</version>
+        <relativePath>../../ru.taximaxim.codeKeeper/</relativePath>
     </parent>
 
     <groupId>ru.taximaxim.codeKeeper</groupId>
     <artifactId>ru.taximaxim.codekeeper.standalone.product</artifactId>
-    <version>5.10.3-SNAPSHOT</version>
+    <version>5.11.0-SNAPSHOT</version>
     <packaging>eclipse-repository</packaging>
 
     <properties>
-        <archive-filename>pgCodeKeeper-cli-${unqualifiedVersion}.${buildQualifier}</archive-filename>
+        <archive-filename>pgCodeKeeper-cli-${unqualifiedVersion}</archive-filename>
     </properties>
 
-    <profiles>
-        <profile>
-            <id>deploy-cli-github</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.gmavenplus</groupId>
-                        <artifactId>gmavenplus-plugin</artifactId>
-                        <version>1.6</version>
-                        <executions>
-                            <execution>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>execute</goal>
-                                </goals>
-                                <configuration>
-                                    <scripts>
-                                        <script>file:///${project.basedir}/deploy-github-release.groovy</script>
-                                    </scripts>
-                                    <bindPropertiesToSeparateVariables>false</bindPropertiesToSeparateVariables>
-                                    <properties>
-                                        <cli-version>${unqualifiedVersion}</cli-version>
-                                        <cli-archive-file>${project.basedir}/target/products/${archive-filename}-linux.gtk.x86_64.zip</cli-archive-file>
-                                    </properties>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-            <dependencies>
-                <dependency>
-                    <groupId>org.codehaus.groovy</groupId>
-                    <artifactId>groovy-all</artifactId>
-                    <version>2.4.13</version>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>
+    <repositories>
+        <repository>
+            <id>eclipse-p2-repo</id>
+            <url>https://download.eclipse.org/releases/latest/</url>
+            <layout>p2</layout>
+        </repository>
+    </repositories>
 
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>3.0.2</version>
+                <version>3.1.0</version>
                 <executions>
                     <execution>
                         <id>copy-resources-all</id>
@@ -74,11 +42,10 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.basedir}/target/products/ru.taximaxim.codekeeper.standalone.product/linux/gtk/x86_64</outputDirectory>
+                            <outputDirectory>${project.build.directory}/products/ru.taximaxim.codekeeper.standalone.product/linux/gtk/x86_64</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>${project.basedir}</directory>
-                                    <filtering>true</filtering>
                                     <includes>
                                         <include>pgcodekeeper-cli.*</include>
                                     </includes>
@@ -91,7 +58,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
-                <version>1.8</version>
+                <version>3.0.0</version>
                 <executions>
                     <execution>
                         <id>set-executable</id>
@@ -102,7 +69,7 @@
                         <configuration>
                             <target>
                                 <chmod
-                                    file="${project.basedir}/target/products/ru.taximaxim.codekeeper.standalone.product/linux/gtk/x86_64/pgcodekeeper-cli.sh"
+                                    file="${project.build.directory}/products/ru.taximaxim.codekeeper.standalone.product/linux/gtk/x86_64/pgcodekeeper-cli.sh"
                                     perm="0775" />
                             </target>
                         </configuration>
@@ -131,6 +98,24 @@
                         </product>
                     </products>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.coderplus.maven.plugins</groupId>
+                <artifactId>copy-rename-maven-plugin</artifactId>
+                <version>1.0.1</version>
+                <executions>
+                    <execution>
+                        <id>rename-file</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>rename</goal>
+                        </goals>
+                        <configuration>
+                            <sourceFile>${project.build.directory}/products/${archive-filename}-linux.gtk.x86_64.zip</sourceFile>
+                            <destinationFile>${project.build.directory}/products/${archive-filename}.zip</destinationFile>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

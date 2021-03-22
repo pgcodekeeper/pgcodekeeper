@@ -29,6 +29,8 @@ public class ApplyCustomDialog extends Dialog {
     private Button btnCheckFuncBodies;
     private Button btnAlterColUsingExpr;
     private Button btnCreateIdxConcurrent;
+    private Button btnScriptFromSelObjs;
+    private Button btnDataMovementMode;
 
     private final OverridablePrefs prefs;
     private final boolean isMsSql;
@@ -92,6 +94,22 @@ public class ApplyCustomDialog extends Dialog {
                     DB_UPDATE_PREF.USING_ON_OFF));
         }
 
+        btnScriptFromSelObjs = new Button(panel, SWT.CHECK);
+        btnScriptFromSelObjs.setText(Messages.DbUpdatePrefPage_script_from_selected_objs);
+        gd = new GridData();
+        gd.horizontalIndent = 10;
+        btnScriptFromSelObjs.setLayoutData(gd);
+        btnScriptFromSelObjs.setSelection(prefs.getBooleanOfDbUpdatePref(
+                DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS));
+
+        btnDataMovementMode = new Button(panel, SWT.CHECK);
+        btnDataMovementMode.setText(Messages.DbUpdatePrefPage_allow_data_movement);
+        gd = new GridData();
+        gd.horizontalIndent = 10;
+        btnDataMovementMode.setLayoutData(gd);
+        btnDataMovementMode.setSelection(prefs.getBooleanOfDbUpdatePref(
+                DB_UPDATE_PREF.DATA_MOVEMENT_MODE));
+
         return panel;
     }
 
@@ -116,7 +134,10 @@ public class ApplyCustomDialog extends Dialog {
             customSettings.put(DB_UPDATE_PREF.USING_ON_OFF,
                     btnAlterColUsingExpr.getSelection());
         }
-
+        customSettings.put(DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS,
+                btnScriptFromSelObjs.getSelection());
+        customSettings.put(DB_UPDATE_PREF.DATA_MOVEMENT_MODE,
+                btnDataMovementMode.getSelection());
         super.okPressed();
     }
 }

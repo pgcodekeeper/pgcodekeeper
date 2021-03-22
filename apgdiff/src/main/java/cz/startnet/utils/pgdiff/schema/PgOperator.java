@@ -104,24 +104,39 @@ public class PgOperator extends PgStatementWithSearchPath implements IOperator {
     public String getDropSQL() {
         final StringBuilder sbString = new StringBuilder();
         sbString.append("DROP OPERATOR ");
-        sbString.append(PgDiffUtils.getQuotedName(getSchemaName())).append('.');
-        appendOperatorSignature(sbString);
+        appendFullName(sbString);
         sbString.append(';');
         return sbString.toString();
     }
 
-    public StringBuilder appendOperatorSignature(StringBuilder sb) {
+    public String getSignature() {
+        StringBuilder sb = new StringBuilder();
         sb.append(getBareName());
-        return appendOperatorArgs(sb);
-    }
-
-    public StringBuilder appendOperatorArgs(StringBuilder sb) {
         sb.append('(');
         sb.append(leftArg == null ? "NONE" : leftArg);
         sb.append(", ");
         sb.append(rightArg == null ? "NONE" : rightArg);
         sb.append(')');
-        return sb;
+        return sb.toString();
+    }
+
+    public String getArguments() {
+        StringBuilder signature = new StringBuilder();
+        String left = getLeftArg();
+        String right = getRightArg();
+
+        signature.append('(');
+        if (left != null) {
+            signature.append(left);
+            if (right != null) {
+                signature.append(", ").append(right);
+            }
+        } else {
+            signature.append(right);
+        }
+        signature.append(')');
+
+        return signature.toString();
     }
 
     @Override
@@ -184,10 +199,6 @@ public class PgOperator extends PgStatementWithSearchPath implements IOperator {
     @Override
     public String getName() {
         return getSignature();
-    }
-
-    public String getSignature() {
-        return appendOperatorSignature(new StringBuilder()).toString();
     }
 
     @Override

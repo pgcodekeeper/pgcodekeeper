@@ -39,14 +39,13 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
         IWorkbenchPage page = getWorkbenchWindow().getActivePage();
 
         Composite composite = new Composite(parent, SWT.NONE);
+        GridLayout gl = new GridLayout();
+        gl.marginWidth = gl.marginHeight = 0;
+        composite.setLayout(gl);
 
         IEditorPart editorPart = page.getActiveEditor();
         storePicker = new DbStorePicker(composite, 40,
                 editorPart instanceof ProjectEditorDiffer, false);
-
-        GridLayout gl = new GridLayout();
-        gl.marginWidth = gl.marginHeight = 0;
-        composite.setLayout(gl);
 
         editorPartListener = new EditorPartListener();
         page.addPartListener(editorPartListener);
@@ -65,7 +64,7 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
             }
         });
 
-        storePicker.addMouseListener(new MouseAdapter() {
+        composite.addMouseListener(new MouseAdapter() {
 
             @Override
             public void mouseDown(MouseEvent e) {

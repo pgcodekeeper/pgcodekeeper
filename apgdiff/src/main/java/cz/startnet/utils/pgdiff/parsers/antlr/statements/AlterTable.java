@@ -268,6 +268,6 @@ public class AlterTable extends TableAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_ALTER, DbObjType.TABLE, ctx.name.identifier());
+        return getStrForStmtAction(ACTION_ALTER, DbObjType.TABLE, ctx.name);
     }
 }

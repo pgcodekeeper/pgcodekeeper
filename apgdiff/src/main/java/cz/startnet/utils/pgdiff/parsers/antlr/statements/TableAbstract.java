@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.util.Arrays;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -29,21 +28,13 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_deferrableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_initialy_immedContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_of_type_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_name_listContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_with_orderContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_constraintContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_constraint_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.ConstraintAnalysisLauncher;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.VexAnalysisLauncher;
-import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractForeignTable;
 import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.MsConstraint;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -344,44 +335,5 @@ public abstract class TableAbstract extends ParserAbstract {
         if (exp != null) {
             db.addAnalysisLauncher(new ConstraintAnalysisLauncher(constrBlank, exp, location));
         }
-    }
-
-    protected AbstractConstraint getMsConstraint(Table_constraintContext conCtx) {
-        String conName = conCtx.id() == null ? "" : conCtx.id().getText();
-        AbstractConstraint con = new MsConstraint(conName);
-
-        Table_constraint_bodyContext body = conCtx.table_constraint_body();
-        con.setPrimaryKey(body.PRIMARY() != null);
-        con.setUnique(body.UNIQUE() != null);
-
-        if (body.REFERENCES() != null) {
-            Qualified_nameContext ref = body.qualified_name();
-            List<IdContext> ids = Arrays.asList(ref.schema, ref.name);
-            String fschema = getSchemaNameSafe(ids);
-            String ftable = ref.name.getText();
-
-            PgObjLocation loc = addObjReference(ids, DbObjType.TABLE, null);
-
-            GenericColumn ftableRef = loc.getObj();
-            con.setForeignTable(ftableRef);
-            con.addDep(ftableRef);
-
-            Column_name_listContext columns = body.pk;
-            if (columns != null) {
-                for (IdContext column : columns.id()) {
-                    String col = column.getText();
-                    con.addForeignColumn(col);
-                    con.addDep(new GenericColumn(fschema, ftable, col, DbObjType.COLUMN));
-                }
-            }
-        } else if (body.column_name_list_with_order() != null) {
-            for (Column_with_orderContext column : body.column_name_list_with_order()
-                    .column_with_order()) {
-                con.addColumn(column.id().getText());
-            }
-        }
-
-        con.setDefinition(getFullCtxText(conCtx.table_constraint_body()));
-        return con;
     }
 }

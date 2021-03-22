@@ -1,19 +1,20 @@
 package cz.startnet.utils.pgdiff;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.TempDir;
 
-abstract class ArgumentsProvider {
+public abstract class ArgumentsProvider {
 
     protected static final String STANDALONE = "pgcodekeeper_standalone_";
 
     protected final String resName;
-    protected File resFile;
+    protected Path resFile;
     protected TempDir resDir;
 
 
@@ -25,27 +26,30 @@ abstract class ArgumentsProvider {
         this.resName = resName;
     }
 
-
     protected abstract String[] args() throws URISyntaxException, IOException;
 
     public String output() {
         return "";
     }
 
-    public File getPredefinedResultFile() throws URISyntaxException, IOException {
+    public Path getPredefinedResultFile() throws URISyntaxException, IOException {
         return getFile(FILES_POSTFIX.DIFF_SQL);
     }
 
-    protected final File getFile(FILES_POSTFIX postfix) throws URISyntaxException, IOException {
-        return ApgdiffUtils.getFileFromOsgiRes(PgDiffTest.class.getResource(resName + postfix));
+    protected final Path getFile(FILES_POSTFIX postfix) throws URISyntaxException, IOException {
+        return ApgdiffUtils.getFileFromOsgiRes(PgDiffTest.class.getResource(resName + postfix)).toPath();
     }
 
-    public File getDiffResultFile() throws IOException {
+    public Path getDiffResultFile() throws IOException {
         if (resFile == null){
-            resFile = Files.createTempFile(STANDALONE, "").toFile();
+            resFile = Files.createTempFile(STANDALONE, "");
         }
 
         return resFile;
+    }
+
+    public String getDiffFileContents() throws IOException {
+        return new String(Files.readAllBytes(getDiffResultFile()), StandardCharsets.UTF_8);
     }
 
     public TempDir getParseResultDir() throws IOException {
@@ -58,8 +62,8 @@ abstract class ArgumentsProvider {
 
     public void close() {
         try {
-            if (resFile != null && !resFile.isDirectory()){
-                Files.deleteIfExists(resFile.toPath());
+            if (resFile != null && !Files.isDirectory(resFile)) {
+                Files.deleteIfExists(resFile);
             }
         } catch (Exception e) {
             // do nothing

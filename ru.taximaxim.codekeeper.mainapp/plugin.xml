@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+    <extension
+          id="product"
+          point="org.eclipse.core.runtime.products">
+      <product application="org.eclipse.ui.ide.workbench" name="%product.name">
+         <property name="appName" value="%product.name"/>
+         <property name="windowImages" value="icons/product16.png,icons/product32.png,icons/product48.png"/>
+         <property name="aboutImage" value="icons/about.png"/> 
+         <property name="aboutText" value="%product.about"/> 
+         <property name="cssTheme" value="org.eclipse.e4.ui.css.theme.e4_default" />
+         <property name="startupForegroundColor" value="000000"/>
+         <property name="startupMessageRect" value="20,250,410,20"/>
+         <property name="startupProgressRect" value="20,270,410,10"/>
+         <property name="preferenceCustomization" value="plugin_customization.ini"/>
+         <property name="introBrandingImage" value="product:icons/product48.png"/>
+         <property name="introTitle" value="%product.intro"/>
+      </product>
+    </extension>
+    <extension
+          point="org.eclipse.ui.intro">
+      <introProductBinding
+          introId="org.eclipse.ui.intro.universal"
+          productId="ru.taximaxim.codekeeper.mainapp.product">
+      </introProductBinding>
+    </extension>
+</plugin>

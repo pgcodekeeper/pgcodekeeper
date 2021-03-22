@@ -247,13 +247,15 @@ public class PgDiff {
         }
 
         DepcyResolver depRes = new DepcyResolver(oldDbFull, newDbFull);
-        createScript(depRes, root, oldDbFull, newDbFull,
-                additionalDepciesSource, additionalDepciesTarget, ignoreList);
+        List<TreeElement> selected = getSelectedElements(root, ignoreList);
+        createScript(depRes, selected, oldDbFull, newDbFull,
+                additionalDepciesSource, additionalDepciesTarget);
 
         if (!depRes.getActions().isEmpty()) {
             script.addStatement("SET search_path = pg_catalog;");
         }
-        new ActionsToScriptConverter(depRes.getActions(), arguments).fillScript(script);
+        new ActionsToScriptConverter(script, depRes.getActions(), arguments, oldDbFull, newDbFull)
+        .fillScript(selected);
         if (arguments.isAddTransaction()) {
             script.addStatement("COMMIT TRANSACTION;");
         }
@@ -273,11 +275,12 @@ public class PgDiff {
         }
 
         DepcyResolver depRes = new DepcyResolver(oldDbFull, newDbFull);
-        createScript(depRes, root, oldDbFull, newDbFull,
-                additionalDepciesSource, additionalDepciesTarget, ignoreList);
+        List<TreeElement> selected = getSelectedElements(root, ignoreList);
+        createScript(depRes, selected, oldDbFull, newDbFull,
+                additionalDepciesSource, additionalDepciesTarget);
 
-        new ActionsToScriptConverter(depRes.getActions(),
-                depRes.getToRefresh(), arguments).fillScript(script);
+        new ActionsToScriptConverter(script, depRes.getActions(),
+                depRes.getToRefresh(), arguments, oldDbFull, newDbFull).fillScript(selected);
 
         if (arguments.isAddTransaction()) {
             script.addStatement("COMMIT\nGO");
@@ -286,11 +289,18 @@ public class PgDiff {
         return script.getText();
     }
 
-    private void createScript(DepcyResolver depRes, TreeElement root,
+    private List<TreeElement> getSelectedElements(TreeElement root, IgnoreList ignoreList) {
+        return new TreeFlattener()
+                .onlySelected()
+                .useIgnoreList(ignoreList)
+                .onlyTypes(arguments.getAllowedTypes())
+                .flatten(root);
+    }
+
+    private void createScript(DepcyResolver depRes, List<TreeElement> selected,
             PgDatabase oldDbFull, PgDatabase newDbFull,
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
-            List<Entry<PgStatement, PgStatement>> additionalDepciesTarget,
-            IgnoreList ignoreList) {
+            List<Entry<PgStatement, PgStatement>> additionalDepciesTarget) {
         if (additionalDepciesSource != null) {
             depRes.addCustomDepciesToOld(additionalDepciesSource);
         }
@@ -306,11 +316,6 @@ public class PgDiff {
             dbNames.add(JdbcConnector.dbNameFromUrl(arguments.getOldSrc()));
         }
 
-        List<TreeElement> selected = new TreeFlattener()
-                .onlySelected()
-                .useIgnoreList(ignoreList)
-                .onlyTypes(arguments.getAllowedTypes())
-                .flatten(root);
         //TODO----------КОСТЫЛЬ колонки добавляются как выбранные если выбрана таблица-----------
         addColumnsAsElements(oldDbFull, newDbFull, selected);
         // ---КОСТЫЛЬ-----------

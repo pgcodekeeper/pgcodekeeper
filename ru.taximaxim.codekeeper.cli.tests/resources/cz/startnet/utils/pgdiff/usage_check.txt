@@ -31,6 +31,9 @@ Usage
                                           database objects
  -L (--keep-newlines)                   : keep newline characters as is (don't
                                           convert to Unix newlines)
+ --simplify-views                       : simple formatting for VIEWs when
+                                          reading via JDBC (not recomended by
+                                          PostgreSQL)
  -X (--add-transaction)                 : wrap generated script with
                                           transaction statements
  -F (--no-check-function-bodies)        : set check_function_bodies to false at
@@ -41,8 +44,11 @@ Usage
  -Z (--time-zone) <timezone>            : use this timezone when working with
                                           database, also add SET TIMEZONE
                                           statement to the script
+ --ignore-column-order                  : ignore differences in table column
+                                          order
  --using-off                            : do not print USING expression for
                                           ALTER COLUMN TYPE
+ --migrate-data                         : migrate data when re-creating tables
  -C (--concurrently-mode)               : print CREATE INDEX with CONCURRENTLY
                                           option for PostgreSQL and WITH ONLINE
                                           = ON for MS SQL
@@ -52,11 +58,16 @@ Usage
  -D (--allow-danger-ddl)                : allows dangerous statements in
  <DANGER_STATEMENT>                       safe-mode scripts
  -O (--allowed-object) <OBJECT_TYPE>    : build the script using these object
-                                          types only
-                                          hide statements of other objects
+                                          types only, hide statements of other
+                                          objects
  --stop-not-allowed                     : exit with an error when
                                           --allowed-object hides a dependency
                                           statement from the script
+ --selected-only                        : build the script using 'selected'
+                                          objects only, hide statements of
+                                          other objects
+                                          in CLI, selected means included by
+                                          --allowed-object and ignore lists
  -I (--ignore-list) <path>              : use an ignore list to include/exclude
                                           objects from diff
                                           specify multiple times to use several
@@ -85,9 +96,9 @@ Usage
                                           libraries
  --lib-safe-mode                        : exit with an error if a library
                                           object conflicts with other schema or
-                                          library objects otherwise, in case of
-                                          conflicts objects loaded first have
-                                          priority
+                                          library objects
+                                          otherwise, in case of conflicts
+                                          objects loaded first have priority
  --ignore-concurrent-modification       : ignore concurrent modification errors
                                           of database objects
  --ms-sql                               : work with MS SQL
@@ -99,9 +110,10 @@ Usage
  --graph-name <name>                    : name of start object in graph mode
                                           specify multiple times to use several
                                           names
- --simplify-views                       : simple formatting for VIEWs when
-                                          reading via JDBC (not recomended by
-                                          PostgreSQL)
+ --graph-filter-object <OBJECT_TYPE>    : show these object types, hide  other
+                                          objects types
+ --graph-invert-filter                  : invert graph filter object types:
+                                          hide objects specified by the filter
 
 DANGER_STATEMENT : [DROP_TABLE | ALTER_COLUMN | DROP_COLUMN | RESTART_WITH | UPDATE]
 OBJECT_TYPE : [CAST | USER | ROLE | ASSEMBLY | SCHEMA | EXTENSION | TYPE | DOMAIN | SEQUENCE | OPERATOR | FTS_PARSER | FTS_TEMPLATE | FTS_DICTIONARY | FTS_CONFIGURATION | TABLE | FUNCTION | PROCEDURE | AGGREGATE | CONSTRAINT | VIEW | INDEX | TRIGGER | RULE | POLICY]
@@ -112,7 +124,7 @@ Library load order
 		2. Explicitly specified libraries.
 		3. Explicitly specified libraries without privileges.
 	In each group order is defined by the given argument order. Within XMLs entry order is used.
-	Objects loaded later in this sequence may override ones loaded earlier (if --lib-safe-mode is off).
+	Objects loaded first in this sequence may override ones loaded later (if --lib-safe-mode is off).
 
 Live database connections
 	Use JDBC connection URL to specify live databases

@@ -6,17 +6,9 @@ import java.util.List;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ClusteredContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_with_orderContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_includeContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_optionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_optionsContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_restContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_sortContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_whereContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.MsIndex;
@@ -24,7 +16,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class CreateMsIndex extends ParserAbstract {
+public class CreateMsIndex extends MsTableAbstract {
 
     private final Create_indexContext ctx;
 
@@ -47,46 +39,10 @@ public class CreateMsIndex extends ParserAbstract {
         ClusteredContext cluster = ctx.clustered();
         ind.setClusterIndex(cluster != null && cluster.CLUSTERED() != null);
 
-        parseIndex(ctx.index_rest(), ind);
+        parseIndex(ctx.index_rest(), ind, schemaCtx.getText(), tableCtx.getText());
 
         PgStatementContainer table = getSafe(AbstractSchema::getStatementContainer, schema, tableCtx);
         addSafe(table, ind, Arrays.asList(schemaCtx, tableCtx, nameCtx));
-    }
-
-    static void parseIndex(Index_restContext rest, AbstractIndex ind) {
-        Index_sortContext sort = rest.index_sort();
-        for (Column_with_orderContext col : sort.column_name_list_with_order()
-                .column_with_order()) {
-            ind.addColumn(col.id().getText());
-        }
-
-        ind.setDefinition(getFullCtxText(sort));
-
-        Index_includeContext include = rest.index_include();
-        if (include != null) {
-            for (IdContext col : include.column_name_list().id()) {
-                ind.addInclude(col.getText());
-            }
-        }
-
-        Index_whereContext wherePart = rest.index_where();
-        if (wherePart != null){
-            ind.setWhere(getFullCtxText(wherePart.where));
-        }
-
-        Index_optionsContext options = rest.index_options();
-        if (options != null) {
-            for (Index_optionContext option : options.index_option()) {
-                String key = option.key.getText();
-                String value = option.index_option_value().getText();
-                ind.addOption(key, value);
-            }
-        }
-
-        IdContext tablespace = rest.id();
-        if (tablespace != null) {
-            ind.setTablespace(tablespace.getText());
-        }
     }
 
     @Override

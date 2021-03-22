@@ -36,6 +36,6 @@ public class CreateFtsTemplate extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_CREATE, DbObjType.FTS_TEMPLATE, ctx.name.identifier());
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.FTS_TEMPLATE, ctx.name);
     }
 }

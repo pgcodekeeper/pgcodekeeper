@@ -40,6 +40,6 @@ public class CreateMsUser extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_CREATE, DbObjType.USER, Arrays.asList(ctx.user_name));
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.USER, ctx.user_name);
     }
 }

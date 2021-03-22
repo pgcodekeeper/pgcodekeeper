@@ -166,7 +166,11 @@ public class AlterOwner extends ParserAbstract {
             return null;
         }
 
-        return new StringBuilder(ACTION_ALTER).append(' ').append(type).append(' ')
-                .append(schemaName).append('.').append(objName).toString();
+        StringBuilder sb = new StringBuilder(ACTION_ALTER);
+        sb.append(' ').append(type).append(' ');
+        if (type != DbObjType.SCHEMA) {
+            sb.append(schemaName).append('.');
+        }
+        return sb.append(objName).toString();
     }
 }

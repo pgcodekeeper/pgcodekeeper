@@ -7,11 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public abstract class AbstractPgFunction extends AbstractFunction {
 
@@ -47,15 +45,8 @@ public abstract class AbstractPgFunction extends AbstractFunction {
     @Override
     public String getDropSQL() {
         final StringBuilder sbString = new StringBuilder();
-        sbString.append("DROP ");
-        sbString.append(getStatementType().name());
-        sbString.append(' ');
-        sbString.append(PgDiffUtils.getQuotedName(getSchemaName())).append('.');
-        if (getStatementType() == DbObjType.AGGREGATE) {
-            ((PgAggregate) this).appendAggSignature(sbString);
-        } else {
-            appendFunctionSignature(sbString, false, true);
-        }
+        sbString.append("DROP ").append(getTypeName()).append(' ');
+        appendFullName(sbString);
         sbString.append(';');
         return sbString.toString();
     }
@@ -75,16 +66,15 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         return getSignature();
     }
 
+    @Override
+    protected StringBuilder appendFullName(StringBuilder sb) {
+        sb.append(PgDiffUtils.getQuotedName(getParent().getName())).append('.');
+        appendFunctionSignature(sb, false, true);
+        return sb;
+    }
+
     /**
-     * Appends signature of statement to sb.<br />
-     *
-     * Used for PRIVILEGES in Functions, Procedures, Aggregates.<br />
-     *
-     * Used for CREATE, ALTER, DROP, COMMENT operations in Functions and Procedures.<br /><br />
-     *
-     * (For CREATE, ALTER, DROP, COMMENT operations in Aggregates used own method
-     * {@link PgAggregate#appendAggSignature(StringBuilder)}.)
-     *
+     * Appends signature of statement to sb.
      */
     public StringBuilder appendFunctionSignature(StringBuilder sb,
             boolean includeDefaultValues, boolean includeArgNames) {
@@ -94,7 +84,7 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         }
         final int sigStart = sb.length();
 
-        sb.append(isPostgres() ? PgDiffUtils.getQuotedName(name) : MsDiffUtils.quoteName(name)).append('(');
+        sb.append(PgDiffUtils.getQuotedName(name)).append('(');
         boolean addComma = false;
         for (final Argument argument : arguments) {
             if (!includeArgNames && ArgMode.OUT == argument.getMode()) {

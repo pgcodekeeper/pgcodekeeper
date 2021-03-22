@@ -201,7 +201,7 @@ public class FunctionsReader extends JdbcReader {
         }
 
         String definition = res.getString("prosrc");
-        String quote = getStringLiteralDollarQuote(definition);
+        String quotedDef = PgDiffUtils.quoteStringDollar(definition);
         String probin = res.getString("probin");
         if (probin != null && !probin.isEmpty()) {
             body.append(PgDiffUtils.quoteString(probin));
@@ -210,11 +210,11 @@ public class FunctionsReader extends JdbcReader {
                 if (!definition.contains("\'") && !definition.contains("\\")) {
                     body.append(PgDiffUtils.quoteString(definition));
                 } else {
-                    body.append(quote).append(definition).append(quote);
+                    body.append(quotedDef);
                 }
             }
         } else if (!"-".equals(definition)) {
-            body.append(quote).append(definition).append(quote);
+            body.append(quotedDef);
         }
 
         function.setBody(loader.args, body.toString());
@@ -227,21 +227,6 @@ public class FunctionsReader extends JdbcReader {
             loader.submitPlpgsqlTask(definition, SQLParser::plpgsql_function, ctx -> db.addAnalysisLauncher(
                     new FuncProcAnalysisLauncher(function, ctx, loader.getCurrentLocation(), argsQualTypes)));
         }
-    }
-
-    /**
-     * Function equivalent to appendStringLiteralDQ in dumputils.c
-     */
-    public static String getStringLiteralDollarQuote(String definition) {
-        final String suffixes = "_XXXXXXX";
-        String quote = "$";
-        int counter = 0;
-        while (definition.contains(quote)) {
-            quote = quote.concat(String.valueOf(suffixes.charAt(counter++)));
-            counter %= suffixes.length();
-        }
-
-        return quote.concat("$");
     }
 
     private AbstractFunction getAgg(ResultSet res, String schemaName,

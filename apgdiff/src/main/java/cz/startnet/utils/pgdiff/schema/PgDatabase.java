@@ -393,6 +393,11 @@ public class PgDatabase extends PgStatement implements IDatabase {
     }
 
     @Override
+    protected StringBuilder appendFullName(StringBuilder sb) {
+        return sb.append("current_database()");
+    }
+
+    @Override
     public boolean compare(PgStatement obj) {
         return obj instanceof PgDatabase && super.compare(obj);
     }
@@ -502,5 +507,9 @@ public class PgDatabase extends PgStatement implements IDatabase {
         db.getDescendants().flatMap(AbstractTable::columnAdder)
         .forEach(st -> statements.put(st.getQualifiedName(), st));
         return statements;
+    }
+
+    public void copyLaunchers(PgDatabase db) {
+        analysisLaunchers.addAll(db.analysisLaunchers);
     }
 }

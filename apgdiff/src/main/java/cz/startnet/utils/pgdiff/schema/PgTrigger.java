@@ -41,7 +41,7 @@ public class PgTrigger extends AbstractTrigger {
     /**
      * Optional list of columns for UPDATE event.
      */
-    protected final Set<String> updateColumns = new HashSet<>();
+    private final Set<String> updateColumns = new HashSet<>();
     private String when;
 
     /**
@@ -88,7 +88,11 @@ public class PgTrigger extends AbstractTrigger {
 
             if (!updateColumns.isEmpty()) {
                 sbSQL.append(" OF ");
-                sbSQL.append(String.join(", ", updateColumns));
+                for (String updateColumn : updateColumns) {
+                    sbSQL.append(PgDiffUtils.getQuotedName(updateColumn));
+                    sbSQL.append(", ");
+                }
+                sbSQL.setLength(sbSQL.length() - 2);
             }
         }
 
@@ -159,9 +163,12 @@ public class PgTrigger extends AbstractTrigger {
     }
 
     @Override
-    public String getDropSQL() {
-        return "DROP TRIGGER " + PgDiffUtils.getQuotedName(getName()) + " ON "
-                + getParent().getQualifiedName() + ";";
+    public final String getDropSQL() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("DROP ").append(getTypeName()).append(' ');
+        appendFullName(sb);
+        sb.append(';');
+        return sb.toString();
     }
 
     @Override
@@ -178,6 +185,13 @@ public class PgTrigger extends AbstractTrigger {
             newTrg.appendCommentSql(sb);
         }
         return sb.length() > startLength;
+    }
+
+    @Override
+    protected StringBuilder appendFullName(StringBuilder sb) {
+        sb.append(PgDiffUtils.getQuotedName(getName())).append(" ON ");
+        sb.append(getParent().getQualifiedName());
+        return sb;
     }
 
     public void setType(final TgTypes tgType) {
