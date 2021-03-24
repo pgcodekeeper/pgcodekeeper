@@ -3004,7 +3004,7 @@ function_block
     ;
 
 start_label
-    : LESS_LESS identifier GREATER_GREATER
+    : LESS_LESS col_label GREATER_GREATER
     ;
 
 declarations
@@ -3152,7 +3152,7 @@ return_stmt
 
 loop_statement
     : start_label? loop_start? LOOP function_statements END LOOP identifier?
-    | (EXIT | CONTINUE) identifier? (WHEN vex)?
+    | (EXIT | CONTINUE) col_label? (WHEN vex)?
     ;
 
 loop_start
