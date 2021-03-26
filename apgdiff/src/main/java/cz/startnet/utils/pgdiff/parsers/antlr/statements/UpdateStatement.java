@@ -36,6 +36,6 @@ public class UpdateStatement extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_UPDATE, DbObjType.TABLE, ctx.update_table_name.identifier());
+        return getStrForStmtAction(ACTION_UPDATE, DbObjType.TABLE, ctx.update_table_name);
     }
 }

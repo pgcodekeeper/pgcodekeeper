@@ -1,8 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
@@ -21,7 +19,6 @@ import org.junit.runners.Parameterized.Parameters;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
 
@@ -44,26 +41,26 @@ public class MsParserTest {
             {"ms_broker_priority"},
             {"ms_certificates"},
             // TODO goto
-            {"ms_control_flow", 6},
+            {"ms_control_flow", 1},
             {"ms_cursors"},
             {"ms_database", 1},
-            {"ms_delete", 8},
+            {"ms_delete"},
             {"ms_drop"},
             {"ms_event"},
             {"ms_full_width_chars"},
             {"ms_function"},
             {"ms_index"},
-            {"ms_insert", 28},
+            {"ms_insert"},
             {"ms_key", 1},
             {"ms_logins", 3},
-            {"ms_merge", 2},
+            {"ms_merge"},
             {"ms_other", 3},
             {"ms_predicates"},
             {"ms_procedures"},
             {"ms_roles"},
             {"ms_rule"},
             {"ms_schema"},
-            {"ms_select", 30},
+            {"ms_select"},
             {"ms_sequences"},
             {"ms_server", 6},
             {"ms_statements", 31},
@@ -71,7 +68,7 @@ public class MsParserTest {
             {"ms_transactions"},
             {"ms_triggers"},
             {"ms_type"},
-            {"ms_update", 16},
+            {"ms_update"},
             {"ms_users"},
             {"ms_xml_data_type", 1},
         });
@@ -89,22 +86,12 @@ public class MsParserTest {
         Log.log(Log.LOG_DEBUG, fileNameTemplate);
     }
 
-    private String getStringFromInpunStream(InputStream inputStream) throws IOException {
-        ByteArrayOutputStream result = new ByteArrayOutputStream();
-        byte[] buffer = new byte[1024];
-        int length;
-        while ((length = inputStream.read(buffer)) != -1) {
-            result.write(buffer, 0, length);
-        }
-        return result.toString(ApgdiffConsts.UTF_8);
-    }
-
     @Test
     public void runDiff() throws IOException {
         List<Object> errors = new ArrayList<>();
         AtomicInteger ambiguity = new AtomicInteger();
 
-        String sql = getStringFromInpunStream(MsParserTest.class
+        String sql = ApgdiffTestUtils.inputStreamToString(MsParserTest.class
                 .getResourceAsStream(fileNameTemplate + ".sql"));
 
         TSQLParser parser = AntlrParser

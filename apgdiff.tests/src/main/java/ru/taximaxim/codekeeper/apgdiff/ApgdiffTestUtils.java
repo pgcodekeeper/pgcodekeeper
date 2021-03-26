@@ -1,8 +1,8 @@
 package ru.taximaxim.codekeeper.apgdiff;
 
-import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -30,7 +30,7 @@ public final class ApgdiffTestUtils {
     public static PgDatabase loadTestDump(String resource, Class<?> c, PgDiffArguments args, boolean analysis)
             throws IOException, InterruptedException {
         PgDumpLoader loader =  new PgDumpLoader(() -> c.getResourceAsStream(resource),
-                "test:/" + c.getName() + '/' + resource, args);
+                "test/" + c.getName() + '/' + resource, args);
         PgDatabase db = analysis ? loader.loadAndAnalyze() : loader.load();
         if (!loader.getErrors().isEmpty()) {
             throw new IOException("Test resource caused  loader errors!");
@@ -66,20 +66,10 @@ public final class ApgdiffTestUtils {
 
     public static void compareResult(String script, String template,
             Class<?> clazz) throws IOException {
-        StringBuilder sbExpDiff;
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                clazz.getResourceAsStream(template + FILES_POSTFIX.DIFF_SQL)))) {
-            sbExpDiff = new StringBuilder(1024);
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                sbExpDiff.append(line);
-                sbExpDiff.append('\n');
-            }
-        }
-
         Assert.assertEquals("File name template: " + template,
-                sbExpDiff.toString().trim(), script.trim());
+                ApgdiffTestUtils.inputStreamToString(clazz.getResourceAsStream(
+                        template + FILES_POSTFIX.DIFF_SQL)).trim(),
+                script.trim());
     }
 
     public static Iterable<Object[]> getParameters(Object[][] objects) {
@@ -92,6 +82,22 @@ public final class ApgdiffTestUtils {
                 ::iterator;
     }
 
+    /**
+     * @param inputStream stream converted to string, closed after use
+     * @return String read from inputStream as UTF-8
+     * @throws IOException
+     */
+    public static String inputStreamToString(InputStream inputStream) throws IOException {
+        try (InputStream is = inputStream) {
+            ByteArrayOutputStream result = new ByteArrayOutputStream();
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = inputStream.read(buffer)) != -1) {
+                result.write(buffer, 0, length);
+            }
+            return result.toString(ApgdiffConsts.UTF_8);
+        }
+    }
 
     private ApgdiffTestUtils() {
     }

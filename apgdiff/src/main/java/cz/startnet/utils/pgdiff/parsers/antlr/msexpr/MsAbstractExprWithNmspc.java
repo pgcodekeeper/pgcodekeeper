@@ -81,7 +81,7 @@ public abstract class MsAbstractExprWithNmspc<T> extends MsAbstractExpr {
                             break;
                         }
                     } else {
-                        Log.log(Log.LOG_WARNING, "Ambiguous reference: " + name);
+                        log(Log.LOG_WARNING, "Ambiguous reference: " + name);
                     }
                 }
             }
@@ -100,7 +100,7 @@ public abstract class MsAbstractExprWithNmspc<T> extends MsAbstractExpr {
         String aliasCi = alias.toLowerCase(Locale.ROOT);
         boolean exists = namespace.containsKey(aliasCi);
         if (exists) {
-            Log.log(Log.LOG_WARNING, "Duplicate namespace entry: " + aliasCi);
+            log(Log.LOG_WARNING, "Duplicate namespace entry: " + aliasCi);
         } else {
             namespace.put(aliasCi, object);
         }
@@ -110,7 +110,7 @@ public abstract class MsAbstractExprWithNmspc<T> extends MsAbstractExpr {
     protected boolean addRawTableReference(GenericColumn qualifiedTable) {
         boolean exists = !unaliasedNamespace.add(qualifiedTable);
         if (exists) {
-            Log.log(Log.LOG_WARNING,
+            log(Log.LOG_WARNING,
                     "Duplicate unaliased table: " + qualifiedTable.schema + ' ' + qualifiedTable.table);
         }
         return !exists;
@@ -143,7 +143,7 @@ public abstract class MsAbstractExprWithNmspc<T> extends MsAbstractExpr {
 
             String withName = withQuery.expression_name.getText();
             if (!cte.add(withName)) {
-                Log.log(Log.LOG_WARNING, "Duplicate CTE " + withName);
+                log(Log.LOG_WARNING, "Duplicate CTE " + withName);
             }
         }
     }

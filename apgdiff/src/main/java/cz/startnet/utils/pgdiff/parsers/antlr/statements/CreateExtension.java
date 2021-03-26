@@ -32,6 +32,6 @@ public class CreateExtension extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_CREATE, DbObjType.EXTENSION, Arrays.asList(ctx.name));
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.EXTENSION, ctx.name);
     }
 }

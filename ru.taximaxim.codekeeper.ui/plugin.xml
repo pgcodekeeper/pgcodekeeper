@@ -388,7 +388,7 @@
                 </separator>
                 <command
                     commandId="ru.taximaxim.codekeeper.ui.command.GetChanges"
-                    icon="icons/refresh.png"
+                    icon="icons/refresh_16x16.png"
                     label="%command.commandname.GetChanges"
                     style="push">
                 </command>
@@ -398,7 +398,7 @@
                 </separator>
                 <command
                     commandId="ru.taximaxim.codekeeper.ui.command.OpenSQLEditor"
-                    icon="IMG_OBJ_FILE"
+                    icon="icons/menu_new_sql_file.png"
                     label="%command.commandname.OpenSQLEditor"
                     style="push">
                 </command>
@@ -421,10 +421,6 @@
                     label="%command.commandname.GetSystemObjects"
                     style="push">
                 </command>
-                <separator
-                    name="ru.taximaxim.codekeeper.ui.separator6"
-                    visible="true">
-                </separator>
                 <command
                     commandId="ru.taximaxim.codekeeper.ui.feedBack"
                     label="%command.label.feedback"
@@ -468,36 +464,6 @@
             <toolbar 
             		id="ru.taximaxim.codekeeper.ui.toolbar"
             		label="%menu.label.pgcodekeeper.main">
-        		 <command
-                    commandId="ru.taximaxim.codekeeper.ui.command.OpenDbStore"
-                    icon="icons/editor_area.png"
-                    label="%command.commandname.OpenDbStore"
-                    style="push">
-                    <visibleWhen checkEnabled="true">
-                        <with variable="activeEditorId">
-                            <or>
-                                <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
-                                </equals>
-                                <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
-                                </equals>
-                            </or>
-                        </with>
-                    </visibleWhen>
-                </command>
-                <control
-                    class="ru.taximaxim.codekeeper.ui.menuitems.DBStoreCombo"
-                    id="ru.taximaxim.codekeeper.ui.DBStoreCombo">
-                    <visibleWhen checkEnabled="true">
-                        <with variable="activeEditorId">
-                            <or>
-                                <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
-                                </equals>
-                                <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
-                                </equals>
-                            </or>
-                        </with>
-                    </visibleWhen>
-                </control>
                 <separator
                       name="ru.taximaxim.codekeeper.ui.separator1"
                       visible="true">
@@ -544,7 +510,7 @@
                 </command>
                 <command
                     commandId="ru.taximaxim.codekeeper.ui.command.GetChanges"
-                    icon="icons/refresh.png"
+                    icon="icons/refresh_16x16.png"
                     label="%command.commandname.GetChanges"
                     style="push">
                     <visibleWhen>
@@ -556,9 +522,19 @@
                         </with>
                     </visibleWhen>
                 </command>
+                <control
+                    class="ru.taximaxim.codekeeper.ui.menuitems.DBStoreCombo"
+                    id="ru.taximaxim.codekeeper.ui.DBStoreCombo">
+                    <visibleWhen checkEnabled="true">
+                        <with variable="activeEditorId">
+                                <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
+                                </equals>
+                        </with>
+                    </visibleWhen>
+                </control>
                 <command
                     commandId="ru.taximaxim.codekeeper.ui.command.OpenSQLEditor"
-                    icon="IMG_OBJ_FILE"
+                    icon="icons/new_sql_file.png"
                     label="%command.commandname.OpenSQLEditor"
                     style="push">
                     <visibleWhen>

@@ -1,8 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
@@ -22,7 +20,6 @@ import org.junit.runners.Parameterized.Parameters;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
 
@@ -54,22 +51,12 @@ public class PlpgParserTest {
         Log.log(Log.LOG_DEBUG, fileNameTemplate);
     }
 
-    private String getStringFromInpunStream(InputStream inputStream) throws IOException {
-        ByteArrayOutputStream result = new ByteArrayOutputStream();
-        byte[] buffer = new byte[1024];
-        int length;
-        while ((length = inputStream.read(buffer)) != -1) {
-            result.write(buffer, 0, length);
-        }
-        return result.toString(ApgdiffConsts.UTF_8);
-    }
-
     @Test
     public void runDiff() throws IOException {
         List<Object> errors = new ArrayList<>();
         AtomicInteger ambiguity = new AtomicInteger();
 
-        String sql = getStringFromInpunStream(PlpgParserTest.class
+        String sql = ApgdiffTestUtils.inputStreamToString(PlpgParserTest.class
                 .getResourceAsStream(fileNameTemplate + ".sql"));
 
         SQLParser parser = AntlrParser

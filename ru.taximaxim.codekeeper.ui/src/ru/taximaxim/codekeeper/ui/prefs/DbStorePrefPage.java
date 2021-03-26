@@ -96,6 +96,8 @@ implements IWorkbenchPreferencePage {
 
 class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
 
+    private String action;
+
     public DbStorePrefListEditor(Composite parent) {
         super(parent);
         getViewer().addDoubleClickListener(event -> editObject());
@@ -103,7 +105,7 @@ class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
 
     @Override
     protected DbInfo getNewObject(DbInfo oldObject) {
-        DbStoreEditorDialog dialog = new DbStoreEditorDialog(getShell(), oldObject);
+        DbStoreEditorDialog dialog = new DbStoreEditorDialog(getShell(), oldObject, action);
         return dialog.open() == Window.OK ? dialog.getDbInfo() : null;
     }
 
@@ -159,5 +161,23 @@ class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
                 }
             }
         });
+    }
+
+    @Override
+    protected void editObject() {
+        action = Messages.DbStorePrefPage_action_edit;
+        super.editObject();
+    }
+
+    @Override
+    protected void copyObject() {
+        action = Messages.DbStorePrefPage_action_copy;
+        super.copyObject();
+    }
+
+    @Override
+    public void addNewObject(DbInfo oldObject) {
+        action = Messages.DbStorePrefPage_action_add_new;
+        super.addNewObject(oldObject);
     }
 }

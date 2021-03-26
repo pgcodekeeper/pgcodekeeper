@@ -1,8 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
@@ -21,7 +19,6 @@ import org.junit.runners.Parameterized.Parameters;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
 
@@ -49,13 +46,11 @@ public class PgParserTest {
             {"copy"},
             {"create_cast"},
             {"create_function"},
-            {"create_index", 10},
             {"create_misc"},
             {"create_procedure"},
             {"create_table_like"},
             {"create_table"},
-            {"create_type"},
-            {"create_view"},
+            {"database"},
             {"date"},
             {"delete"},
             {"dependency"},
@@ -71,11 +66,7 @@ public class PgParserTest {
             {"functional_deps"},
             {"geometry"},
             {"groupingsets", 47},
-            {"hash_func"},
-            {"hash_index"},
-            {"index_including"},
-            {"indexing", 1},
-            {"indirect_toast"},
+            {"index"},
             {"inherit"},
             {"insert_conflict"},
             {"insert"},
@@ -84,7 +75,6 @@ public class PgParserTest {
             {"json_encoding"},
             {"jsonb", 3},
             {"lseg"},
-            {"matview"},
             {"misc_functions"},
             {"misc_sanity"},
             {"name"},
@@ -133,9 +123,9 @@ public class PgParserTest {
             {"triggers"},
             {"tsdicts"},
             {"tsearch", 1},
-            {"type_sanity"},
-            {"updatable_views", 6},
+            {"type"},
             {"update"},
+            {"view"},
             {"window"},
             {"with"},
         });
@@ -153,22 +143,12 @@ public class PgParserTest {
         Log.log(Log.LOG_DEBUG, fileNameTemplate);
     }
 
-    private String getStringFromInpunStream(InputStream inputStream) throws IOException {
-        ByteArrayOutputStream result = new ByteArrayOutputStream();
-        byte[] buffer = new byte[1024];
-        int length;
-        while ((length = inputStream.read(buffer)) != -1) {
-            result.write(buffer, 0, length);
-        }
-        return result.toString(ApgdiffConsts.UTF_8);
-    }
-
     @Test
     public void runDiff() throws IOException {
         List<Object> errors = new ArrayList<>();
         AtomicInteger ambiguity = new AtomicInteger();
 
-        String sql = getStringFromInpunStream(PgParserTest.class
+        String sql = ApgdiffTestUtils.inputStreamToString(PgParserTest.class
                 .getResourceAsStream(fileNameTemplate + ".sql"));
 
         SQLParser parser = AntlrParser

@@ -2,11 +2,8 @@ package ru.taximaxim.codekeeper.ui.differ;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.util.AbstractMap;
@@ -35,6 +32,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.PartialExporterTest;
@@ -144,27 +142,11 @@ abstract class DifferData {
     }
 
     final String getPredefinedDirectDiff() throws IOException {
-        return readResourceToString(DifferTest.class.getResourceAsStream(caseNumber + "_direct_diff.sql"));
+        return ApgdiffTestUtils.inputStreamToString(DifferTest.class.getResourceAsStream(caseNumber + "_direct_diff.sql"));
     }
 
     final String getPredefinedReverseDiff() throws IOException {
-        return readResourceToString(DifferTest.class.getResourceAsStream(caseNumber + "_reverse_diff.sql"));
-    }
-
-    private final String readResourceToString(InputStream resourceStream)
-            throws IOException {
-        StringBuilder script = new StringBuilder();
-        try(InputStreamReader isr = new InputStreamReader(resourceStream, "UTF-8");
-                BufferedReader reader = new BufferedReader(isr)) {
-
-            String line = reader.readLine();
-            while(line != null) {
-                script.append(line);
-                line = reader.readLine();
-                script.append(line == null ? "" : '\n');
-            }
-        }
-        return script.toString();
+        return ApgdiffTestUtils.inputStreamToString(DifferTest.class.getResourceAsStream(caseNumber + "_reverse_diff.sql"));
     }
 }
 

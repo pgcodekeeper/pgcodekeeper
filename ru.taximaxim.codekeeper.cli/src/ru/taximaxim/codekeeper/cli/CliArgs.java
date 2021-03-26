@@ -45,6 +45,7 @@ public class CliArgs extends PgDiffArguments {
         // otherwise args4j breaks
         this.allowedDangers = new ArrayList<>();
         this.allowedTypes = new ArrayList<>();
+        this.graphFilterTypes = new ArrayList<>();
         this.ignoreLists = new ArrayList<>();
         this.sourceLibXmls = new ArrayList<>();
         this.sourceLibs = new ArrayList<>();
@@ -154,6 +155,10 @@ public class CliArgs extends PgDiffArguments {
             usage="do not print USING expression for ALTER COLUMN TYPE")
     private boolean usingTypeCastOff;
 
+    @Option(name="--migrate-data", forbids={"--graph", "--parse"},
+            usage="migrate data when re-creating tables")
+    private boolean dataMovementMode;
+
     @Option(name="-C", aliases="--concurrently-mode", forbids={"--graph", "--parse"},
             usage="print CREATE INDEX with CONCURRENTLY option for PostgreSQL and WITH ONLINE = ON for MS SQL")
     private boolean concurrentlyMode;
@@ -218,7 +223,7 @@ public class CliArgs extends PgDiffArguments {
 
     @Option(name="--lib-safe-mode", forbids={"--parse"},
             usage="exit with an error if a library object conflicts with other schema or library objects"
-                    + " otherwise, in case of conflicts objects loaded first have priority")
+                    + "\notherwise, in case of conflicts objects loaded first have priority")
     private boolean libSafeMode;
 
     @Option(name="--ignore-concurrent-modification",
@@ -229,35 +234,40 @@ public class CliArgs extends PgDiffArguments {
             usage="work with MS SQL")
     private boolean msSql;
 
-    @Option(name="--graph-depth", metaVar="<n>", forbids={"--parse"},
+    @Option(name="--graph-depth", metaVar="<n>", forbids={"--parse"}, depends={"--graph"},
             usage="depth of displayed dependencies in graph mode")
     private int graphDepth;
 
-    @Option(name="--graph-reverse",  depends="--graph-name", forbids={"--parse"},
+    @Option(name="--graph-reverse",  depends={"--graph-name", "--graph"}, forbids={"--parse"},
             usage="reverse the direction of the graph to show objects on which the starting object depends")
     private boolean graphReverse;
 
-    @Option(name="--graph-name", metaVar="<name>", forbids={"--parse"},
+    @Option(name="--graph-name", metaVar="<name>", forbids={"--parse"}, depends={"--graph"},
             usage="name of start object in graph mode"
                     + "\nspecify multiple times to use several names")
     private List<String> graphNames;
 
-    @Override
+    @Option(name="--graph-filter-object", forbids={"--parse"}, depends={"--graph"},
+            handler=DbObjTypeOptionHandler.class,
+            usage="show these object types, hide  other objects types")
+    private List<DbObjType> graphFilterTypes;
+
+    @Option(name="--graph-invert-filter", forbids={"--parse"}, depends={"--graph", "--graph-filter-object"},
+            usage="invert graph filter object types: hide objects specified by the filter")
+    private boolean graphInvertFilter;
+
     public boolean isModeParse() {
         return modeParse;
     }
 
-    @Override
     public void setModeParse(boolean modeParse) {
         this.modeParse = modeParse;
     }
 
-    @Override
     public boolean isModeGraph() {
         return modeGraph;
     }
 
-    @Override
     public void setModeGraph(boolean modeGraph) {
         this.modeGraph = modeGraph;
     }
@@ -282,12 +292,10 @@ public class CliArgs extends PgDiffArguments {
         this.oldSrc = oldSrc;
     }
 
-    @Override
     public String getOutputTarget() {
         return this.outputTarget;
     }
 
-    @Override
     public void setOutputTarget(String outputTarget) {
         this.outputTarget = outputTarget;
     }
@@ -312,37 +320,30 @@ public class CliArgs extends PgDiffArguments {
         this.stopNotAllowed = stopNotAllowed;
     }
 
-    @Override
     public boolean isSafeMode() {
         return safeMode;
     }
 
-    @Override
     public void setSafeMode(boolean safeMode) {
         this.safeMode = safeMode;
     }
 
-    @Override
     public boolean isRunOnTarget() {
         return runOnTarget;
     }
 
-    @Override
     public void setRunOnTarget(boolean runOnTarget) {
         this.runOnTarget = runOnTarget;
     }
 
-    @Override
     public String getRunOnDb() {
         return runOnDb;
     }
 
-    @Override
     public void setRunOnDb(String runOnDb) {
         this.runOnDb = runOnDb;
     }
 
-    @Override
     public Collection<DangerStatement> getAllowedDangers() {
         return Collections.unmodifiableCollection(allowedDangers);
     }
@@ -450,12 +451,10 @@ public class CliArgs extends PgDiffArguments {
         this.inCharsetName = inCharsetName;
     }
 
-    @Override
     public String getOutCharsetName() {
         return outCharsetName;
     }
 
-    @Override
     public void setOutCharsetName(String outCharsetName) {
         this.outCharsetName = outCharsetName;
     }
@@ -515,6 +514,14 @@ public class CliArgs extends PgDiffArguments {
         return Collections.unmodifiableCollection(allowedTypes);
     }
 
+    public Collection<DbObjType> getGraphFilterTypes() {
+        return Collections.unmodifiableCollection(graphFilterTypes);
+    }
+
+    public boolean isGraphInvertFilter() {
+        return graphInvertFilter;
+    }
+
     @Override
     public boolean isSelectedOnly() {
         return selectedOnly;
@@ -523,6 +530,16 @@ public class CliArgs extends PgDiffArguments {
     @Override
     public void setSelectedOnly(boolean selectedOnly) {
         this.selectedOnly = selectedOnly;
+    }
+
+    @Override
+    public boolean isDataMovementMode() {
+        return dataMovementMode;
+    }
+
+    @Override
+    public void setDataMovementMode(boolean dataMovementMode) {
+        this.dataMovementMode = dataMovementMode;
     }
 
     @Override
@@ -555,27 +572,22 @@ public class CliArgs extends PgDiffArguments {
         this.simplifyView = simplifyView;
     }
 
-    @Override
     public int getGraphDepth() {
         return graphDepth;
     }
 
-    @Override
     public boolean isGraphReverse() {
         return graphReverse;
     }
 
-    @Override
     public void setGraphReverse(boolean graphReverse) {
         this.graphReverse = graphReverse;
     }
 
-    @Override
     public void setGraphDepth(int graphDepth) {
         this.graphDepth = graphDepth;
     }
 
-    @Override
     public Collection<String> getGraphNames() {
         return Collections.unmodifiableCollection(graphNames);
     }
@@ -636,15 +648,6 @@ public class CliArgs extends PgDiffArguments {
             }
             if (getRunOnDb() != null && !getRunOnDb().startsWith("jdbc:")) {
                 badArgs("option -R (--run-on) must specify JDBC connection string");
-            }
-            if (getGraphDepth() != DEFAULT_DEPTH) {
-                badArgs("option --graph-depth cannot be used without the option(s) [--graph]");
-            }
-            if (!getGraphNames().isEmpty()) {
-                badArgs("option --graph-name cannot be used without the option(s) [--graph]");
-            }
-            if (isGraphReverse()) {
-                badArgs("option --graph-reverse cannot be used without the option(s) [--graph]");
             }
             if (getOldSrc() == null || getNewSrc() == null) {
                 badArgs("Please specify both SOURCE and DEST.");
