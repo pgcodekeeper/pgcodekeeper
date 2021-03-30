@@ -24,8 +24,11 @@ import cz.startnet.utils.pgdiff.loader.jdbc.SchemasMsReader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreSchemaList;
 
 public class JdbcMsLoader extends JdbcLoaderBase {
+
+    private static IgnoreSchemaList ignoreSchema;
 
     public JdbcMsLoader(JdbcConnector connector, PgDiffArguments args) {
         this(connector, args, SubMonitor.convert(null));
@@ -33,7 +36,7 @@ public class JdbcMsLoader extends JdbcLoaderBase {
 
     public JdbcMsLoader(JdbcConnector connector, PgDiffArguments args,
             SubMonitor monitor) {
-        super(connector, monitor, args);
+        super(connector, monitor, args, ignoreSchema);
     }
 
     @Override

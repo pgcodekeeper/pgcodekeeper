@@ -34,15 +34,17 @@ import cz.startnet.utils.pgdiff.schema.meta.MetaStorage;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class JdbcSystemLoader extends JdbcLoaderBase {
 
     private static final String NAMESPACE_NAME = "nspname";
     private static final String NAME = "name";
+    private static IgnoreSchemaList ignoreSchema;
 
     public JdbcSystemLoader(JdbcConnector connector, SubMonitor monitor) {
-        super(connector, monitor, null);
+        super(connector, monitor, null, ignoreSchema);
     }
 
     @Override

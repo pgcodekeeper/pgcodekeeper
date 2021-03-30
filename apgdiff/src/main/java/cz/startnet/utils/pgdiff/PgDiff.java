@@ -70,13 +70,14 @@ public class PgDiff {
     public String createDiff() throws InterruptedException, IOException, PgCodekeeperException {
         PgDatabase oldDatabase = loadOldDatabaseWithLibraries();
         PgDatabase newDatabase = loadNewDatabaseWithLibraries();
+        IgnoreList ignoreList =  new IgnoreList();
+        IgnoreParser ignoreParser = new IgnoreParser(ignoreList);
 
-        IgnoreParser ignoreParser = new IgnoreParser();
         for (String listFilename : arguments.getIgnoreLists()) {
             ignoreParser.parse(Paths.get(listFilename));
         }
 
-        return diffDatabaseSchemas(oldDatabase, newDatabase, ignoreParser.getIgnoreList());
+        return diffDatabaseSchemas(oldDatabase, newDatabase, ignoreList);
     }
 
     private void analyzeDatabase(PgDatabase db)

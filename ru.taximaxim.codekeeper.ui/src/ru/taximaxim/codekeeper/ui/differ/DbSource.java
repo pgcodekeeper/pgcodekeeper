@@ -28,6 +28,7 @@ import cz.startnet.utils.pgdiff.loader.ProjectLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.InputStreamProvider;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
@@ -40,6 +41,7 @@ import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
+import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
 import ru.taximaxim.codekeeper.ui.properties.OverridablePrefs;
 
 public abstract class DbSource {
@@ -409,6 +411,7 @@ class DbSourceJdbc extends DbSource {
     @Override
     protected PgDatabase loadInternal(SubMonitor monitor)
             throws IOException, InterruptedException {
+        IgnoreSchemaList ignoreSchemaList = InternalIgnoreList.readInternalIgnoreSchemaList();
         monitor.subTask(Messages.reading_db_from_jdbc);
         PgDiffArguments args = getPgDiffArgs(ApgdiffConsts.UTF_8, forceUnixNewlines,
                 isMsSql, proj, oneTimePrefs);
@@ -417,7 +420,7 @@ class DbSourceJdbc extends DbSource {
             return load(new JdbcMsLoader(jdbcConnector, args, monitor));
         }
 
-        return load(new JdbcLoader(jdbcConnector, args, monitor));
+        return load(new JdbcLoader(jdbcConnector, args, monitor, ignoreSchemaList));
     }
 }
 

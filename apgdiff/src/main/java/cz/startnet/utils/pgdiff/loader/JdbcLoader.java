@@ -31,16 +31,18 @@ import cz.startnet.utils.pgdiff.loader.jdbc.ViewsReader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreSchemaList;
 
 public class JdbcLoader extends JdbcLoaderBase {
+    private static IgnoreSchemaList ignoreSchemaList;
 
     public JdbcLoader(JdbcConnector connector, PgDiffArguments pgDiffArguments) {
-        this(connector, pgDiffArguments, SubMonitor.convert(null));
+        this(connector, pgDiffArguments, SubMonitor.convert(null), ignoreSchemaList);
     }
 
     public JdbcLoader(JdbcConnector connector, PgDiffArguments pgDiffArguments,
-            SubMonitor monitor) {
-        super(connector, monitor, pgDiffArguments);
+            SubMonitor monitor, IgnoreSchemaList ignoreSchemaList) {
+        super(connector, monitor, pgDiffArguments, ignoreSchemaList);
     }
 
     @Override
@@ -64,7 +66,6 @@ public class JdbcLoader extends JdbcLoaderBase {
             queryRoles();
             queryCheckExtension();
             setupMonitorWork();
-
             new SchemasReader(this, d).read();
 
             // NOTE: order of readers has been changed to move the heaviest ANTLR tasks to the beginning

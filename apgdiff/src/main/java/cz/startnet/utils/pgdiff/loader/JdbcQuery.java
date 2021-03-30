@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.loader;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
@@ -28,7 +29,7 @@ public class JdbcQuery {
         intervalQueries.put(new Pair<>(since, until), query);
     }
 
-    public String makeQuery(int version) {
+    public String makeQuery(int version, Set<Long> schemaIds) {
         StringBuilder sb = new StringBuilder("SELECT * FROM (");
         sb.append(query);
         sb.append(") t1 ");
@@ -41,7 +42,14 @@ public class JdbcQuery {
         .filter(e -> e.getKey().getFirst().isLE(version) && !e.getKey().getSecond().isLE(version))
         .forEach(e -> appendQuery(sb, e.getValue(),
                 e.getKey().getFirst().getVersion() + "_" + e.getKey().getSecond().getVersion()));
-
+        if (!schemaIds.isEmpty()) {
+            sb.append("WHERE schema_oid IN (");
+            for (Long id : schemaIds) {
+                sb.append(id).append(',');
+            }
+            sb.setLength(sb.length() - 1);
+            sb.append(')');
+        }
         return sb.toString();
     }
 

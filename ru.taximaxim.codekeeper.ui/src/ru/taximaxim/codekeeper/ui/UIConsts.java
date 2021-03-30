@@ -159,6 +159,8 @@ public interface UIConsts {
 
     interface FILE {
         String IGNORED_OBJECTS = ".pgcodekeeperignore"; //$NON-NLS-1$
+        String IGNORED_SCHEMA = ".pgcodekeeperignoreschema"; //$NON-NLS-1$
+
         String IGNORE_LISTS_STORE = PLUGIN_ID.THIS + ".ignoreliststore"; //$NON-NLS-1$
 
         // external icons

@@ -42,6 +42,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreSchemaList;
 
 /**
  * Container for shared JdbcLoader state.
@@ -66,6 +67,7 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
     protected Statement statement;
     private Map<Long, String> cachedRolesNamesByOid;
     protected Map<Long, JdbcType> cachedTypesByOid;
+    protected IgnoreSchemaList ignorelistSchema;
     protected final Map<Long, AbstractSchema> schemaIds = new HashMap<>();
     protected int version;
     private long lastSysOid;
@@ -73,11 +75,12 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
 
     private String extensionSchema;
 
-    public JdbcLoaderBase(JdbcConnector connector, SubMonitor monitor, PgDiffArguments args) {
+    public JdbcLoaderBase(JdbcConnector connector, SubMonitor monitor, PgDiffArguments args, IgnoreSchemaList ignoreListSchema) {
         this.connector = connector;
         this.monitor = monitor;
         this.args = args;
         this.runner = new JdbcRunner(monitor);
+        this.ignorelistSchema = ignoreListSchema;
     }
 
     protected void setCurrentObject(GenericColumn currentObject) {

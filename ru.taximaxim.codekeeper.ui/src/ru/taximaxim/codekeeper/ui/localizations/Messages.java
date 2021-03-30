@@ -510,6 +510,16 @@ public final class Messages extends NLS {
     public static String IgnoredObjectsPrefPage_these_objects_are_ignored_info;
     public static String IgnoredObjectsPrefPage_these_objects_are_ignored_info_white;
 
+    public static String IgnoredSchemaPrefListEditor_add_schema;
+
+    public static String IgnoredSchemaPrefListEditor_black_list_schema_ignor;
+
+    public static String IgnoredSchemaPrefListEditor_schema_ignor;
+
+    public static String IgnoredSchemaPrefListEditor_schema_name;
+
+    public static String IgnoredSchemaPrefListEditor_white_list_schema_ignor;
+
     public static String IgnoreListProperties_create_new_file;
 
     public static String IgnoreListProperties_default_ignore_tooltip;
