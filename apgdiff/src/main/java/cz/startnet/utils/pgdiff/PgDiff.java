@@ -16,6 +16,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 
+import org.eclipse.core.runtime.SubMonitor;
+
 import cz.startnet.utils.pgdiff.loader.DatabaseLoader;
 import cz.startnet.utils.pgdiff.loader.FullAnalyze;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
@@ -37,6 +39,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.CompareTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeFlattener;
@@ -180,16 +183,21 @@ public class PgDiff {
     private PgDatabase loadDatabaseSchema(String format, String srcPath)
             throws InterruptedException, IOException {
         DatabaseLoader loader;
+        IgnoreSchemaList ignoreSchemaList =  new IgnoreSchemaList();
+        IgnoreParser ignoreParser = new IgnoreParser(ignoreSchemaList);
+        for (String listFilename : arguments.getIgnoreSchemaLists()) {
+            ignoreParser.parse(Paths.get(listFilename));
+        }
         if ("dump".equals(format)) {
             loader = new PgDumpLoader(new File(srcPath), arguments);
         } else if ("parsed".equals(format)) {
-            loader = new ProjectLoader(srcPath, arguments, null, errors);
+            loader = new ProjectLoader(srcPath, arguments, null, errors, ignoreSchemaList);
         } else if ("db".equals(format)) {
             String timezone = arguments.getTimeZone() == null ? ApgdiffConsts.UTC : arguments.getTimeZone();
             if (arguments.isMsSql()) {
                 loader = new JdbcMsLoader(JdbcConnector.fromUrl(srcPath, timezone), arguments);
             } else {
-                loader = new JdbcLoader(JdbcConnector.fromUrl(srcPath, timezone), arguments);
+                loader = new JdbcLoader(JdbcConnector.fromUrl(srcPath, timezone), arguments, SubMonitor.convert(null), ignoreSchemaList);
             }
         } else {
             throw new UnsupportedOperationException(

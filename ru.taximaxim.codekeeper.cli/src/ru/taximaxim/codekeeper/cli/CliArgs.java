@@ -46,6 +46,7 @@ public class CliArgs extends PgDiffArguments {
         this.allowedDangers = new ArrayList<>();
         this.allowedTypes = new ArrayList<>();
         this.ignoreLists = new ArrayList<>();
+        this.ignoreSchemaLists = new ArrayList<>();
         this.sourceLibXmls = new ArrayList<>();
         this.sourceLibs = new ArrayList<>();
         this.sourceLibsWithoutPriv = new ArrayList<>();
@@ -189,6 +190,11 @@ public class CliArgs extends PgDiffArguments {
             usage="use an ignore list to include/exclude objects from diff"
                     + "\nspecify multiple times to use several lists")
     private List<String> ignoreLists;
+
+    @Option(name="--ignore-schema", metaVar="<path>", forbids={"--graph", "--parse"},
+            usage="use an ignore schema list to include/exclude schemas from diff"
+                    + "\nspecify multiple times to use several lists")
+    private List<String> ignoreSchemaLists;
 
     @Option(name="--src-lib-xml", metaVar="<path>", forbids={"--parse"},
             usage="add xml with library dependencies to source"
@@ -341,6 +347,11 @@ public class CliArgs extends PgDiffArguments {
     @Override
     public Collection<String> getIgnoreLists() {
         return Collections.unmodifiableCollection(ignoreLists);
+    }
+
+    @Override
+    public Collection<String> getIgnoreSchemaLists() {
+        return Collections.unmodifiableCollection(ignoreSchemaLists);
     }
 
     @Override

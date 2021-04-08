@@ -109,3 +109,26 @@ REVOKE ALL ON SCHEMA public FROM postgres;
 GRANT ALL ON SCHEMA public TO postgres;
 GRANT ALL ON SCHEMA public TO PUBLIC;
 
+CREATE SCHEMA worker;
+
+CREATE TABLE worker.people (
+    fio text
+);
+
+CREATE OR REPLACE FUNCTION worker.get_changes() RETURNS void
+    LANGUAGE sql
+    AS $$
+$$;
+
+CREATE SCHEMA country;
+
+CREATE OR REPLACE FUNCTION country.get_city() RETURNS void
+    LANGUAGE sql
+    AS $$
+    --function body
+$$;
+
+CREATE TABLE country.city (
+    id integer
+);
+

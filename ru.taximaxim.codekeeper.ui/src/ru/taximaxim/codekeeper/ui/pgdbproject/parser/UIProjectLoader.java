@@ -40,6 +40,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.MS_WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.AbstractModelExporter;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -48,10 +49,16 @@ import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 public class UIProjectLoader extends ProjectLoader {
 
     private final IProject iProject;
+    private final IgnoreSchemaList  ignoreSchemaList;
 
     public UIProjectLoader(IProject iProject, PgDiffArguments arguments, IProgressMonitor monitor) {
+        this(iProject, arguments, monitor, null);
+    }
+
+    public UIProjectLoader(IProject iProject, PgDiffArguments arguments, IProgressMonitor monitor, IgnoreSchemaList ignoreSchemaList) {
         super(null, arguments, monitor, new ArrayList<>());
         this.iProject = iProject;
+        this.ignoreSchemaList = ignoreSchemaList;
     }
 
     @Override
@@ -106,9 +113,11 @@ public class UIProjectLoader extends ProjectLoader {
             for (IResource sub : schemasCommonDir.members()) {
                 if (sub.getType() == IResource.FOLDER) {
                     IFolder schemaDir = (IFolder) sub;
-                    loadSubdir(schemaDir, db);
-                    for (String dirSub : DIR_LOAD_ORDER) {
-                        loadSubdir(schemaDir.getFolder(dirSub), db);
+                    if (ignoreSchemaList == null || ignoreSchemaList.getNameStatus(schemaDir.getName())) {
+                        loadSubdir(schemaDir, db);
+                        for (String dirSub : DIR_LOAD_ORDER) {
+                            loadSubdir(schemaDir.getFolder(dirSub), db);
+                        }
                     }
                 }
             }

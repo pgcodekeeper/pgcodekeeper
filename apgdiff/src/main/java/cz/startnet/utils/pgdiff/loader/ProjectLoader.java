@@ -32,6 +32,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.MS_WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreSchemaList;
 
 public class ProjectLoader extends DatabaseLoader {
     /**
@@ -47,20 +48,27 @@ public class ProjectLoader extends DatabaseLoader {
     private final String dirPath;
     protected final PgDiffArguments arguments;
     protected final IProgressMonitor monitor;
+    private final IgnoreSchemaList ignoreSchemaList;
     protected final Map<PgStatement, StatementOverride> overrides = new LinkedHashMap<>();
 
     protected boolean isOverrideMode;
 
     public ProjectLoader(String dirPath, PgDiffArguments arguments) {
-        this(dirPath, arguments, null, new ArrayList<>());
+        this(dirPath, arguments, null, new ArrayList<>(), null);
+    }
+
+    public ProjectLoader(String dirPath, PgDiffArguments arguments, Object object,
+            List<Object> errors) {
+        this(dirPath, arguments, null, new ArrayList<>(), null);
     }
 
     public ProjectLoader(String dirPath, PgDiffArguments arguments,
-            IProgressMonitor monitor, List<Object> errors) {
+            IProgressMonitor monitor, List<Object> errors, IgnoreSchemaList ignoreSchemaList) {
         super(errors);
         this.dirPath = dirPath;
         this.arguments = arguments;
         this.monitor = monitor;
+        this.ignoreSchemaList = ignoreSchemaList;
     }
 
     @Override
@@ -115,9 +123,11 @@ public class ProjectLoader extends DatabaseLoader {
             try (Stream<Path> schemas = Files.list(schemasCommonDir.toPath())) {
                 for (Path schemaDir : PgDiffUtils.sIter(schemas)) {
                     if (Files.isDirectory(schemaDir)) {
-                        loadSubdir(schemasCommonDir, schemaDir.getFileName().toString(), db);
-                        for (String dirSub : DIR_LOAD_ORDER) {
-                            loadSubdir(schemaDir.toFile(), dirSub, db);
+                        if (ignoreSchemaList == null || ignoreSchemaList.getNameStatus(schemaDir.getFileName().toString())) {
+                            loadSubdir(schemasCommonDir, schemaDir.getFileName().toString(), db);
+                            for (String dirSub : DIR_LOAD_ORDER) {
+                                loadSubdir(schemaDir.toFile(), dirSub, db);
+                            }
                         }
                     }
                 }

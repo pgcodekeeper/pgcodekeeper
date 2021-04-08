@@ -17,7 +17,6 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoredObject;
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
@@ -67,7 +66,7 @@ implements IWorkbenchPreferencePage {
             list.add(rule);
         }
         byte[] out = list.getListCode().getBytes(StandardCharsets.UTF_8);
-        Path listFile = InternalIgnoreList.getInternalIgnoreFile(FILE.IGNORED_OBJECTS);
+        Path listFile = InternalIgnoreList.getInternalIgnoreFile();
         if (listFile != null) {
             try {
                 Files.createDirectories(listFile.getParent());

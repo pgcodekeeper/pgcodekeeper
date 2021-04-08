@@ -1,43 +1,45 @@
-package ru.taximaxim.codekeeper.ui.prefs.ignoredobjects;
+package ru.taximaxim.codekeeper.ui.properties;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.dialogs.PropertyPage;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoredObject;
-import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.properties.IgnoredSchemaListEditorProperties;
 
-public class IgnoredSchemasPrefPage extends PropertyPage
-implements IWorkbenchPreferencePage {
+public class IgnoredSchemasProperties extends PropertyPage {
 
     private IgnoredSchemaListEditorProperties listEditor;
-    private IgnoreSchemaList ignore;
+    private IgnoreSchemaList ignoreSchemaList;
+    private IProject proj;
 
     @Override
-    public void init(IWorkbench workbench) {
-        setPreferenceStore(Activator.getDefault().getPreferenceStore());
+    public void setElement(IAdaptable element) {
+        super.setElement(element);
+        proj = element.getAdapter(IProject.class);
     }
 
     @Override
     protected Control createContents(Composite parent) {
-        ignore = InternalIgnoreList.readInternalIgnoreSchemaList();
-        listEditor = IgnoredSchemaListEditorProperties.create(parent, ignore);
-        listEditor.setInputList(new ArrayList<>(ignore.getList()));
+        Path listFile = Paths.get(proj.getLocationURI()).resolve(FILE.IGNORED_SCHEMA);
+        ignoreSchemaList = IgnoreSchemaList.getIgnoreList(listFile);
+
+        listEditor = IgnoredSchemaListEditorProperties.create(parent, ignoreSchemaList);
+        listEditor.setInputList(new ArrayList<>(ignoreSchemaList.getList()));
 
         return listEditor;
     }
@@ -61,14 +63,14 @@ implements IWorkbenchPreferencePage {
 
     private void writeList() throws IOException {
         IgnoreSchemaList list = new IgnoreSchemaList();
-        boolean isWhite = !ignore.isShow();
+        boolean isWhite = !ignoreSchemaList.isShow();
         list.setShow(!isWhite);
         for (IgnoredObject rule : listEditor.getList()){
             rule.setShow(isWhite);
             list.add(rule);
         }
         byte[] out = list.getListCode().getBytes(StandardCharsets.UTF_8);
-        Path listFile = InternalIgnoreList.getInternalIgnoreFile(FILE.IGNORED_SCHEMA);
+        Path listFile = Paths.get(proj.getLocationURI()).resolve(FILE.IGNORED_SCHEMA);
         if (listFile != null) {
             try {
                 Files.createDirectories(listFile.getParent());

@@ -34,10 +34,9 @@ import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreSchemaList;
 
 public class JdbcLoader extends JdbcLoaderBase {
-    private static IgnoreSchemaList ignoreSchemaList;
 
     public JdbcLoader(JdbcConnector connector, PgDiffArguments pgDiffArguments) {
-        this(connector, pgDiffArguments, SubMonitor.convert(null), ignoreSchemaList);
+        this(connector, pgDiffArguments, SubMonitor.convert(null), null);
     }
 
     public JdbcLoader(JdbcConnector connector, PgDiffArguments pgDiffArguments,

@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.eclipse.core.resources.IProject;
@@ -18,10 +19,13 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.SubMonitor;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import cz.startnet.utils.pgdiff.InternalTestUtils;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
@@ -83,9 +87,45 @@ public class DbSourceTest {
             new ModelExporter(dir, dbPredefined, ApgdiffConsts.UTF_8).exportFull();
             project.refreshLocal(IResource.DEPTH_INFINITE, null);
 
+            // create pgcodekeeperignoreschema file in tempDir
+            Path ignoreSchemaPath = Files.createFile(dir.resolve(".pgcodekeeperignoreschema"));
+            String rule = "SHOW ALL";
+            Files.write(ignoreSchemaPath, rule.getBytes());
+
             // testing itself
             assertEquals("Project name differs", dir.getFileName().toString(), project.getName());
             performTest(DbSource.fromProject(new PgDbProject(project)));
+            project.delete(false, true, null);
+        }
+    }
+
+    @Test
+    public void testDbSourceWithIgnoreSchemas() throws CoreException, IOException, PgCodekeeperUIException,
+    InterruptedException{
+        try(TempDir tempDir = new TempDir(workspacePath.toPath(), "dbSourceProjectTest")){
+            Path dir = tempDir.get();
+            // create empty project in temp dir
+            IProject project = createProjectInWorkspace(dir.getFileName().toString());
+
+            // populate project with data
+            new ModelExporter(dir, dbPredefined, ApgdiffConsts.UTF_8).exportFull();
+            project.refreshLocal(IResource.DEPTH_INFINITE, null);
+
+            // create .pgcodekeeperignoreschema file with black list rule in tempDir
+            Path ignoreSchemaPath = Files.createFile(dir.resolve(".pgcodekeeperignoreschema"));
+            String rule = "SHOW ALL\n"
+                    + "HIDE CONTENT,QUALIFIED country \n"
+                    + "HIDE CONTENT,QUALIFIED worker";
+            Files.write(ignoreSchemaPath, rule.getBytes());
+
+            DbSource dbSourceProj =  DbSource.fromProject(new PgDbProject(project));
+            PgDatabase db = dbSourceProj.get(SubMonitor.convert(null, "", 1));
+
+            for (AbstractSchema DbSchema : db.getSchemas()) {
+                for (String ignoredSchema : InternalTestUtils.IGNORED_SCHEMAS_LIST) {
+                    Assert.assertNotEquals("Schema loaded from project isn't equal to schema in ignore schema list", DbSchema.getName(), ignoredSchema);
+                }
+            }
             project.delete(false, true, null);
         }
     }

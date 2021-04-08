@@ -867,7 +867,7 @@
         </page>
         <page
             category="ru.taximaxim.codekeeper.ui.proj_properties"
-            class="ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.IgnoredSchemasPrefPage"
+            class="ru.taximaxim.codekeeper.ui.properties.IgnoredSchemasProperties"
             id="ru.taximaxim.codekeeper.ui.ignored_schema"
             name="%page.name.ignored_schema">
             <enabledWhen>

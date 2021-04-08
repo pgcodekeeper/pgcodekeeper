@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -32,6 +34,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.consoles.UiProgressReporter;
@@ -41,7 +44,6 @@ import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
-import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
 import ru.taximaxim.codekeeper.ui.properties.OverridablePrefs;
 
 public abstract class DbSource {
@@ -224,7 +226,7 @@ class DbSourceProject extends DbSource {
 
     @Override
     protected PgDatabase loadInternal(SubMonitor monitor)
-            throws IOException, InterruptedException, CoreException {
+            throws InterruptedException, CoreException, IOException {
         String charset = proj.getProjectCharset();
         monitor.subTask(Messages.dbSource_loading_tree);
         IProject project = proj.getProject();
@@ -237,7 +239,8 @@ class DbSourceProject extends DbSource {
                 pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
                 OpenProjectUtils.checkMsSql(project), project, oneTimePrefs);
 
-        return load(new UIProjectLoader(project, arguments, monitor));
+        Path listFile = Paths.get(project.getLocationURI()).resolve(FILE.IGNORED_SCHEMA);
+        return load(new UIProjectLoader(project, arguments, monitor, IgnoreSchemaList.getIgnoreList(listFile)));
     }
 }
 
@@ -411,7 +414,6 @@ class DbSourceJdbc extends DbSource {
     @Override
     protected PgDatabase loadInternal(SubMonitor monitor)
             throws IOException, InterruptedException {
-        IgnoreSchemaList ignoreSchemaList = InternalIgnoreList.readInternalIgnoreSchemaList();
         monitor.subTask(Messages.reading_db_from_jdbc);
         PgDiffArguments args = getPgDiffArgs(ApgdiffConsts.UTF_8, forceUnixNewlines,
                 isMsSql, proj, oneTimePrefs);
@@ -420,7 +422,8 @@ class DbSourceJdbc extends DbSource {
             return load(new JdbcMsLoader(jdbcConnector, args, monitor));
         }
 
-        return load(new JdbcLoader(jdbcConnector, args, monitor, ignoreSchemaList));
+        Path listFile = Paths.get(proj.getLocationURI()).resolve(FILE.IGNORED_SCHEMA);
+        return load(new JdbcLoader(jdbcConnector, args, monitor, IgnoreSchemaList.getIgnoreList(listFile)));
     }
 }
 

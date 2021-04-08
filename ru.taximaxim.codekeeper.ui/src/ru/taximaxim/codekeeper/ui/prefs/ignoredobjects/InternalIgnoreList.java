@@ -11,9 +11,7 @@ import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.core.runtime.Platform;
 
 import ru.taximaxim.codekeeper.apgdiff.ignoreparser.IgnoreParser;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.IIgnoreList;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
@@ -43,22 +41,15 @@ public final class InternalIgnoreList {
      * @return internal ignore list or an empty list if an error occurred.
      */
     public static IgnoreList readInternalList() {
-        return readInternalList(FILE.IGNORED_OBJECTS, new IgnoreList());
-    }
-
-    public static IgnoreSchemaList readInternalIgnoreSchemaList() {
-        return readInternalList(FILE.IGNORED_SCHEMA, new IgnoreSchemaList());
-    }
-
-    private static <T extends IIgnoreList> T readInternalList(String file, T list) {
-        Path listFile = getInternalIgnoreFile(file);
+        IgnoreList list = new IgnoreList();
+        Path listFile = getInternalIgnoreFile();
         if (listFile != null) {
             readAppendList(listFile, list);
         }
         return list;
     }
 
-    public static IIgnoreList readAppendList(Path listFile, IIgnoreList appendTo) {
+    public static IgnoreList readAppendList(Path listFile, IgnoreList appendTo) {
         return readAppendList(listFile, appendTo, false);
     }
 
@@ -71,7 +62,7 @@ public final class InternalIgnoreList {
      * since both internal and project's <code>.pgcodekeeperignore</code> files may be absent
      * @return <code>appendTo</code> {@link IgnoreList} filled with entries read from <code>listFile</code>
      */
-    public static IIgnoreList readAppendList(Path listFile, IIgnoreList appendTo, boolean showNotFound) {
+    public static IgnoreList readAppendList(Path listFile, IgnoreList appendTo, boolean showNotFound) {
         try {
             new IgnoreParser(appendTo).parse(listFile);
         } catch (FileNotFoundException | NoSuchFileException ex) {
@@ -91,9 +82,9 @@ public final class InternalIgnoreList {
      *
      * @return path
      */
-    static Path getInternalIgnoreFile(String fileName) {
+    static Path getInternalIgnoreFile() {
         return Paths.get(Platform.getStateLocation(Activator.getContext().getBundle())
-                .append(fileName).toString());
+                .append(FILE.IGNORED_OBJECTS).toString());
     }
 
     private InternalIgnoreList() {

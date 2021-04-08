@@ -1,9 +1,12 @@
 package ru.taximaxim.codekeeper.apgdiff.model.difftree;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import ru.taximaxim.codekeeper.apgdiff.ignoreparser.IgnoreParser;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoredObject.AddStatus;
 
 public class IgnoreSchemaList implements IIgnoreList {
@@ -34,6 +37,17 @@ public class IgnoreSchemaList implements IIgnoreList {
     @Override
     public void add(IgnoredObject rule) {
         rules.add(rule);
+    }
+
+    public static IgnoreSchemaList getIgnoreList(Path listFile) {
+        IgnoreSchemaList ignoreSchemaList = new IgnoreSchemaList();
+        IgnoreParser ignoreParser = new IgnoreParser(ignoreSchemaList);
+        try {
+            ignoreParser.parse(listFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return ignoreSchemaList;
     }
 
     public boolean getNameStatus(String schema) {

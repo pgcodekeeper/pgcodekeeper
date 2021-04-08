@@ -61,13 +61,13 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
     protected final JdbcConnector connector;
     protected final SubMonitor monitor;
     protected final PgDiffArguments args;
+    protected final IgnoreSchemaList ignorelistSchema;
     private GenericColumn currentObject;
     private String currentOperation;
     protected Connection connection;
     protected Statement statement;
     private Map<Long, String> cachedRolesNamesByOid;
     protected Map<Long, JdbcType> cachedTypesByOid;
-    protected IgnoreSchemaList ignorelistSchema;
     protected final Map<Long, AbstractSchema> schemaIds = new HashMap<>();
     protected int version;
     private long lastSysOid;
