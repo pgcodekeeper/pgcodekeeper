@@ -60,8 +60,6 @@ public class JdbcQuery {
                     PgDiffUtils.quoteString("pg_catalog." + classId)), "_dbots");
         }
 
-        System.err.println(sb);
-
         return sb.toString();
     }
 
