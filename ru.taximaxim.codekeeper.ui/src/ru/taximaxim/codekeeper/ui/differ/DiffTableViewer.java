@@ -319,7 +319,7 @@ public class DiffTableViewer extends Composite {
         });
 
         Composite container = new Composite(upperComp, SWT.NONE);
-        container.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+        container.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
         if (lineManager != null) {
             createRightSide(container);
         } else {
@@ -471,7 +471,7 @@ public class DiffTableViewer extends Composite {
             }
         });
         menuMgr.add(new Separator());
-        menuMgr.add(new Action(Messages.DiffTableViewer_copy_object_names + "\tCtrl+C") {
+        menuMgr.add(new Action(Messages.DiffTableViewer_copy_object_names + "\tCtrl+C") { //$NON-NLS-1$
 
             @Override
             public void run() {
@@ -1052,9 +1052,17 @@ public class DiffTableViewer extends Composite {
     public void updateObjectsLabels() {
         int count = elementInfoMap.size();
         int checked = getCheckedElementsCount();
+        Image image = Activator.getRegisteredImage(FILE.ICONAPPSMALL);
+        String text = Messages.DiffTableViewer_selected_count;
+
         if (lineManager != null) {
-            lineManager.setMessage(Activator.getRegisteredImage(FILE.ICONAPPSMALL),
-                    MessageFormat.format(Messages.DiffTableViewer_selected_count, checked, count));
+            if (isApplyToProj) {
+                lineManager.setMessage(image, MessageFormat.format(text, checked, count,
+                        Messages.DiffTableViewer_save_to_project));
+            } else {
+                lineManager.setMessage(image, MessageFormat.format(text, checked, count,
+                        Messages.DiffTableViewer_save_to_DB));
+            }
         } else {
             lblObjectCount.setText(MessageFormat.format(Messages.diffTableViewer_objects, count));
             if (!viewOnly) {

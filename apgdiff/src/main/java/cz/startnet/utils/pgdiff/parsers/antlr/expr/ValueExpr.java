@@ -819,7 +819,7 @@ public class ValueExpr extends AbstractExpr {
     }
 
     public void orderBy(Orderby_clauseContext orderBy) {
-        for (Sort_specifierContext sort : orderBy.sort_specifier_list().sort_specifier()) {
+        for (Sort_specifierContext sort : orderBy.sort_specifier()) {
             analyze(new Vex(sort.vex()));
         }
     }

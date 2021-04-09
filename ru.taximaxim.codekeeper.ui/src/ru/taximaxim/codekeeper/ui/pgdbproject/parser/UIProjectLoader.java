@@ -45,6 +45,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.exporter.AbstractModelExporter;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class UIProjectLoader extends ProjectLoader {
 
@@ -76,7 +77,7 @@ public class UIProjectLoader extends ProjectLoader {
         try {
             return loadDatabaseWithLibraries();
         } catch (CoreException e) {
-            throw new IOException("Error while load project structure", e);
+            throw new IOException(Messages.UIProjectLoader_error_loading_structure, e);
         }
     }
 

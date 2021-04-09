@@ -554,12 +554,12 @@ class FailGraphReverseArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String[] args() throws URISyntaxException, IOException {
-        return new String[]{"--graph-reverse", "--graph-name", "t1", "fisrt", "second"};
+        return new String[]{"--graph-reverse", "fisrt", "second"};
     }
 
     @Override
     public String output() {
-        return "option --graph-name cannot be used without the option(s) [--graph]\n";
+        return "option \"--graph-reverse\" requires the option(s) [--graph-name, --graph]\n";
     }
 }
 
@@ -575,7 +575,7 @@ class FailGraphDepthArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String output() {
-        return "option --graph-depth cannot be used without the option(s) [--graph]\n";
+        return "option \"--graph-depth\" requires the option(s) [--graph]\n";
     }
 }
 
@@ -591,7 +591,7 @@ class FailGraphNameArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String output() {
-        return "option --graph-name cannot be used without the option(s) [--graph]\n";
+        return "option \"--graph-name\" requires the option(s) [--graph]\n";
     }
 }
 
@@ -607,7 +607,7 @@ class FailGraphArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String output() {
-        return "option \"--graph-reverse\" requires the option(s) [--graph-name]\n";
+        return "option \"--graph-reverse\" requires the option(s) [--graph-name, --graph]\n";
     }
 }
 

@@ -114,6 +114,10 @@ Usage
  --graph-name <name>                    : name of start object in graph mode
                                           specify multiple times to use several
                                           names
+ --graph-filter-object <OBJECT_TYPE>    : show these object types, hide  other
+                                          objects types
+ --graph-invert-filter                  : invert graph filter object types:
+                                          hide objects specified by the filter
 
 DANGER_STATEMENT : [DROP_TABLE | ALTER_COLUMN | DROP_COLUMN | RESTART_WITH | UPDATE]
 OBJECT_TYPE : [CAST | USER | ROLE | ASSEMBLY | SCHEMA | EXTENSION | TYPE | DOMAIN | SEQUENCE | OPERATOR | FTS_PARSER | FTS_TEMPLATE | FTS_DICTIONARY | FTS_CONFIGURATION | TABLE | FUNCTION | PROCEDURE | AGGREGATE | CONSTRAINT | VIEW | INDEX | TRIGGER | RULE | POLICY]
@@ -124,7 +128,7 @@ Library load order
 		2. Explicitly specified libraries.
 		3. Explicitly specified libraries without privileges.
 	In each group order is defined by the given argument order. Within XMLs entry order is used.
-	Objects loaded later in this sequence may override ones loaded earlier (if --lib-safe-mode is off).
+	Objects loaded first in this sequence may override ones loaded later (if --lib-safe-mode is off).
 
 Live database connections
 	Use JDBC connection URL to specify live databases

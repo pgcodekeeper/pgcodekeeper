@@ -20,9 +20,7 @@ public class AlterIndex extends ParserAbstract {
     public AlterIndex(Alter_index_statementContext ctx, PgDatabase db) {
         super(db);
         this.ctx = ctx;
-        alterIdxAllAction = ctx.ALL() == null ? null
-                : new StringBuilder(ACTION_ALTER).append(" INDEX ALL IN TABLESPACE ")
-                .append(ctx.identifier(0).getText()).toString();
+        alterIdxAllAction = ctx.ALL() == null ? null : "ALTER INDEX ALL";
     }
 
     @Override
