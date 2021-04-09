@@ -23,7 +23,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import cz.startnet.utils.pgdiff.InternalTestUtils;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -104,6 +103,7 @@ public class DbSourceTest {
     InterruptedException{
         try(TempDir tempDir = new TempDir(workspacePath.toPath(), "dbSourceProjectTest")){
             Path dir = tempDir.get();
+            String[] ignoredSchemas = {"worker", "country"};
             // create empty project in temp dir
             IProject project = createProjectInWorkspace(dir.getFileName().toString());
 
@@ -122,7 +122,7 @@ public class DbSourceTest {
             PgDatabase db = dbSourceProj.get(SubMonitor.convert(null, "", 1));
 
             for (AbstractSchema DbSchema : db.getSchemas()) {
-                for (String ignoredSchema : InternalTestUtils.IGNORED_SCHEMAS_LIST) {
+                for (String ignoredSchema : ignoredSchemas) {
                     Assert.assertNotEquals("Schema loaded from project isn't equal to schema in ignore schema list", DbSchema.getName(), ignoredSchema);
                 }
             }

@@ -109,18 +109,25 @@ REVOKE ALL ON SCHEMA public FROM postgres;
 GRANT ALL ON SCHEMA public TO postgres;
 GRANT ALL ON SCHEMA public TO PUBLIC;
 
+CREATE SCHEMA country;
+
+ALTER SCHEMA country OWNER TO unit_test;
+
 CREATE SCHEMA worker;
+
+ALTER SCHEMA worker OWNER TO unit_test;
+
+CREATE TABLE country.city (
+    id integer
+);
+
+ALTER TABLE country.city OWNER TO unit_test;
 
 CREATE TABLE worker.people (
     fio text
 );
 
-CREATE OR REPLACE FUNCTION worker.get_changes() RETURNS void
-    LANGUAGE sql
-    AS $$
-$$;
-
-CREATE SCHEMA country;
+ALTER TABLE worker.people OWNER TO unit_test;
 
 CREATE OR REPLACE FUNCTION country.get_city() RETURNS void
     LANGUAGE sql
@@ -128,7 +135,12 @@ CREATE OR REPLACE FUNCTION country.get_city() RETURNS void
     --function body
 $$;
 
-CREATE TABLE country.city (
-    id integer
-);
+ALTER FUNCTION country.get_city() OWNER TO unit_test;
+
+CREATE OR REPLACE FUNCTION worker.get_changes() RETURNS void
+    LANGUAGE sql
+    AS $$
+$$;
+
+ALTER FUNCTION worker.get_changes() OWNER TO unit_test;
 
