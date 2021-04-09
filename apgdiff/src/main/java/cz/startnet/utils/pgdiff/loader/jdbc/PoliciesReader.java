@@ -88,4 +88,9 @@ public class PoliciesReader extends JdbcReader {
 
         return p;
     }
+
+    @Override
+    protected String getClassId() {
+        return "pg_policy";
+    }
 }

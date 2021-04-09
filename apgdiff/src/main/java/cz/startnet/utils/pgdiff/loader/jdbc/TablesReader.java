@@ -279,4 +279,9 @@ public class TablesReader extends JdbcReader {
             }
         }
     }
+
+    @Override
+    protected String getClassId() {
+        return "pg_class";
+    }
 }

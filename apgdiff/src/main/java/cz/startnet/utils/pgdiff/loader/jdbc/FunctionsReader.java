@@ -467,4 +467,9 @@ public class FunctionsReader extends JdbcReader {
 
         return argsQualifiedTypes;
     }
+
+    @Override
+    protected String getClassId() {
+        return "pg_proc";
+    }
 }
