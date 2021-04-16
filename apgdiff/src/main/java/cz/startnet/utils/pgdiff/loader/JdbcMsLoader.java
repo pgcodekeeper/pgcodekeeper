@@ -28,15 +28,13 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreSchemaList;
 
 public class JdbcMsLoader extends JdbcLoaderBase {
 
-    private static IgnoreSchemaList ignoreSchema;
-
     public JdbcMsLoader(JdbcConnector connector, PgDiffArguments args) {
-        this(connector, args, SubMonitor.convert(null));
+        this(connector, args, SubMonitor.convert(null), null);
     }
 
     public JdbcMsLoader(JdbcConnector connector, PgDiffArguments args,
-            SubMonitor monitor) {
-        super(connector, monitor, args, ignoreSchema);
+            SubMonitor monitor, IgnoreSchemaList ignoreSchemaList) {
+        super(connector, monitor, args, ignoreSchemaList);
     }
 
     @Override

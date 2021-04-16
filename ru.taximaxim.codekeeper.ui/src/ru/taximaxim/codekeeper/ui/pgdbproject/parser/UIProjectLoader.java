@@ -8,6 +8,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -27,6 +29,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.ide.ResourceUtil;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.DatabaseLoader;
 import cz.startnet.utils.pgdiff.loader.FullAnalyze;
 import cz.startnet.utils.pgdiff.loader.LibraryLoader;
@@ -50,16 +53,14 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 public class UIProjectLoader extends ProjectLoader {
 
     private final IProject iProject;
-    private final IgnoreSchemaList  ignoreSchemaList;
 
     public UIProjectLoader(IProject iProject, PgDiffArguments arguments, IProgressMonitor monitor) {
         this(iProject, arguments, monitor, null);
     }
 
     public UIProjectLoader(IProject iProject, PgDiffArguments arguments, IProgressMonitor monitor, IgnoreSchemaList ignoreSchemaList) {
-        super(null, arguments, monitor, new ArrayList<>());
+        super(null, arguments, monitor, new ArrayList<>(), ignoreSchemaList);
         this.iProject = iProject;
-        this.ignoreSchemaList = ignoreSchemaList;
     }
 
     @Override
@@ -102,7 +103,7 @@ public class UIProjectLoader extends ProjectLoader {
 
         for (WORK_DIR_NAMES workDirName : WORK_DIR_NAMES.values()) {
             // legacy schemas
-            loadSubdir(baseDir.getFolder(new Path(workDirName.name())), db);
+            loadSubdir(baseDir.getFolder(new Path(workDirName.name())), db, this::checkIgnoreSchemaList) ;
         }
 
         IFolder schemasCommonDir = baseDir.getFolder(new Path(WORK_DIR_NAMES.SCHEMA.name()));
@@ -114,7 +115,7 @@ public class UIProjectLoader extends ProjectLoader {
             for (IResource sub : schemasCommonDir.members()) {
                 if (sub.getType() == IResource.FOLDER) {
                     IFolder schemaDir = (IFolder) sub;
-                    if (ignoreSchemaList == null || ignoreSchemaList.getNameStatus(schemaDir.getName())) {
+                    if (checkIgnoreSchemaList(schemaDir.getName())) {
                         loadSubdir(schemaDir, db);
                         for (String dirSub : DIR_LOAD_ORDER) {
                             loadSubdir(schemaDir.getFolder(dirSub), db);
@@ -133,7 +134,7 @@ public class UIProjectLoader extends ProjectLoader {
 
         IFolder securityFolder = baseDir.getFolder(new Path(MS_WORK_DIR_NAMES.SECURITY.getDirName()));
 
-        loadSubdir(securityFolder.getFolder("Schemas"), db); //$NON-NLS-1$
+        loadSubdir(securityFolder.getFolder("Schemas"), db, this::checkIgnoreSchemaList); //$NON-NLS-1$
         // DBO schema check requires schema loads to finish first
         AntlrParser.finishAntlr(antlrTasks);
         addDboSchema(db);
@@ -142,19 +143,47 @@ public class UIProjectLoader extends ProjectLoader {
         loadSubdir(securityFolder.getFolder("Users"), db); //$NON-NLS-1$
 
         for (MS_WORK_DIR_NAMES dirSub : MS_WORK_DIR_NAMES.values()) {
-            loadSubdir(baseDir.getFolder(new Path(dirSub.getDirName())), db);
+            if (dirSub.isInSchema()) {
+                System.err.println();
+                loadSubdir(baseDir.getFolder(new Path(dirSub.getDirName())), db,
+                        msFileName ->
+                checkIgnoreSchemaList(msFileName.substring(0, msFileName.indexOf('.'))));
+
+            } else {
+                loadSubdir(baseDir.getFolder(new Path(dirSub.getDirName())), db);
+            }
         }
     }
 
     private void loadSubdir(IFolder folder, PgDatabase db)
             throws InterruptedException, CoreException {
+        loadSubdir(folder, db, null);
+    }
+
+    /**
+     * @param checkFilename filter for file names without extensions. Can be null.
+     */
+    private void loadSubdir(IFolder folder, PgDatabase db, Predicate<String> checkFilename)
+            throws InterruptedException, CoreException {
         if (!folder.exists()) {
             return;
         }
-        for (IResource resource : folder.members()) {
-            if (resource.getType() == IResource.FILE && "sql".equals(resource.getFileExtension())) { //$NON-NLS-1$
-                loadFile((IFile) resource, monitor, db);
-            }
+        filterFile(folder.members(), monitor, db, f -> checkFilename == null ? true
+                : checkFilename.test(f.getName().substring(0, f.getName().length()-4)));
+    }
+
+    /**
+     * @param checkFile additional filter for loaded sql files
+     */
+    private void filterFile(IResource[] iResources, IProgressMonitor monitor, PgDatabase db,  Predicate<IResource> checkFile)
+            throws CoreException, InterruptedException {
+
+        Stream<IResource> streamR = Arrays.stream(iResources)
+                .filter(r -> r.getType() == IResource.FILE && "sql".equals(r.getFileExtension())) //$NON-NLS-1$
+                .filter(checkFile);
+
+        for (IResource resource : PgDiffUtils.sIter(streamR)) {
+            loadFile((IFile) resource, monitor, db);
         }
     }
 

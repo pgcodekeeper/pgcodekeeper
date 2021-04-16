@@ -418,11 +418,11 @@ class DbSourceJdbc extends DbSource {
         PgDiffArguments args = getPgDiffArgs(ApgdiffConsts.UTF_8, forceUnixNewlines,
                 isMsSql, proj, oneTimePrefs);
 
+        Path listFile = Paths.get(proj.getLocationURI()).resolve(FILE.IGNORED_SCHEMA);
         if (isMsSql) {
-            return load(new JdbcMsLoader(jdbcConnector, args, monitor));
+            return load(new JdbcMsLoader(jdbcConnector, args, monitor, IgnoreSchemaList.getIgnoreList(listFile)));
         }
 
-        Path listFile = Paths.get(proj.getLocationURI()).resolve(FILE.IGNORED_SCHEMA);
         return load(new JdbcLoader(jdbcConnector, args, monitor, IgnoreSchemaList.getIgnoreList(listFile)));
     }
 }

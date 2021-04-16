@@ -195,7 +195,7 @@ public class PgDiff {
         } else if ("db".equals(format)) {
             String timezone = arguments.getTimeZone() == null ? ApgdiffConsts.UTC : arguments.getTimeZone();
             if (arguments.isMsSql()) {
-                loader = new JdbcMsLoader(JdbcConnector.fromUrl(srcPath, timezone), arguments);
+                loader = new JdbcMsLoader(JdbcConnector.fromUrl(srcPath, timezone), arguments, SubMonitor.convert(null), ignoreSchemaList);
             } else {
                 loader = new JdbcLoader(JdbcConnector.fromUrl(srcPath, timezone), arguments, SubMonitor.convert(null), ignoreSchemaList);
             }

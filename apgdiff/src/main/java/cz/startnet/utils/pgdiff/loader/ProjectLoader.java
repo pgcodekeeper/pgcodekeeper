@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -111,7 +112,7 @@ public class ProjectLoader extends DatabaseLoader {
         // read files in schema folder, add schemas to db
         for (WORK_DIR_NAMES dirEnum : WORK_DIR_NAMES.values()) {
             // legacy schemas
-            loadSubdir(dir, dirEnum.name(), db);
+            loadSubdir(dir, dirEnum.name(), db, this::checkIgnoreSchemaList);
         }
 
         File schemasCommonDir = new File(dir, WORK_DIR_NAMES.SCHEMA.name());
@@ -123,7 +124,7 @@ public class ProjectLoader extends DatabaseLoader {
             try (Stream<Path> schemas = Files.list(schemasCommonDir.toPath())) {
                 for (Path schemaDir : PgDiffUtils.sIter(schemas)) {
                     if (Files.isDirectory(schemaDir)) {
-                        if (ignoreSchemaList == null || ignoreSchemaList.getNameStatus(schemaDir.getFileName().toString())) {
+                        if (checkIgnoreSchemaList(schemaDir.getFileName().toString())) {
                             loadSubdir(schemasCommonDir, schemaDir.getFileName().toString(), db);
                             for (String dirSub : DIR_LOAD_ORDER) {
                                 loadSubdir(schemaDir.toFile(), dirSub, db);
@@ -138,7 +139,7 @@ public class ProjectLoader extends DatabaseLoader {
     private void loadMsStructure(File dir, PgDatabase db) throws InterruptedException, IOException {
         File securityFolder = new File(dir, MS_WORK_DIR_NAMES.SECURITY.getDirName());
 
-        loadSubdir(securityFolder, "Schemas", db);
+        loadSubdir(securityFolder, "Schemas", db, this::checkIgnoreSchemaList);
         // DBO schema check requires schema loads to finish first
         AntlrParser.finishAntlr(antlrTasks);
         addDboSchema(db);
@@ -147,7 +148,13 @@ public class ProjectLoader extends DatabaseLoader {
         loadSubdir(securityFolder, "Users", db);
 
         for (MS_WORK_DIR_NAMES dirSub : MS_WORK_DIR_NAMES.values()) {
-            loadSubdir(dir, dirSub.getDirName(), db);
+            if (dirSub.isInSchema()) {
+                // get schema name from file names and filter
+                loadSubdir(dir, dirSub.getDirName(), db,
+                        msFileName -> checkIgnoreSchemaList(msFileName.substring(0, msFileName.indexOf('.'))));
+            } else {
+                loadSubdir(dir, dirSub.getDirName(), db);
+            }
         }
     }
 
@@ -160,26 +167,38 @@ public class ProjectLoader extends DatabaseLoader {
             db.setDefaultSchema(ApgdiffConsts.DBO);
         }
     }
-
     private void loadSubdir(File dir, String sub, PgDatabase db) throws InterruptedException {
+        loadSubdir(dir, sub, db, null);
+    }
+
+    /**
+     * @param checkFilename filter for file names without extensions. Can be null.
+     */
+    private void loadSubdir(File dir, String sub, PgDatabase db, Predicate<String> checkFilename) throws InterruptedException {
         File subDir = new File(dir, sub);
         if (subDir.exists() && subDir.isDirectory()) {
             File[] files = subDir.listFiles();
-            loadFiles(files, db);
+            loadFiles(files, db, f -> checkFilename == null ? true
+                    : checkFilename.test(f.getName().substring(0, f.getName().length()-4)));
         }
     }
 
-    private void loadFiles(File[] files, PgDatabase db) throws InterruptedException {
-        Arrays.sort(files);
-        for (File f : files) {
-            if (f.isFile() && f.getName().toLowerCase(Locale.ROOT).endsWith(".sql")) {
-                PgDumpLoader loader = new PgDumpLoader(f, arguments, monitor);
-                if (isOverrideMode) {
-                    loader.setOverridesMap(overrides);
-                }
-                loader.loadDatabase(db, antlrTasks);
-                launchedLoaders.add(loader);
+    /**
+     * @param checkFile additional filter for loaded sql files
+     */
+    private void loadFiles(File[] files, PgDatabase db, Predicate<File> checkFile) throws InterruptedException {
+        Stream<File> streamF = Arrays.stream(files)
+                .filter(f -> f.isFile() && f.getName().toLowerCase(Locale.ROOT).endsWith(".sql"))
+                .filter(checkFile)
+                .sorted();
+
+        for (File f : PgDiffUtils.sIter(streamF)) {
+            PgDumpLoader loader = new PgDumpLoader(f, arguments, monitor);
+            if (isOverrideMode) {
+                loader.setOverridesMap(overrides);
             }
+            loader.loadDatabase(db, antlrTasks);
+            launchedLoaders.add(loader);
         }
     }
 
@@ -207,5 +226,9 @@ public class ProjectLoader extends DatabaseLoader {
                 }
             }
         }
+    }
+
+    protected boolean checkIgnoreSchemaList(String schemaName) {
+        return ignoreSchemaList == null || ignoreSchemaList.getNameStatus(schemaName);
     }
 }
