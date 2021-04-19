@@ -15,6 +15,11 @@ enum IndentDirection {
     BLOCK_LINE,
     /**
      * Last token in this and parent block
+     * Example:
+     *  EXCEPTION
+     *    WHEN x THEN
+     *      begin end;
+     * end closes both its block and the WHEN block
      */
     REDUCE_TWICE,
 }

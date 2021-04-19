@@ -51,10 +51,10 @@ public class SQLFormattingStrategy extends ContextBasedFormattingStrategy {
         if (document != null && partition != null) {
             Map<String, IDocumentPartitioner> partitioners = null;
             int offset = partition.getOffset();
-            int lenght = partition.getLength();
+            int length = partition.getLength();
 
             try {
-                TextEdit edit = formatDoc(offset, lenght, document.get());
+                TextEdit edit = formatDoc(offset, length, document.get());
 
                 if (edit != null) {
                     if (edit.getChildrenSize() > 20) {
@@ -75,7 +75,7 @@ public class SQLFormattingStrategy extends ContextBasedFormattingStrategy {
         }
     }
 
-    private TextEdit formatDoc(int offset, int lenght, String source) {
+    private TextEdit formatDoc(int offset, int length, String source) {
         FormatConfiguration config = new FormatConfiguration();
 
         String mode = mainPrefs.getString(FORMATTER_PREF.INDENT_TYPE);
@@ -94,17 +94,17 @@ public class SQLFormattingStrategy extends ContextBasedFormattingStrategy {
                 mainPrefs.getBoolean(FORMATTER_PREF.ADD_WHITESPACE_AFTER_OP));
 
         if (mainPrefs.getBoolean(FORMATTER_PREF.REPLACE_TAB)) {
-            config.setWhitespaceCount(mainPrefs.getInt(FORMATTER_PREF.WHITESPACE_COUNT));
+            config.setSpacesForTabs(mainPrefs.getInt(FORMATTER_PREF.WHITESPACE_COUNT));
         }
 
-        FileFormatter formatter = new FileFormatter(offset, lenght, config);
+        FileFormatter formatter = new FileFormatter(offset, length, config);
         List<FormatItem> list = formatter.formatString(source, editor.isMsSql());
 
         if (list.isEmpty()) {
             return null;
         }
 
-        TextEdit edit = new MultiTextEdit(offset, lenght);
+        TextEdit edit = new MultiTextEdit(offset, length);
 
         for (FormatItem item : list) {
             edit.addChild(new ReplaceEdit(item.getStart(), item.getLength(), item.getText()));

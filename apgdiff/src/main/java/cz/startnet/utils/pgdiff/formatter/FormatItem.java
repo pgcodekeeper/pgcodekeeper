@@ -6,9 +6,9 @@ public class FormatItem {
     private final int length;
     private final String text;
 
-    public FormatItem(int start, int lenght, String text) {
+    public FormatItem(int start, int length, String text) {
         this.start = start;
-        this.length = lenght;
+        this.length = length;
         this.text = text;
     }
 

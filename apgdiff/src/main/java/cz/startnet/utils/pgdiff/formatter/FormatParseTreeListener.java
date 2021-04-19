@@ -6,6 +6,7 @@ import java.util.Map;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
+import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
@@ -22,6 +23,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_statementsConte
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Groupby_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.If_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Insert_stmt_for_psqlContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Loop_startContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Loop_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
@@ -29,6 +31,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmt_no_parensCon
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.StatementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Update_setContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Update_stmt_for_psqlContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 
 public class FormatParseTreeListener implements ParseTreeListener {
 
@@ -83,6 +86,14 @@ public class FormatParseTreeListener implements ParseTreeListener {
             // subselect
             indents.put(ctx.getStart(), IndentDirection.BLOCK_START);
             putBlockStop(ctx.getStop());
+
+            /*} else if (ctx instanceof Select_stmt_no_parensContext) {
+            formatSubselect(new SelectStmt((Select_stmt_no_parensContext) ctx));
+            } else if (ctx instanceof Select_stmtContext
+                && !(ctx.parent.parent.parent instanceof Function_statementContext)) {
+            // non-top-level select, assume subselect
+            formatSubselect(new SelectStmt((Select_stmtContext) ctx));*/
+
         } else if (ctx instanceof After_opsContext) {
             indents.put(ctx.getStart(), IndentDirection.BLOCK_LINE);
         } else if (ctx instanceof StatementContext) {
@@ -115,17 +126,16 @@ public class FormatParseTreeListener implements ParseTreeListener {
 
     private void formatExceptionStatement(Exception_statementContext ctx) {
         indents.put(ctx.EXCEPTION().getSymbol(), IndentDirection.BLOCK_LINE);
-        indents.put(ctx.WHEN().get(0).getSymbol(), IndentDirection.BLOCK_START);
-        putBlockStop(ctx.getStop());
+        List<TerminalNode> whenTokens = ctx.WHEN();
+        List<Function_statementsContext> statements = ctx.function_statements();
+        for (int i = 0; i < whenTokens.size(); i++) {
+            indents.put(whenTokens.get(i).getSymbol(), IndentDirection.BLOCK_START);
+            putBlockStop(statements.get(i).getStop());
+        }
     }
 
     private void formatSelectPrimary(Select_primaryContext ctx) {
-        TerminalNode node = ctx.SELECT();
-        if (node != null) {
-            indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
-        }
-
-        node = ctx.FROM();
+        TerminalNode node = ctx.FROM();
         if (node != null) {
             indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
         }
@@ -148,6 +158,14 @@ public class FormatParseTreeListener implements ParseTreeListener {
         Groupby_clauseContext groupBy = ctx.groupby_clause();
         if (groupBy != null) {
             indents.put(groupBy.GROUP().getSymbol(), IndentDirection.BLOCK_LINE);
+        }
+    }
+
+    private void formatSubselect(SelectStmt select) {
+        // TODO improve sub/select formatting, make an option
+        ParseTree blockStart = null;
+        if (select.getCtx().children.size() > 1) {
+            // WITH or after_ops present
         }
     }
 
@@ -229,9 +247,13 @@ public class FormatParseTreeListener implements ParseTreeListener {
     }
 
     private void formatLoopStatement(Loop_statementContext ctx) {
-        List<TerminalNode> loops = ctx.LOOP();
-        if (!loops.isEmpty()) {
-            indents.put(loops.get(0).getSymbol(), IndentDirection.BLOCK_LINE);
+        TerminalNode loop = ctx.LOOP(0);
+        if (loop != null) {
+            Loop_startContext start = ctx.loop_start();
+            if (start != null && start.IN() != null && start.DOUBLE_DOT() == null) {
+                // open LOOP on new line only for complex loop exprs
+                indents.put(loop.getSymbol(), IndentDirection.BLOCK_LINE);
+            }
             indents.put(ctx.END().getSymbol(), IndentDirection.BLOCK_LINE);
         }
     }

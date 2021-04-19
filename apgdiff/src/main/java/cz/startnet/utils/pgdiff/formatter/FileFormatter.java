@@ -30,9 +30,9 @@ public class FileFormatter {
 
     private final FormatConfiguration config;
 
-    public FileFormatter(int offset, int lenght, FormatConfiguration config) {
+    public FileFormatter(int offset, int length, FormatConfiguration config) {
         this.start = offset;
-        this.stop = offset + lenght;
+        this.stop = offset + length;
         this.config = config;
     }
 

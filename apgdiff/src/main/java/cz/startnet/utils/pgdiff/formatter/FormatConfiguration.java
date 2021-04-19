@@ -12,7 +12,7 @@ public class FormatConfiguration {
 
     private IndentType indentType = IndentType.DISABLE;
     private int indentSize;
-    private int whitespaceCount = -1;
+    private int spacesForTabs = -1;
 
     private String tabReplace;
 
@@ -32,9 +32,9 @@ public class FormatConfiguration {
         this.indentSize = indentSize;
     }
 
-    public void setWhitespaceCount(int whitespaceCount) {
-        this.whitespaceCount = whitespaceCount;
-        tabReplace = whitespaceCount > 0 ? String.format("%1$" + whitespaceCount + 's', "") : "";
+    public void setSpacesForTabs(int spacesForTabs) {
+        this.spacesForTabs = spacesForTabs;
+        tabReplace = spacesForTabs > 0 ? String.format("%1$" + spacesForTabs + 's', "") : "";
     }
 
     public boolean isAddWhitespaceAfterOp() {
@@ -53,8 +53,8 @@ public class FormatConfiguration {
         return indentSize;
     }
 
-    public int getWhitespaceCount() {
-        return whitespaceCount;
+    public int getSpacesForTabs() {
+        return spacesForTabs;
     }
 
     public String getTabReplace() {
