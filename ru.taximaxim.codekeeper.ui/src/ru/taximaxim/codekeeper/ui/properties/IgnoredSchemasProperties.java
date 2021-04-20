@@ -20,6 +20,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoredObject;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
 
 public class IgnoredSchemasProperties extends PropertyPage {
 
@@ -36,7 +37,7 @@ public class IgnoredSchemasProperties extends PropertyPage {
     @Override
     protected Control createContents(Composite parent) {
         Path listFile = Paths.get(proj.getLocationURI()).resolve(FILE.IGNORED_SCHEMA);
-        ignoreSchemaList = IgnoreSchemaList.getIgnoreList(listFile);
+        ignoreSchemaList = InternalIgnoreList.getIgnoreSchemaList(listFile);
 
         listEditor = IgnoredSchemaListEditorProperties.create(parent, ignoreSchemaList);
         listEditor.setInputList(new ArrayList<>(ignoreSchemaList.getList()));

@@ -3,6 +3,8 @@ package ru.taximaxim.codekeeper.apgdiff;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
@@ -100,5 +102,13 @@ public final class ApgdiffTestUtils {
     }
 
     private ApgdiffTestUtils() {
+    }
+
+    public static void createIgnoredSchemaFile(Path dir) throws IOException {
+        Path ignoreSchemaPath = Files.createFile(dir.resolve(".pgcodekeeperignoreschema"));
+        String rule = "SHOW ALL\n"
+                + "HIDE CONTENT,QUALIFIED country \n"
+                + "HIDE CONTENT,QUALIFIED worker";
+        Files.write(ignoreSchemaPath, rule.getBytes());
     }
 }
