@@ -87,6 +87,15 @@ GO
 CREATE SCHEMA [country] AUTHORIZATION [dbo]
 GO
 
+CREATE SCHEMA [ignore1] AUTHORIZATION [dbo]
+GO
+
+CREATE SCHEMA [ignoreI4vrw] AUTHORIZATION [dbo]
+GO
+
+CREATE SCHEMA [ignore] AUTHORIZATION [dbo]
+GO
+
 SET QUOTED_IDENTIFIER ON
 GO
 SET ANSI_NULLS ON
@@ -117,3 +126,42 @@ ALTER TABLE [country].[city]
         ADD CONSTRAINT [PK_city] PRIMARY KEY CLUSTERED  ([c1]) ON [PRIMARY]
 GO
 
+CREATE FUNCTION [ignoreI4vrw].[get_func](@First int, @Second int) 
+RETURNS integer
+AS
+BEGIN
+  DECLARE @Res integer = 0;
+  
+  SET @Res = @First + @Second;
+
+  IF @Res < 0
+    SET @Res = 0;
+  
+  RETURN @Res;
+END
+GO
+
+CREATE FUNCTION [ignore1].[get_func](@First int, @Second int) 
+RETURNS integer
+AS
+BEGIN
+  DECLARE @Res integer = 0;
+  
+  SET @Res = @First + @Second;
+
+  IF @Res < 0
+    SET @Res = 0;
+  
+  RETURN @Res;
+END
+GO
+
+CREATE TABLE [ignore].[city](
+    [c1] [int] NOT NULL,
+    [c2] [int] NOT NULL
+) ON [PRIMARY]
+GO
+
+ALTER TABLE [ignore].[city]
+        ADD CONSTRAINT [PK_city] PRIMARY KEY CLUSTERED  ([c1]) ON [PRIMARY]
+GO

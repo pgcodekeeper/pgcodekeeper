@@ -144,3 +144,40 @@ $$;
 
 ALTER FUNCTION worker.get_changes() OWNER TO unit_test;
 
+CREATE SCHEMA ignore1;
+
+ALTER SCHEMA ignore1 OWNER TO unit_test;
+
+CREATE TABLE ignore1.testschema (
+    fio text
+);
+
+ALTER TABLE ignore1.testschema OWNER TO unit_test;
+
+CREATE OR REPLACE FUNCTION ignore1.get_schema() RETURNS void
+    LANGUAGE sql
+    AS $$
+    --function body
+$$;
+
+ALTER FUNCTION ignore1.get_schema() OWNER TO unit_test;
+
+CREATE SCHEMA ignoreI4vrw;
+
+ALTER SCHEMA ignoreI4vrw OWNER TO unit_test;
+
+CREATE TABLE ignoreI4vrw.testschema2 (
+    fio text
+);
+
+ALTER TABLE ignoreI4vrw.testschema2 OWNER TO unit_test;
+
+CREATE SCHEMA ignore;
+
+ALTER SCHEMA ignore OWNER TO unit_test;
+
+CREATE TABLE ignore.testtable (
+    fio text
+);
+
+ALTER TABLE ignore.testtable OWNER TO unit_test;

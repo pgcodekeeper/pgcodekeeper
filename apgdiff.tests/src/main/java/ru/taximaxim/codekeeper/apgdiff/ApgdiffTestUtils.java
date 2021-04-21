@@ -108,7 +108,8 @@ public final class ApgdiffTestUtils {
         Path ignoreSchemaPath = Files.createFile(dir.resolve(".pgcodekeeperignoreschema"));
         String rule = "SHOW ALL\n"
                 + "HIDE CONTENT,QUALIFIED country \n"
-                + "HIDE CONTENT,QUALIFIED worker";
+                + "HIDE CONTENT,QUALIFIED worker  \n"
+                + "HIDE CONTENT,QUALIFIED, REGEX ignore.* type=SCHEMA";
         Files.write(ignoreSchemaPath, rule.getBytes());
     }
 }

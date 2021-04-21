@@ -12,6 +12,9 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -40,7 +43,8 @@ public class DbSourceTest {
 
     private static final String DUMP = "test_dump.sql";
     private static final String MS_DUMP = "testing_ms_dump.sql";
-    private static final String[] IGNORED_SCHEMAS = {"worker", "country"};
+    private static final List<String> IGNORED_SCHEMAS_LIST = Collections.unmodifiableList(Arrays.asList(
+            "worker", "country", "ignore1", "ignore4vrw"));
 
     private static PgDatabase dbPredefined;
     private static File workspacePath;
@@ -120,9 +124,12 @@ public class DbSourceTest {
             DbSource dbSourceProj =  DbSource.fromProject(new PgDbProject(project));
             PgDatabase db = dbSourceProj.get(SubMonitor.convert(null, "", 1));
 
-            for (AbstractSchema DbSchema : db.getSchemas()) {
-                for (String ignoredSchema : IGNORED_SCHEMAS) {
-                    Assert.assertNotEquals("Schema loaded from project equal to schema in ignore schema list", DbSchema.getName(), ignoredSchema);
+            for (AbstractSchema dbSchema : db.getSchemas()) {
+                if (IGNORED_SCHEMAS_LIST.contains(dbSchema.getName())) {
+                    Assert.fail("Ignored Schema loaded " + dbSchema.getName());
+                } else {
+                    Assert.assertEquals("Schema from ms dump isn't equal schema from loader",
+                            db.getSchema(dbSchema.getName()), dbSchema);
                 }
             }
             project.delete(false, true, null);
@@ -151,11 +158,12 @@ public class DbSourceTest {
             DbSource dbSourceProj =  DbSource.fromProject(new PgDbProject(project));
             PgDatabase db = dbSourceProj.get(SubMonitor.convert(null, "", 1));
 
-            for (AbstractSchema DbSchema : db.getSchemas()) {
-                for (String ignoredSchema : IGNORED_SCHEMAS) {
-                    Assert.assertNotEquals(
-                            "Schema loaded from ms project equal to schema in ignore schema list",
-                            DbSchema.getName(), ignoredSchema);
+            for (AbstractSchema dbSchema : db.getSchemas()) {
+                if (IGNORED_SCHEMAS_LIST.contains(dbSchema.getName())) {
+                    Assert.fail("Ignored Schema loaded " + dbSchema.getName());
+                } else {
+                    Assert.assertEquals("Schema from ms dump isn't equal schema from loader",
+                            db.getSchema(dbSchema.getName()), dbSchema);
                 }
             }
             project.delete(false, true, null);
