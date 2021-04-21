@@ -79,7 +79,7 @@ public class IgnoredSchemaListEditorProperties extends PrefListEditor<IgnoredObj
                 Messages.IgnoredObjectPrefListEditor_new_ignored,
                 Messages.IgnoredSchemaPrefListEditor_schema_name,
                 null, text ->  text.isEmpty() ? Messages.IgnoredSchemaPrefListEditor_add_schema : null);
-        return d.open() == Window.OK ? (new IgnoredObject(d.getValue(), false,
+        return d.open() == Window.OK ? (new IgnoredObject(d.getValue(), true,
                 true, true,
                 EnumSet.of(DbObjType.SCHEMA))) : null;
     }
