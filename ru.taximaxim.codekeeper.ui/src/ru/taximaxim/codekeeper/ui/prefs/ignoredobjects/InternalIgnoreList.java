@@ -88,18 +88,21 @@ public final class InternalIgnoreList {
                 .append(FILE.IGNORED_OBJECTS).toString());
     }
 
-    private InternalIgnoreList() {
-    }
-
     public static IgnoreSchemaList getIgnoreSchemaList(Path listFile) {
         IgnoreSchemaList ignoreSchemaList = new IgnoreSchemaList();
         IgnoreParser ignoreParser = new IgnoreParser(ignoreSchemaList);
         try {
             ignoreParser.parse(listFile);
+        } catch (FileNotFoundException | NoSuchFileException ex) {
         } catch (IOException e) {
             ExceptionNotifier.notifyDefault(MessageFormat.format(
-                    Messages.IgnoredObjectsPrefPage_error_getting_ignores_list, listFile), e);
+                    Messages.IgnoredObjectsPrefPage_error_getting_ignores_list, listFile),
+                    e);
         }
         return ignoreSchemaList;
+    }
+
+    private InternalIgnoreList() {
+        // no impl
     }
 }
