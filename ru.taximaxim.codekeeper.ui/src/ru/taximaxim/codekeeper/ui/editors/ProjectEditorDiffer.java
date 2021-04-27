@@ -39,6 +39,8 @@ import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuCreator;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
@@ -61,6 +63,9 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -167,6 +172,13 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private Label lblNotificationText;
     private Link linkRefresh;
 
+    private Action applyAction;
+    private Action actionToProj;
+    private Action actionToDb;
+
+    private ImageDescriptor imgDescrApplyIcon;
+    private ImageDescriptor imgDescrProj;
+    private ImageDescriptor imgDescrDb;
     private Action getChangesAction;
     private DiffTableViewer diffTable;
     private DiffPaneViewer diffPane;
@@ -194,7 +206,17 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         diffTable.setApplyToProj(isApplyToProj);
         diffTable.getViewer().refresh();
         diffTable.updateObjectsLabels();
+        saveLastDirection(getProject(), isApplyToProj);
         updateWorkWith();
+        actionToProj.setChecked(isApplyToProj);
+        actionToDb.setChecked(!isApplyToProj);
+
+        String message = isApplyToProj ? Messages.DiffTableViewer_to_project : Messages.DiffTableViewer_to_database;
+        ImageDescriptor descr = isApplyToProj ? imgDescrProj : imgDescrDb;
+
+        applyAction.setToolTipText(Messages.DiffTableViewer_apply_to + ' ' + message);
+        applyAction.setImageDescriptor(new DecorationOverlayIcon(imgDescrApplyIcon,
+                descr, IDecoration.TOP_RIGHT));
     }
 
     @Override
@@ -261,13 +283,53 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 l.setText(Messages.ProjectEditorDiffer_work_with);
                 l.setEnabled(false);
 
+                //current remote
                 lblCurrentRemote = new Label(labelCont, SWT.NONE);
-
+                lblCurrentRemote.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_HAND));
                 l = new Label(labelCont, SWT.NONE);
                 l.setText(Messages.ProjectEditorDiffer_apply_to);
                 l.setEnabled(false);
 
+                MenuManager menuCurRemote = new MenuManager();
+                lblCurrentRemote.setMenu(menuCurRemote.createContextMenu(lblCurrentRemote));
+                DBStoreMenu dbStoreMenu = new DBStoreMenu(menuCurRemote, ProjectEditorDiffer.this, mainPrefs);
+
+                menuCurRemote.addMenuListener(new IMenuListener() {
+
+                    @Override
+                    public void menuAboutToShow(IMenuManager manager) {
+                        manager.removeAll();
+                        dbStoreMenu.fillMenu();
+                    }
+                });
+
+                lblCurrentRemote.addMouseListener(new MouseAdapter() {
+
+                    @Override
+                    public void mouseDown(MouseEvent e) {
+                        if (e.button==1) {
+                            lblCurrentRemote.getMenu().setVisible(true);
+                        }
+                    }
+                });
+
+                //change apply action
                 lblApplyTo = new Label(labelCont, SWT.NONE);
+                lblApplyTo.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_HAND));
+                createApplyActions();
+
+                MenuManager menuMg = new MenuManager();
+                menuMg.add(actionToProj);
+                menuMg.add(actionToDb);
+
+                menuMg.addMenuListener(m -> m.update(false));
+                lblApplyTo.setMenu(menuMg.createContextMenu(lblApplyTo));
+
+                lblApplyTo.addMouseListener(MouseListener.mouseDownAdapter(e -> {
+                    if (e.button == 1) {
+                        lblApplyTo.getMenu().setVisible(true);
+                    }
+                }));
 
                 final ToolBarManager mgrTblBtn = new ToolBarManager(SWT.FLAT | SWT.RIGHT);
                 addBtnApplyWithMenu(container, mgrTblBtn);
@@ -355,7 +417,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         });
         // end notifications container
 
-        updateWorkWith();
+        changeMigrationDireciton(getLastDirection(), false);
 
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this,
                 IResourceChangeEvent.PRE_CLOSE | IResourceChangeEvent.PRE_DELETE
@@ -376,16 +438,15 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
      * with custom settings.
      */
     private void addBtnApplyWithMenu(Composite container, ToolBarManager mgrTblBtn) {
-
-        ImageDescriptor imgDescrApplyIcon = ImageDescriptor.createFromURL(
+        imgDescrApplyIcon = ImageDescriptor.createFromURL(
                 Activator.getContext().getBundle().getResource(FILE.ICONAPPLYTO));
 
-        ImageDescriptor imgDescrProj = ImageDescriptor.createFromURL(
+        imgDescrProj = ImageDescriptor.createFromURL(
                 Activator.getContext().getBundle().getResource(FILE.DECORPGCODEKEEPER));
-        ImageDescriptor imgDescrDb = ImageDescriptor.createFromURL(
+        imgDescrDb = ImageDescriptor.createFromURL(
                 Activator.getContext().getBundle().getResource(FILE.DECORDATABASE));
 
-        Action applyAction = new Action("", IAction.AS_DROP_DOWN_MENU) { //$NON-NLS-1$
+        applyAction = new Action("", IAction.AS_DROP_DOWN_MENU) { //$NON-NLS-1$
             @Override
             public void run() {
                 if (!diffTable.isApplyToProj()) {
@@ -413,39 +474,12 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
             @Override
             public Menu getMenu(Control parent) {
-                Action actionToProj = new Action(Messages.DiffTableViewer_to_project, IAction.AS_RADIO_BUTTON) {
-
-                    @Override
-                    public void run() {
-                        changeMigrationDireciton(true, false);
-                        applyAction.setToolTipText(Messages.DiffTableViewer_apply_to + ' ' + Messages.DiffTableViewer_to_project);
-                        applyAction.setImageDescriptor(new DecorationOverlayIcon(imgDescrApplyIcon,
-                                imgDescrProj, IDecoration.TOP_RIGHT));
-                    }
-                };
-
-                actionToProj.setImageDescriptor(Activator.getRegisteredDescriptor(FILE.ICONAPPSMALL));
-                Action actionToDb = new Action(Messages.DiffTableViewer_to_database, IAction.AS_RADIO_BUTTON) {
-
-                    @Override
-                    public void run() {
-                        changeMigrationDireciton(false, false);
-                        applyAction.setToolTipText(Messages.DiffTableViewer_apply_to + ' ' + Messages.DiffTableViewer_to_database);
-
-                        applyAction.setImageDescriptor(new DecorationOverlayIcon(imgDescrApplyIcon,
-                                imgDescrDb,
-                                IDecoration.TOP_RIGHT));
-                    }
-
-                };
-                actionToDb.setImageDescriptor(ImageDescriptor.createFromURL(Activator
-                        .getContext().getBundle().getResource(FILE.ICONDATABASE)));
+                menuMgrApplyCustom = new MenuManager();
 
                 if (menuMgrApplyCustom != null) {
                     menuMgrApplyCustom.dispose();
                 }
 
-                menuMgrApplyCustom = new MenuManager();
                 IAction applyCustomAction = new Action(Messages.DiffTableViewer_apply_to_custom) {
 
                     @Override
@@ -460,11 +494,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                     }
                 };
 
-                if (diffTable.isApplyToProj()) {
-                    actionToProj.setChecked(true);
-                } else {
-                    actionToDb.setChecked(true);
-                }
                 Action applyTitle = new Action(Messages.DiffTableViewer_apply_to) {
                 };
                 applyTitle.setEnabled(false);
@@ -486,6 +515,28 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         });
         mgrTblBtn.add(applyAction);
     }
+
+    private void createApplyActions() {
+        actionToProj = new Action(Messages.DiffTableViewer_to_project, IAction.AS_RADIO_BUTTON) {
+
+            @Override
+            public void run() {
+                changeMigrationDireciton(true, false);
+            }
+        };
+
+        actionToProj.setImageDescriptor(Activator.getRegisteredDescriptor(FILE.ICONAPPSMALL));
+        actionToDb = new Action(Messages.DiffTableViewer_to_database, IAction.AS_RADIO_BUTTON) {
+
+            @Override
+            public void run() {
+                changeMigrationDireciton(false, false);
+            }
+        };
+        actionToDb.setImageDescriptor(ImageDescriptor.createFromURL(Activator
+                .getContext().getBundle().getResource(FILE.ICONDATABASE)));
+    }
+
 
     /**
      * Adds [GetChanges] button with drop-down menu, which contains
@@ -905,6 +956,22 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 Log.log(ex);
             }
         }
+    }
+
+    public void saveLastDirection(IProject project, boolean isProj) {
+        IEclipsePreferences prefs = PgDbProject.getPrefs(project, false);
+        if (prefs != null) {
+            prefs.putBoolean(DB_BIND_PREF.LAST_DIRECTION, isProj);
+            try {
+                prefs.flush();
+            } catch (BackingStoreException ex) {
+                Log.log(ex);
+            }
+        }
+    }
+    public boolean getLastDirection() {
+        IEclipsePreferences prefs = proj.getDbBindPrefs();
+        return prefs.getBoolean(DB_BIND_PREF.LAST_DIRECTION, true);
     }
 
     public void diff() {
