@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -39,8 +40,6 @@ import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuCreator;
-import org.eclipse.jface.action.IMenuListener;
-import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
@@ -63,8 +62,6 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -180,7 +177,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private ImageDescriptor imgDescrProj;
     private ImageDescriptor imgDescrDb;
     private Action getChangesAction;
-    private DiffTableViewer diffTable;
+    private DiffTable diffTable;
     private DiffPaneViewer diffPane;
     private boolean isDBLoaded;
     private boolean isCommitCommandAvailable;
@@ -258,93 +255,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
         IStatusLineManager manager = getEditorSite().getActionBars().getStatusLineManager();
 
-        diffTable = new DiffTableViewer(sashOuter, false, manager,
-                Paths.get(getProject().getLocationURI())) {
-
-            @Override
-            public void createRightSide(Composite container) {
-                GridLayout layout = new GridLayout(2, false);
-                layout.marginHeight = 0;
-                layout.marginWidth = 0;
-                container.setLayout(layout);
-
-                Composite labelCont = new Composite(container, SWT.NONE);
-                GridLayout labelLayout = new GridLayout(4, false);
-                labelLayout.marginHeight = 0;
-                labelLayout.marginWidth = 0;
-                labelCont.setLayout(labelLayout);
-
-                PixelConverter pc = new PixelConverter(labelCont);
-                GridData gd = new GridData(SWT.END, SWT.CENTER, true, false);
-                gd.horizontalIndent = pc.convertWidthInCharsToPixels(4);
-                labelCont.setLayoutData(gd);
-
-                Label l = new Label(labelCont, SWT.NONE);
-                l.setText(Messages.ProjectEditorDiffer_work_with);
-                l.setEnabled(false);
-
-                //current remote
-                lblCurrentRemote = new Label(labelCont, SWT.NONE);
-                lblCurrentRemote.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_HAND));
-                l = new Label(labelCont, SWT.NONE);
-                l.setText(Messages.ProjectEditorDiffer_apply_to);
-                l.setEnabled(false);
-
-                MenuManager menuCurRemote = new MenuManager();
-                lblCurrentRemote.setMenu(menuCurRemote.createContextMenu(lblCurrentRemote));
-                DBStoreMenu dbStoreMenu = new DBStoreMenu(menuCurRemote, ProjectEditorDiffer.this, mainPrefs);
-
-                menuCurRemote.addMenuListener(new IMenuListener() {
-
-                    @Override
-                    public void menuAboutToShow(IMenuManager manager) {
-                        manager.removeAll();
-                        dbStoreMenu.fillMenu();
-                    }
-                });
-
-                lblCurrentRemote.addMouseListener(new MouseAdapter() {
-
-                    @Override
-                    public void mouseDown(MouseEvent e) {
-                        if (e.button==1) {
-                            lblCurrentRemote.getMenu().setVisible(true);
-                        }
-                    }
-                });
-
-                //change apply action
-                lblApplyTo = new Label(labelCont, SWT.NONE);
-                lblApplyTo.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_HAND));
-                createApplyActions();
-
-                MenuManager menuMg = new MenuManager();
-                menuMg.add(actionToProj);
-                menuMg.add(actionToDb);
-
-                menuMg.addMenuListener(m -> m.update(false));
-                lblApplyTo.setMenu(menuMg.createContextMenu(lblApplyTo));
-
-                lblApplyTo.addMouseListener(MouseListener.mouseDownAdapter(e -> {
-                    if (e.button == 1) {
-                        lblApplyTo.getMenu().setVisible(true);
-                    }
-                }));
-
-                final ToolBarManager mgrTblBtn = new ToolBarManager(SWT.FLAT | SWT.RIGHT);
-                addBtnApplyWithMenu(container, mgrTblBtn);
-                mgrTblBtn.add(new Separator());
-                addBtnGetChangesWithMenu(container, mgrTblBtn);
-
-                ToolBar toolbar = mgrTblBtn.createControl(container);
-                gd = new GridData(SWT.END, SWT.CENTER, false, false);
-                gd.horizontalIndent = pc.convertWidthInCharsToPixels(2);
-                toolbar.setLayoutData(gd);
-
-                // ensure toolbar is never hidden
-                gd.minimumWidth = toolbar.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
-            }
-        };
+        diffTable = new DiffTable(sashOuter, false, manager,
+                Paths.get(getProject().getLocationURI()));
 
         diffTable.setLayoutData(new GridData(GridData.FILL_BOTH));
         diffTable.getViewer().addPostSelectionChangedListener(e -> {
@@ -430,174 +342,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         isCommitCommandAvailable = commandIds.contains(COMMAND.COMMIT_COMMAND_ID);
 
         getSite().getService(IContextService.class).activateContext(CONTEXT.MAIN);
-    }
-
-    /**
-     * Adds [Apply] button with drop-down menu, which contains
-     * main button [Apply] and additional button for applying
-     * with custom settings.
-     */
-    private void addBtnApplyWithMenu(Composite container, ToolBarManager mgrTblBtn) {
-        imgDescrApplyIcon = ImageDescriptor.createFromURL(
-                Activator.getContext().getBundle().getResource(FILE.ICONAPPLYTO));
-
-        imgDescrProj = ImageDescriptor.createFromURL(
-                Activator.getContext().getBundle().getResource(FILE.DECORPGCODEKEEPER));
-        imgDescrDb = ImageDescriptor.createFromURL(
-                Activator.getContext().getBundle().getResource(FILE.DECORDATABASE));
-
-        applyAction = new Action("", IAction.AS_DROP_DOWN_MENU) { //$NON-NLS-1$
-            @Override
-            public void run() {
-                if (!diffTable.isApplyToProj()) {
-                    diff();
-                } else {
-                    commit();
-                }
-            }
-        };
-        applyAction.setToolTipText(Messages.DiffTableViewer_apply_to + ' ' + Messages.DiffTableViewer_to_project);
-        applyAction.setImageDescriptor(new DecorationOverlayIcon(imgDescrApplyIcon,
-                imgDescrProj, IDecoration.TOP_RIGHT));
-
-        applyAction.setMenuCreator(new IMenuCreator() {
-
-            private MenuManager menuMgrApplyCustom;
-
-            @Override
-            public void dispose() {
-                if (menuMgrApplyCustom != null) {
-                    menuMgrApplyCustom.dispose();
-                    menuMgrApplyCustom = null;
-                }
-            }
-
-            @Override
-            public Menu getMenu(Control parent) {
-                menuMgrApplyCustom = new MenuManager();
-
-                if (menuMgrApplyCustom != null) {
-                    menuMgrApplyCustom.dispose();
-                }
-
-                IAction applyCustomAction = new Action(Messages.DiffTableViewer_apply_to_custom) {
-
-                    @Override
-                    public void run() {
-                        ApplyCustomDialog dialog = new ApplyCustomDialog(container.getShell(),
-                                new OverridablePrefs(proj.getProject(), null), isMsSql, oneTimePrefs);
-                        if (dialog.open() == Dialog.OK) {
-                            // 'oneTimePrefs' filled by one-time preferences
-                            // will be used in 'diff()'
-                            diff();
-                        }
-                    }
-                };
-
-                Action applyTitle = new Action(Messages.DiffTableViewer_apply_to) {
-                };
-                applyTitle.setEnabled(false);
-                menuMgrApplyCustom.add(applyTitle);
-
-                menuMgrApplyCustom.add(actionToProj);
-                menuMgrApplyCustom.add(actionToDb);
-                menuMgrApplyCustom.add(new Separator());
-                applyCustomAction.setEnabled(actionToDb.isChecked());
-
-                menuMgrApplyCustom.add(applyCustomAction);
-                return menuMgrApplyCustom.createContextMenu(parent);
-            }
-
-            @Override
-            public Menu getMenu(Menu parent) {
-                return null;
-            }
-        });
-        mgrTblBtn.add(applyAction);
-    }
-
-    private void createApplyActions() {
-        actionToProj = new Action(Messages.DiffTableViewer_to_project, IAction.AS_RADIO_BUTTON) {
-
-            @Override
-            public void run() {
-                changeMigrationDireciton(true, false);
-            }
-        };
-
-        actionToProj.setImageDescriptor(Activator.getRegisteredDescriptor(FILE.ICONAPPSMALL));
-        actionToDb = new Action(Messages.DiffTableViewer_to_database, IAction.AS_RADIO_BUTTON) {
-
-            @Override
-            public void run() {
-                changeMigrationDireciton(false, false);
-            }
-        };
-        actionToDb.setImageDescriptor(ImageDescriptor.createFromURL(Activator
-                .getContext().getBundle().getResource(FILE.ICONDATABASE)));
-    }
-
-
-    /**
-     * Adds [GetChanges] button with drop-down menu, which contains
-     * main button [GetChanges] and additional button for getting
-     * changes with custom settings.
-     */
-    private void addBtnGetChangesWithMenu(Composite container, ToolBarManager mgrTblBtn) {
-        getChangesAction = new Action("", IAction.AS_DROP_DOWN_MENU) { //$NON-NLS-1$
-
-            @Override
-            public void run() {
-                getChanges();
-            }
-        };
-        getChangesAction.setImageDescriptor(ImageDescriptor.createFromURL(Activator.getContext()
-                .getBundle().getResource(FILE.ICONREFRESH)));
-        getChangesAction.setToolTipText(Messages.DiffTableViewer_get_changes);
-        getChangesAction.setMenuCreator(new IMenuCreator() {
-
-            private MenuManager menuMgrGetChangesCustom;
-
-            @Override
-            public void dispose() {
-                if (menuMgrGetChangesCustom != null) {
-                    menuMgrGetChangesCustom.dispose();
-                    menuMgrGetChangesCustom = null;
-                }
-            }
-
-            @Override
-            public Menu getMenu(Control parent) {
-                if (menuMgrGetChangesCustom != null) {
-                    menuMgrGetChangesCustom.dispose();
-                }
-
-                menuMgrGetChangesCustom = new MenuManager();
-                menuMgrGetChangesCustom.add(new Action(Messages.DiffTableViewer_get_changes_custom) {
-
-                    @Override
-                    public void run() {
-                        GetChangesCustomDialog dialog = new GetChangesCustomDialog(container.getShell(),
-                                new OverridablePrefs(proj.getProject(), null), isMsSql, oneTimePrefs);
-                        if (dialog.open() == Dialog.OK) {
-                            // 'oneTimePrefs' filled by one-time preferences
-                            // will be used in 'getChanges()'
-                            getChanges();
-                        }
-                    }
-                });
-                menuMgrGetChangesCustom.add(new Separator());
-                DBStoreMenu dbStoreMenu = new DBStoreMenu(menuMgrGetChangesCustom, ProjectEditorDiffer.this, mainPrefs);
-                dbStoreMenu.fillMenu();
-                return menuMgrGetChangesCustom.createContextMenu(parent);
-            }
-
-            @Override
-            public Menu getMenu(Menu parent) {
-                return null;
-            }
-        });
-        mgrTblBtn.add(getChangesAction);
     }
 
     private void updateWorkWith() {
@@ -1293,6 +1037,251 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             return ((File) remote).getName();
         } else {
             throw new IllegalArgumentException("Remote is not a File or DbInfo!"); //$NON-NLS-1$
+        }
+    }
+
+    private class DiffTable extends DiffTableViewer {
+
+        public DiffTable(Composite parent, boolean viewOnly, IStatusLineManager lineManager, Path location) {
+            super(parent, viewOnly, lineManager, location);
+        }
+
+        @Override
+        public void createRightSide(Composite container) {
+            GridLayout layout = new GridLayout(2, false);
+            layout.marginHeight = 0;
+            layout.marginWidth = 0;
+            container.setLayout(layout);
+
+            Composite labelCont = new Composite(container, SWT.NONE);
+            GridLayout labelLayout = new GridLayout(4, false);
+            labelLayout.marginHeight = 0;
+            labelLayout.marginWidth = 0;
+            labelCont.setLayout(labelLayout);
+
+            PixelConverter pc = new PixelConverter(labelCont);
+            GridData gd = new GridData(SWT.END, SWT.CENTER, true, false);
+            gd.horizontalIndent = pc.convertWidthInCharsToPixels(4);
+            labelCont.setLayoutData(gd);
+
+            Label l = new Label(labelCont, SWT.NONE);
+            l.setText(Messages.ProjectEditorDiffer_work_with);
+            l.setEnabled(false);
+
+            //current remote
+            lblCurrentRemote = new Label(labelCont, SWT.NONE);
+            lblCurrentRemote.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_HAND));
+            l = new Label(labelCont, SWT.NONE);
+            l.setText(Messages.ProjectEditorDiffer_apply_to);
+            l.setEnabled(false);
+
+            MenuManager menuCurRemote = new MenuManager();
+            lblCurrentRemote.setMenu(menuCurRemote.createContextMenu(lblCurrentRemote));
+            DBStoreMenu dbStoreMenu = new DBStoreMenu(menuCurRemote, ProjectEditorDiffer.this, mainPrefs);
+
+            menuCurRemote.addMenuListener(m->{
+                m.removeAll();
+                dbStoreMenu.fillMenu();
+            });
+
+            lblCurrentRemote.addMouseListener(MouseListener.mouseDownAdapter(e-> {
+                if (e.button==1) {
+                    lblCurrentRemote.getMenu().setVisible(true);
+                }
+            }));
+
+            //change apply action
+            lblApplyTo = new Label(labelCont, SWT.NONE);
+            lblApplyTo.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_HAND));
+            createApplyActions();
+
+            MenuManager menuMg = new MenuManager();
+            menuMg.add(actionToProj);
+            menuMg.add(actionToDb);
+
+            menuMg.addMenuListener(m -> m.update(false));
+            lblApplyTo.setMenu(menuMg.createContextMenu(lblApplyTo));
+
+            lblApplyTo.addMouseListener(MouseListener.mouseDownAdapter(e -> {
+                if (e.button == 1) {
+                    lblApplyTo.getMenu().setVisible(true);
+                }
+            }));
+
+            final ToolBarManager mgrTblBtn = new ToolBarManager(SWT.FLAT | SWT.RIGHT);
+            addBtnApplyWithMenu(container, mgrTblBtn);
+            mgrTblBtn.add(new Separator());
+            addBtnGetChangesWithMenu(container, mgrTblBtn);
+
+            ToolBar toolbar = mgrTblBtn.createControl(container);
+            gd = new GridData(SWT.END, SWT.CENTER, false, false);
+            gd.horizontalIndent = pc.convertWidthInCharsToPixels(2);
+            toolbar.setLayoutData(gd);
+
+            // ensure toolbar is never hidden
+            gd.minimumWidth = toolbar.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
+        }
+
+        private void createApplyActions() {
+            actionToProj = new Action(Messages.DiffTableViewer_to_project, IAction.AS_RADIO_BUTTON) {
+
+                @Override
+                public void run() {
+                    changeMigrationDireciton(true, false);
+                }
+            };
+
+            actionToProj.setImageDescriptor(Activator.getRegisteredDescriptor(FILE.ICONAPPSMALL));
+            actionToDb = new Action(Messages.DiffTableViewer_to_database, IAction.AS_RADIO_BUTTON) {
+
+                @Override
+                public void run() {
+                    changeMigrationDireciton(false, false);
+                }
+            };
+            actionToDb.setImageDescriptor(ImageDescriptor.createFromURL(Activator
+                    .getContext().getBundle().getResource(FILE.ICONDATABASE)));
+        }
+
+        /**
+         * Adds [Apply] button with drop-down menu, which contains
+         * main button [Apply] and additional button for applying
+         * with custom settings.
+         */
+        private void addBtnApplyWithMenu(Composite container, ToolBarManager mgrTblBtn) {
+            imgDescrApplyIcon = ImageDescriptor.createFromURL(
+                    Activator.getContext().getBundle().getResource(FILE.ICONAPPLYTO));
+
+            imgDescrProj = ImageDescriptor.createFromURL(
+                    Activator.getContext().getBundle().getResource(FILE.DECORPGCODEKEEPER));
+            imgDescrDb = ImageDescriptor.createFromURL(
+                    Activator.getContext().getBundle().getResource(FILE.DECORDATABASE));
+
+            applyAction = new Action("", IAction.AS_DROP_DOWN_MENU) { //$NON-NLS-1$
+                @Override
+                public void run() {
+                    if (!diffTable.isApplyToProj()) {
+                        diff();
+                    } else {
+                        commit();
+                    }
+                }
+            };
+            applyAction.setToolTipText(Messages.DiffTableViewer_apply_to + ' ' + Messages.DiffTableViewer_to_project);
+            applyAction.setImageDescriptor(new DecorationOverlayIcon(imgDescrApplyIcon,
+                    imgDescrProj, IDecoration.TOP_RIGHT));
+
+            applyAction.setMenuCreator(new IMenuCreator() {
+
+                private MenuManager menuMgrApplyCustom;
+
+                @Override
+                public void dispose() {
+                    if (menuMgrApplyCustom != null) {
+                        menuMgrApplyCustom.dispose();
+                        menuMgrApplyCustom = null;
+                    }
+                }
+
+                @Override
+                public Menu getMenu(Control parent) {
+                    menuMgrApplyCustom = new MenuManager();
+
+                    if (menuMgrApplyCustom != null) {
+                        menuMgrApplyCustom.dispose();
+                    }
+
+                    IAction applyCustomAction = new Action(Messages.DiffTableViewer_apply_to_custom) {
+
+                        @Override
+                        public void run() {
+                            ApplyCustomDialog dialog = new ApplyCustomDialog(container.getShell(),
+                                    new OverridablePrefs(proj.getProject(), null), isMsSql, oneTimePrefs);
+                            if (dialog.open() == Dialog.OK) {
+                                // 'oneTimePrefs' filled by one-time preferences
+                                // will be used in 'diff()'
+                                diff();
+                            }
+                        }
+                    };
+
+                    Action applyTitle = new Action(Messages.DiffTableViewer_apply_to) {
+                    };
+                    applyTitle.setEnabled(false);
+                    menuMgrApplyCustom.add(applyTitle);
+
+                    menuMgrApplyCustom.add(actionToProj);
+                    menuMgrApplyCustom.add(actionToDb);
+                    menuMgrApplyCustom.add(new Separator());
+                    applyCustomAction.setEnabled(actionToDb.isChecked());
+
+                    menuMgrApplyCustom.add(applyCustomAction);
+                    return menuMgrApplyCustom.createContextMenu(parent);
+                }
+
+                @Override
+                public Menu getMenu(Menu parent) {
+                    return null;
+                }
+            });
+            mgrTblBtn.add(applyAction);
+        }
+
+        private void addBtnGetChangesWithMenu(Composite container, ToolBarManager mgrTblBtn) {
+            getChangesAction = new Action("", IAction.AS_DROP_DOWN_MENU) { //$NON-NLS-1$
+
+                @Override
+                public void run() {
+                    getChanges();
+                }
+            };
+            getChangesAction.setImageDescriptor(ImageDescriptor.createFromURL(Activator.getContext()
+                    .getBundle().getResource(FILE.ICONREFRESH)));
+            getChangesAction.setToolTipText(Messages.DiffTableViewer_get_changes);
+            getChangesAction.setMenuCreator(new IMenuCreator() {
+
+                private MenuManager menuMgrGetChangesCustom;
+
+                @Override
+                public void dispose() {
+                    if (menuMgrGetChangesCustom != null) {
+                        menuMgrGetChangesCustom.dispose();
+                        menuMgrGetChangesCustom = null;
+                    }
+                }
+
+                @Override
+                public Menu getMenu(Control parent) {
+                    if (menuMgrGetChangesCustom != null) {
+                        menuMgrGetChangesCustom.dispose();
+                    }
+
+                    menuMgrGetChangesCustom = new MenuManager();
+                    menuMgrGetChangesCustom.add(new Action(Messages.DiffTableViewer_get_changes_custom) {
+
+                        @Override
+                        public void run() {
+                            GetChangesCustomDialog dialog = new GetChangesCustomDialog(container.getShell(),
+                                    new OverridablePrefs(proj.getProject(), null), isMsSql, oneTimePrefs);
+                            if (dialog.open() == Dialog.OK) {
+                                // 'oneTimePrefs' filled by one-time preferences
+                                // will be used in 'getChanges()'
+                                getChanges();
+                            }
+                        }
+                    });
+                    menuMgrGetChangesCustom.add(new Separator());
+                    DBStoreMenu dbStoreMenu = new DBStoreMenu(menuMgrGetChangesCustom, ProjectEditorDiffer.this, mainPrefs);
+                    dbStoreMenu.fillMenu();
+                    return menuMgrGetChangesCustom.createContextMenu(parent);
+                }
+
+                @Override
+                public Menu getMenu(Menu parent) {
+                    return null;
+                }
+            });
+            mgrTblBtn.add(getChangesAction);
         }
     }
 }
