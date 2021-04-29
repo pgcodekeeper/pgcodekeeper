@@ -32,7 +32,10 @@ Bundle-ActivationPolicy: lazy
 Bundle-Activator: ru.taximaxim.codekeeper.apgdiff.Activator
 Import-Package: org.eclipse.core.runtime;version="[3.5.0,4.0.0)",
  org.eclipse.equinox.log;version="[1.1.0,2.0.0)",
+ org.eclipse.jface.text,
+ org.eclipse.jface.text.formatter,
  org.eclipse.osgi.util;version="[1.1.0,2.0.0)",
+ org.eclipse.text.edits,
  org.osgi.framework;version="[1.9.0,2.0.0)",
  org.osgi.service.log;version="[1.4.0,2.0.0)",
  org.osgi.util.tracker;version="[1.5.0,2.0.0)"

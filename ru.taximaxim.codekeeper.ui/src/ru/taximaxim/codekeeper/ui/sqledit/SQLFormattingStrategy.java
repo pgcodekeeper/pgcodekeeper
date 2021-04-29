@@ -1,7 +1,6 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -14,14 +13,11 @@ import org.eclipse.jface.text.formatter.ContextBasedFormattingStrategy;
 import org.eclipse.jface.text.formatter.FormattingContextProperties;
 import org.eclipse.jface.text.formatter.IFormattingContext;
 import org.eclipse.text.edits.MalformedTreeException;
-import org.eclipse.text.edits.MultiTextEdit;
-import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.text.edits.TextEdit;
 
 import cz.startnet.utils.pgdiff.formatter.FileFormatter;
 import cz.startnet.utils.pgdiff.formatter.FormatConfiguration;
 import cz.startnet.utils.pgdiff.formatter.FormatConfiguration.IndentType;
-import cz.startnet.utils.pgdiff.formatter.FormatItem;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.FORMATTER_PREF;
@@ -97,20 +93,8 @@ public class SQLFormattingStrategy extends ContextBasedFormattingStrategy {
             config.setSpacesForTabs(mainPrefs.getInt(FORMATTER_PREF.WHITESPACE_COUNT));
         }
 
-        FileFormatter formatter = new FileFormatter(offset, length, config);
-        List<FormatItem> list = formatter.formatString(source, editor.isMsSql());
-
-        if (list.isEmpty()) {
-            return null;
-        }
-
-        TextEdit edit = new MultiTextEdit(offset, length);
-
-        for (FormatItem item : list) {
-            edit.addChild(new ReplaceEdit(item.getStart(), item.getLength(), item.getText()));
-        }
-
-        return edit;
+        FileFormatter formatter = new FileFormatter(source, offset, length, config, editor.isMsSql());
+        return formatter.getFormatEdit();
     }
 
     @Override

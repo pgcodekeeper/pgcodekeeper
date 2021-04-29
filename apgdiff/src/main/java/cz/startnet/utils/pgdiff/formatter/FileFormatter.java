@@ -8,6 +8,12 @@ import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Token;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.Document;
+import org.eclipse.text.edits.MalformedTreeException;
+import org.eclipse.text.edits.MultiTextEdit;
+import org.eclipse.text.edits.ReplaceEdit;
+import org.eclipse.text.edits.TextEdit;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLLexer;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
@@ -25,18 +31,58 @@ import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class FileFormatter {
 
+    private final String source;
     private final int start;
+    private final int length;
     private final int stop;
+    private final boolean isMsSql;
 
     private final FormatConfiguration config;
 
-    public FileFormatter(int offset, int length, FormatConfiguration config) {
+    public FileFormatter(String source, int offset, int length, FormatConfiguration config, boolean isMsSql) {
+        this.source = source;
         this.start = offset;
         this.stop = offset + length;
+        this.length = length;
         this.config = config;
+        this.isMsSql = isMsSql;
     }
 
-    public List<FormatItem> formatString(String source, boolean isMsSql) {
+    public String formatText() throws FormatterException {
+        Document doc = new Document(source);
+
+        TextEdit edit = getFormatEdit();
+        if (edit == null) {
+            return source;
+        }
+        try {
+            edit.apply(doc);
+        } catch (MalformedTreeException | BadLocationException e) {
+            throw new FormatterException(e.getLocalizedMessage(), e);
+        }
+        return doc.get();
+    }
+
+    /**
+     * @return edit operation or null if no formatting required
+     */
+    public TextEdit getFormatEdit() {
+        List<FormatItem> list = this.getFormatItems();
+
+        if (list.isEmpty()) {
+            return null;
+        }
+
+        TextEdit edit = new MultiTextEdit(start, length);
+
+        for (FormatItem item : list) {
+            edit.addChild(new ReplaceEdit(item.getStart(), item.getLength(), item.getText()));
+        }
+
+        return edit;
+    }
+
+    public List<FormatItem> getFormatItems() {
         if (isMsSql) {
             return Collections.emptyList();
         }
