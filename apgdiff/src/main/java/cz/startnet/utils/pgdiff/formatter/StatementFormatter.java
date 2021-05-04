@@ -9,7 +9,9 @@ import java.util.Map;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import cz.startnet.utils.pgdiff.formatter.FormatConfiguration.IndentType;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrUtils;
@@ -113,15 +115,16 @@ public class StatementFormatter {
         }
         CommonTokenStream stream = new CommonTokenStream(lexer);
         SQLParser parser = new SQLParser(stream);
-        parser.addParseListener(new FormatParseTreeListener(indents));
+
+        ParserRuleContext ctx;
         if ("SQL".equalsIgnoreCase(language)) {
-            parser.sql();
+            ctx = parser.sql();
             currentIndent = 0;
         } else {
             AntlrUtils.removeIntoStatements(parser);
-            parser.plpgsql_function();
+            ctx = parser.plpgsql_function();
         }
-
+        ParseTreeWalker.DEFAULT.walk(new FormatParseTreeListener(stream, indents), ctx);
         return stream.getTokens();
     }
 
