@@ -33,7 +33,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmt_no_parensContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.StatementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Update_setContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Update_stmt_for_psqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectOps;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
@@ -213,64 +212,36 @@ public class FormatParseTreeListener implements ParseTreeListener {
     }
 
     private void formatDeleteStatement(Delete_stmt_for_psqlContext ctx) {
+        if (ctx.with_clause() == null && !isFromComplex(ctx.from_item())) {
+            // simple statement
+            return;
+        }
+
         indents.put(ctx.DELETE().getSymbol(), IndentDirection.BLOCK_LINE);
 
         TerminalNode node = ctx.USING();
         if (node != null) {
             indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
         }
-
-        node = ctx.WHERE();
-        if (node != null) {
-            indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
-        }
-
-        node = ctx.RETURNING();
-        if (node != null) {
-            indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
-        }
     }
 
     private void formatUpdateStatement(Update_stmt_for_psqlContext ctx) {
+        if (ctx.with_clause() == null && !isFromComplex(ctx.from_item())) {
+            // simple statement
+            return;
+        }
+
         indents.put(ctx.UPDATE().getSymbol(), IndentDirection.BLOCK_LINE);
 
-        for (Update_setContext update : ctx.update_set()) {
-            indents.put(update.getStart(), IndentDirection.BLOCK_START);
-            putBlockStop(update.getStop());
-        }
-
         TerminalNode node = ctx.FROM();
-        if (node != null) {
-            indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
-        }
-
-        node = ctx.WHERE();
-        if (node != null) {
-            indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
-        }
-
-        node = ctx.RETURNING();
         if (node != null) {
             indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
         }
     }
 
     private void formatInsertStatement(Insert_stmt_for_psqlContext ctx) {
-        indents.put(ctx.INSERT().getSymbol(), IndentDirection.BLOCK_LINE);
-
-        TerminalNode node = ctx.OVERRIDING();
-        if (node != null) {
-            indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
-        }
-
-        node = ctx.ON();
-        if (node != null) {
-            indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
-        }
-
-        node = ctx.RETURNING();
-        if (node != null) {
-            indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
+        if (ctx.with_clause() != null) {
+            indents.put(ctx.INSERT().getSymbol(), IndentDirection.BLOCK_LINE);
         }
     }
 
@@ -361,7 +332,10 @@ public class FormatParseTreeListener implements ParseTreeListener {
         if (ctx.groupby_clause() != null || ctx.HAVING() != null || ctx.WINDOW() != null) {
             return true;
         }
-        List<From_itemContext> fromList = ctx.from_item();
+        return isFromComplex(ctx.from_item());
+    }
+
+    private boolean isFromComplex(List<From_itemContext> fromList) {
         if (fromList.size() > 1) {
             return true;
         }
@@ -369,7 +343,6 @@ public class FormatParseTreeListener implements ParseTreeListener {
             // top level from_item is not from_primary, it must be a join
             return true;
         }
-
         return false;
     }
 
