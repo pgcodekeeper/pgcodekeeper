@@ -2,11 +2,13 @@ package cz.startnet.utils.pgdiff.formatter;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
+import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
@@ -14,6 +16,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLLexer;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.After_opsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Case_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Case_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comp_optionsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.DeclarationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.DeclarationsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Delete_stmt_for_psqlContext;
@@ -27,24 +30,37 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.If_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Insert_stmt_for_psqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Loop_startContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Loop_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.OpContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Op_charsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_opsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_ops_no_parensContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmt_no_parensContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Start_labelContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.StatementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Update_stmt_for_psqlContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Vex_bContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectOps;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
+import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 
 public class FormatParseTreeListener implements ParseTreeListener {
 
     private final CommonTokenStream tokens;
     private final Map<Token, IndentDirection> indents;
+    private final Set<Token> unaryOps;
 
-    public FormatParseTreeListener(CommonTokenStream tokens, Map<Token, IndentDirection> indents) {
+    /**
+     * @param unaryOps found unary operators and other operator-like tokens
+     */
+    public FormatParseTreeListener(CommonTokenStream tokens,
+            Map<Token, IndentDirection> indents,
+            Set<Token> unaryOps) {
         this.tokens = tokens;
         this.indents = indents;
+        this.unaryOps = unaryOps;
     }
 
     @Override
@@ -64,7 +80,11 @@ public class FormatParseTreeListener implements ParseTreeListener {
 
     @Override
     public void exitEveryRule(ParserRuleContext ctx) {
-        if (ctx instanceof Function_blockContext) {
+        if (ctx instanceof VexContext) {
+            formatOperators(new Vex((VexContext) ctx));
+        } else if (ctx instanceof Vex_bContext) {
+            formatOperators(new Vex((Vex_bContext) ctx));
+        } else if (ctx instanceof Function_blockContext) {
             formatFunctionBlock((Function_blockContext) ctx);
         } else if (ctx instanceof If_statementContext) {
             formatIfStatement((If_statementContext) ctx);
@@ -100,7 +120,43 @@ public class FormatParseTreeListener implements ParseTreeListener {
             indents.put(ctx.getStart(), IndentDirection.BLOCK_LINE);
         } else if (ctx instanceof StatementContext) {
             formatSql((StatementContext) ctx);
+        } else if (ctx instanceof Start_labelContext) {
+            formatNonOpToken((Start_labelContext) ctx);
+        } else if (ctx instanceof Comp_optionsContext) {
+            formatNonOpToken((Comp_optionsContext) ctx);
         }
+    }
+
+    private void formatOperators(Vex vex) {
+        TerminalNode node = vex.plus();
+        if (node == null) {
+            node = vex.minus();
+        }
+        if (node == null) {
+            OpContext op = vex.op();
+            if (op != null) {
+                Op_charsContext opChars = op.op_chars();
+                if (opChars != null) {
+                    ParseTree opNode = opChars.children.get(0);
+                    if (opNode instanceof TerminalNode) {
+                        node = (TerminalNode) opNode;
+                    }
+                }
+            }
+        }
+        if (node != null && vex.vex().size() == 1) {
+            // found an operator with single operand
+            unaryOps.add(node.getSymbol());
+        }
+    }
+
+    private void formatNonOpToken(Start_labelContext ctx) {
+        unaryOps.add(ctx.LESS_LESS().getSymbol());
+        unaryOps.add(ctx.GREATER_GREATER().getSymbol());
+    }
+
+    private void formatNonOpToken(Comp_optionsContext ctx) {
+        unaryOps.add(ctx.HASH_SIGN().getSymbol());
     }
 
     private void formatFunctionStatements(Function_statementsContext ctx) {

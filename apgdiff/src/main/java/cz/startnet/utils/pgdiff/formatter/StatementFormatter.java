@@ -3,14 +3,17 @@ package cz.startnet.utils.pgdiff.formatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import cz.startnet.utils.pgdiff.formatter.FormatConfiguration.IndentType;
@@ -41,8 +44,15 @@ public class StatementFormatter {
      * whether current token is first non-whitespace token on the line
      */
     private boolean firstTokenInLine = true;
-
+    /**
+     * intermediate indent instructions found by parser
+     */
     private final Map<Token, IndentDirection> indents = new HashMap<>();
+    /**
+     * unaryOps and other operator-like tokens found by parser
+     */
+    private final Set<Token> unaryOps = new HashSet<>();
+
     private final List<FormatItem> tabs = new ArrayList<>();
     private final List<FormatItem> changes = new ArrayList<>();
 
@@ -99,7 +109,7 @@ public class StatementFormatter {
             tabs.clear();
 
             if (config.isAddWhitespaceAfterOp() || config.isAddWhitespaceBeforeOp()) {
-                proccessOperators(type, tokenStart);
+                proccessOperators(type, tokenStart, t);
             }
 
             isMixedIndent = false;
@@ -110,7 +120,10 @@ public class StatementFormatter {
 
     private List<? extends Token> getTokensFromDefinition(String definition, String language) {
         Lexer lexer = new SQLLexer(new ANTLRInputStream(definition));
-        if (IndentType.DISABLE == config.getIndentType()) {
+        if (IndentType.DISABLE == config.getIndentType()
+                && !config.isAddWhitespaceAfterOp()
+                && !config.isAddWhitespaceBeforeOp()) {
+            // fast-path when no parser is required for advanced structure detection
             return lexer.getAllTokens();
         }
         CommonTokenStream stream = new CommonTokenStream(lexer);
@@ -124,7 +137,8 @@ public class StatementFormatter {
             AntlrUtils.removeIntoStatements(parser);
             ctx = parser.plpgsql_function();
         }
-        ParseTreeWalker.DEFAULT.walk(new FormatParseTreeListener(stream, indents), ctx);
+        ParseTreeListener listener = new FormatParseTreeListener(stream, indents, unaryOps);
+        ParseTreeWalker.DEFAULT.walk(listener, ctx);
         return stream.getTokens();
     }
 
@@ -168,8 +182,7 @@ public class StatementFormatter {
         }
     }
 
-    private void proccessOperators(int type, int tokenStart) {
-        // FIXME unary ops don't require spaces
+    private void proccessOperators(int type, int tokenStart, Token t) {
         switch (type) {
         case SQLLexer.EQUAL:
         case SQLLexer.NOT_EQUAL:
@@ -187,7 +200,12 @@ public class StatementFormatter {
         case SQLLexer.COLON_EQUAL:
         case SQLLexer.LESS_LESS:
         case SQLLexer.GREATER_GREATER:
+        case SQLLexer.HASH_SIGN:
         case SQLLexer.OP_CHARS:
+            if (unaryOps.contains(t)) {
+                return;
+            }
+
             if (config.isAddWhitespaceBeforeOp() && lastTokenOffset == tokenStart) {
                 addChange(new FormatItem(tokenStart, 0, " "));
             }
