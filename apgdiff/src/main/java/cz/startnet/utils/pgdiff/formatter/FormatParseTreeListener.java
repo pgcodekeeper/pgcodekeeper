@@ -409,7 +409,8 @@ public class FormatParseTreeListener implements ParseTreeListener {
             try {
                 Token select = node.getSymbol();
                 tokens.seek(select.getTokenIndex());
-                return tokens.LA(-1) == SQLLexer.LEFT_PAREN;
+                Token prev = tokens.LT(-1);
+                return prev == null ? false : prev.getType() == SQLLexer.LEFT_PAREN;
             } finally {
                 tokens.seek(oldPos);
             }
