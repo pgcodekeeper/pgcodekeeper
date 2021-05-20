@@ -807,6 +807,7 @@ LESS_LESS : '<<';
 GREATER_GREATER : '>>';
 DOUBLE_DOT: '..';
 HASH_SIGN: '#';              // last operator rule, sync with CustomSQLAntlrErrorStrategy
+END_OF_DATA: '\\.';
 
 BlockComment
     :   '/*' (BlockComment |.)*? '*/' -> channel(HIDDEN)
@@ -920,6 +921,12 @@ Extended_Control_Characters         :   '\u0080' .. '\u009F';
 
 Character_String_Literal
     : [eEnNxXbB]? Single_String (String_Joiner Single_String)*
+    ;
+
+Copy_Data_Row
+    : StrictIdentifierChar
+    (StrictIdentifierChar | Tab | Space | Single_String | '\\N' | '\\0' | '-' | ':' | '.' | '@' | HEX_DIGIT)*
+    New_Line
     ;
 
 fragment
