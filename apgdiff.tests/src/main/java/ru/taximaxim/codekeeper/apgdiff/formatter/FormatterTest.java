@@ -18,6 +18,7 @@ import cz.startnet.utils.pgdiff.formatter.FormatConfiguration;
 import cz.startnet.utils.pgdiff.formatter.FormatConfiguration.IndentType;
 import cz.startnet.utils.pgdiff.formatter.FormatterException;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
+import ru.taximaxim.codekeeper.apgdiff.log.Log;
 
 @RunWith(value = Parameterized.class)
 public class FormatterTest {
@@ -41,10 +42,11 @@ public class FormatterTest {
 
     public FormatterTest(FormatConfigProvider args) {
         this.args = args;
+        Log.log(Log.LOG_DEBUG, args.getClass().getSimpleName());
     }
 
     @Test
-    public void TestFormatterParams() throws IOException, URISyntaxException, FormatterException {
+    public void testFormatterParams() throws IOException, URISyntaxException, FormatterException {
         FileFormatter fileform = new FileFormatter(args.getOldFile(), 0,
                 args.getOldFile().length(), args.getConfig(), false);
         Assert.assertEquals(
@@ -94,7 +96,6 @@ class DefaultConfigProvider implements FormatConfigProvider {
         config.setIndentSize(2);
         config.setIndentType(IndentType.WHITESPACE);
         config.setRemoveTrailingWhitespace(true);
-        config.setSpacesForTabs(2);
     }
 }
 
@@ -115,6 +116,7 @@ class IndentTypeConfigProvider implements FormatConfigProvider {
     @Override
     public void fillConfig(FormatConfiguration config) {
         config.setIndentType(IndentType.TAB);
+        config.setIndentSize(1);
     }
 }
 
@@ -196,7 +198,8 @@ class AddSpacesForTabsConfigProvider implements FormatConfigProvider {
 
     @Override
     public void fillConfig(FormatConfiguration config) {
-        config.setSpacesForTabs(8);
+        config.setIndentType(IndentType.WHITESPACE);
+        config.setIndentSize(8);
     }
 }
 
@@ -238,6 +241,6 @@ class IndentTypeTabConfigProvider implements FormatConfigProvider {
     @Override
     public void fillConfig(FormatConfiguration config) {
         config.setIndentType(IndentType.TAB);
-        config.setIndentSize(1);
+        config.setIndentSize(2);
     }
 }

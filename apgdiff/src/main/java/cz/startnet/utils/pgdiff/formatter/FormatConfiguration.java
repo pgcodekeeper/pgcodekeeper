@@ -1,5 +1,7 @@
 package cz.startnet.utils.pgdiff.formatter;
 
+import java.util.Arrays;
+
 public class FormatConfiguration {
 
     public enum IndentType {
@@ -12,9 +14,6 @@ public class FormatConfiguration {
 
     private IndentType indentType = IndentType.DISABLE;
     private int indentSize;
-    private int spacesForTabs = -1;
-
-    private String tabReplace;
 
     public void setAddWhitespaceBeforeOp(boolean addWhitespaceBeforeOp) {
         this.addWhitespaceBeforeOp = addWhitespaceBeforeOp;
@@ -30,11 +29,6 @@ public class FormatConfiguration {
 
     public void setIndentSize(int indentSize) {
         this.indentSize = indentSize;
-    }
-
-    public void setSpacesForTabs(int spacesForTabs) {
-        this.spacesForTabs = spacesForTabs;
-        tabReplace = spacesForTabs > 0 ? String.format("%1$" + spacesForTabs + 's', "") : "";
     }
 
     public boolean isAddWhitespaceAfterOp() {
@@ -53,19 +47,26 @@ public class FormatConfiguration {
         return indentSize;
     }
 
-    public int getSpacesForTabs() {
-        return spacesForTabs;
-    }
-
-    public String getTabReplace() {
-        return tabReplace;
-    }
-
     public IndentType getIndentType() {
         return indentType;
     }
 
     public void setIndentType(IndentType indentType) {
         this.indentType = indentType;
+    }
+
+    public String createIndent(int length) {
+        return createIndent(length, getIndentType() == IndentType.TAB ? '\t' : ' ');
+    }
+
+    public static String createIndent(int length, char indentChar) {
+        if (length <= 0) {
+            return "";
+        }
+
+        char [] chars  = new char[length];
+        Arrays.fill(chars, indentChar);
+
+        return new String(chars);
     }
 }

@@ -920,4 +920,15 @@ implements IResourceChangeListener, ITextErrorReporter {
             Log.log(ex);
         }
     }
+    /*
+    @Override
+    protected boolean isTabsToSpacesConversionEnabled() {
+        return FORMATTER_PREF.TAB.equals(mainPrefs.getString(FORMATTER_PREF.INDENT_TYPE));
+    }
+
+    @Override
+    protected boolean isSpacesAsTabsDeletionEnabled() {
+        return false;
+    }
+     */
 }

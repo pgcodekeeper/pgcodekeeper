@@ -227,5 +227,24 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
                 getTextAttribute(prefs, SQLEditorStatementTypes.QUOTED_IDENTIFIER)));
         return commentScanner;
     }
+    /*
+    @Override
+    public int getTabWidth(ISourceViewer sourceViewer) {
+        return prefs.getInt(FORMATTER_PREF.INDENT_SIZE);
+    }
+
+    @Override
+    public String[] getIndentPrefixes(ISourceViewer sourceViewer, String contentType) {
+        String indent;
+
+        String mode = prefs.getString(FORMATTER_PREF.INDENT_TYPE);
+        if (FORMATTER_PREF.TAB.equals(mode)) {
+            indent = "\t";
+        } else {
+            indent = FormatConfiguration.createIndent(getTabWidth(sourceViewer), ' ');
+        }
+        return new String[] { indent, "" };
+    }
+     */
 }
 

@@ -116,8 +116,6 @@ public interface UIConsts {
         String REMOVE_TRAILING_WHITESPACE = "removeTrailingWhitespace"; //$NON-NLS-1$
         String ADD_WHITESPACE_BEFORE_OP = "addWhitespaceBeforeOperator"; //$NON-NLS-1$
         String ADD_WHITESPACE_AFTER_OP = "addWhitespaceAfterOperator"; //$NON-NLS-1$
-        String REPLACE_TAB = "replaceTab"; //$NON-NLS-1$
-        String WHITESPACE_COUNT = "whitespaceCount"; //$NON-NLS-1$
 
         String INDENT_TYPE = "indentType"; //$NON-NLS-1$
         String WHITESPACE = "whitespace"; //$NON-NLS-1$

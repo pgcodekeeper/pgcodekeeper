@@ -18,7 +18,6 @@ public class SQLEditorFormatterPrefPage extends FieldEditorPreferencePage
 implements IWorkbenchPreferencePage {
 
     private IntegerFieldEditor indentSize;
-    private IntegerFieldEditor replaceCount;
 
     public SQLEditorFormatterPrefPage() {
         super(GRID);
@@ -61,28 +60,12 @@ implements IWorkbenchPreferencePage {
         addField(new BooleanFieldEditor(FORMATTER_PREF.ADD_WHITESPACE_AFTER_OP,
                 Messages.SQLEditorFormatterPrefPage_add_whitespace_after_operators,
                 getFieldEditorParent()));
-
-        addField(new BooleanFieldEditor(FORMATTER_PREF.REPLACE_TAB,
-                Messages.SQLEditorFormatterPrefPage_replace_tab_with_whitespaces,
-                getFieldEditorParent()));
-
-        replaceCount = new IntegerFieldEditor(FORMATTER_PREF.WHITESPACE_COUNT,
-                Messages.SQLEditorFormatterPrefPage_whitespace_count,
-                getFieldEditorParent(), 2);
-
-        replaceCount.setEnabled(
-                store.getBoolean(FORMATTER_PREF.REPLACE_TAB),
-                getFieldEditorParent());
-
-        addField(replaceCount);
     }
 
     @Override
     public void propertyChange(PropertyChangeEvent event) {
         FieldEditor source = (FieldEditor) event.getSource();
-        if (source.getPreferenceName() == FORMATTER_PREF.REPLACE_TAB) {
-            replaceCount.setEnabled(((boolean) event.getNewValue()), getFieldEditorParent());
-        } else if (source.getPreferenceName() == FORMATTER_PREF.INDENT_TYPE) {
+        if (source.getPreferenceName() == FORMATTER_PREF.INDENT_TYPE) {
             indentSize.setEnabled(!event.getNewValue().equals(FORMATTER_PREF.DISABLE), getFieldEditorParent());
         }
 

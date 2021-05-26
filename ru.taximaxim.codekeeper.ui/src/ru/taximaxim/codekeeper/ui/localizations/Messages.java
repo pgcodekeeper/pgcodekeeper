@@ -104,13 +104,9 @@ public final class Messages extends NLS {
 
     public static String SQLEditorFormatterPrefPage_remove_trailing_whitespace;
 
-    public static String SQLEditorFormatterPrefPage_replace_tab_with_whitespaces;
-
     public static String SQLEditorFormatterPrefPage_tab;
 
     public static String SQLEditorFormatterPrefPage_whitespace;
-
-    public static String SQLEditorFormatterPrefPage_whitespace_count;
 
     public static String SqlEditor_update_ddl;
 
@@ -459,7 +455,7 @@ public final class Messages extends NLS {
     public static String DiffTableViewer_reading_git_history;
 
     public static String DiffTableViewer_reset_sorting;
-   
+
     public static String DiffTableViewer_save_to_DB;
 
     public static String DiffTableViewer_save_to_project;

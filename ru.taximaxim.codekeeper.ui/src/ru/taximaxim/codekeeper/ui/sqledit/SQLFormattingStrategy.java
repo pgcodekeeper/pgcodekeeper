@@ -89,10 +89,6 @@ public class SQLFormattingStrategy extends ContextBasedFormattingStrategy {
         config.setAddWhitespaceAfterOp(
                 mainPrefs.getBoolean(FORMATTER_PREF.ADD_WHITESPACE_AFTER_OP));
 
-        if (mainPrefs.getBoolean(FORMATTER_PREF.REPLACE_TAB)) {
-            config.setSpacesForTabs(mainPrefs.getInt(FORMATTER_PREF.WHITESPACE_COUNT));
-        }
-
         FileFormatter formatter = new FileFormatter(source, offset, length, config, editor.isMsSql());
         return formatter.getFormatEdit();
     }

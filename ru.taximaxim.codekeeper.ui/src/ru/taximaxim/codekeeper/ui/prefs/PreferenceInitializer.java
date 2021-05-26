@@ -56,8 +56,6 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(FORMATTER_PREF.REMOVE_TRAILING_WHITESPACE, true);
         store.setDefault(FORMATTER_PREF.ADD_WHITESPACE_BEFORE_OP, true);
         store.setDefault(FORMATTER_PREF.ADD_WHITESPACE_AFTER_OP, true);
-        store.setDefault(FORMATTER_PREF.REPLACE_TAB, true);
-        store.setDefault(FORMATTER_PREF.WHITESPACE_COUNT, 2);
 
         setSQLSyntaxColorDefaults(store);
     }

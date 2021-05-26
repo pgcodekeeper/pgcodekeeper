@@ -144,8 +144,9 @@ public class FileFormatter {
         String definition = pair.getFirst();
         Token codeStart = pair.getSecond();
 
-        StatementFormatter sf = new StatementFormatter(start, stop, config);
-        sf.parseDefsToFormat(definition, language, codeStart.getStartIndex());
+        StatementFormatter sf = new StatementFormatter(start, stop, definition,
+                codeStart.getStartIndex(), language, config);
+        sf.format();
         changes.addAll(sf.getChanges());
     }
 }

@@ -1,7 +1,6 @@
 package cz.startnet.utils.pgdiff.formatter;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -25,11 +24,21 @@ public class StatementFormatter {
 
     private final int start;
     private final int stop;
+    /**
+     * function definition's offset into the function CREATE statement string <br>
+     * all other offsets are statement-string-based
+     */
+    private final int defOffset;
+    private final List<? extends Token> tokens;
     private final FormatConfiguration config;
+    /**
+     * tab replacement string if tabs are forbidden; null otherwise
+     */
+    private final String tabReplace;
 
     private int currentIndent = 1;
     /**
-     * position of last non-whitespace or newline token
+     * position of token following last non-whitespace or newline token
      */
     private int lastTokenOffset;
     /**
@@ -52,25 +61,35 @@ public class StatementFormatter {
      * unaryOps and other operator-like tokens found by parser
      */
     private final Set<Token> unaryOps = new HashSet<>();
-
+    /**
+     * pending tab replacements, can either be applied or overridden by other whitespace changes
+     */
     private final List<FormatItem> tabs = new ArrayList<>();
+    /**
+     * accumulated formatting change operations
+     */
     private final List<FormatItem> changes = new ArrayList<>();
 
-    public StatementFormatter(int start, int stop, FormatConfiguration config) {
+    public StatementFormatter(int start, int stop, String functionDefinition,
+            int defOffset, String language, FormatConfiguration config) {
         this.start = start;
         this.stop = stop;
+        this.defOffset = defOffset;
         this.config = config;
+        this.tabReplace = config.getIndentType() == IndentType.WHITESPACE ?
+                config.createIndent(config.getIndentSize()) : null;
+        this.tokens = analyzeDefinition(functionDefinition, language);
     }
 
     public List<FormatItem> getChanges() {
         return changes;
     }
 
-    public void parseDefsToFormat(String definition, String language, int offset) {
-        lastTokenOffset = offset;
+    public void format() {
+        lastTokenOffset = defOffset;
 
-        for (Token t : getTokensFromDefinition(definition, language)) {
-            int tokenStart = offset + t.getStartIndex();
+        for (Token t : tokens) {
+            int tokenStart = defOffset + t.getStartIndex();
             int length = t.getStopIndex() - t.getStartIndex() + 1;
             int type = t.getType();
 
@@ -118,7 +137,7 @@ public class StatementFormatter {
         }
     }
 
-    private List<? extends Token> getTokensFromDefinition(String definition, String language) {
+    private List<? extends Token> analyzeDefinition(String definition, String language) {
         Lexer lexer = new SQLLexer(new ANTLRInputStream(definition));
         if (IndentType.DISABLE == config.getIndentType()
                 && !config.isAddWhitespaceAfterOp()
@@ -148,8 +167,8 @@ public class StatementFormatter {
             isMixedIndent = true;
         }
 
-        if (type == SQLLexer.Tab && config.getSpacesForTabs() >= 0) {
-            tabs.add(new FormatItem(tokenStart, length, config.getTabReplace()));
+        if (type == SQLLexer.Tab && tabReplace != null) {
+            tabs.add(new FormatItem(tokenStart, length, tabReplace));
         }
     }
 
@@ -227,24 +246,15 @@ public class StatementFormatter {
             addChange(new FormatItem(lastTokenOffset, 0, System.lineSeparator()));
         }
 
-        int expectedIndent = indent * config.getIndentSize();
+        int expectedIndent = indent * (config.getIndentType() == IndentType.TAB ?
+                1 : config.getIndentSize());
         int spaceSize = tokenStart - lastTokenOffset;
 
         if (spaceSize != expectedIndent || isMixedIndent) {
-            addChange(new FormatItem(lastTokenOffset, spaceSize, createIndent(expectedIndent)));
+            addChange(new FormatItem(lastTokenOffset, spaceSize,
+                    config.createIndent(expectedIndent)));
         }
         tabs.clear();
-    }
-
-    private String createIndent(int length) {
-        if (length <= 0) {
-            return "";
-        }
-
-        char [] chars  = new char[length];
-        Arrays.fill(chars, config.getIndentType() == IndentType.TAB ? '\t' : ' ');
-
-        return new String(chars);
     }
 
     private void addChange(FormatItem item) {
