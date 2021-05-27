@@ -243,7 +243,8 @@ public class StatementFormatter {
             if (!needNewLine) {
                 return;
             }
-            addChange(new FormatItem(lastTokenOffset, 0, System.lineSeparator()));
+            // TODO pass separator from user preferences
+            addChange(new FormatItem(lastTokenOffset, 0, "\n"));
         }
 
         int expectedIndent = indent * (config.getIndentType() == IndentType.TAB ?

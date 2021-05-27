@@ -11,6 +11,12 @@ select sum(account) into _sum_total from test.account where id in (select distin
 /*SELECT, CASE, INNER LEFT JOIN*/
 select p.id, p.phone as id_phone, coalesce(t.client, 0) as worker, case when exists (select id from test.account where id = acc and blocked = 0) then pub.id_acc else p.acc end as id_client, pub.test2 into _rec from public.test1 pub join pub.library lib on pub.id = p.id_order and pub.seria = lib.seria inner join public.test2 b on pub.id = b.id left join client.phones p on pub.phone = p.phone where pub.id = _order;
 
+/*SELECT, CASE, INNER LEFT JOIN*/
+select p.id, p.phone as id_phone, coalesce(t.client, 0) as worker, case when exists (select id from test.account where id = acc and blocked = 0) then pub.id_acc else p.acc end as id_client, pub.test2 into _rec from public.test1 pub
+ join pub.library lib on pub.id = p.id_order and pub.seria = lib.seria
+ inner join public.test2 b on pub.id = b.id
+ left join client.phones p on pub.phone = p.phone where pub.id = _order;
+
 /*EXCEPTION*/
 exception when others then get stacked diagnostics _sqlstate = returned_sqlstate, _message_text = message_text, _context = pg_exception_context;
      
