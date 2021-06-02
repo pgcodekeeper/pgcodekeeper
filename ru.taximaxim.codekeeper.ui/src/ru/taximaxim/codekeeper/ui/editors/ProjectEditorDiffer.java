@@ -123,6 +123,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.VIEW;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.dbstore.DBStoreMenu;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
+import ru.taximaxim.codekeeper.ui.dbstore.DbStorePicker;
 import ru.taximaxim.codekeeper.ui.dialogs.ApplyCustomDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.CommitDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
@@ -169,6 +170,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private Label lblNotificationText;
     private Link linkRefresh;
 
+    private DbStorePicker dbStorePicker;
     private Action applyAction;
     private Action actionToProj;
     private Action actionToDb;
@@ -358,7 +360,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         if (remoteName.isEmpty()) {
             remoteName = Messages.ProjectEditorDiffer_not_selected;
         }
-        lblCurrentRemote.setText(remoteName);
+        if (remote != null) {
+            dbStorePicker.setSelection(new StructuredSelection(remote), false);
+        }
         lblApplyTo.setText(diffTable.isApplyToProj() ? Messages.ProjectEditorDiffer_apply_project
                 : Messages.ProjectEditorDiffer_apply_db);
         diffTable.layout(true, true);
@@ -1069,26 +1073,19 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             l.setEnabled(false);
 
             //current remote
-            lblCurrentRemote = new Label(labelCont, SWT.NONE);
-            lblCurrentRemote.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_HAND));
+            dbStorePicker = new DbStorePicker(labelCont, true, false);
+            dbStorePicker.fixEclipseBug567652();
+            dbStorePicker.addListenerToCombo(e -> {
+                Object selection = dbStorePicker.getDbInfo();
+                if (selection == null) {
+                    selection = dbStorePicker.getPathOfFile();
+                }
+                ProjectEditorDiffer.this.setCurrentDb(selection);
+            });
+
             l = new Label(labelCont, SWT.NONE);
             l.setText(Messages.ProjectEditorDiffer_apply_to);
             l.setEnabled(false);
-
-            MenuManager menuCurRemote = new MenuManager();
-            lblCurrentRemote.setMenu(menuCurRemote.createContextMenu(lblCurrentRemote));
-            DBStoreMenu dbStoreMenu = new DBStoreMenu(menuCurRemote, ProjectEditorDiffer.this, mainPrefs);
-
-            menuCurRemote.addMenuListener(m->{
-                m.removeAll();
-                dbStoreMenu.fillMenu();
-            });
-
-            lblCurrentRemote.addMouseListener(MouseListener.mouseDownAdapter(e-> {
-                if (e.button==1) {
-                    lblCurrentRemote.getMenu().setVisible(true);
-                }
-            }));
 
             //change apply action
             lblApplyTo = new Label(labelCont, SWT.NONE);
