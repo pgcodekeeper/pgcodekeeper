@@ -163,21 +163,12 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private TreeElement diffTree;
     private Object loadedRemote;
 
-    private Label lblCurrentRemote;
-    private Label lblApplyTo;
-
     private Composite contNotifications;
     private Label lblNotificationText;
     private Link linkRefresh;
 
     private DbStorePicker dbStorePicker;
-    private Action applyAction;
-    private Action actionToProj;
-    private Action actionToDb;
-
-    private ImageDescriptor imgDescrApplyIcon;
-    private ImageDescriptor imgDescrProj;
-    private ImageDescriptor imgDescrDb;
+    private Label lblApplyTo;
     private Action getChangesAction;
     private DiffTable diffTable;
     private DiffPaneViewer diffPane;
@@ -194,28 +185,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     }
 
     public void changeMigrationDireciton(boolean isApplyToProj, boolean showWarning) {
-        if (showWarning && isApplyToProj != diffTable.isApplyToProj()) {
-            MessageBox mb = new MessageBox(parent.getShell(), SWT.ICON_WARNING);
-            mb.setText(Messages.ProjectEditorDiffer_changed_direction_of_roll_on_title);
-            mb.setMessage(MessageFormat.format(Messages.ProjectEditorDiffer_changed_direction_of_roll_on,
-                    isApplyToProj ? Messages.ProjectEditorDiffer_project
-                            : Messages.ProjectEditorDiffer_database));
-            mb.open();
-        }
-        diffTable.setApplyToProj(isApplyToProj);
-        diffTable.getViewer().refresh();
-        diffTable.updateObjectsLabels();
-        saveLastDirection(getProject(), isApplyToProj);
-        updateWorkWith();
-        actionToProj.setChecked(isApplyToProj);
-        actionToDb.setChecked(!isApplyToProj);
-
-        String message = isApplyToProj ? Messages.DiffTableViewer_to_project : Messages.DiffTableViewer_to_database;
-        ImageDescriptor descr = isApplyToProj ? imgDescrProj : imgDescrDb;
-
-        applyAction.setToolTipText(Messages.DiffTableViewer_apply_to + ' ' + message);
-        applyAction.setImageDescriptor(new DecorationOverlayIcon(imgDescrApplyIcon,
-                descr, IDecoration.TOP_RIGHT));
+        diffTable.changeMigrationDireciton(isApplyToProj, showWarning);
     }
 
     @Override
@@ -331,7 +301,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         });
         // end notifications container
 
-        changeMigrationDireciton(getLastDirection(), false);
+        diffTable.changeMigrationDireciton(getLastDirection(), false);
 
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this,
                 IResourceChangeEvent.PRE_CLOSE | IResourceChangeEvent.PRE_DELETE
@@ -706,7 +676,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         }
     }
 
-    public void saveLastDirection(IProject project, boolean isProj) {
+    private void saveLastDirection(IProject project, boolean isProj) {
         IEclipsePreferences prefs = PgDbProject.getPrefs(project, false);
         if (prefs != null) {
             prefs.putBoolean(DB_BIND_PREF.LAST_DIRECTION, isProj);
@@ -717,6 +687,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             }
         }
     }
+
     public boolean getLastDirection() {
         IEclipsePreferences prefs = proj.getDbBindPrefs();
         return prefs.getBoolean(DB_BIND_PREF.LAST_DIRECTION, true);
@@ -1046,6 +1017,14 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
     private class DiffTable extends DiffTableViewer {
 
+        private Action applyAction;
+        private Action actionToProj;
+        private Action actionToDb;
+
+        private ImageDescriptor imgDescrApplyIcon;
+        private ImageDescriptor imgDescrProj;
+        private ImageDescriptor imgDescrDb;
+
         public DiffTable(Composite parent, boolean viewOnly, IStatusLineManager lineManager, Path location) {
             super(parent, viewOnly, lineManager, location);
         }
@@ -1090,13 +1069,12 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             //change apply action
             lblApplyTo = new Label(labelCont, SWT.NONE);
             lblApplyTo.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_HAND));
-            createApplyActions();
 
+            createApplyActions();
             MenuManager menuMg = new MenuManager();
             menuMg.add(actionToProj);
             menuMg.add(actionToDb);
 
-            menuMg.addMenuListener(m -> m.update(false));
             lblApplyTo.setMenu(menuMg.createContextMenu(lblApplyTo));
 
             lblApplyTo.addMouseListener(MouseListener.mouseDownAdapter(e -> {
@@ -1182,12 +1160,11 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
                 @Override
                 public Menu getMenu(Control parent) {
-                    menuMgrApplyCustom = new MenuManager();
-
                     if (menuMgrApplyCustom != null) {
                         menuMgrApplyCustom.dispose();
                     }
 
+                    menuMgrApplyCustom = new MenuManager();
                     IAction applyCustomAction = new Action(Messages.DiffTableViewer_apply_to_custom) {
 
                         @Override
@@ -1279,6 +1256,31 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 }
             });
             mgrTblBtn.add(getChangesAction);
+        }
+
+        public void changeMigrationDireciton(boolean isApplyToProj, boolean showWarning) {
+            if (showWarning && isApplyToProj != diffTable.isApplyToProj()) {
+                MessageBox mb = new MessageBox(parent.getShell(), SWT.ICON_WARNING);
+                mb.setText(Messages.ProjectEditorDiffer_changed_direction_of_roll_on_title);
+                mb.setMessage(MessageFormat.format(Messages.ProjectEditorDiffer_changed_direction_of_roll_on,
+                        isApplyToProj ? Messages.ProjectEditorDiffer_project
+                                : Messages.ProjectEditorDiffer_database));
+                mb.open();
+            }
+            diffTable.setApplyToProj(isApplyToProj);
+            diffTable.getViewer().refresh();
+            diffTable.updateObjectsLabels();
+            saveLastDirection(getProject(), isApplyToProj);
+            updateWorkWith();
+            actionToProj.setChecked(isApplyToProj);
+            actionToDb.setChecked(!isApplyToProj);
+
+            String message = isApplyToProj ? Messages.DiffTableViewer_to_project : Messages.DiffTableViewer_to_database;
+            ImageDescriptor descr = isApplyToProj ? imgDescrProj : imgDescrDb;
+
+            applyAction.setToolTipText(Messages.DiffTableViewer_apply_to + ' ' + message);
+            applyAction.setImageDescriptor(new DecorationOverlayIcon(imgDescrApplyIcon,
+                    descr, IDecoration.TOP_RIGHT));
         }
     }
 }
