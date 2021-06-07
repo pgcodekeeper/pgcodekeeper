@@ -3,7 +3,8 @@ WITH sys_schemas AS (
     FROM pg_catalog.pg_namespace n
     WHERE n.nspname LIKE 'pg\_%'
         OR n.nspname = 'information_schema'
-        OR EXISTS (SELECT 1 FROM pg_catalog.pg_depend dp WHERE dp.objid = n.oid AND dp.deptype = 'e')
+        OR EXISTS (SELECT 1 FROM pg_catalog.pg_depend dp WHERE dp.objid = n.oid AND dp.deptype = 'e'
+        AND dp.classid = 'pg_catalog.pg_namespace'::pg_catalog.regclass)
 )
 
 SELECT p.oid::bigint,
@@ -18,4 +19,5 @@ SELECT p.oid::bigint,
 FROM pg_catalog.pg_policy p
 JOIN pg_catalog.pg_class c ON c.oid = p.polrelid
 LEFT JOIN pg_catalog.pg_description d ON p.oid = d.objoid
+    AND d.classoid = 'pg_catalog.pg_policy'::pg_catalog.regclass
 WHERE c.relnamespace NOT IN (SELECT oid FROM sys_schemas)
