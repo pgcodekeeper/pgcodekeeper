@@ -27,6 +27,7 @@ import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.FileDialog;
@@ -60,6 +61,7 @@ public class DbStorePicker {
     private final List<File> projects = new ArrayList<>();
 
     private final ComboViewer cmbDbNames;
+    private boolean triggerEvent = true;
 
     public DbStorePicker(Composite parent, boolean useFileSources, boolean useDirSources) {
         this(parent, DEFAULT_LENGTH, useFileSources, useDirSources);
@@ -69,7 +71,14 @@ public class DbStorePicker {
         this.useFileSources = useFileSources;
         this.useDirSources = useDirSources;
 
-        cmbDbNames = new ComboViewer(parent, SWT.READ_ONLY | SWT.DROP_DOWN);
+        cmbDbNames = new ComboViewer(parent, SWT.READ_ONLY | SWT.DROP_DOWN) {
+            @Override
+            protected void fireSelectionChanged(SelectionChangedEvent event) {
+                if (triggerEvent) {
+                    super.fireSelectionChanged(event);
+                }
+            }
+        };
         cmbDbNames.setContentProvider(ArrayContentProvider.getInstance());
         cmbDbNames.setLabelProvider(new DbStoreLabelProvider());
         cmbDbNames.addSelectionChangedListener(new DbStoreSelectionListener());
@@ -188,6 +197,16 @@ public class DbStorePicker {
         cmbDbNames.setSelection(selection);
     }
 
+    public void setSelection(IStructuredSelection selection, boolean triggerEvent) {
+        boolean oldTriggerEvent = this.triggerEvent;
+        try {
+            this.triggerEvent = triggerEvent;
+            setSelection(selection);
+        } finally {
+            this.triggerEvent = oldTriggerEvent;
+        }
+    }
+
     public void clearSelection() {
         cmbDbNames.setSelection(StructuredSelection.EMPTY);
     }
@@ -211,6 +230,11 @@ public class DbStorePicker {
 
     public void dispose() {
         cmbDbNames.getControl().dispose();
+    }
+
+    public void fixEclipseBug567652() {
+        Combo combo = cmbDbNames.getCombo();
+        combo.setBackground(combo.getBackground());
     }
 
     public static File chooseDbSource(IPreferenceStore prefStore, Shell shell, boolean dir) {
