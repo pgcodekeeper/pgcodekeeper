@@ -523,8 +523,6 @@ public final class Messages extends NLS {
 
     public static String IgnoredSchemaPrefListEditor_black_list_schema_ignor;
 
-    public static String IgnoredSchemaPrefListEditor_schema_ignor;
-
     public static String IgnoredSchemaPrefListEditor_schema_name;
 
     public static String IgnoredSchemaPrefListEditor_white_list_schema_ignor;

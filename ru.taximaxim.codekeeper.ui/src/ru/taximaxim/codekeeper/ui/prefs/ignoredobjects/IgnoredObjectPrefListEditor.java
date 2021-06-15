@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.IIgnoreList;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoredObject;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -38,13 +39,16 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject> {
     }
 
     public static IgnoredObjectPrefListEditor create(Composite parent, IgnoreList ignoreList) {
-        fillComposite(parent, ignoreList);
+        fillComposite(parent, ignoreList,
+                Messages.IgnoredObjectsPrefPage_these_objects_are_ignored_info,
+                Messages.IgnoredObjectsPrefPage_these_objects_are_ignored_info_white);
         return new IgnoredObjectPrefListEditor(parent);
     }
 
-    private static void fillComposite(Composite composite, IgnoreList ignoreList) {
+    protected static void fillComposite(Composite composite, IIgnoreList ignoreList,
+            String blackDescripton, String whiteDescripton) {
         Label descriptionLabel = new Label(composite, SWT.NONE);
-        descriptionLabel.setText(Messages.IgnoredObjectsPrefPage_these_objects_are_ignored_info);
+        descriptionLabel.setText(blackDescripton);
 
         Composite compositeRadio = new Composite(composite, SWT.NONE);
         GridLayout gridRadioLayout = new GridLayout(2, false);
@@ -62,7 +66,7 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject> {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 ignoreList.setShow(true);
-                descriptionLabel.setText(Messages.IgnoredObjectsPrefPage_these_objects_are_ignored_info);
+                descriptionLabel.setText(blackDescripton);
                 composite.layout();
             }
         });
@@ -75,13 +79,13 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject> {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 ignoreList.setShow(false);
-                descriptionLabel.setText(Messages.IgnoredObjectsPrefPage_these_objects_are_ignored_info_white);
+                descriptionLabel.setText(whiteDescripton);
                 composite.layout();
             }
         });
     }
 
-    private IgnoredObjectPrefListEditor(Composite parent) {
+    protected IgnoredObjectPrefListEditor(Composite parent) {
         super(parent);
     }
 

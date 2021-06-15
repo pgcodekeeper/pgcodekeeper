@@ -4,9 +4,8 @@ import java.util.List;
 
 public interface IIgnoreList {
 
-    public List<IgnoredObject> getList();
-
+    List<IgnoredObject> getList();
     void add(IgnoredObject rule);
-
-    public void setShow(boolean isShow);
+    void setShow(boolean isShow);
+    boolean isShow();
 }
