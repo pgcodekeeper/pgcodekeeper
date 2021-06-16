@@ -92,6 +92,22 @@ public final class Messages extends NLS {
     public static String SQLEditorCompletionProcessor_show_templates;
     public static String SQLEditorCompletionProcessor_show_keywords;
 
+    public static String SQLEditorFormatterPrefPage_add_whitespace_after_operators;
+
+    public static String SQLEditorFormatterPrefPage_add_whitespace_before_operators;
+
+    public static String SQLEditorFormatterPrefPage_disable;
+
+    public static String SQLEditorFormatterPrefPage_indent_size;
+
+    public static String SQLEditorFormatterPrefPage_indent_type;
+
+    public static String SQLEditorFormatterPrefPage_remove_trailing_whitespace;
+
+    public static String SQLEditorFormatterPrefPage_tab;
+
+    public static String SQLEditorFormatterPrefPage_whitespace;
+
     public static String SqlEditor_update_ddl;
 
     public static String UiProgressReporter_warning;
@@ -439,7 +455,7 @@ public final class Messages extends NLS {
     public static String DiffTableViewer_reading_git_history;
 
     public static String DiffTableViewer_reset_sorting;
-   
+
     public static String DiffTableViewer_save_to_DB;
 
     public static String DiffTableViewer_save_to_project;

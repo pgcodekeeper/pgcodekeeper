@@ -97,6 +97,11 @@ public class SequencesReader extends JdbcReader {
         }
     }
 
+    @Override
+    protected String getClassId() {
+        return "pg_class";
+    }
+
     static {
         DATA_SELECT_LENGTH =
                 // static part

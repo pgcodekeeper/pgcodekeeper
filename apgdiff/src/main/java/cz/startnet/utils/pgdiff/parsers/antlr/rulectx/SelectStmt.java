@@ -2,6 +2,8 @@ package cz.startnet.utils.pgdiff.parsers.antlr.rulectx;
 
 import java.util.List;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.After_opsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmt_no_parensContext;
@@ -28,6 +30,10 @@ public class SelectStmt {
         this.selectNp = select;
         this.select = null;
         this.isNp = true;
+    }
+
+    public ParserRuleContext getCtx() {
+        return isNp ? selectNp : select;
     }
 
     public With_clauseContext withClause() {

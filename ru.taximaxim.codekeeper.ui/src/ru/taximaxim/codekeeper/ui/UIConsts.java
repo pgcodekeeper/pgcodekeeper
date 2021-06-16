@@ -111,6 +111,18 @@ public interface UIConsts {
         String NUMBER_OF_LINES_LIMIT = "numberOfLinesLimit"; //$NON-NLS-1$
     }
 
+    interface FORMATTER_PREF {
+        String INDENT_SIZE = "indentSize"; //$NON-NLS-1$
+        String REMOVE_TRAILING_WHITESPACE = "removeTrailingWhitespace"; //$NON-NLS-1$
+        String ADD_WHITESPACE_BEFORE_OP = "addWhitespaceBeforeOperator"; //$NON-NLS-1$
+        String ADD_WHITESPACE_AFTER_OP = "addWhitespaceAfterOperator"; //$NON-NLS-1$
+
+        String INDENT_TYPE = "indentType"; //$NON-NLS-1$
+        String WHITESPACE = "whitespace"; //$NON-NLS-1$
+        String TAB = "tab"; //$NON-NLS-1$
+        String DISABLE = "disable"; //$NON-NLS-1$
+    }
+
     interface USAGE_REPORT_PREF {
         String USAGEREPORT_ENABLED_ID = "allow_usage_report_preference"; //$NON-NLS-1$
         String ASK_USER_USAGEREPORT_ID = "ask_user_for_usage_report_preference"; //$NON-NLS-1$
@@ -140,6 +152,7 @@ public interface UIConsts {
         String DB_BINDING = PLUGIN_ID.THIS + ".dbbinding"; //$NON-NLS-1$
 
         String LAST_DB_STORE = "prefLastDbStore"; //$NON-NLS-1$
+        String LAST_DIRECTION = "prefLastDirection"; //$NON-NLS-1$
         String LAST_DB_STORE_EDITOR = "prefLastDbStoreEditor"; //$NON-NLS-1$
         String NAME_OF_BOUND_DB = "nameOfBoundDatabase"; //$NON-NLS-1$
     }

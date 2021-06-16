@@ -37,4 +37,9 @@ public class FtsParsersReader extends JdbcReader {
         loader.setAuthor(parser, res);
         schema.addFtsParser(parser);
     }
+
+    @Override
+    protected String getClassId() {
+        return "pg_ts_parser";
+    }
 }
