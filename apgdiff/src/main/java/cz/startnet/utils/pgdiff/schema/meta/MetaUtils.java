@@ -68,7 +68,7 @@ public class MetaUtils {
         case FUNCTION:
         case PROCEDURE:
             IFunction funcion = (IFunction) st;
-            MetaFunction func = new MetaFunction(loc);
+            MetaFunction func = new MetaFunction(loc, st.getBareName());
             funcion.getReturnsColumns().forEach(func::addReturnsColumn);
             funcion.getArguments().forEach(func::addArgument);
             func.setReturns(funcion.getReturns());
@@ -109,7 +109,8 @@ public class MetaUtils {
         // some children may have a parental location
         if (loc != null && loc.getType() == type) {
             return loc;
-        }        GenericColumn gc;
+        }
+        GenericColumn gc;
         switch (type) {
         case CAST:
         case SCHEMA:

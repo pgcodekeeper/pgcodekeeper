@@ -138,8 +138,7 @@ public class CreateRule extends ParserAbstract {
             StringBuilder sb = new StringBuilder();
             DbObjType type = obj.PROCEDURE() == null ?
                     DbObjType.FUNCTION : DbObjType.PROCEDURE;
-            addObjReference(funcIds, type, state,
-                    CreateFunction.getFuncSignature(funct.function_args()));
+            addObjReference(funcIds, type, state, parseArguments(funct.function_args()));
 
             if (isRefMode()) {
                 continue;

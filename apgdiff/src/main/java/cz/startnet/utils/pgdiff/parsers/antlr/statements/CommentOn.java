@@ -218,7 +218,7 @@ public class CommentOn extends ParserAbstract {
         doSafe((s,c) -> s.setComment(db.getArguments(), c), st, comment);
         if (type == DbObjType.FUNCTION || type == DbObjType.PROCEDURE || type == DbObjType.AGGREGATE) {
             addObjReference(ids, type, ACTION_ALTER,
-                    CreateFunction.getFuncSignature(obj.function_args()));
+                    parseArguments(obj.function_args()));
         } else {
             addObjReference(ids, type, ACTION_COMMENT);
         }

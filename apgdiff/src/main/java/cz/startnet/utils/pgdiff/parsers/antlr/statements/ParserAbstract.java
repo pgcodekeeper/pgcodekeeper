@@ -210,13 +210,21 @@ public abstract class ParserAbstract {
         return type;
     }
 
+    public static String parseArguments(Function_argsContext argsContext) {
+        return parseSignature(null, argsContext);
+    }
+
     public static String parseSignature(String name, Function_argsContext argsContext) {
-        AbstractPgFunction function = new PgFunction(name);
+        AbstractPgFunction function = new PgFunction(name == null ? "noname" : name);
         fillFuncArgs(argsContext.function_arguments(), function);
         if (argsContext.agg_order() != null) {
             fillFuncArgs(argsContext.agg_order().function_arguments(), function);
         }
-        return function.getSignature();
+        String signature = function.getSignature();
+        if (name == null) {
+            signature = signature.substring("noname".length());
+        }
+        return signature;
     }
 
     private static void fillFuncArgs(List<Function_argumentsContext> argsCtx, AbstractPgFunction function) {
@@ -406,8 +414,9 @@ public abstract class ParserAbstract {
         }
 
         String name = nameCtx.getText();
+        int nameLength = name.length();
         if (signature != null) {
-            name+= signature;
+            name = PgDiffUtils.getQuotedName(name) + signature;
         }
         switch (type) {
         case DOMAIN:
@@ -415,10 +424,7 @@ public abstract class ParserAbstract {
         case FTS_DICTIONARY:
         case FTS_PARSER:
         case FTS_TEMPLATE:
-        case FUNCTION:
         case OPERATOR:
-        case PROCEDURE:
-        case AGGREGATE:
         case SEQUENCE:
         case TABLE:
         case TYPE:
@@ -426,6 +432,13 @@ public abstract class ParserAbstract {
         case INDEX:
             return new PgObjLocation(new GenericColumn(schemaName, name, type),
                     action, getStart(nameCtx), nameCtx.start.getLine(), fileName);
+        case FUNCTION:
+        case PROCEDURE:
+        case AGGREGATE:
+            PgObjLocation loc = new PgObjLocation(new GenericColumn(schemaName, name, type),
+                    action, getStart(nameCtx), nameCtx.start.getLine(), fileName);
+            loc.setLength(nameLength);
+            return loc;
         case CONSTRAINT:
         case TRIGGER:
         case RULE:

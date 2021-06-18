@@ -92,7 +92,11 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                 String functionName = result.getString(NAME);
                 String schemaName = result.getString(NAMESPACE_NAME);
 
-                MetaFunction function = new MetaFunction(schemaName, functionName);
+                String arguments = result.getString("proarguments");
+                JdbcReader.checkObjectValidity(arguments, DbObjType.FUNCTION, functionName);
+                String signature = PgDiffUtils.getQuotedName(functionName) + '(' + arguments + ')';
+
+                MetaFunction function = new MetaFunction(schemaName, signature, functionName);
 
                 Array arr = result.getArray("proargmodes");
                 if (arr != null) {
@@ -115,9 +119,6 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
 
                 function.setSetof(result.getBoolean("proretset"));
 
-                String arguments = result.getString("proarguments");
-
-                JdbcReader.checkObjectValidity(arguments, DbObjType.FUNCTION, functionName);
 
                 if (!arguments.isEmpty()) {
                     submitAntlrTask('(' + arguments + ')',

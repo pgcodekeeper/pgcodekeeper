@@ -103,7 +103,7 @@ public class AlterOwner extends ParserAbstract {
         if (type != null) {
             if (type == DbObjType.FUNCTION || type == DbObjType.PROCEDURE || type == DbObjType.AGGREGATE) {
                 addObjReference(ids, type, ACTION_ALTER,
-                        CreateFunction.getFuncSignature(ctx.function_args()));
+                        parseArguments(ctx.function_args()));
             } else {
                 addObjReference(ids, type, ACTION_ALTER);
             }
