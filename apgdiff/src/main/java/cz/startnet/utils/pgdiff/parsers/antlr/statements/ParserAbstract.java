@@ -336,7 +336,12 @@ public abstract class ParserAbstract {
                 ACTION_CREATE, false, signature);
         if (loc != null) {
             child.setLocation(loc);
-            db.addReference(fileName, loc);}
+
+            db.addReference(fileName, loc);
+        }
+
+        // TODO move to beginning of the method later
+        checkLocation(child, QNameParser.getFirstNameCtx(ids).getStart());
     }
 
     private void checkLocation(PgStatement statement, Token errToken) {
