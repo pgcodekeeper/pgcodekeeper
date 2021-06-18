@@ -143,11 +143,6 @@ public class MetaFunction extends MetaStatement implements IFunction {
                 sb.append(", ");
             }
 
-            if (ArgMode.IN != mode) {
-                sb.append(mode);
-                sb.append(' ');
-            }
-
             sb.append(argument.getDataType());
             addComma = true;
         }

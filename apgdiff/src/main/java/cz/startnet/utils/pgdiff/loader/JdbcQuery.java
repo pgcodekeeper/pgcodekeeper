@@ -1,12 +1,18 @@
 package cz.startnet.utils.pgdiff.loader;
 
+import java.text.MessageFormat;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.loader.jdbc.JdbcLoaderBase;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class JdbcQuery {
+
+    private static final String EXTENSION_QUERY = "SELECT time.objid AS oid, time.ses_user\n"
+            + "FROM {0}.dbots_event_data time WHERE time.classid = {1}::pg_catalog.regclass";
 
     private String query;
     private final Map<SupportedVersion, String> sinceQueries = new EnumMap<>(SupportedVersion.class);
@@ -28,10 +34,15 @@ public class JdbcQuery {
         intervalQueries.put(new Pair<>(since, until), query);
     }
 
-    public String makeQuery(int version) {
+    /**
+     * @param classId postgres only: name of the object class id,
+     *          i.e. the pg_catalog table which stores oid's for the object type
+     */
+    public String makeQuery(JdbcLoaderBase loader, String classId) {
+        int version = loader.getVersion();
         StringBuilder sb = new StringBuilder("SELECT * FROM (");
         sb.append(query);
-        sb.append(") t1 ");
+        sb.append(") t1 \n");
 
         sinceQueries.entrySet().stream()
         .filter(e -> e.getKey().isLE(version))
@@ -42,6 +53,13 @@ public class JdbcQuery {
         .forEach(e -> appendQuery(sb, e.getValue(),
                 e.getKey().getFirst().getVersion() + "_" + e.getKey().getSecond().getVersion()));
 
+        String extensionSchema = loader.getExtensionSchema();
+        if (extensionSchema != null) {
+            appendQuery(sb, MessageFormat.format(
+                    EXTENSION_QUERY, PgDiffUtils.getQuotedName(extensionSchema),
+                    PgDiffUtils.quoteString("pg_catalog." + classId)), "_dbots");
+        }
+
         return sb.toString();
     }
 
@@ -50,6 +68,6 @@ public class JdbcQuery {
                 .append(query)
                 .append(") t")
                 .append(versionName)
-                .append(" USING (oid) ");
+                .append(" USING (oid) \n");
     }
 }

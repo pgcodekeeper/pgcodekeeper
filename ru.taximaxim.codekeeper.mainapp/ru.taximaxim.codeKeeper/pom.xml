@@ -30,7 +30,7 @@
     </modules>
 
     <properties>
-        <revision>5.10.8-SNAPSHOT</revision>
+        <revision>6.0.0-SNAPSHOT</revision>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -94,12 +94,12 @@
             </modules>
         </profile>
         <profile>
-            <id>neon</id>
+            <id>compat_check</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
             <properties>
-                <target.definition.file>app_neon</target.definition.file>
+                <target.definition.file>app_202006</target.definition.file>
             </properties>
         </profile>
     </profiles>

@@ -131,7 +131,7 @@ public class MsTable extends AbstractTable {
     }
 
     protected void appendOptions(StringBuilder sbSQL) {
-        int startLenght = sbSQL.length();
+        int startLength = sbSQL.length();
         if (tablespace != null) {
             // tablespace already quoted
             sbSQL.append(" ON ").append(tablespace).append(' ');
@@ -145,7 +145,7 @@ public class MsTable extends AbstractTable {
             sbSQL.append("FILESTREAM_ON ").append(MsDiffUtils.quoteName(getFileStream())).append(' ');
         }
 
-        if (sbSQL.length() > startLenght) {
+        if (sbSQL.length() > startLength) {
             sbSQL.setLength(sbSQL.length() - 1);
         }
 

@@ -6,3 +6,4 @@ SELECT e.oid::bigint,
     d.description
 FROM pg_catalog.pg_extension e
 LEFT JOIN pg_catalog.pg_description d ON e.oid = d.objoid
+    AND d.classoid = 'pg_catalog.pg_extension'::pg_catalog.regclass

@@ -64,4 +64,9 @@ public class IndicesReader extends JdbcReader {
 
         return i;
     }
+
+    @Override
+    protected String getClassId() {
+        return "pg_class";
+    }
 }

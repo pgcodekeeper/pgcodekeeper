@@ -81,4 +81,9 @@ public class RulesReader extends JdbcReader {
         }
         return r;
     }
+
+    @Override
+    protected String getClassId() {
+        return "pg_rewrite";
+    }
 }
