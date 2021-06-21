@@ -24,7 +24,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.User_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterOwner;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateRule;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.GrantPrivilege;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.IStatement;
@@ -65,7 +65,7 @@ implements SqlContextProcessor {
         Rule_commonContext rule = ctx.rule_common();
         Create_schema_statementContext schema;
         if (rule != null) {
-            safeParseStatement(new CreateRule(rule, db, overrides), ctx);
+            safeParseStatement(new GrantPrivilege(rule, db, overrides), ctx);
         } else if ((schema = ctx.create_schema_statement()) != null) {
             safeParseStatement(() -> createSchema(schema), ctx);
         }

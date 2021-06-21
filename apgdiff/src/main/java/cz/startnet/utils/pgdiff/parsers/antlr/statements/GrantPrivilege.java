@@ -28,17 +28,17 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.StatementOverride;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class CreateRule extends ParserAbstract {
+public class GrantPrivilege extends ParserAbstract {
     private final Rule_commonContext ctx;
     private final String state;
     private final boolean isGO;
     private final Map<PgStatement, StatementOverride> overrides;
 
-    public CreateRule(Rule_commonContext ctx, PgDatabase db) {
+    public GrantPrivilege(Rule_commonContext ctx, PgDatabase db) {
         this(ctx, db, null);
     }
 
-    public CreateRule(Rule_commonContext ctx, PgDatabase db, Map<PgStatement, StatementOverride> overrides) {
+    public GrantPrivilege(Rule_commonContext ctx, PgDatabase db, Map<PgStatement, StatementOverride> overrides) {
         super(db);
         this.ctx = ctx;
         this.overrides = overrides;

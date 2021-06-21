@@ -49,7 +49,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateIndex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateOperator;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreatePolicy;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateRewrite;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateRule;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.GrantPrivilege;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateSchema;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateSequence;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTable;
@@ -154,7 +154,7 @@ implements SqlContextProcessor {
         } else if (ctx.comment_on_statement() != null) {
             p = new CommentOn(ctx.comment_on_statement(), db);
         } else if (ctx.rule_common() != null) {
-            p = new CreateRule(ctx.rule_common(), db);
+            p = new GrantPrivilege(ctx.rule_common(), db);
         } else if (ctx.create_database_statement() != null) {
             p = new CreateDatabase(ctx.create_database_statement(), db);
         } else if (ctx.set_statement() != null) {
