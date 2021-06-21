@@ -273,7 +273,15 @@ public class GenericColumn implements Serializable {
             if (sb.length() > 0) {
                 sb.append('.');
             }
-            sb.append(PgDiffUtils.getQuotedName(table));
+            switch (type) {
+            case FUNCTION:
+            case PROCEDURE:
+            case AGGREGATE:
+                sb.append(table);
+                break;
+            default:
+                sb.append(PgDiffUtils.getQuotedName(table));
+            }
         }
         if (column != null) {
             if (sb.length() > 0) {
