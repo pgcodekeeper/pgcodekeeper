@@ -17,10 +17,10 @@ import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class CreateRewrite extends ParserAbstract {
+public class CreateRule extends ParserAbstract {
     private final Create_rewrite_statementContext ctx;
 
-    public CreateRewrite(Create_rewrite_statementContext ctx, PgDatabase db) {
+    public CreateRule(Create_rewrite_statementContext ctx, PgDatabase db) {
         super(db);
         this.ctx = ctx;
     }
