@@ -23,13 +23,20 @@ public class CreateFtsTemplate extends ParserAbstract {
         List<IdentifierContext> ids = ctx.name.identifier();
         PgFtsTemplate template = new PgFtsTemplate(QNameParser.getFirstName(ids));
 
+        /*
+         * function signatures are hardcoded for proper dependency resolution
+         * argument list for each type of function is predetermined
+         */
+
         if (ctx.init_name != null) {
             template.setInitFunction(ParserAbstract.getFullCtxText(ctx.init_name));
-            addDepSafe(template, ctx.init_name.identifier(), DbObjType.FUNCTION, true);
+            addDepSafe(template, ctx.init_name.identifier(), DbObjType.FUNCTION, true,
+                    "(internal)");
         }
 
         template.setLexizeFunction(ParserAbstract.getFullCtxText(ctx.lexize_name));
-        addDepSafe(template, ctx.lexize_name.identifier(), DbObjType.FUNCTION, true);
+        addDepSafe(template, ctx.lexize_name.identifier(), DbObjType.FUNCTION, true,
+                "(internal, internal, internal, internal)");
 
         addSafe(getSchemaSafe(ids), template, ids);
     }

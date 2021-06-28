@@ -34,8 +34,8 @@ public class MetaStorage implements Serializable {
 
     private static MetaStorage getObjectsFromResources(SupportedVersion ver) {
         SupportedVersion version;
-        if (!SupportedVersion.VERSION_9_5.isLE(ver.getVersion())) {
-            version = SupportedVersion.VERSION_9_5;
+        if (!SupportedVersion.VERSION_9_6.isLE(ver.getVersion())) {
+            version = SupportedVersion.VERSION_9_6;
         } else {
             version = ver;
         }

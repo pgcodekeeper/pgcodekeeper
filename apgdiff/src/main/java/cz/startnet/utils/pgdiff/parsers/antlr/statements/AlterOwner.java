@@ -100,8 +100,13 @@ public class AlterOwner extends ParserAbstract {
             }
         }
 
-        if (type != null)  {
-            addObjReference(ids, type, ACTION_ALTER);
+        if (type != null) {
+            if (type == DbObjType.FUNCTION || type == DbObjType.PROCEDURE || type == DbObjType.AGGREGATE) {
+                addObjReference(ids, type, ACTION_ALTER,
+                        parseArguments(ctx.function_args()));
+            } else {
+                addObjReference(ids, type, ACTION_ALTER);
+            }
         }
 
         if (st == null || (type == DbObjType.SCHEMA
