@@ -1,7 +1,6 @@
 package cz.startnet.utils.pgdiff.loader;
 
 import java.io.EOFException;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
@@ -112,7 +111,7 @@ public class LibraryLoader extends DatabaseLoader {
         }
 
         PgDatabase db = new PgDatabase(args);
-        PgDumpLoader loader = new PgDumpLoader(new File(path), args);
+        PgDumpLoader loader = new PgDumpLoader(Paths.get(path), args);
         loader.loadAsync(db, antlrTasks);
         launchedLoaders.add(loader);
         finishLoaders();
@@ -272,7 +271,7 @@ public class LibraryLoader extends DatabaseLoader {
         if (filePath.endsWith(".zip")) {
             db.addLib(getLibrary(filePath, args, args.isIgnorePrivileges()));
         } else if (filePath.endsWith(".sql")) {
-            PgDumpLoader loader = new PgDumpLoader(sub.toFile(), args);
+            PgDumpLoader loader = new PgDumpLoader(sub, args);
             loader.loadDatabase(db, antlrTasks);
             launchedLoaders.add(loader);
         }

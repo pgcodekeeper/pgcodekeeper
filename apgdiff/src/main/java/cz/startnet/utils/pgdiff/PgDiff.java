@@ -5,7 +5,6 @@
  */
 package cz.startnet.utils.pgdiff;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -189,7 +188,7 @@ public class PgDiff {
             ignoreParser.parse(Paths.get(listFilename));
         }
         if ("dump".equals(format)) {
-            loader = new PgDumpLoader(new File(srcPath), arguments);
+            loader = new PgDumpLoader(Paths.get(srcPath), arguments);
         } else if ("parsed".equals(format)) {
             loader = new ProjectLoader(srcPath, arguments, null, errors, ignoreSchemaList);
         } else if ("db".equals(format)) {

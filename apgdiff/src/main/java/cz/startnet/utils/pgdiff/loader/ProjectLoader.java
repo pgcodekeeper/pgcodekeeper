@@ -1,11 +1,10 @@
 package cz.startnet.utils.pgdiff.loader;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -76,7 +75,7 @@ public class ProjectLoader extends DatabaseLoader {
     public PgDatabase load() throws InterruptedException, IOException {
         PgDatabase db = new PgDatabase(arguments);
 
-        File dir = new File(dirPath);
+        Path dir = Paths.get(dirPath);
         if (arguments.isMsSql()) {
             loadMsStructure(dir, db);
         } else {
@@ -89,8 +88,8 @@ public class ProjectLoader extends DatabaseLoader {
     }
 
     public void loadOverrides(PgDatabase db) throws InterruptedException, IOException {
-        File dir = new File(dirPath, ApgdiffConsts.OVERRIDES_DIR);
-        if (arguments.isIgnorePrivileges() || !dir.exists() || !dir.isDirectory()) {
+        Path dir = Paths.get(dirPath, ApgdiffConsts.OVERRIDES_DIR);
+        if (arguments.isIgnorePrivileges() || !Files.isDirectory(dir)) {
             return;
         }
         isOverrideMode = true;
@@ -107,7 +106,7 @@ public class ProjectLoader extends DatabaseLoader {
         }
     }
 
-    private void loadPgStructure(File dir, PgDatabase db) throws InterruptedException, IOException {
+    private void loadPgStructure(Path dir, PgDatabase db) throws InterruptedException, IOException {
         // step 1
         // read files in schema folder, add schemas to db
         for (WORK_DIR_NAMES dirEnum : WORK_DIR_NAMES.values()) {
@@ -115,19 +114,19 @@ public class ProjectLoader extends DatabaseLoader {
             loadSubdir(dir, dirEnum.name(), db, this::checkIgnoreSchemaList);
         }
 
-        File schemasCommonDir = new File(dir, WORK_DIR_NAMES.SCHEMA.name());
+        Path schemasCommonDir = dir.resolve(WORK_DIR_NAMES.SCHEMA.name());
         // skip walking SCHEMA folder if it does not exist
-        if (schemasCommonDir.isDirectory()) {
+        if (Files.isDirectory(schemasCommonDir)) {
             // new schemas + content
             // step 2
             // read out schemas names, and work in loop on each
-            try (Stream<Path> schemas = Files.list(schemasCommonDir.toPath())) {
+            try (Stream<Path> schemas = Files.list(schemasCommonDir)) {
                 for (Path schemaDir : PgDiffUtils.sIter(schemas)) {
                     if (Files.isDirectory(schemaDir)) {
                         if (checkIgnoreSchemaList(schemaDir.getFileName().toString())) {
                             loadSubdir(schemasCommonDir, schemaDir.getFileName().toString(), db);
                             for (String dirSub : DIR_LOAD_ORDER) {
-                                loadSubdir(schemaDir.toFile(), dirSub, db);
+                                loadSubdir(schemaDir, dirSub, db);
                             }
                         }
                     }
@@ -136,8 +135,8 @@ public class ProjectLoader extends DatabaseLoader {
         }
     }
 
-    private void loadMsStructure(File dir, PgDatabase db) throws InterruptedException, IOException {
-        File securityFolder = new File(dir, MS_WORK_DIR_NAMES.SECURITY.getDirName());
+    private void loadMsStructure(Path dir, PgDatabase db) throws InterruptedException, IOException {
+        Path securityFolder = dir.resolve(MS_WORK_DIR_NAMES.SECURITY.getDirName());
 
         loadSubdir(securityFolder, "Schemas", db, this::checkIgnoreSchemaList);
         // DBO schema check requires schema loads to finish first
@@ -167,39 +166,38 @@ public class ProjectLoader extends DatabaseLoader {
             db.setDefaultSchema(ApgdiffConsts.DBO);
         }
     }
-    private void loadSubdir(File dir, String sub, PgDatabase db) throws InterruptedException {
+    private void loadSubdir(Path dir, String sub, PgDatabase db) throws InterruptedException, IOException {
         loadSubdir(dir, sub, db, null);
     }
 
     /**
      * @param checkFilename filter for file names without extensions. Can be null.
      */
-    private void loadSubdir(File dir, String sub, PgDatabase db, Predicate<String> checkFilename) throws InterruptedException {
-        File subDir = new File(dir, sub);
-        if (subDir.exists() && subDir.isDirectory()) {
-            File[] files = subDir.listFiles();
-            loadFiles(files, db, f -> checkFilename == null ? true
-                    : checkFilename.test(f.getName().substring(0, f.getName().length()-4)));
+    private void loadSubdir(Path dir, String sub, PgDatabase db, Predicate<String> checkFilename) throws InterruptedException, IOException {
+        Path subDir = dir.resolve(sub);
+        if (!Files.isDirectory(subDir)) {
+            return;
+        }
+        try (Stream<Path> files = Files.list(subDir)
+                .filter(f -> filterFile(f, checkFilename))
+                .sorted()) {
+            for (Path f : PgDiffUtils.sIter(files)) {
+                PgDumpLoader loader = new PgDumpLoader(f, arguments, monitor);
+                if (isOverrideMode) {
+                    loader.setOverridesMap(overrides);
+                }
+                loader.loadDatabase(db, antlrTasks);
+                launchedLoaders.add(loader);
+            }
         }
     }
 
-    /**
-     * @param checkFile additional filter for loaded sql files
-     */
-    private void loadFiles(File[] files, PgDatabase db, Predicate<File> checkFile) throws InterruptedException {
-        Stream<File> streamF = Arrays.stream(files)
-                .filter(f -> f.isFile() && f.getName().toLowerCase(Locale.ROOT).endsWith(".sql"))
-                .filter(checkFile)
-                .sorted();
-
-        for (File f : PgDiffUtils.sIter(streamF)) {
-            PgDumpLoader loader = new PgDumpLoader(f, arguments, monitor);
-            if (isOverrideMode) {
-                loader.setOverridesMap(overrides);
-            }
-            loader.loadDatabase(db, antlrTasks);
-            launchedLoaders.add(loader);
+    private boolean filterFile(Path f, Predicate<String> checkFilename) {
+        String fileName = f.getFileName().toString();
+        if (!fileName.toLowerCase(Locale.ROOT).endsWith(".sql") || !Files.isRegularFile(f)) {
+            return false;
         }
+        return checkFilename == null || checkFilename.test(fileName.substring(0, fileName.length()-4));
     }
 
     protected void replaceOverrides() {

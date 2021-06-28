@@ -3,9 +3,9 @@ package ru.taximaxim.codekeeper.ui.differ;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -147,11 +147,21 @@ public abstract class DbSource {
 
     public static DbSource fromFile(boolean forceUnixNewlines, File filename,
             String encoding, boolean isMsSql, IProject proj, Map<String, Boolean> oneTimePrefs) {
+        return fromFile(forceUnixNewlines, filename.toPath(), encoding, isMsSql, proj, oneTimePrefs);
+    }
+
+    public static DbSource fromFile(boolean forceUnixNewlines, Path filename,
+            String encoding, boolean isMsSql, IProject proj, Map<String, Boolean> oneTimePrefs) {
         return new DbSourceFile(forceUnixNewlines, filename, encoding, isMsSql,
                 proj, oneTimePrefs);
     }
 
     public static DbSource fromFile(boolean forceUnixNewlines, File filename,
+            String encoding, boolean isMsSql, IProject proj) {
+        return fromFile(forceUnixNewlines, filename.toPath(), encoding, isMsSql, proj);
+    }
+
+    public static DbSource fromFile(boolean forceUnixNewlines, Path filename,
             String encoding, boolean isMsSql, IProject proj) {
         return fromFile(forceUnixNewlines, filename, encoding, isMsSql, proj, null);
     }
@@ -161,9 +171,8 @@ public abstract class DbSource {
         if (dbinfo.isPgDumpSwitch()) {
             return new DbSourceDb(forceUnixNewlines, dbinfo, charset, timezone,
                     proj, oneTimePrefs);
-        } else {
-            return new DbSourceJdbc(dbinfo, timezone, forceUnixNewlines, proj, oneTimePrefs);
         }
+        return new DbSourceJdbc(dbinfo, timezone, forceUnixNewlines, proj, oneTimePrefs);
     }
 
     public static DbSource fromDbInfo(DbInfo dbinfo, boolean forceUnixNewlines,
@@ -254,15 +263,15 @@ class DbSourceFile extends DbSource {
     private static final int AVERAGE_STATEMENT_LENGTH = 5;
 
     private final boolean forceUnixNewlines;
-    private final File filename;
+    private final Path filename;
     private final String encoding;
     private final boolean isMsSql;
     private final IProject proj;
     private final Map<String, Boolean> oneTimePrefs;
 
-    DbSourceFile(boolean forceUnixNewlines, File filename, String encoding,
+    DbSourceFile(boolean forceUnixNewlines, Path filename, String encoding,
             boolean isMsSql, IProject proj, Map<String, Boolean> oneTimePrefs) {
-        super(filename.getAbsolutePath());
+        super(filename.toAbsolutePath().toString());
 
         this.forceUnixNewlines = forceUnixNewlines;
         this.filename = filename;
@@ -289,8 +298,8 @@ class DbSourceFile extends DbSource {
         return load(new PgDumpLoader(filename, args, monitor, 2));
     }
 
-    private int countLines(File filename) throws IOException {
-        try (FileInputStream fis = new FileInputStream(filename);
+    private int countLines(Path filename) throws IOException {
+        try (InputStream fis = Files.newInputStream(filename);
                 InputStream is = new BufferedInputStream(fis)){
             byte[] c = new byte[1024];
             int count = 0;
