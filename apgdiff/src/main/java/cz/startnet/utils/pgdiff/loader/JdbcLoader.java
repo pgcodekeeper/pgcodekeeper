@@ -12,6 +12,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.jdbc.CastsReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.ConstraintsReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.ExtensionsReader;
+import cz.startnet.utils.pgdiff.loader.jdbc.ForeignDataWrappersReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.FtsConfigurationsReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.FtsDictionariesReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.FtsParsersReader;
@@ -24,6 +25,7 @@ import cz.startnet.utils.pgdiff.loader.jdbc.PoliciesReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.RulesReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.SchemasReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.SequencesReader;
+import cz.startnet.utils.pgdiff.loader.jdbc.ServersReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.TablesReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.TriggersReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.TypesReader;
@@ -92,6 +94,8 @@ public class JdbcLoader extends JdbcLoaderBase {
 
             new ExtensionsReader(this, d).read();
             new CastsReader(this, d).read();
+            new ForeignDataWrappersReader(this, d).read();
+            new ServersReader(this, d).read();
 
             if (!SupportedVersion.VERSION_10.isLE(version)) {
                 SequencesReader.querySequencesData(d, this);

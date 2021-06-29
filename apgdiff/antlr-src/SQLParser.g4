@@ -726,7 +726,7 @@ create_domain_statement
     ;
 
 create_server_statement
-    : SERVER if_not_exists? identifier (TYPE character_string)? (VERSION character_string)?
+    : SERVER if_not_exists? identifier (TYPE type=character_string)? (VERSION version=character_string)?
     FOREIGN DATA WRAPPER identifier
     define_foreign_options?
     ;
@@ -958,8 +958,8 @@ create_statistics_statement
     ;
 
 create_foreign_data_wrapper_statement
-    : FOREIGN DATA WRAPPER name=identifier (HANDLER schema_qualified_name_nontype | NO HANDLER )?
-    (VALIDATOR schema_qualified_name_nontype | NO VALIDATOR)?
+    : FOREIGN DATA WRAPPER name=identifier (HANDLER handler_func=schema_qualified_name_nontype | NO HANDLER )?
+    (VALIDATOR validator_func=schema_qualified_name_nontype | NO VALIDATOR)?
     (OPTIONS LEFT_PAREN option_without_equal (COMMA option_without_equal)* RIGHT_PAREN )?
     ;
 

@@ -115,6 +115,8 @@ public class MetaUtils {
         case CAST:
         case SCHEMA:
         case EXTENSION:
+        case FOREIGN_DATA_WRAPPER:
+        case SERVER:
         case ROLE:
         case USER:
         case ASSEMBLY:

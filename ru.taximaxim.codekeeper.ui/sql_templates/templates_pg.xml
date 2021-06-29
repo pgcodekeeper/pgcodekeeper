@@ -131,7 +131,19 @@ $$$$;</template>
     >CREATE VIEW ${schemaName}.${objectName} AS
     SELECT ${expression};</template>
 
+<template 
+    name="create_foreign_data_wrapper"
+    description="%create.foreign_data_wrapper.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createforeign_data_wrapper.protected"
+    >CREATE FOREIGN DATA WRAPPER ${objectName} HANDLER ${schemaName}.${handlerFunction};</template>
 
+<template 
+    name="create_server"
+    description="%create.server.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createserver.protected"
+    >CREATE SERVER ${objectName} FOREIGN DATA WRAPPER ${wrapperName};</template>
 
 <!-- templates for CREATE (UNPROTECTED) -->
 

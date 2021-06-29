@@ -9,7 +9,7 @@ import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgFtsDictionary extends PgStatementWithSearchPath
-implements PgOptionContainer {
+implements PgSimpleOptionContainer {
 
     private String template;
     private final Map<String, String> options = new LinkedHashMap<>();

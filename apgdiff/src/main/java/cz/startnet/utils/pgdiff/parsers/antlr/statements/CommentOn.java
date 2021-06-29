@@ -138,6 +138,12 @@ public class CommentOn extends ParserAbstract {
         } else if (obj.EXTENSION() != null) {
             type = DbObjType.EXTENSION;
             st = getSafe(PgDatabase::getExtension, db, nameCtx);
+        } else if (obj.FOREIGN() != null && obj.DATA() != null && obj.WRAPPER() != null) {
+            type = DbObjType.FOREIGN_DATA_WRAPPER;
+            st = getSafe(PgDatabase::getForeignDW, db, nameCtx);
+        } else if (obj.SERVER() != null) {
+            type = DbObjType.SERVER;
+            st = getSafe(PgDatabase::getServer, db, nameCtx);
         } else if (obj.CONSTRAINT() != null) {
             List<IdentifierContext> parentIds = obj.table_name.identifier();
             ParserRuleContext parentCtx = QNameParser.getFirstNameCtx(parentIds);
