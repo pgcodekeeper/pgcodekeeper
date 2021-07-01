@@ -132,6 +132,13 @@ $$$$;</template>
     SELECT ${expression};</template>
 
 <template 
+    name="create_extension"
+    description="%create.extension.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createextension.protected"
+    >CREATE EXTENSION ${objectName};</template>
+
+<template 
     name="create_foreign_data_wrapper"
     description="%create.foreign_data_wrapper.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 

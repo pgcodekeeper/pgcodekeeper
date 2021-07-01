@@ -89,13 +89,13 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
         sb.append("CREATE FOREIGN DATA WRAPPER ");
         sb.append(PgDiffUtils.getQuotedName(getName()));
         if (getHandler() != null) {
-            sb.append("HANDLER ").append(getHandler());
+            sb.append(" HANDLER ").append(getHandler());
         }
         if (getValidator() != null) {
-            sb.append("VALIDATOR ").append(getValidator());
+            sb.append(" VALIDATOR ").append(getValidator());
         }
         if (!options.isEmpty()) {
-            sb.append("OPTIONS (");
+            sb.append(" OPTIONS (");
             for (Entry <String, String> entry : options.entrySet()) {
                 String key = entry.getKey();
                 String value = entry.getValue();
@@ -125,13 +125,13 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
 
         if (!Objects.equals(newForeign.getHandler(), getHandler())) {
             sb.append(getAlterHeader());
-            sb.append("HANDLER ").append(getHandler())
+            sb.append(" HANDLER ").append(getHandler())
             .append(';');
         }
 
         if (!Objects.equals(newForeign.getValidator(), getValidator())) {
             sb.append(getAlterHeader());
-            sb.append("VALIDATOR ").append(getValidator())
+            sb.append(" VALIDATOR ").append(getValidator())
             .append(';');
         }
 
