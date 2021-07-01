@@ -363,7 +363,7 @@ public class ActionsToScriptConverter {
         }
 
         String cols = colsForMovingData.stream()
-                .map(MsDiffUtils::getQuotedName)
+                .map(quoter)
                 .collect(Collectors.joining(", "));
         sb.append("INSERT INTO ").append(tblQName).append('(')
         .append(cols).append(") SELECT ").append(cols).append(" FROM ")
