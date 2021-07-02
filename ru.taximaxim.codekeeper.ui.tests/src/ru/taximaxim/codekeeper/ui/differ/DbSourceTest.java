@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -94,9 +95,8 @@ public class DbSourceTest {
             project.refreshLocal(IResource.DEPTH_INFINITE, null);
 
             // create pgcodekeeperignoreschema file in tempDir
-            Path ignoreSchemaPath = Files.createFile(dir.resolve(".pgcodekeeperignoreschema"));
             String rule = "SHOW ALL";
-            Files.write(ignoreSchemaPath, rule.getBytes());
+            Files.write(dir.resolve(".pgcodekeeperignoreschema"), rule.getBytes(StandardCharsets.UTF_8));
 
             // testing itself
             assertEquals("Project name differs", dir.getFileName().toString(), project.getName());
@@ -128,8 +128,8 @@ public class DbSourceTest {
                 if (IGNORED_SCHEMAS_LIST.contains(dbSchema.getName())) {
                     Assert.fail("Ignored Schema loaded " + dbSchema.getName());
                 } else {
-                    Assert.assertEquals("Schema from ms dump isn't equal schema from loader",
-                            db.getSchema(dbSchema.getName()), dbSchema);
+                    Assert.assertEquals("Schema from dump isn't equal schema from loader",
+                            dbPredefined.getSchema(dbSchema.getName()), dbSchema);
                 }
             }
             project.delete(false, true, null);
@@ -163,7 +163,7 @@ public class DbSourceTest {
                     Assert.fail("Ignored Schema loaded " + dbSchema.getName());
                 } else {
                     Assert.assertEquals("Schema from ms dump isn't equal schema from loader",
-                            db.getSchema(dbSchema.getName()), dbSchema);
+                            msDb.getSchema(dbSchema.getName()), dbSchema);
                 }
             }
             project.delete(false, true, null);
@@ -187,7 +187,7 @@ public class DbSourceTest {
         assertEquals("Db loaded not equal to predefined db", dbPredefined, dbSource);
     }
 
-    protected IProject createProjectInWorkspace(String projectName, boolean isMsSql) throws CoreException{
+    private IProject createProjectInWorkspace(String projectName, boolean isMsSql) throws CoreException{
         IProject project = workspaceRoot.getProject(projectName);
         PgDbProject.createPgDbProject(project, null, isMsSql);
         project.getNature(NATURE.ID).deconfigure();

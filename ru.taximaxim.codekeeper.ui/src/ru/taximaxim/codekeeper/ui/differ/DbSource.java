@@ -30,6 +30,7 @@ import cz.startnet.utils.pgdiff.loader.ProjectLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.InputStreamProvider;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
@@ -218,7 +219,7 @@ class DbSourceDirTree extends DbSource {
 
         return load(new ProjectLoader(dirTreePath,
                 getPgDiffArgs(encoding, forceUnixNewlines, isMsSql, null, oneTimePrefs),
-                monitor, new ArrayList<>()));
+                new ArrayList<>()));
     }
 }
 
@@ -428,11 +429,11 @@ class DbSourceJdbc extends DbSource {
                 isMsSql, proj, oneTimePrefs);
 
         Path listFile = Paths.get(proj.getLocationURI()).resolve(FILE.IGNORED_SCHEMA);
+        IgnoreSchemaList ignoreShemaList = InternalIgnoreList.getIgnoreSchemaList(listFile);
         if (isMsSql) {
-            return load(new JdbcMsLoader(jdbcConnector, args, monitor, InternalIgnoreList.getIgnoreSchemaList(listFile)));
+            return load(new JdbcMsLoader(jdbcConnector, args, monitor,ignoreShemaList));
         }
-
-        return load(new JdbcLoader(jdbcConnector, args, monitor, InternalIgnoreList.getIgnoreSchemaList(listFile)));
+        return load(new JdbcLoader(jdbcConnector, args, monitor, ignoreShemaList));
     }
 }
 

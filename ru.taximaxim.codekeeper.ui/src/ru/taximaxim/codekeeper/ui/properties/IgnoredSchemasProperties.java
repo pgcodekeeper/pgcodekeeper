@@ -2,11 +2,9 @@ package ru.taximaxim.codekeeper.ui.properties;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 
 import org.eclipse.core.resources.IProject;
@@ -24,7 +22,7 @@ import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
 
 public class IgnoredSchemasProperties extends PropertyPage {
 
-    private IgnoredSchemaListEditorProperties listEditor;
+    private IgnoredSchemaListEditor listEditor;
     private IgnoreSchemaList ignoreSchemaList;
     private IProject proj;
 
@@ -39,7 +37,7 @@ public class IgnoredSchemasProperties extends PropertyPage {
         Path listFile = Paths.get(proj.getLocationURI()).resolve(FILE.IGNORED_SCHEMA);
         ignoreSchemaList = InternalIgnoreList.getIgnoreSchemaList(listFile);
 
-        listEditor = IgnoredSchemaListEditorProperties.create(parent, ignoreSchemaList);
+        listEditor = IgnoredSchemaListEditor.create(parent, ignoreSchemaList);
         listEditor.setInputList(new ArrayList<>(ignoreSchemaList.getList()));
 
         return listEditor;
@@ -72,13 +70,7 @@ public class IgnoredSchemasProperties extends PropertyPage {
         }
         byte[] out = list.getListCode().getBytes(StandardCharsets.UTF_8);
         Path listFile = Paths.get(proj.getLocationURI()).resolve(FILE.IGNORED_SCHEMA);
-        if (listFile != null) {
-            try {
-                Files.createDirectories(listFile.getParent());
-            } catch (FileAlreadyExistsException ex) {
-                // no action
-            }
-            Files.write(listFile, out, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-        }
+        Files.createDirectories(listFile.getParent());
+        Files.write(listFile, out);
     }
 }

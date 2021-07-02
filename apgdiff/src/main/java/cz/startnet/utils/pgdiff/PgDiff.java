@@ -94,7 +94,7 @@ public class PgDiff {
             return;
         }
 
-        new ProjectLoader(source, arguments, null, errors).loadOverrides(db);
+        new ProjectLoader(source, arguments, errors).loadOverrides(db);
         assertErrors();
     }
 
@@ -184,9 +184,7 @@ public class PgDiff {
         DatabaseLoader loader;
         IgnoreSchemaList ignoreSchemaList =  new IgnoreSchemaList();
         IgnoreParser ignoreParser = new IgnoreParser(ignoreSchemaList);
-        for (String listFilename : arguments.getIgnoreSchemaLists()) {
-            ignoreParser.parse(Paths.get(listFilename));
-        }
+        ignoreParser.parse(Paths.get(arguments.getIgnoreSchemaList()));
         if ("dump".equals(format)) {
             loader = new PgDumpLoader(Paths.get(srcPath), arguments);
         } else if ("parsed".equals(format)) {

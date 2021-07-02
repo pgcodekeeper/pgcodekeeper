@@ -94,6 +94,7 @@ public final class InternalIgnoreList {
         try {
             ignoreParser.parse(listFile);
         } catch (FileNotFoundException | NoSuchFileException ex) {
+            // ignore file was not created
         } catch (IOException e) {
             ExceptionNotifier.notifyDefault(MessageFormat.format(
                     Messages.IgnoredObjectsPrefPage_error_getting_ignores_list, listFile),

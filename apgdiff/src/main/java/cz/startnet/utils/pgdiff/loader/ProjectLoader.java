@@ -57,7 +57,7 @@ public class ProjectLoader extends DatabaseLoader {
         this(dirPath, arguments, null, new ArrayList<>(), null);
     }
 
-    public ProjectLoader(String dirPath, PgDiffArguments arguments, Object object,
+    public ProjectLoader(String dirPath, PgDiffArguments arguments,
             List<Object> errors) {
         this(dirPath, arguments, null, new ArrayList<>(), null);
     }
@@ -122,12 +122,11 @@ public class ProjectLoader extends DatabaseLoader {
             // read out schemas names, and work in loop on each
             try (Stream<Path> schemas = Files.list(schemasCommonDir)) {
                 for (Path schemaDir : PgDiffUtils.sIter(schemas)) {
-                    if (Files.isDirectory(schemaDir)) {
-                        if (checkIgnoreSchemaList(schemaDir.getFileName().toString())) {
-                            loadSubdir(schemasCommonDir, schemaDir.getFileName().toString(), db);
-                            for (String dirSub : DIR_LOAD_ORDER) {
-                                loadSubdir(schemaDir, dirSub, db);
-                            }
+                    if (Files.isDirectory(schemaDir) &&
+                            checkIgnoreSchemaList(schemaDir.getFileName().toString())) {
+                        loadSubdir(schemasCommonDir, schemaDir.getFileName().toString(), db);
+                        for (String dirSub : DIR_LOAD_ORDER) {
+                            loadSubdir(schemaDir, dirSub, db);
                         }
                     }
                 }

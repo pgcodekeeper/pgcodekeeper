@@ -144,11 +144,7 @@ public class UIProjectLoader extends ProjectLoader {
 
         for (MS_WORK_DIR_NAMES dirSub : MS_WORK_DIR_NAMES.values()) {
             if (dirSub.isInSchema()) {
-                System.err.println();
-                loadSubdir(baseDir.getFolder(new Path(dirSub.getDirName())), db,
-                        msFileName ->
-                checkIgnoreSchemaList(msFileName.substring(0, msFileName.indexOf('.'))));
-
+                loadSubdir(baseDir.getFolder(new Path(dirSub.getDirName())), db, msFileName -> checkIgnoreSchemaList(msFileName.substring(0, msFileName.indexOf('.'))));
             } else {
                 loadSubdir(baseDir.getFolder(new Path(dirSub.getDirName())), db);
             }
