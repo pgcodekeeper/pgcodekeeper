@@ -73,9 +73,8 @@ Usage
                                           specify multiple times to use several
                                           lists
  --ignore-schema <path>                 : use an ignore schema list to
-                                          include/exclude schemas from diff
-                                          specify multiple times to use several
-                                          lists
+                                          include/exclude schemas at loading
+                                          stage
  --src-lib-xml <path>                   : add xml with library dependencies to
                                           source
                                           specify multiple times to use several

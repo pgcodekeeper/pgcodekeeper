@@ -184,7 +184,9 @@ public class PgDiff {
         DatabaseLoader loader;
         IgnoreSchemaList ignoreSchemaList =  new IgnoreSchemaList();
         IgnoreParser ignoreParser = new IgnoreParser(ignoreSchemaList);
-        ignoreParser.parse(Paths.get(arguments.getIgnoreSchemaList()));
+        if (arguments.getIgnoreSchemaList() != null) {
+            ignoreParser.parse(Paths.get(arguments.getIgnoreSchemaList()));
+        }
         if ("dump".equals(format)) {
             loader = new PgDumpLoader(Paths.get(srcPath), arguments);
         } else if ("parsed".equals(format)) {

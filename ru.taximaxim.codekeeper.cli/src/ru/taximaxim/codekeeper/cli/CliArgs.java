@@ -192,9 +192,7 @@ public class CliArgs extends PgDiffArguments {
     private List<String> ignoreLists;
 
     @Option(name="--ignore-schema", metaVar="<path>",
-            usage="use an ignore schema list to include/exclude schemas from diff. This list works in \n"
-                    + "loading stage"
-                    + "\nspecify multiple times to use several lists")
+            usage="use an ignore schema list to include/exclude schemas at loading stage")
     private String ignoreSchemaList;
 
     @Option(name="--src-lib-xml", metaVar="<path>", forbids={"--parse"},
