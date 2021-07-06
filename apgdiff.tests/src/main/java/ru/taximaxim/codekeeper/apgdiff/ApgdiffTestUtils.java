@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Assert;
@@ -24,6 +25,11 @@ import cz.startnet.utils.pgdiff.schema.PgSchema;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public final class ApgdiffTestUtils {
+
+    public static final String RESOURCE_DUMP = "testing_dump.sql";
+    public static final String RESOURCE_MS_DUMP = "testing_ms_dump.sql";
+    public static final List<String> IGNORED_SCHEMAS_LIST = Collections.unmodifiableList(Arrays.asList(
+            "worker", "country", "ignore1", "ignore4vrw"));
 
     public static PgDatabase loadTestDump(String resource, Class<?> c, PgDiffArguments args)
             throws IOException, InterruptedException {
@@ -109,7 +115,7 @@ public final class ApgdiffTestUtils {
         String rule = "SHOW ALL \n"
                 + "HIDE NONE country \n"
                 + "HIDE NONE worker  \n"
-                + "HIDE REGEX ignore.* ";
+                + "HIDE REGEX 'ignore.*' ";
         Files.write(dir.resolve(".pgcodekeeperignoreschema"), rule.getBytes(StandardCharsets.UTF_8));
     }
 }

@@ -13,9 +13,6 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -42,11 +39,6 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public class DbSourceTest {
 
-    private static final String DUMP = "test_dump.sql";
-    private static final String MS_DUMP = "testing_ms_dump.sql";
-    private static final List<String> IGNORED_SCHEMAS_LIST = Collections.unmodifiableList(Arrays.asList(
-            "worker", "country", "ignore1", "ignore4vrw"));
-
     private static PgDatabase dbPredefined;
     private static File workspacePath;
     private static IWorkspaceRoot workspaceRoot;
@@ -55,7 +47,7 @@ public class DbSourceTest {
     public static void initDb() throws IOException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(ApgdiffConsts.UTF_8);
-        dbPredefined = ApgdiffTestUtils.loadTestDump(DUMP, DbSourceTest.class, args);
+        dbPredefined = ApgdiffTestUtils.loadTestDump(ApgdiffTestUtils.RESOURCE_DUMP, ApgdiffTestUtils.class, args);
 
         workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
         workspacePath = workspaceRoot.getLocation().toFile();
@@ -76,7 +68,7 @@ public class DbSourceTest {
     @Test
     public void testFile() throws IOException, URISyntaxException, InterruptedException,
     CoreException {
-        URL urla = DbSourceTest.class.getResource(DUMP);
+        URL urla = ApgdiffTestUtils.class.getResource(ApgdiffTestUtils.RESOURCE_DUMP);
 
         performTest(DbSource.fromFile(true, ApgdiffUtils.getFileFromOsgiRes(urla),
                 ApgdiffConsts.UTF_8, false, null));
@@ -125,7 +117,7 @@ public class DbSourceTest {
             PgDatabase db = dbSourceProj.get(SubMonitor.convert(null, "", 1));
 
             for (AbstractSchema dbSchema : db.getSchemas()) {
-                if (IGNORED_SCHEMAS_LIST.contains(dbSchema.getName())) {
+                if (ApgdiffTestUtils.IGNORED_SCHEMAS_LIST.contains(dbSchema.getName())) {
                     Assert.fail("Ignored Schema loaded " + dbSchema.getName());
                 } else {
                     Assert.assertEquals("Schema from dump isn't equal schema from loader",
@@ -148,7 +140,7 @@ public class DbSourceTest {
             IProject project = createProjectInWorkspace(dir.getFileName().toString(), true);
 
             // populate project with data
-            PgDatabase msDb = ApgdiffTestUtils.loadTestDump(MS_DUMP, DbSourceTest.class, args);
+            PgDatabase msDb = ApgdiffTestUtils.loadTestDump(ApgdiffTestUtils.RESOURCE_MS_DUMP, ApgdiffTestUtils.class, args);
             new MsModelExporter(dir, msDb, ApgdiffConsts.UTF_8).exportFull();
             project.refreshLocal(IResource.DEPTH_INFINITE, null);
 
@@ -159,7 +151,7 @@ public class DbSourceTest {
             PgDatabase db = dbSourceProj.get(SubMonitor.convert(null, "", 1));
 
             for (AbstractSchema dbSchema : db.getSchemas()) {
-                if (IGNORED_SCHEMAS_LIST.contains(dbSchema.getName())) {
+                if (ApgdiffTestUtils.IGNORED_SCHEMAS_LIST.contains(dbSchema.getName())) {
                     Assert.fail("Ignored Schema loaded " + dbSchema.getName());
                 } else {
                     Assert.assertEquals("Schema from ms dump isn't equal schema from loader",
