@@ -1,7 +1,6 @@
 package cz.startnet.utils.pgdiff.loader;
 
 import java.text.MessageFormat;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,7 +36,7 @@ public class JdbcQuery {
     }
 
     public String makeQuery(JdbcLoaderBase loader, String classId) {
-        return makeQuery(loader, Collections.emptySet(), classId);
+        return makeQuery(loader, null, classId);
     }
 
     /**
@@ -66,13 +65,15 @@ public class JdbcQuery {
                     PgDiffUtils.quoteString("pg_catalog." + classId)), "_dbots");
         }
 
-        if (!schemaIds.isEmpty()) {
-            sb.append("WHERE schema_oid IN (");
-            for (Long id : schemaIds) {
-                sb.append(id).append(',');
+        if (schemaIds != null) {
+            sb.append("WHERE schema_oid = ANY (ARRAY[");
+            if (!schemaIds.isEmpty()) {
+                for (Long id : schemaIds) {
+                    sb.append(id).append(',');
+                }
+                sb.setLength(sb.length() - 1);
             }
-            sb.setLength(sb.length() - 1);
-            sb.append(')');
+            sb.append("]::oid[])");
         }
         return sb.toString();
     }
