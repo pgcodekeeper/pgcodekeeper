@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,6 +81,14 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
         return version;
     }
 
+    public String getExtensionSchema() {
+        return extensionSchema;
+    }
+
+    public Map<Long, AbstractSchema> getSchemas() {
+        return Collections.unmodifiableMap(schemaIds);
+    }
+
     protected void setCurrentObject(GenericColumn currentObject) {
         this.currentObject = currentObject;
     }
@@ -121,10 +130,6 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
 
     protected void addError(final String message) {
         errors.add(getCurrentLocation() + ' ' + message);
-    }
-
-    public String getExtensionSchema() {
-        return extensionSchema;
     }
 
     protected String getRoleByOid(long oid) {

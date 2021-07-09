@@ -4,7 +4,6 @@ import java.text.MessageFormat;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.jdbc.JdbcLoaderBase;
@@ -36,14 +35,20 @@ public class JdbcQuery {
     }
 
     public String makeQuery(JdbcLoaderBase loader, String classId) {
-        return makeQuery(loader, null, classId);
+        return makeQuery(loader, false, classId);
     }
 
     /**
      * @param classId postgres only: name of the object class id,
      *          i.e. the pg_catalog table which stores oid's for the object type
+     * @return query or null, if filterSchemas is true and no schemas are requested
+     *          (fast path for an obviously empty query result)
      */
-    public String makeQuery(JdbcLoaderBase loader, Set<Long> schemaIds, String classId) {
+    public String makeQuery(JdbcLoaderBase loader, boolean filterSchemas, String classId) {
+        if (filterSchemas && loader.getSchemas().isEmpty()) {
+            return null;
+        }
+
         int version = loader.getVersion();
         StringBuilder sb = new StringBuilder("SELECT * FROM (");
         sb.append(query);
@@ -65,15 +70,13 @@ public class JdbcQuery {
                     PgDiffUtils.quoteString("pg_catalog." + classId)), "_dbots");
         }
 
-        if (schemaIds != null) {
-            sb.append("WHERE schema_oid = ANY (ARRAY[");
-            if (!schemaIds.isEmpty()) {
-                for (Long id : schemaIds) {
-                    sb.append(id).append(',');
-                }
-                sb.setLength(sb.length() - 1);
+        if (filterSchemas) {
+            sb.append("WHERE schema_oid IN (");
+            for (Long id : loader.getSchemas().keySet()) {
+                sb.append(id).append(',');
             }
-            sb.append("]::oid[])");
+            sb.setLength(sb.length() - 1);
+            sb.append(')');
         }
         return sb.toString();
     }

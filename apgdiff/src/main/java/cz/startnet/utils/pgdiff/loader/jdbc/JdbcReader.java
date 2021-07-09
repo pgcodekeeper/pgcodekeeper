@@ -29,7 +29,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
     }
 
     public void read() throws SQLException, InterruptedException, XmlReaderException {
-        String query = queries.makeQuery(loader, loader.schemaIds.keySet(), getClassId());
+        String query = queries.makeQuery(loader, true, getClassId());
 
         loader.setCurrentOperation(getClass().getSimpleName() + " query");
         try (PreparedStatement statement = loader.connection.prepareStatement(query)) {
