@@ -318,21 +318,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
     private void updateWorkWith() {
         Object remote = getCurrentDb();
-        String remoteName;
-        if (remote instanceof DbInfo) {
-            remoteName = ((DbInfo) remote).getName();
-        } else if (remote instanceof File) {
-            remoteName = ((File) remote).getName();
-        } else {
-            remoteName = ""; //$NON-NLS-1$
-        }
-
-        if (remoteName.isEmpty()) {
-            remoteName = Messages.ProjectEditorDiffer_not_selected;
-        }
-        if (remote != null) {
-            dbStorePicker.setSelection(new StructuredSelection(remote), false);
-        }
+        dbStorePicker.setSelection(remote != null ? new StructuredSelection(remote) : new StructuredSelection(), false);
         lblApplyTo.setText(diffTable.isApplyToProj() ? Messages.ProjectEditorDiffer_apply_project
                 : Messages.ProjectEditorDiffer_apply_db);
         diffTable.layout(true, true);
@@ -676,18 +662,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         }
     }
 
-    private void saveLastDirection(IProject project, boolean isProj) {
-        IEclipsePreferences prefs = PgDbProject.getPrefs(project, false);
-        if (prefs != null) {
-            prefs.putBoolean(DB_BIND_PREF.LAST_DIRECTION, isProj);
-            try {
-                prefs.flush();
-            } catch (BackingStoreException ex) {
-                Log.log(ex);
-            }
-        }
-    }
-
     public boolean getLastDirection() {
         IEclipsePreferences prefs = proj.getDbBindPrefs();
         return prefs.getBoolean(DB_BIND_PREF.LAST_DIRECTION, true);
@@ -890,12 +864,11 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 MessageBox mb = new MessageBox(parent.getShell(), SWT.ICON_WARNING | SWT.YES | SWT.NO);
                 mb.setMessage(Messages.ProjectEditorDiffer_lib_change_error_message);
                 mb.setText(Messages.ProjectEditorDiffer_lib_change_warning_title);
-                if (mb.open() == SWT.YES) {
-                    forceSave = true;
-                    saveOverrides = true;
-                } else {
+                if (mb.open() != SWT.YES) {
                     return;
                 }
+                forceSave = true;
+                saveOverrides = true;
             } else {
                 MessageDialog mb = new MessageDialog(parent.getShell(),
                         Messages.ProjectEditorDiffer_lib_change_warning_title, null,
@@ -1008,11 +981,11 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private static String getRemoteName(Object remote) {
         if (remote instanceof DbInfo) {
             return ((DbInfo) remote).getName();
-        } else if (remote instanceof File) {
-            return ((File) remote).getName();
-        } else {
-            throw new IllegalArgumentException("Remote is not a File or DbInfo!"); //$NON-NLS-1$
         }
+        if (remote instanceof File) {
+            return ((File) remote).getName();
+        }
+        throw new IllegalArgumentException("Remote is not a File or DbInfo!"); //$NON-NLS-1$
     }
 
     private class DiffTable extends DiffTableViewer {
@@ -1281,6 +1254,18 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             applyAction.setToolTipText(Messages.DiffTableViewer_apply_to + ' ' + message);
             applyAction.setImageDescriptor(new DecorationOverlayIcon(imgDescrApplyIcon,
                     descr, IDecoration.TOP_RIGHT));
+        }
+
+        private void saveLastDirection(IProject project, boolean isProj) {
+            IEclipsePreferences prefs = PgDbProject.getPrefs(project, false);
+            if (prefs != null) {
+                prefs.putBoolean(DB_BIND_PREF.LAST_DIRECTION, isProj);
+                try {
+                    prefs.flush();
+                } catch (BackingStoreException ex) {
+                    Log.log(ex);
+                }
+            }
         }
     }
 }

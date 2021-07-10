@@ -57,9 +57,8 @@ public class ProjectLoader extends DatabaseLoader {
         this(dirPath, arguments, null, new ArrayList<>(), null);
     }
 
-    public ProjectLoader(String dirPath, PgDiffArguments arguments,
-            List<Object> errors) {
-        this(dirPath, arguments, null, new ArrayList<>(), null);
+    public ProjectLoader(String dirPath, PgDiffArguments arguments, List<Object> errors) {
+        this(dirPath, arguments, null, errors, null);
     }
 
     public ProjectLoader(String dirPath, PgDiffArguments arguments,
