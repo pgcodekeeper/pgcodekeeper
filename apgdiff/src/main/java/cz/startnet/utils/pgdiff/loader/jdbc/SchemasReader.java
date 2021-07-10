@@ -31,9 +31,11 @@ public class SchemasReader implements PgCatalogStrings {
             while (result.next()) {
                 PgDiffUtils.checkCancelled(loader.monitor);
                 AbstractSchema schema = getSchema(result);
-                db.addSchema(schema);
-                loader.schemaIds.put(result.getLong(OID), schema);
-                loader.setAuthor(schema, result);
+                if (loader.ignorelistSchema == null || loader.ignorelistSchema.getNameStatus(schema.getName())) {
+                    db.addSchema(schema);
+                    loader.schemaIds.put(result.getLong(OID), schema);
+                    loader.setAuthor(schema, result);
+                }
             }
         }
     }

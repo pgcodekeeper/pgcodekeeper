@@ -69,7 +69,7 @@ interface FormatConfigProvider {
 
     default String getFileContent(String fileName) throws IOException, URISyntaxException {
         return new String(Files.readAllBytes(ApgdiffUtils.getFileFromOsgiRes(
-                FormatterTest.class.getResource(fileName)).toPath()),
+                FormatterTest.class.getResource(fileName))),
                 StandardCharsets.UTF_8);
     }
 }

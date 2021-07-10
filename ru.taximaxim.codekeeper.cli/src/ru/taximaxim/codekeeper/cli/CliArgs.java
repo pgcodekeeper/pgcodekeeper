@@ -191,6 +191,10 @@ public class CliArgs extends PgDiffArguments {
                     + "\nspecify multiple times to use several lists")
     private List<String> ignoreLists;
 
+    @Option(name="--ignore-schema", metaVar="<path>",
+            usage="use an ignore schema list to include/exclude schemas at loading stage")
+    private String ignoreSchemaList;
+
     @Option(name="--src-lib-xml", metaVar="<path>", forbids={"--parse"},
             usage="add xml with library dependencies to source"
                     + "\nspecify multiple times to use several library xml's")
@@ -351,6 +355,11 @@ public class CliArgs extends PgDiffArguments {
     @Override
     public Collection<String> getIgnoreLists() {
         return Collections.unmodifiableCollection(ignoreLists);
+    }
+
+    @Override
+    public String getIgnoreSchemaList() {
+        return ignoreSchemaList;
     }
 
     @Override

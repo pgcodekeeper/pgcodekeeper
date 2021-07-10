@@ -30,8 +30,10 @@ public class SchemasMsReader {
             while (result.next()) {
                 PgDiffUtils.checkCancelled(loader.monitor);
                 AbstractSchema schema = getSchema(result);
-                db.addSchema(schema);
-                loader.schemaIds.put(result.getLong("schema_id"), schema);
+                if (loader.ignorelistSchema == null || loader.ignorelistSchema.getNameStatus(schema.getName())) {
+                    db.addSchema(schema);
+                    loader.schemaIds.put(result.getLong("schema_id"), schema);
+                }
             }
         }
     }

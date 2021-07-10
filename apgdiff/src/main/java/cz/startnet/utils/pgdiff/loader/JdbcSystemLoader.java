@@ -42,7 +42,7 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
     private static final String NAME = "name";
 
     public JdbcSystemLoader(JdbcConnector connector, SubMonitor monitor) {
-        super(connector, monitor, null);
+        super(connector, monitor, null, null);
     }
 
     @Override

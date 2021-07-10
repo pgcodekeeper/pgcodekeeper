@@ -12,6 +12,7 @@ import org.eclipse.core.runtime.Platform;
 
 import ru.taximaxim.codekeeper.apgdiff.ignoreparser.IgnoreParser;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
@@ -87,6 +88,22 @@ public final class InternalIgnoreList {
                 .append(FILE.IGNORED_OBJECTS).toString());
     }
 
+    public static IgnoreSchemaList getIgnoreSchemaList(Path listFile) {
+        IgnoreSchemaList ignoreSchemaList = new IgnoreSchemaList();
+        IgnoreParser ignoreParser = new IgnoreParser(ignoreSchemaList);
+        try {
+            ignoreParser.parse(listFile);
+        } catch (FileNotFoundException | NoSuchFileException ex) {
+            // ignore file was not created
+        } catch (IOException e) {
+            ExceptionNotifier.notifyDefault(MessageFormat.format(
+                    Messages.IgnoredObjectsPrefPage_error_getting_ignores_list, listFile),
+                    e);
+        }
+        return ignoreSchemaList;
+    }
+
     private InternalIgnoreList() {
+        // no impl
     }
 }

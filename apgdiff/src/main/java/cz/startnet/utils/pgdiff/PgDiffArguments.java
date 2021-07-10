@@ -33,6 +33,7 @@ public class PgDiffArguments implements Cloneable {
     private final List<DbObjType> allowedTypes = new ArrayList<>();
     private boolean stopNotAllowed;
     private final List<String> ignoreLists = new ArrayList<>();
+    private String ignoreSchemaList;
     private final List<String> sourceLibs = new ArrayList<>();
     private final List<String> sourceLibXmls = new ArrayList<>();
     private final List<String> sourceLibsWithoutPriv = new ArrayList<>();
@@ -96,6 +97,10 @@ public class PgDiffArguments implements Cloneable {
 
     public Collection<String> getIgnoreLists() {
         return Collections.unmodifiableCollection(ignoreLists);
+    }
+
+    public String getIgnoreSchemaList() {
+        return ignoreSchemaList;
     }
 
     public Collection<String> getSourceLibXmls() {

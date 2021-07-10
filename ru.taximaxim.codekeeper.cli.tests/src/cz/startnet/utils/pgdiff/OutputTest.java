@@ -110,7 +110,7 @@ class UsageArgumentsProvider extends ArgumentsProvider {
     public String output() {
         try {
             return new String(Files.readAllBytes(ApgdiffUtils.getFileFromOsgiRes(
-                    OutputTest.class.getResource("usage_check.txt")).toPath()),
+                    OutputTest.class.getResource("usage_check.txt"))),
                     StandardCharsets.UTF_8);
         } catch (IOException | URISyntaxException ex) {
             throw new IllegalStateException(ex);
@@ -170,7 +170,7 @@ class EmptyArgumentsProvider extends ArgumentsProvider {
     public String output() {
         try {
             return new String(Files.readAllBytes(ApgdiffUtils.getFileFromOsgiRes(
-                    OutputTest.class.getResource("usage_check.txt")).toPath()),
+                    OutputTest.class.getResource("usage_check.txt"))),
                     StandardCharsets.UTF_8);
         } catch (IOException | URISyntaxException ex) {
             throw new IllegalStateException(ex);
@@ -539,7 +539,7 @@ class OverrideArgumentsProvider extends ArgumentsProvider {
     protected String[] args() throws URISyntaxException, IOException {
         Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
         Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
-        Path lib = ApgdiffUtils.getFileFromOsgiRes(OutputTest.class.getResource("lib.sql")).toPath();
+        Path lib = ApgdiffUtils.getFileFromOsgiRes(OutputTest.class.getResource("lib.sql"));
 
         return new String[] {"-o", getDiffResultFile().toString(),
                 "-t", fOriginal.toString(), "-s", fNew.toString(),

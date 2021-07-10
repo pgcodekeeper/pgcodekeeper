@@ -284,7 +284,7 @@ class FlagsArgumentsProvider extends ArgumentsProvider {
     @Override
     public Path getPredefinedResultFile() throws URISyntaxException, IOException {
         URL resourceUrl = PgDiffTest.class.getResource("MainTest_" + resName + FILES_POSTFIX.DIFF_SQL);
-        return ApgdiffUtils.getFileFromOsgiRes(resourceUrl).toPath();
+        return ApgdiffUtils.getFileFromOsgiRes(resourceUrl);
     }
 }
 
@@ -299,10 +299,10 @@ class IgnoreListsArgumentsProvider extends ArgumentsProvider {
 
     @Override
     protected String[] args() throws URISyntaxException, IOException {
-        Path black = ApgdiffUtils.getFileFromOsgiRes(DiffTest.class.getResource("black.ignore")).toPath();
-        Path white = ApgdiffUtils.getFileFromOsgiRes(DiffTest.class.getResource("white.ignore")).toPath();
-        Path old = ApgdiffUtils.getFileFromOsgiRes(PgDiffTest.class.getResource("ignore_old.sql")).toPath();
-        Path new_ = ApgdiffUtils.getFileFromOsgiRes(PgDiffTest.class.getResource("ignore_new.sql")).toPath();
+        Path black = ApgdiffUtils.getFileFromOsgiRes(DiffTest.class.getResource("black.ignore"));
+        Path white = ApgdiffUtils.getFileFromOsgiRes(DiffTest.class.getResource("white.ignore"));
+        Path old = ApgdiffUtils.getFileFromOsgiRes(PgDiffTest.class.getResource("ignore_old.sql"));
+        Path new_ = ApgdiffUtils.getFileFromOsgiRes(PgDiffTest.class.getResource("ignore_new.sql"));
 
         return new String[] {"--ignore-list", black.toString(),
                 "-I", white.toString(), "-o", getDiffResultFile().toString(),
@@ -342,7 +342,7 @@ class LibrariesArgumentsProvider extends ArgumentsProvider {
     protected String[] args() throws URISyntaxException, IOException {
         Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
         Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
-        Path lib = ApgdiffUtils.getFileFromOsgiRes(DiffTest.class.getResource("lib.sql")).toPath();
+        Path lib = ApgdiffUtils.getFileFromOsgiRes(DiffTest.class.getResource("lib.sql"));
 
         return new String[] {"-o", getDiffResultFile().toString(),
                 "-t", fOriginal.toString(), "-s", fNew.toString(),
