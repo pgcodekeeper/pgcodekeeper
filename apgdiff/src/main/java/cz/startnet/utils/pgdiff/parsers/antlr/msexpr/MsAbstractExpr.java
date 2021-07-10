@@ -41,8 +41,12 @@ public abstract class MsAbstractExpr {
         this.depcies = depcies;
     }
 
+    protected MsAbstractExprWithNmspc<?> findCte(String cteName) {
+        return parent == null ? null : parent.findCte(cteName);
+    }
+
     protected boolean hasCte(String cteName) {
-        return parent != null && parent.hasCte(cteName);
+        return findCte(cteName) != null;
     }
 
     /**
