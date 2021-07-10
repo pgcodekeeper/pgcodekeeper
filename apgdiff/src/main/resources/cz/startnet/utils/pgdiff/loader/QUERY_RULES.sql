@@ -3,7 +3,8 @@ WITH sys_schemas AS (
     FROM pg_catalog.pg_namespace n
     WHERE n.nspname LIKE 'pg\_%'
         OR n.nspname = 'information_schema'
-        OR EXISTS (SELECT 1 FROM pg_catalog.pg_depend dp WHERE dp.objid = n.oid AND dp.deptype = 'e')
+        OR EXISTS (SELECT 1 FROM pg_catalog.pg_depend dp WHERE dp.objid = n.oid AND dp.deptype = 'e'
+        AND dp.classid = 'pg_catalog.pg_namespace'::pg_catalog.regclass)
 )
 
 SELECT  r.oid::bigint,
@@ -18,6 +19,7 @@ SELECT  r.oid::bigint,
 FROM pg_catalog.pg_rewrite r
 JOIN pg_catalog.pg_class ccc ON ccc.oid = r.ev_class 
 LEFT JOIN pg_catalog.pg_description d ON r.oid = d.objoid
+    AND d.classoid = 'pg_catalog.pg_rewrite'::pg_catalog.regclass
 WHERE ccc.relnamespace NOT IN (SELECT oid FROM sys_schemas) 
     -- block rules that implement views
     AND NOT ((ccc.relkind = 'v' OR ccc.relkind = 'm') AND r.ev_type = '1' AND r.is_instead)

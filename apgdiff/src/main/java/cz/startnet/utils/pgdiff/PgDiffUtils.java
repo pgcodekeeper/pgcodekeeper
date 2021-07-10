@@ -108,6 +108,23 @@ public final class PgDiffUtils {
                 .append('\'');
     }
 
+    /**
+     * Function equivalent to appendStringLiteralDQ in pgdump's dumputils.c
+     */
+    public static String quoteStringDollar(String contents) {
+        final String suffixes = "_XXXXXXX";
+        StringBuilder quote = new StringBuilder("$");
+        int counter = 0;
+        while (contents.contains(quote)) {
+            quote.append(suffixes.charAt(counter++));
+            counter %= suffixes.length();
+        }
+
+        quote.append('$');
+        String dollar = quote.toString();
+        return dollar + contents + dollar;
+    }
+
     public static String unquoteQuotedName(String name) {
         return name.substring(1, name.length() - 1).replace("\"\"", "\"");
     }

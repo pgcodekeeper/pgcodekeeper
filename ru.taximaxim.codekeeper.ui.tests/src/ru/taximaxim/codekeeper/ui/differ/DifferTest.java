@@ -2,10 +2,10 @@ package ru.taximaxim.codekeeper.ui.differ;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
@@ -80,8 +80,8 @@ public class DifferTest {
         String sourceFilename = "TestPartialExportSource.sql";
         String targetFilename = "TestPartialExportTarget.sql";
 
-        File sourceFile = ApgdiffUtils.getFileFromOsgiRes(PartialExporterTest.class.getResource(sourceFilename));
-        File targetFile = ApgdiffUtils.getFileFromOsgiRes(PartialExporterTest.class.getResource(targetFilename));
+        Path sourceFile = ApgdiffUtils.getFileFromOsgiRes(PartialExporterTest.class.getResource(sourceFilename));
+        Path targetFile = ApgdiffUtils.getFileFromOsgiRes(PartialExporterTest.class.getResource(targetFilename));
 
         DbSource dbSource = DbSource.fromFile(true, sourceFile, ApgdiffConsts.UTF_8, false, null);
         DbSource dbTarget = DbSource.fromFile(true, targetFile, ApgdiffConsts.UTF_8, false, null);
@@ -113,13 +113,11 @@ public class DifferTest {
 
         differ.getDiffDirect();
         assertEquals("Direct script differs", differ.getDiffDirect(),
-                getResourceFileAsString(caseNumber + "_direct_diff.sql"));
+                ApgdiffTestUtils.inputStreamToString(DifferTest.class.getResourceAsStream(
+                        caseNumber + "_direct_diff.sql")));
         assertEquals("Reverse script differs", differ.getDiffReverse(),
-                getResourceFileAsString(caseNumber + "_reverse_diff.sql"));
-    }
-
-    private String getResourceFileAsString(String name) throws IOException {
-        return ApgdiffTestUtils.getResourceFileAsString(name, DifferTest.class);
+                ApgdiffTestUtils.inputStreamToString(DifferTest.class.getResourceAsStream(
+                        caseNumber + "_reverse_diff.sql")));
     }
 }
 

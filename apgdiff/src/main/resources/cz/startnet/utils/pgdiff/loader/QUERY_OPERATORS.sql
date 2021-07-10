@@ -6,8 +6,7 @@ WITH sys_schemas AS (
 ), extension_deps AS (
     SELECT dep.objid 
     FROM pg_catalog.pg_depend dep 
-    WHERE refclassid = 'pg_catalog.pg_extension'::pg_catalog.regclass 
-        AND dep.deptype = 'e'
+    WHERE dep.classid = 'pg_catalog.pg_operator'::pg_catalog.regclass AND dep.deptype = 'e'
 )
 
 SELECT o.oid::bigint,
@@ -32,6 +31,7 @@ SELECT o.oid::bigint,
        d.description AS comment
 FROM pg_catalog.pg_operator o
 LEFT JOIN pg_catalog.pg_description d ON d.objoid = o.oid
+    AND d.classoid = 'pg_catalog.pg_operator'::pg_catalog.regclass
 JOIN pg_catalog.pg_proc prc ON o.oprcode = prc.oid
 LEFT JOIN pg_catalog.pg_namespace prc_n ON prc.pronamespace = prc_n.oid
 LEFT JOIN pg_catalog.pg_operator com ON o.oprcom = com.oid

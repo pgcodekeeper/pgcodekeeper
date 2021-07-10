@@ -126,4 +126,9 @@ public class ViewsReader extends JdbcReader {
     protected void setParams(PreparedStatement statement) throws SQLException {
         statement.setBoolean(1, loader.args.isSimplifyView());
     }
+
+    @Override
+    protected String getClassId() {
+        return "pg_class";
+    }
 }

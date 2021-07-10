@@ -5,7 +5,7 @@ import java.sql.SQLException;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateRewrite;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateRule;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgEventType;
@@ -70,7 +70,7 @@ public class RulesReader extends JdbcReader {
 
         loader.submitAntlrTask(command, p -> p.sql().statement(0)
                 .schema_statement().schema_create().create_rewrite_statement(),
-                ctx -> CreateRewrite.setConditionAndAddCommands(ctx, r,
+                ctx -> CreateRule.setConditionAndAddCommands(ctx, r,
                         schema.getDatabase(), loader.getCurrentLocation()));
 
         loader.setAuthor(r, res);
@@ -80,5 +80,10 @@ public class RulesReader extends JdbcReader {
             r.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
         return r;
+    }
+
+    @Override
+    protected String getClassId() {
+        return "pg_rewrite";
     }
 }

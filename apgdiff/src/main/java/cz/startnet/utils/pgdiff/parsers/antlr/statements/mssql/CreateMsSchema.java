@@ -32,6 +32,6 @@ public class CreateMsSchema extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_CREATE, DbObjType.SCHEMA, Arrays.asList(ctx.schema_name));
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.SCHEMA, ctx.schema_name);
     }
 }

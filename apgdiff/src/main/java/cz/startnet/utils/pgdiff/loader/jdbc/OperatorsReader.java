@@ -105,4 +105,9 @@ public class OperatorsReader extends JdbcReader {
         sb.append(PgDiffUtils.getQuotedName(funcName));
         return sb.toString();
     }
+
+    @Override
+    protected String getClassId() {
+        return "pg_operator";
+    }
 }

@@ -1,12 +1,14 @@
 package ru.taximaxim.codekeeper.apgdiff;
 
-import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.junit.Assert;
 
@@ -24,6 +26,11 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public final class ApgdiffTestUtils {
 
+    public static final String RESOURCE_DUMP = "testing_dump.sql";
+    public static final String RESOURCE_MS_DUMP = "testing_ms_dump.sql";
+    public static final List<String> IGNORED_SCHEMAS_LIST = Collections.unmodifiableList(Arrays.asList(
+            "worker", "country", "ignore1", "ignore4vrw"));
+
     public static PgDatabase loadTestDump(String resource, Class<?> c, PgDiffArguments args)
             throws IOException, InterruptedException {
         return loadTestDump(resource, c, args, true);
@@ -32,7 +39,7 @@ public final class ApgdiffTestUtils {
     public static PgDatabase loadTestDump(String resource, Class<?> c, PgDiffArguments args, boolean analysis)
             throws IOException, InterruptedException {
         PgDumpLoader loader =  new PgDumpLoader(() -> c.getResourceAsStream(resource),
-                "test:/" + c.getName() + '/' + resource, args);
+                "test/" + c.getName() + '/' + resource, args);
         PgDatabase db = analysis ? loader.loadAndAnalyze() : loader.load();
         if (!loader.getErrors().isEmpty()) {
             throw new IOException("Test resource caused  loader errors!");
@@ -68,19 +75,10 @@ public final class ApgdiffTestUtils {
 
     public static void compareResult(String script, String template,
             Class<?> clazz) throws IOException {
-        String sbExpDiff = getResourceFileAsString(template + FILES_POSTFIX.DIFF_SQL, clazz);
-
         Assert.assertEquals("File name template: " + template,
-                sbExpDiff.trim(), script.trim());
-    }
-
-    public static String getResourceFileAsString(String resource, Class<?> clazz)
-            throws IOException {
-        try (InputStreamReader isr = new InputStreamReader(
-                clazz.getResourceAsStream(resource), StandardCharsets.UTF_8);
-                BufferedReader reader = new BufferedReader(isr)) {
-            return reader.lines().collect(Collectors.joining(System.lineSeparator()));
-        }
+                ApgdiffTestUtils.inputStreamToString(clazz.getResourceAsStream(
+                        template + FILES_POSTFIX.DIFF_SQL)).trim(),
+                script.trim());
     }
 
     public static Iterable<Object[]> getParameters(Object[][] objects) {
@@ -93,7 +91,31 @@ public final class ApgdiffTestUtils {
                 ::iterator;
     }
 
+    /**
+     * @param inputStream stream converted to string, closed after use
+     * @return String read from inputStream as UTF-8
+     * @throws IOException
+     */
+    public static String inputStreamToString(InputStream inputStream) throws IOException {
+        try (InputStream is = inputStream) {
+            ByteArrayOutputStream result = new ByteArrayOutputStream();
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = inputStream.read(buffer)) != -1) {
+                result.write(buffer, 0, length);
+            }
+            return result.toString(ApgdiffConsts.UTF_8);
+        }
+    }
 
     private ApgdiffTestUtils() {
+    }
+
+    public static void createIgnoredSchemaFile(Path dir) throws IOException {
+        String rule = "SHOW ALL \n"
+                + "HIDE NONE country \n"
+                + "HIDE NONE worker  \n"
+                + "HIDE REGEX 'ignore.*' ";
+        Files.write(dir.resolve(".pgcodekeeperignoreschema"), rule.getBytes(StandardCharsets.UTF_8));
     }
 }

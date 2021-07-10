@@ -115,8 +115,6 @@ public class CreateOperator extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        Operator_nameContext operNameCtx = ctx.name;
-        return getStrForStmtAction(ACTION_CREATE, DbObjType.OPERATOR,
-                Arrays.asList(operNameCtx.schema_name, operNameCtx.operator));
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.OPERATOR, ctx.name);
     }
 }
