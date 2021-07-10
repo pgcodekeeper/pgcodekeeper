@@ -203,32 +203,6 @@
         </handler>
     </extension>
     <extension point="org.eclipse.ui.menus">
-        <menuContribution locationURI="popup:org.eclipse.ui.navigator.ProjectExplorer#PopupMenu?after=group.open">
-            <menu
-                label="%menu.label.showIn"
-                commandId="org.eclipse.ui.navigate.showInQuickMenu"
-                id="ru.taximaxim.codekeeper.showInMenu"
-                mnemonic="%menu.mnemonic.showIn">
-                <dynamic
-                    class="org.eclipse.ui.ExtensionFactory:showInContribution"
-                    id="ru.taximaxim.codekeeper.dynamicShowInMenu">
-                </dynamic>
-                <visibleWhen checkEnabled="false">
-                    <iterate
-                        operator="or"
-                        ifEmpty="false">
-                        <test
-                            property="org.eclipse.core.resources.projectNature"
-                            value="ru.taximaxim.codekeeper.ui.nature">
-                        </test>
-                        <with variable="activeWorkbenchWindow.activePerspective">
-                            <equals value="ru.taximaxim.codekeeper.ui.mainperspective">
-                            </equals>
-                        </with>
-                    </iterate>
-                </visibleWhen>
-            </menu>
-        </menuContribution>
         <menuContribution locationURI="popup:org.eclipse.ui.navigator.ProjectExplorer#PopupMenu?after=additions">
             <command commandId="org.eclipse.ui.newWizard">
                 <parameter
