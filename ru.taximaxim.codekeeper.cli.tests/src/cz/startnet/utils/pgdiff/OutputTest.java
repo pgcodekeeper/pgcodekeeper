@@ -11,8 +11,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.List;
 
 import org.junit.After;
 import org.junit.Test;
@@ -21,6 +19,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.osgi.framework.BundleContext;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.cli.Activator;
 import ru.taximaxim.codekeeper.cli.Main;
@@ -30,8 +29,8 @@ import ru.taximaxim.codekeeper.cli.localizations.Messages;
 public class OutputTest {
 
     @Parameters
-    public static Iterable<ArgumentsProvider[]> parameters() {
-        List<ArgumentsProvider[]> p = Arrays.asList(new ArgumentsProvider[][] {
+    public static Iterable<Object[]> parameters() {
+        return ApgdiffTestUtils.getParameters(new Object[][] {
             {new UsageArgumentsProvider()},
             {new VersionArgumentsProvider()},
             {new CharsetsArgumentsProvider()},
@@ -60,8 +59,6 @@ public class OutputTest {
             {new FailGraphArgumentsProvider()},
             {new IgnoreColumnOrderArgumentsProvider()},
         });
-
-        return p.stream()::iterator;
     }
 
     private final ArgumentsProvider args;

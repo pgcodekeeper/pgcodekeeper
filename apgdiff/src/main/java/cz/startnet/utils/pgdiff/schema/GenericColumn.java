@@ -9,14 +9,11 @@ import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class GenericColumn implements Serializable {
-
-    private static final Collection<String> SYS_SCHEMAS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
-            "information_schema", "pg_catalog"
-            )));
 
     @Deprecated
     // TODO detect these by separating their tokens from identifiers in parser
@@ -88,7 +85,7 @@ public class GenericColumn implements Serializable {
 
     private boolean isBuiltin() {
         return (type == DbObjType.TYPE && ApgdiffConsts.SYS_TYPES.contains(table))
-                || SYS_SCHEMAS.contains(schema) || SYS_COLUMNS.contains(column)
+                || ApgdiffUtils.isPgSystemSchema(schema) || SYS_COLUMNS.contains(column)
                 || (table != null && table.startsWith("pg_"));
     }
 

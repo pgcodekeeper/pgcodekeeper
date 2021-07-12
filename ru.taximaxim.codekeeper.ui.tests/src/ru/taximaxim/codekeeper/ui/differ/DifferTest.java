@@ -8,8 +8,6 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -43,23 +41,17 @@ import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 public class DifferTest {
 
     private static boolean defaultCheckBodies;
-    private final DifferData differData;
 
     @Parameters
-    public static Collection<?> parameters() {
-        return Arrays.asList(
-                new Object[][]{
-                    {1},
-                    {2},
-                    {3},
-                    {4},
-                    {5}
-                });
+    public static Iterable<Object[]> parameters() {
+        return ApgdiffTestUtils.getParameters(new Object[][] {
+            { new DifferData1(), 1 },
+            { new DifferData2(), 2 },
+            { new DifferData3(), 3 },
+            { new DifferData4(), 4 },
+            { new DifferData5(), 5 },
+        });
     }
-
-    private static final DifferData[] DB_OBJS = {
-            new DifferData1(), new DifferData2(), new DifferData3(), new DifferData4(), new DifferData5()
-    };
 
     @BeforeClass
     public static void beforeClass() {
@@ -74,9 +66,12 @@ public class DifferTest {
         prefs.setValue(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES, defaultCheckBodies);
     }
 
-    public DifferTest(int param) {
-        this.differData = DB_OBJS[param - 1];
-        differData.setCaseNumber(param);
+    private final DifferData differData;
+    private final int caseNumber;
+
+    public DifferTest(DifferData differData, int caseNumber) {
+        this.differData = differData;
+        this.caseNumber = caseNumber;
     }
 
     @Test
@@ -117,36 +112,24 @@ public class DifferTest {
         job.join();
 
         differ.getDiffDirect();
-        assertEquals("Direct script differs",
-                differData.getPredefinedDirectDiff(), differ.getDiffDirect());
-        assertEquals("Reverse script differs",
-                differData.getPredefinedReverseDiff(), differ.getDiffReverse());
+        assertEquals("Direct script differs", differ.getDiffDirect(),
+                ApgdiffTestUtils.inputStreamToString(DifferTest.class.getResourceAsStream(
+                        caseNumber + "_direct_diff.sql")));
+        assertEquals("Reverse script differs", differ.getDiffReverse(),
+                ApgdiffTestUtils.inputStreamToString(DifferTest.class.getResourceAsStream(
+                        caseNumber + "_reverse_diff.sql")));
     }
 }
 
-abstract class DifferData {
-    int caseNumber = -1;
+interface DifferData {
+    void setUserSelection(TreeElement root);
 
-    abstract void setUserSelection(TreeElement root);
-
-    List<Entry<PgStatement, PgStatement>> getAdditionalDepciesSource(PgDatabase source) {
+    default List<Entry<PgStatement, PgStatement>> getAdditionalDepciesSource(PgDatabase source) {
         return new ArrayList<>();
     }
 
-    List<Entry<PgStatement, PgStatement>> getAdditionalDepciesTarget(PgDatabase target) {
+    default List<Entry<PgStatement, PgStatement>> getAdditionalDepciesTarget(PgDatabase target) {
         return new ArrayList<>();
-    }
-
-    final void setCaseNumber(int caseNumber) {
-        this.caseNumber = caseNumber;
-    }
-
-    final String getPredefinedDirectDiff() throws IOException {
-        return ApgdiffTestUtils.inputStreamToString(DifferTest.class.getResourceAsStream(caseNumber + "_direct_diff.sql"));
-    }
-
-    final String getPredefinedReverseDiff() throws IOException {
-        return ApgdiffTestUtils.inputStreamToString(DifferTest.class.getResourceAsStream(caseNumber + "_reverse_diff.sql"));
     }
 }
 
@@ -154,11 +137,11 @@ abstract class DifferData {
  * DifferData implementation with 1 EDIT constraint selected (parent table is expected to
  * be "auto-selected" as yet)
  */
-class DifferData1 extends DifferData {
+class DifferData1 implements DifferData {
 
     @Override
-    void setUserSelection(TreeElement root) {
-        root.getChild("public").getChild("t4").getChild("t4_c2_key").setSelected(true);
+    public void setUserSelection(TreeElement root) {
+        root.getChild(ApgdiffConsts.PUBLIC).getChild("t4").getChild("t4_c2_key").setSelected(true);
     }
 }
 
@@ -166,17 +149,17 @@ class DifferData1 extends DifferData {
  * DifferData implementation with 1 EDIT constraint selected (parent table is expected to
  * be "auto-selected" as yet). Adds to source and target depcy: view>table (with no impact)
  */
-class DifferData2 extends DifferData {
+class DifferData2 implements DifferData {
 
     @Override
-    void setUserSelection(TreeElement root) {
-        root.getChild("public").getChild("t1").getChild("t1_c2_key").setSelected(true);
+    public void setUserSelection(TreeElement root) {
+        root.getChild(ApgdiffConsts.PUBLIC).getChild("t1").getChild("t1_c2_key").setSelected(true);
     }
 
     @Override
-    List<Entry<PgStatement, PgStatement>> getAdditionalDepciesSource(PgDatabase source) {
-        AbstractTable t = source.getSchema("public").getTable("t1");
-        AbstractSequence s = source.getSchema("public").getSequence("t1_c1_seq");
+    public List<Entry<PgStatement, PgStatement>> getAdditionalDepciesSource(PgDatabase source) {
+        AbstractTable t = source.getSchema(ApgdiffConsts.PUBLIC).getTable("t1");
+        AbstractSequence s = source.getSchema(ApgdiffConsts.PUBLIC).getSequence("t1_c1_seq");
         Entry<PgStatement, PgStatement> arr = new AbstractMap.SimpleEntry<> (s, t);
         List<Entry<PgStatement, PgStatement>> list = new ArrayList<>();
         list.add(arr);
@@ -184,7 +167,7 @@ class DifferData2 extends DifferData {
     }
 
     @Override
-    List<Entry<PgStatement, PgStatement>> getAdditionalDepciesTarget(PgDatabase target) {
+    public List<Entry<PgStatement, PgStatement>> getAdditionalDepciesTarget(PgDatabase target) {
         return this.getAdditionalDepciesSource(target);
     }
 }
@@ -193,17 +176,17 @@ class DifferData2 extends DifferData {
  * DifferData implementation with 1 EDIT constraint selected (parent table is expected to
  * be "auto-selected" as yet). Adds to source and target depcy: view>column
  */
-class DifferData3 extends DifferData {
+class DifferData3 implements DifferData {
 
     @Override
-    void setUserSelection(TreeElement root) {
-        root.getChild("public").getChild("t1").getChild("t1_c2_key").setSelected(true);
+    public void setUserSelection(TreeElement root) {
+        root.getChild(ApgdiffConsts.PUBLIC).getChild("t1").getChild("t1_c2_key").setSelected(true);
     }
 
     @Override
-    List<Entry<PgStatement, PgStatement>> getAdditionalDepciesSource(PgDatabase source) {
-        AbstractColumn c = source.getSchema("public").getTable("t1").getColumn("c1");
-        AbstractSequence s = source.getSchema("public").getSequence("t1_c1_seq");
+    public List<Entry<PgStatement, PgStatement>> getAdditionalDepciesSource(PgDatabase source) {
+        AbstractColumn c = source.getSchema(ApgdiffConsts.PUBLIC).getTable("t1").getColumn("c1");
+        AbstractSequence s = source.getSchema(ApgdiffConsts.PUBLIC).getSequence("t1_c1_seq");
         Entry<PgStatement, PgStatement> arr = new AbstractMap.SimpleEntry<> (s, c);
         List<Entry<PgStatement, PgStatement>> list = new ArrayList<>();
         list.add(arr);
@@ -211,7 +194,7 @@ class DifferData3 extends DifferData {
     }
 
     @Override
-    List<Entry<PgStatement, PgStatement>> getAdditionalDepciesTarget(PgDatabase target) {
+    public List<Entry<PgStatement, PgStatement>> getAdditionalDepciesTarget(PgDatabase target) {
         return this.getAdditionalDepciesSource(target);
     }
 }
@@ -219,10 +202,10 @@ class DifferData3 extends DifferData {
 /**
  * DifferData implementation with 1 NEW table selected.
  */
-class DifferData4 extends DifferData {
+class DifferData4 implements DifferData {
 
     @Override
-    void setUserSelection(TreeElement root) {
+    public void setUserSelection(TreeElement root) {
         root.getChild("test").getChild("test_table").setSelected(true);
     }
 }
@@ -231,17 +214,17 @@ class DifferData4 extends DifferData {
  * DifferData implementation with 1 DELETE view selected.
  * Adds to target depcy: view>new schema
  */
-class DifferData5 extends DifferData {
+class DifferData5 implements DifferData {
 
     @Override
-    void setUserSelection(TreeElement root) {
-        root.getChild("public").getChild("v1").setSelected(true);
+    public void setUserSelection(TreeElement root) {
+        root.getChild(ApgdiffConsts.PUBLIC).getChild("v1").setSelected(true);
     }
 
     @Override
-    List<Entry<PgStatement, PgStatement>> getAdditionalDepciesTarget(PgDatabase target) {
+    public List<Entry<PgStatement, PgStatement>> getAdditionalDepciesTarget(PgDatabase target) {
         AbstractSchema s = target.getSchema("newschema");
-        AbstractView v = target.getSchema("public").getView("v1");
+        AbstractView v = target.getSchema(ApgdiffConsts.PUBLIC).getView("v1");
         Entry<PgStatement, PgStatement> arr = new AbstractMap.SimpleEntry<> (v, s);
         List<Entry<PgStatement, PgStatement>> list = new ArrayList<>();
         list.add(arr);

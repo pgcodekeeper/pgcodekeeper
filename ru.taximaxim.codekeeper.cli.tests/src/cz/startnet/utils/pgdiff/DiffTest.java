@@ -11,8 +11,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,6 +21,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.cli.Main;
 
@@ -29,8 +29,8 @@ import ru.taximaxim.codekeeper.cli.Main;
 public class DiffTest {
 
     @Parameters
-    public static Iterable<ArgumentsProvider[]> parameters() {
-        List<ArgumentsProvider[]> p = Arrays.asList(new ArgumentsProvider[][] {
+    public static Iterable<Object[]> parameters() {
+        return ApgdiffTestUtils.getParameters(new Object[][] {
             {new SourceTargerArgumentsProvider()},
             {new AddTestArgumentsProvider()},
             {new ModifyTestArgumentsProvider()},
@@ -49,8 +49,6 @@ public class DiffTest {
             {new MoveDataDiffColsIdentityArgumentsProvider()},
             {new MoveDataDropTableWithoutRename()},
         });
-
-        return p.stream()::iterator;
     }
 
     private final ArgumentsProvider args;
@@ -92,20 +90,18 @@ public class DiffTest {
         try (BufferedReader reader1 = Files.newBufferedReader(f1, StandardCharsets.UTF_8);
                 BufferedReader reader2 = Files.newBufferedReader(f2, StandardCharsets.UTF_8);) {
 
-            String line1;
-            String line2;
-            while ((line1 = getNextLine(reader1)) != null & (line2 = getNextLine(reader2)) != null) {
-                if (!line1.equals(line2)){
+            while (true) {
+                String line1 = getNextLine(reader1);
+                String line2 = getNextLine(reader2);
+                if (!Objects.equals(line1, line2)) {
                     return false;
                 }
-            }
 
-            if (line1 == line2){
-                return true;
+                if (line1 == null || line2 == null) {
+                    return line1 == line2;
+                }
             }
         }
-
-        return true;
     }
 
     /**
