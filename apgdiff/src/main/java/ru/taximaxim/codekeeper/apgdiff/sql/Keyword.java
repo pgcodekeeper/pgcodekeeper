@@ -19,7 +19,7 @@ import java.util.Map;
  * kwlist.h</a>, use your desired stable branch.</li>
  * <li>Paste it into {@link #addKeywords(Map)}, replacing the code there.</li>
  * <li>In pasted code, replace <code>PG_KEYWORD\(("\w+"), \w+, (\w+)\)</code> by
- * <code>keywords.put($1, new Keyword($1, $2));</code> using regular expressions.</li>
+ * <code>keywords.put\($1, new Keyword\($1, $2\)\);</code> using regular expressions.</li>
  * </ol>
  *
  * @author levsha_aa
@@ -39,7 +39,7 @@ public class Keyword {
      * Regex search and replacement strings for kwlist.h -> Java transformation:
      *
      * PG_KEYWORD\(("\w+"), \w+, (\w+)\)
-     * keywords.put($1, new Keyword($1, $2));
+     * keywords.put\($1, new Keyword\($1, $2\)\);
      */
     private static void addKeywords(Map<String, Keyword> keywords) {
         keywords.put("abort", new Keyword("abort", UNRESERVED_KEYWORD));
@@ -54,7 +54,7 @@ public class Keyword {
         keywords.put("also", new Keyword("also", UNRESERVED_KEYWORD));
         keywords.put("alter", new Keyword("alter", UNRESERVED_KEYWORD));
         keywords.put("always", new Keyword("always", UNRESERVED_KEYWORD));
-        keywords.put("analyse", new Keyword("analyse", RESERVED_KEYWORD));        /* British spelling */
+        keywords.put("analyse", new Keyword("analyse", RESERVED_KEYWORD));      /* British spelling */
         keywords.put("analyze", new Keyword("analyze", RESERVED_KEYWORD));
         keywords.put("and", new Keyword("and", RESERVED_KEYWORD));
         keywords.put("any", new Keyword("any", RESERVED_KEYWORD));
@@ -172,6 +172,7 @@ public class Keyword {
         keywords.put("execute", new Keyword("execute", UNRESERVED_KEYWORD));
         keywords.put("exists", new Keyword("exists", COL_NAME_KEYWORD));
         keywords.put("explain", new Keyword("explain", UNRESERVED_KEYWORD));
+        keywords.put("expression", new Keyword("expression", UNRESERVED_KEYWORD));
         keywords.put("extension", new Keyword("extension", UNRESERVED_KEYWORD));
         keywords.put("external", new Keyword("external", UNRESERVED_KEYWORD));
         keywords.put("extract", new Keyword("extract", COL_NAME_KEYWORD));
@@ -276,8 +277,14 @@ public class Keyword {
         keywords.put("nchar", new Keyword("nchar", COL_NAME_KEYWORD));
         keywords.put("new", new Keyword("new", UNRESERVED_KEYWORD));
         keywords.put("next", new Keyword("next", UNRESERVED_KEYWORD));
+        keywords.put("nfc", new Keyword("nfc", UNRESERVED_KEYWORD));
+        keywords.put("nfd", new Keyword("nfd", UNRESERVED_KEYWORD));
+        keywords.put("nfkc", new Keyword("nfkc", UNRESERVED_KEYWORD));
+        keywords.put("nfkd", new Keyword("nfkd", UNRESERVED_KEYWORD));
         keywords.put("no", new Keyword("no", UNRESERVED_KEYWORD));
         keywords.put("none", new Keyword("none", COL_NAME_KEYWORD));
+        keywords.put("normalize", new Keyword("normalize", COL_NAME_KEYWORD));
+        keywords.put("normalized", new Keyword("normalized", UNRESERVED_KEYWORD));
         keywords.put("not", new Keyword("not", RESERVED_KEYWORD));
         keywords.put("nothing", new Keyword("nothing", UNRESERVED_KEYWORD));
         keywords.put("notify", new Keyword("notify", UNRESERVED_KEYWORD));
@@ -433,6 +440,7 @@ public class Keyword {
         keywords.put("trusted", new Keyword("trusted", UNRESERVED_KEYWORD));
         keywords.put("type", new Keyword("type", UNRESERVED_KEYWORD));
         keywords.put("types", new Keyword("types", UNRESERVED_KEYWORD));
+        keywords.put("uescape", new Keyword("uescape", UNRESERVED_KEYWORD));
         keywords.put("unbounded", new Keyword("unbounded", UNRESERVED_KEYWORD));
         keywords.put("uncommitted", new Keyword("uncommitted", UNRESERVED_KEYWORD));
         keywords.put("unencrypted", new Keyword("unencrypted", UNRESERVED_KEYWORD));
@@ -508,7 +516,13 @@ public class Keyword {
         return category;
     }
 
-    public static void getAllTokensByGroups () {
+    /*
+     * ======== Service methods for parser maintenance ========
+     * Use only to generate lexer token lists.
+     * Do not call from project's code.
+     */
+
+    public static void getAllTokensByGroups() {
         Map<KeywordCategory, StringBuilder> map = new EnumMap<>(KeywordCategory.class);
         KEYWORDS.values().stream()
         .sorted((v1,v2) -> v1.getKeyword().compareTo(v2.getKeyword()))
@@ -541,7 +555,7 @@ public class Keyword {
         // SONAR-ON
     }
 
-    public static void getAllWordsByGroups () {
+    public static void getAllWordsByGroups() {
         Map<KeywordCategory, StringBuilder> map = new EnumMap<>(KeywordCategory.class);
         KEYWORDS.values().stream()
         .sorted((v1,v2) -> v1.getKeyword().compareTo(v2.getKeyword()))

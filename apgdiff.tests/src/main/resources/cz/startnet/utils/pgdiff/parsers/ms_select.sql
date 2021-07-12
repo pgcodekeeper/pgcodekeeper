@@ -1247,3 +1247,10 @@ GO
 -- Specifying the STUFF function
 SELECT STUFF('abcdef', 2, 3, 'ijklmn');
 GO
+
+SELECT TRIM (exp)
+GO
+SELECT IIF (exp, exp, exp)
+GO
+SELECT IIF (exp = 1 or exp = 2, exp, exp)
+GO

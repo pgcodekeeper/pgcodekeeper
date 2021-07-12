@@ -74,6 +74,6 @@ public class AlterFtsStatement extends ParserAbstract {
         } else {
             ftsType = DbObjType.FTS_CONFIGURATION;
         }
-        return getStrForStmtAction(ACTION_ALTER, ftsType, ctx.name.identifier());
+        return getStrForStmtAction(ACTION_ALTER, ftsType, ctx.name);
     }
 }

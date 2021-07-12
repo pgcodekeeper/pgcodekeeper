@@ -211,7 +211,8 @@ public class DepcyResolver {
                 if (newSt != null) {
                     // add views to emit refreshes
                     // others are to block drop+create pairs for unchanged statements
-                    if (newSt instanceof SourceStatement && newSt.equals(drop)) {
+                    if (newSt instanceof SourceStatement && newSt.equals(drop)
+                            && !inDropsList(newSt.getParent())) {
                         toRefresh.add(newSt);
                     }
 

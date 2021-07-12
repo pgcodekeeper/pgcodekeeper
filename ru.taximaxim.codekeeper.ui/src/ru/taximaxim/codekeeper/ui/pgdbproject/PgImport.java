@@ -196,6 +196,11 @@ class PgImport extends WizardPage {
 
     private boolean isInWorkspaceRoot(Path path) {
         Path parent = path.getParent();
-        return parent != null && Files.exists(parent.resolve(FILE_METADATA));
+        if (parent == null) {
+            return false;
+        }
+
+        String root = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString();
+        return root.equals(parent.toString());
     }
 }

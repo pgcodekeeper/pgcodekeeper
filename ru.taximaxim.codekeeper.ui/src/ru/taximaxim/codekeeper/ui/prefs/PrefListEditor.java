@@ -150,7 +150,7 @@ public abstract class PrefListEditor<T> extends Composite {
         return objsList.stream().anyMatch(obj -> checkDuplicate(obj, newObj));
     }
 
-    private void copyObject() {
+    protected void copyObject() {
         IStructuredSelection selection = (IStructuredSelection) viewerObjs.getSelection();
         if (selection.isEmpty()) {
             return;

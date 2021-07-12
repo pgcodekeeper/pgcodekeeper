@@ -126,7 +126,7 @@ public final class JdbcQueries {
     }
 
     private static String readResource(URL url) throws IOException, URISyntaxException {
-        return new String(Files.readAllBytes(ApgdiffUtils.getFileFromOsgiRes(url).toPath()),
+        return new String(Files.readAllBytes(ApgdiffUtils.getFileFromOsgiRes(url)),
                 StandardCharsets.UTF_8);
     }
 

@@ -6,8 +6,7 @@ WITH sys_schemas AS (
 ), extension_deps AS (
     SELECT dep.objid 
     FROM pg_catalog.pg_depend dep 
-    WHERE refclassid = 'pg_catalog.pg_extension'::pg_catalog.regclass 
-        AND dep.deptype = 'e'
+    WHERE dep.classid = 'pg_catalog.pg_ts_config'::pg_catalog.regclass AND dep.deptype = 'e'
 )
 
 SELECT c.oid::bigint,
@@ -22,6 +21,7 @@ SELECT c.oid::bigint,
        c.cfgnamespace AS schema_oid
 FROM pg_ts_config c
 LEFT JOIN pg_catalog.pg_description d ON c.oid = d.objoid 
+    AND d.classoid = 'pg_catalog.pg_ts_config'::pg_catalog.regclass
 LEFT JOIN pg_catalog.pg_ts_parser p ON p.oid = c.cfgparser
 LEFT JOIN pg_catalog.pg_namespace n ON p.prsnamespace = n.oid
 LEFT JOIN LATERAL (

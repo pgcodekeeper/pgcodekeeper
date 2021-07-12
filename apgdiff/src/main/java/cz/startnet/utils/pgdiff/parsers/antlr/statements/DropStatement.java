@@ -8,6 +8,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_cast_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_database_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_operator_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_policy_statementContext;
@@ -35,7 +36,9 @@ public class DropStatement extends ParserAbstract {
 
     @Override
     public void parseObject() {
-        if (ctx.drop_function_statement() != null) {
+        if (ctx.drop_database_statement() != null) {
+            dropDatabase(ctx.drop_database_statement());
+        } else if (ctx.drop_function_statement() != null) {
             dropFunction(ctx.drop_function_statement());
         } else if (ctx.drop_trigger_statement() != null) {
             dropTrigger(ctx.drop_trigger_statement());
@@ -50,6 +53,10 @@ public class DropStatement extends ParserAbstract {
         } else if (ctx.drop_cast_statement() != null) {
             dropCast(ctx.drop_cast_statement());
         }
+    }
+
+    private void dropDatabase(Drop_database_statementContext ctx) {
+        addObjReference(Arrays.asList(ctx.identifier()), DbObjType.DATABASE, ACTION_DROP);
     }
 
     public void dropFunction(Drop_function_statementContext ctx) {
@@ -112,9 +119,7 @@ public class DropStatement extends ParserAbstract {
     }
 
     private DbObjType getTypeOfDropStmt(Drop_statementsContext ctx) {
-        if (ctx.DATABASE()!= null) {
-            return DbObjType.DATABASE;
-        } else if (ctx.TABLE() != null) {
+        if (ctx.TABLE() != null) {
             return DbObjType.TABLE;
         } else if (ctx.EXTENSION() != null) {
             return DbObjType.EXTENSION;
@@ -156,7 +161,11 @@ public class DropStatement extends ParserAbstract {
     protected String getStmtAction() {
         List<? extends ParserRuleContext> ids = null;
         DbObjType type = null;
-        if (ctx.drop_function_statement() != null) {
+        if (ctx.drop_database_statement() != null) {
+            Drop_database_statementContext dropDbCtx = ctx.drop_database_statement();
+            ids = Arrays.asList(dropDbCtx.identifier());
+            type = DbObjType.DATABASE;
+        } else if (ctx.drop_function_statement() != null) {
             Drop_function_statementContext dropFuncCtx = ctx.drop_function_statement();
             ids = dropFuncCtx.name.identifier();
             if (dropFuncCtx.PROCEDURE() != null) {

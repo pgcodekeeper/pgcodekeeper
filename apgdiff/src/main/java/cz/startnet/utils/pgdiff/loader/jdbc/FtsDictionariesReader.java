@@ -49,4 +49,9 @@ public class FtsDictionariesReader extends JdbcReader {
         loader.setAuthor(dic, res);
         schema.addFtsDictionary(dic);
     }
+
+    @Override
+    protected String getClassId() {
+        return "pg_ts_dict";
+    }
 }

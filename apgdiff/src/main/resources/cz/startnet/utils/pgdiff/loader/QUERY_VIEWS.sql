@@ -6,8 +6,7 @@ WITH sys_schemas AS (
 ), extension_deps AS (
     SELECT dep.objid 
     FROM pg_catalog.pg_depend dep 
-    WHERE refclassid = 'pg_catalog.pg_extension'::pg_catalog.regclass 
-        AND dep.deptype = 'e'
+    WHERE dep.classid = 'pg_catalog.pg_class'::pg_catalog.regclass AND dep.deptype = 'e'
 )
 
 SELECT c.oid::bigint,
@@ -37,11 +36,13 @@ LEFT JOIN
          AND attr.attrelid = def.adrelid
          AND attr.attisdropped IS FALSE
      LEFT JOIN pg_catalog.pg_description des ON des.objoid = attr.attrelid
+         AND des.classoid = 'pg_catalog.pg_class'::pg_catalog.regclass
          AND des.objsubid = attr.attnum
      GROUP BY attrelid) subselect ON subselect.attrelid = c.oid
 LEFT JOIN pg_catalog.pg_tablespace tabsp ON tabsp.oid = c.reltablespace
 LEFT JOIN pg_catalog.pg_am am ON am.oid = c.relam
 LEFT JOIN pg_catalog.pg_description d ON c.oid = d.objoid
+    AND d.classoid = 'pg_catalog.pg_class'::pg_catalog.regclass
     AND d.objsubid = 0
 WHERE c.relnamespace NOT IN (SELECT oid FROM sys_schemas)
     AND c.relkind IN ('v','m')

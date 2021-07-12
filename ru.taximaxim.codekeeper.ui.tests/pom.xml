@@ -21,7 +21,7 @@
 	 	    <artifactId>tycho-surefire-plugin</artifactId>
 	 	    <version>${tycho.version}</version>
 	 	    <configuration>
-              <appArgLine>-nl en</appArgLine>
+              <appArgLine>-nl en -consoleLog</appArgLine>
 	        </configuration>
 	 	  </plugin>
 	 </plugins>
