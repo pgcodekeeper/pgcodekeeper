@@ -1026,6 +1026,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
             //current remote
             dbStorePicker = new DbStorePicker(labelCont, true, false);
+            dbStorePicker.filter(OpenProjectUtils.checkMsSql(getProject()));
             dbStorePicker.fixEclipseBug567652();
             dbStorePicker.addListenerToCombo(e -> {
                 Object selection = dbStorePicker.getDbInfo();

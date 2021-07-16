@@ -109,6 +109,7 @@ public class ProjectProperties extends PropertyPage {
 
         dbForBind = DbInfo.getLastDb(nameOfBoundDb);
         storePicker = new DbStorePicker(panel, false, false);
+        storePicker.filter(isMsSql);
         storePicker.setSelection(dbForBind != null ? new StructuredSelection(dbForBind) : StructuredSelection.EMPTY);
         storePicker.setEnabled(btnBindProjToDb.getSelection());
         storePicker.addListenerToCombo(e -> dbForBind = storePicker.getDbInfo());
