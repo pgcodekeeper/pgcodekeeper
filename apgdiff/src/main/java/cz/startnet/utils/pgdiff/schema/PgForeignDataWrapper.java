@@ -71,11 +71,14 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
         if (this == obj) {
             return true;
         }
-        PgForeignDataWrapper FDataWrap = (PgForeignDataWrapper) obj;
-        return obj instanceof PgForeignDataWrapper && super.compare(obj)
-                && Objects.equals(handler, FDataWrap.getHandler())
-                && Objects.equals(validator, FDataWrap.getHandler())
-                && Objects.equals(options, FDataWrap.getOptions());
+
+        if (obj instanceof PgForeignDataWrapper && super.compare(obj)) {
+            PgForeignDataWrapper FDataWrap = (PgForeignDataWrapper) obj;
+            return Objects.equals(handler, FDataWrap.getHandler())
+                    && Objects.equals(validator, FDataWrap.getValidator())
+                    && Objects.equals(options, FDataWrap.getOptions());
+        }
+        return false;
     }
 
     @Override
@@ -125,13 +128,13 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
 
         if (!Objects.equals(newForeign.getHandler(), getHandler())) {
             sb.append(getAlterHeader());
-            sb.append(" HANDLER ").append(getHandler())
+            sb.append(" HANDLER ").append(newForeign.getHandler())
             .append(';');
         }
 
         if (!Objects.equals(newForeign.getValidator(), getValidator())) {
             sb.append(getAlterHeader());
-            sb.append(" VALIDATOR ").append(getValidator())
+            sb.append(" VALIDATOR ").append(newForeign.getValidator())
             .append(';');
         }
 

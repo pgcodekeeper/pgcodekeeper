@@ -56,6 +56,7 @@ public class PgServer extends PgStatement implements PgForeignOptionContainer{
     public Map<String, String> getOptions() {
         return options;
     }
+
     @Override
     public void addOption(String key, String value) {
         this.options.put(key, value);
@@ -76,6 +77,22 @@ public class PgServer extends PgStatement implements PgForeignOptionContainer{
     }
 
     @Override
+    public boolean compare(PgStatement obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof PgServer && super.compare(obj)) {
+            PgServer srv = (PgServer) obj;
+            return obj instanceof PgServer && super.compare(obj)
+                    && Objects.equals(type, srv.getType())
+                    && Objects.equals(version, srv.getVersion())
+                    && Objects.equals(fdw, srv.getFdw())
+                    && Objects.equals(options, srv.getOptions());
+        }
+        return false;
+    }
+
+    @Override
     public PgDatabase getDatabase() {
         return (PgDatabase)getParent();
     }
@@ -85,14 +102,15 @@ public class PgServer extends PgStatement implements PgForeignOptionContainer{
         final StringBuilder sb = new StringBuilder();
         sb.append("CREATE SERVER ").append(PgDiffUtils.getQuotedName(getName()));
         if (getType() != null) {
-            sb.append("TYPE ").append(getType());
+            sb.append(" TYPE ").append(getType());
         }
         if (getVersion() != null) {
-            sb.append("VERSION ").append(PgDiffUtils.getQuotedName(getVersion()));
+            sb.append(" VERSION ").append(getVersion());
         }
         sb.append(" FOREIGN DATA WRAPPER ").append(PgDiffUtils.getQuotedName(getFdw()));
+
         if (!options.isEmpty()) {
-            sb.append("OPTIONS ").append("(");
+            sb.append(" OPTIONS ").append("(");
             for (Entry<String, String> entry : options.entrySet()) {
                 String key = entry.getKey();
                 String value = entry.getValue();
@@ -118,20 +136,15 @@ public class PgServer extends PgStatement implements PgForeignOptionContainer{
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         PgServer newServer = (PgServer) newCondition;
-        if (!Objects.equals(newServer.getFdw(), getFdw())) {
+        if (!Objects.equals(newServer.getFdw(), getFdw()) ||
+                !Objects.equals(newServer.getType(), getType())   ) {
             isNeedDepcies.set(true);
             return true;
         }
 
-        if (!Objects.equals(newServer.getType(), getType())){
-            sb.append(getAlterHeader());
-            sb.append("TYPE ").append(getType())
-            .append(';');
-        }
-
         if (!Objects.equals(newServer.getVersion(), getVersion())){
             sb.append(getAlterHeader());
-            sb.append("VERSION ").append(PgDiffUtils.getQuotedName(getVersion()))
+            sb.append(" VERSION ").append(newServer.getVersion())
             .append(';');
         }
 
