@@ -4,6 +4,10 @@ CREATE EXTENSION postgres_fdw SCHEMA public;
 
 COMMENT ON EXTENSION postgres_fdw IS 'foreign-data wrapper for remote PostgreSQL servers';
 
+CREATE SERVER film_server FOREIGN DATA WRAPPER postgres_fdw;
+
+CREATE SERVER new_server FOREIGN DATA WRAPPER postgres_fdw;
+
 CREATE FOREIGN TABLE public.films (
 	code character(5) NOT NULL,
 	title character varying(40) NOT NULL,
