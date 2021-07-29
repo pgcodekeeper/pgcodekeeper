@@ -113,7 +113,8 @@ public class CommentOn extends ParserAbstract {
         AbstractSchema schema = null;
         if (obj.table_name != null) {
             schema = getSchemaSafe(obj.table_name.identifier());
-        } else if (obj.EXTENSION() == null && obj.SCHEMA() == null && obj.DATABASE() == null) {
+        } else if (obj.EXTENSION() == null && obj.SCHEMA() == null && obj.DATABASE() == null && obj.SERVER() == null
+                && (obj.DATA() == null && obj.WRAPPER() == null)) {
             schema = getSchemaSafe(ids);
         }
 

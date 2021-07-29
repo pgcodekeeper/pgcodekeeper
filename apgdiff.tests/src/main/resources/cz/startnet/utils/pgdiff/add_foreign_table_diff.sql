@@ -6,7 +6,11 @@ COMMENT ON EXTENSION postgres_fdw IS 'foreign-data wrapper for remote PostgreSQL
 
 CREATE SERVER film_server FOREIGN DATA WRAPPER postgres_fdw;
 
+ALTER SERVER film_server OWNER TO galiev_mr;
+
 CREATE SERVER new_server FOREIGN DATA WRAPPER postgres_fdw;
+
+ALTER SERVER new_server OWNER TO galiev_mr;
 
 CREATE FOREIGN TABLE public.films (
 	code character(5) NOT NULL,

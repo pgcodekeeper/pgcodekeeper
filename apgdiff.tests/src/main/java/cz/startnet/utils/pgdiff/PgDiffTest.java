@@ -498,6 +498,14 @@ public class PgDiffTest {
                     {"compare_functions"},
                     // Tests scenario where CAST is compared.
                     {"compare_casts"},
+                    // Tests scenario where FOREIGN DATA WRAPPER is compared.
+                    {"compare_fdw"},
+                    // Tests scenario where SERVER is compared.
+                    {"compare_servers"},
+                    // Tests scenario where FOREIGN DATA WRAPPER is dropped.
+                    {"drop_fdw"},
+                    // Tests scenario where SERVER is dropped.
+                    {"drop_server"},
                     // Tests scenario where POLICY is compared.
                     {"compare_policies"},
                     // Tests scenario where COLUMN is added to modified table.

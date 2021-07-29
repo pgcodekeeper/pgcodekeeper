@@ -123,6 +123,11 @@ public class PgServer extends PgStatement implements PgForeignOptionContainer{
             sb.append(")");
         }
         sb.append(";");
+        appendOwnerSQL(sb);
+        if (comment != null && !comment.isEmpty()) {
+            sb.append("\n\n");
+            appendCommentSql(sb);
+        }
         return sb.toString();
     }
 

@@ -55,6 +55,11 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
     }
 
     @Override
+    protected String getTypeName() {
+        return "FOREIGN DATA WRAPPER";
+    }
+
+    @Override
     public DbObjType getStatementType() {
         return DbObjType.FOREIGN_DATA_WRAPPER;
     }
@@ -112,6 +117,13 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
             sb.append(")");
         }
         sb.append(";");
+
+        appendOwnerSQL(sb);
+
+        if (comment != null && !comment.isEmpty()) {
+            sb.append("\n\n");
+            appendCommentSql(sb);
+        }
         return sb.toString();
     }
 

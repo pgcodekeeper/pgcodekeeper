@@ -31,6 +31,7 @@ public class ServersReader implements PgCatalogStrings {
                 PgServer server = getServer(res);
                 db.addServer(server);
                 loader.setAuthor(server, res);
+                loader.setOwner(server, res.getLong("srvowner"));
             }
         }
     }

@@ -31,6 +31,7 @@ public class ForeignDataWrappersReader implements PgCatalogStrings {
                 PgForeignDataWrapper foreignDW = getForeignDW(res);
                 db.addForeignDW(foreignDW);
                 loader.setAuthor(foreignDW, res);
+                loader.setOwner(foreignDW, res.getLong("fdwowner"));
             }
         }
     }

@@ -68,27 +68,32 @@ public class AlterOwner extends ParserAbstract {
             st = getSafe(PgDatabase::getSchema, db, nameCtx);
             type = DbObjType.SCHEMA;
         } else {
-            AbstractSchema schema = getSchemaSafe(ids);
             if (ctx.DOMAIN() != null) {
-                st = getSafe(AbstractSchema::getDomain, schema, nameCtx);
+                st = getSafe(AbstractSchema::getDomain, getSchemaSafe(ids), nameCtx);
                 type = DbObjType.DOMAIN;
             } else if (ctx.VIEW() != null) {
-                st = getSafe(AbstractSchema::getView, schema, nameCtx);
+                st = getSafe(AbstractSchema::getView, getSchemaSafe(ids), nameCtx);
                 type = DbObjType.VIEW;
+            } else if (ctx.FOREIGN() != null && ctx.DATA() != null && ctx.WRAPPER() != null ) {
+                st = getSafe(PgDatabase::getForeignDW, db, nameCtx);
+                type = DbObjType.FOREIGN_DATA_WRAPPER;
+            } else if (ctx.SERVER() != null ) {
+                st = getSafe(PgDatabase::getServer, db, nameCtx);
+                type = DbObjType.SERVER;
             } else if (ctx.DICTIONARY() != null) {
-                st = getSafe(AbstractSchema::getFtsDictionary, schema, nameCtx);
+                st = getSafe(AbstractSchema::getFtsDictionary, getSchemaSafe(ids), nameCtx);
                 type = DbObjType.FTS_DICTIONARY;
             } else if (ctx.CONFIGURATION() != null) {
-                st = getSafe(AbstractSchema::getFtsConfiguration, schema, nameCtx);
+                st = getSafe(AbstractSchema::getFtsConfiguration, getSchemaSafe(ids), nameCtx);
                 type = DbObjType.FTS_CONFIGURATION;
             } else if (ctx.SEQUENCE() != null) {
-                st = getSafe(AbstractSchema::getSequence, schema, nameCtx);
+                st = getSafe(AbstractSchema::getSequence, getSchemaSafe(ids), nameCtx);
                 type = DbObjType.SEQUENCE;
             } else if (ctx.TYPE() != null) {
-                st = getSafe(AbstractSchema::getType, schema, nameCtx);
+                st = getSafe(AbstractSchema::getType, getSchemaSafe(ids), nameCtx);
                 type = DbObjType.TYPE;
             } else if (ctx.PROCEDURE() != null || ctx.FUNCTION() != null || ctx.AGGREGATE() != null) {
-                st = getSafe(AbstractSchema::getFunction, schema, parseSignature(nameCtx.getText(),
+                st = getSafe(AbstractSchema::getFunction, getSchemaSafe(ids), parseSignature(nameCtx.getText(),
                         ctx.function_args()), nameCtx.getStart());
                 if (ctx.FUNCTION() != null) {
                     type = DbObjType.FUNCTION;
@@ -127,6 +132,10 @@ public class AlterOwner extends ParserAbstract {
         DbObjType type = null;
         if (ctx.SCHEMA() != null) {
             type = DbObjType.SCHEMA;
+        } else if (ctx.FOREIGN() != null && ctx.DATA() != null && ctx.WRAPPER() != null) {
+            type = DbObjType.FOREIGN_DATA_WRAPPER;
+        } else if (ctx.SERVER() != null) {
+            type = DbObjType.SERVER;
         } else if (ctx.DOMAIN() != null) {
             type = DbObjType.DOMAIN;
         } else if (ctx.VIEW() != null) {
