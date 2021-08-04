@@ -10,6 +10,8 @@ import cz.startnet.utils.pgdiff.schema.PgForeignDataWrapper;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateForeignDataWrapper extends ParserAbstract{
+    public static final String VALID_SIGNATURE  = "(text[], oid)";
+    public static final String HAND_SIGNATURE  = "()";
 
     private final Create_foreign_data_wrapper_statementContext ctx;
     public CreateForeignDataWrapper(Create_foreign_data_wrapper_statementContext ctx, PgDatabase db) {
@@ -24,9 +26,11 @@ public class CreateForeignDataWrapper extends ParserAbstract{
         PgForeignDataWrapper fDW = new PgForeignDataWrapper(nameCtx.getText());
         if (ctx.handler_func != null) {
             fDW.setHandler(getFullCtxText(ctx.handler_func));
+            addDepSafe(fDW, ctx.handler_func.identifier(), DbObjType.FUNCTION, true, HAND_SIGNATURE);
         }
         if (ctx.validator_func != null) {
             fDW.setValidator(getFullCtxText(ctx.validator_func));
+            addDepSafe(fDW, ctx.validator_func.identifier(), DbObjType.FUNCTION, true, VALID_SIGNATURE);
         }
         if (ctx.OPTIONS() != null) {
             for (Option_without_equalContext option :  ctx.option_without_equal()) {

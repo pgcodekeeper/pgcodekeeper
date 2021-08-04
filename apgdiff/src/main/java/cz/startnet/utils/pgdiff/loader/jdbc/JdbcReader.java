@@ -101,13 +101,28 @@ public abstract class JdbcReader implements PgCatalogStrings {
         return null;
     }
 
+    /**
+     * @deprecated {@link #setFunctionWithDep(BiConsumer, PgStatement, String, String)}
+     */
+    @Deprecated
     protected <T extends PgStatement> void setFunctionWithDep(
             BiConsumer<T, String> setter, T statement, String function) {
+        setFunctionWithDep(setter, statement, function, null);
+    }
+
+    protected static <T extends PgStatement> void setFunctionWithDep(
+            BiConsumer<T, String> setter, T statement, String function, String signature) {
         if (function.indexOf('.') != -1) {
             QNameParser<IdentifierContext> parser = QNameParser.parsePg(function);
             String schemaName = parser.getSchemaName();
             if (schemaName != null && !ApgdiffUtils.isPgSystemSchema(schemaName)) {
-                statement.addDep(new GenericColumn(schemaName, parser.getFirstName(), DbObjType.FUNCTION));
+                statement.addDep(new GenericColumn(schemaName, DbObjType.SCHEMA));
+
+                String name = parser.getFirstName();
+                if (signature != null) {
+                    name += signature;
+                }
+                statement.addDep(new GenericColumn(schemaName, name, DbObjType.FUNCTION));
             }
         }
         setter.accept(statement, function);

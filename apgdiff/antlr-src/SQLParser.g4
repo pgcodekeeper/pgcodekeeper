@@ -848,7 +848,7 @@ alter_foreign_data_wrapper
     ;
 
 alter_foreign_data_wrapper_action
-    : (HANDLER schema_qualified_name_nontype | NO HANDLER )? (VALIDATOR schema_qualified_name_nontype | NO VALIDATOR)? define_foreign_options?
+    : (HANDLER schema_qualified_name | NO HANDLER )? (VALIDATOR schema_qualified_name | NO VALIDATOR)? define_foreign_options?
     | rename_to
     ;
 
@@ -956,8 +956,8 @@ create_statistics_statement
     ;
 
 create_foreign_data_wrapper_statement
-    : FOREIGN DATA WRAPPER name=identifier (HANDLER handler_func=schema_qualified_name_nontype | NO HANDLER )?
-    (VALIDATOR validator_func=schema_qualified_name_nontype | NO VALIDATOR)?
+    : FOREIGN DATA WRAPPER name=identifier (HANDLER handler_func=schema_qualified_name | NO HANDLER )?
+    (VALIDATOR validator_func=schema_qualified_name | NO VALIDATOR)?
     (OPTIONS LEFT_PAREN option_without_equal (COMMA option_without_equal)* RIGHT_PAREN )?
     ;
 
@@ -1874,7 +1874,7 @@ col_label
 
 /*
  * These rules should be generated using code in the Keyword class.
- * Word tokens that are not keywords should be added to nonreserved list.
+ * Word tokens that are not keywords should be added to nonkeyword list.
  */
 tokens_nonreserved
     : ABORT

@@ -6,6 +6,7 @@ import java.sql.SQLException;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateForeignDataWrapper;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -48,7 +49,7 @@ public class ForeignDataWrappersReader implements PgCatalogStrings {
         }
         String fdwValidator = res.getString("fdwvalidator");
         if (!"-".equals(fdwValidator)) {
-            f.setValidator(fdwValidator);
+            JdbcReader.setFunctionWithDep(PgForeignDataWrapper::setValidator, f, fdwValidator, CreateForeignDataWrapper.VALID_SIGNATURE);
         }
         if (res.getString("fdwoptions") != null) {
             Array arr = res.getArray("fdwoptions");

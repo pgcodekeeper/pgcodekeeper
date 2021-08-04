@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.Arrays;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_server_statementContext;
@@ -29,12 +30,8 @@ public class CreateServer extends ParserAbstract {
         if (ctx.version != null) {
             server.setVersion(getFullCtxText(ctx.version));
         }
-        if (ids.size() > 1) {
-            server.setFdw(ids.get(1).getText());
-        }
-        else {
-            server.setFdw("FDWName");
-        }
+        server.setFdw(ids.get(1).getText());
+        addDepSafe(server, Arrays.asList(ids.get(1)), DbObjType.FOREIGN_DATA_WRAPPER, true);
 
         Define_foreign_optionsContext options = ctx.define_foreign_options();
         if (options!= null) {
@@ -42,7 +39,7 @@ public class CreateServer extends ParserAbstract {
                 server.addOption(option.foreign_option_name().identifier().getText(), option.character_string().getText());
             }
         }
-        addSafe(db, server, ids);
+        addSafe(db, server, Arrays.asList(ids.get(0)));
     }
 
     @Override

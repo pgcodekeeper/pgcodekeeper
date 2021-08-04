@@ -41,6 +41,7 @@ public class ServersReader implements PgCatalogStrings {
         loader.setCurrentObject(new GenericColumn(srvName, DbObjType.SERVER));
         PgServer srv = new PgServer(srvName);
         srv.setFdw(res.getString("fdwname"));
+        srv.addDep(new GenericColumn(srv.getFdw(), DbObjType.FOREIGN_DATA_WRAPPER));
         String srvType = res.getString("srvtype");
         if (srvType != null) {
             srv.setType(PgDiffUtils.quoteString(srvType));

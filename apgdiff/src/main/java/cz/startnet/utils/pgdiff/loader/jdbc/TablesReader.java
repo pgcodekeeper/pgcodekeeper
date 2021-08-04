@@ -52,6 +52,7 @@ public class TablesReader extends JdbcReader {
             } else {
                 t = new PartitionForeignPgTable(tableName, serverName, partitionBound);
             }
+            t.addDep(new GenericColumn(serverName, DbObjType.SERVER));
         } else if (ofTypeOid != 0) {
             JdbcType jdbcOfType = loader.cachedTypesByOid.get(ofTypeOid);
             String ofType = jdbcOfType.getFullName();
