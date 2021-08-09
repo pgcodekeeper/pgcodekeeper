@@ -85,9 +85,6 @@
         </profile>
         <profile>
             <id>internal</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
             <modules>
                 <module>../../../codekeeper-internal/ru.taximaxim.codekeeper.internal.tests</module>
                 <module>../../../codekeeper-internal/ru.taximaxim.codekeeper.internal.ui.tests</module>
@@ -95,9 +92,6 @@
         </profile>
         <profile>
             <id>compat_check</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
             <properties>
                 <target.definition.file>app_202006</target.definition.file>
             </properties>
@@ -153,7 +147,7 @@
                             <groupId>ru.taximaxim.codeKeeper</groupId>
                             <artifactId>ru.taximaxim.codeKeeper</artifactId>
                             <version>${revision}</version>
-                            <classifier>../${target.definition.file}</classifier>
+                            <classifier>ru.taximaxim.codekeeper.mainapp/${target.definition.file}</classifier>
                         </artifact>
                     </target>
                     <pomDependencies>consider</pomDependencies>
