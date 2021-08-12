@@ -181,8 +181,8 @@ Simple tests for core logic wrappers: `DbSource`, `Differ`, `ProjectUpdater`.
 General program lifecycle goes as follows:
 1. `PgDiffArguments` object is filled with operation parameters.
 2. `PgDatabase`s are loaded from requested sources, including their libraries and privilege overrides. Ignored schemas are skipped at this step.
-2.1. During the load dependencies of each object are found and recorded. Expressions are also analyzed to extract their dependencies including overloaded function calls.
-2.2. All parser and expression analysis operations are run in parallel using `AntlrParser.ANTLR_POOL` thread pool to speed up the process. Parallel operations are serialized by calling `finishLoaders` at the end of each loading process.
+   1. During the load dependencies of each object are found and recorded. Expressions are also analyzed to extract their dependencies including overloaded function calls.
+   2. All parser and expression analysis operations are run in parallel using `AntlrParser.ANTLR_POOL` thread pool to speed up the process. Parallel operations are serialized by calling `finishLoaders` at the end of each loading process.
 3. The diff tree (represented by root `TreeElement`) is created by comparing two `PgDatabase`s. In GUI this is then shown to the user to assess the situation and choose objects to work with.
 4. The diff tree, now containing "user selection", is used to selectively update project files on disk, or to generate a migration script.
 5. In latter case, each "selected" TreeElement is passed to `DepcyResolver` to generate script actions fulfillilng the requested change, including actions on dependent objects. To do this, JGraphT object dependency graphs are built using dependency information found at the loading stage.
