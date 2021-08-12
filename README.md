@@ -53,7 +53,7 @@ The project consists of several modules that implement Eclipse RCP plugins (and,
 #### Main Modules
 
 - `pom.xml` - first, root pom.xml defines Maven build order and environment. Not required for application development.
-- `apgdiff` - the core module contataining database schema classes and loaders, comparison logic, SQL code generators and parsers.
+- `apgdiff` - the core module containing database schema classes and loaders, comparison logic, SQL code generators and parsers.
 - `ru.taximaxim.codekeeper.cli` - CLI implementation module.
 - `ru.taximaxim.codekeeper.ui` - GUI module, Eclipse integration.
 
@@ -65,7 +65,7 @@ The project consists of several modules that implement Eclipse RCP plugins (and,
 
 #### Misc Modules
 
-- `ru.taximaxim.codekeeper.mainapp` - "branding plugin", provides Eclipse with feature information, images, etc. Also contains developement Target platform files.
+- `ru.taximaxim.codekeeper.mainapp` - "branding plugin", provides Eclipse with feature information, images, etc. Also contains development Target platform files.
 - `ru.taximaxim.codekeeper.mainapp/feature` - Eclipse feature module.
 - `ru.taximaxim.codekeeper.mainapp/updatesite` - Eclipse p2 repository/update site module.
 - `ru.taximaxim.codekeeper.mainapp/product/rcp` - Eclipse product description, used to build pgCodeKeeper packages.
@@ -88,7 +88,7 @@ Primary packages of this module are:
 - `cz.startnet.utils.pgdiff.loader` - database schema loaders: project, SQL file, JDBC, library.
   - `ProjectLoader` - loads a database from project structure. **(!)** Keep in sync with `UIProjectLoader`.
   - `PgDumpLoader` - loads objects into a database structure from a file. **(!)** Keep in sync with `PgUIDumpLoader`.
-- `cz.startnet.utils.pgdiff.loader` (resources) - SQL queries for JdbcLoaders, used by Java code via JdbcQueries.
+- `cz.startnet.utils.pgdiff.loader` (resources) - SQL queries for JdbcLoaders, used by Java code via `JdbcQueries`.
 - `cz.startnet.utils.pgdiff.loader.jdbc` - classes that create schema objects based on JDBC ResultSets.
 - `cz.startnet.utils.pgdiff.parsers.antlr` - generated ANTLR4 parser code, plus utility parser classes. Notable classes:
   - `AntlrParser` - factory methods for parser creation and parallel parser operations.
@@ -107,7 +107,7 @@ Primary packages of this module are:
   - `TreeElement` - a node in an object diff tree.
   - `DiffTree` - object diff tree factory.
   - `TreeFlattener` - filters and flattens the tree into a list of nodes according to requested parameters.
-- `ru.taximaxim.codekeeper.apgdiff.model.graph` - object depedency graph classes, built using JGraphT library. Notable classes:
+- `ru.taximaxim.codekeeper.apgdiff.model.graph` - object dependency graph classes, built using JGraphT library. Notable classes:
   - `DepcyGraph` - the dependency graph and its builder.
   - `DepcyResolver` - main script building algorithm. Creates a list of `StatementAction`s according to requested object changes and object dependencies.
   - `DepcyTreeExtender` - extends an object diff tree according to object dependencies.
@@ -185,6 +185,6 @@ General program lifecycle goes as follows:
    2. All parser and expression analysis operations are run in parallel using `AntlrParser.ANTLR_POOL` thread pool to speed up the process. Parallel operations are serialized by calling `finishLoaders` at the end of each loading process.
 3. The diff tree (represented by root `TreeElement`) is created by comparing two `PgDatabase`s. In GUI this is then shown to the user to assess the situation and choose objects to work with.
 4. The diff tree, now containing "user selection", is used to selectively update project files on disk, or to generate a migration script.
-5. In latter case, each "selected" TreeElement is passed to `DepcyResolver` to generate script actions fulfillilng the requested change, including actions on dependent objects. To do this, JGraphT object dependency graphs are built using dependency information found at the loading stage.
+5. In latter case, each "selected" TreeElement is passed to `DepcyResolver` to generate script actions fulfilling the requested change, including actions on dependent objects. To do this, JGraphT object dependency graphs are built using dependency information found at the loading stage.
 6. Generated actions are now converted into SQL code with some last-moment post-processing and filtering.
 7. Generated SQL script is written to a file/stdout or shown in the GUI for user to review and run on their database.
