@@ -34,7 +34,7 @@ cd pgcodekeeper
 mvn verify
 ```
 
-Binaries will be created in `ru.taximaxim.codekeeper.mainapp/product/rcp/target/products`
+Binaries will be created in `ru.taximaxim.codekeeper.mainapp/product/rcp/target/products`  
 CLI package will be created in `ru.taximaxim.codekeeper.mainapp/product/standalone/target/products`
 
 ## Notes
@@ -76,7 +76,7 @@ The project consists of several modules that implement Eclipse RCP plugins (and,
 
 #### apgdiff
 
-This module was derived from [apgdiff](https://github.com/fordfrog/apgdiff) project. At this point it is almost fully rewritten according to our needs.
+This module was derived from [apgdiff](https://github.com/fordfrog/apgdiff) project. At this point it is almost fully rewritten according to our needs.  
 Primary packages of this module are:
 
 - `cz.startnet.utils.pgdiff.schema` - contains classes that describe SQL objects. Each class contains object properties, creation SQL code generator, object comparison logic and ALTER code generator. Notable classes:
@@ -118,7 +118,7 @@ Primary packages of this module are:
 - `ru.taximaxim.codekeeper.apgdiff.sql` - a categorized list of all PostgreSQL keywords. Generated from PostgreSQL source.
 - `ru.taximaxim.codekeeper.apgdiff.ignoreparser` - builder for `IgnoreList`s.
 - `ru.taximaxim.codekeeper.apgdiff` - main package containing general stuff: e.g. string constants, utils.
-- `antlr-src` - sources for ANTLR4 parsers. We maintain parsers for PostgreSQL, pl/pgsql, T-SQL, and also our custom Ignore Lists and PostgreSQL ACLs syntax.
+- `antlr-src` - sources for ANTLR4 parsers. We maintain parsers for PostgreSQL, pl/pgsql, T-SQL, and also our custom Ignore Lists and PostgreSQL ACLs syntax.  
 These need to be built using your preferred ANTLR4 builder into `cz.startnet.utils.pgdiff.parsers.antlr` package.
 
 #### ru.taximaxim.codekeeper.ui
@@ -158,7 +158,7 @@ Majority of code in this module implements Eclipse integration, and also wraps c
   - `ResultSetView` - shows rows returned by SELECT or other commands executed in a script in SQL Editor.
 - `ru.taximaxim.codekeeper.ui.views.navigator` - Eclipse Project Explorer integration, see also `plugin.xml`
 - `ru.taximaxim.codekeeper.ui` - main package containing general stuff: e.g. string constants, utils. Notable classes:
-  - `UiSync` - exception safety wrapper around SWT's `Display.asyncExec()`. Use this instead of calling `getDisplay().asyncExec()`.
+  - `UiSync` - exception safety wrapper around SWT's `Display.asyncExec()`. **(!)** Use this instead of calling `getDisplay().asyncExec()`.
   - `UIConsts` - majority of string IDs and other constants commonly used in UI.
 
 #### apgdiff.tests

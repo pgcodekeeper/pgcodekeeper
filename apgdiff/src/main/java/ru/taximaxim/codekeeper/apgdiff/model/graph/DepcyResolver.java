@@ -34,10 +34,26 @@ import cz.startnet.utils.pgdiff.schema.SourceStatement;
 import cz.startnet.utils.pgdiff.schema.TypedPgTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-/**
- * Служит для отслеживания зависимостей, при этом старое состояние хранится в
- * oldDb, a новое состояние в newDb, и требуется список объектов для удаления
- * или создания при приведении состояния из старого в новое.
+/*
+ * implementation notes:
+ *
+ * General idea behind this class is graph passes that collect required actions.
+ * addDropStatements starts a bottom-to-top pass in the old DB graph,
+ * addCreateStatements starts a top-to-bottom pass in the new DB graph.
+ * When these passes reach an object requiring an ALTER,
+ * an "opposite direction" pass for that object is started.
+ * This also allows us to treat alters as "drops" here.
+ * Passes are eventually exhausted when all the actions have been collected
+ * into actions set.
+ *
+ * This logic and many kludges around it are consequences of having to work with two graphs,
+ * two object states (old and new) and having to generate action sequences for
+ * object create, drop and alter in the same script.
+ *
+ * TODO the better idea is to prepare a single graph containing not objects,
+ * but *actions* and dependencies between these actions.
+ * Theoretically, a simple topological sort will be enough to derive an action list from such a graph.
+ * Hopefully someday this kludgy mess will be replaced by a more advanced algorithm.
  */
 public class DepcyResolver {
 
