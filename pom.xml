@@ -15,18 +15,18 @@
     <version>${revision}</version>
     <packaging>pom</packaging>
     <modules>
-        <module>..</module>
-        <module>../../apgdiff</module>
-        <module>../../apgdiff.tests</module>
-        <module>../../ru.taximaxim.codekeeper.ui</module>
-        <module>../../ru.taximaxim.codekeeper.ui.tests</module>
-        <module>../../ru.taximaxim.codekeeper.cli</module>
-        <module>../../ru.taximaxim.codekeeper.cli.tests</module>
-        <module>../feature</module>
-        <module>../updatesite</module>
-        <module>../product/rcp</module>
-        <module>../product/standalone</module>
-        <module>../deploy</module>
+        <module>apgdiff</module>
+        <module>apgdiff.tests</module>
+        <module>ru.taximaxim.codekeeper.ui</module>
+        <module>ru.taximaxim.codekeeper.ui.tests</module>
+        <module>ru.taximaxim.codekeeper.cli</module>
+        <module>ru.taximaxim.codekeeper.cli.tests</module>
+        <module>ru.taximaxim.codekeeper.mainapp</module>
+        <module>ru.taximaxim.codekeeper.mainapp/feature</module>
+        <module>ru.taximaxim.codekeeper.mainapp/updatesite</module>
+        <module>ru.taximaxim.codekeeper.mainapp/product/rcp</module>
+        <module>ru.taximaxim.codekeeper.mainapp/product/standalone</module>
+        <module>ru.taximaxim.codekeeper.mainapp/deploy</module>
     </modules>
 
     <properties>
@@ -85,19 +85,13 @@
         </profile>
         <profile>
             <id>internal</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
             <modules>
-                <module>../../../codekeeper-internal/ru.taximaxim.codekeeper.internal.tests</module>
-                <module>../../../codekeeper-internal/ru.taximaxim.codekeeper.internal.ui.tests</module>
+                <module>../codekeeper-internal/ru.taximaxim.codekeeper.internal.tests</module>
+                <module>../codekeeper-internal/ru.taximaxim.codekeeper.internal.ui.tests</module>
             </modules>
         </profile>
         <profile>
             <id>compat_check</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
             <properties>
                 <target.definition.file>app_202006</target.definition.file>
             </properties>
@@ -153,7 +147,7 @@
                             <groupId>ru.taximaxim.codeKeeper</groupId>
                             <artifactId>ru.taximaxim.codeKeeper</artifactId>
                             <version>${revision}</version>
-                            <classifier>../${target.definition.file}</classifier>
+                            <classifier>ru.taximaxim.codekeeper.mainapp/${target.definition.file}</classifier>
                         </artifact>
                     </target>
                     <pomDependencies>consider</pomDependencies>
