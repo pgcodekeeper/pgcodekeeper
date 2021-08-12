@@ -46,9 +46,16 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  * Passes are eventually exhausted when all the actions have been collected
  * into actions set.
  *
+ * At the very end recreateDrops is called, which starts a "create pass"
+ * for every object that was dropped but should not have been -
+ * i.e. it was a dependency related drop. These passes are performed until
+ * they stop generating new actions. This ensures that all dropped dependencies
+ * have been recreated, and any dependency drops that may have been generated in the process
+ * have also been accounted for.
+ *
  * This logic and many kludges around it are consequences of having to work with two graphs,
  * two object states (old and new) and having to generate action sequences for
- * object create, drop and alter in the same script.
+ * object creates, drops and alters in the same script.
  *
  * TODO the better idea is to prepare a single graph containing not objects,
  * but *actions* and dependencies between these actions.
