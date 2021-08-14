@@ -37,7 +37,7 @@ public abstract class ArgumentsProvider {
     }
 
     protected final Path getFile(FILES_POSTFIX postfix) throws URISyntaxException, IOException {
-        return ApgdiffUtils.getFileFromOsgiRes(PgDiffTest.class.getResource(resName + postfix)).toPath();
+        return ApgdiffUtils.getFileFromOsgiRes(PgDiffTest.class.getResource(resName + postfix));
     }
 
     public Path getDiffResultFile() throws IOException {

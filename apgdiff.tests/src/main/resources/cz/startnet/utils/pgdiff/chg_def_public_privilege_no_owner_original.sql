@@ -107,6 +107,20 @@ CREATE TABLE public.tbl2 (
 
 REVOKE ALL ON TABLE public.tbl2 FROM PUBLIC;
 
+-- default revoke
+
+CREATE OR REPLACE FUNCTION public.f3(s text) RETURNS text
+    LANGUAGE plpgsql
+    AS $$begin return 'textttt'; end;$$;
+
+-- default grant  
+
+CREATE OR REPLACE FUNCTION public.f4(s text) RETURNS text
+    LANGUAGE plpgsql
+    AS $$begin return 'textttt'; end;$$;
+
+REVOKE ALL ON FUNCTION public.f4(s text) FROM PUBLIC;
+
 -------------------------------------------------------------------------------
 
 --

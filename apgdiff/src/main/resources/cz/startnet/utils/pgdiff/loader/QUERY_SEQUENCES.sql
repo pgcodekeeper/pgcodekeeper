@@ -6,7 +6,7 @@ WITH sys_schemas AS (
 ), extension_deps AS (
     SELECT dep.objid 
     FROM pg_catalog.pg_depend dep 
-    WHERE refclassid = 'pg_catalog.pg_extension'::pg_catalog.regclass 
+    WHERE dep.classid = 'pg_catalog.pg_class'::pg_catalog.regclass
         AND dep.deptype = 'e'
 )
 
@@ -20,7 +20,8 @@ SELECT c.oid::bigint,
        c.relacl::text AS aclarray,
        c.relnamespace AS schema_oid
 FROM pg_catalog.pg_class c
-LEFT JOIN pg_catalog.pg_description descr ON c.oid = descr.objoid
+LEFT JOIN pg_catalog.pg_description descr ON c.oid = descr.objoid 
+    AND descr.classoid = 'pg_catalog.pg_class'::pg_catalog.regclass
     AND descr.objsubid = 0
 LEFT JOIN pg_catalog.pg_depend d ON d.classid = c.tableoid
     AND d.objid = c.oid

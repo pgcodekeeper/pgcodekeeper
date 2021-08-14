@@ -134,25 +134,10 @@ public class PgObjLocation extends ContextLocation {
         if (obj == null || col == null) {
             return false;
         }
-        return Objects.equals(obj.schema, col.schema)
+        return compareTypes(col.type)
+                && Objects.equals(obj.schema, col.schema)
                 && Objects.equals(obj.column, col.column)
-                && compareTypes(col.type)
-                && compareNames(col.table);
-    }
-
-    private boolean compareNames(String objName) {
-        String name = obj.table;
-        if (Objects.equals(objName, name)) {
-            return true;
-        }
-
-        DbObjType type = obj.type;
-        if (type != DbObjType.FUNCTION && type != DbObjType.AGGREGATE
-                && type != DbObjType.PROCEDURE && type != DbObjType.OPERATOR) {
-            return false;
-        }
-
-        return (objName.startsWith(name + '(') || name.startsWith(objName + '('));
+                && Objects.equals(obj.table, col.table);
     }
 
     private boolean compareTypes(DbObjType objType) {

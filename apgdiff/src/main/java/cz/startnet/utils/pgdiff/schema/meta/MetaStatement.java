@@ -28,7 +28,7 @@ public class MetaStatement implements IStatement, Serializable {
     }
 
     @Override
-    public final String getBareName() {
+    public String getBareName() {
         return object.getObjName();
     }
 

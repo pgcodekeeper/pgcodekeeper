@@ -115,11 +115,7 @@ public class JdbcRunner {
                 return queryFuture.get(SLEEP_TIME, TimeUnit.MILLISECONDS);
             } catch (ExecutionException e) {
                 Throwable t = e.getCause();
-                if (t instanceof SQLException) {
-                    throw (SQLException)t;
-                } else {
-                    throw new IllegalStateException(t.getLocalizedMessage(), e);
-                }
+                throw new SQLException(t.getLocalizedMessage(), e);
             } catch (TimeoutException e) {
                 // no action: check cancellation and try again
             }

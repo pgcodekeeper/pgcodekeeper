@@ -27,6 +27,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Id_tokenContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identifier_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Including_indexContext;
@@ -34,6 +35,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Predefined_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
@@ -209,13 +211,21 @@ public abstract class ParserAbstract {
         return type;
     }
 
+    public static String parseArguments(Function_argsContext argsContext) {
+        return parseSignature(null, argsContext);
+    }
+
     public static String parseSignature(String name, Function_argsContext argsContext) {
-        AbstractPgFunction function = new PgFunction(name);
+        AbstractPgFunction function = new PgFunction(name == null ? "noname" : name);
         fillFuncArgs(argsContext.function_arguments(), function);
         if (argsContext.agg_order() != null) {
             fillFuncArgs(argsContext.agg_order().function_arguments(), function);
         }
-        return function.getSignature();
+        String signature = function.getSignature();
+        if (name == null) {
+            signature = signature.substring("noname".length());
+        }
+        return signature;
     }
 
     private static void fillFuncArgs(List<Function_argumentsContext> argsCtx, AbstractPgFunction function) {
@@ -267,13 +277,31 @@ public abstract class ParserAbstract {
     }
 
     protected PgObjLocation addObjReference(List<? extends ParserRuleContext> ids,
-            DbObjType type, String action) {
-        PgObjLocation loc = getLocation(ids, type, action, false, null, LocationType.REFERENCE);
+            DbObjType type, String action, String signature) {
+        PgObjLocation loc = getLocation(ids, type, action, false, signature, LocationType.REFERENCE);
         if (loc != null) {
             db.addReference(fileName, loc);
         }
 
         return loc;
+    }
+
+    protected PgObjLocation addObjReference(List<? extends ParserRuleContext> ids,
+            DbObjType type, String action) {
+        return addObjReference(ids, type, action, null);
+    }
+
+    private int getStart(ParserRuleContext ctx) {
+        int start = ctx.start.getStartIndex();
+        if (ctx instanceof IdentifierContext) {
+            Id_tokenContext id = ((IdentifierContext) ctx).id_token();
+            if (id != null && id.QuotedIdentifier() != null) {
+                start++;
+            }
+        } else if (ctx instanceof IdContext && ((IdContext) ctx).SQUARE_BRACKET_ID() != null) {
+            start++;
+        }
+        return start;
     }
 
     public <T extends IStatement, R extends IStatement> R getSafe(
@@ -299,9 +327,14 @@ public abstract class ParserAbstract {
 
     protected void addSafe(PgStatement parent, PgStatement child,
             List<? extends ParserRuleContext> ids) {
+        addSafe(parent, child, ids, null);
+    }
+
+    protected void addSafe(PgStatement parent, PgStatement child,
+            List<? extends ParserRuleContext> ids, String signature){
         doSafe(PgStatement::addChild, parent, child);
         PgObjLocation loc = getLocation(ids, child.getStatementType(),
-                ACTION_CREATE, false, null, LocationType.DEFINITION);
+                ACTION_CREATE, false, signature, LocationType.DEFINITION);
         if (loc != null) {
             child.setLocation(loc);
             db.addReference(fileName, loc);
@@ -393,8 +426,9 @@ public abstract class ParserAbstract {
         }
 
         String name = nameCtx.getText();
+        int nameLength = name.length();
         if (signature != null) {
-            name+= signature;
+            name = PgDiffUtils.getQuotedName(name) + signature;
         }
         switch (type) {
         case DOMAIN:
@@ -402,10 +436,7 @@ public abstract class ParserAbstract {
         case FTS_DICTIONARY:
         case FTS_PARSER:
         case FTS_TEMPLATE:
-        case FUNCTION:
         case OPERATOR:
-        case PROCEDURE:
-        case AGGREGATE:
         case SEQUENCE:
         case TABLE:
         case TYPE:
@@ -417,6 +448,23 @@ public abstract class ParserAbstract {
                     .setCtx(nameCtx)
                     .setObject(object)
                     .setAction(action)
+                    .setLocationType(locationType)
+                    .build();
+        case FUNCTION:
+        case PROCEDURE:
+        case AGGREGATE:
+            /*
+            PgObjLocation loc = new PgObjLocation(new GenericColumn(schemaName, name, type),
+                    action, getStart(nameCtx), nameCtx.start.getLine(), fileName);
+            loc.setLength(nameLength);
+             */
+            return new PgObjLocation.Builder()
+                    .setFilePath(fileName)
+                    .setObject(new GenericColumn(schemaName, name, type))
+                    .setAction(action)
+                    .setOffset(getStart(nameCtx))
+                    .setLineNumber(nameCtx.start.getLine())
+                    // FIXME .setLength()
                     .setLocationType(locationType)
                     .build();
         case CONSTRAINT:
