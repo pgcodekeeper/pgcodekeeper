@@ -453,18 +453,13 @@ public abstract class ParserAbstract {
         case FUNCTION:
         case PROCEDURE:
         case AGGREGATE:
-            /*
-            PgObjLocation loc = new PgObjLocation(new GenericColumn(schemaName, name, type),
-                    action, getStart(nameCtx), nameCtx.start.getLine(), fileName);
-            loc.setLength(nameLength);
-             */
             return new PgObjLocation.Builder()
                     .setFilePath(fileName)
                     .setObject(new GenericColumn(schemaName, name, type))
                     .setAction(action)
                     .setOffset(getStart(nameCtx))
                     .setLineNumber(nameCtx.start.getLine())
-                    // FIXME .setLength()
+                    .setLength(nameLength)
                     .setLocationType(locationType)
                     .build();
         case CONSTRAINT:
@@ -493,6 +488,7 @@ public abstract class ParserAbstract {
         return new PgObjLocation.Builder()
                 .setFilePath(fileName)
                 .setCtx(source)
+                .setLength(target.stop.getStopIndex() - source.start.getStartIndex() + 1)
                 .setObject(object)
                 .setAction(action)
                 .build();

@@ -194,6 +194,7 @@ public class PgObjLocation extends ContextLocation {
         private int offset;
         private int lineNumber;
         private int charPositionInLine;
+        private int length = -1;
         private GenericColumn object;
         private ParserRuleContext ctx;
         private LocationType locationType = LocationType.REFERENCE;
@@ -233,6 +234,11 @@ public class PgObjLocation extends ContextLocation {
             return this;
         }
 
+        public Builder setLength(int length) {
+            this.length = length;
+            return this;
+        }
+
         public Builder setObject(GenericColumn object) {
             this.object = object;
             return this;
@@ -254,13 +260,19 @@ public class PgObjLocation extends ContextLocation {
                 int offset = start.getStartIndex();
                 int line = start.getLine();
                 int position = start.getCharPositionInLine();
-                int length = ctx.getStop().getStopIndex() - offset + 1;
+                int length = this.length;
+                if (length == -1) {
+                    length = ctx.getStop().getStopIndex() - offset + 1;
+                }
 
                 return new PgObjLocation(filePath, offset, line, position,
                         object, action, sql, alias, length, locationType);
             }
 
-            int length = object == null ? 0 : object.getObjName().length();
+            int length = this.length;
+            if (length == -1) {
+                length = object == null ? 0 : object.getObjName().length();
+            }
 
             return new PgObjLocation(filePath, offset, lineNumber, charPositionInLine,
                     object, action, sql, alias, length, locationType);

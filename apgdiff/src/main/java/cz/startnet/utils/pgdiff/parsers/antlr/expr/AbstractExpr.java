@@ -183,7 +183,7 @@ public abstract class AbstractExpr {
         }
     }
 
-    protected void addAlias(GenericColumn depcy, ParserRuleContext ctx) {
+    protected void addAliasReference(GenericColumn depcy, ParserRuleContext ctx) {
         depcies.add(new PgObjLocation.Builder()
                 .setObject(depcy)
                 .setCtx(ctx)
@@ -234,7 +234,7 @@ public abstract class AbstractExpr {
                 if (referencedTable.getObjName().equals(columnParent)) {
                     addDepcy(referencedTable, columnParentCtx);
                 } else {
-                    addAlias(referencedTable, columnParentCtx);
+                    addAliasReference(referencedTable, columnParentCtx);
                 }
 
                 columnType = addFilteredColumnDepcy(

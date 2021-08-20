@@ -441,7 +441,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
             if (relationGc.getObjName().equals(relation)) {
                 addDepcy(relationGc, relationCtx);
             } else {
-                addAlias(relationGc, relationCtx);
+                addAliasReference(relationGc, relationCtx);
             }
 
             addFilteredRelationColumnsDepcies(relationGc.schema, relationGc.table, ANY)
