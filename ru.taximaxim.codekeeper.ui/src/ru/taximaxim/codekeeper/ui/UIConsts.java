@@ -152,6 +152,7 @@ public interface UIConsts {
         String DB_BINDING = PLUGIN_ID.THIS + ".dbbinding"; //$NON-NLS-1$
 
         String LAST_DB_STORE = "prefLastDbStore"; //$NON-NLS-1$
+        String LAST_DIRECTION = "prefLastDirection"; //$NON-NLS-1$
         String LAST_DB_STORE_EDITOR = "prefLastDbStoreEditor"; //$NON-NLS-1$
         String NAME_OF_BOUND_DB = "nameOfBoundDatabase"; //$NON-NLS-1$
     }
@@ -171,6 +172,8 @@ public interface UIConsts {
 
     interface FILE {
         String IGNORED_OBJECTS = ".pgcodekeeperignore"; //$NON-NLS-1$
+        String IGNORED_SCHEMA = ".pgcodekeeperignoreschema"; //$NON-NLS-1$
+
         String IGNORE_LISTS_STORE = PLUGIN_ID.THIS + ".ignoreliststore"; //$NON-NLS-1$
 
         // external icons

@@ -7,12 +7,15 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.IntUnaryOperator;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.layout.PixelConverter;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
@@ -26,7 +29,9 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.FileDialog;
@@ -60,6 +65,7 @@ public class DbStorePicker {
     private final List<File> projects = new ArrayList<>();
 
     private final ComboViewer cmbDbNames;
+    private boolean triggerEvent = true;
 
     public DbStorePicker(Composite parent, boolean useFileSources, boolean useDirSources) {
         this(parent, DEFAULT_LENGTH, useFileSources, useDirSources);
@@ -69,7 +75,14 @@ public class DbStorePicker {
         this.useFileSources = useFileSources;
         this.useDirSources = useDirSources;
 
-        cmbDbNames = new ComboViewer(parent, SWT.READ_ONLY | SWT.DROP_DOWN);
+        cmbDbNames = new ComboViewer(parent, SWT.READ_ONLY | SWT.DROP_DOWN) {
+            @Override
+            protected void fireSelectionChanged(SelectionChangedEvent event) {
+                if (triggerEvent) {
+                    super.fireSelectionChanged(event);
+                }
+            }
+        };
         cmbDbNames.setContentProvider(ArrayContentProvider.getInstance());
         cmbDbNames.setLabelProvider(new DbStoreLabelProvider());
         cmbDbNames.addSelectionChangedListener(new DbStoreSelectionListener());
@@ -188,6 +201,16 @@ public class DbStorePicker {
         cmbDbNames.setSelection(selection);
     }
 
+    public void setSelection(IStructuredSelection selection, boolean triggerEvent) {
+        boolean oldTriggerEvent = this.triggerEvent;
+        try {
+            this.triggerEvent = triggerEvent;
+            setSelection(selection);
+        } finally {
+            this.triggerEvent = oldTriggerEvent;
+        }
+    }
+
     public void clearSelection() {
         cmbDbNames.setSelection(StructuredSelection.EMPTY);
     }
@@ -211,6 +234,22 @@ public class DbStorePicker {
 
     public void dispose() {
         cmbDbNames.getControl().dispose();
+    }
+
+    public void fixEclipseBug567652() {
+        Combo combo = cmbDbNames.getCombo();
+        LocalResourceManager lrm = new LocalResourceManager(JFaceResources.getResources(), combo);
+        RGB rgb = combo.getForeground().getRGB();
+
+        // separate workaround for invisible text on KDE
+        // detach widget color from theme by using a modified version
+        IntUnaryOperator modColor = c -> c == 255 ? c - 1 : c + 1;
+        combo.setForeground(lrm.createColor(new RGB(
+                modColor.applyAsInt(rgb.red),
+                modColor.applyAsInt(rgb.green),
+                modColor.applyAsInt(rgb.blue))));
+
+        combo.setBackground(combo.getBackground());
     }
 
     public static File chooseDbSource(IPreferenceStore prefStore, Shell shell, boolean dir) {

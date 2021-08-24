@@ -375,12 +375,16 @@ public abstract class AbstractExpr {
         if (ApgdiffUtils.isPgSystemSchema(schemaName)) {
             return;
         }
+        addDepcy(new GenericColumn(schemaName, DbObjType.SCHEMA), schemaCtx, start);
 
         IdentifierContext nameCtx = QNameParser.getFirstNameCtx(ids);
         String functionName = nameCtx.getText();
-
-        addDepcy(new GenericColumn(schemaName, DbObjType.SCHEMA), schemaCtx, start);
-        addDepcy(new GenericColumn(schemaName, functionName, DbObjType.FUNCTION), nameCtx, start);
+        for (IFunction f : availableFunctions(schemaName)) {
+            if (f.getBareName().equals(functionName)) {
+                addDepcy(new GenericColumn(schemaName, f.getName(), DbObjType.FUNCTION), nameCtx, start);
+                break;
+            }
+        }
     }
 
     protected void addFunctionSigDepcy(String signature, Token start) {

@@ -82,9 +82,8 @@ public class DepcyWriter {
         }
         if (!isInvertFilter) {
             return filterObjTypes.contains(type);
-        } else {
-            return !filterObjTypes.contains(type);
         }
+        return !filterObjTypes.contains(type);
     }
 
     private void printTree(PgStatement st, int level, Set<PgStatement> added, PgStatement parentSt, int hiddenObj) {
@@ -114,7 +113,7 @@ public class DepcyWriter {
             final int finalLevel = level;
             final int finalHiddenObj = hiddenObj;
 
-            graph.outgoingEdgesOf(st).stream().map(defEdg -> graph.getEdgeTarget(defEdg))
+            graph.outgoingEdgesOf(st).stream().map(graph::getEdgeTarget)
             .sorted(Comparator.comparing(PgStatement::getStatementType))
             .forEach(pgSt -> printTree(pgSt, finalLevel, new HashSet<>(added), finalParentSt, finalHiddenObj));
         }

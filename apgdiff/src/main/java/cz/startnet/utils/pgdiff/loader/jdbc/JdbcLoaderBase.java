@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +42,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreSchemaList;
 
 /**
  * Container for shared JdbcLoader state.
@@ -54,6 +56,7 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
     protected final JdbcConnector connector;
     protected final SubMonitor monitor;
     protected final PgDiffArguments args;
+    protected final IgnoreSchemaList ignorelistSchema;
     private GenericColumn currentObject;
     private String currentOperation;
     protected Connection connection;
@@ -66,15 +69,24 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
     protected JdbcRunner runner;
     private String extensionSchema;
 
-    public JdbcLoaderBase(JdbcConnector connector, SubMonitor monitor, PgDiffArguments args) {
+    public JdbcLoaderBase(JdbcConnector connector, SubMonitor monitor, PgDiffArguments args, IgnoreSchemaList ignoreListSchema) {
         this.connector = connector;
         this.monitor = monitor;
         this.args = args;
         this.runner = new JdbcRunner(monitor);
+        this.ignorelistSchema = ignoreListSchema;
     }
 
     public int getVersion() {
         return version;
+    }
+
+    public String getExtensionSchema() {
+        return extensionSchema;
+    }
+
+    public Map<Long, AbstractSchema> getSchemas() {
+        return Collections.unmodifiableMap(schemaIds);
     }
 
     protected void setCurrentObject(GenericColumn currentObject) {
@@ -118,10 +130,6 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
 
     protected void addError(final String message) {
         errors.add(getCurrentLocation() + ' ' + message);
-    }
-
-    public String getExtensionSchema() {
-        return extensionSchema;
     }
 
     protected String getRoleByOid(long oid) {

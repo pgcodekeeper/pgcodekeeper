@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.schema.meta;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -34,8 +35,8 @@ public class MetaStorage implements Serializable {
 
     private static MetaStorage getObjectsFromResources(SupportedVersion ver) {
         SupportedVersion version;
-        if (!SupportedVersion.VERSION_9_5.isLE(ver.getVersion())) {
-            version = SupportedVersion.VERSION_9_5;
+        if (!SupportedVersion.VERSION_9_6.isLE(ver.getVersion())) {
+            version = SupportedVersion.VERSION_9_6;
         } else {
             version = ver;
         }
@@ -46,8 +47,8 @@ public class MetaStorage implements Serializable {
         }
 
         try {
-            String path = ApgdiffUtils.getFileFromOsgiRes(MetaStorage.class.getResource(
-                    FILE_NAME + version + ".ser")).toString();
+            Path path = ApgdiffUtils.getFileFromOsgiRes(MetaStorage.class.getResource(
+                    FILE_NAME + version + ".ser"));
             Object object = ApgdiffUtils.deserialize(path);
 
             if (object instanceof MetaStorage) {

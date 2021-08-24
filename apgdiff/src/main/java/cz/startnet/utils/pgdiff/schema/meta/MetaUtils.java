@@ -68,7 +68,7 @@ public class MetaUtils {
         case FUNCTION:
         case PROCEDURE:
             IFunction funcion = (IFunction) st;
-            MetaFunction func = new MetaFunction(loc);
+            MetaFunction func = new MetaFunction(loc, st.getBareName());
             funcion.getReturnsColumns().forEach(func::addReturnsColumn);
             funcion.getArguments().forEach(func::addArgument);
             func.setReturns(funcion.getReturns());
@@ -135,7 +135,7 @@ public class MetaUtils {
         case TABLE:
         case TYPE:
         case VIEW:
-            gc = new GenericColumn(st.getParent().getName(), st.getBareName(), type);
+            gc = new GenericColumn(st.getParent().getName(), st.getName(), type);
             break;
         case INDEX:
             gc = new GenericColumn(st.getParent().getParent().getName(), st.getName(), type);

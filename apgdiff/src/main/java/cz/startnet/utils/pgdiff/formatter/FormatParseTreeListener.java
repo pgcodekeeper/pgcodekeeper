@@ -198,12 +198,10 @@ public class FormatParseTreeListener implements ParseTreeListener {
         }
 
         TerminalNode node = ctx.SELECT();
-        if (node != null) {
-            if (!isSelectPrimaryInParens(ctx)) {
-                // only new-line SELECT if no LEFT_PAREN found next to it
-                // LEFT_PAREN must open a block, making this newline extraneous
-                indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
-            }
+        if (node != null && !isSelectPrimaryInParens(ctx)) {
+            // only new-line SELECT if no LEFT_PAREN found next to it
+            // LEFT_PAREN must open a block, making this newline extraneous
+            indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
         }
 
         node = ctx.FROM();

@@ -10,6 +10,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.eclipse.core.resources.IProject;
@@ -18,23 +20,24 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.SubMonitor;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.TempDir;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
+import ru.taximaxim.codekeeper.apgdiff.model.exporter.MsModelExporter;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public class DbSourceTest {
-
-    private static final String DUMP = "test_dump.sql";
 
     private static PgDatabase dbPredefined;
     private static File workspacePath;
@@ -44,7 +47,7 @@ public class DbSourceTest {
     public static void initDb() throws IOException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(ApgdiffConsts.UTF_8);
-        dbPredefined = ApgdiffTestUtils.loadTestDump(DUMP, DbSourceTest.class, args);
+        dbPredefined = ApgdiffTestUtils.loadTestDump(ApgdiffTestUtils.RESOURCE_DUMP, ApgdiffTestUtils.class, args);
 
         workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
         workspacePath = workspaceRoot.getLocation().toFile();
@@ -65,7 +68,7 @@ public class DbSourceTest {
     @Test
     public void testFile() throws IOException, URISyntaxException, InterruptedException,
     CoreException {
-        URL urla = DbSourceTest.class.getResource(DUMP);
+        URL urla = ApgdiffTestUtils.class.getResource(ApgdiffTestUtils.RESOURCE_DUMP);
 
         performTest(DbSource.fromFile(true, ApgdiffUtils.getFileFromOsgiRes(urla),
                 ApgdiffConsts.UTF_8, false, null));
@@ -77,15 +80,84 @@ public class DbSourceTest {
         try(TempDir tempDir = new TempDir(workspacePath.toPath(), "dbSourceProjectTest")){
             Path dir = tempDir.get();
             // create empty project in temp dir
-            IProject project = createProjectInWorkspace(dir.getFileName().toString());
+            IProject project = createProjectInWorkspace(dir.getFileName().toString(), false);
 
             // populate project with data
             new ModelExporter(dir, dbPredefined, ApgdiffConsts.UTF_8).exportFull();
             project.refreshLocal(IResource.DEPTH_INFINITE, null);
 
+            // create pgcodekeeperignoreschema file in tempDir
+            String rule = "SHOW ALL";
+            Files.write(dir.resolve(".pgcodekeeperignoreschema"), rule.getBytes(StandardCharsets.UTF_8));
+
             // testing itself
             assertEquals("Project name differs", dir.getFileName().toString(), project.getName());
             performTest(DbSource.fromProject(new PgDbProject(project)));
+            project.delete(false, true, null);
+        }
+    }
+
+    @Test
+    public void testDbSourceWithIgnoreSchemas() throws CoreException, IOException, PgCodekeeperUIException,
+    InterruptedException{
+        try(TempDir tempDir = new TempDir(workspacePath.toPath(), "dbSourceProjectTest")){
+            Path dir = tempDir.get();
+
+            // create empty project in temp dir
+            IProject project = createProjectInWorkspace(dir.getFileName().toString(), false);
+
+            // populate project with data
+            new ModelExporter(dir, dbPredefined, ApgdiffConsts.UTF_8).exportFull();
+            project.refreshLocal(IResource.DEPTH_INFINITE, null);
+
+            // create .pgcodekeeperignoreschema file with black list rule in tempDir
+            ApgdiffTestUtils.createIgnoredSchemaFile(dir);
+
+            DbSource dbSourceProj =  DbSource.fromProject(new PgDbProject(project));
+            PgDatabase db = dbSourceProj.get(SubMonitor.convert(null, "", 1));
+
+            for (AbstractSchema dbSchema : db.getSchemas()) {
+                if (ApgdiffTestUtils.IGNORED_SCHEMAS_LIST.contains(dbSchema.getName())) {
+                    Assert.fail("Ignored Schema loaded " + dbSchema.getName());
+                } else {
+                    Assert.assertEquals("Schema from dump isn't equal schema from loader",
+                            dbPredefined.getSchema(dbSchema.getName()), dbSchema);
+                }
+            }
+            project.delete(false, true, null);
+        }
+    }
+
+    @Test
+    public void testMsDbSourceWithIgnoreSchemas() throws CoreException, IOException, PgCodekeeperUIException,
+    InterruptedException{
+        try(TempDir tempDir = new TempDir(workspacePath.toPath(), "dbSourceProjectTest")){
+            Path dir = tempDir.get();
+            PgDiffArguments args = new PgDiffArguments();
+            args.setMsSql(true);
+
+            // create empty project in temp dir
+            IProject project = createProjectInWorkspace(dir.getFileName().toString(), true);
+
+            // populate project with data
+            PgDatabase msDb = ApgdiffTestUtils.loadTestDump(ApgdiffTestUtils.RESOURCE_MS_DUMP, ApgdiffTestUtils.class, args);
+            new MsModelExporter(dir, msDb, ApgdiffConsts.UTF_8).exportFull();
+            project.refreshLocal(IResource.DEPTH_INFINITE, null);
+
+            // create .pgcodekeeperignoreschema file with black list rule in tempDir
+            ApgdiffTestUtils.createIgnoredSchemaFile(dir);
+
+            DbSource dbSourceProj =  DbSource.fromProject(new PgDbProject(project));
+            PgDatabase db = dbSourceProj.get(SubMonitor.convert(null, "", 1));
+
+            for (AbstractSchema dbSchema : db.getSchemas()) {
+                if (ApgdiffTestUtils.IGNORED_SCHEMAS_LIST.contains(dbSchema.getName())) {
+                    Assert.fail("Ignored Schema loaded " + dbSchema.getName());
+                } else {
+                    Assert.assertEquals("Schema from ms dump isn't equal schema from loader",
+                            msDb.getSchema(dbSchema.getName()), dbSchema);
+                }
+            }
             project.delete(false, true, null);
         }
     }
@@ -107,10 +179,13 @@ public class DbSourceTest {
         assertEquals("Db loaded not equal to predefined db", dbPredefined, dbSource);
     }
 
-    private IProject createProjectInWorkspace(String projectName) throws CoreException{
+    private IProject createProjectInWorkspace(String projectName, boolean isMsSql) throws CoreException{
         IProject project = workspaceRoot.getProject(projectName);
-        PgDbProject.createPgDbProject(project, null, false);
+        PgDbProject.createPgDbProject(project, null, isMsSql);
         project.getNature(NATURE.ID).deconfigure();
+        if (isMsSql) {
+            project.getNature(NATURE.MS).deconfigure();
+        }
 
         assertNotNull("Project location cannot be determined", project.getLocation());
         return project;

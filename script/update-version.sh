@@ -2,7 +2,7 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ( \
-cd "${DIR}/../ru.taximaxim.codekeeper.mainapp/ru.taximaxim.codeKeeper/" \
+cd "${DIR}/../" \
 && \
 mvn org.eclipse.tycho:tycho-versions-plugin:set-version \
 -P internal \
