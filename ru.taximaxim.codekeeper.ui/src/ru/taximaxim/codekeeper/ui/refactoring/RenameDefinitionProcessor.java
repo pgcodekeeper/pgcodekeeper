@@ -3,7 +3,7 @@ package ru.taximaxim.codekeeper.ui.refactoring;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
@@ -55,9 +55,9 @@ public class RenameDefinitionProcessor extends RenameProcessor {
         return getReferences().toArray();
     }
 
-    private List<PgObjLocation> getReferences() {
+    private Stream<PgObjLocation> getReferences() {
         if (file == null) {
-            return new ArrayList<>();
+            return Stream.empty();
         }
 
         return PgDbParser.getParser(file).getAllObjReferences()
@@ -71,7 +71,7 @@ public class RenameDefinitionProcessor extends RenameProcessor {
                     }
 
                     return Integer.compare(o1.getOffset(), o2.getOffset());
-                }).collect(Collectors.toList());
+                });
     }
 
     public String getOldName() {
@@ -118,11 +118,10 @@ public class RenameDefinitionProcessor extends RenameProcessor {
         }
 
         IFile file = null;
-        TextFileChange fileChange = null;
         MultiTextEdit multiEdit = null;
         List<RenameDefinitionChange> fileRenames = new ArrayList<>();
 
-        for (PgObjLocation ref : getReferences()) {
+        for (PgObjLocation ref : PgDiffUtils.sIter(getReferences())) {
             IFile mfile = FileUtilsUi.getFileForLocation(ref);
 
             if (mfile == null) {
@@ -136,12 +135,12 @@ public class RenameDefinitionProcessor extends RenameProcessor {
             if (!Objects.equals(file, mfile)) {
                 file = mfile;
                 multiEdit = new MultiTextEdit();
-                fileChange = new TextFileChange(file.getName(), file);
+                TextFileChange fileChange = new TextFileChange(file.getName(), file);
                 fileChange.setTextType("sql"); //$NON-NLS-1$
                 fileChange.setEdit(multiEdit);
                 change.add(fileChange);
             }
- 
+
             multiEdit.addChild(new ReplaceEdit(ref.getOffset(), ref.getObjLength(),
                     quotedName));
         }
@@ -151,8 +150,7 @@ public class RenameDefinitionProcessor extends RenameProcessor {
         return change;
     }
 
-    private void addFileRenames(IFile file, PgObjLocation ref,
-            List<RenameDefinitionChange> fileRenames) {
+    private void addFileRenames(IFile file, PgObjLocation ref, List<RenameDefinitionChange> fileRenames) {
         switch (ref.getType()) {
         case TRIGGER:
         case RULE:

@@ -1,6 +1,5 @@
 package ru.taximaxim.codekeeper.ui.refactoring;
 
-import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -26,11 +25,9 @@ public class RenameDefinitionChange extends RenameResourceChange {
         if (result.hasFatalError()) {
             return result;
         }
-        IContainer c= getModifiedResource().getParent();
-        for (IResource member : c.members()) {
-            if (member.getName().equals(newName)) {
-                result.addFatalError(Messages.RenameDefinitionChange_error_resource_already_exists);
-            }
+        IResource newRes = getModifiedResource().getParent().findMember(newName);
+        if (newRes != null) {
+            result.addFatalError(Messages.RenameDefinitionChange_error_resource_already_exists);
         }
         return result;
     }
