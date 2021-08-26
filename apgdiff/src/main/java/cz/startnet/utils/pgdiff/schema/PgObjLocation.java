@@ -11,7 +11,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgObjLocation extends ContextLocation {
 
-    private static final long serialVersionUID = -6511243237472584008L;
+    private static final long serialVersionUID = 6558864943211641773L;
 
     public enum LocationType {
         DEFINITION,
