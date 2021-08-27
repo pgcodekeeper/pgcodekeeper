@@ -103,7 +103,7 @@ public abstract class MsAbstractExpr {
         }
     }
 
-    protected void addAlias(GenericColumn depcy, ParserRuleContext ctx) {
+    protected void addAliasReference(GenericColumn depcy, ParserRuleContext ctx) {
         depcies.add(new PgObjLocation.Builder()
                 .setObject(depcy)
                 .setCtx(ctx)
@@ -148,7 +148,7 @@ public abstract class MsAbstractExpr {
                 if (relationName.equals(table.table)) {
                     addDepcy(table, relationCtx);
                 } else {
-                    addAlias(table, relationCtx);
+                    addAliasReference(table, relationCtx);
                 }
 
                 addDepcy(new GenericColumn(table.schema, table.table,

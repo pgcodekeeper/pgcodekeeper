@@ -5,10 +5,10 @@
  */
 package cz.startnet.utils.pgdiff.loader;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.Queue;
 
@@ -91,24 +91,24 @@ public class PgDumpLoader extends DatabaseLoader {
      * Call {@link #close()} after this {@link PgDumpLoader} instance is no longer needed,
      * or wrap usage of the instance with try-with-resources.
      */
-    public PgDumpLoader(File inputFile, PgDiffArguments args,
+    public PgDumpLoader(Path inputFile, PgDiffArguments args,
             IProgressMonitor monitor, int monitoringLevel) {
-        this(() -> new FileInputStream(inputFile), inputFile.toString(), args, monitor, monitoringLevel);
+        this(() -> Files.newInputStream(inputFile), inputFile.toString(), args, monitor, monitoringLevel);
     }
 
     /**
-     * @see #PgDumpLoader(File, PgDiffArguments, IProgressMonitor, int)
+     * @see #PgDumpLoader(Path, PgDiffArguments, IProgressMonitor, int)
      * @see #PgDumpLoader(InputStream, String, PgDiffArguments, IProgressMonitor)
      */
-    public PgDumpLoader(File inputFile, PgDiffArguments args, IProgressMonitor monitor) {
+    public PgDumpLoader(Path inputFile, PgDiffArguments args, IProgressMonitor monitor) {
         this(inputFile, args, monitor, 1);
     }
 
     /**
-     * @see #PgDumpLoader(File, PgDiffArguments, IProgressMonitor, int)
+     * @see #PgDumpLoader(Path, PgDiffArguments, IProgressMonitor, int)
      * @see #PgDumpLoader(InputStream, String, PgDiffArguments)
      */
-    public PgDumpLoader(File inputFile, PgDiffArguments args) {
+    public PgDumpLoader(Path inputFile, PgDiffArguments args) {
         this(inputFile, args, new NullProgressMonitor(), 0);
     }
 

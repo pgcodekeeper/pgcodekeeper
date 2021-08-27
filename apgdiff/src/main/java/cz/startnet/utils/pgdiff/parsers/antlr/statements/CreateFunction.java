@@ -74,7 +74,7 @@ public class CreateFunction extends ParserAbstract {
             function.setReturns(getTypeName(ctx.rettype_data));
             addPgTypeDepcy(ctx.rettype_data, function);
         }
-        addSafe(getSchemaSafe(ids), function, ids);
+        addSafe(getSchemaSafe(ids), function, ids, parseArguments(ctx.function_parameters().function_args()));
     }
 
     private void fillFunction(Create_funct_paramsContext params, AbstractPgFunction function) {

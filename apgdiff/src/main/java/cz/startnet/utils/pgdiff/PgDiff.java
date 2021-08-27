@@ -5,7 +5,6 @@
  */
 package cz.startnet.utils.pgdiff;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -15,6 +14,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
+
+import org.eclipse.core.runtime.SubMonitor;
 
 import cz.startnet.utils.pgdiff.loader.DatabaseLoader;
 import cz.startnet.utils.pgdiff.loader.FullAnalyze;
@@ -37,6 +38,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.CompareTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeFlattener;
@@ -70,13 +72,14 @@ public class PgDiff {
     public String createDiff() throws InterruptedException, IOException, PgCodekeeperException {
         PgDatabase oldDatabase = loadOldDatabaseWithLibraries();
         PgDatabase newDatabase = loadNewDatabaseWithLibraries();
+        IgnoreList ignoreList =  new IgnoreList();
+        IgnoreParser ignoreParser = new IgnoreParser(ignoreList);
 
-        IgnoreParser ignoreParser = new IgnoreParser();
         for (String listFilename : arguments.getIgnoreLists()) {
             ignoreParser.parse(Paths.get(listFilename));
         }
 
-        return diffDatabaseSchemas(oldDatabase, newDatabase, ignoreParser.getIgnoreList());
+        return diffDatabaseSchemas(oldDatabase, newDatabase, ignoreList);
     }
 
     private void analyzeDatabase(PgDatabase db)
@@ -91,7 +94,7 @@ public class PgDiff {
             return;
         }
 
-        new ProjectLoader(source, arguments, null, errors).loadOverrides(db);
+        new ProjectLoader(source, arguments, errors).loadOverrides(db);
         assertErrors();
     }
 
@@ -179,16 +182,21 @@ public class PgDiff {
     private PgDatabase loadDatabaseSchema(String format, String srcPath)
             throws InterruptedException, IOException {
         DatabaseLoader loader;
+        IgnoreSchemaList ignoreSchemaList =  new IgnoreSchemaList();
+        IgnoreParser ignoreParser = new IgnoreParser(ignoreSchemaList);
+        if (arguments.getIgnoreSchemaList() != null) {
+            ignoreParser.parse(Paths.get(arguments.getIgnoreSchemaList()));
+        }
         if ("dump".equals(format)) {
-            loader = new PgDumpLoader(new File(srcPath), arguments);
+            loader = new PgDumpLoader(Paths.get(srcPath), arguments);
         } else if ("parsed".equals(format)) {
-            loader = new ProjectLoader(srcPath, arguments, null, errors);
+            loader = new ProjectLoader(srcPath, arguments, null, errors, ignoreSchemaList);
         } else if ("db".equals(format)) {
             String timezone = arguments.getTimeZone() == null ? ApgdiffConsts.UTC : arguments.getTimeZone();
             if (arguments.isMsSql()) {
-                loader = new JdbcMsLoader(JdbcConnector.fromUrl(srcPath, timezone), arguments);
+                loader = new JdbcMsLoader(JdbcConnector.fromUrl(srcPath, timezone), arguments, SubMonitor.convert(null), ignoreSchemaList);
             } else {
-                loader = new JdbcLoader(JdbcConnector.fromUrl(srcPath, timezone), arguments);
+                loader = new JdbcLoader(JdbcConnector.fromUrl(srcPath, timezone), arguments, SubMonitor.convert(null), ignoreSchemaList);
             }
         } else {
             throw new UnsupportedOperationException(

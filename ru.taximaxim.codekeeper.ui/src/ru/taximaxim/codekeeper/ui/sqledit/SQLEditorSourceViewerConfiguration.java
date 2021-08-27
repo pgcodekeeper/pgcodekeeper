@@ -18,6 +18,8 @@ import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
+import org.eclipse.jface.text.formatter.IContentFormatter;
+import org.eclipse.jface.text.formatter.MultiPassContentFormatter;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
 import org.eclipse.jface.text.quickassist.IQuickAssistAssistant;
@@ -277,6 +279,15 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         return targets;
     }
 
+    @Override
+    public IContentFormatter getContentFormatter(ISourceViewer sourceViewer) {
+        final MultiPassContentFormatter formatter =
+                new MultiPassContentFormatter(getConfiguredDocumentPartitioning(sourceViewer),
+                        SQLEditorCommonDocumentProvider.SQL_CODE);
+        formatter.setMasterStrategy(new SQLFormattingStrategy(editor));
+        return formatter;
+    }
+
     private void addDamagerRepairer(PresentationReconciler reconciler, RuleBasedScanner commentScanner, String contentType) {
         DefaultDamagerRepairer commentDamagerRepairer= new DefaultDamagerRepairer(commentScanner);
         reconciler.setDamager(commentDamagerRepairer, contentType);
@@ -360,4 +371,23 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
                 getTextAttribute(prefs, SQLEditorStatementTypes.QUOTED_IDENTIFIER)));
         return commentScanner;
     }
+    /*
+    @Override
+    public int getTabWidth(ISourceViewer sourceViewer) {
+        return prefs.getInt(FORMATTER_PREF.INDENT_SIZE);
+    }
+
+    @Override
+    public String[] getIndentPrefixes(ISourceViewer sourceViewer, String contentType) {
+        String indent;
+
+        String mode = prefs.getString(FORMATTER_PREF.INDENT_TYPE);
+        if (FORMATTER_PREF.TAB.equals(mode)) {
+            indent = "\t";
+        } else {
+            indent = FormatConfiguration.createIndent(getTabWidth(sourceViewer), ' ');
+        }
+        return new String[] { indent, "" };
+    }
+     */
 }

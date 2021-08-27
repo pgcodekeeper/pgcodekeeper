@@ -9,6 +9,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
+
 public class PgRenameRefactoringInputPage extends UserInputWizardPage {
 
     public static final String PAGE_NAME = "RenameRefactoringPage"; //$NON-NLS-1$
@@ -28,16 +30,16 @@ public class PgRenameRefactoringInputPage extends UserInputWizardPage {
         top.setLayout(new GridLayout(2, false));
 
         Label label= new Label(top, SWT.NONE);
-        label.setText("New Name: ");
+        label.setText(Messages.PgRenameRefactoringInputPage_new_name);
         txtName = new Text(top, SWT.BORDER);
-        txtName.setText(getOldName());
         txtName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        txtName.selectAll();
 
         txtName.addModifyListener(e ->  {
             updatePageComplete();
             getRenameProcessor().setNewName(txtName.getText());
         });
+        txtName.setText(getOldName());
+        txtName.selectAll();
     }
 
     private RenameDefinitionProcessor getRenameProcessor() {
@@ -51,7 +53,7 @@ public class PgRenameRefactoringInputPage extends UserInputWizardPage {
 
     private void updatePageComplete() {
         String txt = txtName.getText();
-        if (txt.length() == 0 || txt.equals(getOldName())) {
+        if (txt.isEmpty() || txt.equals(getOldName())) {
             setPageComplete(false);
         } else {
             setPageComplete(true);

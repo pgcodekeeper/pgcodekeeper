@@ -29,10 +29,10 @@ Schema: public
 
   View: testview4
     RelationColumns : 
-     a - functionCol
-     b - functionCol
-     c - functionCol
+     a - text
+     b - text
+     c - text
 
   View: testview5
     RelationColumns : 
-     array_agg - functionCol
+     array_agg - anyarray

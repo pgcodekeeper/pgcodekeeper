@@ -49,6 +49,8 @@ import org.eclipse.jface.text.source.DefaultCharacterPairMatcher;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModelExtension;
 import org.eclipse.jface.text.source.ICharacterPairMatcher;
+import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.DecorationOverlayIcon;
 import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.jface.viewers.ISelection;
@@ -273,6 +275,10 @@ implements IResourceChangeListener, ITextErrorReporter {
     public void doSave(IProgressMonitor progressMonitor) {
         super.doSave(progressMonitor);
         refreshParser();
+    }
+
+    public void doFormat() {
+        ((SourceViewer) getSourceViewer()).doOperation(ISourceViewer.FORMAT);
     }
 
     @Override
@@ -926,4 +932,15 @@ implements IResourceChangeListener, ITextErrorReporter {
             Log.log(ex);
         }
     }
+    /*
+    @Override
+    protected boolean isTabsToSpacesConversionEnabled() {
+        return FORMATTER_PREF.TAB.equals(mainPrefs.getString(FORMATTER_PREF.INDENT_TYPE));
+    }
+
+    @Override
+    protected boolean isSpacesAsTabsDeletionEnabled() {
+        return false;
+    }
+     */
 }

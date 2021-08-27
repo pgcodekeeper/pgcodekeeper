@@ -43,7 +43,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsFunction;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsIndex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsProcedure;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsRole;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsRule;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.GrantMsPrivilege;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsSchema;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsSequence;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsTable;
@@ -142,7 +142,7 @@ implements TSqlContextProcessor {
                 addToQueries(set, getAction(set));
             } else if ((security = ast.security_statement()) != null
                     && security.rule_common() != null) {
-                safeParseStatement(new CreateMsRule(security.rule_common(), db), security);
+                safeParseStatement(new GrantMsPrivilege(security.rule_common(), db), security);
             } else {
                 addToQueries(ast, getAction(ast));
             }

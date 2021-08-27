@@ -5,8 +5,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +42,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreSchemaList;
 
 /**
  * Container for shared JdbcLoader state.
@@ -50,16 +51,12 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  */
 public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalogStrings {
 
-    private static final String EXTENSION_QUERY = "SELECT q.*, time.ses_user FROM ({0}) q\n"
-            + "LEFT JOIN {1}.dbots_event_data time ON q.oid = time.objid";
-
     private static final int DEFAULT_OBJECTS_COUNT = 100;
-
-    // TODO after removing helpers split this into MS and PG base classes
 
     protected final JdbcConnector connector;
     protected final SubMonitor monitor;
     protected final PgDiffArguments args;
+    protected final IgnoreSchemaList ignorelistSchema;
     private GenericColumn currentObject;
     private String currentOperation;
     protected Connection connection;
@@ -70,14 +67,26 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
     protected int version;
     private long lastSysOid;
     protected JdbcRunner runner;
-
     private String extensionSchema;
 
-    public JdbcLoaderBase(JdbcConnector connector, SubMonitor monitor, PgDiffArguments args) {
+    public JdbcLoaderBase(JdbcConnector connector, SubMonitor monitor, PgDiffArguments args, IgnoreSchemaList ignoreListSchema) {
         this.connector = connector;
         this.monitor = monitor;
         this.args = args;
         this.runner = new JdbcRunner(monitor);
+        this.ignorelistSchema = ignoreListSchema;
+    }
+
+    public int getVersion() {
+        return version;
+    }
+
+    public String getExtensionSchema() {
+        return extensionSchema;
+    }
+
+    public Map<Long, AbstractSchema> getSchemas() {
+        return Collections.unmodifiableMap(schemaIds);
     }
 
     protected void setCurrentObject(GenericColumn currentObject) {
@@ -93,16 +102,15 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
         StringBuilder sb = new StringBuilder("jdbc:");
         if (currentObject == null) {
             return sb.append(currentOperation).toString();
-        } else {
-            if (currentObject.schema != null) {
-                sb.append('/').append(currentObject.schema);
-            }
-            if (currentObject.table != null) {
-                sb.append('/').append(currentObject.table);
-            }
-            if (currentObject.column != null) {
-                sb.append('/').append(currentObject.column);
-            }
+        }
+        if (currentObject.schema != null) {
+            sb.append('/').append(currentObject.schema);
+        }
+        if (currentObject.table != null) {
+            sb.append('/').append(currentObject.table);
+        }
+        if (currentObject.column != null) {
+            sb.append('/').append(currentObject.column);
         }
         return sb.toString();
     }
@@ -122,23 +130,6 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
 
     protected void addError(final String message) {
         errors.add(getCurrentLocation() + ' ' + message);
-    }
-
-    /**
-     * Join timestamps to query
-     *
-     * @param base base query
-     * @return new query
-     */
-    public String appendTimestamps(String base) {
-        if (extensionSchema == null) {
-            return base;
-        }
-        return MessageFormat.format(EXTENSION_QUERY, base, PgDiffUtils.getQuotedName(extensionSchema));
-    }
-
-    public String getExtensionSchema() {
-        return extensionSchema;
     }
 
     protected String getRoleByOid(long oid) {

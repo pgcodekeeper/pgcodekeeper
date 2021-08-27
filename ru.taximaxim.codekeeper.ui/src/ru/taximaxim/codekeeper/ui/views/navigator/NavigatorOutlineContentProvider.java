@@ -26,7 +26,7 @@ public class NavigatorOutlineContentProvider implements ITreeContentProvider {
                 .filter(e -> e.getAction() != null)
                 .sorted((a, b) -> Integer.compare(a.getOffset(), b.getOffset()))
                 .map(e -> new SegmentsWithParent(e, iFile))
-                .toArray(size -> new Object[size]);
+                .toArray();
     }
 
     @Override

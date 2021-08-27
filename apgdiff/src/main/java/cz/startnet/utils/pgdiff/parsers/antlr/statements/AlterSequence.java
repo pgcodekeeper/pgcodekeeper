@@ -42,9 +42,11 @@ public class AlterSequence extends ParserAbstract {
                     GenericColumn gc = new GenericColumn(QNameParser.getThirdName(col),
                             QNameParser.getSecondName(col), QNameParser.getFirstName(col), DbObjType.COLUMN);
                     doSafe(PgSequence::setOwnedBy, sequence, gc);
+                    if (col.size() > 1) {
+                        List<IdentifierContext> tableIds = col.subList(0, col.size() - 1);
+                        addObjReference(tableIds, DbObjType.TABLE, null);
+                    }
                 }
-
-                addObjReference(col, DbObjType.TABLE, null);
             }
         }
 

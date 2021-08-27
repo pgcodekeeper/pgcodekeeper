@@ -66,7 +66,6 @@ public class AlterMsBatch extends BatchContextProcessor {
 
     @Override
     protected String getStmtAction() {
-        DbObjType type;
         List<? extends ParserRuleContext> ids;
         if (ctx.create_or_alter_procedure() != null) {
             Qualified_nameContext qname = ctx.create_or_alter_procedure().qualified_name();

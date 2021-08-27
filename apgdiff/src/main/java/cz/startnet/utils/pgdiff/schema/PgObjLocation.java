@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.schema;
 
+import java.util.List;
 import java.util.Objects;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -7,11 +8,15 @@ import org.antlr.v4.runtime.Token;
 
 import cz.startnet.utils.pgdiff.ContextLocation;
 import cz.startnet.utils.pgdiff.DangerStatement;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgObjLocation extends ContextLocation {
 
-    private static final long serialVersionUID = -6511243237472584008L;
+    private static final long serialVersionUID = 6558864943211641773L;
 
     public enum LocationType {
         DEFINITION,
@@ -121,8 +126,28 @@ public class PgObjLocation extends ContextLocation {
         return obj == null ? null : obj.type;
     }
 
-    public String getText() {
-        return alias != null ? alias : getObjName();
+    /**
+     * @return name stripped of arguments for function signatures
+     */
+    public String getBareName() {
+        if (alias != null) {
+            return alias;
+        }
+        String objName = getObjName();
+        switch (obj.type) {
+        case FUNCTION:
+        case PROCEDURE:
+        case AGGREGATE:
+            break;
+        default:
+            return objName;
+        }
+        if (objName.indexOf('(') == -1) {
+            return objName;
+        }
+        SQLParser p = AntlrParser.makeBasicParser(SQLParser.class, objName, "function signature");
+        List<IdentifierContext> ids = p.function_args_parser().schema_qualified_name().identifier();
+        return QNameParser.getFirstName(ids);
     }
 
     public final boolean compare(PgObjLocation loc) {
@@ -134,25 +159,10 @@ public class PgObjLocation extends ContextLocation {
         if (obj == null || col == null) {
             return false;
         }
-        return Objects.equals(obj.schema, col.schema)
+        return compareTypes(col.type)
+                && Objects.equals(obj.schema, col.schema)
                 && Objects.equals(obj.column, col.column)
-                && compareTypes(col.type)
-                && compareNames(col.table);
-    }
-
-    private boolean compareNames(String objName) {
-        String name = obj.table;
-        if (Objects.equals(objName, name)) {
-            return true;
-        }
-
-        DbObjType type = obj.type;
-        if (type != DbObjType.FUNCTION && type != DbObjType.AGGREGATE
-                && type != DbObjType.PROCEDURE && type != DbObjType.OPERATOR) {
-            return false;
-        }
-
-        return (objName.startsWith(name + '(') || name.startsWith(objName + '('));
+                && Objects.equals(obj.table, col.table);
     }
 
     private boolean compareTypes(DbObjType objType) {
@@ -209,6 +219,7 @@ public class PgObjLocation extends ContextLocation {
         private int offset;
         private int lineNumber;
         private int charPositionInLine;
+        private int length = -1;
         private GenericColumn object;
         private ParserRuleContext ctx;
         private LocationType locationType = LocationType.REFERENCE;
@@ -248,6 +259,11 @@ public class PgObjLocation extends ContextLocation {
             return this;
         }
 
+        public Builder setLength(int length) {
+            this.length = length;
+            return this;
+        }
+
         public Builder setObject(GenericColumn object) {
             this.object = object;
             return this;
@@ -269,13 +285,19 @@ public class PgObjLocation extends ContextLocation {
                 int offset = start.getStartIndex();
                 int line = start.getLine();
                 int position = start.getCharPositionInLine();
-                int length = ctx.getStop().getStopIndex() - offset + 1;
+                int length = this.length;
+                if (length == -1) {
+                    length = ctx.getStop().getStopIndex() - offset + 1;
+                }
 
                 return new PgObjLocation(filePath, offset, line, position,
                         object, action, sql, alias, length, locationType);
             }
 
-            int length = object == null ? 0 : object.getObjName().length();
+            int length = this.length;
+            if (length == -1) {
+                length = object == null ? 0 : object.getObjName().length();
+            }
 
             return new PgObjLocation(filePath, offset, lineNumber, charPositionInLine,
                     object, action, sql, alias, length, locationType);

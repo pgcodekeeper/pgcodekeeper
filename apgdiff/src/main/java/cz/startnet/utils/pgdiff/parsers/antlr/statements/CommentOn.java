@@ -216,7 +216,13 @@ public class CommentOn extends ParserAbstract {
         }
 
         doSafe((s,c) -> s.setComment(db.getArguments(), c), st, comment);
-        addObjReference(ids, type, ACTION_COMMENT);
+        if (type == DbObjType.FUNCTION || type == DbObjType.PROCEDURE || type == DbObjType.AGGREGATE) {
+            addObjReference(ids, type, ACTION_ALTER,
+                    parseArguments(obj.function_args()));
+        } else {
+            addObjReference(ids, type, ACTION_COMMENT);
+        }
+
     }
 
     private void commentCast(Comment_member_objectContext obj, String comment) {

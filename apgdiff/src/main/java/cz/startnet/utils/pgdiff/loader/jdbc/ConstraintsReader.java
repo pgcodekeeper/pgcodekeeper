@@ -98,4 +98,9 @@ public class ConstraintsReader extends JdbcReader {
             c.addColumn(name);
         }
     }
+
+    @Override
+    protected String getClassId() {
+        return "pg_constraint";
+    }
 }

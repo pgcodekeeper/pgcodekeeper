@@ -45,6 +45,7 @@ public class CliArgs extends PgDiffArguments {
         // otherwise args4j breaks
         this.allowedDangers = new ArrayList<>();
         this.allowedTypes = new ArrayList<>();
+        this.graphFilterTypes = new ArrayList<>();
         this.ignoreLists = new ArrayList<>();
         this.sourceLibXmls = new ArrayList<>();
         this.sourceLibs = new ArrayList<>();
@@ -190,6 +191,10 @@ public class CliArgs extends PgDiffArguments {
                     + "\nspecify multiple times to use several lists")
     private List<String> ignoreLists;
 
+    @Option(name="--ignore-schema", metaVar="<path>",
+            usage="use an ignore schema list to include/exclude schemas at loading stage")
+    private String ignoreSchemaList;
+
     @Option(name="--src-lib-xml", metaVar="<path>", forbids={"--parse"},
             usage="add xml with library dependencies to source"
                     + "\nspecify multiple times to use several library xml's")
@@ -222,7 +227,7 @@ public class CliArgs extends PgDiffArguments {
 
     @Option(name="--lib-safe-mode", forbids={"--parse"},
             usage="exit with an error if a library object conflicts with other schema or library objects"
-                    + " otherwise, in case of conflicts objects loaded first have priority")
+                    + "\notherwise, in case of conflicts objects loaded first have priority")
     private boolean libSafeMode;
 
     @Option(name="--ignore-concurrent-modification",
@@ -233,18 +238,27 @@ public class CliArgs extends PgDiffArguments {
             usage="work with MS SQL")
     private boolean msSql;
 
-    @Option(name="--graph-depth", metaVar="<n>", forbids={"--parse"},
+    @Option(name="--graph-depth", metaVar="<n>", forbids={"--parse"}, depends={"--graph"},
             usage="depth of displayed dependencies in graph mode")
     private int graphDepth;
 
-    @Option(name="--graph-reverse",  depends="--graph-name", forbids={"--parse"},
+    @Option(name="--graph-reverse",  depends={"--graph-name", "--graph"}, forbids={"--parse"},
             usage="reverse the direction of the graph to show objects on which the starting object depends")
     private boolean graphReverse;
 
-    @Option(name="--graph-name", metaVar="<name>", forbids={"--parse"},
+    @Option(name="--graph-name", metaVar="<name>", forbids={"--parse"}, depends={"--graph"},
             usage="name of start object in graph mode"
                     + "\nspecify multiple times to use several names")
     private List<String> graphNames;
+
+    @Option(name="--graph-filter-object", forbids={"--parse"}, depends={"--graph"},
+            handler=DbObjTypeOptionHandler.class,
+            usage="show these object types, hide  other objects types")
+    private List<DbObjType> graphFilterTypes;
+
+    @Option(name="--graph-invert-filter", forbids={"--parse"}, depends={"--graph", "--graph-filter-object"},
+            usage="invert graph filter object types: hide objects specified by the filter")
+    private boolean graphInvertFilter;
 
     public boolean isModeParse() {
         return modeParse;
@@ -341,6 +355,11 @@ public class CliArgs extends PgDiffArguments {
     @Override
     public Collection<String> getIgnoreLists() {
         return Collections.unmodifiableCollection(ignoreLists);
+    }
+
+    @Override
+    public String getIgnoreSchemaList() {
+        return ignoreSchemaList;
     }
 
     @Override
@@ -504,6 +523,14 @@ public class CliArgs extends PgDiffArguments {
         return Collections.unmodifiableCollection(allowedTypes);
     }
 
+    public Collection<DbObjType> getGraphFilterTypes() {
+        return Collections.unmodifiableCollection(graphFilterTypes);
+    }
+
+    public boolean isGraphInvertFilter() {
+        return graphInvertFilter;
+    }
+
     @Override
     public boolean isSelectedOnly() {
         return selectedOnly;
@@ -630,15 +657,6 @@ public class CliArgs extends PgDiffArguments {
             }
             if (getRunOnDb() != null && !getRunOnDb().startsWith("jdbc:")) {
                 badArgs("option -R (--run-on) must specify JDBC connection string");
-            }
-            if (getGraphDepth() != DEFAULT_DEPTH) {
-                badArgs("option --graph-depth cannot be used without the option(s) [--graph]");
-            }
-            if (!getGraphNames().isEmpty()) {
-                badArgs("option --graph-name cannot be used without the option(s) [--graph]");
-            }
-            if (isGraphReverse()) {
-                badArgs("option --graph-reverse cannot be used without the option(s) [--graph]");
             }
             if (getOldSrc() == null || getNewSrc() == null) {
                 badArgs("Please specify both SOURCE and DEST.");

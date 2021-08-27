@@ -11,8 +11,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.List;
 
 import org.junit.After;
 import org.junit.Test;
@@ -21,6 +19,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.osgi.framework.BundleContext;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.cli.Activator;
 import ru.taximaxim.codekeeper.cli.Main;
@@ -30,8 +29,8 @@ import ru.taximaxim.codekeeper.cli.localizations.Messages;
 public class OutputTest {
 
     @Parameters
-    public static Iterable<ArgumentsProvider[]> parameters() {
-        List<ArgumentsProvider[]> p = Arrays.asList(new ArgumentsProvider[][] {
+    public static Iterable<Object[]> parameters() {
+        return ApgdiffTestUtils.getParameters(new Object[][] {
             {new UsageArgumentsProvider()},
             {new VersionArgumentsProvider()},
             {new CharsetsArgumentsProvider()},
@@ -60,8 +59,6 @@ public class OutputTest {
             {new FailGraphArgumentsProvider()},
             {new IgnoreColumnOrderArgumentsProvider()},
         });
-
-        return p.stream()::iterator;
     }
 
     private final ArgumentsProvider args;
@@ -110,7 +107,7 @@ class UsageArgumentsProvider extends ArgumentsProvider {
     public String output() {
         try {
             return new String(Files.readAllBytes(ApgdiffUtils.getFileFromOsgiRes(
-                    OutputTest.class.getResource("usage_check.txt")).toPath()),
+                    OutputTest.class.getResource("usage_check.txt"))),
                     StandardCharsets.UTF_8);
         } catch (IOException | URISyntaxException ex) {
             throw new IllegalStateException(ex);
@@ -170,7 +167,7 @@ class EmptyArgumentsProvider extends ArgumentsProvider {
     public String output() {
         try {
             return new String(Files.readAllBytes(ApgdiffUtils.getFileFromOsgiRes(
-                    OutputTest.class.getResource("usage_check.txt")).toPath()),
+                    OutputTest.class.getResource("usage_check.txt"))),
                     StandardCharsets.UTF_8);
         } catch (IOException | URISyntaxException ex) {
             throw new IllegalStateException(ex);
@@ -539,7 +536,7 @@ class OverrideArgumentsProvider extends ArgumentsProvider {
     protected String[] args() throws URISyntaxException, IOException {
         Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
         Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
-        Path lib = ApgdiffUtils.getFileFromOsgiRes(OutputTest.class.getResource("lib.sql")).toPath();
+        Path lib = ApgdiffUtils.getFileFromOsgiRes(OutputTest.class.getResource("lib.sql"));
 
         return new String[] {"-o", getDiffResultFile().toString(),
                 "-t", fOriginal.toString(), "-s", fNew.toString(),
@@ -554,12 +551,12 @@ class FailGraphReverseArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String[] args() throws URISyntaxException, IOException {
-        return new String[]{"--graph-reverse", "--graph-name", "t1", "fisrt", "second"};
+        return new String[]{"--graph-reverse", "fisrt", "second"};
     }
 
     @Override
     public String output() {
-        return "option --graph-name cannot be used without the option(s) [--graph]\n";
+        return "option \"--graph-reverse\" requires the option(s) [--graph-name, --graph]\n";
     }
 }
 
@@ -575,7 +572,7 @@ class FailGraphDepthArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String output() {
-        return "option --graph-depth cannot be used without the option(s) [--graph]\n";
+        return "option \"--graph-depth\" requires the option(s) [--graph]\n";
     }
 }
 
@@ -591,7 +588,7 @@ class FailGraphNameArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String output() {
-        return "option --graph-name cannot be used without the option(s) [--graph]\n";
+        return "option \"--graph-name\" requires the option(s) [--graph]\n";
     }
 }
 
@@ -607,7 +604,7 @@ class FailGraphArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String output() {
-        return "option \"--graph-reverse\" requires the option(s) [--graph-name]\n";
+        return "option \"--graph-reverse\" requires the option(s) [--graph-name, --graph]\n";
     }
 }
 
