@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.schema;
 
+import java.util.List;
 import java.util.Objects;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -7,6 +8,10 @@ import org.antlr.v4.runtime.Token;
 
 import cz.startnet.utils.pgdiff.ContextLocation;
 import cz.startnet.utils.pgdiff.DangerStatement;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgObjLocation extends ContextLocation {
@@ -121,8 +126,28 @@ public class PgObjLocation extends ContextLocation {
         return obj == null ? null : obj.type;
     }
 
-    public String getText() {
-        return alias != null ? alias : getObjName();
+    /**
+     * @return name stripped of arguments for function signatures
+     */
+    public String getBareName() {
+        if (alias != null) {
+            return alias;
+        }
+        String objName = getObjName();
+        switch (obj.type) {
+        case FUNCTION:
+        case PROCEDURE:
+        case AGGREGATE:
+            break;
+        default:
+            return objName;
+        }
+        if (objName.indexOf('(') == -1) {
+            return objName;
+        }
+        SQLParser p = AntlrParser.makeBasicParser(SQLParser.class, objName, "function signature");
+        List<IdentifierContext> ids = p.function_args_parser().schema_qualified_name().identifier();
+        return QNameParser.getFirstName(ids);
     }
 
     public final boolean compare(PgObjLocation loc) {

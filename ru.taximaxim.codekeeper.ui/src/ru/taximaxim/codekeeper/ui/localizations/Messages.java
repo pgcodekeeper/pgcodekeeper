@@ -1023,6 +1023,8 @@ public final class Messages extends NLS {
 
     public static String RenameDefinitionChange_error_resource_already_exists;
 
+    public static String RenameDefinitionProcessor_rename_object;
+
     // SONAR-ON
 
     static {

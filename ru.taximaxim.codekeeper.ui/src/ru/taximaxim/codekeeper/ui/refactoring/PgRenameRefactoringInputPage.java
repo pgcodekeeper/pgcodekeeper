@@ -32,14 +32,14 @@ public class PgRenameRefactoringInputPage extends UserInputWizardPage {
         Label label= new Label(top, SWT.NONE);
         label.setText(Messages.PgRenameRefactoringInputPage_new_name);
         txtName = new Text(top, SWT.BORDER);
-        txtName.setText(getOldName());
         txtName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        txtName.selectAll();
 
         txtName.addModifyListener(e ->  {
             updatePageComplete();
             getRenameProcessor().setNewName(txtName.getText());
         });
+        txtName.setText(getOldName());
+        txtName.selectAll();
     }
 
     private RenameDefinitionProcessor getRenameProcessor() {

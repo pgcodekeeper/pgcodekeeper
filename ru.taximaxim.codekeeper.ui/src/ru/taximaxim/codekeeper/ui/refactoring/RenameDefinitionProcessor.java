@@ -28,6 +28,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.AbstractModelExporter;
 import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 
 public class RenameDefinitionProcessor extends RenameProcessor {
@@ -75,7 +76,7 @@ public class RenameDefinitionProcessor extends RenameProcessor {
     }
 
     public String getOldName() {
-        return selection.getText();
+        return selection.getBareName();
     }
 
     @Override
@@ -85,7 +86,7 @@ public class RenameDefinitionProcessor extends RenameProcessor {
 
     @Override
     public String getProcessorName() {
-        return "Rename reference"; //$NON-NLS-1$
+        return Messages.RenameDefinitionProcessor_rename_object;
     }
 
     @Override
