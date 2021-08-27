@@ -3,38 +3,41 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 import java.util.Arrays;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_foreign_data_wrapper_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_foreign_optionsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Foreign_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Option_without_equalContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgForeignDataWrapper;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class CreateForeignDataWrapper extends ParserAbstract{
-    public static final String VALID_SIGNATURE  = "(text[], oid)";
-    public static final String HAND_SIGNATURE  = "()";
+public class CreateFdw extends ParserAbstract {
+
+    public static final String VALIDATOR_SIGNATURE  = "(text[], oid)";
+    public static final String HANDLER_SIGNATURE  = "()";
 
     private final Create_foreign_data_wrapper_statementContext ctx;
-    public CreateForeignDataWrapper(Create_foreign_data_wrapper_statementContext ctx, PgDatabase db) {
+
+    public CreateFdw(Create_foreign_data_wrapper_statementContext ctx, PgDatabase db) {
         super(db);
         this.ctx = ctx;
     }
 
     @Override
     public void parseObject() {
-
         IdentifierContext nameCtx = ctx.name;
         PgForeignDataWrapper fDW = new PgForeignDataWrapper(nameCtx.getText());
         if (ctx.handler_func != null) {
             fDW.setHandler(getFullCtxText(ctx.handler_func));
-            addDepSafe(fDW, ctx.handler_func.identifier(), DbObjType.FUNCTION, true, HAND_SIGNATURE);
+            addDepSafe(fDW, ctx.handler_func.identifier(), DbObjType.FUNCTION, true, HANDLER_SIGNATURE);
         }
         if (ctx.validator_func != null) {
             fDW.setValidator(getFullCtxText(ctx.validator_func));
-            addDepSafe(fDW, ctx.validator_func.identifier(), DbObjType.FUNCTION, true, VALID_SIGNATURE);
+            addDepSafe(fDW, ctx.validator_func.identifier(), DbObjType.FUNCTION, true, VALIDATOR_SIGNATURE);
         }
-        if (ctx.OPTIONS() != null) {
-            for (Option_without_equalContext option :  ctx.option_without_equal()) {
-                fDW.addOption(option.identifier().getText(), option.Character_String_Literal().getText());
+        Define_foreign_optionsContext options = ctx.define_foreign_options();
+        if (options!= null) {
+            for (Foreign_optionContext option : options.foreign_option()) {
+                fDW.addOption(option.foreign_option_name().identifier().getText(), option.character_string().getText());
             }
         }
         addSafe(db, fDW, Arrays.asList(nameCtx));
@@ -44,5 +47,4 @@ public class CreateForeignDataWrapper extends ParserAbstract{
     protected String getStmtAction() {
         return getStrForStmtAction(ACTION_CREATE, DbObjType.FOREIGN_DATA_WRAPPER, ctx.name);
     }
-
 }

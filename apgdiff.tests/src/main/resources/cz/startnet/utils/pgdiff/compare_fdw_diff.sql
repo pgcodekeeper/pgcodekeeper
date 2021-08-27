@@ -2,7 +2,11 @@ SET search_path = pg_catalog;
 
 ALTER FOREIGN DATA WRAPPER test_fdw_1 HANDLER handler_function_1;
 
+ALTER FOREIGN DATA WRAPPER test_fdw_11 NO HANDLER;
+
 ALTER FOREIGN DATA WRAPPER test_fdw_2 VALIDATOR fdw_test_validator_1;
+
+ALTER FOREIGN DATA WRAPPER test_fdw_21 NO VALIDATOR;
 
 ALTER FOREIGN DATA WRAPPER test_fdw_0 OPTIONS (ADD debug 'true');
 

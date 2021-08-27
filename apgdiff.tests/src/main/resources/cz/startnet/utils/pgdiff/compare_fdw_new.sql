@@ -2,9 +2,15 @@
 CREATE FOREIGN DATA WRAPPER test_fdw_1
      HANDLER handler_function_1;
      
+-- null handler
+CREATE FOREIGN DATA WRAPPER test_fdw_11;
+     
 -- validator
 CREATE FOREIGN DATA WRAPPER test_fdw_2
      VALIDATOR fdw_test_validator_1;
+
+-- null validator
+CREATE FOREIGN DATA WRAPPER test_fdw_21;
 
 --options
 CREATE FOREIGN DATA WRAPPER test_fdw_0 OPTIONS (debug 'true');

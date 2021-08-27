@@ -121,7 +121,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
             if (schemaName != null && !ApgdiffUtils.isPgSystemSchema(schemaName)) {
                 statement.addDep(new GenericColumn(schemaName, DbObjType.SCHEMA));
 
-                String name = parser.getFirstName();
+                String name = PgDiffUtils.getQuotedName(parser.getFirstName());
                 if (signature != null) {
                     name += signature;
                 }

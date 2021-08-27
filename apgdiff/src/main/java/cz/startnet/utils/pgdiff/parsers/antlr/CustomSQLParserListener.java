@@ -39,7 +39,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateCast;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateDatabase;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateDomain;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateExtension;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateForeignDataWrapper;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateFdw;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateForeignTable;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateFtsConfiguration;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateFtsDictionary;
@@ -122,7 +122,7 @@ implements SqlContextProcessor {
         } else if (ctx.create_extension_statement() != null) {
             p = new CreateExtension(ctx.create_extension_statement(), db);
         } else if (ctx.create_foreign_data_wrapper_statement() != null) {
-            p = new CreateForeignDataWrapper(ctx.create_foreign_data_wrapper_statement(), db);
+            p = new CreateFdw(ctx.create_foreign_data_wrapper_statement(), db);
         } else if (ctx.create_server_statement() != null) {
             p = new CreateServer(ctx.create_server_statement(), db);
         } else if (ctx.create_cast_statement() != null) {

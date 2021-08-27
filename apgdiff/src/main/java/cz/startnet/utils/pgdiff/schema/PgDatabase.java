@@ -37,7 +37,7 @@ public class PgDatabase extends PgStatement implements IDatabase {
 
     private final Map<String, AbstractSchema> schemas = new LinkedHashMap<>();
     private final Map<String, PgExtension> extensions = new LinkedHashMap<>();
-    private final Map<String, PgForeignDataWrapper> fDWs = new LinkedHashMap<>();
+    private final Map<String, PgForeignDataWrapper> fdws = new LinkedHashMap<>();
     private final Map<String, PgServer> servers = new LinkedHashMap<>();
     private final Map<String, PgCast> casts = new LinkedHashMap<>();
     private final Map<String, MsAssembly> assemblies = new LinkedHashMap<>();
@@ -189,7 +189,7 @@ public class PgDatabase extends PgStatement implements IDatabase {
     protected void fillChildrenList(List<Collection<? extends PgStatement>> l) {
         l.add(schemas.values());
         l.add(extensions.values());
-        l.add(fDWs.values());
+        l.add(fdws.values());
         l.add(servers.values());
         l.add(casts.values());
         l.add(assemblies.values());
@@ -286,7 +286,7 @@ public class PgDatabase extends PgStatement implements IDatabase {
      * @return found foreign data wrapper or null
      */
     public PgForeignDataWrapper getForeignDW(final String name) {
-        return fDWs.get(name);
+        return fdws.get(name);
     }
 
     /**
@@ -295,11 +295,11 @@ public class PgDatabase extends PgStatement implements IDatabase {
      * @return {@link #foreign data wrappers}
      */
     public Collection<PgForeignDataWrapper> getForeignDWs() {
-        return Collections.unmodifiableCollection(fDWs.values());
+        return Collections.unmodifiableCollection(fdws.values());
     }
 
     public void addForeignDW(final PgForeignDataWrapper fDW) {
-        addUnique(fDWs, fDW, this);
+        addUnique(fdws, fDW, this);
     }
 
     public PgServer getServer(final String name) {
@@ -457,7 +457,7 @@ public class PgDatabase extends PgStatement implements IDatabase {
         if (obj instanceof PgDatabase) {
             PgDatabase db = (PgDatabase) obj;
             return extensions.equals(db.extensions)
-                    && fDWs.equals(db.fDWs)
+                    && fdws.equals(db.fdws)
                     && servers.equals(db.servers)
                     && casts.equals(db.casts)
                     && schemas.equals(db.schemas)
@@ -476,7 +476,7 @@ public class PgDatabase extends PgStatement implements IDatabase {
     @Override
     public void computeChildrenHash(Hasher hasher) {
         hasher.putUnordered(extensions);
-        hasher.putUnordered(fDWs);
+        hasher.putUnordered(fdws);
         hasher.putUnordered(servers);
         hasher.putUnordered(casts);
         hasher.putUnordered(schemas);

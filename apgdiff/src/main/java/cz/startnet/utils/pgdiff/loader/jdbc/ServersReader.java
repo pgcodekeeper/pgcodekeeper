@@ -31,7 +31,6 @@ public class ServersReader implements PgCatalogStrings {
                 PgServer server = getServer(res);
                 db.addServer(server);
                 loader.setAuthor(server, res);
-                loader.setOwner(server, res.getLong("srvowner"));
             }
         }
     }
@@ -61,6 +60,9 @@ public class ServersReader implements PgCatalogStrings {
         if (comment != null && !comment.isEmpty()) {
             srv.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
+
+        loader.setOwner(srv, res.getLong("srvowner"));
+        loader.setPrivileges(srv, res.getString("srvacl"), null);
         return srv;
     }
 }

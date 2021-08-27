@@ -124,6 +124,8 @@ public class PgServer extends PgStatement implements PgForeignOptionContainer{
         }
         sb.append(";");
         appendOwnerSQL(sb);
+        appendPrivileges(sb);
+
         if (comment != null && !comment.isEmpty()) {
             sb.append("\n\n");
             appendCommentSql(sb);
@@ -142,12 +144,12 @@ public class PgServer extends PgStatement implements PgForeignOptionContainer{
         final int startLength = sb.length();
         PgServer newServer = (PgServer) newCondition;
         if (!Objects.equals(newServer.getFdw(), getFdw()) ||
-                !Objects.equals(newServer.getType(), getType())   ) {
+                !Objects.equals(newServer.getType(), getType())) {
             isNeedDepcies.set(true);
             return true;
         }
 
-        if (!Objects.equals(newServer.getVersion(), getVersion())){
+        if (!Objects.equals(newServer.getVersion(), getVersion())) {
             sb.append(getAlterHeader());
             sb.append(" VERSION ").append(newServer.getVersion())
             .append(';');
@@ -160,6 +162,7 @@ public class PgServer extends PgStatement implements PgForeignOptionContainer{
         if (!Objects.equals(newServer.getOwner(), getOwner())) {
             newServer.appendOwnerSQL(sb);
         }
+        alterPrivileges(newCondition, sb);
 
         if (!Objects.equals(newServer.getComment(), getComment())) {
             sb.append("\n\n");

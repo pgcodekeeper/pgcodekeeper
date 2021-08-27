@@ -264,7 +264,14 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
             order = "U";
             isFunctionOrTypeOrDomain = true;
             break;
-
+        case SERVER:
+            stType = "FOREIGN SERVER";
+            order = "U";
+            break;
+        case FOREIGN_DATA_WRAPPER:
+            stType = "FOREIGN DATA WRAPPER";
+            order = "U";
+            break;
         default:
             throw new IllegalStateException(type + " doesn't support privileges!");
         }

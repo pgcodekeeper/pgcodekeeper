@@ -87,6 +87,14 @@ public class GrantPrivilege extends ParserAbstract {
             type = DbObjType.SCHEMA;
         } else if (obj.TYPE() != null) {
             type = DbObjType.TYPE;
+        } else if (obj.SERVER() != null) {
+            type = DbObjType.SERVER;
+        } else if (obj.FOREIGN() != null) {
+            if (obj.SERVER() != null) {
+                type = DbObjType.SERVER;
+            } else if (obj.WRAPPER() != null) {
+                type = DbObjType.FOREIGN_DATA_WRAPPER;
+            }
         } else {
             addOutlineRefForCommentOrRule(state, ctx);
             return;
@@ -228,9 +236,21 @@ public class GrantPrivilege extends ParserAbstract {
             String state, String permissions, List<String> roles, boolean isGO) {
         List<IdentifierContext> ids = name.identifier();
         IdentifierContext idCtx = QNameParser.getFirstNameCtx(ids);
-        AbstractSchema schema = (DbObjType.SCHEMA == type ?
-                getSafe(PgDatabase::getSchema, db, idCtx) : getSchemaSafe(ids));
+        AbstractSchema schema;
+        switch (type) {
+        case SCHEMA:
+            schema = getSafe(PgDatabase::getSchema, db, idCtx);
+            break;
+        case FOREIGN_DATA_WRAPPER:
+        case SERVER:
+            schema = null;
+            break;
+        default:
+            schema = getSchemaSafe(ids);
+        }
+
         PgStatement statement = null;
+        String typeName = null;
         switch (type) {
         case TABLE:
             statement = (PgStatement) getSafe(AbstractSchema::getRelation, schema, idCtx);
@@ -252,13 +272,24 @@ public class GrantPrivilege extends ParserAbstract {
         case DOMAIN:
             statement = getSafe(AbstractSchema::getDomain, schema, idCtx);
             break;
+        case SERVER:
+            statement = getSafe(PgDatabase::getServer, db, idCtx);
+            typeName = "FOREIGN SERVER";
+            break;
+        case FOREIGN_DATA_WRAPPER:
+            statement = getSafe(PgDatabase::getForeignDW, db, idCtx);
+            typeName = "FOREIGN DATA WRAPPER";
+            break;
         default:
             break;
+        }
+        if (typeName == null) {
+            typeName = type.name();
         }
         if (statement != null) {
             for (String role : roles) {
                 addPrivilege(statement, new PgPrivilege(state, permissions,
-                        type + " " + statement.getQualifiedName(), role, isGO));
+                        typeName + " " + statement.getQualifiedName(), role, isGO));
             }
         }
     }

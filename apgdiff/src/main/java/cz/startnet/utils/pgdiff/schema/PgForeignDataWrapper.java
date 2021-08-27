@@ -78,10 +78,10 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
         }
 
         if (obj instanceof PgForeignDataWrapper && super.compare(obj)) {
-            PgForeignDataWrapper FDataWrap = (PgForeignDataWrapper) obj;
-            return Objects.equals(handler, FDataWrap.getHandler())
-                    && Objects.equals(validator, FDataWrap.getValidator())
-                    && Objects.equals(options, FDataWrap.getOptions());
+            PgForeignDataWrapper fdw = (PgForeignDataWrapper) obj;
+            return Objects.equals(handler, fdw.getHandler())
+                    && Objects.equals(validator, fdw.getValidator())
+                    && Objects.equals(options, fdw.getOptions());
         }
         return false;
     }
@@ -119,6 +119,7 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
         sb.append(";");
 
         appendOwnerSQL(sb);
+        appendPrivileges(sb);
 
         if (comment != null && !comment.isEmpty()) {
             sb.append("\n\n");
@@ -140,14 +141,26 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
 
         if (!Objects.equals(newForeign.getHandler(), getHandler())) {
             sb.append(getAlterHeader());
-            sb.append(" HANDLER ").append(newForeign.getHandler())
-            .append(';');
+            if (newForeign.getHandler() != null) {
+                sb.append(" HANDLER ").append(newForeign.getHandler());
+                isNeedDepcies.set(true);
+            }
+            else {
+                sb.append(" NO HANDLER");
+            }
+            sb.append(';');
         }
 
         if (!Objects.equals(newForeign.getValidator(), getValidator())) {
             sb.append(getAlterHeader());
-            sb.append(" VALIDATOR ").append(newForeign.getValidator())
-            .append(';');
+            if (newForeign.getValidator() != null) {
+                sb.append(" VALIDATOR ").append(newForeign.getValidator());
+                isNeedDepcies.set(true);
+            }
+            else {
+                sb.append(" NO VALIDATOR");
+            }
+            sb.append(';');
         }
 
         if (!Objects.equals(newForeign.getOptions(), getOptions())) {
@@ -157,6 +170,7 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
         if (!Objects.equals(newForeign.getOwner(), getOwner())) {
             newForeign.appendOwnerSQL(sb);
         }
+        alterPrivileges(newCondition, sb);
 
         if (!Objects.equals(newForeign.getComment(), getComment())) {
             sb.append("\n\n");

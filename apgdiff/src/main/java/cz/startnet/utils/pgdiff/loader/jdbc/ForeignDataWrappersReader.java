@@ -6,7 +6,7 @@ import java.sql.SQLException;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateForeignDataWrapper;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateFdw;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -32,7 +32,6 @@ public class ForeignDataWrappersReader implements PgCatalogStrings {
                 PgForeignDataWrapper foreignDW = getForeignDW(res);
                 db.addForeignDW(foreignDW);
                 loader.setAuthor(foreignDW, res);
-                loader.setOwner(foreignDW, res.getLong("fdwowner"));
             }
         }
     }
@@ -46,10 +45,11 @@ public class ForeignDataWrappersReader implements PgCatalogStrings {
 
         if (!"-".equals(fdwHandler)) {
             f.setHandler(res.getString("fdwhandler"));
+            JdbcReader.setFunctionWithDep(PgForeignDataWrapper::setHandler, f, fdwHandler, CreateFdw.HANDLER_SIGNATURE);
         }
         String fdwValidator = res.getString("fdwvalidator");
         if (!"-".equals(fdwValidator)) {
-            JdbcReader.setFunctionWithDep(PgForeignDataWrapper::setValidator, f, fdwValidator, CreateForeignDataWrapper.VALID_SIGNATURE);
+            JdbcReader.setFunctionWithDep(PgForeignDataWrapper::setValidator, f, fdwValidator, CreateFdw.VALIDATOR_SIGNATURE);
         }
         if (res.getString("fdwoptions") != null) {
             Array arr = res.getArray("fdwoptions");
@@ -60,6 +60,9 @@ public class ForeignDataWrappersReader implements PgCatalogStrings {
         if (comment != null && !comment.isEmpty()) {
             f.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
+        loader.setOwner(f, res.getLong("fdwowner"));
+        loader.setPrivileges(f, res.getString("fdwacl"), null);
+
         return f;
     }
 }

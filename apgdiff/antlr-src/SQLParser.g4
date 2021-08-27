@@ -958,11 +958,7 @@ create_statistics_statement
 create_foreign_data_wrapper_statement
     : FOREIGN DATA WRAPPER name=identifier (HANDLER handler_func=schema_qualified_name | NO HANDLER )?
     (VALIDATOR validator_func=schema_qualified_name | NO VALIDATOR)?
-    (OPTIONS LEFT_PAREN option_without_equal (COMMA option_without_equal)* RIGHT_PAREN )?
-    ;
-
-option_without_equal
-    : identifier Character_String_Literal
+     define_foreign_options?
     ;
 
 create_operator_statement
