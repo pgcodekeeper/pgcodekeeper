@@ -116,7 +116,7 @@ ALTER TABLE public.test_id_seq OWNER TO botov_av;
 -- Name: test_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: botov_av
 --
 
-ALTER SEQUENCE public.test_id_seq OWNED BY test.id;
+ALTER SEQUENCE public.test_id_seq OWNED BY public.test.id;
 
 
 --
