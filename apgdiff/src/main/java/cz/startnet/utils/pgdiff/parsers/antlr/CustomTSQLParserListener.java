@@ -91,8 +91,13 @@ implements TSqlContextProcessor {
     }
 
     private void endBatch(Go_statementContext goCtx) {
-        safeParseStatement(() -> db.addReference(filename,
-                new PgObjLocation(ApgdiffConsts.GO, goCtx, ApgdiffConsts.GO)), goCtx);
+        PgObjLocation loc = new PgObjLocation.Builder()
+                .setAction(ApgdiffConsts.GO)
+                .setCtx(goCtx)
+                .setSql(ApgdiffConsts.GO)
+                .build();
+
+        safeParseStatement(() -> db.addReference(filename, loc), goCtx);
     }
 
     public void clause(St_clauseContext st) {

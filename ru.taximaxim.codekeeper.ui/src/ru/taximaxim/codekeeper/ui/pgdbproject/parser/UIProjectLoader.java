@@ -48,6 +48,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.exporter.AbstractModelExporter;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
+import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class UIProjectLoader extends ProjectLoader {
@@ -86,8 +87,7 @@ public class UIProjectLoader extends ProjectLoader {
         for (Object error : errors) {
             if (error instanceof AntlrError) {
                 AntlrError antlrError = (AntlrError) error;
-                IPath path = new Path(antlrError.getFilePath());
-                IFile file = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(path);
+                IFile file = FileUtilsUi.getFileForLocation(antlrError);
                 if (file != null) {
                     PgUIDumpLoader.addMarker(file, antlrError);
                 }

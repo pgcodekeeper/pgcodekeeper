@@ -160,8 +160,11 @@ public class ProjectLoader extends DatabaseLoader {
     protected void addDboSchema(PgDatabase db) {
         if (!db.containsSchema(ApgdiffConsts.DBO)) {
             MsSchema schema = new MsSchema(ApgdiffConsts.DBO);
-            schema.setLocation(new PgObjLocation(
-                    new GenericColumn(ApgdiffConsts.DBO, DbObjType.SCHEMA)));
+            PgObjLocation loc = new PgObjLocation.Builder()
+                    .setObject(new GenericColumn(ApgdiffConsts.DBO, DbObjType.SCHEMA))
+                    .build();
+
+            schema.setLocation(loc);
             db.addSchema(schema);
             db.setDefaultSchema(ApgdiffConsts.DBO);
         }

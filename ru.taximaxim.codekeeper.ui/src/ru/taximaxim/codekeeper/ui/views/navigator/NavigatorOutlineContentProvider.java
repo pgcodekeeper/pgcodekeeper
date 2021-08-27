@@ -1,14 +1,8 @@
 package ru.taximaxim.codekeeper.ui.views.navigator;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 
-import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 import ru.taximaxim.codekeeper.ui.sqledit.SegmentsWithParent;
 
@@ -25,16 +19,14 @@ public class NavigatorOutlineContentProvider implements ITreeContentProvider {
             return null;
         }
         IFile iFile = (IFile) parentElement;
-        IProject iProject = iFile.getProject();
 
-        Set<PgObjLocation> refs = PgDbParser.getParser(iProject).getObjsForPath(iFile.getLocation().toOSString());
-        List<SegmentsWithParent> segments = new ArrayList<>(refs.size());
-
-        refs.stream().filter(e -> e.getAction() != null)
-        .sorted((a, b) -> Integer.compare(a.getOffset(), b.getOffset()))
-        .forEach(e -> segments.add(new SegmentsWithParent(e, iFile)));
-
-        return segments.toArray();
+        return PgDbParser.getParser(iFile)
+                .getObjsForPath(iFile.getLocation().toOSString())
+                .stream()
+                .filter(e -> e.getAction() != null)
+                .sorted((a, b) -> Integer.compare(a.getOffset(), b.getOffset()))
+                .map(e -> new SegmentsWithParent(e, iFile))
+                .toArray();
     }
 
     @Override
