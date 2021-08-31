@@ -44,7 +44,6 @@ public class ForeignDataWrappersReader implements PgCatalogStrings {
         String fdwHandler = res.getString("fdwhandler");
 
         if (!"-".equals(fdwHandler)) {
-            f.setHandler(res.getString("fdwhandler"));
             JdbcReader.setFunctionWithDep(PgForeignDataWrapper::setHandler, f, fdwHandler, CreateFdw.HANDLER_SIGNATURE);
         }
         String fdwValidator = res.getString("fdwvalidator");

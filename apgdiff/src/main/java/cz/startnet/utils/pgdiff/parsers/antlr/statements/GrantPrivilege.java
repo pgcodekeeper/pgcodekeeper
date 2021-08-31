@@ -87,8 +87,6 @@ public class GrantPrivilege extends ParserAbstract {
             type = DbObjType.SCHEMA;
         } else if (obj.TYPE() != null) {
             type = DbObjType.TYPE;
-        } else if (obj.SERVER() != null) {
-            type = DbObjType.SERVER;
         } else if (obj.FOREIGN() != null) {
             if (obj.SERVER() != null) {
                 type = DbObjType.SERVER;

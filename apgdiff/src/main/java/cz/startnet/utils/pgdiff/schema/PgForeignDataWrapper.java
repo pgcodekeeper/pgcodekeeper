@@ -144,8 +144,7 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
             if (newForeign.getHandler() != null) {
                 sb.append(" HANDLER ").append(newForeign.getHandler());
                 isNeedDepcies.set(true);
-            }
-            else {
+            } else {
                 sb.append(" NO HANDLER");
             }
             sb.append(';');
@@ -156,8 +155,7 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
             if (newForeign.getValidator() != null) {
                 sb.append(" VALIDATOR ").append(newForeign.getValidator());
                 isNeedDepcies.set(true);
-            }
-            else {
+            } else {
                 sb.append(" NO VALIDATOR");
             }
             sb.append(';');
