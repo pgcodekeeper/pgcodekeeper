@@ -395,6 +395,8 @@ public abstract class ParserAbstract {
             throw new IllegalStateException("Unsupported type: CAST");
         case ASSEMBLY:
         case EXTENSION:
+        case FOREIGN_DATA_WRAPPER:
+        case SERVER:
         case SCHEMA:
         case ROLE:
         case USER:
@@ -607,7 +609,7 @@ public abstract class ParserAbstract {
             BiConsumer<String, String> c) {
         String quotedOption = PgDiffUtils.getQuotedName(option);
         if (isToast) {
-            quotedOption = "toast."+ option;
+            quotedOption = "toast." + quotedOption;
         }
         c.accept(quotedOption, value);
     }

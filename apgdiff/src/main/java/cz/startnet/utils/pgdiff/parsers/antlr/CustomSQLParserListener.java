@@ -39,6 +39,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateCast;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateDatabase;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateDomain;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateExtension;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateFdw;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateForeignTable;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateFtsConfiguration;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateFtsDictionary;
@@ -52,6 +53,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateRule;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.GrantPrivilege;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateSchema;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateSequence;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateServer;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTable;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateType;
@@ -119,6 +121,10 @@ implements SqlContextProcessor {
             p = new CreateIndex(ctx.create_index_statement(), db, tablespace);
         } else if (ctx.create_extension_statement() != null) {
             p = new CreateExtension(ctx.create_extension_statement(), db);
+        } else if (ctx.create_foreign_data_wrapper_statement() != null) {
+            p = new CreateFdw(ctx.create_foreign_data_wrapper_statement(), db);
+        } else if (ctx.create_server_statement() != null) {
+            p = new CreateServer(ctx.create_server_statement(), db);
         } else if (ctx.create_cast_statement() != null) {
             p = new CreateCast(ctx.create_cast_statement(), db);
         } else if (ctx.create_trigger_statement() != null) {

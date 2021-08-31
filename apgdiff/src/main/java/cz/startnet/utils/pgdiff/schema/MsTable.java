@@ -17,7 +17,7 @@ import cz.startnet.utils.pgdiff.hashers.Hasher;
  * @since 5.3.1.
  * @author galiev_mr
  */
-public class MsTable extends AbstractTable {
+public class MsTable extends AbstractTable implements PgSimpleOptionContainer{
 
     private static final String MEMORY_OPTIMIZED = "MEMORY_OPTIMIZED";
 
