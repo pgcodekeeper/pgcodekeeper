@@ -48,6 +48,7 @@ import cz.startnet.utils.pgdiff.schema.IStatement;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation.LocationType;
 import cz.startnet.utils.pgdiff.schema.PgOperator;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -277,7 +278,7 @@ public abstract class ParserAbstract {
 
     protected PgObjLocation addObjReference(List<? extends ParserRuleContext> ids,
             DbObjType type, String action, String signature) {
-        PgObjLocation loc = getLocation(ids, type, action, false, signature);
+        PgObjLocation loc = getLocation(ids, type, action, false, signature, LocationType.REFERENCE);
         if (loc != null) {
             db.addReference(fileName, loc);
         }
@@ -333,10 +334,9 @@ public abstract class ParserAbstract {
             List<? extends ParserRuleContext> ids, String signature){
         doSafe(PgStatement::addChild, parent, child);
         PgObjLocation loc = getLocation(ids, child.getStatementType(),
-                ACTION_CREATE, false, signature);
+                ACTION_CREATE, false, signature, LocationType.DEFINITION);
         if (loc != null) {
             child.setLocation(loc);
-
             db.addReference(fileName, loc);
         }
 
@@ -387,7 +387,8 @@ public abstract class ParserAbstract {
     }
 
     private PgObjLocation getLocation(List<? extends ParserRuleContext> ids,
-            DbObjType type, String action, boolean isDep, String signature) {
+            DbObjType type, String action, boolean isDep, String signature,
+            LocationType locationType) {
         ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
         switch (type) {
         case CAST:
@@ -400,8 +401,14 @@ public abstract class ParserAbstract {
         case ROLE:
         case USER:
         case DATABASE:
-            return new PgObjLocation(new GenericColumn(nameCtx.getText(), type),
-                    action, getStart(nameCtx), nameCtx.start.getLine(), fileName);
+            GenericColumn object = new GenericColumn(nameCtx.getText(), type);
+            return new PgObjLocation.Builder()
+                    .setFilePath(fileName)
+                    .setCtx(nameCtx)
+                    .setObject(object)
+                    .setAction(action)
+                    .setLocationType(locationType)
+                    .build();
         default:
             break;
         }
@@ -437,34 +444,56 @@ public abstract class ParserAbstract {
         case TYPE:
         case VIEW:
         case INDEX:
-            return new PgObjLocation(new GenericColumn(schemaName, name, type),
-                    action, getStart(nameCtx), nameCtx.start.getLine(), fileName);
+            GenericColumn object = new GenericColumn(schemaName, name, type);
+            return new PgObjLocation.Builder()
+                    .setFilePath(fileName)
+                    .setCtx(nameCtx)
+                    .setObject(object)
+                    .setAction(action)
+                    .setLocationType(locationType)
+                    .build();
         case FUNCTION:
         case PROCEDURE:
         case AGGREGATE:
-            PgObjLocation loc = new PgObjLocation(new GenericColumn(schemaName, name, type),
-                    action, getStart(nameCtx), nameCtx.start.getLine(), fileName);
-            loc.setLength(nameLength);
-            return loc;
+            return new PgObjLocation.Builder()
+                    .setFilePath(fileName)
+                    .setObject(new GenericColumn(schemaName, name, type))
+                    .setAction(action)
+                    .setOffset(getStart(nameCtx))
+                    .setLineNumber(nameCtx.start.getLine())
+                    .setLength(nameLength)
+                    .setLocationType(locationType)
+                    .build();
         case CONSTRAINT:
         case TRIGGER:
         case RULE:
         case POLICY:
         case COLUMN:
-            return new PgObjLocation(new GenericColumn(schemaName,
-                    QNameParser.getSecondName(ids), name, type), action,
-                    getStart(nameCtx), nameCtx.start.getLine(), fileName);
+            object = new GenericColumn(schemaName, QNameParser.getSecondName(ids), name, type);
+            return new PgObjLocation.Builder()
+                    .setFilePath(fileName)
+                    .setCtx(nameCtx)
+                    .setObject(object)
+                    .setAction(action)
+                    .setLocationType(locationType)
+                    .build();
         default:
             return null;
         }
     }
 
     protected PgObjLocation getCastLocation(Data_typeContext source, Data_typeContext target, String action) {
-        PgObjLocation loc = new PgObjLocation(new GenericColumn(
-                ICast.getSimpleName(getFullCtxText(source), getFullCtxText(target)), DbObjType.CAST),
-                action, source.start.getStartIndex(), source.start.getLine(), fileName);
-        loc.setLength(target.stop.getStopIndex() - source.start.getStartIndex() + 1);
-        return loc;
+        GenericColumn object = new GenericColumn(
+                ICast.getSimpleName(getFullCtxText(source), getFullCtxText(target)),
+                DbObjType.CAST);
+
+        return new PgObjLocation.Builder()
+                .setFilePath(fileName)
+                .setCtx(source)
+                .setLength(target.stop.getStopIndex() - source.start.getStartIndex() + 1)
+                .setObject(object)
+                .setAction(action)
+                .build();
     }
 
     protected <T extends IStatement, U extends Object> void doSafe(BiConsumer<T, U> adder,
@@ -481,7 +510,7 @@ public abstract class ParserAbstract {
 
     protected void addDepSafe(PgStatement st, List<? extends ParserRuleContext> ids,
             DbObjType type, boolean isPostgres, String signature) {
-        PgObjLocation loc = getLocation(ids, type, null, true, signature);
+        PgObjLocation loc = getLocation(ids, type, null, true, signature, LocationType.REFERENCE);
         if (loc != null && !ApgdiffUtils.isSystemSchema(loc.getSchema(), isPostgres)) {
             if (!refMode) {
                 st.addDep(loc.getObj());
@@ -599,9 +628,12 @@ public abstract class ParserAbstract {
      */
     protected PgObjLocation fillQueryLocation(ParserRuleContext ctx) {
         String act = getStmtAction();
-        PgObjLocation loc = new PgObjLocation(
-                act != null ? act : ctx.getStart().getText().toUpperCase(Locale.ROOT),
-                        ctx, getFullCtxText(ctx));
+        PgObjLocation loc = new PgObjLocation.Builder()
+                .setAction(act != null ? act : ctx.getStart().getText().toUpperCase(Locale.ROOT))
+                .setSql(getFullCtxText(ctx))
+                .setCtx(ctx)
+                .build();
+
         db.addReference(fileName, loc);
         return loc;
     }
@@ -612,7 +644,11 @@ public abstract class ParserAbstract {
      * for objects which undefined in DbObjType).
      */
     protected void addOutlineRefForCommentOrRule(String action, ParserRuleContext ctx) {
-        db.addReference(fileName, new PgObjLocation(action, ctx, null));
+        PgObjLocation loc = new PgObjLocation.Builder()
+                .setAction(action)
+                .setCtx(ctx)
+                .build();
+        db.addReference(fileName, loc);
     }
 
     /**

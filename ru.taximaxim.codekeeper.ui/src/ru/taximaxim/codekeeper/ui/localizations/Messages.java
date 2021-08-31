@@ -535,11 +535,7 @@ public final class Messages extends NLS {
     public static String IgnoredObjectsPrefPage_these_objects_are_ignored_info;
     public static String IgnoredObjectsPrefPage_these_objects_are_ignored_info_white;
 
-    public static String IgnoredSchemaPrefListEditor_add_schema;
-
     public static String IgnoredSchemaPrefListEditor_black_list_schema_ignor;
-
-    public static String IgnoredSchemaPrefListEditor_schema_name;
 
     public static String IgnoredSchemaPrefListEditor_white_list_schema_ignor;
 
@@ -754,6 +750,8 @@ public final class Messages extends NLS {
 
     public static String PgPassDialog_title;
 
+    public static String PgRenameRefactoringInputPage_new_name;
+
     public static String PrefListEditor_cannot_add;
 
     public static String ProjectEditorDiffer_apply_db;
@@ -784,8 +782,6 @@ public final class Messages extends NLS {
     public static String ProjectEditorDiffer_library_duplication_exception;
 
     public static String ProjectEditorDiffer_no_differences;
-
-    public static String ProjectEditorDiffer_not_selected;
 
     public static String ProjectEditorDiffer_database;
 
@@ -1024,6 +1020,10 @@ public final class Messages extends NLS {
     public static String QuickUpdate_updating_db;
 
     public static String QuickUpdate_updating_project;
+
+    public static String RenameDefinitionChange_error_resource_already_exists;
+
+    public static String RenameDefinitionProcessor_rename_object;
 
     // SONAR-ON
 

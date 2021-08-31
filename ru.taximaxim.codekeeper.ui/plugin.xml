@@ -129,6 +129,12 @@
         </command>
         <command
             categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.RenameReference"
+            id="ru.taximaxim.codekeeper.ui.command.RenameReference"
+            name="%command.commandname.RenameReference">
+        </command>
+        <command
+            categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
             defaultHandler="ru.taximaxim.codekeeper.ui.handlers.Format"
             id="ru.taximaxim.codekeeper.ui.command.Format"
             name="%command.commandname.Format">
@@ -546,6 +552,11 @@
                         </adapt>
                     </with>
                 </visibleWhen>
+            </command>
+            <command commandId="ru.taximaxim.codekeeper.ui.command.RenameReference">
+               <visibleWhen
+                     checkEnabled="true">
+               </visibleWhen>
             </command>
             <command commandId="ru.taximaxim.codekeeper.ui.command.Format">
             </command>
@@ -1412,6 +1423,12 @@
             contextId="ru.taximaxim.codekeeper.ui.pgCodeKeeperEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+M3+E">
+        </key>
+        <key
+            commandId="ru.taximaxim.codekeeper.ui.command.RenameReference"
+            contextId="ru.taximaxim.codekeeper.ui.pgCodeKeeperEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M2+M3+R">
         </key>
         <key
             commandId="ru.taximaxim.codekeeper.ui.command.OpenObjectWizard"

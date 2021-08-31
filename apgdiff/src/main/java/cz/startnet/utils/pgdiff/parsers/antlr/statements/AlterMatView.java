@@ -25,7 +25,8 @@ public class AlterMatView extends ParserAbstract {
             List<IdentifierContext> ids = ctx.schema_qualified_name().identifier();
             addObjReference(ids, DbObjType.VIEW, action);
         } else {
-            db.addReference(fileName, new PgObjLocation(action, ctx.getParent(), null));
+            db.addReference(fileName, new PgObjLocation.Builder()
+                    .setAction(action).setCtx(ctx.getParent()).build());
         }
     }
 

@@ -135,7 +135,7 @@ ALTER SEQUENCE public.emp_id_seq OWNER TO galiev_mr;
 -- Name: emp_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: galiev_mr
 --
 
-ALTER SEQUENCE public.emp_id_seq OWNED BY emp.id;
+ALTER SEQUENCE public.emp_id_seq OWNED BY public.emp.id;
 
 
 --

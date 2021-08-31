@@ -78,7 +78,8 @@ public class LibraryLoader extends DatabaseLoader {
             try {
                 URI uri = new URI(path);
                 PgDatabase db = loadURI(uri, args, isIgnorePriv);
-                db.getDescendants().forEach(st -> st.setLocation(new PgObjLocation(path)));
+                db.getDescendants().forEach(st -> st.setLocation(
+                        new PgObjLocation.Builder().setFilePath(path).build()));
                 return db;
             } catch (URISyntaxException ex) {
                 // shouldn't happen, already checked by getSource
@@ -146,7 +147,8 @@ public class LibraryLoader extends DatabaseLoader {
         PgDatabase db = getLibrary(unzip(path, metaPath.resolve(name)),
                 args, isIgnorePriv);
 
-        db.getDescendants().forEach(st -> st.setLocation(new PgObjLocation(path.toString())));
+        db.getDescendants().forEach(st -> st.setLocation(
+                new PgObjLocation.Builder().setFilePath(path.toString()).build()));
         return db;
     }
 
@@ -166,7 +168,8 @@ public class LibraryLoader extends DatabaseLoader {
             errors.addAll(loader.getErrors());
         }
 
-        db.getDescendants().forEach(st -> st.setLocation(new PgObjLocation(path)));
+        db.getDescendants().forEach(st -> st.setLocation(
+                new PgObjLocation.Builder().setFilePath(path).build()));
         return db;
     }
 
