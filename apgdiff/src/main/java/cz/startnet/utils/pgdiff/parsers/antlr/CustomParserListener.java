@@ -64,13 +64,7 @@ public class CustomParserListener {
     public static AntlrError handleUnresolvedReference(UnresolvedReferenceException ex,
             String filename) {
         Token t = ex.getErrorToken();
-        ErrorTypes errorType;
-        if (ex instanceof MisplacedObjectException) {
-            errorType= ErrorTypes.MISPLACEERROR;
-        }
-        else {
-            errorType = ErrorTypes.OTHER;
-        }
+        ErrorTypes errorType = ex instanceof MisplacedObjectException ? ErrorTypes.MISPLACEERROR : ErrorTypes.OTHER;
         AntlrError err = new AntlrError(t, filename, t.getLine(),
                 t.getCharPositionInLine(), ex.getMessage(), errorType);
         Log.log(Log.LOG_WARNING, err.toString(), ex);

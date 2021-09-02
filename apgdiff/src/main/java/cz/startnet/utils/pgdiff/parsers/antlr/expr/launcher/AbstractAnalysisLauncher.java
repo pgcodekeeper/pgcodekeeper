@@ -102,15 +102,10 @@ public abstract class AbstractAnalysisLauncher {
         } catch (UnresolvedReferenceException ex) {
             Token t = ex.getErrorToken();
             if (t != null) {
-                ErrorTypes misplaceError;
-                if (ex instanceof MisplacedObjectException) {
-                    misplaceError = ErrorTypes.MISPLACEERROR;
-                } else {
-                    misplaceError = null;
-                }
+                ErrorTypes errorType = ex instanceof MisplacedObjectException ? ErrorTypes.MISPLACEERROR : ErrorTypes.OTHER;
                 AntlrError err = new AntlrError(t, location, t.getLine(),
-                        t.getCharPositionInLine(), ex.getMessage(), misplaceError)
-                                .copyWithOffset(offset, lineOffset, inLineOffset);
+                        t.getCharPositionInLine(), ex.getMessage(), errorType)
+                        .copyWithOffset(offset, lineOffset, inLineOffset);
                 Log.log(Log.LOG_WARNING, err.toString(), ex);
                 errors.add(err);
             } else {
