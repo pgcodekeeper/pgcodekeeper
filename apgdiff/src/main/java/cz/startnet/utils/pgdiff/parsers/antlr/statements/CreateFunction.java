@@ -74,7 +74,7 @@ public class CreateFunction extends ParserAbstract {
             function.setReturns(getTypeName(ctx.rettype_data));
             addPgTypeDepcy(ctx.rettype_data, function);
         }
-        addSafe(getSchemaSafe(ids), function, ids);
+        addSafe(getSchemaSafe(ids), function, ids, parseArguments(ctx.function_parameters().function_args()));
     }
 
     private void fillFunction(Create_funct_paramsContext params, AbstractPgFunction function) {
@@ -256,6 +256,6 @@ public class CreateFunction extends ParserAbstract {
     protected String getStmtAction() {
         return getStrForStmtAction(ACTION_CREATE,
                 ctx.PROCEDURE() != null ? DbObjType.PROCEDURE : DbObjType.FUNCTION,
-                        ctx.function_parameters().schema_qualified_name().identifier());
+                        ctx.function_parameters().schema_qualified_name());
     }
 }

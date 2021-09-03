@@ -14,6 +14,8 @@ public enum DbObjType {
     ASSEMBLY,
     SCHEMA,
     EXTENSION,
+    FOREIGN_DATA_WRAPPER,
+    SERVER,
     TYPE,
     DOMAIN,
     SEQUENCE,

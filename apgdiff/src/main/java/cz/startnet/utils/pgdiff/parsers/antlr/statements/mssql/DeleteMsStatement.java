@@ -2,6 +2,8 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
 import java.util.Arrays;
 
+import org.antlr.v4.runtime.tree.ParseTree;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Delete_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
@@ -28,9 +30,13 @@ public class DeleteMsStatement extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        Qualified_nameContext qname = ctx.qualified_name();
-        return getStrForStmtAction(
-                new StringBuilder(ACTION_DELETE).append(' ').append("FROM").toString(),
-                DbObjType.TABLE, Arrays.asList(qname.schema, qname.name));
+        ParseTree id = ctx.qualified_name();
+        if (id == null) {
+            id = ctx.rowset_function_limited();
+        }
+        if (id == null) {
+            id = ctx.LOCAL_ID(0);
+        }
+        return getStrForStmtAction(ACTION_DELETE + " FROM", DbObjType.TABLE, id);
     }
 }

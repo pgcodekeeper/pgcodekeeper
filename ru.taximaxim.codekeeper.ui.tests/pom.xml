@@ -6,7 +6,7 @@
     <groupId>ru.taximaxim.codeKeeper</groupId>
     <artifactId>ru.taximaxim.codeKeeper</artifactId>
     <version>${revision}</version>
-    <relativePath>../ru.taximaxim.codekeeper.mainapp/ru.taximaxim.codeKeeper/</relativePath>
+    <relativePath>../</relativePath>
   </parent>
 
   <groupId>ru.taximaxim.codeKeeper</groupId>
@@ -21,7 +21,7 @@
 	 	    <artifactId>tycho-surefire-plugin</artifactId>
 	 	    <version>${tycho.version}</version>
 	 	    <configuration>
-              <appArgLine>-nl en</appArgLine>
+              <appArgLine>-nl en -consoleLog</appArgLine>
 	        </configuration>
 	 	  </plugin>
 	 </plugins>
@@ -30,9 +30,6 @@
   <profiles>
     <profile>
       <id>internal</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
       <dependencies>
         <dependency>
           <groupId>ru.taximaxim.codeKeeper</groupId>

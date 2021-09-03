@@ -289,4 +289,9 @@ public class TypesReader extends JdbcReader {
         }
         return t;
     }
+
+    @Override
+    protected String getClassId() {
+        return "pg_type";
+    }
 }

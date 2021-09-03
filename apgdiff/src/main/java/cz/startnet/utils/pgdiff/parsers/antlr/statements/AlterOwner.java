@@ -8,7 +8,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.All_simple_opContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_ownerContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_owner_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
@@ -22,14 +22,14 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class AlterOwner extends ParserAbstract {
 
-    private final Alter_ownerContext ctx;
+    private final Alter_owner_statementContext ctx;
     private final Map<PgStatement, StatementOverride> overrides;
 
-    public AlterOwner(Alter_ownerContext ctx, PgDatabase db) {
+    public AlterOwner(Alter_owner_statementContext ctx, PgDatabase db) {
         this(ctx, db, null);
     }
 
-    public AlterOwner(Alter_ownerContext ctx, PgDatabase db,
+    public AlterOwner(Alter_owner_statementContext ctx, PgDatabase db,
             Map<PgStatement, StatementOverride> overrides) {
         super(db);
         this.ctx = ctx;
@@ -67,6 +67,12 @@ public class AlterOwner extends ParserAbstract {
         if (ctx.SCHEMA() != null) {
             st = getSafe(PgDatabase::getSchema, db, nameCtx);
             type = DbObjType.SCHEMA;
+        } else if (ctx.FOREIGN() != null && ctx.DATA() != null && ctx.WRAPPER() != null ) {
+            st = getSafe(PgDatabase::getForeignDW, db, nameCtx);
+            type = DbObjType.FOREIGN_DATA_WRAPPER;
+        } else if (ctx.SERVER() != null ) {
+            st = getSafe(PgDatabase::getServer, db, nameCtx);
+            type = DbObjType.SERVER;
         } else {
             AbstractSchema schema = getSchemaSafe(ids);
             if (ctx.DOMAIN() != null) {
@@ -100,8 +106,13 @@ public class AlterOwner extends ParserAbstract {
             }
         }
 
-        if (type != null)  {
-            addObjReference(ids, type, ACTION_ALTER);
+        if (type != null) {
+            if (type == DbObjType.FUNCTION || type == DbObjType.PROCEDURE || type == DbObjType.AGGREGATE) {
+                addObjReference(ids, type, ACTION_ALTER,
+                        parseArguments(ctx.function_args()));
+            } else {
+                addObjReference(ids, type, ACTION_ALTER);
+            }
         }
 
         if (st == null || (type == DbObjType.SCHEMA
@@ -127,6 +138,10 @@ public class AlterOwner extends ParserAbstract {
         DbObjType type = null;
         if (ctx.SCHEMA() != null) {
             type = DbObjType.SCHEMA;
+        } else if (ctx.FOREIGN() != null && ctx.DATA() != null && ctx.WRAPPER() != null) {
+            type = DbObjType.FOREIGN_DATA_WRAPPER;
+        } else if (ctx.SERVER() != null) {
+            type = DbObjType.SERVER;
         } else if (ctx.DOMAIN() != null) {
             type = DbObjType.DOMAIN;
         } else if (ctx.VIEW() != null) {
@@ -166,7 +181,11 @@ public class AlterOwner extends ParserAbstract {
             return null;
         }
 
-        return new StringBuilder(ACTION_ALTER).append(' ').append(type).append(' ')
-                .append(schemaName).append('.').append(objName).toString();
+        StringBuilder sb = new StringBuilder(ACTION_ALTER);
+        sb.append(' ').append(type).append(' ');
+        if (type != DbObjType.SCHEMA) {
+            sb.append(schemaName).append('.');
+        }
+        return sb.append(objName).toString();
     }
 }

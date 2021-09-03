@@ -53,8 +53,7 @@ public class CreateAggregate extends ParserAbstract {
         addFuncAsDepcy(AggFuncs.SFUNC, sFuncCtx, aggregate);
 
         fillAggregate(ctx.aggregate_param(), aggregate);
-
-        addSafe(getSchemaSafe(ids), aggregate, ids);
+        addSafe(getSchemaSafe(ids), aggregate, ids, parseArguments(ctx.function_args()));
     }
 
     private void fillAllArguments(PgAggregate aggregate) {
@@ -284,6 +283,6 @@ public class CreateAggregate extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_CREATE, DbObjType.AGGREGATE, ctx.name.identifier());
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.AGGREGATE, ctx.name);
     }
 }

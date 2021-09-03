@@ -1,11 +1,10 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_database_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_extension_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_operator_statementContext;
@@ -27,7 +26,9 @@ public class AlterOther extends ParserAbstract {
 
     @Override
     public void parseObject() {
-        if (ctx.alter_function_statement() != null) {
+        if (ctx.alter_database_statement() != null) {
+            alterDatabase(ctx.alter_database_statement());
+        } else if (ctx.alter_function_statement() != null) {
             alterFunction(ctx.alter_function_statement());
         } else if (ctx.alter_schema_statement() != null) {
             alterSchema(ctx.alter_schema_statement());
@@ -38,6 +39,10 @@ public class AlterOther extends ParserAbstract {
         } else if (ctx.alter_extension_statement() != null) {
             alterExtension(ctx.alter_extension_statement());
         }
+    }
+
+    private void alterDatabase(Alter_database_statementContext ctx) {
+        addObjReference(Arrays.asList(ctx.identifier()), DbObjType.DATABASE, ACTION_ALTER);
     }
 
     public void alterFunction(Alter_function_statementContext ctx) {
@@ -75,9 +80,8 @@ public class AlterOther extends ParserAbstract {
     @Override
     protected String getStmtAction() {
         DbObjType type = getType();
-        List<? extends ParserRuleContext> ids = getIds();
-        return type != null && !ids.isEmpty()
-                ? getStrForStmtAction(ACTION_ALTER, type, ids) : null;
+        ParserRuleContext id = getId();
+        return type != null && id != null ? getStrForStmtAction(ACTION_ALTER, type, id) : null;
 
     }
 
@@ -92,25 +96,32 @@ public class AlterOther extends ParserAbstract {
             return DbObjType.TYPE;
         } else if (ctx.alter_extension_statement() != null) {
             return DbObjType.EXTENSION;
+        } else if (ctx.alter_database_statement() != null) {
+            return DbObjType.DATABASE;
         }
         return null;
     }
 
-    private List<? extends ParserRuleContext> getIds() {
+    private ParserRuleContext getId() {
         Alter_operator_statementContext alterOperCtx = ctx.alter_operator_statement();
         if (alterOperCtx != null) {
-            Operator_nameContext nameCtx = alterOperCtx.target_operator().operator_name();
-            return Arrays.asList(nameCtx.schema_name, nameCtx.operator);
-        } else if (ctx.alter_function_statement() != null) {
-            return ctx.alter_function_statement().function_parameters()
-                    .schema_qualified_name().identifier();
-        } else if (ctx.alter_schema_statement() != null) {
-            return Arrays.asList(ctx.alter_schema_statement().identifier());
-        } else if (ctx.alter_type_statement() != null) {
-            return ctx.alter_type_statement().name.identifier();
-        } else if (ctx.alter_extension_statement() != null) {
-            return Arrays.asList(ctx.alter_extension_statement().identifier());
+            return alterOperCtx.target_operator().operator_name();
         }
-        return Collections.emptyList();
+        if (ctx.alter_function_statement() != null) {
+            return ctx.alter_function_statement().function_parameters().schema_qualified_name();
+        }
+        if (ctx.alter_schema_statement() != null) {
+            return ctx.alter_schema_statement().identifier();
+        }
+        if (ctx.alter_type_statement() != null) {
+            return ctx.alter_type_statement().name;
+        }
+        if (ctx.alter_extension_statement() != null) {
+            return ctx.alter_extension_statement().identifier();
+        }
+        if (ctx.alter_database_statement() != null) {
+            return ctx.alter_database_statement().identifier();
+        }
+        return null;
     }
 }

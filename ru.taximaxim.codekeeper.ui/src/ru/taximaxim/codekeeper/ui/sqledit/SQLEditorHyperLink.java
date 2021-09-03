@@ -3,8 +3,6 @@ package ru.taximaxim.codekeeper.ui.sqledit;
 import java.nio.file.Paths;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.ui.PartInitException;
@@ -32,7 +30,7 @@ public class SQLEditorHyperLink implements IHyperlink {
         this.label = label;
         this.lineNumber = lineNumber;
         this.isMsSql = isMsSql;
-        IFile file = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(new Path(location));
+        IFile file = FileUtilsUi.getFileForLocation(location);
         relativePath = file == null ? location : file.getProjectRelativePath().toString();
     }
 

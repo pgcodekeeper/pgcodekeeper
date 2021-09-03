@@ -12,6 +12,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.jdbc.CastsReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.ConstraintsReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.ExtensionsReader;
+import cz.startnet.utils.pgdiff.loader.jdbc.ForeignDataWrappersReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.FtsConfigurationsReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.FtsDictionariesReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.FtsParsersReader;
@@ -24,6 +25,7 @@ import cz.startnet.utils.pgdiff.loader.jdbc.PoliciesReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.RulesReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.SchemasReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.SequencesReader;
+import cz.startnet.utils.pgdiff.loader.jdbc.ServersReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.TablesReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.TriggersReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.TypesReader;
@@ -31,16 +33,17 @@ import cz.startnet.utils.pgdiff.loader.jdbc.ViewsReader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreSchemaList;
 
 public class JdbcLoader extends JdbcLoaderBase {
 
     public JdbcLoader(JdbcConnector connector, PgDiffArguments pgDiffArguments) {
-        this(connector, pgDiffArguments, SubMonitor.convert(null));
+        this(connector, pgDiffArguments, SubMonitor.convert(null), null);
     }
 
     public JdbcLoader(JdbcConnector connector, PgDiffArguments pgDiffArguments,
-            SubMonitor monitor) {
-        super(connector, monitor, pgDiffArguments);
+            SubMonitor monitor, IgnoreSchemaList ignoreSchemaList) {
+        super(connector, monitor, pgDiffArguments, ignoreSchemaList);
     }
 
     @Override
@@ -64,7 +67,6 @@ public class JdbcLoader extends JdbcLoaderBase {
             queryRoles();
             queryCheckExtension();
             setupMonitorWork();
-
             new SchemasReader(this, d).read();
 
             // NOTE: order of readers has been changed to move the heaviest ANTLR tasks to the beginning
@@ -92,6 +94,8 @@ public class JdbcLoader extends JdbcLoaderBase {
 
             new ExtensionsReader(this, d).read();
             new CastsReader(this, d).read();
+            new ForeignDataWrappersReader(this, d).read();
+            new ServersReader(this, d).read();
 
             if (!SupportedVersion.VERSION_10.isLE(version)) {
                 SequencesReader.querySequencesData(d, this);

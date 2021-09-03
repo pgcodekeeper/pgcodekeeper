@@ -33,6 +33,8 @@ public final class JdbcQueries {
     public static String QUERY_CHECK_TIMESTAMPS;
 
     public static final JdbcQuery QUERY_EXTENSIONS = new JdbcQuery();
+    public static final JdbcQuery QUERY_FOREIGN_DATA_WRAPPERS = new JdbcQuery();
+    public static final JdbcQuery QUERY_SERVERS = new JdbcQuery();
     public static final JdbcQuery QUERY_CASTS = new JdbcQuery();
     public static final JdbcQuery QUERY_SCHEMAS = new JdbcQuery();
 
@@ -126,7 +128,7 @@ public final class JdbcQueries {
     }
 
     private static String readResource(URL url) throws IOException, URISyntaxException {
-        return new String(Files.readAllBytes(ApgdiffUtils.getFileFromOsgiRes(url).toPath()),
+        return new String(Files.readAllBytes(ApgdiffUtils.getFileFromOsgiRes(url)),
                 StandardCharsets.UTF_8);
     }
 

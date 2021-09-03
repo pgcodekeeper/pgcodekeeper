@@ -59,8 +59,13 @@ public class ModelExporter extends AbstractModelExporter {
         String schemaName;
         switch (type) {
         case EXTENSION:
+        case SERVER:
         case CAST:
             path = baseDir.resolve(type.name());
+            break;
+
+        case FOREIGN_DATA_WRAPPER:
+            path = baseDir.resolve("FDW");
             break;
 
         case SCHEMA:

@@ -43,7 +43,9 @@ public interface ApgdiffConsts {
     enum WORK_DIR_NAMES {
         SCHEMA,
         EXTENSION,
-        CAST
+        CAST,
+        SERVER,
+        FDW
     }
 
     enum MS_WORK_DIR_NAMES {
@@ -56,7 +58,7 @@ public interface ApgdiffConsts {
         PROCEDURES("Stored Procedures"),
         SECURITY("Security");
 
-        String name;
+        private final String name;
 
         MS_WORK_DIR_NAMES(String name) {
             this.name = name;
@@ -64,6 +66,10 @@ public interface ApgdiffConsts {
 
         public String getDirName() {
             return name;
+        }
+
+        public boolean isInSchema() {
+            return this != ASSEMBLIES && this != SECURITY;
         }
     }
 

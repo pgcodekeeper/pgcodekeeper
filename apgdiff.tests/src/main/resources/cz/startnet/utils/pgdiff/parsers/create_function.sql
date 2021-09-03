@@ -111,4 +111,6 @@ begin
   set local work_mem = '2MB';
   return current_setting('work_mem');
 end $$
-language plpgsql
+language plpgsql;
+ALTER FUNCTION public.namelen(person_type) DEPENDS ON EXTENSION ext;
+ALTER FUNCTION public.namelen(person_type) NO DEPENDS ON EXTENSION ext;

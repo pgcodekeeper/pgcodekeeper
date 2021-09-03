@@ -67,6 +67,8 @@ public abstract class PgStatement implements IStatement, IHashable {
 
     public boolean isOwned() {
         switch (getStatementType()) {
+        case FOREIGN_DATA_WRAPPER:
+        case SERVER:
         case FTS_CONFIGURATION:
         case FTS_DICTIONARY:
         case TABLE:
@@ -224,24 +226,28 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     private void addPrivilegeFiltered(PgPrivilege privilege, String locOwner) {
-        if (privilege.isRevoke()) {
-            if ("PUBLIC".equals(privilege.getRole())) {
-                switch (getStatementType()) {
-                // revoke public is non-default for these
-                case FUNCTION:
-                case PROCEDURE:
-                case AGGREGATE:
-                case DOMAIN:
-                case TYPE:
-                    break;
-                default:
-                    return;
-                }
+        if ("PUBLIC".equals(privilege.getRole())) {
+            boolean isFunc;
+            switch (getStatementType()) {
+            // revoke public is non-default for funcs etc
+            // grant public is default for them
+            case FUNCTION:
+            case PROCEDURE:
+            case AGGREGATE:
+            case DOMAIN:
+            case TYPE:
+                isFunc = true;
+                break;
+            default:
+                isFunc = false;
+                break;
             }
-            privileges.add(privilege);
-        } else if (!privilege.getRole().equals(locOwner)) {
-            privileges.add(privilege);
-        } else {
+            if (isFunc != privilege.isRevoke()) {
+                return;
+            }
+        }
+
+        if (!privilege.isRevoke() && privilege.getRole().equals(locOwner)) {
             PgPrivilege delRevoke = privileges.stream()
                     .filter(p -> p.isRevoke()
                             && p.getRole().equals(privilege.getRole())
@@ -249,10 +255,10 @@ public abstract class PgStatement implements IStatement, IHashable {
                     .findAny().orElse(null);
             if (delRevoke != null) {
                 privileges.remove(delRevoke);
-            } else {
-                privileges.add(privilege);
+                return;
             }
         }
+        privileges.add(privilege);
     }
 
     public void clearPrivileges() {

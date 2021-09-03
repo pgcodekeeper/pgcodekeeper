@@ -23,7 +23,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 /**
  * Stores column information.
  */
-public class PgColumn extends AbstractColumn implements PgOptionContainer  {
+public class PgColumn extends AbstractColumn implements PgSimpleOptionContainer  {
 
     private static final String ALTER_FOREIGN_OPTION =  "{0} OPTIONS ({1} {2} {3});";
 

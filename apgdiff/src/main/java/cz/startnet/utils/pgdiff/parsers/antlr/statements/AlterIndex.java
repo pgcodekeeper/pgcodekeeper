@@ -20,15 +20,18 @@ public class AlterIndex extends ParserAbstract {
     public AlterIndex(Alter_index_statementContext ctx, PgDatabase db) {
         super(db);
         this.ctx = ctx;
-        alterIdxAllAction = ctx.ALL() == null ? null
-                : new StringBuilder(ACTION_ALTER).append(" INDEX ALL IN TABLESPACE ")
-                .append(ctx.identifier(0).getText()).toString();
+        alterIdxAllAction = ctx.ALL() == null ? null : "ALTER INDEX ALL";
     }
 
     @Override
     public void parseObject() {
         if (alterIdxAllAction != null) {
-            db.addReference(fileName, new PgObjLocation(alterIdxAllAction, ctx.getParent(), null));
+            PgObjLocation loc = new PgObjLocation.Builder()
+                    .setAction(alterIdxAllAction)
+                    .setCtx(ctx.getParent())
+                    .build();
+
+            db.addReference(fileName, loc);
             return;
         }
 
@@ -56,8 +59,7 @@ public class AlterIndex extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        return alterIdxAllAction != null ? alterIdxAllAction
-                : getStrForStmtAction(ACTION_ALTER, DbObjType.INDEX,
-                        ctx.schema_qualified_name().identifier());
+        return alterIdxAllAction != null ? alterIdxAllAction : getStrForStmtAction(
+                ACTION_ALTER, DbObjType.INDEX, ctx.schema_qualified_name());
     }
 }

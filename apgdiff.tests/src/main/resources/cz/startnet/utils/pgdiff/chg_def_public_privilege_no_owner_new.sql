@@ -71,6 +71,21 @@ CREATE TABLE public.tbl2 (
     c1 integer
 );
 
+-- default revoke
+
+CREATE OR REPLACE FUNCTION public.f3(s text) RETURNS text
+    LANGUAGE plpgsql
+    AS $$begin return 'textttt'; end;$$;
+
+REVOKE ALL ON FUNCTION public.f3(s text) FROM PUBLIC;
+
+    
+ -- default grant 
+
+CREATE OR REPLACE FUNCTION public.f4(s text) RETURNS text
+    LANGUAGE plpgsql
+    AS $$begin return 'textttt'; end;$$;
+
 -------------------------------------------------------------------------------
 
 --

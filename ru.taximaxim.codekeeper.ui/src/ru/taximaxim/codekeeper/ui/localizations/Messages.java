@@ -92,9 +92,27 @@ public final class Messages extends NLS {
     public static String SQLEditorCompletionProcessor_show_templates;
     public static String SQLEditorCompletionProcessor_show_keywords;
 
+    public static String SQLEditorFormatterPrefPage_add_whitespace_after_operators;
+
+    public static String SQLEditorFormatterPrefPage_add_whitespace_before_operators;
+
+    public static String SQLEditorFormatterPrefPage_disable;
+
+    public static String SQLEditorFormatterPrefPage_indent_size;
+
+    public static String SQLEditorFormatterPrefPage_indent_type;
+
+    public static String SQLEditorFormatterPrefPage_remove_trailing_whitespace;
+
+    public static String SQLEditorFormatterPrefPage_tab;
+
+    public static String SQLEditorFormatterPrefPage_whitespace;
+
     public static String SqlEditor_update_ddl;
 
     public static String UiProgressReporter_warning;
+
+    public static String UIProjectLoader_error_loading_structure;
 
     public static String UpdateDdl_read_only_db_message;
 
@@ -130,9 +148,8 @@ public final class Messages extends NLS {
     public static String differ_direct_diff;
     public static String differ_get_differ;
     public static String differ_reverse_diff;
-    public static String diffTableViewer_change_type;
-    public static String diffTableViewer_for_database;
-    public static String diffTableViewer_for_project;
+    public static String diffTableViewer_change_type_for_database;
+    public static String diffTableViewer_change_type_for_project;
     public static String diffTableViewer_container;
     public static String diffTableViewer_db_user;
     public static String diffTableViewer_deselect_child_elements;
@@ -315,6 +332,8 @@ public final class Messages extends NLS {
 
     public static String DbStorePicker_load_from_file;
 
+    public static String DbStorePicker_open_db_store;
+
     public static String DbStorePrefPage_action_add_new;
 
     public static String DbStorePrefPage_already_present;
@@ -334,6 +353,8 @@ public final class Messages extends NLS {
     public static String DbStorePrefPage_secure_storage_error_text_other;
 
     public static String DbStorePrefPage_secure_storage_error_title;
+
+    public static String DbUpdatePrefPage_allow_data_movement;
 
     public static String DbUpdatePrefPage_alter_seq_restart_statement;
 
@@ -411,6 +432,8 @@ public final class Messages extends NLS {
 
     public static String DiffTableViewer_copy_as_regex;
 
+    public static String DiffTableViewer_copy_object_names;
+
     public static String DiffTableViewer_database;
 
     public static String DiffTableViewer_directory;
@@ -432,6 +455,11 @@ public final class Messages extends NLS {
     public static String DiffTableViewer_reading_git_history;
 
     public static String DiffTableViewer_reset_sorting;
+
+    public static String DiffTableViewer_save_to_DB;
+
+    public static String DiffTableViewer_save_to_project;
+
     public static String DiffTableViewer_selected;
 
     public static String DiffTableViewer_selected_count;
@@ -506,6 +534,10 @@ public final class Messages extends NLS {
 
     public static String IgnoredObjectsPrefPage_these_objects_are_ignored_info;
     public static String IgnoredObjectsPrefPage_these_objects_are_ignored_info_white;
+
+    public static String IgnoredSchemaPrefListEditor_black_list_schema_ignor;
+
+    public static String IgnoredSchemaPrefListEditor_white_list_schema_ignor;
 
     public static String IgnoreListProperties_create_new_file;
 
@@ -718,7 +750,15 @@ public final class Messages extends NLS {
 
     public static String PgPassDialog_title;
 
+    public static String PgRenameRefactoringInputPage_new_name;
+
     public static String PrefListEditor_cannot_add;
+
+    public static String ProjectEditorDiffer_apply_db;
+
+    public static String ProjectEditorDiffer_apply_project;
+
+    public static String ProjectEditorDiffer_apply_to;
 
     public static String ProjectEditorDiffer_changed_direction_of_roll_on_title;
     public static String ProjectEditorDiffer_changed_direction_of_roll_on;
@@ -758,6 +798,8 @@ public final class Messages extends NLS {
     public static String ProjectEditorDiffer_override_objects;
 
     public static String ProjectEditorDiffer_override_privileges;
+
+    public static String ProjectEditorDiffer_work_with;
 
     public static String ProjectEditorInput_pgcodekeeper_project;
 
@@ -978,6 +1020,10 @@ public final class Messages extends NLS {
     public static String QuickUpdate_updating_db;
 
     public static String QuickUpdate_updating_project;
+
+    public static String RenameDefinitionChange_error_resource_already_exists;
+
+    public static String RenameDefinitionProcessor_rename_object;
 
     // SONAR-ON
 

@@ -57,10 +57,14 @@ public class ReferenceSearchQuery implements ISearchQuery {
             return null;
         }
 
-        PgObjLocation copy = new PgObjLocation(loc.getOffset(), loc.getLineNumber(),
-                loc.getCharPositionInLine(), sql, loc.getFilePath());
-        copy.setLength(loc.getObjLength());
-        return copy;
+        return new PgObjLocation.Builder()
+                .setOffset(loc.getOffset())
+                .setLineNumber(loc.getLineNumber())
+                .setCharPositionInLine(loc.getCharPositionInLine())
+                .setFilePath(loc.getFilePath())
+                .setLength(loc.getObjLength())
+                .setSql(sql)
+                .build();
     }
 
     private String getLineFromFile(String filePath, int lineNumber) {

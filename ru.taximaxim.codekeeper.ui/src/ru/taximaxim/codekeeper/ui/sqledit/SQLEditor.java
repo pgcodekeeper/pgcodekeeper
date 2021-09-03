@@ -49,6 +49,8 @@ import org.eclipse.jface.text.source.DefaultCharacterPairMatcher;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModelExtension;
 import org.eclipse.jface.text.source.ICharacterPairMatcher;
+import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.DecorationOverlayIcon;
 import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.jface.viewers.ISelection;
@@ -245,9 +247,21 @@ implements IResourceChangeListener, ITextErrorReporter {
         IAnnotationModel model = getSourceViewer().getAnnotationModel();
         for (PgObjLocation loc : getReferences()) {
             if (loc.isDanger()) {
-                model.addAnnotation(new Annotation(MARKER.DANGER_ANNOTATION, false, loc.getWarningText()),
+                model.addAnnotation(new Annotation(MARKER.DANGER_ANNOTATION, false,
+                        getWarningText(loc.getDanger())),
                         new Position(loc.getOffset(), loc.getObjLength()));
             }
+        }
+    }
+
+    private String getWarningText(DangerStatement danger) {
+        switch (danger) {
+        case ALTER_COLUMN: return "ALTER COLUMN ... TYPE statement"; //$NON-NLS-1$
+        case DROP_COLUMN: return "DROP COLUMN statement"; //$NON-NLS-1$
+        case DROP_TABLE: return "DROP TABLE statement"; //$NON-NLS-1$
+        case RESTART_WITH: return "ALTER SEQUENCE ... RESTART WITH statement"; //$NON-NLS-1$
+        case UPDATE: return "UPDATE statement"; //$NON-NLS-1$
+        default: return null;
         }
     }
 
@@ -261,6 +275,10 @@ implements IResourceChangeListener, ITextErrorReporter {
     public void doSave(IProgressMonitor progressMonitor) {
         super.doSave(progressMonitor);
         refreshParser();
+    }
+
+    public void doFormat() {
+        ((SourceViewer) getSourceViewer()).doOperation(ISourceViewer.FORMAT);
     }
 
     @Override
@@ -426,7 +444,7 @@ implements IResourceChangeListener, ITextErrorReporter {
         }
 
         if (res != null && UIProjectLoader.isInProject(res)) {
-            return PgDbParser.getParser(res.getProject());
+            return PgDbParser.getParser(res);
         }
 
         PgDbParser parser = new PgDbParser();
@@ -914,4 +932,15 @@ implements IResourceChangeListener, ITextErrorReporter {
             Log.log(ex);
         }
     }
+    /*
+    @Override
+    protected boolean isTabsToSpacesConversionEnabled() {
+        return FORMATTER_PREF.TAB.equals(mainPrefs.getString(FORMATTER_PREF.INDENT_TYPE));
+    }
+
+    @Override
+    protected boolean isSpacesAsTabsDeletionEnabled() {
+        return false;
+    }
+     */
 }

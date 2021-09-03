@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.Arrays;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
@@ -50,6 +51,7 @@ public class CreateForeignTable extends TableAbstract {
 
     private AbstractTable defineTable(String tableName, String schemaName) {
         Define_serverContext srvCtx = ctx.define_server();
+        IdentifierContext srvName = srvCtx.identifier();
         Define_columnsContext colCtx = ctx.define_columns();
         Define_partitionContext partCtx = ctx.define_partition();
 
@@ -57,16 +59,17 @@ public class CreateForeignTable extends TableAbstract {
 
         if (colCtx != null) {
             table = fillForeignTable(srvCtx, new SimpleForeignPgTable(
-                    tableName, srvCtx.identifier().getText()));
+                    tableName, srvName.getText()));
             fillColumns(colCtx, table, schemaName, null);
         } else {
             String partBound = ParserAbstract.getFullCtxText(partCtx.for_values_bound());
             table = fillForeignTable(srvCtx, new PartitionForeignPgTable(
-                    tableName, srvCtx.identifier().getText(), partBound));
+                    tableName, srvName.getText(), partBound));
 
             fillTypeColumns(partCtx.list_of_type_column_def(), table, schemaName, null);
             addInherit(table, partCtx.parent_table.identifier());
         }
+        addDepSafe(table, Arrays.asList(srvName), DbObjType.SERVER, true);
 
         return table;
     }
@@ -85,6 +88,6 @@ public class CreateForeignTable extends TableAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_CREATE, DbObjType.TABLE, ctx.name.identifier());
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.TABLE, ctx.name);
     }
 }
