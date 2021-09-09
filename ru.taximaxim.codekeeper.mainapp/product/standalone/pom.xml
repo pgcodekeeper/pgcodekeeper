@@ -19,7 +19,9 @@
     <properties>
         <archive-filename>pgCodeKeeper-cli-${unqualifiedVersion}</archive-filename>
     </properties>
-
+<!-- 
+  - latest is incompatible with Java 8 which is still our minimal requirement
+  - uncomment when Java dependency will be bumped
     <repositories>
         <repository>
             <id>eclipse-p2-repo</id>
@@ -27,7 +29,7 @@
             <layout>p2</layout>
         </repository>
     </repositories>
-
+ -->
     <build>
         <plugins>
             <plugin>
