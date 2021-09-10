@@ -32,8 +32,7 @@ final class SQLEditorTextHover extends DefaultTextHover implements ITextHoverExt
     public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
         PgDbParser parser = editor.getParser();
         for (PgObjLocation obj : parser.getObjsForEditor(editor.getEditorInput())) {
-            if (offset > obj.getOffset()
-                    && offset < (obj.getOffset() + obj.getObjLength())) {
+            if (offset >= obj.getOffset() && offset < (obj.getOffset() + obj.getObjLength())) {
                 Optional<MetaStatement> loc = parser.getDefinitionsForObj(obj).findAny();
                 if (loc.isPresent()) {
                     SQLEditorMyRegion region = new SQLEditorMyRegion(obj.getOffset(), obj.getObjLength());

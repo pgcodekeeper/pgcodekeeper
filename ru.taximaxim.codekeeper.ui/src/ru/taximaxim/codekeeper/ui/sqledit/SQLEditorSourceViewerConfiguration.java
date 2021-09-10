@@ -108,7 +108,10 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     public String[] getConfiguredContentTypes(ISourceViewer sourceViewer) {
         return new String[] {
                 SQLEditorCommonDocumentProvider.SQL_CODE,
-                SQLEditorCommonDocumentProvider.SQL_SINGLE_COMMENT
+                SQLEditorCommonDocumentProvider.SQL_SINGLE_COMMENT,
+                SQLEditorCommonDocumentProvider.SQL_MULTI_COMMENT,
+                SQLEditorCommonDocumentProvider.SQL_CHARACTER_STRING_LITERAL,
+                SQLEditorCommonDocumentProvider.SQL_QUOTED_IDENTIFIER
         };
     }
 
