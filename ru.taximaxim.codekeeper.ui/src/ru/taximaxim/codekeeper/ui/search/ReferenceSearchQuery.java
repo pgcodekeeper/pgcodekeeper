@@ -62,7 +62,6 @@ public class ReferenceSearchQuery implements ISearchQuery {
                 .setLineNumber(loc.getLineNumber())
                 .setCharPositionInLine(loc.getCharPositionInLine())
                 .setFilePath(loc.getFilePath())
-                .setLength(loc.getObjLength())
                 .setSql(sql)
                 .build();
     }

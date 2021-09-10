@@ -414,7 +414,6 @@ public abstract class ParserAbstract {
         }
 
         String name = nameCtx.getText();
-        int nameLength = name.length();
         if (signature != null) {
             name = PgDiffUtils.getQuotedName(name) + signature;
         }
@@ -430,25 +429,14 @@ public abstract class ParserAbstract {
         case TYPE:
         case VIEW:
         case INDEX:
-            GenericColumn object = new GenericColumn(schemaName, name, type);
-            return new PgObjLocation.Builder()
-                    .setFilePath(fileName)
-                    .setCtx(nameCtx)
-                    .setObject(object)
-                    .setAction(action)
-                    .setLocationType(locationType)
-                    .build();
         case FUNCTION:
         case PROCEDURE:
         case AGGREGATE:
             return new PgObjLocation.Builder()
                     .setFilePath(fileName)
+                    .setCtx(nameCtx)
                     .setObject(new GenericColumn(schemaName, name, type))
                     .setAction(action)
-                    // TODO setCtx
-                    // .setOffset(getStart(nameCtx))
-                    .setLineNumber(nameCtx.start.getLine())
-                    .setLength(nameLength)
                     .setLocationType(locationType)
                     .build();
         case CONSTRAINT:
@@ -456,11 +444,10 @@ public abstract class ParserAbstract {
         case RULE:
         case POLICY:
         case COLUMN:
-            object = new GenericColumn(schemaName, QNameParser.getSecondName(ids), name, type);
             return new PgObjLocation.Builder()
                     .setFilePath(fileName)
                     .setCtx(nameCtx)
-                    .setObject(object)
+                    .setObject(new GenericColumn(schemaName, QNameParser.getSecondName(ids), name, type))
                     .setAction(action)
                     .setLocationType(locationType)
                     .build();
