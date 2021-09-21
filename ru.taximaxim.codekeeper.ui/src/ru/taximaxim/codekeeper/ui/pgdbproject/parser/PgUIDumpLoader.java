@@ -16,6 +16,7 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
+import cz.startnet.utils.pgdiff.parsers.antlr.ErrorTypes;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
@@ -92,7 +93,9 @@ public class PgUIDumpLoader extends PgDumpLoader {
             marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
             marker.setAttribute(IMarker.MESSAGE, antlrError.getMsg());
             marker.setAttribute(IMarker.BOOKMARK, antlrError.getMsg());
-            marker.setAttribute(MARKER.ERROR_TYPE, MARKER.MISPLACE_ERROR);
+            if (antlrError.getErrorType() == ErrorTypes.MISPLACEERROR) {
+                marker.setAttribute(MARKER.ERROR_TYPE, MARKER.MISPLACE_ERROR);
+            }
             int start = antlrError.getStart();
             int stop = antlrError.getStop();
             if (start == -1 || stop == -1) {

@@ -1,30 +1,20 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
-import java.util.Iterator;
 import java.util.Map;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.jface.bindings.keys.KeySequence;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IInformationControl;
-import org.eclipse.jface.text.IInformationControlCreator;
-import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextHover;
-import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
-import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.formatter.IContentFormatter;
 import org.eclipse.jface.text.formatter.MultiPassContentFormatter;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
 import org.eclipse.jface.text.quickassist.IQuickAssistAssistant;
-import org.eclipse.jface.text.quickassist.IQuickAssistInvocationContext;
-import org.eclipse.jface.text.quickassist.IQuickAssistProcessor;
 import org.eclipse.jface.text.quickassist.QuickAssistAssistant;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.rules.IRule;
@@ -32,19 +22,13 @@ import org.eclipse.jface.text.rules.IWordDetector;
 import org.eclipse.jface.text.rules.RuleBasedScanner;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.rules.WordRule;
-import org.eclipse.jface.text.source.Annotation;
-import org.eclipse.jface.text.source.IAnnotationHover;
-import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.jface.text.source.ISourceViewer;
-import org.eclipse.jface.text.source.TextInvocationContext;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 import org.eclipse.ui.keys.IBindingService;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
-import org.eclipse.ui.texteditor.MarkerAnnotation;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -71,53 +55,14 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     public SQLEditorSourceViewerConfiguration(ISharedTextColors sharedColors,
             IPreferenceStore store, SQLEditor editor) {
         super(store);
-        fSharedColors= sharedColors;
+        fSharedColors = sharedColors;
         this.prefs = Activator.getDefault().getPreferenceStore();
         this.editor = editor;
     }
 
     @Override
-    public IAnnotationHover getAnnotationHover(ISourceViewer sourceViewer) {
-        return new IAnnotationHover() {
-
-            @Override
-            public String getHoverInfo(ISourceViewer sourceViewer, int lineNumber) {
-                IDocument document= sourceViewer.getDocument();
-
-                try {
-                    IRegion info= document.getLineInformation(lineNumber);
-                    return document.get(info.getOffset(), info.getLength());
-                } catch (BadLocationException x) {
-                }
-
-                return null;
-            }
-        };
-
-    }
-
-    @Override
     public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
         return new SQLEditorTextHover(sourceViewer, editor);
-    }
-
-    /**
-     * Returns the information control creator. The creator is a factory creating information
-     * controls for the given source viewer. This implementation always returns a creator for
-     * <code>JavaInformationControl</code> instances.
-     *
-     * @param sourceViewer the source viewer to be configured by this configuration
-     * @return the information control creator or <code>null</code> if no information support should be installed
-     * @since 2.0
-     */
-    @Override
-    public IInformationControlCreator getInformationControlCreator(ISourceViewer sourceViewer) {
-        return new IInformationControlCreator() {
-            @Override
-            public IInformationControl createInformationControl(Shell parent) {
-                return new SQLEditorInformationControl(parent);
-            }
-        };
     }
 
     @Override
@@ -146,15 +91,10 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
 
         return assistant;
     }
-    /*
-    @Override
-    public String[] getIndentPrefixes(ISourceViewer sourceViewer, String contentType) {
-        return new String[] { "\t", "    " }; //$NON-NLS-1$ //$NON-NLS-2$
-    }
-     */
+
     private KeySequence getIterationBinding() {
-        final IBindingService bindingSvc= PlatformUI.getWorkbench().getService(IBindingService.class);
-        TriggerSequence binding= bindingSvc.getBestActiveBindingFor(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
+        final IBindingService bindingSvc = PlatformUI.getWorkbench().getService(IBindingService.class);
+        TriggerSequence binding = bindingSvc.getBestActiveBindingFor(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
         if (binding instanceof KeySequence) {
             return (KeySequence) binding;
         }
@@ -164,84 +104,9 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     @Override
     public IQuickAssistAssistant getQuickAssistAssistant(ISourceViewer sourceViewer) {
         IQuickAssistAssistant quickAssist = new QuickAssistAssistant();
-        quickAssist.setQuickAssistProcessor(new MyQuickAssistProcessor());
+        quickAssist.setQuickAssistProcessor(new SQLEditorQuickAssistProcessor(editor));
         quickAssist.setInformationControlCreator(getInformationControlCreator(sourceViewer));
         return quickAssist;
-    }
-
-    private static class MyQuickAssistProcessor implements IQuickAssistProcessor {
-
-        /*
-         * @see IContentAssistProcessor#computeCompletionProposals(ITextViewer, int)
-         */
-        @Override
-        public ICompletionProposal[] computeQuickAssistProposals(
-                IQuickAssistInvocationContext quickAssistContext) {
-
-            ISourceViewer viewer = quickAssistContext.getSourceViewer();
-            IAnnotationModel model = viewer.getAnnotationModel();
-
-            int documentOffset = quickAssistContext.getOffset();
-            int length = viewer != null ? viewer.getSelectedRange().y : -1;
-            TextInvocationContext context = new TextInvocationContext(viewer,
-                    documentOffset, length);
-
-            if (model == null) {
-                return null;
-            }
-
-            MisplaceCompletionProposal[] proposals = computeProposals(context, model);
-            if (proposals == null) {
-                return null;
-            }
-            return proposals;
-            //return new CompletionProposal[] {new CompletionProposal("replacementString", 11, 5, 3), new CompletionProposal("replacementString2", 10, 4, 2)};
-
-        }
-
-        private boolean isAtPosition(int offset, Position pos) {
-            return (pos != null) && (offset >= pos.getOffset() && offset <= (pos.getOffset() +  pos.getLength()));
-        }
-
-        private MisplaceCompletionProposal[] computeProposals(
-                IQuickAssistInvocationContext context, IAnnotationModel model) {
-            int offset = context.getOffset();
-            Iterator<Annotation> iter = model.getAnnotationIterator();
-            while (iter.hasNext()) {
-                Annotation annotation = iter.next();
-                if (canFix(annotation)) {
-                    Position pos = model.getPosition(annotation);
-                    if (isAtPosition(offset, pos)) {
-                        if (annotation instanceof MarkerAnnotation) {
-                            return getMisplaceProposal(annotation);
-                        }
-                    }
-                }
-            }
-            //TODO This disables Default Spelling Problems.
-            return null;
-        }
-
-        private MisplaceCompletionProposal[] getMisplaceProposal(Annotation annotation) {
-            MisplaceProposal misplProposal = new MisplaceProposal(annotation);
-            return misplProposal.getMisplaceProposals();
-        }
-
-        @Override
-        public String getErrorMessage() {
-            return "Some message";
-        }
-
-        @Override
-        public boolean canFix(Annotation annotation) {
-            // return annotation instanceof SpellingAnnotation && !annotation.isMarkedDeleted();
-            return true;
-        }
-
-        @Override
-        public boolean canAssist(IQuickAssistInvocationContext invocationContext) {
-            return true;
-        }
     }
 
     @Override
@@ -297,7 +162,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     private RuleBasedScanner createRecipeScanner() {
         RuleBasedScanner recipeScanner= new RuleBasedScanner();
 
-        IRule[] rules= {
+        IRule[] rules = {
                 sqlSyntaxRules()
         };
         recipeScanner.setRules(rules);
@@ -371,23 +236,4 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
                 getTextAttribute(prefs, SQLEditorStatementTypes.QUOTED_IDENTIFIER)));
         return commentScanner;
     }
-    /*
-    @Override
-    public int getTabWidth(ISourceViewer sourceViewer) {
-        return prefs.getInt(FORMATTER_PREF.INDENT_SIZE);
-    }
-
-    @Override
-    public String[] getIndentPrefixes(ISourceViewer sourceViewer, String contentType) {
-        String indent;
-
-        String mode = prefs.getString(FORMATTER_PREF.INDENT_TYPE);
-        if (FORMATTER_PREF.TAB.equals(mode)) {
-            indent = "\t";
-        } else {
-            indent = FormatConfiguration.createIndent(getTabWidth(sourceViewer), ' ');
-        }
-        return new String[] { indent, "" };
-    }
-     */
 }

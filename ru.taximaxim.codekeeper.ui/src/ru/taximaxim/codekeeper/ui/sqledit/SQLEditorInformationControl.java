@@ -5,13 +5,15 @@ import java.util.List;
 
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.AbstractInformationControl;
-import org.eclipse.jface.text.IInformationControl;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.IInformationControlExtension2;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Point;
@@ -29,14 +31,11 @@ public class SQLEditorInformationControl extends AbstractInformationControl
 implements IInformationControlExtension2 {
 
     private Composite fParent;
-    private SQLAnnotationInfo fInput;
-    public SQLEditorInformationControl(Shell parentShell, String statusFieldText) {
-        super(parentShell, statusFieldText);
-        create();
-    }
+    private SQLHoverInfo fInput;
 
-    public SQLEditorInformationControl(Shell parent) {
-        super(parent, (String) null);
+    public SQLEditorInformationControl(Shell parentShell, String statusFieldText) {
+        //TODO statusFieldText is dissappearing when rename operation done. Need fix
+        super(parentShell, statusFieldText);
         create();
     }
 
@@ -45,7 +44,7 @@ implements IInformationControlExtension2 {
         return fInput != null;
     }
 
-    private SQLAnnotationInfo getSQLAnnotationInfo() {
+    private SQLHoverInfo getSQLHoverInfo() {
         return fInput;
     }
 
@@ -83,22 +82,12 @@ implements IInformationControlExtension2 {
 
     @Override
     public void setInput(Object input) {
-        fInput = (SQLAnnotationInfo) input;
-        // disposeDeferredCreatedContent();
+        fInput = (SQLHoverInfo) input;
         deferredCreateContent();
     }
 
-    /*    protected void disposeDeferredCreatedContent() {
-        for (Control child : fParent.getChildren()) {
-            child.dispose();
-        }
-        ToolBarManager toolBarManager= getToolBarManager();
-        if (toolBarManager != null)
-            toolBarManager.removeAll();
-    }*/
-
     protected void deferredCreateContent() {
-        createAnnotationInformation(getSQLAnnotationInfo().annotation);
+        createAnnotationInformation(getSQLHoverInfo().annotation);
 
         Color foreground = fParent.getForeground();
         Color background = fParent.getBackground();
@@ -106,12 +95,13 @@ implements IInformationControlExtension2 {
         setForegroundColor(foreground); // For main composite.
         setBackgroundColor(background);
         setColorAndFont(fParent, foreground, background, JFaceResources.getDialogFont()); // For child elements.
-
-        MisplaceProposal misplProposal = new MisplaceProposal(
-                getSQLAnnotationInfo().annotation);
-        if (misplProposal.getMisplaceProposals() != null) {
-            createCompletionProposalsControl(misplProposal.getMisplaceProposals());
+        if (fInput.pgObjLocation != null) {
+            MisplaceCompletionProposal [] misplaceCompletionProposals = MisplaceProposal.getMisplaceProposals(getSQLHoverInfo().annotation, fInput.pgObjLocation);
+            if (misplaceCompletionProposals != null) {
+                createCompletionProposalsControl(misplaceCompletionProposals);
+            }
         }
+
         fParent.layout(true);
     }
 
@@ -133,9 +123,13 @@ implements IInformationControlExtension2 {
         GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
         text.setLayoutData(data);
         text.setAlwaysShowScrollBars(false);
-        String annotationText = annotation.getText();
-        if (annotationText != null) {
-            text.setText(annotationText);
+        if (annotation != null) {
+            String annotationText = annotation.getText();
+            if (annotationText != null) {
+                text.setText(annotationText);
+            }
+        } else if (fInput.comment != null) {
+            text.setText(fInput.comment);
         }
     }
 
@@ -157,12 +151,7 @@ implements IInformationControlExtension2 {
         GridData layoutData = new GridData(SWT.BEGINNING, SWT.CENTER, false, false);
         layoutData.horizontalIndent = 4;
         quickFixLabel.setLayoutData(layoutData);
-        String text;
-        if (proposals.length == 1) {
-            text = "Quick fix available:";
-        } else {
-            text = String.valueOf(proposals.length) + " quick fixes available:";
-        }
+        String text = proposals.length == 1 ? "Quick fix available:" : String.valueOf(proposals.length) + " quick fixes available:";
         quickFixLabel.setText(text);
 
         setColorAndFont(composite, fParent.getForeground(), fParent.getBackground(),
@@ -189,17 +178,7 @@ implements IInformationControlExtension2 {
 
         for (MisplaceCompletionProposal prop : proposals) {
             list.add(createCompletionProposalLink(composite, prop)); // Original link for single fix, hence pass 1 for count
-            /*if (prop instanceof FixCorrectionProposal) {
-                FixCorrectionProposal proposal= (FixCorrectionProposal) prop;
-                int count= proposal.computeNumberOfFixesForCleanUp(proposal.getCleanUp());
-                if (count > 1) {
-                    list.add(createCompletionProposalLink(composite, prop, count));
-                }
-            }*/
         }
-
-        //list.add(createCompletionProposalLink(composite));/*, prop, 1);*/
-        //  list.add(createCompletionProposalLink(composite));/*, prop, 1);*/
         scrolledComposite.setContent(composite);
         setColorAndFont(scrolledComposite, parent.getForeground(), parent.getBackground(),
                 JFaceResources.getDialogFont());
@@ -225,8 +204,6 @@ implements IInformationControlExtension2 {
 
     private Link createCompletionProposalLink(Composite parent,
             final MisplaceCompletionProposal proposal) {
-        // final boolean isMultiFix= count > 1;
-        //if (isMultiFix) {
         new Label(parent, SWT.NONE); // spacer to fill image cell
         parent = new Composite(parent, SWT.NONE); // indented composite for multi-fix
         GridLayout layout = new GridLayout(2, false);
@@ -237,11 +214,17 @@ implements IInformationControlExtension2 {
         Link proposalLink = new Link(parent, SWT.NONE);
         GridData layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
         String linkText = proposal.getDisplayString();
-
         proposalLink.setText("<a>" + linkText + "</a>"); //$NON-NLS-1$ //$NON-NLS-2$
         proposalLink.setLayoutData(layoutData);
-        /*proposalLink.addSelectionListener(new SelectionAdapter() {
-        }*/
+
+        proposalLink.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                dispose();
+                IDocument document = fInput.viewer.getDocument();
+                proposal.apply(document);
+            }
+        });
         return proposalLink;
     }
 
@@ -258,22 +241,9 @@ implements IInformationControlExtension2 {
         }
     }
 
-    /*
-     * @see org.eclipse.jface.text.IInformationControlExtension5#getInformationPresenterControlCreator()
-     * @since 3.4
-     */
     @Override
     public IInformationControlCreator getInformationPresenterControlCreator() {
-        return new IInformationControlCreator() {
-            /*
-             * @see org.eclipse.jface.text.IInformationControlCreator#createInformationControl(org.eclipse.swt.widgets.Shell)
-             */
-            @Override
-            public IInformationControl createInformationControl(Shell parent) {
-
-                return new SQLEditorInformationControl(parent,
-                        EditorsUI.getTooltipAffordanceString());
-            }
-        };
+        return parent -> new SQLEditorInformationControl(parent,
+                EditorsUI.getTooltipAffordanceString());
     }
 }
