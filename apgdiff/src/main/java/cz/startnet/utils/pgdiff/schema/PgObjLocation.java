@@ -126,6 +126,10 @@ public class PgObjLocation extends ContextLocation {
         return obj == null ? null : obj.type;
     }
 
+    public String getQualifiedName() {
+        return obj == null ? null : obj.getQualifiedName();
+    }
+
     /**
      * @return name stripped of arguments for function signatures
      */
@@ -190,14 +194,14 @@ public class PgObjLocation extends ContextLocation {
 
     public PgObjLocation copyWithOffset(int offset, int lineOffset,
             int inLineOffset, String filePath) {
+        int newCharPosition = getLineNumber() == 1 ? getCharPositionInLine() + inLineOffset : getCharPositionInLine();
         PgObjLocation loc = new PgObjLocation(filePath,
                 getOffset() + offset,
                 getLineNumber() + lineOffset,
-                getCharPositionInLine() + inLineOffset,
+                newCharPosition,
                 obj, action, sql, alias, length, locationType);
         loc.setWarning(danger);
         return loc;
-
     }
 
     @Override
@@ -219,7 +223,6 @@ public class PgObjLocation extends ContextLocation {
         private int offset;
         private int lineNumber;
         private int charPositionInLine;
-        private int length = -1;
         private GenericColumn object;
         private ParserRuleContext ctx;
         private LocationType locationType = LocationType.REFERENCE;
@@ -259,11 +262,6 @@ public class PgObjLocation extends ContextLocation {
             return this;
         }
 
-        public Builder setLength(int length) {
-            this.length = length;
-            return this;
-        }
-
         public Builder setObject(GenericColumn object) {
             this.object = object;
             return this;
@@ -285,20 +283,12 @@ public class PgObjLocation extends ContextLocation {
                 int offset = start.getStartIndex();
                 int line = start.getLine();
                 int position = start.getCharPositionInLine();
-                int length = this.length;
-                if (length == -1) {
-                    length = ctx.getStop().getStopIndex() - offset + 1;
-                }
-
+                int length =  ctx.getStop().getStopIndex() - offset + 1;
                 return new PgObjLocation(filePath, offset, line, position,
                         object, action, sql, alias, length, locationType);
             }
 
-            int length = this.length;
-            if (length == -1) {
-                length = object == null ? 0 : object.getObjName().length();
-            }
-
+            int length =  object == null ? 0 : object.getObjName().length();
             return new PgObjLocation(filePath, offset, lineNumber, charPositionInLine,
                     object, action, sql, alias, length, locationType);
         }

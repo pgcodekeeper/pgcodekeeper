@@ -23,11 +23,11 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Cast_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Id_tokenContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identifier_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Including_indexContext;
@@ -35,7 +35,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Predefined_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
@@ -291,19 +290,6 @@ public abstract class ParserAbstract {
         return addObjReference(ids, type, action, null);
     }
 
-    private int getStart(ParserRuleContext ctx) {
-        int start = ctx.start.getStartIndex();
-        if (ctx instanceof IdentifierContext) {
-            Id_tokenContext id = ((IdentifierContext) ctx).id_token();
-            if (id != null && id.QuotedIdentifier() != null) {
-                start++;
-            }
-        } else if (ctx instanceof IdContext && ((IdContext) ctx).SQUARE_BRACKET_ID() != null) {
-            start++;
-        }
-        return start;
-    }
-
     public <T extends IStatement, R extends IStatement> R getSafe(
             BiFunction<T, String, R> getter, T container, ParserRuleContext ctx) {
         return getSafe(getter, container, ctx.getText(), ctx.start);
@@ -392,7 +378,7 @@ public abstract class ParserAbstract {
         ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
         switch (type) {
         case CAST:
-            throw new IllegalStateException("Unsupported type: CAST");
+            return getCastLocation((Cast_nameContext) nameCtx, action);
         case ASSEMBLY:
         case EXTENSION:
         case FOREIGN_DATA_WRAPPER:
@@ -428,7 +414,6 @@ public abstract class ParserAbstract {
         }
 
         String name = nameCtx.getText();
-        int nameLength = name.length();
         if (signature != null) {
             name = PgDiffUtils.getQuotedName(name) + signature;
         }
@@ -444,24 +429,14 @@ public abstract class ParserAbstract {
         case TYPE:
         case VIEW:
         case INDEX:
-            GenericColumn object = new GenericColumn(schemaName, name, type);
-            return new PgObjLocation.Builder()
-                    .setFilePath(fileName)
-                    .setCtx(nameCtx)
-                    .setObject(object)
-                    .setAction(action)
-                    .setLocationType(locationType)
-                    .build();
         case FUNCTION:
         case PROCEDURE:
         case AGGREGATE:
             return new PgObjLocation.Builder()
                     .setFilePath(fileName)
+                    .setCtx(nameCtx)
                     .setObject(new GenericColumn(schemaName, name, type))
                     .setAction(action)
-                    .setOffset(getStart(nameCtx))
-                    .setLineNumber(nameCtx.start.getLine())
-                    .setLength(nameLength)
                     .setLocationType(locationType)
                     .build();
         case CONSTRAINT:
@@ -469,11 +444,10 @@ public abstract class ParserAbstract {
         case RULE:
         case POLICY:
         case COLUMN:
-            object = new GenericColumn(schemaName, QNameParser.getSecondName(ids), name, type);
             return new PgObjLocation.Builder()
                     .setFilePath(fileName)
                     .setCtx(nameCtx)
-                    .setObject(object)
+                    .setObject(new GenericColumn(schemaName, QNameParser.getSecondName(ids), name, type))
                     .setAction(action)
                     .setLocationType(locationType)
                     .build();
@@ -482,18 +456,18 @@ public abstract class ParserAbstract {
         }
     }
 
-    protected PgObjLocation getCastLocation(Data_typeContext source, Data_typeContext target, String action) {
-        GenericColumn object = new GenericColumn(
-                ICast.getSimpleName(getFullCtxText(source), getFullCtxText(target)),
-                DbObjType.CAST);
-
+    private PgObjLocation getCastLocation(Cast_nameContext nameCtx, String action) {
+        GenericColumn object = new GenericColumn(getCastName(nameCtx), DbObjType.CAST);
         return new PgObjLocation.Builder()
                 .setFilePath(fileName)
-                .setCtx(source)
-                .setLength(target.stop.getStopIndex() - source.start.getStartIndex() + 1)
+                .setCtx(nameCtx)
                 .setObject(object)
                 .setAction(action)
                 .build();
+    }
+
+    protected String getCastName(Cast_nameContext nameCtx) {
+        return ICast.getSimpleName(getFullCtxText(nameCtx.source), getFullCtxText(nameCtx.target));
     }
 
     protected <T extends IStatement, U extends Object> void doSafe(BiConsumer<T, U> adder,

@@ -327,7 +327,7 @@ alter_extension_action
 extension_member_object
     : ACCESS METHOD schema_qualified_name
     | AGGREGATE function_parameters
-    | CAST LEFT_PAREN schema_qualified_name AS schema_qualified_name RIGHT_PAREN
+    | CAST LEFT_PAREN cast_name RIGHT_PAREN
     | COLLATION identifier
     | CONVERSION identifier
     | DOMAIN schema_qualified_name
@@ -1157,7 +1157,7 @@ security_label
 comment_member_object
     : ACCESS METHOD identifier 
     | (AGGREGATE | PROCEDURE | FUNCTION | ROUTINE) name=schema_qualified_name function_args
-    | CAST LEFT_PAREN source=data_type AS target=data_type RIGHT_PAREN
+    | CAST LEFT_PAREN cast_name RIGHT_PAREN
     | COLLATION identifier
     | COLUMN name=schema_qualified_name
     | CONSTRAINT identifier ON DOMAIN? table_name=schema_qualified_name
@@ -1336,13 +1336,17 @@ alter_subscription_action
     ;
 
 create_cast_statement
-    : CAST LEFT_PAREN source=data_type AS target=data_type RIGHT_PAREN
+    : CAST LEFT_PAREN cast_name RIGHT_PAREN
     (WITH FUNCTION func_name=schema_qualified_name function_args | WITHOUT FUNCTION | WITH INOUT)
     (AS ASSIGNMENT | AS IMPLICIT)?
     ;
 
+cast_name
+    : source=data_type AS target=data_type
+    ;
+
 drop_cast_statement
-    : CAST if_exists? LEFT_PAREN source=data_type AS target=data_type RIGHT_PAREN cascade_restrict?
+    : CAST if_exists? LEFT_PAREN cast_name RIGHT_PAREN cascade_restrict?
     ;
 
 create_operator_family_statement
