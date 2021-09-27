@@ -28,9 +28,9 @@ public class ReferenceSearchQuery implements ISearchQuery {
     private final PgDbParser parser;
 
     public ReferenceSearchQuery(PgObjLocation ref, IProject proj) {
-        this.result = new ReferenceSearchResult(this);
         this.ref = ref;
         this.parser = PgDbParser.getParser(proj);
+        this.result = new ReferenceSearchResult(this);
     }
 
     @Override
@@ -44,9 +44,13 @@ public class ReferenceSearchQuery implements ISearchQuery {
             PgObjLocation copy = getLocationCopy(loc);
             if (copy != null) {
                 res.addMatch(new Match(copy, loc.getOffset(), loc.getObjLength()));
-                sub.worked(1);
+            }
+            sub.worked(1);
+            if (sub.isCanceled()) {
+                return Status.CANCEL_STATUS;
             }
         }
+        sub.done();
 
         return Status.OK_STATUS;
     }
