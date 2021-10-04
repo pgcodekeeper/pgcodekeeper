@@ -367,7 +367,7 @@ public class ActionsToScriptConverter {
                 .collect(Collectors.joining(", "));
         sb.append("INSERT INTO ").append(tblQName).append('(')
         .append(cols).append(")");
-        if (!arguments.isMsSql()) {
+        if (!arguments.isMsSql() && identityCols != null) {
             sb.append("\nOVERRIDING SYSTEM VALUE");
         }
         sb.append("\nSELECT ").append(cols).append(" FROM ")
