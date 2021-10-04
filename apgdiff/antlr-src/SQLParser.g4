@@ -2926,7 +2926,8 @@ null_ordering
 
 insert_stmt_for_psql
     : with_clause? INSERT INTO insert_table_name=schema_qualified_name (AS alias=identifier)?
-    (OVERRIDING (SYSTEM | USER) VALUE)? insert_columns?
+    insert_columns?
+    (OVERRIDING (SYSTEM | USER) VALUE)?
     (select_stmt | DEFAULT VALUES)
     (ON CONFLICT conflict_object? conflict_action)?
     (RETURNING select_list)?
