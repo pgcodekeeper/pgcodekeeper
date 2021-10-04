@@ -366,7 +366,11 @@ public class ActionsToScriptConverter {
                 .map(quoter)
                 .collect(Collectors.joining(", "));
         sb.append("INSERT INTO ").append(tblQName).append('(')
-        .append(cols).append(")\nOVERRIDING SYSTEM VALUE\nSELECT ").append(cols).append(" FROM ")
+        .append(cols).append(")");
+        if (!arguments.isMsSql()) {
+            sb.append("\nOVERRIDING SYSTEM VALUE");
+        }
+        sb.append("\nSELECT ").append(cols).append(" FROM ")
         .append(tblTmpQName).append(arguments.isMsSql() ? PgStatement.GO : ";");
 
         if (arguments.isMsSql() && !identityColsForMovingData.isEmpty()) {

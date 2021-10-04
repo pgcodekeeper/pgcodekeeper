@@ -39,7 +39,8 @@ GO
 GRANT SELECT ON [dbo].[tbl] TO [test_user]
 GO
 
-INSERT INTO [dbo].[tbl]([c1], [c2], [c3], [c6], [c5]) SELECT [c1], [c2], [c3], [c6], [c5] FROM [dbo].[tbl_randomly_generated_part]
+INSERT INTO [dbo].[tbl]([c1], [c2], [c3], [c6], [c5])
+SELECT [c1], [c2], [c3], [c6], [c5] FROM [dbo].[tbl_randomly_generated_part]
 GO
 
 DROP TABLE [dbo].[tbl_randomly_generated_part]
