@@ -68,7 +68,7 @@ public class LibraryLoader extends DatabaseLoader {
     private PgDatabase getLibrary(String path, PgDiffArguments arguments, boolean isIgnorePriv)
             throws InterruptedException, IOException {
 
-        PgDiffArguments args = arguments.clone();
+        PgDiffArguments args = arguments.copy();
         args.setIgnorePrivileges(isIgnorePriv);
 
         switch (PgLibrary.getSource(path)) {

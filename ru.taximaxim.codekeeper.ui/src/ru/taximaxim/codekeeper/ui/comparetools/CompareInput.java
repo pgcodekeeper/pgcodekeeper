@@ -17,9 +17,9 @@ public class CompareInput extends CompareEditorInput {
 
     private static final String TITLE = "Compare (''{0}'' - ''{1}'')"; //$NON-NLS-1$
 
-    private final CompareItem left;
-    private final CompareItem right;
-
+    private CompareItem left;
+    private CompareItem right;
+    private final DiffNode diffNode ;
     public CompareInput(PgOverride override) {
         super(new CompareConfiguration());
 
@@ -29,8 +29,7 @@ public class CompareInput extends CompareEditorInput {
         String oldPath = oldStatement.getLocation().getFilePath();
         String newPath = newStatement.getLocation().getFilePath();
 
-        left = new CompareItem(oldPath, oldStatement.getCreationSQL());
-        right = new CompareItem(newPath, newStatement.getCreationSQL());
+        diffNode = getFormattedContents(oldPath, newPath, oldStatement, newStatement);
 
         getCompareConfiguration().setLeftLabel(oldPath);
         getCompareConfiguration().setRightLabel(newPath);
@@ -44,16 +43,34 @@ public class CompareInput extends CompareEditorInput {
         getCompareConfiguration().setLeftLabel(Messages.database);
         getCompareConfiguration().setRightLabel(Messages.DiffPaneViewer_project);
 
-        left = new CompareItem(name, project == null ? "" : project.getCreationSQL()); //$NON-NLS-1$
-        right =  new CompareItem(name, remote == null ? "" : remote.getCreationSQL()); //$NON-NLS-1$
+        diffNode = getFormattedContents(null, name, project, remote);
 
         setTitle("Compare " + type + ' ' + name); //$NON-NLS-1$
+    }
+
+    private DiffNode getFormattedContents(String oldPath, String newPath, PgStatement project, PgStatement remote) {
+        String contentsLeft = project == null ? "" : project.getFormattedCreationSQL(); //$NON-NLS-1$
+        String contentsRight = remote == null ? "" : remote.getFormattedCreationSQL(); //$NON-NLS-1$
+
+        if (oldPath == null) {
+            oldPath = newPath;
+        }
+
+        if (contentsLeft.equals(contentsRight)) {
+            left = new CompareItem(oldPath, project == null ? "" : project.getFullSQL()); //$NON-NLS-1$
+            right =  new CompareItem(newPath, remote == null ? "" : remote.getFullSQL()); //$NON-NLS-1$
+        } else {
+            left = new CompareItem(oldPath, contentsLeft);
+            right =  new CompareItem(newPath, contentsRight);
+        }
+
+        return new DiffNode(left, right);
     }
 
     @Override
     protected Object prepareInput(IProgressMonitor monitor)
             throws InvocationTargetException, InterruptedException {
-        return new DiffNode(left, right);
+        return diffNode;
     }
 
     @Override

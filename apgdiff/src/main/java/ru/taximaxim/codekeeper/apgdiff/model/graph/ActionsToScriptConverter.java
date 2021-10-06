@@ -121,7 +121,7 @@ public class ActionsToScriptConverter {
                     if (depcy != null) {
                         script.addStatement(depcy);
                     }
-                    script.addCreate(obj, null, obj.getCreationSQL(), true);
+                    script.addCreate(obj, null, obj.getFormattedCreationSQL(), true);
 
                     if (arguments.isDataMovementMode()
                             && DbObjType.TABLE == obj.getStatementType()

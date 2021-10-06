@@ -58,21 +58,28 @@ public class DiffPaneViewer extends Composite {
     public void setInput(TreeElement el, Collection<TreeElement> availableElements) {
         this.availableElements = availableElements;
         if (el != null) {
-            diffPane.setInput(new DiffNode(new CompareItem(Messages.database, getSql(el, false)),
-                    new CompareItem(Messages.DiffPaneViewer_project, getSql(el, true))));
+            String contentsLeft = getSql(el, false, true);
+            String contentsRight = getSql(el, true, true);
+            if (contentsLeft != null && contentsRight != null
+                    && contentsLeft.equals(contentsRight)) {
+                contentsLeft = getSql(el, false, false);
+                contentsRight = getSql(el, true, false);
+            }
+            diffPane.setInput(new DiffNode(new CompareItem(Messages.database, contentsLeft),
+                    new CompareItem(Messages.DiffPaneViewer_project, contentsRight)));
         } else {
             diffPane.setInput(null);
         }
     }
 
-    private String getSql(TreeElement el, boolean project) {
-        String elSql = getElementSql(el, project);
+    private String getSql(TreeElement el, boolean project, boolean isFormatted) {
+        String elSql = getElementSql(el, project, isFormatted);
         if (elSql != null && availableElements != null && el.hasChildren()
                 && DiffTableViewer.isContainer(el)) {
             StringBuilder sb = new StringBuilder(elSql);
             for (TreeElement child : el.getChildren()) {
                 if (availableElements.contains(child)) {
-                    String childSql = getElementSql(child, project);
+                    String childSql = getElementSql(child, project, isFormatted);
                     if (childSql != null) {
                         sb.append(UIConsts._NL).append(UIConsts._NL).append(childSql);
                     }
@@ -84,14 +91,18 @@ public class DiffPaneViewer extends Composite {
         }
     }
 
-    private String getElementSql(TreeElement el, boolean project) {
+    private String getElementSql(TreeElement el, boolean project, boolean isFormatted) {
         if (el.getSide() == DiffSide.LEFT == project || el.getSide() == DiffSide.BOTH) {
             DbSource db = project ? dbProject : dbRemote;
             PgStatement st = el.getPgStatement(db.getDbObject());
             if (st.getStatementType() == DbObjType.ASSEMBLY) {
                 return ((MsAssembly)st).getPreview();
             }
-            return st.getFullSQL();
+            if (isFormatted) {
+                return st.getFullFormattedSQL();
+            } else {
+                return st.getFullSQL();
+            }
         } else {
             return null;
         }

@@ -69,4 +69,14 @@ public class FormatConfiguration {
 
         return new String(chars);
     }
+
+    public FormatConfiguration copy() {
+        FormatConfiguration config = new FormatConfiguration();
+        config.addWhitespaceBeforeOp = isAddWhitespaceBeforeOp();
+        config.addWhitespaceAfterOp = isAddWhitespaceAfterOp();
+        config.removeTrailingWhitespace = isRemoveTrailingWhitespace();
+        config.indentType = getIndentType();
+        config.indentSize = getIndentSize();
+        return config;
+    }
 }

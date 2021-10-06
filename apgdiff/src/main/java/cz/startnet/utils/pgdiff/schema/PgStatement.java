@@ -15,6 +15,8 @@ import java.util.stream.Stream;
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.formatter.FileFormatter;
+import cz.startnet.utils.pgdiff.formatter.FormatterException;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import cz.startnet.utils.pgdiff.hashers.IHashable;
 import cz.startnet.utils.pgdiff.hashers.JavaHasher;
@@ -365,6 +367,28 @@ public abstract class PgStatement implements IStatement, IHashable {
 
     public String getFullSQL() {
         return getCreationSQL();
+    }
+
+    public String getFullFormattedSQL() {
+        return formatSQL(getFullSQL());
+    }
+
+    public String getFormattedCreationSQL() {
+        return formatSQL(getCreationSQL());
+    }
+
+    private String formatSQL(String sql) {
+        PgDiffArguments args = getDatabase().getArguments();
+        if (args == null || !args.isFormatOption()) {
+            return sql;
+        }
+        FileFormatter fileForm = new FileFormatter(sql, 0, sql.length(), args.getFormatConfiguration(), false);
+        try {
+            return fileForm.formatText();
+        } catch (FormatterException e) {
+            Log.log(e);
+            return sql;
+        }
     }
 
     public abstract String getDropSQL();

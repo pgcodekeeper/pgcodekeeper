@@ -10,10 +10,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import cz.startnet.utils.pgdiff.formatter.FormatConfiguration;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class PgDiffArguments implements Cloneable {
+public class PgDiffArguments {
 
     private String newSrc;
     private String oldSrc;
@@ -46,6 +47,8 @@ public class PgDiffArguments implements Cloneable {
     private boolean simplifyView;
     private boolean ignoreErrors;
     private boolean ignoreColumnOrder;
+    private boolean formatOption;
+    private FormatConfiguration formatConfiguration = new FormatConfiguration();
 
     public void setNewSrc(final String newSrc) {
         this.newSrc = newSrc;
@@ -167,6 +170,22 @@ public class PgDiffArguments implements Cloneable {
         this.ignoreColumnOrder = ignoreColumnOrder;
     }
 
+    public boolean isFormatOption() {
+        return formatOption;
+    }
+
+    public void setFormatOption(boolean formatOption) {
+        this.formatOption = formatOption;
+    }
+
+    public void setFormatConfiguration(FormatConfiguration formatConfiguration) {
+        this.formatConfiguration = formatConfiguration;
+    }
+
+    public FormatConfiguration getFormatConfiguration() {
+        return formatConfiguration;
+    }
+
     public String getInCharsetName() {
         return inCharsetName;
     }
@@ -259,12 +278,41 @@ public class PgDiffArguments implements Cloneable {
         this.simplifyView = simplifyView;
     }
 
-    @Override
-    public PgDiffArguments clone() {
-        try {
-            return (PgDiffArguments) super.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new RuntimeException("Impossible error", e);
-        }
+    public PgDiffArguments copy() {
+        PgDiffArguments arg = new PgDiffArguments();
+        arg.newSrc = getNewSrc();
+        arg.oldSrc = getOldSrc();
+        arg.newSrcFormat = getNewSrcFormat();
+        arg.oldSrcFormat = getOldSrcFormat();
+        arg.inCharsetName = getInCharsetName();
+        arg.ignorePrivileges = isIgnorePrivileges();
+        arg.keepNewlines = isKeepNewlines();
+        arg.addTransaction = isAddTransaction();
+        arg.disableCheckFunctionBodies = isDisableCheckFunctionBodies();
+        arg.enableFunctionBodiesDependencies = isEnableFunctionBodiesDependencies();
+        arg.timeZone = getTimeZone();
+        arg.usingTypeCastOff = isUsingTypeCastOff();
+        arg.selectedOnly = isSelectedOnly();
+        arg.dataMovementMode = isDataMovementMode();
+        arg.concurrentlyMode = isConcurrentlyMode();
+        arg.allowedTypes.addAll(getAllowedTypes());
+        arg.stopNotAllowed = isStopNotAllowed();
+        arg.ignoreLists.addAll(getIgnoreLists());
+        arg.ignoreSchemaList = getIgnoreSchemaList();
+        arg.sourceLibs.addAll(getSourceLibs());
+        arg.sourceLibXmls.addAll(getSourceLibXmls());
+        arg.sourceLibsWithoutPriv.addAll(getSourceLibsWithoutPriv());
+        arg.targetLibXmls.addAll(getTargetLibXmls());
+        arg.targetLibs.addAll(getTargetLibs());
+        arg.targetLibsWithoutPriv.addAll(getTargetLibsWithoutPriv());
+        arg.libSafeMode = isLibSafeMode();
+        arg.msSql = isMsSql();
+        arg.ignoreConcurrentModification = isIgnoreConcurrentModification();
+        arg.simplifyView = isSimplifyView();
+        arg.ignoreErrors = isIgnoreErrors();
+        arg.ignoreColumnOrder = isIgnoreColumnOrder();
+        arg.formatOption = isFormatOption();
+        arg.formatConfiguration = formatConfiguration.copy();
+        return arg;
     }
 }
