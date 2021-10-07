@@ -224,6 +224,9 @@ public class PgDiffDepciesTest {
             // добавление оператора с перегруженными функциями
             // пользователь выбрал оператор
             {"add_operator_usr_op"},
+            // проверка объекта forein_data_wrapper, server
+            // пользователь выбрал объект forein_table с зависимыми от него forein_data_wrapper, server
+            {"change_fdw_usr"},
         });
     }
 

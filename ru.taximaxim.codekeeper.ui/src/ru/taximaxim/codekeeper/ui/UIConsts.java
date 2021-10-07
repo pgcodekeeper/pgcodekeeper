@@ -197,8 +197,7 @@ public interface UIConsts {
         String ICONDATABASE = ICONPGADMIN + "database.png"; //$NON-NLS-1$
 
         // copies of inaccessible Eclipse icons
-        String ICONUP = "/icons/search_prev.gif"; //$NON-NLS-1$
-        String ICONDOWN = "/icons/search_next.gif"; //$NON-NLS-1$
+        String ICONSEARCHLINE = "/icons/search_line.gif"; //$NON-NLS-1$
         String ICONEDIT = "/icons/editor_area.png"; //$NON-NLS-1$
         String ICONSELECTALL = "/icons/check_all.gif"; //$NON-NLS-1$
         String ICONSELECTNONE = "/icons/uncheck_all.gif"; //$NON-NLS-1$
@@ -206,7 +205,6 @@ public interface UIConsts {
         String ICONAPPLYTO = "/icons/save_edit.png"; //$NON-NLS-1$
         String ICONREFRESH = "/icons/refresh_16x18.png"; //$NON-NLS-1$
         String ICONWRITEOUTCONSOLE = "/icons/writeout_co.png"; //$NON-NLS-1$
-        String ICONCHECK = "/icons/header_complete.gif"; //$NON-NLS-1$
         String ICONEMPTYFILTER = "/icons/empty_filter.png"; //$NON-NLS-1$
         String ICONFILTER = "/icons/filter_tsk.png"; //$NON-NLS-1$
         String ICONALERT = "/icons/alert_obj.gif"; //$NON-NLS-1$

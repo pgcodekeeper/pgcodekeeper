@@ -6,6 +6,10 @@ COMMENT ON CAST (integer AS bigint) IS 'test cast 2';
 
 COMMENT ON EXTENSION test_ext IS 'test extension 2';
 
+COMMENT ON FOREIGN DATA WRAPPER test_fdw_2 IS 'new comment';
+
+COMMENT ON SERVER test_server_0 IS 'new_comment';
+
 COMMENT ON COLUMN public.typ_composite.key IS 'Type column of composite comment 2';
 
 COMMENT ON TYPE public.typ_composite IS 'This composite type 2';

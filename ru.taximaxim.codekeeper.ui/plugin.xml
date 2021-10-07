@@ -84,6 +84,11 @@
         </command>
         <command
             categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            id="ru.taximaxim.codekeeper.ui.command.FindReferences"
+            name="find references">
+        </command>
+        <command
+            categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
             id="ru.taximaxim.codekeeper.ui.command.UpdateDdl"
             name="%command.commandname.UpdateDdl">
         </command>
@@ -190,6 +195,10 @@
                     </adapt>
                 </with>
             </enabledWhen>
+        </handler>
+        <handler
+            class="ru.taximaxim.codekeeper.ui.handlers.FindReferences"
+            commandId="ru.taximaxim.codekeeper.ui.command.FindReferences">
         </handler>
         <handler
             class="ru.taximaxim.codekeeper.ui.handlers.OpenSQLEditor"
@@ -1413,6 +1422,12 @@
             sequence="M1+M3+A">
         </key>
         <key
+            commandId="ru.taximaxim.codekeeper.ui.command.FindReferences"
+            contextId="ru.taximaxim.codekeeper.ui.pgCodeKeeperEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M2+G">
+        </key>
+        <key
             commandId="ru.taximaxim.codekeeper.ui.command.UpdateDdl"
             contextId="ru.taximaxim.codekeeper.ui.pgCodeKeeperEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
@@ -1458,5 +1473,13 @@
             class="ru.taximaxim.codekeeper.ui.comparetools.SqlContentViewerCreator"
             id="ru.taximaxim.codekeeper.ui.SqlContentViewerCreator">
         </viewer>
+    </extension>
+    <extension
+          point="org.eclipse.search.searchResultViewPages">
+       <viewPage
+             class="ru.taximaxim.codekeeper.ui.search.ReferenceResultPage"
+             id="ru.taximaxim.codekeeper.ui.ReferenceResultPage"
+             searchResultClass="ru.taximaxim.codekeeper.ui.search.ReferenceSearchResult">
+       </viewPage>
     </extension>
 </plugin>

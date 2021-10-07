@@ -304,13 +304,22 @@ implements IResourceChangeListener, ITextErrorReporter {
         ISelection selection = provider.getSelection();
         if (selection instanceof ITextSelection) {
             ITextSelection textSelection = (ITextSelection) selection;
-            int offset = textSelection.getOffset();
-
-            return getReferences().stream()
-                    .filter(loc -> loc.getOffset() <= offset && offset <= loc.getOffset() + loc.getObjLength())
-                    .findAny().orElse(null);
+            return getObjectAtOffset(textSelection.getOffset(), true);
         }
 
+        return null;
+    }
+
+    public PgObjLocation getObjectAtOffset(int offset, boolean includeNextPos) {
+        for (PgObjLocation obj : getReferences()) {
+            int endPos = obj.getOffset() + obj.getObjLength();
+            if (includeNextPos) {
+                endPos++;
+            }
+            if (offset >= obj.getOffset() && offset < endPos) {
+                return obj;
+            }
+        }
         return null;
     }
 

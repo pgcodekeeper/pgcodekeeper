@@ -227,8 +227,34 @@ GRANT ALL ON SEQUENCE public.test_id_seq TO maindb;
 
 GRANT ALL ON TABLE public.test_view TO maindb;
 
+ -- change privileges for fdw11
+ 
+CREATE FOREIGN DATA WRAPPER fdw11;
+GRANT ALL ON FOREIGN DATA WRAPPER fdw11 TO user_1;
+
+ -- add new privileges for fdw2
+
+CREATE FOREIGN DATA WRAPPER fdw2;
+GRANT ALL ON FOREIGN DATA WRAPPER fdw2 TO user_1;
+
+ -- revoke old privileges for fdw3
+
+CREATE FOREIGN DATA WRAPPER fdw3;
+
+ -- change privileges for server
+
+CREATE SERVER test_server1 FOREIGN DATA WRAPPER fdw11;
+GRANT ALL ON FOREIGN SERVER test_server1 TO user_1;
+
+ -- add new privileges for server
+
+CREATE SERVER test_server2 FOREIGN DATA WRAPPER fdw11;
+GRANT ALL ON FOREIGN SERVER test_server2 TO user_1;
+
+ -- revoke old privileges for server
+
+CREATE SERVER test_server3 FOREIGN DATA WRAPPER fdw11;
 
 --
 -- PostgreSQL database dump complete
 --
-

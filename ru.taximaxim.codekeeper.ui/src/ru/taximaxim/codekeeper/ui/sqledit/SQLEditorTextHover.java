@@ -1,7 +1,6 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
 import java.util.Iterator;
-import java.util.Optional;
 
 import org.eclipse.jface.text.DefaultTextHover;
 import org.eclipse.jface.text.IInformationControlCreator;
@@ -19,7 +18,6 @@ import org.eclipse.ui.editors.text.EditorsUI;
 
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
-import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 
 final class SQLEditorTextHover extends DefaultTextHover implements ITextHoverExtension, ITextHoverExtension2, ITextHover {
 
@@ -34,16 +32,14 @@ final class SQLEditorTextHover extends DefaultTextHover implements ITextHoverExt
 
     @Override
     public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
-        Optional<IRegion> region = Optional.empty();
-        PgDbParser parser = editor.getParser();
-        for (PgObjLocation obj : parser.getObjsForEditor(editor.getEditorInput())) {
-            if (offset > obj.getOffset() && offset < (obj.getOffset() + obj.getObjLength())) {
-                region = parser.getDefinitionsForObj(obj)
-                        .findAny()
-                        .map(meta -> new SQLEditorMyRegion(obj,  meta.getComment()));
-            }
+        PgObjLocation obj = editor.getObjectAtOffset(offset, false);
+        if (obj == null) {
+            return new Region(offset, 0);
         }
-        return region.orElse(new Region(offset, 0));
+        return editor.getParser().getDefinitionsForObj(obj)
+                .findAny()
+                .map(meta -> (IRegion) new SQLEditorMyRegion(obj,  meta.getComment()))
+                .orElse(new Region(offset, 0));
     }
 
     @Override
@@ -54,7 +50,8 @@ final class SQLEditorTextHover extends DefaultTextHover implements ITextHoverExt
     @Override
     protected boolean isIncluded(Annotation annotation) {
         // exclude text change annotations
-        return !annotation.getType().startsWith(QUICKDIFF);
+        return annotation.getText() != null && !annotation.isMarkedDeleted()
+                && !annotation.getType().startsWith(QUICKDIFF);
     }
 
     @Override
@@ -64,8 +61,7 @@ final class SQLEditorTextHover extends DefaultTextHover implements ITextHoverExt
 
     @Override
     public Object getHoverInfo2(ITextViewer textViewer, IRegion hoverRegion) {
-        IAnnotationModel model;
-        model = ((ISourceViewer) textViewer).getAnnotationModel();
+        IAnnotationModel model = ((ISourceViewer) textViewer).getAnnotationModel();
         if (model == null) {
             return null;
         }

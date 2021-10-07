@@ -6,8 +6,7 @@ import cz.startnet.utils.pgdiff.ContextLocation;
 
 public class AntlrError extends ContextLocation {
 
-    private static final long serialVersionUID = 3290362774294960759L;
-
+    private static final long serialVersionUID = -6122212579392980835L;
     private final String msg;
     private final String text;
     private final int stop;

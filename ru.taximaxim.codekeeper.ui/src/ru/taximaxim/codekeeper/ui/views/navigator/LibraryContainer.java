@@ -14,6 +14,7 @@ import java.util.stream.Stream;
 import cz.startnet.utils.pgdiff.libraries.PgLibrary;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class LibraryContainer {
@@ -76,19 +77,11 @@ public class LibraryContainer {
 
     private static void readProject(LibraryContainer parent, Path p) throws IOException {
         LibraryContainer proj = new LibraryContainer(parent, p);
-        Path extension = p.resolve(ApgdiffConsts.WORK_DIR_NAMES.EXTENSION.toString());
-        if (Files.exists(extension)) {
-            readFile(proj, extension);
-        }
-
-        Path cast = p.resolve(ApgdiffConsts.WORK_DIR_NAMES.CAST.toString());
-        if (Files.exists(cast)) {
-            readFile(proj, cast);
-        }
-
-        Path schema = p.resolve(ApgdiffConsts.WORK_DIR_NAMES.SCHEMA.toString());
-        if (Files.exists(schema)) {
-            readFile(proj, schema);
+        for (WORK_DIR_NAMES name : ApgdiffConsts.WORK_DIR_NAMES.values()) {
+            Path dirPath = p.resolve(name.name());
+            if (Files.exists(dirPath)) {
+                readFile(proj, dirPath);
+            }
         }
     }
 

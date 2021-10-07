@@ -327,7 +327,7 @@ alter_extension_action
 extension_member_object
     : ACCESS METHOD schema_qualified_name
     | AGGREGATE function_parameters
-    | CAST LEFT_PAREN schema_qualified_name AS schema_qualified_name RIGHT_PAREN
+    | CAST LEFT_PAREN cast_name RIGHT_PAREN
     | COLLATION identifier
     | CONVERSION identifier
     | DOMAIN schema_qualified_name
@@ -598,7 +598,6 @@ alter_server_statement
 alter_server_action
     : (VERSION character_string)? define_foreign_options
     | VERSION character_string
-    | owner_to
     | rename_to
     ;
 
@@ -726,7 +725,7 @@ create_domain_statement
     ;
 
 create_server_statement
-    : SERVER if_not_exists? identifier (TYPE character_string)? (VERSION character_string)?
+    : SERVER if_not_exists? identifier (TYPE type=character_string)? (VERSION version=character_string)?
     FOREIGN DATA WRAPPER identifier
     define_foreign_options?
     ;
@@ -825,7 +824,7 @@ alter_owner_statement
     : (OPERATOR target_operator
         | LARGE OBJECT NUMBER_LITERAL
         | (FUNCTION | PROCEDURE | AGGREGATE) name=schema_qualified_name function_args
-        | (TEXT SEARCH DICTIONARY | TEXT SEARCH CONFIGURATION | DOMAIN | SCHEMA | SEQUENCE | TYPE | MATERIALIZED? VIEW)
+        | (TEXT SEARCH DICTIONARY | TEXT SEARCH CONFIGURATION | FOREIGN DATA WRAPPER | SERVER | DOMAIN | SCHEMA | SEQUENCE | TYPE | MATERIALIZED? VIEW)
         if_exists? name=schema_qualified_name) owner_to
     ;
 
@@ -849,8 +848,7 @@ alter_foreign_data_wrapper
     ;
 
 alter_foreign_data_wrapper_action
-    : (HANDLER schema_qualified_name_nontype | NO HANDLER )? (VALIDATOR schema_qualified_name_nontype | NO VALIDATOR)? define_foreign_options?
-    | owner_to
+    : (HANDLER schema_qualified_name | NO HANDLER )? (VALIDATOR schema_qualified_name | NO VALIDATOR)? define_foreign_options?
     | rename_to
     ;
 
@@ -958,13 +956,9 @@ create_statistics_statement
     ;
 
 create_foreign_data_wrapper_statement
-    : FOREIGN DATA WRAPPER name=identifier (HANDLER schema_qualified_name_nontype | NO HANDLER )?
-    (VALIDATOR schema_qualified_name_nontype | NO VALIDATOR)?
-    (OPTIONS LEFT_PAREN option_without_equal (COMMA option_without_equal)* RIGHT_PAREN )?
-    ;
-
-option_without_equal
-    : identifier Character_String_Literal
+    : FOREIGN DATA WRAPPER name=identifier (HANDLER handler_func=schema_qualified_name | NO HANDLER )?
+    (VALIDATOR validator_func=schema_qualified_name | NO VALIDATOR)?
+     define_foreign_options?
     ;
 
 create_operator_statement
@@ -1163,7 +1157,7 @@ security_label
 comment_member_object
     : ACCESS METHOD identifier 
     | (AGGREGATE | PROCEDURE | FUNCTION | ROUTINE) name=schema_qualified_name function_args
-    | CAST LEFT_PAREN source=data_type AS target=data_type RIGHT_PAREN
+    | CAST LEFT_PAREN cast_name RIGHT_PAREN
     | COLLATION identifier
     | COLUMN name=schema_qualified_name
     | CONSTRAINT identifier ON DOMAIN? table_name=schema_qualified_name
@@ -1342,13 +1336,17 @@ alter_subscription_action
     ;
 
 create_cast_statement
-    : CAST LEFT_PAREN source=data_type AS target=data_type RIGHT_PAREN
+    : CAST LEFT_PAREN cast_name RIGHT_PAREN
     (WITH FUNCTION func_name=schema_qualified_name function_args | WITHOUT FUNCTION | WITH INOUT)
     (AS ASSIGNMENT | AS IMPLICIT)?
     ;
 
+cast_name
+    : source=data_type AS target=data_type
+    ;
+
 drop_cast_statement
-    : CAST if_exists? LEFT_PAREN source=data_type AS target=data_type RIGHT_PAREN cascade_restrict?
+    : CAST if_exists? LEFT_PAREN cast_name RIGHT_PAREN cascade_restrict?
     ;
 
 create_operator_family_statement
@@ -1876,7 +1874,7 @@ col_label
 
 /*
  * These rules should be generated using code in the Keyword class.
- * Word tokens that are not keywords should be added to nonreserved list.
+ * Word tokens that are not keywords should be added to nonkeyword list.
  */
 tokens_nonreserved
     : ABORT
@@ -2928,7 +2926,8 @@ null_ordering
 
 insert_stmt_for_psql
     : with_clause? INSERT INTO insert_table_name=schema_qualified_name (AS alias=identifier)?
-    (OVERRIDING (SYSTEM | USER) VALUE)? insert_columns?
+    insert_columns?
+    (OVERRIDING (SYSTEM | USER) VALUE)?
     (select_stmt | DEFAULT VALUES)
     (ON CONFLICT conflict_object? conflict_action)?
     (RETURNING select_list)?

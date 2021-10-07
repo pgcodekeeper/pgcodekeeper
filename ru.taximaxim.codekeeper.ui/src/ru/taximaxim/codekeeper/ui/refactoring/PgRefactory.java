@@ -23,6 +23,10 @@ public class PgRefactory {
         return INSTANCE;
     }
 
+    private PgRefactory() {
+        //empty private constructor
+    }
+
     public void rename(Shell shell, PgObjLocation selection) {
         IFile file = FileUtilsUi.getFileForLocation(selection);
         if (file == null || !IDE.saveAllEditors(new IResource[] { file.getProject() }, true)) {

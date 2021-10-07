@@ -6,6 +6,10 @@ COMMENT ON CAST (integer AS bigint) IS NULL;
 
 COMMENT ON EXTENSION test_ext IS NULL;
 
+COMMENT ON FOREIGN DATA WRAPPER test_fdw_1 IS NULL;
+
+COMMENT ON SERVER test_server_0 IS NULL;
+
 COMMENT ON COLUMN public.typ_composite.key IS NULL;
 
 COMMENT ON COLUMN public.typ_composite.val IS NULL;

@@ -1,8 +1,5 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.AbstractInformationControl;
 import org.eclipse.jface.text.IDocument;
@@ -26,12 +23,13 @@ import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.editors.text.EditorsUI;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class SQLEditorInformationControl extends AbstractInformationControl
 implements IInformationControlExtension2 {
 
-    private Composite fParent;
-    private SQLHoverInfo fInput;
+    private Composite parent;
+    private SQLHoverInfo input;
 
     public SQLEditorInformationControl(Shell parentShell, String statusFieldText) {
         //TODO statusFieldText is dissappearing when rename operation done. Need fix
@@ -41,21 +39,17 @@ implements IInformationControlExtension2 {
 
     @Override
     public boolean hasContents() {
-        return fInput != null;
-    }
-
-    private SQLHoverInfo getSQLHoverInfo() {
-        return fInput;
+        return input != null;
     }
 
     @Override
-    protected void createContent(Composite parentShell) {
-        fParent = parentShell;
+    protected void createContent(Composite parent) {
+        this.parent = parent;
         GridLayout layout = new GridLayout(1, false);
         layout.verticalSpacing = 0;
         layout.marginWidth = 0;
         layout.marginHeight = 0;
-        fParent.setLayout(layout);
+        parent.setLayout(layout);
     }
 
     @Override
@@ -82,41 +76,35 @@ implements IInformationControlExtension2 {
 
     @Override
     public void setInput(Object input) {
-        fInput = (SQLHoverInfo) input;
+        this.input = (SQLHoverInfo) input;
         deferredCreateContent();
     }
 
     protected void deferredCreateContent() {
-        createAnnotationInformation(getSQLHoverInfo().annotation);
+        createAnnotationInformation(input.annotation);
 
-        Color foreground = fParent.getForeground();
-        Color background = fParent.getBackground();
+        Color foreground = parent.getForeground();
+        Color background = parent.getBackground();
 
         setForegroundColor(foreground); // For main composite.
         setBackgroundColor(background);
-        setColorAndFont(fParent, foreground, background, JFaceResources.getDialogFont()); // For child elements.
-        if (fInput.pgObjLocation != null) {
-            MisplaceCompletionProposal [] misplaceCompletionProposals = MisplaceProposal.getMisplaceProposals(getSQLHoverInfo().annotation, fInput.pgObjLocation);
+        setColorAndFont(parent, foreground, background, JFaceResources.getDialogFont()); // For child elements.
+        if (input.pgObjLocation != null) {
+            MisplaceCompletionProposal [] misplaceCompletionProposals = MisplaceCompletionProposal.getMisplaceProposals(input.annotation, input.pgObjLocation);
             if (misplaceCompletionProposals != null) {
                 createCompletionProposalsControl(misplaceCompletionProposals);
             }
         }
-
-        fParent.layout(true);
     }
 
     private void createAnnotationInformation(Annotation annotation) {
-        Composite composite = new Composite(fParent, SWT.NONE);
+        Composite composite = new Composite(parent, SWT.NONE);
         composite.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
         GridLayout layout = new GridLayout(2, false);
         layout.marginHeight = 2;
         layout.marginWidth = 2;
         layout.horizontalSpacing = 0;
         composite.setLayout(layout);
-
-        GridData gridData = new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false);
-        gridData.widthHint = 17;
-        gridData.heightHint = 16;
 
         StyledText text = new StyledText(composite,
                 SWT.H_SCROLL | SWT.V_SCROLL | SWT.MULTI | SWT.WRAP | SWT.READ_ONLY);
@@ -128,14 +116,14 @@ implements IInformationControlExtension2 {
             if (annotationText != null) {
                 text.setText(annotationText);
             }
-        } else if (fInput.comment != null) {
-            text.setText(fInput.comment);
+        } else if (input.comment != null) {
+            text.setText(input.comment);
         }
     }
 
     private void createCompletionProposalsControl(
             MisplaceCompletionProposal[] proposals) {
-        Composite composite = new Composite(fParent, SWT.NONE);
+        Composite composite = new Composite(parent, SWT.NONE);
         composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         GridLayout layout2 = new GridLayout(1, false);
         layout2.marginHeight = 0;
@@ -151,10 +139,10 @@ implements IInformationControlExtension2 {
         GridData layoutData = new GridData(SWT.BEGINNING, SWT.CENTER, false, false);
         layoutData.horizontalIndent = 4;
         quickFixLabel.setLayoutData(layoutData);
-        String text = proposals.length == 1 ? "Quick fix available:" : String.valueOf(proposals.length) + " quick fixes available:";
+        String text = proposals.length == 1 ? Messages.SQLEditorInformationControl_quick_fix_available : String.valueOf(proposals.length) + Messages.SQLEditorInformationControl_quick_fix_availableSQLEditorInformationControl_quick_fixes_available;
         quickFixLabel.setText(text);
 
-        setColorAndFont(composite, fParent.getForeground(), fParent.getBackground(),
+        setColorAndFont(composite, parent.getForeground(), parent.getBackground(),
                 JFaceResources.getDialogFont());
         createCompletionProposalsList(composite, proposals);
     }
@@ -174,10 +162,9 @@ implements IInformationControlExtension2 {
         layout.marginLeft = 5;
         layout.verticalSpacing = 2;
         composite.setLayout(layout);
-        List<Link> list = new ArrayList<>();
 
         for (MisplaceCompletionProposal prop : proposals) {
-            list.add(createCompletionProposalLink(composite, prop)); // Original link for single fix, hence pass 1 for count
+            createCompletionProposalLink(composite, prop);
         }
         scrolledComposite.setContent(composite);
         setColorAndFont(scrolledComposite, parent.getForeground(), parent.getBackground(),
@@ -205,13 +192,13 @@ implements IInformationControlExtension2 {
     private Link createCompletionProposalLink(Composite parent,
             final MisplaceCompletionProposal proposal) {
         new Label(parent, SWT.NONE); // spacer to fill image cell
-        parent = new Composite(parent, SWT.NONE); // indented composite for multi-fix
+        Composite newParent = new Composite(parent, SWT.NONE); // indented composite for multi-fix
         GridLayout layout = new GridLayout(2, false);
         layout.marginWidth = 0;
         layout.marginHeight = 0;
-        parent.setLayout(layout);
+        newParent.setLayout(layout);
 
-        Link proposalLink = new Link(parent, SWT.NONE);
+        Link proposalLink = new Link(newParent, SWT.NONE);
         GridData layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
         String linkText = proposal.getDisplayString();
         proposalLink.setText("<a>" + linkText + "</a>"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -221,7 +208,7 @@ implements IInformationControlExtension2 {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 dispose();
-                IDocument document = fInput.viewer.getDocument();
+                IDocument document = input.viewer.getDocument();
                 proposal.apply(document);
             }
         });

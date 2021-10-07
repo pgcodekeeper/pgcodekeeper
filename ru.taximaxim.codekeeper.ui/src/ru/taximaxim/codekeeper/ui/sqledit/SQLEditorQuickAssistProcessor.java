@@ -9,11 +9,9 @@ import org.eclipse.jface.text.quickassist.IQuickAssistProcessor;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
-import org.eclipse.jface.text.source.TextInvocationContext;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
-import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 
 public class SQLEditorQuickAssistProcessor implements IQuickAssistProcessor {
     private final SQLEditor editor;
@@ -32,33 +30,24 @@ public class SQLEditorQuickAssistProcessor implements IQuickAssistProcessor {
         ISourceViewer viewer = quickAssistContext.getSourceViewer();
         IAnnotationModel model = viewer.getAnnotationModel();
 
-        int documentOffset = quickAssistContext.getOffset();
-        int length = viewer != null ? viewer.getSelectedRange().y : -1;
-        TextInvocationContext context = new TextInvocationContext(viewer,
-                documentOffset, length);
-
         if (model == null) {
             return null;
         }
 
-        MisplaceCompletionProposal[] proposals = computeProposals(context, model);
-        if (proposals == null) {
-            return null;
-        }
-        return proposals;
+        return computeProposals(quickAssistContext.getOffset(), model);
     }
 
     private MisplaceCompletionProposal[] computeProposals(
-            IQuickAssistInvocationContext context, IAnnotationModel model) {
-        int offset = context.getOffset();
+            int documentOffset, IAnnotationModel model) {
         Iterator<Annotation> iter = model.getAnnotationIterator();
         while (iter.hasNext()) {
             Annotation annotation = iter.next();
             if (annotation instanceof MarkerAnnotation) {
                 Position pos = model.getPosition(annotation);
-                if (pos != null && pos.overlapsWith(offset, 0)) {
+                pos = new Position(pos.getOffset(), pos.getLength() + 1);
+                if (pos != null && pos.overlapsWith(documentOffset, 0)) {
                     if (canFix(annotation)) {
-                        PgObjLocation obj = getPgObj(offset);
+                        PgObjLocation obj = editor.getObjectAtOffset(documentOffset, true);
                         if (obj != null) {
                             return getMisplaceProposal(annotation, obj);
                         }
@@ -66,33 +55,21 @@ public class SQLEditorQuickAssistProcessor implements IQuickAssistProcessor {
                 }
             }
         }
-        //TODO This disables Default Spelling Problems.
         return null;
     }
-
-    private PgObjLocation getPgObj( int offset) {
-        PgDbParser parser = editor.getParser();
-        for (PgObjLocation obj : parser.getObjsForEditor(editor.getEditorInput())) {
-            if (offset > obj.getOffset() && offset < (obj.getOffset() + obj.getObjLength())) {
-                return obj;
-            }
-        }
-        return null;
-    }
-
 
     private MisplaceCompletionProposal[] getMisplaceProposal(Annotation annotation, PgObjLocation pgObjLocation) {
-        return MisplaceProposal.getMisplaceProposals(annotation, pgObjLocation);
+        return MisplaceCompletionProposal.getMisplaceProposals(annotation, pgObjLocation);
     }
 
     @Override
     public String getErrorMessage() {
-        return "Some message";
+        return null;
     }
 
     @Override
     public boolean canFix(Annotation annotation) {
-        return MisplaceProposal.isMisplaceError(annotation);
+        return MisplaceCompletionProposal.isMisplaceError(annotation);
     }
 
     @Override

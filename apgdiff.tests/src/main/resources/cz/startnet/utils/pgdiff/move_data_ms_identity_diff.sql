@@ -47,7 +47,8 @@ GO
 SET IDENTITY_INSERT [dbo].[tbl] ON
 GO
 
-INSERT INTO [dbo].[tbl]([c1], [c2], [c3], [c4], [c6], [c5], [c7]) SELECT [c1], [c2], [c3], [c4], [c6], [c5], [c7] FROM [dbo].[tbl_randomly_generated_part]
+INSERT INTO [dbo].[tbl]([c1], [c2], [c3], [c4], [c6], [c5], [c7])
+SELECT [c1], [c2], [c3], [c4], [c6], [c5], [c7] FROM [dbo].[tbl_randomly_generated_part]
 GO
 
 SET IDENTITY_INSERT [dbo].[tbl] OFF
