@@ -108,6 +108,10 @@ public final class Messages extends NLS {
 
     public static String SQLEditorFormatterPrefPage_whitespace;
 
+    public static String SQLEditorInformationControl_quick_fix_available;
+
+    public static String SQLEditorInformationControl_quick_fix_availableSQLEditorInformationControl_quick_fixes_available;
+
     public static String SqlEditor_update_ddl;
 
     public static String UiProgressReporter_warning;
@@ -555,6 +559,8 @@ public final class Messages extends NLS {
 
 
     public static String ManualDepciesDialog_set_add_depcies;
+
+    public static String MisplaceCompletionProposal_rename_file_to;
     public static String MockDataPage_add_column;
 
     public static String MockDataPage_any_value;

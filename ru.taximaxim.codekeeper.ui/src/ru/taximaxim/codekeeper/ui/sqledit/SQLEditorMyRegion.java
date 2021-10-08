@@ -2,32 +2,33 @@ package ru.taximaxim.codekeeper.ui.sqledit;
 
 import org.eclipse.jface.text.IRegion;
 
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+
 public class SQLEditorMyRegion implements IRegion {
-    
-    private int length;
-    private int offset;
-    private String comment = ""; //$NON-NLS-1$
-    
-    public SQLEditorMyRegion(int offset, int length) {
-        this.offset = offset;
-        this.length = length;
+
+    private final PgObjLocation pgObjLocation;
+    private final String comment;
+
+    public SQLEditorMyRegion(PgObjLocation pgObjLocation, String comment) {
+        this.pgObjLocation = pgObjLocation;
+        this.comment = comment;
     }
 
     @Override
     public int getLength() {
-        return length;
+        return pgObjLocation.getObjLength();
     }
 
     @Override
     public int getOffset() {
-        return offset;
-    }
-    
-    public String getComment() {
-        return comment;
+        return pgObjLocation.getOffset();
     }
 
-    public void setComment(String comment) {
-        this.comment = comment;        
+    public PgObjLocation getPgObjLocation() {
+        return pgObjLocation;
+    }
+
+    public String getComment() {
+        return comment;
     }
 }

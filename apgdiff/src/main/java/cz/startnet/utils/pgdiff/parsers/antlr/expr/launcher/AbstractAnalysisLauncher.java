@@ -11,8 +11,10 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
+import cz.startnet.utils.pgdiff.parsers.antlr.ErrorTypes;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ExpressionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.exception.MisplacedObjectException;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.AbstractExprWithNmspc;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExprWithNmspc;
@@ -100,8 +102,9 @@ public abstract class AbstractAnalysisLauncher {
         } catch (UnresolvedReferenceException ex) {
             Token t = ex.getErrorToken();
             if (t != null) {
+                ErrorTypes errorType = ex instanceof MisplacedObjectException ? ErrorTypes.MISPLACEERROR : ErrorTypes.OTHER;
                 AntlrError err = new AntlrError(t, location, t.getLine(),
-                        t.getCharPositionInLine(), ex.getMessage())
+                        t.getCharPositionInLine(), ex.getMessage(), errorType)
                         .copyWithOffset(offset, lineOffset, inLineOffset);
                 Log.log(Log.LOG_WARNING, err.toString(), ex);
                 errors.add(err);

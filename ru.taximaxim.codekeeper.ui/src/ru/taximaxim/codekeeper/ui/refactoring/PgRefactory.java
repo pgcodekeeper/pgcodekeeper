@@ -2,6 +2,11 @@ package ru.taximaxim.codekeeper.ui.refactoring;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.ltk.core.refactoring.CheckConditionsOperation;
+import org.eclipse.ltk.core.refactoring.PerformRefactoringOperation;
 import org.eclipse.ltk.core.refactoring.participants.RenameRefactoring;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizardOpenOperation;
 import org.eclipse.swt.widgets.Shell;
@@ -16,6 +21,10 @@ public class PgRefactory {
 
     public static PgRefactory getInstance() {
         return INSTANCE;
+    }
+
+    private PgRefactory() {
+        //empty private constructor
     }
 
     public void rename(Shell shell, PgObjLocation selection) {
@@ -34,5 +43,14 @@ public class PgRefactory {
         } catch (InterruptedException e) {
             // cancelled
         }
+    }
+
+    public void fixFileName(PgObjLocation selection) throws CoreException {
+        RenameDefinitionProcessor processor = new RenameDefinitionProcessor(selection);
+        RenameRefactoring refactoring = new RenameRefactoring(processor);
+        processor.setNewName(selection.getObjName());
+        PerformRefactoringOperation op = new PerformRefactoringOperation(refactoring, CheckConditionsOperation.ALL_CONDITIONS);
+        ResourcesPlugin.getWorkspace().run(op, new NullProgressMonitor());
+        FileUtilsUi.getFileForLocation(selection).refreshLocal(IResource.DEPTH_ZERO, new NullProgressMonitor());
     }
 }

@@ -44,7 +44,8 @@ CREATE TABLE public.tbl (
 
 GRANT INSERT ON TABLE public.tbl TO test_user;
 
-INSERT INTO public.tbl(id, id_2, name, population, description, altitude, event_time) SELECT id, id_2, name, population, description, altitude, event_time FROM public.tbl_randomly_generated_part;
+INSERT INTO public.tbl(id, id_2, name, population, description, altitude, event_time)
+SELECT id, id_2, name, population, description, altitude, event_time FROM public.tbl_randomly_generated_part;
 
 DROP TABLE public.tbl_randomly_generated_part;
 
