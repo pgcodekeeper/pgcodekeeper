@@ -480,7 +480,7 @@ public final class NewObjectPage extends WizardPage {
 
     private String getDirName(DbObjType objType) {
         if (objType.equals(DbObjType.FOREIGN_DATA_WRAPPER)) {
-            return "FDW";
+            return "FDW"; //$NON-NLS-1$
         }
         return objType.name();
     }

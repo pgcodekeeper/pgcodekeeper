@@ -17,7 +17,6 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -185,7 +184,7 @@ public class UIProjectLoader extends ProjectLoader {
 
     private void loadFile(IFile file, IProgressMonitor monitor, PgDatabase db)
             throws CoreException, InterruptedException {
-        PgDiffArguments arguments = db.getArguments().clone();
+        PgDiffArguments arguments = db.getArguments().copy();
         arguments.setInCharsetName(file.getCharset());
 
         PgUIDumpLoader loader = new PgUIDumpLoader(file, arguments, monitor);
