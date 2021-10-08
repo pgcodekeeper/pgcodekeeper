@@ -72,14 +72,14 @@ public class DiffPaneViewer extends Composite {
         }
     }
 
-    private String getSql(TreeElement el, boolean project, boolean isFormatted) {
-        String elSql = getElementSql(el, project, isFormatted);
+    private String getSql(TreeElement el, boolean project, boolean format) {
+        String elSql = getElementSql(el, project, format);
         if (elSql != null && availableElements != null && el.hasChildren()
                 && DiffTableViewer.isContainer(el)) {
             StringBuilder sb = new StringBuilder(elSql);
             for (TreeElement child : el.getChildren()) {
                 if (availableElements.contains(child)) {
-                    String childSql = getElementSql(child, project, isFormatted);
+                    String childSql = getElementSql(child, project, format);
                     if (childSql != null) {
                         sb.append(UIConsts._NL).append(UIConsts._NL).append(childSql);
                     }
@@ -98,11 +98,7 @@ public class DiffPaneViewer extends Composite {
             if (st.getStatementType() == DbObjType.ASSEMBLY) {
                 return ((MsAssembly)st).getPreview();
             }
-            if (isFormatted) {
-                return st.getFullFormattedSQL();
-            } else {
-                return st.getFullSQL();
-            }
+            return isFormatted ? st.getFullFormattedSQL() : st.getFullSQL();
         } else {
             return null;
         }

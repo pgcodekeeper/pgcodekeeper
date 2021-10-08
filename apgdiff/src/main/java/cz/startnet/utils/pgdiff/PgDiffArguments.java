@@ -47,7 +47,7 @@ public class PgDiffArguments {
     private boolean simplifyView;
     private boolean ignoreErrors;
     private boolean ignoreColumnOrder;
-    private boolean formatOption;
+    private boolean autoFormatObjectCode;
     private FormatConfiguration formatConfiguration = new FormatConfiguration();
 
     public void setNewSrc(final String newSrc) {
@@ -170,12 +170,12 @@ public class PgDiffArguments {
         this.ignoreColumnOrder = ignoreColumnOrder;
     }
 
-    public boolean isFormatOption() {
-        return formatOption;
+    public boolean isAutoFormatObjectCode() {
+        return autoFormatObjectCode;
     }
 
-    public void setFormatOption(boolean formatOption) {
-        this.formatOption = formatOption;
+    public void setAutoFormatObjectCode(boolean autoFormatObjectCode) {
+        this.autoFormatObjectCode = autoFormatObjectCode;
     }
 
     public void setFormatConfiguration(FormatConfiguration formatConfiguration) {
@@ -311,7 +311,7 @@ public class PgDiffArguments {
         arg.simplifyView = isSimplifyView();
         arg.ignoreErrors = isIgnoreErrors();
         arg.ignoreColumnOrder = isIgnoreColumnOrder();
-        arg.formatOption = isFormatOption();
+        arg.autoFormatObjectCode = isAutoFormatObjectCode();
         arg.formatConfiguration = formatConfiguration.copy();
         return arg;
     }

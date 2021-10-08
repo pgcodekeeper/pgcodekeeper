@@ -3,7 +3,6 @@ package ru.taximaxim.codekeeper.ui.sqledit;
 import java.util.LinkedList;
 import java.util.Map;
 
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentPartitioner;
@@ -15,16 +14,10 @@ import org.eclipse.jface.text.formatter.IFormattingContext;
 import org.eclipse.text.edits.MalformedTreeException;
 import org.eclipse.text.edits.TextEdit;
 
-import cz.startnet.utils.pgdiff.formatter.FileFormatter;
-import cz.startnet.utils.pgdiff.formatter.FormatConfiguration;
-import cz.startnet.utils.pgdiff.formatter.FormatConfiguration.IndentType;
-import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.UIConsts.FORMATTER_PREF;
+import ru.taximaxim.codekeeper.ui.formatter.Formatter;
 
 public class SQLFormattingStrategy extends ContextBasedFormattingStrategy {
-
-    private final IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
 
     /** Documents to be formatted by this strategy */
     private final LinkedList<IDocument> fDocuments = new LinkedList<>();
@@ -50,7 +43,7 @@ public class SQLFormattingStrategy extends ContextBasedFormattingStrategy {
             int length = partition.getLength();
 
             try {
-                TextEdit edit = formatDoc(offset, length, document.get());
+                TextEdit edit = Formatter.formatDoc(offset, length, document.get(), editor.isMsSql());
 
                 if (edit != null) {
                     if (edit.getChildrenSize() > 20) {
@@ -69,28 +62,6 @@ public class SQLFormattingStrategy extends ContextBasedFormattingStrategy {
                 }
             }
         }
-    }
-
-    private TextEdit formatDoc(int offset, int length, String source) {
-        FormatConfiguration config = new FormatConfiguration();
-
-        String mode = mainPrefs.getString(FORMATTER_PREF.INDENT_TYPE);
-        if (FORMATTER_PREF.WHITESPACE.equals(mode)) {
-            config.setIndentType(IndentType.WHITESPACE);
-        } else if (FORMATTER_PREF.TAB.equals(mode)) {
-            config.setIndentType(IndentType.TAB);
-        }
-
-        config.setIndentSize(mainPrefs.getInt(FORMATTER_PREF.INDENT_SIZE));
-        config.setRemoveTrailingWhitespace(
-                mainPrefs.getBoolean(FORMATTER_PREF.REMOVE_TRAILING_WHITESPACE));
-        config.setAddWhitespaceBeforeOp(
-                mainPrefs.getBoolean(FORMATTER_PREF.ADD_WHITESPACE_BEFORE_OP));
-        config.setAddWhitespaceAfterOp(
-                mainPrefs.getBoolean(FORMATTER_PREF.ADD_WHITESPACE_AFTER_OP));
-
-        FileFormatter formatter = new FileFormatter(source, offset, length, config, editor.isMsSql());
-        return formatter.getFormatEdit();
     }
 
     @Override

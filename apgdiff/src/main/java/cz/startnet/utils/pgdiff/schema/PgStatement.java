@@ -379,10 +379,10 @@ public abstract class PgStatement implements IStatement, IHashable {
 
     private String formatSQL(String sql) {
         PgDiffArguments args = getDatabase().getArguments();
-        if (args == null || !args.isFormatOption()) {
+        if (args == null || !args.isAutoFormatObjectCode()) {
             return sql;
         }
-        FileFormatter fileForm = new FileFormatter(sql, 0, sql.length(), args.getFormatConfiguration(), false);
+        FileFormatter fileForm = new FileFormatter(sql, 0, sql.length(), args.getFormatConfiguration(), !isPostgres());
         try {
             return fileForm.formatText();
         } catch (FormatterException e) {

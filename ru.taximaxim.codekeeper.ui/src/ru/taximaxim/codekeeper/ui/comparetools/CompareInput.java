@@ -43,7 +43,7 @@ public class CompareInput extends CompareEditorInput {
         getCompareConfiguration().setLeftLabel(Messages.database);
         getCompareConfiguration().setRightLabel(Messages.DiffPaneViewer_project);
 
-        diffNode = getFormattedContents(null, name, project, remote);
+        diffNode = getFormattedContents(name, name, project, remote);
 
         setTitle("Compare " + type + ' ' + name); //$NON-NLS-1$
     }
@@ -51,10 +51,6 @@ public class CompareInput extends CompareEditorInput {
     private DiffNode getFormattedContents(String oldPath, String newPath, PgStatement project, PgStatement remote) {
         String contentsLeft = project == null ? "" : project.getFormattedCreationSQL(); //$NON-NLS-1$
         String contentsRight = remote == null ? "" : remote.getFormattedCreationSQL(); //$NON-NLS-1$
-
-        if (oldPath == null) {
-            oldPath = newPath;
-        }
 
         if (contentsLeft.equals(contentsRight)) {
             left = new CompareItem(oldPath, project == null ? "" : project.getFullSQL()); //$NON-NLS-1$
