@@ -106,10 +106,11 @@ implements SqlContextProcessor {
 
         for (Table_actionContext tablAction : ctx.table_action()) {
             Owner_toContext owner = tablAction.owner_to();
-            if (owner != null && owner.name != null) {
+            IdentifierContext name;
+            if (owner != null && (name = owner.user_name().identifier()) != null) {
                 IRelation st = getSafe(AbstractSchema::getRelation, schema, nameCtx);
                 overrides.computeIfAbsent((PgStatement) st,
-                        k -> new StatementOverride()).setOwner(owner.name.getText());
+                        k -> new StatementOverride()).setOwner(name.getText());
             }
         }
     }

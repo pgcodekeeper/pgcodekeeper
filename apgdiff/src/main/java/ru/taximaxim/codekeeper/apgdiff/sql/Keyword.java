@@ -5,7 +5,9 @@ import static ru.taximaxim.codekeeper.apgdiff.sql.Keyword.KeywordCategory.RESERV
 import static ru.taximaxim.codekeeper.apgdiff.sql.Keyword.KeywordCategory.TYPE_FUNC_NAME_KEYWORD;
 import static ru.taximaxim.codekeeper.apgdiff.sql.Keyword.KeywordCategory.UNRESERVED_KEYWORD;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Locale;
@@ -18,7 +20,7 @@ import java.util.Map;
  * <a href='https://github.com/postgres/postgres/blob/REL9_6_STABLE/src/include/parser/kwlist.h'>
  * kwlist.h</a>, use your desired stable branch.</li>
  * <li>Paste it into {@link #addKeywords(Map)}, replacing the code there.</li>
- * <li>In pasted code, replace <code>PG_KEYWORD\(("\w+"), \w+, (\w+)\)</code> by
+ * <li>In pasted code, replace <code>PG_KEYWORD\(("\w+"), \w+, (\w+), \w+\)</code> by
  * <code>keywords.put\($1, new Keyword\($1, $2\)\);</code> using regular expressions.</li>
  * </ol>
  *
@@ -61,10 +63,12 @@ public class Keyword {
         keywords.put("array", new Keyword("array", RESERVED_KEYWORD));
         keywords.put("as", new Keyword("as", RESERVED_KEYWORD));
         keywords.put("asc", new Keyword("asc", RESERVED_KEYWORD));
+        keywords.put("asensitive", new Keyword("asensitive", UNRESERVED_KEYWORD));
         keywords.put("assertion", new Keyword("assertion", UNRESERVED_KEYWORD));
         keywords.put("assignment", new Keyword("assignment", UNRESERVED_KEYWORD));
         keywords.put("asymmetric", new Keyword("asymmetric", RESERVED_KEYWORD));
         keywords.put("at", new Keyword("at", UNRESERVED_KEYWORD));
+        keywords.put("atomic", new Keyword("atomic", UNRESERVED_KEYWORD));
         keywords.put("attach", new Keyword("attach", UNRESERVED_KEYWORD));
         keywords.put("attribute", new Keyword("attribute", UNRESERVED_KEYWORD));
         keywords.put("authorization", new Keyword("authorization", TYPE_FUNC_NAME_KEYWORD));
@@ -77,6 +81,7 @@ public class Keyword {
         keywords.put("bit", new Keyword("bit", COL_NAME_KEYWORD));
         keywords.put("boolean", new Keyword("boolean", COL_NAME_KEYWORD));
         keywords.put("both", new Keyword("both", RESERVED_KEYWORD));
+        keywords.put("breadth", new Keyword("breadth", UNRESERVED_KEYWORD));
         keywords.put("by", new Keyword("by", UNRESERVED_KEYWORD));
         keywords.put("cache", new Keyword("cache", UNRESERVED_KEYWORD));
         keywords.put("call", new Keyword("call", UNRESERVED_KEYWORD));
@@ -104,6 +109,7 @@ public class Keyword {
         keywords.put("comments", new Keyword("comments", UNRESERVED_KEYWORD));
         keywords.put("commit", new Keyword("commit", UNRESERVED_KEYWORD));
         keywords.put("committed", new Keyword("committed", UNRESERVED_KEYWORD));
+        keywords.put("compression", new Keyword("compression", UNRESERVED_KEYWORD));
         keywords.put("concurrently", new Keyword("concurrently", TYPE_FUNC_NAME_KEYWORD));
         keywords.put("configuration", new Keyword("configuration", UNRESERVED_KEYWORD));
         keywords.put("conflict", new Keyword("conflict", UNRESERVED_KEYWORD));
@@ -145,6 +151,7 @@ public class Keyword {
         keywords.put("delimiter", new Keyword("delimiter", UNRESERVED_KEYWORD));
         keywords.put("delimiters", new Keyword("delimiters", UNRESERVED_KEYWORD));
         keywords.put("depends", new Keyword("depends", UNRESERVED_KEYWORD));
+        keywords.put("depth", new Keyword("depth", UNRESERVED_KEYWORD));
         keywords.put("desc", new Keyword("desc", RESERVED_KEYWORD));
         keywords.put("detach", new Keyword("detach", UNRESERVED_KEYWORD));
         keywords.put("dictionary", new Keyword("dictionary", UNRESERVED_KEYWORD));
@@ -180,6 +187,7 @@ public class Keyword {
         keywords.put("family", new Keyword("family", UNRESERVED_KEYWORD));
         keywords.put("fetch", new Keyword("fetch", RESERVED_KEYWORD));
         keywords.put("filter", new Keyword("filter", UNRESERVED_KEYWORD));
+        keywords.put("finalize", new Keyword("finalize", UNRESERVED_KEYWORD));
         keywords.put("first", new Keyword("first", UNRESERVED_KEYWORD));
         keywords.put("float", new Keyword("float", COL_NAME_KEYWORD));
         keywords.put("following", new Keyword("following", UNRESERVED_KEYWORD));
@@ -361,6 +369,7 @@ public class Keyword {
         keywords.put("reset", new Keyword("reset", UNRESERVED_KEYWORD));
         keywords.put("restart", new Keyword("restart", UNRESERVED_KEYWORD));
         keywords.put("restrict", new Keyword("restrict", UNRESERVED_KEYWORD));
+        keywords.put("return", new Keyword("return", UNRESERVED_KEYWORD));
         keywords.put("returning", new Keyword("returning", RESERVED_KEYWORD));
         keywords.put("returns", new Keyword("returns", UNRESERVED_KEYWORD));
         keywords.put("revoke", new Keyword("revoke", UNRESERVED_KEYWORD));
@@ -522,18 +531,33 @@ public class Keyword {
      * Do not call from project's code.
      */
 
+    // SONAR-OFF
     public static void getAllTokensByGroups() {
-        Map<KeywordCategory, StringBuilder> map = new EnumMap<>(KeywordCategory.class);
-        KEYWORDS.values().stream()
-        .sorted((v1,v2) -> v1.getKeyword().compareTo(v2.getKeyword()))
+        KeywordCategory[] prevCat = new KeywordCategory[1];
+        char[] prevFirstLetter = new char[1];
+
+        Arrays.stream(KeywordCategory.values())
+        .flatMap(kc -> KEYWORDS.values().stream()
+                .filter(k -> k.getCategory() == kc)
+                .sorted(Comparator.comparing(Keyword::getKeyword)))
         .forEach(v -> {
-            StringBuilder sb = map.get(v.getCategory());
-            if (sb == null) {
-                sb = new StringBuilder();
-                map.put(v.getCategory(), sb);
+            if (prevCat[0] != v.getCategory()) {
+                System.out.println();
+                System.out.println("    /*");
+                System.out.println("    ==================================================");
+                System.out.println("    " + v.getCategory());
+                System.out.println("    ==================================================");
+                System.out.println("    */");
+                prevCat[0] = v.getCategory();
             }
             String k = v.getKeyword();
             String kUpper = k.toUpperCase(Locale.ROOT);
+            char firstLetter = k.charAt(0);
+            if (prevFirstLetter[0] != firstLetter) {
+                System.out.println();
+                prevFirstLetter[0] = firstLetter;
+            }
+            StringBuilder sb = new StringBuilder();
             sb.append("    ").append(kUpper).append(':');
             for (int i = 0; i < k.length(); ++i){
                 char ch = k.charAt(i);
@@ -543,17 +567,11 @@ public class Keyword {
                     sb.append(" [").append(ch).append(kUpper.charAt(i)).append(']');
                 }
             }
-            sb.append(";\n");
+            sb.append(";");
+            System.out.println(sb);
         });
-        // SONAR-OFF
-        map.keySet().stream().sorted().forEach(k -> {
-            System.out.println("==================================================");
-            System.out.println(k);
-            System.out.println("==================================================");
-            System.out.println(map.get(k));
-        });
-        // SONAR-ON
     }
+    // SONAR-ON
 
     public static void getAllWordsByGroups() {
         Map<KeywordCategory, StringBuilder> map = new EnumMap<>(KeywordCategory.class);

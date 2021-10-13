@@ -57,15 +57,18 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     ALSO: [aA] [lL] [sS] [oO];
     ALTER: [aA] [lL] [tT] [eE] [rR];
     ALWAYS: [aA] [lL] [wW] [aA] [yY] [sS];
+    ASENSITIVE: [aA] [sS] [eE] [nN] [sS] [iI] [tT] [iI] [vV] [eE];
     ASSERTION: [aA] [sS] [sS] [eE] [rR] [tT] [iI] [oO] [nN];
     ASSIGNMENT: [aA] [sS] [sS] [iI] [gG] [nN] [mM] [eE] [nN] [tT];
     AT: [aA] [tT];
+    ATOMIC: [aA] [tT] [oO] [mM] [iI] [cC];
     ATTACH: [aA] [tT] [tT] [aA] [cC] [hH];
     ATTRIBUTE: [aA] [tT] [tT] [rR] [iI] [bB] [uU] [tT] [eE];
 
     BACKWARD: [bB] [aA] [cC] [kK] [wW] [aA] [rR] [dD];
     BEFORE: [bB] [eE] [fF] [oO] [rR] [eE];
     BEGIN: [bB] [eE] [gG] [iI] [nN];
+    BREADTH: [bB] [rR] [eE] [aA] [dD] [tT] [hH];
     BY: [bB] [yY];
 
     CACHE: [cC] [aA] [cC] [hH] [eE];
@@ -85,6 +88,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     COMMENTS: [cC] [oO] [mM] [mM] [eE] [nN] [tT] [sS];
     COMMIT: [cC] [oO] [mM] [mM] [iI] [tT];
     COMMITTED: [cC] [oO] [mM] [mM] [iI] [tT] [tT] [eE] [dD];
+    COMPRESSION: [cC] [oO] [mM] [pP] [rR] [eE] [sS] [sS] [iI] [oO] [nN];
     CONFIGURATION: [cC] [oO] [nN] [fF] [iI] [gG] [uU] [rR] [aA] [tT] [iI] [oO] [nN];
     CONFLICT: [cC] [oO] [nN] [fF] [lL] [iI] [cC] [tT];
     CONNECTION: [cC] [oO] [nN] [nN] [eE] [cC] [tT] [iI] [oO] [nN];
@@ -112,6 +116,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     DELIMITER: [dD] [eE] [lL] [iI] [mM] [iI] [tT] [eE] [rR];
     DELIMITERS: [dD] [eE] [lL] [iI] [mM] [iI] [tT] [eE] [rR] [sS];
     DEPENDS: [dD] [eE] [pP] [eE] [nN] [dD] [sS];
+    DEPTH: [dD] [eE] [pP] [tT] [hH];
     DETACH: [dD] [eE] [tT] [aA] [cC] [hH];
     DICTIONARY: [dD] [iI] [cC] [tT] [iI] [oO] [nN] [aA] [rR] [yY];
     DISABLE: [dD] [iI] [sS] [aA] [bB] [lL] [eE];
@@ -139,6 +144,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
 
     FAMILY: [fF] [aA] [mM] [iI] [lL] [yY];
     FILTER: [fF] [iI] [lL] [tT] [eE] [rR];
+    FINALIZE: [fF] [iI] [nN] [aA] [lL] [iI] [zZ] [eE];
     FIRST: [fF] [iI] [rR] [sS] [tT];
     FOLLOWING: [fF] [oO] [lL] [lL] [oO] [wW] [iI] [nN] [gG];
     FORCE: [fF] [oO] [rR] [cC] [eE];
@@ -274,6 +280,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     RESET: [rR] [eE] [sS] [eE] [tT];
     RESTART: [rR] [eE] [sS] [tT] [aA] [rR] [tT];
     RESTRICT: [rR] [eE] [sS] [tT] [rR] [iI] [cC] [tT];
+    RETURN: [rR] [eE] [tT] [uU] [rR] [nN];
     RETURNS: [rR] [eE] [tT] [uU] [rR] [nN] [sS];
     REVOKE: [rR] [eE] [vV] [oO] [kK] [eE];
     ROLE: [rR] [oO] [lL] [eE];
@@ -586,7 +593,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     WHERE: [wW] [hH] [eE] [rR] [eE];
     WINDOW: [wW] [iI] [nN] [dD] [oO] [wW];
     WITH: [wW] [iI] [tT] [hH];   // last RESERVED_KEYWORD, sync with AntlrUtils.normalizeWhitespaceUnquoted
-    
+
     /*
      * Other tokens.
      * Some sql words/data types are not keywords but we need a token to be able to parse them.
@@ -757,7 +764,6 @@ private final Deque<String> _tags = new ArrayDeque<String>();
 
     RAISE: [rR] [aA] [iI] [sS] [eE];
     RECORD: [rR] [eE] [cC] [oO] [rR] [dD];
-    RETURN: [rR] [eE] [tT] [uU] [rR] [nN];
     REVERSE: [rR] [eE] [vV] [eE] [rR] [sS] [eE];
     ROWTYPE: [rR] [oO] [wW] [tT] [yY] [pP] [eE];
 

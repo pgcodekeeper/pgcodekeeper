@@ -144,7 +144,7 @@ explain_option
     ;
 
 user_name
-    : identifier | CURRENT_USER | SESSION_USER
+    : identifier | CURRENT_ROLE | CURRENT_USER | SESSION_USER
     ;
 
 table_cols_list
@@ -370,7 +370,7 @@ alter_table_statement
         | rename_to
         | RENAME CONSTRAINT identifier TO identifier
         | ATTACH PARTITION child=schema_qualified_name for_values_bound
-        | DETACH PARTITION child=schema_qualified_name)
+        | DETACH PARTITION child=schema_qualified_name (CONCURRENTLY | FINALIZE)?)
     ;
 
 table_action
@@ -1053,7 +1053,7 @@ rewrite_command
     ;
 
 create_trigger_statement
-    : CONSTRAINT? TRIGGER name=identifier (before_true=BEFORE | (INSTEAD OF) | AFTER)
+    : (OR REPLACE)? CONSTRAINT? TRIGGER name=identifier (before_true=BEFORE | (INSTEAD OF) | AFTER)
     (((insert_true=INSERT | delete_true=DELETE | truncate_true=TRUNCATE) 
     | update_true=UPDATE (OF identifier_list)?)OR?)+
     ON table_name=schema_qualified_name
@@ -1074,10 +1074,8 @@ when_trigger
     ;
 
 rule_common
-    : (GRANT | REVOKE grant_option_for?)
-    (permissions | columns_permissions)
-    ON rule_member_object
-    (TO | FROM) roles_names (WITH GRANT OPTION | cascade_restrict)?
+    : GRANT (permissions | columns_permissions) ON rule_member_object TO roles_names (WITH GRANT OPTION)? granted_by?
+    | REVOKE grant_option_for? (permissions | columns_permissions) ON rule_member_object FROM roles_names granted_by? cascade_restrict?
     | other_rules
     ;
 
@@ -1126,8 +1124,8 @@ permission
     ;
 
 other_rules
-    : GRANT names_references TO names_references (WITH ADMIN OPTION)?
-    | REVOKE (ADMIN OPTION FOR)? names_references FROM names_references cascade_restrict?
+    : GRANT names_references TO roles_names (WITH ADMIN OPTION)? granted_by?
+    | REVOKE (ADMIN OPTION FOR)? names_references FROM roles_names granted_by? cascade_restrict?
     ;
 
 grant_to_rule
@@ -1144,6 +1142,10 @@ roles_names
 
 role_name_with_group
     : GROUP? user_name
+    ;
+
+granted_by
+    : GRANTED BY role_name_with_group
     ;
 
 comment_on_statement
@@ -1326,7 +1328,7 @@ alter_subscription_statement
 
 alter_subscription_action
     : CONNECTION character_string
-    | SET PUBLICATION identifier_list with_storage_parameter?
+    | (ADD | DROP | SET) PUBLICATION identifier_list with_storage_parameter?
     | REFRESH PUBLICATION with_storage_parameter?
     | ENABLE
     | DISABLE
@@ -1736,7 +1738,7 @@ action
     ;
 
 owner_to
-    : OWNER TO (name=identifier | CURRENT_USER | SESSION_USER)
+    : OWNER TO user_name
     ;
 
 rename_to
@@ -1888,14 +1890,17 @@ tokens_nonreserved
     | ALSO
     | ALTER
     | ALWAYS
+    | ASENSITIVE
     | ASSERTION
     | ASSIGNMENT
     | AT
+    | ATOMIC
     | ATTACH
     | ATTRIBUTE
     | BACKWARD
     | BEFORE
     | BEGIN
+    | BREADTH
     | BY
     | CACHE
     | CALL
@@ -1914,6 +1919,7 @@ tokens_nonreserved
     | COMMENTS
     | COMMIT
     | COMMITTED
+    | COMPRESSION
     | CONFIGURATION
     | CONFLICT
     | CONNECTION
@@ -1940,6 +1946,7 @@ tokens_nonreserved
     | DELIMITER
     | DELIMITERS
     | DEPENDS
+    | DEPTH
     | DETACH
     | DICTIONARY
     | DISABLE
@@ -1965,6 +1972,7 @@ tokens_nonreserved
     | EXTERNAL
     | FAMILY
     | FILTER
+    | FINALIZE
     | FIRST
     | FOLLOWING
     | FORCE
@@ -2089,6 +2097,7 @@ tokens_nonreserved
     | RESET
     | RESTART
     | RESTRICT
+    | RETURN
     | RETURNS
     | REVOKE
     | ROLE
@@ -2467,7 +2476,6 @@ tokens_nonkeyword
     | QUERY
     | RAISE
     | RECORD
-    | RETURN
     | REVERSE
     | ROWTYPE
     | SLICE
@@ -2698,6 +2706,7 @@ system_function
     // parens are handled by generic function call
     // since current_schema is defined as reserved(can be function) keyword
     | CURRENT_SCHEMA /*(LEFT_PAREN RIGHT_PAREN)?*/
+    | CURRENT_ROLE
     | CURRENT_USER
     | SESSION_USER
     | USER
@@ -2714,7 +2723,7 @@ date_time_function
 
 string_value_function
     : TRIM LEFT_PAREN (LEADING | TRAILING | BOTH)? (chars=vex FROM str=vex | FROM? str=vex (COMMA chars=vex)?) RIGHT_PAREN
-    | SUBSTRING LEFT_PAREN vex (COMMA vex)* (FROM vex)? (FOR vex)? RIGHT_PAREN
+    | SUBSTRING LEFT_PAREN vex (COMMA vex)* ((FROM | SIMILAR) vex)? ((FOR | ESCAPE) vex)? RIGHT_PAREN
     | POSITION LEFT_PAREN vex_b IN vex RIGHT_PAREN
     | OVERLAY LEFT_PAREN vex PLACING vex FROM vex (FOR vex)? RIGHT_PAREN
     | COLLATION FOR LEFT_PAREN vex RIGHT_PAREN
@@ -2819,6 +2828,8 @@ with_clause
 with_query
     : query_name=identifier (LEFT_PAREN column_name+=identifier (COMMA column_name+=identifier)* RIGHT_PAREN)?
     AS (NOT? MATERIALIZED)? LEFT_PAREN data_statement RIGHT_PAREN
+    (SEARCH (BREADTH | DEPTH) FIRST BY identifier (COMMA identifier)* SET identifier)?
+    (CYCLE identifier (COMMA identifier)* SET identifier (TO vex DEFAULT vex)? USING identifier )?
     ;
 
 select_ops
