@@ -3069,7 +3069,7 @@ base_statement
     ;
 
 var
-    : (schema_qualified_name | DOLLAR_NUMBER) (LEFT_BRACKET vex RIGHT_BRACKET)*
+    : indirection_var
     ;
 
 diagnostic_option
