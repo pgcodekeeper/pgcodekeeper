@@ -174,6 +174,10 @@ public class TablesReader extends JdbcReader {
         if (SupportedVersion.VERSION_12.isLE(loader.version)) {
             colGenerated = getColArray(res, "col_generated");
         }
+        String[] colCompression = null;
+        if (SupportedVersion.VERSION_14.isLE(loader.version)) {
+            colCompression = getColArray(res, "col_compression");
+        }
 
         for (int i = 0; i < colNames.length; i++) {
             PgColumn column = new PgColumn(colNames[i]);
@@ -244,6 +248,21 @@ public class TablesReader extends JdbcReader {
 
             if (colGenerated != null && "s".equals(colGenerated[i])) {
                 column.setGenerated(true);
+            }
+
+            if (colCompression != null && !colCompression[i].isEmpty()) {
+                switch (colCompression[i]) {
+                case "p":
+                    colCompression[i] = "pglz";
+                    break;
+                case "l":
+                    colCompression[i] = "lz4";
+                    break;
+                default:
+                    colCompression[i]= null;
+                    break;
+                }
+                column.setCompression(colCompression[i]);
             }
 
             String comment = colComments[i];

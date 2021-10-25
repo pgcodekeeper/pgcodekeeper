@@ -12,11 +12,13 @@ public abstract class AbstractColumn extends PgStatementWithSearchPath {
 
     protected static final String ALTER_COLUMN = "\n\tALTER COLUMN ";
     protected static final String COLLATE = " COLLATE ";
+    protected static final String COMPRESSION = " COMPRESSION ";
     protected static final String NULL = " NULL";
     protected static final String NOT_NULL = " NOT NULL";
 
     private String type;
     private String collation;
+    private String compression;
     private boolean nullValue = true;
     private String defaultValue;
 
@@ -72,6 +74,15 @@ public abstract class AbstractColumn extends PgStatementWithSearchPath {
         return collation;
     }
 
+    public void setCompression(String compression) {
+        this.compression = compression;
+        resetHash();
+    }
+
+    public String getCompression() {
+        return compression;
+    }
+
     @Override
     public PgObjLocation getLocation() {
         PgObjLocation location = getMeta().getLocation();
@@ -101,6 +112,7 @@ public abstract class AbstractColumn extends PgStatementWithSearchPath {
 
             return  Objects.equals(type, col.getType())
                     && Objects.equals(collation, col.getCollation())
+                    && Objects.equals(compression, col.getCompression())
                     && nullValue == col.getNullValue()
                     && Objects.equals(defaultValue, col.getDefaultValue());
         }
@@ -112,6 +124,7 @@ public abstract class AbstractColumn extends PgStatementWithSearchPath {
     public void computeHash(Hasher hasher) {
         hasher.put(type);
         hasher.put(collation);
+        hasher.put(compression);
         hasher.put(nullValue);
         hasher.put(defaultValue);
     }
@@ -122,6 +135,7 @@ public abstract class AbstractColumn extends PgStatementWithSearchPath {
         copyBaseFields(colDst);
         colDst.setType(getType());
         colDst.setCollation(getCollation());
+        colDst.setCompression(getCompression());
         colDst.setNullValue(getNullValue());
         colDst.setDefaultValue(getDefaultValue());
         return colDst;

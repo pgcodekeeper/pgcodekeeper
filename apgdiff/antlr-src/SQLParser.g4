@@ -412,6 +412,7 @@ column_action
     | DROP IDENTITY if_exists?
     | DROP EXPRESSION if_exists?
     | SET storage_parameter
+    | SET compression_identifier
     | set_statistics
     | SET STORAGE storage_option
     | RESET names_in_parens
@@ -1639,11 +1640,11 @@ table_of_type_column_def
     ;
 
 table_column_definition
-    : identifier data_type define_foreign_options? collate_identifier? constraint_common*
+    : identifier data_type define_foreign_options? compression_identifier? collate_identifier? constraint_common*
     ;
 
 like_option
-    : (INCLUDING | EXCLUDING) (COMMENTS | CONSTRAINTS | DEFAULTS | GENERATED | IDENTITY | INDEXES | STORAGE | ALL)
+    : (INCLUDING | EXCLUDING) (COMMENTS | COMPRESSION | CONSTRAINTS | DEFAULTS | GENERATED | IDENTITY | INDEXES | STORAGE | ALL)
     ;
 /** NULL, DEFAULT - column constraint
 * EXCLUDE, FOREIGN KEY - table_constraint
@@ -1761,6 +1762,10 @@ partition_by_columns
 
 cascade_restrict
     : CASCADE | RESTRICT
+    ;
+
+compression_identifier
+    : COMPRESSION (compression_method=identifier | DEFAULT)
     ;
 
 collate_identifier
@@ -1914,6 +1919,7 @@ tokens_nonreserved
     | COMMENTS
     | COMMIT
     | COMMITTED
+    | COMPRESSION
     | CONFIGURATION
     | CONFLICT
     | CONNECTION

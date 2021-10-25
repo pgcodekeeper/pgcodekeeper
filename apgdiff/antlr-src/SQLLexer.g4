@@ -85,6 +85,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     COMMENTS: [cC] [oO] [mM] [mM] [eE] [nN] [tT] [sS];
     COMMIT: [cC] [oO] [mM] [mM] [iI] [tT];
     COMMITTED: [cC] [oO] [mM] [mM] [iI] [tT] [tT] [eE] [dD];
+    COMPRESSION: [cC] [oO] [mM] [pP] [rR] [eE] [sS] [sS] [iI] [oO] [nN];
     CONFIGURATION: [cC] [oO] [nN] [fF] [iI] [gG] [uU] [rR] [aA] [tT] [iI] [oO] [nN];
     CONFLICT: [cC] [oO] [nN] [fF] [lL] [iI] [cC] [tT];
     CONNECTION: [cC] [oO] [nN] [nN] [eE] [cC] [tT] [iI] [oO] [nN];

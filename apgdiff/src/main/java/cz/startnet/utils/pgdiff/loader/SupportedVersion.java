@@ -9,7 +9,8 @@ public enum SupportedVersion {
     VERSION_10 (100000, "10.0"),
     VERSION_11 (110000, "11.0"),
     VERSION_12 (120000, "12.0"),
-    VERSION_13 (130000, "13.0");
+    VERSION_13 (130000, "13.0"),
+    VERSION_14 (140000, "14.0");
 
     private final int version;
     private final String text;

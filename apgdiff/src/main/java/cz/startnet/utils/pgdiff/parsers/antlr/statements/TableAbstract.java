@@ -188,8 +188,15 @@ public abstract class TableAbstract extends ParserAbstract {
                 addTableConstraint(colCtx.tabl_constraint, table, schemaName, tablespace);
             } else if (colCtx.table_column_definition() != null) {
                 Table_column_definitionContext column = colCtx.table_column_definition();
+                IdentifierContext compression;
+                if (column.compression_identifier() != null) {
+                    compression = column.compression_identifier().compression_method;
+                } else {
+                    compression = null;
+                }
                 addColumn(column.identifier().getText(), column.data_type(),
-                        column.collate_identifier(), column.constraint_common(),
+                        column.collate_identifier(), compression,
+                        column.constraint_common(),
                         column.define_foreign_options(), table);
             }
         }
@@ -203,12 +210,16 @@ public abstract class TableAbstract extends ParserAbstract {
     }
 
     protected void addColumn(String columnName, Data_typeContext datatype,
-            Collate_identifierContext collate, List<Constraint_commonContext> constraints,
+            Collate_identifierContext collate, IdentifierContext compression,
+            List<Constraint_commonContext> constraints,
             Define_foreign_optionsContext options, AbstractTable table) {
         PgColumn col = new PgColumn(columnName);
         if (datatype != null) {
             col.setType(getTypeName(datatype));
             addPgTypeDepcy(datatype, col);
+        }
+        if (compression != null) {
+            col.setCompression(compression.getText());
         }
         if (collate != null) {
             col.setCollation(getFullCtxText(collate.collation));
@@ -232,7 +243,7 @@ public abstract class TableAbstract extends ParserAbstract {
 
     protected void addColumn(String columnName, List<Constraint_commonContext> constraints,
             AbstractTable table) {
-        addColumn(columnName, null, null, constraints, null, table);
+        addColumn(columnName, null, null, null, constraints, null, table);
     }
 
     protected void addInherit(AbstractPgTable table, List<IdentifierContext> idsInh) {

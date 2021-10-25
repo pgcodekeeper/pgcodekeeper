@@ -51,6 +51,10 @@ public class PgColumn extends AbstractColumn implements PgSimpleOptionContainer 
         } else {
             sbDefinition.append(' ');
             sbDefinition.append(getType());
+            if (getCompression() != null) {
+                sbDefinition.append(COMPRESSION).append(getCompression());
+            }
+
             if (getCollation() != null) {
                 sbDefinition.append(COLLATE).append(getCollation());
             }
@@ -96,6 +100,9 @@ public class PgColumn extends AbstractColumn implements PgSimpleOptionContainer 
             .append(PgDiffUtils.getQuotedName(name))
             .append(' ')
             .append(getType());
+            if (getCompression() != null) {
+                sb.append(COMPRESSION).append(getCompression());
+            }
             if (getCollation() != null) {
                 sb.append(COLLATE).append(getCollation());
             }
@@ -104,7 +111,7 @@ public class PgColumn extends AbstractColumn implements PgSimpleOptionContainer 
             if (mergeDefaultNotNull) {
                 // for NOT NULL columns we'd emit a time consuming UPDATE column=DEFAULT anyway
                 // so we can merge DEFAULT with column definition with no performance loss
-                // this operation also becomes fast on PostgreSQL 11+ (metadata only operation)
+                // this operation also becomes fast o PostgreSQL 11+ (metadata only operation)
                 definitionDefaultNotNull(sb);
             }
 
@@ -206,6 +213,7 @@ public class PgColumn extends AbstractColumn implements PgSimpleOptionContainer 
         compareDefaults(oldDefault, newColumn.getDefaultValue(), isNeedDepcies, sb);
         compareNullValues(getNullValue(), newColumn.getNullValue(), newColumn.getDefaultValue() != null, sb);
         compareStorages(getStorage(), newColumn.getStorage(), sb);
+        compareCompression(getCompression(), newColumn.getCompression(), sb);
 
         alterPrivileges(newColumn, sb);
 
@@ -462,6 +470,19 @@ public class PgColumn extends AbstractColumn implements PgSimpleOptionContainer 
             sb.append(getAlterColumn(true, true, PgDiffUtils.getQuotedName(name)))
             .append(" SET STORAGE ")
             .append(newStorage)
+            .append(';');
+        }
+    }
+
+    private void compareCompression(String oldCompression, String newCompression,
+            StringBuilder sb) {
+        if (newCompression == null && oldCompression != null) {
+            sb.append(getAlterColumn(true, true, PgDiffUtils.getQuotedName(name)))
+            .append(" SET COMPRESSION DEFAULT; ");
+        } else if (newCompression != null && !newCompression.equalsIgnoreCase(oldCompression)) {
+            sb.append(getAlterColumn(true, true, PgDiffUtils.getQuotedName(name)))
+            .append(" SET COMPRESSION ")
+            .append(newCompression)
             .append(';');
         }
     }
