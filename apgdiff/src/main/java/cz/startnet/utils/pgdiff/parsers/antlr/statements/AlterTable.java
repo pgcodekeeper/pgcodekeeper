@@ -75,7 +75,7 @@ public class AlterTable extends TableAbstract {
             if (tablAction.owner_to() != null) {
                 IRelation r = getSafe(AbstractSchema::getRelation, schema, nameCtx);
                 if (r instanceof PgStatement) {
-                    fillOwnerTo(tablAction.owner_to(), (PgStatement) r);
+                    fillOwnerTo(tablAction.owner_to().user_name().identifier(), (PgStatement) r);
                 }
                 continue;
             }

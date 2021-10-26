@@ -11,7 +11,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.All_simple_opContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_owner_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -38,9 +37,12 @@ public class AlterOwner extends ParserAbstract {
 
     @Override
     public void parseObject() {
-        Owner_toContext owner = ctx.owner_to();
+        if (db.getArguments().isIgnorePrivileges()) {
+            return;
+        }
 
-        if (db.getArguments().isIgnorePrivileges() || owner.name == null) {
+        IdentifierContext name = ctx.owner_to().user_name().identifier();
+        if (name == null) {
             return;
         }
 
@@ -55,7 +57,7 @@ public class AlterOwner extends ParserAbstract {
             st = getSafe(AbstractSchema::getOperator, getSchemaSafe(ids),
                     parseSignature(nameCtx.getText(), targetOperCtx),
                     nameCtx.getStart());
-            setOwner(st, owner);
+            setOwner(st, name);
             addObjReference(ids, DbObjType.OPERATOR, ACTION_ALTER);
             return;
         }
@@ -117,19 +119,19 @@ public class AlterOwner extends ParserAbstract {
 
         if (st == null || (type == DbObjType.SCHEMA
                 && ApgdiffConsts.PUBLIC.equals(nameCtx.getText())
-                && "postgres".equals(owner.name.getText()))) {
+                && "postgres".equals(name.getText()))) {
             return;
         }
 
-        setOwner(st, owner);
+        setOwner(st, name);
     }
 
-    private void setOwner(PgStatement st, Owner_toContext owner) {
+    private void setOwner(PgStatement st, IdentifierContext owner) {
         if (overrides == null) {
             fillOwnerTo(owner, st);
         } else {
             overrides.computeIfAbsent(st,
-                    k -> new StatementOverride()).setOwner(owner.name.getText());
+                    k -> new StatementOverride()).setOwner(owner.getText());
         }
     }
 

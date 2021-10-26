@@ -31,7 +31,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContex
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identifier_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Including_indexContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Predefined_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
@@ -533,13 +532,11 @@ public abstract class ParserAbstract {
      * @param ctx контекст парсера с владельцем
      * @param st объект
      */
-    protected void fillOwnerTo(Owner_toContext ctx, PgStatement st) {
-        if (db.getArguments().isIgnorePrivileges() || refMode) {
+    protected void fillOwnerTo(IdentifierContext owner, PgStatement st) {
+        if (owner == null || db.getArguments().isIgnorePrivileges() || refMode) {
             return;
         }
-        if (ctx != null && ctx.name != null) {
-            st.setOwner(ctx.name.getText());
-        }
+        st.setOwner(owner.getText());
     }
 
     protected void addPgTypeDepcy(Data_typeContext ctx, PgStatement st) {
