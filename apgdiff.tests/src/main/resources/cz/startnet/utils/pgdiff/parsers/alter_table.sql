@@ -2355,6 +2355,9 @@ DROP TABLE fail_part;
 -- DETACH PARTITION
 --
 
+ALTER TABLE range_parted2 DETACH PARTITION part_rp CONCURRENTLY;
+ALTER TABLE range_parted2 DETACH PARTITION part_rp FINALIZE;
+
 -- check that the table is partitioned at all
 CREATE TABLE regular_table (a int);
 ALTER TABLE regular_table DETACH PARTITION any_name;

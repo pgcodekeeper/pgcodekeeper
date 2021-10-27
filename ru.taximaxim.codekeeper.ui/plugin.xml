@@ -85,7 +85,7 @@
         <command
             categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
             id="ru.taximaxim.codekeeper.ui.command.FindReferences"
-            name="find references">
+            name="%command.name.FindReferences">
         </command>
         <command
             categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
@@ -561,6 +561,11 @@
                         </adapt>
                     </with>
                 </visibleWhen>
+            </command>
+            <command commandId="ru.taximaxim.codekeeper.ui.command.FindReferences">
+               <visibleWhen
+                     checkEnabled="true">
+               </visibleWhen>
             </command>
             <command commandId="ru.taximaxim.codekeeper.ui.command.RenameReference">
                <visibleWhen
