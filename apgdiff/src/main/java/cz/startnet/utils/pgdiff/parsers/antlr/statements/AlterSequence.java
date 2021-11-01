@@ -66,6 +66,6 @@ public class AlterSequence extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_CREATE, DbObjType.SEQUENCE, ctx.name);
+        return getStrForStmtAction(ACTION_ALTER, DbObjType.SEQUENCE, ctx.name);
     }
 }

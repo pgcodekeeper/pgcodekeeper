@@ -131,6 +131,6 @@ public class CreateTrigger extends ParserAbstract {
     protected String getStmtAction() {
         List<IdentifierContext> ids = new ArrayList<>(ctx.table_name.identifier());
         ids.add(ctx.name);
-        return getStrForStmtAction(ACTION_ALTER, DbObjType.TRIGGER, ids);
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.TRIGGER, ids);
     }
 }
