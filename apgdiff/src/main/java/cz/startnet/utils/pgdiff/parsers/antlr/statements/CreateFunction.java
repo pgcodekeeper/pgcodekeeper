@@ -13,11 +13,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.AntlrUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_funct_paramsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_actions_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_column_name_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -62,7 +62,7 @@ public class CreateFunction extends ParserAbstract {
         AbstractPgFunction function = ctx.PROCEDURE() != null ? new PgProcedure(name)
                 : new PgFunction(name);
 
-        fillFunction(ctx.create_funct_params(), function);
+        fillFunction(function);
 
         if (ctx.ret_table != null) {
             function.setReturns(getFullCtxText(ctx.ret_table));
@@ -77,11 +77,11 @@ public class CreateFunction extends ParserAbstract {
         addSafe(getSchemaSafe(ids), function, ids, parseArguments(ctx.function_parameters().function_args()));
     }
 
-    private void fillFunction(Create_funct_paramsContext params, AbstractPgFunction function) {
+    private void fillFunction(AbstractPgFunction function) {
         Function_defContext funcDef = null;
         Float cost = null;
         String language = null;
-        for (Function_actions_commonContext action  : params.function_actions_common()) {
+        for (Function_actions_commonContext action : ctx.function_actions_common()) {
             if (action.WINDOW() != null) {
                 function.setWindow(true);
             } else if (action.IMMUTABLE() != null) {
@@ -125,12 +125,21 @@ public class CreateFunction extends ParserAbstract {
 
         List<Pair<String, GenericColumn>> funcArgs = fillArguments(function);
 
-        if (("SQL".equalsIgnoreCase(language) || "PLPGSQL".equalsIgnoreCase(language))
-                && funcDef != null && funcDef.symbol == null) {
+        Function_bodyContext body = ctx.function_body();
+        if (body != null) {
+            function.setInStatementBody(true);
+            String bodyText = getFullCtxText(body);
+            function.setBody(db.getArguments(), bodyText);
+            if (language == null) {
+                language = "sql";
+            }
+            analyzeFunctionBody(function, body, funcArgs);
+        } else if (funcDef != null && funcDef.symbol == null
+                && ("SQL".equalsIgnoreCase(language) || "PLPGSQL".equalsIgnoreCase(language))) {
             analyzeFunctionDefinition(function, language, funcDef.definition, funcArgs);
         }
 
-        With_storage_parameterContext storage = params.with_storage_parameter();
+        With_storage_parameterContext storage = ctx.with_storage_parameter();
         if (storage != null) {
             for (Storage_parameter_optionContext option : storage.storage_parameter().storage_parameter_option()) {
                 if ("isStrict".equalsIgnoreCase(option.getText())) {
@@ -209,6 +218,18 @@ public class CreateFunction extends ParserAbstract {
                         db.addAnalysisLauncher(launcher);
                     });
         }
+    }
+
+    private void analyzeFunctionBody(AbstractPgFunction function, Function_bodyContext body,
+            List<Pair<String, GenericColumn>> funcArgs) {
+        // finalizer-only task, defers analyzer until finalizing stage
+        AntlrParser.submitAntlrTask(antlrTasks, () -> body,
+                ctx -> {
+                    FuncProcAnalysisLauncher launcher = new FuncProcAnalysisLauncher(
+                            function, ctx, fileName, funcArgs);
+                    launcher.setOffset(body.getStart());
+                    db.addAnalysisLauncher(launcher);
+                });
     }
 
     /**

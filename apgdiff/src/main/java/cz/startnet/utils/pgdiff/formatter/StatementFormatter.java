@@ -19,6 +19,7 @@ import cz.startnet.utils.pgdiff.formatter.FormatConfiguration.IndentType;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLLexer;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_bodyContext;
 
 public class StatementFormatter {
 
@@ -75,10 +76,26 @@ public class StatementFormatter {
         this.start = start;
         this.stop = stop;
         this.defOffset = defOffset;
+        this.lastTokenOffset = defOffset;
         this.config = config;
         this.tabReplace = config.getIndentType() == IndentType.WHITESPACE ?
                 config.createIndent(config.getIndentSize()) : null;
         this.tokens = analyzeDefinition(functionDefinition, language);
+    }
+
+
+    public StatementFormatter(int start, int stop, Function_bodyContext definition,
+            CommonTokenStream tokenStream, FormatConfiguration config) {
+        this.start = start;
+        this.stop = stop;
+        this.defOffset = 0;
+        this.config = config;
+        this.tabReplace = config.getIndentType() == IndentType.WHITESPACE ?
+                config.createIndent(config.getIndentSize()) : null;
+        this.tokens = analyzeDefinition(definition, tokenStream);
+        if (!tokens.isEmpty()) {
+            lastTokenOffset = tokens.get(0).getStartIndex();
+        }
     }
 
     public List<FormatItem> getChanges() {
@@ -86,8 +103,6 @@ public class StatementFormatter {
     }
 
     public void format() {
-        lastTokenOffset = defOffset;
-
         for (Token t : tokens) {
             int tokenStart = defOffset + t.getStartIndex();
             int length = t.getStopIndex() - t.getStartIndex() + 1;
@@ -139,9 +154,7 @@ public class StatementFormatter {
 
     private List<? extends Token> analyzeDefinition(String definition, String language) {
         Lexer lexer = new SQLLexer(new ANTLRInputStream(definition));
-        if (IndentType.DISABLE == config.getIndentType()
-                && !config.isAddWhitespaceAfterOp()
-                && !config.isAddWhitespaceBeforeOp()) {
+        if (isLexerOnly()) {
             // fast-path when no parser is required for advanced structure detection
             return lexer.getAllTokens();
         }
@@ -156,9 +169,27 @@ public class StatementFormatter {
             AntlrUtils.removeIntoStatements(parser);
             ctx = parser.plpgsql_function();
         }
-        ParseTreeListener listener = new FormatParseTreeListener(stream, indents, unaryOps);
-        ParseTreeWalker.DEFAULT.walk(listener, ctx);
+        runFormatListener(ctx, stream);
         return stream.getTokens();
+    }
+
+    private List<? extends Token> analyzeDefinition(Function_bodyContext definition,
+            CommonTokenStream tokenStream) {
+        if (!isLexerOnly()) {
+            runFormatListener(definition, tokenStream);
+        }
+        return tokenStream.getTokens(definition.getStart().getTokenIndex(), definition.getStop().getTokenIndex());
+    }
+
+    private boolean isLexerOnly() {
+        return IndentType.DISABLE == config.getIndentType()
+                && !config.isAddWhitespaceAfterOp()
+                && !config.isAddWhitespaceBeforeOp();
+    }
+
+    private void runFormatListener(ParserRuleContext definition, CommonTokenStream tokenStream) {
+        ParseTreeListener listener = new FormatParseTreeListener(tokenStream, indents, unaryOps);
+        ParseTreeWalker.DEFAULT.walk(listener, definition);
     }
 
     private void processSpaces(int type, int tokenStart, int length) {

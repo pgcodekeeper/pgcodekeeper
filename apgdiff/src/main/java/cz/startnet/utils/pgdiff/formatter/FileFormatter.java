@@ -17,10 +17,9 @@ import org.eclipse.text.edits.TextEdit;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLLexer;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_funct_paramsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_actions_commonContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_createContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_statementContext;
@@ -90,19 +89,21 @@ public class FileFormatter {
         List<FormatItem> changes = new ArrayList<>();
 
         Lexer lexer = new SQLLexer(new ANTLRInputStream(source));
-        SQLParser parser = new SQLParser(new CommonTokenStream(lexer));
+        CommonTokenStream tokenStream = new CommonTokenStream(lexer);
+        SQLParser parser = new SQLParser(tokenStream);
 
         SqlContext root = parser.sql();
         for (StatementContext st : root.statement()) {
             if (start <= st.stop.getStopIndex() || st.start.getStartIndex() < stop) {
-                fillChanges(st, changes);
+                fillChanges(st, tokenStream, changes);
             }
         }
 
         return changes;
     }
 
-    private void fillChanges(StatementContext st, List<FormatItem> changes) {
+    private void fillChanges(StatementContext st, CommonTokenStream tokenStream,
+            List<FormatItem> changes) {
         Schema_statementContext schema = st.schema_statement();
         if (schema == null) {
             return;
@@ -118,34 +119,34 @@ public class FileFormatter {
             return;
         }
 
-        Create_funct_paramsContext body = function.create_funct_params();
-        if (body == null) {
-            return;
-        }
-
-        String language = null;
-        Function_defContext funcDef = null;
-
-        for (Function_actions_commonContext action : body.function_actions_common()) {
-            if (action.LANGUAGE() != null) {
-                language = action.lang_name.getText();
-            } else if (action.AS() != null) {
-                funcDef = action.function_def();
+        StatementFormatter sf;
+        Function_bodyContext body = function.function_body();
+        if (body != null) {
+            sf = new StatementFormatter(start, stop, body, tokenStream, config);
+        } else {
+            String language = null;
+            Function_defContext funcDef = null;
+            for (Function_actions_commonContext action : function.function_actions_common()) {
+                if (action.LANGUAGE() != null) {
+                    language = action.lang_name.getText();
+                } else if (action.AS() != null) {
+                    funcDef = action.function_def();
+                }
             }
+
+            if (funcDef == null || funcDef.symbol != null
+                    || (!"PLPGSQL".equalsIgnoreCase(language) && !"SQL".equalsIgnoreCase(language))) {
+                return;
+            }
+
+            Pair<String, Token> pair = ParserAbstract.unquoteQuotedString(funcDef.definition);
+            String definition = pair.getFirst();
+            Token codeStart = pair.getSecond();
+
+            sf = new StatementFormatter(start, stop, definition,
+                    codeStart.getStartIndex(), language, config);
         }
 
-        if ((!"PLPGSQL".equalsIgnoreCase(language) && !"SQL".equalsIgnoreCase(language)) || funcDef == null) {
-            return;
-        }
-
-        List<Character_stringContext> funcContent = funcDef.character_string();
-
-        Pair<String, Token> pair = ParserAbstract.unquoteQuotedString(funcContent.get(0));
-        String definition = pair.getFirst();
-        Token codeStart = pair.getSecond();
-
-        StatementFormatter sf = new StatementFormatter(start, stop, definition,
-                codeStart.getStartIndex(), language, config);
         sf.format();
         changes.addAll(sf.getChanges());
     }

@@ -22,6 +22,27 @@ CALL ptest1(substring(random()::numeric(20,15)::text, 1, 1));  -- ok, volatile a
 SELECT * FROM cp_test ORDER BY b COLLATE "C";
 
 
+-- SQL-standard body
+CREATE PROCEDURE ptest1s(x text)
+LANGUAGE SQL
+BEGIN ATOMIC
+  INSERT INTO cp_test VALUES (1, x);
+END;
+
+SELECT pg_get_functiondef('ptest1s'::regproc);
+
+CALL ptest1s('b');
+
+SELECT * FROM cp_test ORDER BY b COLLATE "C";
+
+-- utitlity functions currently not supported here
+CREATE PROCEDURE ptestx()
+LANGUAGE SQL
+BEGIN ATOMIC
+  CREATE TABLE x (a int);
+END;
+
+
 CREATE PROCEDURE ptest2()
 LANGUAGE SQL
 AS $$
@@ -94,6 +115,11 @@ $$;
 
 CALL ptest6(1, 2);
 
+
+-- empty body
+CREATE PROCEDURE ptest8(x text)
+BEGIN ATOMIC
+END;
 
 -- various error cases
 
