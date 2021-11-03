@@ -73,13 +73,13 @@ public class PgParserTest {
             {"interval"},
             {"join"},
             {"json_encoding"},
-            {"jsonb", 3},
+            {"jsonb"},
             {"lseg"},
             {"misc_functions"},
             {"misc_sanity"},
             {"name"},
             {"namespace"},
-            {"numeric_big", 6},
+            {"numeric_big"},
             {"numeric"},
             {"numerology"},
             {"object_address"},
@@ -92,24 +92,22 @@ public class PgParserTest {
             {"partition_join"},
             {"partition_prune", 6},
             {"plancache"},
-            {"point", 5},
+            {"point"},
             {"policy"},
             {"polygon"},
-            // IDEA can't find ambiguity
-            {"polymorphism", 1},
-            {"privileges", 2},
+            {"polymorphism"},
+            {"privileges"},
             {"publication"},
             {"rangefuncs"},
             {"rangetypes"},
             {"reloptions"},
             {"role"},
             {"rowtypes"},
-            {"rules", 1},
-            // IDEA can't find 7 ambiguity
-            {"select", 12},
+            {"rules"},
+            {"select", 2},
             {"set"},
             {"sequence"},
-            {"spgist", 2},
+            {"spgist"},
             // some string are unsupported
             {"strings"},
             {"subscription"},
@@ -122,7 +120,7 @@ public class PgParserTest {
             {"transactions"},
             {"triggers"},
             {"tsdicts"},
-            {"tsearch", 1},
+            {"tsearch"},
             {"type"},
             {"update"},
             {"view"},
@@ -168,6 +166,7 @@ public class PgParserTest {
 
         int count = ambiguity.intValue();
         Assert.assertTrue("File: " + fileNameTemplate + " - ANTLR Error", errors.isEmpty());
-        Assert.assertFalse("File: " + fileNameTemplate + " - ANTLR Ambiguity " + count, count != allowedAmbiguity);
+        Assert.assertFalse("File: " + fileNameTemplate + " - ANTLR Ambiguity " + count + " expected " + allowedAmbiguity,
+                count != allowedAmbiguity);
     }
 }

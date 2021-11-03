@@ -35,7 +35,7 @@ public class PlpgParserTest {
     @Parameters
     public static Iterable<Object[]> parameters() {
         return ApgdiffTestUtils.getParameters(new Object[][] {
-            {"plpgsql", 21},
+            {"plpgsql", 20},
         });
     }
 
@@ -76,6 +76,7 @@ public class PlpgParserTest {
 
         int count = ambiguity.intValue();
         Assert.assertTrue("File: " + fileNameTemplate + " - ANTLR Error", errors.isEmpty());
-        Assert.assertFalse("File: " + fileNameTemplate + " - ANTLR Ambiguity " + count, count != allowedAmbiguity);
+        Assert.assertFalse("File: " + fileNameTemplate + " - ANTLR Ambiguity " + count + " expected " + allowedAmbiguity,
+                count != allowedAmbiguity);
     }
 }

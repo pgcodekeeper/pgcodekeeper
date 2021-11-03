@@ -2573,7 +2573,6 @@ vex
   // TODO a lot of ambiguities between 3 next alternatives
   | vex op vex
   | op vex
-  | vex op
   | vex NOT? IN LEFT_PAREN (select_stmt_no_parens | vex (COMMA vex)*) RIGHT_PAREN
   | vex NOT? BETWEEN (ASYMMETRIC | SYMMETRIC)? vex_b AND vex
   | vex NOT? (LIKE | ILIKE | SIMILAR TO) vex
@@ -2606,7 +2605,6 @@ vex_b
   | vex_b (PLUS | MINUS) vex_b
   | vex_b op vex_b
   | op vex_b
-  | vex_b op
   | vex_b (LTH | GTH | LEQ | GEQ | EQUAL | NOT_EQUAL) vex_b
   | vex_b IS NOT? DISTINCT FROM vex_b
   | vex_b IS NOT? DOCUMENT
