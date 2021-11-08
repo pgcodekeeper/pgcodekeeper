@@ -289,13 +289,14 @@ public class TypesReader extends JdbcReader {
             setFunctionWithDep(PgType::setSubtypeDiff, t, res.getString("rngsubdiff"));
         }
 
-        long multiRangeLong = res.getLong("rngmultirange");
-        if (SupportedVersion.VERSION_14.isLE(loader.version) && multiRangeLong != 0) {
-            JdbcType multiRangeType = loader.cachedTypesByOid.get(multiRangeLong);
-            t.setMultirange(multiRangeType.getFullName());
-            multiRangeType.addTypeDepcy(t);
+        if (SupportedVersion.VERSION_14.isLE(loader.version)) {
+            long multiRangeLong = res.getLong("rngmultirange");
+            if (multiRangeLong != 0) {
+                JdbcType multiRangeType = loader.cachedTypesByOid.get(multiRangeLong);
+                t.setMultirange(multiRangeType.getFullName());
+                multiRangeType.addTypeDepcy(t);
+            }
         }
-
         return t;
     }
 
