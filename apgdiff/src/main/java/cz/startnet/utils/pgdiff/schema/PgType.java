@@ -29,6 +29,7 @@ public class PgType extends AbstractType {
     private String collation;
     private String canonical;
     private String subtypeDiff;
+    private String multirange;
 
     // base type fields
     private String inputFunction;
@@ -124,6 +125,15 @@ public class PgType extends AbstractType {
 
     public void setSubtypeDiff(String subtypeDiff) {
         this.subtypeDiff = subtypeDiff;
+        resetHash();
+    }
+
+    public String getMultirange() {
+        return multirange;
+    }
+
+    public void setMultirange(String multirange) {
+        this.multirange = multirange;
         resetHash();
     }
 
@@ -393,6 +403,9 @@ public class PgType extends AbstractType {
         if (subtypeDiff != null && !subtypeDiff.isEmpty()) {
             sb.append(",\n\tsubtype_diff = ").append(subtypeDiff);
         }
+        if (multirange != null && !multirange.isEmpty()) {
+            sb.append(",\n\tmultirange_type_name = ").append(multirange);
+        }
     }
 
     private void appendBaseDef(StringBuilder sb) {
@@ -623,6 +636,7 @@ public class PgType extends AbstractType {
         copy.setCollation(getCollation());
         copy.setCanonical(getCanonical());
         copy.setSubtypeDiff(getSubtypeDiff());
+        copy.setMultirange(getMultirange());
         copy.setInputFunction(getInputFunction());
         copy.setOutputFunction(getOutputFunction());
         copy.setReceiveFunction(getReceiveFunction());
@@ -662,6 +676,7 @@ public class PgType extends AbstractType {
                     && Objects.equals(collation, type.getCollation())
                     && Objects.equals(canonical, type.getCanonical())
                     && Objects.equals(subtypeDiff, type.getSubtypeDiff())
+                    && Objects.equals(multirange, type.getMultirange())
                     && Objects.equals(inputFunction, type.getInputFunction())
                     && Objects.equals(outputFunction, type.getOutputFunction())
                     && Objects.equals(receiveFunction, type.getReceiveFunction())
@@ -695,6 +710,7 @@ public class PgType extends AbstractType {
         hasher.put(collation);
         hasher.put(canonical);
         hasher.put(subtypeDiff);
+        hasher.put(multirange);
         hasher.put(inputFunction);
         hasher.put(outputFunction);
         hasher.put(receiveFunction);

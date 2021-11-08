@@ -666,6 +666,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     MSFUNC: [mM] [sS] [fF] [uU] [nN] [cC];
     MSSPACE: [mM] [sS] [sS] [pP] [aA] [cC] [eE];
     MSTYPE: [mM] [sS] [tT] [yY] [pP] [eE];
+    MULTIRANGE_TYPE_NAME: [mM] [uU] [lL] [tT] [iI] [rR] [aA] [nN] [gG] [eE] UNDERLINE [tT] [yY] [pP] [eE] UNDERLINE [nN] [aA] [mM] [eE] ;
 
     NEGATOR: [nN] [eE] [gG] [aA] [tT] [oO] [rR];
     NOBYPASSRLS: [nN] [oO] [bB] [yY] [pP] [aA] [sS] [sS] [rR] [lL] [sS];

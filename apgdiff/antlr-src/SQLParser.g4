@@ -688,12 +688,14 @@ create_type_statement
                 | SUBTYPE_OPCLASS EQUAL subtype_operator_class=identifier
                 | COLLATION EQUAL collation=schema_qualified_name
                 | CANONICAL EQUAL canonical_function=schema_qualified_name
-                | SUBTYPE_DIFF EQUAL subtype_diff_function=schema_qualified_name)?
+                | SUBTYPE_DIFF EQUAL subtype_diff_function=schema_qualified_name
+                | MULTIRANGE_TYPE_NAME EQUAL multirange_name=data_type)?
                 (COMMA (SUBTYPE EQUAL subtype_name=data_type
                 | SUBTYPE_OPCLASS EQUAL subtype_operator_class=identifier
                 | COLLATION EQUAL collation=schema_qualified_name
                 | CANONICAL EQUAL canonical_function=schema_qualified_name
-                | SUBTYPE_DIFF EQUAL subtype_diff_function=schema_qualified_name))*
+                | SUBTYPE_DIFF EQUAL subtype_diff_function=schema_qualified_name
+                | MULTIRANGE_TYPE_NAME EQUAL multirange_name=data_type))*
             RIGHT_PAREN)
     | LEFT_PAREN
             // pg_dump prints internallength first
