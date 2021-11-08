@@ -294,7 +294,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
 
             ParserRuleContext aliasCtx = target.col_label();
             if (aliasCtx == null) {
-                aliasCtx = target.id_token();
+                aliasCtx = target.bare_col_label();
             }
 
             if (aliasCtx != null) {
