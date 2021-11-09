@@ -68,9 +68,6 @@ public class PlpgParserTest {
             @Override
             public void reportAmbiguity(Parser p, DFA dfa, int start,
                     int stop, boolean exact, BitSet set, ATNConfigSet conf) {
-                synchronized (this) {
-                    System.err.println(start + " " + stop);
-                }
                 ambiguity.incrementAndGet();
             }
         });

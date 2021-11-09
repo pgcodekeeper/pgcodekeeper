@@ -2995,7 +2995,6 @@ vex
   | vex EXP vex
   | vex (MULTIPLY | DIVIDE | MODULAR) vex
   | vex (PLUS | MINUS) vex
-  // TODO a lot of ambiguities between 3 next alternatives
   | vex op vex
   | op vex
   | vex NOT? IN LEFT_PAREN (select_stmt_no_parens | vex (COMMA vex)*) RIGHT_PAREN
@@ -3267,6 +3266,7 @@ select_ops_no_parens
     | select_primary
     ;
 
+// also change perform_stmt when making changes here
 select_primary
     : SELECT
         (set_qualifier (ON LEFT_PAREN vex (COMMA vex)* RIGHT_PAREN)?)?

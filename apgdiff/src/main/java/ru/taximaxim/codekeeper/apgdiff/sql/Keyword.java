@@ -39,7 +39,7 @@ public class Keyword {
         UNRESERVED_KEYWORD, COL_NAME_KEYWORD, TYPE_FUNC_NAME_KEYWORD, RESERVED_KEYWORD
     }
 
-    enum LabelCategory {
+    public enum LabelCategory {
         BARE_LABEL, AS_LABEL
     }
 
@@ -605,14 +605,16 @@ public class Keyword {
                 sbBare.append("  | ").append(v.getKeyword().toUpperCase(Locale.ROOT)).append("\n");
             }
         });
+        System.out.println("==================================================");
+        System.out.println(BARE_LABEL);
+        System.out.println("==================================================");
+        System.out.println(sbBare);
         map.keySet().stream().sorted().forEach(k -> {
             System.out.println("==================================================");
             System.out.println(k);
             System.out.println("==================================================");
             System.out.println(map.get(k));
         });
-        System.out.println(BARE_LABEL);
-        System.out.println(sbBare);
     }
     // SONAR-ON
 }
