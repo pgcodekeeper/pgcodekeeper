@@ -109,6 +109,10 @@ public class CreateType extends ParserAbstract {
             type.setAnalyzeFunction(getFullCtxText(ctx.analyze_function));
             addDepSafe(type, ctx.analyze_function.identifier(), DbObjType.FUNCTION, true);
         }
+        if (ctx.subscript_function != null) {
+            type.setSubscriptFunction(getFullCtxText(ctx.subscript_function));
+            addDepSafe(type, ctx.subscript_function.identifier(), DbObjType.FUNCTION, true);
+        }
         if (ctx.internallength != null) {
             type.setInternalLength(getFullCtxText(ctx.internallength));
         }

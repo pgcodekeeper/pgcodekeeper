@@ -708,6 +708,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     SUBTYPE_DIFF: [sS] [uU] [bB] [tT] [yY] [pP] [eE] UNDERLINE [dD] [iI] [fF] [fF];
     SUBTYPE_OPCLASS: [sS] [uU] [bB] [tT] [yY] [pP] [eE] UNDERLINE [oO] [pP] [cC] [lL] [aA] [sS] [sS];
     SUBTYPE: [sS] [uU] [bB] [tT] [yY] [pP] [eE];
+    SUBSCRIPT: [sS] [uU] [bB] [sS] [cC] [rR] [iI] [pP] [tT];
     SUMMARY: [sS] [uU] [mM] [mM] [aA] [rR] [yY]; 
     SUPERUSER: [sS] [uU] [pP] [eE] [rR] [uU] [sS] [eE] [rR];
 

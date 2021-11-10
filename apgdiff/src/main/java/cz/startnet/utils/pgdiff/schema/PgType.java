@@ -39,6 +39,7 @@ public class PgType extends AbstractType {
     private String typmodInputFunction;
     private String typmodOutputFunction;
     private String analyzeFunction;
+    private String subscriptFunction;
     private String internalLength;
     private boolean passedByValue;
     private String alignment;
@@ -197,6 +198,15 @@ public class PgType extends AbstractType {
 
     public void setAnalyzeFunction(String analyzeFunction) {
         this.analyzeFunction = analyzeFunction;
+        resetHash();
+    }
+
+    public String getSubscriptFunction() {
+        return subscriptFunction;
+    }
+
+    public void setSubscriptFunction(String subscriptFunction) {
+        this.subscriptFunction = subscriptFunction;
         resetHash();
     }
 
@@ -426,6 +436,9 @@ public class PgType extends AbstractType {
         if (PgDiffUtils.isStringNotEmpty(analyzeFunction)) {
             sb.append(",\n\tANALYZE = ").append(analyzeFunction);
         }
+        if (PgDiffUtils.isStringNotEmpty(subscriptFunction)) {
+            sb.append(",\n\tSUBSCRIPT = ").append(subscriptFunction);
+        }
         if (PgDiffUtils.isStringNotEmpty(internalLength)) {
             sb.append(",\n\tINTERNALLENGTH = ").append(internalLength);
         }
@@ -644,6 +657,7 @@ public class PgType extends AbstractType {
         copy.setTypmodInputFunction(getTypmodInputFunction());
         copy.setTypmodOutputFunction(getTypmodOutputFunction());
         copy.setAnalyzeFunction(getAnalyzeFunction());
+        copy.setSubscriptFunction(getSubscriptFunction());
         copy.setInternalLength(getInternalLength());
         copy.setPassedByValue(isPassedByValue());
         copy.setAlignment(getAlignment());
@@ -684,6 +698,7 @@ public class PgType extends AbstractType {
                     && Objects.equals(typmodInputFunction, type.getTypmodInputFunction())
                     && Objects.equals(typmodOutputFunction, type.getTypmodOutputFunction())
                     && Objects.equals(analyzeFunction, type.getAnalyzeFunction())
+                    && Objects.equals(subscriptFunction, type.getSubscriptFunction())
                     && Objects.equals(internalLength, type.getInternalLength())
                     && passedByValue == type.isPassedByValue()
                     && Objects.equals(alignment, type.getAlignment())
@@ -718,6 +733,7 @@ public class PgType extends AbstractType {
         hasher.put(typmodInputFunction);
         hasher.put(typmodOutputFunction);
         hasher.put(analyzeFunction);
+        hasher.put(subscriptFunction);
         hasher.put(internalLength);
         hasher.put(passedByValue);
         hasher.put(alignment);

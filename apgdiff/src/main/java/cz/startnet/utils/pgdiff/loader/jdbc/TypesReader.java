@@ -152,6 +152,9 @@ public class TypesReader extends JdbcReader {
         if (res.getBoolean("typanalyzeset")) {
             setFunctionWithDep(PgType::setAnalyzeFunction, t, res.getString("typanalyze"));
         }
+        if (SupportedVersion.VERSION_14.isLE(loader.version) &&  res.getBoolean("typsubscriptset")) {
+            setFunctionWithDep(PgType::setSubscriptFunction, t, res.getString("typsubscript"));
+        }
 
         short len = res.getShort("typlen");
         t.setInternalLength(len == -1 ? "variable" : "" + len);

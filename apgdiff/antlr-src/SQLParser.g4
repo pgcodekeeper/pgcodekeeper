@@ -707,6 +707,7 @@ create_type_statement
             | TYPMOD_IN EQUAL type_modifier_input_function=schema_qualified_name
             | TYPMOD_OUT EQUAL type_modifier_output_function=schema_qualified_name
             | ANALYZE EQUAL analyze_function=schema_qualified_name
+            | SUBSCRIPT EQUAL subscript_function=schema_qualified_name
             | INTERNALLENGTH EQUAL (internallength=signed_numerical_literal | VARIABLE )
             | PASSEDBYVALUE
             | ALIGNMENT EQUAL alignment=data_type
