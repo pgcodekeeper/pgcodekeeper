@@ -2406,6 +2406,7 @@ tokens_nonkeyword
     | MSFUNC
     | MSSPACE
     | MSTYPE
+    | MULTIRANGE_TYPE_NAME
     | NEGATOR
     | NOBYPASSRLS
     | NOCREATEDB
@@ -2442,6 +2443,7 @@ tokens_nonkeyword
     | SUBTYPE_DIFF
     | SUBTYPE_OPCLASS
     | SUBTYPE
+    | SUBSCRIPT
     | SUMMARY
     | SUPERUSER
     | TIMING

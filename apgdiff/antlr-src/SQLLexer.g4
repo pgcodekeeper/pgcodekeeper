@@ -597,6 +597,9 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     /*
      * Other tokens.
      * Some sql words/data types are not keywords but we need a token to be able to parse them.
+     *
+     * Manually added word-tokens must also be manually added to the 
+     * tokens_nonkeyword parser rule SQLParser.g4. 
      */
 
     ALIGNMENT: [aA] [lL] [iI] [gG] [nN] [mM] [eE] [nN] [tT];
