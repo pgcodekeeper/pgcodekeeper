@@ -253,16 +253,15 @@ public class TablesReader extends JdbcReader {
             if (colCompression != null && !colCompression[i].isEmpty()) {
                 switch (colCompression[i]) {
                 case "p":
-                    colCompression[i] = "pglz";
+                    column.setCompression("pglz");
                     break;
                 case "l":
-                    colCompression[i] = "lz4";
+                    column.setCompression("lz4");
                     break;
                 default:
-                    colCompression[i]= null;
+                    column.setCompression(null);
                     break;
                 }
-                column.setCompression(colCompression[i]);
             }
 
             String comment = colComments[i];

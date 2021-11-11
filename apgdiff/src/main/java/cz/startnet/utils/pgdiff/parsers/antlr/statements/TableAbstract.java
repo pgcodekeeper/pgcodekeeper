@@ -6,6 +6,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Collate_identifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Compression_identifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constraint_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
@@ -188,9 +189,9 @@ public abstract class TableAbstract extends ParserAbstract {
                 addTableConstraint(colCtx.tabl_constraint, table, schemaName, tablespace);
             } else if (colCtx.table_column_definition() != null) {
                 Table_column_definitionContext column = colCtx.table_column_definition();
-                IdentifierContext compression;
+                Compression_identifierContext compression;
                 if (column.compression_identifier() != null) {
-                    compression = column.compression_identifier().compression_method;
+                    compression = column.compression_identifier();
                 } else {
                     compression = null;
                 }
@@ -210,7 +211,7 @@ public abstract class TableAbstract extends ParserAbstract {
     }
 
     protected void addColumn(String columnName, Data_typeContext datatype,
-            Collate_identifierContext collate, IdentifierContext compression,
+            Collate_identifierContext collate, Compression_identifierContext compression,
             List<Constraint_commonContext> constraints,
             Define_foreign_optionsContext options, AbstractTable table) {
         PgColumn col = new PgColumn(columnName);
@@ -219,7 +220,7 @@ public abstract class TableAbstract extends ParserAbstract {
             addPgTypeDepcy(datatype, col);
         }
         if (compression != null) {
-            col.setCompression(compression.getText());
+            col.setCompression(compression.compression_method.getText());
         }
         if (collate != null) {
             col.setCollation(getFullCtxText(collate.collation));
