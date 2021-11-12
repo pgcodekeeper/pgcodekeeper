@@ -470,7 +470,8 @@ public final class NewObjectPage extends WizardPage {
         if (!file.exists()) {
             StringBuilder sb = new StringBuilder();
             sb.append(MessageFormat.format(PATTERN, DbObjType.SCHEMA, PgDiffUtils.getQuotedName(name)));
-            file.create(new ByteArrayInputStream(sb.toString().getBytes()), false, null);
+            file.create(new ByteArrayInputStream(sb.toString().getBytes(
+                    Charset.forName(file.getCharset()))), false, null);
         }
         if (open) {
             openFileInEditor(file);
