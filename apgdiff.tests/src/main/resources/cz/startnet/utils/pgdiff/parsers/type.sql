@@ -24,6 +24,8 @@ CREATE TYPE t1 (INPUT = f1, OUTPUT = f2, DEFAULT = NULL);
 CREATE TYPE t1 (INPUT = f1, OUTPUT = f2, ELEMENT = float4);
 CREATE TYPE t1 (INPUT = f1, OUTPUT = f2, DELIMITER = ',');
 CREATE TYPE t1 (INPUT = f1, OUTPUT = f2, COLLATABLE = true);
+CREATE TYPE textrange1 AS RANGE(subtype=text, multirange_type_name=multirange_of_text, collation="C");
+CREATE TYPE textrange2 AS RANGE(subtype=text, multirange_type_name=_textrange1, collation="C");
 
 ALTER TYPE t1 ADD ATTRIBUTE f3 text;
 ALTER TYPE t1 ADD ATTRIBUTE f3 text COLLATE "en_US";

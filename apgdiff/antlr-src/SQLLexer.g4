@@ -597,6 +597,9 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     /*
      * Other tokens.
      * Some sql words/data types are not keywords but we need a token to be able to parse them.
+     *
+     * Manually added word-tokens must also be manually added to the 
+     * tokens_nonkeyword parser rule SQLParser.g4. 
      */
 
     ALIGNMENT: [aA] [lL] [iI] [gG] [nN] [mM] [eE] [nN] [tT];
@@ -666,6 +669,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     MSFUNC: [mM] [sS] [fF] [uU] [nN] [cC];
     MSSPACE: [mM] [sS] [sS] [pP] [aA] [cC] [eE];
     MSTYPE: [mM] [sS] [tT] [yY] [pP] [eE];
+    MULTIRANGE_TYPE_NAME: [mM] [uU] [lL] [tT] [iI] [rR] [aA] [nN] [gG] [eE] UNDERLINE [tT] [yY] [pP] [eE] UNDERLINE [nN] [aA] [mM] [eE] ;
 
     NEGATOR: [nN] [eE] [gG] [aA] [tT] [oO] [rR];
     NOBYPASSRLS: [nN] [oO] [bB] [yY] [pP] [aA] [sS] [sS] [rR] [lL] [sS];
@@ -707,6 +711,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     SUBTYPE_DIFF: [sS] [uU] [bB] [tT] [yY] [pP] [eE] UNDERLINE [dD] [iI] [fF] [fF];
     SUBTYPE_OPCLASS: [sS] [uU] [bB] [tT] [yY] [pP] [eE] UNDERLINE [oO] [pP] [cC] [lL] [aA] [sS] [sS];
     SUBTYPE: [sS] [uU] [bB] [tT] [yY] [pP] [eE];
+    SUBSCRIPT: [sS] [uU] [bB] [sS] [cC] [rR] [iI] [pP] [tT];
     SUMMARY: [sS] [uU] [mM] [mM] [aA] [rR] [yY]; 
     SUPERUSER: [sS] [uU] [pP] [eE] [rR] [uU] [sS] [eE] [rR];
 

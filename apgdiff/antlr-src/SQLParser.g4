@@ -688,12 +688,14 @@ create_type_statement
                 | SUBTYPE_OPCLASS EQUAL subtype_operator_class=identifier
                 | COLLATION EQUAL collation=schema_qualified_name
                 | CANONICAL EQUAL canonical_function=schema_qualified_name
-                | SUBTYPE_DIFF EQUAL subtype_diff_function=schema_qualified_name)?
+                | SUBTYPE_DIFF EQUAL subtype_diff_function=schema_qualified_name
+                | MULTIRANGE_TYPE_NAME EQUAL multirange_name=data_type)?
                 (COMMA (SUBTYPE EQUAL subtype_name=data_type
                 | SUBTYPE_OPCLASS EQUAL subtype_operator_class=identifier
                 | COLLATION EQUAL collation=schema_qualified_name
                 | CANONICAL EQUAL canonical_function=schema_qualified_name
-                | SUBTYPE_DIFF EQUAL subtype_diff_function=schema_qualified_name))*
+                | SUBTYPE_DIFF EQUAL subtype_diff_function=schema_qualified_name
+                | MULTIRANGE_TYPE_NAME EQUAL multirange_name=data_type))*
             RIGHT_PAREN)
     | LEFT_PAREN
             // pg_dump prints internallength first
@@ -705,6 +707,7 @@ create_type_statement
             | TYPMOD_IN EQUAL type_modifier_input_function=schema_qualified_name
             | TYPMOD_OUT EQUAL type_modifier_output_function=schema_qualified_name
             | ANALYZE EQUAL analyze_function=schema_qualified_name
+            | SUBSCRIPT EQUAL subscript_function=schema_qualified_name
             | INTERNALLENGTH EQUAL (internallength=signed_numerical_literal | VARIABLE )
             | PASSEDBYVALUE
             | ALIGNMENT EQUAL alignment=data_type
@@ -2403,6 +2406,7 @@ tokens_nonkeyword
     | MSFUNC
     | MSSPACE
     | MSTYPE
+    | MULTIRANGE_TYPE_NAME
     | NEGATOR
     | NOBYPASSRLS
     | NOCREATEDB
@@ -2439,6 +2443,7 @@ tokens_nonkeyword
     | SUBTYPE_DIFF
     | SUBTYPE_OPCLASS
     | SUBTYPE
+    | SUBSCRIPT
     | SUMMARY
     | SUPERUSER
     | TIMING

@@ -65,6 +65,8 @@ public class JdbcQuery {
 
         String extensionSchema = loader.getExtensionSchema();
         if (extensionSchema != null) {
+            // join extension data with a left join
+            sb.append("LEFT ");
             appendQuery(sb, MessageFormat.format(
                     EXTENSION_QUERY, PgDiffUtils.getQuotedName(extensionSchema),
                     PgDiffUtils.quoteString("pg_catalog." + classId)), "_dbots");
@@ -82,7 +84,7 @@ public class JdbcQuery {
     }
 
     private StringBuilder appendQuery(StringBuilder sb, String query, String versionName) {
-        return sb.append("LEFT JOIN (")
+        return sb.append("JOIN (")
                 .append(query)
                 .append(") t")
                 .append(versionName)

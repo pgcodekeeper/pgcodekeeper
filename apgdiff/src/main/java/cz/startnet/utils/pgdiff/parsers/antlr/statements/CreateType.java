@@ -77,6 +77,10 @@ public class CreateType extends ParserAbstract {
             type.setSubtypeDiff(getFullCtxText(ctx.subtype_diff_function));
             addDepSafe(type, ctx.subtype_diff_function.identifier(), DbObjType.FUNCTION, true);
         }
+        if (ctx.multirange_name != null) {
+            type.setMultirange(ctx.multirange_name.getText());
+            addPgTypeDepcy(ctx.multirange_name, type);
+        }
         if (ctx.input_function != null) {
             type.setInputFunction(getFullCtxText(ctx.input_function));
             addDepSafe(type, ctx.input_function.identifier(), DbObjType.FUNCTION, true);
@@ -104,6 +108,10 @@ public class CreateType extends ParserAbstract {
         if (ctx.analyze_function != null) {
             type.setAnalyzeFunction(getFullCtxText(ctx.analyze_function));
             addDepSafe(type, ctx.analyze_function.identifier(), DbObjType.FUNCTION, true);
+        }
+        if (ctx.subscript_function != null) {
+            type.setSubscriptFunction(getFullCtxText(ctx.subscript_function));
+            addDepSafe(type, ctx.subscript_function.identifier(), DbObjType.FUNCTION, true);
         }
         if (ctx.internallength != null) {
             type.setInternalLength(getFullCtxText(ctx.internallength));
