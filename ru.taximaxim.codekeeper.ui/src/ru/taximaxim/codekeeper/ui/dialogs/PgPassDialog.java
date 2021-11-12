@@ -115,11 +115,10 @@ public class PgPassDialog extends Dialog {
             }
         });
 
-        int width = (int)(viewer.getTable().getSize().x * 0.25);
-        name.getColumn().setWidth(Math.max(width, 250));
-        user.getColumn().setWidth(Math.max(width, 250));
-        host.getColumn().setWidth(Math.max(width, 200));
-        port.getColumn().setWidth(Math.max(width, 100));
+        name.getColumn().setWidth(250);
+        user.getColumn().setWidth(250);
+        host.getColumn().setWidth(200);
+        port.getColumn().setWidth(100);
     }
 
     private List<PgPassEntry> parseLines() {

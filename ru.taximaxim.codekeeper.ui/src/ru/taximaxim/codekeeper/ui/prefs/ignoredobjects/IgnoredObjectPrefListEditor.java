@@ -164,12 +164,8 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject> {
         });
         objType.setEditingSupport(new TypesEditingSupport(tableViewer));
 
-        // name column will take half of the space
-        int width = (int)(tableViewer.getTable().getSize().x * 0.5);
-        // not less than 150
-        name.getColumn().setWidth(Math.max(width, 150));
-
         PixelConverter pc = new PixelConverter(tableViewer.getControl());
+        name.getColumn().setWidth(150);
         isRegular.getColumn().setWidth(pc.convertWidthInCharsToPixels(10));
         ignoreContents.getColumn().setWidth(pc.convertWidthInCharsToPixels(28));
         isQualified.getColumn().setWidth(pc.convertWidthInCharsToPixels(18));
