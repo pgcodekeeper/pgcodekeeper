@@ -219,7 +219,7 @@ public abstract class TableAbstract extends ParserAbstract {
             col.setType(getTypeName(datatype));
             addPgTypeDepcy(datatype, col);
         }
-        if (compression != null) {
+        if (compression != null && compression.compression_method != null) {
             col.setCompression(compression.compression_method.getText());
         }
         if (collate != null) {

@@ -215,8 +215,7 @@ public class PgColumn extends AbstractColumn implements PgSimpleOptionContainer 
         compareDefaults(oldDefault, newColumn.getDefaultValue(), isNeedDepcies, sb);
         compareNullValues(getNullValue(), newColumn.getNullValue(), newColumn.getDefaultValue() != null, sb);
         compareStorages(getStorage(), newColumn.getStorage(), sb);
-        compareCompression(PgDiffUtils.getQuotedName(getCompression()),
-               PgDiffUtils.getQuotedName(newColumn.getCompression()), sb);
+        compareCompression(getCompression(), newColumn.getCompression(), sb);
 
         alterPrivileges(newColumn, sb);
 
@@ -485,7 +484,7 @@ public class PgColumn extends AbstractColumn implements PgSimpleOptionContainer 
         } else if (newCompression != null && !newCompression.equalsIgnoreCase(oldCompression)) {
             sb.append(getAlterColumn(true, true, name))
             .append(" SET COMPRESSION ")
-            .append(newCompression)
+            .append(PgDiffUtils.getQuotedName(newCompression))
             .append(';');
         }
     }
