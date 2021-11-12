@@ -227,7 +227,6 @@ public class CreateFunction extends ParserAbstract {
                 ctx -> {
                     FuncProcAnalysisLauncher launcher = new FuncProcAnalysisLauncher(
                             function, ctx, fileName, funcArgs);
-                    launcher.setOffset(body.getStart());
                     db.addAnalysisLauncher(launcher);
                 });
     }
