@@ -189,14 +189,8 @@ public abstract class TableAbstract extends ParserAbstract {
                 addTableConstraint(colCtx.tabl_constraint, table, schemaName, tablespace);
             } else if (colCtx.table_column_definition() != null) {
                 Table_column_definitionContext column = colCtx.table_column_definition();
-                Compression_identifierContext compression;
-                if (column.compression_identifier() != null) {
-                    compression = column.compression_identifier();
-                } else {
-                    compression = null;
-                }
                 addColumn(column.identifier().getText(), column.data_type(),
-                        column.collate_identifier(), compression,
+                        column.collate_identifier(), column.compression_identifier(),
                         column.constraint_common(),
                         column.define_foreign_options(), table);
             }

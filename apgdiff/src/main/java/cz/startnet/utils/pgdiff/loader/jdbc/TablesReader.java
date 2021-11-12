@@ -258,9 +258,6 @@ public class TablesReader extends JdbcReader {
                 case "l":
                     column.setCompression("lz4");
                     break;
-                default:
-                    column.setCompression(null);
-                    break;
                 }
             }
 
