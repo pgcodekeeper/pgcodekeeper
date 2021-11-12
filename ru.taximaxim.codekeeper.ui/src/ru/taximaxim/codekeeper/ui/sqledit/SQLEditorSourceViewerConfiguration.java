@@ -62,7 +62,8 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
 
     @Override
     public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
-        return new SQLEditorTextHover(sourceViewer, editor);
+        return editor == null ? super.getTextHover(sourceViewer, contentType)
+                : new SQLEditorTextHover(sourceViewer, editor);
     }
 
     @Override

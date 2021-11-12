@@ -6,6 +6,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Collate_identifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Compression_identifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constraint_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
@@ -189,7 +190,8 @@ public abstract class TableAbstract extends ParserAbstract {
             } else if (colCtx.table_column_definition() != null) {
                 Table_column_definitionContext column = colCtx.table_column_definition();
                 addColumn(column.identifier().getText(), column.data_type(),
-                        column.collate_identifier(), column.constraint_common(),
+                        column.collate_identifier(), column.compression_identifier(),
+                        column.constraint_common(),
                         column.define_foreign_options(), table);
             }
         }
@@ -203,12 +205,16 @@ public abstract class TableAbstract extends ParserAbstract {
     }
 
     protected void addColumn(String columnName, Data_typeContext datatype,
-            Collate_identifierContext collate, List<Constraint_commonContext> constraints,
+            Collate_identifierContext collate, Compression_identifierContext compression,
+            List<Constraint_commonContext> constraints,
             Define_foreign_optionsContext options, AbstractTable table) {
         PgColumn col = new PgColumn(columnName);
         if (datatype != null) {
             col.setType(getTypeName(datatype));
             addPgTypeDepcy(datatype, col);
+        }
+        if (compression != null && compression.compression_method != null) {
+            col.setCompression(compression.compression_method.getText());
         }
         if (collate != null) {
             col.setCollation(getFullCtxText(collate.collation));
@@ -232,7 +238,7 @@ public abstract class TableAbstract extends ParserAbstract {
 
     protected void addColumn(String columnName, List<Constraint_commonContext> constraints,
             AbstractTable table) {
-        addColumn(columnName, null, null, constraints, null, table);
+        addColumn(columnName, null, null, null, constraints, null, table);
     }
 
     protected void addInherit(AbstractPgTable table, List<IdentifierContext> idsInh) {

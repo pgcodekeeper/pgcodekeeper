@@ -908,3 +908,8 @@ CREATE TABLE VARCHAR_TBL(f1 varchar(1));
 CREATE TEMP TABLE temptest(col int) ON COMMIT DELETE ROWS;
 CREATE TEMP TABLE temptest(col int) ON COMMIT DROP;
 create temp table temp_parted_oncommit (a int) partition by list (a) on commit delete rows;
+
+CREATE TABLE cmdata(f1 text COMPRESSION pglz);
+CREATE TABLE cmpart2(f1 text COMPRESSION lz4);
+CREATE TABLE cmdata3 (f1 TEXT COMPRESSION pglz, f2 TEXT COMPRESSION lz4);
+CREATE TABLE cmdata4 (f1 TEXT COMPRESSION DEFAULT);
