@@ -23,6 +23,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Delete_stmt_for_psqlCont
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Exception_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.From_itemContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_blockContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_statementsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Groupby_clauseContext;
@@ -86,6 +87,8 @@ public class FormatParseTreeListener implements ParseTreeListener {
             formatOperators(new Vex((Vex_bContext) ctx));
         } else if (ctx instanceof Function_blockContext) {
             formatFunctionBlock((Function_blockContext) ctx);
+        } else if (ctx instanceof Function_bodyContext) {
+            formatFunctionBody((Function_bodyContext) ctx);
         } else if (ctx instanceof If_statementContext) {
             formatIfStatement((If_statementContext) ctx);
         } else if (ctx instanceof Loop_statementContext) {
@@ -180,6 +183,11 @@ public class FormatParseTreeListener implements ParseTreeListener {
 
         indents.put(block.BEGIN().getSymbol(), IndentDirection.BLOCK_LINE);
         indents.put(block.END().getSymbol(), IndentDirection.BLOCK_LINE);
+    }
+
+    private void formatFunctionBody(Function_bodyContext body) {
+        indents.put(body.BEGIN().getSymbol(), IndentDirection.BLOCK_LINE);
+        indents.put(body.END().getSymbol(), IndentDirection.BLOCK_LINE);
     }
 
     private void formatExceptionStatement(Exception_statementContext ctx) {

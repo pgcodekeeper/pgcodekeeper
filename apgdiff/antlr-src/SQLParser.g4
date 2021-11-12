@@ -35,6 +35,10 @@ plpgsql_function_test_list
     : (comp_options? function_block SEMI_COLON)* EOF
     ;
 
+function_body_eof
+    : function_body EOF
+    ;
+
 /******* END Start symbols *******/
 
 statement
@@ -1226,11 +1230,7 @@ label_member_object
 create_function_statement
     : (OR REPLACE)? (FUNCTION | PROCEDURE) function_parameters
     (RETURNS (rettype_data=data_type | ret_table=function_ret_table))?
-    create_funct_params
-    ;
-
-create_funct_params
-    : function_actions_common+ with_storage_parameter?
+    (function_actions_common+ with_storage_parameter? | function_actions_common* function_body)
     ;
 
 transform_for_type
@@ -1255,6 +1255,15 @@ function_args
 
 agg_order
     : ORDER BY function_arguments (COMMA function_arguments)*
+    ;
+
+function_body
+    : function_return
+    | BEGIN ATOMIC SEMI_COLON* ((statement | function_return) SEMI_COLON+)* END
+    ;
+
+function_return
+    : RETURN vex
     ;
 
 character_string
