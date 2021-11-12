@@ -45,12 +45,10 @@ public class SQLEditorQuickAssistProcessor implements IQuickAssistProcessor {
             if (annotation instanceof MarkerAnnotation) {
                 Position pos = model.getPosition(annotation);
                 pos = new Position(pos.getOffset(), pos.getLength() + 1);
-                if (pos != null && pos.overlapsWith(documentOffset, 0)) {
-                    if (canFix(annotation)) {
-                        PgObjLocation obj = editor.getObjectAtOffset(documentOffset, true);
-                        if (obj != null) {
-                            return getMisplaceProposal(annotation, obj);
-                        }
+                if (pos != null && pos.overlapsWith(documentOffset, 0) && canFix(annotation)) {
+                    PgObjLocation obj = editor.getObjectAtOffset(documentOffset, true);
+                    if (obj != null) {
+                        return getMisplaceProposal(annotation, obj);
                     }
                 }
             }
