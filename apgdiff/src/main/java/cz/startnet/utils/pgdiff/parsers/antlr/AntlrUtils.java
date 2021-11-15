@@ -89,7 +89,6 @@ public class AntlrUtils {
         CommonTokenStream stream = (CommonTokenStream) parser.getTokenStream();
 
         boolean isImport = false;
-        boolean hasInto = false;
         int i = 0;
 
         while (true) {
@@ -103,7 +102,6 @@ public class AntlrUtils {
                 return;
             case SQLLexer.SEMI_COLON:
                 isImport = false;
-                hasInto = false;
                 break;
             case SQLLexer.IMPORT:
                 if (stream.LA(2) == SQLLexer.FOREIGN && stream.LA(3) == SQLLexer.SCHEMA) {
@@ -111,12 +109,10 @@ public class AntlrUtils {
                 }
                 break;
             case SQLLexer.INTO:
-                if (hasInto || isImport || stream.LA(- 1) == SQLLexer.INSERT) {
+                if (isImport || stream.LA(- 1) == SQLLexer.INSERT) {
                     break;
                 }
-                if (hideIntoTokens(stream)) {
-                    hasInto = true;
-                }
+                hideIntoTokens(stream);
                 break;
             default:
                 break;
@@ -124,7 +120,7 @@ public class AntlrUtils {
         }
     }
 
-    private static boolean hideIntoTokens(CommonTokenStream stream) {
+    private static void  hideIntoTokens(CommonTokenStream stream) {
         int i = 1;
         int nextType = stream.LA(++i); // into
 
@@ -132,23 +128,18 @@ public class AntlrUtils {
             nextType = stream.LA(++i); // strict
         }
 
-        if (isIdentifier(nextType)) {
-            nextType = stream.LA(++i); // identifier
+        nextType = stream.LA(++i); // identifier
 
-            while ((nextType == SQLLexer.DOT || nextType == SQLLexer.COMMA)
-                    && isIdentifier(stream.LA(i + 1))) {
-                i += 2; // comma or dot + identifier
-                nextType = stream.LA(i);
-            }
-
-            // hide from end, because LT(p) skips hidden tokens
-            for (int p = i - 1; p > 0; p--) {
-                ((CommonToken) stream.LT(p)).setChannel(Token.HIDDEN_CHANNEL);
-            }
-            return true;
+        while ((nextType == SQLLexer.DOT || nextType == SQLLexer.COMMA)
+                && isIdentifier(stream.LA(i + 1))) {
+            i += 2; // comma or dot + identifier
+            nextType = stream.LA(i);
         }
 
-        return false;
+        // hide from end, because LT(p) skips hidden tokens
+        for (int p = i - 1; p > 0; p--) {
+            ((CommonToken) stream.LT(p)).setChannel(Token.HIDDEN_CHANNEL);
+        }
     }
 
     private static boolean isIdentifier(int type) {
