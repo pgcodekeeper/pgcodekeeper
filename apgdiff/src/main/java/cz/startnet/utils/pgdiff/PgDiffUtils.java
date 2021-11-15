@@ -12,6 +12,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -48,7 +49,7 @@ public final class PgDiffUtils {
         }
 
         if (!allowKeywords) {
-            Keyword keyword = Keyword.KEYWORDS.get(id);
+            Keyword keyword = Keyword.KEYWORDS.get(allowCaps ? id.toLowerCase(Locale.ROOT) : id);
             if (keyword != null && keyword.getCategory() != KeywordCategory.UNRESERVED_KEYWORD) {
                 return false;
             }

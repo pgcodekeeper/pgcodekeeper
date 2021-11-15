@@ -76,6 +76,7 @@ public class PlpgParserTest {
 
         int count = ambiguity.intValue();
         Assert.assertTrue("File: " + fileNameTemplate + " - ANTLR Error", errors.isEmpty());
-        Assert.assertFalse("File: " + fileNameTemplate + " - ANTLR Ambiguity " + count, count != allowedAmbiguity);
+        Assert.assertFalse("File: " + fileNameTemplate + " - ANTLR Ambiguity " + count + " expected " + allowedAmbiguity,
+                count != allowedAmbiguity);
     }
 }

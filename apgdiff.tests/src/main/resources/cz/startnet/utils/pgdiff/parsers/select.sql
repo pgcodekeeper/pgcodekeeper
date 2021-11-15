@@ -515,7 +515,6 @@ select v||'a', case v||'a' when 'aa' then 1 else 0 end, count(*) from unnest(arr
 select v||'a', case when v||'a' = 'aa' then 1 else 0 end, count(*) from unnest(array['a','b']) u(v) group by v||'a' order by 1;
 SELECT point '(1,2)' <% widget '(0,0,3)' AS t, point '(1,2)' <% widget '(0,0,1)' AS f;
 -- begin ambiguity
-SELECT 2 !=-;
 SELECT true<>-1 BETWEEN 1 AND 1;
 SELECT false<>/**/1 BETWEEN 1 AND 1;
 SELECT false<=-1 BETWEEN 1 AND 1;
@@ -694,7 +693,6 @@ SELECT 2- -1 AS three;
 SELECT 2 - -2 AS four;
 SELECT int2 '2' * int2 '2' = int2 '16' / int2 '4' /*AS true*/;
 SELECT int4 '1000' < int4 '999' /*AS false*/;
-SELECT 4! AS twenty_four;
 SELECT !!3 AS six;
 SELECT 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 AS ten;
 SELECT 2 + 2 / 2 AS three;
