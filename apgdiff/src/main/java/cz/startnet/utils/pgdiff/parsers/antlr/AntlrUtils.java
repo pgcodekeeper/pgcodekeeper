@@ -128,17 +128,19 @@ public class AntlrUtils {
             nextType = stream.LA(++i); // strict
         }
 
-        nextType = stream.LA(++i); // identifier
+        if (isIdentifier(nextType)) {
+            nextType = stream.LA(++i); // identifier
 
-        while ((nextType == SQLLexer.DOT || nextType == SQLLexer.COMMA)
-                && isIdentifier(stream.LA(i + 1))) {
-            i += 2; // comma or dot + identifier
-            nextType = stream.LA(i);
-        }
+            while ((nextType == SQLLexer.DOT || nextType == SQLLexer.COMMA)
+                    && isIdentifier(stream.LA(i + 1))) {
+                i += 2; // comma or dot + identifier
+                nextType = stream.LA(i);
+            }
 
-        // hide from end, because LT(p) skips hidden tokens
-        for (int p = i - 1; p > 0; p--) {
-            ((CommonToken) stream.LT(p)).setChannel(Token.HIDDEN_CHANNEL);
+            // hide from end, because LT(p) skips hidden tokens
+            for (int p = i - 1; p > 0; p--) {
+                ((CommonToken) stream.LT(p)).setChannel(Token.HIDDEN_CHANNEL);
+            }
         }
     }
 
