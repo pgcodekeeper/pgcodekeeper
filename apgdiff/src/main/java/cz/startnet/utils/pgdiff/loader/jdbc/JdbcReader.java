@@ -29,7 +29,10 @@ public abstract class JdbcReader implements PgCatalogStrings {
     }
 
     public void read() throws SQLException, InterruptedException, XmlReaderException {
-        String query = loader.appendTimestamps(queries.makeQuery(loader.version));
+        String query = queries.makeQuery(loader, true, getClassId());
+        if (query == null) {
+            return;
+        }
 
         loader.setCurrentOperation(getClass().getSimpleName() + " query");
         try (PreparedStatement statement = loader.connection.prepareStatement(query)) {
@@ -43,11 +46,10 @@ public abstract class JdbcReader implements PgCatalogStrings {
                     try {
                         processResult(result, schema);
                     } catch (ConcurrentModificationException ex) {
-                        if (loader.args.isIgnoreConcurrentModification()) {
-                            Log.log(ex);
-                        } else {
+                        if (!loader.args.isIgnoreConcurrentModification()) {
                             throw ex;
                         }
+                        Log.log(ex);
                     }
                 } else {
                     Log.log(Log.LOG_WARNING, "No schema found for id " + schemaId);
@@ -58,6 +60,15 @@ public abstract class JdbcReader implements PgCatalogStrings {
 
     protected void setParams(PreparedStatement statement) throws SQLException {
         // subclasses will override if needed
+    }
+
+    /**
+     * Override for postgres for correct dbo_ts extension work.
+     *
+     * @return object class's catalog name
+     */
+    protected String getClassId() {
+        return null;
     }
 
     /**
@@ -93,13 +104,27 @@ public abstract class JdbcReader implements PgCatalogStrings {
         return null;
     }
 
+    /**
+     * @deprecated {@link #setFunctionWithDep(BiConsumer, PgStatement, String, String)}
+     */
+    @Deprecated
     protected <T extends PgStatement> void setFunctionWithDep(
             BiConsumer<T, String> setter, T statement, String function) {
+        setFunctionWithDep(setter, statement, function, null);
+    }
+
+    protected static <T extends PgStatement> void setFunctionWithDep(
+            BiConsumer<T, String> setter, T statement, String function, String signature) {
         if (function.indexOf('.') != -1) {
             QNameParser<IdentifierContext> parser = QNameParser.parsePg(function);
             String schemaName = parser.getSchemaName();
             if (schemaName != null && !ApgdiffUtils.isPgSystemSchema(schemaName)) {
-                statement.addDep(new GenericColumn(schemaName, parser.getFirstName(), DbObjType.FUNCTION));
+                statement.addDep(new GenericColumn(schemaName, DbObjType.SCHEMA));
+                String name = parser.getFirstName();
+                if (signature != null) {
+                    name = PgDiffUtils.getQuotedName(name) + signature;
+                }
+                statement.addDep(new GenericColumn(schemaName, name, DbObjType.FUNCTION));
             }
         }
         setter.accept(statement, function);

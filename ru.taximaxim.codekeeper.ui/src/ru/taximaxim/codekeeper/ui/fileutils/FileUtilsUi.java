@@ -21,6 +21,7 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+import cz.startnet.utils.pgdiff.ContextLocation;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -75,6 +76,21 @@ public final class FileUtilsUi {
         }
         IEditorInput input = new SQLEditorInput(path, project, isMsSql, isReadOnly);
         return IDE.openEditor(page, input, EDITOR.SQL);
+    }
+
+    public static IFile getFileForLocation(ContextLocation loc) {
+        if (loc == null) {
+            return null;
+        }
+        return getFileForLocation(loc.getFilePath());
+    }
+
+    public static IFile getFileForLocation(String location) {
+        if (location == null) {
+            return null;
+        }
+        return ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(
+                new org.eclipse.core.runtime.Path(location));
     }
 
     private FileUtilsUi() {

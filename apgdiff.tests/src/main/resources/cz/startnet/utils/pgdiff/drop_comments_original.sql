@@ -140,3 +140,10 @@ CREATE TEXT SEARCH CONFIGURATION public.test_config (
 
 COMMENT ON TEXT SEARCH CONFIGURATION public.test_config IS 'test_config';
 
+CREATE FOREIGN DATA WRAPPER test_fdw_1;
+ 
+COMMENT ON FOREIGN DATA WRAPPER test_fdw_1 IS 'test_comment';
+
+CREATE SERVER test_server_0  FOREIGN DATA WRAPPER fdw1;
+
+COMMENT ON SERVER test_server_0 IS 'test_comment';

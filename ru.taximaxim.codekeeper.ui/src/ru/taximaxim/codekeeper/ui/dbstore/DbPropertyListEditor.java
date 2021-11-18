@@ -74,12 +74,8 @@ public class DbPropertyListEditor extends PrefListEditor<Entry<String, String>> 
 
         value.setEditingSupport(new TxtValueEditingSupport(tableViewer));
 
-        // name column will take half of the space
-        int width = (int)(tableViewer.getTable().getSize().x * 0.5);
-        // not less than 200
-        name.getColumn().setWidth(Math.max(width, 150));
-
         PixelConverter pc = new PixelConverter(tableViewer.getControl());
+        name.getColumn().setWidth(150);
         value.getColumn().setWidth(pc.convertWidthInCharsToPixels(28));
     }
 }

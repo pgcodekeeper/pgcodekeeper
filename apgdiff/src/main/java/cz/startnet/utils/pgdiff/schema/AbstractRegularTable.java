@@ -13,7 +13,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
  * @author galiev_mr
  *
  */
-public abstract class AbstractRegularTable extends AbstractPgTable {
+public abstract class AbstractRegularTable extends AbstractPgTable implements PgSimpleOptionContainer {
 
     protected boolean isLogged = true;
     protected String tablespace;

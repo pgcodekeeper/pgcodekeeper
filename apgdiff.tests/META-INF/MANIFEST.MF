@@ -5,14 +5,10 @@ Bundle-SymbolicName: apgdiff.tests
 Bundle-Version: 1.0.0.qualifier
 Fragment-Host: apgdiff
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Export-Package: cz.startnet.utils.pgdiff.loader,
- ru.taximaxim.codekeeper.apgdiff,
- ru.taximaxim.codekeeper.apgdiff.model.exporter
 Require-Bundle: org.junit;bundle-version="4.11.0"
 Bundle-ClassPath: .,
  lib/javers-core-1.1.1.jar,
  lib/picocontainer-2.14.jar,
  lib/joda-time-2.7.jar,
  lib/slf4j-api-1.7.13.jar
-Import-Package: cz.startnet.utils.pgdiff.loader
 Automatic-Module-Name: apgdiff.tests

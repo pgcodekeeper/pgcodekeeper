@@ -36,6 +36,6 @@ public class AlterMsAssembly extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_ALTER, DbObjType.ASSEMBLY, Arrays.asList(ctx.name));
+        return getStrForStmtAction(ACTION_ALTER, DbObjType.ASSEMBLY, ctx.name);
     }
 }

@@ -10,6 +10,7 @@ import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.ui.IEditorInput;
 
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation.LocationType;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 
 public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
@@ -31,12 +32,25 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
         for (PgObjLocation obj : parser.getObjsForEditor(editor.getEditorInput())) {
             if (offset >= obj.getOffset()
                     && offset < (obj.getOffset() + obj.getObjLength())) {
-                Stream<IHyperlink> stream = parser.getDefinitionsForObj(obj)
+                Stream<IHyperlink> stream = parser.getAllObjReferences()
+                        .filter(obj::compare)
+                        .filter(def -> {
+                            LocationType type = def.getLocationType();
+                            if (type == LocationType.DEFINITION) {
+                                return true;
+                            }
+                            if (type == LocationType.VARIABLE) {
+                                // search only on current file
+                                return def.getFilePath().equals(obj.getFilePath());
+                            }
+
+                            return false;
+                        })
                         .map(def -> new SQLEditorHyperLink(
                                 new Region(def.getOffset(), def.getObjLength()),
                                 new Region(obj.getOffset(), obj.getObjLength()),
-                                obj.getObjName(), def.getFilePath(), def.getLineNumber(),
-                                editor.isMsSql()));
+                                obj.getObjName(), def.getFilePath(),
+                                def.getLineNumber(), editor.isMsSql()));
                 links = Stream.concat(links, stream);
             }
         }

@@ -7,7 +7,7 @@ import java.util.List;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoredObject.AddStatus;
 
-public class IgnoreList {
+public class IgnoreList implements IIgnoreList {
 
     private final List<IgnoredObject> rules = new ArrayList<>();
 
@@ -18,10 +18,12 @@ public class IgnoreList {
         return isShow;
     }
 
+    @Override
     public void setShow(boolean isShow) {
         this.isShow = isShow;
     }
 
+    @Override
     public List<IgnoredObject> getList() {
         return Collections.unmodifiableList(rules);
     }
@@ -30,6 +32,7 @@ public class IgnoreList {
         rules.clear();
     }
 
+    @Override
     public void add(IgnoredObject rule) {
         IgnoredObject existing = findSameMatchingRule(rule);
         if (existing != null) {

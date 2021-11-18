@@ -515,7 +515,6 @@ select v||'a', case v||'a' when 'aa' then 1 else 0 end, count(*) from unnest(arr
 select v||'a', case when v||'a' = 'aa' then 1 else 0 end, count(*) from unnest(array['a','b']) u(v) group by v||'a' order by 1;
 SELECT point '(1,2)' <% widget '(0,0,3)' AS t, point '(1,2)' <% widget '(0,0,1)' AS f;
 -- begin ambiguity
-SELECT 2 !=-;
 SELECT true<>-1 BETWEEN 1 AND 1;
 SELECT false<>/**/1 BETWEEN 1 AND 1;
 SELECT false<=-1 BETWEEN 1 AND 1;
@@ -694,7 +693,6 @@ SELECT 2- -1 AS three;
 SELECT 2 - -2 AS four;
 SELECT int2 '2' * int2 '2' = int2 '16' / int2 '4' /*AS true*/;
 SELECT int4 '1000' < int4 '999' /*AS false*/;
-SELECT 4! AS twenty_four;
 SELECT !!3 AS six;
 SELECT 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 AS ten;
 SELECT 2 + 2 / 2 AS three;
@@ -1377,3 +1375,29 @@ SELECT
     1 AS SIMILAR,
     1 AS TABLESAMPLE,
     1 AS VERBOSE;
+SELECT xmlcomment('test');
+SELECT xmlconcat('hello', 'you');
+SELECT xmlelement(name element, xmlattributes (1 as ":one:", 'deuce' as two), 'content&');
+SELECT xmlelement(name employee, xmlforest(name, age, salary as pay)) FROM emp;
+SELECT xmlparse(content '<abc>x</abc>');
+SELECT xmlpi(name foo, 'bar');
+SELECT xmlroot(xml '<foo/>', version no value, standalone yes);
+SELECT xmlserialize(content 'good' as char(10));
+SELECT xmlserialize(content 'good' as text);
+SELECT  xmltable.*
+   FROM (SELECT data FROM xmldata) x,
+        LATERAL XMLTABLE('/ROWS/ROW'
+                         PASSING data
+                         COLUMNS id int PATH '@id',
+                                  _id FOR ORDINALITY,
+                                  country_name text PATH 'COUNTRY_NAME/text()' NOT NULL,
+                                  country_id text PATH 'COUNTRY_ID',
+                                  region_id int PATH 'REGION_ID',
+                                  size float PATH 'SIZE',
+                                  unit text PATH 'SIZE/@unit',
+                                  premier_name text PATH 'PREMIER_NAME' DEFAULT 'not specified');
+SELECT * FROM XMLTABLE(XMLNAMESPACES('http://x.y' AS zz),
+                      '/zz:rows/zz:row'
+                      PASSING '<rows xmlns="http://x.y"><row><a>10</a></row></rows>'
+                      COLUMNS a int PATH 'zz:a');
+SELECT 1 INTO b;

@@ -1,12 +1,12 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.util.Arrays;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Collate_identifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Compression_identifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constraint_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
@@ -16,33 +16,26 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Foreign_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identity_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Including_indexContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_columnContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_parametersContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.List_of_type_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Names_in_parensContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Option_with_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sequence_bodyContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sort_specifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_deferrableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_initialy_immedContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_of_type_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_name_listContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_with_orderContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_constraintContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_constraint_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.ConstraintAnalysisLauncher;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.VexAnalysisLauncher;
-import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractForeignTable;
 import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.MsConstraint;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -197,7 +190,8 @@ public abstract class TableAbstract extends ParserAbstract {
             } else if (colCtx.table_column_definition() != null) {
                 Table_column_definitionContext column = colCtx.table_column_definition();
                 addColumn(column.identifier().getText(), column.data_type(),
-                        column.collate_identifier(), column.constraint_common(),
+                        column.collate_identifier(), column.compression_identifier(),
+                        column.constraint_common(),
                         column.define_foreign_options(), table);
             }
         }
@@ -211,12 +205,16 @@ public abstract class TableAbstract extends ParserAbstract {
     }
 
     protected void addColumn(String columnName, Data_typeContext datatype,
-            Collate_identifierContext collate, List<Constraint_commonContext> constraints,
+            Collate_identifierContext collate, Compression_identifierContext compression,
+            List<Constraint_commonContext> constraints,
             Define_foreign_optionsContext options, AbstractTable table) {
         PgColumn col = new PgColumn(columnName);
         if (datatype != null) {
             col.setType(getTypeName(datatype));
             addPgTypeDepcy(datatype, col);
+        }
+        if (compression != null && compression.compression_method != null) {
+            col.setCompression(compression.compression_method.getText());
         }
         if (collate != null) {
             col.setCollation(getFullCtxText(collate.collation));
@@ -240,7 +238,7 @@ public abstract class TableAbstract extends ParserAbstract {
 
     protected void addColumn(String columnName, List<Constraint_commonContext> constraints,
             AbstractTable table) {
-        addColumn(columnName, null, null, constraints, null, table);
+        addColumn(columnName, null, null, null, constraints, null, table);
     }
 
     protected void addInherit(AbstractPgTable table, List<IdentifierContext> idsInh) {
@@ -331,52 +329,17 @@ public abstract class TableAbstract extends ParserAbstract {
 
         constrBlank.setDefinition(sb.toString());
 
-        for (Sort_specifierContext s : constrBody.sort_specifier()) {
-            db.addAnalysisLauncher(new ConstraintAnalysisLauncher(constrBlank, s.vex(), location));
+        for (Index_columnContext c : constrBody.index_column()) {
+            db.addAnalysisLauncher(new ConstraintAnalysisLauncher(constrBlank, c.vex(), location));
+
+            for (Option_with_valueContext o : c.option_with_value()) {
+                db.addAnalysisLauncher(new ConstraintAnalysisLauncher(constrBlank, o.vex(), location));
+            }
         }
 
         VexContext exp = constrBody.vex();
         if (exp != null) {
             db.addAnalysisLauncher(new ConstraintAnalysisLauncher(constrBlank, exp, location));
         }
-    }
-
-    protected AbstractConstraint getMsConstraint(Table_constraintContext conCtx) {
-        String conName = conCtx.id() == null ? "" : conCtx.id().getText();
-        AbstractConstraint con = new MsConstraint(conName);
-
-        Table_constraint_bodyContext body = conCtx.table_constraint_body();
-        con.setPrimaryKey(body.PRIMARY() != null);
-        con.setUnique(body.UNIQUE() != null);
-
-        if (body.REFERENCES() != null) {
-            Qualified_nameContext ref = body.qualified_name();
-            List<IdContext> ids = Arrays.asList(ref.schema, ref.name);
-            String fschema = getSchemaNameSafe(ids);
-            String ftable = ref.name.getText();
-
-            PgObjLocation loc = addObjReference(ids, DbObjType.TABLE, null);
-
-            GenericColumn ftableRef = loc.getObj();
-            con.setForeignTable(ftableRef);
-            con.addDep(ftableRef);
-
-            Column_name_listContext columns = body.pk;
-            if (columns != null) {
-                for (IdContext column : columns.id()) {
-                    String col = column.getText();
-                    con.addForeignColumn(col);
-                    con.addDep(new GenericColumn(fschema, ftable, col, DbObjType.COLUMN));
-                }
-            }
-        } else if (body.column_name_list_with_order() != null) {
-            for (Column_with_orderContext column : body.column_name_list_with_order()
-                    .column_with_order()) {
-                con.addColumn(column.id().getText());
-            }
-        }
-
-        con.setDefinition(getFullCtxText(conCtx.table_constraint_body()));
-        return con;
     }
 }

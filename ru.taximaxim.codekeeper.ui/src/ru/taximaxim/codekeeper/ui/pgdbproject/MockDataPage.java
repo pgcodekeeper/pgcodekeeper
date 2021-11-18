@@ -666,10 +666,9 @@ public class MockDataPage extends WizardPage {
             }
         });
 
-        int width = (int)(viewer.getTable().getSize().x * 0.33);
-        name.getColumn().setWidth(Math.max(width, 200));
-        type.getColumn().setWidth(Math.max(width, 200));
-        generator.getColumn().setWidth(Math.max(width, 200));
+        name.getColumn().setWidth(200);
+        type.getColumn().setWidth(200);
+        generator.getColumn().setWidth(200);
     }
 
     /**

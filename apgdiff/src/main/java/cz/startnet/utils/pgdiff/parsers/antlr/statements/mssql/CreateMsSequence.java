@@ -10,7 +10,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_sequenceContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Data_type_sizeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Sequence_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
@@ -79,8 +78,6 @@ public class CreateMsSequence extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        Qualified_nameContext qualNameCtx = ctx.qualified_name();
-        return getStrForStmtAction(ACTION_CREATE, DbObjType.SEQUENCE,
-                Arrays.asList(qualNameCtx.schema, qualNameCtx.name));
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.SEQUENCE, ctx.qualified_name());
     }
 }

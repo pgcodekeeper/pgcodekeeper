@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.loader;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -72,7 +71,7 @@ public class LibraryLoader extends DatabaseLoader {
     private PgDatabase getLibrary(String path, PgDiffArguments arguments, boolean isIgnorePriv)
             throws InterruptedException, IOException {
 
-        PgDiffArguments args = arguments.clone();
+        PgDiffArguments args = arguments.copy();
         args.setIgnorePrivileges(isIgnorePriv);
 
         switch (PgLibrarySource.getSource(path)) {
@@ -82,7 +81,8 @@ public class LibraryLoader extends DatabaseLoader {
             try {
                 URI uri = new URI(path);
                 PgDatabase db = loadURI(uri, args, isIgnorePriv);
-                db.getDescendants().forEach(st -> st.setLocation(new PgObjLocation(path)));
+                db.getDescendants().forEach(st -> st.setLocation(
+                        new PgObjLocation.Builder().setFilePath(path).build()));
                 return db;
             } catch (URISyntaxException ex) {
                 // shouldn't happen, already checked by getSource
@@ -101,7 +101,7 @@ public class LibraryLoader extends DatabaseLoader {
 
         if (Files.isDirectory(p)) {
             if (Files.exists(p.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER))) {
-                PgDatabase db = new ProjectLoader(path, args, null, errors).load();
+                PgDatabase db = new ProjectLoader(path, args, errors).load();
 
                 new LibraryLoader(db, metaPath, errors).loadXml(
                         new DependenciesXmlStore(p.resolve(DependenciesXmlStore.FILE_NAME)), args);
@@ -120,7 +120,7 @@ public class LibraryLoader extends DatabaseLoader {
         }
 
         PgDatabase db = new PgDatabase(args);
-        PgDumpLoader loader = new PgDumpLoader(new File(path), args);
+        PgDumpLoader loader = new PgDumpLoader(Paths.get(path), args);
         loader.loadAsync(db, antlrTasks);
         launchedLoaders.add(loader);
         finishLoaders();
@@ -149,7 +149,8 @@ public class LibraryLoader extends DatabaseLoader {
             errors.addAll(loader.getErrors());
         }
 
-        db.getDescendants().forEach(st -> st.setLocation(new PgObjLocation(path)));
+        db.getDescendants().forEach(st -> st.setLocation(
+                new PgObjLocation.Builder().setFilePath(path).build()));
         return db;
     }
 
@@ -258,7 +259,7 @@ public class LibraryLoader extends DatabaseLoader {
         if (filePath.endsWith(".zip")) {
             db.addLib(getLibrary(filePath, args, args.isIgnorePrivileges()));
         } else if (filePath.endsWith(".sql")) {
-            PgDumpLoader loader = new PgDumpLoader(sub.toFile(), args);
+            PgDumpLoader loader = new PgDumpLoader(sub, args);
             loader.loadDatabase(db, antlrTasks);
             launchedLoaders.add(loader);
         }

@@ -10,6 +10,7 @@ CREATE TYPE public.typ_base (
 	TYPMOD_IN = typmod_in_func,
 	TYPMOD_OUT = typmod_out_func,
 	ANALYZE = analyze_func,
+	SUBSCRIPT = subscript_func_2,
 	INTERNALLENGTH = 3,
 	PASSEDBYVALUE,
 	ALIGNMENT = char,

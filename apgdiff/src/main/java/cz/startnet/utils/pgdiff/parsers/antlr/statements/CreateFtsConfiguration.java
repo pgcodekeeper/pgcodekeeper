@@ -3,7 +3,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_fts_configurationContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_fts_configuration_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFtsConfiguration;
@@ -11,9 +11,9 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateFtsConfiguration extends ParserAbstract {
 
-    private final Create_fts_configurationContext ctx;
+    private final Create_fts_configuration_statementContext ctx;
 
-    public CreateFtsConfiguration(Create_fts_configurationContext ctx, PgDatabase db) {
+    public CreateFtsConfiguration(Create_fts_configuration_statementContext ctx, PgDatabase db) {
         super(db);
         this.ctx = ctx;
     }
@@ -33,7 +33,6 @@ public class CreateFtsConfiguration extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_CREATE, DbObjType.FTS_CONFIGURATION,
-                ctx.name.identifier());
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.FTS_CONFIGURATION, ctx.name);
     }
 }

@@ -150,4 +150,9 @@ public class TriggersReader extends JdbcReader {
         }
         return t;
     }
+
+    @Override
+    protected String getClassId() {
+        return "pg_trigger";
+    }
 }

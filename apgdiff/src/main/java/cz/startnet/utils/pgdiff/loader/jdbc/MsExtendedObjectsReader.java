@@ -35,10 +35,7 @@ public class MsExtendedObjectsReader extends JdbcReader {
         String assembly = res.getString("assembly");
         String assemblyClass = res.getString("assembly_class");
         String assemblyMethod = res.getString("assembly_method");
-        String executeAs = res.getString("execute_as");
-        String owner = res.getString("owner");
 
-        List<XmlReader> args = XmlReader.readXML(res.getString("args"));
         AbstractMsClrFunction func;
 
         if (type == DbObjType.PROCEDURE) {
@@ -47,21 +44,7 @@ public class MsExtendedObjectsReader extends JdbcReader {
             MsClrFunction localFunc = new MsClrFunction(name, assembly, assemblyClass, assemblyMethod);
 
             if ("FT".equals(funcType)) {
-                List<String> columns = new ArrayList<>();
-
-                for (XmlReader col : XmlReader.readXML(res.getString("cols"))) {
-                    MsColumn column = new MsColumn(col.getString("name"));
-                    boolean isUserDefined = col.getBoolean("ud");
-                    if (!isUserDefined) {
-                        column.setCollation(col.getString("cn"));
-                    }
-                    column.setType(JdbcLoaderBase.getMsType(localFunc, col.getString("st"), col.getString("type"),
-                            isUserDefined, col.getInt("size"), col.getInt("pr"), col.getInt("sc")));
-                    columns.add(column.getFullDefinition());
-                }
-
-                localFunc.setReturns("TABLE (\n" + String.join(",\n", columns) + ")");
-                localFunc.setFuncType(FuncTypes.TABLE);
+                setReturns(localFunc, XmlReader.readXML(res.getString("cols")));
             } else {
                 localFunc.setReturns(JdbcLoaderBase.getMsType(localFunc, res.getString("return_type_sh"),
                         res.getString("return_type"), res.getBoolean("return_type_ud"),
@@ -76,8 +59,38 @@ public class MsExtendedObjectsReader extends JdbcReader {
             func = localFunc;
         }
 
+        func.addDep(new GenericColumn(assembly, DbObjType.ASSEMBLY));
+
+        String executeAs = res.getString("execute_as");
         func.addOption("EXECUTE AS " + (executeAs == null ? "CALLER" : executeAs));
 
+        addArguments(func, XmlReader.readXML(res.getString("args")));
+
+        String owner = res.getString("owner");
+        loader.setOwner(func, owner);
+
+        schema.addFunction(func);
+        loader.setPrivileges(func, XmlReader.readXML(res.getString("acl")));
+    }
+
+    private void setReturns(MsClrFunction localFunc, List<XmlReader> cols) {
+        List<String> columns = new ArrayList<>();
+        for (XmlReader col : cols) {
+            MsColumn column = new MsColumn(col.getString("name"));
+            boolean isUserDefined = col.getBoolean("ud");
+            if (!isUserDefined) {
+                column.setCollation(col.getString("cn"));
+            }
+            column.setType(JdbcLoaderBase.getMsType(localFunc, col.getString("st"), col.getString("type"),
+                    isUserDefined, col.getInt("size"), col.getInt("pr"), col.getInt("sc")));
+            columns.add(column.getFullDefinition());
+        }
+
+        localFunc.setReturns("TABLE (\n" + String.join(",\n", columns) + ")");
+        localFunc.setFuncType(FuncTypes.TABLE);
+    }
+
+    private void addArguments(AbstractMsClrFunction func, List<XmlReader> args) {
         for (XmlReader arg : args) {
             boolean isUserDefined = arg.getBoolean("ud");
             Argument argDst = new Argument(arg.getBoolean("ou") ? ArgMode.OUTPUT : ArgMode.IN,
@@ -111,11 +124,5 @@ public class MsExtendedObjectsReader extends JdbcReader {
             argDst.setReadOnly(arg.getBoolean("ro"));
             func.addArgument(argDst);
         }
-
-        loader.setOwner(func, owner);
-        func.addDep(new GenericColumn(assembly, DbObjType.ASSEMBLY));
-
-        schema.addFunction(func);
-        loader.setPrivileges(func, XmlReader.readXML(res.getString("acl")));
     }
 }

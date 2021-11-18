@@ -18,6 +18,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_alterContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sequence_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_def_columnContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statisticsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameterContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
@@ -74,7 +75,7 @@ public class AlterTable extends TableAbstract {
             if (tablAction.owner_to() != null) {
                 IRelation r = getSafe(AbstractSchema::getRelation, schema, nameCtx);
                 if (r instanceof PgStatement) {
-                    fillOwnerTo(tablAction.owner_to(), (PgStatement) r);
+                    fillOwnerTo(tablAction.owner_to().user_name().identifier(), (PgStatement) r);
                 }
                 continue;
             }
@@ -110,7 +111,7 @@ public class AlterTable extends TableAbstract {
             Table_column_definitionContext def = tablAction.table_column_definition();
             if (def != null) {
                 addColumn(def.identifier().getText(), def.data_type(),
-                        def.collate_identifier(), def.constraint_common(),
+                        def.collate_identifier(), def.compression_identifier(), def.constraint_common(),
                         def.define_foreign_options(), tabl);
             }
 
@@ -162,8 +163,9 @@ public class AlterTable extends TableAbstract {
     private void parseColumnAction(AbstractSchema schema, PgColumn col,
             Column_actionContext colAction) {
         // column statistics
-        if (colAction.STATISTICS() != null) {
-            col.setStatistics(Integer.valueOf(colAction.signed_number_literal().getText()));
+        Set_statisticsContext statistics = colAction.set_statistics();
+        if (statistics != null) {
+            col.setStatistics(Integer.valueOf(statistics.signed_number_literal().getText()));
         }
 
         // column not null constraint
@@ -266,6 +268,6 @@ public class AlterTable extends TableAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_ALTER, DbObjType.TABLE, ctx.name.identifier());
+        return getStrForStmtAction(ACTION_ALTER, DbObjType.TABLE, ctx.name);
     }
 }

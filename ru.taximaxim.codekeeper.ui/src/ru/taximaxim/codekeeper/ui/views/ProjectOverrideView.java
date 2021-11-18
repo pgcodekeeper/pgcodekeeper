@@ -256,11 +256,10 @@ public class ProjectOverrideView extends ViewPart implements ISelectionListener 
             }
         });
 
-        int width = (int)(viewer.getTable().getSize().x * 0.25);
-        type.getColumn().setWidth(Math.max(width, 150));
-        name.getColumn().setWidth(Math.max(width, 150));
-        oldLocation.getColumn().setWidth(Math.max(width, 300));
-        newLocation.getColumn().setWidth(Math.max(width, 300));
+        type.getColumn().setWidth(150);
+        name.getColumn().setWidth(150);
+        oldLocation.getColumn().setWidth(300);
+        newLocation.getColumn().setWidth(300);
     }
 
     @Override

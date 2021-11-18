@@ -91,13 +91,17 @@ public class IgnoredObject {
                 ignoreContent, isQualified, EnumSet.copyOf(objTypes));
     }
 
-    public boolean match(TreeElement el, String... dbNames) {
-        boolean matches;
+    boolean match(String objName) {
         if (isRegular) {
-            matches = regex.matcher(isQualified ? el.getQualifiedName() : el.getName()).find();
+            return regex.matcher(objName).find();
         } else {
-            matches = name.equals(isQualified ?  el.getQualifiedName() : el.getName());
+            return name.equals(objName);
         }
+    }
+
+    public boolean match(TreeElement el, String... dbNames) {
+        boolean matches = match(isQualified ? el.getQualifiedName() : el.getName());
+
         if (!objTypes.isEmpty()) {
             matches = matches && objTypes.contains(el.getType());
         }
@@ -203,10 +207,25 @@ public class IgnoredObject {
     }
 
     private static String getValidId(String id) {
-        if (PgDiffUtils.isValidId(id, true, true)) {
+        if (PgDiffUtils.isValidId(id, true, true) && !isKeyword(id)) {
             return id;
-        } else {
-            return quoteWithDq(id) ? PgDiffUtils.quoteName(id) : PgDiffUtils.quoteString(id);
+        }
+
+        return quoteWithDq(id) ? PgDiffUtils.quoteName(id) : PgDiffUtils.quoteString(id);
+    }
+
+    private static boolean isKeyword(String id) {
+        switch (id) {
+        case "QUALIFIED":
+        case "HIDE":
+        case "SHOW":
+        case "ALL":
+        case "CONTENT":
+        case "REGEX":
+        case "NONE":
+            return true;
+        default:
+            return false;
         }
     }
 

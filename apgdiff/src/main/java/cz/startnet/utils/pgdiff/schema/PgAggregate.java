@@ -194,7 +194,7 @@ public class PgAggregate extends AbstractPgFunction {
                     sb.append(", ");
                 }
 
-                sb.append(getDeclaration(arg, false, true));
+                arg.appendDeclaration(sb, false, true);
                 first = false;
                 i--;
             }

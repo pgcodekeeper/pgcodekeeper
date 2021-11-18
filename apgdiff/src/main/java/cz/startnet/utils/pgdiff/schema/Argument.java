@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.schema;
 import java.io.Serializable;
 import java.util.Objects;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import cz.startnet.utils.pgdiff.hashers.IHashable;
 import cz.startnet.utils.pgdiff.hashers.JavaHasher;
@@ -57,6 +58,35 @@ public class Argument implements Serializable, IHashable {
 
     public String getName() {
         return name;
+    }
+
+    public StringBuilder appendDeclaration(StringBuilder sbString,
+            boolean includeDefaultValue, boolean includeArgName) {
+        if (includeArgName) {
+            ArgMode mode = getMode();
+            if (mode != ArgMode.IN) {
+                sbString.append(mode);
+                sbString.append(' ');
+            }
+
+            String name = getName();
+
+            if (name != null && !name.isEmpty()) {
+                sbString.append(PgDiffUtils.getQuotedName(name));
+                sbString.append(' ');
+            }
+        }
+
+        sbString.append(getDataType());
+
+        String def = getDefaultExpression();
+
+        if (includeDefaultValue && def != null && !def.isEmpty()) {
+            sbString.append(" = ");
+            sbString.append(def);
+        }
+
+        return sbString;
     }
 
     @Override

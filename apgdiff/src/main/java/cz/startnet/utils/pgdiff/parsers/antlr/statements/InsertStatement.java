@@ -20,8 +20,6 @@ public class InsertStatement extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(
-                new StringBuilder(ACTION_INSERT).append(' ').append("INTO").toString(),
-                DbObjType.TABLE, ctx.insert_table_name.identifier());
+        return getStrForStmtAction(ACTION_INSERT + " INTO", DbObjType.TABLE, ctx.insert_table_name);
     }
 }

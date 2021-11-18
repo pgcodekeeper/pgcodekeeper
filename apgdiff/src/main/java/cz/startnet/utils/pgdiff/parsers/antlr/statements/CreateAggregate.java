@@ -15,7 +15,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContex
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identifier_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
-import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.PgAggregate;
 import cz.startnet.utils.pgdiff.schema.PgAggregate.AggFuncs;
@@ -53,8 +52,7 @@ public class CreateAggregate extends ParserAbstract {
         addFuncAsDepcy(AggFuncs.SFUNC, sFuncCtx, aggregate);
 
         fillAggregate(ctx.aggregate_param(), aggregate);
-
-        addSafe(getSchemaSafe(ids), aggregate, ids);
+        addSafe(getSchemaSafe(ids), aggregate, ids, parseArguments(ctx.function_args()));
     }
 
     private void fillAllArguments(PgAggregate aggregate) {
@@ -273,7 +271,8 @@ public class CreateAggregate extends ParserAbstract {
 
     private static void fillStringByArgs(StringBuilder sb, List<Argument> args) {
         for (Argument arg : args) {
-            sb.append(AbstractPgFunction.getDeclaration(arg, false, true)).append(", ");
+            arg.appendDeclaration(sb, false, true);
+            sb.append(", ");
         }
     }
 
@@ -284,6 +283,6 @@ public class CreateAggregate extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_CREATE, DbObjType.AGGREGATE, ctx.name.identifier());
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.AGGREGATE, ctx.name);
     }
 }
