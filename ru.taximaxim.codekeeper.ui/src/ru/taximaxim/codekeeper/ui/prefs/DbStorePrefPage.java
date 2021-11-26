@@ -6,9 +6,11 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.security.storage.StorageException;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
@@ -30,6 +32,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStoreEditorDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.PgPassDialog;
@@ -41,6 +44,7 @@ public class DbStorePrefPage extends PreferencePage
 implements IWorkbenchPreferencePage {
 
     private DbStorePrefListEditor dbList;
+    private List<DbInfo> oldDbList;
 
     @Override
     public void init(IWorkbench workbench) {
@@ -51,6 +55,7 @@ implements IWorkbenchPreferencePage {
     protected Control createContents(Composite parent) {
         dbList = new DbStorePrefListEditor(parent);
         dbList.setInputList(DbInfo.readStoreFromXml());
+        oldDbList = new ArrayList<>(dbList.getList());
         return dbList;
     }
 
@@ -66,23 +71,27 @@ implements IWorkbenchPreferencePage {
     public boolean performOk() {
         setErrorMessage(null);
         try {
-            try {
-                DbXmlStore.INSTANCE.savePasswords(dbList.getList());
-            } catch (StorageException e) {
-                MessageBox mb;
-                String text;
-                if (Platform.OS_LINUX.equals(Platform.getOS())) {
-                    mb = new MessageBox(getShell(), SWT.ICON_WARNING | SWT.YES | SWT.NO);
-                    text = Messages.DbStorePrefPage_secure_storage_error_text_linux;
-                } else {
-                    mb = new MessageBox(getShell(), SWT.ERROR);
-                    text = Messages.DbStorePrefPage_secure_storage_error_text_other;
-                }
-                mb.setMessage(MessageFormat.format(text, e.getLocalizedMessage()));
-                mb.setText(Messages.DbStorePrefPage_secure_storage_error_title);
-                if (mb.open() != SWT.YES) {
-                    setErrorMessage(e.getLocalizedMessage());
-                    return false;
+            IPreferenceStore prefs = Activator.getDefault().getPreferenceStore();
+            if (prefs.getBoolean(PREF.SAVE_IN_SECURITY_STORAGE)) {
+                try {
+                    DbXmlStore.INSTANCE.savePasswords(dbList.getList(), oldDbList);
+                } catch (StorageException e) {
+                    MessageBox mb;
+                    String text;
+                    if (Platform.OS_LINUX.equals(Platform.getOS())) {
+                        mb = new MessageBox(getShell(), SWT.ICON_WARNING | SWT.YES | SWT.NO);
+                        text = Messages.DbStorePrefPage_secure_storage_error_text_linux;
+                    } else {
+                        mb = new MessageBox(getShell(), SWT.ERROR);
+                        text = Messages.DbStorePrefPage_secure_storage_error_text_other;
+                    }
+                    mb.setMessage(MessageFormat.format(text, e.getLocalizedMessage()));
+                    mb.setText(Messages.DbStorePrefPage_secure_storage_error_title);
+                    if (mb.open() != SWT.YES) {
+                        setErrorMessage(e.getLocalizedMessage());
+                        return false;
+                    }
+                    prefs.setValue(PREF.SAVE_IN_SECURITY_STORAGE, false);
                 }
             }
             DbXmlStore.INSTANCE.writeObjects(dbList.getList());

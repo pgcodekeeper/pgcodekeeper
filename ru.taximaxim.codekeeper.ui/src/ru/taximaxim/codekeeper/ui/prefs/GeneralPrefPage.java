@@ -32,6 +32,9 @@ implements IWorkbenchPreferencePage  {
     @Override
     protected void createFieldEditors() {
 
+        addField(new BooleanFieldEditor(PREF.SAVE_IN_SECURITY_STORAGE,
+                Messages.GeneralPrefPage_save_in_security_storage, getFieldEditorParent()));
+
         addField(new BooleanFieldEditor(PREF.FORCE_SHOW_CONSOLE,
                 Messages.generalPrefPage_show_console_when_program_write_to_console, getFieldEditorParent()));
 

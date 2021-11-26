@@ -62,6 +62,7 @@ public interface UIConsts {
     }
 
     interface PREF {
+        String SAVE_IN_SECURITY_STORAGE = "prefSaveInSecurityStorage"; //$NON-NLS-1$
         String FORCE_SHOW_CONSOLE = "prefForceShowConsole"; //$NON-NLS-1$
         String DB_STORE_FILES = "prefDbStoreHistory"; //$NON-NLS-1$
         String NO_PRIVILEGES = "prefNoPrivileges"; //$NON-NLS-1$
