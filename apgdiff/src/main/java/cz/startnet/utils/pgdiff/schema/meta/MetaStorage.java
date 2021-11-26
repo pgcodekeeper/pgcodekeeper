@@ -1,18 +1,15 @@
 package cz.startnet.utils.pgdiff.schema.meta;
 
-import java.io.IOException;
+import cz.startnet.utils.pgdiff.loader.SupportedVersion;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
+
+import java.io.InputStream;
 import java.io.Serializable;
-import java.net.URISyntaxException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import cz.startnet.utils.pgdiff.loader.SupportedVersion;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
-import ru.taximaxim.codekeeper.apgdiff.log.Log;
 
 public class MetaStorage implements Serializable {
 
@@ -45,21 +42,14 @@ public class MetaStorage implements Serializable {
         if (db != null) {
             return db;
         }
-
-        try {
-            Path path = ApgdiffUtils.getFileFromOsgiRes(MetaStorage.class.getResource(
-                    FILE_NAME + version + ".ser"));
-            Object object = ApgdiffUtils.deserialize(path);
-
-            if (object instanceof MetaStorage) {
-                MetaStorage storage = (MetaStorage) object;
-                MetaStorage other = STORAGE_CACHE.putIfAbsent(version, storage);
-                return other == null ? storage : other;
-            }
-        } catch (URISyntaxException | IOException e) {
-            Log.log(Log.LOG_ERROR, "Error while reading systems objects from resources");
+        InputStream inputStream = MetaStorage.class.getResourceAsStream(
+                FILE_NAME + version + ".ser");
+        Object object = ApgdiffUtils.deserialize(inputStream);
+        if (object instanceof MetaStorage) {
+            MetaStorage storage = (MetaStorage) object;
+            MetaStorage other = STORAGE_CACHE.putIfAbsent(version, storage);
+            return other == null ? storage : other;
         }
-
         return null;
     }
 }

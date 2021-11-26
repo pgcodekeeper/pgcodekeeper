@@ -1,14 +1,17 @@
 package cz.startnet.utils.pgdiff.loader;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
+import ru.taximaxim.codekeeper.apgdiff.log.Log;
+
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.lang.reflect.Field;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
-import ru.taximaxim.codekeeper.apgdiff.log.Log;
 
 /**
  * For every field in this class that starts with 'QUERY_'
@@ -109,27 +112,39 @@ public final class JdbcQueries {
         query.setQuery(readResource(f.getName()));
 
         for (SupportedVersion version : SupportedVersion.values()) {
-            URL url = JdbcQueries.class.getResource(f.getName() + '_' + version + ".sql");
-            if (url != null) {
-                query.addSinceQuery(version, readResource(url));
+            InputStream inputStream = JdbcQueries.class.getResourceAsStream(f.getName() + '_' + version + ".sql");
+            if (inputStream != null) {
+                query.addSinceQuery(version, convertInputstreamToString(inputStream));
             }
             for (SupportedVersion v2 : SupportedVersion.values()) {
-                URL urlInterval = JdbcQueries.class.getResource(f.getName() + '_'
+                InputStream inputStreamInterval = JdbcQueries.class.getResourceAsStream(f.getName() + '_'
                         + version.getVersion() + '_' + v2.getVersion() + ".sql");
-                if (urlInterval != null) {
-                    query.addIntervalQuery(version, v2, readResource(urlInterval));
+                if (inputStreamInterval != null) {
+                    query.addIntervalQuery(version, v2, convertInputstreamToString(inputStreamInterval));
                 }
             }
         }
     }
 
     private static String readResource(String name) throws IOException, URISyntaxException {
-        return readResource(JdbcQueries.class.getResource(name + ".sql"));
+        return convertInputstreamToString(JdbcQueries.class.getResourceAsStream(name + ".sql"));
+        //return readResource(JdbcQueries.class.getResource(name + ".sql"));
     }
 
     private static String readResource(URL url) throws IOException, URISyntaxException {
         return new String(Files.readAllBytes(ApgdiffUtils.getFileFromOsgiRes(url)),
                 StandardCharsets.UTF_8);
+    }
+
+    private static String convertInputstreamToString(InputStream stream) throws IOException {
+        int bufferSize = 1024;
+        char[] buffer = new char[bufferSize];
+        StringBuilder out = new StringBuilder();
+        Reader in = new InputStreamReader(stream, StandardCharsets.UTF_8);
+        for (int numRead; (numRead = in.read(buffer, 0, buffer.length)) > 0; ) {
+            out.append(buffer, 0, numRead);
+        }
+        return out.toString();
     }
 
     private JdbcQueries() {

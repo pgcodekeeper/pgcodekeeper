@@ -1,19 +1,15 @@
 package ru.taximaxim.codekeeper.apgdiff;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.URIUtil;
+import ru.taximaxim.codekeeper.apgdiff.log.Log;
+
+import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.URIUtil;
-
-import ru.taximaxim.codekeeper.apgdiff.log.Log;
 
 public final class ApgdiffUtils {
 
@@ -69,6 +65,18 @@ public final class ApgdiffUtils {
             Log.log(Log.LOG_DEBUG, "Error while deserialize object!", e);
         }
 
+        return null;
+    }
+
+    public static Object deserialize(InputStream inputStream) {
+        if(inputStream == null){
+            return null;
+        }
+        try (ObjectInputStream oin = new ObjectInputStream(inputStream)) {
+            return oin.readObject();
+        } catch (ClassNotFoundException | IOException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 
