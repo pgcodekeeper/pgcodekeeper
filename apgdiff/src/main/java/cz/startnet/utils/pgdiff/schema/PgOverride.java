@@ -29,25 +29,20 @@ public class PgOverride {
     }
 
     public String getNewPath() {
-        PgObjLocation loc = newStatement.getLocation();
-        if (loc != null) {
-            return loc.getFilePath();
-        }
-
-        if (newStatement.isLib()) {
-            return newStatement.getLibName();
-        }
-
-        return null;
+        return getStatementPath(newStatement);
     }
 
     public String getOldPath() {
-        PgObjLocation loc = oldStatement.getLocation();
+        return getStatementPath(oldStatement);
+    }
+
+    private String getStatementPath(PgStatement st) {
+        PgObjLocation loc = st.getLocation();
         if (loc != null) {
             return loc.getFilePath();
         }
-        if (oldStatement.isLib()) {
-            return oldStatement.getLibName();
+        if (st.isLib()) {
+            return st.getLibName();
         }
         return null;
     }

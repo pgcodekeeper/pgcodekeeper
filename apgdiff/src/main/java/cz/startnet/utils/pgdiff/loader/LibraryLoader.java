@@ -24,8 +24,6 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.libraries.PgLibrary;
 import cz.startnet.utils.pgdiff.libraries.PgLibrarySource;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgObjLocation;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
@@ -49,22 +47,16 @@ public class LibraryLoader extends DatabaseLoader {
     public void loadLibraries(PgDiffArguments args, boolean isIgnorePriv,
             Collection<String> paths) throws InterruptedException, IOException {
         for (String path : paths) {
-            database.addLib(getLibrary(path, args, isIgnorePriv));
+            database.addLib(getLibrary(path, args, isIgnorePriv), path, null);
         }
     }
 
     public void loadXml(DependenciesXmlStore xmlStore, PgDiffArguments args)
             throws InterruptedException, IOException {
         for (PgLibrary lib : xmlStore.readObjects()) {
-            PgDatabase l = getLibrary(lib.getPath(), args, lib.isIgnorePriv());
-            String owner = lib.getOwner();
-            if (!owner.isEmpty()) {
-                l.getDescendants()
-                .filter(PgStatement::isOwned)
-                .forEach(st -> st.setOwner(owner));
-            }
-
-            database.addLib(l);
+            String path = lib.getPath();
+            PgDatabase l = getLibrary(path, args, lib.isIgnorePriv());
+            database.addLib(l, path, lib.getOwner());
         }
     }
 
@@ -81,8 +73,6 @@ public class LibraryLoader extends DatabaseLoader {
             try {
                 URI uri = new URI(path);
                 PgDatabase db = loadURI(uri, args, isIgnorePriv);
-                db.getDescendants().forEach(st -> st.setLocation(
-                        new PgObjLocation.Builder().setFilePath(path).build()));
                 return db;
             } catch (URISyntaxException ex) {
                 // shouldn't happen, already checked by getSource
@@ -149,8 +139,6 @@ public class LibraryLoader extends DatabaseLoader {
             errors.addAll(loader.getErrors());
         }
 
-        db.getDescendants().forEach(st -> st.setLocation(
-                new PgObjLocation.Builder().setFilePath(path).build()));
         return db;
     }
 
@@ -257,7 +245,7 @@ public class LibraryLoader extends DatabaseLoader {
         String filePath = sub.toString();
         PgDiffArguments args = db.getArguments();
         if (filePath.endsWith(".zip")) {
-            db.addLib(getLibrary(filePath, args, args.isIgnorePrivileges()));
+            db.addLib(getLibrary(filePath, args, args.isIgnorePrivileges()), null, null);
         } else if (filePath.endsWith(".sql")) {
             PgDumpLoader loader = new PgDumpLoader(sub, args);
             loader.loadDatabase(db, antlrTasks);

@@ -493,8 +493,17 @@ public class PgDatabase extends PgStatement implements IDatabase {
         return dbDst;
     }
 
-    public void addLib(PgDatabase lib) {
-        lib.getDescendants().forEach(this::concat);
+    public void addLib(PgDatabase lib, String libName, String owner) {
+        lib.getDescendants().forEach(st -> {
+            // do not override dependent library name
+            if (libName != null && st.getLibName() == null) {
+                st.setLibName(libName);
+            }
+            if (st.isOwned() && owner != null && !owner.isEmpty()) {
+                st.setOwner(owner);
+            }
+            concat(st);
+        });
 
         lib.analysisLaunchers.stream()
         .filter(st -> st.getStmt().getParent() != null)
