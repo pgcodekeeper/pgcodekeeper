@@ -29,7 +29,7 @@ public class CreateForeignTable extends TableAbstract {
     private final Create_foreign_table_statementContext ctx;
 
     public CreateForeignTable(Create_foreign_table_statementContext ctx, PgDatabase db) {
-        super(db);
+        super(db, null);
         this.ctx = ctx;
     }
 
