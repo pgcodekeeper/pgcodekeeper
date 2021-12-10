@@ -26,7 +26,7 @@
       <import plugin="org.apache.httpcomponents.httpcore" version="4.3.0" match="compatible"/>
       <import plugin="org.apache.httpcomponents.httpclient" version="4.3.0" match="compatible"/>
       <import feature="org.eclipse.platform" version="4.16.0" match="compatible"/>
-      <import feature="org.eclipse.jgit" version="5.0.0" match="compatible"/>
+      <import feature="org.eclipse.jgit" version="5.0.0" match="greaterOrEqual"/>
       <import feature="org.eclipse.zest" version="1.7.0" match="compatible"/>
    </requires>
 
