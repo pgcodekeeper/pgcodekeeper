@@ -1,8 +1,8 @@
 package cz.startnet.utils.pgdiff.formatter;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,6 +20,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.AntlrUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLLexer;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_bodyContext;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class StatementFormatter {
 
@@ -57,7 +58,8 @@ public class StatementFormatter {
     /**
      * intermediate indent instructions found by parser
      */
-    private final Map<Token, IndentDirection> indents = new HashMap<>();
+    private final Map<Token, Pair<IndentDirection, Integer>> indents = new LinkedHashMap<>();
+
     /**
      * unaryOps and other operator-like tokens found by parser
      */
@@ -210,21 +212,19 @@ public class StatementFormatter {
         }
     }
 
-    private void processIndents(IndentDirection direction, int tokenStart) {
-        if (direction != null) {
-            switch (direction) {
+    private void processIndents(Pair<IndentDirection, Integer> indent, int tokenStart) {
+        if (indent != null) {
+            switch (indent.getFirst()) {
             case BLOCK_START:
                 writeIndent(true, currentIndent++, tokenStart);
+                currentIndent +=indent.getSecond()-1;
                 break;
             case BLOCK_LINE:
                 writeIndent(true, currentIndent - 1, tokenStart);
                 break;
             case BLOCK_STOP:
                 writeIndent(false, --currentIndent, tokenStart);
-                break;
-            case REDUCE_TWICE:
-                writeIndent(false, --currentIndent, tokenStart);
-                currentIndent--;
+                currentIndent -= indent.getSecond()-1;
                 break;
             }
         } else if (firstTokenInLine) {

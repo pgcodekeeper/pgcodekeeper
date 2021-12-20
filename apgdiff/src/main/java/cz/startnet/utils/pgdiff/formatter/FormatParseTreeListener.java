@@ -46,18 +46,19 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Vex_bContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectOps;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class FormatParseTreeListener implements ParseTreeListener {
 
     private final CommonTokenStream tokens;
-    private final Map<Token, IndentDirection> indents;
+    private final Map<Token, Pair<IndentDirection, Integer>> indents;
     private final Set<Token> unaryOps;
 
     /**
      * @param unaryOps found unary operators and other operator-like tokens
      */
     public FormatParseTreeListener(CommonTokenStream tokens,
-            Map<Token, IndentDirection> indents,
+            Map<Token, Pair<IndentDirection, Integer>> indents,
             Set<Token> unaryOps) {
         this.tokens = tokens;
         this.indents = indents;
@@ -120,7 +121,7 @@ public class FormatParseTreeListener implements ParseTreeListener {
         } else if (ctx instanceof Select_ops_no_parensContext) {
             formatSelectOps(new SelectOps((Select_ops_no_parensContext) ctx));
         } else if (ctx instanceof After_opsContext) {
-            indents.put(ctx.getStart(), IndentDirection.BLOCK_LINE);
+            putIndent(ctx.getStart(), IndentDirection.BLOCK_LINE);
         } else if (ctx instanceof StatementContext) {
             formatSql((StatementContext) ctx);
         } else if (ctx instanceof Start_labelContext) {
@@ -166,37 +167,37 @@ public class FormatParseTreeListener implements ParseTreeListener {
         List<Function_statementContext> statements = ctx.function_statement();
         List<TerminalNode> colons = ctx.SEMI_COLON();
         for (int i = 0; i < statements.size(); i++) {
-            indents.put(statements.get(i).getStart(), IndentDirection.BLOCK_START);
-            putBlockStop(colons.get(i).getSymbol());
+            putIndent(statements.get(i).getStart(), IndentDirection.BLOCK_START);
+            putIndent(colons.get(i).getSymbol(), IndentDirection.BLOCK_STOP);
         }
     }
 
     private void formatFunctionBlock(Function_blockContext block) {
         DeclarationsContext declare = block.declarations();
         if (declare != null) {
-            indents.put(declare.DECLARE().getSymbol(), IndentDirection.BLOCK_LINE);
+            putIndent(declare.DECLARE().getSymbol(), IndentDirection.BLOCK_LINE);
             for (DeclarationContext dec : declare.declaration()) {
-                indents.put(dec.getStart(), IndentDirection.BLOCK_START);
-                putBlockStop(dec.getStop());
+                putIndent(dec.getStart(), IndentDirection.BLOCK_START);
+                putIndent(dec.getStop(), IndentDirection.BLOCK_STOP);
             }
         }
 
-        indents.put(block.BEGIN().getSymbol(), IndentDirection.BLOCK_LINE);
-        indents.put(block.END().getSymbol(), IndentDirection.BLOCK_LINE);
+        putIndent(block.BEGIN().getSymbol(), IndentDirection.BLOCK_LINE);
+        putIndent(block.END().getSymbol(), IndentDirection.BLOCK_LINE);
     }
 
     private void formatFunctionBody(Function_bodyContext body) {
-        indents.put(body.BEGIN().getSymbol(), IndentDirection.BLOCK_LINE);
-        indents.put(body.END().getSymbol(), IndentDirection.BLOCK_LINE);
+        putIndent(body.BEGIN().getSymbol(), IndentDirection.BLOCK_LINE);
+        putIndent(body.END().getSymbol(), IndentDirection.BLOCK_LINE);
     }
 
     private void formatExceptionStatement(Exception_statementContext ctx) {
-        indents.put(ctx.EXCEPTION().getSymbol(), IndentDirection.BLOCK_LINE);
+        putIndent(ctx.EXCEPTION().getSymbol(), IndentDirection.BLOCK_LINE);
         List<TerminalNode> whenTokens = ctx.WHEN();
         List<Function_statementsContext> statements = ctx.function_statements();
         for (int i = 0; i < whenTokens.size(); i++) {
-            indents.put(whenTokens.get(i).getSymbol(), IndentDirection.BLOCK_START);
-            putBlockStop(statements.get(i).getStop());
+            putIndent(whenTokens.get(i).getSymbol(), IndentDirection.BLOCK_START);
+            putIndent(statements.get(i).getStop(), IndentDirection.BLOCK_STOP);
         }
     }
 
@@ -209,32 +210,32 @@ public class FormatParseTreeListener implements ParseTreeListener {
         if (node != null && !isSelectPrimaryInParens(ctx)) {
             // only new-line SELECT if no LEFT_PAREN found next to it
             // LEFT_PAREN must open a block, making this newline extraneous
-            indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
+            putIndent(node.getSymbol(), IndentDirection.BLOCK_LINE);
         }
 
         node = ctx.FROM();
         if (node != null) {
-            indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
+            putIndent(node.getSymbol(), IndentDirection.BLOCK_LINE);
         }
 
         node = ctx.WHERE();
         if (node != null) {
-            indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
+            putIndent(node.getSymbol(), IndentDirection.BLOCK_LINE);
         }
 
         node = ctx.HAVING();
         if (node != null) {
-            indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
+            putIndent(node.getSymbol(), IndentDirection.BLOCK_LINE);
         }
 
         node = ctx.WINDOW();
         if (node != null) {
-            indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
+            putIndent(node.getSymbol(), IndentDirection.BLOCK_LINE);
         }
 
         Groupby_clauseContext groupBy = ctx.groupby_clause();
         if (groupBy != null) {
-            indents.put(groupBy.GROUP().getSymbol(), IndentDirection.BLOCK_LINE);
+            putIndent(groupBy.GROUP().getSymbol(), IndentDirection.BLOCK_LINE);
         }
     }
 
@@ -247,7 +248,7 @@ public class FormatParseTreeListener implements ParseTreeListener {
             op = selectOps.intersect();
         }
         if (op != null) {
-            indents.put(op.getSymbol(), IndentDirection.BLOCK_LINE);
+            putIndent(op.getSymbol(), IndentDirection.BLOCK_LINE);
         }
     }
 
@@ -258,19 +259,24 @@ public class FormatParseTreeListener implements ParseTreeListener {
         }
 
         ParserRuleContext ctx = select.getCtx();
+        if (ctx instanceof Select_stmtContext && ctx.getChildCount() == 1 && select.selectOps().selectStmt() != null) {
+            //if select is entirely contained in parens don't need block start.
+            //Block was created by code below for parens already
+            return;
+        }
         ParserRuleContext parent = ctx.getParent();
         TerminalNode leftParen = parent.getToken(SQLLexer.LEFT_PAREN, 0);
         if (leftParen != null) {
             TerminalNode rightParen = parent.getToken(SQLLexer.RIGHT_PAREN, 0);
             if (rightParen != null) {
-                indents.put(leftParen.getSymbol(), IndentDirection.BLOCK_START);
-                putBlockStop(rightParen.getSymbol());
+                putIndent(leftParen.getSymbol(), IndentDirection.BLOCK_START);
+                putIndent(rightParen.getSymbol(), IndentDirection.BLOCK_STOP);
                 return;
             }
         }
         // if select is not wrapped with parens, make it the block
-        indents.put(ctx.getStart(), IndentDirection.BLOCK_START);
-        putBlockStop(ctx.getStop());
+        putIndent(ctx.getStart(), IndentDirection.BLOCK_START);
+        putIndent(ctx.getStop(), IndentDirection.BLOCK_STOP);
     }
 
     private void formatDeleteStatement(Delete_stmt_for_psqlContext ctx) {
@@ -279,11 +285,11 @@ public class FormatParseTreeListener implements ParseTreeListener {
             return;
         }
 
-        indents.put(ctx.DELETE().getSymbol(), IndentDirection.BLOCK_LINE);
+        putIndent(ctx.DELETE().getSymbol(), IndentDirection.BLOCK_LINE);
 
         TerminalNode node = ctx.USING();
         if (node != null) {
-            indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
+            putIndent(node.getSymbol(), IndentDirection.BLOCK_LINE);
         }
     }
 
@@ -293,33 +299,33 @@ public class FormatParseTreeListener implements ParseTreeListener {
             return;
         }
 
-        indents.put(ctx.UPDATE().getSymbol(), IndentDirection.BLOCK_LINE);
+        putIndent(ctx.UPDATE().getSymbol(), IndentDirection.BLOCK_LINE);
 
         TerminalNode node = ctx.FROM();
         if (node != null) {
-            indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
+            putIndent(node.getSymbol(), IndentDirection.BLOCK_LINE);
         }
     }
 
     private void formatInsertStatement(Insert_stmt_for_psqlContext ctx) {
         if (ctx.with_clause() != null) {
-            indents.put(ctx.INSERT().getSymbol(), IndentDirection.BLOCK_LINE);
+            putIndent(ctx.INSERT().getSymbol(), IndentDirection.BLOCK_LINE);
         }
     }
 
     private void formatIfStatement(If_statementContext ctx) {
         for (TerminalNode node : ctx.ELSIF()) {
-            indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
+            putIndent(node.getSymbol(), IndentDirection.BLOCK_LINE);
         }
         for (TerminalNode node : ctx.ELSEIF()) {
-            indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
+            putIndent(node.getSymbol(), IndentDirection.BLOCK_LINE);
         }
         TerminalNode elseCtx = ctx.ELSE();
         if (elseCtx != null) {
-            indents.put(elseCtx.getSymbol(), IndentDirection.BLOCK_LINE);
+            putIndent(elseCtx.getSymbol(), IndentDirection.BLOCK_LINE);
         }
 
-        indents.put(ctx.END().getSymbol(), IndentDirection.BLOCK_LINE);
+        putIndent(ctx.END().getSymbol(), IndentDirection.BLOCK_LINE);
     }
 
     private void formatLoopStatement(Loop_statementContext ctx) {
@@ -328,51 +334,57 @@ public class FormatParseTreeListener implements ParseTreeListener {
             Loop_startContext start = ctx.loop_start();
             if (start != null && start.IN() != null && start.DOUBLE_DOT() == null) {
                 // open LOOP on new line only for complex loop exprs
-                indents.put(loop.getSymbol(), IndentDirection.BLOCK_LINE);
+                putIndent(loop.getSymbol(), IndentDirection.BLOCK_LINE);
             }
-            indents.put(ctx.END().getSymbol(), IndentDirection.BLOCK_LINE);
+            putIndent(ctx.END().getSymbol(), IndentDirection.BLOCK_LINE);
         }
     }
 
     private void formatCaseStatement(Case_statementContext ctx) {
-        indents.put(ctx.CASE().get(0).getSymbol(), IndentDirection.BLOCK_LINE);
+        putIndent(ctx.CASE().get(0).getSymbol(), IndentDirection.BLOCK_LINE);
 
         for (TerminalNode node : ctx.WHEN()) {
-            indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
+            putIndent(node.getSymbol(), IndentDirection.BLOCK_LINE);
         }
 
         TerminalNode elseCtx = ctx.ELSE();
         if (elseCtx != null) {
-            indents.put(elseCtx.getSymbol(), IndentDirection.BLOCK_LINE);
+            putIndent(elseCtx.getSymbol(), IndentDirection.BLOCK_LINE);
         }
 
-        indents.put(ctx.END().getSymbol(), IndentDirection.BLOCK_LINE);
+        putIndent(ctx.END().getSymbol(), IndentDirection.BLOCK_LINE);
+
     }
 
     private void formatCaseExpression(Case_expressionContext ctx) {
-        indents.put(ctx.CASE().getSymbol(), IndentDirection.BLOCK_START);
+        putIndent(ctx.CASE().getSymbol(), IndentDirection.BLOCK_START);
 
         for (TerminalNode node : ctx.WHEN()) {
-            indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
+            putIndent(node.getSymbol(), IndentDirection.BLOCK_LINE);
         }
 
         TerminalNode elseCtx = ctx.ELSE();
         if (elseCtx != null) {
-            indents.put(elseCtx.getSymbol(), IndentDirection.BLOCK_LINE);
+            putIndent(elseCtx.getSymbol(), IndentDirection.BLOCK_LINE);
         }
 
-        putBlockStop(ctx.END().getSymbol());
+        putIndent(ctx.END().getSymbol(), IndentDirection.BLOCK_STOP);
     }
 
     private void formatSql(StatementContext ctx) {
-        indents.put(ctx.getStart(), IndentDirection.BLOCK_START);
-        putBlockStop(ctx.getStop());
+        putIndent(ctx.getStart(), IndentDirection.BLOCK_START);
+        putIndent(ctx.getStop(), IndentDirection.BLOCK_STOP);
     }
 
-    private void putBlockStop(Token token) {
-        // if token already is block end, reduce twice
-        indents.merge(token, IndentDirection.BLOCK_STOP,
-                (o, n) -> o == IndentDirection.BLOCK_STOP ? IndentDirection.REDUCE_TWICE : n);
+    private void putIndent(Token token, IndentDirection indentDir) {
+        Pair<IndentDirection, Integer> indent = indents.get(token);
+        if (indent != null && indent.getFirst() == indentDir) {
+            indent = new Pair<>(indentDir, indent.getSecond() + 1);
+        } else {
+            indent = new Pair<>(indentDir, 1);
+        }
+
+        indents.put(token, indent);
     }
 
     private boolean isSelectComplex(SelectStmt select) {
