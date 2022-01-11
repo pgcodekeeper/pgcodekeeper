@@ -75,6 +75,7 @@ public interface UIConsts {
         String REUSE_OPEN_COMPARE_EDITOR = "reuseOpenCompareEditors"; //$NON-NLS-1$
         String IGNORE_CONCURRENT_MODIFICATION = "ignoreConcurrentModification"; //$NON-NLS-1$
         String PARSER_CACHE_CLEANING_INTERVAL = "parserCacheCleaningInterval"; //$NON-NLS-1$
+        String LIMIT_SELECT_RESULTS = "limitSelectResults"; //$NON-NLS-1$
         String HEAP_SIZE_WARNING = "heapSizeWarning"; //$NON-NLS-1$
         String FORMAT_OBJECT_CODE_AUTOMATICALLY = "formatObjectCodeAutomatically"; //$NON-NLS-1$
     }

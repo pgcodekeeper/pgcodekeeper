@@ -31,18 +31,20 @@ public class QueriesBatchCallable extends StatementCallable<String> {
     private final Connection connection;
     private final IProgressReporter reporter;
     private final boolean isMsSql;
+    private final int limitRows;
 
     private boolean isAutoCommitEnabled = true;
 
     public QueriesBatchCallable(Statement st, List<PgObjLocation> batches,
             IProgressMonitor monitor, IProgressReporter reporter,
-            Connection connection, boolean isMsSql) {
+            Connection connection, boolean isMsSql, int limitRows) {
         super(st, null);
         this.batches = batches;
         this.monitor = monitor;
         this.connection = connection;
         this.reporter = reporter;
         this.isMsSql = isMsSql;
+        this.limitRows = limitRows;
     }
 
     @Override
@@ -151,7 +153,12 @@ public class QueriesBatchCallable extends StatementCallable<String> {
 
     private void executeSingleStatement(PgObjLocation query)
             throws SQLException, InterruptedException {
-        if (st.execute(query.getSql())) {
+        String str = query.getAction().equals("SELECT") && limitRows != 0
+                ? String.format("select * from ( %1$s ) as t limit %2$s", query.getSql(),
+                        limitRows)
+                        : query.getSql();
+
+        if (st.execute(str)) {
             writeResult(query.getSql());
         }
         writeWarnings();
@@ -213,7 +220,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
             }
         }
 
-        reporter.showData(query, results);
+        reporter.showData(query, results, limitRows);
     }
 
     private void writeWarnings() throws SQLException {

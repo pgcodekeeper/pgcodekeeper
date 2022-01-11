@@ -72,6 +72,10 @@ implements IWorkbenchPreferencePage  {
                 Messages.GeneralPrefPage_format_object_code_automatically,
                 getFieldEditorParent()));
 
+        addField(new IntegerFieldEditor(PREF.LIMIT_SELECT_RESULTS,
+                Messages.GeneralPrefPage_set_limit,
+                getFieldEditorParent(), 4));
+
         new Label(getFieldEditorParent(), SWT.SEPARATOR | SWT.HORIZONTAL)
         .setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
