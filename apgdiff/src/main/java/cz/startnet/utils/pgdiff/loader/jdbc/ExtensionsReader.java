@@ -39,6 +39,7 @@ public class ExtensionsReader implements PgCatalogStrings {
         loader.setCurrentObject(new GenericColumn(extName, DbObjType.EXTENSION));
         PgExtension e = new PgExtension(extName);
         e.setSchema(res.getString("namespace"));
+        e.setExtrelocatable(res.getBoolean("extrelocatable"));
         e.addDep(new GenericColumn(e.getSchema(), DbObjType.SCHEMA));
 
         String comment = res.getString("description");
