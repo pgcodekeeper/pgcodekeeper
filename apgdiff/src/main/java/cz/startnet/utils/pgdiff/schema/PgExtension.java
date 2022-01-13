@@ -81,10 +81,10 @@ public class PgExtension extends PgStatement {
         final int startLength = sb.length();
         PgExtension newExt = (PgExtension) newCondition;
 
-        if (!getExtrelocatable()) {
-            return true;
-        }
         if (!Objects.equals(newExt.getSchema(), getSchema())) {
+            if (!getExtrelocatable()) {
+                return true;
+            }
             sb.append("\n\nALTER EXTENSION ")
             .append(PgDiffUtils.getQuotedName(getName()))
             .append(" SET SCHEMA ")
