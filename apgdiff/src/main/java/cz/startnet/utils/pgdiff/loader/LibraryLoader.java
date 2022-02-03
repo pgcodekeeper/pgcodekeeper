@@ -16,7 +16,9 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
@@ -32,11 +34,20 @@ public class LibraryLoader extends DatabaseLoader {
 
     private final PgDatabase database;
     private final Path metaPath;
+    private final Set<String> loadedPaths;
+
+    private boolean loadNested;
+
 
     public LibraryLoader(PgDatabase database, Path metaPath, List<Object> errors) {
+        this(database, metaPath, errors, new HashSet<>());
+    }
+
+    public LibraryLoader(PgDatabase database, Path metaPath, List<Object> errors, Set<String> loadedPaths) {
         super(errors);
         this.database = database;
         this.metaPath = metaPath;
+        this.loadedPaths = loadedPaths;
     }
 
     @Override
@@ -53,7 +64,9 @@ public class LibraryLoader extends DatabaseLoader {
 
     public void loadXml(DependenciesXmlStore xmlStore, PgDiffArguments args)
             throws InterruptedException, IOException {
-        for (PgLibrary lib : xmlStore.readObjects()) {
+        List<PgLibrary> xmlLibs = xmlStore.readObjects();
+        loadNested = xmlStore.readLoadNestedFlag();
+        for (PgLibrary lib : xmlLibs) {
             String path = lib.getPath();
             PgDatabase l = getLibrary(path, args, lib.isIgnorePriv());
             database.addLib(l, path, lib.getOwner());
@@ -62,6 +75,9 @@ public class LibraryLoader extends DatabaseLoader {
 
     private PgDatabase getLibrary(String path, PgDiffArguments arguments, boolean isIgnorePriv)
             throws InterruptedException, IOException {
+        if (!loadedPaths.add(path)) {
+            return new PgDatabase();
+        }
 
         PgDiffArguments args = arguments.copy();
         args.setIgnorePrivileges(isIgnorePriv);
@@ -93,8 +109,10 @@ public class LibraryLoader extends DatabaseLoader {
             if (Files.exists(p.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER))) {
                 PgDatabase db = new ProjectLoader(path, args, errors).load();
 
-                new LibraryLoader(db, metaPath, errors).loadXml(
-                        new DependenciesXmlStore(p.resolve(DependenciesXmlStore.FILE_NAME)), args);
+                if (loadNested) {
+                    new LibraryLoader(db, metaPath, errors, loadedPaths).loadXml(
+                            new DependenciesXmlStore(p.resolve(DependenciesXmlStore.FILE_NAME)), args);
+                }
 
                 return db;
             }
@@ -191,7 +209,7 @@ public class LibraryLoader extends DatabaseLoader {
         Files.createDirectories(dir);
         Path destDir = dir.toRealPath();
 
-        try (FileSystem fs = FileSystems.newFileSystem(zip, null)) {
+        try (FileSystem fs = FileSystems.newFileSystem(zip, (ClassLoader) null)) {
             final Path root = fs.getPath("/");
 
             // walk the zip file tree and copy files to the destination

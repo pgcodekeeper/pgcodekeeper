@@ -10,9 +10,9 @@ public class PgLibrary {
         this(path, true, "");
     }
 
-    public PgLibrary(String path, boolean hasPriv, String owner) {
+    public PgLibrary(String path, boolean isIgnorePriv, String owner) {
         this.path = path;
-        this.isIgnorePriv = hasPriv;
+        this.isIgnorePriv = isIgnorePriv;
         this.owner = owner;
     }
 

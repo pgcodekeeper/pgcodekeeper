@@ -16,6 +16,7 @@ public class CodekeeperLinkHelper implements ILinkHelper {
 
     @Override
     public IStructuredSelection findSelection(IEditorInput anInput) {
+        // TODO expand tree and populate library objects before?
         if (anInput instanceof ProjectEditorInput) {
             ProjectEditorInput in = (ProjectEditorInput) anInput;
             return new StructuredSelection(in.getProject());

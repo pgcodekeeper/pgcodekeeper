@@ -886,43 +886,46 @@ public class DiffTableViewer extends Composite {
     }
 
     private void setLibLocations() {
-        elementInfoMap.forEach((k,v) -> {
-            if (k.getSide() != DiffSide.RIGHT) {
-                PgStatement st = k.getPgStatement(dbProject.getDbObject());
-                if (!st.isLib()) {
-                    return;
-                }
-
-                String name = null;
-                String type = null;
-                String loc = null;
-                String libName = st.getLibName();
-                switch (PgLibrarySource.getSource(libName)) {
-                case JDBC:
-                    type = Messages.DiffTableViewer_database;
-                    name = JdbcConnector.dbNameFromUrl(libName);
-                    break;
-                case URL:
-                    type = Messages.DiffTableViewer_uri;
-                    try {
-                        name = FileUtils.getNameFromUri(new URI(libName));
-                    } catch (URISyntaxException e) {
-                        name = libName;
-                    }
-                    break;
-                case LOCAL:
-                    loc = st.getLocation().getFilePath();
-                    Path location = Paths.get(libName);
-                    type = Files.isDirectory(location) ?
-                            Messages.DiffTableViewer_directory : Messages.DiffTableViewer_file;
-                    name = location.getFileName().toString();
-                    break;
-                }
-
-                v.setLibLocation(Messages.DiffTableViewer_library + name + '\n' + Messages.DiffTableViewer_type + type
-                        + (loc == null ? "" : ('\n' + Messages.DiffTableViewer_path + loc))); //$NON-NLS-1$
+        for (Entry<TreeElement, ElementMetaInfo> entry : elementInfoMap.entrySet()) {
+            if (entry.getKey().getSide() == DiffSide.RIGHT) {
+                continue;
             }
-        });
+
+            PgStatement st = entry.getKey().getPgStatement(dbProject.getDbObject());
+            if (!st.isLib()) {
+                continue;
+            }
+
+            String name = null;
+            String type = null;
+            String loc = null;
+            String libName = st.getLibName();
+            switch (PgLibrarySource.getSource(libName)) {
+            case JDBC:
+                type = Messages.DiffTableViewer_database;
+                name = JdbcConnector.dbNameFromUrl(libName);
+                break;
+            case URL:
+                type = Messages.DiffTableViewer_uri;
+                try {
+                    name = FileUtils.getNameFromUri(new URI(libName));
+                } catch (URISyntaxException e) {
+                    name = libName;
+                }
+                break;
+            case LOCAL:
+                loc = st.getLocation().getFilePath();
+                Path location = Paths.get(libName);
+                type = Files.isDirectory(location) ?
+                        Messages.DiffTableViewer_directory : Messages.DiffTableViewer_file;
+                name = location.getFileName().toString();
+                break;
+            }
+
+            entry.getValue().setLibLocation(Messages.DiffTableViewer_library + name
+                    + '\n' + Messages.DiffTableViewer_type + type
+                    + (loc == null ? "" : ('\n' + Messages.DiffTableViewer_path + loc))); //$NON-NLS-1$
+        }
     }
 
     private void readDbUsers() {
