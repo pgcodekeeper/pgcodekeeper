@@ -34,7 +34,7 @@ public class LibraryLoader extends DatabaseLoader {
 
     private final PgDatabase database;
     private final Path metaPath;
-    private final Set<String> loadedPaths;
+    private final Set<String> loadedLibs;
 
     private boolean loadNested;
 
@@ -47,7 +47,7 @@ public class LibraryLoader extends DatabaseLoader {
         super(errors);
         this.database = database;
         this.metaPath = metaPath;
-        this.loadedPaths = loadedPaths;
+        this.loadedLibs = loadedPaths;
     }
 
     @Override
@@ -65,17 +65,22 @@ public class LibraryLoader extends DatabaseLoader {
     public void loadXml(DependenciesXmlStore xmlStore, PgDiffArguments args)
             throws InterruptedException, IOException {
         List<PgLibrary> xmlLibs = xmlStore.readObjects();
-        loadNested = xmlStore.readLoadNestedFlag();
-        for (PgLibrary lib : xmlLibs) {
-            String path = lib.getPath();
-            PgDatabase l = getLibrary(path, args, lib.isIgnorePriv());
-            database.addLib(l, path, lib.getOwner());
+        boolean oldLoadNested = loadNested;
+        try {
+            loadNested = xmlStore.readLoadNestedFlag();
+            for (PgLibrary lib : xmlLibs) {
+                String path = lib.getPath();
+                PgDatabase l = getLibrary(path, args, lib.isIgnorePriv());
+                database.addLib(l, path, lib.getOwner());
+            }
+        } finally {
+            loadNested = oldLoadNested;
         }
     }
 
     private PgDatabase getLibrary(String path, PgDiffArguments arguments, boolean isIgnorePriv)
             throws InterruptedException, IOException {
-        if (!loadedPaths.add(path)) {
+        if (!loadedLibs.add(path)) {
             return new PgDatabase();
         }
 
@@ -110,7 +115,7 @@ public class LibraryLoader extends DatabaseLoader {
                 PgDatabase db = new ProjectLoader(path, args, errors).load();
 
                 if (loadNested) {
-                    new LibraryLoader(db, metaPath, errors, loadedPaths).loadXml(
+                    new LibraryLoader(db, metaPath, errors, loadedLibs).loadXml(
                             new DependenciesXmlStore(p.resolve(DependenciesXmlStore.FILE_NAME)), args);
                 }
 
