@@ -10,9 +10,9 @@ import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 
 public class ZipLibrary extends CacheableLibrary {
 
-    ZipLibrary(AbstractLibrary parent, Path path) {
+    ZipLibrary(AbstractLibrary parent, Path path, String project, boolean isMsSql) {
         super(parent, FileUtils.getUnzippedFilePath(LibraryUtils.META_PATH, path),
-                path.getFileName().toString(), path.toString());
+                path.getFileName().toString(), path.toString(), project, isMsSql);
     }
 
     @Override

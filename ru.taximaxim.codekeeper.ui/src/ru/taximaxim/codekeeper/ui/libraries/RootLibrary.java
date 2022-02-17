@@ -8,10 +8,8 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class RootLibrary extends AbstractLibrary {
 
-    RootLibrary(boolean isMsSql, String project) {
+    RootLibrary() {
         super(null, null, Messages.LibraryContainer_root);
-        this.isMsSql = isMsSql;
-        this.project = project;
     }
 
     @Override

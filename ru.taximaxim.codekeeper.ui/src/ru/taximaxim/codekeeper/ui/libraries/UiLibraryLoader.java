@@ -30,16 +30,20 @@ public class UiLibraryLoader {
         return bool ? -1 : 1;
     };
 
-    private final Set<String> loadedLibs = new HashSet<>();
+    private final String project;
+    private final boolean isMsSql;
     private boolean loadNested;
 
-    public UiLibraryLoader(boolean loadNested) {
+    private final Set<String> loadedLibs = new HashSet<>();
+
+    public UiLibraryLoader(String project, boolean isMsSql, boolean loadNested) {
+        this.project = project;
+        this.isMsSql = isMsSql;
         this.loadNested = loadNested;
     }
 
-    public RootLibrary load(List<PgLibrary> libs, String project, boolean isMsSql)
-            throws IOException {
-        RootLibrary root = new RootLibrary(isMsSql, project);
+    public RootLibrary load(List<PgLibrary> libs) throws IOException {
+        RootLibrary root = new RootLibrary();
 
         for (PgLibrary lib : libs) {
             readLib(root, lib);
@@ -63,7 +67,7 @@ public class UiLibraryLoader {
             break;
         case URL:
             try {
-                UrlLibrary url = new UrlLibrary(root, new URI(path));
+                UrlLibrary url = new UrlLibrary(root, new URI(path), project, isMsSql);
                 readPath(url, url.getPath());
             } catch (URISyntaxException e) {
                 // shouldn't happen, already checked by getSource
@@ -80,10 +84,10 @@ public class UiLibraryLoader {
         if (Files.isDirectory(path)) {
             readDir(new DirectoryLibrary(parent, path), path);
         } else if (FileUtils.isZipFile(path)) {
-            ZipLibrary zip = new ZipLibrary(parent, path);
+            ZipLibrary zip = new ZipLibrary(parent, path, project, isMsSql);
             readPath(zip, zip.getPath());
         } else {
-            new FileLibrary(parent, path);
+            new FileLibrary(parent, path, project, isMsSql);
         }
     }
 

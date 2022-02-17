@@ -11,10 +11,15 @@ import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
 public abstract class CacheableLibrary extends AbstractLibrary {
 
     private final String libPath;
+    private final String project;
+    private final boolean isMsSql;
 
-    CacheableLibrary(AbstractLibrary parent, Path path, String name, String fullName) {
+    CacheableLibrary(AbstractLibrary parent, Path path, String name, String fullName,
+            String project, boolean isMsSql) {
         super(parent, path, name);
         this.libPath = fullName;
+        this.project = project;
+        this.isMsSql = isMsSql;
     }
 
     public void clear() throws IOException {
@@ -28,7 +33,7 @@ public abstract class CacheableLibrary extends AbstractLibrary {
     public void refresh() throws IOException {
         children.clear();
         // do not refresh nested libs, they're not nested in UI tree
-        new UiLibraryLoader(false).readLib(this, path.toString());
+        new UiLibraryLoader(project, isMsSql, false).readLib(this, path.toString());
     }
 
     private void clearAllChildren(List<AbstractLibrary> children) throws IOException {

@@ -9,7 +9,6 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.navigator.ILinkHelper;
 
 import ru.taximaxim.codekeeper.ui.libraries.FileLibrary;
-import ru.taximaxim.codekeeper.ui.libraries.LibraryUtils;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorInput;
 
 public class CodekeeperLinkHelper implements ILinkHelper {
@@ -25,7 +24,7 @@ public class CodekeeperLinkHelper implements ILinkHelper {
         if (anInput instanceof SQLEditorInput) {
             SQLEditorInput input = (SQLEditorInput) anInput;
             if (input.isReadOnly()) {
-                return new StructuredSelection(LibraryUtils.createFileLib(
+                return new StructuredSelection(new FileLibrary(
                         input.getPath(), input.getProject(), input.isMsSql()));
             }
         }

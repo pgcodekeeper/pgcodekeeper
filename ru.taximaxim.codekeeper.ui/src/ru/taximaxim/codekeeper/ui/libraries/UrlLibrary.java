@@ -10,9 +10,9 @@ import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 
 public class UrlLibrary extends CacheableLibrary {
 
-    UrlLibrary(AbstractLibrary parent, URI uri) {
+    UrlLibrary(AbstractLibrary parent, URI uri, String project, boolean isMsSql) {
         super(parent, FileUtils.getLoadedFilePath(LibraryUtils.META_PATH, uri),
-                FileUtils.getNameFromUri(uri), uri.toString());
+                FileUtils.getNameFromUri(uri), uri.toString(), project, isMsSql);
     }
 
     @Override

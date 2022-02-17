@@ -24,15 +24,8 @@ public class LibraryUtils {
                 Paths.get(proj.getLocation().toString())
                 .resolve(DependenciesXmlStore.FILE_NAME));
         List<PgLibrary> libs = xml.readObjects();
-        return new UiLibraryLoader(xml.readLoadNestedFlag())
-                .load(libs, proj.getName(), proj.hasNature(NATURE.MS));
-    }
-
-    public static FileLibrary createFileLib(Path path, String projectName, boolean isMsSql) {
-        FileLibrary lib = new FileLibrary(null, path);
-        lib.setProject(projectName);
-        lib.setMsSql(isMsSql);
-        return lib;
+        return new UiLibraryLoader(proj.getName(), proj.hasNature(NATURE.MS), xml.readLoadNestedFlag())
+                .load(libs);
     }
 
     public static String getDescription(AbstractLibrary lib) {

@@ -11,9 +11,6 @@ public abstract class AbstractLibrary {
 
     protected static final String CONCAT_STRING = " - ";  //$NON-NLS-1$
 
-    protected boolean isMsSql;
-    protected String project;
-
     protected final AbstractLibrary parent;
     protected final Path path;
     protected final String name;
@@ -28,30 +25,12 @@ public abstract class AbstractLibrary {
         this.path = path;
         this.name = name;
         if (parent != null) {
-            this.isMsSql = parent.isMsSql;
-            this.project = parent.project;
             parent.addChild(this);
         }
     }
 
     private void addChild(AbstractLibrary child) {
         children.add(child);
-    }
-
-    public void setMsSql(boolean isMsSql) {
-        this.isMsSql = isMsSql;
-    }
-
-    public boolean isMsSql() {
-        return isMsSql;
-    }
-
-    public void setProject(String project) {
-        this.project = project;
-    }
-
-    public String getProject() {
-        return project;
     }
 
     public AbstractLibrary getParent() {
@@ -100,9 +79,7 @@ public abstract class AbstractLibrary {
         if (obj instanceof AbstractLibrary) {
             AbstractLibrary lib = (AbstractLibrary) obj;
             return Objects.equals(path, lib.path)
-                    && Objects.equals(name, lib.name)
-                    && isMsSql == lib.isMsSql
-                    && Objects.equals(project, lib.project);
+                    && Objects.equals(name, lib.name);
         }
         return false;
     }
@@ -110,13 +87,9 @@ public abstract class AbstractLibrary {
     @Override
     public int hashCode() {
         final int prime = 31;
-        final int itrue = 1231;
-        final int ifalse = 1237;
         int result = 1;
         result = prime * result + ((path == null) ? 0 : path.hashCode());
         result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + (isMsSql ? itrue : ifalse);
-        result = prime * result + ((project == null) ? 0 : project.hashCode());
         return result;
     }
 }
