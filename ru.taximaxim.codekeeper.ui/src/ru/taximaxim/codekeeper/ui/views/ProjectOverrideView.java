@@ -3,6 +3,7 @@ package ru.taximaxim.codekeeper.ui.views;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IContributionItem;
@@ -45,36 +46,47 @@ public class ProjectOverrideView extends ViewPart implements ISelectionListener 
 
     private IWorkbenchPart part;
     private ISelection selection;
+    private IProject project;
 
     @Override
     public void selectionChanged(IWorkbenchPart part, ISelection selection) {
         this.part = part;
         this.selection = selection;
-        if (selection instanceof IStructuredSelection) {
-            List<?> selected = ((IStructuredSelection) selection).toList();
-            DBPair dss = selected.stream().filter(e -> e instanceof DBPair)
-                    .map(e -> (DBPair)e).findAny().orElse(null);
 
-            if (dss != null) {
-                PgDatabase db = dss.dbProject.getDbObject();
+        if (!(selection instanceof IStructuredSelection)) {
+            return;
+        }
 
-                List<PgOverride> overrides = db.getOverrides();
-
-                if (!filterStatement) {
-                    viewer.setInput(overrides);
-                } else {
-                    viewer.setInput(overrides.stream()
-                            .filter(o -> selected.stream()
-                                    .filter(e -> e instanceof TreeElement)
-                                    .map(e -> (TreeElement)e)
-                                    .filter(e -> e.getSide() != DiffSide.RIGHT)
-                                    .map(e -> e.getPgStatement(db))
-                                    .anyMatch(st -> o.getNewStatement().equals(st)))
-                            .collect(Collectors.toList()));
-                }
-            } else {
-                viewer.setInput(null);
+        DBPair dbPair = null;
+        List<?> selected = ((IStructuredSelection) selection).toList();
+        for (Object object : selected) {
+            if (object instanceof DBPair) {
+                dbPair = (DBPair) object;
+            } else if (object instanceof IProject) {
+                project  = (IProject) object;
             }
+        }
+
+        if (dbPair == null) {
+            viewer.setInput(null);
+            return;
+        }
+
+        PgDatabase db = dbPair.dbProject.getDbObject();
+
+        List<PgOverride> overrides = db.getOverrides();
+
+        if (!filterStatement) {
+            viewer.setInput(overrides);
+        } else {
+            viewer.setInput(overrides.stream()
+                    .filter(o -> selected.stream()
+                            .filter(e -> e instanceof TreeElement)
+                            .map(e -> (TreeElement)e)
+                            .filter(e -> e.getSide() != DiffSide.RIGHT)
+                            .map(e -> e.getPgStatement(db))
+                            .anyMatch(st -> o.getNewStatement().equals(st)))
+                    .collect(Collectors.toList()));
         }
     }
 
@@ -181,7 +193,8 @@ public class ProjectOverrideView extends ViewPart implements ISelectionListener 
                     PgOverride ov = (PgOverride) obj;
                     PgStatement st = openOldFile ? ov.getOldStatement() : ov.getNewStatement();
                     PgObjLocation loc = st.getLocation();
-                    FileUtilsUi.openFileInSqlEditor(loc, null, !st.isPostgres(), st.isLib());
+                    String proj = project == null ? null : project.getName();
+                    FileUtilsUi.openFileInSqlEditor(loc, proj, !st.isPostgres(), st.isLib());
                 } catch (PartInitException ex) {
                     ExceptionNotifier.notifyDefault(ex.getLocalizedMessage(), ex);
                 }

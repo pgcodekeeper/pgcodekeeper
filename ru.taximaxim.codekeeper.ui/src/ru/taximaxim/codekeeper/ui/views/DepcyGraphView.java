@@ -117,7 +117,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
                         try {
                             PgStatement st = (PgStatement) obj;
                             FileUtilsUi.openFileInSqlEditor(
-                                    st.getLocation(), null, !st.isPostgres(), st.isLib());
+                                    st.getLocation(), currentProject.getName(), !st.isPostgres(), st.isLib());
                         } catch (PartInitException ex) {
                             ExceptionNotifier.notifyDefault(ex.getLocalizedMessage(), ex);
                         }
@@ -150,17 +150,17 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         }
 
         IProject selectedProj = null;
-        DBPair dss = null;
+        DBPair dbPair = null;
         List<?> selected = ((IStructuredSelection) selection).toList();
 
         for (Object object : selected) {
             if (object instanceof DBPair) {
-                dss = (DBPair) object;
+                dbPair = (DBPair) object;
             } else if (object instanceof IProject) {
                 selectedProj  = (IProject) object;
             }
         }
-        if (dss == null) {
+        if (dbPair == null) {
             return;
         }
         lastSelectionPart = part;
@@ -168,7 +168,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         currentProject = selectedProj;
 
         boolean showProject = projectAction.isChecked();
-        PgDatabase newDb = showProject ? dss.dbProject.getDbObject() : dss.dbRemote.getDbObject();
+        PgDatabase newDb = showProject ? dbPair.dbProject.getDbObject() : dbPair.dbRemote.getDbObject();
         if (currentDb != newDb) {
             currentDb = newDb;
             depRes = new SimpleDepcyResolver(currentDb);

@@ -33,8 +33,7 @@ public class CodekeeperLinkHelper implements ILinkHelper {
     }
 
     @Override
-    public void activateEditor(IWorkbenchPage aPage,
-            IStructuredSelection aSelection) {
+    public void activateEditor(IWorkbenchPage aPage, IStructuredSelection aSelection) {
         if (aSelection == null || aSelection.isEmpty()) {
             return;
         }
@@ -45,7 +44,7 @@ public class CodekeeperLinkHelper implements ILinkHelper {
             input = new ProjectEditorInput(proj.getName());
         } else if (element instanceof FileLibrary) {
             FileLibrary lib = (FileLibrary) element;
-            input = new SQLEditorInput(lib.getPath(), lib.isMsSql(), true);
+            input = new SQLEditorInput(lib.getPath(), lib.getProject(), lib.isMsSql(), true);
         }
         if (input == null) {
             return;
