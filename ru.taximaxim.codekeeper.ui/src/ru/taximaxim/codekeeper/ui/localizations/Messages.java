@@ -390,6 +390,14 @@ public final class Messages extends NLS {
 
     public static String DependencyProperties_attention;
 
+    public static String DependencyProperties_clear_cache;
+
+    public static String DependencyProperties_clear_cache_descr;
+
+    public static String DependencyProperties_clear_cache_error;
+
+    public static String DependencyProperties_clear_libraries_cache;
+
     public static String DependencyProperties_connection_start;
 
     public static String DependencyProperties_empty_scheme;
@@ -401,6 +409,10 @@ public final class Messages extends NLS {
     public static String DependencyProperties_ignore_priv_warn;
 
     public static String DependencyProperties_ignore_privileges;
+
+    public static String DependencyProperties_load_dependencies;
+
+    public static String DependencyProperties_load_nested;
 
     public static String DependencyProperties_owner;
 
@@ -614,9 +626,17 @@ public final class Messages extends NLS {
 
     public static String MockDataWizard_create_data_table;
 
+    public static String NavigationLibrariesActionProvider_clear_library_cache;
+
+    public static String NavigationLibrariesActionProvider_failed_to_clear_library_cache;
+
     public static String NavigationLibrariesActionProvider_failed_to_open_library;
 
+    public static String NavigationLibrariesActionProvider_failed_to_refresh_library;
+
     public static String NavigationLibrariesActionProvider_open_library;
+
+    public static String NavigationLibrariesActionProvider_refresh_library;
 
     public static String NavigatorRootActionProvider_open_action;
 
@@ -1028,6 +1048,8 @@ public final class Messages extends NLS {
     public static String QuickUpdate_updating_db;
 
     public static String QuickUpdate_updating_project;
+
+    public static String ReferenceSearchResult_matches;
 
     public static String RenameDefinitionChange_error_resource_already_exists;
 

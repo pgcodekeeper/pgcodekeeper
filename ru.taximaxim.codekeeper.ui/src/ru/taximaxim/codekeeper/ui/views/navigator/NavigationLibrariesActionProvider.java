@@ -1,38 +1,47 @@
 package ru.taximaxim.codekeeper.ui.views.navigator;
 
-import java.nio.file.Path;
+import java.io.IOException;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.navigator.CommonActionProvider;
 import org.eclipse.ui.navigator.ICommonActionConstants;
 import org.eclipse.ui.navigator.ICommonActionExtensionSite;
 import org.eclipse.ui.navigator.ICommonMenuConstants;
 
-import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
+import ru.taximaxim.codekeeper.ui.libraries.CacheableLibrary;
+import ru.taximaxim.codekeeper.ui.libraries.FileLibrary;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class NavigationLibrariesActionProvider extends CommonActionProvider {
 
     private OpenLibrary openAction;
+    private ClearLibrary clearAction;
+    private RefreshLibrary refreshAction;
 
     @Override
     public void init(ICommonActionExtensionSite site) {
-        openAction = new OpenLibrary(Messages.NavigationLibrariesActionProvider_open_library,
-                site.getViewSite().getSelectionProvider());
+        super.init(site);
+        openAction = new OpenLibrary();
+        clearAction = new ClearLibrary();
+        refreshAction = new RefreshLibrary();
     }
 
     @Override
     public void fillActionBars(IActionBars actionBars) {
         if (openAction.isEnabled()) {
             actionBars.setGlobalActionHandler(ICommonActionConstants.OPEN, openAction);
+        }
+        if (refreshAction.isEnabled()) {
+            actionBars.setGlobalActionHandler(ActionFactory.REFRESH.getId(), refreshAction);
         }
     }
 
@@ -41,44 +50,109 @@ public class NavigationLibrariesActionProvider extends CommonActionProvider {
         if (openAction.isEnabled()) {
             menu.appendToGroup(ICommonMenuConstants.GROUP_OPEN, openAction);
         }
+        if (refreshAction.isEnabled()) {
+            menu.appendToGroup(ICommonMenuConstants.GROUP_BUILD, refreshAction);
+        }
+        if (clearAction.isEnabled()) {
+            menu.appendToGroup(ICommonMenuConstants.GROUP_BUILD, clearAction);
+        }
     }
 
-    private static class OpenLibrary extends Action {
+    private void refresh(Object element) {
+        StructuredViewer viewer = getActionSite().getStructuredViewer();
+        if (viewer != null && viewer.getControl() != null
+                && !viewer.getControl().isDisposed()) {
+            viewer.refresh(element);
+        }
+    }
 
-        private LibraryContainer segment;
-        private final ISelectionProvider provider;
+    private class OpenLibrary extends Action {
 
-        public OpenLibrary(String text, ISelectionProvider provider) {
-            super(text);
-            this.provider = provider;
+        public OpenLibrary() {
+            super(Messages.NavigationLibrariesActionProvider_open_library);
         }
 
         @Override
         public boolean isEnabled() {
-            ISelection selection = provider.getSelection();
-            if (!selection.isEmpty()) {
-                Object sel = ((IStructuredSelection) selection).getFirstElement();
-                if (sel instanceof LibraryContainer && ((LibraryContainer)sel).isEnableToOpen()) {
-                    segment = (LibraryContainer) sel;
-                    return true;
+            IStructuredSelection selection = (IStructuredSelection) getContext().getSelection();
+            return selection.getFirstElement() instanceof FileLibrary;
+        }
+
+        @Override
+        public void run() {
+            IStructuredSelection selection = (IStructuredSelection) getContext().getSelection();
+            Object sel = selection.getFirstElement();
+            if (sel instanceof FileLibrary) {
+                try {
+                    FileLibrary lib = (FileLibrary) sel;
+                    FileUtilsUi.openFileInSqlEditor(
+                            lib.getPath(), lib.getProject(), lib.isMsSql(), true);
+                } catch (PartInitException e) {
+                    ExceptionNotifier.notifyDefault(
+                            Messages.NavigationLibrariesActionProvider_failed_to_open_library, e);
                 }
             }
+        }
+    }
+
+    private class ClearLibrary extends Action {
+
+        public ClearLibrary() {
+            super(Messages.NavigationLibrariesActionProvider_clear_library_cache);
+        }
+
+        @Override
+        public boolean isEnabled() {
+            ISelection selection = getContext().getSelection();
+            if (!selection.isEmpty()) {
+                Object sel = ((IStructuredSelection) selection).getFirstElement();
+                return sel instanceof CacheableLibrary && ((CacheableLibrary) sel).exists();
+            }
+
             return false;
         }
 
         @Override
         public void run() {
-            if (isEnabled()) {
-                Path path = segment.getPath();
+            IStructuredSelection selection = (IStructuredSelection) getContext().getSelection();
+            Object sel = selection.getFirstElement();
+            if (sel instanceof CacheableLibrary && ((CacheableLibrary) sel).exists()) {
                 try {
-                    if (path != null) {
-                        FileUtilsUi.openFileInSqlEditor(path, segment.isMsSql());
-                    }
-                } catch (PartInitException e) {
-                    Log.log(e);
+                    ((CacheableLibrary) sel).clear();
+                } catch (IOException e) {
                     ExceptionNotifier.notifyDefault(
-                            Messages.NavigationLibrariesActionProvider_failed_to_open_library, e);
+                            Messages.NavigationLibrariesActionProvider_failed_to_clear_library_cache, e);
                 }
+                refresh(sel);
+            }
+        }
+    }
+
+    private class RefreshLibrary extends Action {
+
+        public RefreshLibrary() {
+            super(Messages.NavigationLibrariesActionProvider_refresh_library);
+        }
+
+        @Override
+        public boolean isEnabled() {
+            IStructuredSelection selection = (IStructuredSelection) getContext().getSelection();
+            return selection.getFirstElement() instanceof CacheableLibrary;
+        }
+
+        @Override
+        public void run() {
+            IStructuredSelection selection = (IStructuredSelection) getContext()
+                    .getSelection();
+            Object sel = selection.getFirstElement();
+            if (sel instanceof CacheableLibrary) {
+                try {
+                    ((CacheableLibrary) sel).refresh();
+                } catch (IOException e) {
+                    ExceptionNotifier.notifyDefault(
+                            Messages.NavigationLibrariesActionProvider_failed_to_refresh_library, e);
+                }
+                refresh(sel);
             }
         }
     }
