@@ -213,7 +213,7 @@ public class FunctionsReader extends JdbcReader {
                 }
             }
             body = sb.toString();
-        } else if (!"-".equals(definition)) {
+        } else if (definition != null && !definition.isEmpty() && !"-".equals(definition)) {
             body = PgDiffUtils.quoteStringDollar(definition);
         } else if (SupportedVersion.VERSION_14.isLE(loader.version)) {
             String probody = res.getString("prosqlbody");

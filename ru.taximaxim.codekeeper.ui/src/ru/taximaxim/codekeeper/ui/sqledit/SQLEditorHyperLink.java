@@ -19,17 +19,19 @@ public class SQLEditorHyperLink implements IHyperlink {
     private final String label;
     private final IRegion regionHightLight;
     private final int lineNumber;
-    private final boolean isMsSql;
     private final String relativePath;
+    private final boolean isMsSql;
+    private final String project;
 
     public SQLEditorHyperLink(IRegion region, IRegion regionHightLight, String label,
-            String location, int lineNumber, boolean isMsSql) {
+            String location, int lineNumber, boolean isMsSql, String project) {
         this.region = region;
         this.regionHightLight = regionHightLight;
         this.location = location;
         this.label = label;
         this.lineNumber = lineNumber;
         this.isMsSql = isMsSql;
+        this.project = project;
         IFile file = FileUtilsUi.getFileForLocation(location);
         relativePath = file == null ? location : file.getProjectRelativePath().toString();
     }
@@ -52,7 +54,8 @@ public class SQLEditorHyperLink implements IHyperlink {
     @Override
     public void open() {
         try {
-            ITextEditor editor = (ITextEditor) FileUtilsUi.openFileInSqlEditor(Paths.get(location), isMsSql);
+            ITextEditor editor = (ITextEditor) FileUtilsUi.openFileInSqlEditor(
+                    Paths.get(location), project, isMsSql, false);
             editor.selectAndReveal(region.getOffset(), region.getLength());
         } catch (PartInitException ex) {
             ExceptionNotifier.notifyDefault(

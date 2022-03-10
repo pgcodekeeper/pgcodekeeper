@@ -282,6 +282,7 @@ public class DbStoreEditorDialog extends TrayDialog {
         new Label(tabAreaDb, SWT.NONE).setText(Messages.domain);
 
         txtDomain = new Text(tabAreaDb, SWT.BORDER);
+        txtDomain.setEnabled(false);
         txtDomain.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, false, false, 3, 1));
 
         if (Platform.OS_WIN32.equals(Platform.getOS())) {
