@@ -16,4 +16,9 @@ public class RootLibrary extends AbstractLibrary {
     public Image getImage() {
         return Activator.getRegisteredImage(FILE.ICONLIB);
     }
+
+    @Override
+    protected String getDescriptionRecursive() {
+        return "";
+    }
 }

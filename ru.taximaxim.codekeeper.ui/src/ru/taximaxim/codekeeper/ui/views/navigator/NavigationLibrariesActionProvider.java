@@ -15,7 +15,6 @@ import org.eclipse.ui.navigator.ICommonActionConstants;
 import org.eclipse.ui.navigator.ICommonActionExtensionSite;
 import org.eclipse.ui.navigator.ICommonMenuConstants;
 
-import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.libraries.CacheableLibrary;
@@ -89,7 +88,6 @@ public class NavigationLibrariesActionProvider extends CommonActionProvider {
                     FileUtilsUi.openFileInSqlEditor(
                             lib.getPath(), lib.getProject(), lib.isMsSql(), true);
                 } catch (PartInitException e) {
-                    Log.log(e);
                     ExceptionNotifier.notifyDefault(
                             Messages.NavigationLibrariesActionProvider_failed_to_open_library, e);
                 }
@@ -122,7 +120,6 @@ public class NavigationLibrariesActionProvider extends CommonActionProvider {
                 try {
                     ((CacheableLibrary) sel).clear();
                 } catch (IOException e) {
-                    Log.log(e);
                     ExceptionNotifier.notifyDefault(
                             Messages.NavigationLibrariesActionProvider_failed_to_clear_library_cache, e);
                 }
@@ -152,7 +149,6 @@ public class NavigationLibrariesActionProvider extends CommonActionProvider {
                 try {
                     ((CacheableLibrary) sel).refresh();
                 } catch (IOException e) {
-                    Log.log(e);
                     ExceptionNotifier.notifyDefault(
                             Messages.NavigationLibrariesActionProvider_failed_to_refresh_library, e);
                 }

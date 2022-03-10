@@ -7,13 +7,13 @@ import java.nio.file.Path;
 import java.util.Objects;
 
 import org.eclipse.core.filesystem.EFS;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.PlatformObject;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.IURIEditorInput;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.model.IWorkbenchAdapter;
 
 public class SQLEditorInput extends PlatformObject implements IURIEditorInput, IPersistableElement {
 
@@ -66,7 +66,32 @@ public class SQLEditorInput extends PlatformObject implements IURIEditorInput, I
 
     @Override
     public <T> T getAdapter(Class<T> adapter) {
-        return Platform.getAdapterManager().getAdapter(this, adapter);
+        if (adapter.isAssignableFrom(IWorkbenchAdapter.class)) {
+            return adapter.cast(new IWorkbenchAdapter() {
+
+                @Override
+                public Object getParent(Object o) {
+                    // TODO should (?) be a DirectoryLibrary, but no way to construct it here
+                    return null;
+                }
+
+                @Override
+                public String getLabel(Object o) {
+                    return getName();
+                }
+
+                @Override
+                public ImageDescriptor getImageDescriptor(Object object) {
+                    return SQLEditorInput.this.getImageDescriptor();
+                }
+
+                @Override
+                public Object[] getChildren(Object o) {
+                    return new Object[0];
+                }
+            });
+        }
+        return super.getAdapter(adapter);
     }
 
     @Override

@@ -49,6 +49,17 @@ public class DependenciesXmlStore extends XmlStore<PgLibrary> {
         }
     }
 
+    /**
+     * Do not call this method, use {@link #writeDependencies(List, boolean)}
+     * instead.
+     *
+     * @throws IllegalStateException this method always throws
+     */
+    @Override
+    public void writeObjects(List<PgLibrary> list) throws IOException {
+        throw new IllegalStateException();
+    }
+
     public void writeDependencies(List<PgLibrary> depdencies, boolean loadNestedFlag) throws IOException {
         Document xml = createDocument(depdencies);
         xml.getDocumentElement().setAttribute(LOAD_NESTED, Boolean.toString(loadNestedFlag));

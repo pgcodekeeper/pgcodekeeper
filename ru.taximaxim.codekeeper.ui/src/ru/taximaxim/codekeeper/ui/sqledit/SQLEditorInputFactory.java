@@ -12,6 +12,7 @@ public class SQLEditorInputFactory implements IElementFactory {
     private static final String TAG_PROJECT = "project"; //$NON-NLS-1$
     private static final String TAG_IS_MS_SQL = "isMsSql"; //$NON-NLS-1$
     private static final String TAG_IS_READ_ONLY = "isReadOnly"; //$NON-NLS-1$
+    private static final String TAG_IS_TEMP = "isTemp"; //$NON-NLS-1$
 
     /**
      * This factory's ID.
@@ -33,6 +34,7 @@ public class SQLEditorInputFactory implements IElementFactory {
         memento.putString(TAG_PROJECT, input.getProject());
         memento.putBoolean(TAG_IS_MS_SQL, input.isMsSql());
         memento.putBoolean(TAG_IS_READ_ONLY, input.isReadOnly());
+        memento.putBoolean(TAG_IS_TEMP, input.isTemp());
     }
 
     @Override
@@ -41,11 +43,12 @@ public class SQLEditorInputFactory implements IElementFactory {
         String project = memento.getString(TAG_PROJECT);
         Boolean isMsSql = memento.getBoolean(TAG_IS_MS_SQL);
         Boolean isReadOnly = memento.getBoolean(TAG_IS_READ_ONLY);
-        if (path == null || isMsSql == null || isReadOnly == null) {
+        Boolean isTemp = memento.getBoolean(TAG_IS_TEMP);
+        if (path == null || isMsSql == null || isReadOnly == null || isTemp == null) {
             return null;
         }
 
 
-        return new SQLEditorInput(Paths.get(path), project, isMsSql, isReadOnly);
+        return new SQLEditorInput(Paths.get(path), project, isMsSql, isReadOnly, isTemp);
     }
 }

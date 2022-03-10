@@ -28,25 +28,6 @@ public class LibraryUtils {
                 .load(libs);
     }
 
-    public static String getDescription(AbstractLibrary lib) {
-        if (lib == null || lib instanceof RootLibrary) {
-            return ""; //$NON-NLS-1$
-        }
-
-        StringBuilder sb = new StringBuilder(lib.getName());
-
-        AbstractLibrary parent = lib.getParent();
-        while (parent != null && !(parent instanceof RootLibrary)) {
-            sb.insert(0, '/');
-            sb.insert(0, parent.getName());
-            parent = parent.getParent();
-        }
-
-        sb.append(AbstractLibrary.CONCAT_STRING).append(lib.getPath());
-
-        return sb.toString();
-    }
-
     private LibraryUtils() {
         // only statics
     }

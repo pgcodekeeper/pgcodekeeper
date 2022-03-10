@@ -47,6 +47,14 @@ public abstract class AbstractLibrary {
 
     public abstract Image getImage();
 
+    public String getDescription() {
+        return getDescriptionRecursive() + CONCAT_STRING + getPath();
+    }
+
+    protected String getDescriptionRecursive() {
+        return parent == null ? getName() : (parent.getDescriptionRecursive() + '/' + getName());
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(name);
