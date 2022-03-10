@@ -19,6 +19,6 @@ public class RootLibrary extends AbstractLibrary {
 
     @Override
     protected String getDescriptionRecursive() {
-        return "";
+        return ""; //$NON-NLS-1$
     }
 }
