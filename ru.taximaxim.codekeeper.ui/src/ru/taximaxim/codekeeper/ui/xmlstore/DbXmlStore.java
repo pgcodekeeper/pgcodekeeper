@@ -110,18 +110,17 @@ public class DbXmlStore extends XmlStore<DbInfo> {
         notifyListeners();
     }
 
-    public void savePasswords(List<DbInfo> list, List<DbInfo> oldlist) throws StorageException, IOException {
+    public void savePasswords(List<DbInfo> list, List<DbInfo> oldlist) throws IOException, StorageException {
         boolean isSecurePrefs = false;
         for (DbInfo dbInfo : list) {
-            int index = oldlist.indexOf(dbInfo);
-            if (index != -1) {
-                if (oldlist.get(index).getDbPass().isEmpty() && dbInfo.getDbPass().isEmpty()) {
-                    isSecurePrefs = false;
+            if (dbInfo.getDbPass().isEmpty()) {
+                int index = oldlist.indexOf(dbInfo);
+                if (index != -1 && oldlist.get(index).getDbPass().isEmpty()) {
                     continue;
                 }
-                securePrefs.put(dbInfo.getName(), dbInfo.getDbPass(), true);
-                isSecurePrefs = true;
             }
+            securePrefs.put(dbInfo.getName(), dbInfo.getDbPass(), true);
+            isSecurePrefs = true;
         }
         if (isSecurePrefs) {
             securePrefs.flush();
@@ -137,7 +136,8 @@ public class DbXmlStore extends XmlStore<DbInfo> {
             createSubElement(xml, keyElement, Tags.NAME.toString(), dbInfo.getName());
             createSubElement(xml, keyElement, Tags.DBNAME.toString(), dbInfo.getDbName());
             createSubElement(xml, keyElement, Tags.DBUSER.toString(), dbInfo.getDbUser());
-            createSubElement(xml, keyElement, Tags.DBPASS.toString(), mainPrefs.getBoolean(PREF.SAVE_IN_SECURITY_STORAGE) ? "" : dbInfo.getDbPass()); //$NON-NLS-1$
+            createSubElement(xml, keyElement, Tags.DBPASS.toString(),
+                    mainPrefs.getBoolean(PREF.SAVE_IN_SECURE_STORAGE) ? "" : dbInfo.getDbPass()); //$NON-NLS-1$
             createSubElement(xml, keyElement, Tags.DBHOST.toString(), dbInfo.getDbHost());
             createSubElement(xml, keyElement, Tags.DBPORT.toString(), String.valueOf(dbInfo.getDbPort()));
             createSubElement(xml, keyElement, Tags.READ_ONLY.toString(), String.valueOf(dbInfo.isReadOnly()));
@@ -210,9 +210,11 @@ public class DbXmlStore extends XmlStore<DbInfo> {
                 }
             }
         }
-        String dbPass = "";
+        String dbPass = object.get(Tags.DBPASS);
         try {
-            dbPass = mainPrefs.getBoolean(PREF.SAVE_IN_SECURITY_STORAGE) ? securePrefs.get(object.get(Tags.NAME), dbPass) : object.get(Tags.DBPASS);
+            if (mainPrefs.getBoolean(PREF.SAVE_IN_SECURE_STORAGE)) {
+                dbPass = securePrefs.get(object.get(Tags.NAME), dbPass);
+            }
         } catch (StorageException e) {
             Log.log(Log.LOG_ERROR, "Error reading from secure storage: " + e); //$NON-NLS-1$
         }

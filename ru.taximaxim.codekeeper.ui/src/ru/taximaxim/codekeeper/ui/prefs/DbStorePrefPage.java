@@ -10,8 +10,8 @@ import java.util.List;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.security.storage.StorageException;
-import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.preference.PreferencePage;
+import org.eclipse.jface.preference.BooleanFieldEditor;
+import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
@@ -23,7 +23,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.ISharedImages;
@@ -40,11 +39,16 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.xmlstore.DbXmlStore;
 import ru.taximaxim.pgpass.PgPass;
 
-public class DbStorePrefPage extends PreferencePage
+public class DbStorePrefPage extends FieldEditorPreferencePage
 implements IWorkbenchPreferencePage {
 
     private DbStorePrefListEditor dbList;
+    private BooleanFieldEditor useSecureStorage;
     private List<DbInfo> oldDbList;
+
+    public DbStorePrefPage() {
+        super(GRID);
+    }
 
     @Override
     public void init(IWorkbench workbench) {
@@ -52,11 +56,15 @@ implements IWorkbenchPreferencePage {
     }
 
     @Override
-    protected Control createContents(Composite parent) {
-        dbList = new DbStorePrefListEditor(parent);
+    protected void createFieldEditors() {
+        dbList = new DbStorePrefListEditor(getFieldEditorParent());
+        dbList.setLayoutData(new GridData(GridData.FILL_BOTH));
         dbList.setInputList(DbInfo.readStoreFromXml());
         oldDbList = new ArrayList<>(dbList.getList());
-        return dbList;
+
+        useSecureStorage = new BooleanFieldEditor(PREF.SAVE_IN_SECURE_STORAGE,
+                Messages.GeneralPrefPage_save_in_security_storage, getFieldEditorParent());
+        addField(useSecureStorage);
     }
 
     @Override
@@ -71,30 +79,29 @@ implements IWorkbenchPreferencePage {
     public boolean performOk() {
         setErrorMessage(null);
         try {
-            IPreferenceStore prefs = Activator.getDefault().getPreferenceStore();
-            if (prefs.getBoolean(PREF.SAVE_IN_SECURITY_STORAGE)) {
+            if (useSecureStorage.getBooleanValue()) {
                 try {
                     DbXmlStore.INSTANCE.savePasswords(dbList.getList(), oldDbList);
                 } catch (StorageException e) {
-                    MessageBox mb;
+                    MessageBox mb = new MessageBox(getShell(), SWT.ICON_WARNING | SWT.YES | SWT.NO);
                     String text;
                     if (Platform.OS_LINUX.equals(Platform.getOS())) {
-                        mb = new MessageBox(getShell(), SWT.ICON_WARNING | SWT.YES | SWT.NO);
                         text = Messages.DbStorePrefPage_secure_storage_error_text_linux;
                     } else {
-                        mb = new MessageBox(getShell(), SWT.ERROR);
                         text = Messages.DbStorePrefPage_secure_storage_error_text_other;
                     }
                     mb.setMessage(MessageFormat.format(text, e.getLocalizedMessage()));
                     mb.setText(Messages.DbStorePrefPage_secure_storage_error_title);
                     if (mb.open() != SWT.YES) {
-                        setErrorMessage(e.getLocalizedMessage());
+                        setErrorMessage(Messages.DbStorePrefPage_secure_storage_error + e.getLocalizedMessage());
                         return false;
                     }
-                    prefs.setValue(PREF.SAVE_IN_SECURITY_STORAGE, false);
+                    getPreferenceStore().setValue(PREF.SAVE_IN_SECURE_STORAGE, false);
+                    useSecureStorage.load();
                 }
             }
             DbXmlStore.INSTANCE.writeObjects(dbList.getList());
+            super.performOk();
             return true;
         } catch (IOException e) {
             setErrorMessage(e.getLocalizedMessage());

@@ -356,6 +356,8 @@ public final class Messages extends NLS {
 
     public static String DbStorePrefPage_secure_storage_error_text_other;
 
+    public static String DbStorePrefPage_secure_storage_error;
+
     public static String DbStorePrefPage_secure_storage_error_title;
 
     public static String DbUpdatePrefPage_allow_data_movement;
