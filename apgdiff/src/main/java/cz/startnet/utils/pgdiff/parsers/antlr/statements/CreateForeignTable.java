@@ -3,6 +3,8 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 import java.util.Arrays;
 import java.util.List;
 
+import org.antlr.v4.runtime.CommonTokenStream;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_foreign_table_statementContext;
@@ -28,8 +30,8 @@ public class CreateForeignTable extends TableAbstract {
 
     private final Create_foreign_table_statementContext ctx;
 
-    public CreateForeignTable(Create_foreign_table_statementContext ctx, PgDatabase db) {
-        super(db, null);
+    public CreateForeignTable(Create_foreign_table_statementContext ctx, PgDatabase db, CommonTokenStream stream) {
+        super(db, stream);
         this.ctx = ctx;
     }
 
