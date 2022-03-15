@@ -3,6 +3,8 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 import java.util.Arrays;
 import java.util.List;
 
+import org.antlr.v4.runtime.CommonTokenStream;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_index_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -27,11 +29,13 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 public class CreateIndex extends ParserAbstract {
     private final Create_index_statementContext ctx;
     private final String tablespace;
+    private final CommonTokenStream stream;
 
-    public CreateIndex(Create_index_statementContext ctx, PgDatabase db, String tablespace) {
+    public CreateIndex(Create_index_statementContext ctx, PgDatabase db, String tablespace, CommonTokenStream stream) {
         super(db);
         this.ctx = ctx;
         this.tablespace = tablespace;
+        this.stream = stream;
     }
 
     @Override
@@ -44,7 +48,7 @@ public class CreateIndex extends ParserAbstract {
         IdentifierContext nameCtx = ctx.name;
         String name = nameCtx != null ? nameCtx.getText() : "";
         PgIndex ind = new PgIndex(name);
-        parseIndex(ctx.index_rest(), tablespace, schemaName, tableName, ind, db, fileName);
+        parseIndex(ctx.index_rest(), tablespace, schemaName, tableName, ind, db, fileName, stream);
         ind.setUnique(ctx.UNIQUE() != null);
 
         if (nameCtx != null) {
@@ -56,7 +60,7 @@ public class CreateIndex extends ParserAbstract {
     }
 
     public static void parseIndex(Index_restContext rest, String tablespace,
-            String schemaName, String tableName, PgIndex ind, PgDatabase db, String location) {
+            String schemaName, String tableName, PgIndex ind, PgDatabase db, String location, CommonTokenStream stream) {
         db.addAnalysisLauncher(new IndexAnalysisLauncher(ind, rest, location));
 
         Index_sortContext sort = rest.index_sort();
@@ -95,7 +99,7 @@ public class CreateIndex extends ParserAbstract {
 
         Index_whereContext wherePart = rest.index_where();
         if (wherePart != null){
-            ind.setWhere(getFullCtxText(wherePart.vex()));
+            ind.setWhere(getExpressionText(wherePart.vex(), stream));
         }
     }
 

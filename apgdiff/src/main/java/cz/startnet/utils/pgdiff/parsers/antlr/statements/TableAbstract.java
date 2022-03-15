@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 
+import org.antlr.v4.runtime.CommonTokenStream;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
@@ -44,9 +45,11 @@ import cz.startnet.utils.pgdiff.schema.PgSequence;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public abstract class TableAbstract extends ParserAbstract {
+    private final CommonTokenStream stream;
 
-    public TableAbstract(PgDatabase db) {
+    public TableAbstract(PgDatabase db, CommonTokenStream stream) {
         super(db);
+        this.stream = stream;
     }
 
     protected void fillTypeColumns(List_of_type_column_defContext columns,
@@ -79,7 +82,7 @@ public abstract class TableAbstract extends ParserAbstract {
 
         VexContext def = body.default_expr;
         if (def != null) {
-            col.setDefaultValue(getFullCtxText(def));
+            col.setDefaultValue(getExpressionText(def, stream));
             db.addAnalysisLauncher(new VexAnalysisLauncher(col, def, fileName));
         } else if (body.NULL() != null) {
             col.setNullValue(body.NOT() == null);
@@ -173,7 +176,7 @@ public abstract class TableAbstract extends ParserAbstract {
         } else if (body.GENERATED() != null) {
             col.setGenerated(true);
             VexContext genExpr = body.vex();
-            col.setDefaultValue(getFullCtxText(genExpr));
+            col.setDefaultValue(getExpressionText(genExpr, stream));
             db.addAnalysisLauncher(new VexAnalysisLauncher(col, genExpr, fileName));
         }
 
