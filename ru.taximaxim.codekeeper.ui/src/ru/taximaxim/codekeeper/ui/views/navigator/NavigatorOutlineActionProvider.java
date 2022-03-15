@@ -28,6 +28,7 @@ public class NavigatorOutlineActionProvider extends CommonActionProvider {
 
     @Override
     public void init(ICommonActionExtensionSite aSite) {
+        super.init(aSite);
         provider = aSite.getViewSite().getSelectionProvider();
         openAction = new OpenSegment(Messages.PgNavigatorActionProvider_open_with_sql_editor);
     }

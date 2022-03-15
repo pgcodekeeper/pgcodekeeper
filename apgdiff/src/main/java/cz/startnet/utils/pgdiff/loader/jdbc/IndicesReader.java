@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.antlr.v4.runtime.CommonTokenStream;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateIndex;
@@ -12,6 +13,7 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class IndicesReader extends JdbcReader {
 
@@ -39,10 +41,10 @@ public class IndicesReader extends JdbcReader {
         String definition = res.getString("definition");
         checkObjectValidity(definition, DbObjType.INDEX, indexName);
         loader.submitAntlrTask(definition,
-                p -> p.sql().statement(0).schema_statement().schema_create()
-                .create_index_statement().index_rest(),
-                ctx -> CreateIndex.parseIndex(ctx, tablespace, schemaName, tableName, i,
-                        schema.getDatabase(), loader.getCurrentLocation()));
+                p ->  new Pair<>(p.sql().statement(0).schema_statement().schema_create().create_index_statement().index_rest(),
+                        (CommonTokenStream) p.getTokenStream()),
+                pair -> CreateIndex.parseIndex(pair.getFirst(), tablespace, schemaName, tableName, i,
+                        schema.getDatabase(), loader.getCurrentLocation(), pair.getSecond()));
         loader.setAuthor(i, res);
 
         i.setClusterIndex(res.getBoolean("isclustered"));

@@ -43,23 +43,38 @@ public class SQLEditorCommonDocumentProvider extends TextFileDocumentProvider {
     @Override
     protected FileInfo createFileInfo(Object element) throws CoreException{
         FileInfo info = super.createFileInfo(element);
-        if(info == null){
-            info = createEmptyFileInfo();
+        if (info == null) {
+            return null;
         }
+
+        if (element instanceof SQLEditorInput && ((SQLEditorInput) element).isTemp()) {
+            info.fTextFileBuffer.setDirty(true);
+        }
+
         IDocument document = info.fTextFileBuffer.getDocument();
         if (document != null) {
             setupDocument(document);
         }
+
         return info;
     }
 
-    void setupDocument(IDocument document) {
+    private void setupDocument(IDocument document) {
         if (document instanceof IDocumentExtension3) {
-            IDocumentExtension3 ext= (IDocumentExtension3) document;
+            IDocumentExtension3 ext = (IDocumentExtension3) document;
             IDocumentPartitioner partitioner= createRecipePartitioner();
             partitioner.connect(document);
             ext.setDocumentPartitioner(SQL_PARTITIONING, partitioner);
         }
+    }
+
+    @Override
+    public boolean isReadOnly(Object element) {
+        if (element instanceof SQLEditorInput) {
+            return ((SQLEditorInput) element).isReadOnly();
+        }
+
+        return super.isReadOnly(element);
     }
 
     IDocumentPartitioner createRecipePartitioner() {

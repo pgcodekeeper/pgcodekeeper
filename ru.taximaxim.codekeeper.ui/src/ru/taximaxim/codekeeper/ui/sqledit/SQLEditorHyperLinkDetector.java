@@ -2,11 +2,14 @@ package ru.taximaxim.codekeeper.ui.sqledit;
 
 import java.util.stream.Stream;
 
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.hyperlink.AbstractHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.ide.ResourceUtil;
 
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation.LocationType;
@@ -17,7 +20,21 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
     @Override
     public IHyperlink[] detectHyperlinks(ITextViewer textViewer, IRegion region,
             boolean canShowMultipleHyperlinks) {
+        String project;
         SQLEditor editor = getAdapter(SQLEditor.class);
+        IEditorInput input = editor.getEditorInput();
+        if (input instanceof SQLEditorInput) {
+            SQLEditorInput sqlInput = (SQLEditorInput) input;
+            if (sqlInput.isReadOnly()) {
+                return new IHyperlink[0];
+            } else {
+                project = sqlInput.getProject();
+            }
+        } else {
+            IResource res = ResourceUtil.getResource(input);
+            project = res == null ? null : res.getProject().getName();
+        }
+
         PgDbParser parser = editor.getParser();
 
         int offset = region.getOffset();
@@ -44,7 +61,7 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
                                 new Region(def.getOffset(), def.getObjLength()),
                                 new Region(obj.getOffset(), obj.getObjLength()),
                                 obj.getObjName(), def.getFilePath(),
-                                def.getLineNumber(), editor.isMsSql()));
+                                def.getLineNumber(), editor.isMsSql(), project));
                 links = Stream.concat(links, stream);
             }
         }
