@@ -1,11 +1,9 @@
 package ru.taximaxim.codekeeper.ui.handlers;
 
+import java.nio.file.Paths;
+
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.filesystem.EFS;
-import org.eclipse.core.filesystem.IFileStore;
-import org.eclipse.core.runtime.Path;
-import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -27,9 +25,9 @@ public class OpenSQLEditor extends AbstractHandler {
     }
 
     public static boolean openEditor(IWorkbenchPage page) {
-        IFileStore externalFile = EFS.getNullFileSystem()
-                .getStore(new Path("/pgCodeKeeper/new query " + number++)); //$NON-NLS-1$
-        IEditorInput input = new SQLEditorInput(externalFile, false);
+        SQLEditorInput input = new SQLEditorInput(
+                Paths.get("/pgCodeKeeper/new query " + number++), //$NON-NLS-1$
+                null, false, false, true);
         try {
             IDE.openEditor(page, input, EDITOR.SQL);
             return true;

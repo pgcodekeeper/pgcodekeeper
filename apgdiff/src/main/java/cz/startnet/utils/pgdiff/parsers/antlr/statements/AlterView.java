@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 
+import org.antlr.v4.runtime.CommonTokenStream;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_view_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_view_statementContext;
@@ -16,10 +17,12 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 public class AlterView extends ParserAbstract {
 
     private final Alter_view_statementContext ctx;
+    private final CommonTokenStream stream;
 
-    public AlterView(Alter_view_statementContext ctx, PgDatabase db) {
+    public AlterView(Alter_view_statementContext ctx, PgDatabase db, CommonTokenStream stream) {
         super(db);
         this.ctx = ctx;
+        this.stream = stream;
     }
 
     @Override
@@ -31,7 +34,7 @@ public class AlterView extends ParserAbstract {
         if (action.set_def_column() != null) {
             VexContext exp = action.set_def_column().vex();
             doSafe((s,o) -> {
-                s.addColumnDefaultValue(getFullCtxText(action.column_name), getFullCtxText(exp));
+                s.addColumnDefaultValue(getFullCtxText(action.column_name), getExpressionText(exp, stream));
                 db.addAnalysisLauncher(new VexAnalysisLauncher(s, exp, fileName));
             }, dbView, null);
         }

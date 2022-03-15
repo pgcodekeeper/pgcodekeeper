@@ -16,13 +16,14 @@ import org.eclipse.search.ui.text.Match;
 import org.eclipse.ui.IEditorPart;
 
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 
 public class ReferenceSearchResult extends AbstractTextSearchResult
 implements IEditorMatchAdapter, IFileMatchAdapter {
 
-    private static final String RESULT_LABEL = "''{0}'' - {1} matches";
+    private static final String RESULT_LABEL = Messages.ReferenceSearchResult_matches;
 
     private static final Match[] EMPTY_ARRAY = new Match[0];
 
