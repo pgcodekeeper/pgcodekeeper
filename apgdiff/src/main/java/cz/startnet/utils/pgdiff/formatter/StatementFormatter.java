@@ -1,8 +1,8 @@
 package cz.startnet.utils.pgdiff.formatter;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -58,7 +58,7 @@ public class StatementFormatter {
     /**
      * intermediate indent instructions found by parser
      */
-    private final Map<Token, Pair<IndentDirection, Integer>> indents = new LinkedHashMap<>();
+    private final Map<Token, Pair<IndentDirection, Integer>> indents = new HashMap<>();
 
     /**
      * unaryOps and other operator-like tokens found by parser
@@ -217,14 +217,14 @@ public class StatementFormatter {
             switch (indent.getFirst()) {
             case BLOCK_START:
                 writeIndent(true, currentIndent++, tokenStart);
-                currentIndent +=indent.getSecond()-1;
+                currentIndent += indent.getSecond() - 1;
                 break;
             case BLOCK_LINE:
                 writeIndent(true, currentIndent - 1, tokenStart);
                 break;
             case BLOCK_STOP:
                 writeIndent(false, --currentIndent, tokenStart);
-                currentIndent -= indent.getSecond()-1;
+                currentIndent -= indent.getSecond() - 1;
                 break;
             }
         } else if (firstTokenInLine) {
