@@ -41,7 +41,7 @@ public class ProjectEditorInput extends PlatformObject implements IEditorInput, 
 
     @Override
     public <T> T getAdapter(Class<T> adapter) {
-        Object ad = null;
+        Object ad;
         if (adapter.isAssignableFrom(IProject.class)) {
             ad = getProject();
         } else if (adapter.isAssignableFrom(IWorkbenchAdapter.class)) {

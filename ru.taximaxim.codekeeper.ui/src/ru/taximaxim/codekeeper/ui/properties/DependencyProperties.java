@@ -42,12 +42,15 @@ import org.osgi.service.prefs.BackingStoreException;
 
 import cz.startnet.utils.pgdiff.libraries.PgLibrary;
 import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
+import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.CommonEditingSupport;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
+import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
+import ru.taximaxim.codekeeper.ui.libraries.LibraryUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.AbstractTxtEditingSupport;
 import ru.taximaxim.codekeeper.ui.prefs.PrefListEditor;
@@ -60,6 +63,7 @@ public class DependencyProperties extends PropertyPage {
 
     private DependenciesListEditor editor;
     private Button btnSafeMode;
+    private Button btnLoadNested;
     private IProject proj;
 
     @Override
@@ -76,22 +80,30 @@ public class DependencyProperties extends PropertyPage {
         Composite area = new Composite(parent, SWT.NONE);
         area.setLayout(new GridLayout());
 
-        editor = new DependenciesListEditor(area);
-        editor.setLayoutData(new GridData(GridData.FILL_BOTH));
-
         List<PgLibrary> input;
+        boolean loadNested;
         try {
             input = store.readObjects();
+            loadNested = store.readLoadNestedFlag();
         } catch (IOException e) {
             Log.log(e);
             input = new ArrayList<>();
+            loadNested = false;
         }
+
+        editor = new DependenciesListEditor(area);
+        editor.setLayoutData(new GridData(GridData.FILL_BOTH));
         editor.setInputList(input);
 
         btnSafeMode = new Button(area, SWT.CHECK);
         btnSafeMode.setText(Messages.DependencyProperties_safe_mode);
         btnSafeMode.setToolTipText(Messages.DependencyProperties_safe_mode_desc);
         btnSafeMode.setSelection(prefs.getBoolean(PROJ_PREF.LIB_SAFE_MODE, true));
+
+        btnLoadNested = new Button(area, SWT.CHECK);
+        btnLoadNested.setText(Messages.DependencyProperties_load_nested);
+        btnLoadNested.setToolTipText(Messages.DependencyProperties_load_dependencies);
+        btnLoadNested.setSelection(loadNested);
 
         return area;
     }
@@ -101,7 +113,7 @@ public class DependencyProperties extends PropertyPage {
         try {
             prefs.putBoolean(PROJ_PREF.LIB_SAFE_MODE, btnSafeMode.getSelection());
             prefs.flush();
-            store.writeObjects(editor.getList());
+            store.writeDependencies(editor.getList(), btnLoadNested.getSelection());
             refreshProject();
             setValid(true);
             setErrorMessage(null);
@@ -113,6 +125,32 @@ public class DependencyProperties extends PropertyPage {
             return false;
         }
         return true;
+    }
+
+    @Override
+    protected void contributeButtons(Composite parent) {
+        ((GridLayout) parent.getLayout()).numColumns++;
+        Button button = new Button(parent, SWT.PUSH);
+        button.setText(Messages.DependencyProperties_clear_libraries_cache);
+        button.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                MessageBox mbQuestion = new MessageBox(getShell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+                mbQuestion.setText(Messages.DependencyProperties_clear_cache);
+                mbQuestion.setMessage(Messages.DependencyProperties_clear_cache_descr);
+                if (mbQuestion.open() != SWT.YES) {
+                    return;
+                }
+
+                try {
+                    FileUtils.deleteRecursive(LibraryUtils.META_PATH);
+                } catch (IOException ex) {
+                    ExceptionNotifier.notifyDefault(Messages.DependencyProperties_clear_cache_error, ex);
+                    return;
+                }
+            }
+        });
     }
 
     private void refreshProject() {

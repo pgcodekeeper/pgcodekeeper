@@ -62,6 +62,7 @@ public interface UIConsts {
     }
 
     interface PREF {
+        String SAVE_IN_SECURE_STORAGE = "prefSaveInSecureStorage"; //$NON-NLS-1$
         String FORCE_SHOW_CONSOLE = "prefForceShowConsole"; //$NON-NLS-1$
         String DB_STORE_FILES = "prefDbStoreHistory"; //$NON-NLS-1$
         String NO_PRIVILEGES = "prefNoPrivileges"; //$NON-NLS-1$
@@ -188,6 +189,7 @@ public interface UIConsts {
         String ICONBALLGREEN = "/icons/ball_green.png"; //$NON-NLS-1$
         String ICONADDDEP = "/icons/add_dep.png"; //$NON-NLS-1$
         String PGPASS = "/icons/pg_pass.png"; //$NON-NLS-1$
+        String ZIP = "/icons/zip.png"; //$NON-NLS-1$
         String PG_ICON = "/icons/postgresql_icon.png"; //$NON-NLS-1$
         String MS_ICON = "/icons/mssql_icon.png"; //$NON-NLS-1$
         String DECORDATABASE = "/icons/db_decorator.png"; //$NON-NLS-1$

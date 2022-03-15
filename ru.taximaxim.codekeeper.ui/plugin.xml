@@ -1118,22 +1118,31 @@
             class="ru.taximaxim.codekeeper.ui.editors.ProjectEditorInputFactory"
             id="ru.taximaxim.codekeeper.ui.editors.ProjectEditorInputFactory">
         </factory>
+        <factory
+            class="ru.taximaxim.codekeeper.ui.sqledit.SQLEditorInputFactory"
+            id="ru.taximaxim.codekeeper.ui.sqledit.SQLEditorInputFactory">
+        </factory>
     </extension>
     <extension point="org.eclipse.ui.navigator.linkHelper">
         <linkHelper
             class="ru.taximaxim.codekeeper.ui.editors.CodekeeperLinkHelper"
             id="ru.taximaxim.codekeeper.ui.editors.codekeeperlinkHelper">
             <editorInputEnablement>
-                <instanceof value="ru.taximaxim.codekeeper.ui.editors.ProjectEditorInput">
-                </instanceof>
+                 <or>
+                    <instanceof value="ru.taximaxim.codekeeper.ui.editors.ProjectEditorInput"/>
+                    <instanceof value="ru.taximaxim.codekeeper.ui.sqledit.SQLEditorInput"/>
+                 </or>
             </editorInputEnablement>
             <selectionEnablement>
-                <adapt type="org.eclipse.core.resources.IProject">
-                    <test
-                        property="org.eclipse.core.resources.projectNature"
-                        value="ru.taximaxim.codekeeper.ui.nature">
-                    </test>
-                </adapt>
+                <or>
+                    <adapt type="org.eclipse.core.resources.IProject">
+                        <test
+                            property="org.eclipse.core.resources.projectNature"
+                            value="ru.taximaxim.codekeeper.ui.nature">
+                        </test>
+                    </adapt>
+                    <instanceof value="ru.taximaxim.codekeeper.ui.libraries.FileLibrary"/>
+                </or>
             </selectionEnablement>
         </linkHelper>
     </extension>
@@ -1233,9 +1242,7 @@
                 </adapt>
             </triggerPoints>
             <possibleChildren>
-                <or>
-                    <instanceof value="ru.taximaxim.codekeeper.ui.views.navigator.LibraryContainer" />
-                </or>
+                <instanceof value="ru.taximaxim.codekeeper.ui.libraries.AbstractLibrary"/>
             </possibleChildren>
             <commonSorter class="ru.taximaxim.codekeeper.ui.views.navigator.DisabledSorter">
             </commonSorter>
@@ -1244,8 +1251,7 @@
             class="ru.taximaxim.codekeeper.ui.views.navigator.NavigationLibrariesActionProvider"
             id="ru.taximaxim.codekeeper.ui.views.navigator.codekeeperLibrariesActionProvider">
             <enablement>
-                <instanceof value="ru.taximaxim.codekeeper.ui.views.navigator.LibraryContainer">
-                </instanceof>
+                <instanceof value="ru.taximaxim.codekeeper.ui.libraries.AbstractLibrary"/>
             </enablement>
         </actionProvider>
         <navigatorContent

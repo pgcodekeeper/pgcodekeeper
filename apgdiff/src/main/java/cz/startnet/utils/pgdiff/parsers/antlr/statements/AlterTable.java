@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 import java.util.Arrays;
 import java.util.List;
 
+import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
@@ -47,8 +48,8 @@ public class AlterTable extends TableAbstract {
     private final Alter_table_statementContext ctx;
     private final String tablespace;
 
-    public AlterTable(Alter_table_statementContext ctx, PgDatabase db, String tablespace) {
-        super(db);
+    public AlterTable(Alter_table_statementContext ctx, PgDatabase db, String tablespace, CommonTokenStream stream) {
+        super(db, stream);
         this.ctx = ctx;
         this.tablespace = tablespace;
     }

@@ -420,9 +420,9 @@ public class ActionsToScriptConverter {
      * table, excluding calculated columns.
      */
     private List<String> getColsForMovingData(AbstractTable newTbl) {
-        List<AbstractColumn> oldCols = ((AbstractTable) newTbl.getTwin(oldDbFull)).getColumns();
+        AbstractTable oldTable = (AbstractTable) newTbl.getTwin(oldDbFull);
         Stream<? extends AbstractColumn> cols = newTbl.getColumns().stream()
-                .filter(oldCols::contains);
+                .filter(c -> oldTable.containsColumn(c.getName()));
         if (arguments.isMsSql()) {
             cols = cols.map(col -> (MsColumn) col)
                     .filter(msCol -> msCol.getExpression() == null);

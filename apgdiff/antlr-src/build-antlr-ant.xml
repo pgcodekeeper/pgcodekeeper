@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="project" default="default">
+  <description>
+    Generate antlr sources. This script works as an Eclipse builder.
+    Required properties:
+     build-fileset - space-separated, list of absolute, quoted paths to files to be built
+                     if not set - all g4 files are built (full build)
+     build-project-location - apgdiff project location
+  </description>
+
+  <target name="default">
+    <!-- regexpmapper breaks when regexp contains a property-path with backslashes (on Windows) -->
+    <pathconvert dirsep="/" property="basedir-fwd-slash">
+      <path location="${basedir}" />
+    </pathconvert>
+
+    <!--
+      build-fileset filter step
+      No Ant resource collection supports space-separated list of absolute paths
+      which are also quoted to support spaces in paths.
+      So we cheat by using a filelist which prepends each path with dummy basedir
+      and leaves the path itself in quotes.
+      We then use regexpmapper to strip the dummy basedir and also filter 
+      build-fileset to leave only grammar-files in basedir.
+     -->
+    <pathconvert pathsep=" " property="build-fileset-filtered">
+      <filelist dir="${basedir}" files="${build-fileset}" />
+      <regexpmapper from="^${basedir-fwd-slash}/(&quot;${basedir-fwd-slash}/.*\.g4&quot;)$$" to="\1" handledirsep="true" />
+    </pathconvert>
+
+    <!--
+      In case no build-fileset is provided prepare a list of all grammars
+      using the same format.
+      Note that all-grammars property lacks outer quotes, they must be added
+      when using the property.
+     -->
+    <pathconvert pathsep="&quot; &quot;" property="all-grammars">
+      <fileset dir="${basedir}" includes="*.g4" />
+    </pathconvert>
+
+    <!-- choose the fileset to build -->
+    <condition
+      property="build-fileset-final"
+      value="${build-fileset-filtered}"
+      else="&quot;${all-grammars}&quot;">
+      <and>
+        <isset property="build-fileset" />
+        <not>
+          <equals arg1="${build-fileset}" arg2="" />
+        </not>
+      </and>
+    </condition>
+
+    <!--
+      Run the ANTLR tool. Pass the build fileset as "line" which works well with
+      the space-separated quoted format.
+     -->
+    <echo message="running antlr-tool for ${build-fileset-final}" />
+    <java jar="antlr-4.6-complete.jar" fork="true" failonerror="true" maxmemory="256M">
+      <arg value="-Werror" />
+      <arg value="-no-listener" />
+      <arg value="-no-visitor" />
+      <arg value="-o" />
+      <arg file="${build-project-location}/target/generated-sources/antlr4/cz/startnet/utils/pgdiff/parsers/antlr" />
+      <arg line="${build-fileset-final}" />
+    </java>
+  </target>
+</project>

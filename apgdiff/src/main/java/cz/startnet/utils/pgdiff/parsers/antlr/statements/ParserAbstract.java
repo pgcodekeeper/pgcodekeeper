@@ -34,6 +34,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Including_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Predefined_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.MisplacedObjectException;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
@@ -167,6 +168,12 @@ public abstract class ParserAbstract {
         }
 
         return full;
+    }
+
+    public static String getExpressionText(VexContext def, CommonTokenStream stream) {
+        String expression = getFullCtxText(def);
+        String whitespace = getHiddenLeftCtxText(def, stream);
+        return whitespace.startsWith("\n") ? (whitespace + expression) : expression;
     }
 
     private static String convertAlias(String type) {
