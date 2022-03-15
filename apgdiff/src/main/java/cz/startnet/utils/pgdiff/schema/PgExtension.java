@@ -15,7 +15,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 public class PgExtension extends PgStatement {
 
     private String schema;
-    private boolean extrelocatable;
+    private boolean relocatable;
 
     @Override
     public DbObjType getStatementType() {
@@ -35,13 +35,12 @@ public class PgExtension extends PgStatement {
         resetHash();
     }
 
-    public boolean getExtrelocatable() {
-        return extrelocatable;
+    public boolean isRelocatable() {
+        return relocatable;
     }
 
-    public void setExtrelocatable(boolean extrelocatable) {
-        this.extrelocatable = extrelocatable;
-        resetHash();
+    public void setRelocatable(boolean relocatable) {
+        this.relocatable = relocatable;
     }
 
     @Override
@@ -82,7 +81,7 @@ public class PgExtension extends PgStatement {
         PgExtension newExt = (PgExtension) newCondition;
 
         if (!Objects.equals(newExt.getSchema(), getSchema())) {
-            if (!getExtrelocatable()) {
+            if (!isRelocatable()) {
                 return true;
             }
             sb.append("\n\nALTER EXTENSION ")
