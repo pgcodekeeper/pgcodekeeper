@@ -99,5 +99,42 @@ exception
     SELECT sum(salary) OVER w, avg(salary) OVER w
     FROM empsalary
     WINDOW w AS (PARTITION BY depname ORDER BY salary DESC);
+
+    /*FOR ...(SELECT...) ...LOOP*/
+    for v_next_sync in
+      (select sys_change_version from bankrupt_bulk.address
+      order by 1 )
+    loop
+    end loop;
+
+    /*SELECT ...UNION...SELECT*/
+    (
+        (select 1
+        limit 1)
+      union
+        (select 2
+        limit 1))
+    order by 1;
+
+    /*SELECT ...EXCEPTION*/
+    select 1;
+    BEGIN
+      select 1;
+    EXCEPTION
+      WHEN condition THEN
+        select 12;
+      WHEN condition THEN
+        begin
+          select 12;
+        end;
+      WHEN condition THEN
+        select 13;
+    END;
+
+    /*DECLARE*/
+    declare
+      aa int;
+    begin
+    end;
 END$$;
 ALTER FUNCTION public.fun2() OWNER TO user_m;
