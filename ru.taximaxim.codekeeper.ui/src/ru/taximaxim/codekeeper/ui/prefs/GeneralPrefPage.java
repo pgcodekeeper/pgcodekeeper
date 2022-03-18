@@ -40,7 +40,7 @@ implements IWorkbenchPreferencePage  {
                 getFieldEditorParent()));
 
         new Label(getFieldEditorParent(), SWT.SEPARATOR | SWT.HORIZONTAL)
-        .setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        .setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
 
         addField(new BooleanFieldEditor(PREF.IGNORE_COLUMN_ORDER,
                 Messages.GeneralPrefPage_ignore_column_order,
@@ -54,7 +54,7 @@ implements IWorkbenchPreferencePage  {
                 Messages.GeneralPrefPage_body_depcy_tooltip);
 
         new Label(getFieldEditorParent(), SWT.SEPARATOR | SWT.HORIZONTAL)
-        .setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        .setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
 
         addField(new BooleanFieldEditor(PREF.NO_PRIVILEGES,
                 Messages.dbUpdatePrefPage_ignore_privileges,
@@ -77,7 +77,7 @@ implements IWorkbenchPreferencePage  {
                 getFieldEditorParent(), 4));
 
         new Label(getFieldEditorParent(), SWT.SEPARATOR | SWT.HORIZONTAL)
-        .setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        .setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
 
         addField(new BooleanFieldEditor(PREF.HEAP_SIZE_WARNING,
                 Messages.GeneralPrefPage_alert_if_heap_size_less_than_necessary,

@@ -51,6 +51,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
     public String call() throws Exception {
         SubMonitor subMonitor = SubMonitor.convert(monitor);
         PgObjLocation currQuery = null;
+        String[] finalModifiedQuery = new String[1];
 
         try {
             if (!isMsSql) {
@@ -58,7 +59,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
                 for (PgObjLocation query : batches) {
                     PgDiffUtils.checkCancelled(monitor);
                     currQuery = query;
-                    executeSingleStatement(query);
+                    executeSingleStatement(query, finalModifiedQuery);
                     subMonitor.worked(1);
                 }
             } else {
@@ -70,7 +71,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
                     currQuery = null;
                     if (queriesList.size() == 1) {
                         currQuery = queriesList.get(0);
-                        executeSingleStatement(currQuery);
+                        executeSingleStatement(currQuery, finalModifiedQuery);
                     } else {
                         runBatch(queriesList);
                     }
@@ -91,7 +92,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
             if (currQuery != null) {
                 int offset = sem.getPosition();
                 if (offset > 0) {
-                    appendPosition(sb, currQuery.getSql(), offset);
+                    appendPosition(sb, finalModifiedQuery[0], offset);
                 } else {
                     if (currQuery.getLineNumber() > 1) {
                         sb.append("\n  Line: ").append(currQuery.getLineNumber());
@@ -151,14 +152,15 @@ public class QueriesBatchCallable extends StatementCallable<String> {
         return batchesList;
     }
 
-    private void executeSingleStatement(PgObjLocation query)
+    private void executeSingleStatement(PgObjLocation query, String[] finalModifiedQuery)
             throws SQLException, InterruptedException {
-        String str = query.getAction().equals("SELECT") && limitRows != 0
-                ? String.format("select * from ( %1$s ) as t limit %2$s", query.getSql(),
-                        limitRows)
-                        : query.getSql();
+        String sql = query.getSql();
+        if (limitRows > 0 && query.getAction().equals("SELECT")) {
+            sql = "SELECT * FROM ( " + sql + " ) AS t LIMIT " + limitRows;
+        }
 
-        if (st.execute(str)) {
+        finalModifiedQuery[0] = sql;
+        if (st.execute(sql)) {
             writeResult(query.getSql());
         }
         writeWarnings();
