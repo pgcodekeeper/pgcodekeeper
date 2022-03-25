@@ -17,6 +17,7 @@ import cz.startnet.utils.pgdiff.libraries.PgLibrary;
 import cz.startnet.utils.pgdiff.libraries.PgLibrarySource;
 import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
 
 public class UiLibraryLoader {
@@ -109,19 +110,11 @@ public class UiLibraryLoader {
     }
 
     private void readProject(AbstractLibrary parent, Path path) throws IOException {
-        Path extension = path.resolve(ApgdiffConsts.WORK_DIR_NAMES.EXTENSION.toString());
-        if (Files.exists(extension)) {
-            readPath(parent, extension);
-        }
-
-        Path cast = path.resolve(ApgdiffConsts.WORK_DIR_NAMES.CAST.toString());
-        if (Files.exists(cast)) {
-            readPath(parent, cast);
-        }
-
-        Path schema = path.resolve(ApgdiffConsts.WORK_DIR_NAMES.SCHEMA.toString());
-        if (Files.exists(schema)) {
-            readPath(parent, schema);
+        for (WORK_DIR_NAMES name : ApgdiffConsts.WORK_DIR_NAMES.values()) {
+            Path dirPath = path.resolve(name.name());
+            if (Files.exists(dirPath)) {
+                readPath(parent, dirPath);
+            }
         }
 
         if (!loadNested) {
