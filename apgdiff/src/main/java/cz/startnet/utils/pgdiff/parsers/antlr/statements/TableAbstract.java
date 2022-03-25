@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 import java.util.List;
 
 import org.antlr.v4.runtime.CommonTokenStream;
+
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
@@ -21,9 +22,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_columnContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_parametersContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.List_of_type_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Names_in_parensContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Option_with_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sequence_bodyContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parametersContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_deferrableContext;
@@ -230,7 +232,7 @@ public abstract class TableAbstract extends ParserAbstract {
                 for (Foreign_optionContext option : options.foreign_option()) {
                     Character_stringContext opt = option.character_string();
                     String value = opt == null ? "" : opt.getText();
-                    fillOptionParams(value, option.foreign_option_name().getText(), false, col::addForeignOption);
+                    fillOptionParams(value, option.col_label().getText(), false, col::addForeignOption);
                 }
             } else {
                 //throw new IllegalStateException("Options used only for foreign table");
@@ -335,8 +337,11 @@ public abstract class TableAbstract extends ParserAbstract {
         for (Index_columnContext c : constrBody.index_column()) {
             db.addAnalysisLauncher(new ConstraintAnalysisLauncher(constrBlank, c.vex(), location));
 
-            for (Option_with_valueContext o : c.option_with_value()) {
-                db.addAnalysisLauncher(new ConstraintAnalysisLauncher(constrBlank, o.vex(), location));
+            Storage_parametersContext params = c.storage_parameters();
+            if (params != null) {
+                for (Storage_parameter_optionContext o : params.storage_parameter_option()) {
+                    db.addAnalysisLauncher(new ConstraintAnalysisLauncher(constrBlank, o.vex(), location));
+                }
             }
         }
 

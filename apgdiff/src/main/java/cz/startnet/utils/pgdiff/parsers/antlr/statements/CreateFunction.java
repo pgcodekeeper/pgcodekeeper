@@ -141,7 +141,7 @@ public class CreateFunction extends ParserAbstract {
 
         With_storage_parameterContext storage = ctx.with_storage_parameter();
         if (storage != null) {
-            for (Storage_parameter_optionContext option : storage.storage_parameter().storage_parameter_option()) {
+            for (Storage_parameter_optionContext option : storage.storage_parameters().storage_parameter_option()) {
                 if ("isStrict".equalsIgnoreCase(option.getText())) {
                     function.setStrict(true);
                 } else if ("isCachable".equalsIgnoreCase(option.getText())) {

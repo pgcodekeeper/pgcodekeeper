@@ -36,7 +36,7 @@ public class CreateServer extends ParserAbstract {
         Define_foreign_optionsContext options = ctx.define_foreign_options();
         if (options!= null) {
             for (Foreign_optionContext option : options.foreign_option()) {
-                server.addOption(option.foreign_option_name().identifier().getText(), option.character_string().getText());
+                server.addOption(option.col_label().getText(), option.character_string().getText());
             }
         }
         addSafe(db, server, Arrays.asList(ids.get(0)));

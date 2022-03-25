@@ -21,7 +21,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sequence_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_def_columnContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statisticsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_optionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameterContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parametersContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
@@ -183,7 +183,7 @@ public class AlterTable extends TableAbstract {
         }
 
         // column options
-        Storage_parameterContext param = colAction.storage_parameter();
+        Storage_parametersContext param = colAction.storage_parameters();
         if (param != null) {
             for (Storage_parameter_optionContext option : param.storage_parameter_option()) {
                 VexContext opt = option.vex();
@@ -198,7 +198,7 @@ public class AlterTable extends TableAbstract {
             for (Foreign_optionContext option : fOptions.foreign_option()) {
                 Character_stringContext opt = option.character_string();
                 String value = opt == null ? null : opt.getText();
-                fillOptionParams(value, option.foreign_option_name().getText(), false, col::addForeignOption);
+                fillOptionParams(value, option.col_label().getText(), false, col::addForeignOption);
             }
         }
 

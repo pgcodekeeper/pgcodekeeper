@@ -11,7 +11,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Including_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_columnContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_restContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_sortContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_columnsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_whereContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_varContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
@@ -63,7 +63,7 @@ public class CreateIndex extends ParserAbstract {
             String schemaName, String tableName, PgIndex ind, PgDatabase db, String location, CommonTokenStream stream) {
         db.addAnalysisLauncher(new IndexAnalysisLauncher(ind, rest, location));
 
-        Index_sortContext sort = rest.index_sort();
+        Index_columnsContext sort = rest.index_columns();
         parseColumns(sort, ind);
 
         if (rest.method != null) {
@@ -83,7 +83,7 @@ public class CreateIndex extends ParserAbstract {
         With_storage_parameterContext options = rest.with_storage_parameter();
 
         if (options != null) {
-            for (Storage_parameter_optionContext option : options.storage_parameter().storage_parameter_option()) {
+            for (Storage_parameter_optionContext option : options.storage_parameters().storage_parameter_option()) {
                 String key = option.storage_parameter_name().getText();
                 VexContext v = option.vex();
                 String value = v == null ? "" : v.getText();
@@ -103,7 +103,7 @@ public class CreateIndex extends ParserAbstract {
         }
     }
 
-    private static void parseColumns(Index_sortContext sort, AbstractIndex ind) {
+    private static void parseColumns(Index_columnsContext sort, AbstractIndex ind) {
         for (Index_columnContext sort_ctx : sort.index_column()) {
             Value_expression_primaryContext vexPrimary = sort_ctx.column.value_expression_primary();
             if (vexPrimary != null) {

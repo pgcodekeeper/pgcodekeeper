@@ -5,7 +5,7 @@ import java.util.List;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_fts_dictionary_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Option_with_valueContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFtsDictionary;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -24,8 +24,8 @@ public class CreateFtsDictionary extends ParserAbstract {
         List<IdentifierContext> ids = ctx.name.identifier();
         String name = QNameParser.getFirstName(ids);
         PgFtsDictionary dictionary = new PgFtsDictionary(name);
-        for (Option_with_valueContext option : ctx.option_with_value()) {
-            fillOptionParams(option.vex().getText(), option.identifier().getText(), false, dictionary::addOption);
+        for (Storage_parameter_optionContext option : ctx.storage_parameter_option()) {
+            fillOptionParams(option.vex().getText(), option.storage_parameter_name().getText(), false, dictionary::addOption);
         }
 
         List<IdentifierContext> templateIds = ctx.template.identifier();

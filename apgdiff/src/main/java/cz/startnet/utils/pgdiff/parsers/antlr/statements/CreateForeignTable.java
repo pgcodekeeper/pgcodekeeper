@@ -82,7 +82,7 @@ public class CreateForeignTable extends TableAbstract {
             for (Foreign_optionContext option : options.foreign_option()) {
                 Character_stringContext opt = option.character_string();
                 String value = opt == null ? null : opt.getText();
-                fillOptionParams(value, option.foreign_option_name().getText(), false, table::addOption);
+                fillOptionParams(value, option.col_label().getText(), false, table::addOption);
             }
         }
         return table;

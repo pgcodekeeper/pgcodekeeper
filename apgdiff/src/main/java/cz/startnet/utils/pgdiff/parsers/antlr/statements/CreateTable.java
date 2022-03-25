@@ -109,7 +109,7 @@ public class CreateTable extends TableAbstract {
         if (storage != null) {
             With_storage_parameterContext parameters = storage.with_storage_parameter();
             if (parameters != null) {
-                parseOptions(parameters.storage_parameter().storage_parameter_option(), table);
+                parseOptions(parameters.storage_parameters().storage_parameter_option(), table);
             }
             if (storage.WITHOUT() != null) {
                 table.setHasOids(false);
