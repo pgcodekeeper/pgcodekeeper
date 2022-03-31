@@ -45,6 +45,7 @@ public class DbXmlStore extends XmlStore<DbInfo> {
         DBNAME("dbname"), //$NON-NLS-1$
         DBUSER("dbuser"), //$NON-NLS-1$
         DBPASS("dbpass"), //$NON-NLS-1$
+        DBGROUP("dbgroup"), //$NON-NLS-1$
         DBHOST("dbhost"), //$NON-NLS-1$
         DBPORT("dbport"), //$NON-NLS-1$
         READ_ONLY("read_only"), //$NON-NLS-1$
@@ -129,6 +130,7 @@ public class DbXmlStore extends XmlStore<DbInfo> {
             createSubElement(xml, keyElement, Tags.DBNAME.toString(), dbInfo.getDbName());
             createSubElement(xml, keyElement, Tags.DBUSER.toString(), dbInfo.getDbUser());
             createSubElement(xml, keyElement, Tags.DBPASS.toString(), ""); //$NON-NLS-1$
+            createSubElement(xml, keyElement, Tags.DBGROUP.toString(), dbInfo.getDb_group());
             createSubElement(xml, keyElement, Tags.DBHOST.toString(), dbInfo.getDbHost());
             createSubElement(xml, keyElement, Tags.DBPORT.toString(), String.valueOf(dbInfo.getDbPort()));
             createSubElement(xml, keyElement, Tags.READ_ONLY.toString(), String.valueOf(dbInfo.isReadOnly()));
@@ -178,6 +180,7 @@ public class DbXmlStore extends XmlStore<DbInfo> {
                 case DBNAME:
                 case DBUSER:
                 case DBPASS:
+                case DBGROUP:
                 case DBHOST:
                 case DBPORT:
                 case READ_ONLY:
@@ -219,7 +222,8 @@ public class DbXmlStore extends XmlStore<DbInfo> {
                 Boolean.parseBoolean(object.get(Tags.WIN_AUTH)),
                 object.get(Tags.DOMAIN), object.get(Tags.PGDUMP_EXE_PATH),
                 object.get(Tags.PGDUMP_CUSTOM_PARAMS),
-                Boolean.parseBoolean(object.get(Tags.PG_DUMP_SWITCH)));
+                Boolean.parseBoolean(object.get(Tags.PG_DUMP_SWITCH)),
+                object.get(Tags.DBGROUP));
     }
 
     private void fillIgnoreFileList(NodeList xml, List<String> list) {

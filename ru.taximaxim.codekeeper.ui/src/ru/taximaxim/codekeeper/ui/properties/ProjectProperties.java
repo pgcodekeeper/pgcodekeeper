@@ -8,7 +8,6 @@ import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -34,7 +33,8 @@ import ru.taximaxim.codekeeper.ui.UIConsts.DB_BIND_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
-import ru.taximaxim.codekeeper.ui.dbstore.DbStorePicker;
+import ru.taximaxim.codekeeper.ui.dbstore.IStorePicker;
+import ru.taximaxim.codekeeper.ui.dbstore.DbMenuStorePicker;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
@@ -51,7 +51,7 @@ public class ProjectProperties extends PropertyPage {
     private Button btnForceUnixNewlines;
     private Button btnDisableParser;
     private Button btnBindProjToDb;
-    private DbStorePicker storePicker;
+    private IStorePicker storePicker;
     private Combo cmbTimezone;
     private CLabel lblWarn;
     private CLabel lblWarnPosix;
@@ -103,17 +103,18 @@ public class ProjectProperties extends PropertyPage {
             public void widgetSelected(SelectionEvent e) {
                 storePicker.setEnabled(btnBindProjToDb.getSelection());
                 if (!btnBindProjToDb.getSelection()) {
-                    storePicker.setSelection(StructuredSelection.EMPTY);
+                    storePicker.setSelection(null);
                 }
             }
         });
 
         dbForBind = DbInfo.getLastDb(nameOfBoundDb);
-        storePicker = new DbStorePicker(panel, false, false);
+        storePicker = new DbMenuStorePicker(panel, false, false);
         storePicker.filter(isMsSql);
-        storePicker.setSelection(dbForBind != null ? new StructuredSelection(dbForBind) : StructuredSelection.EMPTY);
+        storePicker.setSelection(dbForBind);
+
         storePicker.setEnabled(btnBindProjToDb.getSelection());
-        storePicker.addListenerToCombo(e -> dbForBind = storePicker.getDbInfo());
+        storePicker.addSelectionListener(() -> { dbForBind = storePicker.getDbInfo();});
 
         if (!isMsSql) {
             new Label(panel, SWT.NONE).setText(Messages.projectProperties_timezone_for_all_db_connections);
@@ -243,7 +244,7 @@ public class ProjectProperties extends PropertyPage {
         btnDisableParser.setSelection(false);
         btnForceUnixNewlines.setSelection(true);
         btnBindProjToDb.setSelection(false);
-        storePicker.setSelection(StructuredSelection.EMPTY);
+        storePicker.setSelection(null);
         if (!isMsSql) {
             cmbTimezone.setText(ApgdiffConsts.UTC);
             btnSimplifyView.setEnabled(enable);

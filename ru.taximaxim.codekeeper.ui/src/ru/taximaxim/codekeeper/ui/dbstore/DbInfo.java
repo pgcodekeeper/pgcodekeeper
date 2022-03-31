@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -30,6 +31,7 @@ public class DbInfo {
     private final boolean winAuth;
     private final boolean msSql;
     private final String domain;
+    private String db_group;
     private final boolean generateName;
     private final List<String> ignoreFiles;
     private final Map<String, String> properties;
@@ -48,6 +50,14 @@ public class DbInfo {
 
     public String getDbPass() {
         return dbpass;
+    }
+
+    public String getDb_group() {
+        return db_group;
+    }
+
+    public void setDb_group(String db_group) {
+        this.db_group = db_group;
     }
 
     public String getDbHost() {
@@ -101,7 +111,7 @@ public class DbInfo {
     public DbInfo(String name, String dbname, String dbuser, String dbpass,
             String dbhost, int dbport, boolean readOnly, boolean generateName,
             List<String> ignoreFiles, Map<String, String> properties, boolean msSql, boolean winAuth,
-            String domain, String pgdumpExePath, String pgdumpCustomParams, boolean pgDumpSwitch) {
+            String domain, String pgdumpExePath, String pgdumpCustomParams, boolean pgDumpSwitch, String db_group) {
         this.name = name;
         this.dbname = dbname;
         this.dbuser = dbuser;
@@ -118,6 +128,7 @@ public class DbInfo {
         this.pgdumpExePath = pgdumpExePath == null ? DEFAULT_EXECUTE_PATH : pgdumpExePath;
         this.pgdumpCustomParams = pgdumpCustomParams == null ? DEFAULT_CUSTOM_PARAMS : pgdumpCustomParams;
         this.pgDumpSwitch = pgDumpSwitch;
+        this.db_group = db_group;
     }
 
     @Override
@@ -151,6 +162,21 @@ public class DbInfo {
         }
 
         return new ArrayList<>();
+    }
+
+    public static void addGrouppedDblist(List<DbInfo> list) {
+        Map<String, List<DbInfo>> map = getGroupMap(list);
+        list.clear();
+        map.values().stream().forEach(v -> v.forEach(dbinfo-> list.add(dbinfo)));
+    }
+
+    public static Map<String, List<DbInfo>> getGroupMap(List<DbInfo> list) {
+        Map<String, List<DbInfo>> map = new LinkedHashMap<>();
+
+        for (DbInfo dbInfo : list) {
+            map.computeIfAbsent(dbInfo.getDb_group(),k ->  new ArrayList<>()).add(dbInfo);
+        }
+        return map;
     }
 
     public static DbInfo getLastDb(String preference) {
