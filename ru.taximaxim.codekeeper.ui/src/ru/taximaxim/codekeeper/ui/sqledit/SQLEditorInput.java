@@ -1,10 +1,13 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
+import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.runtime.PlatformObject;
@@ -16,6 +19,14 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 
 public class SQLEditorInput extends PlatformObject implements IURIEditorInput, IPersistableElement {
+
+    private static final AtomicInteger TMP_INPUT_COUNTER = new AtomicInteger(1);
+
+    public static SQLEditorInput newTmpInput() {
+        int number = TMP_INPUT_COUNTER.getAndIncrement();
+        return new SQLEditorInput(Paths.get("/pgCodeKeeper/new query " + number), //$NON-NLS-1$
+                null, false, false, true);
+    }
 
     private final Path path;
     private final boolean isMsSql;
@@ -31,7 +42,7 @@ public class SQLEditorInput extends PlatformObject implements IURIEditorInput, I
         this(path, project, isMsSql, isReadOnly, false);
     }
 
-    public SQLEditorInput(Path path, String project, boolean isMsSql, boolean isReadOnly, boolean isTemp) {
+    SQLEditorInput(Path path, String project, boolean isMsSql, boolean isReadOnly, boolean isTemp) {
         this.path = path;
         this.project = project;
         this.isMsSql = isMsSql;
@@ -61,7 +72,7 @@ public class SQLEditorInput extends PlatformObject implements IURIEditorInput, I
 
     @Override
     public String getToolTipText() {
-        return path.toString();
+        return isTemp ? getNullFileStoreUri().getPath() : path.toString();
     }
 
     @Override
@@ -128,16 +139,24 @@ public class SQLEditorInput extends PlatformObject implements IURIEditorInput, I
 
     @Override
     public URI getURI() {
-        if (isTemp) {
-            try {
-                return new URI(EFS.SCHEME_NULL, null, path.toString(), null);
-            } catch (URISyntaxException e) {
-                //should never happen
-                return null;
-            }
-        }
+        return isTemp ? getNullFileStoreUri() : path.toUri();
+    }
 
-        return path.toUri();
+    private URI getNullFileStoreUri() {
+        try {
+            String path = this.path.toString();
+            // fix Windows paths for URI (otherwise leading \ is treated as relative path
+            if (!path.startsWith("/")) {
+                path = path.replace(File.separatorChar, '/');
+            }
+            if (!path.startsWith("/")) {
+                path = '/' + path;
+            }
+            return new URI(EFS.SCHEME_NULL, null, path, null);
+        } catch (URISyntaxException e) {
+            //should never happen
+            return null;
+        }
     }
 
     @Override
