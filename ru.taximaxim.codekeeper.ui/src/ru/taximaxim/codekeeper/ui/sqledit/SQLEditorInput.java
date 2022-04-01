@@ -145,7 +145,7 @@ public class SQLEditorInput extends PlatformObject implements IURIEditorInput, I
     private URI getNullFileStoreUri() {
         try {
             String path = this.path.toString();
-            // fix Windows paths for URI (otherwise leading \ is treated as relative path
+            // fix Windows paths for URI (otherwise leading \ is treated as relative path)
             if (!path.startsWith("/")) {
                 path = path.replace(File.separatorChar, '/');
             }
@@ -155,7 +155,7 @@ public class SQLEditorInput extends PlatformObject implements IURIEditorInput, I
             return new URI(EFS.SCHEME_NULL, null, path, null);
         } catch (URISyntaxException e) {
             //should never happen
-            return null;
+            throw new IllegalStateException(e.getLocalizedMessage(), e);
         }
     }
 
