@@ -3,7 +3,7 @@ package ru.taximaxim.codekeeper.apgdiff.model.graph;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jgrapht.DirectedGraph;
+import org.jgrapht.Graph;
 import org.jgrapht.event.TraversalListenerAdapter;
 import org.jgrapht.event.VertexTraversalEvent;
 import org.jgrapht.graph.DefaultEdge;
@@ -65,7 +65,7 @@ public class SimpleDepcyResolver {
         return depcies;
     }
 
-    private class DepcyIterator extends TraversalListenerAdapter<PgStatement, DefaultEdge> {
+    private static class DepcyIterator extends TraversalListenerAdapter<PgStatement, DefaultEdge> {
         Set<PgStatement> depcies = new HashSet<>();
 
         public DepcyIterator(Set<PgStatement> depcies) {
@@ -83,7 +83,7 @@ public class SimpleDepcyResolver {
 
     public Set<PgStatement> getConnectedTo(PgStatement entity) {
         Set<PgStatement> connected = new HashSet<>();
-        DirectedGraph<PgStatement, DefaultEdge> currentGraph = oldDepcyGraph.getGraph();
+        Graph<PgStatement, DefaultEdge> currentGraph = oldDepcyGraph.getGraph();
         for (DefaultEdge e : currentGraph.outgoingEdgesOf(entity)) {
             connected.add(currentGraph.getEdgeTarget(e));
         }

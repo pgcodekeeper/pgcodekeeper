@@ -8,7 +8,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.jgrapht.DirectedGraph;
+import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;
 
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
@@ -21,7 +21,7 @@ public class DepcyWriter {
     private static final int START_LEVEL = 0;
 
     private final PgDatabase db;
-    private final DirectedGraph<PgStatement, DefaultEdge> graph;
+    private final Graph<PgStatement, DefaultEdge> graph;
     private final int depth;
     private final PrintWriter writer;
     private final EnumSet<DbObjType> filterObjTypes;

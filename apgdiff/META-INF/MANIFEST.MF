@@ -22,12 +22,12 @@ Export-Package: cz.startnet.utils.pgdiff,
  ru.taximaxim.pgpass
 x-apgdiffcomment: ru.taximaxim.codekeeper.apgdiff.utils - hidden use in deserialization
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Bundle-ClassPath: lib/jgrapht-core-0.9.0.jar,
- .,
+Bundle-ClassPath: .,
  lib/antlr-runtime-4.6.jar,
- lib/postgresql-42.2.5.jar,
- lib/PgPass-0.0.2.jar,
- lib/mssql-jdbc-7.4.1.jre8.jar
+ lib/jgrapht-core-1.4.0.jar,
+ lib/mssql-jdbc-7.4.1.jre8.jar,
+ lib/PgPass-1.0.0.jar,
+ lib/postgresql-42.3.3.jar
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: ru.taximaxim.codekeeper.apgdiff.Activator
 Import-Package: org.eclipse.core.runtime;version="[3.5.0,4.0.0)",
