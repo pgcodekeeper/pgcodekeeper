@@ -1037,3 +1037,21 @@ create temp table test (i int);
 with test as (select 42) insert into test select * from test;
 select * from test;
 drop table test;
+
+with recursive search_graph(f, t, label) as (
+    select * from graph0 g
+    union all
+    select g.*
+    from graph0 g, search_graph sg
+    where g.f = sg.t
+) search depth first by f, t set seq
+select * from search_graph order by seq;
+
+with recursive search_graph(f, t, label) as (
+    select * from graph0 g
+    union all
+    select g.*
+    from graph0 g, search_graph sg
+    where g.f = sg.t
+) search breadth first by f, t set seq
+select * from search_graph order by seq;

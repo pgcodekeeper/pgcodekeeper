@@ -20,7 +20,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  * Stores table index information.
  */
 public abstract class AbstractIndex extends PgStatementWithSearchPath
-implements PgOptionContainer {
+implements PgSimpleOptionContainer {
 
     /**
      * Contains columns with sort order

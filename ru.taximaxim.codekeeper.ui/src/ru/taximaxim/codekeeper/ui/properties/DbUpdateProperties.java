@@ -35,6 +35,7 @@ public class DbUpdateProperties extends PropertyPage {
     private Button btnScriptFromSelObjs;
     private Button btnOptionExists;
     private Button btnOptionDropObject;
+    private Button btnDataMovementMode;
 
     private IEclipsePreferences prefs;
 
@@ -69,6 +70,7 @@ public class DbUpdateProperties extends PropertyPage {
                 btnScriptFromSelObjs.setEnabled(btnEnableProjPref.getSelection());
                 btnOptionExists.setEnabled(btnEnableProjPref.getSelection());
                 btnOptionDropObject.setEnabled(btnEnableProjPref.getSelection());
+                btnDataMovementMode.setEnabled(btnEnableProjPref.getSelection());
             }
         });
 
@@ -131,6 +133,16 @@ public class DbUpdateProperties extends PropertyPage {
         btnOptionDropObject.setLayoutData(gd);
         btnOptionDropObject.setSelection(prefs.getBoolean(DB_UPDATE_PREF.OPTION_DROP_OBJECT, false));
         btnOptionDropObject.setEnabled(overridePref);
+
+        btnDataMovementMode = new Button(panel, SWT.CHECK);
+        btnDataMovementMode.setText(Messages.DbUpdatePrefPage_allow_data_movement);
+        gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
+        gd.horizontalIndent = 10;
+        btnDataMovementMode.setLayoutData(gd);
+        btnDataMovementMode.setSelection(prefs.getBoolean(DB_UPDATE_PREF
+                .DATA_MOVEMENT_MODE, false));
+        btnDataMovementMode.setEnabled(overridePref);
+
         return panel;
     }
 
@@ -145,6 +157,7 @@ public class DbUpdateProperties extends PropertyPage {
         setDefault(mainPS, btnScriptFromSelObjs, DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS);
         setDefault(mainPS, btnOptionExists, DB_UPDATE_PREF.OPTION_EXISTS);
         setDefault(mainPS, btnOptionDropObject, DB_UPDATE_PREF.OPTION_DROP_OBJECT);
+        setDefault(mainPS, btnDataMovementMode, DB_UPDATE_PREF.DATA_MOVEMENT_MODE);
 
         try {
             fillPrefs();
@@ -184,6 +197,7 @@ public class DbUpdateProperties extends PropertyPage {
         prefs.putBoolean(DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS, btnScriptFromSelObjs.getSelection());
         prefs.putBoolean(DB_UPDATE_PREF.OPTION_EXISTS, btnOptionExists.getSelection());
         prefs.putBoolean(DB_UPDATE_PREF.OPTION_DROP_OBJECT, btnOptionDropObject.getSelection());
+        prefs.putBoolean(DB_UPDATE_PREF.DATA_MOVEMENT_MODE, btnDataMovementMode.getSelection());
         prefs.flush();
         setValid(true);
         setErrorMessage(null);

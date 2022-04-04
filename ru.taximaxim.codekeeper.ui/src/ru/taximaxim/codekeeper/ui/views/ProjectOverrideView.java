@@ -3,6 +3,7 @@ package ru.taximaxim.codekeeper.ui.views;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IContributionItem;
@@ -25,7 +26,9 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
 
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgOverride;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -43,36 +46,47 @@ public class ProjectOverrideView extends ViewPart implements ISelectionListener 
 
     private IWorkbenchPart part;
     private ISelection selection;
+    private IProject project;
 
     @Override
     public void selectionChanged(IWorkbenchPart part, ISelection selection) {
         this.part = part;
         this.selection = selection;
-        if (selection instanceof IStructuredSelection) {
-            List<?> selected = ((IStructuredSelection) selection).toList();
-            DBPair dss = selected.stream().filter(e -> e instanceof DBPair)
-                    .map(e -> (DBPair)e).findAny().orElse(null);
 
-            if (dss != null) {
-                PgDatabase db = dss.dbProject.getDbObject();
+        if (!(selection instanceof IStructuredSelection)) {
+            return;
+        }
 
-                List<PgOverride> overrides = db.getOverrides();
-
-                if (!filterStatement) {
-                    viewer.setInput(overrides);
-                } else {
-                    viewer.setInput(overrides.stream()
-                            .filter(o -> selected.stream()
-                                    .filter(e -> e instanceof TreeElement)
-                                    .map(e -> (TreeElement)e)
-                                    .filter(e -> e.getSide() != DiffSide.RIGHT)
-                                    .map(e -> e.getPgStatement(db))
-                                    .anyMatch(st -> o.getNewStatement().equals(st)))
-                            .collect(Collectors.toList()));
-                }
-            } else {
-                viewer.setInput(null);
+        DBPair dbPair = null;
+        List<?> selected = ((IStructuredSelection) selection).toList();
+        for (Object object : selected) {
+            if (object instanceof DBPair) {
+                dbPair = (DBPair) object;
+            } else if (object instanceof IProject) {
+                project  = (IProject) object;
             }
+        }
+
+        if (dbPair == null) {
+            viewer.setInput(null);
+            return;
+        }
+
+        PgDatabase db = dbPair.dbProject.getDbObject();
+
+        List<PgOverride> overrides = db.getOverrides();
+
+        if (!filterStatement) {
+            viewer.setInput(overrides);
+        } else {
+            viewer.setInput(overrides.stream()
+                    .filter(o -> selected.stream()
+                            .filter(e -> e instanceof TreeElement)
+                            .map(e -> (TreeElement)e)
+                            .filter(e -> e.getSide() != DiffSide.RIGHT)
+                            .map(e -> e.getPgStatement(db))
+                            .anyMatch(st -> o.getNewStatement().equals(st)))
+                    .collect(Collectors.toList()));
         }
     }
 
@@ -124,6 +138,11 @@ public class ProjectOverrideView extends ViewPart implements ISelectionListener 
             public void run() {
                 openFile(false);
             }
+
+            @Override
+            public boolean isEnabled() {
+                return canOpen(false);
+            }
         });
 
         menuMgr.add(new Action(Messages.ProjectOverrideView_open_old_location) {
@@ -131,6 +150,11 @@ public class ProjectOverrideView extends ViewPart implements ISelectionListener 
             @Override
             public void run() {
                 openFile(true);
+            }
+
+            @Override
+            public boolean isEnabled() {
+                return canOpen(true);
             }
         });
 
@@ -166,14 +190,30 @@ public class ProjectOverrideView extends ViewPart implements ISelectionListener 
             Object obj = ((IStructuredSelection) selection).getFirstElement();
             if (obj instanceof PgOverride) {
                 try {
-                    PgOverride ov = (PgOverride)obj;
-                    FileUtilsUi.openFileInSqlEditor(openOldFile ? ov.getOldLocation() : ov.getNewLocation(),
-                            !ov.getNewStatement().isPostgres());
+                    PgOverride ov = (PgOverride) obj;
+                    PgStatement st = openOldFile ? ov.getOldStatement() : ov.getNewStatement();
+                    PgObjLocation loc = st.getLocation();
+                    String proj = project == null ? null : project.getName();
+                    FileUtilsUi.openFileInSqlEditor(loc, proj, !st.isPostgres(), st.isLib());
                 } catch (PartInitException ex) {
                     ExceptionNotifier.notifyDefault(ex.getLocalizedMessage(), ex);
                 }
             }
         }
+    }
+
+    private boolean canOpen(boolean isOld) {
+        ISelection selection = viewer.getSelection();
+        if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
+            Object obj = ((IStructuredSelection) selection).getFirstElement();
+            if (obj instanceof PgOverride) {
+                PgOverride ov = (PgOverride) obj;
+                PgStatement st = isOld ? ov.getOldStatement() : ov.getNewStatement();
+                return st.getLocation() != null;
+            }
+        }
+
+        return false;
     }
 
     private void addColumns() {
@@ -229,11 +269,10 @@ public class ProjectOverrideView extends ViewPart implements ISelectionListener 
             }
         });
 
-        int width = (int)(viewer.getTable().getSize().x * 0.25);
-        type.getColumn().setWidth(Math.max(width, 150));
-        name.getColumn().setWidth(Math.max(width, 150));
-        oldLocation.getColumn().setWidth(Math.max(width, 300));
-        newLocation.getColumn().setWidth(Math.max(width, 300));
+        type.getColumn().setWidth(150);
+        name.getColumn().setWidth(150);
+        oldLocation.getColumn().setWidth(300);
+        newLocation.getColumn().setWidth(300);
     }
 
     @Override

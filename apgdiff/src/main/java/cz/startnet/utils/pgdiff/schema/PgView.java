@@ -28,7 +28,7 @@ import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
  *
  * @author fordfrog
  */
-public class PgView extends AbstractView implements PgOptionContainer  {
+public class PgView extends AbstractView implements PgSimpleOptionContainer  {
 
     public static final String COLUMN_COMMENT = "\n\nCOMMENT ON COLUMN {0}.{1} IS {2};";
     public static final String CHECK_OPTION = "check_option";

@@ -15,6 +15,8 @@ import java.util.stream.Stream;
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.formatter.FileFormatter;
+import cz.startnet.utils.pgdiff.formatter.FormatterException;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import cz.startnet.utils.pgdiff.hashers.IHashable;
 import cz.startnet.utils.pgdiff.hashers.JavaHasher;
@@ -67,6 +69,8 @@ public abstract class PgStatement implements IStatement, IHashable {
 
     public boolean isOwned() {
         switch (getStatementType()) {
+        case FOREIGN_DATA_WRAPPER:
+        case SERVER:
         case FTS_CONFIGURATION:
         case FTS_DICTIONARY:
         case TABLE:
@@ -112,8 +116,12 @@ public abstract class PgStatement implements IStatement, IHashable {
         return getMeta().isLib();
     }
 
-    public void markAsLib() {
-        getMeta().setLib(true);
+    public String getLibName() {
+        return getMeta().getLibName();
+    }
+
+    public void setLibName(String libName) {
+        getMeta().setLibName(libName);
     }
 
     public String getAuthor() {
@@ -224,24 +232,28 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     private void addPrivilegeFiltered(PgPrivilege privilege, String locOwner) {
-        if (privilege.isRevoke()) {
-            if ("PUBLIC".equals(privilege.getRole())) {
-                switch (getStatementType()) {
-                // revoke public is non-default for these
-                case FUNCTION:
-                case PROCEDURE:
-                case AGGREGATE:
-                case DOMAIN:
-                case TYPE:
-                    break;
-                default:
-                    return;
-                }
+        if ("PUBLIC".equals(privilege.getRole())) {
+            boolean isFunc;
+            switch (getStatementType()) {
+            // revoke public is non-default for funcs etc
+            // grant public is default for them
+            case FUNCTION:
+            case PROCEDURE:
+            case AGGREGATE:
+            case DOMAIN:
+            case TYPE:
+                isFunc = true;
+                break;
+            default:
+                isFunc = false;
+                break;
             }
-            privileges.add(privilege);
-        } else if (!privilege.getRole().equals(locOwner)) {
-            privileges.add(privilege);
-        } else {
+            if (isFunc != privilege.isRevoke()) {
+                return;
+            }
+        }
+
+        if (!privilege.isRevoke() && privilege.getRole().equals(locOwner)) {
             PgPrivilege delRevoke = privileges.stream()
                     .filter(p -> p.isRevoke()
                             && p.getRole().equals(privilege.getRole())
@@ -249,10 +261,10 @@ public abstract class PgStatement implements IStatement, IHashable {
                     .findAny().orElse(null);
             if (delRevoke != null) {
                 privileges.remove(delRevoke);
-            } else {
-                privileges.add(privilege);
+                return;
             }
         }
+        privileges.add(privilege);
     }
 
     public void clearPrivileges() {
@@ -359,6 +371,28 @@ public abstract class PgStatement implements IStatement, IHashable {
 
     public String getFullSQL() {
         return getCreationSQL();
+    }
+
+    public String getFullFormattedSQL() {
+        return formatSQL(getFullSQL());
+    }
+
+    public String getFormattedCreationSQL() {
+        return formatSQL(getCreationSQL());
+    }
+
+    private String formatSQL(String sql) {
+        PgDiffArguments args = getDatabase().getArguments();
+        if (args == null || !args.isAutoFormatObjectCode()) {
+            return sql;
+        }
+        FileFormatter fileForm = new FileFormatter(sql, 0, sql.length(), args.getFormatConfiguration(), !isPostgres());
+        try {
+            return fileForm.formatText();
+        } catch (FormatterException e) {
+            Log.log(e);
+            return sql;
+        }
     }
 
     public final String getDropSQL() {

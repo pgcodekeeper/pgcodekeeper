@@ -30,6 +30,9 @@ public interface UIConsts {
         String ERROR = PLUGIN_ID.THIS + ".sql.errormarker"; //$NON-NLS-1$
         String DANGER_ANNOTATION = PLUGIN_ID.THIS + ".sql.dangerannotation"; //$NON-NLS-1$
         String OBJECT_OCCURRENCE = PLUGIN_ID.THIS + ".sql.objectoccurrence"; //$NON-NLS-1$
+        String ERROR_TYPE = PLUGIN_ID.THIS + ".sql.error_type"; //$NON-NLS-1$
+        String MISPLACE_ERROR = PLUGIN_ID.THIS + ".sql.misplace_error"; //$NON-NLS-1$
+
     }
 
     interface DECORATOR {
@@ -59,6 +62,7 @@ public interface UIConsts {
     }
 
     interface PREF {
+        String SAVE_IN_SECURE_STORAGE = "prefSaveInSecureStorage"; //$NON-NLS-1$
         String FORCE_SHOW_CONSOLE = "prefForceShowConsole"; //$NON-NLS-1$
         String DB_STORE_FILES = "prefDbStoreHistory"; //$NON-NLS-1$
         String NO_PRIVILEGES = "prefNoPrivileges"; //$NON-NLS-1$
@@ -72,7 +76,9 @@ public interface UIConsts {
         String REUSE_OPEN_COMPARE_EDITOR = "reuseOpenCompareEditors"; //$NON-NLS-1$
         String IGNORE_CONCURRENT_MODIFICATION = "ignoreConcurrentModification"; //$NON-NLS-1$
         String PARSER_CACHE_CLEANING_INTERVAL = "parserCacheCleaningInterval"; //$NON-NLS-1$
+        String LIMIT_SELECT_RESULTS = "limitSelectResults"; //$NON-NLS-1$
         String HEAP_SIZE_WARNING = "heapSizeWarning"; //$NON-NLS-1$
+        String FORMAT_OBJECT_CODE_AUTOMATICALLY = "formatObjectCodeAutomatically"; //$NON-NLS-1$
     }
 
     interface DB_UPDATE_PREF {
@@ -90,6 +96,7 @@ public interface UIConsts {
         String MIGRATION_COMMAND = "prefMigrationCommand"; //$NON-NLS-1$;
         String PRINT_INDEX_WITH_CONCURRENTLY = "prefPrintIndexWithConcurrently"; //$NON-NLS-1$;
         String SCRIPT_FROM_SELECTED_OBJS = "prefScriptFromSelectedObjs"; //$NON-NLS-1$;
+        String DATA_MOVEMENT_MODE = "prefDataMovementMode"; //$NON-NLS-1$;
         String OPTION_EXISTS = "prefOptionExist"; //$NON-NLS-1$;
         String OPTION_DROP_OBJECT = "prefOptionDropObject"; //$NON-NLS-1$;
     }
@@ -110,6 +117,18 @@ public interface UIConsts {
         String HIGHLIGHT_BRACKET_AT_CARET_LOCATION = "highlightBracketAtCaretLocation"; //$NON-NLS-1$
         String ENCLOSING_BRACKETS = "enclosingBrackets"; //$NON-NLS-1$
         String NUMBER_OF_LINES_LIMIT = "numberOfLinesLimit"; //$NON-NLS-1$
+    }
+
+    interface FORMATTER_PREF {
+        String INDENT_SIZE = "indentSize"; //$NON-NLS-1$
+        String REMOVE_TRAILING_WHITESPACE = "removeTrailingWhitespace"; //$NON-NLS-1$
+        String ADD_WHITESPACE_BEFORE_OP = "addWhitespaceBeforeOperator"; //$NON-NLS-1$
+        String ADD_WHITESPACE_AFTER_OP = "addWhitespaceAfterOperator"; //$NON-NLS-1$
+
+        String INDENT_TYPE = "indentType"; //$NON-NLS-1$
+        String WHITESPACE = "whitespace"; //$NON-NLS-1$
+        String TAB = "tab"; //$NON-NLS-1$
+        String DISABLE = "disable"; //$NON-NLS-1$
     }
 
     interface USAGE_REPORT_PREF {
@@ -141,6 +160,7 @@ public interface UIConsts {
         String DB_BINDING = PLUGIN_ID.THIS + ".dbbinding"; //$NON-NLS-1$
 
         String LAST_DB_STORE = "prefLastDbStore"; //$NON-NLS-1$
+        String LAST_DIRECTION = "prefLastDirection"; //$NON-NLS-1$
         String LAST_DB_STORE_EDITOR = "prefLastDbStoreEditor"; //$NON-NLS-1$
         String NAME_OF_BOUND_DB = "nameOfBoundDatabase"; //$NON-NLS-1$
     }
@@ -160,6 +180,8 @@ public interface UIConsts {
 
     interface FILE {
         String IGNORED_OBJECTS = ".pgcodekeeperignore"; //$NON-NLS-1$
+        String IGNORED_SCHEMA = ".pgcodekeeperignoreschema"; //$NON-NLS-1$
+
         String IGNORE_LISTS_STORE = PLUGIN_ID.THIS + ".ignoreliststore"; //$NON-NLS-1$
 
         // external icons
@@ -170,23 +192,25 @@ public interface UIConsts {
         String ICONBALLGREEN = "/icons/ball_green.png"; //$NON-NLS-1$
         String ICONADDDEP = "/icons/add_dep.png"; //$NON-NLS-1$
         String PGPASS = "/icons/pg_pass.png"; //$NON-NLS-1$
+        String ZIP = "/icons/zip.png"; //$NON-NLS-1$
         String PG_ICON = "/icons/postgresql_icon.png"; //$NON-NLS-1$
         String MS_ICON = "/icons/mssql_icon.png"; //$NON-NLS-1$
+        String DECORDATABASE = "/icons/db_decorator.png"; //$NON-NLS-1$
+        String DECORPGCODEKEEPER = "/icons/nature_decorator.png"; //$NON-NLS-1$
 
         // pgadmin icons
         String ICONPGADMIN = "/icons/pgadmin/"; //$NON-NLS-1$
         String ICONDATABASE = ICONPGADMIN + "database.png"; //$NON-NLS-1$
 
         // copies of inaccessible Eclipse icons
-        String ICONUP = "/icons/search_prev.gif"; //$NON-NLS-1$
-        String ICONDOWN = "/icons/search_next.gif"; //$NON-NLS-1$
+        String ICONSEARCHLINE = "/icons/search_line.gif"; //$NON-NLS-1$
         String ICONEDIT = "/icons/editor_area.png"; //$NON-NLS-1$
         String ICONSELECTALL = "/icons/check_all.gif"; //$NON-NLS-1$
         String ICONSELECTNONE = "/icons/uncheck_all.gif"; //$NON-NLS-1$
         String ICONINVERTSELECTION = "/icons/loop_obj.png"; //$NON-NLS-1$
-        String ICONREFRESH = "/icons/refresh.png"; //$NON-NLS-1$
+        String ICONAPPLYTO = "/icons/save_edit.png"; //$NON-NLS-1$
+        String ICONREFRESH = "/icons/refresh_16x18.png"; //$NON-NLS-1$
         String ICONWRITEOUTCONSOLE = "/icons/writeout_co.png"; //$NON-NLS-1$
-        String ICONCHECK = "/icons/header_complete.gif"; //$NON-NLS-1$
         String ICONEMPTYFILTER = "/icons/empty_filter.png"; //$NON-NLS-1$
         String ICONFILTER = "/icons/filter_tsk.png"; //$NON-NLS-1$
         String ICONALERT = "/icons/alert_obj.gif"; //$NON-NLS-1$

@@ -1716,11 +1716,20 @@ alter_table
         | (WITH (CHECK | nocheck_check=NOCHECK))? (CHECK | nocheck=NOCHECK) CONSTRAINT id (COMMA id)*
         | (ENABLE | DISABLE) TRIGGER id (COMMA id)*
         | (ENABLE | DISABLE) CHANGE_TRACKING (WITH LR_BRACKET TRACK_COLUMNS_UPDATED EQUAL (ON|OFF) RR_BRACKET)?
+        | SWITCH (PARTITION expression)?
+           TO qualified_name
+           (PARTITION expression)?
+           (WITH LR_BRACKET low_priority_lock_wait RR_BRACKET)?
         | REBUILD table_options)
     ;
 
 table_action_drop
     : (COLUMN | CONSTRAINT?) (IF EXISTS)? id (COMMA id)*
+    ;
+
+low_priority_lock_wait
+    : WAIT_AT_LOW_PRIORITY LR_BRACKET MAX_DURATION EQUAL time MINUTES? COMMA
+           ABORT_AFTER_WAIT EQUAL ( NONE | SELF | BLOCKERS ) RR_BRACKET
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms174269.aspx
@@ -3132,6 +3141,7 @@ id
 
 simple_id
     : ID
+    | ABORT_AFTER_WAIT
     | ABSENT
     | ABSOLUTE
     | ACCENT_SENSITIVITY
@@ -3185,11 +3195,11 @@ simple_id
     | BACKUP_PRIORITY
     | BEFORE
     | BEGIN_DIALOG
-    | BIGINT
     | BINARY_BASE64
     | BINDING
     | BLOB_STORAGE
     | BLOCK
+    | BLOCKERS
     | BLOCKING_HIERARCHY
     | BLOCKSIZE
     | BROKER_INSTANCE
@@ -3250,10 +3260,6 @@ simple_id
     | DATA
     | DATABASE_MIRRORING
     | DATE_CORRELATION_OPTIMIZATION
-    | DATEADD
-    | DATEDIFF
-    | DATENAME
-    | DATEPART
     | DAYS
     | DB_CHAINING
     | DB_FAILOVER
@@ -3293,11 +3299,9 @@ simple_id
     | ERROR
     | EVENT_RETENTION_MODE
     | EVENT
-    | EVENTDATA
     | EXCLUSIVE
     | EXECUTABLE_FILE
     | EXECUTABLE
-    | EXIST
     | EXPAND
     | EXPIREDATE
     | EXPIRY_DATE
@@ -3308,7 +3312,6 @@ simple_id
     | FAILOVER_MODE
     | FAILOVER
     | FAILURE_CONDITION_LEVEL
-    | FAILURE
     | FAILURECONDITIONLEVEL
     | FALSE
     | FAN_IN
@@ -3336,8 +3339,6 @@ simple_id
     | FULLTEXT
     | GB
     | GET
-    | GETDATE
-    | GETUTCDATE
     | GLOBAL
     | GOVERNOR
     | GROUP_MAX_REQUESTS
@@ -3365,15 +3366,14 @@ simple_id
     | INPUT
     | INSENSITIVE
     | INSTEAD
-    | INT
     | IO
     | IP
-    | ISNULL
     | ISOLATION
     | JSON
     | KB
     | KEEP
     | KEEPFIXED
+    | KERBEROS
     | KEY_PATH
     | KEY_SOURCE
     | KEY_STORE_PROVIDER_NAME
@@ -3420,6 +3420,7 @@ simple_id
     | MAX_SIZE
     | MAX
     | MAXDOP
+    | MAX_DURATION
     | MAXRECURSION
     | MAXSIZE
     | MAXTRANSFER
@@ -3465,7 +3466,6 @@ simple_id
     | NO_TRUNCATE
     | NO_WAIT
     | NO
-    | NOCOUNT
     | NODES
     | NOEXPAND
     | NOFORMAT
@@ -3479,10 +3479,8 @@ simple_id
     | NOTIFICATION
     | NOUNLOAD
     | NOWAIT
-    | NTILE
     | NTLM
     | NUMANODE
-    | NUMBER
     | NUMERIC_ROUNDABORT
     | OBJECT
     | OFFLINE
@@ -3500,8 +3498,6 @@ simple_id
     | OUTPUT
     | OWNER
     | PAGE_VERIFY
-    | PAGE
-    | PARAM_NODE
     | PARAMETERIZATION
     | PARSE
     | PARTIAL
@@ -3543,7 +3539,6 @@ simple_id
     | PROPERTY
     | PROVIDER_KEY_NAME
     | PROVIDER
-    | QUERY
     | QUERYTRACEON
     | QUEUE_DELAY
     | QUEUE
@@ -3598,7 +3593,6 @@ simple_id
     | ROLE
     | ROOT
     | ROUTE
-    | ROW_NUMBER
     | ROW
     | ROWGUID
     | ROWS
@@ -3649,7 +3643,6 @@ simple_id
     | SINGLETON
     | SIZE
     | SKIP_KEYWORD
-    | SMALLINT
     | SNAPSHOT
     | SOFTNUMA
     | SOURCE
@@ -3661,7 +3654,6 @@ simple_id
     | SQLDUMPERFLAGS
     | SQLDUMPERPATH
     | SQLDUMPERTIMEOUT
-    | SQLDUMPERTIMEOUTS
     | STANDBY
     | START_DATE
     | START
@@ -3670,7 +3662,6 @@ simple_id
     | STATE
     | STATIC
     | STATISTICAL_SEMANTICS
-    | STATS_STREAM
     | STATS
     | STATUS
     | STOP_ON_ERROR
@@ -3678,7 +3669,6 @@ simple_id
     | STOPLIST
     | STOPPED
     | STRING_AGG
-    | STUFF
     | SUBJECT
     | SUPPORTED
     | SUSPEND
@@ -3686,6 +3676,7 @@ simple_id
     | SYNCHRONOUS_COMMIT
     | SYNONYM
     | SYSTEM
+    | SWITCH
     | TAKE
     | TAPE
     | TARGET_RECOVERY_TIME
@@ -3698,7 +3689,6 @@ simple_id
     | TIME
     | TIMEOUT
     | TIMER
-    | TINYINT
     | TORN_PAGE_DETECTION
     | TRACK_CAUSALITY
     | TRACK_COLUMNS_UPDATED
@@ -3734,6 +3724,7 @@ simple_id
     | VIEWS
     | VISIBILITY
     | WAIT
+    | WAIT_AT_LOW_PRIORITY
     | WELL_FORMED_XML
     | WINDOWS
     | WITHOUT_ARRAY_WRAPPER

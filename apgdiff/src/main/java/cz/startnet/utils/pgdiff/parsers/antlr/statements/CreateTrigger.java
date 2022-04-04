@@ -99,10 +99,8 @@ public class CreateTrigger extends ParserAbstract {
                 .schema_qualified_name_nontype();
         IdentifierContext sch = funcNameCtx.schema;
         if (sch != null) {
-            // TODO add empty signature to function name
-            // when function signatures in refs and defs will be supported
             addDepSafe(trigger, Arrays.asList(sch, funcNameCtx.identifier_nontype()),
-                    DbObjType.FUNCTION, true);
+                    DbObjType.FUNCTION, true, "()");
         }
 
         for (Identifier_listContext column : ctx.identifier_list()) {
@@ -133,6 +131,6 @@ public class CreateTrigger extends ParserAbstract {
     protected String getStmtAction() {
         List<IdentifierContext> ids = new ArrayList<>(ctx.table_name.identifier());
         ids.add(ctx.name);
-        return getStrForStmtAction(ACTION_ALTER, DbObjType.TRIGGER, ids);
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.TRIGGER, ids);
     }
 }

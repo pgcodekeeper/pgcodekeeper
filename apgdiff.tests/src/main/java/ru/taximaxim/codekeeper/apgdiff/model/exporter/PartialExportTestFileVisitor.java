@@ -16,6 +16,7 @@ import java.util.Map;
 import org.junit.Assert;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 
 public class PartialExportTestFileVisitor extends SimpleFileVisitor<Path>{
     private final Path pathToBeCompared;
@@ -48,30 +49,30 @@ public class PartialExportTestFileVisitor extends SimpleFileVisitor<Path>{
         String relativeFilePath = pathToBeCompared.relativize(file1).toString().replace('\\', '/');
         File file2 = new File(pathToCompareTo.toFile(), relativeFilePath);
 
-        if (!file2.exists() && isInSource){
-            if (!deletedFiles.contains(relativeFilePath)){
+        if (!file2.exists() && isInSource) {
+            if (!deletedFiles.contains(relativeFilePath)) {
                 fail(isInSource() + "file is missing but not in deleted list: " + relativeFilePath);
             }
             deletedFiles.remove(relativeFilePath);
         }
-        if (!file2.exists() && !isInSource){
-            if (!newFiles.contains(relativeFilePath)){
+        if (!file2.exists() && !isInSource) {
+            if (!newFiles.contains(relativeFilePath)) {
                 fail(isInSource() + "file is missing but not in new list: " + relativeFilePath);
             }
             newFiles.remove(relativeFilePath);
         }
-        if (file2.exists() && file2.isDirectory()){
+        if (file2.isDirectory()) {
             fail(isInSource() + "file is a directory: " + relativeFilePath);
         }
 
         if (file2.exists() && !Arrays.equals(Files.readAllBytes(file1), Files.readAllBytes(file2.toPath()))){
-            if (!modifiedFiles.containsKey(relativeFilePath)){
+            if (!modifiedFiles.containsKey(relativeFilePath)) {
                 fail(isInSource() + "Source and target files differ, but this file is "
                         + "not in list of modified objects: " + relativeFilePath);
             }
             String hash = modifiedFiles.remove(relativeFilePath);
             File file = isInSource ? file2 : file1.toFile();
-            String partialFile = new String(Files.readAllBytes(file.toPath()), PartialExporterTest.UTF_8);
+            String partialFile = new String(Files.readAllBytes(file.toPath()), ApgdiffConsts.UTF_8);
 
             Assert.assertEquals("Files differ, and partial file has unexpected hash"
                     + "\nPartial file:\n" + partialFile,

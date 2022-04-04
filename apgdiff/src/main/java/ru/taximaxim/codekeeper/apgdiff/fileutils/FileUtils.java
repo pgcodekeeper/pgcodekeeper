@@ -1,11 +1,15 @@
 package ru.taximaxim.codekeeper.apgdiff.fileutils;
 
+import java.io.EOFException;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.io.UncheckedIOException;
+import java.net.URI;
 import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.DosFileAttributeView;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -16,8 +20,6 @@ import java.util.stream.Stream;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 public final class FileUtils {
-
-    private static final int HASH_LENGTH = 10;
 
     private static final DateTimeFormatter FILE_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd HH''mm''ss");
     private static final Pattern INVALID_FILENAME = Pattern.compile("[\\\\/:*?\"<>|]");
@@ -35,7 +37,7 @@ public final class FileUtils {
                 throw wrapEx.getCause();
             }
         }
-        FileUtils.removeReadOnly(f);
+        removeReadOnly(f);
     }
 
     public static void removeReadOnly(Path path) throws IOException {
@@ -58,19 +60,58 @@ public final class FileUtils {
     }
 
     public static String getValidFilename(String name) {
-        Matcher m = FileUtils.INVALID_FILENAME.matcher(name);
+        Matcher m = INVALID_FILENAME.matcher(name);
         if (m.find()) {
-            String hash = PgDiffUtils.md5(name)
-                    // 2^40 variants, should be enough for this purpose
-                    .substring(0, HASH_LENGTH);
-            return m.replaceAll("") + '_' + hash; //$NON-NLS-1$
+            return m.replaceAll("_"); //$NON-NLS-1$
         } else {
             return name;
         }
     }
 
     public static String getFileDate() {
-        return FileUtils.FILE_DATE.format(LocalDateTime.now());
+        return FILE_DATE.format(LocalDateTime.now());
+    }
+
+    public static boolean isZipFile(Path path) throws IOException {
+        try (RandomAccessFile raf = new RandomAccessFile(path.toFile(), "r")) {
+            int fileSignature = raf.readInt();
+            return fileSignature == 0x504B0304 || fileSignature == 0x504B0506
+                    || fileSignature == 0x504B0708;
+        } catch (EOFException e) {
+            return false;
+        }
+    }
+
+    public static Path getUnzippedFilePath(Path metaPath, Path path) {
+        String hash;
+        if (path.startsWith(metaPath)) {
+            hash = metaPath.relativize(path).toString();
+        } else {
+            hash = path.toString();
+        }
+
+        String name = path.getFileName().toString() + '_' + PgDiffUtils.md5(hash).substring(0, 10);
+
+        return metaPath.resolve(name);
+    }
+
+    public static Path getLoadedFilePath(Path metaPath, URI uri) {
+        String path = uri.getPath();
+        String fileName = FileUtils.getValidFilename(Paths.get(path).getFileName().toString());
+        String name = fileName + '_' + PgDiffUtils.md5(path).substring(0, 10);
+        return metaPath.resolve(name);
+    }
+
+    public static String getNameFromUri(URI uri) {
+        if (uri == null) {
+            return null;
+        }
+        String urlPath = uri.getPath();
+        if (urlPath != null) {
+            return urlPath.substring(urlPath.lastIndexOf('/') + 1);
+        }
+
+        return uri.toString();
     }
 
     private FileUtils() {

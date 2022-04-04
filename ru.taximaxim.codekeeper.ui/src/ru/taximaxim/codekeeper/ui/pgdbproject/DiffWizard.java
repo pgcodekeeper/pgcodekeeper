@@ -166,7 +166,7 @@ class PageDiff extends WizardPage implements Listener {
     private Button btnScriptFromSelObjs;
     private Button btnOptionExists;
     private Button btnOptionDropObject;
-
+    private Button btnDataMovementMode;
 
     public PageDiff(String pageName, IPreferenceStore mainPrefs, PgDbProject proj) {
         super(pageName, pageName, null);
@@ -268,6 +268,7 @@ class PageDiff extends WizardPage implements Listener {
                 btnScriptFromSelObjs.setVisible(selected);
                 btnOptionExists.setVisible(selected);
                 btnOptionDropObject.setVisible(selected);
+                btnDataMovementMode.setVisible(selected);
 
                 UiSync.exec(getShell(), () -> getShell().pack());
             }
@@ -332,6 +333,11 @@ class PageDiff extends WizardPage implements Listener {
         btnOptionDropObject.setText(Messages.DbUpdatePrefPage_option_drop_object);
         btnOptionDropObject.setSelection(mainPrefs.getBoolean(DB_UPDATE_PREF.OPTION_DROP_OBJECT));
         btnOptionDropObject.setVisible(false);
+
+        btnDataMovementMode = new Button(container, SWT.CHECK);
+        btnDataMovementMode.setText(Messages.DbUpdatePrefPage_allow_data_movement);
+        btnDataMovementMode.setSelection(mainPrefs.getBoolean(DB_UPDATE_PREF.DATA_MOVEMENT_MODE));
+        btnDataMovementMode.setVisible(false);
 
         if (proj != null) {
             dbTarget.setDbStore(new StructuredSelection(proj.getProject().getLocation().toFile()));
@@ -405,6 +411,7 @@ class PageDiff extends WizardPage implements Listener {
         oneTimePrefs.put(DB_UPDATE_PREF.OPTION_DROP_OBJECT, btnOptionDropObject.getSelection());
         oneTimePrefs.put(PREF.SIMPLIFY_VIEW, btnSimplifyView.getSelection());
         oneTimePrefs.put(DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS, btnScriptFromSelObjs.getSelection());
+        oneTimePrefs.put(DB_UPDATE_PREF.DATA_MOVEMENT_MODE, btnDataMovementMode.getSelection());
 
         return oneTimePrefs;
     }

@@ -136,7 +136,6 @@ public class Differ implements IRunnableWithProgress {
             // forceUnixNewLines has no effect on diff operaiton, just pass true
             PgDiffArguments args =
                     DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone, true, msSql, proj, oneTimePrefs);
-
             diffDirect = new PgDiff(args).diffDatabaseSchemasAdditionalDepcies(
                     root,
                     sourceDbFull, targetDbFull,
@@ -166,7 +165,7 @@ public class Differ implements IRunnableWithProgress {
         public Getter(PgDatabase db, IProject proj, Map<String, Boolean> oneTimePrefs) {
             oldArgs = db.getArguments();
             consumer = (db::setArguments);
-            PgDiffArguments newArgs = oldArgs.clone();
+            PgDiffArguments newArgs = oldArgs.copy();
             // применить параметры для генерации кода ко всем БД
             OverridablePrefs prefs = new OverridablePrefs(proj, oneTimePrefs);
             newArgs.setConcurrentlyMode(

@@ -55,29 +55,33 @@ public class DisableMsTrigger extends ParserAbstract {
         StringBuilder sb = new StringBuilder();
         Enable_disable_triggerContext ctxEnableDisableTr = (Enable_disable_triggerContext) ctx;
         sb.append(ctxEnableDisableTr.DISABLE() != null ? "DISABLE " : "ENABLE ")
-        .append("TRIGGER ");
-
+        .append("TRIGGER");
 
         Names_referencesContext triggers = ctxEnableDisableTr.names_references();
         Qualified_nameContext parent = ctxEnableDisableTr.qualified_name();
-        if (triggers == null || parent == null) {
-            PgObjLocation loc = new PgObjLocation(sb.toString(), ctx, getFullCtxText(ctx));
-            db.addReference(fileName, loc);
-            return loc;
+
+        if (triggers != null && parent != null) {
+            sb.append(' ');
+
+            String schemaName = parent.schema.getText();
+            String parentName = parent.name.getText();
+
+            for (Qualified_nameContext qname : triggers.qualified_name()) {
+                sb.append(schemaName)
+                .append('.').append(parentName)
+                .append('.').append(qname.name.getText())
+                .append(", ");
+            }
+
+            sb.setLength(sb.length() - 2);
         }
 
-        IdContext schemaCtx = parent.schema;
+        PgObjLocation loc = new PgObjLocation.Builder()
+                .setAction(sb.toString())
+                .setCtx(ctx)
+                .setSql(getFullCtxText(ctx))
+                .build();
 
-        for (Qualified_nameContext qname : triggers.qualified_name()) {
-            sb.append(schemaCtx.getText())
-            .append('.').append(parent.name.getText())
-            .append('.').append(qname.name.getText())
-            .append(", ");
-
-        }
-        sb.setLength(sb.length() - 2);
-
-        PgObjLocation loc = new PgObjLocation(sb.toString(), ctx, getFullCtxText(ctx));
         db.addReference(fileName, loc);
         return loc;
     }

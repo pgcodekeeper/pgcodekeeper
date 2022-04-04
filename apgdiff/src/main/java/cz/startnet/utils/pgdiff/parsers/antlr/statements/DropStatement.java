@@ -8,6 +8,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_cast_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_database_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_operator_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_policy_statementContext;
@@ -19,7 +20,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_dropContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
-import cz.startnet.utils.pgdiff.schema.ICast;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -35,7 +35,9 @@ public class DropStatement extends ParserAbstract {
 
     @Override
     public void parseObject() {
-        if (ctx.drop_function_statement() != null) {
+        if (ctx.drop_database_statement() != null) {
+            dropDatabase(ctx.drop_database_statement());
+        } else if (ctx.drop_function_statement() != null) {
             dropFunction(ctx.drop_function_statement());
         } else if (ctx.drop_trigger_statement() != null) {
             dropTrigger(ctx.drop_trigger_statement());
@@ -50,6 +52,10 @@ public class DropStatement extends ParserAbstract {
         } else if (ctx.drop_cast_statement() != null) {
             dropCast(ctx.drop_cast_statement());
         }
+    }
+
+    private void dropDatabase(Drop_database_statementContext ctx) {
+        addObjReference(Arrays.asList(ctx.identifier()), DbObjType.DATABASE, ACTION_DROP);
     }
 
     public void dropFunction(Drop_function_statementContext ctx) {
@@ -73,7 +79,7 @@ public class DropStatement extends ParserAbstract {
     }
 
     private void dropCast(Drop_cast_statementContext ctx) {
-        db.addReference(fileName, getCastLocation(ctx.source, ctx.target, ACTION_DROP));
+        addObjReference(Arrays.asList(ctx.cast_name()), DbObjType.CAST, ACTION_DROP);
     }
 
     public void dropTrigger(Drop_trigger_statementContext ctx) {
@@ -112,9 +118,7 @@ public class DropStatement extends ParserAbstract {
     }
 
     private DbObjType getTypeOfDropStmt(Drop_statementsContext ctx) {
-        if (ctx.DATABASE()!= null) {
-            return DbObjType.DATABASE;
-        } else if (ctx.TABLE() != null) {
+        if (ctx.TABLE() != null) {
             return DbObjType.TABLE;
         } else if (ctx.EXTENSION() != null) {
             return DbObjType.EXTENSION;
@@ -156,7 +160,11 @@ public class DropStatement extends ParserAbstract {
     protected String getStmtAction() {
         List<? extends ParserRuleContext> ids = null;
         DbObjType type = null;
-        if (ctx.drop_function_statement() != null) {
+        if (ctx.drop_database_statement() != null) {
+            Drop_database_statementContext dropDbCtx = ctx.drop_database_statement();
+            ids = Arrays.asList(dropDbCtx.identifier());
+            type = DbObjType.DATABASE;
+        } else if (ctx.drop_function_statement() != null) {
             Drop_function_statementContext dropFuncCtx = ctx.drop_function_statement();
             ids = dropFuncCtx.name.identifier();
             if (dropFuncCtx.PROCEDURE() != null) {
@@ -201,10 +209,9 @@ public class DropStatement extends ParserAbstract {
                     : Collections.emptyList();
             type = DbObjType.OPERATOR;
         } else if (ctx.drop_cast_statement() != null) {
-            Drop_cast_statementContext castCtx = ctx.drop_cast_statement();
             StringBuilder sb = new StringBuilder();
             sb.append(ACTION_DROP).append(' ').append(DbObjType.CAST).append(" (");
-            sb.append(ICast.getSimpleName(getFullCtxText(castCtx.source), getFullCtxText(castCtx.target)));
+            sb.append(getCastName(ctx.drop_cast_statement().cast_name()));
             sb.append(')');
             return sb.toString();
         }

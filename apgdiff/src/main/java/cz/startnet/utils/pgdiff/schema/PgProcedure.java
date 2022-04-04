@@ -6,9 +6,7 @@
 package cz.startnet.utils.pgdiff.schema;
 
 import java.util.Iterator;
-import java.util.Map.Entry;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
@@ -23,57 +21,6 @@ public class PgProcedure extends AbstractPgFunction {
     @Override
     public DbObjType getStatementType() {
         return DbObjType.PROCEDURE;
-    }
-
-    @Override
-    public String getCreationSQL() {
-        final StringBuilder sbSQL = new StringBuilder();
-        appendDropBeforeCreate(sbSQL);
-        sbSQL.append("CREATE OR REPLACE PROCEDURE ");
-        sbSQL.append(PgDiffUtils.getQuotedName(getSchemaName())).append('.');
-        appendFunctionSignature(sbSQL, true, true);
-        sbSQL.append("\n    ");
-
-        if (getLanguage() != null) {
-            sbSQL.append("LANGUAGE ").append(PgDiffUtils.getQuotedName(getLanguage()));
-        }
-
-        if (!transforms.isEmpty()) {
-            sbSQL.append(" TRANSFORM ");
-            for (String tran : transforms) {
-                sbSQL.append("FOR TYPE ").append(tran).append(", ");
-            }
-
-            sbSQL.setLength(sbSQL.length() - 2);
-        }
-
-        if (isSecurityDefiner()) {
-            sbSQL.append(" SECURITY DEFINER");
-        }
-
-        for (Entry<String, String> param : configurations.entrySet()) {
-            String val = param.getValue();
-            sbSQL.append("\n    SET ").append(param.getKey());
-            if (FROM_CURRENT.equals(val)) {
-                sbSQL.append(val);
-            } else {
-                sbSQL.append(" TO ").append(val);
-            }
-        }
-
-        sbSQL.append("\n    AS ");
-        sbSQL.append(getBody());
-        sbSQL.append(';');
-
-        appendOwnerSQL(sbSQL);
-        appendPrivileges(sbSQL);
-
-        if (comment != null && !comment.isEmpty()) {
-            sbSQL.append("\n\n");
-            appendCommentSql(sbSQL);
-        }
-
-        return sbSQL.toString();
     }
 
     @Override

@@ -9,14 +9,11 @@ import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class GenericColumn implements Serializable {
-
-    private static final Collection<String> SYS_SCHEMAS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
-            "information_schema", "pg_catalog"
-            )));
 
     @Deprecated
     // TODO detect these by separating their tokens from identifiers in parser
@@ -88,7 +85,7 @@ public class GenericColumn implements Serializable {
 
     private boolean isBuiltin() {
         return (type == DbObjType.TYPE && ApgdiffConsts.SYS_TYPES.contains(table))
-                || SYS_SCHEMAS.contains(schema) || SYS_COLUMNS.contains(column)
+                || ApgdiffUtils.isPgSystemSchema(schema) || SYS_COLUMNS.contains(column)
                 || (table != null && table.startsWith("pg_"));
     }
 
@@ -101,6 +98,8 @@ public class GenericColumn implements Serializable {
         case DATABASE: return db;
         case SCHEMA: return db.getSchema(schema);
         case EXTENSION: return db.getExtension(schema);
+        case FOREIGN_DATA_WRAPPER: return db.getForeignDW(schema);
+        case SERVER: return db.getServer(schema);
         case CAST: return db.getCast(schema);
         case ASSEMBLY: return db.getAssembly(schema);
         case USER: return db.getUser(schema);
@@ -183,50 +182,18 @@ public class GenericColumn implements Serializable {
         // getRelation should only look for "selectable" relations
         return getRelation(s);
     }
-    /*
-     * // optimization debug tools
-    public static final Map<String, Integer> ZERO = new HashMap<>();
-    public static final Map<String, Integer> MANY = new HashMap<>();
-     */
+
     private AbstractFunction resolveFunctionCall(AbstractSchema schema) {
-        // in some cases (like triggers) we already have a signature reference, try it first
-        // eventually this will become the norm (pending function call analysis)
-        // and bare name lookup will become deprecated
-
-        // for now optimize by preferring bareName path for names with no signature (no parens)
-        // later we can make a requirement of caching signatures when loading functions
-
-        AbstractFunction func = null;
-        if (table.indexOf('(') != -1) {
-            func = schema.getFunction(table);
-        }
-        if (func != null) {
-            return func;
+        if (schema.isPostgres()) {
+            return schema.getFunction(table);
         }
 
-        int found = 0;
         for (AbstractFunction f : schema.getFunctions()) {
             if (f.getBareName().equals(table)) {
-                ++found;
-                func = f;
+                return f;
             }
         }
-        /*
-        Map<String, Integer> m;
-        if (found != 1) {
-            m = found == 0 ? ZERO : MANY;
-            Integer i = m.get(table);
-            if (i == null) {
-                i = 0;
-            } else {
-                ++i;
-            }
-            m.put(table, i);
-        }
-         */
-        // TODO right now we don't have means to resolve overloaded function calls
-        // to avoid false dependencies skip resolving overloaded calls completely
-        return found == 1 ? func : null;
+        return null;
     }
 
     private PgOperator resolveOperatorCall(AbstractSchema schema) {
@@ -305,7 +272,15 @@ public class GenericColumn implements Serializable {
             if (sb.length() > 0) {
                 sb.append('.');
             }
-            sb.append(PgDiffUtils.getQuotedName(table));
+            switch (type) {
+            case FUNCTION:
+            case PROCEDURE:
+            case AGGREGATE:
+                sb.append(table);
+                break;
+            default:
+                sb.append(PgDiffUtils.getQuotedName(table));
+            }
         }
         if (column != null) {
             if (sb.length() > 0) {

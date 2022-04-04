@@ -65,6 +65,6 @@ public class CreateSequence extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_CREATE, DbObjType.SEQUENCE, ctx.name.identifier());
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.SEQUENCE, ctx.name);
     }
 }

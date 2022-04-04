@@ -32,6 +32,6 @@ public class CreateMsRole extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_CREATE, DbObjType.ROLE, Arrays.asList(ctx.role_name));
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.ROLE, ctx.role_name);
     }
 }

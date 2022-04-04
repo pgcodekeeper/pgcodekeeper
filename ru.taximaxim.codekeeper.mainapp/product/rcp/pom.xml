@@ -7,12 +7,12 @@
         <artifactId>ru.taximaxim.codeKeeper</artifactId>
         <groupId>ru.taximaxim.codeKeeper</groupId>
         <version>${revision}</version>
-        <relativePath>../../ru.taximaxim.codeKeeper/</relativePath>
+        <relativePath>../../../</relativePath>
     </parent>
 
     <groupId>ru.taximaxim.codeKeeper</groupId>
     <artifactId>ru.taximaxim.codekeeper.rcp.product</artifactId>
-    <version>5.10.5-SNAPSHOT</version>
+    <version>6.4.1-SNAPSHOT</version>
     <packaging>eclipse-repository</packaging>
 
     <repositories>

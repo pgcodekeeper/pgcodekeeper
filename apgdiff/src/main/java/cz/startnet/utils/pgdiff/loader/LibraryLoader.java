@@ -1,29 +1,31 @@
 package cz.startnet.utils.pgdiff.loader;
 
-import java.io.EOFException;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.RandomAccessFile;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.libraries.PgLibrary;
+import cz.startnet.utils.pgdiff.libraries.PgLibrarySource;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgObjLocation;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
@@ -32,11 +34,20 @@ public class LibraryLoader extends DatabaseLoader {
 
     private final PgDatabase database;
     private final Path metaPath;
+    private final Set<String> loadedLibs;
+
+    private boolean loadNested;
+
 
     public LibraryLoader(PgDatabase database, Path metaPath, List<Object> errors) {
+        this(database, metaPath, errors, new HashSet<>());
+    }
+
+    public LibraryLoader(PgDatabase database, Path metaPath, List<Object> errors, Set<String> loadedPaths) {
         super(errors);
         this.database = database;
         this.metaPath = metaPath;
+        this.loadedLibs = loadedPaths;
     }
 
     @Override
@@ -47,39 +58,42 @@ public class LibraryLoader extends DatabaseLoader {
     public void loadLibraries(PgDiffArguments args, boolean isIgnorePriv,
             Collection<String> paths) throws InterruptedException, IOException {
         for (String path : paths) {
-            database.addLib(getLibrary(path, args, isIgnorePriv));
+            database.addLib(getLibrary(path, args, isIgnorePriv), path, null);
         }
     }
 
     public void loadXml(DependenciesXmlStore xmlStore, PgDiffArguments args)
             throws InterruptedException, IOException {
-        for (PgLibrary lib : xmlStore.readObjects()) {
-            PgDatabase l = getLibrary(lib.getPath(), args, lib.isIgnorePriv());
-            String owner = lib.getOwner();
-            if (!owner.isEmpty()) {
-                l.getDescendants()
-                .filter(PgStatement::isOwned)
-                .forEach(st -> st.setOwner(owner));
+        List<PgLibrary> xmlLibs = xmlStore.readObjects();
+        boolean oldLoadNested = loadNested;
+        try {
+            loadNested = xmlStore.readLoadNestedFlag();
+            for (PgLibrary lib : xmlLibs) {
+                String path = lib.getPath();
+                PgDatabase l = getLibrary(path, args, lib.isIgnorePriv());
+                database.addLib(l, path, lib.getOwner());
             }
-
-            database.addLib(l);
+        } finally {
+            loadNested = oldLoadNested;
         }
     }
 
     private PgDatabase getLibrary(String path, PgDiffArguments arguments, boolean isIgnorePriv)
             throws InterruptedException, IOException {
+        if (!loadedLibs.add(path)) {
+            return new PgDatabase();
+        }
 
-        PgDiffArguments args = arguments.clone();
+        PgDiffArguments args = arguments.copy();
         args.setIgnorePrivileges(isIgnorePriv);
 
-        switch (PgLibrary.getSource(path)) {
+        switch (PgLibrarySource.getSource(path)) {
         case JDBC:
             return loadJdbc(args, path);
         case URL:
             try {
                 URI uri = new URI(path);
                 PgDatabase db = loadURI(uri, args, isIgnorePriv);
-                db.getDescendants().forEach(st -> st.setLocation(new PgObjLocation(path)));
                 return db;
             } catch (URISyntaxException ex) {
                 // shouldn't happen, already checked by getSource
@@ -98,7 +112,14 @@ public class LibraryLoader extends DatabaseLoader {
 
         if (Files.isDirectory(p)) {
             if (Files.exists(p.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER))) {
-                return new ProjectLoader(path, args, null, errors).load();
+                PgDatabase db = new ProjectLoader(path, args, errors).load();
+
+                if (loadNested) {
+                    new LibraryLoader(db, metaPath, errors, loadedLibs).loadXml(
+                            new DependenciesXmlStore(p.resolve(DependenciesXmlStore.FILE_NAME)), args);
+                }
+
+                return db;
             }
 
             PgDatabase db = new PgDatabase(args);
@@ -107,48 +128,22 @@ public class LibraryLoader extends DatabaseLoader {
             return db;
         }
 
-        if (isZipFile(path)) {
+        if (FileUtils.isZipFile(p)) {
             return loadZip(p, args, isIgnorePriv);
         }
 
         PgDatabase db = new PgDatabase(args);
-        PgDumpLoader loader = new PgDumpLoader(new File(path), args);
+        PgDumpLoader loader = new PgDumpLoader(Paths.get(path), args);
         loader.loadAsync(db, antlrTasks);
         launchedLoaders.add(loader);
         finishLoaders();
         return db;
     }
 
-    private boolean isZipFile(String path) throws IOException {
-        int fileSignature = 0;
-        try (RandomAccessFile raf = new RandomAccessFile(path, "r")) {
-            fileSignature = raf.readInt();
-        } catch (EOFException e) {
-            // empty file
-            return false;
-        }
-
-        return fileSignature == 0x504B0304 || fileSignature == 0x504B0506
-                || fileSignature == 0x504B0708;
-    }
-
     private PgDatabase loadZip(Path path, PgDiffArguments args, boolean isIgnorePriv)
             throws InterruptedException, IOException {
-        String hash;
-        if (path.startsWith(metaPath)) {
-            hash = metaPath.relativize(path).toString();
-        } else {
-            hash = path.toString();
-        }
-
-        String name = path.getFileName().toString() + '_'
-                + PgDiffUtils.md5(hash).substring(0, 10);
-
-        PgDatabase db = getLibrary(unzip(path, metaPath.resolve(name)),
-                args, isIgnorePriv);
-
-        db.getDescendants().forEach(st -> st.setLocation(new PgObjLocation(path.toString())));
-        return db;
+        Path dir = FileUtils.getUnzippedFilePath(metaPath, path);
+        return getLibrary(unzip(path, dir), args, isIgnorePriv);
     }
 
     private PgDatabase loadJdbc(PgDiffArguments args, String path) throws IOException, InterruptedException {
@@ -167,7 +162,6 @@ public class LibraryLoader extends DatabaseLoader {
             errors.addAll(loader.getErrors());
         }
 
-        db.getDescendants().forEach(st -> st.setLocation(new PgObjLocation(path)));
         return db;
     }
 
@@ -218,33 +212,37 @@ public class LibraryLoader extends DatabaseLoader {
         }
 
         Files.createDirectories(dir);
-        dir = dir.toRealPath();
+        Path destDir = dir.toRealPath();
 
-        try (InputStream fis = Files.newInputStream(zip);
-                ZipInputStream zis = new ZipInputStream(fis)) {
-            ZipEntry ze = zis.getNextEntry();
-            while (ze != null) {
-                Path newFile = dir.resolve(ze.getName()).normalize();
-                if (!newFile.startsWith(dir)) {
-                    throw new SecurityException("Malicious zip-archive attempting to write outside target directory: "
-                            + newFile);
+        try (FileSystem fs = FileSystems.newFileSystem(zip, (ClassLoader) null)) {
+            final Path root = fs.getPath("/");
+
+            // walk the zip file tree and copy files to the destination
+            Files.walkFileTree(root, new SimpleFileVisitor<Path>(){
+
+                @Override
+                public FileVisitResult visitFile(Path file,
+                        BasicFileAttributes attrs) throws IOException {
+                    Path destFile = Paths.get(destDir.toString(), file.toString());
+                    Files.copy(file, destFile, StandardCopyOption.REPLACE_EXISTING);
+                    return FileVisitResult.CONTINUE;
                 }
 
-                //create directories for sub directories in zip
-                if (!ze.isDirectory()) {
-                    Files.createDirectories(newFile.getParent());
-                    Files.copy(zis, newFile);
-                }
-                //close this ZipEntry
-                zis.closeEntry();
-                ze = zis.getNextEntry();
-            }
+                @Override
+                public FileVisitResult preVisitDirectory(Path dir,
+                        BasicFileAttributes attrs) throws IOException {
+                    Path dirToCreate = Paths.get(destDir.toString(), dir.toString());
 
-            //close last ZipEntry
-            zis.closeEntry();
+                    if (Files.notExists(dirToCreate)){
+                        Files.createDirectory(dirToCreate);
+                    }
+
+                    return FileVisitResult.CONTINUE;
+                }
+            });
         }
 
-        return dir.toString();
+        return destDir.toString();
     }
 
     private void readStatementsFromDirectory(Path f, PgDatabase db)
@@ -270,9 +268,9 @@ public class LibraryLoader extends DatabaseLoader {
         String filePath = sub.toString();
         PgDiffArguments args = db.getArguments();
         if (filePath.endsWith(".zip")) {
-            db.addLib(getLibrary(filePath, args, args.isIgnorePrivileges()));
+            db.addLib(getLibrary(filePath, args, args.isIgnorePrivileges()), null, null);
         } else if (filePath.endsWith(".sql")) {
-            PgDumpLoader loader = new PgDumpLoader(sub.toFile(), args);
+            PgDumpLoader loader = new PgDumpLoader(sub, args);
             loader.loadDatabase(db, antlrTasks);
             launchedLoaders.add(loader);
         }

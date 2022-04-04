@@ -5,9 +5,9 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 
-import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
@@ -38,9 +38,116 @@ public abstract class AbstractPgFunction extends AbstractFunction {
     protected final Map<String, String> returnsColumns = new LinkedHashMap<>();
 
     private String signatureCache;
+    private boolean inStatementBody;
 
     public AbstractPgFunction(String name) {
         super(name);
+    }
+
+    @Override
+    public String getCreationSQL() {
+        final StringBuilder sbSQL = new StringBuilder();
+        sbSQL.append("CREATE OR REPLACE ");
+        sbSQL.append(getStatementType());
+        sbSQL.append(' ');
+        sbSQL.append(PgDiffUtils.getQuotedName(getSchemaName())).append('.');
+        appendFunctionSignature(sbSQL, true, true);
+        if (getReturns() != null) {
+            sbSQL.append(' ');
+            sbSQL.append("RETURNS ");
+            sbSQL.append(getReturns());
+        }
+        sbSQL.append("\n    ");
+
+        if (getLanguage() != null) {
+            sbSQL.append("LANGUAGE ").append(PgDiffUtils.getQuotedName(getLanguage()));
+        }
+
+        if (!transforms.isEmpty()) {
+            sbSQL.append(" TRANSFORM ");
+            for (String tran : transforms) {
+                sbSQL.append("FOR TYPE ").append(tran).append(", ");
+            }
+
+            sbSQL.setLength(sbSQL.length() - 2);
+        }
+
+        if (isWindow()) {
+            sbSQL.append(" WINDOW");
+        }
+
+        if (getVolatileType() != null) {
+            sbSQL.append(' ').append(getVolatileType());
+        }
+
+        if (isStrict()) {
+            sbSQL.append(" STRICT");
+        }
+
+        if (isSecurityDefiner()) {
+            sbSQL.append(" SECURITY DEFINER");
+        }
+
+        if (isLeakproof()) {
+            sbSQL.append(" LEAKPROOF");
+        }
+
+        if (getParallel() != null) {
+            sbSQL.append(" PARALLEL ").append(getParallel());
+        }
+
+        if (getCost() != null) {
+            sbSQL.append(" COST ").append(getCost());
+        }
+
+        if (DEFAULT_PROROWS != getRows()) {
+            sbSQL.append(" ROWS ");
+            if (getRows() % 1 == 0) {
+                sbSQL.append((int)getRows());
+            } else {
+                sbSQL.append(getRows());
+            }
+        }
+
+        if (getSupportFunc() != null) {
+            sbSQL.append(" SUPPORT ").append(getSupportFunc());
+        }
+
+        for (Entry<String, String> param : configurations.entrySet()) {
+            String val = param.getValue();
+            sbSQL.append("\n    SET ").append(param.getKey()).append(' ');
+            if (FROM_CURRENT.equals(val)) {
+                sbSQL.append(val);
+            } else {
+                sbSQL.append("TO ").append(val);
+            }
+        }
+
+        sbSQL.append("\n    ");
+        if (!isInStatementBody()) {
+            sbSQL.append("AS ");
+        }
+        sbSQL.append(getBody());
+        sbSQL.append(';');
+
+        appendOwnerSQL(sbSQL);
+        appendPrivileges(sbSQL);
+
+        if (comment != null && !comment.isEmpty()) {
+            sbSQL.append("\n\n");
+            appendCommentSql(sbSQL);
+        }
+
+        return sbSQL.toString();
+    }
+
+    @Override
+    public String getDropSQL() {
+        final StringBuilder sbString = new StringBuilder();
+        sbString.append("DROP ").append(getTypeName()).append(' ');
+        appendFullName(sbString);
+        sbString.append(';');
+        return sbString.toString();
     }
 
     @Override
@@ -76,7 +183,7 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         }
         final int sigStart = sb.length();
 
-        sb.append(isPostgres() ? PgDiffUtils.getQuotedName(name) : MsDiffUtils.quoteName(name)).append('(');
+        sb.append(PgDiffUtils.getQuotedName(name)).append('(');
         boolean addComma = false;
         for (final Argument argument : arguments) {
             if (!includeArgNames && ArgMode.OUT == argument.getMode()) {
@@ -85,7 +192,7 @@ public abstract class AbstractPgFunction extends AbstractFunction {
             if (addComma) {
                 sb.append(", ");
             }
-            sb.append(getDeclaration(argument, includeDefaultValues, includeArgNames));
+            argument.appendDeclaration(sb, includeDefaultValues, includeArgNames);
             addComma = true;
         }
         sb.append(')');
@@ -94,36 +201,6 @@ public abstract class AbstractPgFunction extends AbstractFunction {
             signatureCache = sb.substring(sigStart, sb.length());
         }
         return sb;
-    }
-
-    public static String getDeclaration(Argument arg, boolean includeDefaultValue, boolean includeArgName) {
-        final StringBuilder sbString = new StringBuilder();
-
-        if (includeArgName) {
-            ArgMode mode = arg.getMode();
-            if (mode != ArgMode.IN) {
-                sbString.append(mode);
-                sbString.append(' ');
-            }
-
-            String name = arg.getName();
-
-            if (name != null && !name.isEmpty()) {
-                sbString.append(PgDiffUtils.getQuotedName(name));
-                sbString.append(' ');
-            }
-        }
-
-        sbString.append(arg.getDataType());
-
-        String def = arg.getDefaultExpression();
-
-        if (includeDefaultValue && def != null && !def.isEmpty()) {
-            sbString.append(" = ");
-            sbString.append(def);
-        }
-
-        return sbString.toString();
     }
 
     public boolean isWindow() {
@@ -287,6 +364,14 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         returnsColumns.put(name, type);
     }
 
+    public boolean isInStatementBody() {
+        return inStatementBody;
+    }
+
+    public void setInStatementBody(boolean inStatementBody) {
+        this.inStatementBody = inStatementBody;
+    }
+
     /**
      * Returns function signature. It consists of unquoted name and argument
      * data types.
@@ -361,6 +446,7 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         functionDst.transforms.addAll(transforms);
         functionDst.returnsColumns.putAll(returnsColumns);
         functionDst.configurations.putAll(configurations);
+        functionDst.setInStatementBody(isInStatementBody());
 
         return functionDst;
     }

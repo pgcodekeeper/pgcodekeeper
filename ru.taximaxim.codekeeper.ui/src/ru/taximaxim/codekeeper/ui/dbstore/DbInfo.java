@@ -166,7 +166,7 @@ public class DbInfo {
 
     public void appendIgnoreFiles(IgnoreList ignoreList) {
         for (String file : getIgnoreFiles()) {
-            InternalIgnoreList.readAppendList(Paths.get(file), ignoreList);
+            InternalIgnoreList.readAppendList(Paths.get(file), ignoreList, true);
         }
     }
 }

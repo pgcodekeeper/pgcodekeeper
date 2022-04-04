@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -268,8 +267,7 @@ public class TreeElement {
             if (par.getType() == DbObjType.DATABASE) {
                 break;
             }
-            qname = PgDiffUtils.getQuotedName(par.getName())
-                    + (qname.isEmpty() ? qname : '.' + qname);
+            qname = par.getName() + (qname.isEmpty() ? qname : '.' + qname);
             par = par.getParent();
         }
 
@@ -282,8 +280,7 @@ public class TreeElement {
      */
     public String getQualifiedName() {
         String qname = getContainerQName();
-        String objName = PgDiffUtils.getQuotedName(getName());
-        return qname.isEmpty() ? objName : qname + '.' + objName;
+        return qname.isEmpty() ? getName() : qname + '.' + getName();
     }
 
     @Override

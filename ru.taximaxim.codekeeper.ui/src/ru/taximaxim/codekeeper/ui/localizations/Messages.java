@@ -92,9 +92,31 @@ public final class Messages extends NLS {
     public static String SQLEditorCompletionProcessor_show_templates;
     public static String SQLEditorCompletionProcessor_show_keywords;
 
+    public static String SQLEditorFormatterPrefPage_add_whitespace_after_operators;
+
+    public static String SQLEditorFormatterPrefPage_add_whitespace_before_operators;
+
+    public static String SQLEditorFormatterPrefPage_disable;
+
+    public static String SQLEditorFormatterPrefPage_indent_size;
+
+    public static String SQLEditorFormatterPrefPage_indent_type;
+
+    public static String SQLEditorFormatterPrefPage_remove_trailing_whitespace;
+
+    public static String SQLEditorFormatterPrefPage_tab;
+
+    public static String SQLEditorFormatterPrefPage_whitespace;
+
+    public static String SQLEditorInformationControl_quick_fix_available;
+
+    public static String SQLEditorInformationControl_quick_fix_availableSQLEditorInformationControl_quick_fixes_available;
+
     public static String SqlEditor_update_ddl;
 
     public static String UiProgressReporter_warning;
+
+    public static String UIProjectLoader_error_loading_structure;
 
     public static String UpdateDdl_read_only_db_message;
 
@@ -119,7 +141,6 @@ public final class Messages extends NLS {
     public static String dbPicker_port;
     public static String dbStoreEditorDialog_cannot_save_entry;
     public static String dbStoreEditorDialog_db_info;
-    public static String dbStoreEditorDialog_db_store_editor;
     public static String dbStoreEditorDialog_not_valid_port_number;
     public static String dbStoreEditorDialog_empty_name;
 
@@ -131,9 +152,8 @@ public final class Messages extends NLS {
     public static String differ_direct_diff;
     public static String differ_get_differ;
     public static String differ_reverse_diff;
-    public static String diffTableViewer_change_type;
-    public static String diffTableViewer_for_database;
-    public static String diffTableViewer_for_project;
+    public static String diffTableViewer_change_type_for_database;
+    public static String diffTableViewer_change_type_for_project;
     public static String diffTableViewer_container;
     public static String diffTableViewer_db_user;
     public static String diffTableViewer_deselect_child_elements;
@@ -316,7 +336,15 @@ public final class Messages extends NLS {
 
     public static String DbStorePicker_load_from_file;
 
+    public static String DbStorePicker_open_db_store;
+
+    public static String DbStorePrefPage_action_add_new;
+
     public static String DbStorePrefPage_already_present;
+
+    public static String DbStorePrefPage_action_copy;
+
+    public static String DbStorePrefPage_action_edit;
 
     public static String DbStorePrefPage_pg_pass_file_filter;
 
@@ -328,7 +356,11 @@ public final class Messages extends NLS {
 
     public static String DbStorePrefPage_secure_storage_error_text_other;
 
+    public static String DbStorePrefPage_secure_storage_error;
+
     public static String DbStorePrefPage_secure_storage_error_title;
+
+    public static String DbUpdatePrefPage_allow_data_movement;
 
     public static String DbUpdatePrefPage_alter_seq_restart_statement;
 
@@ -364,6 +396,14 @@ public final class Messages extends NLS {
 
     public static String DependencyProperties_attention;
 
+    public static String DependencyProperties_clear_cache;
+
+    public static String DependencyProperties_clear_cache_descr;
+
+    public static String DependencyProperties_clear_cache_error;
+
+    public static String DependencyProperties_clear_libraries_cache;
+
     public static String DependencyProperties_connection_start;
 
     public static String DependencyProperties_empty_scheme;
@@ -375,6 +415,10 @@ public final class Messages extends NLS {
     public static String DependencyProperties_ignore_priv_warn;
 
     public static String DependencyProperties_ignore_privileges;
+
+    public static String DependencyProperties_load_dependencies;
+
+    public static String DependencyProperties_load_nested;
 
     public static String DependencyProperties_owner;
 
@@ -410,6 +454,8 @@ public final class Messages extends NLS {
 
     public static String DiffTableViewer_copy_as_regex;
 
+    public static String DiffTableViewer_copy_object_names;
+
     public static String DiffTableViewer_database;
 
     public static String DiffTableViewer_directory;
@@ -431,6 +477,11 @@ public final class Messages extends NLS {
     public static String DiffTableViewer_reading_git_history;
 
     public static String DiffTableViewer_reset_sorting;
+
+    public static String DiffTableViewer_save_to_DB;
+
+    public static String DiffTableViewer_save_to_project;
+
     public static String DiffTableViewer_selected;
 
     public static String DiffTableViewer_selected_count;
@@ -506,6 +557,10 @@ public final class Messages extends NLS {
     public static String IgnoredObjectsPrefPage_these_objects_are_ignored_info;
     public static String IgnoredObjectsPrefPage_these_objects_are_ignored_info_white;
 
+    public static String IgnoredSchemaPrefListEditor_black_list_schema_ignor;
+
+    public static String IgnoredSchemaPrefListEditor_white_list_schema_ignor;
+
     public static String IgnoreListProperties_create_new_file;
 
     public static String IgnoreListProperties_default_ignore_tooltip;
@@ -522,6 +577,8 @@ public final class Messages extends NLS {
 
 
     public static String ManualDepciesDialog_set_add_depcies;
+
+    public static String MisplaceCompletionProposal_rename_file_to;
     public static String MockDataPage_add_column;
 
     public static String MockDataPage_any_value;
@@ -575,9 +632,17 @@ public final class Messages extends NLS {
 
     public static String MockDataWizard_create_data_table;
 
+    public static String NavigationLibrariesActionProvider_clear_library_cache;
+
+    public static String NavigationLibrariesActionProvider_failed_to_clear_library_cache;
+
     public static String NavigationLibrariesActionProvider_failed_to_open_library;
 
+    public static String NavigationLibrariesActionProvider_failed_to_refresh_library;
+
     public static String NavigationLibrariesActionProvider_open_library;
+
+    public static String NavigationLibrariesActionProvider_refresh_library;
 
     public static String NavigatorRootActionProvider_open_action;
 
@@ -717,7 +782,15 @@ public final class Messages extends NLS {
 
     public static String PgPassDialog_title;
 
+    public static String PgRenameRefactoringInputPage_new_name;
+
     public static String PrefListEditor_cannot_add;
+
+    public static String ProjectEditorDiffer_apply_db;
+
+    public static String ProjectEditorDiffer_apply_project;
+
+    public static String ProjectEditorDiffer_apply_to;
 
     public static String ProjectEditorDiffer_changed_direction_of_roll_on_title;
     public static String ProjectEditorDiffer_changed_direction_of_roll_on;
@@ -757,6 +830,8 @@ public final class Messages extends NLS {
     public static String ProjectEditorDiffer_override_objects;
 
     public static String ProjectEditorDiffer_override_privileges;
+
+    public static String ProjectEditorDiffer_work_with;
 
     public static String ProjectEditorInput_pgcodekeeper_project;
 
@@ -901,7 +976,12 @@ public final class Messages extends NLS {
     public static String GeneralPrefPage_time_to_clean_parser_cache;
     public static String GeneralPrefPage_clean_parser_cache;
 
+    public static String GeneralPrefPage_format_object_code_automatically;
+
     public static String GeneralPrefPage_reuse_open_compare_editor;
+
+    public static String GeneralPrefPage_save_in_security_storage;
+    public static String GeneralPrefPage_set_limit;
 
     public static String GeneralPrefPage_show_diff_errors;
 
@@ -976,6 +1056,12 @@ public final class Messages extends NLS {
     public static String QuickUpdate_updating_db;
 
     public static String QuickUpdate_updating_project;
+
+    public static String ReferenceSearchResult_matches;
+
+    public static String RenameDefinitionChange_error_resource_already_exists;
+
+    public static String RenameDefinitionProcessor_rename_object;
 
     // SONAR-ON
 

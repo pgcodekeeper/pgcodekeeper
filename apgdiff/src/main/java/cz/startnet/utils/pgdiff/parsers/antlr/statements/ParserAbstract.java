@@ -11,32 +11,32 @@ import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
+import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Cast_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Id_tokenContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identifier_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Including_indexContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Predefined_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.exception.MisplacedObjectException;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
@@ -48,9 +48,12 @@ import cz.startnet.utils.pgdiff.schema.IStatement;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation.LocationType;
 import cz.startnet.utils.pgdiff.schema.PgOperator;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.MS_WORK_DIR_NAMES;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
@@ -167,6 +170,12 @@ public abstract class ParserAbstract {
         return full;
     }
 
+    public static String getExpressionText(VexContext def, CommonTokenStream stream) {
+        String expression = getFullCtxText(def);
+        String whitespace = getHiddenLeftCtxText(def, stream);
+        return whitespace.startsWith("\n") ? (whitespace + expression) : expression;
+    }
+
     private static String convertAlias(String type) {
         String alias = type.toLowerCase(Locale.ROOT);
 
@@ -208,13 +217,21 @@ public abstract class ParserAbstract {
         return type;
     }
 
+    public static String parseArguments(Function_argsContext argsContext) {
+        return parseSignature(null, argsContext);
+    }
+
     public static String parseSignature(String name, Function_argsContext argsContext) {
-        AbstractPgFunction function = new PgFunction(name);
+        AbstractPgFunction function = new PgFunction(name == null ? "noname" : name);
         fillFuncArgs(argsContext.function_arguments(), function);
         if (argsContext.agg_order() != null) {
             fillFuncArgs(argsContext.agg_order().function_arguments(), function);
         }
-        return function.getSignature();
+        String signature = function.getSignature();
+        if (name == null) {
+            signature = signature.substring("noname".length());
+        }
+        return signature;
     }
 
     private static void fillFuncArgs(List<Function_argumentsContext> argsCtx, AbstractPgFunction function) {
@@ -266,8 +283,8 @@ public abstract class ParserAbstract {
     }
 
     protected PgObjLocation addObjReference(List<? extends ParserRuleContext> ids,
-            DbObjType type, String action) {
-        PgObjLocation loc = getLocation(ids, type, action, false, null);
+            DbObjType type, String action, String signature) {
+        PgObjLocation loc = getLocation(ids, type, action, false, signature, LocationType.REFERENCE);
         if (loc != null) {
             db.addReference(fileName, loc);
         }
@@ -275,17 +292,9 @@ public abstract class ParserAbstract {
         return loc;
     }
 
-    private int getStart(ParserRuleContext ctx) {
-        int start = ctx.start.getStartIndex();
-        if (ctx instanceof IdentifierContext) {
-            Id_tokenContext id = ((IdentifierContext) ctx).id_token();
-            if (id != null && id.QuotedIdentifier() != null) {
-                start++;
-            }
-        } else if (ctx instanceof IdContext && ((IdContext) ctx).SQUARE_BRACKET_ID() != null) {
-            start++;
-        }
-        return start;
+    protected PgObjLocation addObjReference(List<? extends ParserRuleContext> ids,
+            DbObjType type, String action) {
+        return addObjReference(ids, type, action, null);
     }
 
     public <T extends IStatement, R extends IStatement> R getSafe(
@@ -311,9 +320,14 @@ public abstract class ParserAbstract {
 
     protected void addSafe(PgStatement parent, PgStatement child,
             List<? extends ParserRuleContext> ids) {
+        addSafe(parent, child, ids, null);
+    }
+
+    protected void addSafe(PgStatement parent, PgStatement child,
+            List<? extends ParserRuleContext> ids, String signature){
         doSafe(PgStatement::addChild, parent, child);
         PgObjLocation loc = getLocation(ids, child.getStatementType(),
-                ACTION_CREATE, false, null);
+                ACTION_CREATE, false, signature, LocationType.DEFINITION);
         if (loc != null) {
             child.setLocation(loc);
             db.addReference(fileName, loc);
@@ -329,55 +343,65 @@ public abstract class ParserAbstract {
         }
 
         String filePath = ModelExporter.getRelativeFilePath(statement).toString();
-        if (!PgDiffUtils.endsWithIgnoreCase(fileName, filePath) && isInProject(statement.isPostgres())) {
-            throw new UnresolvedReferenceException(
-                    MessageFormat.format(LOCATION_ERROR, statement.getBareName(), filePath),
-                    errToken);
+        if (!PgDiffUtils.endsWithIgnoreCase(fileName, filePath)
+                && isInProject(statement.isPostgres())) {
+            throw new MisplacedObjectException(MessageFormat.format(LOCATION_ERROR,
+                    statement.getBareName(), filePath), errToken);
         }
     }
 
     private boolean isInProject(boolean isPostgres) {
-        // exclude external directories
-        Stream<String> dirs;
+        // collect working directories
+        List<String> dirs;
         if (isPostgres) {
             dirs = Arrays.stream(ApgdiffConsts.WORK_DIR_NAMES.values())
-                    .map(e -> '/' + e.name() + '/');
+                    .map(WORK_DIR_NAMES::name).collect(Collectors.toList());
         } else {
             dirs = Arrays.stream(ApgdiffConsts.MS_WORK_DIR_NAMES.values())
-                    .map(e -> '/' + e.getDirName() + '/');
+                    .map(MS_WORK_DIR_NAMES::getDirName).collect(Collectors.toList());
         }
 
-        if (dirs.noneMatch(fileName::contains)) {
-            return false;
-        }
-
-        // search project marker
         Path parent = Paths.get(fileName).getParent();
-        while (parent != null) {
-            if (Files.exists(parent.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER))) {
-                return true;
+        while (true) {
+            Path folder = parent.getFileName();
+            parent = parent.getParent();
+
+            // file name for root is null
+            if (folder == null || parent == null) {
+                return false;
             }
 
-            parent = parent.getParent();
+            // if we find the project directory, then we check the marker at the level above
+            if (dirs.contains(folder.toString())
+                    && Files.exists(parent.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER))) {
+                return true;
+            }
         }
-
-        return false;
     }
 
     private PgObjLocation getLocation(List<? extends ParserRuleContext> ids,
-            DbObjType type, String action, boolean isDep, String signature) {
+            DbObjType type, String action, boolean isDep, String signature,
+            LocationType locationType) {
         ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
         switch (type) {
         case CAST:
-            throw new IllegalStateException("Unsupported type: CAST");
+            return getCastLocation((Cast_nameContext) nameCtx, action);
         case ASSEMBLY:
         case EXTENSION:
+        case FOREIGN_DATA_WRAPPER:
+        case SERVER:
         case SCHEMA:
         case ROLE:
         case USER:
         case DATABASE:
-            return new PgObjLocation(new GenericColumn(nameCtx.getText(), type),
-                    action, getStart(nameCtx), nameCtx.start.getLine(), fileName);
+            GenericColumn object = new GenericColumn(nameCtx.getText(), type);
+            return new PgObjLocation.Builder()
+                    .setFilePath(fileName)
+                    .setCtx(nameCtx)
+                    .setObject(object)
+                    .setAction(action)
+                    .setLocationType(locationType)
+                    .build();
         default:
             break;
         }
@@ -398,7 +422,7 @@ public abstract class ParserAbstract {
 
         String name = nameCtx.getText();
         if (signature != null) {
-            name+= signature;
+            name = PgDiffUtils.getQuotedName(name) + signature;
         }
         switch (type) {
         case DOMAIN:
@@ -406,36 +430,51 @@ public abstract class ParserAbstract {
         case FTS_DICTIONARY:
         case FTS_PARSER:
         case FTS_TEMPLATE:
-        case FUNCTION:
         case OPERATOR:
-        case PROCEDURE:
-        case AGGREGATE:
         case SEQUENCE:
         case TABLE:
         case TYPE:
         case VIEW:
         case INDEX:
-            return new PgObjLocation(new GenericColumn(schemaName, name, type),
-                    action, getStart(nameCtx), nameCtx.start.getLine(), fileName);
+        case FUNCTION:
+        case PROCEDURE:
+        case AGGREGATE:
+            return new PgObjLocation.Builder()
+                    .setFilePath(fileName)
+                    .setCtx(nameCtx)
+                    .setObject(new GenericColumn(schemaName, name, type))
+                    .setAction(action)
+                    .setLocationType(locationType)
+                    .build();
         case CONSTRAINT:
         case TRIGGER:
         case RULE:
         case POLICY:
         case COLUMN:
-            return new PgObjLocation(new GenericColumn(schemaName,
-                    QNameParser.getSecondName(ids), name, type), action,
-                    getStart(nameCtx), nameCtx.start.getLine(), fileName);
+            return new PgObjLocation.Builder()
+                    .setFilePath(fileName)
+                    .setCtx(nameCtx)
+                    .setObject(new GenericColumn(schemaName, QNameParser.getSecondName(ids), name, type))
+                    .setAction(action)
+                    .setLocationType(locationType)
+                    .build();
         default:
             return null;
         }
     }
 
-    protected PgObjLocation getCastLocation(Data_typeContext source, Data_typeContext target, String action) {
-        PgObjLocation loc = new PgObjLocation(new GenericColumn(
-                ICast.getSimpleName(getFullCtxText(source), getFullCtxText(target)), DbObjType.CAST),
-                action, source.start.getStartIndex(), source.start.getLine(), fileName);
-        loc.setLength(target.stop.getStopIndex() - source.start.getStartIndex() + 1);
-        return loc;
+    private PgObjLocation getCastLocation(Cast_nameContext nameCtx, String action) {
+        GenericColumn object = new GenericColumn(getCastName(nameCtx), DbObjType.CAST);
+        return new PgObjLocation.Builder()
+                .setFilePath(fileName)
+                .setCtx(nameCtx)
+                .setObject(object)
+                .setAction(action)
+                .build();
+    }
+
+    protected String getCastName(Cast_nameContext nameCtx) {
+        return ICast.getSimpleName(getFullCtxText(nameCtx.source), getFullCtxText(nameCtx.target));
     }
 
     protected <T extends IStatement, U extends Object> void doSafe(BiConsumer<T, U> adder,
@@ -452,7 +491,7 @@ public abstract class ParserAbstract {
 
     protected void addDepSafe(PgStatement st, List<? extends ParserRuleContext> ids,
             DbObjType type, boolean isPostgres, String signature) {
-        PgObjLocation loc = getLocation(ids, type, null, true, signature);
+        PgObjLocation loc = getLocation(ids, type, null, true, signature, LocationType.REFERENCE);
         if (loc != null && !ApgdiffUtils.isSystemSchema(loc.getSchema(), isPostgres)) {
             if (!refMode) {
                 st.addDep(loc.getObj());
@@ -500,13 +539,11 @@ public abstract class ParserAbstract {
      * @param ctx контекст парсера с владельцем
      * @param st объект
      */
-    protected void fillOwnerTo(Owner_toContext ctx, PgStatement st) {
-        if (db.getArguments().isIgnorePrivileges() || refMode) {
+    protected void fillOwnerTo(IdentifierContext owner, PgStatement st) {
+        if (owner == null || db.getArguments().isIgnorePrivileges() || refMode) {
             return;
         }
-        if (ctx != null && ctx.name != null) {
-            st.setOwner(ctx.name.getText());
-        }
+        st.setOwner(owner.getText());
     }
 
     protected void addPgTypeDepcy(Data_typeContext ctx, PgStatement st) {
@@ -551,7 +588,7 @@ public abstract class ParserAbstract {
             BiConsumer<String, String> c) {
         String quotedOption = PgDiffUtils.getQuotedName(option);
         if (isToast) {
-            quotedOption = "toast."+ option;
+            quotedOption = "toast." + quotedOption;
         }
         c.accept(quotedOption, value);
     }
@@ -570,9 +607,12 @@ public abstract class ParserAbstract {
      */
     protected PgObjLocation fillQueryLocation(ParserRuleContext ctx) {
         String act = getStmtAction();
-        PgObjLocation loc = new PgObjLocation(
-                act != null ? act : ctx.getStart().getText().toUpperCase(Locale.ROOT),
-                        ctx, getFullCtxText(ctx));
+        PgObjLocation loc = new PgObjLocation.Builder()
+                .setAction(act != null ? act : ctx.getStart().getText().toUpperCase(Locale.ROOT))
+                .setSql(getFullCtxText(ctx))
+                .setCtx(ctx)
+                .build();
+
         db.addReference(fileName, loc);
         return loc;
     }
@@ -583,7 +623,11 @@ public abstract class ParserAbstract {
      * for objects which undefined in DbObjType).
      */
     protected void addOutlineRefForCommentOrRule(String action, ParserRuleContext ctx) {
-        db.addReference(fileName, new PgObjLocation(action, ctx, null));
+        PgObjLocation loc = new PgObjLocation.Builder()
+                .setAction(action)
+                .setCtx(ctx)
+                .build();
+        db.addReference(fileName, loc);
     }
 
     /**
@@ -595,15 +639,22 @@ public abstract class ParserAbstract {
     /**
      * Used in general cases in {@link #getStmtAction()} for get action information.
      */
-    protected String getStrForStmtAction(String action, DbObjType type,
-            List<? extends ParserRuleContext> ids) {
-        StringBuilder sb = new StringBuilder(action).append(' ').append(type).append(' ');
+    protected static String getStrForStmtAction(String action, DbObjType type, List<? extends ParserRuleContext> ids) {
+        StringBuilder sb = new StringBuilder();
         for (ParserRuleContext id : ids) {
             if (id != null) {
                 sb.append(id.getText()).append('.');
             }
         }
         sb.setLength(sb.length() - 1);
-        return sb.toString();
+        return getStrForStmtAction(action, type, sb.toString());
+    }
+
+    protected static String getStrForStmtAction(String action, DbObjType type, ParseTree id) {
+        return getStrForStmtAction(action, type, id.getText());
+    }
+
+    protected static String getStrForStmtAction(String action, DbObjType type, String id) {
+        return action + ' ' + type + ' ' + id;
     }
 }
