@@ -176,7 +176,7 @@ public class PgSequence extends AbstractSequence {
 
         final String newStart = newSequence.getStartWith();
         if (newStart != null && !newStart.equals(getStartWith())) {
-            sbSQL.append("\n\tRESTART WITH ");
+            sbSQL.append("\n\tSTART WITH ");
             sbSQL.append(newStart);
         }
 

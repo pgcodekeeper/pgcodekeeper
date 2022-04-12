@@ -309,7 +309,9 @@ class FailDangerRestartArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String output() {
-        return "Script contains dangerous statements: RESTART_WITH. Use --allow-danger-ddl to override.\n";
+        //return "Script contains dangerous statements: RESTART_WITH. Use --allow-danger-ddl to override.\n";
+        // TODO we do not generate RESTART anymore
+        return "";
     }
 }
 
