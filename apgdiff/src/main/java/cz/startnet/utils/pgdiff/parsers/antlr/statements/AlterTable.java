@@ -21,8 +21,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sequence_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_def_columnContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statisticsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_optionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parametersContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parametersContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
@@ -113,7 +113,7 @@ public class AlterTable extends TableAbstract {
             if (def != null) {
                 addColumn(def.identifier().getText(), def.data_type(),
                         def.collate_identifier(), def.compression_identifier(), def.constraint_common(),
-                        def.define_foreign_options(), tabl);
+                        def.define_foreign_options(), tabl, getSchemaNameSafe(ids));
             }
 
             if (column != null && colAction != null) {

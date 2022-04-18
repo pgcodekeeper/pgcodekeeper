@@ -66,7 +66,7 @@ public class SimpleDepcyResolver {
     }
 
     private static class DepcyIterator extends TraversalListenerAdapter<PgStatement, DefaultEdge> {
-        Set<PgStatement> depcies = new HashSet<>();
+        private final Set<PgStatement> depcies;
 
         public DepcyIterator(Set<PgStatement> depcies) {
             this.depcies = depcies;
