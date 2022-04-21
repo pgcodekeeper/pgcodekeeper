@@ -155,7 +155,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
     private void executeSingleStatement(PgObjLocation query, String[] finalModifiedQuery)
             throws SQLException, InterruptedException {
         String sql = query.getSql();
-        if (limitRows > 0 && query.getAction().equals("SELECT")) {
+        if (limitRows > 0 && "SELECT".equals(query.getAction())) {
             sql = "SELECT * FROM ( " + sql + " ) AS t LIMIT " + limitRows;
         }
 

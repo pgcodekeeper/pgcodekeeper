@@ -92,9 +92,7 @@ public class LibraryLoader extends DatabaseLoader {
             return loadJdbc(args, path);
         case URL:
             try {
-                URI uri = new URI(path);
-                PgDatabase db = loadURI(uri, args, isIgnorePriv);
-                return db;
+                return loadURI(new URI(path), args, isIgnorePriv);
             } catch (URISyntaxException ex) {
                 // shouldn't happen, already checked by getSource
                 // not URI, try to folder or file
