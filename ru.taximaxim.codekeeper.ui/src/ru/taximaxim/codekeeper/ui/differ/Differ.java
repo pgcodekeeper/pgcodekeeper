@@ -172,8 +172,8 @@ public class Differ implements IRunnableWithProgress {
                     prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY));
             newArgs.setUsingTypeCastOff(
                     !prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.USING_ON_OFF));
-            newArgs.setOptionExisting(prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.OPTION_EXISTS));
-            newArgs.setOptionDropObject(prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.OPTION_DROP_OBJECT));
+            newArgs.setGenerateExists(prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.GENERATE_EXISTS));
+            newArgs.setDropBeforeCreate(prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.DROP_BEFORE_CREATE));
             db.setArguments(newArgs);
         }
 

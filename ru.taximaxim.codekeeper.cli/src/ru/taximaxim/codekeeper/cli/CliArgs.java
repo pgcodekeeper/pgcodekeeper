@@ -163,6 +163,14 @@ public class CliArgs extends PgDiffArguments {
             usage="print CREATE INDEX with CONCURRENTLY option for PostgreSQL and WITH ONLINE = ON for MS SQL")
     private boolean concurrentlyMode;
 
+    @Option(name="--generate-exist", forbids={"--graph", "--parse"},
+            usage="print CREATE IF NOT EXISTS / DROP IF EXISTS")
+    private boolean generateExists;
+
+    @Option(name="--drop-before-create", forbids={"--graph", "--parse"},
+            usage="print DROP before CREATE statement")
+    private boolean dropBeforeCreate;
+
     @Option(name="-S", aliases="--safe-mode", forbids={"--graph", "--parse"},
             usage="do not generate scripts containing dangerous statements\nsee: --allow-danger-ddl")
     private boolean safeMode;
@@ -259,14 +267,6 @@ public class CliArgs extends PgDiffArguments {
     @Option(name="--graph-invert-filter", forbids={"--parse"}, depends={"--graph", "--graph-filter-object"},
             usage="invert graph filter object types: hide objects specified by the filter")
     private boolean graphInvertFilter;
-
-    @Option(name="--option-exist", forbids={"--parse"},
-            usage="enable printing IF EXISTS/IF NOT EXISTS in CREATE and DROP statements")
-    private boolean optionExisting;
-
-    @Option(name="--option-drop-object", forbids={"--parse"},
-            usage="enable printing DROP statement before CREATE")
-    private boolean optionDropObject;
 
     public boolean isModeParse() {
         return modeParse;
@@ -532,23 +532,23 @@ public class CliArgs extends PgDiffArguments {
     }
 
     @Override
-    public void setOptionExisting(boolean optionExisting) {
-        this.optionExisting = optionExisting;
+    public void setGenerateExists(boolean generateExists) {
+        this.generateExists = generateExists;
     }
 
     @Override
-    public boolean isOptionExisting() {
-        return optionExisting;
+    public boolean isGenerateExists() {
+        return generateExists;
     }
 
     @Override
-    public boolean isOptionDropObject() {
-        return optionDropObject;
+    public boolean isDropBeforeCreate() {
+        return dropBeforeCreate;
     }
 
     @Override
-    public void setOptionDropObject(boolean optionDropObject) {
-        this.optionDropObject = optionDropObject;
+    public void setDropBeforeCreate(boolean dropBeforeCreate) {
+        this.dropBeforeCreate = dropBeforeCreate;
     }
 
     public Collection<DbObjType> getGraphFilterTypes() {

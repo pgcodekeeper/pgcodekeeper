@@ -164,8 +164,8 @@ class PageDiff extends WizardPage implements Listener {
     private Button btnAlterColUsingExpr;
     private Button btnCreateIdxConcurrent;
     private Button btnScriptFromSelObjs;
-    private Button btnOptionExists;
-    private Button btnOptionDropObject;
+    private Button btnGenerateExists;
+    private Button btnDropBeforeCreate;
     private Button btnDataMovementMode;
 
     public PageDiff(String pageName, IPreferenceStore mainPrefs, PgDbProject proj) {
@@ -266,8 +266,8 @@ class PageDiff extends WizardPage implements Listener {
                 btnAlterColUsingExpr.setVisible(selected);
                 btnCreateIdxConcurrent.setVisible(selected);
                 btnScriptFromSelObjs.setVisible(selected);
-                btnOptionExists.setVisible(selected);
-                btnOptionDropObject.setVisible(selected);
+                btnGenerateExists.setVisible(selected);
+                btnDropBeforeCreate.setVisible(selected);
                 btnDataMovementMode.setVisible(selected);
 
                 UiSync.exec(getShell(), () -> getShell().pack());
@@ -324,15 +324,15 @@ class PageDiff extends WizardPage implements Listener {
         btnScriptFromSelObjs.setText(Messages.DbUpdatePrefPage_script_from_selected_objs);
         btnScriptFromSelObjs.setSelection(mainPrefs.getBoolean(DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS));
         btnScriptFromSelObjs.setVisible(false);
-        btnOptionExists = new Button(container, SWT.CHECK);
-        btnOptionExists.setText(Messages.DbUpdatePrefPage_option_if_exists);
-        btnOptionExists.setSelection(mainPrefs.getBoolean(DB_UPDATE_PREF.OPTION_EXISTS));
-        btnOptionExists.setVisible(false);
+        btnGenerateExists = new Button(container, SWT.CHECK);
+        btnGenerateExists.setText(Messages.DbUpdatePrefPage_option_if_exists);
+        btnGenerateExists.setSelection(mainPrefs.getBoolean(DB_UPDATE_PREF.GENERATE_EXISTS));
+        btnGenerateExists.setVisible(false);
 
-        btnOptionDropObject = new Button(container, SWT.CHECK);
-        btnOptionDropObject.setText(Messages.DbUpdatePrefPage_option_drop_object);
-        btnOptionDropObject.setSelection(mainPrefs.getBoolean(DB_UPDATE_PREF.OPTION_DROP_OBJECT));
-        btnOptionDropObject.setVisible(false);
+        btnDropBeforeCreate = new Button(container, SWT.CHECK);
+        btnDropBeforeCreate.setText(Messages.DbUpdatePrefPage_option_drop_object);
+        btnDropBeforeCreate.setSelection(mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_BEFORE_CREATE));
+        btnDropBeforeCreate.setVisible(false);
 
         btnDataMovementMode = new Button(container, SWT.CHECK);
         btnDataMovementMode.setText(Messages.DbUpdatePrefPage_allow_data_movement);
@@ -407,8 +407,8 @@ class PageDiff extends WizardPage implements Listener {
         oneTimePrefs.put(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES, btnCheckFuncBodies.getSelection());
         oneTimePrefs.put(DB_UPDATE_PREF.USING_ON_OFF, btnAlterColUsingExpr.getSelection());
         oneTimePrefs.put(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY, btnCreateIdxConcurrent.getSelection());
-        oneTimePrefs.put(DB_UPDATE_PREF.OPTION_EXISTS, btnOptionExists.getSelection());
-        oneTimePrefs.put(DB_UPDATE_PREF.OPTION_DROP_OBJECT, btnOptionDropObject.getSelection());
+        oneTimePrefs.put(DB_UPDATE_PREF.GENERATE_EXISTS, btnGenerateExists.getSelection());
+        oneTimePrefs.put(DB_UPDATE_PREF.DROP_BEFORE_CREATE, btnDropBeforeCreate.getSelection());
         oneTimePrefs.put(PREF.SIMPLIFY_VIEW, btnSimplifyView.getSelection());
         oneTimePrefs.put(DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS, btnScriptFromSelObjs.getSelection());
         oneTimePrefs.put(DB_UPDATE_PREF.DATA_MOVEMENT_MODE, btnDataMovementMode.getSelection());

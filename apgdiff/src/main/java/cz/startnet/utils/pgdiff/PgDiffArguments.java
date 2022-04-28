@@ -49,23 +49,23 @@ public class PgDiffArguments {
     private boolean ignoreColumnOrder;
     private boolean autoFormatObjectCode;
     private FormatConfiguration formatConfiguration = new FormatConfiguration();
-    private boolean optionExisting;
-    private boolean optionDropObject;
+    private boolean generateExists;
+    private boolean dropBeforeCreate;
 
-    public boolean isOptionDropObject() {
-        return optionDropObject;
+    public boolean isDropBeforeCreate() {
+        return dropBeforeCreate;
     }
 
-    public void setOptionDropObject(boolean optionDropObject) {
-        this.optionDropObject = optionDropObject;
+    public void setDropBeforeCreate(boolean dropBeforeCreate) {
+        this.dropBeforeCreate = dropBeforeCreate;
     }
 
-    public boolean isOptionExisting() {
-        return optionExisting;
+    public boolean isGenerateExists() {
+        return generateExists;
     }
 
-    public void setOptionExisting(boolean optionExisting) {
-        this.optionExisting = optionExisting;
+    public void setGenerateExists(boolean generateExists) {
+        this.generateExists = generateExists;
     }
 
     public void setNewSrc(final String newSrc) {

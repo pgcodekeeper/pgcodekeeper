@@ -48,7 +48,7 @@ public class PgIndex extends AbstractIndex {
         if (args != null && args.isConcurrentlyMode()) {
             sbSQL.append("CONCURRENTLY ");
         }
-        if (inherit != null || (args != null && args.isOptionExisting())) {
+        if (inherit != null || (args != null && args.isGenerateExists())) {
             sbSQL.append("IF NOT EXISTS ");
         }
         sbSQL.append(PgDiffUtils.getQuotedName(name));

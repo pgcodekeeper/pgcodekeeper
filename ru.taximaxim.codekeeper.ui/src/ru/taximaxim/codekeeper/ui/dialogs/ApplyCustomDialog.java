@@ -30,8 +30,8 @@ public class ApplyCustomDialog extends Dialog {
     private Button btnAlterColUsingExpr;
     private Button btnCreateIdxConcurrent;
     private Button btnScriptFromSelObjs;
-    private Button btnOptionExists;
-    private Button btnOptionDropObject;
+    private Button btnGenerateExists;
+    private Button btndropBeforeCreate;
     private Button btnDataMovementMode;
 
     private final OverridablePrefs prefs;
@@ -78,21 +78,21 @@ public class ApplyCustomDialog extends Dialog {
         btnCreateIdxConcurrent.setSelection(prefs.getBooleanOfDbUpdatePref(
                 DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY));
 
-        btnOptionExists = new Button(panel, SWT.CHECK);
-        btnOptionExists.setText(Messages.DbUpdatePrefPage_option_if_exists);
+        btnGenerateExists = new Button(panel, SWT.CHECK);
+        btnGenerateExists.setText(Messages.DbUpdatePrefPage_option_if_exists);
         gd = new GridData();
         gd.horizontalIndent = 10;
-        btnOptionExists.setLayoutData(gd);
-        btnOptionExists.setSelection(prefs.getBooleanOfDbUpdatePref(
-                DB_UPDATE_PREF.OPTION_EXISTS));
+        btnGenerateExists.setLayoutData(gd);
+        btnGenerateExists.setSelection(prefs.getBooleanOfDbUpdatePref(
+                DB_UPDATE_PREF.GENERATE_EXISTS));
 
-        btnOptionDropObject = new Button(panel, SWT.CHECK);
-        btnOptionDropObject.setText(Messages.DbUpdatePrefPage_option_drop_object);
+        btndropBeforeCreate = new Button(panel, SWT.CHECK);
+        btndropBeforeCreate.setText(Messages.DbUpdatePrefPage_option_drop_object);
         gd = new GridData();
         gd.horizontalIndent = 10;
-        btnOptionDropObject.setLayoutData(gd);
-        btnOptionDropObject.setSelection(prefs.getBooleanOfDbUpdatePref(
-                DB_UPDATE_PREF.OPTION_DROP_OBJECT));
+        btndropBeforeCreate.setLayoutData(gd);
+        btndropBeforeCreate.setSelection(prefs.getBooleanOfDbUpdatePref(
+                DB_UPDATE_PREF.DROP_BEFORE_CREATE));
 
         if (!isMsSql) {
             btnCheckFuncBodies = new Button(panel, SWT.CHECK);
@@ -146,10 +146,10 @@ public class ApplyCustomDialog extends Dialog {
                 btnScriptAddTransact.getSelection());
         customSettings.put(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY,
                 btnCreateIdxConcurrent.getSelection());
-        customSettings.put(DB_UPDATE_PREF.OPTION_EXISTS,
-                btnOptionExists.getSelection());
-        customSettings.put(DB_UPDATE_PREF.OPTION_DROP_OBJECT,
-                btnOptionDropObject.getSelection());
+        customSettings.put(DB_UPDATE_PREF.GENERATE_EXISTS,
+                btnGenerateExists.getSelection());
+        customSettings.put(DB_UPDATE_PREF.DROP_BEFORE_CREATE,
+                btndropBeforeCreate.getSelection());
         if (!isMsSql) {
             customSettings.put(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES,
                     btnCheckFuncBodies.getSelection());

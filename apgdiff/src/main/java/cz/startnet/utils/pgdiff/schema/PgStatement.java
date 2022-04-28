@@ -397,13 +397,13 @@ public abstract class PgStatement implements IStatement, IHashable {
 
     public final String getDropSQL() {
         PgDiffArguments args = getDatabase().getArguments();
-        return getDropSQL(args != null && args.isOptionExisting());
+        return getDropSQL(args != null && args.isGenerateExists());
     }
 
-    protected String getDropSQL(boolean optionExists) {
+    protected String getDropSQL(boolean generateExists) {
         final StringBuilder sbString = new StringBuilder();
         sbString.append("DROP ").append(getTypeName()).append(' ');
-        if (optionExists) {
+        if (generateExists) {
             sbString.append("IF EXISTS ");
         }
         appendFullName(sbString);
@@ -413,7 +413,7 @@ public abstract class PgStatement implements IStatement, IHashable {
 
     protected void appendDropBeforeCreate(StringBuilder sb) {
         PgDiffArguments args = getDatabase().getArguments();
-        if (args != null && args.isOptionDropObject()) {
+        if (args != null && args.isDropBeforeCreate()) {
             sb.append(getDropSQL(true));
             sb.append("\n\n");
         }
@@ -421,7 +421,7 @@ public abstract class PgStatement implements IStatement, IHashable {
 
     protected void appendIfNotExists(StringBuilder sb) {
         PgDiffArguments args = getDatabase().getArguments();
-        if (args != null && args.isOptionDropObject()) {
+        if (args != null && args.isGenerateExists()) {
             sb.append("IF NOT EXISTS ");
         }
     }
