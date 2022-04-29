@@ -60,6 +60,7 @@ public class ModelExporter extends AbstractModelExporter {
         switch (type) {
         case EXTENSION:
         case SERVER:
+        case USER_MAPPING:
         case CAST:
             path = baseDir.resolve(type.name());
             break;

@@ -29,6 +29,7 @@ import cz.startnet.utils.pgdiff.loader.jdbc.ServersReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.TablesReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.TriggersReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.TypesReader;
+import cz.startnet.utils.pgdiff.loader.jdbc.UserMappingReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.ViewsReader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
@@ -96,6 +97,7 @@ public class JdbcLoader extends JdbcLoaderBase {
             new CastsReader(this, d).read();
             new ForeignDataWrappersReader(this, d).read();
             new ServersReader(this, d).read();
+            new UserMappingReader(this, d).read();
 
             if (!SupportedVersion.VERSION_10.isLE(version)) {
                 SequencesReader.querySequencesData(d, this);

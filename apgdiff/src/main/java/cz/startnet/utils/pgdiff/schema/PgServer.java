@@ -83,8 +83,7 @@ public class PgServer extends PgStatement implements PgForeignOptionContainer{
         }
         if (obj instanceof PgServer && super.compare(obj)) {
             PgServer srv = (PgServer) obj;
-            return obj instanceof PgServer && super.compare(obj)
-                    && Objects.equals(type, srv.getType())
+            return Objects.equals(type, srv.getType())
                     && Objects.equals(version, srv.getVersion())
                     && Objects.equals(fdw, srv.getFdw())
                     && Objects.equals(options, srv.getOptions());

@@ -36,6 +36,7 @@ public final class JdbcQueries {
     public static final JdbcQuery QUERY_FOREIGN_DATA_WRAPPERS = new JdbcQuery();
     public static final JdbcQuery QUERY_SERVERS = new JdbcQuery();
     public static final JdbcQuery QUERY_CASTS = new JdbcQuery();
+    public static final JdbcQuery QUERY_USER_MAPPING = new JdbcQuery();
     public static final JdbcQuery QUERY_SCHEMAS = new JdbcQuery();
 
     public static final JdbcQuery QUERY_TABLES = new JdbcQuery();
