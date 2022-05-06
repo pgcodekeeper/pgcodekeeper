@@ -80,6 +80,9 @@ public class MsConstraint extends AbstractConstraint {
         sbSQL.append("ALTER ").append(getParent().getStatementType().name()).append(' ');
         sbSQL.append(getParent().getQualifiedName());
         sbSQL.append("\n\tDROP CONSTRAINT ");
+        if (optionExists) {
+            sbSQL.append("IF EXISTS ");
+        }
         sbSQL.append(MsDiffUtils.quoteName(getName()));
         sbSQL.append(GO);
 
