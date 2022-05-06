@@ -473,10 +473,11 @@ public abstract class PgStatement implements IStatement, IHashable {
      * Shallow version of {@link #equals(Object)}
      */
     public boolean compare(PgStatement obj) {
-        return Objects.equals(name, obj.name)
-                && privileges.equals(obj.privileges)
+        return getStatementType() == obj.getStatementType()
+                && Objects.equals(name, obj.name)
                 && Objects.equals(owner, obj.owner)
-                && Objects.equals(comment, obj.comment);
+                && Objects.equals(comment, obj.comment)
+                && privileges.equals(obj.privileges);
     }
 
     protected final void copyBaseFields(PgStatement copy) {
@@ -501,7 +502,7 @@ public abstract class PgStatement implements IStatement, IHashable {
         if (DbObjType.DATABASE == type) {
             return db;
         }
-        PgStatement twinParent = getParent().getTwin(db);
+        PgStatement twinParent = getParent().getTwinRecursive(db);
         if (twinParent == null) {
             return null;
         }
@@ -570,8 +571,8 @@ public abstract class PgStatement implements IStatement, IHashable {
             return true;
         } else if (obj instanceof PgStatement) {
             PgStatement st = (PgStatement) obj;
-            return this.parentNamesEquals(st)
-                    && this.compare(st)
+            return this.compare(st)
+                    && this.parentNamesEquals(st)
                     && this.compareChildren(st);
         }
         return false;

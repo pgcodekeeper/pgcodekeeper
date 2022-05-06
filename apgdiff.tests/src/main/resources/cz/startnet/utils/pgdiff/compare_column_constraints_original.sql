@@ -38,7 +38,7 @@ ALTER TABLE public.testtable OWNER TO fordfrog;
 
 CREATE TABLE public.testtable2 (
     c1 integer NOT NULL DEFAULT 350 UNIQUE,
-    c2 integer REFERENCES public.testtable (c1),
+    c2 integer REFERENCES public.testtable(c1),
     c3 text,
     c4 integer CONSTRAINT check_positive CHECK (c4 > 0)
 );

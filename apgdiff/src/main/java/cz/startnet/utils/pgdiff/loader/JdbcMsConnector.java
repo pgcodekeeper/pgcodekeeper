@@ -5,6 +5,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
@@ -16,6 +17,7 @@ public class JdbcMsConnector extends JdbcConnector {
     private static final int DEFAULT_PORT = 1433;
     private static final Pattern PATTERN_PROPERTIES =
             Pattern.compile(";(?:(\\w+)=(\\w+|\\{[^}]*\\})?)?");
+    private static final String TRUST_CERT = "trustServerCertificate";
 
     private final boolean winAuth;
     private String domain;
@@ -63,20 +65,26 @@ public class JdbcMsConnector extends JdbcConnector {
                     continue;
                 }
                 String s = m.group(1).toLowerCase(Locale.ROOT);
+                String value = unescapeValue(m.group(2));
                 switch (s) {
                 case "user":
                 case "username":
-                    this.user = unescapeValue(m.group(2));
+                    this.user = value;
                     break;
                 case "password":
-                    this.pass = unescapeValue(m.group(2));
+                    this.pass = value;
                     break;
                 case "database":
                 case "databasename":
-                    this.dbName = unescapeValue(m.group(2));
+                    this.dbName = value;
                     break;
                 case "domain":
-                    this.domain = unescapeValue(m.group(2));
+                    this.domain = value;
+                    break;
+                case "trustservercertificate":
+                    // override our legacy-default with user-supplied value
+                    properties = new HashMap<>();
+                    properties.put(TRUST_CERT, value);
                     break;
                 default:
                     break;
@@ -120,6 +128,10 @@ public class JdbcMsConnector extends JdbcConnector {
             props.setProperty("authenticationScheme", "NTLM");
             props.setProperty("integratedSecurity", "true");
             props.setProperty("domain", domain);
+        }
+        if (props.getProperty(TRUST_CERT) == null) {
+            // revert to pre-10.x jdbc driver behavior unless told otherwise
+            props.setProperty(TRUST_CERT, "true");
         }
         return props;
     }

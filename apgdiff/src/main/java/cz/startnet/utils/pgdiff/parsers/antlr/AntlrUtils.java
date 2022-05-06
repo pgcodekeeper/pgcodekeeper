@@ -97,7 +97,7 @@ public class AntlrUtils {
 
             switch (type) {
             case SQLLexer.EOF:
-                stream.reset();
+                stream.seek(0);
                 parser.setInputStream(stream);
                 return;
             case SQLLexer.SEMI_COLON:
