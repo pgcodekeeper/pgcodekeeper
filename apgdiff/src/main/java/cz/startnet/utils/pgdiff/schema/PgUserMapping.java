@@ -10,7 +10,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class PgUserMapping  extends PgStatement implements PgForeignOptionContainer {
+public class PgUserMapping extends PgStatement implements PgForeignOptionContainer {
     private final String user;
     private final String server;
     private final Map<String, String> options = new LinkedHashMap<>();
@@ -79,8 +79,9 @@ public class PgUserMapping  extends PgStatement implements PgForeignOptionContai
     @Override
     public String getCreationSQL() {
         final StringBuilder sb = new StringBuilder();
-        sb.append("CREATE USER MAPPING FOR ")
-        .append(getQualifiedName());
+        sb.append("CREATE USER MAPPING ");
+        appendIfNotExists(sb);
+        sb.append("FOR ").append(getQualifiedName());
         if (!options.isEmpty()) {
             sb.append(" OPTIONS (");
             for (Entry<String, String> entry : options.entrySet()) {
@@ -99,11 +100,6 @@ public class PgUserMapping  extends PgStatement implements PgForeignOptionContai
     }
 
     @Override
-    public String getDropSQL() {
-        return "DROP USER MAPPING FOR " + getQualifiedName() + ';';
-    }
-
-    @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
@@ -119,6 +115,18 @@ public class PgUserMapping  extends PgStatement implements PgForeignOptionContai
             compareOptions(newUsm, sb);
         }
         return sb.length() > startLength;
+    }
+
+    @Override
+    protected String getDropSQL(boolean generateExists) {
+        final StringBuilder sbString = new StringBuilder();
+        sbString.append("DROP USER MAPPING ");
+        if (generateExists) {
+            sbString.append("IF EXISTS ");
+        }
+        sbString.append("FOR ").append(getQualifiedName());
+        sbString.append(';');
+        return sbString.toString();
     }
 
     @Override
