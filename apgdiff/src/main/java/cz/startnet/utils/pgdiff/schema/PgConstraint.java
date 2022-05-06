@@ -42,13 +42,16 @@ public class PgConstraint extends AbstractConstraint {
     }
 
     @Override
-    public String getDropSQL() {
+    public String getDropSQL(boolean optionExists) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("ALTER ").append(getParent().getStatementType().name()).append(' ');
         sbSQL.append(PgDiffUtils.getQuotedName(getParent().getParent().getName()));
         sbSQL.append('.');
         sbSQL.append(PgDiffUtils.getQuotedName(getParent().getName()));
         sbSQL.append("\n\tDROP CONSTRAINT ");
+        if (optionExists) {
+            sbSQL.append("IF EXISTS ");
+        }
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));
         sbSQL.append(';');
 

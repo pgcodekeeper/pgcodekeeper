@@ -21,6 +21,7 @@ public class MsFunction extends AbstractMsFunction {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
+        appendDropBeforeCreate(sbSQL);
         sbSQL.append(getFunctionFullSQL(true));
 
         appendOwnerSQL(sbSQL);
@@ -53,11 +54,6 @@ public class MsFunction extends AbstractMsFunction {
         }
 
         return true;
-    }
-
-    @Override
-    public String getDropSQL() {
-        return "DROP FUNCTION " + getQualifiedName() + GO;
     }
 
     @Override

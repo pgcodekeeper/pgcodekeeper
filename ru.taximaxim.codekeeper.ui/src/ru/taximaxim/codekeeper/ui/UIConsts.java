@@ -97,6 +97,8 @@ public interface UIConsts {
         String PRINT_INDEX_WITH_CONCURRENTLY = "prefPrintIndexWithConcurrently"; //$NON-NLS-1$;
         String SCRIPT_FROM_SELECTED_OBJS = "prefScriptFromSelectedObjs"; //$NON-NLS-1$;
         String DATA_MOVEMENT_MODE = "prefDataMovementMode"; //$NON-NLS-1$;
+        String GENERATE_EXISTS = "prefGenerateExist"; //$NON-NLS-1$;
+        String DROP_BEFORE_CREATE = "prefDropBeforeCreate"; //$NON-NLS-1$;
     }
 
     interface PG_EDIT_PREF {

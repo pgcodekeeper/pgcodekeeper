@@ -40,11 +40,6 @@ public class MsSchema extends AbstractSchema {
     }
 
     @Override
-    public String getDropSQL() {
-        return "DROP SCHEMA " + MsDiffUtils.quoteName(getName()) + GO;
-    }
-
-    @Override
     public boolean isPostgres() {
         return false;
     }

@@ -54,11 +54,6 @@ implements PgSimpleOptionContainer {
     }
 
     @Override
-    public String getDropSQL() {
-        return "DROP TEXT SEARCH DICTIONARY " + getQualifiedName() + ';';
-    }
-
-    @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();

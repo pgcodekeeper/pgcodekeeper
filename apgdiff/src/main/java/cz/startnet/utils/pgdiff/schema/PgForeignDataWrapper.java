@@ -129,11 +129,6 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
     }
 
     @Override
-    public String getDropSQL() {
-        return "DROP FOREIGN DATA WRAPPER " + PgDiffUtils.getQuotedName(getName()) + ';';
-    }
-
-    @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
