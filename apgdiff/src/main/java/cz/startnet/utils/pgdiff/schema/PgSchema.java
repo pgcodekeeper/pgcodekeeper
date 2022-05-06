@@ -8,8 +8,6 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
-
 /**
  * Postgres schema code generation.
  */
@@ -22,8 +20,10 @@ public class PgSchema extends AbstractSchema {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
+        appendDropBeforeCreate(sbSQL);
         sbSQL.append("CREATE SCHEMA ");
-        sbSQL.append(PgDiffUtils.getQuotedName(getName()));
+        appendIfNotExists(sbSQL);
+        sbSQL.append(getQualifiedName());
 
         sbSQL.append(';');
 
@@ -36,11 +36,6 @@ public class PgSchema extends AbstractSchema {
         }
 
         return sbSQL.toString();
-    }
-
-    @Override
-    public String getDropSQL() {
-        return "DROP SCHEMA " + PgDiffUtils.getQuotedName(getName()) + ';';
     }
 
     @Override

@@ -18,6 +18,7 @@ public class MsSequence extends AbstractSequence {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
+        appendDropBeforeCreate(sbSQL);
         sbSQL.append("CREATE SEQUENCE ");
         sbSQL.append(getQualifiedName());
 
@@ -149,11 +150,6 @@ public class MsSequence extends AbstractSequence {
         }
 
         return sbSQL.length() > 0;
-    }
-
-    @Override
-    public String getDropSQL() {
-        return "DROP SEQUENCE " + getQualifiedName() + GO;
     }
 
     @Override

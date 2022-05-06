@@ -98,8 +98,9 @@ public class PgColumn extends AbstractColumn implements PgSimpleOptionContainer 
         boolean mergeDefaultNotNull = false;
         if (getType() != null && getParentCol((AbstractPgTable) getParent()) == null) {
             sb.append(getAlterTable(false, false));
-            sb.append("\n\tADD COLUMN ")
-            .append(PgDiffUtils.getQuotedName(name))
+            sb.append("\n\tADD COLUMN ");
+            appendIfNotExists(sb);
+            sb.append(PgDiffUtils.getQuotedName(name))
             .append(' ')
             .append(getType());
             if (getCompression() != null) {
@@ -151,7 +152,7 @@ public class PgColumn extends AbstractColumn implements PgSimpleOptionContainer 
     }
 
     @Override
-    public String getDropSQL() {
+    public String getDropSQL(boolean optionExists) {
         if (getType() != null && getParentCol((AbstractPgTable) getParent()) == null) {
             boolean addOnly = true;
 
@@ -164,9 +165,14 @@ public class PgColumn extends AbstractColumn implements PgSimpleOptionContainer 
             if (getParent() instanceof AbstractRegularTable) {
                 addOnly = ((AbstractRegularTable) getParent()).getPartitionBy() == null;
             }
-
-            return getAlterTable(false, addOnly) + "\n\tDROP COLUMN "
-            + PgDiffUtils.getQuotedName(getName()) + ';';
+            StringBuilder dropSb = new StringBuilder();
+            dropSb.append(getAlterTable(false, addOnly))
+            .append("\n\tDROP COLUMN ");
+            if (optionExists) {
+                dropSb.append("IF EXISTS ");
+            }
+            dropSb.append(PgDiffUtils.getQuotedName(getName())).append(";");
+            return dropSb.toString();
         }
 
         StringBuilder sb = new StringBuilder();

@@ -31,6 +31,7 @@ public class MsUser extends PgStatement {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
+        appendDropBeforeCreate(sbSQL);
         sbSQL.append("CREATE USER ");
         sbSQL.append(MsDiffUtils.quoteName(getName()));
         if (login != null) {
@@ -45,11 +46,6 @@ public class MsUser extends PgStatement {
         appendPrivileges(sbSQL);
 
         return sbSQL.toString();
-    }
-
-    @Override
-    public String getDropSQL() {
-        return "DROP USER " + MsDiffUtils.quoteName(name) + GO;
     }
 
     @Override

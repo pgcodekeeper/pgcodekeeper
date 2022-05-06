@@ -36,6 +36,7 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
     @Override
     public String getCreationSQL() {
         StringBuilder sbSql = new StringBuilder();
+        appendDropBeforeCreate(sbSql);
         sbSql.append("CREATE TEXT SEARCH CONFIGURATION ")
         .append(getQualifiedName()).append(" (\n\t");
         sbSql.append("PARSER = ").append(parser).append(" );");
@@ -59,11 +60,6 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
     @Override
     protected String getTypeName() {
         return "TEXT SEARCH CONFIGURATION";
-    }
-
-    @Override
-    public String getDropSQL() {
-        return "DROP TEXT SEARCH CONFIGURATION " + getQualifiedName() + ';';
     }
 
     @Override

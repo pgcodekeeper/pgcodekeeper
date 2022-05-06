@@ -19,6 +19,7 @@ public class MsIndex extends AbstractIndex {
 
     private String getCreationSQL(boolean dropExisting) {
         final StringBuilder sbSQL = new StringBuilder();
+        appendDropBeforeCreate(sbSQL);
         sbSQL.append("CREATE ");
 
         if (isUnique()) {
@@ -106,9 +107,11 @@ public class MsIndex extends AbstractIndex {
     }
 
     @Override
-    public String getDropSQL() {
-        return "DROP INDEX " + MsDiffUtils.quoteName(getName()) + " ON "
-                + getParent().getQualifiedName() + GO;
+    protected StringBuilder appendFullName(StringBuilder sb) {
+        sb.append(MsDiffUtils.quoteName(getName()))
+        .append(" ON ")
+        .append(getParent().getQualifiedName());
+        return sb;
     }
 
     @Override

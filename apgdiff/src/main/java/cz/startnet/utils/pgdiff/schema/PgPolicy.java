@@ -74,6 +74,7 @@ public class PgPolicy extends PgStatementWithSearchPath {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
+        appendDropBeforeCreate(sbSQL);
         sbSQL.append("CREATE POLICY ");
         appendFullName(sbSQL);
 
@@ -103,14 +104,6 @@ public class PgPolicy extends PgStatementWithSearchPath {
             appendCommentSql(sbSQL);
         }
 
-        return sbSQL.toString();
-    }
-
-    @Override
-    public String getDropSQL() {
-        StringBuilder sbSQL = new StringBuilder("DROP POLICY ");
-        appendFullName(sbSQL);
-        sbSQL.append(';');
         return sbSQL.toString();
     }
 

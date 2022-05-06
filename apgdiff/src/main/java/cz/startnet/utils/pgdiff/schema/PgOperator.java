@@ -43,6 +43,7 @@ public class PgOperator extends PgStatementWithSearchPath implements IOperator {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
+        appendDropBeforeCreate(sbSQL);
         sbSQL.append("CREATE OPERATOR ");
         sbSQL.append(PgDiffUtils.getQuotedName(getSchemaName())).append('.');
         sbSQL.append(getBareName());
@@ -98,15 +99,6 @@ public class PgOperator extends PgStatementWithSearchPath implements IOperator {
         }
 
         return sbSQL.toString();
-    }
-
-    @Override
-    public String getDropSQL() {
-        final StringBuilder sbString = new StringBuilder();
-        sbString.append("DROP OPERATOR ");
-        appendFullName(sbString);
-        sbString.append(';');
-        return sbString.toString();
     }
 
     public String getSignature() {

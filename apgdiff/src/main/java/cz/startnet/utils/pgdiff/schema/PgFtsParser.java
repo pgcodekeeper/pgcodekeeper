@@ -31,6 +31,7 @@ public class PgFtsParser extends PgStatementWithSearchPath {
     @Override
     public String getCreationSQL() {
         StringBuilder sbSql = new StringBuilder();
+        appendDropBeforeCreate(sbSql);
         sbSql.append("CREATE TEXT SEARCH PARSER ")
         .append(getQualifiedName()).append(" (\n\t")
         .append("START = ").append(startFunction).append(",\n\t")
@@ -54,11 +55,6 @@ public class PgFtsParser extends PgStatementWithSearchPath {
     @Override
     protected String getTypeName() {
         return "TEXT SEARCH PARSER";
-    }
-
-    @Override
-    public String getDropSQL() {
-        return "DROP TEXT SEARCH PARSER " + getQualifiedName() + ';';
     }
 
     @Override

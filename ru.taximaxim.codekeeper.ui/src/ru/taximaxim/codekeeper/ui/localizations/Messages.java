@@ -364,6 +364,10 @@ public final class Messages extends NLS {
 
     public static String DbUpdatePrefPage_alter_seq_restart_statement;
 
+    public static String DbUpdatePrefPage_option_drop_object;
+
+    public static String DbUpdatePrefPage_option_if_exists;
+
     public static String DbUpdatePrefPage_print_index_with_concurrently;
 
     public static String DbUpdatePrefPage_script_from_selected_objs;
@@ -902,7 +906,6 @@ public final class Messages extends NLS {
     public static String edit;
     public static String feedback_message;
     public static String add_log;
-
 
     public static String FeedBackDialog_bad_response;
 

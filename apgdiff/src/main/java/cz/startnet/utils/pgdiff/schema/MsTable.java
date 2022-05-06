@@ -40,7 +40,7 @@ public class MsTable extends AbstractTable implements PgSimpleOptionContainer{
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
-
+        appendDropBeforeCreate(sbSQL);
         appendName(sbSQL);
         appendColumns(sbSQL);
         appendOptions(sbSQL);
@@ -205,11 +205,6 @@ public class MsTable extends AbstractTable implements PgSimpleOptionContainer{
         sb.append(getAlterTable(true, false));
         sb.append(" ENABLE CHANGE_TRACKING WITH (TRACK_COLUMNS_UPDATED = ");
         sb.append(isTracked() ? "ON" : "OFF").append(')').append(GO);
-    }
-
-    @Override
-    public String getDropSQL() {
-        return "DROP TABLE " + getQualifiedName() + GO;
     }
 
     @Override

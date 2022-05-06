@@ -25,16 +25,12 @@ public class MsClrFunction extends AbstractMsClrFunction {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
+        appendDropBeforeCreate(sbSQL);
         sbSQL.append(getFunctionFullSQL(true));
 
         appendOwnerSQL(sbSQL);
         appendPrivileges(sbSQL);
         return sbSQL.toString();
-    }
-
-    @Override
-    public String getDropSQL() {
-        return "DROP FUNCTION " + getQualifiedName() + GO;
     }
 
     @Override

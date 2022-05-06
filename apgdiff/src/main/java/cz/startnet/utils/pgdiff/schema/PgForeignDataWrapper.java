@@ -94,6 +94,7 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
     @Override
     public String getCreationSQL() {
         final StringBuilder sb = new StringBuilder();
+        appendDropBeforeCreate(sb);
         sb.append("CREATE FOREIGN DATA WRAPPER ");
         sb.append(PgDiffUtils.getQuotedName(getName()));
         if (getHandler() != null) {
@@ -126,11 +127,6 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
             appendCommentSql(sb);
         }
         return sb.toString();
-    }
-
-    @Override
-    public String getDropSQL() {
-        return "DROP FOREIGN DATA WRAPPER " + PgDiffUtils.getQuotedName(getName()) + ';';
     }
 
     @Override

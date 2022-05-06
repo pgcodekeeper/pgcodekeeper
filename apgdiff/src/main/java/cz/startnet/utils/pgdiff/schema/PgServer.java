@@ -99,7 +99,10 @@ public class PgServer extends PgStatement implements PgForeignOptionContainer{
     @Override
     public String getCreationSQL() {
         final StringBuilder sb = new StringBuilder();
-        sb.append("CREATE SERVER ").append(PgDiffUtils.getQuotedName(getName()));
+        appendDropBeforeCreate(sb);
+        sb.append("CREATE SERVER ");
+        appendIfNotExists(sb);
+        sb.append(PgDiffUtils.getQuotedName(getName()));
         if (getType() != null) {
             sb.append(" TYPE ").append(getType());
         }
@@ -130,11 +133,6 @@ public class PgServer extends PgStatement implements PgForeignOptionContainer{
             appendCommentSql(sb);
         }
         return sb.toString();
-    }
-
-    @Override
-    public String getDropSQL() {
-        return "DROP SERVER " + PgDiffUtils.getQuotedName(getName()) + ';';
     }
 
     @Override

@@ -47,6 +47,7 @@ public abstract class AbstractPgFunction extends AbstractFunction {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
+        appendDropBeforeCreate(sbSQL);
         sbSQL.append("CREATE OR REPLACE ");
         sbSQL.append(getStatementType());
         sbSQL.append(' ');
@@ -139,15 +140,6 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         }
 
         return sbSQL.toString();
-    }
-
-    @Override
-    public String getDropSQL() {
-        final StringBuilder sbString = new StringBuilder();
-        sbString.append("DROP ").append(getTypeName()).append(' ');
-        appendFullName(sbString);
-        sbString.append(';');
-        return sbString.toString();
     }
 
     @Override

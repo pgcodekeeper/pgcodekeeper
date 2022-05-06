@@ -31,6 +31,7 @@ implements PgSimpleOptionContainer {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSql = new StringBuilder();
+        appendDropBeforeCreate(sbSql);
         sbSql.append("CREATE TEXT SEARCH DICTIONARY ")
         .append(getQualifiedName());
         sbSql.append(" (\n\tTEMPLATE = ").append(template);
@@ -51,11 +52,6 @@ implements PgSimpleOptionContainer {
     @Override
     protected String getTypeName() {
         return "TEXT SEARCH DICTIONARY";
-    }
-
-    @Override
-    public String getDropSQL() {
-        return "DROP TEXT SEARCH DICTIONARY " + getQualifiedName() + ';';
     }
 
     @Override

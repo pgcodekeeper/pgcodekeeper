@@ -46,6 +46,7 @@ public class MsAssembly extends PgStatement {
 
     private String getAssemblyFullSQL(boolean isPreview) {
         StringBuilder sb = new StringBuilder();
+        appendDropBeforeCreate(sb);
         sb.append("CREATE ASSEMBLY ").append(MsDiffUtils.quoteName(name));
         if (owner != null) {
             sb.append("\nAUTHORIZATION ").append(MsDiffUtils.quoteName(owner));
@@ -75,8 +76,16 @@ public class MsAssembly extends PgStatement {
 
 
     @Override
-    public String getDropSQL() {
-        return "DROP ASSEMBLY " + MsDiffUtils.quoteName(name) + " WITH NO DEPENDENTS" + GO;
+    public String getDropSQL(boolean optionExists) {
+        StringBuilder dropSb = new StringBuilder();
+        dropSb.append("DROP ASSEMBLY ");
+        if (optionExists) {
+            dropSb.append("IF EXISTS ");
+        }
+        dropSb.append(MsDiffUtils.quoteName(name))
+        .append(" WITH NO DEPENDENTS")
+        .append(GO);
+        return dropSb.toString();
     }
 
     @Override

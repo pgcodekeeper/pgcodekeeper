@@ -36,11 +36,6 @@ public abstract class AbstractForeignTable extends AbstractPgTable implements Pg
     }
 
     @Override
-    public String getDropSQL() {
-        return "DROP FOREIGN TABLE " + getQualifiedName() + ';';
-    }
-
-    @Override
     protected boolean isNeedRecreate(AbstractTable newTable) {
         return super.isNeedRecreate(newTable)
                 || !this.getClass().equals(newTable.getClass())
@@ -82,7 +77,9 @@ public abstract class AbstractForeignTable extends AbstractPgTable implements Pg
 
     @Override
     protected void appendName(StringBuilder sbSQL) {
-        sbSQL.append("CREATE FOREIGN TABLE ").append(getQualifiedName());
+        sbSQL.append("CREATE FOREIGN TABLE ");
+        appendIfNotExists(sbSQL);
+        sbSQL.append(getQualifiedName());
     }
 
     @Override

@@ -28,6 +28,7 @@ public class PgFtsTemplate extends PgStatementWithSearchPath {
     @Override
     public String getCreationSQL() {
         StringBuilder sbSql = new StringBuilder();
+        appendDropBeforeCreate(sbSql);
         sbSql.append("CREATE TEXT SEARCH TEMPLATE ")
         .append(getQualifiedName()).append(" (\n\t");
 
@@ -48,11 +49,6 @@ public class PgFtsTemplate extends PgStatementWithSearchPath {
     @Override
     protected String getTypeName() {
         return "TEXT SEARCH TEMPLATE";
-    }
-
-    @Override
-    public String getDropSQL() {
-        return "DROP TEXT SEARCH TEMPLATE " + getQualifiedName() + ';';
     }
 
     @Override
