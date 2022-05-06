@@ -94,7 +94,6 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
     @Override
     public String getCreationSQL() {
         final StringBuilder sb = new StringBuilder();
-        appendDropBeforeCreate(sb);
         sb.append("CREATE FOREIGN DATA WRAPPER ");
         sb.append(PgDiffUtils.getQuotedName(getName()));
         if (getHandler() != null) {

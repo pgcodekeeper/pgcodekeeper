@@ -28,7 +28,6 @@ public class PgFtsTemplate extends PgStatementWithSearchPath {
     @Override
     public String getCreationSQL() {
         StringBuilder sbSql = new StringBuilder();
-        appendDropBeforeCreate(sbSql);
         sbSql.append("CREATE TEXT SEARCH TEMPLATE ")
         .append(getQualifiedName()).append(" (\n\t");
 

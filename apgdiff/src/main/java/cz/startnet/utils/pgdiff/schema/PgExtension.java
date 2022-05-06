@@ -51,7 +51,6 @@ public class PgExtension extends PgStatement {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
-        appendDropBeforeCreate(sbSQL);
         sbSQL.append("CREATE EXTENSION ");
         appendIfNotExists(sbSQL);
         sbSQL.append(getQualifiedName());

@@ -100,7 +100,6 @@ public class PgServer extends PgStatement implements PgForeignOptionContainer{
     @Override
     public String getCreationSQL() {
         final StringBuilder sb = new StringBuilder();
-        appendDropBeforeCreate(sb);
         sb.append("CREATE SERVER ");
         appendIfNotExists(sb);
         sb.append(PgDiffUtils.getQuotedName(getName()));

@@ -36,7 +36,6 @@ public class PgIndex extends AbstractIndex {
 
     private String getCreationSQL(String name) {
         final StringBuilder sbSQL = new StringBuilder();
-        appendDropBeforeCreate(sbSQL);
         sbSQL.append("CREATE ");
 
         if (isUnique()) {

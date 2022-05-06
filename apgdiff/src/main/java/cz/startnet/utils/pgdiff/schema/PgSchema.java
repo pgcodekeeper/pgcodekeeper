@@ -20,7 +20,6 @@ public class PgSchema extends AbstractSchema {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
-        appendDropBeforeCreate(sbSQL);
         sbSQL.append("CREATE SCHEMA ");
         appendIfNotExists(sbSQL);
         sbSQL.append(getQualifiedName());
