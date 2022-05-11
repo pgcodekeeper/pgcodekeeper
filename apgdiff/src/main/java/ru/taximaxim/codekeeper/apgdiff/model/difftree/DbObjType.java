@@ -29,9 +29,9 @@ public enum DbObjType {
     FUNCTION,
     PROCEDURE,
     AGGREGATE,
+    INDEX,
     CONSTRAINT,
     VIEW,
-    INDEX,
     TRIGGER,
     RULE,
     POLICY
