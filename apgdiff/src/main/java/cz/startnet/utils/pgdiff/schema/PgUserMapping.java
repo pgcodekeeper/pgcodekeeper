@@ -2,7 +2,6 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -82,20 +81,11 @@ public class PgUserMapping extends PgStatement implements PgForeignOptionContain
         sb.append("CREATE USER MAPPING ");
         appendIfNotExists(sb);
         sb.append("FOR ").append(getQualifiedName());
-        if (!options.isEmpty()) {
-            sb.append(" OPTIONS (");
-            for (Entry<String, String> entry : options.entrySet()) {
-                String key = entry.getKey();
-                String value = entry.getValue();
-                sb.append(key)
-                .append(" ")
-                .append(value)
-                .append(", ");
-            }
-            sb.setLength(sb.length() - 2);
-            sb.append(")");
+        if (!getOptions().isEmpty()) {
+            sb.append(' ');
         }
-        sb.append(";");
+        appendOptions(sb);
+        sb.append(';');
         return sb.toString();
     }
 

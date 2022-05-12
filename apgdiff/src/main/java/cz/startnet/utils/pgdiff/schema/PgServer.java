@@ -2,7 +2,6 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -110,21 +109,11 @@ public class PgServer extends PgStatement implements PgForeignOptionContainer{
             sb.append(" VERSION ").append(getVersion());
         }
         sb.append(" FOREIGN DATA WRAPPER ").append(PgDiffUtils.getQuotedName(getFdw()));
-
-        if (!options.isEmpty()) {
-            sb.append(" OPTIONS ").append("(");
-            for (Entry<String, String> entry : options.entrySet()) {
-                String key = entry.getKey();
-                String value = entry.getValue();
-                sb.append(PgDiffUtils.getQuotedName(key))
-                .append(" ")
-                .append(value)
-                .append(", ");
-            }
-            sb.setLength(sb.length() - 2);
-            sb.append(")");
+        if (!getOptions().isEmpty()) {
+            sb.append(' ');
         }
-        sb.append(";");
+        appendOptions(sb);
+        sb.append(';');
         appendOwnerSQL(sb);
         appendPrivileges(sb);
 
