@@ -317,7 +317,6 @@ public class PgType extends AbstractType {
     @Override
     public String getCreationSQL() {
         StringBuilder sb = new StringBuilder();
-        appendDropBeforeCreate(sb);
         sb.append("CREATE TYPE ").append(getQualifiedName());
 
         switch(form) {

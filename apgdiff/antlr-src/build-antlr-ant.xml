@@ -56,7 +56,7 @@
       the space-separated quoted format.
      -->
     <echo message="running antlr-tool for ${build-fileset-final}" />
-    <java jar="antlr-4.6-complete.jar" fork="true" failonerror="true" maxmemory="256M">
+    <java jar="antlr-4.9.3-complete.jar" fork="true" failonerror="true" maxmemory="256M">
       <arg value="-Werror" />
       <arg value="-no-listener" />
       <arg value="-no-visitor" />

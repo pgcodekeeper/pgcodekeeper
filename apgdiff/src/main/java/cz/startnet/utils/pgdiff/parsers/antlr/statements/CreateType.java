@@ -54,7 +54,7 @@ public class CreateType extends ParserAbstract {
         }
 
         for (Table_column_definitionContext attr : ctx.attrs) {
-            type.addAttr(getColumn(attr));
+            addAttr(attr, type);
         }
         for (Character_stringContext enume : ctx.enums) {
             type.addEnum(enume.getText());
@@ -155,14 +155,14 @@ public class CreateType extends ParserAbstract {
         }
     }
 
-    private AbstractColumn getColumn(Table_column_definitionContext colCtx) {
+    private void addAttr(Table_column_definitionContext colCtx, PgType type) {
         AbstractColumn col = new PgColumn(colCtx.identifier().getText());
         col.setType(getTypeName(colCtx.data_type()));
-        addPgTypeDepcy(colCtx.data_type(), col);
+        addPgTypeDepcy(colCtx.data_type(), type);
         if (colCtx.collate_identifier() != null) {
             col.setCollation(getFullCtxText(colCtx.collate_identifier().collation));
         }
-        return col;
+        type.addAttr(col);
     }
 
     @Override

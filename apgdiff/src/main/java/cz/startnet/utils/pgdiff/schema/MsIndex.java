@@ -19,7 +19,6 @@ public class MsIndex extends AbstractIndex {
 
     private String getCreationSQL(boolean dropExisting) {
         final StringBuilder sbSQL = new StringBuilder();
-        appendDropBeforeCreate(sbSQL);
         sbSQL.append("CREATE ");
 
         if (isUnique()) {

@@ -43,7 +43,6 @@ public class PgOperator extends PgStatementWithSearchPath implements IOperator {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
-        appendDropBeforeCreate(sbSQL);
         sbSQL.append("CREATE OPERATOR ");
         sbSQL.append(PgDiffUtils.getQuotedName(getSchemaName())).append('.');
         sbSQL.append(getBareName());

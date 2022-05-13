@@ -49,6 +49,9 @@ public class PgConstraint extends AbstractConstraint {
         sbSQL.append('.');
         sbSQL.append(PgDiffUtils.getQuotedName(getParent().getName()));
         sbSQL.append("\n\tDROP CONSTRAINT ");
+        if (optionExists) {
+            sbSQL.append("IF EXISTS ");
+        }
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));
         sbSQL.append(';');
 

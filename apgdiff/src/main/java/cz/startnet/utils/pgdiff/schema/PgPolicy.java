@@ -74,7 +74,6 @@ public class PgPolicy extends PgStatementWithSearchPath {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
-        appendDropBeforeCreate(sbSQL);
         sbSQL.append("CREATE POLICY ");
         appendFullName(sbSQL);
 
