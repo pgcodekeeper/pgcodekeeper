@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -51,9 +50,8 @@ public class ServersReader implements PgCatalogStrings {
             srv.setVersion(PgDiffUtils.quoteString(srvVersion));
         }
 
-        if (res.getString("srvoptions") != null) {
-            Array arr = res.getArray("srvoptions");
-            String[] options = (String[]) arr.getArray();
+        String[] options = JdbcReader.getColArray(res, "srvoptions");
+        if (options != null) {
             ParserAbstract.fillOptionParams(options, srv::addOption, false, true, false);
         }
         String comment = res.getString("description");

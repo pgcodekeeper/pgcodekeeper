@@ -492,7 +492,8 @@ public abstract class ParserAbstract {
     }
 
     protected String getUserMappingName(Create_user_mapping_statementContext nameCtx) {
-        return nameCtx.user_name().getText() + " SERVER " + nameCtx.identifier().getText();
+        return nameCtx.user_name() != null ? nameCtx.user_name().getText() : nameCtx.USER().toString()
+                + " SERVER " + nameCtx.identifier().getText();
     }
 
     protected <T extends IStatement, U extends Object> void doSafe(BiConsumer<T, U> adder,
