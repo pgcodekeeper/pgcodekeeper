@@ -492,7 +492,7 @@ public abstract class ParserAbstract {
     }
 
     protected String getUserMappingName(Create_user_mapping_statementContext nameCtx) {
-        return nameCtx.user_name() != null ? nameCtx.user_name().getText() : nameCtx.USER().toString()
+        return (nameCtx.user_name() != null ? nameCtx.user_name().getText() : nameCtx.USER().get(1).getText())
                 + " SERVER " + nameCtx.identifier().getText();
     }
 
