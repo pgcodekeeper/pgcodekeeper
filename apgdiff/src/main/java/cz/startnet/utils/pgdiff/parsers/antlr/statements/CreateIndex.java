@@ -10,8 +10,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_index_statementCo
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Including_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_columnContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_restContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_columnsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_restContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_whereContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_varContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
@@ -87,7 +87,7 @@ public class CreateIndex extends ParserAbstract {
                 String key = option.storage_parameter_name().getText();
                 VexContext v = option.vex();
                 String value = v == null ? "" : v.getText();
-                ind.addOption(key, value);
+                fillOptionParams(value, key, false, ind::addOption);
             }
         }
 

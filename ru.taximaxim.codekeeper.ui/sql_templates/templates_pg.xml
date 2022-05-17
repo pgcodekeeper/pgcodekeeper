@@ -152,6 +152,13 @@ $$$$;</template>
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createserver.protected"
     >CREATE SERVER ${objectName} FOREIGN DATA WRAPPER ${wrapperName};</template>
 
+<template 
+    name="create_user_mapping"
+    description="%create.user_mapping.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createuser_mapping.protected"
+    >CREATE USER MAPPING FOR ${userName} SERVER ${serverName};</template>
+    
 <!-- templates for CREATE (UNPROTECTED) -->
 
 <template 

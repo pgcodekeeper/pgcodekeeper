@@ -2,12 +2,29 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.text.MessageFormat;
 import java.util.Map;
+import java.util.Map.Entry;
 
 public interface PgForeignOptionContainer extends PgOptionContainer {
 
     static final String ALTER_FOREIGN_OPTION = "{0} OPTIONS ({1} {2} {3});";
+    static final String DELIM = ",\n    ";
 
     String getAlterHeader();
+
+    default void appendOptions(StringBuilder sb) {
+        Map<String, String> options = getOptions();
+        if (!options.isEmpty()) {
+            sb.append("OPTIONS (\n    ");
+            for (Entry<String, String> entry : options.entrySet()) {
+                sb.append(entry.getKey())
+                .append(' ')
+                .append(entry.getValue())
+                .append(DELIM);
+            }
+            sb.setLength(sb.length() - DELIM.length());
+            sb.append("\n)");
+        }
+    }
 
     @Override
     default void compareOptions(PgOptionContainer newContainer, StringBuilder sb) {

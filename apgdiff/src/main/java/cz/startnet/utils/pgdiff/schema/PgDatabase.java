@@ -39,6 +39,7 @@ public class PgDatabase extends PgStatement implements IDatabase {
     private final Map<String, PgExtension> extensions = new LinkedHashMap<>();
     private final Map<String, PgForeignDataWrapper> fdws = new LinkedHashMap<>();
     private final Map<String, PgServer> servers = new LinkedHashMap<>();
+    private final Map<String, PgUserMapping> userMappings = new LinkedHashMap<>();
     private final Map<String, PgCast> casts = new LinkedHashMap<>();
     private final Map<String, MsAssembly> assemblies = new LinkedHashMap<>();
     private final Map<String, MsRole> roles = new LinkedHashMap<>();
@@ -191,6 +192,7 @@ public class PgDatabase extends PgStatement implements IDatabase {
         l.add(extensions.values());
         l.add(fdws.values());
         l.add(servers.values());
+        l.add(userMappings.values());
         l.add(casts.values());
         l.add(assemblies.values());
         l.add(roles.values());
@@ -208,6 +210,8 @@ public class PgDatabase extends PgStatement implements IDatabase {
             return getForeignDW(name);
         case SERVER:
             return getServer(name);
+        case USER_MAPPING:
+            return getUserMapping(name);
         case CAST:
             return getCast(name);
         case ASSEMBLY:
@@ -239,6 +243,9 @@ public class PgDatabase extends PgStatement implements IDatabase {
             break;
         case CAST:
             addCast((PgCast) st);
+            break;
+        case USER_MAPPING:
+            addUserMapping((PgUserMapping) st);
             break;
         case ASSEMBLY:
             addAssembly((MsAssembly) st);
@@ -312,6 +319,18 @@ public class PgDatabase extends PgStatement implements IDatabase {
 
     public void addServer(final PgServer server) {
         addUnique(servers, server, this);
+    }
+
+    public PgUserMapping getUserMapping(final String name) {
+        return userMappings.get(name);
+    }
+
+    public Collection<PgUserMapping> getUserMappings() {
+        return Collections.unmodifiableCollection(userMappings.values());
+    }
+
+    public void addUserMapping(final PgUserMapping userMapping) {
+        addUnique(userMappings, userMapping, this);
     }
 
     /**

@@ -21,7 +21,12 @@ CREATE FOREIGN TABLE public.films (
 	len interval hour to minute
 )
 SERVER film_server
-OPTIONS (schema_name 'public', table_name 'films', updatable 'true', use_remote_estimate 'true');
+OPTIONS (
+    schema_name 'public',
+    table_name 'films',
+    updatable 'true',
+    use_remote_estimate 'true'
+);
 
 ALTER FOREIGN TABLE public.films ALTER COLUMN code SET STORAGE PLAIN;
 

@@ -1,7 +1,6 @@
 package cz.startnet.utils.pgdiff.loader;
 
 import java.io.IOException;
-import java.sql.Array;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -98,14 +97,16 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
 
                 MetaFunction function = new MetaFunction(schemaName, signature, functionName);
 
-                Array arr = result.getArray("proargmodes");
+                String[] arr = JdbcReader.getColArray(result, "proargmodes");
                 if (arr != null) {
-                    List<String> argModes = Arrays.asList((String[])arr.getArray());
+                    List<String> argModes = Arrays.asList(arr);
                     if (argModes.contains("t")) {
-                        Long[] argTypeOids = (Long[]) result.getArray("proallargtypes").getArray();
-                        String[] argNames = (String[]) result.getArray("proargnames").getArray();
+                        Long[] argTypeOids = JdbcReader.getColArray(result, "proallargtypes");
+                        String[] argNames = JdbcReader.getColArray(result, "proargnames");
 
-                        IntStream.range(0, argModes.size()).filter(i -> "t".equals(argModes.get(i))).forEach(e -> {
+                        IntStream.range(0, argModes.size())
+                        .filter(i -> "t".equals(argModes.get(i)))
+                        .forEach(e -> {
                             JdbcType returnType = cachedTypesByOid.get(argTypeOids[e]);
                             function.addReturnsColumn(argNames[e], returnType.getFullName(schemaName));
                         });
@@ -182,10 +183,9 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                 }
                 MetaRelation relation = new MetaRelation(schemaName, relationName, type);
 
-                Array arr = result.getArray("col_names");
-                if (arr != null) {
-                    String[] colNames = (String[]) arr.getArray();
-                    String[] colTypes = (String[]) result.getArray("col_types").getArray();
+                String[] colNames = JdbcReader.getColArray(result, "col_names");
+                if (colNames != null) {
+                    String[] colTypes = JdbcReader.getColArray(result, "col_types");
                     List<Pair<String, String>> columns = new ArrayList<>(colNames.length);
                     for (int i = 0; i < colNames.length; i++) {
                         JdbcReader.checkTypeValidity(colTypes[i]);

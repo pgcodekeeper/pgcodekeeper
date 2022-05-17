@@ -56,6 +56,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateServer;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTable;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateType;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateUserMapping;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.DeleteStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.DropStatement;
@@ -127,6 +128,8 @@ implements SqlContextProcessor {
             p = new CreateServer(ctx.create_server_statement(), db);
         } else if (ctx.create_cast_statement() != null) {
             p = new CreateCast(ctx.create_cast_statement(), db);
+        } else if (ctx.create_user_mapping_statement() != null) {
+            p = new CreateUserMapping(ctx.create_user_mapping_statement(), db);
         } else if (ctx.create_trigger_statement() != null) {
             p = new CreateTrigger(ctx.create_trigger_statement(), db);
         } else if (ctx.create_rewrite_statement() != null) {

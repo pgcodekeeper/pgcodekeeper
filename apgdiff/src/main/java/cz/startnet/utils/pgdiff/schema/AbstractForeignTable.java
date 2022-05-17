@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.schema;
 
-import java.util.Map.Entry;
 import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -43,26 +42,12 @@ public abstract class AbstractForeignTable extends AbstractPgTable implements Pg
     }
 
     @Override
-    protected void appendOptions(StringBuilder sbSQL) {
+    public void appendOptions(StringBuilder sbSQL) {
         sbSQL.append("\nSERVER ").append(PgDiffUtils.getQuotedName(serverName));
-
-        StringBuilder sb = new StringBuilder();
-        for (Entry <String, String> entry : options.entrySet()) {
-            String key = entry.getKey();
-            String value = entry.getValue();
-
-            sb.append(key);
-            if (!value.isEmpty()) {
-                sb.append(' ').append(value);
-            }
-            sb.append(", ");
+        if (!getOptions().isEmpty()) {
+            sbSQL.append('\n');
         }
-
-        if (sb.length() > 0) {
-            sb.setLength(sb.length() - 2);
-            sbSQL.append("\nOPTIONS (").append(sb).append(")");
-        }
-
+        PgForeignOptionContainer.super.appendOptions(sbSQL);
         sbSQL.append(';');
     }
 

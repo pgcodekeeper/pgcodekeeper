@@ -94,7 +94,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
         }
     }
 
-    protected static <T> T[] getColArray(ResultSet rs, String columnName) throws SQLException {
+    public static <T> T[] getColArray(ResultSet rs, String columnName) throws SQLException {
         Array arr = rs.getArray(columnName);
         if (arr != null) {
             @SuppressWarnings("unchecked")
