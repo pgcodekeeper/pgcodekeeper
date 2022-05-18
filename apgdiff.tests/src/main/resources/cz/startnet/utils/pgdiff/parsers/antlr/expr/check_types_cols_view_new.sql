@@ -196,3 +196,16 @@ CREATE VIEW public.asterisk15 AS
            FROM public.tablettt) AS qqq,
     ( SELECT to_json(d.*) AS to_json
            FROM public.tablettt d) AS www;
+
+CREATE VIEW public.lateral_access AS
+  SELECT first.c1 AS c1_int,
+       second.c1 AS c1_text,
+       second.c1_int_nested AS c1_int_nested
+  FROM
+    (SELECT 1 c1) first,
+    LATERAL 
+    (SELECT first.c1,
+            second.c1_int_nested
+     FROM
+       (SELECT 'text' c1) first,
+       (SELECT first.c1 c1_int_nested) second) second;
