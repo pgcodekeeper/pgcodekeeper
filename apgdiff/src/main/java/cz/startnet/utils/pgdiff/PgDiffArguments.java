@@ -49,6 +49,24 @@ public class PgDiffArguments {
     private boolean ignoreColumnOrder;
     private boolean autoFormatObjectCode;
     private FormatConfiguration formatConfiguration = new FormatConfiguration();
+    private boolean generateExists;
+    private boolean dropBeforeCreate;
+
+    public boolean isDropBeforeCreate() {
+        return dropBeforeCreate;
+    }
+
+    public void setDropBeforeCreate(boolean dropBeforeCreate) {
+        this.dropBeforeCreate = dropBeforeCreate;
+    }
+
+    public boolean isGenerateExists() {
+        return generateExists;
+    }
+
+    public void setGenerateExists(boolean generateExists) {
+        this.generateExists = generateExists;
+    }
 
     public void setNewSrc(final String newSrc) {
         this.newSrc = newSrc;

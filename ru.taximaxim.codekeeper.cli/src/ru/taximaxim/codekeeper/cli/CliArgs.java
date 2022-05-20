@@ -163,6 +163,14 @@ public class CliArgs extends PgDiffArguments {
             usage="print CREATE INDEX with CONCURRENTLY option for PostgreSQL and WITH ONLINE = ON for MS SQL")
     private boolean concurrentlyMode;
 
+    @Option(name="--generate-exist", forbids={"--graph", "--parse"},
+            usage="print CREATE IF NOT EXISTS / DROP IF EXISTS")
+    private boolean generateExists;
+
+    @Option(name="--drop-before-create", forbids={"--graph", "--parse"},
+            usage="print DROP before CREATE statement")
+    private boolean dropBeforeCreate;
+
     @Option(name="-S", aliases="--safe-mode", forbids={"--graph", "--parse"},
             usage="do not generate scripts containing dangerous statements\nsee: --allow-danger-ddl")
     private boolean safeMode;
@@ -521,6 +529,26 @@ public class CliArgs extends PgDiffArguments {
     @Override
     public Collection<DbObjType> getAllowedTypes() {
         return Collections.unmodifiableCollection(allowedTypes);
+    }
+
+    @Override
+    public void setGenerateExists(boolean generateExists) {
+        this.generateExists = generateExists;
+    }
+
+    @Override
+    public boolean isGenerateExists() {
+        return generateExists;
+    }
+
+    @Override
+    public boolean isDropBeforeCreate() {
+        return dropBeforeCreate;
+    }
+
+    @Override
+    public void setDropBeforeCreate(boolean dropBeforeCreate) {
+        this.dropBeforeCreate = dropBeforeCreate;
     }
 
     public Collection<DbObjType> getGraphFilterTypes() {

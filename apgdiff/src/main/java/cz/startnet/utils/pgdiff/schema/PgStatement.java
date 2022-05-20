@@ -116,8 +116,12 @@ public abstract class PgStatement implements IStatement, IHashable {
         return getMeta().isLib();
     }
 
-    public void markAsLib() {
-        getMeta().setLib(true);
+    public String getLibName() {
+        return getMeta().getLibName();
+    }
+
+    public void setLibName(String libName) {
+        getMeta().setLibName(libName);
     }
 
     public String getAuthor() {
@@ -391,7 +395,36 @@ public abstract class PgStatement implements IStatement, IHashable {
         }
     }
 
-    public abstract String getDropSQL();
+    public final String getDropSQL() {
+        PgDiffArguments args = getDatabase().getArguments();
+        return getDropSQL(args != null && args.isGenerateExists());
+    }
+
+    protected String getDropSQL(boolean generateExists) {
+        final StringBuilder sbString = new StringBuilder();
+        sbString.append("DROP ").append(getTypeName()).append(' ');
+        if (generateExists) {
+            sbString.append("IF EXISTS ");
+        }
+        appendFullName(sbString);
+        sbString.append(isPostgres() ? ';' : GO);
+        return sbString.toString();
+    }
+
+    protected void appendDropBeforeCreate(StringBuilder sb) {
+        PgDiffArguments args = getDatabase().getArguments();
+        if (args != null && args.isDropBeforeCreate()) {
+            sb.append(getDropSQL(true));
+            sb.append("\n\n");
+        }
+    }
+
+    protected void appendIfNotExists(StringBuilder sb) {
+        PgDiffArguments args = getDatabase().getArguments();
+        if (args != null && args.isGenerateExists()) {
+            sb.append("IF NOT EXISTS ");
+        }
+    }
 
     /**
      * Метод заполняет sb выражением изменения объекта, можно ли изменить объект
@@ -440,10 +473,11 @@ public abstract class PgStatement implements IStatement, IHashable {
      * Shallow version of {@link #equals(Object)}
      */
     public boolean compare(PgStatement obj) {
-        return Objects.equals(name, obj.name)
-                && privileges.equals(obj.privileges)
+        return getStatementType() == obj.getStatementType()
+                && Objects.equals(name, obj.name)
                 && Objects.equals(owner, obj.owner)
-                && Objects.equals(comment, obj.comment);
+                && Objects.equals(comment, obj.comment)
+                && privileges.equals(obj.privileges);
     }
 
     protected final void copyBaseFields(PgStatement copy) {
@@ -468,7 +502,7 @@ public abstract class PgStatement implements IStatement, IHashable {
         if (DbObjType.DATABASE == type) {
             return db;
         }
-        PgStatement twinParent = getParent().getTwin(db);
+        PgStatement twinParent = getParent().getTwinRecursive(db);
         if (twinParent == null) {
             return null;
         }
@@ -537,8 +571,8 @@ public abstract class PgStatement implements IStatement, IHashable {
             return true;
         } else if (obj instanceof PgStatement) {
             PgStatement st = (PgStatement) obj;
-            return this.parentNamesEquals(st)
-                    && this.compare(st)
+            return this.compare(st)
+                    && this.parentNamesEquals(st)
                     && this.compareChildren(st);
         }
         return false;

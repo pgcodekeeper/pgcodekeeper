@@ -61,6 +61,7 @@ public class PgTrigger extends AbstractTrigger {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
+        appendDropBeforeCreate(sbSQL);
         sbSQL.append("CREATE");
         if (isConstraint()) {
             sbSQL.append(" CONSTRAINT");
@@ -160,15 +161,6 @@ public class PgTrigger extends AbstractTrigger {
         }
 
         return sbSQL.toString();
-    }
-
-    @Override
-    public final String getDropSQL() {
-        final StringBuilder sb = new StringBuilder();
-        sb.append("DROP ").append(getTypeName()).append(' ');
-        appendFullName(sb);
-        sb.append(';');
-        return sb.toString();
     }
 
     @Override

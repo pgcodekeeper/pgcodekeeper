@@ -3,6 +3,8 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 import java.util.Arrays;
 import java.util.List;
 
+import org.antlr.v4.runtime.CommonTokenStream;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_foreign_table_statementContext;
@@ -28,8 +30,8 @@ public class CreateForeignTable extends TableAbstract {
 
     private final Create_foreign_table_statementContext ctx;
 
-    public CreateForeignTable(Create_foreign_table_statementContext ctx, PgDatabase db) {
-        super(db);
+    public CreateForeignTable(Create_foreign_table_statementContext ctx, PgDatabase db, CommonTokenStream stream) {
+        super(db, stream);
         this.ctx = ctx;
     }
 
@@ -80,7 +82,7 @@ public class CreateForeignTable extends TableAbstract {
             for (Foreign_optionContext option : options.foreign_option()) {
                 Character_stringContext opt = option.character_string();
                 String value = opt == null ? null : opt.getText();
-                fillOptionParams(value, option.foreign_option_name().getText(), false, table::addOption);
+                fillOptionParams(value, option.col_label().getText(), false, table::addOption);
             }
         }
         return table;

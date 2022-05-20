@@ -42,6 +42,8 @@ COMMENT ON FUNCTION public.test_fnc(arg character varying) IS NULL;
 
 COMMENT ON PROCEDURE public.test_proc(arg integer) IS NULL;
 
+COMMENT ON INDEX public.test_index IS NULL;
+
 COMMENT ON CONSTRAINT text_check ON public.test IS NULL;
 
 COMMENT ON CONSTRAINT test_pkey ON public.test IS NULL;
@@ -51,8 +53,6 @@ COMMENT ON MATERIALIZED VIEW public.test_mat_view IS NULL;
 COMMENT ON VIEW public.test_view IS NULL;
 
 COMMENT ON COLUMN public.test_view.id IS NULL;
-
-COMMENT ON INDEX public.test_index IS NULL;
 
 COMMENT ON TRIGGER test_trigger ON public.test IS NULL;
 

@@ -1,8 +1,8 @@
 package cz.startnet.utils.pgdiff.schema;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -54,7 +54,7 @@ public class PgServer extends PgStatement implements PgForeignOptionContainer{
 
     @Override
     public Map<String, String> getOptions() {
-        return options;
+        return Collections.unmodifiableMap(options);
     }
 
     @Override
@@ -83,8 +83,7 @@ public class PgServer extends PgStatement implements PgForeignOptionContainer{
         }
         if (obj instanceof PgServer && super.compare(obj)) {
             PgServer srv = (PgServer) obj;
-            return obj instanceof PgServer && super.compare(obj)
-                    && Objects.equals(type, srv.getType())
+            return Objects.equals(type, srv.getType())
                     && Objects.equals(version, srv.getVersion())
                     && Objects.equals(fdw, srv.getFdw())
                     && Objects.equals(options, srv.getOptions());
@@ -100,7 +99,9 @@ public class PgServer extends PgStatement implements PgForeignOptionContainer{
     @Override
     public String getCreationSQL() {
         final StringBuilder sb = new StringBuilder();
-        sb.append("CREATE SERVER ").append(PgDiffUtils.getQuotedName(getName()));
+        sb.append("CREATE SERVER ");
+        appendIfNotExists(sb);
+        sb.append(PgDiffUtils.getQuotedName(getName()));
         if (getType() != null) {
             sb.append(" TYPE ").append(getType());
         }
@@ -108,21 +109,11 @@ public class PgServer extends PgStatement implements PgForeignOptionContainer{
             sb.append(" VERSION ").append(getVersion());
         }
         sb.append(" FOREIGN DATA WRAPPER ").append(PgDiffUtils.getQuotedName(getFdw()));
-
-        if (!options.isEmpty()) {
-            sb.append(" OPTIONS ").append("(");
-            for (Entry<String, String> entry : options.entrySet()) {
-                String key = entry.getKey();
-                String value = entry.getValue();
-                sb.append(PgDiffUtils.getQuotedName(key))
-                .append(" ")
-                .append(value)
-                .append(", ");
-            }
-            sb.setLength(sb.length() - 2);
-            sb.append(")");
+        if (!getOptions().isEmpty()) {
+            sb.append(' ');
         }
-        sb.append(";");
+        appendOptions(sb);
+        sb.append(';');
         appendOwnerSQL(sb);
         appendPrivileges(sb);
 
@@ -131,11 +122,6 @@ public class PgServer extends PgStatement implements PgForeignOptionContainer{
             appendCommentSql(sb);
         }
         return sb.toString();
-    }
-
-    @Override
-    public String getDropSQL() {
-        return "DROP SERVER " + PgDiffUtils.getQuotedName(getName()) + ';';
     }
 
     @Override

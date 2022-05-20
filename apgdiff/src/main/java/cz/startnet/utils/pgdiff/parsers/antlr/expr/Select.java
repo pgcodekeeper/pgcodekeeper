@@ -77,8 +77,8 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
     }
 
     @Override
-    protected Entry<String, GenericColumn> findReferenceInNmspc(String schema, String name, String column) {
-        return !inFrom || lateralAllowed ? super.findReferenceInNmspc(schema, name, column) : null;
+    protected boolean namespaceAccessible() {
+        return !inFrom || lateralAllowed;
     }
 
     @Override

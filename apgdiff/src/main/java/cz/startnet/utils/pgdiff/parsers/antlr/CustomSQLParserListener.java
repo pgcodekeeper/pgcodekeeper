@@ -50,16 +50,17 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateIndex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateOperator;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreatePolicy;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateRule;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.GrantPrivilege;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateSchema;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateSequence;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateServer;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTable;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateType;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateUserMapping;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.DeleteStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.DropStatement;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.GrantPrivilege;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.InsertStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.UpdateStatement;
@@ -100,7 +101,7 @@ implements SqlContextProcessor {
             if (create != null) {
                 create(create, stream);
             } else if ((alter = schema.schema_alter()) != null) {
-                alter(alter);
+                alter(alter, stream);
             } else if ((drop = schema.schema_drop()) != null) {
                 drop(drop);
             }
@@ -114,11 +115,11 @@ implements SqlContextProcessor {
     private void create(Schema_createContext ctx, CommonTokenStream stream) {
         ParserAbstract p;
         if (ctx.create_table_statement() != null) {
-            p = new CreateTable(ctx.create_table_statement(), db, tablespace, accessMethod, oids);
+            p = new CreateTable(ctx.create_table_statement(), db, tablespace, accessMethod, oids, stream);
         } else if (ctx.create_foreign_table_statement() != null) {
-            p = new CreateForeignTable(ctx.create_foreign_table_statement(), db);
+            p = new CreateForeignTable(ctx.create_foreign_table_statement(), db, stream);
         } else if (ctx.create_index_statement() != null) {
-            p = new CreateIndex(ctx.create_index_statement(), db, tablespace);
+            p = new CreateIndex(ctx.create_index_statement(), db, tablespace, stream);
         } else if (ctx.create_extension_statement() != null) {
             p = new CreateExtension(ctx.create_extension_statement(), db);
         } else if (ctx.create_foreign_data_wrapper_statement() != null) {
@@ -127,6 +128,8 @@ implements SqlContextProcessor {
             p = new CreateServer(ctx.create_server_statement(), db);
         } else if (ctx.create_cast_statement() != null) {
             p = new CreateCast(ctx.create_cast_statement(), db);
+        } else if (ctx.create_user_mapping_statement() != null) {
+            p = new CreateUserMapping(ctx.create_user_mapping_statement(), db);
         } else if (ctx.create_trigger_statement() != null) {
             p = new CreateTrigger(ctx.create_trigger_statement(), db);
         } else if (ctx.create_rewrite_statement() != null) {
@@ -148,7 +151,7 @@ implements SqlContextProcessor {
         } else if (ctx.create_type_statement() != null) {
             p = new CreateType(ctx.create_type_statement(), db);
         } else if (ctx.create_domain_statement() != null) {
-            p = new CreateDomain(ctx.create_domain_statement(), db);
+            p = new CreateDomain(ctx.create_domain_statement(), db, stream);
         } else if (ctx.create_fts_configuration_statement() != null) {
             p = new CreateFtsConfiguration(ctx.create_fts_configuration_statement(), db);
         } else if (ctx.create_fts_template_statement() != null) {
@@ -175,16 +178,16 @@ implements SqlContextProcessor {
         safeParseStatement(p, ctx);
     }
 
-    private void alter(Schema_alterContext ctx) {
+    private void alter(Schema_alterContext ctx, CommonTokenStream stream) {
         ParserAbstract p;
         if (ctx.alter_table_statement() != null) {
-            p = new AlterTable(ctx.alter_table_statement(), db, tablespace);
+            p = new AlterTable(ctx.alter_table_statement(), db, tablespace, stream);
         } else if (ctx.alter_index_statement() != null) {
             p = new AlterIndex(ctx.alter_index_statement(), db);
         } else if (ctx.alter_sequence_statement() != null) {
             p = new AlterSequence(ctx.alter_sequence_statement(), db);
         } else if (ctx.alter_view_statement() != null) {
-            p = new AlterView(ctx.alter_view_statement(), db);
+            p = new AlterView(ctx.alter_view_statement(), db, stream);
         } else if (ctx.alter_materialized_view_statement() != null) {
             p = new AlterMatView(ctx.alter_materialized_view_statement(), db);
         } else if (ctx.alter_domain_statement() != null) {

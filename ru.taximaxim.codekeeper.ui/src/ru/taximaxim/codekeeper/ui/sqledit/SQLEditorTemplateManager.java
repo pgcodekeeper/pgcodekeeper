@@ -3,8 +3,8 @@ package ru.taximaxim.codekeeper.ui.sqledit;
 import java.io.IOException;
 
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.text.templates.ContextTypeRegistry;
 import org.eclipse.jface.text.templates.persistence.TemplateStore;
+import org.eclipse.text.templates.ContextTypeRegistry;
 import org.eclipse.ui.editors.text.templates.ContributionContextTypeRegistry;
 import org.eclipse.ui.editors.text.templates.ContributionTemplateStore;
 
@@ -35,7 +35,7 @@ public class SQLEditorTemplateManager {
     public TemplateStore getTemplateStore() {
 
         if (fStore == null) {
-            fStore = new ContributionTemplateStore(getContextTypeRegistry(),
+            fStore = new ContributionTemplateStore(getContributionContextTypeRegistry(),
                     Activator.getDefault().getPreferenceStore(),
                     CUSTOM_TEMPLATES_KEY);
             try {
@@ -48,6 +48,11 @@ public class SQLEditorTemplateManager {
     }
 
     public ContextTypeRegistry getContextTypeRegistry() {
+        // weird API deprecation workaround
+        return getContributionContextTypeRegistry();
+    }
+
+    public ContributionContextTypeRegistry getContributionContextTypeRegistry() {
         if (fRegistry == null) {
             fRegistry = new ContributionContextTypeRegistry();
         }

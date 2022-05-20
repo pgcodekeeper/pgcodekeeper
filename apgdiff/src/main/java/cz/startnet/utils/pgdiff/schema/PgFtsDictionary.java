@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.schema;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -51,11 +52,6 @@ implements PgSimpleOptionContainer {
     @Override
     protected String getTypeName() {
         return "TEXT SEARCH DICTIONARY";
-    }
-
-    @Override
-    public String getDropSQL() {
-        return "DROP TEXT SEARCH DICTIONARY " + getQualifiedName() + ';';
     }
 
     @Override
@@ -115,7 +111,7 @@ implements PgSimpleOptionContainer {
 
     @Override
     public Map<String, String> getOptions() {
-        return options;
+        return Collections.unmodifiableMap(options);
     }
 
     @Override

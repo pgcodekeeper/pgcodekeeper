@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 
+import org.antlr.v4.runtime.CommonTokenStream;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Col_labelContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_table_statementContext;
@@ -37,8 +38,8 @@ public class CreateTable extends TableAbstract {
     private final String oids;
 
     public CreateTable(Create_table_statementContext ctx, PgDatabase db,
-            String tablespace, String accessMethod, String oids) {
-        super(db);
+            String tablespace, String accessMethod, String oids, CommonTokenStream stream) {
+        super(db, stream);
         this.ctx = ctx;
         this.tablespace = tablespace;
         this.accessMethod = accessMethod;
@@ -108,7 +109,7 @@ public class CreateTable extends TableAbstract {
         if (storage != null) {
             With_storage_parameterContext parameters = storage.with_storage_parameter();
             if (parameters != null) {
-                parseOptions(parameters.storage_parameter().storage_parameter_option(), table);
+                parseOptions(parameters.storage_parameters().storage_parameter_option(), table);
             }
             if (storage.WITHOUT() != null) {
                 table.setHasOids(false);

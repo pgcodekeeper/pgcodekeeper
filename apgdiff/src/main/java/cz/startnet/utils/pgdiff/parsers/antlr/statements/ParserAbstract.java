@@ -25,6 +25,7 @@ import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Cast_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_user_mapping_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
@@ -34,6 +35,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Including_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Predefined_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.MisplacedObjectException;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
@@ -167,6 +169,12 @@ public abstract class ParserAbstract {
         }
 
         return full;
+    }
+
+    public static String getExpressionText(VexContext def, CommonTokenStream stream) {
+        String expression = getFullCtxText(def);
+        String whitespace = getHiddenLeftCtxText(def, stream);
+        return whitespace.startsWith("\n") ? (whitespace + expression) : expression;
     }
 
     private static String convertAlias(String type) {
@@ -379,6 +387,8 @@ public abstract class ParserAbstract {
         switch (type) {
         case CAST:
             return getCastLocation((Cast_nameContext) nameCtx, action);
+        case USER_MAPPING:
+            return getUserMappingLocation((Create_user_mapping_statementContext) nameCtx, action);
         case ASSEMBLY:
         case EXTENSION:
         case FOREIGN_DATA_WRAPPER:
@@ -466,8 +476,24 @@ public abstract class ParserAbstract {
                 .build();
     }
 
+
+    private PgObjLocation getUserMappingLocation(Create_user_mapping_statementContext nameCtx, String action) {
+        GenericColumn object = new GenericColumn(getUserMappingName(nameCtx), DbObjType.USER_MAPPING);
+        return new PgObjLocation.Builder()
+                .setFilePath(fileName)
+                .setCtx(nameCtx)
+                .setObject(object)
+                .setAction(action)
+                .build();
+    }
+
     protected String getCastName(Cast_nameContext nameCtx) {
         return ICast.getSimpleName(getFullCtxText(nameCtx.source), getFullCtxText(nameCtx.target));
+    }
+
+    protected String getUserMappingName(Create_user_mapping_statementContext nameCtx) {
+        return (nameCtx.user_name() != null ? nameCtx.user_name().getText() : nameCtx.USER().get(1).getText())
+                + " SERVER " + nameCtx.identifier().getText();
     }
 
     protected <T extends IStatement, U extends Object> void doSafe(BiConsumer<T, U> adder,

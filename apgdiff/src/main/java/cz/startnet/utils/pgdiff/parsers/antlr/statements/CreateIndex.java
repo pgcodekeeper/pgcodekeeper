@@ -3,13 +3,15 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 import java.util.Arrays;
 import java.util.List;
 
+import org.antlr.v4.runtime.CommonTokenStream;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_index_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Including_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_columnContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_columnsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_restContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_sortContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_whereContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_varContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
@@ -27,11 +29,13 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 public class CreateIndex extends ParserAbstract {
     private final Create_index_statementContext ctx;
     private final String tablespace;
+    private final CommonTokenStream stream;
 
-    public CreateIndex(Create_index_statementContext ctx, PgDatabase db, String tablespace) {
+    public CreateIndex(Create_index_statementContext ctx, PgDatabase db, String tablespace, CommonTokenStream stream) {
         super(db);
         this.ctx = ctx;
         this.tablespace = tablespace;
+        this.stream = stream;
     }
 
     @Override
@@ -44,7 +48,7 @@ public class CreateIndex extends ParserAbstract {
         IdentifierContext nameCtx = ctx.name;
         String name = nameCtx != null ? nameCtx.getText() : "";
         PgIndex ind = new PgIndex(name);
-        parseIndex(ctx.index_rest(), tablespace, schemaName, tableName, ind, db, fileName);
+        parseIndex(ctx.index_rest(), tablespace, schemaName, tableName, ind, db, fileName, stream);
         ind.setUnique(ctx.UNIQUE() != null);
 
         if (nameCtx != null) {
@@ -56,10 +60,10 @@ public class CreateIndex extends ParserAbstract {
     }
 
     public static void parseIndex(Index_restContext rest, String tablespace,
-            String schemaName, String tableName, PgIndex ind, PgDatabase db, String location) {
+            String schemaName, String tableName, PgIndex ind, PgDatabase db, String location, CommonTokenStream stream) {
         db.addAnalysisLauncher(new IndexAnalysisLauncher(ind, rest, location));
 
-        Index_sortContext sort = rest.index_sort();
+        Index_columnsContext sort = rest.index_columns();
         parseColumns(sort, ind);
 
         if (rest.method != null) {
@@ -79,11 +83,11 @@ public class CreateIndex extends ParserAbstract {
         With_storage_parameterContext options = rest.with_storage_parameter();
 
         if (options != null) {
-            for (Storage_parameter_optionContext option : options.storage_parameter().storage_parameter_option()) {
+            for (Storage_parameter_optionContext option : options.storage_parameters().storage_parameter_option()) {
                 String key = option.storage_parameter_name().getText();
                 VexContext v = option.vex();
                 String value = v == null ? "" : v.getText();
-                ind.addOption(key, value);
+                fillOptionParams(value, key, false, ind::addOption);
             }
         }
 
@@ -95,11 +99,11 @@ public class CreateIndex extends ParserAbstract {
 
         Index_whereContext wherePart = rest.index_where();
         if (wherePart != null){
-            ind.setWhere(getFullCtxText(wherePart.vex()));
+            ind.setWhere(getExpressionText(wherePart.vex(), stream));
         }
     }
 
-    private static void parseColumns(Index_sortContext sort, AbstractIndex ind) {
+    private static void parseColumns(Index_columnsContext sort, AbstractIndex ind) {
         for (Index_columnContext sort_ctx : sort.index_column()) {
             Value_expression_primaryContext vexPrimary = sort_ctx.column.value_expression_primary();
             if (vexPrimary != null) {

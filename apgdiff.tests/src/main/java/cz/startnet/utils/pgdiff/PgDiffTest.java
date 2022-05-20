@@ -502,6 +502,12 @@ public class PgDiffTest {
                     {"compare_fdw"},
                     // Tests scenario where SERVER is compared.
                     {"compare_servers"},
+                    // Tests scenario where USER MAPPING is compared.
+                    {"compare_user_mapping"},
+                    // Tests scenario where USER MAPPING is added.
+                    {"add_user_mapping"},
+                    // Tests scenario where USER MAPPING is dropped.
+                    {"drop_user_mapping"},
                     // Tests scenario where FOREIGN DATA WRAPPER is dropped.
                     {"drop_fdw"},
                     // Tests scenario where SERVER is dropped.

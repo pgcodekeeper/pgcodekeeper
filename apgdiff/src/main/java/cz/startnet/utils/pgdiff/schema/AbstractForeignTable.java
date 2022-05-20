@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.schema;
 
-import java.util.Map.Entry;
 import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -36,11 +35,6 @@ public abstract class AbstractForeignTable extends AbstractPgTable implements Pg
     }
 
     @Override
-    public String getDropSQL() {
-        return "DROP FOREIGN TABLE " + getQualifiedName() + ';';
-    }
-
-    @Override
     protected boolean isNeedRecreate(AbstractTable newTable) {
         return super.isNeedRecreate(newTable)
                 || !this.getClass().equals(newTable.getClass())
@@ -48,26 +42,12 @@ public abstract class AbstractForeignTable extends AbstractPgTable implements Pg
     }
 
     @Override
-    protected void appendOptions(StringBuilder sbSQL) {
+    public void appendOptions(StringBuilder sbSQL) {
         sbSQL.append("\nSERVER ").append(PgDiffUtils.getQuotedName(serverName));
-
-        StringBuilder sb = new StringBuilder();
-        for (Entry <String, String> entry : options.entrySet()) {
-            String key = entry.getKey();
-            String value = entry.getValue();
-
-            sb.append(key);
-            if (!value.isEmpty()) {
-                sb.append(' ').append(value);
-            }
-            sb.append(", ");
+        if (!getOptions().isEmpty()) {
+            sbSQL.append('\n');
         }
-
-        if (sb.length() > 0) {
-            sb.setLength(sb.length() - 2);
-            sbSQL.append("\nOPTIONS (").append(sb).append(")");
-        }
-
+        PgForeignOptionContainer.super.appendOptions(sbSQL);
         sbSQL.append(';');
     }
 
@@ -82,7 +62,9 @@ public abstract class AbstractForeignTable extends AbstractPgTable implements Pg
 
     @Override
     protected void appendName(StringBuilder sbSQL) {
-        sbSQL.append("CREATE FOREIGN TABLE ").append(getQualifiedName());
+        sbSQL.append("CREATE FOREIGN TABLE ");
+        appendIfNotExists(sbSQL);
+        sbSQL.append(getQualifiedName());
     }
 
     @Override

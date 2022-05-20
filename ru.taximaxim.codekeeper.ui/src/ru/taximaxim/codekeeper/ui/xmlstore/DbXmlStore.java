@@ -16,6 +16,7 @@ import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.eclipse.equinox.security.storage.StorageException;
 import org.eclipse.equinox.security.storage.provider.IProviderHints;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -26,6 +27,7 @@ import cz.startnet.utils.pgdiff.xmlstore.XmlStore;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 
 public class DbXmlStore extends XmlStore<DbInfo> {
@@ -37,6 +39,7 @@ public class DbXmlStore extends XmlStore<DbInfo> {
     private final List<IPropertyChangeListener> listeners = new ArrayList<>();
 
     private final ISecurePreferences securePrefs;
+    private final IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
 
     private enum Tags {
         DB_STORE("db_store"), //$NON-NLS-1$
@@ -108,15 +111,20 @@ public class DbXmlStore extends XmlStore<DbInfo> {
         notifyListeners();
     }
 
-    public void savePasswords(List<DbInfo> list) throws IOException, StorageException {
-        try {
-            for (DbInfo dbInfo : list) {
-                securePrefs.put(dbInfo.getName(), dbInfo.getDbPass(), true);
+     public void savePasswords(List<DbInfo> list, List<DbInfo> oldlist) throws IOException, StorageException {
+        boolean isSecurePrefs = false;
+        for (DbInfo dbInfo : list) {
+            if (dbInfo.getDbPass().isEmpty()) {
+                int index = oldlist.indexOf(dbInfo);
+                if (index != -1 && oldlist.get(index).getDbPass().isEmpty()) {
+                    continue;
+                }
             }
+            securePrefs.put(dbInfo.getName(), dbInfo.getDbPass(), true);
+            isSecurePrefs = true;
+        }
+        if (isSecurePrefs) {
             securePrefs.flush();
-        } catch (StorageException | IOException e) {
-            throw new IOException("Error while writing to secure storage: " //$NON-NLS-1$
-                    + e.getLocalizedMessage(), e);
         }
     }
 
@@ -207,7 +215,9 @@ public class DbXmlStore extends XmlStore<DbInfo> {
 
         String dbPass = object.get(Tags.DBPASS);
         try {
+            if (mainPrefs.getBoolean(PREF.SAVE_IN_SECURE_STORAGE)) {
             dbPass = securePrefs.get(object.get(Tags.NAME), dbPass);
+            }
         } catch (StorageException e) {
             Log.log(Log.LOG_ERROR, "Error reading from secure storage: " + e); //$NON-NLS-1$
         }
@@ -271,3 +281,4 @@ public class DbXmlStore extends XmlStore<DbInfo> {
         listeners.forEach(e -> e.propertyChange(null));
     }
 }
+

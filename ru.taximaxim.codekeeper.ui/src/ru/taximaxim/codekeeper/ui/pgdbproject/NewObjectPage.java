@@ -93,7 +93,7 @@ public final class NewObjectPage extends WizardPage {
     private final EnumSet<DbObjType> allowedTypes = EnumSet.complementOf(
             EnumSet.of(DbObjType.COLUMN, DbObjType.DATABASE, DbObjType.SEQUENCE,
                     DbObjType.ASSEMBLY, DbObjType.ROLE, DbObjType.USER,
-                    DbObjType.OPERATOR, DbObjType.AGGREGATE, DbObjType.CAST));
+                    DbObjType.OPERATOR, DbObjType.AGGREGATE, DbObjType.CAST, DbObjType.USER_MAPPING));
 
     private ComboViewer viewerProject;
     private ComboViewer viewerType;
@@ -138,6 +138,7 @@ public final class NewObjectPage extends WizardPage {
         try {
             PgStatement st = UIProjectLoader.parseStatement((IFile)resource,
                     EnumSet.of(DbObjType.EXTENSION, DbObjType.FOREIGN_DATA_WRAPPER,
+                            DbObjType.USER_MAPPING,
                             DbObjType.SERVER, DbObjType.TABLE,
                             DbObjType.VIEW, DbObjType.DOMAIN,
                             DbObjType.TYPE, DbObjType.FUNCTION,

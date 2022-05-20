@@ -364,11 +364,17 @@ public final class Messages extends NLS {
 
     public static String DbStorePrefPage_secure_storage_error_text_other;
 
+    public static String DbStorePrefPage_secure_storage_error;
+
     public static String DbStorePrefPage_secure_storage_error_title;
 
     public static String DbUpdatePrefPage_allow_data_movement;
 
     public static String DbUpdatePrefPage_alter_seq_restart_statement;
+
+    public static String DbUpdatePrefPage_option_drop_object;
+
+    public static String DbUpdatePrefPage_option_if_exists;
 
     public static String DbUpdatePrefPage_print_index_with_concurrently;
 
@@ -398,6 +404,14 @@ public final class Messages extends NLS {
 
     public static String DependencyProperties_attention;
 
+    public static String DependencyProperties_clear_cache;
+
+    public static String DependencyProperties_clear_cache_descr;
+
+    public static String DependencyProperties_clear_cache_error;
+
+    public static String DependencyProperties_clear_libraries_cache;
+
     public static String DependencyProperties_connection_start;
 
     public static String DependencyProperties_empty_scheme;
@@ -409,6 +423,10 @@ public final class Messages extends NLS {
     public static String DependencyProperties_ignore_priv_warn;
 
     public static String DependencyProperties_ignore_privileges;
+
+    public static String DependencyProperties_load_dependencies;
+
+    public static String DependencyProperties_load_nested;
 
     public static String DependencyProperties_owner;
 
@@ -622,9 +640,17 @@ public final class Messages extends NLS {
 
     public static String MockDataWizard_create_data_table;
 
+    public static String NavigationLibrariesActionProvider_clear_library_cache;
+
+    public static String NavigationLibrariesActionProvider_failed_to_clear_library_cache;
+
     public static String NavigationLibrariesActionProvider_failed_to_open_library;
 
+    public static String NavigationLibrariesActionProvider_failed_to_refresh_library;
+
     public static String NavigationLibrariesActionProvider_open_library;
+
+    public static String NavigationLibrariesActionProvider_refresh_library;
 
     public static String NavigatorRootActionProvider_open_action;
 
@@ -889,7 +915,6 @@ public final class Messages extends NLS {
     public static String feedback_message;
     public static String add_log;
 
-
     public static String FeedBackDialog_bad_response;
 
     public static String FeedBackDialog_could_not_send;
@@ -962,6 +987,9 @@ public final class Messages extends NLS {
     public static String GeneralPrefPage_format_object_code_automatically;
 
     public static String GeneralPrefPage_reuse_open_compare_editor;
+
+    public static String GeneralPrefPage_save_in_security_storage;
+    public static String GeneralPrefPage_set_limit;
 
     public static String GeneralPrefPage_show_diff_errors;
 
@@ -1038,6 +1066,8 @@ public final class Messages extends NLS {
     public static String QuickUpdate_updating_db;
 
     public static String QuickUpdate_updating_project;
+
+    public static String ReferenceSearchResult_matches;
 
     public static String RenameDefinitionChange_error_resource_already_exists;
 

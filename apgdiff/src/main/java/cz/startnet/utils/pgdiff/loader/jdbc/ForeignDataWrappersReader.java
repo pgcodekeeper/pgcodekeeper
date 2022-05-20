@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -50,9 +49,9 @@ public class ForeignDataWrappersReader implements PgCatalogStrings {
         if (!"-".equals(fdwValidator)) {
             JdbcReader.setFunctionWithDep(PgForeignDataWrapper::setValidator, f, fdwValidator, CreateFdw.VALIDATOR_SIGNATURE);
         }
-        if (res.getString("fdwoptions") != null) {
-            Array arr = res.getArray("fdwoptions");
-            String[] options = (String[]) arr.getArray();
+
+        String[] options = JdbcReader.getColArray(res, "fdwoptions");
+        if (options != null) {
             ParserAbstract.fillOptionParams(options, f::addOption, false, true, false);
         }
         String comment = res.getString("description");

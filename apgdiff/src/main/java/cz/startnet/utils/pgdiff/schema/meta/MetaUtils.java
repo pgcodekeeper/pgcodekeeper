@@ -114,6 +114,7 @@ public class MetaUtils {
         GenericColumn gc;
         switch (type) {
         case CAST:
+        case USER_MAPPING:
         case SCHEMA:
         case EXTENSION:
         case FOREIGN_DATA_WRAPPER:

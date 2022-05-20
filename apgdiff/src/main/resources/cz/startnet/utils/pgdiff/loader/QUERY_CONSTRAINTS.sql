@@ -10,18 +10,7 @@ WITH sys_schemas AS (
 SELECT c.oid::bigint, 
     ccc.relname,
     c.conname,
-    c.contype,
-    cf.relname AS foreign_table_name,
     ts.spcname,
-    (SELECT nsp.nspname
-     FROM pg_catalog.pg_namespace nsp
-     WHERE nsp.oid = cf.relnamespace) AS foreign_schema_name,
-    (SELECT pg_catalog.array_agg(attname ORDER BY attnum) 
-     FROM pg_catalog.pg_attribute a
-     WHERE a.attrelid = cf.oid AND a.attnum = ANY(c.confkey)) AS foreign_cols,
-    (SELECT pg_catalog.array_agg(attname ORDER BY attnum) 
-     FROM pg_catalog.pg_attribute a
-     WHERE a.attrelid = ccc.oid AND a.attnum = ANY(c.conkey)) AS cols,
     d.description,
     pg_catalog.pg_get_constraintdef(c.oid) AS definition,
     ccc.relnamespace AS schema_oid

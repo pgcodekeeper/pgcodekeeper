@@ -23,8 +23,10 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 
         store.setDefault(PREF.FORCE_SHOW_CONSOLE, true);
+        store.setDefault(PREF.SAVE_IN_SECURE_STORAGE, true);
         store.setDefault(PREF.PARSER_CACHE_CLEANING_INTERVAL, 30);
         store.setDefault(PREF.HEAP_SIZE_WARNING, true);
+        store.setDefault(PREF.LIMIT_SELECT_RESULTS, 1000);
 
         store.setDefault(PG_EDIT_PREF.EDITOR_UPDATE_ACTION, PG_EDIT_PREF.NO_ACTION);
         store.setDefault(PG_EDIT_PREF.SHOW_GIT_USER, true);

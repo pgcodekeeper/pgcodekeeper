@@ -62,6 +62,7 @@ public interface UIConsts {
     }
 
     interface PREF {
+        String SAVE_IN_SECURE_STORAGE = "prefSaveInSecureStorage"; //$NON-NLS-1$
         String FORCE_SHOW_CONSOLE = "prefForceShowConsole"; //$NON-NLS-1$
         String DB_STORE_FILES = "prefDbStoreHistory"; //$NON-NLS-1$
         String NO_PRIVILEGES = "prefNoPrivileges"; //$NON-NLS-1$
@@ -75,6 +76,7 @@ public interface UIConsts {
         String REUSE_OPEN_COMPARE_EDITOR = "reuseOpenCompareEditors"; //$NON-NLS-1$
         String IGNORE_CONCURRENT_MODIFICATION = "ignoreConcurrentModification"; //$NON-NLS-1$
         String PARSER_CACHE_CLEANING_INTERVAL = "parserCacheCleaningInterval"; //$NON-NLS-1$
+        String LIMIT_SELECT_RESULTS = "limitSelectResults"; //$NON-NLS-1$
         String HEAP_SIZE_WARNING = "heapSizeWarning"; //$NON-NLS-1$
         String FORMAT_OBJECT_CODE_AUTOMATICALLY = "formatObjectCodeAutomatically"; //$NON-NLS-1$
     }
@@ -95,6 +97,8 @@ public interface UIConsts {
         String PRINT_INDEX_WITH_CONCURRENTLY = "prefPrintIndexWithConcurrently"; //$NON-NLS-1$;
         String SCRIPT_FROM_SELECTED_OBJS = "prefScriptFromSelectedObjs"; //$NON-NLS-1$;
         String DATA_MOVEMENT_MODE = "prefDataMovementMode"; //$NON-NLS-1$;
+        String GENERATE_EXISTS = "prefGenerateExist"; //$NON-NLS-1$;
+        String DROP_BEFORE_CREATE = "prefDropBeforeCreate"; //$NON-NLS-1$;
     }
 
     interface PG_EDIT_PREF {
@@ -188,6 +192,7 @@ public interface UIConsts {
         String ICONBALLGREEN = "/icons/ball_green.png"; //$NON-NLS-1$
         String ICONADDDEP = "/icons/add_dep.png"; //$NON-NLS-1$
         String PGPASS = "/icons/pg_pass.png"; //$NON-NLS-1$
+        String ZIP = "/icons/zip.png"; //$NON-NLS-1$
         String PG_ICON = "/icons/postgresql_icon.png"; //$NON-NLS-1$
         String MS_ICON = "/icons/mssql_icon.png"; //$NON-NLS-1$
         String DECORDATABASE = "/icons/db_decorator.png"; //$NON-NLS-1$

@@ -230,6 +230,9 @@ public class PgDiffDepciesTest {
             // проверка объекта forein_data_wrapper, server
             // пользователь выбрал объект forein_table с зависимыми от него forein_data_wrapper, server
             {"change_fdw_usr"},
+            // проверка объекта user mapping
+            // пользователь выбрал объект user mapping с зависимостью server
+            {"add_user_mapping_usr"},
         });
     }
 

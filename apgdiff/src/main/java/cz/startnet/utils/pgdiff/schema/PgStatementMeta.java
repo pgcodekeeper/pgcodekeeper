@@ -3,7 +3,7 @@ package cz.startnet.utils.pgdiff.schema;
 public class PgStatementMeta {
     private PgObjLocation location;
     private String author;
-    private boolean isLib;
+    private String libName;
 
     public PgObjLocation getLocation() {
         return location;
@@ -22,16 +22,20 @@ public class PgStatementMeta {
     }
 
     public boolean isLib() {
-        return isLib;
+        return libName != null;
     }
 
-    public void setLib(boolean isLib) {
-        this.isLib = isLib;
+    public String getLibName() {
+        return libName;
+    }
+
+    public void setLibName(String libName) {
+        this.libName = libName;
     }
 
     public void copy(PgStatementMeta meta) {
         this.location = meta.location;
         this.author = meta.author;
-        this.isLib = meta.isLib;
+        this.libName = meta.libName;
     }
 }

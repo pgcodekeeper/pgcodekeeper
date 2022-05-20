@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.jgrapht.DirectedGraph;
-import org.jgrapht.alg.CycleDetector;
+import org.jgrapht.Graph;
+import org.jgrapht.alg.cycle.CycleDetector;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.EdgeReversedGraph;
 import org.jgrapht.graph.SimpleDirectedGraph;
@@ -33,7 +33,7 @@ public class DepcyGraph {
 
     private static final String REMOVE_DEP = "Remove dependency from {0} to {1}";
 
-    private final DirectedGraph<PgStatement, DefaultEdge> graph =
+    private final Graph<PgStatement, DefaultEdge> graph =
             new SimpleDirectedGraph<>(DefaultEdge.class);
 
     private final EdgeReversedGraph<PgStatement, DefaultEdge> reversedGraph =
@@ -44,7 +44,7 @@ public class DepcyGraph {
      * зависящий объект → зависимость <br>
      * source → target
      */
-    public DirectedGraph<PgStatement, DefaultEdge> getGraph() {
+    public Graph<PgStatement, DefaultEdge> getGraph() {
         return graph;
     }
 

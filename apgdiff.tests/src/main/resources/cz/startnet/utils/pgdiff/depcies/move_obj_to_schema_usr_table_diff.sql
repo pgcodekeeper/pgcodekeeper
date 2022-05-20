@@ -49,6 +49,8 @@ CREATE TABLE test.emp (
 
 ALTER TABLE test.emp OWNER TO galiev_mr;
 
+CREATE UNIQUE INDEX name_ind ON test.emp USING btree (empname);
+
 CREATE VIEW test.emp_view AS
 	SELECT emp.empname,
     emp.last_date,
@@ -57,8 +59,6 @@ CREATE VIEW test.emp_view AS
    FROM test.emp;
 
 ALTER VIEW test.emp_view OWNER TO galiev_mr;
-
-CREATE UNIQUE INDEX name_ind ON test.emp USING btree (empname);
 
 -- DEPCY: This FUNCTION is a dependency of TRIGGER: test.emp.emp_stamp
 

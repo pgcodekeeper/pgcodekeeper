@@ -37,7 +37,7 @@ public class CreateFdw extends ParserAbstract {
         Define_foreign_optionsContext options = ctx.define_foreign_options();
         if (options!= null) {
             for (Foreign_optionContext option : options.foreign_option()) {
-                fDW.addOption(option.foreign_option_name().identifier().getText(), option.character_string().getText());
+                fillOptionParams(option.character_string().getText(), option.col_label().getText(), false,fDW::addOption);
             }
         }
         addSafe(db, fDW, Arrays.asList(nameCtx));

@@ -50,8 +50,13 @@ public class PgView extends AbstractView implements PgSimpleOptionContainer  {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder(getQuery().length() * 2);
+        appendDropBeforeCreate(sbSQL);
         sbSQL.append("CREATE ");
         sbSQL.append(getTypeName()).append(' ');
+        if (isMatView()) {
+            appendIfNotExists(sbSQL);
+        }
+
         sbSQL.append(getQualifiedName());
 
         if (!columnNames.isEmpty()) {
@@ -139,15 +144,6 @@ public class PgView extends AbstractView implements PgSimpleOptionContainer  {
     @Override
     protected String getTypeName() {
         return isMatView() ? "MATERIALIZED VIEW" : "VIEW";
-    }
-
-    @Override
-    public String getDropSQL() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("DROP ").append(getTypeName()).append(' ');
-        appendFullName(sb);
-        sb.append(';');
-        return sb.toString();
     }
 
     @Override

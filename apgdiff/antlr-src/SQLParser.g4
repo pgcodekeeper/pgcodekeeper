@@ -394,7 +394,7 @@ table_action
     | SET WITHOUT (CLUSTER | OIDS)
     | SET WITH OIDS
     | SET (LOGGED | UNLOGGED)
-    | SET storage_parameter
+    | SET storage_parameters
     | RESET names_in_parens
     | define_foreign_options
     | INHERIT parent_table=schema_qualified_name
@@ -415,7 +415,7 @@ column_action
     | (set=SET | DROP) NOT NULL
     | DROP IDENTITY if_exists?
     | DROP EXPRESSION if_exists?
-    | SET storage_parameter
+    | SET storage_parameters
     | SET compression_identifier
     | set_statistics
     | SET STORAGE storage_option
@@ -492,7 +492,7 @@ index_def_action
     | ALTER COLUMN? (NUMBER_LITERAL | identifier) set_statistics
     | RESET LEFT_PAREN identifier_list RIGHT_PAREN
     | set_tablespace
-    | SET storage_parameter
+    | SET storage_parameters
     ;
 
 alter_default_privileges_statement
@@ -533,7 +533,7 @@ alter_view_action
     | RENAME COLUMN? identifier TO identifier
     | rename_to
     | set_schema
-    | SET storage_parameter
+    | SET storage_parameters
     | RESET names_in_parens
     ;
 
@@ -552,12 +552,12 @@ alter_materialized_view_action
 
 materialized_view_action
     : ALTER COLUMN? identifier set_statistics
-    | ALTER COLUMN? identifier SET storage_parameter
+    | ALTER COLUMN? identifier SET storage_parameters
     | ALTER COLUMN? identifier RESET names_in_parens
     | ALTER COLUMN? identifier SET STORAGE storage_option
     | CLUSTER ON index_name=schema_qualified_name
     | SET WITHOUT CLUSTER
-    | SET storage_parameter
+    | SET storage_parameters
     | RESET names_in_parens
     ;
 
@@ -609,7 +609,7 @@ alter_server_action
 alter_fts_statement
     : TEXT SEARCH
       ((TEMPLATE | DICTIONARY | CONFIGURATION | PARSER) name=schema_qualified_name (rename_to | set_schema)
-      | DICTIONARY name=schema_qualified_name storage_parameter
+      | DICTIONARY name=schema_qualified_name storage_parameters
       | CONFIGURATION name=schema_qualified_name alter_fts_configuration)
     ;
 
@@ -643,17 +643,15 @@ create_index_statement
     ;
 
 index_rest
-    : (USING method=identifier)? index_sort including_index? with_storage_parameter? table_space? index_where?
+    : (USING method=identifier)? index_columns including_index? with_storage_parameter? table_space? index_where?
     ;
 
-index_sort
+index_columns
     : LEFT_PAREN index_column (COMMA index_column)* RIGHT_PAREN
     ;
 
 index_column
-    : column=vex operator_class=schema_qualified_name? 
-    (LEFT_PAREN option_with_value (COMMA option_with_value)* RIGHT_PAREN)?
-    order_specification? null_ordering?
+    : column=vex (operator_class=schema_qualified_name storage_parameters?)? order_specification? null_ordering?
     ;
 
 including_index
@@ -741,12 +739,8 @@ create_server_statement
 create_fts_dictionary_statement
     : TEXT SEARCH DICTIONARY name=schema_qualified_name
     LEFT_PAREN
-        TEMPLATE EQUAL template=schema_qualified_name (COMMA option_with_value)*
+        TEMPLATE EQUAL template=schema_qualified_name (COMMA storage_parameter_option)*
     RIGHT_PAREN
-    ;
-
-option_with_value
-    : identifier EQUAL vex
     ;
 
 create_fts_configuration_statement
@@ -839,7 +833,7 @@ alter_owner_statement
 alter_tablespace_action
     : rename_to
     | owner_to
-    | SET LEFT_PAREN option_with_value (COMMA option_with_value)* RIGHT_PAREN
+    | SET storage_parameters
     | RESET LEFT_PAREN identifier_list RIGHT_PAREN
     ;
 
@@ -953,7 +947,7 @@ group_option
 create_tablespace_statement
     : TABLESPACE name=identifier (OWNER user_name)?
     LOCATION directory=Character_String_Literal
-    (WITH LEFT_PAREN option_with_value (COMMA option_with_value)* RIGHT_PAREN)?
+    with_storage_parameter?
     ;
 
 create_statistics_statement
@@ -1345,7 +1339,7 @@ alter_subscription_action
     | REFRESH PUBLICATION with_storage_parameter?
     | ENABLE
     | DISABLE
-    | SET storage_parameter
+    | SET storage_parameters
     | owner_to
     | rename_to
     ;
@@ -1438,7 +1432,7 @@ alter_publication_statement
 alter_publication_action
     : rename_to
     | owner_to
-    | SET storage_parameter
+    | SET storage_parameters
     | (ADD | DROP | SET) TABLE only_table_multiply (COMMA only_table_multiply)*
     ;
 
@@ -1497,7 +1491,7 @@ create_view_statement
     : (OR REPLACE)? (TEMP | TEMPORARY)? RECURSIVE? MATERIALIZED? VIEW 
     if_not_exists? name=schema_qualified_name column_names=view_columns?
     (USING identifier)?
-    (WITH storage_parameter)?
+    (WITH storage_parameters)?
     table_space?
     AS v_query=select_stmt
     with_check_option?
@@ -1630,12 +1624,7 @@ define_foreign_options
     ;
 
 foreign_option
-    : (ADD | SET | DROP)? foreign_option_name character_string?
-    ;
-
-foreign_option_name
-    : identifier
-    | USER
+    : (ADD | SET | DROP)? col_label character_string?
     ;
 
 list_of_type_column_def
@@ -1671,8 +1660,8 @@ constr_body
     : EXCLUDE (USING index_method=identifier)?
             LEFT_PAREN index_column WITH all_op (COMMA index_column WITH all_op)* RIGHT_PAREN
             index_parameters (where=WHERE exp=vex)?
-    | (FOREIGN KEY names_in_parens)? REFERENCES schema_qualified_name ref=names_in_parens?
-        (MATCH (FULL | PARTIAL | SIMPLE) | ON (DELETE | UPDATE) action)*
+    | (FOREIGN KEY col=names_in_parens)? REFERENCES schema_qualified_name ref=names_in_parens?
+        (MATCH (FULL | PARTIAL | SIMPLE))? (ON (DELETE | UPDATE) action)*
     | CHECK LEFT_PAREN expression=vex RIGHT_PAREN (NO INHERIT)?
     | NOT? NULL
     | (UNIQUE | PRIMARY KEY) col=names_in_parens? index_parameters
@@ -1712,7 +1701,7 @@ names_references
     : schema_qualified_name (COMMA schema_qualified_name)*
     ;
 
-storage_parameter
+storage_parameters
     : LEFT_PAREN storage_parameter_option (COMMA storage_parameter_option)* RIGHT_PAREN
     ;
 
@@ -1725,7 +1714,7 @@ storage_parameter_name
     ;
 
 with_storage_parameter
-    : WITH storage_parameter
+    : WITH storage_parameters
     ;
 
 storage_parameter_oid
@@ -3395,7 +3384,7 @@ indirection_identifier
     ;
 
 conflict_object
-    : index_sort index_where?
+    : index_columns index_where?
     | ON CONSTRAINT identifier
     ;
 

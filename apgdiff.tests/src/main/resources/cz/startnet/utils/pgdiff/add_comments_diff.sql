@@ -42,6 +42,8 @@ COMMENT ON FUNCTION public.test_fnc(arg character varying) IS 'test function';
 
 COMMENT ON PROCEDURE public.test_proc(arg integer) IS 'test procedure';
 
+COMMENT ON INDEX public.test_index IS 'test table index';
+
 COMMENT ON CONSTRAINT text_check ON public.test IS 'text check';
 
 COMMENT ON CONSTRAINT test_pkey ON public.test IS 'primary key';
@@ -51,8 +53,6 @@ COMMENT ON MATERIALIZED VIEW public.test_mat_view IS 'test mat view';
 COMMENT ON VIEW public.test_view IS 'test view';
 
 COMMENT ON COLUMN public.test_view.id IS 'view id col';
-
-COMMENT ON INDEX public.test_index IS 'test table index';
 
 COMMENT ON TRIGGER test_trigger ON public.test IS 'test trigger';
 

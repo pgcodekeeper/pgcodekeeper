@@ -14,7 +14,7 @@
 
     <groupId>ru.taximaxim.codeKeeper</groupId>
     <artifactId>apgdiff</artifactId>
-    <version>6.3.2-SNAPSHOT</version>
+    <version>6.4.1-SNAPSHOT</version>
     <packaging>eclipse-plugin</packaging>
 
     <properties>
@@ -26,12 +26,13 @@
             <plugin>
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr4-maven-plugin</artifactId>
-                <version>4.6</version>
+                <version>4.9.3</version>
                 <configuration>
                     <visitor>false</visitor>
                     <listener>false</listener>
+                    <treatWarningsAsErrors>true</treatWarningsAsErrors>
                     <sourceDirectory>${project.basedir}/antlr-src</sourceDirectory>
-                    <outputDirectory>${project.basedir}/src/main/java/cz/startnet/utils/pgdiff/parsers/antlr</outputDirectory>
+                    <outputDirectory>${project.build.directory}/generated-sources/antlr4/cz/startnet/utils/pgdiff/parsers/antlr</outputDirectory>
                 </configuration>
                 <executions>
                     <execution>
