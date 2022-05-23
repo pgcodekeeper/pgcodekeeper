@@ -137,7 +137,7 @@ public class DbStoreEditorDialog extends TrayDialog {
                     dbName = dbInitial.getDbName();
                     dbUser = dbInitial.getDbUser();
                     dbPass = dbInitial.getDbPass();
-                    dbGroup = dbInitial.getDb_group();
+                    dbGroup = dbInitial.getDbGroup();
                     generateEntryName = dbInitial.isGeneratedName();
                     entryName = dbInitial.getName();
                     domain = dbInitial.getDomain();

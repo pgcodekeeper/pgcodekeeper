@@ -64,7 +64,7 @@ implements IWorkbenchPreferencePage {
         dbList.setLayoutData(new GridData(GridData.FILL_BOTH));
         List<DbInfo> dbInfoList = DbInfo.readStoreFromXml();
 
-        DbInfo.addGrouppedDblist(dbInfoList);
+        DbInfo.fillDblist(dbInfoList);
         dbList.setInputList(dbInfoList);
         oldDbList = new ArrayList<>(dbList.getList());
 
@@ -138,19 +138,19 @@ class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
 
     protected Set<String> getDbGroup() {
         Set<String> dbGroups = new LinkedHashSet<>();
-        getList().stream().forEach(dbInfo -> dbGroups.add(dbInfo.getDb_group()));
+        getList().stream().forEach(dbInfo -> dbGroups.add(dbInfo.getDbGroup()));
         return dbGroups;
     }
 
     @Override
     public void refresh() {
-        DbInfo.addGrouppedDblist(getList());
+        DbInfo.fillDblist(getList());
         super.refresh();
     }
 
     @Override
     public void setInputList(List<DbInfo> list){
-        DbInfo.addGrouppedDblist(list);
+        DbInfo.fillDblist(list);
         super.setInputList(list);
     }
 
@@ -163,7 +163,7 @@ class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
 
             @Override
             public String getText(Object element) {
-                return ((DbInfo) element).getDb_group();
+                return ((DbInfo) element).getDbGroup();
             }
         });
         PixelConverter pc = new PixelConverter(tableViewer.getControl());

@@ -111,7 +111,7 @@ public class DbXmlStore extends XmlStore<DbInfo> {
         notifyListeners();
     }
 
-     public void savePasswords(List<DbInfo> list, List<DbInfo> oldlist) throws IOException, StorageException {
+    public void savePasswords(List<DbInfo> list, List<DbInfo> oldlist) throws IOException, StorageException {
         boolean isSecurePrefs = false;
         for (DbInfo dbInfo : list) {
             if (dbInfo.getDbPass().isEmpty()) {
@@ -138,7 +138,7 @@ public class DbXmlStore extends XmlStore<DbInfo> {
             createSubElement(xml, keyElement, Tags.DBNAME.toString(), dbInfo.getDbName());
             createSubElement(xml, keyElement, Tags.DBUSER.toString(), dbInfo.getDbUser());
             createSubElement(xml, keyElement, Tags.DBPASS.toString(), ""); //$NON-NLS-1$
-            createSubElement(xml, keyElement, Tags.DBGROUP.toString(), dbInfo.getDb_group());
+            createSubElement(xml, keyElement, Tags.DBGROUP.toString(), dbInfo.getDbGroup());
             createSubElement(xml, keyElement, Tags.DBHOST.toString(), dbInfo.getDbHost());
             createSubElement(xml, keyElement, Tags.DBPORT.toString(), String.valueOf(dbInfo.getDbPort()));
             createSubElement(xml, keyElement, Tags.READ_ONLY.toString(), String.valueOf(dbInfo.isReadOnly()));
@@ -216,12 +216,11 @@ public class DbXmlStore extends XmlStore<DbInfo> {
         String dbPass = object.get(Tags.DBPASS);
         try {
             if (mainPrefs.getBoolean(PREF.SAVE_IN_SECURE_STORAGE)) {
-            dbPass = securePrefs.get(object.get(Tags.NAME), dbPass);
+                dbPass = securePrefs.get(object.get(Tags.NAME), dbPass);
             }
         } catch (StorageException e) {
             Log.log(Log.LOG_ERROR, "Error reading from secure storage: " + e); //$NON-NLS-1$
         }
-
         return new DbInfo(object.get(Tags.NAME), object.get(Tags.DBNAME),
                 object.get(Tags.DBUSER), dbPass, object.get(Tags.DBHOST),
                 Integer.parseInt(object.get(Tags.DBPORT)),
@@ -233,7 +232,7 @@ public class DbXmlStore extends XmlStore<DbInfo> {
                 object.get(Tags.DOMAIN), object.get(Tags.PGDUMP_EXE_PATH),
                 object.get(Tags.PGDUMP_CUSTOM_PARAMS),
                 Boolean.parseBoolean(object.get(Tags.PG_DUMP_SWITCH)),
-                object.get(Tags.DBGROUP));
+                !object.containsKey(Tags.DBGROUP) ? "" : object.get(Tags.DBGROUP));
     }
 
     private void fillIgnoreFileList(NodeList xml, List<String> list) {
