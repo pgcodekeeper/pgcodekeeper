@@ -346,6 +346,16 @@ public final class Messages extends NLS {
 
     public static String DbStorePrefPage_action_edit;
 
+    public static String DbStorePrefPage_export_db;
+
+    public static String DbStorePrefPage_import_db_list;
+
+    public static String DbStorePrefPage_open_db_list;
+
+    public static String DbStorePrefPage_save_db_list;
+
+    public static String DbStorePrefPage_xml_files;
+
     public static String DbStorePrefPage_pg_pass_file_filter;
 
     public static String DbStorePrefPage_pg_pass_file_select_title;
