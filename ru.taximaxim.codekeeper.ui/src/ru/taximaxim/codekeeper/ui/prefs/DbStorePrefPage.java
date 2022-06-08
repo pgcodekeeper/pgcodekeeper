@@ -32,11 +32,11 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStoreEditorDialog;
+import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.dialogs.PgPassDialog;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.xmlstore.DbXmlStore;
@@ -157,7 +157,7 @@ class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
         createButton(parent, EDIT_ID, Messages.edit, Activator.getRegisteredImage(FILE.ICONEDIT));
         createButton(parent, DELETE_ID, Messages.delete, Activator.getEclipseImage(ISharedImages.IMG_ETOOL_DELETE));
 
-        Button exportDB = createButton(parent, CLIENT_ID, Messages.DbStorePrefPage_export_db,FILE.ICONAPPLYTO);
+        Button exportDB = createButton(parent, CLIENT_ID, Messages.DbStorePrefPage_export_db, FILE.ICONEXPORT);
         exportDB.setLayoutData(new GridData(SWT.DEFAULT, SWT.END, false, true));
 
         exportDB.addSelectionListener(new SelectionAdapter() {
@@ -165,7 +165,7 @@ class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 FileDialog dialog = new FileDialog(getShell(), SWT.SAVE);
-                dialog.setText(Messages.DbStorePrefPage_save_db_list);
+                dialog.setText(Messages.DbStorePrefPage_export_db);
                 dialog.setFilterExtensions(new String[] { "*.xml", "*" }); //$NON-NLS-1$ //$NON-NLS-2$
                 dialog.setFilterNames(new String[] { Messages.DbStorePrefPage_xml_files, Messages.DiffPresentationPane_any_file_filter });
                 dialog.setFilterPath(ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString());
@@ -175,22 +175,20 @@ class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
                     try {
                         new DbXmlStore(Paths.get(stringPath)).writeObjects(getList());
                     } catch (IOException ex) {
-                        Log.log(ex);
+                        ExceptionNotifier.notifyDefault(Messages.DbStorePrefPage_saving_error, ex);
                     }
-                } else {
-                    return;
                 }
             }
         });
 
-        Button importDB = createButton(parent, CLIENT_ID, Messages.DbStorePrefPage_import_db_list,FILE.ICONIMPORT);
+        Button importDB = createButton(parent, CLIENT_ID, Messages.DbStorePrefPage_import_db_list, FILE.ICONIMPORT);
 
         importDB.addSelectionListener(new SelectionAdapter() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
                 FileDialog dialog = new FileDialog(getShell(), SWT.OPEN);
-                dialog.setText(Messages.DbStorePrefPage_open_db_list);
+                dialog.setText(Messages.DbStorePrefPage_import_db_list);
                 dialog.setFilterExtensions(new String[] { "*.xml", "*" }); //$NON-NLS-1$ //$NON-NLS-2$
                 dialog.setFilterNames(new String[] {Messages.DbStorePrefPage_xml_files, Messages.DiffPresentationPane_any_file_filter });
                 dialog.setFilterPath(ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString());
@@ -200,7 +198,7 @@ class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
                     try {
                         DbStorePrefListEditor.this.setInputList(new DbXmlStore(Paths.get(stringPath)).readObjects());
                     } catch (IOException ex) {
-                        Log.log(ex);
+                        ExceptionNotifier.notifyDefault(Messages.DbStorePrefPage_opening_error, ex);
                     }
                 }
             }

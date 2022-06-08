@@ -350,9 +350,9 @@ public final class Messages extends NLS {
 
     public static String DbStorePrefPage_import_db_list;
 
-    public static String DbStorePrefPage_open_db_list;
+    public static String DbStorePrefPage_opening_error;
 
-    public static String DbStorePrefPage_save_db_list;
+    public static String DbStorePrefPage_saving_error;
 
     public static String DbStorePrefPage_xml_files;
 

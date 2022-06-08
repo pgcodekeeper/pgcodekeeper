@@ -218,6 +218,7 @@ public interface UIConsts {
         String ICONLIB = "/icons/lib.gif"; //$NON-NLS-1$
         String ICONCLOUD = "/icons/cloud.png"; //$NON-NLS-1$
         String ICONIMPORT = "/icons/import_wiz.png"; //$NON-NLS-1$
+        String ICONEXPORT = "/icons/export_wiz.png"; //$NON-NLS-1$
     }
 
     interface WORKING_SET {
