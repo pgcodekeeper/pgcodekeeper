@@ -32,14 +32,15 @@ import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 
 public class DbXmlStore extends XmlStore<DbInfo> {
 
-    public static final DbXmlStore INSTANCE = new DbXmlStore();
-
     private static final String FILE_NAME = "dbstore.xml"; //$NON-NLS-1$
+    public static final DbXmlStore INSTANCE = new DbXmlStore(Paths.get(Platform.getStateLocation(Activator.getContext().getBundle())
+            .append(FILE_NAME).toString()));
 
     private final List<IPropertyChangeListener> listeners = new ArrayList<>();
 
     private final ISecurePreferences securePrefs;
     private final IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
+    private final Path path;
 
     private enum Tags {
         DB_STORE("db_store"), //$NON-NLS-1$
@@ -78,8 +79,9 @@ public class DbXmlStore extends XmlStore<DbInfo> {
         }
     }
 
-    private DbXmlStore() {
-        super(FILE_NAME, Tags.DB_STORE.toString());
+    public DbXmlStore(Path path) {
+        super(path.getFileName().toString(), Tags.DB_STORE.toString());
+        this.path = path;
 
         ISecurePreferences pref;
         try {
@@ -101,8 +103,7 @@ public class DbXmlStore extends XmlStore<DbInfo> {
 
     @Override
     protected Path getXmlFile() {
-        return Paths.get(Platform.getStateLocation(Activator.getContext().getBundle())
-                .append(fileName).toString());
+        return path;
     }
 
     @Override
