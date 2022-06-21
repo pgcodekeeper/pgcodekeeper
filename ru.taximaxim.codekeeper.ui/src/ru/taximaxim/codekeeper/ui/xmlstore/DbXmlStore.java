@@ -233,7 +233,7 @@ public class DbXmlStore extends XmlStore<DbInfo> {
                 object.get(Tags.DOMAIN), object.get(Tags.PGDUMP_EXE_PATH),
                 object.get(Tags.PGDUMP_CUSTOM_PARAMS),
                 Boolean.parseBoolean(object.get(Tags.PG_DUMP_SWITCH)),
-                !object.containsKey(Tags.DBGROUP) ? "" : object.get(Tags.DBGROUP));
+                !object.containsKey(Tags.DBGROUP) ? "" : object.get(Tags.DBGROUP)); //$NON-NLS-1$
     }
 
     private void fillIgnoreFileList(NodeList xml, List<String> list) {

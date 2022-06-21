@@ -160,7 +160,7 @@ class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
     @Override
     protected void addColumns(TableViewer tableViewer) {
         TableViewerColumn dbGroupCol = new TableViewerColumn(tableViewer, SWT.NONE);
-        dbGroupCol.getColumn().setText(Messages.DbStorePrefPage_db_group_0);
+        dbGroupCol.getColumn().setText(Messages.DbStorePrefPage_db_group);
         dbGroupCol.getColumn().setResizable(true);
         dbGroupCol.setLabelProvider(new ColumnLabelProvider() {
 
@@ -173,7 +173,7 @@ class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
         dbGroupCol.getColumn().setWidth(pc.convertWidthInCharsToPixels(15));
 
         TableViewerColumn dbNameCol = new TableViewerColumn(tableViewer, SWT.NONE);
-        dbNameCol.getColumn().setText(Messages.DbStorePrefPage_db_group_1);
+        dbNameCol.getColumn().setText(Messages.DbStorePrefPage_db);
         dbNameCol.getColumn().setResizable(true);
         dbNameCol.setLabelProvider(new ColumnLabelProvider() {
 

@@ -84,7 +84,7 @@ public class DbMenuStorePicker extends AbstractStorePicker implements IStorePick
         text = text.replace("<", "\\<"); //$NON-NLS-1$ //$NON-NLS-2$
         text = text.replace(">", "\\>"); //$NON-NLS-1$ //$NON-NLS-2$
         if (text.endsWith("\\")) { //$NON-NLS-1$
-            text += " "; //$NON-NLS-1$
+            text += ' ';
         }
         return text;
     }

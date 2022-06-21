@@ -350,9 +350,9 @@ public final class Messages extends NLS {
 
     public static String DbStorePrefPage_action_edit;
 
-    public static String DbStorePrefPage_db_group_0;
+    public static String DbStorePrefPage_db_group;
 
-    public static String DbStorePrefPage_db_group_1;
+    public static String DbStorePrefPage_db;
 
     public static String DbStorePrefPage_export_db;
 
