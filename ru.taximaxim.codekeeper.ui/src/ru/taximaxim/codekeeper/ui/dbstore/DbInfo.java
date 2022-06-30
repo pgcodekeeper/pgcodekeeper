@@ -161,24 +161,22 @@ public class DbInfo {
     }
 
     /**
-     * filling list with sorted dbInfo
+     * Sorts the list by DbInfo.dbGroup in order of group occurrence
      */
-
     public static void sortDbGroups(List<DbInfo> list) {
         Map<String, List<DbInfo>> map = groupDbs(list);
         list.clear();
-        map.values().stream().forEach(v -> v.forEach(dbinfo-> list.add(dbinfo)));
+        map.values().stream().forEach(v -> v.forEach(list::add));
     }
 
     /**
-     * distribution of dbInfo into by group. if dbInfo group not exist create new group with empty name
+     * @return Map of DbInfo's grouped by their dbGroup
      */
-
     public static Map<String, List<DbInfo>> groupDbs(List<DbInfo> list) {
         Map<String, List<DbInfo>> map = new LinkedHashMap<>();
 
         for (DbInfo dbInfo : list) {
-            map.computeIfAbsent(dbInfo.getDbGroup(), k ->  new ArrayList<>()).add(dbInfo);
+            map.computeIfAbsent(dbInfo.getDbGroup(), k -> new ArrayList<>()).add(dbInfo);
         }
         return map;
     }

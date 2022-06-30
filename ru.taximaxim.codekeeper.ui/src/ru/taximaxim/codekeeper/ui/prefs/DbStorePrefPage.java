@@ -141,8 +141,7 @@ class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
 
     protected Set<String> getDbGroups() {
         Set<String> dbGroups = new LinkedHashSet<>();
-        getList().stream().forEach(dbInfo -> dbGroups.add(dbInfo.getDbGroup()));
-        getList().stream().map(DbInfo::getDbGroup).forEach(dbGroup -> dbGroups.add(dbGroup));
+        getList().stream().map(DbInfo::getDbGroup).forEach(dbGroups::add);
         return dbGroups;
     }
 
