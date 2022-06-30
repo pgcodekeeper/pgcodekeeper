@@ -33,8 +33,8 @@ import ru.taximaxim.codekeeper.ui.UIConsts.DB_BIND_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
-import ru.taximaxim.codekeeper.ui.dbstore.IStorePicker;
 import ru.taximaxim.codekeeper.ui.dbstore.DbMenuStorePicker;
+import ru.taximaxim.codekeeper.ui.dbstore.IStorePicker;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
@@ -114,7 +114,7 @@ public class ProjectProperties extends PropertyPage {
         storePicker.setSelection(dbForBind);
 
         storePicker.setEnabled(btnBindProjToDb.getSelection());
-        storePicker.addSelectionListener(() -> { dbForBind = storePicker.getDbInfo();});
+        storePicker.addSelectionListener(() -> dbForBind = storePicker.getDbInfo());
 
         if (!isMsSql) {
             new Label(panel, SWT.NONE).setText(Messages.projectProperties_timezone_for_all_db_connections);

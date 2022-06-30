@@ -67,7 +67,7 @@ implements IWorkbenchPreferencePage {
         dbList.setLayoutData(new GridData(GridData.FILL_BOTH));
         List<DbInfo> dbInfoList = DbInfo.readStoreFromXml();
 
-        DbInfo.fillDblist(dbInfoList);
+        DbInfo.sortDbGroups(dbInfoList);
         dbList.setInputList(dbInfoList);
         oldDbList = new ArrayList<>(dbList.getList());
 
@@ -130,7 +130,7 @@ class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
 
     @Override
     protected DbInfo getNewObject(DbInfo oldObject) {
-        DbStoreEditorDialog dialog = new DbStoreEditorDialog(getShell(), oldObject, action, getDbGroup() );
+        DbStoreEditorDialog dialog = new DbStoreEditorDialog(getShell(), oldObject, action, getDbGroups() );
         return dialog.open() == Window.OK ? dialog.getDbInfo() : null;
     }
 
@@ -139,21 +139,22 @@ class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
         return MessageFormat.format(Messages.DbStorePrefPage_already_present, obj.getName());
     }
 
-    protected Set<String> getDbGroup() {
+    protected Set<String> getDbGroups() {
         Set<String> dbGroups = new LinkedHashSet<>();
         getList().stream().forEach(dbInfo -> dbGroups.add(dbInfo.getDbGroup()));
+        getList().stream().map(DbInfo::getDbGroup).forEach(dbGroup -> dbGroups.add(dbGroup));
         return dbGroups;
     }
 
     @Override
     public void refresh() {
-        DbInfo.fillDblist(getList());
+        DbInfo.sortDbGroups(getList());
         super.refresh();
     }
 
     @Override
     public void setInputList(List<DbInfo> list){
-        DbInfo.fillDblist(list);
+        DbInfo.sortDbGroups(list);
         super.setInputList(list);
     }
 

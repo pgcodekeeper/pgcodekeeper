@@ -71,7 +71,7 @@ public class DbStoreEditorDialog extends TrayDialog {
     private Button btnMsSql;
     private Button btnUseDump;
     private Button btnWinAuth;
-    private ComboViewer cmb;
+    private ComboViewer cmbGroups;
     private final Set<String> dbGroups;
 
     private IgnoreListEditor ignoreListEditor;
@@ -100,11 +100,11 @@ public class DbStoreEditorDialog extends TrayDialog {
         return btnWinAuth != null && btnWinAuth.getSelection();
     }
 
-    public DbStoreEditorDialog(Shell shell, DbInfo dbInitial, String action, Set<String> set) {
+    public DbStoreEditorDialog(Shell shell, DbInfo dbInitial, String action, Set<String> dbGroups) {
         super(shell);
         this.dbInitial = dbInitial;
         this.action = action;
-        this.dbGroups = set;
+        this.dbGroups = dbGroups;
     }
 
     @Override
@@ -165,7 +165,7 @@ public class DbStoreEditorDialog extends TrayDialog {
                 txtDbUser.setText(dbUser);
                 txtDbPass.setText(dbPass);
                 if (dbGroup != null) {
-                    cmb.setSelection(new StructuredSelection(dbGroup));
+                    cmbGroups.setSelection(new StructuredSelection(dbGroup));
                 }
                 txtName.setText(entryName);
                 txtDomain.setText(domain != null ? domain : ""); //$NON-NLS-1$;
@@ -352,11 +352,11 @@ public class DbStoreEditorDialog extends TrayDialog {
         Label lblDB = new Label(tabAreaDb, SWT.NONE);
         lblDB.setText(Messages.DbStoreEditorDialog_choice_db_group);
 
-        cmb = new ComboViewer(tabAreaDb, SWT.DROP_DOWN);
-        cmb.getCombo().setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 3, 1));
-        cmb.setContentProvider(ArrayContentProvider.getInstance());
+        cmbGroups = new ComboViewer(tabAreaDb, SWT.DROP_DOWN);
+        cmbGroups.getCombo().setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, false, false, 3, 1));
+        cmbGroups.setContentProvider(ArrayContentProvider.getInstance());
         dbGroups.removeIf(String::isEmpty);
-        cmb.setInput(dbGroups);
+        cmbGroups.setInput(dbGroups);
 
         //// Creating tab item "Ignored objects files" and fill it by components.
 
@@ -550,7 +550,7 @@ public class DbStoreEditorDialog extends TrayDialog {
                     .collect(Collectors.toMap(Entry::getKey, Entry::getValue)),
                     btnMsSql.getSelection(), isWinAuth(), txtDomain.getText(),
                     exePath, txtDumpParameters.getText(), btnUseDump.getSelection(),
-                    cmb.getCombo().getText());
+                    cmbGroups.getCombo().getText());
             super.okPressed();
         }
     }

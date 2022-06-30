@@ -138,7 +138,8 @@ public class DbXmlStore extends XmlStore<DbInfo> {
             createSubElement(xml, keyElement, Tags.NAME.toString(), dbInfo.getName());
             createSubElement(xml, keyElement, Tags.DBNAME.toString(), dbInfo.getDbName());
             createSubElement(xml, keyElement, Tags.DBUSER.toString(), dbInfo.getDbUser());
-            createSubElement(xml, keyElement, Tags.DBPASS.toString(), ""); //$NON-NLS-1$
+            createSubElement(xml, keyElement, Tags.DBPASS.toString(),
+                    mainPrefs.getBoolean(PREF.SAVE_IN_SECURE_STORAGE) ? "" : dbInfo.getDbPass()); //$NON-NLS-1$
             createSubElement(xml, keyElement, Tags.DBGROUP.toString(), dbInfo.getDbGroup());
             createSubElement(xml, keyElement, Tags.DBHOST.toString(), dbInfo.getDbHost());
             createSubElement(xml, keyElement, Tags.DBPORT.toString(), String.valueOf(dbInfo.getDbPort()));

@@ -31,7 +31,7 @@ public class DbInfo {
     private final boolean winAuth;
     private final boolean msSql;
     private final String domain;
-    private String dbGroup;
+    private final String dbGroup;
     private final boolean generateName;
     private final List<String> ignoreFiles;
     private final Map<String, String> properties;
@@ -54,10 +54,6 @@ public class DbInfo {
 
     public String getDbGroup() {
         return dbGroup;
-    }
-
-    public void setDbGroup(String dbGroup) {
-        this.dbGroup = dbGroup;
     }
 
     public String getDbHost() {
@@ -164,17 +160,25 @@ public class DbInfo {
         return new ArrayList<>();
     }
 
-    public static void fillDblist(List<DbInfo> list) {
-        Map<String, List<DbInfo>> map = getGroupMap(list);
+    /**
+     * filling list with sorted dbInfo
+     */
+
+    public static void sortDbGroups(List<DbInfo> list) {
+        Map<String, List<DbInfo>> map = groupDbs(list);
         list.clear();
         map.values().stream().forEach(v -> v.forEach(dbinfo-> list.add(dbinfo)));
     }
 
-    public static Map<String, List<DbInfo>> getGroupMap(List<DbInfo> list) {
+    /**
+     * distribution of dbInfo into by group. if dbInfo group not exist create new group with empty name
+     */
+
+    public static Map<String, List<DbInfo>> groupDbs(List<DbInfo> list) {
         Map<String, List<DbInfo>> map = new LinkedHashMap<>();
 
         for (DbInfo dbInfo : list) {
-            map.computeIfAbsent(dbInfo.getDbGroup(),k ->  new ArrayList<>()).add(dbInfo);
+            map.computeIfAbsent(dbInfo.getDbGroup(), k ->  new ArrayList<>()).add(dbInfo);
         }
         return map;
     }

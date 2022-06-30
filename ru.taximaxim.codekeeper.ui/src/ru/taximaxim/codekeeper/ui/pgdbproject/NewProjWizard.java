@@ -59,8 +59,8 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.WIZARD;
 import ru.taximaxim.codekeeper.ui.UIConsts.WORKING_SET;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
-import ru.taximaxim.codekeeper.ui.dbstore.IStorePicker;
 import ru.taximaxim.codekeeper.ui.dbstore.DbMenuStorePicker;
+import ru.taximaxim.codekeeper.ui.dbstore.IStorePicker;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.handlers.OpenEditor;
@@ -254,18 +254,18 @@ class PageDb extends WizardPage {
     private Button btnInit;
     private Button btnBind;
     private Button btnGetTz;
-    private IStorePicker lblPicker;
+    private IStorePicker storePicker;
     private ComboViewer timezoneCombo;
     private ComboViewer charsetCombo;
     private CLabel lblWarnPosix;
 
 
     public DbInfo getDbInfo() {
-        return lblPicker.getDbInfo();
+        return storePicker.getDbInfo();
     }
 
     public File getDumpPath() {
-        return lblPicker.getPathOfFile();
+        return storePicker.getPathOfFile();
     }
 
     public String getCharset(){
@@ -326,11 +326,9 @@ class PageDb extends WizardPage {
 
         new Label(source, SWT.NONE).setText(Messages.DbStorePicker_db_connection);
 
-        lblPicker = new DbMenuStorePicker(source, true, false);
-        lblPicker.filter(!isPostgres);
-        lblPicker.addSelectionListener(() -> {
-            modifyButtons();
-        });
+        storePicker = new DbMenuStorePicker(source, true, false);
+        storePicker.filter(!isPostgres);
+        storePicker.addSelectionListener(this::modifyButtons);
 
         Button btnEditStore = new Button(source, SWT.PUSH);
         btnEditStore.setImage(Activator.getRegisteredImage(FILE.ICONEDIT));
@@ -365,7 +363,7 @@ class PageDb extends WizardPage {
 
             btnGetTz = new Button(container, SWT.PUSH);
             btnGetTz.setText(Messages.NewProjWizard_get_from_db);
-            btnGetTz.setEnabled(lblPicker.getDbInfo() != null);
+            btnGetTz.setEnabled(storePicker.getDbInfo() != null);
             btnGetTz.addSelectionListener(new SelectionAdapter() {
 
                 @Override
@@ -401,9 +399,9 @@ class PageDb extends WizardPage {
     private void modifyButtons() {
         boolean init = btnInit.getSelection();
         if (isPostgres) {
-            btnGetTz.setEnabled(init && lblPicker.getDbInfo() != null);
+            btnGetTz.setEnabled(init && storePicker.getDbInfo() != null);
         }
-        lblPicker.setEnabled(init);
+        storePicker.setEnabled(init);
 
         if (getDbInfo() == null) {
             btnBind.setSelection(false);
@@ -429,7 +427,7 @@ class PageDb extends WizardPage {
 
     @Override
     public boolean isPageComplete() {
-        return !btnInit.getSelection() || lblPicker.getDbInfo() != null || lblPicker.getPathOfFile() != null;
+        return !btnInit.getSelection() || storePicker.getDbInfo() != null || storePicker.getPathOfFile() != null;
     }
 
     private static class TimeZoneProgress implements IRunnableWithProgress {

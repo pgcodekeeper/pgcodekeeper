@@ -42,11 +42,11 @@ public class DBStoreMenu {
     private final Object selection;
     private final ListenerList<Consumer<Object>> listeners = new ListenerList<>();
 
-    public DBStoreMenu(MenuManager menuMgrGetChangesCustom, boolean useFileSources,
+    public DBStoreMenu(MenuManager menuMgr, boolean useFileSources,
             boolean useDirSources, boolean isMssql, Shell shell, Object selection) {
         this.useFileSources = useFileSources;
         this.useDirSources = useDirSources;
-        this.menuMgr = menuMgrGetChangesCustom;
+        this.menuMgr = menuMgr;
         this.isMssql = isMssql;
         this.shell = shell;
         this.selection = selection;
@@ -81,9 +81,9 @@ public class DBStoreMenu {
     }
 
     public void fillDbMenu(List<DbInfo> store) {
-        Map<String, List<DbInfo>> map = DbInfo.getGroupMap(store);
+        Map<String, List<DbInfo>> map = DbInfo.groupDbs(store);
         map.forEach((k, v) -> {
-            MenuManager submenu = new MenuManager(k.equals("") ? Messages.DbMenu_no_group : k); //$NON-NLS-1$
+            MenuManager submenu = new MenuManager("".equals(k) ? Messages.DbMenu_no_group : k); //$NON-NLS-1$
             menuMgr.add(submenu);
             for (DbInfo dbInfo : v) {
                 if (isMssql == dbInfo.isMsSql()) {
@@ -99,8 +99,6 @@ public class DBStoreMenu {
             files = Collections.emptyList();
         }
 
-        List<Object> input = new ArrayList<>(files.size() + projects.size() + 4);
-        input.addAll(store);
         menuMgr.add(new Action(Messages.DbStorePicker_open_db_store) {
 
             @Override

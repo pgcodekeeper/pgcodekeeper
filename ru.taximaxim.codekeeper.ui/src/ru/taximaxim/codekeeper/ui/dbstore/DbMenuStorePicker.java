@@ -16,7 +16,7 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class DbMenuStorePicker extends AbstractStorePicker implements IStorePicker {
 
-    private final Link lblDB;
+    private final Link lnkDb;
 
     private boolean isMsSql;
     private Object selection;
@@ -24,35 +24,36 @@ public class DbMenuStorePicker extends AbstractStorePicker implements IStorePick
 
     public DbMenuStorePicker(Composite parent, boolean useFileSources, boolean useDirSources) {
         super(parent, useFileSources, useDirSources);
-        lblDB = new Link(parent, SWT.NONE);
+        lnkDb = new Link(parent, SWT.NONE);
         updateTextLbl();
         Runnable menuRunnable = () -> {
-            Menu oldMenu = lblDB.getMenu();
+            Menu oldMenu = lnkDb.getMenu();
             if (oldMenu != null) {
                 oldMenu.dispose();
             }
 
             List<DbInfo> store = DbInfo.readStoreFromXml();
             MenuManager menuMgr = new MenuManager();
-            DBStoreMenu dbMenu = new DBStoreMenu(menuMgr, DbMenuStorePicker.this.useFileSources, DbMenuStorePicker.this.useDirSources, isMsSql, parent.getShell(),
-                    selection);
+            DBStoreMenu dbMenu = new DBStoreMenu(menuMgr,
+                    DbMenuStorePicker.this.useFileSources,
+                    DbMenuStorePicker.this.useDirSources, isMsSql, parent.getShell(), selection);
             dbMenu.fillDbMenu(store);
             dbMenu.addSelectionListener(this::setSelection);
-            lblDB.setMenu(menuMgr.createContextMenu(lblDB));
+            lnkDb.setMenu(menuMgr.createContextMenu(lnkDb));
         };
 
-        lblDB.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+        lnkDb.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
             menuRunnable.run();
-            lblDB.getMenu().setVisible(true);
+            lnkDb.getMenu().setVisible(true);
         }));
-        lblDB.addMenuDetectListener(e -> {
+        lnkDb.addMenuDetectListener(e -> {
             menuRunnable.run();
         });
     }
 
     @Override
     protected Control getControl() {
-        return lblDB;
+        return lnkDb;
     }
 
     @Override
@@ -75,7 +76,7 @@ public class DbMenuStorePicker extends AbstractStorePicker implements IStorePick
         } else {
             text = Messages.LabelPicker_choice_db;
         }
-        lblDB.setText("<a>" + escapeLink(text) + "</a>"); //$NON-NLS-1$ //$NON-NLS-2$
+        lnkDb.setText("<a>" + escapeLink(text) + "</a>"); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     private String escapeLink(String s) {

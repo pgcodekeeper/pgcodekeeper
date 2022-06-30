@@ -16,7 +16,7 @@ public interface IStorePicker {
     }
 
     default File getPathOfDir() {
-        return getPath(false);
+        return getPath(true);
     }
 
     File getPath(boolean getDirectory);
