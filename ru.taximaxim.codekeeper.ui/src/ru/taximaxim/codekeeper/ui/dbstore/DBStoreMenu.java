@@ -82,16 +82,27 @@ public class DBStoreMenu {
 
     public void fillDbMenu(List<DbInfo> store) {
         Map<String, List<DbInfo>> map = DbInfo.groupDbs(store);
-        map.forEach((k, v) -> {
-            MenuManager submenu = new MenuManager("".equals(k) ? Messages.DbMenu_no_group : k); //$NON-NLS-1$
-            menuMgr.add(submenu);
-            for (DbInfo dbInfo : v) {
-                if (isMssql == dbInfo.isMsSql()) {
-                    addAction(dbInfo, submenu);
-                }
-            }
-        });
 
+        if (map.keySet().size() > 1) {
+            map.forEach((k, v) -> {
+                MenuManager submenu = new MenuManager(
+                        "".equals(k) ? Messages.DbMenu_no_group : k); //$NON-NLS-1$
+                menuMgr.add(submenu);
+                for (DbInfo dbInfo : v) {
+                    if (isMssql == dbInfo.isMsSql()) {
+                        addAction(dbInfo, submenu);
+                    }
+                }
+            });
+        } else {
+            map.values().forEach(v -> {
+                for (DbInfo dbInfo : v) {
+                    if (isMssql == dbInfo.isMsSql()) {
+                        addAction(dbInfo, menuMgr);
+                    }
+                }
+            });
+        }
         Collection<File> files;
         if (useFileSources || useDirSources) {
             files = AbstractStorePicker.stringToDumpFileHistory(prefStore.getString(PREF.DB_STORE_FILES));
