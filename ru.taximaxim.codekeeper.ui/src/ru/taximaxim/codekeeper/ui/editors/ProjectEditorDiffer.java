@@ -62,6 +62,8 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -123,7 +125,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.VIEW;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.dbstore.DBStoreMenu;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
-import ru.taximaxim.codekeeper.ui.dbstore.DbStorePicker;
+import ru.taximaxim.codekeeper.ui.dbstore.DbMenuStorePicker;
 import ru.taximaxim.codekeeper.ui.dialogs.ApplyCustomDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.CommitDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
@@ -167,7 +169,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private Label lblNotificationText;
     private Link linkRefresh;
 
-    private DbStorePicker dbStorePicker;
+    private DbMenuStorePicker dbStorePicker;
     private Label lblApplyTo;
     private Action getChangesAction;
     private DiffTable diffTable;
@@ -317,8 +319,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     }
 
     private void updateWorkWith() {
-        Object remote = getCurrentDb();
-        dbStorePicker.setSelection(remote != null ? new StructuredSelection(remote) : new StructuredSelection(), false);
+        dbStorePicker.setSelection(getCurrentDb(), false);
         lblApplyTo.setText(diffTable.isApplyToProj() ? Messages.ProjectEditorDiffer_apply_project
                 : Messages.ProjectEditorDiffer_apply_db);
         diffTable.layout(true, true);
@@ -639,6 +640,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         IEclipsePreferences prefs = proj.getDbBindPrefs();
         DbInfo boundDb = DbInfo.getLastDb(prefs.get(DB_BIND_PREF.NAME_OF_BOUND_DB, "")); //$NON-NLS-1$
         if (boundDb != null) {
+            dbStorePicker.setEnabled(false);
             return boundDb;
         }
 
@@ -1028,10 +1030,23 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             l.setEnabled(false);
 
             //current remote
-            dbStorePicker = new DbStorePicker(labelCont, true, false);
-            dbStorePicker.filter(OpenProjectUtils.checkMsSql(getProject()));
-            dbStorePicker.fixEclipseBug567652();
-            dbStorePicker.addListenerToCombo(e -> {
+
+            dbStorePicker = new DbMenuStorePicker(labelCont, true, false);
+            dbStorePicker.filter(isMsSql);
+            labelCont.addMouseListener(new MouseAdapter() {
+
+                @Override
+                public void mouseDown(MouseEvent e) {
+                    if (!dbStorePicker.isEnabled()) {
+                        MessageBox mb = new MessageBox(parent.getShell(), SWT.ICON_INFORMATION);
+                        mb.setText(Messages.DbStoreCombo_db_binding_property_title);
+                        mb.setMessage(Messages.DbStoreCombo_db_binding_property);
+                        mb.open();
+                    }
+                }
+            });
+
+            dbStorePicker.addSelectionListener(()-> {
                 Object selection = dbStorePicker.getDbInfo();
                 if (selection == null) {
                     selection = dbStorePicker.getPathOfFile();
@@ -1222,8 +1237,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                         }
                     });
                     menuMgrGetChangesCustom.add(new Separator());
-                    DBStoreMenu dbStoreMenu = new DBStoreMenu(menuMgrGetChangesCustom, ProjectEditorDiffer.this, mainPrefs);
-                    dbStoreMenu.fillMenu();
+                    DBStoreMenu dbMenu = new DBStoreMenu(menuMgrGetChangesCustom, true, false, isMsSql, parent.getShell(), getCurrentDb());
+                    dbMenu.fillDbMenu(DbInfo.readStoreFromXml());
+                    dbMenu.addSelectionListener(ProjectEditorDiffer.this::setCurrentDb);
                     return menuMgrGetChangesCustom.createContextMenu(parent);
                 }
 

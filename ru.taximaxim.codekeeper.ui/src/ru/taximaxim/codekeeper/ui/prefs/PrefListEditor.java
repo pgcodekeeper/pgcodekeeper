@@ -163,7 +163,7 @@ public abstract class PrefListEditor<T> extends Composite {
         }
         if (newObj != null) {
             objsList.add(0, newObj);
-            viewerObjs.refresh();
+            refresh();
         }
     }
 
@@ -175,8 +175,12 @@ public abstract class PrefListEditor<T> extends Composite {
 
         if (newObj != null) {
             objsList.add(0, newObj);
-            viewerObjs.refresh();
+            refresh();
         }
+    }
+
+    public void refresh() {
+        viewerObjs.refresh();
     }
 
     private T getAnotherObject(T value) {
@@ -209,7 +213,7 @@ public abstract class PrefListEditor<T> extends Composite {
                     break;
                 }
             }
-            viewerObjs.refresh();
+            refresh();
         }
     }
 
@@ -219,7 +223,7 @@ public abstract class PrefListEditor<T> extends Composite {
             return;
         }
         if (objsList.remove(selection.getFirstElement())) {
-            viewerObjs.refresh();
+            refresh();
         }
     }
 
@@ -277,7 +281,7 @@ public abstract class PrefListEditor<T> extends Composite {
                 objsList.remove(source);
                 objsList.add(targetIndex, source);
                 dragSource = dragTarget = null;
-                viewerObjs.refresh();
+                refresh();
                 return true;
             }
             return false;

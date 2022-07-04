@@ -146,10 +146,10 @@ public class SQLEditorInput extends PlatformObject implements IURIEditorInput, I
         try {
             String path = this.path.toString();
             // fix Windows paths for URI (otherwise leading \ is treated as relative path)
-            if (!path.startsWith("/")) {
+            if (!path.startsWith("/")) { //$NON-NLS-1$
                 path = path.replace(File.separatorChar, '/');
             }
-            if (!path.startsWith("/")) {
+            if (!path.startsWith("/")) { //$NON-NLS-1$
                 path = '/' + path;
             }
             return new URI(EFS.SCHEME_NULL, null, path, null);

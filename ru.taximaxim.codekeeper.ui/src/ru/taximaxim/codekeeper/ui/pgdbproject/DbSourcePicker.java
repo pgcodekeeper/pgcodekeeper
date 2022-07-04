@@ -9,7 +9,6 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
@@ -24,14 +23,15 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
-import ru.taximaxim.codekeeper.ui.dbstore.DbStorePicker;
+import ru.taximaxim.codekeeper.ui.dbstore.DbMenuStorePicker;
+import ru.taximaxim.codekeeper.ui.dbstore.IStorePicker;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 class DbSourcePicker extends Composite {
 
     private final PageDiff pageDiff;
-    private final DbStorePicker storePicker;
+    private final IStorePicker storePicker;
     private final ComboViewer cmbEncoding;
 
     public DbSourcePicker(Composite parent, String groupTitle, final PageDiff pageDiff) {
@@ -49,8 +49,7 @@ class DbSourcePicker extends Composite {
 
         new Label(sourceComp, SWT.NONE).setText(Messages.DbStorePicker_db_schema_source);
 
-        storePicker = new DbStorePicker(sourceComp, true, true);
-
+        storePicker = new DbMenuStorePicker(sourceComp, true, true);
         new Label(sourceComp, SWT.NONE).setText(Messages.diffWizard_target_encoding);
 
         cmbEncoding = new ComboViewer(sourceComp, SWT.BORDER | SWT.DROP_DOWN);
@@ -59,8 +58,7 @@ class DbSourcePicker extends Composite {
         cmbEncoding.setInput(UIConsts.ENCODINGS);
         cmbEncoding.getCombo().setText(ApgdiffConsts.UTF_8);
         cmbEncoding.getControl().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-        storePicker.addListenerToCombo(event -> {
+        storePicker.addSelectionListener(() -> {
             pageDiff.getWizard().getContainer().updateButtons();
             File dir = storePicker.getPathOfDir();
             PgDbProject project = null;
@@ -75,10 +73,13 @@ class DbSourcePicker extends Composite {
             }
             cmbEncoding.getControl().setEnabled(!isProject);
         });
-
     }
 
-    public void setDbStore(IStructuredSelection selection) {
+    public void filter(boolean isMsql) {
+        storePicker.filter(isMsql);
+    }
+
+    public void setDbStore(Object selection) {
         storePicker.setSelection(selection);
     }
 
