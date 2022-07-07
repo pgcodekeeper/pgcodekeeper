@@ -41,7 +41,10 @@ public class SqlEditorTemplateProposal extends TemplateProposal {
         }
 
         tmplPatt = tmplPatt.replace("${objectName}", objectName); //$NON-NLS-1$
-        tmplPatt = tmplPatt.replace("${schemaName}", schema); //$NON-NLS-1$
+
+        if (schema != null) {
+            tmplPatt = tmplPatt.replace("${schemaName}", schema); //$NON-NLS-1$
+        }
 
         return new SqlEditorTemplateProposal(new Template(tmpl.getName(), tmpl.getDescription(),
                 tmpl.getContextTypeId(), tmplPatt, tmpl.isAutoInsertable()),

@@ -131,11 +131,6 @@ public class PgDomain extends PgStatementWithSearchPath {
     }
 
     @Override
-    public String getDropSQL() {
-        return "DROP DOMAIN " + getQualifiedName() + ';';
-    }
-
-    @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();

@@ -91,13 +91,17 @@ public class IgnoredObject {
                 ignoreContent, isQualified, EnumSet.copyOf(objTypes));
     }
 
-    public boolean match(TreeElement el, String... dbNames) {
-        boolean matches;
+    boolean match(String objName) {
         if (isRegular) {
-            matches = regex.matcher(isQualified ? el.getQualifiedName() : el.getName()).find();
+            return regex.matcher(objName).find();
         } else {
-            matches = name.equals(isQualified ?  el.getQualifiedName() : el.getName());
+            return name.equals(objName);
         }
+    }
+
+    public boolean match(TreeElement el, String... dbNames) {
+        boolean matches = match(isQualified ? el.getQualifiedName() : el.getName());
+
         if (!objTypes.isEmpty()) {
             matches = matches && objTypes.contains(el.getType());
         }

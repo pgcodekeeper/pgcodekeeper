@@ -75,11 +75,14 @@ public class MsConstraint extends AbstractConstraint {
     }
 
     @Override
-    public String getDropSQL() {
+    public String getDropSQL(boolean optionExists) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("ALTER ").append(getParent().getStatementType().name()).append(' ');
         sbSQL.append(getParent().getQualifiedName());
         sbSQL.append("\n\tDROP CONSTRAINT ");
+        if (optionExists) {
+            sbSQL.append("IF EXISTS ");
+        }
         sbSQL.append(MsDiffUtils.quoteName(getName()));
         sbSQL.append(GO);
 

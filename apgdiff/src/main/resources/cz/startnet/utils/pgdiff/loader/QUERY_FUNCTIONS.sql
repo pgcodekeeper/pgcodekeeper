@@ -6,8 +6,7 @@ WITH sys_schemas AS (
 ), extension_deps AS (
     SELECT dep.objid 
     FROM pg_catalog.pg_depend dep 
-    WHERE refclassid = 'pg_catalog.pg_extension'::pg_catalog.regclass 
-        AND dep.deptype = 'e'
+    WHERE dep.classid = 'pg_catalog.pg_proc'::pg_catalog.regclass AND dep.deptype = 'e'
 )
 
 SELECT  -- common part (functions/procedures/aggregates)
@@ -64,6 +63,7 @@ FROM pg_catalog.pg_proc p
 
 -- common part (functions/procedures/aggregates)
 LEFT JOIN pg_catalog.pg_description d ON d.objoid = p.oid
+    AND d.classoid = 'pg_catalog.pg_proc'::pg_catalog.regclass
 LEFT JOIN pg_catalog.pg_language l ON l.oid = p.prolang
 
 -- for aggregates

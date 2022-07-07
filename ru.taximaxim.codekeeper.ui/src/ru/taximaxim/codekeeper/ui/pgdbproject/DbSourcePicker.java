@@ -12,22 +12,16 @@ import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.ui.dialogs.PreferencesUtil;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
-import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
-import ru.taximaxim.codekeeper.ui.UIConsts.PREF_PAGE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStorePicker;
@@ -50,23 +44,12 @@ class DbSourcePicker extends Composite {
         setLayout(fl);
 
         Group sourceComp = new Group(this, SWT.NONE);
-        sourceComp.setLayout(new GridLayout(3, false));
+        sourceComp.setLayout(new GridLayout(2, false));
         sourceComp.setText(groupTitle);
 
         new Label(sourceComp, SWT.NONE).setText(Messages.DbStorePicker_db_schema_source);
 
         storePicker = new DbStorePicker(sourceComp, true, true);
-
-        Button btnEditStore = new Button(sourceComp, SWT.PUSH);
-        btnEditStore.setImage(Activator.getRegisteredImage(FILE.ICONEDIT));
-        btnEditStore.addSelectionListener(new SelectionAdapter() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                PreferencesUtil.createPreferenceDialogOn(getShell(),
-                        PREF_PAGE.DB_STORE, null, null).open();
-            }
-        });
 
         new Label(sourceComp, SWT.NONE).setText(Messages.diffWizard_target_encoding);
 
@@ -75,6 +58,7 @@ class DbSourcePicker extends Composite {
         cmbEncoding.setLabelProvider(new LabelProvider());
         cmbEncoding.setInput(UIConsts.ENCODINGS);
         cmbEncoding.getCombo().setText(ApgdiffConsts.UTF_8);
+        cmbEncoding.getControl().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         storePicker.addListenerToCombo(event -> {
             pageDiff.getWizard().getContainer().updateButtons();

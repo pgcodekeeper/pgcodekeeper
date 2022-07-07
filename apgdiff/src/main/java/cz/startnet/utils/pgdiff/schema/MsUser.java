@@ -48,11 +48,6 @@ public class MsUser extends PgStatement {
     }
 
     @Override
-    public String getDropSQL() {
-        return "DROP USER " + MsDiffUtils.quoteName(name) + GO;
-    }
-
-    @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();

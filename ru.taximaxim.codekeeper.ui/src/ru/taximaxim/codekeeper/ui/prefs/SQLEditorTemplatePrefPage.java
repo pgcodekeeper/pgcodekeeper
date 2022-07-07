@@ -2,11 +2,11 @@ package ru.taximaxim.codekeeper.ui.prefs;
 
 import java.util.Arrays;
 
-import org.eclipse.jface.text.templates.persistence.TemplateStore;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.text.templates.TemplateStoreCore;
 import org.eclipse.ui.texteditor.templates.TemplatePreferencePage;
 
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -21,7 +21,7 @@ public class SQLEditorTemplatePrefPage extends TemplatePreferencePage {
             setTemplateStore(SQLEditorTemplateManager.getInstance()
                     .getTemplateStore());
             setContextTypeRegistry(SQLEditorTemplateManager.getInstance()
-                    .getContextTypeRegistry());
+                    .getContributionContextTypeRegistry());
         } catch (Exception ex) {
             Log.log(Log.LOG_ERROR, "Cannot get sql templates", ex); //$NON-NLS-1$
         }
@@ -41,7 +41,7 @@ public class SQLEditorTemplatePrefPage extends TemplatePreferencePage {
 
     private static class OnlyUserTemplatesContentProvider implements IStructuredContentProvider {
 
-        private TemplateStore fStore;
+        private TemplateStoreCore fStore;
 
         @Override
         public Object[] getElements(Object input) {
@@ -55,7 +55,7 @@ public class SQLEditorTemplatePrefPage extends TemplatePreferencePage {
 
         @Override
         public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-            fStore = (TemplateStore) newInput;
+            fStore = (TemplateStoreCore) newInput;
         }
 
         @Override

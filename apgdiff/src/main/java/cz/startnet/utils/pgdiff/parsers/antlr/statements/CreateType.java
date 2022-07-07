@@ -54,7 +54,7 @@ public class CreateType extends ParserAbstract {
         }
 
         for (Table_column_definitionContext attr : ctx.attrs) {
-            type.addAttr(getColumn(attr));
+            addAttr(attr, type);
         }
         for (Character_stringContext enume : ctx.enums) {
             type.addEnum(enume.getText());
@@ -76,6 +76,10 @@ public class CreateType extends ParserAbstract {
         if (ctx.subtype_diff_function != null) {
             type.setSubtypeDiff(getFullCtxText(ctx.subtype_diff_function));
             addDepSafe(type, getIdentifiers(ctx.subtype_diff_function), DbObjType.FUNCTION, true);
+        }
+        if (ctx.multirange_name != null) {
+            type.setMultirange(ctx.multirange_name.getText());
+            addPgTypeDepcy(ctx.multirange_name, type);
         }
         if (ctx.input_function != null) {
             type.setInputFunction(getFullCtxText(ctx.input_function));
@@ -104,6 +108,10 @@ public class CreateType extends ParserAbstract {
         if (ctx.analyze_function != null) {
             type.setAnalyzeFunction(getFullCtxText(ctx.analyze_function));
             addDepSafe(type, getIdentifiers(ctx.analyze_function), DbObjType.FUNCTION, true);
+        }
+        if (ctx.subscript_function != null) {
+            type.setSubscriptFunction(getFullCtxText(ctx.subscript_function));
+            addDepSafe(type, getIdentifiers(ctx.subscript_function), DbObjType.FUNCTION, true);
         }
         if (ctx.internallength != null) {
             type.setInternalLength(getFullCtxText(ctx.internallength));
@@ -147,14 +155,14 @@ public class CreateType extends ParserAbstract {
         }
     }
 
-    private AbstractColumn getColumn(Table_column_definitionContext colCtx) {
+    private void addAttr(Table_column_definitionContext colCtx, PgType type) {
         AbstractColumn col = new PgColumn(colCtx.identifier().getText());
         col.setType(getTypeName(colCtx.data_type()));
-        addPgTypeDepcy(colCtx.data_type(), col);
+        addPgTypeDepcy(colCtx.data_type(), type);
         if (colCtx.collate_identifier() != null) {
             col.setCollation(getFullCtxText(colCtx.collate_identifier().collation));
         }
-        return col;
+        type.addAttr(col);
     }
 
     @Override

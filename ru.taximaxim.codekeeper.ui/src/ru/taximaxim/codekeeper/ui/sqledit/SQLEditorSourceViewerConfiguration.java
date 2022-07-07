@@ -10,8 +10,12 @@ import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
+import org.eclipse.jface.text.formatter.IContentFormatter;
+import org.eclipse.jface.text.formatter.MultiPassContentFormatter;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
+import org.eclipse.jface.text.quickassist.IQuickAssistAssistant;
+import org.eclipse.jface.text.quickassist.QuickAssistAssistant;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.jface.text.rules.IWordDetector;
@@ -51,14 +55,15 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     public SQLEditorSourceViewerConfiguration(ISharedTextColors sharedColors,
             IPreferenceStore store, SQLEditor editor) {
         super(store);
-        fSharedColors= sharedColors;
+        fSharedColors = sharedColors;
         this.prefs = Activator.getDefault().getPreferenceStore();
         this.editor = editor;
     }
 
     @Override
     public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
-        return editor == null ? null : new SQLEditorTextHover(sourceViewer, editor);
+        return editor == null ? super.getTextHover(sourceViewer, contentType)
+                : new SQLEditorTextHover(sourceViewer, editor);
     }
 
     @Override
@@ -89,12 +94,20 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     }
 
     private KeySequence getIterationBinding() {
-        final IBindingService bindingSvc= PlatformUI.getWorkbench().getService(IBindingService.class);
-        TriggerSequence binding= bindingSvc.getBestActiveBindingFor(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
+        final IBindingService bindingSvc = PlatformUI.getWorkbench().getService(IBindingService.class);
+        TriggerSequence binding = bindingSvc.getBestActiveBindingFor(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
         if (binding instanceof KeySequence) {
             return (KeySequence) binding;
         }
         return null;
+    }
+
+    @Override
+    public IQuickAssistAssistant getQuickAssistAssistant(ISourceViewer sourceViewer) {
+        IQuickAssistAssistant quickAssist = new QuickAssistAssistant();
+        quickAssist.setQuickAssistProcessor(new SQLEditorQuickAssistProcessor(editor));
+        quickAssist.setInformationControlCreator(getInformationControlCreator(sourceViewer));
+        return quickAssist;
     }
 
     @Override
@@ -106,7 +119,10 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     public String[] getConfiguredContentTypes(ISourceViewer sourceViewer) {
         return new String[] {
                 SQLEditorCommonDocumentProvider.SQL_CODE,
-                SQLEditorCommonDocumentProvider.SQL_SINGLE_COMMENT
+                SQLEditorCommonDocumentProvider.SQL_SINGLE_COMMENT,
+                SQLEditorCommonDocumentProvider.SQL_MULTI_COMMENT,
+                SQLEditorCommonDocumentProvider.SQL_CHARACTER_STRING_LITERAL,
+                SQLEditorCommonDocumentProvider.SQL_QUOTED_IDENTIFIER
         };
     }
 
@@ -120,7 +136,6 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         addDamagerRepairer(reconciler, createCharacterStringLiteralCommentScanner(), SQLEditorCommonDocumentProvider.SQL_CHARACTER_STRING_LITERAL);
         addDamagerRepairer(reconciler, createQuotedIdentifierScanner(), SQLEditorCommonDocumentProvider.SQL_QUOTED_IDENTIFIER);
         addDamagerRepairer(reconciler, createRecipeScanner(), SQLEditorCommonDocumentProvider.SQL_CODE);
-
         return reconciler;
     }
 
@@ -133,6 +148,15 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         return targets;
     }
 
+    @Override
+    public IContentFormatter getContentFormatter(ISourceViewer sourceViewer) {
+        final MultiPassContentFormatter formatter =
+                new MultiPassContentFormatter(getConfiguredDocumentPartitioning(sourceViewer),
+                        SQLEditorCommonDocumentProvider.SQL_CODE);
+        formatter.setMasterStrategy(new SQLFormattingStrategy(editor));
+        return formatter;
+    }
+
     private void addDamagerRepairer(PresentationReconciler reconciler, RuleBasedScanner commentScanner, String contentType) {
         DefaultDamagerRepairer commentDamagerRepairer= new DefaultDamagerRepairer(commentScanner);
         reconciler.setDamager(commentDamagerRepairer, contentType);
@@ -142,7 +166,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     private RuleBasedScanner createRecipeScanner() {
         RuleBasedScanner recipeScanner= new RuleBasedScanner();
 
-        IRule[] rules= {
+        IRule[] rules = {
                 sqlSyntaxRules()
         };
         recipeScanner.setRules(rules);
@@ -216,5 +240,23 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
                 getTextAttribute(prefs, SQLEditorStatementTypes.QUOTED_IDENTIFIER)));
         return commentScanner;
     }
-}
+    /*
+    @Override
+    public int getTabWidth(ISourceViewer sourceViewer) {
+        return prefs.getInt(FORMATTER_PREF.INDENT_SIZE);
+    }
 
+    @Override
+    public String[] getIndentPrefixes(ISourceViewer sourceViewer, String contentType) {
+        String indent;
+
+        String mode = prefs.getString(FORMATTER_PREF.INDENT_TYPE);
+        if (FORMATTER_PREF.TAB.equals(mode)) {
+            indent = "\t";
+        } else {
+            indent = FormatConfiguration.createIndent(getTabWidth(sourceViewer), ' ');
+        }
+        return new String[] { indent, "" };
+    }
+     */
+}

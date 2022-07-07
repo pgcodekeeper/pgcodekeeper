@@ -92,7 +92,7 @@ public final class NewObjectPage extends WizardPage {
     private final EnumSet<DbObjType> allowedTypes = EnumSet.complementOf(
             EnumSet.of(DbObjType.COLUMN, DbObjType.DATABASE, DbObjType.SEQUENCE,
                     DbObjType.ASSEMBLY, DbObjType.ROLE, DbObjType.USER,
-                    DbObjType.OPERATOR, DbObjType.AGGREGATE, DbObjType.CAST));
+                    DbObjType.OPERATOR, DbObjType.AGGREGATE, DbObjType.CAST, DbObjType.USER_MAPPING));
 
     private ComboViewer viewerProject;
     private ComboViewer viewerType;
@@ -124,7 +124,8 @@ public final class NewObjectPage extends WizardPage {
                 .findAny().orElse(null);
         IContainer container = resource.getParent();
         if (container != null) {
-            if (type != null && type != DbObjType.SCHEMA && type != DbObjType.EXTENSION) {
+            if (type != null && type != DbObjType.SCHEMA && type != DbObjType.EXTENSION
+                    && type != DbObjType.FOREIGN_DATA_WRAPPER && type != DbObjType.SERVER) {
                 schema = container.getName();
             } else if (DbObjType.SCHEMA.name().equals(container.getName())) {
                 schema = resource.getName();
@@ -135,7 +136,9 @@ public final class NewObjectPage extends WizardPage {
     private void parseFile(IResource resource) {
         try {
             PgStatement st = UIProjectLoader.parseStatement((IFile)resource,
-                    EnumSet.of(DbObjType.EXTENSION, DbObjType.TABLE,
+                    EnumSet.of(DbObjType.EXTENSION, DbObjType.FOREIGN_DATA_WRAPPER,
+                            DbObjType.USER_MAPPING,
+                            DbObjType.SERVER, DbObjType.TABLE,
                             DbObjType.VIEW, DbObjType.DOMAIN,
                             DbObjType.TYPE, DbObjType.FUNCTION,
                             DbObjType.PROCEDURE));
@@ -291,6 +294,8 @@ public final class NewObjectPage extends WizardPage {
         switch (type) {
         case SCHEMA:
         case EXTENSION:
+        case FOREIGN_DATA_WRAPPER:
+        case SERVER:
             path = name;
             expectedFormat = NAME;
             break;
@@ -344,10 +349,13 @@ public final class NewObjectPage extends WizardPage {
             } else {
                 String third = parser.getThirdName();
                 String second = parser.getSecondName();
-                if ((type == DbObjType.SCHEMA || type == DbObjType.EXTENSION) && second != null) {
+                if ((type == DbObjType.SCHEMA || type == DbObjType.EXTENSION
+                        || type == DbObjType.FOREIGN_DATA_WRAPPER
+                        || type == DbObjType.SERVER) && second != null) {
                     err = Messages.NewObjectWizard_invalid_schema_format;
                 } else if (isSubElement() == (third == null)
-                        || (second == null && type != DbObjType.SCHEMA && type != DbObjType.EXTENSION)) {
+                        || (second == null && type != DbObjType.SCHEMA && type != DbObjType.EXTENSION
+                        && type != DbObjType.FOREIGN_DATA_WRAPPER && type != DbObjType.SERVER)) {
                     err = Messages.NewObjectWizard_invalid_input_format + expectedFormat;
                 }
 
@@ -356,7 +364,8 @@ public final class NewObjectPage extends WizardPage {
                     if (isSubElement()) {
                         container = second;
                         schema = third;
-                    } else if (type != DbObjType.EXTENSION && type != DbObjType.SCHEMA) {
+                    } else if (type != DbObjType.EXTENSION && type != DbObjType.SCHEMA
+                            && type != DbObjType.FOREIGN_DATA_WRAPPER && type != DbObjType.SERVER) {
                         schema = second;
                     }
                 }
@@ -381,8 +390,8 @@ public final class NewObjectPage extends WizardPage {
     public boolean createFile() {
         try {
             mainPrefs.setValue(PREF.LAST_CREATED_OBJECT_TYPE, type.name());
-            if (type == DbObjType.EXTENSION) {
-                createExtension(name, currentProj);
+            if (type == DbObjType.EXTENSION || type == DbObjType.FOREIGN_DATA_WRAPPER || type == DbObjType.SERVER) {
+                createObject(null, name, type, true, currentProj);
             } else if (type == DbObjType.SCHEMA) {
                 createSchema(name, true, currentProj);
             } else if (!isSubElement()) {
@@ -407,7 +416,7 @@ public final class NewObjectPage extends WizardPage {
 
     private void openFileInEditor(IFile file, String tmplId, String schema,
             String object, String parent) throws CoreException {
-        String schemaName = PgDiffUtils.getQuotedName(schema);
+        String schemaName = schema != null ? PgDiffUtils.getQuotedName(schema): null;
         String objectName = PgDiffUtils.getQuotedName(object);
 
         Template newObjTmpl = SQLEditorTemplateManager.getInstance()
@@ -461,7 +470,8 @@ public final class NewObjectPage extends WizardPage {
         if (!file.exists()) {
             StringBuilder sb = new StringBuilder();
             sb.append(MessageFormat.format(PATTERN, DbObjType.SCHEMA, PgDiffUtils.getQuotedName(name)));
-            file.create(new ByteArrayInputStream(sb.toString().getBytes()), false, null);
+            file.create(new ByteArrayInputStream(sb.toString().getBytes(
+                    Charset.forName(file.getCharset()))), false, null);
         }
         if (open) {
             openFileInEditor(file);
@@ -469,23 +479,27 @@ public final class NewObjectPage extends WizardPage {
         return schemaFolder;
     }
 
-    private void createExtension(String name, IProject project) throws CoreException {
-        IFolder folder = project.getFolder(DbObjType.EXTENSION.name());
-        if (!folder.exists()) {
-            folder.create(false, true, null);
+    private String getDirName(DbObjType objType) {
+        if (objType.equals(DbObjType.FOREIGN_DATA_WRAPPER)) {
+            return "FDW"; //$NON-NLS-1$
         }
-        IFile extFile = folder.getFile(AbstractModelExporter.getExportedFilenameSql(name));
-        if (!extFile.exists()) {
-            String code = MessageFormat.format(PATTERN, DbObjType.EXTENSION, PgDiffUtils.getQuotedName(name));
-            extFile.create(new ByteArrayInputStream(code.getBytes()), false, null);
-        }
-        openFileInEditor(extFile);
+        return objType.name();
     }
 
     private IFile createObject(String schema, String name, DbObjType type,
             boolean open, IProject project) throws CoreException {
-        IFile file = getFolder(schema, type, project)
-                .getFile(AbstractModelExporter.getExportedFilenameSql(name));
+        IFile file;
+        if (schema == null) {
+            IFolder folder = project.getFolder(getDirName(type));
+            if (!folder.exists()) {
+                folder.create(false, true, null);
+            }
+            file = folder.getFile(AbstractModelExporter.getExportedFilenameSql(name));
+        } else {
+            file = getFolder(schema, type, project)
+                    .getFile(AbstractModelExporter.getExportedFilenameSql(name));
+        }
+
         if (!file.exists()) {
             file.create(new ByteArrayInputStream(new byte[0]), false, null);
             if (open) {

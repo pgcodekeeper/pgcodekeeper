@@ -10,7 +10,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 
 import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.SqlContextProcessor;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_ownerContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_owner_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_schema_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -25,7 +25,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.User_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterOwner;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateRule;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.GrantPrivilege;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.IRelation;
@@ -67,14 +67,14 @@ implements SqlContextProcessor {
         Rule_commonContext rule = ctx.rule_common();
         Create_schema_statementContext schema;
         if (rule != null) {
-            safeParseStatement(new CreateRule(rule, db, overrides), ctx);
+            safeParseStatement(new GrantPrivilege(rule, db, overrides), ctx);
         } else if ((schema = ctx.create_schema_statement()) != null) {
             safeParseStatement(() -> createSchema(schema), ctx);
         }
     }
 
     private void alter(Schema_alterContext ctx) {
-        Alter_ownerContext owner = ctx.alter_owner();
+        Alter_owner_statementContext owner = ctx.alter_owner_statement();
         Alter_table_statementContext ats;
         if (owner != null) {
             safeParseStatement(new AlterOwner(owner, db, overrides), ctx);
@@ -108,10 +108,11 @@ implements SqlContextProcessor {
 
         for (Table_actionContext tablAction : ctx.table_action()) {
             Owner_toContext owner = tablAction.owner_to();
-            if (owner != null && owner.name != null) {
+            IdentifierContext name;
+            if (owner != null && (name = owner.user_name().identifier()) != null) {
                 IRelation st = getSafe(AbstractSchema::getRelation, schema, nameCtx);
                 overrides.computeIfAbsent((PgStatement) st,
-                        k -> new StatementOverride()).setOwner(owner.name.getText());
+                        k -> new StatementOverride()).setOwner(name.getText());
             }
         }
     }

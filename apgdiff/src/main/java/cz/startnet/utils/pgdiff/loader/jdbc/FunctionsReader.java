@@ -106,8 +106,6 @@ public class FunctionsReader extends JdbcReader {
     private void fillFunction(AbstractPgFunction function, ResultSet res,
             PgDatabase db, List<Pair<String, GenericColumn>> argsQualTypes)
                     throws SQLException {
-        StringBuilder body = new StringBuilder();
-
         function.setLanguageCost(res.getString("lang_name"), res.getFloat("procost"));
 
         // since 9.5 PostgreSQL
@@ -200,48 +198,44 @@ public class FunctionsReader extends JdbcReader {
             }
         }
 
+        String body = "";
         String definition = res.getString("prosrc");
-        String quote = getStringLiteralDollarQuote(definition);
         String probin = res.getString("probin");
         if (probin != null && !probin.isEmpty()) {
-            body.append(PgDiffUtils.quoteString(probin));
+            StringBuilder sb = new StringBuilder();
+            sb.append(PgDiffUtils.quoteString(probin));
             if (!"-".equals(definition)) {
-                body.append(", ");
+                sb.append(", ");
                 if (!definition.contains("\'") && !definition.contains("\\")) {
-                    body.append(PgDiffUtils.quoteString(definition));
+                    sb.append(PgDiffUtils.quoteString(definition));
                 } else {
-                    body.append(quote).append(definition).append(quote);
+                    sb.append(PgDiffUtils.quoteStringDollar(definition));
                 }
             }
-        } else if (!"-".equals(definition)) {
-            body.append(quote).append(definition).append(quote);
+            body = sb.toString();
+        } else if (definition != null && !definition.isEmpty() && !"-".equals(definition)) {
+            body = PgDiffUtils.quoteStringDollar(definition);
+        } else if (SupportedVersion.VERSION_14.isLE(loader.version)) {
+            String probody = res.getString("prosqlbody");
+            // must not be null at this point, otherwise function has no body (?)
+            checkObjectValidity(probody, DbObjType.FUNCTION, function.getBareName());
+            function.setInStatementBody(true);
+            body = probody;
         }
 
-        function.setBody(loader.args, body.toString());
+        function.setBody(loader.args, body);
 
         // Parsing the function definition and adding its result context for analysis.
-        if (!"-".equals(definition) && "SQL".equalsIgnoreCase(function.getLanguage())) {
+        if (function.isInStatementBody()) {
+            loader.submitAntlrTask(body, SQLParser::function_body, ctx -> db.addAnalysisLauncher(
+                    new FuncProcAnalysisLauncher(function, ctx, loader.getCurrentLocation(), argsQualTypes)));
+        } else if (!"-".equals(definition) && "SQL".equalsIgnoreCase(function.getLanguage())) {
             loader.submitAntlrTask(definition, SQLParser::sql, ctx -> db.addAnalysisLauncher(
                     new FuncProcAnalysisLauncher(function, ctx, loader.getCurrentLocation(), argsQualTypes)));
         } else if (!"-".equals(definition) && "PLPGSQL".equalsIgnoreCase(function.getLanguage())) {
             loader.submitPlpgsqlTask(definition, SQLParser::plpgsql_function, ctx -> db.addAnalysisLauncher(
                     new FuncProcAnalysisLauncher(function, ctx, loader.getCurrentLocation(), argsQualTypes)));
         }
-    }
-
-    /**
-     * Function equivalent to appendStringLiteralDQ in dumputils.c
-     */
-    public static String getStringLiteralDollarQuote(String definition) {
-        final String suffixes = "_XXXXXXX";
-        String quote = "$";
-        int counter = 0;
-        while (definition.contains(quote)) {
-            quote = quote.concat(String.valueOf(suffixes.charAt(counter++)));
-            counter %= suffixes.length();
-        }
-
-        return quote.concat("$");
     }
 
     private AbstractFunction getAgg(ResultSet res, String schemaName,
@@ -481,5 +475,10 @@ public class FunctionsReader extends JdbcReader {
         }
 
         return argsQualifiedTypes;
+    }
+
+    @Override
+    protected String getClassId() {
+        return "pg_proc";
     }
 }

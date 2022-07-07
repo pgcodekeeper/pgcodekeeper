@@ -32,7 +32,7 @@ public class CastsReader implements PgCatalogStrings {
 
     public void read() throws SQLException, InterruptedException {
         loader.setCurrentOperation("casts query");
-        String query = loader.appendTimestamps(JdbcQueries.QUERY_CASTS.getQuery());
+        String query = JdbcQueries.QUERY_CASTS.makeQuery(loader, "pg_cast");
 
         try (ResultSet res = loader.runner.runScript(loader.statement, query)) {
             while (res.next()) {

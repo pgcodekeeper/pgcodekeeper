@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 
+import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
@@ -21,9 +22,11 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 public class CreateDomain extends ParserAbstract {
 
     private final Create_domain_statementContext ctx;
-    public CreateDomain(Create_domain_statementContext ctx, PgDatabase db) {
+    private final CommonTokenStream stream;
+    public CreateDomain(Create_domain_statementContext ctx, PgDatabase db, CommonTokenStream stream) {
         super(db);
         this.ctx = ctx;
+        this.stream = stream;
     }
 
     @Override
@@ -38,7 +41,7 @@ public class CreateDomain extends ParserAbstract {
         VexContext exp = ctx.def_value;
         if (exp != null) {
             db.addAnalysisLauncher(new VexAnalysisLauncher(domain, exp, fileName));
-            domain.setDefaultValue(getFullCtxText(exp));
+            domain.setDefaultValue(getExpressionText(exp, stream));
         }
         for (Domain_constraintContext constrCtx : ctx.dom_constraint) {
             if (constrCtx.CHECK() != null) {

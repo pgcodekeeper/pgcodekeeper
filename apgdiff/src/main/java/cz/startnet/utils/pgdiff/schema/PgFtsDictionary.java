@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.schema;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -9,7 +10,7 @@ import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgFtsDictionary extends PgStatementWithSearchPath
-implements PgOptionContainer {
+implements PgSimpleOptionContainer {
 
     private String template;
     private final Map<String, String> options = new LinkedHashMap<>();
@@ -51,11 +52,6 @@ implements PgOptionContainer {
     @Override
     protected String getTypeName() {
         return "TEXT SEARCH DICTIONARY";
-    }
-
-    @Override
-    public String getDropSQL() {
-        return "DROP TEXT SEARCH DICTIONARY " + getQualifiedName() + ';';
     }
 
     @Override
@@ -115,7 +111,7 @@ implements PgOptionContainer {
 
     @Override
     public Map<String, String> getOptions() {
-        return options;
+        return Collections.unmodifiableMap(options);
     }
 
     @Override

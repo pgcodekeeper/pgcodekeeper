@@ -37,6 +37,9 @@ public class PgDatabase extends PgStatement implements IDatabase {
 
     private final Map<String, AbstractSchema> schemas = new LinkedHashMap<>();
     private final Map<String, PgExtension> extensions = new LinkedHashMap<>();
+    private final Map<String, PgForeignDataWrapper> fdws = new LinkedHashMap<>();
+    private final Map<String, PgServer> servers = new LinkedHashMap<>();
+    private final Map<String, PgUserMapping> userMappings = new LinkedHashMap<>();
     private final Map<String, PgCast> casts = new LinkedHashMap<>();
     private final Map<String, MsAssembly> assemblies = new LinkedHashMap<>();
     private final Map<String, MsRole> roles = new LinkedHashMap<>();
@@ -187,6 +190,9 @@ public class PgDatabase extends PgStatement implements IDatabase {
     protected void fillChildrenList(List<Collection<? extends PgStatement>> l) {
         l.add(schemas.values());
         l.add(extensions.values());
+        l.add(fdws.values());
+        l.add(servers.values());
+        l.add(userMappings.values());
         l.add(casts.values());
         l.add(assemblies.values());
         l.add(roles.values());
@@ -200,6 +206,12 @@ public class PgDatabase extends PgStatement implements IDatabase {
             return getSchema(name);
         case EXTENSION:
             return getExtension(name);
+        case FOREIGN_DATA_WRAPPER:
+            return getForeignDW(name);
+        case SERVER:
+            return getServer(name);
+        case USER_MAPPING:
+            return getUserMapping(name);
         case CAST:
             return getCast(name);
         case ASSEMBLY:
@@ -223,8 +235,17 @@ public class PgDatabase extends PgStatement implements IDatabase {
         case EXTENSION:
             addExtension((PgExtension) st);
             break;
+        case FOREIGN_DATA_WRAPPER:
+            addForeignDW((PgForeignDataWrapper) st);
+            break;
+        case SERVER:
+            addServer((PgServer) st);
+            break;
         case CAST:
             addCast((PgCast) st);
+            break;
+        case USER_MAPPING:
+            addUserMapping((PgUserMapping) st);
             break;
         case ASSEMBLY:
             addAssembly((MsAssembly) st);
@@ -262,6 +283,54 @@ public class PgDatabase extends PgStatement implements IDatabase {
 
     public void addExtension(final PgExtension extension) {
         addUnique(extensions, extension, this);
+    }
+
+    /**
+     * Returns foreign data wrapper of given name or null if the foreign data wrapper has not been found.
+     *
+     * @param name foreign data wrapper name
+     *
+     * @return found foreign data wrapper or null
+     */
+    public PgForeignDataWrapper getForeignDW(final String name) {
+        return fdws.get(name);
+    }
+
+    /**
+     * Getter for {@link #foreign data wrappers}. The list cannot be modified.
+     *
+     * @return {@link #foreign data wrappers}
+     */
+    public Collection<PgForeignDataWrapper> getForeignDWs() {
+        return Collections.unmodifiableCollection(fdws.values());
+    }
+
+    public void addForeignDW(final PgForeignDataWrapper fDW) {
+        addUnique(fdws, fDW, this);
+    }
+
+    public PgServer getServer(final String name) {
+        return servers.get(name);
+    }
+
+    public Collection<PgServer> getServers() {
+        return Collections.unmodifiableCollection(servers.values());
+    }
+
+    public void addServer(final PgServer server) {
+        addUnique(servers, server, this);
+    }
+
+    public PgUserMapping getUserMapping(final String name) {
+        return userMappings.get(name);
+    }
+
+    public Collection<PgUserMapping> getUserMappings() {
+        return Collections.unmodifiableCollection(userMappings.values());
+    }
+
+    public void addUserMapping(final PgUserMapping userMapping) {
+        addUnique(userMappings, userMapping, this);
     }
 
     /**
@@ -376,7 +445,7 @@ public class PgDatabase extends PgStatement implements IDatabase {
     }
 
     @Override
-    public String getDropSQL() {
+    public String getDropSQL(boolean optionExists) {
         return null;
     }
 
@@ -407,6 +476,8 @@ public class PgDatabase extends PgStatement implements IDatabase {
         if (obj instanceof PgDatabase) {
             PgDatabase db = (PgDatabase) obj;
             return extensions.equals(db.extensions)
+                    && fdws.equals(db.fdws)
+                    && servers.equals(db.servers)
                     && casts.equals(db.casts)
                     && schemas.equals(db.schemas)
                     && assemblies.equals(db.assemblies)
@@ -424,6 +495,8 @@ public class PgDatabase extends PgStatement implements IDatabase {
     @Override
     public void computeChildrenHash(Hasher hasher) {
         hasher.putUnordered(extensions);
+        hasher.putUnordered(fdws);
+        hasher.putUnordered(servers);
         hasher.putUnordered(casts);
         hasher.putUnordered(schemas);
         hasher.putUnordered(assemblies);
@@ -439,9 +512,15 @@ public class PgDatabase extends PgStatement implements IDatabase {
         return dbDst;
     }
 
-    public void addLib(PgDatabase lib) {
+    public void addLib(PgDatabase lib, String libName, String owner) {
         lib.getDescendants().forEach(st -> {
-            st.markAsLib();
+            // do not override dependent library name
+            if (libName != null && st.getLibName() == null) {
+                st.setLibName(libName);
+            }
+            if (st.isOwned() && owner != null && !owner.isEmpty()) {
+                st.setOwner(owner);
+            }
             concat(st);
         });
 
@@ -451,9 +530,11 @@ public class PgDatabase extends PgStatement implements IDatabase {
             l.updateStmt(this);
             analysisLaunchers.add(l);
         });
+
+        overrides.addAll(lib.getOverrides());
     }
 
-    public void concat(PgStatement st) {
+    private void concat(PgStatement st) {
         DbObjType type = st.getStatementType();
         String name = st.getName();
         PgStatement parent = st.getParent();
@@ -465,6 +546,8 @@ public class PgDatabase extends PgStatement implements IDatabase {
         case ASSEMBLY:
         case SCHEMA:
         case EXTENSION:
+        case FOREIGN_DATA_WRAPPER:
+        case SERVER:
         case CAST:
             orig = getChild(name, type);
             if (orig == null) {

@@ -6,7 +6,7 @@ WITH sys_schemas AS (
 ), extension_deps AS (
     SELECT dep.objid 
     FROM pg_catalog.pg_depend dep 
-    WHERE refclassid = 'pg_catalog.pg_extension'::pg_catalog.regclass 
+    WHERE dep.classid = 'pg_catalog.pg_class'::pg_catalog.regclass
         AND dep.deptype = 'e'
 ), nspnames AS (
     SELECT n.oid,
@@ -70,6 +70,7 @@ LEFT JOIN pg_catalog.pg_foreign_table ftbl ON ftbl.ftrelid = c.oid
 LEFT JOIN pg_catalog.pg_foreign_server ser ON ser.oid = ftbl.ftserver
 LEFT JOIN pg_catalog.pg_tablespace tabsp ON tabsp.oid = c.reltablespace
 LEFT JOIN pg_catalog.pg_description d ON d.objoid = c.oid AND d.objsubid = 0
+    AND d.classoid = 'pg_catalog.pg_class'::pg_catalog.regclass
 LEFT JOIN pg_catalog.pg_class tc ON tc.oid = c.reltoastrelid
 LEFT JOIN pg_catalog.pg_am am ON am.oid = c.relam
 LEFT JOIN (SELECT
@@ -108,6 +109,7 @@ LEFT JOIN (SELECT
       FROM pg_catalog.pg_attribute a
       LEFT JOIN pg_catalog.pg_attrdef attrdef ON attrdef.adnum = a.attnum AND a.attrelid = attrdef.adrelid
       LEFT JOIN pg_catalog.pg_description d ON d.objoid = a.attrelid AND d.objsubid = a.attnum
+          AND d.classoid = 'pg_catalog.pg_class'::pg_catalog.regclass
       LEFT JOIN pg_catalog.pg_type t ON t.oid = a.atttypid
       LEFT JOIN collations cl ON cl.oid =  a.attcollation
       WHERE a.attisdropped IS FALSE

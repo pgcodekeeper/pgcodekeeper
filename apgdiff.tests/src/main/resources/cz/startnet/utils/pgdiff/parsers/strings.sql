@@ -129,6 +129,9 @@ SELECT SUBSTRING('abcdefg' FROM 'c.e') AS "cde";
 -- With a parenthesized subexpression, return only what matches the subexpr
 SELECT SUBSTRING('abcdefg' FROM 'b(.*)f') AS "cde";
 
+-- T581 regular expression substring (with SQL's bizarre regexp syntax)
+SELECT SUBSTRING('abcdefg' SIMILAR 'a#"(b_d)#"%' ESCAPE '#') AS "bcd";
+
 -- PostgreSQL extension to allow using back reference in replace string;
 SELECT regexp_replace('1112223333', E'(\\d{3})(\\d{3})(\\d{4})', E'(\\1) \\2-\\3');
 SELECT regexp_replace('AAA   BBB   CCC   ', E'\\s+', ' ', 'g');

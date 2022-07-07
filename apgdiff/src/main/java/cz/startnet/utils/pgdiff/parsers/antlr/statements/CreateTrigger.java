@@ -101,7 +101,7 @@ public class CreateTrigger extends ParserAbstract {
         if (funcNameCtx.schema != null) {
             // TODO add empty signature to function name
             // when function signatures in refs and defs will be supported
-            addDepSafe(trigger, getIdentifiers(funcNameCtx), DbObjType.FUNCTION, true);
+            addDepSafe(trigger, getIdentifiers(funcNameCtx), DbObjType.FUNCTION, true, "()");
         }
 
         ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
@@ -134,6 +134,6 @@ public class CreateTrigger extends ParserAbstract {
     protected String getStmtAction() {
         List<ParserRuleContext> ids = new ArrayList<>(getIdentifiers(ctx.table_name));
         ids.add(ctx.name);
-        return getStrForStmtAction(ACTION_ALTER, DbObjType.TRIGGER, ids);
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.TRIGGER, ids);
     }
 }

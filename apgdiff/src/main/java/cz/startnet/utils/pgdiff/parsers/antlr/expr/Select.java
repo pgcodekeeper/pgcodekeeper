@@ -78,8 +78,8 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
     }
 
     @Override
-    protected Entry<String, GenericColumn> findReferenceInNmspc(String schema, String name, String column) {
-        return !inFrom || lateralAllowed ? super.findReferenceInNmspc(schema, name, column) : null;
+    protected boolean namespaceAccessible() {
+        return !inFrom || lateralAllowed;
     }
 
     @Override
@@ -295,7 +295,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
 
             ParserRuleContext aliasCtx = target.col_label();
             if (aliasCtx == null) {
-                aliasCtx = target.id_token();
+                aliasCtx = target.bare_col_label();
             }
 
             if (aliasCtx != null) {
@@ -439,8 +439,11 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
                 addDepcy(new GenericColumn(relationGc.schema, DbObjType.SCHEMA), schemaCtx);
             }
 
-            // currently adding a table reference for any alias
-            addDepcy(relationGc, relationCtx);
+            if (relationGc.getObjName().equals(relation)) {
+                addDepcy(relationGc, relationCtx);
+            } else {
+                addAliasReference(relationGc, relationCtx);
+            }
 
             addFilteredRelationColumnsDepcies(relationGc.schema, relationGc.table, ANY)
             .map(Pair::copyMod)

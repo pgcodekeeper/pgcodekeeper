@@ -25,15 +25,17 @@ public class SchemasReader implements PgCatalogStrings {
     public void read() throws SQLException, InterruptedException {
         loader.setCurrentOperation("schemas query");
 
-        String query = loader.appendTimestamps(JdbcQueries.QUERY_SCHEMAS.getQuery());
+        String query = JdbcQueries.QUERY_SCHEMAS.makeQuery(loader, "pg_namespace");
 
         try (ResultSet result = loader.runner.runScript(loader.statement, query)) {
             while (result.next()) {
                 PgDiffUtils.checkCancelled(loader.monitor);
                 AbstractSchema schema = getSchema(result);
-                db.addSchema(schema);
-                loader.schemaIds.put(result.getLong(OID), schema);
-                loader.setAuthor(schema, result);
+                if (loader.ignorelistSchema == null || loader.ignorelistSchema.getNameStatus(schema.getName())) {
+                    db.addSchema(schema);
+                    loader.schemaIds.put(result.getLong(OID), schema);
+                    loader.setAuthor(schema, result);
+                }
             }
         }
     }

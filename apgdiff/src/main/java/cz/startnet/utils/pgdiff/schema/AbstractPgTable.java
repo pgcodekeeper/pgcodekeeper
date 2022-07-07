@@ -44,7 +44,6 @@ public abstract class AbstractPgTable extends AbstractTable {
     public String getCreationSQL() {
         final StringBuilder sbOption = new StringBuilder();
         final StringBuilder sbSQL = new StringBuilder();
-
         appendName(sbSQL);
         appendColumns(sbSQL, sbOption);
         appendInherit(sbSQL);
@@ -176,11 +175,6 @@ public abstract class AbstractPgTable extends AbstractTable {
             sequence.fillSequenceBody(sbOption);
             sbOption.append("\n);");
         }
-    }
-
-    @Override
-    public String getDropSQL() {
-        return "DROP TABLE " + getQualifiedName() + ';';
     }
 
     @Override

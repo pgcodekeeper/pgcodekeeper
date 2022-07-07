@@ -83,3 +83,7 @@ CREATE TEXT SEARCH DICTIONARY public.test_dictionary (
 
 CREATE TEXT SEARCH CONFIGURATION public.test_config (
     PARSER = pg_catalog."default" );
+    
+CREATE FOREIGN DATA WRAPPER test_fdw_1;
+
+CREATE SERVER test_server_0 FOREIGN DATA WRAPPER fdw1;

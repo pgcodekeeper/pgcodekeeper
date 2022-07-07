@@ -73,6 +73,6 @@ public class CreateMsAssembly extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_CREATE, DbObjType.ASSEMBLY, Arrays.asList(ctx.assembly_name));
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.ASSEMBLY, ctx.assembly_name);
     }
 }

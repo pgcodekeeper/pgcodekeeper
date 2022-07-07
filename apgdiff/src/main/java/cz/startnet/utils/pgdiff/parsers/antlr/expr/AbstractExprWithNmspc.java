@@ -94,25 +94,27 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
     protected List<Pair<String, String>> findCte(String cteName) {
         List<Pair<String, String>> pairs = cte.get(cteName);
         return pairs != null ? pairs : super.findCte(cteName);
-
     }
 
-    @Override
-    protected Entry<String, GenericColumn> findReference(String schema, String name, String column) {
-        Entry<String, GenericColumn> ref = findReferenceInNmspc(schema, name, column);
-        return ref != null ?  ref : super.findReference(schema, name, column);
+    protected boolean namespaceAccessible() {
+        return true;
     }
 
     @Override
     protected List<Pair<String, String>> findReferenceComplex(String name) {
-        return complexNamespace.entrySet().stream()
-                .filter(p -> name.equals(p.getKey()))
-                .map(Entry::getValue)
-                .findAny().orElse(super.findReferenceComplex(name));
-
+        List<Pair<String, String>> ret = null;
+        if (namespaceAccessible()) {
+            ret = complexNamespace.get(name);
+        }
+        return ret != null ? ret : super.findReferenceComplex(name);
     }
 
-    protected Entry<String, GenericColumn> findReferenceInNmspc(String schema, String name, String column) {
+    @Override
+    protected Entry<String, GenericColumn> findReference(String schema, String name, String column) {
+        if (!namespaceAccessible()) {
+            return super.findReference(schema, name, column);
+        }
+
         boolean found = false;
         GenericColumn dereferenced = null;
         if (schema == null && namespace.containsKey(name)) {
@@ -139,7 +141,7 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
         }
 
         if (!found) {
-            return null;
+            return super.findReference(schema, name, column);
         }
 
         // column aliases imply there must be a corresponding table alias
@@ -317,6 +319,10 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
         }
 
         if (alias != null) {
+            if (depcy != null) {
+                // add alias definition
+                addVariable(depcy, alias);
+            }
             String aliasName = alias.getText();
             boolean added = addReference(aliasName, depcy);
             if (!added && cteList == null && columnAliases != null && !columnAliases.isEmpty()) {

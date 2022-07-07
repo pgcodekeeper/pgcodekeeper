@@ -14,7 +14,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameterContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parametersContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_spaceContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
@@ -83,7 +83,7 @@ public class CreateView extends ParserAbstract {
                 view.addColumnName(column.getText());
             }
         }
-        Storage_parameterContext storage = ctx.storage_parameter();
+        Storage_parametersContext storage = ctx.storage_parameters();
         if (storage != null){
             List <Storage_parameter_optionContext> options = storage.storage_parameter_option();
             for (Storage_parameter_optionContext option: options){

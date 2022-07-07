@@ -61,3 +61,7 @@ PARTITION BY RANGE (c2 COLLATE public.french varchar_pattern_ops)
 USING hash
 WITH (autovacuum_enabled, fillfactor = 80, oids = true)
 TABLESPACE test_tablespace;
+
+ -- compression
+CREATE TABLE public.t33 (c1 integer COMPRESSION lz4, c2 integer);
+CREATE TABLE public.t35 (c1 integer COMPRESSION pglz, c2 integer);

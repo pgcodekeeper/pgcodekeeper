@@ -1,7 +1,9 @@
 SET search_path = pg_catalog;
 
+DROP EXTENSION postgis;
+
 -- DEPCY: This SCHEMA is a dependency of EXTENSION: postgis
 
 CREATE SCHEMA test;
 
-ALTER EXTENSION postgis SET SCHEMA test;
+CREATE EXTENSION postgis SCHEMA test;

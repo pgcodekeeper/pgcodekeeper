@@ -118,11 +118,6 @@ public class PgCast extends PgStatement implements ICast {
     }
 
     @Override
-    public String getDropSQL() {
-        return "DROP CAST " + getQualifiedName() + ';';
-    }
-
-    @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();

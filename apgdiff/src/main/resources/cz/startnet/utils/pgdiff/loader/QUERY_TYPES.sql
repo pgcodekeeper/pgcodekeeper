@@ -6,7 +6,7 @@ WITH sys_schemas AS (
 ), extension_deps AS (
     SELECT dep.objid 
     FROM pg_catalog.pg_depend dep 
-    WHERE refclassid = 'pg_catalog.pg_extension'::pg_catalog.regclass 
+    WHERE dep.classid = 'pg_catalog.pg_type'::pg_catalog.regclass
         AND dep.deptype = 'e'
 ), nspnames AS (
     SELECT n.oid,
@@ -103,6 +103,7 @@ SELECT  -- GENERAL
     t.typnamespace AS schema_oid
 FROM pg_catalog.pg_type t
 LEFT JOIN pg_catalog.pg_description d ON d.objoid = t.oid
+    AND d.classoid = 'pg_catalog.pg_type'::pg_catalog.regclass
 LEFT JOIN pg_catalog.pg_range r ON r.rngtypid = t.oid
 LEFT JOIN pg_catalog.pg_opclass opc ON opc.oid = r.rngsubopc
 LEFT JOIN
@@ -113,6 +114,7 @@ LEFT JOIN
          pg_catalog.array_agg(cd.description ORDER BY c.conname) AS concomments
      FROM pg_catalog.pg_constraint c
      LEFT JOIN pg_catalog.pg_description cd ON cd.objoid = c.oid
+         AND cd.classoid = 'pg_catalog.pg_constraint'::pg_catalog.regclass
      WHERE c.contypid != 0
      GROUP BY c.contypid) dom_constraints ON dom_constraints.contypid = t.oid
 LEFT JOIN
@@ -130,6 +132,7 @@ LEFT JOIN
      LEFT JOIN pg_catalog.pg_type ta ON ta.oid = a.atttypid
      LEFT JOIN collations cl ON cl.oid = a.attcollation
      LEFT JOIN pg_catalog.pg_description d ON d.objoid = a.attrelid AND d.objsubid = a.attnum
+      AND d.classoid = 'pg_catalog.pg_class'::pg_catalog.regclass
      WHERE a.attisdropped = FALSE
      GROUP BY a.attrelid) comp_attrs ON comp_attrs.attrelid = t.typrelid
 WHERE t.typnamespace NOT IN (SELECT oid FROM sys_schemas)

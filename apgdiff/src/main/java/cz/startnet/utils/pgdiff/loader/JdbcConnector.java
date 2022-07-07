@@ -119,19 +119,21 @@ public class JdbcConnector {
             if (query != null) {
                 for (String param : query.split("&")) {
                     int eq = param.indexOf('=');
-                    if (eq != -1) {
-                        String key = urlDecode(param.substring(0, eq));
-                        String val = urlDecode(param.substring(eq + 1));
-                        switch (key) {
-                        case "user":
-                            user = val;
-                            break;
-                        case "password":
-                            pass = val;
-                            break;
-                        default:
-                            break;
-                        }
+                    if (eq == -1) {
+                        continue;
+                    }
+
+                    String key = urlDecode(param.substring(0, eq));
+                    String val = urlDecode(param.substring(eq + 1));
+                    switch (key) {
+                    case "user":
+                        user = val;
+                        break;
+                    case "password":
+                        pass = val;
+                        break;
+                    default:
+                        break;
                     }
                 }
             }

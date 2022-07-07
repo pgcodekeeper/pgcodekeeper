@@ -6,6 +6,10 @@ COMMENT ON CAST (integer AS bigint) IS 'test cast';
 
 COMMENT ON EXTENSION test_ext IS 'test extension';
 
+COMMENT ON FOREIGN DATA WRAPPER test_fdw_1 IS 'test_comment';
+
+COMMENT ON SERVER srv111 IS 'test_comment';
+
 COMMENT ON COLUMN public.typ_composite.key IS 'Type composite key comment';
 
 COMMENT ON COLUMN public.typ_composite.val IS 'Type composite val comment';
@@ -38,6 +42,8 @@ COMMENT ON FUNCTION public.test_fnc(arg character varying) IS 'test function';
 
 COMMENT ON PROCEDURE public.test_proc(arg integer) IS 'test procedure';
 
+COMMENT ON INDEX public.test_index IS 'test table index';
+
 COMMENT ON CONSTRAINT text_check ON public.test IS 'text check';
 
 COMMENT ON CONSTRAINT test_pkey ON public.test IS 'primary key';
@@ -47,8 +53,6 @@ COMMENT ON MATERIALIZED VIEW public.test_mat_view IS 'test mat view';
 COMMENT ON VIEW public.test_view IS 'test view';
 
 COMMENT ON COLUMN public.test_view.id IS 'view id col';
-
-COMMENT ON INDEX public.test_index IS 'test table index';
 
 COMMENT ON TRIGGER test_trigger ON public.test IS 'test trigger';
 
