@@ -46,9 +46,7 @@ public class DbMenuStorePicker extends AbstractStorePicker implements IStorePick
             menuRunnable.run();
             lnkDb.getMenu().setVisible(true);
         }));
-        lnkDb.addMenuDetectListener(e -> {
-            menuRunnable.run();
-        });
+        lnkDb.addMenuDetectListener(e -> menuRunnable.run());
     }
 
     @Override

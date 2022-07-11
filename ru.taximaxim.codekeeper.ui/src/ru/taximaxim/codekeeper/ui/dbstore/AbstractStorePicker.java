@@ -17,6 +17,9 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public abstract class AbstractStorePicker implements IStorePicker {
 
+    public static final String DELIM_ENTRY = "\n"; //$NON-NLS-1$
+    public static final int MAX_FILES_HISTORY = 10;
+
     protected final Composite parent;
 
     protected boolean useFileSources;

@@ -4,9 +4,6 @@ import java.io.File;
 
 public interface IStorePicker {
 
-    public static final String DELIM_ENTRY = "\n"; //$NON-NLS-1$
-    public static final int MAX_FILES_HISTORY = 10;
-
     void setUseFileSources(boolean useFileSources);
 
     DbInfo getDbInfo();
