@@ -35,7 +35,7 @@ public class UserMappingReader implements PgCatalogStrings {
     }
 
     private PgUserMapping getUserMapping(ResultSet res) throws SQLException {
-        String user  = loader.getRoleByOid(res.getLong("username"));
+        String user  = res.getString("username");
         String server = res.getString("servername");
         PgUserMapping usm = new PgUserMapping(user, server);
 
