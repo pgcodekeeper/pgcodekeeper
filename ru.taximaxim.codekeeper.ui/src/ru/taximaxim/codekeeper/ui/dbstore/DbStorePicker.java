@@ -52,7 +52,7 @@ public class DbStorePicker extends AbstractStorePicker implements IStorePicker {
     private static final OpenDbStore OPENDB = new OpenDbStore();
     private static final int MAX_FILES_HISTORY = 10;
 
-    private boolean isMsSql;
+    private Boolean isMsSql;
     private final IPreferenceStore prefStore = Activator.getDefault().getPreferenceStore();
     private final List<File> projects = new ArrayList<>();
 
@@ -106,7 +106,7 @@ public class DbStorePicker extends AbstractStorePicker implements IStorePicker {
 
             @Override
             public boolean select(Viewer viewer, Object parentElement, Object el) {
-                return !(el instanceof DbInfo) || ((DbInfo) el).isMsSql() == isMsSql;
+                return isMsSql == null || !(el instanceof DbInfo) || ((DbInfo) el).isMsSql() == isMsSql;
             }
         });
 
@@ -193,7 +193,7 @@ public class DbStorePicker extends AbstractStorePicker implements IStorePicker {
     }
 
     @Override
-    public void filter(boolean isMsSql) {
+    public void filter(Boolean isMsSql) {
         this.isMsSql = isMsSql;
         cmbDbNames.refresh();
     }

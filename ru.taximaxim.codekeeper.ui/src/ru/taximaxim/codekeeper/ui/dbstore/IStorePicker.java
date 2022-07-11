@@ -37,7 +37,7 @@ public interface IStorePicker {
 
     void addSelectionListener(Runnable runnable);
 
-    void filter(boolean isMsSql);
+    void filter(Boolean isMsSql);
 
     void dispose();
 }

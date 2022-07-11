@@ -37,13 +37,13 @@ public class DBStoreMenu {
     private final List<File> projects = new ArrayList<>();
 
     private final MenuManager menuMgr;
-    private final boolean isMssql;
+    private final Boolean isMssql;
     private final Shell shell;
     private final Object selection;
     private final ListenerList<Consumer<Object>> listeners = new ListenerList<>();
 
     public DBStoreMenu(MenuManager menuMgr, boolean useFileSources,
-            boolean useDirSources, boolean isMssql, Shell shell, Object selection) {
+            boolean useDirSources, Boolean isMssql, Shell shell, Object selection) {
         this.useFileSources = useFileSources;
         this.useDirSources = useDirSources;
         this.menuMgr = menuMgr;
@@ -93,7 +93,7 @@ public class DBStoreMenu {
             }
 
             for (DbInfo dbInfo : v) {
-                if (dbInfo.isMsSql() == isMssql) {
+                if (isMssql == null || dbInfo.isMsSql() == isMssql) {
                     addAction(dbInfo, submenu);
                 }
             }

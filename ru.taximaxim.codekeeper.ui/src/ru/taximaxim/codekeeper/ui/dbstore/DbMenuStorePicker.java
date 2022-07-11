@@ -18,7 +18,7 @@ public class DbMenuStorePicker extends AbstractStorePicker implements IStorePick
 
     private final Link lnkDb;
 
-    private boolean isMsSql;
+    private Boolean isMsSql;
     private Object selection;
     private final ListenerList<Runnable> runnableListeners = new ListenerList<>();
 
@@ -104,10 +104,10 @@ public class DbMenuStorePicker extends AbstractStorePicker implements IStorePick
     }
 
     @Override
-    public void filter(boolean isMsSql) {
+    public void filter(Boolean isMsSql) {
         this.isMsSql = isMsSql;
         DbInfo dbInfo = getDbInfo();
-        if (dbInfo != null && dbInfo.isMsSql() != isMsSql) {
+        if (isMsSql != null && dbInfo != null && dbInfo.isMsSql() != isMsSql) {
             clearSelection();
         }
     }
