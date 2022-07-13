@@ -45,8 +45,6 @@ import ru.taximaxim.codekeeper.ui.xmlstore.DbXmlStore;
 
 public class DbStorePicker extends AbstractStorePicker implements IStorePicker {
 
-    private static final int DEFAULT_LENGTH = 26;
-
     private static final LoadFileElement LOAD_FILE = new LoadFileElement(false);
     private static final LoadFileElement LOAD_DIR = new LoadFileElement(true);
     private static final OpenDbStore OPENDB = new OpenDbStore();

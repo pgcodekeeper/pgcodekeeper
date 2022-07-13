@@ -50,7 +50,7 @@ public class DbMenuStorePicker extends AbstractStorePicker implements IStorePick
     }
 
     @Override
-    protected Control getControl() {
+    public Control getControl() {
         return lnkDb;
     }
 

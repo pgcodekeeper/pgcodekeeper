@@ -3,9 +3,11 @@ package ru.taximaxim.codekeeper.ui.menuitems;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.jface.layout.PixelConverter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -23,7 +25,6 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_BIND_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.dbstore.DbMenuStorePicker;
-import ru.taximaxim.codekeeper.ui.dbstore.IStorePicker;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
@@ -31,7 +32,7 @@ import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 
 public class DBStoreCombo extends WorkbenchWindowControlContribution {
 
-    private IStorePicker storePicker;
+    private DbMenuStorePicker storePicker;
     private EditorPartListener editorPartListener;
 
     @Override
@@ -46,6 +47,12 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
         IEditorPart editorPart = page.getActiveEditor();
         storePicker = new DbMenuStorePicker(composite,
                 editorPart instanceof ProjectEditorDiffer, false);
+
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.widthHint = new PixelConverter(composite)
+                .convertWidthInCharsToPixels(DbMenuStorePicker.DEFAULT_LENGTH);
+        storePicker.getControl().setLayoutData(gd);
+
         editorPartListener = new EditorPartListener();
         page.addPartListener(editorPartListener);
 
