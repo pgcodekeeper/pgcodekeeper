@@ -7,11 +7,14 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.security.storage.StorageException;
+import org.eclipse.jface.layout.PixelConverter;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
@@ -62,7 +65,10 @@ implements IWorkbenchPreferencePage {
     protected void createFieldEditors() {
         dbList = new DbStorePrefListEditor(getFieldEditorParent());
         dbList.setLayoutData(new GridData(GridData.FILL_BOTH));
-        dbList.setInputList(DbInfo.readStoreFromXml());
+        List<DbInfo> dbInfoList = DbInfo.readStoreFromXml();
+
+        DbInfo.sortDbGroups(dbInfoList);
+        dbList.setInputList(dbInfoList);
         oldDbList = new ArrayList<>(dbList.getList());
 
         useSecureStorage = new BooleanFieldEditor(PREF.SAVE_IN_SECURE_STORAGE,
@@ -75,7 +81,7 @@ implements IWorkbenchPreferencePage {
         dbList.setInputList(Arrays.asList(
                 new DbInfo("default", "", "", "", "", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
                         0, false, false, new ArrayList<>(), new HashMap<>(), false, false, "", //$NON-NLS-1$
-                        DbInfo.DEFAULT_EXECUTE_PATH, DbInfo.DEFAULT_CUSTOM_PARAMS, false)));
+                        DbInfo.DEFAULT_EXECUTE_PATH, DbInfo.DEFAULT_CUSTOM_PARAMS, false, ""))); //$NON-NLS-1$
     }
 
     @Override
@@ -124,7 +130,7 @@ class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
 
     @Override
     protected DbInfo getNewObject(DbInfo oldObject) {
-        DbStoreEditorDialog dialog = new DbStoreEditorDialog(getShell(), oldObject, action);
+        DbStoreEditorDialog dialog = new DbStoreEditorDialog(getShell(), oldObject, action, getDbGroups() );
         return dialog.open() == Window.OK ? dialog.getDbInfo() : null;
     }
 
@@ -133,10 +139,43 @@ class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
         return MessageFormat.format(Messages.DbStorePrefPage_already_present, obj.getName());
     }
 
+    protected Set<String> getDbGroups() {
+        Set<String> dbGroups = new LinkedHashSet<>();
+        getList().stream().map(DbInfo::getDbGroup).forEach(dbGroups::add);
+        return dbGroups;
+    }
+
+    @Override
+    public void refresh() {
+        DbInfo.sortDbGroups(getList());
+        super.refresh();
+    }
+
+    @Override
+    public void setInputList(List<DbInfo> list){
+        DbInfo.sortDbGroups(list);
+        super.setInputList(list);
+    }
+
     @Override
     protected void addColumns(TableViewer tableViewer) {
-        TableViewerColumn col = new TableViewerColumn(tableViewer, SWT.NONE);
-        col.setLabelProvider(new ColumnLabelProvider() {
+        TableViewerColumn dbGroupCol = new TableViewerColumn(tableViewer, SWT.NONE);
+        dbGroupCol.getColumn().setText(Messages.DbStorePrefPage_db_group);
+        dbGroupCol.getColumn().setResizable(true);
+        dbGroupCol.setLabelProvider(new ColumnLabelProvider() {
+
+            @Override
+            public String getText(Object element) {
+                return ((DbInfo) element).getDbGroup();
+            }
+        });
+        PixelConverter pc = new PixelConverter(tableViewer.getControl());
+        dbGroupCol.getColumn().setWidth(pc.convertWidthInCharsToPixels(15));
+
+        TableViewerColumn dbNameCol = new TableViewerColumn(tableViewer, SWT.NONE);
+        dbNameCol.getColumn().setText(Messages.DbStorePrefPage_db);
+        dbNameCol.getColumn().setResizable(true);
+        dbNameCol.setLabelProvider(new ColumnLabelProvider() {
 
             @Override
             public String getText(Object element) {
@@ -148,6 +187,7 @@ class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
                 return Activator.getRegisteredImage(((DbInfo) element).isMsSql() ? FILE.MS_ICON : FILE.PG_ICON);
             }
         });
+        dbNameCol.getColumn().setWidth(pc.convertWidthInCharsToPixels(50));
     }
 
     @Override
