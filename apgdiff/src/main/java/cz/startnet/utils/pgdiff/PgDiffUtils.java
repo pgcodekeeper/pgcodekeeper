@@ -263,6 +263,9 @@ public final class PgDiffUtils {
         return str.regionMatches(true, str.length() - suffixLength, suffix, 0, suffixLength);
     }
 
+    /**
+     * Casts a Stream into Iterable. Stream is consumed after Iterable.iterator() is called.
+     */
     public static <T> Iterable<T> sIter(Stream<T> stream) {
         return stream::iterator;
     }
