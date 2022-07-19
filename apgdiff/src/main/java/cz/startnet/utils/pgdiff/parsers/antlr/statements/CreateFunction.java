@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -57,7 +58,7 @@ public class CreateFunction extends ParserAbstract {
 
     @Override
     public void parseObject() {
-        List<IdentifierContext> ids = ctx.function_parameters().schema_qualified_name().identifier();
+        List<ParserRuleContext> ids = getIdentifiers(ctx.function_parameters().schema_qualified_name());
         String name = QNameParser.getFirstName(ids);
         AbstractPgFunction function = ctx.PROCEDURE() != null ? new PgProcedure(name)
                 : new PgFunction(name);
@@ -117,7 +118,7 @@ public class CreateFunction extends ParserAbstract {
             } else if (action.SET() != null) {
                 setConfigParams(action, function);
             } else if (action.SUPPORT() != null) {
-                List<IdentifierContext> suppFuncIds = action.schema_qualified_name().identifier();
+                List<ParserRuleContext> suppFuncIds = getIdentifiers(action.schema_qualified_name());
                 function.setSupportFunc(getFullCtxText(suppFuncIds));
                 addDepSafe(function, suppFuncIds, DbObjType.FUNCTION, true);
             }
@@ -248,10 +249,9 @@ public class CreateFunction extends ParserAbstract {
             Schema_qualified_name_nontypeContext typeQname = dataType.predefined_type()
                     .schema_qualified_name_nontype();
             if (typeQname != null) {
-                if (typeQname.schema != null) {
-                    typeSchema = typeQname.schema.getText();
-                }
-                typeName = typeQname.identifier_nontype().getText();
+                List<ParserRuleContext> typeIds = getIdentifiers(typeQname);
+                typeSchema = QNameParser.getSchemaName(typeIds);
+                typeName = QNameParser.getFirstName(typeIds);
             } else {
                 typeName = getFullCtxText(dataType);
             }
@@ -276,6 +276,6 @@ public class CreateFunction extends ParserAbstract {
     protected String getStmtAction() {
         return getStrForStmtAction(ACTION_CREATE,
                 ctx.PROCEDURE() != null ? DbObjType.PROCEDURE : DbObjType.FUNCTION,
-                        ctx.function_parameters().schema_qualified_name());
+                        getIdentifiers(ctx.function_parameters().schema_qualified_name()));
     }
 }

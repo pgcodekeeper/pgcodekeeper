@@ -7,10 +7,11 @@ import java.sql.SQLException;
 import java.util.ConcurrentModificationException;
 import java.util.function.BiConsumer;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQuery;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -116,7 +117,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
     protected static <T extends PgStatement> void setFunctionWithDep(
             BiConsumer<T, String> setter, T statement, String function, String signature) {
         if (function.indexOf('.') != -1) {
-            QNameParser<IdentifierContext> parser = QNameParser.parsePg(function);
+            QNameParser<ParserRuleContext> parser = QNameParser.parsePg(function);
             String schemaName = parser.getSchemaName();
             if (schemaName != null && !ApgdiffUtils.isPgSystemSchema(schemaName)) {
                 statement.addDep(new GenericColumn(schemaName, DbObjType.SCHEMA));

@@ -4,6 +4,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -32,7 +33,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContex
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identifier_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Including_indexContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Predefined_typeContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
@@ -281,6 +284,34 @@ public abstract class ParserAbstract {
         String s = dollarText.stream().map(TerminalNode::getText).collect(Collectors.joining());
 
         return new Pair<>(s, dollarText.get(0).getSymbol());
+    }
+
+    public static List<ParserRuleContext> getIdentifiers(Schema_qualified_nameContext qNameCtx) {
+        List<ParserRuleContext> ids = new ArrayList<>(3);
+        ids.add(qNameCtx.identifier());
+        ids.addAll(qNameCtx.identifier_reserved());
+        return ids;
+    }
+
+    public static List<ParserRuleContext> getIdentifiers(Schema_qualified_name_nontypeContext qNameNonTypeCtx) {
+        List<ParserRuleContext> ids;
+        Identifier_nontypeContext singleId = qNameNonTypeCtx.identifier_nontype();
+        if (singleId != null) {
+            ids = new ArrayList<>(1);
+            ids.add(singleId);
+        } else {
+            ids = new ArrayList<>(2);
+            ids.add(qNameNonTypeCtx.schema);
+            ids.add(qNameNonTypeCtx.identifier_reserved_nontype());
+        }
+        return ids;
+    }
+
+    public static List<ParserRuleContext> getIdentifiers(Operator_nameContext operQNameCtx) {
+        List<ParserRuleContext> ids = new ArrayList<>(2);
+        ids.add(operQNameCtx.schema_name);
+        ids.add(operQNameCtx.operator);
+        return ids;
     }
 
     protected PgObjLocation addObjReference(List<? extends ParserRuleContext> ids,
@@ -568,8 +599,7 @@ public abstract class ParserAbstract {
     protected void addPgTypeDepcy(Data_typeContext ctx, PgStatement st) {
         Schema_qualified_name_nontypeContext qname = ctx.predefined_type().schema_qualified_name_nontype();
         if (qname != null && qname.identifier() != null) {
-            addDepSafe(st, Arrays.asList(qname.identifier(), qname.identifier_nontype()),
-                    DbObjType.TYPE, true);
+            addDepSafe(st, getIdentifiers(qname), DbObjType.TYPE, true);
         }
     }
 

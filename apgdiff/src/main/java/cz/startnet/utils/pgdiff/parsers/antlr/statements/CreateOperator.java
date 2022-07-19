@@ -8,7 +8,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.All_op_refContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.All_simple_opContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_operator_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -32,11 +31,8 @@ public class CreateOperator extends ParserAbstract {
 
     @Override
     public void parseObject() {
-        Operator_nameContext operNameCtx = ctx.name;
-        IdentifierContext schemaCtx = operNameCtx.schema_name;
-        All_simple_opContext operName = operNameCtx.operator;
-        List<ParserRuleContext> ids = Arrays.asList(schemaCtx, operName);
-        PgOperator oper = new PgOperator(operName.getText());
+        List<ParserRuleContext> ids = getIdentifiers(ctx.name);
+        PgOperator oper = new PgOperator(QNameParser.getFirstName(ids));
         Schema_qualified_nameContext funcCtx = null;
         Schema_qualified_nameContext restCtx = null;
         Schema_qualified_nameContext joinCtx = null;
@@ -85,7 +81,7 @@ public class CreateOperator extends ParserAbstract {
         String arguments = oper.getArguments();
         if (funcCtx != null) {
             oper.setProcedure(getFullCtxText(funcCtx));
-            List<IdentifierContext> funcIds = funcCtx.identifier();
+            List<ParserRuleContext> funcIds = getIdentifiers(funcCtx);
             addDepSafe(oper, funcIds, DbObjType.FUNCTION, true, arguments);
             db.addAnalysisLauncher(new OperatorAnalysisLaincher(
                     oper, getOperatorFunction(oper, funcIds), fileName));
@@ -93,13 +89,13 @@ public class CreateOperator extends ParserAbstract {
 
         if (restCtx != null) {
             oper.setRestrict(getFullCtxText(restCtx));
-            List<IdentifierContext> funcIds = restCtx.identifier();
+            List<ParserRuleContext> funcIds = getIdentifiers(restCtx);
             addDepSafe(oper, funcIds, DbObjType.FUNCTION, true, arguments);
         }
 
         if (joinCtx != null) {
             oper.setJoin(getFullCtxText(joinCtx));
-            List<IdentifierContext> funcIds = joinCtx.identifier();
+            List<ParserRuleContext> funcIds = getIdentifiers(joinCtx);
             addDepSafe(oper, funcIds, DbObjType.FUNCTION, true, arguments);
         }
 
@@ -107,7 +103,7 @@ public class CreateOperator extends ParserAbstract {
         addSafe(getSchemaSafe(ids), oper, ids);
     }
 
-    private GenericColumn getOperatorFunction(PgOperator oper, List<IdentifierContext> ids) {
+    private GenericColumn getOperatorFunction(PgOperator oper, List<ParserRuleContext> ids) {
         String name = QNameParser.getFirstName(ids) + oper.getArguments();
         return new GenericColumn(QNameParser.getSchemaName(ids),
                 name, DbObjType.FUNCTION);

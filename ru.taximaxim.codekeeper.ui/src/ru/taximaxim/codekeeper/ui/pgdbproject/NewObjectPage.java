@@ -51,7 +51,6 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
@@ -344,7 +343,7 @@ public final class NewObjectPage extends WizardPage {
             setDescription(Messages.PgObject_empty_name);
             return false;
         } else {
-            QNameParser<IdentifierContext> parser = QNameParser.parsePg(fullName);
+            QNameParser<?> parser = QNameParser.parsePg(fullName);
             if (parser.hasErrors()) {
                 err = Messages.NewObjectWizard_invalid_input_format + expectedFormat;
             } else {

@@ -44,12 +44,11 @@ public class CommentOn extends ParserAbstract {
         String comment = str == null ? null : str.getText();
         Comment_member_objectContext obj = ctx.comment_member_object();
 
-        List<? extends ParserRuleContext> ids = null;
+        List<ParserRuleContext> ids = null;
         if (obj.target_operator() != null) {
-            Operator_nameContext operCtx = obj.target_operator().name;
-            ids = Arrays.asList(operCtx.schema_name, operCtx.operator);
+            ids = getIdentifiers(obj.target_operator().name);
         } else if (obj.name != null) {
-            ids = obj.name.identifier();
+            ids = getIdentifiers(obj.name);
         } else if (obj.cast_name() != null) {
             ids = Arrays.asList(obj.cast_name());
         } else {
@@ -108,7 +107,7 @@ public class CommentOn extends ParserAbstract {
 
         AbstractSchema schema = null;
         if (obj.table_name != null) {
-            schema = getSchemaSafe(obj.table_name.identifier());
+            schema = getSchemaSafe(getIdentifiers(obj.table_name));
         } else if (obj.EXTENSION() == null && obj.SCHEMA() == null && obj.DATABASE() == null
                 && obj.CAST() == null && obj.SERVER() == null
                 && (obj.DATA() == null || obj.WRAPPER() == null)) {
@@ -143,7 +142,7 @@ public class CommentOn extends ParserAbstract {
             type = DbObjType.SERVER;
             st = getSafe(PgDatabase::getServer, db, nameCtx);
         } else if (obj.CONSTRAINT() != null) {
-            List<IdentifierContext> parentIds = obj.table_name.identifier();
+            List<ParserRuleContext> parentIds = getIdentifiers(obj.table_name);
             ParserRuleContext parentCtx = QNameParser.getFirstNameCtx(parentIds);
             type = DbObjType.CONSTRAINT;
             if (obj.DOMAIN() != null) {
@@ -191,9 +190,9 @@ public class CommentOn extends ParserAbstract {
             st = getSafe(AbstractSchema::getDomain, schema, nameCtx);
         } else if ((obj.TRIGGER() != null && obj.EVENT() == null)
                 || obj.POLICY() != null || obj.RULE() != null) {
-            List<IdentifierContext> parentIds = obj.table_name.identifier();
+            List<ParserRuleContext> parentIds = getIdentifiers(obj.table_name);
             addObjReference(parentIds, DbObjType.TABLE, null);
-            IdentifierContext tableCtx = QNameParser.getFirstNameCtx(parentIds);
+            ParserRuleContext tableCtx = QNameParser.getFirstNameCtx(parentIds);
             ids = Arrays.asList(QNameParser.getSchemaNameCtx(parentIds), tableCtx, nameCtx);
             PgStatementContainer c = getSafe(AbstractSchema::getStatementContainer, schema, tableCtx);
             if (obj.POLICY() != null) {

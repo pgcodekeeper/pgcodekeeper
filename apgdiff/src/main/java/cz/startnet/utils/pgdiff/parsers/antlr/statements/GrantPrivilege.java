@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Columns_permissionsContext;
@@ -102,7 +104,7 @@ public class GrantPrivilege extends ParserAbstract {
 
         if (type != null) {
             for (Schema_qualified_nameContext name : objName) {
-                addObjReference(name.identifier(), type, state);
+                addObjReference(getIdentifiers(name), type, state);
 
                 if (isRefMode()) {
                     continue;
@@ -134,8 +136,8 @@ public class GrantPrivilege extends ParserAbstract {
 
     private void parseFunction(Rule_member_objectContext obj, String permissions, List<String> roles) {
         for (Function_parametersContext funct : obj.func_name) {
-            List<IdentifierContext> funcIds = funct.schema_qualified_name().identifier();
-            IdentifierContext functNameCtx = QNameParser.getFirstNameCtx(funcIds);
+            List<ParserRuleContext> funcIds = getIdentifiers(funct.schema_qualified_name());
+            ParserRuleContext functNameCtx = QNameParser.getFirstNameCtx(funcIds);
             AbstractSchema schema = getSchemaSafe(funcIds);
             AbstractPgFunction func = (AbstractPgFunction) getSafe(AbstractSchema::getFunction, schema,
                     parseSignature(functNameCtx.getText(), funct.function_args()),
@@ -188,7 +190,7 @@ public class GrantPrivilege extends ParserAbstract {
 
     private void setColumnPrivilege(Schema_qualified_nameContext tbl,
             Map<String, Entry<IdentifierContext, List<String>>> colPrivs, List<String> roles) {
-        List<IdentifierContext> ids = tbl.identifier();
+        List<ParserRuleContext> ids = getIdentifiers(tbl);
 
         addObjReference(ids, DbObjType.TABLE, state);
 
@@ -201,7 +203,7 @@ public class GrantPrivilege extends ParserAbstract {
         }
 
         AbstractSchema schema = getSchemaSafe(ids);
-        IdentifierContext firstPart = QNameParser.getFirstNameCtx(ids);
+        ParserRuleContext firstPart = QNameParser.getFirstNameCtx(ids);
 
         //привилегии пишем так как получили одной строкой
         PgStatement st = (PgStatement) getSafe(AbstractSchema::getRelation, schema, firstPart);
@@ -232,8 +234,8 @@ public class GrantPrivilege extends ParserAbstract {
 
     private void addToDB(Schema_qualified_nameContext name, DbObjType type,
             String state, String permissions, List<String> roles, boolean isGO) {
-        List<IdentifierContext> ids = name.identifier();
-        IdentifierContext idCtx = QNameParser.getFirstNameCtx(ids);
+        List<ParserRuleContext> ids = getIdentifiers(name);
+        ParserRuleContext idCtx = QNameParser.getFirstNameCtx(ids);
         AbstractSchema schema;
         switch (type) {
         case SCHEMA:

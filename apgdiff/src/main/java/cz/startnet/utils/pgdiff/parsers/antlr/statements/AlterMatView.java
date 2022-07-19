@@ -2,8 +2,9 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_materialized_view_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -22,7 +23,7 @@ public class AlterMatView extends ParserAbstract {
     @Override
     public void parseObject() {
         if (ctx.ALL() == null) {
-            List<IdentifierContext> ids = ctx.schema_qualified_name().identifier();
+            List<ParserRuleContext> ids = getIdentifiers(ctx.schema_qualified_name());
             addObjReference(ids, DbObjType.VIEW, action);
         } else {
             db.addReference(fileName, new PgObjLocation.Builder()

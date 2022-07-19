@@ -46,26 +46,17 @@ public class AlterOwner extends ParserAbstract {
             return;
         }
 
-        PgStatement st = null;
-
+        List<ParserRuleContext> ids;
         if (ctx.OPERATOR() != null) {
-            Target_operatorContext targetOperCtx = ctx.target_operator();
-            Operator_nameContext operNameCtx = targetOperCtx.name;
-            IdentifierContext schemaCtx = operNameCtx.schema_name;
-            All_simple_opContext nameCtx = operNameCtx.operator;
-            List<ParserRuleContext> ids = Arrays.asList(schemaCtx, nameCtx);
-            st = getSafe(AbstractSchema::getOperator, getSchemaSafe(ids),
-                    parseSignature(nameCtx.getText(), targetOperCtx),
-                    nameCtx.getStart());
-            setOwner(st, name);
-            addObjReference(ids, DbObjType.OPERATOR, ACTION_ALTER);
-            return;
+            ids = getIdentifiers(ctx.target_operator().name);
+        } else {
+            ids = getIdentifiers(ctx.name);
         }
 
-        List<IdentifierContext> ids = ctx.name.identifier();
-        IdentifierContext nameCtx = QNameParser.getFirstNameCtx(ids);
+        ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
 
         DbObjType type = null;
+        PgStatement st = null;
         if (ctx.SCHEMA() != null) {
             st = getSafe(PgDatabase::getSchema, db, nameCtx);
             type = DbObjType.SCHEMA;
@@ -95,6 +86,11 @@ public class AlterOwner extends ParserAbstract {
             } else if (ctx.TYPE() != null) {
                 st = getSafe(AbstractSchema::getType, schema, nameCtx);
                 type = DbObjType.TYPE;
+            } else if (ctx.OPERATOR() != null) {
+                st = getSafe(AbstractSchema::getOperator, schema,
+                        parseSignature(nameCtx.getText(), ctx.target_operator()),
+                        nameCtx.getStart());
+                type = DbObjType.OPERATOR;
             } else if (ctx.PROCEDURE() != null || ctx.FUNCTION() != null || ctx.AGGREGATE() != null) {
                 st = getSafe(AbstractSchema::getFunction, schema, parseSignature(nameCtx.getText(),
                         ctx.function_args()), nameCtx.getStart());
@@ -168,26 +164,16 @@ public class AlterOwner extends ParserAbstract {
             return null;
         }
 
-        String schemaName = null;
-        String objName = null;
         Target_operatorContext targetOperCtx;
+        List<ParserRuleContext> ids;
         if (ctx.name != null) {
-            List<IdentifierContext> ids = ctx.name.identifier();
-            schemaName = QNameParser.getSchemaName(ids);
-            objName = QNameParser.getFirstName(ids);
+            ids = getIdentifiers(ctx.name);
         } else if ((targetOperCtx = ctx.target_operator()) != null) {
-            Operator_nameContext operNameCtx = targetOperCtx.name;
-            schemaName = operNameCtx.schema_name.getText();
-            objName = operNameCtx.operator.getText();
+            ids = getIdentifiers(targetOperCtx.name);
         } else {
             return null;
         }
 
-        StringBuilder sb = new StringBuilder(ACTION_ALTER);
-        sb.append(' ').append(type).append(' ');
-        if (type != DbObjType.SCHEMA) {
-            sb.append(schemaName).append('.');
-        }
-        return sb.append(objName).toString();
+        return getStrForStmtAction(ACTION_ALTER, type, ids);
     }
 }

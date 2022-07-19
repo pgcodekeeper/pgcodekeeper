@@ -1,12 +1,10 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.Arrays;
-import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Cast_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_cast_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.schema.ICast.CastContext;
 import cz.startnet.utils.pgdiff.schema.PgCast;
@@ -36,9 +34,8 @@ public class CreateCast extends ParserAbstract {
         Schema_qualified_nameContext funcNameCtx = ctx.func_name;
         if (funcNameCtx != null) {
             cast.setMethod(CastMethod.FUNCTION);
-            List<IdentifierContext> ids = funcNameCtx.identifier();
             String args = getFullCtxText(ctx.function_args());
-            addDepSafe(cast, ids, DbObjType.FUNCTION, true, args);
+            addDepSafe(cast, getIdentifiers(funcNameCtx), DbObjType.FUNCTION, true, args);
             cast.setFunction(getFullCtxText(funcNameCtx) + args);
         } else if (ctx.INOUT() != null) {
             cast.setMethod(CastMethod.INOUT);

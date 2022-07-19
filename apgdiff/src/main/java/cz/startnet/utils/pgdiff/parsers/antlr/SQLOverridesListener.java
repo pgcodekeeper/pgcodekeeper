@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.function.BiFunction;
 
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
@@ -25,6 +26,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.User_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterOwner;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.GrantPrivilege;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.IStatement;
@@ -97,12 +99,12 @@ implements SqlContextProcessor {
     }
 
     private void alterTable(Alter_table_statementContext ctx) {
-        List<IdentifierContext> ids = ctx.name.identifier();
-        IdentifierContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
+        List<ParserRuleContext> ids = ParserAbstract.getIdentifiers(ctx.name);
+        ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
         AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() :
             getSafe(PgDatabase::getSchema, db, schemaCtx);
 
-        IdentifierContext nameCtx = QNameParser.getFirstNameCtx(ids);
+        ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
 
         for (Table_actionContext tablAction : ctx.table_action()) {
             Owner_toContext owner = tablAction.owner_to();
@@ -116,7 +118,7 @@ implements SqlContextProcessor {
     }
 
     private <T extends IStatement, R extends IStatement> R getSafe(
-            BiFunction<T, String, R> getter, T container, IdentifierContext ctx) {
+            BiFunction<T, String, R> getter, T container, ParserRuleContext ctx) {
         String name = ctx.getText();
         R statement = getter.apply(container, name);
         if (statement == null) {

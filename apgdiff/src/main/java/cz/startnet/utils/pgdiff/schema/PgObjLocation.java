@@ -11,7 +11,7 @@ import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgObjLocation extends ContextLocation {
@@ -150,7 +150,7 @@ public class PgObjLocation extends ContextLocation {
             return objName;
         }
         SQLParser p = AntlrParser.makeBasicParser(SQLParser.class, objName, "function signature");
-        List<IdentifierContext> ids = p.function_args_parser().schema_qualified_name().identifier();
+        List<ParserRuleContext> ids = ParserAbstract.getIdentifiers(p.function_args_parser().schema_qualified_name());
         return QNameParser.getFirstName(ids);
     }
 

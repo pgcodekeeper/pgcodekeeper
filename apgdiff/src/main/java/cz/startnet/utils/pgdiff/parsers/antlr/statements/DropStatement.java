@@ -67,14 +67,12 @@ public class DropStatement extends ParserAbstract {
         } else {
             type = DbObjType.AGGREGATE;
         }
-        addObjReference(ctx.name.identifier(), type, ACTION_DROP);
+        addObjReference(getIdentifiers(ctx.name), type, ACTION_DROP);
     }
 
     public void dropOperator(Drop_operator_statementContext ctx) {
         for (Target_operatorContext targetOperCtx : ctx.target_operator()) {
-            Operator_nameContext nameCtx = targetOperCtx.operator_name();
-            addObjReference(Arrays.asList(nameCtx.schema_name, nameCtx.operator),
-                    DbObjType.OPERATOR, ACTION_DROP);
+            addObjReference(getIdentifiers(targetOperCtx.name), DbObjType.OPERATOR, ACTION_DROP);
         }
     }
 
@@ -83,18 +81,18 @@ public class DropStatement extends ParserAbstract {
     }
 
     public void dropTrigger(Drop_trigger_statementContext ctx) {
-        dropChild(ctx.table_name.identifier(), ctx.name, DbObjType.TRIGGER);
+        dropChild(getIdentifiers(ctx.table_name), ctx.name, DbObjType.TRIGGER);
     }
 
     public void dropRule(Drop_rule_statementContext ctx) {
-        dropChild(ctx.schema_qualified_name().identifier(), ctx.name, DbObjType.RULE);
+        dropChild(getIdentifiers(ctx.schema_qualified_name()), ctx.name, DbObjType.RULE);
     }
 
     private void dropPolicy(Drop_policy_statementContext ctx) {
-        dropChild(ctx.schema_qualified_name().identifier(), ctx.identifier(), DbObjType.POLICY);
+        dropChild(getIdentifiers(ctx.schema_qualified_name()), ctx.identifier(), DbObjType.POLICY);
     }
 
-    public void dropChild(List<IdentifierContext> tableIds, IdentifierContext nameCtx, DbObjType type) {
+    public void dropChild(List<ParserRuleContext> tableIds, IdentifierContext nameCtx, DbObjType type) {
         tableIds.add(nameCtx);
         addObjReference(tableIds, type, ACTION_DROP);
     }
@@ -108,7 +106,7 @@ public class DropStatement extends ParserAbstract {
 
         for (Schema_qualified_nameContext objName :
             ctx.if_exist_names_restrict_cascade().names_references().schema_qualified_name()) {
-            List<IdentifierContext> ids = objName.identifier();
+            List<ParserRuleContext> ids = getIdentifiers(objName);
             PgObjLocation loc = addObjReference(ids, type, ACTION_DROP);
 
             if (type == DbObjType.TABLE) {
@@ -166,7 +164,7 @@ public class DropStatement extends ParserAbstract {
             type = DbObjType.DATABASE;
         } else if (ctx.drop_function_statement() != null) {
             Drop_function_statementContext dropFuncCtx = ctx.drop_function_statement();
-            ids = dropFuncCtx.name.identifier();
+            ids = getIdentifiers(dropFuncCtx.name);
             if (dropFuncCtx.PROCEDURE() != null) {
                 type = DbObjType.PROCEDURE;
             } else if (dropFuncCtx.FUNCTION() != null) {
@@ -176,19 +174,19 @@ public class DropStatement extends ParserAbstract {
             }
         } else if (ctx.drop_trigger_statement() != null) {
             Drop_trigger_statementContext dropTrigCtx = ctx.drop_trigger_statement();
-            List<IdentifierContext> auxIds = dropTrigCtx.table_name.identifier();
+            List<ParserRuleContext> auxIds = getIdentifiers(dropTrigCtx.table_name);
             auxIds.add(dropTrigCtx.name);
             ids = auxIds;
             type = DbObjType.TRIGGER;
         } else if (ctx.drop_rule_statement() != null) {
             Drop_rule_statementContext dropRuleCtx = ctx.drop_rule_statement();
-            List<IdentifierContext> auxIds = dropRuleCtx.schema_qualified_name().identifier();
+            List<ParserRuleContext> auxIds = getIdentifiers(dropRuleCtx.schema_qualified_name());
             auxIds.add(dropRuleCtx.name);
             ids = auxIds;
             type = DbObjType.RULE;
         } else if (ctx.drop_policy_statement() != null) {
             Drop_policy_statementContext dropPolicyCtx = ctx.drop_policy_statement();
-            List<IdentifierContext> auxIds = dropPolicyCtx.schema_qualified_name().identifier();
+            List<ParserRuleContext> auxIds = getIdentifiers(dropPolicyCtx.schema_qualified_name());
             auxIds.add(dropPolicyCtx.identifier());
             ids = auxIds;
             type = DbObjType.POLICY;
@@ -198,15 +196,14 @@ public class DropStatement extends ParserAbstract {
             if (type != null) {
                 List<Schema_qualified_nameContext> objNames = dropStmtCtx
                         .if_exist_names_restrict_cascade().names_references().schema_qualified_name();
-                ids = objNames.size() == 1 ? objNames.get(0).identifier()
+                ids = objNames.size() == 1 ? getIdentifiers(objNames.get(0))
                         : Collections.emptyList();
             }
         } else if (ctx.drop_operator_statement() != null) {
             Drop_operator_statementContext dropRuleCtx = ctx.drop_operator_statement();
             List<Target_operatorContext> targetOpers = dropRuleCtx.target_operator();
-            Operator_nameContext nameCtx = targetOpers.get(0).operator_name();
-            ids = targetOpers.size() == 1 ? Arrays.asList(nameCtx.schema_name, nameCtx.operator)
-                    : Collections.emptyList();
+            Operator_nameContext nameCtx = targetOpers.get(0).name;
+            ids = targetOpers.size() == 1 ? getIdentifiers(nameCtx) : Collections.emptyList();
             type = DbObjType.OPERATOR;
         } else if (ctx.drop_cast_statement() != null) {
             StringBuilder sb = new StringBuilder();

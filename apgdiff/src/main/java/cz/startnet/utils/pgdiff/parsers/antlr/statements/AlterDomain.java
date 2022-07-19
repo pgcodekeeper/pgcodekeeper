@@ -2,6 +2,8 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_domain_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Domain_constraintContext;
@@ -24,7 +26,7 @@ public class AlterDomain extends ParserAbstract {
 
     @Override
     public void parseObject() {
-        List<IdentifierContext> ids = ctx.name.identifier();
+        List<ParserRuleContext> ids = getIdentifiers(ctx.name);
         PgDomain domain = getSafe(AbstractSchema::getDomain,
                 getSchemaSafe(ids), QNameParser.getFirstNameCtx(ids));
 
@@ -44,6 +46,6 @@ public class AlterDomain extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_ALTER, DbObjType.DOMAIN, ctx.name);
+        return getStrForStmtAction(ACTION_ALTER, DbObjType.DOMAIN, getIdentifiers(ctx.name));
     }
 }
