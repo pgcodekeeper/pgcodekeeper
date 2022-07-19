@@ -6,7 +6,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_sequence_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sequence_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Tokens_nonreserved_except_function_typeContext;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -56,7 +55,7 @@ public class CreateSequence extends ParserAbstract {
                 List<ParserRuleContext> col = getIdentifiers(body.col_name);
                 Tokens_nonreserved_except_function_typeContext word;
                 if (col.size() != 1
-                        || (word = ((IdentifierContext) col.get(0)).tokens_nonreserved_except_function_type()) == null
+                        || (word = body.col_name.identifier().tokens_nonreserved_except_function_type()) == null
                         || word.NONE() == null) {
                     sequence.setOwnedBy(new GenericColumn(QNameParser.getThirdName(col),
                             QNameParser.getSecondName(col), QNameParser.getFirstName(col), DbObjType.COLUMN));

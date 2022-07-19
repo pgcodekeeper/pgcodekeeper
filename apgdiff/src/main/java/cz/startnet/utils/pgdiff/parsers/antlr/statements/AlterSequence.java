@@ -7,7 +7,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_sequence_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_alterContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sequence_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Tokens_nonreserved_except_function_typeContext;
@@ -38,7 +37,7 @@ public class AlterSequence extends ParserAbstract {
                 List<ParserRuleContext> col = getIdentifiers(seqbody.col_name);
                 Tokens_nonreserved_except_function_typeContext word;
                 if (col.size() != 1
-                        || (word = ((IdentifierContext) col.get(0)).tokens_nonreserved_except_function_type()) == null
+                        || (word = seqbody.col_name.identifier().tokens_nonreserved_except_function_type()) == null
                         || word.NONE() == null) {
                     GenericColumn gc = new GenericColumn(QNameParser.getThirdName(col),
                             QNameParser.getSecondName(col), QNameParser.getFirstName(col), DbObjType.COLUMN);
@@ -67,6 +66,6 @@ public class AlterSequence extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_CREATE, DbObjType.SEQUENCE, getIdentifiers(ctx.name));
+        return getStrForStmtAction(ACTION_ALTER, DbObjType.SEQUENCE, getIdentifiers(ctx.name));
     }
 }

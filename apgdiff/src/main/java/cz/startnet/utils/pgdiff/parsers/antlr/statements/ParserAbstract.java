@@ -4,6 +4,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -286,15 +287,31 @@ public abstract class ParserAbstract {
     }
 
     public static List<ParserRuleContext> getIdentifiers(Schema_qualified_nameContext qNameCtx) {
-        return qNameCtx.getRuleContexts(ParserRuleContext.class);
+        List<ParserRuleContext> ids = new ArrayList<>(3);
+        ids.add(qNameCtx.identifier());
+        ids.addAll(qNameCtx.identifier_reserved());
+        return ids;
     }
 
     public static List<ParserRuleContext> getIdentifiers(Schema_qualified_name_nontypeContext qNameNonTypeCtx) {
-        return qNameNonTypeCtx.getRuleContexts(ParserRuleContext.class);
+        List<ParserRuleContext> ids;
+        Identifier_nontypeContext singleId = qNameNonTypeCtx.identifier_nontype();
+        if (singleId != null) {
+            ids = new ArrayList<>(1);
+            ids.add(singleId);
+        } else {
+            ids = new ArrayList<>(2);
+            ids.add(qNameNonTypeCtx.schema);
+            ids.add(qNameNonTypeCtx.identifier_reserved_nontype());
+        }
+        return ids;
     }
 
     public static List<ParserRuleContext> getIdentifiers(Operator_nameContext operQNameCtx) {
-        return operQNameCtx.getRuleContexts(ParserRuleContext.class);
+        List<ParserRuleContext> ids = new ArrayList<>(2);
+        ids.add(operQNameCtx.schema_name);
+        ids.add(operQNameCtx.operator);
+        return ids;
     }
 
     protected PgObjLocation addObjReference(List<? extends ParserRuleContext> ids,

@@ -99,8 +99,6 @@ public class CreateTrigger extends ParserAbstract {
         Schema_qualified_name_nontypeContext funcNameCtx = ctx.func_name
                 .schema_qualified_name_nontype();
         if (funcNameCtx.schema != null) {
-            // TODO add empty signature to function name
-            // when function signatures in refs and defs will be supported
             addDepSafe(trigger, getIdentifiers(funcNameCtx), DbObjType.FUNCTION, true, "()");
         }
 
