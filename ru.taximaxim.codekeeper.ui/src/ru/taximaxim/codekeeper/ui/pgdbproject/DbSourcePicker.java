@@ -9,35 +9,29 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.ui.dialogs.PreferencesUtil;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
-import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
-import ru.taximaxim.codekeeper.ui.UIConsts.PREF_PAGE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
-import ru.taximaxim.codekeeper.ui.dbstore.DbStorePicker;
+import ru.taximaxim.codekeeper.ui.dbstore.DbMenuStorePicker;
+import ru.taximaxim.codekeeper.ui.dbstore.IStorePicker;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 class DbSourcePicker extends Composite {
 
     private final PageDiff pageDiff;
-    private final DbStorePicker storePicker;
+    private final IStorePicker storePicker;
     private final ComboViewer cmbEncoding;
 
     public DbSourcePicker(Composite parent, String groupTitle, final PageDiff pageDiff) {
@@ -50,24 +44,12 @@ class DbSourcePicker extends Composite {
         setLayout(fl);
 
         Group sourceComp = new Group(this, SWT.NONE);
-        sourceComp.setLayout(new GridLayout(3, false));
+        sourceComp.setLayout(new GridLayout(2, false));
         sourceComp.setText(groupTitle);
 
         new Label(sourceComp, SWT.NONE).setText(Messages.DbStorePicker_db_schema_source);
 
-        storePicker = new DbStorePicker(sourceComp, true, true);
-
-        Button btnEditStore = new Button(sourceComp, SWT.PUSH);
-        btnEditStore.setImage(Activator.getRegisteredImage(FILE.ICONEDIT));
-        btnEditStore.addSelectionListener(new SelectionAdapter() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                PreferencesUtil.createPreferenceDialogOn(getShell(),
-                        PREF_PAGE.DB_STORE, null, null).open();
-            }
-        });
-
+        storePicker = new DbMenuStorePicker(sourceComp, true, true);
         new Label(sourceComp, SWT.NONE).setText(Messages.diffWizard_target_encoding);
 
         cmbEncoding = new ComboViewer(sourceComp, SWT.BORDER | SWT.DROP_DOWN);
@@ -75,8 +57,8 @@ class DbSourcePicker extends Composite {
         cmbEncoding.setLabelProvider(new LabelProvider());
         cmbEncoding.setInput(UIConsts.ENCODINGS);
         cmbEncoding.getCombo().setText(ApgdiffConsts.UTF_8);
-
-        storePicker.addListenerToCombo(event -> {
+        cmbEncoding.getControl().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        storePicker.addSelectionListener(() -> {
             pageDiff.getWizard().getContainer().updateButtons();
             File dir = storePicker.getPathOfDir();
             PgDbProject project = null;
@@ -91,10 +73,13 @@ class DbSourcePicker extends Composite {
             }
             cmbEncoding.getControl().setEnabled(!isProject);
         });
-
     }
 
-    public void setDbStore(IStructuredSelection selection) {
+    public void filter(boolean isMsql) {
+        storePicker.filter(isMsql);
+    }
+
+    public void setDbStore(Object selection) {
         storePicker.setSelection(selection);
     }
 

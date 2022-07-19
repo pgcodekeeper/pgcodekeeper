@@ -181,7 +181,7 @@ public class EventRegister {
         Activator plugin = Activator.getDefault();
         //The plug-in instance can be null at shutdown, when the plug-in is stopped.
         if (plugin != null) {
-            Path dir = Paths.get(plugin.getStateLocation().toOSString(), "events");
+            Path dir = Paths.get(plugin.getStateLocation().toOSString(), "events"); //$NON-NLS-1$
             try {
                 return Files.createDirectories(dir);
             } catch (IOException e) {

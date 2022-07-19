@@ -192,6 +192,9 @@ public class PgDiffDepciesTest {
             // пользователь выбрал функцию
             {"add_func_with_dep_usr_f1"},
             // добавление функции с зависимостями
+            // пользователь выбрал функции с телами в команде CREATE
+            {"add_func_with_dep_usr_f_inline"},
+            // добавление функции с зависимостями
             // пользователь выбрал функцию f1
             {"add_function_with_dep_usr_f1"},
             // изменение сиквенсов с зависимостями
@@ -224,6 +227,12 @@ public class PgDiffDepciesTest {
             // добавление оператора с перегруженными функциями
             // пользователь выбрал оператор
             {"add_operator_usr_op"},
+            // проверка объекта forein_data_wrapper, server
+            // пользователь выбрал объект forein_table с зависимыми от него forein_data_wrapper, server
+            {"change_fdw_usr"},
+            // проверка объекта user mapping
+            // пользователь выбрал объект user mapping с зависимостью server
+            {"add_user_mapping_usr"},
         });
     }
 

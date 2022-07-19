@@ -41,7 +41,6 @@ Schema: public
      pgcatalogggg_round__double - double precision
      vex_op_vex__boolean - boolean
      op_vex__numeric - numeric
-     vex_op__numeric - numeric
      vex_op_2__numeric - numeric
      operrrr__integer - integer
      func_user_type_return__custom_type - public.custom_type

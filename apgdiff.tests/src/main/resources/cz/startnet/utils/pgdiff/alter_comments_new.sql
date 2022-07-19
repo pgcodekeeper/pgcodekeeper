@@ -108,3 +108,11 @@ COMMENT ON RULE test_rule ON public.test IS 'test rule 2';
 CREATE POLICY test_policy ON public.test;
 
 COMMENT ON POLICY test_policy ON public.test IS 'test policy 2';
+
+CREATE FOREIGN DATA WRAPPER test_fdw_2;
+
+COMMENT ON FOREIGN DATA WRAPPER test_fdw_2 IS 'new comment';
+
+CREATE SERVER test_server_0  FOREIGN DATA WRAPPER fdw1;
+
+COMMENT ON SERVER test_server_0 IS 'new_comment';

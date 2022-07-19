@@ -15,6 +15,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 public class PgExtension extends PgStatement {
 
     private String schema;
+    private boolean relocatable;
 
     @Override
     public DbObjType getStatementType() {
@@ -34,6 +35,14 @@ public class PgExtension extends PgStatement {
         resetHash();
     }
 
+    public boolean isRelocatable() {
+        return relocatable;
+    }
+
+    public void setRelocatable(boolean relocatable) {
+        this.relocatable = relocatable;
+    }
+
     @Override
     public PgDatabase getDatabase() {
         return (PgDatabase)getParent();
@@ -43,9 +52,10 @@ public class PgExtension extends PgStatement {
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE EXTENSION ");
-        sbSQL.append(PgDiffUtils.getQuotedName(getName()));
+        appendIfNotExists(sbSQL);
+        sbSQL.append(getQualifiedName());
 
-        if(getSchema() != null && !getSchema().isEmpty()) {
+        if (getSchema() != null && !getSchema().isEmpty()) {
             sbSQL.append(" SCHEMA ");
             sbSQL.append(getSchema());
         }
@@ -61,17 +71,15 @@ public class PgExtension extends PgStatement {
     }
 
     @Override
-    public String getDropSQL() {
-        return "DROP EXTENSION " + PgDiffUtils.getQuotedName(getName()) + ';';
-    }
-
-    @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         PgExtension newExt = (PgExtension) newCondition;
 
         if (!Objects.equals(newExt.getSchema(), getSchema())) {
+            if (!isRelocatable()) {
+                return true;
+            }
             sb.append("\n\nALTER EXTENSION ")
             .append(PgDiffUtils.getQuotedName(getName()))
             .append(" SET SCHEMA ")

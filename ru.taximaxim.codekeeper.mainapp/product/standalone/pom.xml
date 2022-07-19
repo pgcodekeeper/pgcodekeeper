@@ -8,18 +8,20 @@
         <artifactId>ru.taximaxim.codeKeeper</artifactId>
         <groupId>ru.taximaxim.codeKeeper</groupId>
         <version>${revision}</version>
-        <relativePath>../../ru.taximaxim.codeKeeper/</relativePath>
+        <relativePath>../../../</relativePath>
     </parent>
 
     <groupId>ru.taximaxim.codeKeeper</groupId>
     <artifactId>ru.taximaxim.codekeeper.standalone.product</artifactId>
-    <version>5.10.8-SNAPSHOT</version>
+    <version>6.5.1-SNAPSHOT</version>
     <packaging>eclipse-repository</packaging>
 
     <properties>
         <archive-filename>pgCodeKeeper-cli-${unqualifiedVersion}</archive-filename>
     </properties>
-
+<!-- 
+  - latest is incompatible with Java 8 which is still our minimal requirement
+  - uncomment when Java dependency will be bumped
     <repositories>
         <repository>
             <id>eclipse-p2-repo</id>
@@ -27,7 +29,7 @@
             <layout>p2</layout>
         </repository>
     </repositories>
-
+ -->
     <build>
         <plugins>
             <plugin>

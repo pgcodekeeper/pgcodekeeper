@@ -3,9 +3,11 @@ package ru.taximaxim.codekeeper.ui.differ;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -28,18 +30,22 @@ import cz.startnet.utils.pgdiff.loader.ProjectLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.InputStreamProvider;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.consoles.UiProgressReporter;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.externalcalls.PgDumper;
+import ru.taximaxim.codekeeper.ui.formatter.Formatter;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
+import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
 import ru.taximaxim.codekeeper.ui.properties.OverridablePrefs;
 
 public abstract class DbSource {
@@ -121,6 +127,8 @@ public abstract class DbSource {
         args.setIgnorePrivileges(prefs.getBooleanOfRootPref(PREF.NO_PRIVILEGES));
         args.setIgnoreColumnOrder(prefs.getBooleanOfRootPref(PREF.IGNORE_COLUMN_ORDER));
         args.setSimplifyView(prefs.getBooleanOfRootPref(PREF.SIMPLIFY_VIEW));
+        args.setAutoFormatObjectCode(prefs.getBooleanOfRootPref(PREF.FORMAT_OBJECT_CODE_AUTOMATICALLY));
+        args.setFormatConfiguration(Formatter.getFormatterConfig());
         args.setTimeZone(timeZone);
         args.setKeepNewlines(!forceUnixNewlines);
         args.setMsSql(msSql);
@@ -143,11 +151,21 @@ public abstract class DbSource {
 
     public static DbSource fromFile(boolean forceUnixNewlines, File filename,
             String encoding, boolean isMsSql, IProject proj, Map<String, Boolean> oneTimePrefs) {
+        return fromFile(forceUnixNewlines, filename.toPath(), encoding, isMsSql, proj, oneTimePrefs);
+    }
+
+    public static DbSource fromFile(boolean forceUnixNewlines, Path filename,
+            String encoding, boolean isMsSql, IProject proj, Map<String, Boolean> oneTimePrefs) {
         return new DbSourceFile(forceUnixNewlines, filename, encoding, isMsSql,
                 proj, oneTimePrefs);
     }
 
     public static DbSource fromFile(boolean forceUnixNewlines, File filename,
+            String encoding, boolean isMsSql, IProject proj) {
+        return fromFile(forceUnixNewlines, filename.toPath(), encoding, isMsSql, proj);
+    }
+
+    public static DbSource fromFile(boolean forceUnixNewlines, Path filename,
             String encoding, boolean isMsSql, IProject proj) {
         return fromFile(forceUnixNewlines, filename, encoding, isMsSql, proj, null);
     }
@@ -157,9 +175,8 @@ public abstract class DbSource {
         if (dbinfo.isPgDumpSwitch()) {
             return new DbSourceDb(forceUnixNewlines, dbinfo, charset, timezone,
                     proj, oneTimePrefs);
-        } else {
-            return new DbSourceJdbc(dbinfo, timezone, forceUnixNewlines, proj, oneTimePrefs);
         }
+        return new DbSourceJdbc(dbinfo, timezone, forceUnixNewlines, proj, oneTimePrefs);
     }
 
     public static DbSource fromDbInfo(DbInfo dbinfo, boolean forceUnixNewlines,
@@ -205,7 +222,7 @@ class DbSourceDirTree extends DbSource {
 
         return load(new ProjectLoader(dirTreePath,
                 getPgDiffArgs(encoding, forceUnixNewlines, isMsSql, null, oneTimePrefs),
-                monitor, new ArrayList<>()));
+                new ArrayList<>()));
     }
 }
 
@@ -222,7 +239,7 @@ class DbSourceProject extends DbSource {
 
     @Override
     protected PgDatabase loadInternal(SubMonitor monitor)
-            throws IOException, InterruptedException, CoreException {
+            throws InterruptedException, CoreException, IOException {
         String charset = proj.getProjectCharset();
         monitor.subTask(Messages.dbSource_loading_tree);
         IProject project = proj.getProject();
@@ -235,7 +252,8 @@ class DbSourceProject extends DbSource {
                 pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
                 OpenProjectUtils.checkMsSql(project), project, oneTimePrefs);
 
-        return load(new UIProjectLoader(project, arguments, monitor));
+        Path listFile = Paths.get(project.getLocationURI()).resolve(FILE.IGNORED_SCHEMA);
+        return load(new UIProjectLoader(project, arguments, monitor, InternalIgnoreList.getIgnoreSchemaList(listFile)));
     }
 }
 
@@ -249,15 +267,15 @@ class DbSourceFile extends DbSource {
     private static final int AVERAGE_STATEMENT_LENGTH = 5;
 
     private final boolean forceUnixNewlines;
-    private final File filename;
+    private final Path filename;
     private final String encoding;
     private final boolean isMsSql;
     private final IProject proj;
     private final Map<String, Boolean> oneTimePrefs;
 
-    DbSourceFile(boolean forceUnixNewlines, File filename, String encoding,
+    DbSourceFile(boolean forceUnixNewlines, Path filename, String encoding,
             boolean isMsSql, IProject proj, Map<String, Boolean> oneTimePrefs) {
-        super(filename.getAbsolutePath());
+        super(filename.toAbsolutePath().toString());
 
         this.forceUnixNewlines = forceUnixNewlines;
         this.filename = filename;
@@ -284,8 +302,8 @@ class DbSourceFile extends DbSource {
         return load(new PgDumpLoader(filename, args, monitor, 2));
     }
 
-    private int countLines(File filename) throws IOException {
-        try (FileInputStream fis = new FileInputStream(filename);
+    private int countLines(Path filename) throws IOException {
+        try (InputStream fis = Files.newInputStream(filename);
                 InputStream is = new BufferedInputStream(fis)){
             byte[] c = new byte[1024];
             int count = 0;
@@ -413,11 +431,15 @@ class DbSourceJdbc extends DbSource {
         PgDiffArguments args = getPgDiffArgs(ApgdiffConsts.UTF_8, forceUnixNewlines,
                 isMsSql, proj, oneTimePrefs);
 
-        if (isMsSql) {
-            return load(new JdbcMsLoader(jdbcConnector, args, monitor));
+        IgnoreSchemaList ignoreShemaList = null;
+        if (proj != null) {
+            Path listFile = Paths.get(proj.getLocationURI()).resolve(FILE.IGNORED_SCHEMA);
+            ignoreShemaList = InternalIgnoreList.getIgnoreSchemaList(listFile);
         }
-
-        return load(new JdbcLoader(jdbcConnector, args, monitor));
+        if (isMsSql) {
+            return load(new JdbcMsLoader(jdbcConnector, args, monitor, ignoreShemaList));
+        }
+        return load(new JdbcLoader(jdbcConnector, args, monitor, ignoreShemaList));
     }
 }
 

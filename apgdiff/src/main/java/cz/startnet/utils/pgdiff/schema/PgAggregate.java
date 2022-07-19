@@ -57,6 +57,7 @@ public class PgAggregate extends AbstractPgFunction {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
+        appendDropBeforeCreate(sbSQL);
         sbSQL.append("CREATE AGGREGATE ");
         appendFullName(sbSQL);
 
@@ -194,7 +195,7 @@ public class PgAggregate extends AbstractPgFunction {
                     sb.append(", ");
                 }
 
-                sb.append(getDeclaration(arg, false, true));
+                arg.appendDeclaration(sb, false, true);
                 first = false;
                 i--;
             }

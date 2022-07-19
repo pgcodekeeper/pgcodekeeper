@@ -31,24 +31,27 @@ public class QueriesBatchCallable extends StatementCallable<String> {
     private final Connection connection;
     private final IProgressReporter reporter;
     private final boolean isMsSql;
+    private final int limitRows;
 
     private boolean isAutoCommitEnabled = true;
 
     public QueriesBatchCallable(Statement st, List<PgObjLocation> batches,
             IProgressMonitor monitor, IProgressReporter reporter,
-            Connection connection, boolean isMsSql) {
+            Connection connection, boolean isMsSql, int limitRows) {
         super(st, null);
         this.batches = batches;
         this.monitor = monitor;
         this.connection = connection;
         this.reporter = reporter;
         this.isMsSql = isMsSql;
+        this.limitRows = limitRows;
     }
 
     @Override
     public String call() throws Exception {
         SubMonitor subMonitor = SubMonitor.convert(monitor);
         PgObjLocation currQuery = null;
+        String[] finalModifiedQuery = new String[1];
 
         try {
             if (!isMsSql) {
@@ -56,7 +59,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
                 for (PgObjLocation query : batches) {
                     PgDiffUtils.checkCancelled(monitor);
                     currQuery = query;
-                    executeSingleStatement(query);
+                    executeSingleStatement(query, finalModifiedQuery);
                     subMonitor.worked(1);
                 }
             } else {
@@ -68,7 +71,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
                     currQuery = null;
                     if (queriesList.size() == 1) {
                         currQuery = queriesList.get(0);
-                        executeSingleStatement(currQuery);
+                        executeSingleStatement(currQuery, finalModifiedQuery);
                     } else {
                         runBatch(queriesList);
                     }
@@ -89,7 +92,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
             if (currQuery != null) {
                 int offset = sem.getPosition();
                 if (offset > 0) {
-                    appendPosition(sb, currQuery.getSql(), offset);
+                    appendPosition(sb, finalModifiedQuery[0], offset);
                 } else {
                     if (currQuery.getLineNumber() > 1) {
                         sb.append("\n  Line: ").append(currQuery.getLineNumber());
@@ -149,9 +152,15 @@ public class QueriesBatchCallable extends StatementCallable<String> {
         return batchesList;
     }
 
-    private void executeSingleStatement(PgObjLocation query)
+    private void executeSingleStatement(PgObjLocation query, String[] finalModifiedQuery)
             throws SQLException, InterruptedException {
-        if (st.execute(query.getSql())) {
+        String sql = query.getSql();
+        if (limitRows > 0 && "SELECT".equals(query.getAction())) {
+            sql = "SELECT * FROM ( " + sql + " ) AS t LIMIT " + limitRows;
+        }
+
+        finalModifiedQuery[0] = sql;
+        if (st.execute(sql)) {
             writeResult(query.getSql());
         }
         writeWarnings();
@@ -213,7 +222,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
             }
         }
 
-        reporter.showData(query, results);
+        reporter.showData(query, results, limitRows);
     }
 
     private void writeWarnings() throws SQLException {

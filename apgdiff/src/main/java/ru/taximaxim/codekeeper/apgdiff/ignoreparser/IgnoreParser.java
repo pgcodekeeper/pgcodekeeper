@@ -22,22 +22,14 @@ import cz.startnet.utils.pgdiff.parsers.antlr.IgnoreListParser.WhiteContext;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.IIgnoreList;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoredObject;
 
 public class IgnoreParser {
 
-    private final IgnoreList list;
+    private final IIgnoreList list;
 
-    public IgnoreList getIgnoreList() {
-        return list;
-    }
-
-    public IgnoreParser() {
-        this(new IgnoreList());
-    }
-
-    public IgnoreParser(IgnoreList list) {
+    public IgnoreParser(IIgnoreList list) {
         this.list = list;
     }
 

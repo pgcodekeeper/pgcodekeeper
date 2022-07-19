@@ -8,6 +8,7 @@ import org.eclipse.swt.graphics.RGB;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.FORMATTER_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PG_EDIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.SQL_EDITOR_PREF;
@@ -22,8 +23,10 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 
         store.setDefault(PREF.FORCE_SHOW_CONSOLE, true);
+        store.setDefault(PREF.SAVE_IN_SECURE_STORAGE, true);
         store.setDefault(PREF.PARSER_CACHE_CLEANING_INTERVAL, 30);
         store.setDefault(PREF.HEAP_SIZE_WARNING, true);
+        store.setDefault(PREF.LIMIT_SELECT_RESULTS, 1000);
 
         store.setDefault(PG_EDIT_PREF.EDITOR_UPDATE_ACTION, PG_EDIT_PREF.NO_ACTION);
         store.setDefault(PG_EDIT_PREF.SHOW_GIT_USER, true);
@@ -49,6 +52,12 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(SQL_EDITOR_PREF.MATCHING_BRACKETS_COLOR, "127, 0, 85"); //$NON-NLS-1$
         store.setDefault(SQL_EDITOR_PREF.HIGHLIGHT_BRACKET_AT_CARET_LOCATION, true);
         store.setDefault(SQL_EDITOR_PREF.ENCLOSING_BRACKETS, true);
+
+        store.setDefault(FORMATTER_PREF.INDENT_TYPE, FORMATTER_PREF.WHITESPACE);
+        store.setDefault(FORMATTER_PREF.INDENT_SIZE, 2);
+        store.setDefault(FORMATTER_PREF.REMOVE_TRAILING_WHITESPACE, true);
+        store.setDefault(FORMATTER_PREF.ADD_WHITESPACE_BEFORE_OP, true);
+        store.setDefault(FORMATTER_PREF.ADD_WHITESPACE_AFTER_OP, true);
 
         setSQLSyntaxColorDefaults(store);
     }

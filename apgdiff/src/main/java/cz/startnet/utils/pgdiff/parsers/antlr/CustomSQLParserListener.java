@@ -27,6 +27,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceExcep
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterDomain;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterFtsStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterIndex;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterMatView;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterOther;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterOwner;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterSequence;
@@ -35,8 +36,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterView;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CommentOn;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateAggregate;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateCast;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateDatabase;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateDomain;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateExtension;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateFdw;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateForeignTable;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateFtsConfiguration;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateFtsDictionary;
@@ -46,16 +49,18 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateFunction;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateIndex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateOperator;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreatePolicy;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateRewrite;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateRule;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateSchema;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateSequence;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateServer;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTable;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateType;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateUserMapping;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.DeleteStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.DropStatement;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.GrantPrivilege;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.InsertStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.UpdateStatement;
@@ -96,7 +101,7 @@ implements SqlContextProcessor {
             if (create != null) {
                 create(create, stream);
             } else if ((alter = schema.schema_alter()) != null) {
-                alter(alter);
+                alter(alter, stream);
             } else if ((drop = schema.schema_drop()) != null) {
                 drop(drop);
             }
@@ -110,19 +115,25 @@ implements SqlContextProcessor {
     private void create(Schema_createContext ctx, CommonTokenStream stream) {
         ParserAbstract p;
         if (ctx.create_table_statement() != null) {
-            p = new CreateTable(ctx.create_table_statement(), db, tablespace, accessMethod, oids);
+            p = new CreateTable(ctx.create_table_statement(), db, tablespace, accessMethod, oids, stream);
         } else if (ctx.create_foreign_table_statement() != null) {
-            p = new CreateForeignTable(ctx.create_foreign_table_statement(), db);
+            p = new CreateForeignTable(ctx.create_foreign_table_statement(), db, stream);
         } else if (ctx.create_index_statement() != null) {
-            p = new CreateIndex(ctx.create_index_statement(), db, tablespace);
+            p = new CreateIndex(ctx.create_index_statement(), db, tablespace, stream);
         } else if (ctx.create_extension_statement() != null) {
             p = new CreateExtension(ctx.create_extension_statement(), db);
+        } else if (ctx.create_foreign_data_wrapper_statement() != null) {
+            p = new CreateFdw(ctx.create_foreign_data_wrapper_statement(), db);
+        } else if (ctx.create_server_statement() != null) {
+            p = new CreateServer(ctx.create_server_statement(), db);
         } else if (ctx.create_cast_statement() != null) {
             p = new CreateCast(ctx.create_cast_statement(), db);
+        } else if (ctx.create_user_mapping_statement() != null) {
+            p = new CreateUserMapping(ctx.create_user_mapping_statement(), db);
         } else if (ctx.create_trigger_statement() != null) {
             p = new CreateTrigger(ctx.create_trigger_statement(), db);
         } else if (ctx.create_rewrite_statement() != null) {
-            p = new CreateRewrite(ctx.create_rewrite_statement(), db);
+            p = new CreateRule(ctx.create_rewrite_statement(), db);
         } else if (ctx.create_policy_statement() != null) {
             p = new CreatePolicy(ctx.create_policy_statement(), db);
         } else if (ctx.create_function_statement() != null) {
@@ -140,19 +151,21 @@ implements SqlContextProcessor {
         } else if (ctx.create_type_statement() != null) {
             p = new CreateType(ctx.create_type_statement(), db);
         } else if (ctx.create_domain_statement() != null) {
-            p = new CreateDomain(ctx.create_domain_statement(), db);
-        } else if (ctx.create_fts_configuration() != null) {
-            p = new CreateFtsConfiguration(ctx.create_fts_configuration(), db);
-        } else if (ctx.create_fts_template() != null) {
-            p = new CreateFtsTemplate(ctx.create_fts_template(), db);
-        } else if (ctx.create_fts_parser() != null) {
-            p = new CreateFtsParser(ctx.create_fts_parser(), db);
-        } else if (ctx.create_fts_dictionary() != null) {
-            p = new CreateFtsDictionary(ctx.create_fts_dictionary(), db);
+            p = new CreateDomain(ctx.create_domain_statement(), db, stream);
+        } else if (ctx.create_fts_configuration_statement() != null) {
+            p = new CreateFtsConfiguration(ctx.create_fts_configuration_statement(), db);
+        } else if (ctx.create_fts_template_statement() != null) {
+            p = new CreateFtsTemplate(ctx.create_fts_template_statement(), db);
+        } else if (ctx.create_fts_parser_statement() != null) {
+            p = new CreateFtsParser(ctx.create_fts_parser_statement(), db);
+        } else if (ctx.create_fts_dictionary_statement() != null) {
+            p = new CreateFtsDictionary(ctx.create_fts_dictionary_statement(), db);
         } else if (ctx.comment_on_statement() != null) {
             p = new CommentOn(ctx.comment_on_statement(), db);
         } else if (ctx.rule_common() != null) {
-            p = new CreateRule(ctx.rule_common(), db);
+            p = new GrantPrivilege(ctx.rule_common(), db);
+        } else if (ctx.create_database_statement() != null) {
+            p = new CreateDatabase(ctx.create_database_statement(), db);
         } else if (ctx.set_statement() != null) {
             Set_statementContext setCtx = ctx.set_statement();
             set(setCtx);
@@ -165,27 +178,30 @@ implements SqlContextProcessor {
         safeParseStatement(p, ctx);
     }
 
-    private void alter(Schema_alterContext ctx) {
+    private void alter(Schema_alterContext ctx, CommonTokenStream stream) {
         ParserAbstract p;
         if (ctx.alter_table_statement() != null) {
-            p = new AlterTable(ctx.alter_table_statement(), db, tablespace);
+            p = new AlterTable(ctx.alter_table_statement(), db, tablespace, stream);
         } else if (ctx.alter_index_statement() != null) {
             p = new AlterIndex(ctx.alter_index_statement(), db);
         } else if (ctx.alter_sequence_statement() != null) {
             p = new AlterSequence(ctx.alter_sequence_statement(), db);
         } else if (ctx.alter_view_statement() != null) {
-            p = new AlterView(ctx.alter_view_statement(), db);
+            p = new AlterView(ctx.alter_view_statement(), db, stream);
+        } else if (ctx.alter_materialized_view_statement() != null) {
+            p = new AlterMatView(ctx.alter_materialized_view_statement(), db);
         } else if (ctx.alter_domain_statement() != null) {
             p = new AlterDomain(ctx.alter_domain_statement(), db);
         } else if (ctx.alter_fts_statement() != null) {
             p = new AlterFtsStatement(ctx.alter_fts_statement(), db);
-        } else if (ctx.alter_owner() != null) {
-            p = new AlterOwner(ctx.alter_owner(), db);
-        } else if (ctx.alter_function_statement() != null
-                || ctx.alter_schema_statement() != null
-                || ctx.alter_type_statement() != null
+        } else if (ctx.alter_owner_statement() != null) {
+            p = new AlterOwner(ctx.alter_owner_statement(), db);
+        } else if (ctx.alter_database_statement() != null
+                || ctx.alter_extension_statement() != null
+                || ctx.alter_function_statement() != null
                 || ctx.alter_operator_statement() != null
-                || ctx.alter_extension_statement() != null) {
+                || ctx.alter_schema_statement() != null
+                || ctx.alter_type_statement() != null) {
             p = new AlterOther(ctx, db);
         } else {
             addToQueries(ctx, getAction(ctx));
@@ -196,7 +212,8 @@ implements SqlContextProcessor {
 
     private void drop(Schema_dropContext ctx) {
         ParserAbstract p;
-        if (ctx.drop_function_statement() != null
+        if (ctx.drop_database_statement() != null
+                || ctx.drop_function_statement() != null
                 || ctx.drop_trigger_statement() != null
                 || ctx.drop_rule_statement() != null
                 || ctx.drop_statements() != null
@@ -296,15 +313,15 @@ implements SqlContextProcessor {
                 return "CREATE TABLE";
             } else if (createCtx.create_conversion_statement() != null) {
                 return "CREATE CONVERSION";
-            } else if (createCtx.create_event_trigger() != null
-                    || createCtx.create_user_mapping() != null
-                    || createCtx.create_access_method() != null
+            } else if (createCtx.create_event_trigger_statement() != null
+                    || createCtx.create_user_mapping_statement() != null
+                    || createCtx.create_access_method_statement() != null
                     || createCtx.create_operator_family_statement() != null
                     || createCtx.create_operator_class_statement() != null
                     || createCtx.security_label() != null) {
                 descrWordsCount = 3;
             } else if (createCtx.schema_import() != null
-                    || createCtx.create_foreign_data_wrapper() != null) {
+                    || createCtx.create_foreign_data_wrapper_statement() != null) {
                 descrWordsCount = 4;
             }
             return getActionDescription(ctx, descrWordsCount);
@@ -315,9 +332,9 @@ implements SqlContextProcessor {
                 return "ALTER LANGUAGE";
             } else if (alterCtx.alter_foreign_data_wrapper() != null) {
                 descrWordsCount = 4;
-            } else if (alterCtx.alter_default_privileges() != null
-                    || alterCtx.alter_event_trigger() != null
-                    || alterCtx.alter_user_mapping() != null
+            } else if (alterCtx.alter_default_privileges_statement() != null
+                    || alterCtx.alter_event_trigger_statement() != null
+                    || alterCtx.alter_user_mapping_statement() != null
                     || alterCtx.alter_operator_family_statement() != null
                     || alterCtx.alter_operator_class_statement() != null) {
                 descrWordsCount = 3;
@@ -328,8 +345,8 @@ implements SqlContextProcessor {
             int descrWordsCount = 2;
             if (dropCtx.drop_operator_family_statement() != null
                     || dropCtx.drop_operator_class_statement() != null
-                    || dropCtx.drop_user_mapping() != null
-                    || dropCtx.drop_owned() != null) {
+                    || dropCtx.drop_user_mapping_statement() != null
+                    || dropCtx.drop_owned_statement() != null) {
                 descrWordsCount = 3;
             }
             return getActionDescription(ctx, descrWordsCount);

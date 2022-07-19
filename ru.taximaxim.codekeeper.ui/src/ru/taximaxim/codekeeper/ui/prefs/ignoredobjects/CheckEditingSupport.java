@@ -5,9 +5,13 @@ import org.eclipse.jface.viewers.TableViewer;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoredObject;
 import ru.taximaxim.codekeeper.ui.CommonEditingSupport;
-import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.IgnoredObjectPrefListEditor.BooleanChangeValues;
 
 public class CheckEditingSupport extends CommonEditingSupport<CheckboxCellEditor> {
+
+    public enum BooleanChangeValues {
+        REGULAR, IGNORE_CONTENT, QUALIFIED;
+    }
+
     private final BooleanChangeValues type;
 
     public CheckEditingSupport(TableViewer tableViewer, BooleanChangeValues type) {

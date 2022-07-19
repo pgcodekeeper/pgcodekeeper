@@ -9,4 +9,4 @@ CREATE SEQUENCE public.s1
     NO MAXVALUE
     CACHE 1;
 
-ALTER SEQUENCE public.s1 OWNED BY t1.c1;
+ALTER SEQUENCE public.s1 OWNED BY public.t1.c1;

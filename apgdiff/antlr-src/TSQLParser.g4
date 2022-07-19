@@ -1716,11 +1716,20 @@ alter_table
         | (WITH (CHECK | nocheck_check=NOCHECK))? (CHECK | nocheck=NOCHECK) CONSTRAINT id (COMMA id)*
         | (ENABLE | DISABLE) TRIGGER id (COMMA id)*
         | (ENABLE | DISABLE) CHANGE_TRACKING (WITH LR_BRACKET TRACK_COLUMNS_UPDATED EQUAL (ON|OFF) RR_BRACKET)?
+        | SWITCH (PARTITION expression)?
+           TO qualified_name
+           (PARTITION expression)?
+           (WITH LR_BRACKET low_priority_lock_wait RR_BRACKET)?
         | REBUILD table_options)
     ;
 
 table_action_drop
     : (COLUMN | CONSTRAINT?) (IF EXISTS)? id (COMMA id)*
+    ;
+
+low_priority_lock_wait
+    : WAIT_AT_LOW_PRIORITY LR_BRACKET MAX_DURATION EQUAL time MINUTES? COMMA
+           ABORT_AFTER_WAIT EQUAL ( NONE | SELF | BLOCKERS ) RR_BRACKET
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms174269.aspx
@@ -3132,6 +3141,7 @@ id
 
 simple_id
     : ID
+    | ABORT_AFTER_WAIT
     | ABSENT
     | ABSOLUTE
     | ACCENT_SENSITIVITY
@@ -3189,6 +3199,7 @@ simple_id
     | BINDING
     | BLOB_STORAGE
     | BLOCK
+    | BLOCKERS
     | BLOCKING_HIERARCHY
     | BLOCKSIZE
     | BROKER_INSTANCE
@@ -3409,6 +3420,7 @@ simple_id
     | MAX_SIZE
     | MAX
     | MAXDOP
+    | MAX_DURATION
     | MAXRECURSION
     | MAXSIZE
     | MAXTRANSFER
@@ -3664,6 +3676,7 @@ simple_id
     | SYNCHRONOUS_COMMIT
     | SYNONYM
     | SYSTEM
+    | SWITCH
     | TAKE
     | TAPE
     | TARGET_RECOVERY_TIME
@@ -3711,6 +3724,7 @@ simple_id
     | VIEWS
     | VISIBILITY
     | WAIT
+    | WAIT_AT_LOW_PRIORITY
     | WELL_FORMED_XML
     | WINDOWS
     | WITHOUT_ARRAY_WRAPPER

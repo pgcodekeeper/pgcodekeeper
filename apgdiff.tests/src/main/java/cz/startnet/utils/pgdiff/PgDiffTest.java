@@ -99,6 +99,9 @@ public class PgDiffTest {
                     {"add_table_of_type"},
                     // Tests scenario where in TYPED TABLE new options is added.
                     {"add_table_of_type_options"},
+                    // Tests scenario where TABLE and FUNCTION with reserved
+                    // keyword without quotes in names is added.
+                    {"add_tbl_and_func_with_keyword_name_no_quotes"},
                     // Tests scenario where options of TYPED TABLE is modified.
                     {"modify_table_of_type_options"},
                     // Tests scenario where FOREIGN TABLE is modified.
@@ -107,6 +110,9 @@ public class PgDiffTest {
                     {"modify_table_of_type_column"},
                     // Tests scenario where TYPED TABLE is dropped.
                     {"drop_table_of_type"},
+                    // Tests scenario where TABLE and FUNCTION with reserved
+                    // keyword without quotes in names is dropped.
+                    {"drop_tbl_and_func_with_keyword_name_no_quotes"},
                     // Tests scenario where new TABLE with generated column is added.
                     {"add_table_with_generated_col"},
                     // Tests scenario where TABLE CONSTRAINT is added.
@@ -498,6 +504,20 @@ public class PgDiffTest {
                     {"compare_functions"},
                     // Tests scenario where CAST is compared.
                     {"compare_casts"},
+                    // Tests scenario where FOREIGN DATA WRAPPER is compared.
+                    {"compare_fdw"},
+                    // Tests scenario where SERVER is compared.
+                    {"compare_servers"},
+                    // Tests scenario where USER MAPPING is compared.
+                    {"compare_user_mapping"},
+                    // Tests scenario where USER MAPPING is added.
+                    {"add_user_mapping"},
+                    // Tests scenario where USER MAPPING is dropped.
+                    {"drop_user_mapping"},
+                    // Tests scenario where FOREIGN DATA WRAPPER is dropped.
+                    {"drop_fdw"},
+                    // Tests scenario where SERVER is dropped.
+                    {"drop_server"},
                     // Tests scenario where POLICY is compared.
                     {"compare_policies"},
                     // Tests scenario where COLUMN is added to modified table.

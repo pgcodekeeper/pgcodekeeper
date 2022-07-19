@@ -23,7 +23,7 @@ create unique index pkeys_i on pkeys (pkey1, pkey2);
 --  (fkey1, fkey2)  --> pkeys (pkey1, pkey2)
 --  (fkey3)     --> fkeys2 (pkey23)
 --
-create trigger check_fkeys_pkey_exist
+create OR REPLACE trigger check_fkeys_pkey_exist
     before insert or update on fkeys
     for each row
     execute function

@@ -59,7 +59,7 @@ ALTER TABLE public.testtable1_id_seq OWNER TO fordfrog;
 -- Name: testtable1_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: fordfrog
 --
 
-ALTER SEQUENCE testtable1_id_seq OWNED BY testtable1.id;
+ALTER SEQUENCE testtable1_id_seq OWNED BY public.testtable1.id;
 
 
 --
@@ -98,7 +98,7 @@ ALTER TABLE public.testtable3_id_seq OWNER TO fordfrog;
 -- Name: testtable3_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: fordfrog
 --
 
-ALTER SEQUENCE testtable3_id_seq OWNED BY testtable3.id;
+ALTER SEQUENCE testtable3_id_seq OWNED BY public.testtable3.id;
 
 
 --
@@ -139,7 +139,7 @@ ALTER TABLE testschema2.testtable1_id_seq OWNER TO fordfrog;
 -- Name: testtable1_id_seq; Type: SEQUENCE OWNED BY; Schema: testschema2; Owner: fordfrog
 --
 
-ALTER SEQUENCE testtable1_id_seq OWNED BY testtable1.id;
+ALTER SEQUENCE testtable1_id_seq OWNED BY public.testtable1.id;
 
 
 --

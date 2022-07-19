@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 import java.util.Arrays;
 import java.util.List;
 
+import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
@@ -18,9 +19,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_alterContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sequence_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_def_columnContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statisticsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_optionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameterContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parametersContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
@@ -46,17 +48,17 @@ public class AlterTable extends TableAbstract {
     private final Alter_table_statementContext ctx;
     private final String tablespace;
 
-    public AlterTable(Alter_table_statementContext ctx, PgDatabase db, String tablespace) {
-        super(db);
+    public AlterTable(Alter_table_statementContext ctx, PgDatabase db, String tablespace, CommonTokenStream stream) {
+        super(db, stream);
         this.ctx = ctx;
         this.tablespace = tablespace;
     }
 
     @Override
     public void parseObject() {
-        List<IdentifierContext> ids = ctx.name.identifier();
+        List<ParserRuleContext> ids = getIdentifiers(ctx.name);
         AbstractSchema schema = getSchemaSafe(ids);
-        IdentifierContext nameCtx = QNameParser.getFirstNameCtx(ids);
+        ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
         AbstractPgTable tabl = null;
 
         PgObjLocation loc = addObjReference(ids, DbObjType.TABLE, ACTION_ALTER);
@@ -74,7 +76,7 @@ public class AlterTable extends TableAbstract {
             if (tablAction.owner_to() != null) {
                 IRelation r = getSafe(AbstractSchema::getRelation, schema, nameCtx);
                 if (r instanceof PgStatement) {
-                    fillOwnerTo(tablAction.owner_to(), (PgStatement) r);
+                    fillOwnerTo(tablAction.owner_to().user_name().identifier(), (PgStatement) r);
                 }
                 continue;
             }
@@ -110,8 +112,8 @@ public class AlterTable extends TableAbstract {
             Table_column_definitionContext def = tablAction.table_column_definition();
             if (def != null) {
                 addColumn(def.identifier().getText(), def.data_type(),
-                        def.collate_identifier(), def.constraint_common(),
-                        def.define_foreign_options(), tabl);
+                        def.collate_identifier(), def.compression_identifier(), def.constraint_common(),
+                        def.define_foreign_options(), tabl, getSchemaNameSafe(ids));
             }
 
             if (column != null && colAction != null) {
@@ -132,7 +134,7 @@ public class AlterTable extends TableAbstract {
 
             Schema_qualified_nameContext ind = tablAction.index_name;
             if (ind != null) {
-                IdentifierContext indexName = QNameParser.getFirstNameCtx(ind.identifier());
+                ParserRuleContext indexName = QNameParser.getFirstNameCtx(getIdentifiers(ind));
                 AbstractIndex index = getSafe(AbstractTable::getIndex, tabl, indexName);
                 index.setClusterIndex(true);
             }
@@ -162,8 +164,9 @@ public class AlterTable extends TableAbstract {
     private void parseColumnAction(AbstractSchema schema, PgColumn col,
             Column_actionContext colAction) {
         // column statistics
-        if (colAction.STATISTICS() != null) {
-            col.setStatistics(Integer.valueOf(colAction.signed_number_literal().getText()));
+        Set_statisticsContext statistics = colAction.set_statistics();
+        if (statistics != null) {
+            col.setStatistics(Integer.valueOf(statistics.signed_number_literal().getText()));
         }
 
         // column not null constraint
@@ -180,7 +183,7 @@ public class AlterTable extends TableAbstract {
         }
 
         // column options
-        Storage_parameterContext param = colAction.storage_parameter();
+        Storage_parametersContext param = colAction.storage_parameters();
         if (param != null) {
             for (Storage_parameter_optionContext option : param.storage_parameter_option()) {
                 VexContext opt = option.vex();
@@ -195,7 +198,7 @@ public class AlterTable extends TableAbstract {
             for (Foreign_optionContext option : fOptions.foreign_option()) {
                 Character_stringContext opt = option.character_string();
                 String value = opt == null ? null : opt.getText();
-                fillOptionParams(value, option.foreign_option_name().getText(), false, col::addForeignOption);
+                fillOptionParams(value, option.col_label().getText(), false, col::addForeignOption);
             }
         }
 
@@ -211,7 +214,7 @@ public class AlterTable extends TableAbstract {
             String name = null;
             for (Sequence_bodyContext body : identity.sequence_body()) {
                 if (body.NAME() != null) {
-                    name = QNameParser.getFirstName(body.name.identifier());
+                    name = QNameParser.getFirstName(getIdentifiers(body.name));
                 }
             }
             PgSequence sequence = new PgSequence(name);
@@ -225,7 +228,7 @@ public class AlterTable extends TableAbstract {
     }
 
     private void createRule(AbstractPgTable tabl, Table_actionContext tablAction) {
-        PgRule rule = getSafe(AbstractTable::getRule, tabl, tablAction.rewrite_rule_name.identifier(0));
+        PgRule rule = getSafe(AbstractTable::getRule, tabl, getIdentifiers(tablAction.rewrite_rule_name).get(0));
         if (rule != null) {
             if (tablAction.DISABLE() != null) {
                 rule.setEnabledState("DISABLE");
@@ -266,6 +269,6 @@ public class AlterTable extends TableAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_ALTER, DbObjType.TABLE, ctx.name);
+        return getStrForStmtAction(ACTION_ALTER, DbObjType.TABLE, getIdentifiers(ctx.name));
     }
 }

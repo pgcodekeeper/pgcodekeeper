@@ -19,7 +19,7 @@ public class MetaStatement implements IStatement, Serializable {
     }
 
     public MetaStatement(GenericColumn column) {
-        this(new PgObjLocation(column));
+        this(new PgObjLocation.Builder().setObject(column).build());
     }
 
     @Override
@@ -28,7 +28,7 @@ public class MetaStatement implements IStatement, Serializable {
     }
 
     @Override
-    public final String getBareName() {
+    public String getBareName() {
         return object.getObjName();
     }
 

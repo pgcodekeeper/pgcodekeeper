@@ -25,7 +25,7 @@ public class MetaRelation extends MetaStatement implements IRelation {
     }
 
     public MetaRelation(String schemaName, String relationName, DbObjType type) {
-        this(new PgObjLocation(new GenericColumn(schemaName, relationName, type)));
+        super(new GenericColumn(schemaName, relationName, type));
     }
 
     @Override

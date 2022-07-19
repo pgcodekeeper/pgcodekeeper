@@ -5,9 +5,7 @@
  */
 package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -26,7 +24,6 @@ import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.meta.MetaContainer;
 import cz.startnet.utils.pgdiff.schema.meta.MetaUtils;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
@@ -120,16 +117,6 @@ public class ExprTypeTest {
         return metaDb;
     }
 
-    private String getStringFromInpunStream(InputStream inputStream) throws IOException {
-        ByteArrayOutputStream result = new ByteArrayOutputStream();
-        byte[] buffer = new byte[1024];
-        int length;
-        while ((length = inputStream.read(buffer)) != -1) {
-            result.write(buffer, 0, length);
-        }
-        return result.toString(ApgdiffConsts.UTF_8);
-    }
-
     @Test
     public void runDiff() throws IOException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();
@@ -138,7 +125,7 @@ public class ExprTypeTest {
         String typesForCompare = null;
         if (fileNameTemplate.startsWith(CHECK)) {
             // compare with a "type-dump"
-            typesForCompare = getStringFromInpunStream(ExprTypeTest.class
+            typesForCompare = ApgdiffTestUtils.inputStreamToString(ExprTypeTest.class
                     .getResourceAsStream(fileNameTemplate + FILES_POSTFIX.DIFF_SQL));
         } else if (fileNameTemplate.startsWith(COMPARE)) {
             // compare with types with another SQL representation

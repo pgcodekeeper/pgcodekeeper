@@ -181,7 +181,7 @@ public class MsAntlrLoaderTest {
 class MsDB0 implements MsDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
-        PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
+        PgDatabase d = ApgdiffTestUtils.createDumpDB(false);
         AbstractSchema schema = d.getDefaultSchema();
 
         MsTable table = new MsTable("fax_boxes");
@@ -300,7 +300,7 @@ class MsDB0 implements MsDatabaseObjectCreator {
 class MsDB1 implements MsDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
-        PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
+        PgDatabase d = ApgdiffTestUtils.createDumpDB(false);
 
         AbstractSchema schema = new MsSchema("msschema");
         d.addSchema(schema);
@@ -334,7 +334,7 @@ class MsDB1 implements MsDatabaseObjectCreator {
 class MsDB2 implements MsDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
-        PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
+        PgDatabase d = ApgdiffTestUtils.createDumpDB(false);
         AbstractSchema schema = d.getDefaultSchema();
 
         MsSequence seq = new MsSequence("admins_aid_seq");
@@ -472,7 +472,7 @@ class MsDB2 implements MsDatabaseObjectCreator {
 class MsDB3 implements MsDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
-        PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
+        PgDatabase d = ApgdiffTestUtils.createDumpDB(false);
         AbstractSchema schema = d.getDefaultSchema();
 
         MsSequence seq = new MsSequence("call_logs_id_seq");
@@ -509,7 +509,7 @@ class MsDB3 implements MsDatabaseObjectCreator {
 class MsDB4 implements MsDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
-        PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
+        PgDatabase d = ApgdiffTestUtils.createDumpDB(false);
         AbstractSchema schema = d.getDefaultSchema();
 
         MsTable table = new MsTable("table1");
@@ -588,7 +588,7 @@ class MsDB4 implements MsDatabaseObjectCreator {
 class MsDB5 implements MsDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
-        PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
+        PgDatabase d = ApgdiffTestUtils.createDumpDB(false);
         AbstractSchema schema = d.getDefaultSchema();
 
         schema.addPrivilege(new PgPrivilege("REVOKE", "SELECT", "SCHEMA::[dbo]", "[ms_user]", false));
@@ -627,7 +627,7 @@ class MsDB5 implements MsDatabaseObjectCreator {
 class MsDB6 implements MsDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
-        PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
+        PgDatabase d = ApgdiffTestUtils.createDumpDB(false);
 
         AbstractSchema schema = new MsSchema("common");
         d.addSchema(schema);
@@ -655,7 +655,7 @@ class MsDB6 implements MsDatabaseObjectCreator {
 class MsDB7 implements MsDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
-        PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
+        PgDatabase d = ApgdiffTestUtils.createDumpDB(false);
         AbstractSchema schema = d.getDefaultSchema();
 
         // TODO uncomment and remade this for MsType when it will be supported
@@ -700,7 +700,7 @@ class MsDB7 implements MsDatabaseObjectCreator {
 class MsDB8 implements MsDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
-        PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
+        PgDatabase d = ApgdiffTestUtils.createDumpDB(false);
         AbstractSchema schema = d.getDefaultSchema();
 
         MsSequence seq = new MsSequence("user_id_seq");
@@ -820,7 +820,7 @@ class MsDB8 implements MsDatabaseObjectCreator {
 class MsDB9 implements MsDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
-        PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
+        PgDatabase d = ApgdiffTestUtils.createDumpDB(false);
         AbstractSchema schema = new MsSchema("admin");
         d.addSchema(schema);
         d.setDefaultSchema("admin");
@@ -933,7 +933,7 @@ class MsDB9 implements MsDatabaseObjectCreator {
 class MsDB10 implements MsDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
-        PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
+        PgDatabase d = ApgdiffTestUtils.createDumpDB(false);
         AbstractSchema schema = d.getDefaultSchema();
 
         MsFunction func = new MsFunction("curdate");
@@ -958,7 +958,7 @@ class MsDB10 implements MsDatabaseObjectCreator {
 class MsDB11 implements MsDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
-        PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
+        PgDatabase d = ApgdiffTestUtils.createDumpDB(false);
         // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
         // d.setComment("'This is my comment on this database.'");
 
@@ -1003,7 +1003,7 @@ class MsDB11 implements MsDatabaseObjectCreator {
 class MsDB12 implements MsDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
-        PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
+        PgDatabase d = ApgdiffTestUtils.createDumpDB(false);
         AbstractSchema schema = d.getDefaultSchema();
 
         MsFunction func = new MsFunction("function_string_to_table");
@@ -1058,7 +1058,7 @@ class MsDB12 implements MsDatabaseObjectCreator {
 class MsDB13 implements MsDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
-        PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
+        PgDatabase d = ApgdiffTestUtils.createDumpDB(false);
         AbstractSchema schema = d.getDefaultSchema();
 
         schema.addPrivilege(new PgPrivilege("REVOKE", "SELECT", "SCHEMA::[dbo]", "[ms_user]", false));
@@ -1224,7 +1224,7 @@ class MsDB13 implements MsDatabaseObjectCreator {
 class MsDB14 implements MsDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
-        PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
+        PgDatabase d = ApgdiffTestUtils.createDumpDB(false);
         AbstractSchema schema = d.getDefaultSchema();
 
         MsTable table = new MsTable("test");
@@ -1251,7 +1251,7 @@ class MsDB14 implements MsDatabaseObjectCreator {
 class MsDB15 implements MsDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
-        PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
+        PgDatabase d = ApgdiffTestUtils.createDumpDB(false);
         AbstractSchema schema = d.getDefaultSchema();
 
         // table1
@@ -1299,7 +1299,7 @@ class MsDB15 implements MsDatabaseObjectCreator {
 class MsDB16 implements MsDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
-        PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
+        PgDatabase d = ApgdiffTestUtils.createDumpDB(false);
         AbstractSchema schema = d.getDefaultSchema();
 
         // table1

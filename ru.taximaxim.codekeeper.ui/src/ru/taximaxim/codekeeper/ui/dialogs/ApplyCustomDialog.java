@@ -30,6 +30,8 @@ public class ApplyCustomDialog extends Dialog {
     private Button btnAlterColUsingExpr;
     private Button btnCreateIdxConcurrent;
     private Button btnScriptFromSelObjs;
+    private Button btnGenerateExists;
+    private Button btndropBeforeCreate;
     private Button btnDataMovementMode;
 
     private final OverridablePrefs prefs;
@@ -75,6 +77,22 @@ public class ApplyCustomDialog extends Dialog {
         btnCreateIdxConcurrent.setLayoutData(gd);
         btnCreateIdxConcurrent.setSelection(prefs.getBooleanOfDbUpdatePref(
                 DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY));
+
+        btnGenerateExists = new Button(panel, SWT.CHECK);
+        btnGenerateExists.setText(Messages.DbUpdatePrefPage_option_if_exists);
+        gd = new GridData();
+        gd.horizontalIndent = 10;
+        btnGenerateExists.setLayoutData(gd);
+        btnGenerateExists.setSelection(prefs.getBooleanOfDbUpdatePref(
+                DB_UPDATE_PREF.GENERATE_EXISTS));
+
+        btndropBeforeCreate = new Button(panel, SWT.CHECK);
+        btndropBeforeCreate.setText(Messages.DbUpdatePrefPage_option_drop_object);
+        gd = new GridData();
+        gd.horizontalIndent = 10;
+        btndropBeforeCreate.setLayoutData(gd);
+        btndropBeforeCreate.setSelection(prefs.getBooleanOfDbUpdatePref(
+                DB_UPDATE_PREF.DROP_BEFORE_CREATE));
 
         if (!isMsSql) {
             btnCheckFuncBodies = new Button(panel, SWT.CHECK);
@@ -128,6 +146,10 @@ public class ApplyCustomDialog extends Dialog {
                 btnScriptAddTransact.getSelection());
         customSettings.put(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY,
                 btnCreateIdxConcurrent.getSelection());
+        customSettings.put(DB_UPDATE_PREF.GENERATE_EXISTS,
+                btnGenerateExists.getSelection());
+        customSettings.put(DB_UPDATE_PREF.DROP_BEFORE_CREATE,
+                btndropBeforeCreate.getSelection());
         if (!isMsSql) {
             customSettings.put(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES,
                     btnCheckFuncBodies.getSelection());

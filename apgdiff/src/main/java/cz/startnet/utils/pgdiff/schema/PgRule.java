@@ -92,6 +92,7 @@ public class PgRule extends PgStatementWithSearchPath{
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
+        appendDropBeforeCreate(sbSQL);
         sbSQL.append("CREATE RULE ");
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));
         sbSQL.append(" AS\n    ON ").append(getEvent());
@@ -134,14 +135,6 @@ public class PgRule extends PgStatementWithSearchPath{
             sbSQL.append("\n\n");
             appendCommentSql(sbSQL);
         }
-        return sbSQL.toString();
-    }
-
-    @Override
-    public String getDropSQL() {
-        StringBuilder sbSQL = new StringBuilder("DROP RULE ");
-        appendFullName(sbSQL);
-        sbSQL.append(';');
         return sbSQL.toString();
     }
 
