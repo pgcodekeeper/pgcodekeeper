@@ -268,6 +268,14 @@ public class CliArgs extends PgDiffArguments {
             usage="invert graph filter object types: hide objects specified by the filter")
     private boolean graphInvertFilter;
 
+    @Option(name="--pre-script", metaVar="<path>",
+            usage="add PRE script path")
+    private List<String> preFilePath = new ArrayList<>();
+
+    @Option(name="--post-script", metaVar="<path>",
+            usage="add POST script path")
+    private List<String> postFilePath = new ArrayList<>();
+
     public boolean isModeParse() {
         return modeParse;
     }
@@ -627,6 +635,26 @@ public class CliArgs extends PgDiffArguments {
 
     public Collection<String> getGraphNames() {
         return Collections.unmodifiableCollection(graphNames);
+    }
+
+    @Override
+    public Collection<String> getPreFilePath() {
+        return Collections.unmodifiableCollection(preFilePath);
+    }
+
+    @Override
+    public void setPreFilePath(List<String> preFilePath) {
+        this.preFilePath = preFilePath;
+    }
+
+    @Override
+    public Collection<String> getPostFilePath() {
+        return Collections.unmodifiableCollection(postFilePath);
+    }
+
+    @Override
+    public void setPostFilePath(List<String> postFilePath) {
+        this.postFilePath = postFilePath;
     }
 
     private static void badArgs(String message) throws CmdLineException{

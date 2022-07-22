@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +46,7 @@ import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
+import ru.taximaxim.codekeeper.ui.prefs.PrePostScriptPrefPage;
 import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
 import ru.taximaxim.codekeeper.ui.properties.OverridablePrefs;
 
@@ -132,6 +134,12 @@ public abstract class DbSource {
         args.setTimeZone(timeZone);
         args.setKeepNewlines(!forceUnixNewlines);
         args.setMsSql(msSql);
+        if (prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.ADD_PRE_POST_SCRIPT)) {
+            args.setPreFilePath(Arrays.asList(PrePostScriptPrefPage.getPath(FILE.PRE_SCRIPT).toString(),
+                    Paths.get(proj.getLocationURI()).resolve(FILE.PRE_DIR).toString()));
+            args.setPostFilePath(Arrays.asList(Paths.get(proj.getLocationURI()).resolve(FILE.POST_DIR).toString(),
+                    PrePostScriptPrefPage.getPath(FILE.POST_SCRIPT).toString()));
+        }
         return args;
     }
 

@@ -120,6 +120,8 @@ Usage
                                           objects types
  --graph-invert-filter                  : invert graph filter object types:
                                           hide objects specified by the filter
+ --pre-script <path>                    : add PRE script path
+ --post-script <path>                   : add POST script path
 
 DANGER_STATEMENT : [DROP_TABLE | ALTER_COLUMN | DROP_COLUMN | RESTART_WITH | UPDATE]
 OBJECT_TYPE : [CAST | USER | ROLE | ASSEMBLY | SCHEMA | EXTENSION | FOREIGN_DATA_WRAPPER | SERVER | USER_MAPPING | TYPE | DOMAIN | SEQUENCE | OPERATOR | FTS_PARSER | FTS_TEMPLATE | FTS_DICTIONARY | FTS_CONFIGURATION | TABLE | FUNCTION | PROCEDURE | AGGREGATE | INDEX | CONSTRAINT | VIEW | TRIGGER | RULE | POLICY]

@@ -87,6 +87,7 @@ public interface UIConsts {
         String DROP_TABLE_STATEMENT = "prefDropTableStatement"; //$NON-NLS-1$
         String ALTER_COLUMN_STATEMENT = "prefAlterColumnStatement"; //$NON-NLS-1$
         String DROP_COLUMN_STATEMENT = "prefDropColumnStatement"; //$NON-NLS-1$
+        String ADD_PRE_POST_SCRIPT = "prefAddPrePostScript"; //$NON-NLS-1$
         String RESTART_WITH_STATEMENT = "prefRestartWithStatement"; //$NON-NLS-1$
         String UPDATE_STATEMENT = "prefUpdateStatement"; //$NON-NLS-1$
         String SCRIPT_IN_TRANSACTION = "prefScriptInTransaction"; //$NON-NLS-1$
@@ -183,6 +184,11 @@ public interface UIConsts {
         String IGNORED_SCHEMA = ".pgcodekeeperignoreschema"; //$NON-NLS-1$
 
         String IGNORE_LISTS_STORE = PLUGIN_ID.THIS + ".ignoreliststore"; //$NON-NLS-1$
+
+        String PRE_DIR = "PRE"; //$NON-NLS-1$
+        String PRE_SCRIPT = "pre_script.sql"; //$NON-NLS-1$
+        String POST_DIR = "POST"; //$NON-NLS-1$
+        String POST_SCRIPT = "post_script.sql"; //$NON-NLS-1$
 
         // external icons
         String ICONAPPSMALL = "/icons/app_icon16.png"; //$NON-NLS-1$

@@ -1,5 +1,6 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
+import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.properties.OverridablePrefs;
 
@@ -151,6 +153,8 @@ public class Differ implements IRunnableWithProgress {
                         targetDbFull, sourceDbFull,
                         additionalDepciesTarget, additionalDepciesSource);
             }
+        } catch (IOException e) {
+            ExceptionNotifier.notifyDefault(Messages.Differ_read_error + e.getLocalizedMessage() , e);
         }
 
         PgDiffUtils.checkCancelled(pm);
