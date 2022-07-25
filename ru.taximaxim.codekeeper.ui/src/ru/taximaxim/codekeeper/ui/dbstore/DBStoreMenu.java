@@ -22,6 +22,7 @@ import org.eclipse.ui.dialogs.PreferencesUtil;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF_PAGE;
@@ -180,6 +181,7 @@ public class DBStoreMenu {
             }
         };
         submenu.add(dbAction);
+        dbAction.setImageDescriptor(Activator.getRegisteredDescriptor(dbInfo.isMsSql() ? FILE.MS_ICON : FILE.PG_ICON));
         if (dbInfo.equals(selection)) {
             dbAction.setChecked(true);
         }
