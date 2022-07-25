@@ -51,6 +51,24 @@ public class PgDiffArguments {
     private FormatConfiguration formatConfiguration = new FormatConfiguration();
     private boolean generateExists;
     private boolean dropBeforeCreate;
+    private List<String> preFilePath = new ArrayList<>();
+    private List<String> postFilePath = new ArrayList<>();
+
+    public Collection<String> getPreFilePath() {
+        return Collections.unmodifiableCollection(preFilePath);
+    }
+
+    public void setPreFilePath(List<String> preFilePath) {
+        this.preFilePath = preFilePath;
+    }
+    
+    public Collection<String> getPostFilePath() {
+        return Collections.unmodifiableCollection(postFilePath);
+    }
+
+    public void setPostFilePath(List<String> postFilePath) {
+        this.postFilePath = postFilePath;
+    }
 
     public boolean isDropBeforeCreate() {
         return dropBeforeCreate;
@@ -331,6 +349,8 @@ public class PgDiffArguments {
         arg.ignoreColumnOrder = isIgnoreColumnOrder();
         arg.autoFormatObjectCode = isAutoFormatObjectCode();
         arg.formatConfiguration = formatConfiguration.copy();
+        arg.preFilePath.addAll(getPreFilePath());
+        arg.postFilePath.addAll(getPostFilePath());
         return arg;
     }
 }

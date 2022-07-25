@@ -6,6 +6,8 @@
 package cz.startnet.utils.pgdiff;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
@@ -14,6 +16,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.stream.Stream;
 
 import org.eclipse.core.runtime.SubMonitor;
 
@@ -211,7 +214,7 @@ public class PgDiff {
     }
 
     public String diffDatabaseSchemas(PgDatabase oldDbFull, PgDatabase newDbFull,
-            IgnoreList ignoreList) throws InterruptedException {
+            IgnoreList ignoreList) throws InterruptedException, IOException {
         TreeElement root = DiffTree.create(oldDbFull, newDbFull, null);
         root.setAllChecked();
         return arguments.isMsSql() ? diffMsDatabaseSchemas(root, oldDbFull, newDbFull, null, null, ignoreList) :
@@ -225,7 +228,7 @@ public class PgDiff {
     public String diffDatabaseSchemasAdditionalDepcies(TreeElement root,
             PgDatabase oldDbFull, PgDatabase newDbFull,
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
-            List<Entry<PgStatement, PgStatement>> additionalDepciesTarget) {
+            List<Entry<PgStatement, PgStatement>> additionalDepciesTarget) throws IOException {
         if (arguments.isMsSql()) {
             return diffMsDatabaseSchemas(root, oldDbFull, newDbFull,
                     additionalDepciesSource, additionalDepciesTarget, null);
@@ -238,8 +241,12 @@ public class PgDiff {
             TreeElement root, PgDatabase oldDbFull, PgDatabase newDbFull,
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget,
-            IgnoreList ignoreList) {
+            IgnoreList ignoreList) throws IOException {
         PgDiffScript script = new PgDiffScript();
+
+        for (String preFilePath : arguments.getPreFilePath()) {
+            addPrePostPath(script, preFilePath);
+        }
 
         if (arguments.getTimeZone() != null) {
             script.addStatement("SET TIMEZONE TO "
@@ -268,7 +275,35 @@ public class PgDiff {
             script.addStatement("COMMIT TRANSACTION;");
         }
 
+        for (String postFilePath : arguments.getPostFilePath()) {
+            addPrePostPath(script, postFilePath);
+        }
         return script.getText();
+    }
+
+    private void addPrePostPath(PgDiffScript script, String scriptPath) throws IOException {
+        Path path = Paths.get(scriptPath);
+
+        if (Files.isRegularFile(path)) {
+            addPrePostScript(script, path);
+            return;
+        }
+        Stream<Path> stream = Files.list(Paths.get(scriptPath)).sorted();
+        for (Path  fileName : PgDiffUtils.sIter(stream)) {
+            if (Files.isRegularFile(fileName)) {
+                addPrePostScript(script, fileName);
+            }
+        }
+    }
+
+    private void addPrePostScript(PgDiffScript script, Path fileName) throws IOException {
+        try {
+            String prePostScript = new String(Files.readAllBytes(fileName), StandardCharsets.UTF_8);
+            script.addStatement(prePostScript);
+
+        } catch (IOException e) {
+            throw new IOException(Messages.PgDiff_read_error + e.getLocalizedMessage(), e);
+        }
     }
 
     private String diffMsDatabaseSchemas(

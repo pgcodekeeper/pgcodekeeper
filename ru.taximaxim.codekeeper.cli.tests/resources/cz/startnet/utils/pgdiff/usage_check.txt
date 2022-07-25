@@ -44,6 +44,14 @@ Usage
  -Z (--time-zone) <timezone>            : use this timezone when working with
                                           database, also add SET TIMEZONE
                                           statement to the script
+ --pre-script <path>                    : PRE script file path or directory
+                                          with PRE scripts
+                                          specify multiple times to use several
+                                          paths
+ --post-script <path>                   : POST script file path or directory
+                                          with POST scripts
+                                          specify multiple times to use several
+                                          paths
  --ignore-column-order                  : ignore differences in table column
                                           order
  --using-off                            : do not print USING expression for

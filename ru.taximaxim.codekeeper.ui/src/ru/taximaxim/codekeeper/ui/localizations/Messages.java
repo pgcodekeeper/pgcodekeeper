@@ -378,6 +378,8 @@ public final class Messages extends NLS {
 
     public static String DbStorePrefPage_secure_storage_error_title;
 
+    public static String DbUpdatePrefPage_add_pre_post_script;
+
     public static String DbUpdatePrefPage_allow_data_movement;
 
     public static String DbUpdatePrefPage_alter_seq_restart_statement;
@@ -449,6 +451,7 @@ public final class Messages extends NLS {
     public static String DependencyProperties_select_directory;
 
     public static String DiffPaneViewer_project;
+
     public static String DiffPresentationPane_any_file_filter;
 
     public static String DiffPresentationPane_attention;
@@ -803,6 +806,12 @@ public final class Messages extends NLS {
     public static String PgRenameRefactoringInputPage_new_name;
 
     public static String PrefListEditor_cannot_add;
+
+    public static String PrePostScriptPrefPage_post;
+
+    public static String PrePostScriptPrefPage_pre;
+
+    public static String PrePostScriptPrefPage_pre_post_descr;
 
     public static String ProjectEditorDiffer_apply_db;
 

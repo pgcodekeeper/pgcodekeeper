@@ -1,5 +1,6 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
@@ -151,6 +152,8 @@ public class Differ implements IRunnableWithProgress {
                         targetDbFull, sourceDbFull,
                         additionalDepciesTarget, additionalDepciesSource);
             }
+        } catch (IOException e) {
+            throw new InvocationTargetException(e, e.getLocalizedMessage());
         }
 
         PgDiffUtils.checkCancelled(pm);

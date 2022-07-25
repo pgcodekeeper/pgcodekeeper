@@ -147,6 +147,16 @@ public class CliArgs extends PgDiffArguments {
             usage="use this timezone when working with database, also add SET TIMEZONE statement to the script")
     private String timeZone;
 
+    @Option(name="--pre-script", metaVar="<path>", forbids={"--parse", "--graph"},
+            usage="PRE script file path or directory with PRE scripts"
+                    + "\nspecify multiple times to use several paths")
+    private List<String> preFilePath = new ArrayList<>();
+
+    @Option(name="--post-script", metaVar="<path>", forbids={"--parse", "--graph"},
+            usage="POST script file path or directory with POST scripts"
+                    + "\nspecify multiple times to use several paths")
+    private List<String> postFilePath = new ArrayList<>();
+
     @Option(name="--ignore-column-order",
             usage="ignore differences in table column order")
     private boolean ignoreColumnOrder;
@@ -627,6 +637,26 @@ public class CliArgs extends PgDiffArguments {
 
     public Collection<String> getGraphNames() {
         return Collections.unmodifiableCollection(graphNames);
+    }
+
+    @Override
+    public Collection<String> getPreFilePath() {
+        return Collections.unmodifiableCollection(preFilePath);
+    }
+
+    @Override
+    public void setPreFilePath(List<String> preFilePath) {
+        this.preFilePath = preFilePath;
+    }
+
+    @Override
+    public Collection<String> getPostFilePath() {
+        return Collections.unmodifiableCollection(postFilePath);
+    }
+
+    @Override
+    public void setPostFilePath(List<String> postFilePath) {
+        this.postFilePath = postFilePath;
     }
 
     private static void badArgs(String message) throws CmdLineException{
