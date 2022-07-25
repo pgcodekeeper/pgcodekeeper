@@ -56,9 +56,9 @@ public class AlterTable extends TableAbstract {
 
     @Override
     public void parseObject() {
-        List<IdentifierContext> ids = ctx.name.identifier();
+        List<ParserRuleContext> ids = getIdentifiers(ctx.name);
         AbstractSchema schema = getSchemaSafe(ids);
-        IdentifierContext nameCtx = QNameParser.getFirstNameCtx(ids);
+        ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
         AbstractPgTable tabl = null;
 
         PgObjLocation loc = addObjReference(ids, DbObjType.TABLE, ACTION_ALTER);
@@ -134,7 +134,7 @@ public class AlterTable extends TableAbstract {
 
             Schema_qualified_nameContext ind = tablAction.index_name;
             if (ind != null) {
-                IdentifierContext indexName = QNameParser.getFirstNameCtx(ind.identifier());
+                ParserRuleContext indexName = QNameParser.getFirstNameCtx(getIdentifiers(ind));
                 AbstractIndex index = getSafe(AbstractTable::getIndex, tabl, indexName);
                 index.setClusterIndex(true);
             }
@@ -214,7 +214,7 @@ public class AlterTable extends TableAbstract {
             String name = null;
             for (Sequence_bodyContext body : identity.sequence_body()) {
                 if (body.NAME() != null) {
-                    name = QNameParser.getFirstName(body.name.identifier());
+                    name = QNameParser.getFirstName(getIdentifiers(body.name));
                 }
             }
             PgSequence sequence = new PgSequence(name);
@@ -228,7 +228,7 @@ public class AlterTable extends TableAbstract {
     }
 
     private void createRule(AbstractPgTable tabl, Table_actionContext tablAction) {
-        PgRule rule = getSafe(AbstractTable::getRule, tabl, tablAction.rewrite_rule_name.identifier(0));
+        PgRule rule = getSafe(AbstractTable::getRule, tabl, getIdentifiers(tablAction.rewrite_rule_name).get(0));
         if (rule != null) {
             if (tablAction.DISABLE() != null) {
                 rule.setEnabledState("DISABLE");
@@ -269,6 +269,6 @@ public class AlterTable extends TableAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_ALTER, DbObjType.TABLE, ctx.name);
+        return getStrForStmtAction(ACTION_ALTER, DbObjType.TABLE, getIdentifiers(ctx.name));
     }
 }

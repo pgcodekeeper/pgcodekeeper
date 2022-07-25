@@ -2,6 +2,8 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import org.antlr.v4.runtime.CommonTokenStream;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_view_actionContext;
@@ -27,7 +29,7 @@ public class AlterView extends ParserAbstract {
 
     @Override
     public void parseObject() {
-        List<IdentifierContext> ids = ctx.name.identifier();
+        List<ParserRuleContext> ids = getIdentifiers(ctx.name);
         PgView dbView = (PgView) getSafe(AbstractSchema::getView,
                 getSchemaSafe(ids), QNameParser.getFirstNameCtx(ids));
         Alter_view_actionContext action = ctx.alter_view_action();
@@ -47,6 +49,6 @@ public class AlterView extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_ALTER, DbObjType.VIEW, ctx.name);
+        return getStrForStmtAction(ACTION_ALTER, DbObjType.VIEW, getIdentifiers(ctx.name));
     }
 }

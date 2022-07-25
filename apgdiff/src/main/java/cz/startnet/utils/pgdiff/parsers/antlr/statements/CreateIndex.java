@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_index_statementContext;
@@ -40,7 +41,7 @@ public class CreateIndex extends ParserAbstract {
 
     @Override
     public void parseObject() {
-        List<IdentifierContext> ids = ctx.table_name.identifier();
+        List<ParserRuleContext> ids = getIdentifiers(ctx.table_name);
         String schemaName = getSchemaNameSafe(ids);
         String tableName = QNameParser.getFirstName(ids);
         addObjReference(ids, DbObjType.TABLE, null);
@@ -52,7 +53,7 @@ public class CreateIndex extends ParserAbstract {
         ind.setUnique(ctx.UNIQUE() != null);
 
         if (nameCtx != null) {
-            IdentifierContext parent = QNameParser.getFirstNameCtx(ids);
+            ParserRuleContext parent = QNameParser.getFirstNameCtx(ids);
             PgStatementContainer table = getSafe(AbstractSchema::getStatementContainer,
                     getSchemaSafe(ids), parent);
             addSafe(table, ind, Arrays.asList(QNameParser.getSchemaNameCtx(ids), nameCtx));
@@ -118,7 +119,7 @@ public class CreateIndex extends ParserAbstract {
     @Override
     protected String getStmtAction() {
         StringBuilder sb = new StringBuilder(ACTION_CREATE).append(' ').append(DbObjType.INDEX)
-                .append(' ').append(QNameParser.getSchemaName(ctx.table_name.identifier()));
+                .append(' ').append(QNameParser.getSchemaName(getIdentifiers(ctx.table_name)));
         if (ctx.name != null) {
             sb.append('.').append(ctx.name.getText());
         }

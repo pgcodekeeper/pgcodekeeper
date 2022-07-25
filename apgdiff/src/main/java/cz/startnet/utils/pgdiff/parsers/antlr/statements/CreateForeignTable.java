@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
@@ -37,7 +38,7 @@ public class CreateForeignTable extends TableAbstract {
 
     @Override
     public void parseObject() {
-        List<IdentifierContext> ids = ctx.name.identifier();
+        List<ParserRuleContext> ids = getIdentifiers(ctx.name);
         String tableName = QNameParser.getFirstName(ids);
         AbstractSchema schema = getSchemaSafe(ids);
         AbstractTable table = defineTable(tableName, getSchemaNameSafe(ids));
@@ -69,7 +70,7 @@ public class CreateForeignTable extends TableAbstract {
                     tableName, srvName.getText(), partBound));
 
             fillTypeColumns(partCtx.list_of_type_column_def(), table, schemaName, null);
-            addInherit(table, partCtx.parent_table.identifier());
+            addInherit(table, getIdentifiers(partCtx.parent_table));
         }
         addDepSafe(table, Arrays.asList(srvName), DbObjType.SERVER, true);
 
@@ -90,6 +91,6 @@ public class CreateForeignTable extends TableAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_CREATE, DbObjType.TABLE, ctx.name);
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.TABLE, getIdentifiers(ctx.name));
     }
 }

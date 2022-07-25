@@ -59,7 +59,8 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.WIZARD;
 import ru.taximaxim.codekeeper.ui.UIConsts.WORKING_SET;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
-import ru.taximaxim.codekeeper.ui.dbstore.DbStorePicker;
+import ru.taximaxim.codekeeper.ui.dbstore.DbMenuStorePicker;
+import ru.taximaxim.codekeeper.ui.dbstore.IStorePicker;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.handlers.OpenEditor;
@@ -253,7 +254,7 @@ class PageDb extends WizardPage {
     private Button btnInit;
     private Button btnBind;
     private Button btnGetTz;
-    private DbStorePicker storePicker;
+    private IStorePicker storePicker;
     private ComboViewer timezoneCombo;
     private ComboViewer charsetCombo;
     private CLabel lblWarnPosix;
@@ -325,9 +326,9 @@ class PageDb extends WizardPage {
 
         new Label(source, SWT.NONE).setText(Messages.DbStorePicker_db_connection);
 
-        storePicker = new DbStorePicker(source, true, false);
+        storePicker = new DbMenuStorePicker(source, true, false);
         storePicker.filter(!isPostgres);
-        storePicker.addListenerToCombo(e -> modifyButtons());
+        storePicker.addSelectionListener(this::modifyButtons);
 
         Button btnEditStore = new Button(source, SWT.PUSH);
         btnEditStore.setImage(Activator.getRegisteredImage(FILE.ICONEDIT));
@@ -400,7 +401,7 @@ class PageDb extends WizardPage {
         if (isPostgres) {
             btnGetTz.setEnabled(init && storePicker.getDbInfo() != null);
         }
-        storePicker.setComboEnabled(init);
+        storePicker.setEnabled(init);
 
         if (getDbInfo() == null) {
             btnBind.setSelection(false);

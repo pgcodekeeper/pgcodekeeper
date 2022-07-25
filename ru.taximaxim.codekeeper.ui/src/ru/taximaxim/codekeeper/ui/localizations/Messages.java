@@ -263,6 +263,8 @@ public final class Messages extends NLS {
 
     public static String dbUpdatePrefPage_ignore_privileges;
 
+    public static String DbMenu_no_group;
+
     public static String DbPropertyListEditor_properties_hint;
     public static String DbPropertyListEditor_pg_link_hint;
     public static String DbPropertyListEditor_ms_link_hint;
@@ -281,6 +283,8 @@ public final class Messages extends NLS {
     public static String DbStoreEditorDialog_failed_connection_reason;
 
     public static String DbStoreEditorDialog_ignore_file_list;
+
+    public static String DbStoreEditorDialog_choice_db_group;
 
     public static String DbStoreEditorDialog_connect_to_ms;
 
@@ -345,6 +349,20 @@ public final class Messages extends NLS {
     public static String DbStorePrefPage_action_copy;
 
     public static String DbStorePrefPage_action_edit;
+
+    public static String DbStorePrefPage_db_group;
+
+    public static String DbStorePrefPage_db;
+
+    public static String DbStorePrefPage_export_db;
+
+    public static String DbStorePrefPage_import_db_list;
+
+    public static String DbStorePrefPage_opening_error;
+
+    public static String DbStorePrefPage_saving_error;
+
+    public static String DbStorePrefPage_xml_files;
 
     public static String DbStorePrefPage_pg_pass_file_filter;
 
@@ -1010,6 +1028,8 @@ public final class Messages extends NLS {
 
     // usage report
     public static String EclipseEnvironment_Error_SavePreferences;
+
+    public static String LabelPicker_choice_db;
 
     public static String LibraryContainer_root;
 

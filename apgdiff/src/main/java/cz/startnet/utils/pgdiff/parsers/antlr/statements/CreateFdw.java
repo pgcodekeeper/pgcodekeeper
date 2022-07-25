@@ -28,11 +28,11 @@ public class CreateFdw extends ParserAbstract {
         PgForeignDataWrapper fDW = new PgForeignDataWrapper(nameCtx.getText());
         if (ctx.handler_func != null) {
             fDW.setHandler(getFullCtxText(ctx.handler_func));
-            addDepSafe(fDW, ctx.handler_func.identifier(), DbObjType.FUNCTION, true, HANDLER_SIGNATURE);
+            addDepSafe(fDW, getIdentifiers(ctx.handler_func), DbObjType.FUNCTION, true, HANDLER_SIGNATURE);
         }
         if (ctx.validator_func != null) {
             fDW.setValidator(getFullCtxText(ctx.validator_func));
-            addDepSafe(fDW, ctx.validator_func.identifier(), DbObjType.FUNCTION, true, VALIDATOR_SIGNATURE);
+            addDepSafe(fDW, getIdentifiers(ctx.validator_func), DbObjType.FUNCTION, true, VALIDATOR_SIGNATURE);
         }
         Define_foreign_optionsContext options = ctx.define_foreign_options();
         if (options!= null) {

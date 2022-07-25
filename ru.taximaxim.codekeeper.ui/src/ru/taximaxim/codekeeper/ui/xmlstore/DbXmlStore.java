@@ -32,14 +32,15 @@ import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 
 public class DbXmlStore extends XmlStore<DbInfo> {
 
-    public static final DbXmlStore INSTANCE = new DbXmlStore();
-
     private static final String FILE_NAME = "dbstore.xml"; //$NON-NLS-1$
+    public static final DbXmlStore INSTANCE = new DbXmlStore(Paths.get(Platform.getStateLocation(Activator.getContext().getBundle())
+            .append(FILE_NAME).toString()));
 
     private final List<IPropertyChangeListener> listeners = new ArrayList<>();
 
     private final ISecurePreferences securePrefs;
     private final IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
+    private final Path path;
 
     private enum Tags {
         DB_STORE("db_store"), //$NON-NLS-1$
@@ -48,6 +49,7 @@ public class DbXmlStore extends XmlStore<DbInfo> {
         DBNAME("dbname"), //$NON-NLS-1$
         DBUSER("dbuser"), //$NON-NLS-1$
         DBPASS("dbpass"), //$NON-NLS-1$
+        DBGROUP("dbgroup"), //$NON-NLS-1$
         DBHOST("dbhost"), //$NON-NLS-1$
         DBPORT("dbport"), //$NON-NLS-1$
         READ_ONLY("read_only"), //$NON-NLS-1$
@@ -77,8 +79,9 @@ public class DbXmlStore extends XmlStore<DbInfo> {
         }
     }
 
-    private DbXmlStore() {
-        super(FILE_NAME, Tags.DB_STORE.toString());
+    public DbXmlStore(Path path) {
+        super(path.getFileName().toString(), Tags.DB_STORE.toString());
+        this.path = path;
 
         ISecurePreferences pref;
         try {
@@ -100,8 +103,7 @@ public class DbXmlStore extends XmlStore<DbInfo> {
 
     @Override
     protected Path getXmlFile() {
-        return Paths.get(Platform.getStateLocation(Activator.getContext().getBundle())
-                .append(fileName).toString());
+        return path;
     }
 
     @Override
@@ -138,6 +140,7 @@ public class DbXmlStore extends XmlStore<DbInfo> {
             createSubElement(xml, keyElement, Tags.DBUSER.toString(), dbInfo.getDbUser());
             createSubElement(xml, keyElement, Tags.DBPASS.toString(),
                     mainPrefs.getBoolean(PREF.SAVE_IN_SECURE_STORAGE) ? "" : dbInfo.getDbPass()); //$NON-NLS-1$
+            createSubElement(xml, keyElement, Tags.DBGROUP.toString(), dbInfo.getDbGroup());
             createSubElement(xml, keyElement, Tags.DBHOST.toString(), dbInfo.getDbHost());
             createSubElement(xml, keyElement, Tags.DBPORT.toString(), String.valueOf(dbInfo.getDbPort()));
             createSubElement(xml, keyElement, Tags.READ_ONLY.toString(), String.valueOf(dbInfo.isReadOnly()));
@@ -187,6 +190,7 @@ public class DbXmlStore extends XmlStore<DbInfo> {
                 case DBNAME:
                 case DBUSER:
                 case DBPASS:
+                case DBGROUP:
                 case DBHOST:
                 case DBPORT:
                 case READ_ONLY:
@@ -210,6 +214,7 @@ public class DbXmlStore extends XmlStore<DbInfo> {
                 }
             }
         }
+
         String dbPass = object.get(Tags.DBPASS);
         try {
             if (mainPrefs.getBoolean(PREF.SAVE_IN_SECURE_STORAGE)) {
@@ -218,7 +223,6 @@ public class DbXmlStore extends XmlStore<DbInfo> {
         } catch (StorageException e) {
             Log.log(Log.LOG_ERROR, "Error reading from secure storage: " + e); //$NON-NLS-1$
         }
-
         return new DbInfo(object.get(Tags.NAME), object.get(Tags.DBNAME),
                 object.get(Tags.DBUSER), dbPass, object.get(Tags.DBHOST),
                 Integer.parseInt(object.get(Tags.DBPORT)),
@@ -229,7 +233,8 @@ public class DbXmlStore extends XmlStore<DbInfo> {
                 Boolean.parseBoolean(object.get(Tags.WIN_AUTH)),
                 object.get(Tags.DOMAIN), object.get(Tags.PGDUMP_EXE_PATH),
                 object.get(Tags.PGDUMP_CUSTOM_PARAMS),
-                Boolean.parseBoolean(object.get(Tags.PG_DUMP_SWITCH)));
+                Boolean.parseBoolean(object.get(Tags.PG_DUMP_SWITCH)),
+                !object.containsKey(Tags.DBGROUP) ? "" : object.get(Tags.DBGROUP)); //$NON-NLS-1$
     }
 
     private void fillIgnoreFileList(NodeList xml, List<String> list) {
@@ -277,3 +282,4 @@ public class DbXmlStore extends XmlStore<DbInfo> {
         listeners.forEach(e -> e.propertyChange(null));
     }
 }
+

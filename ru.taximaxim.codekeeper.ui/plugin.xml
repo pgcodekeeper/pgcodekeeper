@@ -521,6 +521,10 @@
                         </with>
                     </visibleWhen>
                 </control>
+                <separator
+                      name="ru.taximaxim.codekeeper.ui.separator2"
+                      visible="true">
+                </separator>
                 <command
                     commandId="ru.taximaxim.codekeeper.ui.command.OpenSQLEditor"
                     icon="icons/new_sql_file.png"

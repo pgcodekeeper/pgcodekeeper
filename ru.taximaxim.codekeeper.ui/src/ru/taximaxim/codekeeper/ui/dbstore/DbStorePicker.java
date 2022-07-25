@@ -4,8 +4,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Deque;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.function.IntUnaryOperator;
 
@@ -33,9 +31,7 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.DirectoryDialog;
-import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -47,34 +43,25 @@ import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.xmlstore.DbXmlStore;
 
-public class DbStorePicker {
-
-    private static final int DEFAULT_LENGTH = 26;
-
-    private static final String DELIM_ENTRY = "\n"; //$NON-NLS-1$
+public class DbStorePicker extends AbstractStorePicker implements IStorePicker {
 
     private static final LoadFileElement LOAD_FILE = new LoadFileElement(false);
     private static final LoadFileElement LOAD_DIR = new LoadFileElement(true);
     private static final OpenDbStore OPENDB = new OpenDbStore();
     private static final int MAX_FILES_HISTORY = 10;
 
-    private boolean useFileSources;
     private Boolean isMsSql;
-    private final boolean useDirSources;
     private final IPreferenceStore prefStore = Activator.getDefault().getPreferenceStore();
     private final List<File> projects = new ArrayList<>();
 
     private final ComboViewer cmbDbNames;
-    private boolean triggerEvent = true;
 
     public DbStorePicker(Composite parent, boolean useFileSources, boolean useDirSources) {
         this(parent, DEFAULT_LENGTH, useFileSources, useDirSources);
     }
 
     public DbStorePicker(Composite parent, int chars, boolean useFileSources, boolean useDirSources) {
-        this.useFileSources = useFileSources;
-        this.useDirSources = useDirSources;
-
+        super(parent, useFileSources, useDirSources);
         cmbDbNames = new ComboViewer(parent, SWT.READ_ONLY | SWT.DROP_DOWN) {
             @Override
             protected void fireSelectionChanged(SelectionChangedEvent event) {
@@ -124,17 +111,15 @@ public class DbStorePicker {
         loadStore(null);
     }
 
-    public void loadStore(boolean useFileSources) {
-        this.useFileSources = useFileSources;
+    @Override
+    protected Control getControl() {
+        return cmbDbNames.getControl();
+    }
+
+    @Override
+    public void setUseFileSources(boolean useFileSources) {
+        super.setUseFileSources(useFileSources);
         loadStore(null);
-    }
-
-    public void setComboEnabled(boolean enabled) {
-        cmbDbNames.getControl().setEnabled(enabled);
-    }
-
-    public boolean isComboEnabled() {
-        return cmbDbNames.getControl().getEnabled();
     }
 
     private void loadStore(ISelection newSelection) {
@@ -174,34 +159,19 @@ public class DbStorePicker {
         cmbDbNames.setSelection(selection);
     }
 
-    public DbInfo getDbInfo() {
-        Object selected = ((IStructuredSelection) cmbDbNames.getSelection()).getFirstElement();
-        return selected instanceof DbInfo ? (DbInfo) selected : null;
+    @Override
+    public Object getSelection() {
+        return ((IStructuredSelection) cmbDbNames.getSelection()).getFirstElement();
     }
 
-    public File getPathOfFile() {
-        return getPath(false);
+    @Override
+    public void setSelection(Object selection) {
+        cmbDbNames.setSelection(selection == null ? StructuredSelection.EMPTY
+                : new StructuredSelection(selection));
     }
 
-    public File getPathOfDir() {
-        return getPath(true);
-    }
-
-    public File getPath(boolean getDirectory) {
-        Object selected = ((IStructuredSelection) cmbDbNames.getSelection()).getFirstElement();
-        if (selected instanceof File) {
-            File f = (File) selected;
-            return f.isDirectory() == getDirectory ? f : null;
-        } else {
-            return null;
-        }
-    }
-
-    public void setSelection(IStructuredSelection selection) {
-        cmbDbNames.setSelection(selection);
-    }
-
-    public void setSelection(IStructuredSelection selection, boolean triggerEvent) {
+    @Override
+    public void setSelection(Object selection, boolean triggerEvent) {
         boolean oldTriggerEvent = this.triggerEvent;
         try {
             this.triggerEvent = triggerEvent;
@@ -211,29 +181,19 @@ public class DbStorePicker {
         }
     }
 
-    public void clearSelection() {
-        cmbDbNames.setSelection(StructuredSelection.EMPTY);
-    }
-
-    public void addListenerToCombo(ISelectionChangedListener listener) {
-        cmbDbNames.addSelectionChangedListener(listener);
+    @Override
+    public void addSelectionListener(Runnable listener) {
+        cmbDbNames.addSelectionChangedListener(e -> listener.run());
     }
 
     public void addMouseListener(MouseAdapter mouseAdapter) {
         cmbDbNames.getCombo().addMouseListener(mouseAdapter);
     }
 
-    public void setEnabled(boolean enabled) {
-        cmbDbNames.getCombo().setEnabled(enabled);
-    }
-
+    @Override
     public void filter(Boolean isMsSql) {
         this.isMsSql = isMsSql;
         cmbDbNames.refresh();
-    }
-
-    public void dispose() {
-        cmbDbNames.getControl().dispose();
     }
 
     public void fixEclipseBug567652() {
@@ -250,52 +210,6 @@ public class DbStorePicker {
                 modColor.applyAsInt(rgb.blue))));
 
         combo.setBackground(combo.getBackground());
-    }
-
-    public static File chooseDbSource(IPreferenceStore prefStore, Shell shell, boolean dir) {
-        String pathToDump = dir ? DbStorePicker.getDirPath(prefStore, shell) : DbStorePicker.getFilePath(prefStore, shell);
-        if (pathToDump == null) {
-            return null;
-        }
-
-        File dumpFile = new File(pathToDump);
-        Deque<File> dumpHistory = stringToDumpFileHistory(prefStore.getString(PREF.DB_STORE_FILES));
-        dumpHistory.addFirst(dumpFile);
-        while (dumpHistory.size() > MAX_FILES_HISTORY) {
-            dumpHistory.removeLast();
-        }
-        prefStore.setValue(PREF.DB_STORE_FILES, dumpFileHistoryToPreference(dumpHistory));
-        prefStore.setValue(PREF.LAST_OPENED_LOCATION,
-                dir ? dumpFile.getAbsolutePath() : dumpFile.getParent());
-        return dumpFile;
-    }
-
-    private static String getDirPath(IPreferenceStore prefStore, Shell shell) {
-        DirectoryDialog dialog = new DirectoryDialog(shell);
-        dialog.setText(Messages.DbStorePicker_choose_dir);
-        dialog.setFilterPath(prefStore.getString(PREF.LAST_OPENED_LOCATION));
-        return dialog.open();
-    }
-
-    public static String getFilePath(IPreferenceStore prefStore, Shell shell) {
-        FileDialog dialog = new FileDialog(shell);
-        dialog.setText(Messages.choose_dump_file_with_changes);
-        dialog.setFilterExtensions(new String[] {"*.sql", "*"}); //$NON-NLS-1$ //$NON-NLS-2$
-        dialog.setFilterNames(new String[] {
-                Messages.DiffPresentationPane_sql_file_filter,
-                Messages.DiffPresentationPane_any_file_filter});
-        dialog.setFilterPath(prefStore.getString(PREF.LAST_OPENED_LOCATION));
-        return dialog.open();
-    }
-
-    public static String dumpFileHistoryToPreference(Collection<File> dumps) {
-        StringBuilder sb = new StringBuilder();
-        for (File path : dumps){
-            sb.append(path.getAbsolutePath());
-            sb.append(DELIM_ENTRY);
-        }
-        sb.setLength(sb.length() - 1);
-        return sb.toString();
     }
 
     private class DbStoreSelectionListener implements ISelectionChangedListener {
@@ -316,7 +230,7 @@ public class DbStorePicker {
                 revertSelection = false;
             } else if (selected instanceof LoadFileElement) {
                 LoadFileElement loadEl = (LoadFileElement) selected;
-                File dumpFile = DbStorePicker.chooseDbSource(prefStore, cmbDbNames.getControl().getShell(), loadEl.loadDir);
+                File dumpFile = chooseDbSource(prefStore, cmbDbNames.getControl().getShell(), loadEl.loadDir);
 
                 if (dumpFile != null) {
                     loadStore(new StructuredSelection(dumpFile));
@@ -376,15 +290,4 @@ public class DbStorePicker {
         }
     }
 
-    public static Deque<File> stringToDumpFileHistory(String preference) {
-        String[] coordStrings = preference.split(DELIM_ENTRY);
-        Deque<File> paths = new LinkedList<>();
-        for (String path : coordStrings) {
-            File f = new File(path);
-            if (f.exists() && !paths.contains(f)) {
-                paths.add(f);
-            }
-        }
-        return paths;
-    }
 }

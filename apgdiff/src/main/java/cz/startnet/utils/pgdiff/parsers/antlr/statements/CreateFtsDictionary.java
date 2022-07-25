@@ -2,9 +2,10 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_fts_dictionary_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFtsDictionary;
@@ -21,14 +22,14 @@ public class CreateFtsDictionary extends ParserAbstract {
 
     @Override
     public void parseObject() {
-        List<IdentifierContext> ids = ctx.name.identifier();
+        List<ParserRuleContext> ids = getIdentifiers(ctx.name);
         String name = QNameParser.getFirstName(ids);
         PgFtsDictionary dictionary = new PgFtsDictionary(name);
         for (Storage_parameter_optionContext option : ctx.storage_parameter_option()) {
             fillOptionParams(option.vex().getText(), option.storage_parameter_name().getText(), false, dictionary::addOption);
         }
 
-        List<IdentifierContext> templateIds = ctx.template.identifier();
+        List<ParserRuleContext> templateIds = getIdentifiers(ctx.template);
         dictionary.setTemplate(ParserAbstract.getFullCtxText(ctx.template));
         addDepSafe(dictionary, templateIds, DbObjType.FTS_TEMPLATE, true);
         addSafe(getSchemaSafe(ids), dictionary, ids);
@@ -36,6 +37,6 @@ public class CreateFtsDictionary extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_CREATE, DbObjType.FTS_DICTIONARY, ctx.name);
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.FTS_DICTIONARY, getIdentifiers(ctx.name));
     }
 }

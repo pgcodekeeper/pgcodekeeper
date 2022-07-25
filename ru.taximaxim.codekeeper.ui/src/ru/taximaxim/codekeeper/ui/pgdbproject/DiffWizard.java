@@ -13,7 +13,6 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.jface.wizard.WizardPage;
@@ -244,6 +243,8 @@ class PageDiff extends WizardPage implements Listener {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
+                dbSource.filter(isMsSql());
+                dbTarget.filter(isMsSql());
                 getWizard().getContainer().updateButtons();
                 getWizard().getContainer().updateMessage();
             }
@@ -340,7 +341,7 @@ class PageDiff extends WizardPage implements Listener {
         btnDataMovementMode.setVisible(false);
 
         if (proj != null) {
-            dbTarget.setDbStore(new StructuredSelection(proj.getProject().getLocation().toFile()));
+            dbTarget.setDbStore(proj.getProject().getLocation().toFile());
         }
 
         setControl(container);

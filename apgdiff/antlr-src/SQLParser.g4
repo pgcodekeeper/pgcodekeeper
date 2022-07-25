@@ -1872,6 +1872,16 @@ identifier_nontype
     | tokens_reserved_except_function_type
     ;
 
+identifier_reserved
+    : identifier
+    | tokens_reserved
+    ;
+
+identifier_reserved_nontype
+    : identifier_nontype
+    | tokens_reserved
+    ;
+
 col_label
     : id_token
     | tokens_reserved
@@ -2926,7 +2936,7 @@ tokens_nonkeyword
 
 schema_qualified_name_nontype
     : identifier_nontype
-    | schema=identifier DOT identifier_nontype
+    | schema=identifier DOT identifier_reserved_nontype
     ;
 
 type_list
@@ -3221,7 +3231,7 @@ type_coercion
 ===============================================================================
 */
 schema_qualified_name
-    : identifier ( DOT identifier ( DOT identifier )? )?
+    : identifier ( DOT identifier_reserved ( DOT identifier_reserved )? )?
     ;
  
 set_qualifier
