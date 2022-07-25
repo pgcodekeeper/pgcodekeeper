@@ -135,10 +135,10 @@ public abstract class DbSource {
         args.setKeepNewlines(!forceUnixNewlines);
         args.setMsSql(msSql);
         if (prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.ADD_PRE_POST_SCRIPT)) {
-            args.setPreFilePath(Arrays.asList(PrePostScriptPrefPage.getPath(FILE.PRE_SCRIPT).toString(),
+            args.setPreFilePath(Arrays.asList(PrePostScriptPrefPage.getScriptPath(FILE.PRE_SCRIPT).toString(),
                     Paths.get(proj.getLocationURI()).resolve(FILE.PRE_DIR).toString()));
             args.setPostFilePath(Arrays.asList(Paths.get(proj.getLocationURI()).resolve(FILE.POST_DIR).toString(),
-                    PrePostScriptPrefPage.getPath(FILE.POST_SCRIPT).toString()));
+                    PrePostScriptPrefPage.getScriptPath(FILE.POST_SCRIPT).toString()));
         }
         return args;
     }

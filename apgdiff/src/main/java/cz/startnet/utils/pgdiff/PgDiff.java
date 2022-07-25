@@ -298,8 +298,8 @@ public class PgDiff {
 
     private void addPrePostScript(PgDiffScript script, Path fileName) throws IOException {
         try {
-            String preScript = new String(Files.readAllBytes(fileName), StandardCharsets.UTF_8);
-            script.addStatement(preScript);
+            String prePostScript = new String(Files.readAllBytes(fileName), StandardCharsets.UTF_8);
+            script.addStatement(prePostScript);
 
         } catch (IOException e) {
             throw new IOException(Messages.PgDiff_read_error + e.getLocalizedMessage(), e);

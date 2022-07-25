@@ -147,6 +147,16 @@ public class CliArgs extends PgDiffArguments {
             usage="use this timezone when working with database, also add SET TIMEZONE statement to the script")
     private String timeZone;
 
+    @Option(name="--pre-script", metaVar="<path>", forbids={"--parse", "--graph"},
+            usage="PRE script file path or directory with PRE scripts"
+                    + "\nspecify multiple times to use several paths")
+    private List<String> preFilePath = new ArrayList<>();
+
+    @Option(name="--post-script", metaVar="<path>", forbids={"--parse", "--graph"},
+            usage="POST script file path or directory with POST scripts"
+                    + "\nspecify multiple times to use several paths")
+    private List<String> postFilePath = new ArrayList<>();
+
     @Option(name="--ignore-column-order",
             usage="ignore differences in table column order")
     private boolean ignoreColumnOrder;
@@ -267,14 +277,6 @@ public class CliArgs extends PgDiffArguments {
     @Option(name="--graph-invert-filter", forbids={"--parse"}, depends={"--graph", "--graph-filter-object"},
             usage="invert graph filter object types: hide objects specified by the filter")
     private boolean graphInvertFilter;
-
-    @Option(name="--pre-script", metaVar="<path>",
-            usage="add PRE script path")
-    private List<String> preFilePath = new ArrayList<>();
-
-    @Option(name="--post-script", metaVar="<path>",
-            usage="add POST script path")
-    private List<String> postFilePath = new ArrayList<>();
 
     public boolean isModeParse() {
         return modeParse;

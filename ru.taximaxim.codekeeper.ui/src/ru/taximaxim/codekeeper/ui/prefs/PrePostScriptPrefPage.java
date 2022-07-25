@@ -9,7 +9,6 @@ import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -28,9 +27,14 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorInput;
 
 public class PrePostScriptPrefPage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
+
     private IWorkbenchPage page;
     private final String postFileName = FILE.POST_SCRIPT;
     private final String preFileName = FILE.PRE_SCRIPT;
+
+    public PrePostScriptPrefPage() {
+        super(GRID);
+    }
 
     @Override
     public void init(IWorkbench workbench) {
@@ -45,11 +49,11 @@ public class PrePostScriptPrefPage extends FieldEditorPreferencePage implements 
                 Messages.DbUpdatePrefPage_add_pre_post_script,
                 getFieldEditorParent());
         addField(addPrePostScript);
+        addPrePostScript.getDescriptionControl(getFieldEditorParent())
+        .setToolTipText(Messages.PrePostScriptPrefPage_pre_post_descr);
 
-        Composite area = getFieldEditorParent();
-        GridLayout gridLayout = new GridLayout(2, true);
-        area.setLayout(gridLayout);
-        area.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
+        Composite area = new Composite(getFieldEditorParent(), SWT.NONE);
+        area.setLayout(new GridLayout(2, true));
 
         Button btnPreScript = new Button(area, SWT.PUSH);
         btnPreScript.setText(Messages.PrePostScriptPrefPage_pre);
@@ -74,7 +78,7 @@ public class PrePostScriptPrefPage extends FieldEditorPreferencePage implements 
     }
 
     private void openEditor(String filename) {
-        SQLEditorInput input = new SQLEditorInput(getPath(filename), false, false);
+        SQLEditorInput input = new SQLEditorInput(getScriptPath(filename), false, false);
         try {
             IDE.openEditor(page, input, EDITOR.SQL);
         } catch (PartInitException ex) {
@@ -82,7 +86,7 @@ public class PrePostScriptPrefPage extends FieldEditorPreferencePage implements 
         }
     }
 
-    public static Path getPath(String fileName) {
+    public static Path getScriptPath(String fileName) {
         return Paths.get(Platform.getStateLocation(Activator.getContext().getBundle())
                 .append(fileName).toString());
     }

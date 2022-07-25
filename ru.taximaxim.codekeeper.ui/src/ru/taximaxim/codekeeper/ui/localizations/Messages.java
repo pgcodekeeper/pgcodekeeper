@@ -432,9 +432,8 @@ public final class Messages extends NLS {
 
     public static String DependencyProperties_select_directory;
 
-    public static String Differ_read_error;
-
     public static String DiffPaneViewer_project;
+
     public static String DiffPresentationPane_any_file_filter;
 
     public static String DiffPresentationPane_attention;
@@ -793,6 +792,8 @@ public final class Messages extends NLS {
     public static String PrePostScriptPrefPage_post;
 
     public static String PrePostScriptPrefPage_pre;
+
+    public static String PrePostScriptPrefPage_pre_post_descr;
 
     public static String ProjectEditorDiffer_apply_db;
 
