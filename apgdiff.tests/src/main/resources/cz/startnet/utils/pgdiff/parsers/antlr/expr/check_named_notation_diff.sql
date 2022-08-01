@@ -2,6 +2,10 @@
 
 Schema: public
 
+  View: testview0
+    RelationColumns : 
+     f1 - bigint
+
   View: testview1
     RelationColumns : 
      f1 - integer
@@ -20,11 +24,11 @@ Schema: public
 
   View: testview5
     RelationColumns : 
-     f2 - integer
+     f1 - smallint
 
   View: testview6
     RelationColumns : 
-     f3 - integer
+     f1 - smallint
 
   View: testview7
     RelationColumns : 

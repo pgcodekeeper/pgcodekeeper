@@ -3125,7 +3125,7 @@ function_call
     ;
 
 vex_or_named_notation
-    : VARIADIC? (argname=identifier pointer)? vex
+    : VARIADIC? (identifier pointer)? vex
     ;
 
 pointer

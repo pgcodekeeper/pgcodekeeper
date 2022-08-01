@@ -1,4 +1,9 @@
-
+--no args overload
+CREATE FUNCTION public.f1( ) RETURNS bigint
+  LANGUAGE plpgsql
+  AS $_$ begin RETURN 1; end;$_$;
+CREATE VIEW public.testview0 AS
+  SELECT * FROM public.f1();
 
 CREATE FUNCTION public.f1( id text, n integer) RETURNS integer
   LANGUAGE plpgsql
@@ -17,19 +22,19 @@ CREATE VIEW public.testview3 AS
 CREATE VIEW public.testview4 AS
   SELECT * FROM public.f1(n := 2, id:= '');
   
-CREATE FUNCTION public.f2(a boolean, id text, n integer) RETURNS integer
+--overload
+CREATE FUNCTION public.f1(a boolean, id text, n integer,
+p timestamp with time zone DEFAULT '2022-12-31 23:59:59'::timestamp with time zone) RETURNS smallint
   LANGUAGE plpgsql
   AS $_$ begin RETURN NULL; end;$_$;
 --Using Mixed Notation
+--explicit default
 CREATE VIEW public.testview5 AS
-  SELECT * FROM public.f2(TRUE, id => ' ', n => 2);
+  SELECT * FROM public.f1(TRUE, p => '2023-01-01 00:00:00'::timestamp with time zone, id => ' ', n => 2);
 
-CREATE FUNCTION public.f3(a boolean, id text, n integer, p point DEFAULT (2,2)) RETURNS integer
-  LANGUAGE plpgsql
-  AS $_$ begin RETURN NULL; end;$_$;
 --Using Mixed Notation with default
 CREATE VIEW public.testview6 AS
-  SELECT * FROM public.f3(TRUE, id => ' ', n => 2);
+  SELECT * FROM public.f1(TRUE, id => ' ', n => 2);
   
 CREATE FUNCTION public.f12Max(
 b1 boolean,
