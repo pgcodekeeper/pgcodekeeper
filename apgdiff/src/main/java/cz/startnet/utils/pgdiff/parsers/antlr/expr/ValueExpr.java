@@ -524,7 +524,8 @@ public class ValueExpr extends AbstractExpr {
 
         Collection<IFunction> functions = availableFunctions(schemaName);
 
-        if (args.size() == 1 && TypesSetManually.QUALIFIED_ASTERISK.equals(argsType.get(0))) {
+        if (args.size() == 1 && argsType.size() == 1
+                && TypesSetManually.QUALIFIED_ASTERISK.equals(argsType.get(0))) {
             //// In this case function's argument is '*' or 'source.*'.
 
             IFunction func = null;
