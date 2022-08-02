@@ -3,8 +3,11 @@ package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -12,7 +15,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_elementsContext;
@@ -498,26 +500,32 @@ public class ValueExpr extends AbstractExpr {
             addDepcy(new GenericColumn(schemaName, DbObjType.SCHEMA), id);
         }
 
-        // TODO add processing for named/mixed notation in functions, because
-        // of order the arguments in function call (if order of arguments
-        // are not the same as in original - the current analysis will fail)
-        //
-        // (4.3.2. Using Named Notation / 4.3.3. Using Mixed Notation)
-        // https://www.postgresql.org/docs/11/sql-syntax-calling-funcs.html
-
         List<Vex_or_named_notationContext> args = function.vex_or_named_notation();
 
+        // all sequential args go before named args
+        // so we can ignore the order of latter and collect them into a map
         List<String> argsType = new ArrayList<>(args.size());
-        for (VexContext arg : PgDiffUtils.sIter(args.stream()
-                .map(Vex_or_named_notationContext::vex))) {
-            String argType = analyze(new Vex(arg)).getSecond();
+        Map<String, String> argsName = new HashMap<>();
+        for (Vex_or_named_notationContext arg : args) {
+            String argType = analyze(new Vex(arg.vex())).getSecond();
             // strip once before calling resolveCall
-            argsType.add(stripParens(argType));
+            argType = stripParens(argType);
+
+            IdentifierContext argnameCtx = arg.identifier();
+            if (argnameCtx != null) {
+                String argname = argnameCtx.getText();
+                if (argsName.put(argname, argType) != null) {
+                    Log.log(Log.LOG_WARNING, "Duplicate values for function named arg: " + argname);
+                }
+            } else {
+                argsType.add(argType);
+            }
         }
 
         Collection<IFunction> functions = availableFunctions(schemaName);
 
-        if (args.size() == 1 && TypesSetManually.QUALIFIED_ASTERISK.equals(argsType.get(0))) {
+        if (args.size() == 1 && argsType.size() == 1
+                && TypesSetManually.QUALIFIED_ASTERISK.equals(argsType.get(0))) {
             //// In this case function's argument is '*' or 'source.*'.
 
             IFunction func = null;
@@ -537,7 +545,7 @@ public class ValueExpr extends AbstractExpr {
             return new ModPair<>(functionName, func != null ?
                     getFunctionReturns(func) : TypesSetManually.FUNCTION_COLUMN);
         } else {
-            IFunction resultFunction = resolveCall(functionName, argsType, functions);
+            IFunction resultFunction = resolveCall(functionName, argsType, argsName, functions);
 
             if (resultFunction != null) {
                 addFunctionDepcy(resultFunction, QNameParser.getFirstNameCtx(ids));
@@ -677,13 +685,14 @@ public class ValueExpr extends AbstractExpr {
 
     /**
      * @param functionName called function bare name
-     * @param sourceTypes call argument types
+     * @param sourceTypes call sequential argument types
+     * @param sourceNames call named argument types (Name => Type map)
      * @param availableFunctions functions from applicable schemas
      * @return most suitable function to call or null,
      *      if none were found or an ambiguity was detected
      */
     private IFunction resolveCall(String functionName, List<String> sourceTypes,
-            Collection<? extends IFunction> availableFunctions) {
+            Map<String, String> sourceNames, Collection<? extends IFunction> availableFunctions) {
         // save each applicable function with the number of exact type matches
         // between input args and function parameters
         // function that has more exact matches (less casts) wins
@@ -692,14 +701,29 @@ public class ValueExpr extends AbstractExpr {
             if (!f.getBareName().equals(functionName)) {
                 continue;
             }
+
             int argN = 0;
+            int namedArgN = 0;
             int exactMatches = 0;
             boolean signatureApplicable = true;
             for (Argument arg : f.getArguments()) {
                 if (!arg.getMode().isIn()) {
                     continue;
                 }
-                if (argN >= sourceTypes.size()) {
+
+                String sourceType = null;
+                boolean hasNamedArg = namedArgN < sourceNames.size();
+                if (argN < sourceTypes.size()) {
+                    sourceType = sourceTypes.get(argN);
+                    ++argN;
+                } else if (hasNamedArg) {
+                    sourceType = sourceNames.get(arg.getName());
+                    if (sourceType != null) {
+                        ++namedArgN;
+                    }
+                }
+
+                if (sourceType == null) {
                     // supplied fewer arguments than function requires
                     // current (unsatisfied) parameter having a default value
                     // means that all the rest of parameters will also have default values
@@ -707,19 +731,25 @@ public class ValueExpr extends AbstractExpr {
                     // thus, the function is applicable if the first unsatisfied parameter
                     // has a default value, and otherwise it is not
                     signatureApplicable = arg.getDefaultExpression() != null;
-                    break;
+                    if (!signatureApplicable || !hasNamedArg) {
+                        break;
+                    } else {
+                        // continue checking if more named (out-of-order) args are available
+                        continue;
+                    }
                 }
-                String sourceType = sourceTypes.get(argN);
+
                 if (sourceType.equals(arg.getDataType())) {
                     ++exactMatches;
                 } else if (!typesMatch(sourceType, arg.getDataType())) {
                     signatureApplicable = false;
                     break;
                 }
-                ++argN;
             }
             if (signatureApplicable) {
-                if (exactMatches == argN && argN == sourceTypes.size()) {
+                if (exactMatches == (argN + namedArgN) && argN == sourceTypes.size()
+                        && namedArgN == sourceNames.size()) {
+                    // all args matched types exactly with no casts
                     // fast path for exact signature match
                     return f;
                 }
@@ -730,8 +760,7 @@ public class ValueExpr extends AbstractExpr {
         if (matches.isEmpty()) {
             return null;
         }
-        return Collections.max(matches,
-                (m1,m2) -> Integer.compare(m1.getSecond(), m2.getSecond()))
+        return Collections.max(matches, Comparator.comparing(Pair::getSecond))
                 .getFirst();
     }
 

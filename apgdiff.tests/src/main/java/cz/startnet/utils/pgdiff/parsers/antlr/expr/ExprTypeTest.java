@@ -58,6 +58,8 @@ public class ExprTypeTest {
             {CHECK + "array_types"},
             // Check ANY type-matching
             {CHECK + "anytype_resolution"},
+            // Check by named notation type
+            {CHECK + "named_notation"},
         });
     }
 
