@@ -41,6 +41,8 @@ import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.PgStatementContainer;
+import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class AlterTable extends TableAbstract {
@@ -145,6 +147,10 @@ public class AlterTable extends TableAbstract {
                 tabl.setHasOids(true);
             }
 
+            if (tablAction.TRIGGER() != null) {
+                createTrigger(tabl, tablAction);
+            }
+
             if (tablAction.RULE() != null) {
                 createRule(tabl, tablAction);
             }
@@ -224,6 +230,28 @@ public class AlterTable extends TableAbstract {
             col.setSequence(sequence);
             sequence.setParent(schema);
             col.setIdentityType(identity.ALWAYS() != null ? "ALWAYS" : "BY DEFAULT");
+        }
+    }
+
+    private void createTrigger(AbstractPgTable tabl, Table_actionContext tablAction) {
+        if (tablAction.trigger_name == null) {
+            return;
+        }
+
+        PgTrigger trigger = (PgTrigger) getSafe(PgStatementContainer::getTrigger, tabl,
+                tablAction.trigger_name);
+        if (trigger != null) {
+            if (tablAction.DISABLE() != null) {
+                trigger.setEnabledState("DISABLE");
+            } else if (tablAction.ENABLE() != null) {
+                if (tablAction.REPLICA() != null) {
+                    trigger.setEnabledState("ENABLE REPLICA");
+                } else if (tablAction.ALWAYS() != null) {
+                    trigger.setEnabledState("ENABLE ALWAYS");
+                } else {
+                    trigger.setEnabledState("ENABLE");
+                }
+            }
         }
     }
 

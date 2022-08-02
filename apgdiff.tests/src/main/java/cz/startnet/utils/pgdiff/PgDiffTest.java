@@ -295,6 +295,8 @@ public class PgDiffTest {
                     {"alter_table_alter_column_set_reset"},
                     // Tests set storage for column
                     {"alter_table_alter_column_set_storage"},
+                    // Tests triggers with disable/enable options in table
+                    {"alter_table_trigger"},
                     // Tests adding new sequence that is owned by table
                     {"add_owned_sequence"},
                     // Tests adding empty table
