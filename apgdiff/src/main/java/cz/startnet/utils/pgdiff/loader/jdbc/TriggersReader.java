@@ -79,6 +79,26 @@ public class TriggersReader extends JdbcReader {
         functionCall.append(PgDiffUtils.getQuotedName(funcSchema)).append('.')
         .append(PgDiffUtils.getQuotedName(funcName)).append('(');
 
+        String tgEnabled = res.getString("tgenabled");
+        switch (tgEnabled) {
+        case "f":
+        case "D":
+            t.setEnabledState("DISABLE");
+            break;
+        case "t":
+        case "O":
+            //default enable state
+            break;
+        case "R":
+            t.setEnabledState("ENABLE REPLICA");
+            break;
+        case "A":
+            t.setEnabledState("ENABLE ALWAYS");
+            break;
+        default:
+            t.setEnabledState("ENABLE");
+        }
+
         byte[] args = res.getBytes("tgargs");
         if (args.length > 0) {
             functionCall.append('\'');

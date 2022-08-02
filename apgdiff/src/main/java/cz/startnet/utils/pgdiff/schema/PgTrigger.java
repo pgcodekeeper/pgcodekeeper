@@ -22,6 +22,7 @@ public class PgTrigger extends AbstractTrigger {
 
     private String function;
     private String refTableName;
+    private String enabledState;
     /**
      * Whether the trigger should be fired BEFORE, AFTER or INSTEAD_OF action. Default is
      * before.
@@ -155,6 +156,16 @@ public class PgTrigger extends AbstractTrigger {
         sbSQL.append(getFunction());
         sbSQL.append(';');
 
+        if (enabledState != null) {
+            sbSQL.append("\n\nALTER TABLE ")
+            .append(getParent().getQualifiedName())
+            .append(' ')
+            .append(enabledState)
+            .append(" TRIGGER ")
+            .append(PgDiffUtils.getQuotedName(getName()))
+            .append(';');
+        }
+
         if (comment != null && !comment.isEmpty()) {
             sbSQL.append("\n\n");
             appendCommentSql(sbSQL);
@@ -172,6 +183,20 @@ public class PgTrigger extends AbstractTrigger {
             isNeedDepcies.set(true);
             return true;
         }
+        String newEnabledState = newTrg.getEnabledState();
+        if (!Objects.equals(getEnabledState(), newEnabledState)) {
+            if (newEnabledState == null) {
+                newEnabledState = "ENABLE";
+            }
+            sb.append("\n\nALTER TABLE ")
+            .append(getParent().getQualifiedName())
+            .append(' ')
+            .append(newEnabledState)
+            .append(" TRIGGER ")
+            .append(PgDiffUtils.getQuotedName(newTrg.getName()))
+            .append(';');
+        }
+
         if (!Objects.equals(getComment(), newTrg.getComment())) {
             sb.append("\n\n");
             newTrg.appendCommentSql(sb);
@@ -312,30 +337,44 @@ public class PgTrigger extends AbstractTrigger {
         return newTable;
     }
 
-    @Override
-    public boolean compare(PgStatement obj) {
-        return super.compare(obj) && compareUnalterable(obj);
+    public String getEnabledState() {
+        return enabledState;
     }
 
-    private boolean compareUnalterable(PgStatement obj) {
-        if (obj instanceof PgTrigger) {
+    public void setEnabledState(String enabledState) {
+        this.enabledState = enabledState;
+        resetHash();
+    }
+
+    @Override
+    public boolean compare(PgStatement obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof PgTrigger && super.compare(obj)) {
             PgTrigger trigger = (PgTrigger) obj;
-            return  tgType == trigger.getType()
-                    && (forEachRow == trigger.isForEachRow())
-                    && Objects.equals(function, trigger.getFunction())
-                    && (onDelete == trigger.isOnDelete())
-                    && (onInsert == trigger.isOnInsert())
-                    && (onUpdate == trigger.isOnUpdate())
-                    && (onTruncate == trigger.isOnTruncate())
-                    && Objects.equals(isImmediate, trigger.isImmediate())
-                    && Objects.equals(refTableName, trigger.getRefTableName())
-                    && (constraint == trigger.isConstraint())
-                    && Objects.equals(when, trigger.getWhen())
-                    && Objects.equals(newTable, trigger.getNewTable())
-                    && Objects.equals(oldTable, trigger.getOldTable())
-                    && Objects.equals(updateColumns, trigger.updateColumns);
+            return compareUnalterable(trigger)
+                    && Objects.equals(enabledState, trigger.getEnabledState());
         }
         return false;
+    }
+
+    private boolean compareUnalterable(PgTrigger trigger) {
+        return tgType == trigger.getType()
+                && (forEachRow == trigger.isForEachRow())
+                && Objects.equals(function, trigger.getFunction())
+                && (onDelete == trigger.isOnDelete())
+                && (onInsert == trigger.isOnInsert())
+                && (onUpdate == trigger.isOnUpdate())
+                && (onTruncate == trigger.isOnTruncate())
+                && Objects.equals(isImmediate, trigger.isImmediate())
+                && Objects.equals(refTableName, trigger.getRefTableName())
+                && (constraint == trigger.isConstraint())
+                && Objects.equals(when, trigger.getWhen())
+                && Objects.equals(newTable, trigger.getNewTable())
+                && Objects.equals(oldTable, trigger.getOldTable())
+                && Objects.equals(updateColumns, trigger.updateColumns);
+
     }
 
     @Override
@@ -354,6 +393,7 @@ public class PgTrigger extends AbstractTrigger {
         hasher.put(refTableName);
         hasher.put(newTable);
         hasher.put(oldTable);
+        hasher.put(enabledState);
     }
 
     @Override
@@ -373,6 +413,7 @@ public class PgTrigger extends AbstractTrigger {
         trigger.setNewTable(getNewTable());
         trigger.setOldTable(getOldTable());
         trigger.updateColumns.addAll(updateColumns);
+        trigger.setEnabledState(getEnabledState());
         return trigger;
     }
 }
