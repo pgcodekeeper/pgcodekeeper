@@ -87,7 +87,7 @@ public class TriggersReader extends JdbcReader {
             break;
         case "t":
         case "O":
-            t.setEnabledState("ENABLE" );
+            //default enable state
             break;
         case "R":
             t.setEnabledState("ENABLE REPLICA");
@@ -95,6 +95,8 @@ public class TriggersReader extends JdbcReader {
         case "A":
             t.setEnabledState("ENABLE ALWAYS");
             break;
+        default:
+            t.setEnabledState("ENABLE" );
         }
 
         byte[] args = res.getBytes("tgargs");
