@@ -96,7 +96,7 @@ public class TriggersReader extends JdbcReader {
             t.setEnabledState("ENABLE ALWAYS");
             break;
         default:
-            t.setEnabledState("ENABLE" );
+            t.setEnabledState("ENABLE");
         }
 
         byte[] args = res.getBytes("tgargs");

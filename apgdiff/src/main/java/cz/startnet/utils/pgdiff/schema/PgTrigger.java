@@ -348,29 +348,33 @@ public class PgTrigger extends AbstractTrigger {
 
     @Override
     public boolean compare(PgStatement obj) {
-        return super.compare(obj) && compareUnalterable(obj);
-    }
-
-    private boolean compareUnalterable(PgStatement obj) {
-        if (obj instanceof PgTrigger) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof PgTrigger && super.compare(obj)) {
             PgTrigger trigger = (PgTrigger) obj;
-            return  tgType == trigger.getType()
-                    && (forEachRow == trigger.isForEachRow())
-                    && Objects.equals(function, trigger.getFunction())
-                    && (onDelete == trigger.isOnDelete())
-                    && (onInsert == trigger.isOnInsert())
-                    && (onUpdate == trigger.isOnUpdate())
-                    && (onTruncate == trigger.isOnTruncate())
-                    && Objects.equals(isImmediate, trigger.isImmediate())
-                    && Objects.equals(refTableName, trigger.getRefTableName())
-                    && (constraint == trigger.isConstraint())
-                    && Objects.equals(enabledState, trigger.getEnabledState())
-                    && Objects.equals(when, trigger.getWhen())
-                    && Objects.equals(newTable, trigger.getNewTable())
-                    && Objects.equals(oldTable, trigger.getOldTable())
-                    && Objects.equals(updateColumns, trigger.updateColumns);
+            return compareUnalterable(trigger)
+                    && Objects.equals(enabledState, trigger.getEnabledState());
         }
         return false;
+    }
+
+    private boolean compareUnalterable(PgTrigger trigger) {
+        return tgType == trigger.getType()
+                && (forEachRow == trigger.isForEachRow())
+                && Objects.equals(function, trigger.getFunction())
+                && (onDelete == trigger.isOnDelete())
+                && (onInsert == trigger.isOnInsert())
+                && (onUpdate == trigger.isOnUpdate())
+                && (onTruncate == trigger.isOnTruncate())
+                && Objects.equals(isImmediate, trigger.isImmediate())
+                && Objects.equals(refTableName, trigger.getRefTableName())
+                && (constraint == trigger.isConstraint())
+                && Objects.equals(when, trigger.getWhen())
+                && Objects.equals(newTable, trigger.getNewTable())
+                && Objects.equals(oldTable, trigger.getOldTable())
+                && Objects.equals(updateColumns, trigger.updateColumns);
+
     }
 
     @Override

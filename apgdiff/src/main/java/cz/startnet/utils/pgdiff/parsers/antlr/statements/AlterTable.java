@@ -248,8 +248,6 @@ public class AlterTable extends TableAbstract {
                     trigger.setEnabledState("ENABLE REPLICA");
                 } else if (tablAction.ALWAYS() != null) {
                     trigger.setEnabledState("ENABLE ALWAYS");
-                } else {
-                    trigger.setEnabledState("ENABLE");
                 }
             }
         }
