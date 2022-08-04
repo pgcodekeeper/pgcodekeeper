@@ -49,7 +49,7 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
                 editorPart instanceof ProjectEditorDiffer, false);
 
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.widthHint = new PixelConverter(composite)
+        gd.minimumWidth = new PixelConverter(composite)
                 .convertWidthInCharsToPixels(DbMenuStorePicker.DEFAULT_LENGTH);
         storePicker.getControl().setLayoutData(gd);
 
