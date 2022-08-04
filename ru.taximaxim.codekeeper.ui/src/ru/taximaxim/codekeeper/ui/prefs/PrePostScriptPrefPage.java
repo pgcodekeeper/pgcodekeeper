@@ -1,5 +1,8 @@
 package ru.taximaxim.codekeeper.ui.prefs;
 
+import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -78,10 +81,17 @@ public class PrePostScriptPrefPage extends FieldEditorPreferencePage implements 
     }
 
     private void openEditor(String filename) {
-        SQLEditorInput input = new SQLEditorInput(getScriptPath(filename), false, false);
         try {
+            Path path = getScriptPath(filename);
+            try {
+                // try to create file if not exists, otherwise editor will ask where to save it
+                Files.createFile(path);
+            } catch (FileAlreadyExistsException ex) {
+                // no op
+            }
+            SQLEditorInput input = new SQLEditorInput(path, false, false);
             IDE.openEditor(page, input, EDITOR.SQL);
-        } catch (PartInitException ex) {
+        } catch (PartInitException | IOException ex) {
             ExceptionNotifier.notifyDefault(ex.getLocalizedMessage(), ex);
         }
     }

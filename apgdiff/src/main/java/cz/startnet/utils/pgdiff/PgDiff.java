@@ -283,24 +283,25 @@ public class PgDiff {
 
     private void addPrePostPath(PgDiffScript script, String scriptPath) throws IOException {
         Path path = Paths.get(scriptPath);
+        addPrePostPath(script, path);
+    }
 
+    private void addPrePostPath(PgDiffScript script, Path path) throws IOException {
         if (Files.isRegularFile(path)) {
             addPrePostScript(script, path);
             return;
         }
-        Stream<Path> stream = Files.list(Paths.get(scriptPath)).sorted();
-        for (Path  fileName : PgDiffUtils.sIter(stream)) {
-            if (Files.isRegularFile(fileName)) {
-                addPrePostScript(script, fileName);
-            }
+        Stream<Path> stream = Files.list(path).sorted();
+        for (Path child : PgDiffUtils.sIter(stream)) {
+            addPrePostPath(script, child);
         }
     }
 
     private void addPrePostScript(PgDiffScript script, Path fileName) throws IOException {
         try {
             String prePostScript = new String(Files.readAllBytes(fileName), StandardCharsets.UTF_8);
+            prePostScript = "-- " + fileName + "\n\n" + prePostScript;
             script.addStatement(prePostScript);
-
         } catch (IOException e) {
             throw new IOException(Messages.PgDiff_read_error + e.getLocalizedMessage(), e);
         }

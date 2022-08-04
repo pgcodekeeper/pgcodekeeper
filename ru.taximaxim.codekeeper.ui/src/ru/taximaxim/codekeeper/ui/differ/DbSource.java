@@ -9,7 +9,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -135,12 +134,23 @@ public abstract class DbSource {
         args.setKeepNewlines(!forceUnixNewlines);
         args.setMsSql(msSql);
         if (prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.ADD_PRE_POST_SCRIPT)) {
-            args.setPreFilePath(Arrays.asList(PrePostScriptPrefPage.getScriptPath(FILE.PRE_SCRIPT).toString(),
-                    Paths.get(proj.getLocationURI()).resolve(FILE.PRE_DIR).toString()));
-            args.setPostFilePath(Arrays.asList(Paths.get(proj.getLocationURI()).resolve(FILE.POST_DIR).toString(),
-                    PrePostScriptPrefPage.getScriptPath(FILE.POST_SCRIPT).toString()));
+            List<String> prePaths = new ArrayList<>();
+            addPathIfExists(prePaths, PrePostScriptPrefPage.getScriptPath(FILE.PRE_SCRIPT));
+            addPathIfExists(prePaths, Paths.get(proj.getLocationURI()).resolve(FILE.PRE_DIR));
+            args.setPreFilePath(prePaths);
+
+            List<String> postPaths = new ArrayList<>();
+            addPathIfExists(postPaths, Paths.get(proj.getLocationURI()).resolve(FILE.POST_DIR));
+            addPathIfExists(postPaths, PrePostScriptPrefPage.getScriptPath(FILE.POST_SCRIPT));
+            args.setPostFilePath(postPaths);
         }
         return args;
+    }
+
+    private static void addPathIfExists(List<String> paths, Path path) {
+        if (Files.exists(path)) {
+            paths.add(path.toString());
+        }
     }
 
     public static DbSource fromDirTree(boolean forceUnixNewlines,String dirTreePath,
