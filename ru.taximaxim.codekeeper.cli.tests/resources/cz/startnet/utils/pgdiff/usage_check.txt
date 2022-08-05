@@ -46,10 +46,14 @@ Usage
                                           statement to the script
  --pre-script <path>                    : PRE script file path or directory
                                           with PRE scripts
+                                          nested directories are loaded
+                                          recursively
                                           specify multiple times to use several
                                           paths
  --post-script <path>                   : POST script file path or directory
                                           with POST scripts
+                                          nested directories are loaded
+                                          recursively
                                           specify multiple times to use several
                                           paths
  --ignore-column-order                  : ignore differences in table column

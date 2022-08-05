@@ -149,11 +149,13 @@ public class CliArgs extends PgDiffArguments {
 
     @Option(name="--pre-script", metaVar="<path>", forbids={"--parse", "--graph"},
             usage="PRE script file path or directory with PRE scripts"
+                    + "\nnested directories are loaded recursively"
                     + "\nspecify multiple times to use several paths")
     private List<String> preFilePath = new ArrayList<>();
 
     @Option(name="--post-script", metaVar="<path>", forbids={"--parse", "--graph"},
             usage="POST script file path or directory with POST scripts"
+                    + "\nnested directories are loaded recursively"
                     + "\nspecify multiple times to use several paths")
     private List<String> postFilePath = new ArrayList<>();
 
