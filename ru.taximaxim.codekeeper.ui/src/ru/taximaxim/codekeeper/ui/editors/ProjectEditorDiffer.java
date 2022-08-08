@@ -895,7 +895,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         }
 
         TreeElement treeCopy = diffTree.getCopy();
-
         Log.log(Log.LOG_INFO, "Processing depcies for project update"); //$NON-NLS-1$
         Set<TreeElement> sumNewAndDelete = new DepcyTreeExtender(
                 dbProject.getDbObject(), dbRemote.getDbObject(), treeCopy).getDepcies();
@@ -945,11 +944,18 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
      */
     private int warnCheckedElements() {
         int checked = diffTable.getCheckedElementsCount();
+
         if (checked < 1) {
-            MessageBox mb = new MessageBox(parent.getShell(), SWT.ICON_INFORMATION);
-            mb.setMessage(Messages.please_check_at_least_one_row);
-            mb.setText(Messages.empty_selection);
-            mb.open();
+            IStructuredSelection selection = diffTable.getViewer().getStructuredSelection();
+            if (selection.isEmpty()) {
+                MessageBox mb = new MessageBox(parent.getShell(), SWT.ICON_INFORMATION);
+                mb.setMessage(Messages.please_check_at_least_one_row);
+                mb.setText(Messages.empty_selection);
+                mb.open();
+            } else {
+                diffTable.setElementsChecked(selection.toList(), true, false);
+                return selection.size();
+            }
         }
         return checked;
     }
