@@ -1075,7 +1075,7 @@ public class DiffTableViewer extends Composite {
         return false;
     }
 
-    private void setElementsChecked(Collection<?> elements, boolean state,
+    public void setElementsChecked(Collection<?> elements, boolean state,
             boolean checkFilterMatch) {
         setElementsChecked(elements, el -> state, checkFilterMatch);
     }
