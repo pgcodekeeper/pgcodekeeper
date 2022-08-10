@@ -433,6 +433,7 @@ public class DbStoreEditorDialog extends TrayDialog {
         txtDumpParameters = new Text(tabPGDupmConfigProperties, SWT.BORDER);
         txtDumpParameters.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, false, false, 2, 1));
         txtDumpParameters.addModifyListener(modifyListener);
+
         return area;
     }
 

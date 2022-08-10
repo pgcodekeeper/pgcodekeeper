@@ -241,7 +241,7 @@ public interface UIConsts {
     }
 
     interface PROP_VARS {
-        String TRUST_CERT = "trustServerCertificate";
+        String TRUST_CERT = "trustServerCertificate"; //$NON-NLS-1$
     }
 
     String DDL_DEFAULT_CMD = "psql -e -1 -w --set ON_ERROR_STOP=1 -X -h %host -p %port -U %user -f %script %db"; //$NON-NLS-1$
