@@ -240,6 +240,10 @@ public interface UIConsts {
         String DB_PASS_PLACEHOLDER = "%pass"; //$NON-NLS-1$
     }
 
+    interface PROP_VARS {
+        String TRUST_CERT = "trustServerCertificate";
+    }
+
     String DDL_DEFAULT_CMD = "psql -e -1 -w --set ON_ERROR_STOP=1 -X -h %host -p %port -U %user -f %script %db"; //$NON-NLS-1$
 
     List<String> TIME_ZONES = Collections.unmodifiableList(Arrays.asList(

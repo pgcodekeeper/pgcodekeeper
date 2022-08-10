@@ -316,6 +316,8 @@ public final class Messages extends NLS {
 
     public static String DbStoreEditorDialog_learn_more;
 
+    public static String DbStoreEditorDialog_ms_cert;
+
     public static String DbStoreEditorDialog_ms_sql_database;
 
     public static String DbStoreEditorDialog_select_ignore_file;
@@ -325,6 +327,8 @@ public final class Messages extends NLS {
     public static String DbStoreEditorDialog_successfull_connection;
 
     public static String DbStoreEditorDialog_test_connection;
+
+    public static String DbStoreEditorDialog_trust_mssql;
 
     public static String DbStoreEditorDialog_use_win_auth;
 
