@@ -2,9 +2,10 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_sequence_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sequence_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Tokens_nonreserved_except_function_typeContext;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -23,7 +24,7 @@ public class CreateSequence extends ParserAbstract {
 
     @Override
     public void parseObject() {
-        List<IdentifierContext> ids = ctx.name.identifier();
+        List<ParserRuleContext> ids = getIdentifiers(ctx.name);
         PgSequence sequence = new PgSequence(QNameParser.getFirstName(ids));
         fillSequence(sequence, ctx.sequence_body());
         addSafe(getSchemaSafe(ids), sequence, ids);
@@ -51,9 +52,10 @@ public class CreateSequence extends ParserAbstract {
             } else if (body.col_name != null) {
                 // TODO incorrect qualified name work
                 // also broken in altersequence
-                List<IdentifierContext> col = body.col_name.identifier();
+                List<ParserRuleContext> col = getIdentifiers(body.col_name);
                 Tokens_nonreserved_except_function_typeContext word;
-                if (col.size() != 1 || (word = col.get(0).tokens_nonreserved_except_function_type()) == null
+                if (col.size() != 1
+                        || (word = body.col_name.identifier().tokens_nonreserved_except_function_type()) == null
                         || word.NONE() == null) {
                     sequence.setOwnedBy(new GenericColumn(QNameParser.getThirdName(col),
                             QNameParser.getSecondName(col), QNameParser.getFirstName(col), DbObjType.COLUMN));
@@ -65,6 +67,6 @@ public class CreateSequence extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_CREATE, DbObjType.SEQUENCE, ctx.name.identifier());
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.SEQUENCE, getIdentifiers(ctx.name));
     }
 }

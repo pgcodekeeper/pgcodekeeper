@@ -15,18 +15,16 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ExpressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Identity_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_optionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_optionsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.MsExpressionAnalysisLauncher;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.TableAbstract;
 import cz.startnet.utils.pgdiff.schema.MsColumn;
 import cz.startnet.utils.pgdiff.schema.MsIndex;
 import cz.startnet.utils.pgdiff.schema.MsTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class CreateMsTable extends TableAbstract {
+public class CreateMsTable extends MsTableAbstract {
 
     private final Create_tableContext ctx;
 
@@ -77,16 +75,19 @@ public class CreateMsTable extends TableAbstract {
     }
 
     private void fillColumn(Column_def_table_constraintContext colCtx, MsTable table) {
+        IdContext schemaCtx = ctx.qualified_name().schema;
+        IdContext tableCtx = ctx.qualified_name().name;
+
         if (colCtx.table_constraint() != null) {
-            table.addConstraint(getMsConstraint(colCtx.table_constraint()));
+            table.addConstraint(getMsConstraint(colCtx.table_constraint(), schemaCtx.getText(), tableCtx.getText()));
         } else if (colCtx.table_index() != null) {
             Table_indexContext indCtx = colCtx.table_index();
             MsIndex index = new MsIndex(indCtx.index_name.getText());
             ClusteredContext cluster = indCtx.clustered();
             index.setClusterIndex(cluster != null && cluster.CLUSTERED() != null);
-            CreateMsIndex.parseIndex(indCtx.index_rest(), index);
-            addSafe(table, index, Arrays.asList(ctx.qualified_name().schema,
-                    ctx.qualified_name().name, indCtx.index_name));
+
+            parseIndex(indCtx.index_rest(), index, schemaCtx.getText(), tableCtx.getText());
+            addSafe(table, index, Arrays.asList(schemaCtx, tableCtx, indCtx.index_name));
         } else {
             MsColumn col = new MsColumn(colCtx.id().getText());
             if (colCtx.data_type() != null) {
@@ -147,8 +148,6 @@ public class CreateMsTable extends TableAbstract {
 
     @Override
     protected String getStmtAction() {
-        Qualified_nameContext qualNameCtx = ctx.qualified_name();
-        return getStrForStmtAction(ACTION_CREATE, DbObjType.TABLE,
-                Arrays.asList(qualNameCtx.schema, qualNameCtx.name));
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.TABLE, ctx.qualified_name());
     }
 }

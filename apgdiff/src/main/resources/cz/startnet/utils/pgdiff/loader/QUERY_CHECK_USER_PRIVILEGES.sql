@@ -1,0 +1,1 @@
+SELECT pg_catalog.has_table_privilege('pg_catalog.pg_user_mapping', 'SELECT') AS result;

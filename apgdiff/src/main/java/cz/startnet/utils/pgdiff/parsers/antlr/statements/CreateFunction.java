@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -13,11 +14,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.AntlrUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_funct_paramsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_actions_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_column_name_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -57,12 +58,12 @@ public class CreateFunction extends ParserAbstract {
 
     @Override
     public void parseObject() {
-        List<IdentifierContext> ids = ctx.function_parameters().schema_qualified_name().identifier();
+        List<ParserRuleContext> ids = getIdentifiers(ctx.function_parameters().schema_qualified_name());
         String name = QNameParser.getFirstName(ids);
         AbstractPgFunction function = ctx.PROCEDURE() != null ? new PgProcedure(name)
                 : new PgFunction(name);
 
-        fillFunction(ctx.create_funct_params(), function);
+        fillFunction(function);
 
         if (ctx.ret_table != null) {
             function.setReturns(getFullCtxText(ctx.ret_table));
@@ -74,14 +75,14 @@ public class CreateFunction extends ParserAbstract {
             function.setReturns(getTypeName(ctx.rettype_data));
             addPgTypeDepcy(ctx.rettype_data, function);
         }
-        addSafe(getSchemaSafe(ids), function, ids);
+        addSafe(getSchemaSafe(ids), function, ids, parseArguments(ctx.function_parameters().function_args()));
     }
 
-    private void fillFunction(Create_funct_paramsContext params, AbstractPgFunction function) {
+    private void fillFunction(AbstractPgFunction function) {
         Function_defContext funcDef = null;
         Float cost = null;
         String language = null;
-        for (Function_actions_commonContext action  : params.function_actions_common()) {
+        for (Function_actions_commonContext action : ctx.function_actions_common()) {
             if (action.WINDOW() != null) {
                 function.setWindow(true);
             } else if (action.IMMUTABLE() != null) {
@@ -117,7 +118,7 @@ public class CreateFunction extends ParserAbstract {
             } else if (action.SET() != null) {
                 setConfigParams(action, function);
             } else if (action.SUPPORT() != null) {
-                List<IdentifierContext> suppFuncIds = action.schema_qualified_name().identifier();
+                List<ParserRuleContext> suppFuncIds = getIdentifiers(action.schema_qualified_name());
                 function.setSupportFunc(getFullCtxText(suppFuncIds));
                 addDepSafe(function, suppFuncIds, DbObjType.FUNCTION, true);
             }
@@ -125,14 +126,23 @@ public class CreateFunction extends ParserAbstract {
 
         List<Pair<String, GenericColumn>> funcArgs = fillArguments(function);
 
-        if (("SQL".equalsIgnoreCase(language) || "PLPGSQL".equalsIgnoreCase(language))
-                && funcDef != null && funcDef.symbol == null) {
+        Function_bodyContext body = ctx.function_body();
+        if (body != null) {
+            function.setInStatementBody(true);
+            String bodyText = getFullCtxText(body);
+            function.setBody(db.getArguments(), bodyText);
+            if (language == null) {
+                language = "sql";
+            }
+            analyzeFunctionBody(function, body, funcArgs);
+        } else if (funcDef != null && funcDef.symbol == null
+                && ("SQL".equalsIgnoreCase(language) || "PLPGSQL".equalsIgnoreCase(language))) {
             analyzeFunctionDefinition(function, language, funcDef.definition, funcArgs);
         }
 
-        With_storage_parameterContext storage = params.with_storage_parameter();
+        With_storage_parameterContext storage = ctx.with_storage_parameter();
         if (storage != null) {
-            for (Storage_parameter_optionContext option : storage.storage_parameter().storage_parameter_option()) {
+            for (Storage_parameter_optionContext option : storage.storage_parameters().storage_parameter_option()) {
                 if ("isStrict".equalsIgnoreCase(option.getText())) {
                     function.setStrict(true);
                 } else if ("isCachable".equalsIgnoreCase(option.getText())) {
@@ -211,6 +221,17 @@ public class CreateFunction extends ParserAbstract {
         }
     }
 
+    private void analyzeFunctionBody(AbstractPgFunction function, Function_bodyContext body,
+            List<Pair<String, GenericColumn>> funcArgs) {
+        // finalizer-only task, defers analyzer until finalizing stage
+        AntlrParser.submitAntlrTask(antlrTasks, () -> body,
+                ctx -> {
+                    FuncProcAnalysisLauncher launcher = new FuncProcAnalysisLauncher(
+                            function, ctx, fileName, funcArgs);
+                    db.addAnalysisLauncher(launcher);
+                });
+    }
+
     /**
      * Returns a list of pairs, each of which contains the name of the argument
      * and its full type name in GenericColumn object (typeSchema, typeName, DbObjType.TYPE).
@@ -228,10 +249,9 @@ public class CreateFunction extends ParserAbstract {
             Schema_qualified_name_nontypeContext typeQname = dataType.predefined_type()
                     .schema_qualified_name_nontype();
             if (typeQname != null) {
-                if (typeQname.schema != null) {
-                    typeSchema = typeQname.schema.getText();
-                }
-                typeName = typeQname.identifier_nontype().getText();
+                List<ParserRuleContext> typeIds = getIdentifiers(typeQname);
+                typeSchema = QNameParser.getSchemaName(typeIds);
+                typeName = QNameParser.getFirstName(typeIds);
             } else {
                 typeName = getFullCtxText(dataType);
             }
@@ -256,6 +276,6 @@ public class CreateFunction extends ParserAbstract {
     protected String getStmtAction() {
         return getStrForStmtAction(ACTION_CREATE,
                 ctx.PROCEDURE() != null ? DbObjType.PROCEDURE : DbObjType.FUNCTION,
-                        ctx.function_parameters().schema_qualified_name().identifier());
+                        getIdentifiers(ctx.function_parameters().schema_qualified_name()));
     }
 }

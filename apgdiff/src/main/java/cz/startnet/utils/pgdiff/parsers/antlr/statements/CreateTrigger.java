@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_trigger_statementContext;
@@ -32,8 +34,7 @@ public class CreateTrigger extends ParserAbstract {
 
     @Override
     public void parseObject() {
-        List<IdentifierContext> ids = ctx.table_name.identifier();
-        String schemaName = getSchemaNameSafe(ids);
+        List<ParserRuleContext> ids = getIdentifiers(ctx.table_name);
         addObjReference(ids, DbObjType.TABLE, null);
 
         PgTrigger trigger = new PgTrigger(ctx.name.getText());
@@ -67,13 +68,13 @@ public class CreateTrigger extends ParserAbstract {
             }
 
             if (ctx.referenced_table_name != null) {
-                List<IdentifierContext> refName = ctx.referenced_table_name.identifier();
+                List<ParserRuleContext> refName = getIdentifiers(ctx.referenced_table_name);
                 String refSchemaName = QNameParser.getSecondName(refName);
                 String refRelName = QNameParser.getFirstName(refName);
 
                 StringBuilder sb = new StringBuilder();
                 if (refSchemaName == null) {
-                    refSchemaName = schemaName;
+                    refSchemaName = getSchemaNameSafe(ids);
                 }
 
                 if (refSchemaName != null) {
@@ -97,27 +98,25 @@ public class CreateTrigger extends ParserAbstract {
 
         Schema_qualified_name_nontypeContext funcNameCtx = ctx.func_name
                 .schema_qualified_name_nontype();
-        IdentifierContext sch = funcNameCtx.schema;
-        if (sch != null) {
-            // TODO add empty signature to function name
-            // when function signatures in refs and defs will be supported
-            addDepSafe(trigger, Arrays.asList(sch, funcNameCtx.identifier_nontype()),
-                    DbObjType.FUNCTION, true);
+        if (funcNameCtx.schema != null) {
+            addDepSafe(trigger, getIdentifiers(funcNameCtx), DbObjType.FUNCTION, true, "()");
         }
+
+        ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
+        ParserRuleContext parentCtx = QNameParser.getFirstNameCtx(ids);
 
         for (Identifier_listContext column : ctx.identifier_list()) {
             for (IdentifierContext nameCol : column.identifier()) {
                 trigger.addUpdateColumn(nameCol.getText());
-                addDepSafe(trigger, Arrays.asList(sch, QNameParser.getFirstNameCtx(ids), nameCol),
+                addDepSafe(trigger, Arrays.asList(schemaCtx, parentCtx, nameCol),
                         DbObjType.COLUMN, true);
             }
         }
         parseWhen(ctx.when_trigger(), trigger, db, fileName);
 
-        IdentifierContext parent = QNameParser.getFirstNameCtx(ids);
         PgStatementContainer cont = getSafe(AbstractSchema::getStatementContainer,
-                getSchemaSafe(ids), parent);
-        addSafe(cont, trigger, Arrays.asList(QNameParser.getSchemaNameCtx(ids), parent, ctx.name));
+                getSchemaSafe(ids), parentCtx);
+        addSafe(cont, trigger, Arrays.asList(schemaCtx, parentCtx, ctx.name));
     }
 
     public static void parseWhen(When_triggerContext whenCtx, PgTrigger trigger,
@@ -131,8 +130,8 @@ public class CreateTrigger extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        List<IdentifierContext> ids = new ArrayList<>(ctx.table_name.identifier());
+        List<ParserRuleContext> ids = new ArrayList<>(getIdentifiers(ctx.table_name));
         ids.add(ctx.name);
-        return getStrForStmtAction(ACTION_ALTER, DbObjType.TRIGGER, ids);
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.TRIGGER, ids);
     }
 }

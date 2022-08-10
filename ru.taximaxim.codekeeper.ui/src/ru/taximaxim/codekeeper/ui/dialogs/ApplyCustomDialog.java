@@ -30,6 +30,10 @@ public class ApplyCustomDialog extends Dialog {
     private Button btnAlterColUsingExpr;
     private Button btnCreateIdxConcurrent;
     private Button btnScriptFromSelObjs;
+    private Button btnGenerateExists;
+    private Button btndropBeforeCreate;
+    private Button btnAddPrePostScript;
+    private Button btnDataMovementMode;
 
     private final OverridablePrefs prefs;
     private final boolean isMsSql;
@@ -75,6 +79,30 @@ public class ApplyCustomDialog extends Dialog {
         btnCreateIdxConcurrent.setSelection(prefs.getBooleanOfDbUpdatePref(
                 DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY));
 
+        btnGenerateExists = new Button(panel, SWT.CHECK);
+        btnGenerateExists.setText(Messages.DbUpdatePrefPage_option_if_exists);
+        gd = new GridData();
+        gd.horizontalIndent = 10;
+        btnGenerateExists.setLayoutData(gd);
+        btnGenerateExists.setSelection(prefs.getBooleanOfDbUpdatePref(
+                DB_UPDATE_PREF.GENERATE_EXISTS));
+
+        btndropBeforeCreate = new Button(panel, SWT.CHECK);
+        btndropBeforeCreate.setText(Messages.DbUpdatePrefPage_option_drop_object);
+        gd = new GridData();
+        gd.horizontalIndent = 10;
+        btndropBeforeCreate.setLayoutData(gd);
+        btndropBeforeCreate.setSelection(prefs.getBooleanOfDbUpdatePref(
+                DB_UPDATE_PREF.DROP_BEFORE_CREATE));
+
+        btnAddPrePostScript = new Button(panel, SWT.CHECK);
+        btnAddPrePostScript.setText(Messages.DbUpdatePrefPage_add_pre_post_script);
+        gd = new GridData();
+        gd.horizontalIndent = 10;
+        btnAddPrePostScript.setLayoutData(gd);
+        btnAddPrePostScript.setSelection(prefs.getBooleanOfDbUpdatePref(
+                DB_UPDATE_PREF.ADD_PRE_POST_SCRIPT));
+
         if (!isMsSql) {
             btnCheckFuncBodies = new Button(panel, SWT.CHECK);
             btnCheckFuncBodies.setText(Messages.dbUpdatePrefPage_check_function_bodies);
@@ -101,6 +129,14 @@ public class ApplyCustomDialog extends Dialog {
         btnScriptFromSelObjs.setSelection(prefs.getBooleanOfDbUpdatePref(
                 DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS));
 
+        btnDataMovementMode = new Button(panel, SWT.CHECK);
+        btnDataMovementMode.setText(Messages.DbUpdatePrefPage_allow_data_movement);
+        gd = new GridData();
+        gd.horizontalIndent = 10;
+        btnDataMovementMode.setLayoutData(gd);
+        btnDataMovementMode.setSelection(prefs.getBooleanOfDbUpdatePref(
+                DB_UPDATE_PREF.DATA_MOVEMENT_MODE));
+
         return panel;
     }
 
@@ -119,6 +155,12 @@ public class ApplyCustomDialog extends Dialog {
                 btnScriptAddTransact.getSelection());
         customSettings.put(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY,
                 btnCreateIdxConcurrent.getSelection());
+        customSettings.put(DB_UPDATE_PREF.GENERATE_EXISTS,
+                btnGenerateExists.getSelection());
+        customSettings.put(DB_UPDATE_PREF.DROP_BEFORE_CREATE,
+                btndropBeforeCreate.getSelection());
+        customSettings.put(DB_UPDATE_PREF.ADD_PRE_POST_SCRIPT,
+                btnAddPrePostScript.getSelection());
         if (!isMsSql) {
             customSettings.put(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES,
                     btnCheckFuncBodies.getSelection());
@@ -127,6 +169,8 @@ public class ApplyCustomDialog extends Dialog {
         }
         customSettings.put(DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS,
                 btnScriptFromSelObjs.getSelection());
+        customSettings.put(DB_UPDATE_PREF.DATA_MOVEMENT_MODE,
+                btnDataMovementMode.getSelection());
         super.okPressed();
     }
 }

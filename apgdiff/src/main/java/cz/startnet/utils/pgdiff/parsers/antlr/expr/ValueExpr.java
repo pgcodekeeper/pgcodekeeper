@@ -3,8 +3,11 @@ package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -12,7 +15,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_elementsContext;
@@ -32,7 +34,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Frame_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_callContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_constructContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identifier_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IndirectionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_varContext;
@@ -294,7 +295,7 @@ public class ValueExpr extends AbstractExpr {
         } else if ((function = primary.function_call()) != null) {
             ret = function(function);
         } else if (primary.NULL() != null) {
-            ret = new ModPair<>(NONAME, TypesSetManually.UNKNOWN);
+            ret = new ModPair<>(NONAME, TypesSetManually.ANYTYPE);
         } else if ((caseExpr = primary.case_expression()) != null) {
             ret = null;
             for (VexContext v : caseExpr.vex()) {
@@ -311,7 +312,7 @@ public class ValueExpr extends AbstractExpr {
             ret = new ModPair<>("exists", TypesSetManually.BOOLEAN);
         } else if ((subSelectStmt = primary.select_stmt_no_parens()) != null) {
             Select select = new Select(this);
-            ret = select.analyze(subSelectStmt).get(0);
+            ret = getSubselectColumn(select.analyze(subSelectStmt));
             Indirection_listContext indir = primary.indirection_list();
             if (indir != null) {
                 indirection(indir.indirection(), ret);
@@ -334,7 +335,8 @@ public class ValueExpr extends AbstractExpr {
             if (elements != null) {
                 ret = arrayElements(elements);
             } else {
-                ret = new Select(this).analyze(array.table_subquery().select_stmt()).get(0);
+                Select select = new Select(this);
+                ret = getSubselectColumn(select.analyze(array.table_subquery().select_stmt()));
             }
             ret.setFirst("array");
             ret.setSecond(ret.getSecond() + "[]");
@@ -363,6 +365,16 @@ public class ValueExpr extends AbstractExpr {
             ret = new ModPair<>(NONAME, TypesSetManually.UNKNOWN);
         }
         return ret;
+    }
+
+    private ModPair<String, String> getSubselectColumn(
+            List<ModPair<String, String>> list) {
+        if (list.isEmpty()) {
+            Log.log(Log.LOG_WARNING, "Subselect return 0 element");
+            return new ModPair<>(NONAME, TypesSetManually.UNKNOWN);
+        } else {
+            return list.get(0);
+        }
     }
 
     private ModPair<String, String> indirectionVar(Indirection_varContext indirection) {
@@ -479,35 +491,41 @@ public class ValueExpr extends AbstractExpr {
         }
 
         String schemaName = null;
-        Identifier_nontypeContext functionCtx = funcNameCtx.identifier_nontype();
-        String functionName = functionCtx.getText();
+        List<ParserRuleContext> ids = ParserAbstract.getIdentifiers(funcNameCtx);
+        String functionName = QNameParser.getFirstName(ids);
 
-        IdentifierContext id = funcNameCtx.identifier();
+        ParserRuleContext id = QNameParser.getSchemaNameCtx(ids);
         if (id != null) {
             schemaName = id.getText();
             addDepcy(new GenericColumn(schemaName, DbObjType.SCHEMA), id);
         }
 
-        // TODO add processing for named/mixed notation in functions, because
-        // of order the arguments in function call (if order of arguments
-        // are not the same as in original - the current analysis will fail)
-        //
-        // (4.3.2. Using Named Notation / 4.3.3. Using Mixed Notation)
-        // https://www.postgresql.org/docs/11/sql-syntax-calling-funcs.html
-
         List<Vex_or_named_notationContext> args = function.vex_or_named_notation();
 
+        // all sequential args go before named args
+        // so we can ignore the order of latter and collect them into a map
         List<String> argsType = new ArrayList<>(args.size());
-        for (VexContext arg : PgDiffUtils.sIter(args.stream()
-                .map(Vex_or_named_notationContext::vex))) {
-            String argType = analyze(new Vex(arg)).getSecond();
+        Map<String, String> argsName = new HashMap<>();
+        for (Vex_or_named_notationContext arg : args) {
+            String argType = analyze(new Vex(arg.vex())).getSecond();
             // strip once before calling resolveCall
-            argsType.add(stripParens(argType));
+            argType = stripParens(argType);
+
+            IdentifierContext argnameCtx = arg.identifier();
+            if (argnameCtx != null) {
+                String argname = argnameCtx.getText();
+                if (argsName.put(argname, argType) != null) {
+                    Log.log(Log.LOG_WARNING, "Duplicate values for function named arg: " + argname);
+                }
+            } else {
+                argsType.add(argType);
+            }
         }
 
         Collection<IFunction> functions = availableFunctions(schemaName);
 
-        if (args.size() == 1 && TypesSetManually.QUALIFIED_ASTERISK.equals(argsType.get(0))) {
+        if (args.size() == 1 && argsType.size() == 1
+                && TypesSetManually.QUALIFIED_ASTERISK.equals(argsType.get(0))) {
             //// In this case function's argument is '*' or 'source.*'.
 
             IFunction func = null;
@@ -527,10 +545,10 @@ public class ValueExpr extends AbstractExpr {
             return new ModPair<>(functionName, func != null ?
                     getFunctionReturns(func) : TypesSetManually.FUNCTION_COLUMN);
         } else {
-            IFunction resultFunction = resolveCall(functionName, argsType, functions);
+            IFunction resultFunction = resolveCall(functionName, argsType, argsName, functions);
 
             if (resultFunction != null) {
-                addFunctionDepcy(resultFunction, functionCtx);
+                addFunctionDepcy(resultFunction, QNameParser.getFirstNameCtx(ids));
                 return new ModPair<>(functionName, getFunctionReturns(resultFunction));
             }
             return new ModPair<>(functionName, TypesSetManually.FUNCTION_COLUMN);
@@ -667,13 +685,14 @@ public class ValueExpr extends AbstractExpr {
 
     /**
      * @param functionName called function bare name
-     * @param sourceTypes call argument types
+     * @param sourceTypes call sequential argument types
+     * @param sourceNames call named argument types (Name => Type map)
      * @param availableFunctions functions from applicable schemas
      * @return most suitable function to call or null,
      *      if none were found or an ambiguity was detected
      */
     private IFunction resolveCall(String functionName, List<String> sourceTypes,
-            Collection<? extends IFunction> availableFunctions) {
+            Map<String, String> sourceNames, Collection<? extends IFunction> availableFunctions) {
         // save each applicable function with the number of exact type matches
         // between input args and function parameters
         // function that has more exact matches (less casts) wins
@@ -682,14 +701,29 @@ public class ValueExpr extends AbstractExpr {
             if (!f.getBareName().equals(functionName)) {
                 continue;
             }
+
             int argN = 0;
+            int namedArgN = 0;
             int exactMatches = 0;
             boolean signatureApplicable = true;
             for (Argument arg : f.getArguments()) {
                 if (!arg.getMode().isIn()) {
                     continue;
                 }
-                if (argN >= sourceTypes.size()) {
+
+                String sourceType = null;
+                boolean hasNamedArg = namedArgN < sourceNames.size();
+                if (argN < sourceTypes.size()) {
+                    sourceType = sourceTypes.get(argN);
+                    ++argN;
+                } else if (hasNamedArg) {
+                    sourceType = sourceNames.get(arg.getName());
+                    if (sourceType != null) {
+                        ++namedArgN;
+                    }
+                }
+
+                if (sourceType == null) {
                     // supplied fewer arguments than function requires
                     // current (unsatisfied) parameter having a default value
                     // means that all the rest of parameters will also have default values
@@ -697,19 +731,25 @@ public class ValueExpr extends AbstractExpr {
                     // thus, the function is applicable if the first unsatisfied parameter
                     // has a default value, and otherwise it is not
                     signatureApplicable = arg.getDefaultExpression() != null;
-                    break;
+                    if (!signatureApplicable || !hasNamedArg) {
+                        break;
+                    } else {
+                        // continue checking if more named (out-of-order) args are available
+                        continue;
+                    }
                 }
-                String sourceType = sourceTypes.get(argN);
+
                 if (sourceType.equals(arg.getDataType())) {
                     ++exactMatches;
-                } else if (!containsCastImplicit(sourceType, arg.getDataType())) {
+                } else if (!typesMatch(sourceType, arg.getDataType())) {
                     signatureApplicable = false;
                     break;
                 }
-                ++argN;
             }
             if (signatureApplicable) {
-                if (exactMatches == argN && argN == sourceTypes.size()) {
+                if (exactMatches == (argN + namedArgN) && argN == sourceTypes.size()
+                        && namedArgN == sourceNames.size()) {
+                    // all args matched types exactly with no casts
                     // fast path for exact signature match
                     return f;
                 }
@@ -720,8 +760,7 @@ public class ValueExpr extends AbstractExpr {
         if (matches.isEmpty()) {
             return null;
         }
-        return Collections.max(matches,
-                (m1,m2) -> Integer.compare(m1.getSecond(), m2.getSecond()))
+        return Collections.max(matches, Comparator.comparing(Pair::getSecond))
                 .getFirst();
     }
 
@@ -741,13 +780,13 @@ public class ValueExpr extends AbstractExpr {
 
             if (Objects.equals(leftArg, left)) {
                 ++exactMatches;
-            } else if (leftArg == null || left == null || !containsCastImplicit(left, leftArg)) {
+            } else if (leftArg == null || left == null || !typesMatch(left, leftArg)) {
                 continue;
             }
 
             if (Objects.equals(rightArg, right)) {
                 ++exactMatches;
-            } else if (rightArg == null || right == null || !containsCastImplicit(right, rightArg)) {
+            } else if (rightArg == null || right == null || !typesMatch(right, rightArg)) {
                 continue;
             }
 
@@ -769,8 +808,20 @@ public class ValueExpr extends AbstractExpr {
 
     }
 
-    private boolean containsCastImplicit(String source, String target) {
+    private boolean typesMatch(String source, String target) {
+        if (isAnyTypes(source) || isAnyTypes(target)) {
+            return true;
+        }
         return meta.containsCastImplicit(source, target);
+    }
+
+    private static boolean isAnyTypes(String type) {
+        return type.equalsIgnoreCase(TypesSetManually.ANYTYPE)
+                || type.equalsIgnoreCase(TypesSetManually.ANY)
+                || type.equalsIgnoreCase(TypesSetManually.ANYARRAY)
+                || type.equalsIgnoreCase(TypesSetManually.ANYRANGE)
+                || type.equalsIgnoreCase(TypesSetManually.ANYENUM)
+                || type.equalsIgnoreCase(TypesSetManually.ANYNOARRAY);
     }
 
     private String getOperatorToken(Vex vex) {
@@ -796,7 +847,7 @@ public class ValueExpr extends AbstractExpr {
     }
 
     public void orderBy(Orderby_clauseContext orderBy) {
-        for (Sort_specifierContext sort : orderBy.sort_specifier_list().sort_specifier()) {
+        for (Sort_specifierContext sort : orderBy.sort_specifier()) {
             analyze(new Vex(sort.vex()));
         }
     }

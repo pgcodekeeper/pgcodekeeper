@@ -132,7 +132,7 @@ ALTER TABLE public.t1_c1_seq OWNER TO galiev_mr;
 -- Name: t1_c1_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: galiev_mr
 --
 
-ALTER SEQUENCE public.t1_c1_seq OWNED BY t1.c1;
+ALTER SEQUENCE public.t1_c1_seq OWNED BY public.t1.c1;
 
 
 --
@@ -170,7 +170,7 @@ ALTER TABLE public.t2_c1_seq OWNER TO galiev_mr;
 -- Name: t2_c1_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: galiev_mr
 --
 
-ALTER SEQUENCE public.t2_c1_seq OWNED BY t2.c1;
+ALTER SEQUENCE public.t2_c1_seq OWNED BY public.t2.c1;
 
 
 --

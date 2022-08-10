@@ -12,6 +12,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -48,7 +49,7 @@ public final class PgDiffUtils {
         }
 
         if (!allowKeywords) {
-            Keyword keyword = Keyword.KEYWORDS.get(id);
+            Keyword keyword = Keyword.KEYWORDS.get(allowCaps ? id.toLowerCase(Locale.ROOT) : id);
             if (keyword != null && keyword.getCategory() != KeywordCategory.UNRESERVED_KEYWORD) {
                 return false;
             }
@@ -62,10 +63,19 @@ public final class PgDiffUtils {
     }
 
     public static boolean isValidIdChar(char c, boolean allowCaps, boolean allowDigits) {
-        return (c >= 'a' && c <= 'z') ||
-                (allowCaps && c >= 'A' && c <= 'Z') ||
-                (allowDigits && c >= '0' && c <= '9') ||
-                c == '_';
+        if (c >= 'a' && c <= 'z') {
+            return true;
+        }
+
+        if (allowCaps && c >= 'A' && c <= 'Z') {
+            return true;
+        }
+
+        if (allowDigits && c >= '0' && c <= '9') {
+            return true;
+        }
+
+        return c == '_';
     }
 
     /**
@@ -99,6 +109,23 @@ public final class PgDiffUtils {
                 .append('\'');
     }
 
+    /**
+     * Function equivalent to appendStringLiteralDQ in pgdump's dumputils.c
+     */
+    public static String quoteStringDollar(String contents) {
+        final String suffixes = "_XXXXXXX";
+        StringBuilder quote = new StringBuilder("$");
+        int counter = 0;
+        while (contents.contains(quote)) {
+            quote.append(suffixes.charAt(counter++));
+            counter %= suffixes.length();
+        }
+
+        quote.append('$');
+        String dollar = quote.toString();
+        return dollar + contents + dollar;
+    }
+
     public static String unquoteQuotedName(String name) {
         return name.substring(1, name.length() - 1).replace("\"\"", "\"");
     }
@@ -107,30 +134,24 @@ public final class PgDiffUtils {
         return s.substring(start, s.length() - 1).replace("''", "'");
     }
 
-    public static byte[] getHash(String s, String instance) {
-        try {
-            return MessageDigest.getInstance(instance)
-                    .digest(s.getBytes(StandardCharsets.UTF_8));
-        } catch (NoSuchAlgorithmException ex) {
-            Log.log(ex);
-            return null;
-        }
+    public static byte[] getHash(String s, String instance) throws NoSuchAlgorithmException {
+        return MessageDigest.getInstance(instance)
+                .digest(s.getBytes(StandardCharsets.UTF_8));
     }
 
-
     public static String hash (String s, String instance) {
-        byte[] hash = getHash(s, instance);
-        if (hash == null) {
+        try {
+            byte[] hash = getHash(s, instance);
+            StringBuilder sb = new StringBuilder(2 * hash.length);
+            for (byte b : hash) {
+                sb.append(HEX_CHARS[(b & 0xff) >> 4]);
+                sb.append(HEX_CHARS[(b & 0x0f)]);
+            }
+            return sb.toString();
+        } catch (NoSuchAlgorithmException e) {
+            Log.log(e);
             return instance +"_ERROR_" + new Random().nextInt();
         }
-
-        StringBuilder sb = new StringBuilder(2 * hash.length);
-        for (byte b : hash) {
-            sb.append(HEX_CHARS[(b & 0xff) >> 4]);
-            sb.append(HEX_CHARS[(b & 0x0f)]);
-        }
-        return sb.toString();
-
     }
 
     /**
@@ -143,14 +164,7 @@ public final class PgDiffUtils {
     /**
      * @return lowercase hex SHA-256 for UTF-8 representation of given string.
      */
-    public static byte[] sha(String s) {
-        return getHash(s, "SHA-256");
-    }
-
-    /**
-     * @return lowercase hex SHA-256 for UTF-8 representation of given string.
-     */
-    public static String shaString(String s) {
+    public static String sha(String s) {
         return hash(s, "SHA-256");
     }
 
@@ -249,6 +263,9 @@ public final class PgDiffUtils {
         return str.regionMatches(true, str.length() - suffixLength, suffix, 0, suffixLength);
     }
 
+    /**
+     * Casts a Stream into Iterable. Stream is consumed after Iterable.iterator() is called.
+     */
     public static <T> Iterable<T> sIter(Stream<T> stream) {
         return stream::iterator;
     }

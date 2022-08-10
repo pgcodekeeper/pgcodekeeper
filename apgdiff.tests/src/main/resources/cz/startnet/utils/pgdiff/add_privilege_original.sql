@@ -116,7 +116,7 @@ ALTER TABLE public.test_id_seq OWNER TO botov_av;
 -- Name: test_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: botov_av
 --
 
-ALTER SEQUENCE public.test_id_seq OWNED BY test.id;
+ALTER SEQUENCE public.test_id_seq OWNED BY public.test.id;
 
 
 --
@@ -166,4 +166,35 @@ GRANT ALL ON SCHEMA public TO PUBLIC;
 --
 -- PostgreSQL database dump complete
 --
+
+ -- change privileges for fdw11
+
+CREATE FOREIGN DATA WRAPPER fdw11;
+
+GRANT ALL ON FOREIGN DATA WRAPPER fdw11 TO testuser;
+
+ -- add new privileges for fdw2
+
+CREATE FOREIGN DATA WRAPPER fdw2;
+
+ -- revoke old privileges for fdw3
+
+CREATE FOREIGN DATA WRAPPER fdw3;
+
+GRANT ALL ON FOREIGN DATA WRAPPER fdw3 TO testuser;
+
+ -- change privileges for server
+
+CREATE SERVER test_server1 FOREIGN DATA WRAPPER fdw11;
+
+GRANT ALL ON FOREIGN SERVER test_server1 TO testuser;
+
+ -- add new privileges for server
+
+CREATE SERVER test_server2 FOREIGN DATA WRAPPER fdw11;
+
+ -- revoke old privileges for server
+
+CREATE SERVER test_server3 FOREIGN DATA WRAPPER fdw11;
+GRANT ALL ON FOREIGN SERVER test_server3 TO testuser;
 

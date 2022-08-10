@@ -5,6 +5,7 @@ import java.sql.SQLException;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
+import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.VexAnalysisLauncher;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateDomain;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
@@ -151,6 +152,9 @@ public class TypesReader extends JdbcReader {
         if (res.getBoolean("typanalyzeset")) {
             setFunctionWithDep(PgType::setAnalyzeFunction, t, res.getString("typanalyze"));
         }
+        if (SupportedVersion.VERSION_14.isLE(loader.version) &&  res.getBoolean("typsubscriptset")) {
+            setFunctionWithDep(PgType::setSubscriptFunction, t, res.getString("typsubscript"));
+        }
 
         short len = res.getShort("typlen");
         t.setInternalLength(len == -1 ? "variable" : "" + len);
@@ -287,6 +291,20 @@ public class TypesReader extends JdbcReader {
         if (res.getBoolean("rngsubdiffset")) {
             setFunctionWithDep(PgType::setSubtypeDiff, t, res.getString("rngsubdiff"));
         }
+
+        if (SupportedVersion.VERSION_14.isLE(loader.version)) {
+            long multiRangeLong = res.getLong("rngmultirange");
+            if (multiRangeLong != 0) {
+                JdbcType multiRangeType = loader.cachedTypesByOid.get(multiRangeLong);
+                t.setMultirange(multiRangeType.getFullName());
+                multiRangeType.addTypeDepcy(t);
+            }
+        }
         return t;
+    }
+
+    @Override
+    protected String getClassId() {
+        return "pg_type";
     }
 }

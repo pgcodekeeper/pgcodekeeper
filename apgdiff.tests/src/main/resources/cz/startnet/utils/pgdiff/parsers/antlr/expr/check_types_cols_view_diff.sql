@@ -99,3 +99,9 @@ Schema: public
     RelationColumns : 
      qqq - bigint
      www - json
+
+  View: lateral_access
+    RelationColumns : 
+     c1_int - integer
+     c1_text - text
+     c1_int_nested - integer

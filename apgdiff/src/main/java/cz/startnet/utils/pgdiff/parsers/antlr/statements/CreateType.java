@@ -2,12 +2,12 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_type_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
@@ -27,7 +27,7 @@ public class CreateType extends ParserAbstract {
 
     @Override
     public void parseObject() {
-        List<IdentifierContext> ids = ctx.name.identifier();
+        List<ParserRuleContext> ids = getIdentifiers(ctx.name);
         String name = QNameParser.getFirstName(ids);
         AbstractSchema schema = getSchemaSafe(ids);
         PgTypeForm form = PgTypeForm.SHELL;
@@ -54,7 +54,7 @@ public class CreateType extends ParserAbstract {
         }
 
         for (Table_column_definitionContext attr : ctx.attrs) {
-            type.addAttr(getColumn(attr));
+            addAttr(attr, type);
         }
         for (Character_stringContext enume : ctx.enums) {
             type.addEnum(enume.getText());
@@ -71,39 +71,47 @@ public class CreateType extends ParserAbstract {
         }
         if (ctx.canonical_function != null) {
             type.setCanonical(getFullCtxText(ctx.canonical_function));
-            addDepSafe(type, ctx.canonical_function.identifier(), DbObjType.FUNCTION, true);
+            addDepSafe(type, getIdentifiers(ctx.canonical_function), DbObjType.FUNCTION, true);
         }
         if (ctx.subtype_diff_function != null) {
             type.setSubtypeDiff(getFullCtxText(ctx.subtype_diff_function));
-            addDepSafe(type, ctx.subtype_diff_function.identifier(), DbObjType.FUNCTION, true);
+            addDepSafe(type, getIdentifiers(ctx.subtype_diff_function), DbObjType.FUNCTION, true);
+        }
+        if (ctx.multirange_name != null) {
+            type.setMultirange(ctx.multirange_name.getText());
+            addPgTypeDepcy(ctx.multirange_name, type);
         }
         if (ctx.input_function != null) {
             type.setInputFunction(getFullCtxText(ctx.input_function));
-            addDepSafe(type, ctx.input_function.identifier(), DbObjType.FUNCTION, true);
+            addDepSafe(type, getIdentifiers(ctx.input_function), DbObjType.FUNCTION, true);
         }
         if (ctx.output_function != null) {
             type.setOutputFunction(getFullCtxText(ctx.output_function));
-            addDepSafe(type, ctx.output_function.identifier(), DbObjType.FUNCTION, true);
+            addDepSafe(type, getIdentifiers(ctx.output_function), DbObjType.FUNCTION, true);
         }
         if (ctx.receive_function != null) {
             type.setReceiveFunction(getFullCtxText(ctx.receive_function));
-            addDepSafe(type, ctx.receive_function.identifier(), DbObjType.FUNCTION, true);
+            addDepSafe(type, getIdentifiers(ctx.receive_function), DbObjType.FUNCTION, true);
         }
         if (ctx.send_function != null) {
             type.setSendFunction(getFullCtxText(ctx.send_function));
-            addDepSafe(type, ctx.send_function.identifier(), DbObjType.FUNCTION, true);
+            addDepSafe(type, getIdentifiers(ctx.send_function), DbObjType.FUNCTION, true);
         }
         if (ctx.type_modifier_input_function != null) {
             type.setTypmodInputFunction(getFullCtxText(ctx.type_modifier_input_function));
-            addDepSafe(type, ctx.type_modifier_input_function.identifier(), DbObjType.FUNCTION, true);
+            addDepSafe(type, getIdentifiers(ctx.type_modifier_input_function), DbObjType.FUNCTION, true);
         }
         if (ctx.type_modifier_output_function != null) {
             type.setTypmodOutputFunction(getFullCtxText(ctx.type_modifier_output_function));
-            addDepSafe(type, ctx.type_modifier_output_function.identifier(), DbObjType.FUNCTION, true);
+            addDepSafe(type, getIdentifiers(ctx.type_modifier_output_function), DbObjType.FUNCTION, true);
         }
         if (ctx.analyze_function != null) {
             type.setAnalyzeFunction(getFullCtxText(ctx.analyze_function));
-            addDepSafe(type, ctx.analyze_function.identifier(), DbObjType.FUNCTION, true);
+            addDepSafe(type, getIdentifiers(ctx.analyze_function), DbObjType.FUNCTION, true);
+        }
+        if (ctx.subscript_function != null) {
+            type.setSubscriptFunction(getFullCtxText(ctx.subscript_function));
+            addDepSafe(type, getIdentifiers(ctx.subscript_function), DbObjType.FUNCTION, true);
         }
         if (ctx.internallength != null) {
             type.setInternalLength(getFullCtxText(ctx.internallength));
@@ -147,18 +155,18 @@ public class CreateType extends ParserAbstract {
         }
     }
 
-    private AbstractColumn getColumn(Table_column_definitionContext colCtx) {
+    private void addAttr(Table_column_definitionContext colCtx, PgType type) {
         AbstractColumn col = new PgColumn(colCtx.identifier().getText());
         col.setType(getTypeName(colCtx.data_type()));
-        addPgTypeDepcy(colCtx.data_type(), col);
+        addPgTypeDepcy(colCtx.data_type(), type);
         if (colCtx.collate_identifier() != null) {
             col.setCollation(getFullCtxText(colCtx.collate_identifier().collation));
         }
-        return col;
+        type.addAttr(col);
     }
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_CREATE, DbObjType.TYPE, ctx.name.identifier());
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.TYPE, getIdentifiers(ctx.name));
     }
 }

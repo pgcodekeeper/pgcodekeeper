@@ -188,7 +188,7 @@ public abstract class AbstractModelExporter {
     }
 
     protected String getDumpSql(PgStatement statement) {
-        return statement.getFullSQL();
+        return statement.getFullFormattedSQL();
     }
 
     /**

@@ -17,6 +17,8 @@ CREATE SUBSCRIPTION testsub3 CONNECTION 'dbname=doesnotexist' PUBLICATION testpu
 ALTER SUBSCRIPTION testsub3 REFRESH PUBLICATION;
 ALTER SUBSCRIPTION testsub CONNECTION 'foobar';
 ALTER SUBSCRIPTION testsub SET PUBLICATION testpub2, testpub3 WITH (refresh = false);
+ALTER SUBSCRIPTION regress_testsub ADD PUBLICATION testpub1, testpub2 WITH (refresh = false);
+ALTER SUBSCRIPTION regress_testsub DROP PUBLICATION testpub1, testpub1 WITH (refresh = false);
 ALTER SUBSCRIPTION testsub CONNECTION 'dbname=doesnotexist2';
 ALTER SUBSCRIPTION testsub SET (slot_name = 'newname');
 ALTER SUBSCRIPTION doesnotexist CONNECTION 'dbname=doesnotexist2';

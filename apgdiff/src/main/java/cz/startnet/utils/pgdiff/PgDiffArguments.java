@@ -10,20 +10,17 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import cz.startnet.utils.pgdiff.formatter.FormatConfiguration;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class PgDiffArguments implements Cloneable {
+public class PgDiffArguments {
 
-    private boolean modeParse;
-    private boolean modeGraph;
     private String newSrc;
     private String oldSrc;
     private String newSrcFormat;
     private String oldSrcFormat;
-    private String outputTarget;
     private String inCharsetName = ApgdiffConsts.UTF_8;
-    private String outCharsetName = ApgdiffConsts.UTF_8;
     private boolean ignorePrivileges;
     private boolean keepNewlines;
     private boolean addTransaction;
@@ -32,14 +29,12 @@ public class PgDiffArguments implements Cloneable {
     private String timeZone;
     private boolean usingTypeCastOff;
     private boolean selectedOnly;
+    private boolean dataMovementMode;
     private boolean concurrentlyMode;
-    private boolean safeMode;
-    private boolean runOnTarget;
-    private String runOnDb;
-    private final List<DangerStatement> allowedDangers = new ArrayList<>();
     private final List<DbObjType> allowedTypes = new ArrayList<>();
     private boolean stopNotAllowed;
     private final List<String> ignoreLists = new ArrayList<>();
+    private String ignoreSchemaList;
     private final List<String> sourceLibs = new ArrayList<>();
     private final List<String> sourceLibXmls = new ArrayList<>();
     private final List<String> sourceLibsWithoutPriv = new ArrayList<>();
@@ -50,27 +45,46 @@ public class PgDiffArguments implements Cloneable {
     private boolean msSql;
     private boolean ignoreConcurrentModification;
     private boolean simplifyView;
-    private int graphDepth;
-    private boolean graphReverse;
-    private final List<String> graphNames = new ArrayList<>();
     private boolean ignoreErrors;
     private boolean ignoreColumnOrder;
     private boolean projUpdate;
+    private boolean autoFormatObjectCode;
+    private FormatConfiguration formatConfiguration = new FormatConfiguration();
+    private boolean generateExists;
+    private boolean dropBeforeCreate;
+    private List<String> preFilePath = new ArrayList<>();
+    private List<String> postFilePath = new ArrayList<>();
 
-    public void setModeParse(final boolean modeParse) {
-        this.modeParse = modeParse;
+    public Collection<String> getPreFilePath() {
+        return Collections.unmodifiableCollection(preFilePath);
     }
 
-    public boolean isModeParse() {
-        return modeParse;
+    public void setPreFilePath(List<String> preFilePath) {
+        this.preFilePath = preFilePath;
     }
 
-    public void setModeGraph(boolean modeGraph) {
-        this.modeGraph = modeGraph;
+    public Collection<String> getPostFilePath() {
+        return Collections.unmodifiableCollection(postFilePath);
     }
 
-    public boolean isModeGraph() {
-        return modeGraph;
+    public void setPostFilePath(List<String> postFilePath) {
+        this.postFilePath = postFilePath;
+    }
+
+    public boolean isDropBeforeCreate() {
+        return dropBeforeCreate;
+    }
+
+    public void setDropBeforeCreate(boolean dropBeforeCreate) {
+        this.dropBeforeCreate = dropBeforeCreate;
+    }
+
+    public boolean isGenerateExists() {
+        return generateExists;
+    }
+
+    public void setGenerateExists(boolean generateExists) {
+        this.generateExists = generateExists;
     }
 
     public void setNewSrc(final String newSrc) {
@@ -105,14 +119,6 @@ public class PgDiffArguments implements Cloneable {
         return this.oldSrcFormat;
     }
 
-    public void setOutputTarget(final String outputTarget) {
-        this.outputTarget = outputTarget;
-    }
-
-    public String getOutputTarget() {
-        return this.outputTarget;
-    }
-
     public void setAddTransaction(final boolean addTransaction) {
         this.addTransaction = addTransaction;
     }
@@ -129,36 +135,12 @@ public class PgDiffArguments implements Cloneable {
         this.stopNotAllowed = stopNotAllowed;
     }
 
-    public boolean isSafeMode() {
-        return safeMode;
-    }
-
-    public void setSafeMode(final boolean safeMode) {
-        this.safeMode = safeMode;
-    }
-
-    public boolean isRunOnTarget() {
-        return runOnTarget;
-    }
-
-    public void setRunOnTarget(boolean runOnTarget) {
-        this.runOnTarget = runOnTarget;
-    }
-
-    public String getRunOnDb() {
-        return runOnDb;
-    }
-
-    public void setRunOnDb(String runOnDb) {
-        this.runOnDb = runOnDb;
-    }
-
-    public Collection<DangerStatement> getAllowedDangers() {
-        return Collections.unmodifiableCollection(allowedDangers);
-    }
-
     public Collection<String> getIgnoreLists() {
         return Collections.unmodifiableCollection(ignoreLists);
+    }
+
+    public String getIgnoreSchemaList() {
+        return ignoreSchemaList;
     }
 
     public Collection<String> getSourceLibXmls() {
@@ -225,20 +207,28 @@ public class PgDiffArguments implements Cloneable {
         this.ignoreColumnOrder = ignoreColumnOrder;
     }
 
+    public boolean isAutoFormatObjectCode() {
+        return autoFormatObjectCode;
+    }
+
+    public void setAutoFormatObjectCode(boolean autoFormatObjectCode) {
+        this.autoFormatObjectCode = autoFormatObjectCode;
+    }
+
+    public void setFormatConfiguration(FormatConfiguration formatConfiguration) {
+        this.formatConfiguration = formatConfiguration;
+    }
+
+    public FormatConfiguration getFormatConfiguration() {
+        return formatConfiguration;
+    }
+
     public String getInCharsetName() {
         return inCharsetName;
     }
 
     public void setInCharsetName(final String inCharsetName) {
         this.inCharsetName = inCharsetName;
-    }
-
-    public String getOutCharsetName() {
-        return outCharsetName;
-    }
-
-    public void setOutCharsetName(final String outCharsetName) {
-        this.outCharsetName = outCharsetName;
     }
 
     public void setDisableCheckFunctionBodies(boolean disableCheckFunctionBodies) {
@@ -301,32 +291,20 @@ public class PgDiffArguments implements Cloneable {
         this.selectedOnly = selectedOnly;
     }
 
+    public boolean isDataMovementMode() {
+        return dataMovementMode;
+    }
+
+    public void setDataMovementMode(boolean dataMovementMode) {
+        this.dataMovementMode = dataMovementMode;
+    }
+
     public boolean isConcurrentlyMode() {
         return concurrentlyMode;
     }
 
     public void setConcurrentlyMode(boolean concurrentlyMode) {
         this.concurrentlyMode = concurrentlyMode;
-    }
-
-    public int getGraphDepth() {
-        return graphDepth;
-    }
-
-    public void setGraphDepth(int graphDepth) {
-        this.graphDepth = graphDepth;
-    }
-
-    public boolean isGraphReverse() {
-        return graphReverse;
-    }
-
-    public void setGraphReverse(boolean graphReverse) {
-        this.graphReverse = graphReverse;
-    }
-
-    public Collection<String> getGraphNames() {
-        return Collections.unmodifiableCollection(graphNames);
     }
 
     public boolean isSimplifyView() {
@@ -337,20 +315,51 @@ public class PgDiffArguments implements Cloneable {
         this.simplifyView = simplifyView;
     }
 
-    @Override
-    public PgDiffArguments clone() {
-        try {
-            return (PgDiffArguments) super.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new RuntimeException("Impossible error", e);
-        }
-    }
-
     public boolean isProjUpdate() {
         return projUpdate;
     }
 
     public void setProjUpdate(boolean projUpdate) {
         this.projUpdate = projUpdate;
+    }
+
+    public PgDiffArguments copy() {
+        PgDiffArguments arg = new PgDiffArguments();
+        arg.newSrc = getNewSrc();
+        arg.oldSrc = getOldSrc();
+        arg.newSrcFormat = getNewSrcFormat();
+        arg.oldSrcFormat = getOldSrcFormat();
+        arg.inCharsetName = getInCharsetName();
+        arg.ignorePrivileges = isIgnorePrivileges();
+        arg.keepNewlines = isKeepNewlines();
+        arg.addTransaction = isAddTransaction();
+        arg.disableCheckFunctionBodies = isDisableCheckFunctionBodies();
+        arg.enableFunctionBodiesDependencies = isEnableFunctionBodiesDependencies();
+        arg.timeZone = getTimeZone();
+        arg.usingTypeCastOff = isUsingTypeCastOff();
+        arg.selectedOnly = isSelectedOnly();
+        arg.dataMovementMode = isDataMovementMode();
+        arg.concurrentlyMode = isConcurrentlyMode();
+        arg.allowedTypes.addAll(getAllowedTypes());
+        arg.stopNotAllowed = isStopNotAllowed();
+        arg.ignoreLists.addAll(getIgnoreLists());
+        arg.ignoreSchemaList = getIgnoreSchemaList();
+        arg.sourceLibs.addAll(getSourceLibs());
+        arg.sourceLibXmls.addAll(getSourceLibXmls());
+        arg.sourceLibsWithoutPriv.addAll(getSourceLibsWithoutPriv());
+        arg.targetLibXmls.addAll(getTargetLibXmls());
+        arg.targetLibs.addAll(getTargetLibs());
+        arg.targetLibsWithoutPriv.addAll(getTargetLibsWithoutPriv());
+        arg.libSafeMode = isLibSafeMode();
+        arg.msSql = isMsSql();
+        arg.ignoreConcurrentModification = isIgnoreConcurrentModification();
+        arg.simplifyView = isSimplifyView();
+        arg.ignoreErrors = isIgnoreErrors();
+        arg.ignoreColumnOrder = isIgnoreColumnOrder();
+        arg.autoFormatObjectCode = isAutoFormatObjectCode();
+        arg.formatConfiguration = formatConfiguration.copy();
+        arg.preFilePath.addAll(getPreFilePath());
+        arg.postFilePath.addAll(getPostFilePath());
+        return arg;
     }
 }

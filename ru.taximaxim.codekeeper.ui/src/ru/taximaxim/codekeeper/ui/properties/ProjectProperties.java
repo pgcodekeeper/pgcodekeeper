@@ -8,7 +8,6 @@ import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -34,7 +33,8 @@ import ru.taximaxim.codekeeper.ui.UIConsts.DB_BIND_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
-import ru.taximaxim.codekeeper.ui.dbstore.DbStorePicker;
+import ru.taximaxim.codekeeper.ui.dbstore.DbMenuStorePicker;
+import ru.taximaxim.codekeeper.ui.dbstore.IStorePicker;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
@@ -42,6 +42,7 @@ public class ProjectProperties extends PropertyPage {
 
     private Button btnEnableProjPref;
     private Button btnNoPrivileges;
+    private Button btnAutoFormatCode;
     private Button btnIgnoreColumnOrder;
     private Button btnEnableFuncDep;
     private Button btnSimplifyView;
@@ -50,7 +51,7 @@ public class ProjectProperties extends PropertyPage {
     private Button btnForceUnixNewlines;
     private Button btnDisableParser;
     private Button btnBindProjToDb;
-    private DbStorePicker storePicker;
+    private IStorePicker storePicker;
     private Combo cmbTimezone;
     private CLabel lblWarn;
     private CLabel lblWarnPosix;
@@ -102,16 +103,18 @@ public class ProjectProperties extends PropertyPage {
             public void widgetSelected(SelectionEvent e) {
                 storePicker.setEnabled(btnBindProjToDb.getSelection());
                 if (!btnBindProjToDb.getSelection()) {
-                    storePicker.setSelection(StructuredSelection.EMPTY);
+                    storePicker.setSelection(null);
                 }
             }
         });
 
         dbForBind = DbInfo.getLastDb(nameOfBoundDb);
-        storePicker = new DbStorePicker(panel, false, false);
-        storePicker.setSelection(dbForBind != null ? new StructuredSelection(dbForBind) : StructuredSelection.EMPTY);
+        storePicker = new DbMenuStorePicker(panel, false, false);
+        storePicker.filter(isMsSql);
+        storePicker.setSelection(dbForBind);
+
         storePicker.setEnabled(btnBindProjToDb.getSelection());
-        storePicker.addListenerToCombo(e -> dbForBind = storePicker.getDbInfo());
+        storePicker.addSelectionListener(() -> dbForBind = storePicker.getDbInfo());
 
         if (!isMsSql) {
             new Label(panel, SWT.NONE).setText(Messages.projectProperties_timezone_for_all_db_connections);
@@ -152,18 +155,17 @@ public class ProjectProperties extends PropertyPage {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                btnNoPrivileges.setEnabled(btnEnableProjPref.getSelection());
-                btnIgnoreColumnOrder.setEnabled(btnEnableProjPref.getSelection());
-                btnEnableFuncDep.setEnabled(btnEnableProjPref.getSelection());
-                btnUseGlobalIgnoreList.setEnabled(btnEnableProjPref.getSelection());
+                boolean enable = btnEnableProjPref.getSelection();
+                btnNoPrivileges.setEnabled(enable);
+                btnAutoFormatCode.setEnabled(enable);
+                btnIgnoreColumnOrder.setEnabled(enable);
+                btnEnableFuncDep.setEnabled(enable);
+                btnUseGlobalIgnoreList.setEnabled(enable);
                 if (!isMsSql) {
-                    btnSimplifyView.setEnabled(btnEnableProjPref.getSelection());
+                    btnSimplifyView.setEnabled(enable);
                 }
             }
         });
-
-        btnNoPrivileges = createButton(panel, Messages.dbUpdatePrefPage_ignore_privileges,
-                prefs.getBoolean(PREF.NO_PRIVILEGES, false), overridePref);
 
         btnIgnoreColumnOrder = createButton(panel, Messages.GeneralPrefPage_ignore_column_order,
                 prefs.getBoolean(PREF.IGNORE_COLUMN_ORDER, false), overridePref);
@@ -172,10 +174,16 @@ public class ProjectProperties extends PropertyPage {
                 prefs.getBoolean(PREF.ENABLE_BODY_DEPENDENCIES, false), overridePref);
         btnEnableFuncDep.setToolTipText(Messages.GeneralPrefPage_body_depcy_tooltip);
 
+        btnNoPrivileges = createButton(panel, Messages.dbUpdatePrefPage_ignore_privileges,
+                prefs.getBoolean(PREF.NO_PRIVILEGES, false), overridePref);
+
         if (!isMsSql) {
             btnSimplifyView = createButton(panel, Messages.GeneralPrefPage_simplify_view,
                     prefs.getBoolean(PREF.SIMPLIFY_VIEW, false), overridePref);
         }
+
+        btnAutoFormatCode = createButton(panel, Messages.GeneralPrefPage_format_object_code_automatically,
+                prefs.getBoolean(PREF.FORMAT_OBJECT_CODE_AUTOMATICALLY, false), overridePref);
 
         btnUseGlobalIgnoreList = createButton(panel, Messages.ProjectProperties_use_global_ignore_list,
                 prefs.getBoolean(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, true), overridePref);
@@ -219,22 +227,27 @@ public class ProjectProperties extends PropertyPage {
     protected void performDefaults() {
         // overridable preferences
         IPreferenceStore mainPS = Activator.getDefault().getPreferenceStore();
-        btnEnableProjPref.setSelection(false);
-        btnNoPrivileges.setEnabled(btnEnableProjPref.getSelection());
+        boolean enable = false;
+
+        btnEnableProjPref.setSelection(enable);
+        btnNoPrivileges.setEnabled(enable);
         btnNoPrivileges.setSelection(mainPS.getBoolean(PREF.NO_PRIVILEGES));
-        btnEnableFuncDep.setEnabled(btnEnableProjPref.getSelection());
+        btnAutoFormatCode.setEnabled(enable);
+        btnAutoFormatCode.setSelection(mainPS.getBoolean(PREF.FORMAT_OBJECT_CODE_AUTOMATICALLY));
+
+        btnEnableFuncDep.setEnabled(enable);
         btnEnableFuncDep.setSelection(mainPS.getBoolean(PREF.ENABLE_BODY_DEPENDENCIES));
-        btnUseGlobalIgnoreList.setEnabled(btnEnableProjPref.getSelection());
+        btnUseGlobalIgnoreList.setEnabled(enable);
         btnUseGlobalIgnoreList.setSelection(true);
 
         // project preferences
         btnDisableParser.setSelection(false);
         btnForceUnixNewlines.setSelection(true);
         btnBindProjToDb.setSelection(false);
-        storePicker.setSelection(StructuredSelection.EMPTY);
+        storePicker.setSelection(null);
         if (!isMsSql) {
             cmbTimezone.setText(ApgdiffConsts.UTC);
-            btnSimplifyView.setEnabled(btnEnableProjPref.getSelection());
+            btnSimplifyView.setEnabled(enable);
             btnSimplifyView.setSelection(mainPS.getBoolean(PREF.SIMPLIFY_VIEW));
         }
         try {
@@ -280,6 +293,7 @@ public class ProjectProperties extends PropertyPage {
     private void fillPrefs() throws BackingStoreException {
         prefs.putBoolean(PROJ_PREF.ENABLE_PROJ_PREF_ROOT, btnEnableProjPref.getSelection());
         prefs.putBoolean(PREF.NO_PRIVILEGES, btnNoPrivileges.getSelection());
+        prefs.putBoolean(PREF.FORMAT_OBJECT_CODE_AUTOMATICALLY, btnAutoFormatCode.getSelection());
         prefs.putBoolean(PREF.IGNORE_COLUMN_ORDER, btnIgnoreColumnOrder.getSelection());
         prefs.putBoolean(PREF.ENABLE_BODY_DEPENDENCIES, btnEnableFuncDep.getSelection());
         prefs.putBoolean(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, btnUseGlobalIgnoreList.getSelection());

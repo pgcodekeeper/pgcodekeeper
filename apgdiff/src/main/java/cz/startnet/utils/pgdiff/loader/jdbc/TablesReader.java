@@ -52,6 +52,7 @@ public class TablesReader extends JdbcReader {
             } else {
                 t = new PartitionForeignPgTable(tableName, serverName, partitionBound);
             }
+            t.addDep(new GenericColumn(serverName, DbObjType.SERVER));
         } else if (ofTypeOid != 0) {
             JdbcType jdbcOfType = loader.cachedTypesByOid.get(ofTypeOid);
             String ofType = jdbcOfType.getFullName();
@@ -173,6 +174,10 @@ public class TablesReader extends JdbcReader {
         if (SupportedVersion.VERSION_12.isLE(loader.version)) {
             colGenerated = getColArray(res, "col_generated");
         }
+        String[] colCompression = null;
+        if (SupportedVersion.VERSION_14.isLE(loader.version)) {
+            colCompression = getColArray(res, "col_compression");
+        }
 
         for (int i = 0; i < colNames.length; i++) {
             PgColumn column = new PgColumn(colNames[i]);
@@ -245,6 +250,17 @@ public class TablesReader extends JdbcReader {
                 column.setGenerated(true);
             }
 
+            if (colCompression != null && !colCompression[i].isEmpty()) {
+                switch (colCompression[i]) {
+                case "p":
+                    column.setCompression("pglz");
+                    break;
+                case "l":
+                    column.setCompression("lz4");
+                    break;
+                }
+            }
+
             String comment = colComments[i];
             if (comment != null && !comment.isEmpty()) {
                 column.setComment(loader.args, PgDiffUtils.quoteString(comment));
@@ -278,5 +294,10 @@ public class TablesReader extends JdbcReader {
                 t.addColumn(column);
             }
         }
+    }
+
+    @Override
+    protected String getClassId() {
+        return "pg_class";
     }
 }

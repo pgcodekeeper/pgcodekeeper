@@ -1246,3 +1246,7 @@ revoke all on key_desc_1 from regress_insert_other_user;
 grant insert on inserttest3 to regress_coldesc_role;
 grant insert on brtrigpartcon to regress_coldesc_role;
 revoke select on brtrigpartcon from regress_coldesc_role;
+
+-- GRANTED BY
+GRANT INSERT ON atest2 TO regress_priv_user4 GRANTED BY CURRENT_USER;
+GRANT TRUNCATE ON atest2 TO regress_priv_user5 GRANTED BY CURRENT_ROLE;

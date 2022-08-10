@@ -45,6 +45,7 @@ public class CliArgs extends PgDiffArguments {
         // otherwise args4j breaks
         this.allowedDangers = new ArrayList<>();
         this.allowedTypes = new ArrayList<>();
+        this.graphFilterTypes = new ArrayList<>();
         this.ignoreLists = new ArrayList<>();
         this.sourceLibXmls = new ArrayList<>();
         this.sourceLibs = new ArrayList<>();
@@ -146,6 +147,18 @@ public class CliArgs extends PgDiffArguments {
             usage="use this timezone when working with database, also add SET TIMEZONE statement to the script")
     private String timeZone;
 
+    @Option(name="--pre-script", metaVar="<path>", forbids={"--parse", "--graph"},
+            usage="PRE script file path or directory with PRE scripts"
+                    + "\nnested directories are loaded recursively"
+                    + "\nspecify multiple times to use several paths")
+    private List<String> preFilePath = new ArrayList<>();
+
+    @Option(name="--post-script", metaVar="<path>", forbids={"--parse", "--graph"},
+            usage="POST script file path or directory with POST scripts"
+                    + "\nnested directories are loaded recursively"
+                    + "\nspecify multiple times to use several paths")
+    private List<String> postFilePath = new ArrayList<>();
+
     @Option(name="--ignore-column-order",
             usage="ignore differences in table column order")
     private boolean ignoreColumnOrder;
@@ -154,9 +167,21 @@ public class CliArgs extends PgDiffArguments {
             usage="do not print USING expression for ALTER COLUMN TYPE")
     private boolean usingTypeCastOff;
 
+    @Option(name="--migrate-data", forbids={"--graph", "--parse"},
+            usage="migrate data when re-creating tables")
+    private boolean dataMovementMode;
+
     @Option(name="-C", aliases="--concurrently-mode", forbids={"--graph", "--parse"},
             usage="print CREATE INDEX with CONCURRENTLY option for PostgreSQL and WITH ONLINE = ON for MS SQL")
     private boolean concurrentlyMode;
+
+    @Option(name="--generate-exist", forbids={"--graph", "--parse"},
+            usage="print CREATE IF NOT EXISTS / DROP IF EXISTS")
+    private boolean generateExists;
+
+    @Option(name="--drop-before-create", forbids={"--graph", "--parse"},
+            usage="print DROP before CREATE statement")
+    private boolean dropBeforeCreate;
 
     @Option(name="-S", aliases="--safe-mode", forbids={"--graph", "--parse"},
             usage="do not generate scripts containing dangerous statements\nsee: --allow-danger-ddl")
@@ -185,6 +210,10 @@ public class CliArgs extends PgDiffArguments {
             usage="use an ignore list to include/exclude objects from diff"
                     + "\nspecify multiple times to use several lists")
     private List<String> ignoreLists;
+
+    @Option(name="--ignore-schema", metaVar="<path>",
+            usage="use an ignore schema list to include/exclude schemas at loading stage")
+    private String ignoreSchemaList;
 
     @Option(name="--src-lib-xml", metaVar="<path>",
             usage="add xml with library dependencies to source"
@@ -218,7 +247,7 @@ public class CliArgs extends PgDiffArguments {
 
     @Option(name="--lib-safe-mode",
             usage="exit with an error if a library object conflicts with other schema or library objects"
-                    + " otherwise, in case of conflicts objects loaded first have priority")
+                    + "\notherwise, in case of conflicts objects loaded first have priority")
     private boolean libSafeMode;
 
     @Option(name="--ignore-concurrent-modification",
@@ -229,18 +258,27 @@ public class CliArgs extends PgDiffArguments {
             usage="work with MS SQL")
     private boolean msSql;
 
-    @Option(name="--graph-depth", metaVar="<n>", forbids={"--parse"},
+    @Option(name="--graph-depth", metaVar="<n>", forbids={"--parse"}, depends={"--graph"},
             usage="depth of displayed dependencies in graph mode")
     private int graphDepth;
 
-    @Option(name="--graph-reverse",  depends="--graph-name", forbids={"--parse"},
+    @Option(name="--graph-reverse",  depends={"--graph-name", "--graph"}, forbids={"--parse"},
             usage="reverse the direction of the graph to show objects on which the starting object depends")
     private boolean graphReverse;
 
-    @Option(name="--graph-name", metaVar="<name>", forbids={"--parse"},
+    @Option(name="--graph-name", metaVar="<name>", forbids={"--parse"}, depends={"--graph"},
             usage="name of start object in graph mode"
                     + "\nspecify multiple times to use several names")
     private List<String> graphNames;
+
+    @Option(name="--graph-filter-object", forbids={"--parse"}, depends={"--graph"},
+            handler=DbObjTypeOptionHandler.class,
+            usage="show these object types, hide  other objects types")
+    private List<DbObjType> graphFilterTypes;
+
+    @Option(name="--graph-invert-filter", forbids={"--parse"}, depends={"--graph", "--graph-filter-object"},
+            usage="invert graph filter object types: hide objects specified by the filter")
+    private boolean graphInvertFilter;
 
     @Option(name="--project-update",
             usage="update project in parse mode")
@@ -256,29 +294,24 @@ public class CliArgs extends PgDiffArguments {
         this.projUpdate = projUpdate;
     }
 
-    @Override
     public boolean isModeParse() {
         return modeParse;
     }
 
-    @Override
     public void setModeParse(boolean modeParse) {
         this.modeParse = modeParse;
     }
 
-    @Override
     public boolean isModeGraph() {
         return modeGraph;
     }
 
-    @Override
     public void setModeGraph(boolean modeGraph) {
         this.modeGraph = modeGraph;
     }
 
     @Override
     public String getNewSrc() {
-
         return newSrc;
     }
 
@@ -297,12 +330,10 @@ public class CliArgs extends PgDiffArguments {
         this.oldSrc = oldSrc;
     }
 
-    @Override
     public String getOutputTarget() {
         return this.outputTarget;
     }
 
-    @Override
     public void setOutputTarget(String outputTarget) {
         this.outputTarget = outputTarget;
     }
@@ -327,37 +358,30 @@ public class CliArgs extends PgDiffArguments {
         this.stopNotAllowed = stopNotAllowed;
     }
 
-    @Override
     public boolean isSafeMode() {
         return safeMode;
     }
 
-    @Override
     public void setSafeMode(boolean safeMode) {
         this.safeMode = safeMode;
     }
 
-    @Override
     public boolean isRunOnTarget() {
         return runOnTarget;
     }
 
-    @Override
     public void setRunOnTarget(boolean runOnTarget) {
         this.runOnTarget = runOnTarget;
     }
 
-    @Override
     public String getRunOnDb() {
         return runOnDb;
     }
 
-    @Override
     public void setRunOnDb(String runOnDb) {
         this.runOnDb = runOnDb;
     }
 
-    @Override
     public Collection<DangerStatement> getAllowedDangers() {
         return Collections.unmodifiableCollection(allowedDangers);
     }
@@ -365,6 +389,11 @@ public class CliArgs extends PgDiffArguments {
     @Override
     public Collection<String> getIgnoreLists() {
         return Collections.unmodifiableCollection(ignoreLists);
+    }
+
+    @Override
+    public String getIgnoreSchemaList() {
+        return ignoreSchemaList;
     }
 
     @Override
@@ -465,12 +494,10 @@ public class CliArgs extends PgDiffArguments {
         this.inCharsetName = inCharsetName;
     }
 
-    @Override
     public String getOutCharsetName() {
         return outCharsetName;
     }
 
-    @Override
     public void setOutCharsetName(String outCharsetName) {
         this.outCharsetName = outCharsetName;
     }
@@ -531,6 +558,34 @@ public class CliArgs extends PgDiffArguments {
     }
 
     @Override
+    public void setGenerateExists(boolean generateExists) {
+        this.generateExists = generateExists;
+    }
+
+    @Override
+    public boolean isGenerateExists() {
+        return generateExists;
+    }
+
+    @Override
+    public boolean isDropBeforeCreate() {
+        return dropBeforeCreate;
+    }
+
+    @Override
+    public void setDropBeforeCreate(boolean dropBeforeCreate) {
+        this.dropBeforeCreate = dropBeforeCreate;
+    }
+
+    public Collection<DbObjType> getGraphFilterTypes() {
+        return Collections.unmodifiableCollection(graphFilterTypes);
+    }
+
+    public boolean isGraphInvertFilter() {
+        return graphInvertFilter;
+    }
+
+    @Override
     public boolean isSelectedOnly() {
         return selectedOnly;
     }
@@ -538,6 +593,16 @@ public class CliArgs extends PgDiffArguments {
     @Override
     public void setSelectedOnly(boolean selectedOnly) {
         this.selectedOnly = selectedOnly;
+    }
+
+    @Override
+    public boolean isDataMovementMode() {
+        return dataMovementMode;
+    }
+
+    @Override
+    public void setDataMovementMode(boolean dataMovementMode) {
+        this.dataMovementMode = dataMovementMode;
     }
 
     @Override
@@ -570,29 +635,44 @@ public class CliArgs extends PgDiffArguments {
         this.simplifyView = simplifyView;
     }
 
-    @Override
     public int getGraphDepth() {
         return graphDepth;
     }
 
-    @Override
     public boolean isGraphReverse() {
         return graphReverse;
     }
 
-    @Override
     public void setGraphReverse(boolean graphReverse) {
         this.graphReverse = graphReverse;
     }
 
-    @Override
     public void setGraphDepth(int graphDepth) {
         this.graphDepth = graphDepth;
     }
 
-    @Override
     public Collection<String> getGraphNames() {
         return Collections.unmodifiableCollection(graphNames);
+    }
+
+    @Override
+    public Collection<String> getPreFilePath() {
+        return Collections.unmodifiableCollection(preFilePath);
+    }
+
+    @Override
+    public void setPreFilePath(List<String> preFilePath) {
+        this.preFilePath = preFilePath;
+    }
+
+    @Override
+    public Collection<String> getPostFilePath() {
+        return Collections.unmodifiableCollection(postFilePath);
+    }
+
+    @Override
+    public void setPostFilePath(List<String> postFilePath) {
+        this.postFilePath = postFilePath;
     }
 
     private static void badArgs(String message) throws CmdLineException{
@@ -656,15 +736,6 @@ public class CliArgs extends PgDiffArguments {
             }
             if (getRunOnDb() != null && !getRunOnDb().startsWith("jdbc:")) {
                 badArgs("option -R (--run-on) must specify JDBC connection string");
-            }
-            if (getGraphDepth() != DEFAULT_DEPTH) {
-                badArgs("option --graph-depth cannot be used without the option(s) [--graph]");
-            }
-            if (!getGraphNames().isEmpty()) {
-                badArgs("option --graph-name cannot be used without the option(s) [--graph]");
-            }
-            if (isGraphReverse()) {
-                badArgs("option --graph-reverse cannot be used without the option(s) [--graph]");
             }
             if (getOldSrc() == null || getNewSrc() == null) {
                 badArgs("Please specify both SOURCE and DEST.");

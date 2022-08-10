@@ -13,7 +13,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
  * @author galiev_mr
  *
  */
-public abstract class AbstractRegularTable extends AbstractPgTable {
+public abstract class AbstractRegularTable extends AbstractPgTable implements PgSimpleOptionContainer {
 
     protected boolean isLogged = true;
     protected String tablespace;
@@ -31,7 +31,9 @@ public abstract class AbstractRegularTable extends AbstractPgTable {
         if (!isLogged()) {
             sbSQL.append("UNLOGGED ");
         }
-        sbSQL.append("TABLE ").append(getQualifiedName());
+        sbSQL.append("TABLE ");
+        appendIfNotExists(sbSQL);
+        sbSQL.append(getQualifiedName());
     }
 
     @Override

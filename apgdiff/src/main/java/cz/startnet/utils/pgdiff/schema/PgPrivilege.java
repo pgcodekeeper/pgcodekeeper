@@ -66,7 +66,7 @@ public class PgPrivilege implements IHashable {
         }
 
         for (PgPrivilege priv : privileges) {
-            sb.append(priv.getCreationSQL()).append(isPostgres ? ';' : "\nGO").append('\n');
+            sb.append(priv.getCreationSQL()).append(isPostgres ? ';' : PgStatement.GO).append('\n');
         }
 
         sb.setLength(sb.length() - 1);
@@ -91,9 +91,17 @@ public class PgPrivilege implements IHashable {
             // for AGGREGATEs in GRANT/REVOKE the type will be the same as in FUNCTIONs
             type = DbObjType.FUNCTION;
         }
+        String typeName;
+        if (type == DbObjType.FOREIGN_DATA_WRAPPER) {
+            typeName = "FOREIGN DATA WRAPPER";
+        } else if (type == DbObjType.SERVER) {
+            typeName = "FOREIGN SERVER";
+        } else {
+            typeName = type.name();
+        }
 
         StringBuilder sbName = new StringBuilder()
-                .append(type.name())
+                .append(typeName)
                 .append(' ');
         if (newObj instanceof AbstractPgFunction) {
             AbstractPgFunction func = (AbstractPgFunction) newObj;

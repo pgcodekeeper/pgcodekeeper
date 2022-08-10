@@ -14,6 +14,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsConstraint;
 import cz.startnet.utils.pgdiff.schema.MsIndex;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MsIndicesAndPKReader extends JdbcReader {
@@ -70,8 +71,11 @@ public class MsIndicesAndPKReader extends JdbcReader {
         sb.append(String.join(", ", columns));
         sb.append(")");
 
+        PgStatement newSt;
+
         if (type == DbObjType.CONSTRAINT) {
             AbstractConstraint constraint = new MsConstraint(name);
+            newSt = constraint;
 
             if (filter != null) {
                 sb.append(" WHERE ").append(filter);
@@ -135,6 +139,8 @@ public class MsIndicesAndPKReader extends JdbcReader {
             t.addConstraint(constraint);
         } else {
             AbstractIndex index = new MsIndex(name);
+            newSt = index;
+
             index.setClusterIndex(isClustered);
             index.setUnique(isUnique);
             index.setDefinition(sb.toString());
@@ -143,6 +149,7 @@ public class MsIndicesAndPKReader extends JdbcReader {
 
             for (String include : includes) {
                 index.addInclude(include);
+                newSt.addDep(new GenericColumn(schema.getName(), parent, include, DbObjType.COLUMN));
             }
 
             if (isPadded) {
@@ -166,6 +173,10 @@ public class MsIndicesAndPKReader extends JdbcReader {
             }
 
             t.addIndex(index);
+        }
+
+        for (String col : cols) {
+            newSt.addDep(new GenericColumn(schema.getName(), parent, col, DbObjType.COLUMN));
         }
     }
 }

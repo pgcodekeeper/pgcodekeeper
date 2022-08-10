@@ -24,7 +24,6 @@ import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.NotAllowedObjectException;
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.PgDiff;
-import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcRunner;
 import cz.startnet.utils.pgdiff.parsers.antlr.ScriptParser;
@@ -60,7 +59,7 @@ public final class Main {
             } else if (arguments.isModeGraph()) {
                 return graph(writer, arguments);
             } else {
-                return diff( writer, arguments);
+                return diff(writer, arguments);
             }
         }
         catch (PgCodekeeperException ex) {
@@ -84,7 +83,7 @@ public final class Main {
         }
     }
 
-    private static boolean diff(PrintWriter writer, PgDiffArguments arguments)
+    private static boolean diff(PrintWriter writer, CliArgs arguments)
             throws InterruptedException, IOException, SQLException, PgCodekeeperException {
         try (PrintWriter encodedWriter = getDiffWriter(arguments)) {
             PgDiff diff = new PgDiff(arguments);
@@ -127,14 +126,14 @@ public final class Main {
         return true;
     }
 
-    private static PrintWriter getDiffWriter(PgDiffArguments arguments)
+    private static PrintWriter getDiffWriter(CliArgs arguments)
             throws FileNotFoundException, UnsupportedEncodingException {
         String outFile = arguments.getOutputTarget();
         return outFile == null ? null : new UnixPrintWriter(
-                arguments.getOutputTarget(), arguments.getOutCharsetName());
+                outFile, arguments.getOutCharsetName());
     }
 
-    private static boolean parse(PgDiffArguments arguments)
+    private static boolean parse(CliArgs arguments)
             throws IOException, InterruptedException, PgCodekeeperException {
         PgDiff diff = new PgDiff(arguments);
         PgDatabase d;
@@ -154,7 +153,7 @@ public final class Main {
         return true;
     }
 
-    private static boolean graph(PrintWriter writer, PgDiffArguments arguments)
+    private static boolean graph(PrintWriter writer, CliArgs arguments)
             throws IOException, InterruptedException {
         PgDiff diff = new PgDiff(arguments);
         PgDatabase d;
@@ -167,7 +166,8 @@ public final class Main {
 
         try (PrintWriter pw = getDiffWriter(arguments)) {
             new DepcyWriter(d, arguments.getGraphDepth(),
-                    pw != null ?  pw : writer, arguments.isGraphReverse())
+                    pw != null ?  pw : writer, arguments.isGraphReverse(),
+                            arguments.getGraphFilterTypes(), arguments.isGraphInvertFilter())
             .write(arguments.getGraphNames());
         }
         return true;

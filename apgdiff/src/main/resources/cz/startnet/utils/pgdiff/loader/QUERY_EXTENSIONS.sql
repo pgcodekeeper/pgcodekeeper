@@ -3,6 +3,8 @@ SELECT e.oid::bigint,
     (SELECT n.nspname
      FROM pg_catalog.pg_namespace n
      WHERE e.extnamespace = n.oid) namespace,
-    d.description
+    d.description,
+    e.extrelocatable
 FROM pg_catalog.pg_extension e
 LEFT JOIN pg_catalog.pg_description d ON e.oid = d.objoid
+    AND d.classoid = 'pg_catalog.pg_extension'::pg_catalog.regclass

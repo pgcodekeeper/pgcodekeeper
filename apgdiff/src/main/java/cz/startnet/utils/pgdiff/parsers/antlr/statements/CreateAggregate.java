@@ -3,6 +3,8 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 import java.util.Arrays;
 import java.util.List;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Aggregate_paramContext;
@@ -15,7 +17,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContex
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identifier_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
-import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.PgAggregate;
 import cz.startnet.utils.pgdiff.schema.PgAggregate.AggFuncs;
@@ -33,7 +34,7 @@ public class CreateAggregate extends ParserAbstract {
 
     @Override
     public void parseObject() {
-        List<IdentifierContext> ids = ctx.name.identifier();
+        List<ParserRuleContext> ids = getIdentifiers(ctx.name);
         PgAggregate aggregate = new PgAggregate(QNameParser.getFirstName(ids));
 
         //// The order is important for adding dependencies. Two steps.
@@ -53,8 +54,7 @@ public class CreateAggregate extends ParserAbstract {
         addFuncAsDepcy(AggFuncs.SFUNC, sFuncCtx, aggregate);
 
         fillAggregate(ctx.aggregate_param(), aggregate);
-
-        addSafe(getSchemaSafe(ids), aggregate, ids);
+        addSafe(getSchemaSafe(ids), aggregate, ids, parseArguments(ctx.function_args()));
     }
 
     private void fillAllArguments(PgAggregate aggregate) {
@@ -207,8 +207,8 @@ public class CreateAggregate extends ParserAbstract {
 
     private void addFuncAsDepcy(AggFuncs paramName,
             Schema_qualified_nameContext paramFuncCtx, PgAggregate aggr) {
-        List<IdentifierContext> ids = paramFuncCtx.identifier();
-        IdentifierContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
+        List<ParserRuleContext> ids = getIdentifiers(paramFuncCtx);
+        ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
         if (schemaCtx != null) {
             addDepSafe(aggr, Arrays.asList(schemaCtx, QNameParser.getFirstNameCtx(ids)),
                     DbObjType.FUNCTION, true, getParamFuncSignature(aggr, paramName));
@@ -273,7 +273,8 @@ public class CreateAggregate extends ParserAbstract {
 
     private static void fillStringByArgs(StringBuilder sb, List<Argument> args) {
         for (Argument arg : args) {
-            sb.append(AbstractPgFunction.getDeclaration(arg, false, true)).append(", ");
+            arg.appendDeclaration(sb, false, true);
+            sb.append(", ");
         }
     }
 
@@ -284,6 +285,6 @@ public class CreateAggregate extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_CREATE, DbObjType.AGGREGATE, ctx.name.identifier());
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.AGGREGATE, getIdentifiers(ctx.name));
     }
 }

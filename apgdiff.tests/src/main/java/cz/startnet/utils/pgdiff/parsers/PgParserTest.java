@@ -1,8 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
@@ -21,7 +19,6 @@ import org.junit.runners.Parameterized.Parameters;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
 
@@ -49,13 +46,11 @@ public class PgParserTest {
             {"copy"},
             {"create_cast"},
             {"create_function"},
-            {"create_index", 10},
             {"create_misc"},
             {"create_procedure"},
             {"create_table_like"},
             {"create_table"},
-            {"create_type"},
-            {"create_view"},
+            {"database"},
             {"date"},
             {"delete"},
             {"dependency"},
@@ -71,25 +66,20 @@ public class PgParserTest {
             {"functional_deps"},
             {"geometry"},
             {"groupingsets", 47},
-            {"hash_func"},
-            {"hash_index"},
-            {"index_including"},
-            {"indexing", 1},
-            {"indirect_toast"},
+            {"index"},
             {"inherit"},
             {"insert_conflict"},
             {"insert"},
             {"interval"},
             {"join"},
             {"json_encoding"},
-            {"jsonb", 3},
+            {"jsonb"},
             {"lseg"},
-            {"matview"},
             {"misc_functions"},
             {"misc_sanity"},
             {"name"},
             {"namespace"},
-            {"numeric_big", 6},
+            {"numeric_big"},
             {"numeric"},
             {"numerology"},
             {"object_address"},
@@ -102,24 +92,22 @@ public class PgParserTest {
             {"partition_join"},
             {"partition_prune", 6},
             {"plancache"},
-            {"point", 5},
+            {"point"},
             {"policy"},
             {"polygon"},
-            // IDEA can't find ambiguity
-            {"polymorphism", 1},
-            {"privileges", 2},
+            {"polymorphism"},
+            {"privileges"},
             {"publication"},
             {"rangefuncs"},
             {"rangetypes"},
             {"reloptions"},
             {"role"},
             {"rowtypes"},
-            {"rules", 1},
-            // IDEA can't find 7 ambiguity
-            {"select", 12},
+            {"rules"},
+            {"select", 2},
             {"set"},
             {"sequence"},
-            {"spgist", 2},
+            {"spgist"},
             // some string are unsupported
             {"strings"},
             {"subscription"},
@@ -132,10 +120,10 @@ public class PgParserTest {
             {"transactions"},
             {"triggers"},
             {"tsdicts"},
-            {"tsearch", 1},
-            {"type_sanity"},
-            {"updatable_views", 6},
+            {"tsearch"},
+            {"type"},
             {"update"},
+            {"view"},
             {"window"},
             {"with"},
         });
@@ -153,22 +141,12 @@ public class PgParserTest {
         Log.log(Log.LOG_DEBUG, fileNameTemplate);
     }
 
-    private String getStringFromInpunStream(InputStream inputStream) throws IOException {
-        ByteArrayOutputStream result = new ByteArrayOutputStream();
-        byte[] buffer = new byte[1024];
-        int length;
-        while ((length = inputStream.read(buffer)) != -1) {
-            result.write(buffer, 0, length);
-        }
-        return result.toString(ApgdiffConsts.UTF_8);
-    }
-
     @Test
     public void runDiff() throws IOException {
         List<Object> errors = new ArrayList<>();
         AtomicInteger ambiguity = new AtomicInteger();
 
-        String sql = getStringFromInpunStream(PgParserTest.class
+        String sql = ApgdiffTestUtils.inputStreamToString(PgParserTest.class
                 .getResourceAsStream(fileNameTemplate + ".sql"));
 
         SQLParser parser = AntlrParser
@@ -188,6 +166,7 @@ public class PgParserTest {
 
         int count = ambiguity.intValue();
         Assert.assertTrue("File: " + fileNameTemplate + " - ANTLR Error", errors.isEmpty());
-        Assert.assertFalse("File: " + fileNameTemplate + " - ANTLR Ambiguity " + count, count != allowedAmbiguity);
+        Assert.assertFalse("File: " + fileNameTemplate + " - ANTLR Ambiguity " + count + " expected " + allowedAmbiguity,
+                count != allowedAmbiguity);
     }
 }

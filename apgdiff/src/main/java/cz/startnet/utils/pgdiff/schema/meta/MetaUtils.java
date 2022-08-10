@@ -17,6 +17,7 @@ import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.IStatement;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation.LocationType;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
@@ -68,7 +69,7 @@ public class MetaUtils {
         case FUNCTION:
         case PROCEDURE:
             IFunction funcion = (IFunction) st;
-            MetaFunction func = new MetaFunction(loc);
+            MetaFunction func = new MetaFunction(loc, st.getBareName());
             funcion.getReturnsColumns().forEach(func::addReturnsColumn);
             funcion.getArguments().forEach(func::addArgument);
             func.setReturns(funcion.getReturns());
@@ -113,8 +114,11 @@ public class MetaUtils {
         GenericColumn gc;
         switch (type) {
         case CAST:
+        case USER_MAPPING:
         case SCHEMA:
         case EXTENSION:
+        case FOREIGN_DATA_WRAPPER:
+        case SERVER:
         case ROLE:
         case USER:
         case ASSEMBLY:
@@ -133,7 +137,7 @@ public class MetaUtils {
         case TABLE:
         case TYPE:
         case VIEW:
-            gc = new GenericColumn(st.getParent().getName(), st.getBareName(), type);
+            gc = new GenericColumn(st.getParent().getName(), st.getName(), type);
             break;
         case INDEX:
             gc = new GenericColumn(st.getParent().getParent().getName(), st.getName(), type);
@@ -149,7 +153,10 @@ public class MetaUtils {
             throw new IllegalArgumentException("Unsupported type " + type);
         }
 
-        return new PgObjLocation(gc);
+        return new PgObjLocation.Builder()
+                .setObject(gc)
+                .setLocationType(LocationType.DEFINITION)
+                .build();
     }
 
     public static Map<String, List<MetaStatement>> getObjDefinitions(PgDatabase db) {

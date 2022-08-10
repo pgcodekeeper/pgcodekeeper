@@ -8,7 +8,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 
 public final class QNameParser<T extends ParserRuleContext> {
 
@@ -81,13 +81,12 @@ public final class QNameParser<T extends ParserRuleContext> {
         return Collections.unmodifiableList(parts);
     }
 
-    public static QNameParser<IdentifierContext> parsePg(String schemaQualifiedName) {
+    public static QNameParser<ParserRuleContext> parsePg(String schemaQualifiedName) {
         List<Object> errors = new ArrayList<>();
-        List<IdentifierContext> parts = AntlrParser
+        List<ParserRuleContext> parts = ParserAbstract.getIdentifiers(AntlrParser
                 .makeBasicParser(SQLParser.class, schemaQualifiedName, "qname: " + schemaQualifiedName, errors)
                 .qname_parser()
-                .schema_qualified_name()
-                .identifier();
+                .schema_qualified_name());
         return new QNameParser<>(parts, errors);
     }
 

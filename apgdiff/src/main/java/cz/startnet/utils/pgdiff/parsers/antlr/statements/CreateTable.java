@@ -2,6 +2,9 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Col_labelContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_table_statementContext;
@@ -10,7 +13,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_columnsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_partitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_tableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_typeContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Partition_byContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_oidContext;
@@ -37,8 +39,8 @@ public class CreateTable extends TableAbstract {
     private final String oids;
 
     public CreateTable(Create_table_statementContext ctx, PgDatabase db,
-            String tablespace, String accessMethod, String oids) {
-        super(db);
+            String tablespace, String accessMethod, String oids, CommonTokenStream stream) {
+        super(db, stream);
         this.ctx = ctx;
         this.tablespace = tablespace;
         this.accessMethod = accessMethod;
@@ -47,7 +49,7 @@ public class CreateTable extends TableAbstract {
 
     @Override
     public void parseObject() {
-        List<IdentifierContext> ids = ctx.name.identifier();
+        List<ParserRuleContext> ids = getIdentifiers(ctx.name);
         String tableName = QNameParser.getFirstName(ids);
         String schemaName = getSchemaNameSafe(ids);
         AbstractSchema schema = getSchemaSafe(ids);
@@ -79,7 +81,7 @@ public class CreateTable extends TableAbstract {
             String partBound = ParserAbstract.getFullCtxText(partCtx.for_values_bound());
             table = fillRegularTable(new PartitionPgTable(tableName, partBound));
             fillTypeColumns(partCtx.list_of_type_column_def(), table, schemaName, tablespace);
-            addInherit(table, partCtx.parent_table.identifier());
+            addInherit(table, getIdentifiers(partCtx.parent_table));
         }
 
         return table;
@@ -108,7 +110,7 @@ public class CreateTable extends TableAbstract {
         if (storage != null) {
             With_storage_parameterContext parameters = storage.with_storage_parameter();
             if (parameters != null) {
-                parseOptions(parameters.storage_parameter().storage_parameter_option(), table);
+                parseOptions(parameters.storage_parameters().storage_parameter_option(), table);
             }
             if (storage.WITHOUT() != null) {
                 table.setHasOids(false);
@@ -162,6 +164,6 @@ public class CreateTable extends TableAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_CREATE, DbObjType.TABLE, ctx.name.identifier());
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.TABLE, getIdentifiers(ctx.name));
     }
 }

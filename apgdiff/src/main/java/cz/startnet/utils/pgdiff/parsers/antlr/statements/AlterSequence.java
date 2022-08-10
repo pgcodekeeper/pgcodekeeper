@@ -7,7 +7,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_sequence_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_alterContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sequence_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Tokens_nonreserved_except_function_typeContext;
@@ -27,7 +26,7 @@ public class AlterSequence extends ParserAbstract {
 
     @Override
     public void parseObject() {
-        List<IdentifierContext> ids = ctx.name.identifier();
+        List<ParserRuleContext> ids = getIdentifiers(ctx.name);
         PgSequence sequence = (PgSequence) getSafe(AbstractSchema::getSequence,
                 getSchemaSafe(ids), QNameParser.getFirstNameCtx(ids));
 
@@ -35,16 +34,19 @@ public class AlterSequence extends ParserAbstract {
 
         for (Sequence_bodyContext seqbody : ctx.sequence_body()) {
             if (seqbody.OWNED() != null && seqbody.col_name != null) {
-                List<IdentifierContext> col = seqbody.col_name.identifier();
+                List<ParserRuleContext> col = getIdentifiers(seqbody.col_name);
                 Tokens_nonreserved_except_function_typeContext word;
-                if (col.size() != 1 || (word = col.get(0).tokens_nonreserved_except_function_type()) == null
+                if (col.size() != 1
+                        || (word = seqbody.col_name.identifier().tokens_nonreserved_except_function_type()) == null
                         || word.NONE() == null) {
                     GenericColumn gc = new GenericColumn(QNameParser.getThirdName(col),
                             QNameParser.getSecondName(col), QNameParser.getFirstName(col), DbObjType.COLUMN);
                     doSafe(PgSequence::setOwnedBy, sequence, gc);
+                    if (col.size() > 1) {
+                        List<ParserRuleContext> tableIds = col.subList(0, col.size() - 1);
+                        addObjReference(tableIds, DbObjType.TABLE, null);
+                    }
                 }
-
-                addObjReference(col, DbObjType.TABLE, null);
             }
         }
 
@@ -64,6 +66,6 @@ public class AlterSequence extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_CREATE, DbObjType.SEQUENCE, ctx.name.identifier());
+        return getStrForStmtAction(ACTION_ALTER, DbObjType.SEQUENCE, getIdentifiers(ctx.name));
     }
 }

@@ -1,7 +1,5 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
-import java.util.Map.Entry;
-
 import ru.taximaxim.codekeeper.apgdiff.sql.Keyword;
 import ru.taximaxim.codekeeper.apgdiff.sql.Keyword.KeywordCategory;
 
@@ -11,14 +9,14 @@ public class SqlPostgresSyntax {
             "--" //$NON-NLS-1$
     };
 
-    private final String[] reserved = Keyword.KEYWORDS.entrySet().stream()
-            .filter(e -> KeywordCategory.RESERVED_KEYWORD.equals(e.getValue().getCategory()))
-            .map(Entry::getKey)
+    private final String[] reserved = Keyword.KEYWORDS.values().stream()
+            .filter(e -> KeywordCategory.RESERVED_KEYWORD.equals(e.getCategory()))
+            .map(Keyword::getKeyword)
             .toArray(String[]::new);
 
-    private final String[] unreserved = Keyword.KEYWORDS.entrySet().stream()
-            .filter(e -> KeywordCategory.UNRESERVED_KEYWORD.equals(e.getValue().getCategory()))
-            .map(Entry::getKey)
+    private final String[] unreserved = Keyword.KEYWORDS.values().stream()
+            .filter(e -> KeywordCategory.UNRESERVED_KEYWORD.equals(e.getCategory()))
+            .map(Keyword::getKeyword)
             .toArray(String[]::new);
 
     private static final String[] TYPES = {

@@ -1,5 +1,6 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
@@ -136,7 +137,6 @@ public class Differ implements IRunnableWithProgress {
             // forceUnixNewLines has no effect on diff operaiton, just pass true
             PgDiffArguments args =
                     DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone, true, msSql, proj, oneTimePrefs);
-
             diffDirect = new PgDiff(args).diffDatabaseSchemasAdditionalDepcies(
                     root,
                     sourceDbFull, targetDbFull,
@@ -152,6 +152,8 @@ public class Differ implements IRunnableWithProgress {
                         targetDbFull, sourceDbFull,
                         additionalDepciesTarget, additionalDepciesSource);
             }
+        } catch (IOException e) {
+            throw new InvocationTargetException(e, e.getLocalizedMessage());
         }
 
         PgDiffUtils.checkCancelled(pm);
@@ -166,13 +168,15 @@ public class Differ implements IRunnableWithProgress {
         public Getter(PgDatabase db, IProject proj, Map<String, Boolean> oneTimePrefs) {
             oldArgs = db.getArguments();
             consumer = (db::setArguments);
-            PgDiffArguments newArgs = oldArgs.clone();
+            PgDiffArguments newArgs = oldArgs.copy();
             // применить параметры для генерации кода ко всем БД
             OverridablePrefs prefs = new OverridablePrefs(proj, oneTimePrefs);
             newArgs.setConcurrentlyMode(
                     prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY));
             newArgs.setUsingTypeCastOff(
                     !prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.USING_ON_OFF));
+            newArgs.setGenerateExists(prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.GENERATE_EXISTS));
+            newArgs.setDropBeforeCreate(prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.DROP_BEFORE_CREATE));
             db.setArguments(newArgs);
         }
 

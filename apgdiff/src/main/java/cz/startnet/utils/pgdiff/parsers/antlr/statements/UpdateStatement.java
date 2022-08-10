@@ -5,7 +5,6 @@ import java.util.List;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Update_stmt_for_psqlContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
@@ -22,7 +21,7 @@ public class UpdateStatement extends ParserAbstract {
 
     @Override
     public void parseObject() {
-        List<IdentifierContext> ids = ctx.update_table_name.identifier();
+        List<ParserRuleContext> ids = getIdentifiers(ctx.update_table_name);
         PgObjLocation loc = addObjReference(ids, DbObjType.TABLE, ACTION_UPDATE);
         loc.setWarning(DangerStatement.UPDATE);
     }
@@ -36,6 +35,6 @@ public class UpdateStatement extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_UPDATE, DbObjType.TABLE, ctx.update_table_name.identifier());
+        return getStrForStmtAction(ACTION_UPDATE, DbObjType.TABLE, getIdentifiers(ctx.update_table_name));
     }
 }

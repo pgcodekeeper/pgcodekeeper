@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+<!--
+    Use /script/update-version.sh X.Y.Z
+    to update all relevant poms and metadatas
+-->
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>ru.taximaxim.codeKeeper</groupId>
+    <artifactId>ru.taximaxim.codeKeeper</artifactId>
+    <version>${revision}</version>
+    <packaging>pom</packaging>
+    <modules>
+        <module>apgdiff</module>
+        <module>apgdiff.tests</module>
+        <module>ru.taximaxim.codekeeper.ui</module>
+        <module>ru.taximaxim.codekeeper.ui.tests</module>
+        <module>ru.taximaxim.codekeeper.cli</module>
+        <module>ru.taximaxim.codekeeper.cli.tests</module>
+        <module>ru.taximaxim.codekeeper.mainapp</module>
+        <module>ru.taximaxim.codekeeper.mainapp/feature</module>
+        <module>ru.taximaxim.codekeeper.mainapp/updatesite</module>
+        <module>ru.taximaxim.codekeeper.mainapp/product/rcp</module>
+        <module>ru.taximaxim.codekeeper.mainapp/product/standalone</module>
+        <module>ru.taximaxim.codekeeper.mainapp/deploy</module>
+    </modules>
+
+    <properties>
+        <revision>6.5.3-SNAPSHOT</revision>
+
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <tycho.version>1.7.0</tycho.version>
+        <target.definition.file>app</target.definition.file>
+
+        <sonar.language>java</sonar.language>
+        <sonar.java.binaries>${project.build.directory}/classes</sonar.java.binaries>
+        <sonar.java.source>1.8</sonar.java.source>
+        <sonar.java.target>1.8</sonar.java.target>
+        <sonar.core.coveragePlugin>jacoco</sonar.core.coveragePlugin>
+        <sonar.junit.reportPath>${project.build.directory}/surefire-reports/</sonar.junit.reportPath>
+    </properties>
+
+    <profiles>
+        <profile>
+            <id>jenkins</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <version>0.8.5</version>
+                        <configuration>
+                            <!-- задать при запуске мавена -->
+                            <destFile>${sonar.jacoco.reportPaths}</destFile>
+                            <append>true</append>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <version>2.22.2</version>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-report-plugin</artifactId>
+                        <version>2.22.2</version>
+                    </plugin>
+                </plugins>
+            </build>
+            <properties>
+                <target.definition.file>app_202006</target.definition.file>
+            </properties>
+        </profile>
+        <profile>
+            <id>internal</id>
+            <modules>
+                <module>../codekeeper-internal/ru.taximaxim.codekeeper.internal.tests</module>
+                <module>../codekeeper-internal/ru.taximaxim.codekeeper.internal.ui.tests</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>compat_check</id>
+            <properties>
+                <target.definition.file>app_202006</target.definition.file>
+            </properties>
+        </profile>
+    </profiles>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.0.0-M3</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <rules>
+                        <requireMavenVersion>
+                            <version>3.6</version>
+                        </requireMavenVersion>
+                    </rules>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-compiler-plugin</artifactId>
+                <version>${tycho.version}</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-maven-plugin</artifactId>
+                <version>${tycho.version}</version>
+                <extensions>true</extensions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>target-platform-configuration</artifactId>
+                <version>${tycho.version}</version>
+                <configuration>
+                    <resolver>p2</resolver>
+                    <target>
+                        <artifact>
+                            <groupId>ru.taximaxim.codeKeeper</groupId>
+                            <artifactId>ru.taximaxim.codeKeeper</artifactId>
+                            <version>${revision}</version>
+                            <classifier>ru.taximaxim.codekeeper.mainapp/${target.definition.file}</classifier>
+                        </artifact>
+                    </target>
+                    <pomDependencies>consider</pomDependencies>
+                    <environments>
+                        <environment>
+                            <os>linux</os>
+                            <ws>gtk</ws>
+                            <arch>x86_64</arch>
+                        </environment>
+                    </environments>
+                    <dependency-resolution>
+                        <!-- workaround for split package import
+                             allows apgdiff to not require any bundles -->
+                        <extraRequirements>
+                            <requirement>
+                                <type>eclipse-plugin</type>
+                                <id>org.eclipse.core.runtime</id>
+                                <versionRange>[3.4.0,4.0.0)</versionRange>
+                            </requirement>
+                        </extraRequirements>
+                    </dependency-resolution>
+                </configuration>
+            </plugin>
+        </plugins>
+
+        <pluginManagement>
+            <plugins>
+                <!-- disable default install and deploy goals globally -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-install-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>default-install</id>
+                            <phase>none</phase>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>default-deploy</id>
+                            <phase>none</phase>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
+        <extensions>
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-ssh</artifactId>
+                <version>3.4.1</version>
+            </extension>
+        </extensions>
+    </build>
+</project>

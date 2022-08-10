@@ -35,4 +35,9 @@ public class FtsTemplatesReader extends JdbcReader {
         loader.setAuthor(template, res);
         schema.addFtsTemplate(template);
     }
+
+    @Override
+    protected String getClassId() {
+        return "pg_ts_template";
+    }
 }

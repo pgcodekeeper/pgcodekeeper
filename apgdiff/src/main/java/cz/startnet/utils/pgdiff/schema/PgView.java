@@ -28,7 +28,7 @@ import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
  *
  * @author fordfrog
  */
-public class PgView extends AbstractView implements PgOptionContainer  {
+public class PgView extends AbstractView implements PgSimpleOptionContainer  {
 
     public static final String COLUMN_COMMENT = "\n\nCOMMENT ON COLUMN {0}.{1} IS {2};";
     public static final String CHECK_OPTION = "check_option";
@@ -50,8 +50,13 @@ public class PgView extends AbstractView implements PgOptionContainer  {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder(getQuery().length() * 2);
+        appendDropBeforeCreate(sbSQL);
         sbSQL.append("CREATE ");
         sbSQL.append(getTypeName()).append(' ');
+        if (isMatView()) {
+            appendIfNotExists(sbSQL);
+        }
+
         sbSQL.append(getQualifiedName());
 
         if (!columnNames.isEmpty()) {
@@ -139,15 +144,6 @@ public class PgView extends AbstractView implements PgOptionContainer  {
     @Override
     protected String getTypeName() {
         return isMatView() ? "MATERIALIZED VIEW" : "VIEW";
-    }
-
-    @Override
-    public String getDropSQL() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("DROP ").append(getTypeName()).append(' ');
-        appendFullName(sb);
-        sb.append(';');
-        return sb.toString();
     }
 
     @Override

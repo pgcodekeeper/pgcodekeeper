@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Additional_statementContext;
@@ -51,6 +52,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Using_vexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.meta.MetaContainer;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
@@ -130,7 +132,7 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
         } else if (ctx.ROWTYPE() != null) {
             declareNamespaceVar(alias, null, addTypeDepcy(ctx.schema_qualified_name_nontype()));
         } else {
-            String varType = processColumn(ctx.schema_qualified_name().identifier()).getSecond();
+            String varType = processColumn(ParserAbstract.getIdentifiers(ctx.schema_qualified_name())).getSecond();
             addNamespaceVariable(new Pair<>(alias, varType));
         }
     }
@@ -362,7 +364,7 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
         Lock_tableContext lock = transaction.lock_table();
         if (lock != null) {
             for (Only_table_multiplyContext name : lock.only_table_multiply()) {
-                addRelationDepcy(name.schema_qualified_name().identifier());
+                addRelationDepcy(ParserAbstract.getIdentifiers(name.schema_qualified_name()));
             }
         }
     }
@@ -375,9 +377,9 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
 
         if (table != null) {
             if (additional.CLUSTER() != null || additional.TABLE() != null || additional.REFRESH() != null) {
-                addRelationDepcy(table.identifier());
+                addRelationDepcy(ParserAbstract.getIdentifiers(table));
             } else if (additional.SCHEMA() != null) {
-                addSchemaDepcy(table.identifier(), null);
+                addSchemaDepcy(ParserAbstract.getIdentifiers(table), null);
             }
         } else if ((data = additional.data_statement()) != null) {
             new Sql(this).data(data);
@@ -387,7 +389,7 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
             }
         } else if ((col = additional.table_cols_list()) != null) {
             for (Table_colsContext tabl : col.table_cols()) {
-                List<IdentifierContext> ids = tabl.schema_qualified_name().identifier();
+                List<ParserRuleContext> ids = ParserAbstract.getIdentifiers(tabl.schema_qualified_name());
                 GenericColumn rel = addRelationDepcy(ids);
                 for (IdentifierContext id : tabl.identifier()) {
                     addFilteredColumnDepcy(rel.schema, rel.table, id.getText());
@@ -395,7 +397,7 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
             }
         } else if ((truncate = additional.truncate_stmt()) != null) {
             for (Only_table_multiplyContext name : truncate.only_table_multiply()) {
-                addRelationDepcy(name.schema_qualified_name().identifier());
+                addRelationDepcy(ParserAbstract.getIdentifiers(name.schema_qualified_name()));
             }
         }
     }

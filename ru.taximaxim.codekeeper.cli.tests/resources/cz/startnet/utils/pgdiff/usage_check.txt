@@ -44,13 +44,29 @@ Usage
  -Z (--time-zone) <timezone>            : use this timezone when working with
                                           database, also add SET TIMEZONE
                                           statement to the script
+ --pre-script <path>                    : PRE script file path or directory
+                                          with PRE scripts
+                                          nested directories are loaded
+                                          recursively
+                                          specify multiple times to use several
+                                          paths
+ --post-script <path>                   : POST script file path or directory
+                                          with POST scripts
+                                          nested directories are loaded
+                                          recursively
+                                          specify multiple times to use several
+                                          paths
  --ignore-column-order                  : ignore differences in table column
                                           order
  --using-off                            : do not print USING expression for
                                           ALTER COLUMN TYPE
+ --migrate-data                         : migrate data when re-creating tables
  -C (--concurrently-mode)               : print CREATE INDEX with CONCURRENTLY
                                           option for PostgreSQL and WITH ONLINE
                                           = ON for MS SQL
+ --generate-exist                       : print CREATE IF NOT EXISTS / DROP IF
+                                          EXISTS
+ --drop-before-create                   : print DROP before CREATE statement
  -S (--safe-mode)                       : do not generate scripts containing
                                           dangerous statements
                                           see: --allow-danger-ddl
@@ -71,6 +87,9 @@ Usage
                                           objects from diff
                                           specify multiple times to use several
                                           lists
+ --ignore-schema <path>                 : use an ignore schema list to
+                                          include/exclude schemas at loading
+                                          stage
  --src-lib-xml <path>                   : add xml with library dependencies to
                                           source
                                           specify multiple times to use several
@@ -95,9 +114,9 @@ Usage
                                           libraries
  --lib-safe-mode                        : exit with an error if a library
                                           object conflicts with other schema or
-                                          library objects otherwise, in case of
-                                          conflicts objects loaded first have
-                                          priority
+                                          library objects
+                                          otherwise, in case of conflicts
+                                          objects loaded first have priority
  --ignore-concurrent-modification       : ignore concurrent modification errors
                                           of database objects
  --ms-sql                               : work with MS SQL
@@ -110,9 +129,13 @@ Usage
                                           specify multiple times to use several
                                           names
  --project-update                       : update project in parse mode
+ --graph-filter-object <OBJECT_TYPE>    : show these object types, hide  other
+                                          objects types
+ --graph-invert-filter                  : invert graph filter object types:
+                                          hide objects specified by the filter
 
 DANGER_STATEMENT : [DROP_TABLE | ALTER_COLUMN | DROP_COLUMN | RESTART_WITH | UPDATE]
-OBJECT_TYPE : [CAST | USER | ROLE | ASSEMBLY | SCHEMA | EXTENSION | TYPE | DOMAIN | SEQUENCE | OPERATOR | FTS_PARSER | FTS_TEMPLATE | FTS_DICTIONARY | FTS_CONFIGURATION | TABLE | FUNCTION | PROCEDURE | AGGREGATE | CONSTRAINT | VIEW | INDEX | TRIGGER | RULE | POLICY]
+OBJECT_TYPE : [CAST | USER | ROLE | ASSEMBLY | SCHEMA | EXTENSION | FOREIGN_DATA_WRAPPER | SERVER | USER_MAPPING | TYPE | DOMAIN | SEQUENCE | OPERATOR | FTS_PARSER | FTS_TEMPLATE | FTS_DICTIONARY | FTS_CONFIGURATION | TABLE | FUNCTION | PROCEDURE | AGGREGATE | INDEX | CONSTRAINT | VIEW | TRIGGER | RULE | POLICY]
 
 Library load order
 	Libraries are loaded in the following order:
@@ -120,7 +143,7 @@ Library load order
 		2. Explicitly specified libraries.
 		3. Explicitly specified libraries without privileges.
 	In each group order is defined by the given argument order. Within XMLs entry order is used.
-	Objects loaded later in this sequence may override ones loaded earlier (if --lib-safe-mode is off).
+	Objects loaded first in this sequence may override ones loaded later (if --lib-safe-mode is off).
 
 Live database connections
 	Use JDBC connection URL to specify live databases

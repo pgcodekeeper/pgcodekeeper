@@ -2,6 +2,9 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Collate_identifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_domain_statementContext;
@@ -19,14 +22,16 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 public class CreateDomain extends ParserAbstract {
 
     private final Create_domain_statementContext ctx;
-    public CreateDomain(Create_domain_statementContext ctx, PgDatabase db) {
+    private final CommonTokenStream stream;
+    public CreateDomain(Create_domain_statementContext ctx, PgDatabase db, CommonTokenStream stream) {
         super(db);
         this.ctx = ctx;
+        this.stream = stream;
     }
 
     @Override
     public void parseObject() {
-        List<IdentifierContext> ids = ctx.name.identifier();
+        List<ParserRuleContext> ids = getIdentifiers(ctx.name);
         PgDomain domain = new PgDomain(QNameParser.getFirstName(ids));
         domain.setDataType(getTypeName(ctx.dat_type));
         addPgTypeDepcy(ctx.dat_type, domain);
@@ -36,7 +41,7 @@ public class CreateDomain extends ParserAbstract {
         VexContext exp = ctx.def_value;
         if (exp != null) {
             db.addAnalysisLauncher(new VexAnalysisLauncher(domain, exp, fileName));
-            domain.setDefaultValue(getFullCtxText(exp));
+            domain.setDefaultValue(getExpressionText(exp, stream));
         }
         for (Domain_constraintContext constrCtx : ctx.dom_constraint) {
             if (constrCtx.CHECK() != null) {
@@ -64,6 +69,6 @@ public class CreateDomain extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_CREATE, DbObjType.DOMAIN, ctx.name.identifier());
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.DOMAIN, getIdentifiers(ctx.name));
     }
 }
