@@ -128,11 +128,11 @@ Usage
  --graph-name <name>                    : name of start object in graph mode
                                           specify multiple times to use several
                                           names
- --project-update                       : update project in parse mode
  --graph-filter-object <OBJECT_TYPE>    : show these object types, hide  other
                                           objects types
  --graph-invert-filter                  : invert graph filter object types:
                                           hide objects specified by the filter
+ --project-update                       : update project in parse mode
 
 DANGER_STATEMENT : [DROP_TABLE | ALTER_COLUMN | DROP_COLUMN | RESTART_WITH | UPDATE]
 OBJECT_TYPE : [CAST | USER | ROLE | ASSEMBLY | SCHEMA | EXTENSION | FOREIGN_DATA_WRAPPER | SERVER | USER_MAPPING | TYPE | DOMAIN | SEQUENCE | OPERATOR | FTS_PARSER | FTS_TEMPLATE | FTS_DICTIONARY | FTS_CONFIGURATION | TABLE | FUNCTION | PROCEDURE | AGGREGATE | INDEX | CONSTRAINT | VIEW | TRIGGER | RULE | POLICY]
