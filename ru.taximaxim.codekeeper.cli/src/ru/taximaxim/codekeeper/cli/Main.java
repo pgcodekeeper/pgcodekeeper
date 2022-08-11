@@ -49,7 +49,6 @@ public final class Main {
     public static boolean main(String[] args) {
         PrintWriter writer = new PrintWriter(System.out, true);
         CliArgs arguments = new CliArgs();
-        PgDiff diff = new PgDiff(arguments);
         try {
             if (!arguments.parse(writer, args)) {
                 return true;
@@ -62,9 +61,6 @@ public final class Main {
                 return diff(writer, arguments);
             }
         }
-        catch (PgCodekeeperException ex) {
-            diff.getErrors().forEach(System.err::println);
-            return false;        }
         catch (CmdLineException | NotAllowedObjectException ex) {
             System.err.println(ex.getLocalizedMessage());
             return false;
@@ -84,11 +80,17 @@ public final class Main {
     }
 
     private static boolean diff(PrintWriter writer, CliArgs arguments)
-            throws InterruptedException, IOException, SQLException, PgCodekeeperException {
+            throws InterruptedException, IOException, SQLException {
         try (PrintWriter encodedWriter = getDiffWriter(arguments)) {
             PgDiff diff = new PgDiff(arguments);
             String text;
-            text = diff.createDiff();
+            try {
+                text = diff.createDiff();
+            } catch (PgCodekeeperException ex) {
+                diff.getErrors().forEach(System.err::println);
+                return false;
+            }
+
             ScriptParser parser = new ScriptParser("CLI", text, arguments.isMsSql());
 
             if (arguments.isSafeMode()) {
@@ -135,21 +137,24 @@ public final class Main {
 
     private static boolean parse(CliArgs arguments)
             throws IOException, InterruptedException, PgCodekeeperException {
-        PgDiff diff = new PgDiff(arguments);
-        PgDatabase d;
-        if (arguments.isProjUpdate()) {
-            diff.updateProject();
-        } else {
-            d = diff.loadNewDatabase();
-            if (arguments.isMsSql()) {
-                new MsModelExporter(Paths.get(arguments.getOutputTarget()),
-                        d, arguments.getOutCharsetName()).exportFull();
+        PgDiffCli diff = new PgDiffCli(arguments);
+        try {
+            if (arguments.isProjUpdate()) {
+                diff.updateProject();
             } else {
-                new ModelExporter(Paths.get(arguments.getOutputTarget()),
-                        d, arguments.getOutCharsetName()).exportFull();
+                PgDatabase d = diff.loadNewDatabase();
+                if (arguments.isMsSql()) {
+                    new MsModelExporter(Paths.get(arguments.getOutputTarget()), d,
+                            arguments.getOutCharsetName()).exportFull();
+                } else {
+                    new ModelExporter(Paths.get(arguments.getOutputTarget()), d,
+                            arguments.getOutCharsetName()).exportFull();
+                }
             }
+        } catch (PgCodekeeperException ex) {
+            diff.getErrors().forEach(System.err::println);
+            return false;
         }
-
         return true;
     }
 
