@@ -40,6 +40,8 @@ public interface ApgdiffConsts {
 
     String EXTENSION_VERSION = "1.0.0";
 
+    String TRUST_CERT = "trustServerCertificate";
+
     enum WORK_DIR_NAMES {
         SCHEMA,
         EXTENSION,
