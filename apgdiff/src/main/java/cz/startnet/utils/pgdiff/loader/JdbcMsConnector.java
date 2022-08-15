@@ -12,12 +12,13 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+
 public class JdbcMsConnector extends JdbcConnector {
 
     private static final int DEFAULT_PORT = 1433;
     private static final Pattern PATTERN_PROPERTIES =
             Pattern.compile(";(?:(\\w+)=(\\w+|\\{[^}]*\\})?)?");
-    private static final String TRUST_CERT = "trustServerCertificate";
 
     private final boolean winAuth;
     private String domain;
@@ -84,7 +85,7 @@ public class JdbcMsConnector extends JdbcConnector {
                 case "trustservercertificate":
                     // override our legacy-default with user-supplied value
                     properties = new HashMap<>();
-                    properties.put(TRUST_CERT, value);
+                    properties.put(ApgdiffConsts.TRUST_CERT, value);
                     break;
                 default:
                     break;
@@ -129,9 +130,9 @@ public class JdbcMsConnector extends JdbcConnector {
             props.setProperty("integratedSecurity", "true");
             props.setProperty("domain", domain);
         }
-        if (props.getProperty(TRUST_CERT) == null) {
+        if (props.getProperty(ApgdiffConsts.TRUST_CERT) == null) {
             // revert to pre-10.x jdbc driver behavior unless told otherwise
-            props.setProperty(TRUST_CERT, "true");
+            props.setProperty(ApgdiffConsts.TRUST_CERT, "true");
         }
         return props;
     }

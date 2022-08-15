@@ -7,6 +7,7 @@ import java.text.MessageFormat;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -69,6 +70,7 @@ public class DbStoreEditorDialog extends TrayDialog {
     private Button btnReadOnly;
     private Button btnGenerateName;
     private Button btnMsSql;
+    private Button btnMsCert;
     private Button btnUseDump;
     private Button btnWinAuth;
     private ComboViewer cmbGroups;
@@ -89,6 +91,7 @@ public class DbStoreEditorDialog extends TrayDialog {
             txtDbUser.setEnabled(!win);
             txtDbPass.setEnabled(!win);
             txtDomain.setEnabled(ms && !isWinAuth());
+            btnMsCert.setEnabled(ms);
         }
     };
 
@@ -157,6 +160,10 @@ public class DbStoreEditorDialog extends TrayDialog {
                     btnUseDump.setSelection(dbInitial.isPgDumpSwitch());
                     txtDumpFile.setText(dbInitial.getPgdumpExePath());
                     txtDumpParameters.setText(dbInitial.getPgdumpCustomParams());
+                    if (dbInitial.isMsSql()) {
+                        String msTrustCert = dbInitial.getProperties().get(ApgdiffConsts.TRUST_CERT);
+                        btnMsCert.setSelection(msTrustCert != null ? Boolean.valueOf(msTrustCert) : true);
+                    }
                 }
 
                 txtDbHost.setText(dbHost);
@@ -290,6 +297,13 @@ public class DbStoreEditorDialog extends TrayDialog {
         btnMsSql.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, false, false, 3, 1));
         btnMsSql.setText(Messages.DbStoreEditorDialog_connect_to_ms);
         btnMsSql.addSelectionListener(msStateUpdater);
+
+        new Label(tabAreaDb, SWT.NONE).setText(Messages.DbStoreEditorDialog_ms_cert);
+
+        btnMsCert = new Button(tabAreaDb, SWT.CHECK);
+        btnMsCert.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, false, false, 3, 1));
+        btnMsCert.setText(Messages.DbStoreEditorDialog_trust_mssql);
+        btnMsCert.setSelection(true);
 
         new Label(tabAreaDb, SWT.NONE).setText(Messages.domain);
 
@@ -542,13 +556,18 @@ public class DbStoreEditorDialog extends TrayDialog {
             mb.setMessage(Messages.dbStoreEditorDialog_empty_name);
             mb.open();
         } else {
+            boolean isMsSql = btnMsSql.getSelection();
+            Map<String, String> properties = propertyListEditor.getList().stream()
+                    .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+            if (isMsSql) {
+                properties.put(ApgdiffConsts.TRUST_CERT, String.valueOf(btnMsCert.getSelection()));
+            }
+
             dbInfo = new DbInfo(txtName.getText(), txtDbName.getText(),
                     txtDbUser.getText(), txtDbPass.getText(),
                     txtDbHost.getText(), dbport, btnReadOnly.getSelection(),
                     btnGenerateName.getSelection(), ignoreListEditor.getList(),
-                    propertyListEditor.getList().stream()
-                    .collect(Collectors.toMap(Entry::getKey, Entry::getValue)),
-                    btnMsSql.getSelection(), isWinAuth(), txtDomain.getText(),
+                    properties, isMsSql, isWinAuth(), txtDomain.getText(),
                     exePath, txtDumpParameters.getText(), btnUseDump.getSelection(),
                     cmbGroups.getCombo().getText());
             super.okPressed();
