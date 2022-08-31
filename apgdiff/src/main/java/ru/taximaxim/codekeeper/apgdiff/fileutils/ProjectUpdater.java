@@ -1,4 +1,4 @@
-package ru.taximaxim.codekeeper.ui.fileutils;
+package ru.taximaxim.codekeeper.apgdiff.fileutils;
 
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -10,23 +10,17 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.text.MessageFormat;
 import java.util.Collection;
 
-import org.eclipse.core.runtime.CoreException;
-
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.MS_WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
-import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
-import ru.taximaxim.codekeeper.apgdiff.fileutils.TempDir;
+import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
+import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.AbstractModelExporter;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.MsModelExporter;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.OverridesModelExporter;
-import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
-import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public class ProjectUpdater {
 
@@ -39,25 +33,26 @@ public class ProjectUpdater {
     private final boolean isMsSql;
     private final boolean overridesOnly;
 
-    public ProjectUpdater(PgDatabase dbNew, PgDbProject proj) throws CoreException {
-        this(dbNew, null, null, proj, false);
+    public ProjectUpdater(PgDatabase dbNew, boolean isMsSql, String encoding, Path dirExport) {
+        this(dbNew, null, null, isMsSql, encoding, dirExport, false);
     }
 
     public ProjectUpdater(PgDatabase dbNew, PgDatabase dbOld, Collection<TreeElement> changedObjects,
-            PgDbProject proj, boolean overridesOnly) throws CoreException {
+            boolean isMsSql, String encoding, Path dirExport, boolean overridesOnly) {
         this.dbNew = dbNew;
         this.dbOld = dbOld;
 
         this.changedObjects = changedObjects;
 
-        this.encoding = proj.getProjectCharset();
-        this.dirExport = proj.getPathToProject();
+        this.encoding = encoding;
+        this.dirExport = dirExport;
 
-        this.isMsSql = OpenProjectUtils.checkMsSql(proj.getProject());
+        this.isMsSql = isMsSql;
         this.overridesOnly = overridesOnly;
     }
 
     public void updatePartial() throws IOException {
+
         Log.log(Log.LOG_INFO, "Project updater: started partial"); //$NON-NLS-1$
         if (dbOld == null){
             throw new IOException(Messages.ProjectUpdater_old_db_null);

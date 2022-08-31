@@ -47,6 +47,7 @@ public class PgDiffArguments {
     private boolean simplifyView;
     private boolean ignoreErrors;
     private boolean ignoreColumnOrder;
+    private boolean projUpdate;
     private boolean autoFormatObjectCode;
     private FormatConfiguration formatConfiguration = new FormatConfiguration();
     private boolean generateExists;
@@ -61,7 +62,7 @@ public class PgDiffArguments {
     public void setPreFilePath(List<String> preFilePath) {
         this.preFilePath = preFilePath;
     }
-    
+
     public Collection<String> getPostFilePath() {
         return Collections.unmodifiableCollection(postFilePath);
     }
@@ -312,6 +313,14 @@ public class PgDiffArguments {
 
     public void setSimplifyView(boolean simplifyView) {
         this.simplifyView = simplifyView;
+    }
+
+    public boolean isProjUpdate() {
+        return projUpdate;
+    }
+
+    public void setProjUpdate(boolean projUpdate) {
+        this.projUpdate = projUpdate;
     }
 
     public PgDiffArguments copy() {

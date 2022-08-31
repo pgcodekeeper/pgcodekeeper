@@ -182,7 +182,7 @@ public class PgDiff {
      *
      * @return the loaded database
      */
-    private PgDatabase loadDatabaseSchema(String format, String srcPath)
+    public PgDatabase loadDatabaseSchema(String format, String srcPath)
             throws InterruptedException, IOException {
         DatabaseLoader loader;
         IgnoreSchemaList ignoreSchemaList =  new IgnoreSchemaList();
@@ -333,7 +333,7 @@ public class PgDiff {
         return script.getText();
     }
 
-    private List<TreeElement> getSelectedElements(TreeElement root, IgnoreList ignoreList) {
+    protected List<TreeElement> getSelectedElements(TreeElement root, IgnoreList ignoreList) {
         return new TreeFlattener()
                 .onlySelected()
                 .useIgnoreList(ignoreList)

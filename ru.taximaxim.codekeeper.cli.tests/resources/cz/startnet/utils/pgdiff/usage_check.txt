@@ -1,7 +1,7 @@
 Usage
 	pgcodekeeper-cli [option]... SOURCE DEST
 	pgcodekeeper-cli -s SOURCE -t DEST [option]...
-	pgcodekeeper-cli --parse -o OUTDIR [option]... SCHEMA
+	pgcodekeeper-cli --parse -o OUTDIR [--update-project] [option]... SCHEMA
 	pgcodekeeper-cli --graph [option]... SCHEMA
 
  SOURCE                                 : source of schema changes
@@ -120,6 +120,8 @@ Usage
  --ignore-concurrent-modification       : ignore concurrent modification errors
                                           of database objects
  --ms-sql                               : work with MS SQL
+ --update-project                       : update an existing project in parse
+                                          mode
  --graph-depth <n>                      : depth of displayed dependencies in
                                           graph mode (default: 10)
  --graph-reverse                        : reverse the direction of the graph to

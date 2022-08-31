@@ -905,11 +905,6 @@ public final class Messages extends NLS {
     public static String ProjectProperties_binding_to_db_connection;
 
     public static String ProjectProperties_disable_parser_in_external_files;
-    public static String ProjectUpdater_error_backup_restore;
-    public static String ProjectUpdater_error_no_tempdir;
-    public static String ProjectUpdater_error_update;
-
-    public static String ProjectUpdater_old_db_null;
 
     public static String sqlScriptDialog_script_select_storage;
     public static String StdStreamRedirector_error_reading_std;
