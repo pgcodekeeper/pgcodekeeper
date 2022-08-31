@@ -177,7 +177,8 @@ public abstract class ParserAbstract {
     public static String getExpressionText(VexContext def, CommonTokenStream stream) {
         String expression = getFullCtxText(def);
         String whitespace = getHiddenLeftCtxText(def, stream);
-        return whitespace.startsWith("\n") ? (whitespace + expression) : expression;
+        int newline = whitespace.indexOf('\n');
+        return newline != -1 ? (whitespace.substring(newline) + expression) : expression;
     }
 
     private static String convertAlias(String type) {
