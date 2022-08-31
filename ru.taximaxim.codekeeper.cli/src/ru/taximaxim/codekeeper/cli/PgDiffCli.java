@@ -19,7 +19,7 @@ public class PgDiffCli extends PgDiff {
 
     public PgDiffCli(CliArgs arguments) {
         super(arguments);
-        this.arguments = new CliArgs();
+        this.arguments = arguments;
     }
 
     public void updateProject()

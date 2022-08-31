@@ -60,8 +60,7 @@ public final class Main {
             } else {
                 return diff(writer, arguments);
             }
-        }
-        catch (CmdLineException | NotAllowedObjectException ex) {
+        } catch (CmdLineException | NotAllowedObjectException ex) {
             System.err.println(ex.getLocalizedMessage());
             return false;
         } catch (Exception e) {

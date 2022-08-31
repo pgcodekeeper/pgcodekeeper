@@ -258,6 +258,10 @@ public class CliArgs extends PgDiffArguments {
             usage="work with MS SQL")
     private boolean msSql;
 
+    @Option(name="--update-project", depends={"--parse"}, forbids={"--graph"},
+            usage="update an existing project in parse mode")
+    private boolean projUpdate;
+
     @Option(name="--graph-depth", metaVar="<n>", forbids={"--parse"}, depends={"--graph"},
             usage="depth of displayed dependencies in graph mode")
     private int graphDepth;
@@ -279,20 +283,6 @@ public class CliArgs extends PgDiffArguments {
     @Option(name="--graph-invert-filter", forbids={"--parse"}, depends={"--graph", "--graph-filter-object"},
             usage="invert graph filter object types: hide objects specified by the filter")
     private boolean graphInvertFilter;
-
-    @Option(name="--project-update",
-            usage="update project in parse mode")
-    private boolean projUpdate;
-
-    @Override
-    public boolean isProjUpdate() {
-        return projUpdate;
-    }
-
-    @Override
-    public void setProjUpdate(boolean projUpdate) {
-        this.projUpdate = projUpdate;
-    }
 
     public boolean isModeParse() {
         return modeParse;
@@ -651,6 +641,16 @@ public class CliArgs extends PgDiffArguments {
         this.graphDepth = graphDepth;
     }
 
+    @Override
+    public boolean isProjUpdate() {
+        return projUpdate;
+    }
+
+    @Override
+    public void setProjUpdate(boolean projUpdate) {
+        this.projUpdate = projUpdate;
+    }
+
     public Collection<String> getGraphNames() {
         return Collections.unmodifiableCollection(graphNames);
     }
@@ -712,7 +712,7 @@ public class CliArgs extends PgDiffArguments {
         String msJdbcStart = "jdbc:sqlserver:";
         String pgJdbcStart = "jdbc:postgresql:";
 
-        if(isModeParse() && isProjUpdate()) {
+        if (isModeParse() && isProjUpdate()) {
             setOldSrc(getOutputTarget());
             setOldSrcFormat(parsePath(getOldSrc()));
         }

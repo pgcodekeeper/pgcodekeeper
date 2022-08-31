@@ -1,7 +1,7 @@
 Usage
 	pgcodekeeper-cli [option]... SOURCE DEST
 	pgcodekeeper-cli -s SOURCE -t DEST [option]...
-	pgcodekeeper-cli --parse -o OUTDIR [option]... SCHEMA
+	pgcodekeeper-cli --parse -o OUTDIR [--update-project] [option]... SCHEMA
 	pgcodekeeper-cli --graph [option]... SCHEMA
 
  SOURCE                                 : source of schema changes
@@ -120,6 +120,8 @@ Usage
  --ignore-concurrent-modification       : ignore concurrent modification errors
                                           of database objects
  --ms-sql                               : work with MS SQL
+ --update-project                       : update an existing project in parse
+                                          mode
  --graph-depth <n>                      : depth of displayed dependencies in
                                           graph mode (default: 10)
  --graph-reverse                        : reverse the direction of the graph to
@@ -132,7 +134,6 @@ Usage
                                           objects types
  --graph-invert-filter                  : invert graph filter object types:
                                           hide objects specified by the filter
- --project-update                       : update project in parse mode
 
 DANGER_STATEMENT : [DROP_TABLE | ALTER_COLUMN | DROP_COLUMN | RESTART_WITH | UPDATE]
 OBJECT_TYPE : [CAST | USER | ROLE | ASSEMBLY | SCHEMA | EXTENSION | FOREIGN_DATA_WRAPPER | SERVER | USER_MAPPING | TYPE | DOMAIN | SEQUENCE | OPERATOR | FTS_PARSER | FTS_TEMPLATE | FTS_DICTIONARY | FTS_CONFIGURATION | TABLE | FUNCTION | PROCEDURE | AGGREGATE | INDEX | CONSTRAINT | VIEW | TRIGGER | RULE | POLICY]
