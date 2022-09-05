@@ -9,6 +9,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.text.MessageFormat;
@@ -30,6 +31,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.ScriptParser;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
+import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.MsModelExporter;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyWriter;
@@ -53,12 +55,20 @@ public final class Main {
             if (!arguments.parse(writer, args)) {
                 return true;
             }
+            if (arguments.isClearLibCache()) {
+                clearCache();
+            }
             if (arguments.isModeParse()) {
                 return parse(arguments);
             } else if (arguments.isModeGraph()) {
                 return graph(writer, arguments);
-            } else {
+            } else if (arguments.getOldSrc() != null && arguments.getNewSrc() != null) {
                 return diff(writer, arguments);
+            } else if (arguments.isClearLibCache()) {
+                return true;
+            } else {
+                // should never happen due to old/new src checks in CliArgs.parse()
+                throw new IllegalStateException();
             }
         } catch (CmdLineException | NotAllowedObjectException ex) {
             System.err.println(ex.getLocalizedMessage());
@@ -174,6 +184,13 @@ public final class Main {
             .write(arguments.getGraphNames());
         }
         return true;
+    }
+
+    private static void clearCache() throws IOException {
+        Path metaPath = Paths.get(System.getProperty("user.home"))
+                .resolve(".pgcodekeeper-cli").resolve("dependencies");
+        FileUtils.deleteRecursive(metaPath);
+        System.err.println("Clear cached libraries");
     }
 
     private Main() {

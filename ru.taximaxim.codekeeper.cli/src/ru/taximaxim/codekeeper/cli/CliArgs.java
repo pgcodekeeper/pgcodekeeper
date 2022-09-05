@@ -75,6 +75,9 @@ public class CliArgs extends PgDiffArguments {
     @Option(name="--list-charsets", help=true, usage="show list of Java-supported charsets")
     private boolean zlistCharsets;
 
+    @Option(name="--clear-lib-cache", help=true, usage="clear library cache")
+    private boolean clearLibCache;
+
     @Option(name="--parse", depends="-o",
             usage="run in parser mode to save database schema as a directory hierarchy")
     private boolean modeParse;
@@ -279,6 +282,14 @@ public class CliArgs extends PgDiffArguments {
     @Option(name="--graph-invert-filter", forbids={"--parse"}, depends={"--graph", "--graph-filter-object"},
             usage="invert graph filter object types: hide objects specified by the filter")
     private boolean graphInvertFilter;
+
+    public boolean isClearLibCache() {
+        return clearLibCache;
+    }
+
+    public void setClearLibCache(boolean clearLibCache) {
+        this.clearLibCache = clearLibCache;
+    }
 
     public boolean isModeParse() {
         return modeParse;
@@ -712,13 +723,7 @@ public class CliArgs extends PgDiffArguments {
                 badArgs("Cannot work with MS SQL database as PostgerSQL project.");
             }
         } else {
-            if (isRunOnTarget() && !getOldSrc().startsWith("jdbc:")) {
-                badArgs("Cannot run script on non-database target");
-            }
-            if (getRunOnDb() != null && !getRunOnDb().startsWith("jdbc:")) {
-                badArgs("option -R (--run-on) must specify JDBC connection string");
-            }
-            if (getOldSrc() == null || getNewSrc() == null) {
+            if ((getOldSrc() == null || getNewSrc() == null) && !clearLibCache) {
                 badArgs("Please specify both SOURCE and DEST.");
             }
             if (isAddTransaction() && isConcurrentlyMode() && !isMsSql()) {
@@ -733,6 +738,12 @@ public class CliArgs extends PgDiffArguments {
             }
             if ((getOldSrc().startsWith(pgJdbcStart) || getNewSrc().startsWith(pgJdbcStart)) && isMsSql()) {
                 badArgs("Cannot work with PostgreSQL database with --ms-sql parameter.");
+            }
+            if (isRunOnTarget() && !getOldSrc().startsWith("jdbc:")) {
+                badArgs("Cannot run script on non-database target");
+            }
+            if (getRunOnDb() != null && !getRunOnDb().startsWith("jdbc:")) {
+                badArgs("option -R (--run-on) must specify JDBC connection string");
             }
             // TODO Do we need to check DB types for dump and directories?
 
