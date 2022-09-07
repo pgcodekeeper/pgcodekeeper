@@ -3,7 +3,8 @@ WITH sys_schemas AS (
     FROM pg_catalog.pg_namespace n
     WHERE n.nspname LIKE 'pg\_%'
         OR n.nspname = 'information_schema'
-        OR EXISTS (SELECT 1 FROM pg_catalog.pg_depend dp WHERE dp.objid = n.oid AND dp.deptype = 'e')
+        OR EXISTS (SELECT 1 FROM pg_catalog.pg_depend dp WHERE dp.objid = n.oid AND dp.deptype = 'e'
+            AND dp.classid = 'pg_catalog.pg_namespace'::pg_catalog.regclass)
 )
 
 SELECT  cls.oid::bigint,
@@ -23,6 +24,7 @@ JOIN pg_catalog.pg_class cls ON cls.oid = ind.indexrelid
 JOIN pg_catalog.pg_class clsrel ON clsrel.oid = ind.indrelid
 LEFT JOIN pg_catalog.pg_tablespace t ON cls.reltablespace = t.oid 
 LEFT JOIN pg_catalog.pg_description des ON ind.indexrelid = des.objoid AND des.objsubid = 0
+    AND des.classoid = 'pg_catalog.pg_class'::pg_catalog.regclass
 LEFT JOIN pg_catalog.pg_constraint cons ON cons.conindid = ind.indexrelid AND cons.contype IN ('p', 'u', 'x')
 -- inherit index
 LEFT JOIN pg_catalog.pg_inherits inh ON (inh.inhrelid = ind.indexrelid)

@@ -6,6 +6,8 @@ CREATE SCHEMA other;
 
 CREATE EXTENSION testext3 SCHEMA other;
 
-ALTER EXTENSION testext2 SET SCHEMA other;
+DROP EXTENSION testext2;
 
 COMMENT ON EXTENSION testext_comment IS 'new comment';
+
+CREATE EXTENSION testext2 SCHEMA other;

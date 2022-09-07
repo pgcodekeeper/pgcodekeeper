@@ -158,11 +158,6 @@ public class PgCollation extends PgStatementWithSearchPath {
     }
 
     @Override
-    public String getDropSQL() {
-        return "DROP COLLATION " + getQualifiedName() + ";";
-    }
-
-    @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         PgCollation newCollation = (PgCollation) newCondition;

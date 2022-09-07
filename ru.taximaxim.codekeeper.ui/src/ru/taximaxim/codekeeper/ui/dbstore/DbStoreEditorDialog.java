@@ -7,12 +7,17 @@ import java.text.MessageFormat;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TrayDialog;
+import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.ComboViewer;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -65,8 +70,11 @@ public class DbStoreEditorDialog extends TrayDialog {
     private Button btnReadOnly;
     private Button btnGenerateName;
     private Button btnMsSql;
+    private Button btnMsCert;
     private Button btnUseDump;
     private Button btnWinAuth;
+    private ComboViewer cmbGroups;
+    private final Set<String> dbGroups;
 
     private IgnoreListEditor ignoreListEditor;
     private DbPropertyListEditor propertyListEditor;
@@ -83,6 +91,7 @@ public class DbStoreEditorDialog extends TrayDialog {
             txtDbUser.setEnabled(!win);
             txtDbPass.setEnabled(!win);
             txtDomain.setEnabled(ms && !isWinAuth());
+            btnMsCert.setEnabled(ms);
         }
     };
 
@@ -94,10 +103,11 @@ public class DbStoreEditorDialog extends TrayDialog {
         return btnWinAuth != null && btnWinAuth.getSelection();
     }
 
-    public DbStoreEditorDialog(Shell shell, DbInfo dbInitial, String action) {
+    public DbStoreEditorDialog(Shell shell, DbInfo dbInitial, String action, Set<String> dbGroups) {
         super(shell);
         this.dbInitial = dbInitial;
         this.action = action;
+        this.dbGroups = dbGroups;
     }
 
     @Override
@@ -118,6 +128,7 @@ public class DbStoreEditorDialog extends TrayDialog {
                 String dbName = ""; //$NON-NLS-1$
                 String dbUser = ""; //$NON-NLS-1$
                 String dbPass = ""; //$NON-NLS-1$
+                String dbGroup = ""; //$NON-NLS-1$
                 String entryName = ""; //$NON-NLS-1$;
                 String domain = ""; //$NON-NLS-1$;
                 List<String> ignoreList = null;
@@ -129,6 +140,7 @@ public class DbStoreEditorDialog extends TrayDialog {
                     dbName = dbInitial.getDbName();
                     dbUser = dbInitial.getDbUser();
                     dbPass = dbInitial.getDbPass();
+                    dbGroup = dbInitial.getDbGroup();
                     generateEntryName = dbInitial.isGeneratedName();
                     entryName = dbInitial.getName();
                     domain = dbInitial.getDomain();
@@ -148,6 +160,10 @@ public class DbStoreEditorDialog extends TrayDialog {
                     btnUseDump.setSelection(dbInitial.isPgDumpSwitch());
                     txtDumpFile.setText(dbInitial.getPgdumpExePath());
                     txtDumpParameters.setText(dbInitial.getPgdumpCustomParams());
+                    if (dbInitial.isMsSql()) {
+                        String msTrustCert = dbInitial.getProperties().get(ApgdiffConsts.TRUST_CERT);
+                        btnMsCert.setSelection(msTrustCert != null ? Boolean.valueOf(msTrustCert) : true);
+                    }
                 }
 
                 txtDbHost.setText(dbHost);
@@ -155,6 +171,9 @@ public class DbStoreEditorDialog extends TrayDialog {
                 txtDbName.setText(dbName);
                 txtDbUser.setText(dbUser);
                 txtDbPass.setText(dbPass);
+                if (dbGroup != null) {
+                    cmbGroups.setSelection(new StructuredSelection(dbGroup));
+                }
                 txtName.setText(entryName);
                 txtDomain.setText(domain != null ? domain : ""); //$NON-NLS-1$;
                 btnGenerateName.setSelection(generateEntryName);
@@ -279,9 +298,17 @@ public class DbStoreEditorDialog extends TrayDialog {
         btnMsSql.setText(Messages.DbStoreEditorDialog_connect_to_ms);
         btnMsSql.addSelectionListener(msStateUpdater);
 
+        new Label(tabAreaDb, SWT.NONE).setText(Messages.DbStoreEditorDialog_ms_cert);
+
+        btnMsCert = new Button(tabAreaDb, SWT.CHECK);
+        btnMsCert.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, false, false, 3, 1));
+        btnMsCert.setText(Messages.DbStoreEditorDialog_trust_mssql);
+        btnMsCert.setSelection(true);
+
         new Label(tabAreaDb, SWT.NONE).setText(Messages.domain);
 
         txtDomain = new Text(tabAreaDb, SWT.BORDER);
+        txtDomain.setEnabled(false);
         txtDomain.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, false, false, 3, 1));
 
         if (Platform.OS_WIN32.equals(Platform.getOS())) {
@@ -335,6 +362,15 @@ public class DbStoreEditorDialog extends TrayDialog {
                 txtName.setEnabled(!btnGenerateName.getSelection());
             }
         });
+
+        Label lblDB = new Label(tabAreaDb, SWT.NONE);
+        lblDB.setText(Messages.DbStoreEditorDialog_choice_db_group);
+
+        cmbGroups = new ComboViewer(tabAreaDb, SWT.DROP_DOWN);
+        cmbGroups.getCombo().setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, false, false, 3, 1));
+        cmbGroups.setContentProvider(ArrayContentProvider.getInstance());
+        dbGroups.removeIf(String::isEmpty);
+        cmbGroups.setInput(dbGroups);
 
         //// Creating tab item "Ignored objects files" and fill it by components.
 
@@ -520,14 +556,20 @@ public class DbStoreEditorDialog extends TrayDialog {
             mb.setMessage(Messages.dbStoreEditorDialog_empty_name);
             mb.open();
         } else {
+            boolean isMsSql = btnMsSql.getSelection();
+            Map<String, String> properties = propertyListEditor.getList().stream()
+                    .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+            if (isMsSql) {
+                properties.put(ApgdiffConsts.TRUST_CERT, String.valueOf(btnMsCert.getSelection()));
+            }
+
             dbInfo = new DbInfo(txtName.getText(), txtDbName.getText(),
                     txtDbUser.getText(), txtDbPass.getText(),
                     txtDbHost.getText(), dbport, btnReadOnly.getSelection(),
                     btnGenerateName.getSelection(), ignoreListEditor.getList(),
-                    propertyListEditor.getList().stream()
-                    .collect(Collectors.toMap(Entry::getKey, Entry::getValue)),
-                    btnMsSql.getSelection(), isWinAuth(), txtDomain.getText(),
-                    exePath, txtDumpParameters.getText(), btnUseDump.getSelection());
+                    properties, isMsSql, isWinAuth(), txtDomain.getText(),
+                    exePath, txtDumpParameters.getText(), btnUseDump.getSelection(),
+                    cmbGroups.getCombo().getText());
             super.okPressed();
         }
     }

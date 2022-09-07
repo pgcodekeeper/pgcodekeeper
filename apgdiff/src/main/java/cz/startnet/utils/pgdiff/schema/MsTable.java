@@ -17,7 +17,7 @@ import cz.startnet.utils.pgdiff.hashers.Hasher;
  * @since 5.3.1.
  * @author galiev_mr
  */
-public class MsTable extends AbstractTable {
+public class MsTable extends AbstractTable implements PgSimpleOptionContainer{
 
     private static final String MEMORY_OPTIMIZED = "MEMORY_OPTIMIZED";
 
@@ -40,7 +40,6 @@ public class MsTable extends AbstractTable {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
-
         appendName(sbSQL);
         appendColumns(sbSQL);
         appendOptions(sbSQL);
@@ -131,7 +130,7 @@ public class MsTable extends AbstractTable {
     }
 
     protected void appendOptions(StringBuilder sbSQL) {
-        int startLenght = sbSQL.length();
+        int startLength = sbSQL.length();
         if (tablespace != null) {
             // tablespace already quoted
             sbSQL.append(" ON ").append(tablespace).append(' ');
@@ -145,7 +144,7 @@ public class MsTable extends AbstractTable {
             sbSQL.append("FILESTREAM_ON ").append(MsDiffUtils.quoteName(getFileStream())).append(' ');
         }
 
-        if (sbSQL.length() > startLenght) {
+        if (sbSQL.length() > startLength) {
             sbSQL.setLength(sbSQL.length() - 1);
         }
 
@@ -205,11 +204,6 @@ public class MsTable extends AbstractTable {
         sb.append(getAlterTable(true, false));
         sb.append(" ENABLE CHANGE_TRACKING WITH (TRACK_COLUMNS_UPDATED = ");
         sb.append(isTracked() ? "ON" : "OFF").append(')').append(GO);
-    }
-
-    @Override
-    public String getDropSQL() {
-        return "DROP TABLE " + getQualifiedName() + GO;
     }
 
     @Override

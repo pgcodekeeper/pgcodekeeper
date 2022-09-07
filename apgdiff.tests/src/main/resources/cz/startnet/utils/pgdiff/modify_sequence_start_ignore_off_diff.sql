@@ -1,4 +1,4 @@
 SET search_path = pg_catalog;
 
 ALTER SEQUENCE public.testseq
-	RESTART WITH 1000;
+	START WITH 1000;

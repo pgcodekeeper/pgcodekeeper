@@ -1,31 +1,30 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Collation_optionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_collationContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_collation_statementContext;
 import cz.startnet.utils.pgdiff.schema.PgCollation;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateCollation extends ParserAbstract {
-    private final Create_collationContext ctx;
+    private final Create_collation_statementContext ctx;
 
-    public CreateCollation(Create_collationContext ctx, PgDatabase db) {
+    public CreateCollation(Create_collation_statementContext ctx, PgDatabase db) {
         super(db);
         this.ctx = ctx;
     }
 
     @Override
     public void parseObject() {
-        List<IdentifierContext> ids = ctx.name.identifier();
-        IdentifierContext name = QNameParser.getFirstNameCtx(ids);
-        PgCollation collation = new PgCollation(name.getText());
+        List<ParserRuleContext> ids = getIdentifiers(ctx.name);
+        PgCollation collation = new PgCollation(QNameParser.getFirstName(ids));
 
         for (Collation_optionContext body : ctx.collation_option()) {
             if (body.LOCALE() != null) {
@@ -52,7 +51,7 @@ public class CreateCollation extends ParserAbstract {
 
             }
         }
-        addSafe(getSchemaSafe(ids), collation, Arrays.asList(name));
+        addSafe(getSchemaSafe(ids), collation, ids);
     }
 
     private String getValue(Collation_optionContext body) {

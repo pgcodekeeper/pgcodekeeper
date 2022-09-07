@@ -58,6 +58,8 @@ class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvi
             switch (st.getStatementType()) {
             case CAST:
                 return "CAST " + st.getBareName(); //$NON-NLS-1$
+            case USER_MAPPING:
+                return "USER_MAPPING " + st.getBareName(); //$NON-NLS-1$
             case COLUMN:
                 // just for tests
                 return "COL " + st.getBareName(); //$NON-NLS-1$
@@ -72,6 +74,10 @@ class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvi
                 return "DOM " + st.getBareName(); //$NON-NLS-1$
             case EXTENSION:
                 return "EXT " + st.getBareName(); //$NON-NLS-1$
+            case FOREIGN_DATA_WRAPPER:
+                return "FDW " + st.getBareName(); //$NON-NLS-1$
+            case SERVER:
+                return "SRV " + st.getBareName(); //$NON-NLS-1$
             case COLLATION:
                 return "COLL " + st.getBareName(); //$NON-NLS-1$
             case FUNCTION:

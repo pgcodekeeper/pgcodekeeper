@@ -149,7 +149,6 @@ CREATE VIEW public.viewttt AS
     pg_catalog.round((9.8)::double precision) AS pgcatalogggg_round__double,
     (4 > 2) AS vex_op_vex__boolean,
     - ('4.3'::numeric) AS op_vex__numeric,
-    ((4.7)::bigint !) AS vex_op__numeric,
     (@ 4.7) AS vex_op_2__numeric,
     (32 # 2) AS operrrr__integer,
     public.maxmin(333) AS func_user_type_return__custom_type,

@@ -12,7 +12,7 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
-import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
+import ru.taximaxim.codekeeper.ui.fileutils.UIProjectUpdater;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class InitProjectFromSource implements IRunnableWithProgress {
@@ -54,6 +54,6 @@ public class InitProjectFromSource implements IRunnableWithProgress {
 
         PgDatabase db = src.get(taskpm);
         pm.newChild(25).subTask(Messages.initProjectFromSource_exporting_db_model); // 75
-        new ProjectUpdater(db, proj).updateFull();
+        new UIProjectUpdater(db, proj).updateFull();
     }
 }

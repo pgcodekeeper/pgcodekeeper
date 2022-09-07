@@ -40,7 +40,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
-import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
+import ru.taximaxim.codekeeper.ui.fileutils.UIProjectUpdater;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
@@ -293,8 +293,8 @@ public class CommitDialog extends TrayDialog {
                         .onlySelected()
                         .onlyEdits(dbProject.getDbObject(), dbRemote.getDbObject())
                         .flatten(diffTree);
-                new ProjectUpdater(dbRemote.getDbObject(), dbProject.getDbObject(),
-                        checked, proj, isOverridesOnly).updatePartial();
+                new UIProjectUpdater(dbRemote.getDbObject(), dbProject.getDbObject(),
+                        checked,  proj, isOverridesOnly).updatePartial();
                 monitor.done();
             } catch (IOException | CoreException e) {
                 return new Status(IStatus.ERROR, PLUGIN_ID.THIS,

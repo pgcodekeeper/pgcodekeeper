@@ -1,8 +1,5 @@
 package cz.startnet.utils.pgdiff.schema;
 
-import java.text.MessageFormat;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -14,11 +11,9 @@ import cz.startnet.utils.pgdiff.hashers.Hasher;
  * @since 4.1.1
  * @author galiev_mr
  */
-public abstract class AbstractForeignTable extends AbstractPgTable {
+public abstract class AbstractForeignTable extends AbstractPgTable implements PgForeignOptionContainer {
 
     protected final String serverName;
-
-    protected static final String ALTER_FOREIGN_OPTION = "{0} OPTIONS ({1} {2} {3});";
 
     public AbstractForeignTable(String name, String serverName) {
         super(name);
@@ -40,11 +35,6 @@ public abstract class AbstractForeignTable extends AbstractPgTable {
     }
 
     @Override
-    public String getDropSQL() {
-        return "DROP FOREIGN TABLE " + getQualifiedName() + ';';
-    }
-
-    @Override
     protected boolean isNeedRecreate(AbstractTable newTable) {
         return super.isNeedRecreate(newTable)
                 || !this.getClass().equals(newTable.getClass())
@@ -52,26 +42,12 @@ public abstract class AbstractForeignTable extends AbstractPgTable {
     }
 
     @Override
-    protected void appendOptions(StringBuilder sbSQL) {
+    public void appendOptions(StringBuilder sbSQL) {
         sbSQL.append("\nSERVER ").append(PgDiffUtils.getQuotedName(serverName));
-
-        StringBuilder sb = new StringBuilder();
-        for (Entry <String, String> entry : options.entrySet()) {
-            String key = entry.getKey();
-            String value = entry.getValue();
-
-            sb.append(key);
-            if (!value.isEmpty()) {
-                sb.append(' ').append(value);
-            }
-            sb.append(", ");
+        if (!getOptions().isEmpty()) {
+            sbSQL.append('\n');
         }
-
-        if (sb.length() > 0) {
-            sb.setLength(sb.length() - 2);
-            sbSQL.append("\nOPTIONS (").append(sb).append(")");
-        }
-
+        PgForeignOptionContainer.super.appendOptions(sbSQL);
         sbSQL.append(';');
     }
 
@@ -79,37 +55,16 @@ public abstract class AbstractForeignTable extends AbstractPgTable {
     protected String getTypeName() {
         return "FOREIGN TABLE";
     }
-
     @Override
-    public void compareOptions(PgOptionContainer newContainer, StringBuilder sb) {
-        Map <String, String> oldForeignOptions = getOptions();
-        Map <String, String> newForeignOptions = newContainer.getOptions();
-        if (!oldForeignOptions.isEmpty() || !newForeignOptions.isEmpty()) {
-            oldForeignOptions.forEach((key, value) -> {
-                String newValue = newForeignOptions.get(key);
-                if (newValue != null) {
-                    if (!value.equals(newValue)) {
-                        sb.append(MessageFormat.format(ALTER_FOREIGN_OPTION,
-                                getAlterTable(true, false), "SET", key, newValue));
-                    }
-                } else {
-                    sb.append(MessageFormat.format(ALTER_FOREIGN_OPTION,
-                            getAlterTable(true, false), "DROP", key, ""));
-                }
-            });
-
-            newForeignOptions.forEach((key, value) -> {
-                if (!oldForeignOptions.containsKey(key)) {
-                    sb.append(MessageFormat.format(ALTER_FOREIGN_OPTION,
-                            getAlterTable(true, false), "ADD", key, value));
-                }
-            });
-        }
+    public String getAlterHeader() {
+        return getAlterTable(true, false);
     }
 
     @Override
     protected void appendName(StringBuilder sbSQL) {
-        sbSQL.append("CREATE FOREIGN TABLE ").append(getQualifiedName());
+        sbSQL.append("CREATE FOREIGN TABLE ");
+        appendIfNotExists(sbSQL);
+        sbSQL.append(getQualifiedName());
     }
 
     @Override

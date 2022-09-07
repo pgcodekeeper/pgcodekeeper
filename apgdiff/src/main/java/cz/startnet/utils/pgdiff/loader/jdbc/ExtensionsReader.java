@@ -22,7 +22,7 @@ public class ExtensionsReader implements PgCatalogStrings {
 
     public void read() throws SQLException, InterruptedException {
         loader.setCurrentOperation("extensions query");
-        String query = loader.appendTimestamps(JdbcQueries.QUERY_EXTENSIONS.getQuery());
+        String query = JdbcQueries.QUERY_EXTENSIONS.makeQuery(loader, "pg_extension");
 
         try (ResultSet res = loader.runner.runScript(loader.statement, query)) {
             while (res.next()) {
@@ -39,6 +39,7 @@ public class ExtensionsReader implements PgCatalogStrings {
         loader.setCurrentObject(new GenericColumn(extName, DbObjType.EXTENSION));
         PgExtension e = new PgExtension(extName);
         e.setSchema(res.getString("namespace"));
+        e.setRelocatable(res.getBoolean("extrelocatable"));
         e.addDep(new GenericColumn(e.getSchema(), DbObjType.SCHEMA));
 
         String comment = res.getString("description");

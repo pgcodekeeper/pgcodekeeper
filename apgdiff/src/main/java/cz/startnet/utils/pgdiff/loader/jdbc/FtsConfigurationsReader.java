@@ -71,4 +71,9 @@ public class FtsConfigurationsReader extends JdbcReader {
         loader.setAuthor(config, res);
         schema.addFtsConfiguration(config);
     }
+
+    @Override
+    protected String getClassId() {
+        return "pg_ts_config";
+    }
 }

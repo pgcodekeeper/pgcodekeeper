@@ -17,8 +17,9 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MetaFunction extends MetaStatement implements IFunction {
 
-    private static final long serialVersionUID = -585518205768372673L;
+    private static final long serialVersionUID = -241612147164222337L;
 
+    private final String bareName;
     private List<Argument> arguments;
     private transient String signatureCache;
 
@@ -38,12 +39,14 @@ public class MetaFunction extends MetaStatement implements IFunction {
     private String returns;
     private boolean setof;
 
-    public MetaFunction(PgObjLocation object) {
+    public MetaFunction(PgObjLocation object, String bareName) {
         super(object);
+        this.bareName = bareName;
     }
 
-    public MetaFunction(String schemaName, String name) {
+    public MetaFunction(String schemaName, String name, String bareName) {
         super(new GenericColumn(schemaName, name, DbObjType.FUNCTION));
+        this.bareName = bareName;
     }
 
     @Override
@@ -108,6 +111,11 @@ public class MetaFunction extends MetaStatement implements IFunction {
         return getSignature();
     }
 
+    @Override
+    public String getBareName() {
+        return bareName;
+    }
+
     /**
      * Returns function signature. It consists of unquoted name and argument
      * data types.
@@ -133,11 +141,6 @@ public class MetaFunction extends MetaStatement implements IFunction {
             }
             if (addComma) {
                 sb.append(", ");
-            }
-
-            if (ArgMode.IN != mode) {
-                sb.append(mode);
-                sb.append(' ');
             }
 
             sb.append(argument.getDataType());

@@ -100,15 +100,6 @@ public class PgOperator extends PgStatementWithSearchPath implements IOperator {
         return sbSQL.toString();
     }
 
-    @Override
-    public String getDropSQL() {
-        final StringBuilder sbString = new StringBuilder();
-        sbString.append("DROP OPERATOR ");
-        appendFullName(sbString);
-        sbString.append(';');
-        return sbString.toString();
-    }
-
     public String getSignature() {
         StringBuilder sb = new StringBuilder();
         sb.append(getBareName());

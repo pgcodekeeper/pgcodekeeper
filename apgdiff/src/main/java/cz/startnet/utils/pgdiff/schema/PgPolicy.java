@@ -107,14 +107,6 @@ public class PgPolicy extends PgStatementWithSearchPath {
     }
 
     @Override
-    public String getDropSQL() {
-        StringBuilder sbSQL = new StringBuilder("DROP POLICY ");
-        appendFullName(sbSQL);
-        sbSQL.append(';');
-        return sbSQL.toString();
-    }
-
-    @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         PgPolicy newPolice = (PgPolicy) newCondition;

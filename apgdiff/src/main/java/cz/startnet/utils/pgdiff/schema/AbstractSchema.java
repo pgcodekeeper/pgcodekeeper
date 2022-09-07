@@ -132,7 +132,8 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         case FUNCTION:
         case PROCEDURE:
         case AGGREGATE:
-            return getFunction(name);
+            AbstractFunction func = getFunction(name);
+            return func != null && func.getStatementType() == type ? func : null;
         case SEQUENCE:
             return getSequence(name);
         case TYPE:

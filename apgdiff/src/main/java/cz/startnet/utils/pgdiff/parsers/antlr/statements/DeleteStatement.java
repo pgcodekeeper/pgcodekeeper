@@ -15,11 +15,11 @@ public class DeleteStatement extends ParserAbstract {
 
     @Override
     public void parseObject() {
-        addObjReference(ctx.delete_table_name.identifier(), DbObjType.TABLE, ACTION_DELETE);
+        addObjReference(getIdentifiers(ctx.delete_table_name), DbObjType.TABLE, ACTION_DELETE);
     }
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_DELETE + " FROM", DbObjType.TABLE, ctx.delete_table_name);
+        return getStrForStmtAction(ACTION_DELETE + " FROM", DbObjType.TABLE, getIdentifiers(ctx.delete_table_name));
     }
 }

@@ -5,9 +5,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_policy_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.User_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.VexAnalysisLauncher;
@@ -29,7 +30,7 @@ public class CreatePolicy extends ParserAbstract {
 
     @Override
     public void parseObject() {
-        List<IdentifierContext> ids = ctx.schema_qualified_name().identifier();
+        List<ParserRuleContext> ids = getIdentifiers(ctx.schema_qualified_name());
         addObjReference(ids, DbObjType.TABLE, null);
 
         PgPolicy policy = new PgPolicy(ctx.identifier().getText());
@@ -56,7 +57,7 @@ public class CreatePolicy extends ParserAbstract {
             db.addAnalysisLauncher(new VexAnalysisLauncher(policy, vex, fileName));
         }
 
-        IdentifierContext parent = QNameParser.getFirstNameCtx(ids);
+        ParserRuleContext parent = QNameParser.getFirstNameCtx(ids);
         PgStatementContainer cont = getSafe(
                 AbstractSchema::getStatementContainer, getSchemaSafe(ids), parent);
         addSafe(cont, policy, Arrays.asList(QNameParser.getSchemaNameCtx(ids), parent, ctx.identifier()));
@@ -64,7 +65,7 @@ public class CreatePolicy extends ParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        List<IdentifierContext> ids = new ArrayList<>(ctx.schema_qualified_name().identifier());
+        List<ParserRuleContext> ids = new ArrayList<>(getIdentifiers(ctx.schema_qualified_name()));
         ids.add(ctx.identifier());
         return getStrForStmtAction(ACTION_CREATE, DbObjType.POLICY, ids);
     }

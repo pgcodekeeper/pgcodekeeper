@@ -73,8 +73,8 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         listeners.remove(e);
     }
 
-    public static PgDbParser getParser(IProject proj) {
-        return getParserForBuilder(proj, null);
+    public static PgDbParser getParser(IResource res) {
+        return getParserForBuilder(res.getProject(), null);
     }
 
     /**

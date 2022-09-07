@@ -33,6 +33,9 @@ public class DbUpdateProperties extends PropertyPage {
     private Button btnAlterColUsingExpr;
     private Button btnCreateIdxConcurrent;
     private Button btnScriptFromSelObjs;
+    private Button btnGenerateExists;
+    private Button btnDropBeforeCreate;
+    private Button btnAddPrePostScript;
     private Button btnDataMovementMode;
 
     private IEclipsePreferences prefs;
@@ -66,6 +69,9 @@ public class DbUpdateProperties extends PropertyPage {
                 btnAlterColUsingExpr.setEnabled(btnEnableProjPref.getSelection());
                 btnCreateIdxConcurrent.setEnabled(btnEnableProjPref.getSelection());
                 btnScriptFromSelObjs.setEnabled(btnEnableProjPref.getSelection());
+                btnGenerateExists.setEnabled(btnEnableProjPref.getSelection());
+                btnDropBeforeCreate.setEnabled(btnEnableProjPref.getSelection());
+                btnAddPrePostScript.setEnabled(btnEnableProjPref.getSelection());
                 btnDataMovementMode.setEnabled(btnEnableProjPref.getSelection());
             }
         });
@@ -115,6 +121,30 @@ public class DbUpdateProperties extends PropertyPage {
                 .SCRIPT_FROM_SELECTED_OBJS, false));
         btnScriptFromSelObjs.setEnabled(overridePref);
 
+        btnGenerateExists = new Button(panel, SWT.CHECK);
+        btnGenerateExists.setText(Messages.DbUpdatePrefPage_option_if_exists);
+        gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
+        gd.horizontalIndent = 10;
+        btnGenerateExists.setLayoutData(gd);
+        btnGenerateExists.setSelection(prefs.getBoolean(DB_UPDATE_PREF.GENERATE_EXISTS, false));
+        btnGenerateExists.setEnabled(overridePref);
+
+        btnDropBeforeCreate = new Button(panel, SWT.CHECK);
+        btnDropBeforeCreate.setText(Messages.DbUpdatePrefPage_option_drop_object);
+        gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
+        gd.horizontalIndent = 10;
+        btnDropBeforeCreate.setLayoutData(gd);
+        btnDropBeforeCreate.setSelection(prefs.getBoolean(DB_UPDATE_PREF.DROP_BEFORE_CREATE, false));
+        btnDropBeforeCreate.setEnabled(overridePref);
+
+        btnAddPrePostScript = new Button(panel, SWT.CHECK);
+        btnAddPrePostScript.setText(Messages.DbUpdatePrefPage_add_pre_post_script);
+        gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
+        gd.horizontalIndent = 10;
+        btnAddPrePostScript.setLayoutData(gd);
+        btnAddPrePostScript.setSelection(prefs.getBoolean(DB_UPDATE_PREF.ADD_PRE_POST_SCRIPT, false));
+        btnAddPrePostScript.setEnabled(overridePref);
+
         btnDataMovementMode = new Button(panel, SWT.CHECK);
         btnDataMovementMode.setText(Messages.DbUpdatePrefPage_allow_data_movement);
         gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
@@ -136,7 +166,11 @@ public class DbUpdateProperties extends PropertyPage {
         setDefault(mainPS, btnAlterColUsingExpr, DB_UPDATE_PREF.USING_ON_OFF);
         setDefault(mainPS, btnCreateIdxConcurrent, DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY);
         setDefault(mainPS, btnScriptFromSelObjs, DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS);
+        setDefault(mainPS, btnGenerateExists, DB_UPDATE_PREF.GENERATE_EXISTS);
+        setDefault(mainPS, btnDropBeforeCreate, DB_UPDATE_PREF.DROP_BEFORE_CREATE);
+        setDefault(mainPS, btnAddPrePostScript, DB_UPDATE_PREF.ADD_PRE_POST_SCRIPT);
         setDefault(mainPS, btnDataMovementMode, DB_UPDATE_PREF.DATA_MOVEMENT_MODE);
+
         try {
             fillPrefs();
         } catch (BackingStoreException e) {
@@ -173,6 +207,9 @@ public class DbUpdateProperties extends PropertyPage {
         prefs.putBoolean(DB_UPDATE_PREF.USING_ON_OFF, btnAlterColUsingExpr.getSelection());
         prefs.putBoolean(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY, btnCreateIdxConcurrent.getSelection());
         prefs.putBoolean(DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS, btnScriptFromSelObjs.getSelection());
+        prefs.putBoolean(DB_UPDATE_PREF.GENERATE_EXISTS, btnGenerateExists.getSelection());
+        prefs.putBoolean(DB_UPDATE_PREF.DROP_BEFORE_CREATE, btnDropBeforeCreate.getSelection());
+        prefs.putBoolean(DB_UPDATE_PREF.ADD_PRE_POST_SCRIPT, btnAddPrePostScript.getSelection());
         prefs.putBoolean(DB_UPDATE_PREF.DATA_MOVEMENT_MODE, btnDataMovementMode.getSelection());
         prefs.flush();
         setValid(true);

@@ -25,6 +25,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 
 /**
@@ -119,6 +120,9 @@ public abstract class AbstractModelExporter {
         Set<Path> paths = new HashSet<>();
 
         for (TreeElement el : changeList) {
+            if (el.getType() == DbObjType.DATABASE) {
+                continue;
+            }
             switch(el.getSide()) {
             case LEFT:
                 PgStatement stInOld = el.getPgStatement(oldDb);
@@ -184,7 +188,7 @@ public abstract class AbstractModelExporter {
     }
 
     protected String getDumpSql(PgStatement statement) {
-        return statement.getFullSQL();
+        return statement.getFullFormattedSQL();
     }
 
     /**

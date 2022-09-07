@@ -152,11 +152,6 @@ public class MsSequence extends AbstractSequence {
     }
 
     @Override
-    public String getDropSQL() {
-        return "DROP SEQUENCE " + getQualifiedName() + GO;
-    }
-
-    @Override
     public void setDataType(String dataType) {
         String type = dataType.toLowerCase(Locale.ROOT);
         switch (type) {

@@ -7,10 +7,13 @@ import java.util.Set;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Plpgsql_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.AbstractExprWithNmspc;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Function;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Sql;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.SqlFunctionBody;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
@@ -33,6 +36,12 @@ public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
         this.funcArgs = funcArgs;
     }
 
+    public FuncProcAnalysisLauncher(AbstractPgFunction stmt, Function_bodyContext ctx,
+            String location, List<Pair<String, GenericColumn>> funcArgs) {
+        super(stmt, ctx, location);
+        this.funcArgs = funcArgs;
+    }
+
     public FuncProcAnalysisLauncher(AbstractPgFunction stmt, Plpgsql_functionContext ctx,
             String location, List<Pair<String, GenericColumn>> funcArgs) {
         super(stmt, ctx, location);
@@ -43,20 +52,26 @@ public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
     public Set<PgObjLocation> analyze(ParserRuleContext ctx, MetaContainer meta) {
         if (ctx instanceof SqlContext) {
             Sql sql = new Sql(meta);
-            for (int i = 0; i < funcArgs.size(); i++) {
-                Pair<String, GenericColumn> arg = funcArgs.get(i);
-                sql.declareNamespaceVar("$" + (i + 1), arg.getFirst(), arg.getSecond());
-            }
+            declareAnalyzerArgs(sql);
             return analyze((SqlContext) ctx, sql);
         }
 
-        Function function = new Function(meta);
-        for (int i = 0; i < funcArgs.size(); i++) {
-            Pair<String, GenericColumn> arg = funcArgs.get(i);
-            function.declareNamespaceVar("$" + (i + 1), arg.getFirst(), arg.getSecond());
+        if (ctx instanceof Function_bodyContext) {
+            SqlFunctionBody body = new SqlFunctionBody(meta);
+            declareAnalyzerArgs(body);
+            return analyze((Function_bodyContext) ctx, body);
         }
 
+        Function function = new Function(meta);
+        declareAnalyzerArgs(function);
         return analyze((Plpgsql_functionContext) ctx, function);
+    }
+
+    private void declareAnalyzerArgs(AbstractExprWithNmspc<? extends ParserRuleContext> analyzer) {
+        for (int i = 0; i < funcArgs.size(); i++) {
+            Pair<String, GenericColumn> arg = funcArgs.get(i);
+            analyzer.declareNamespaceVar("$" + (i + 1), arg.getFirst(), arg.getSecond());
+        }
     }
 
     @Override

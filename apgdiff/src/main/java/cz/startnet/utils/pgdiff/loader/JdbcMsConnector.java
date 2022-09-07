@@ -5,11 +5,14 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 
 public class JdbcMsConnector extends JdbcConnector {
 
@@ -63,20 +66,26 @@ public class JdbcMsConnector extends JdbcConnector {
                     continue;
                 }
                 String s = m.group(1).toLowerCase(Locale.ROOT);
+                String value = unescapeValue(m.group(2));
                 switch (s) {
                 case "user":
                 case "username":
-                    this.user = unescapeValue(m.group(2));
+                    this.user = value;
                     break;
                 case "password":
-                    this.pass = unescapeValue(m.group(2));
+                    this.pass = value;
                     break;
                 case "database":
                 case "databasename":
-                    this.dbName = unescapeValue(m.group(2));
+                    this.dbName = value;
                     break;
                 case "domain":
-                    this.domain = unescapeValue(m.group(2));
+                    this.domain = value;
+                    break;
+                case "trustservercertificate":
+                    // override our legacy-default with user-supplied value
+                    properties = new HashMap<>();
+                    properties.put(ApgdiffConsts.TRUST_CERT, value);
                     break;
                 default:
                     break;
@@ -120,6 +129,10 @@ public class JdbcMsConnector extends JdbcConnector {
             props.setProperty("authenticationScheme", "NTLM");
             props.setProperty("integratedSecurity", "true");
             props.setProperty("domain", domain);
+        }
+        if (props.getProperty(ApgdiffConsts.TRUST_CERT) == null) {
+            // revert to pre-10.x jdbc driver behavior unless told otherwise
+            props.setProperty(ApgdiffConsts.TRUST_CERT, "true");
         }
         return props;
     }

@@ -34,6 +34,8 @@ public abstract class XmlStore<T> {
     protected final String fileName;
     protected final String rootTag;
 
+    private volatile Document cachedDocument;
+
     protected XmlStore(String fileName, String rootTag) {
         this.fileName = fileName;
         this.rootTag = rootTag;
@@ -49,13 +51,10 @@ public abstract class XmlStore<T> {
     protected abstract Path getXmlFile();
 
     public List<T> readObjects() throws IOException {
-        try (Reader xmlReader = Files.newBufferedReader(getXmlFile(), StandardCharsets.UTF_8)) {
-            return getObjects(readXml(xmlReader));
-        } catch (NoSuchFileException ex) {
+        try {
+            return getObjects(readXml(false));
+        } catch(NoSuchFileException ex) {
             return new ArrayList<>();
-        } catch (IOException | SAXException ex) {
-            throw new IOException(MessageFormat.format(
-                    Messages.XmlStore_read_error, ex.getLocalizedMessage()), ex);
         }
     }
 
@@ -75,19 +74,30 @@ public abstract class XmlStore<T> {
     protected abstract T parseElement(Node node);
 
     public void writeObjects(List<T> list) throws IOException {
+        writeDocument(createDocument(list));
+    }
+
+    protected Document createDocument(List<T> list) throws IOException {
+        try {
+            Document xml = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+            Element root = xml.createElement(rootTag);
+            xml.appendChild(root);
+            appendChildren(xml, root, list);
+            return xml;
+        } catch (ParserConfigurationException ex) {
+            throw new IOException(MessageFormat.format(
+                    Messages.XmlStore_write_error, ex.getLocalizedMessage()), ex);
+        }
+    }
+
+    protected void writeDocument(Document xml) throws IOException {
         try {
             Path path = getXmlFile();
             Files.createDirectories(path.getParent());
             try (Writer xmlWriter = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
-                Document xml = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-                Element root = xml.createElement(rootTag);
-                xml.appendChild(root);
-                appendChildren(xml, root, list);
                 serializeXml(xml, true, xmlWriter);
             }
-
-
-        } catch (IOException | ParserConfigurationException | TransformerException ex) {
+        } catch (IOException | TransformerException ex) {
             throw new IOException(MessageFormat.format(
                     Messages.XmlStore_write_error, ex.getLocalizedMessage()), ex);
         }
@@ -98,10 +108,16 @@ public abstract class XmlStore<T> {
     /**
      * Reads (well-formed) list XML and checks it for basic validity:
      * root node must be <code>&lt;rootTagName&gt;</code>
+     *
+     * @param useCached immediately return the Document read in the previous call to this method
      */
-    private Document readXml(Reader reader) throws IOException, SAXException {
-        try {
-            Document xml = DocumentBuilderFactory.newInstance().newDocumentBuilder()
+    protected Document readXml(boolean useCached) throws IOException, NoSuchFileException {
+        Document xml = cachedDocument;
+        if (useCached && xml != null) {
+            return xml;
+        }
+        try (Reader reader = Files.newBufferedReader(getXmlFile(), StandardCharsets.UTF_8)) {
+            xml = DocumentBuilderFactory.newInstance().newDocumentBuilder()
                     .parse(new InputSource(reader));
             xml.normalize();
 
@@ -109,9 +125,13 @@ public abstract class XmlStore<T> {
                 throw new IOException(Messages.XmlStore_root_error);
             }
 
+            cachedDocument = xml;
             return xml;
-        } catch (ParserConfigurationException ex) {
-            throw new IOException(ex);
+        } catch (NoSuchFileException ex) {
+            throw ex;
+        } catch (IOException | SAXException | ParserConfigurationException ex) {
+            throw new IOException(MessageFormat.format(
+                    Messages.XmlStore_read_error, ex.getLocalizedMessage()), ex);
         }
     }
 

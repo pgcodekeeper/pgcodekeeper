@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.IntStream;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,10 +26,10 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
  */
 interface TreeElementCreator {
     /**
-     * Возвращает дерево, представляющее собой выбор пользователя (фильтр дерева
+     * Заполняет дерево, представляющее собой выбор пользователя (фильтр дерева
      * диффа по селекшену)
      */
-    TreeElement getFilteredTree();
+    void setUserSelection(TreeElement database);
 
     /**
      * Возвращает зависимости от объектов в дереве
@@ -47,31 +46,26 @@ interface TreeElementCreator {
 @RunWith(value = Parameterized.class)
 public class DepcyTreeExtenderTest {
 
-    private static final TreeElementCreator[] DB_OBJS = {
-            // SONAR-OFF
-            new Predefined1(),
-            new Predefined2(),
-            new Predefined3(),
-            new Predefined4(),
-            new Predefined5(),
-            new Predefined6()
-            // SONAR-ON
-    };
-
-    /**
-     * Provides parameters for running the tests.
-     */
     @Parameters
-    public static Iterable<Integer> parameters() {
-        return IntStream.range(1, DB_OBJS.length + 1).mapToObj(i -> (Integer) i)::iterator;
+    public static Iterable<Object[]> parameters() {
+        return ApgdiffTestUtils.getParameters(new Object[][] {
+            { new Predefined1(), 1 },
+            { new Predefined2(), 2 },
+            { new Predefined3(), 3 },
+            { new Predefined4(), 4 },
+            { new Predefined5(), 5 },
+            { new Predefined6(), 6 },
+        });
     }
 
     /**
      * Index of the file that should be tested.
      */
     private final int fileIndex;
+    private final TreeElementCreator predefined;
 
-    public DepcyTreeExtenderTest(int fileIndex) {
+    public DepcyTreeExtenderTest(TreeElementCreator predefined, int fileIndex) {
+        this.predefined = predefined;
         this.fileIndex = fileIndex;
     }
 
@@ -93,9 +87,8 @@ public class DepcyTreeExtenderTest {
         PgDatabase dbTarget = ApgdiffTestUtils.loadTestDump(
                 targetFileName, DepcyTreeExtenderTest.class, args);
 
-        TreeElementCreator predefined = DB_OBJS[fileIndex - 1];
-
-        TreeElement tree = predefined.getFilteredTree();
+        TreeElement tree = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
+        predefined.setUserSelection(tree);
         DepcyTreeExtender dte = new DepcyTreeExtender(dbSource, dbTarget, tree);
         Set<TreeElement> depcy = dte.getDepcies();
         Set<TreeElement> depcyPredefined = predefined.getDepcySet(dbSource, dbTarget, tree);
@@ -114,9 +107,7 @@ public class DepcyTreeExtenderTest {
 class Predefined1 implements TreeElementCreator {
 
     @Override
-    public TreeElement getFilteredTree() {
-        TreeElement database = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
-
+    public void setUserSelection(TreeElement database) {
         TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, DiffSide.BOTH);
         database.addChild(publicSchema);
 
@@ -129,8 +120,6 @@ class Predefined1 implements TreeElementCreator {
         view = new TreeElement("v1", DbObjType.VIEW, DiffSide.RIGHT);
         view.setSelected(true);
         publicSchema.addChild(view);
-
-        return database;
     }
 
     @Override
@@ -149,17 +138,13 @@ class Predefined1 implements TreeElementCreator {
 class Predefined2 implements TreeElementCreator {
 
     @Override
-    public TreeElement getFilteredTree() {
-        TreeElement database = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
-
+    public void setUserSelection(TreeElement database) {
         TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, DiffSide.BOTH);
         database.addChild(publicSchema);
 
         TreeElement seq = new TreeElement("s1", DbObjType.SEQUENCE, DiffSide.BOTH);
         seq.setSelected(true);
         publicSchema.addChild(seq);
-
-        return database;
     }
 
     @Override
@@ -177,17 +162,13 @@ class Predefined2 implements TreeElementCreator {
 class Predefined3 implements TreeElementCreator {
 
     @Override
-    public TreeElement getFilteredTree() {
-        TreeElement database = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
-
+    public void setUserSelection(TreeElement database) {
         TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, DiffSide.BOTH);
         database.addChild(publicSchema);
 
         TreeElement seq = new TreeElement("s1", DbObjType.SEQUENCE, DiffSide.RIGHT);
         seq.setSelected(true);
         publicSchema.addChild(seq);
-
-        return database;
     }
 
     @Override
@@ -209,17 +190,13 @@ class Predefined3 implements TreeElementCreator {
 class Predefined4 implements TreeElementCreator {
 
     @Override
-    public TreeElement getFilteredTree() {
-        TreeElement database = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
-
+    public void setUserSelection(TreeElement database) {
         TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, DiffSide.BOTH);
         database.addChild(publicSchema);
 
         TreeElement seq = new TreeElement("s1", DbObjType.SEQUENCE, DiffSide.RIGHT);
         seq.setSelected(true);
         publicSchema.addChild(seq);
-
-        return database;
     }
 
     @Override
@@ -238,9 +215,7 @@ class Predefined4 implements TreeElementCreator {
 class Predefined5 implements TreeElementCreator {
 
     @Override
-    public TreeElement getFilteredTree() {
-        TreeElement database = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
-
+    public void setUserSelection(TreeElement database) {
         TreeElement republicSchema = new TreeElement("republic", DbObjType.SCHEMA, DiffSide.BOTH);
         database.addChild(republicSchema);
 
@@ -250,8 +225,6 @@ class Predefined5 implements TreeElementCreator {
         TreeElement cons = new TreeElement("fk_t_test2foreign", DbObjType.CONSTRAINT, DiffSide.RIGHT);
         cons.setSelected(true);
         table.addChild(cons);
-
-        return database;
     }
 
     @Override
@@ -268,9 +241,7 @@ class Predefined5 implements TreeElementCreator {
 class Predefined6 implements TreeElementCreator {
 
     @Override
-    public TreeElement getFilteredTree() {
-        TreeElement database = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
-
+    public void setUserSelection(TreeElement database) {
         TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, DiffSide.BOTH);
         database.addChild(publicSchema);
 
@@ -280,8 +251,6 @@ class Predefined6 implements TreeElementCreator {
 
         TreeElement func = new TreeElement("f1()", DbObjType.FUNCTION, DiffSide.RIGHT);
         publicSchema.addChild(func);
-
-        return database;
     }
 
     @Override

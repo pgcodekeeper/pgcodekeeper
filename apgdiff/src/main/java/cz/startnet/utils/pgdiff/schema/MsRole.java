@@ -50,7 +50,7 @@ public class MsRole extends PgStatement {
     }
 
     @Override
-    public String getDropSQL() {
+    public String getDropSQL(boolean optionExists) {
         StringBuilder sb = new StringBuilder();
 
         for (String member : members) {
@@ -58,9 +58,7 @@ public class MsRole extends PgStatement {
             sb.append(" DROP MEMBER ").append(MsDiffUtils.quoteName(member));
             sb.append(GO).append('\n');
         }
-
-        sb.append("DROP ROLE ").append(MsDiffUtils.quoteName(name)).append(GO);
-
+        sb.append(super.getDropSQL(optionExists));
         return sb.toString();
     }
 

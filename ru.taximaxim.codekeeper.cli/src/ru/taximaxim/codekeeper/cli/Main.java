@@ -135,24 +135,25 @@ public final class Main {
     }
 
     private static boolean parse(CliArgs arguments)
-            throws IOException, InterruptedException {
-        PgDiff diff = new PgDiff(arguments);
-        PgDatabase d;
+            throws IOException, InterruptedException, PgCodekeeperException {
+        PgDiffCli diff = new PgDiffCli(arguments);
         try {
-            d = diff.loadNewDatabase();
+            if (arguments.isProjUpdate()) {
+                diff.updateProject();
+            } else {
+                PgDatabase d = diff.loadNewDatabase();
+                if (arguments.isMsSql()) {
+                    new MsModelExporter(Paths.get(arguments.getOutputTarget()), d,
+                            arguments.getOutCharsetName()).exportFull();
+                } else {
+                    new ModelExporter(Paths.get(arguments.getOutputTarget()), d,
+                            arguments.getOutCharsetName()).exportFull();
+                }
+            }
         } catch (PgCodekeeperException ex) {
             diff.getErrors().forEach(System.err::println);
             return false;
         }
-
-        if (arguments.isMsSql()) {
-            new MsModelExporter(Paths.get(arguments.getOutputTarget()),
-                    d, arguments.getOutCharsetName()).exportFull();
-        } else {
-            new ModelExporter(Paths.get(arguments.getOutputTarget()),
-                    d, arguments.getOutCharsetName()).exportFull();
-        }
-
         return true;
     }
 
@@ -169,7 +170,8 @@ public final class Main {
 
         try (PrintWriter pw = getDiffWriter(arguments)) {
             new DepcyWriter(d, arguments.getGraphDepth(),
-                    pw != null ?  pw : writer, arguments.isGraphReverse())
+                    pw != null ?  pw : writer, arguments.isGraphReverse(),
+                            arguments.getGraphFilterTypes(), arguments.isGraphInvertFilter())
             .write(arguments.getGraphNames());
         }
         return true;

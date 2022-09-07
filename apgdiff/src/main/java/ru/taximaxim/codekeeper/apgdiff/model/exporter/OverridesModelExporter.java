@@ -58,6 +58,7 @@ public class OverridesModelExporter extends AbstractModelExporter {
             if (el.getSide() == DiffSide.BOTH) {
                 switch (el.getType()) {
                 case CONSTRAINT:
+                case DATABASE:
                 case INDEX:
                 case TRIGGER:
                 case RULE:

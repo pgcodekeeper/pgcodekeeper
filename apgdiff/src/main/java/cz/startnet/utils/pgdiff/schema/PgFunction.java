@@ -6,10 +6,8 @@
 package cz.startnet.utils.pgdiff.schema;
 
 import java.util.Iterator;
-import java.util.Map.Entry;
 import java.util.Objects;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
@@ -24,96 +22,6 @@ public class PgFunction extends AbstractPgFunction {
 
     public PgFunction(String name) {
         super(name);
-    }
-
-    @Override
-    public String getCreationSQL() {
-        final StringBuilder sbSQL = new StringBuilder();
-        sbSQL.append("CREATE OR REPLACE FUNCTION ");
-        sbSQL.append(PgDiffUtils.getQuotedName(getSchemaName())).append('.');
-        appendFunctionSignature(sbSQL, true, true);
-        sbSQL.append(' ');
-        sbSQL.append("RETURNS ");
-        sbSQL.append(getReturns());
-        sbSQL.append("\n    ");
-
-        if (getLanguage() != null) {
-            sbSQL.append("LANGUAGE ").append(PgDiffUtils.getQuotedName(getLanguage()));
-        }
-
-        if (!transforms.isEmpty()) {
-            sbSQL.append(" TRANSFORM ");
-            for (String tran : transforms) {
-                sbSQL.append("FOR TYPE ").append(tran).append(", ");
-            }
-
-            sbSQL.setLength(sbSQL.length() - 2);
-        }
-
-        if (isWindow()) {
-            sbSQL.append(" WINDOW");
-        }
-
-        if (getVolatileType() != null) {
-            sbSQL.append(' ').append(getVolatileType());
-        }
-
-        if (isStrict()) {
-            sbSQL.append(" STRICT");
-        }
-
-        if (isSecurityDefiner()) {
-            sbSQL.append(" SECURITY DEFINER");
-        }
-
-        if (isLeakproof()) {
-            sbSQL.append(" LEAKPROOF");
-        }
-
-        if (getParallel() != null) {
-            sbSQL.append(" PARALLEL ").append(getParallel());
-        }
-
-        if (getCost() != null) {
-            sbSQL.append(" COST ").append(getCost());
-        }
-
-        if (DEFAULT_PROROWS != getRows()) {
-            sbSQL.append(" ROWS ");
-            if (getRows() % 1 == 0) {
-                sbSQL.append((int)getRows());
-            } else {
-                sbSQL.append(getRows());
-            }
-        }
-
-        if (getSupportFunc() != null) {
-            sbSQL.append(" SUPPORT ").append(getSupportFunc());
-        }
-
-        for (Entry<String, String> param : configurations.entrySet()) {
-            String val = param.getValue();
-            sbSQL.append("\n    SET ").append(param.getKey()).append(' ');
-            if (FROM_CURRENT.equals(val)) {
-                sbSQL.append(val);
-            } else {
-                sbSQL.append("TO ").append(val);
-            }
-        }
-
-        sbSQL.append("\n    AS ");
-        sbSQL.append(getBody());
-        sbSQL.append(';');
-
-        appendOwnerSQL(sbSQL);
-        appendPrivileges(sbSQL);
-
-        if (comment != null && !comment.isEmpty()) {
-            sbSQL.append("\n\n");
-            appendCommentSql(sbSQL);
-        }
-
-        return sbSQL.toString();
     }
 
     @Override

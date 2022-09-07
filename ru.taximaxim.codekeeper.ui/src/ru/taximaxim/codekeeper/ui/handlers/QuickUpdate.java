@@ -41,6 +41,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -52,7 +53,7 @@ import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
-import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
+import ru.taximaxim.codekeeper.ui.fileutils.UIProjectUpdater;
 import ru.taximaxim.codekeeper.ui.job.SingletonEditorJob;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
@@ -243,8 +244,9 @@ class QuickUpdateJob extends SingletonEditorJob {
         checkFileModified();
 
         monitor.newChild(1).subTask(Messages.QuickUpdate_updating_project);
-        ProjectUpdater updater = new ProjectUpdater(dbRemote.getDbObject(),
-                dbProject.getDbObject(), checkedAfter, proj, false);
+        ProjectUpdater updater = new UIProjectUpdater(dbRemote.getDbObject(),
+                dbProject.getDbObject(), checkedAfter,
+                proj, false);
         updater.updatePartial();
 
         file.refreshLocal(IResource.DEPTH_INFINITE, monitor.newChild(1));

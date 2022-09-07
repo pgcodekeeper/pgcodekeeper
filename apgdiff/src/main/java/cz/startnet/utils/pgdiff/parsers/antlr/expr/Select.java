@@ -43,6 +43,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_queryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectOps;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IConstraint;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
@@ -77,8 +78,8 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
     }
 
     @Override
-    protected Entry<String, GenericColumn> findReferenceInNmspc(String schema, String name, String column) {
-        return !inFrom || lateralAllowed ? super.findReferenceInNmspc(schema, name, column) : null;
+    protected boolean namespaceAccessible() {
+        return !inFrom || lateralAllowed;
     }
 
     @Override
@@ -163,7 +164,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
             }
 
             for (Schema_qualified_nameContext tableLock : after.schema_qualified_name()) {
-                addRelationDepcy(tableLock.identifier());
+                addRelationDepcy(ParserAbstract.getIdentifiers(tableLock));
             }
         }
     }
@@ -264,7 +265,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
             Schema_qualified_nameContext table = primary.schema_qualified_name();
             addNameReference(table, null);
             ret = new ArrayList<>();
-            qualAster(table.identifier(), ret);
+            qualAster(ParserAbstract.getIdentifiers(table), ret);
         } else if ((values = primary.values_stmt()) != null) {
             ret = new ArrayList<>();
             ValueExpr vex = new ValueExpr(this);
@@ -294,7 +295,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
 
             ParserRuleContext aliasCtx = target.col_label();
             if (aliasCtx == null) {
-                aliasCtx = target.id_token();
+                aliasCtx = target.bare_col_label();
             }
 
             if (aliasCtx != null) {
@@ -438,8 +439,11 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
                 addDepcy(new GenericColumn(relationGc.schema, DbObjType.SCHEMA), schemaCtx);
             }
 
-            // currently adding a table reference for any alias
-            addDepcy(relationGc, relationCtx);
+            if (relationGc.getObjName().equals(relation)) {
+                addDepcy(relationGc, relationCtx);
+            } else {
+                addAliasReference(relationGc, relationCtx);
+            }
 
             addFilteredRelationColumnsDepcies(relationGc.schema, relationGc.table, ANY)
             .map(Pair::copyMod)

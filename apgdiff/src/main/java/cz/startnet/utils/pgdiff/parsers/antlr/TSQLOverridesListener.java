@@ -24,7 +24,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.St_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Tsql_fileContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.AlterMsAuthorization;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsRule;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.GrantMsPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.StatementOverride;
@@ -68,7 +68,7 @@ implements TSqlContextProcessor {
         } else if ((ast = st.another_statement()) != null) {
             Security_statementContext ss;
             if ((ss = ast.security_statement()) != null && ss.rule_common() != null) {
-                safeParseStatement(new CreateMsRule(ss.rule_common(), db, overrides), ss);
+                safeParseStatement(new GrantMsPrivilege(ss.rule_common(), db, overrides), ss);
             }
         }
     }

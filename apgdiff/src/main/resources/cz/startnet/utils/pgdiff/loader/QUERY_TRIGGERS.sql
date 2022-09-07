@@ -3,7 +3,8 @@ WITH sys_schemas AS (
     FROM pg_catalog.pg_namespace n
     WHERE n.nspname LIKE 'pg\_%'
         OR n.nspname = 'information_schema'
-        OR EXISTS (SELECT 1 FROM pg_catalog.pg_depend dp WHERE dp.objid = n.oid AND dp.deptype = 'e')
+        OR EXISTS (SELECT 1 FROM pg_catalog.pg_depend dp WHERE dp.objid = n.oid AND dp.deptype = 'e'
+        AND dp.classid = 'pg_catalog.pg_namespace'::pg_catalog.regclass)
 )
 
 SELECT t.oid::bigint,
@@ -12,6 +13,7 @@ SELECT t.oid::bigint,
        nsp.nspname,
        t.tgname,
        t.tgtype,
+       t.tgenabled,
        t.tgargs,
        t.tgconstraint::bigint,
        t.tgdeferrable,
@@ -29,6 +31,7 @@ RIGHT JOIN pg_catalog.pg_trigger t ON ccc.oid = t.tgrelid
 LEFT JOIN pg_catalog.pg_class relcon ON relcon.oid = t.tgconstrrelid
 LEFT JOIN pg_catalog.pg_namespace refnsp ON refnsp.oid = relcon.relnamespace
 LEFT JOIN pg_catalog.pg_description d ON t.oid = d.objoid AND d.objsubid = 0
+    AND d.classoid = 'pg_catalog.pg_trigger'::pg_catalog.regclass
 JOIN pg_catalog.pg_proc p ON p.oid = t.tgfoid
 JOIN pg_catalog.pg_namespace nsp ON p.pronamespace = nsp.oid
 WHERE ccc.relkind IN ('r', 'f', 'p', 'm', 'v')

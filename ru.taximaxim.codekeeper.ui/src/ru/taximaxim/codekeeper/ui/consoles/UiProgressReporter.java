@@ -68,12 +68,12 @@ public class UiProgressReporter implements IProgressReporter {
     }
 
     @Override
-    public void showData(String query, List<List<Object>> results) {
+    public void showData(String query, List<List<Object>> results, int limitRows) {
         UiSync.exec(PlatformUI.getWorkbench().getDisplay(), () -> {
             IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
             try {
                 ResultSetView viewPart = (ResultSetView) page.showView(VIEW.RESULT_SET_VIEW);
-                viewPart.addData(query, results);
+                viewPart.addData(query, results, limitRows);
             } catch (PartInitException e) {
                 Log.log(e);
             }

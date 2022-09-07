@@ -99,8 +99,10 @@ public abstract class MsTableAbstract extends ParserAbstract {
         if (options != null) {
             for (Index_optionContext option : options.index_option()) {
                 String key = option.key.getText();
-                String value = option.index_option_value().getText();
-                ind.addOption(key, value);
+                if (!key.equalsIgnoreCase("ONLINE")) {
+                    String value = option.index_option_value().getText();
+                    ind.addOption(key, value);
+                }
             }
         }
 

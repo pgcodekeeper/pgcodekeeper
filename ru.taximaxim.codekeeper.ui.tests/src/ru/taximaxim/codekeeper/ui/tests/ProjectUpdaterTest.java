@@ -29,7 +29,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
-import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
+import ru.taximaxim.codekeeper.ui.fileutils.UIProjectUpdater;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public class ProjectUpdaterTest {
@@ -66,7 +66,7 @@ public class ProjectUpdaterTest {
         proj.getProject().getNature(NATURE.ID).deconfigure();
         proj.getProject().open(null);
         proj.getProject().setDefaultCharset(ENCODING, null);
-        new ProjectUpdater(dbNew, proj).updateFull();
+        new UIProjectUpdater(dbNew, proj).updateFull();
 
         new ModelExporter(referenceDir.get(), dbOld, ENCODING).exportFull();
         if (compareFilesInPaths(workingDir.get(), referenceDir.get())){

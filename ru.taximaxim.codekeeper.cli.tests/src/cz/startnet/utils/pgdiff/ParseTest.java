@@ -2,12 +2,10 @@ package cz.startnet.utils.pgdiff;
 
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.List;
+import java.nio.file.Path;
 
 import org.junit.After;
 import org.junit.Test;
@@ -15,6 +13,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.cli.Main;
 
@@ -22,12 +21,10 @@ import ru.taximaxim.codekeeper.cli.Main;
 public class ParseTest {
 
     @Parameters
-    public static Iterable<ArgumentsProvider[]> parameters() {
-        List<ArgumentsProvider[]> p = Arrays.asList(new ArgumentsProvider[][] {
+    public static Iterable<Object[]> parameters() {
+        return ApgdiffTestUtils.getParameters(new Object[][] {
             {new ParseTestArgumentsProvider()},
         });
-
-        return p.stream()::iterator;
     }
 
     private final ArgumentsProvider args;
@@ -64,7 +61,7 @@ class ParseTestArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String[] args() throws URISyntaxException, IOException {
-        File db = ApgdiffUtils.getFileFromOsgiRes(PgDiffTest.class.getResource(resName));
-        return new String[]{"--parse", "-o", getParseResultDir().get().toFile().getAbsolutePath(), db.getAbsolutePath()};
+        Path db = ApgdiffUtils.getFileFromOsgiRes(PgDiffTest.class.getResource(resName));
+        return new String[]{"--parse", "-o", getParseResultDir().get().toAbsolutePath().toString(), db.toAbsolutePath().toString()};
     }
 }
