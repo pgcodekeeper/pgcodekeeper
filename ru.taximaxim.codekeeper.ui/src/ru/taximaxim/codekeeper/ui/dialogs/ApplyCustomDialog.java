@@ -29,6 +29,7 @@ public class ApplyCustomDialog extends Dialog {
     private Button btnCheckFuncBodies;
     private Button btnAlterColUsingExpr;
     private Button btnCreateIdxConcurrent;
+    private Button btnConstraintNotValid;
     private Button btnScriptFromSelObjs;
     private Button btnGenerateExists;
     private Button btndropBeforeCreate;
@@ -78,6 +79,14 @@ public class ApplyCustomDialog extends Dialog {
         btnCreateIdxConcurrent.setLayoutData(gd);
         btnCreateIdxConcurrent.setSelection(prefs.getBooleanOfDbUpdatePref(
                 DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY));
+
+        btnConstraintNotValid = new Button(panel, SWT.CHECK);
+        btnConstraintNotValid.setText(Messages.ApplyCustomDialog_constraint_not_valid);
+        gd = new GridData();
+        gd.horizontalIndent = 10;
+        btnConstraintNotValid.setLayoutData(gd);
+        btnConstraintNotValid.setSelection(prefs.getBooleanOfDbUpdatePref(
+                DB_UPDATE_PREF.PRINT_CONSTRAINT_NOT_VALID));
 
         btnGenerateExists = new Button(panel, SWT.CHECK);
         btnGenerateExists.setText(Messages.DbUpdatePrefPage_option_if_exists);
@@ -155,6 +164,8 @@ public class ApplyCustomDialog extends Dialog {
                 btnScriptAddTransact.getSelection());
         customSettings.put(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY,
                 btnCreateIdxConcurrent.getSelection());
+        customSettings.put(DB_UPDATE_PREF.PRINT_CONSTRAINT_NOT_VALID,
+                btnConstraintNotValid.getSelection());
         customSettings.put(DB_UPDATE_PREF.GENERATE_EXISTS,
                 btnGenerateExists.getSelection());
         customSettings.put(DB_UPDATE_PREF.DROP_BEFORE_CREATE,

@@ -96,6 +96,7 @@ public interface UIConsts {
         String COMMAND_LINE_DDL_UPDATE = "prefCommandLineDdlUpdate"; //$NON-NLS-1$;
         String MIGRATION_COMMAND = "prefMigrationCommand"; //$NON-NLS-1$;
         String PRINT_INDEX_WITH_CONCURRENTLY = "prefPrintIndexWithConcurrently"; //$NON-NLS-1$;
+        String PRINT_CONSTRAINT_NOT_VALID = "prefPrintConstraintNotValid"; //$NON-NLS-1$;
         String SCRIPT_FROM_SELECTED_OBJS = "prefScriptFromSelectedObjs"; //$NON-NLS-1$;
         String DATA_MOVEMENT_MODE = "prefDataMovementMode"; //$NON-NLS-1$;
         String GENERATE_EXISTS = "prefGenerateExist"; //$NON-NLS-1$;

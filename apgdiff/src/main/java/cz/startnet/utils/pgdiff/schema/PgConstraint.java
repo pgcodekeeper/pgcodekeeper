@@ -8,6 +8,7 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -20,18 +21,30 @@ public class PgConstraint extends AbstractConstraint {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
-        sbSQL.append("ALTER ").append(getParent().getStatementType().name()).append(' ');
-        sbSQL.append(PgDiffUtils.getQuotedName(getParent().getParent().getName()));
-        sbSQL.append('.');
-        sbSQL.append(PgDiffUtils.getQuotedName(getParent().getName()));
+        appendAlterTable(sbSQL);
         sbSQL.append("\n\tADD CONSTRAINT ");
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));
         sbSQL.append(' ');
         sbSQL.append(getDefinition());
-        if (isNotValid()) {
+
+        PgDiffArguments args = getDatabase().getArguments();
+        boolean isPartitionTable = getParent() instanceof PartitionPgTable
+                || (getParent() instanceof AbstractRegularTable
+                        && ((AbstractRegularTable)getParent()).getPartitionBy() != null) ;
+        boolean generateNotValid = args != null && !isPartitionTable && args.isConstraintNotValid();
+
+        if (isNotValid() || generateNotValid) {
             sbSQL.append(" NOT VALID");
         }
         sbSQL.append(';');
+
+        if (generateNotValid && !isNotValid() ) {
+            sbSQL.append("\n\n");
+            appendAlterTable(sbSQL)
+            .append(" VALIDATE CONSTRAINT ")
+            .append(PgDiffUtils.getQuotedName(getName()))
+            .append(';');
+        }
 
         if (comment != null && !comment.isEmpty()) {
             sbSQL.append("\n\n");
@@ -97,6 +110,14 @@ public class PgConstraint extends AbstractConstraint {
         return sb.append(" IS ")
                 .append(comment == null || comment.isEmpty() ? "NULL" : comment)
                 .append(';');
+    }
+
+    private StringBuilder appendAlterTable(StringBuilder sbSQL) {
+        sbSQL.append("ALTER ").append(getParent().getStatementType().name()).append(' ');
+        sbSQL.append(PgDiffUtils.getQuotedName(getParent().getParent().getName()));
+        sbSQL.append('.');
+        sbSQL.append(PgDiffUtils.getQuotedName(getParent().getName()));
+        return sbSQL;
     }
 
     @Override

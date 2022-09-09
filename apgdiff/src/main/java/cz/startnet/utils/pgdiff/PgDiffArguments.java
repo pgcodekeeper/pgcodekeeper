@@ -31,6 +31,7 @@ public class PgDiffArguments {
     private boolean selectedOnly;
     private boolean dataMovementMode;
     private boolean concurrentlyMode;
+    private boolean constraintNotValid;
     private final List<DbObjType> allowedTypes = new ArrayList<>();
     private boolean stopNotAllowed;
     private final List<String> ignoreLists = new ArrayList<>();
@@ -307,6 +308,14 @@ public class PgDiffArguments {
         this.concurrentlyMode = concurrentlyMode;
     }
 
+    public boolean isConstraintNotValid() {
+        return constraintNotValid;
+    }
+
+    public void setConstraintNotValid(boolean constraintNotValid) {
+        this.constraintNotValid = constraintNotValid;
+    }
+
     public boolean isSimplifyView() {
         return simplifyView;
     }
@@ -340,6 +349,7 @@ public class PgDiffArguments {
         arg.selectedOnly = isSelectedOnly();
         arg.dataMovementMode = isDataMovementMode();
         arg.concurrentlyMode = isConcurrentlyMode();
+        arg.constraintNotValid = isConstraintNotValid();
         arg.allowedTypes.addAll(getAllowedTypes());
         arg.stopNotAllowed = isStopNotAllowed();
         arg.ignoreLists.addAll(getIgnoreLists());

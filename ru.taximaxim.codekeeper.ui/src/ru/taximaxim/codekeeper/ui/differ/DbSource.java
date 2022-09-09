@@ -127,6 +127,7 @@ public abstract class DbSource {
         args.setDataMovementMode(prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.DATA_MOVEMENT_MODE));
         args.setIgnorePrivileges(prefs.getBooleanOfRootPref(PREF.NO_PRIVILEGES));
         args.setIgnoreColumnOrder(prefs.getBooleanOfRootPref(PREF.IGNORE_COLUMN_ORDER));
+        args.setConstraintNotValid(prefs.getBooleanOfRootPref(DB_UPDATE_PREF.PRINT_CONSTRAINT_NOT_VALID));
         args.setSimplifyView(prefs.getBooleanOfRootPref(PREF.SIMPLIFY_VIEW));
         args.setAutoFormatObjectCode(prefs.getBooleanOfRootPref(PREF.FORMAT_OBJECT_CODE_AUTOMATICALLY));
         args.setFormatConfiguration(Formatter.getFormatterConfig());
