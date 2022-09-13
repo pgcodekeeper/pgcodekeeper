@@ -260,7 +260,6 @@ class ExportTableOrder implements Comparator<PgStatement> {
         case RULE:      return 3;
         case CONSTRAINT:return 4;
         case POLICY:    return 5;
-        case COLLATION: return 6;
         default:        return 0;
         }
     }

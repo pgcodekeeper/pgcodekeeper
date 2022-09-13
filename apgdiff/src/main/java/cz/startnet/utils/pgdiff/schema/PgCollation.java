@@ -12,11 +12,9 @@ public class PgCollation extends PgStatementWithSearchPath {
         super(name);
     }
 
-    private String locale;
     private String lcCollate;
     private String lcCtype;
     private String provider;
-    private String version;
     private boolean deterministic = true;
 
     @Override
@@ -25,35 +23,8 @@ public class PgCollation extends PgStatementWithSearchPath {
     }
 
     @Override
-    public void computeHash(Hasher hasher) {
-        hasher.put(locale);
-        hasher.put(lcCollate);
-        hasher.put(lcCtype);
-        hasher.put(provider);
-        hasher.put(version);
-        hasher.put(deterministic);
-
-    }
-
-    @Override
     public AbstractSchema getContainingSchema() {
         return (AbstractSchema) getParent();
-    }
-
-    @Override
-    public PgStatement shallowCopy() {
-        PgCollation collationDst = new PgCollation(getName());
-        collationDst.locale = getLocale();
-        collationDst.lcCollate = getLcCollate();
-        collationDst.lcCtype = getLcCtype();
-        collationDst.provider = getProvider();
-        collationDst.version = getVersion();
-        collationDst.deterministic = isDeterministic();
-        return collationDst;
-    }
-
-    public String getLocale() {
-        return locale;
     }
 
     public String getLcCollate() {
@@ -68,21 +39,12 @@ public class PgCollation extends PgStatementWithSearchPath {
         return provider;
     }
 
-    public String getVersion() {
-        return version;
-    }
-
     public boolean isDeterministic() {
         return deterministic;
     }
 
     public void setDeterministic(boolean deterministic) {
         this.deterministic = deterministic;
-        resetHash();
-    }
-
-    public void setLocale(final String locale) {
-        this.locale = locale;
         resetHash();
     }
 
@@ -101,58 +63,33 @@ public class PgCollation extends PgStatementWithSearchPath {
         resetHash();
     }
 
-    public void setVersion(final String version) {
-        this.version = version;
-        resetHash();
-    }
-
-    @Override
-    public boolean compare(PgStatement obj) {
-        if (this == obj) {
-            return true;
-        }
-
-        if (obj instanceof PgCollation && super.compare(obj)) {
-            PgCollation coll = (PgCollation) obj;
-            return deterministic == coll.isDeterministic()
-                    && Objects.equals(lcCollate, coll.getLcCollate())
-                    && Objects.equals(lcCtype, coll.getLcCtype())
-                    && Objects.equals(provider, coll.getProvider())
-                    && Objects.equals(version, coll.getVersion())
-                    && Objects.equals(locale, coll.getLocale());
-        }
-        return false;
-    }
-
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
-        sbSQL.append("CREATE COLLATION ").append(getQualifiedName());
+        sbSQL.append("CREATE COLLATION ");
+        appendIfNotExists(sbSQL);
+        sbSQL.append(getQualifiedName());
         sbSQL.append(" (");
-        if (getLocale() != null) {
-            sbSQL.append(" LOCALE = '").append(getLocale()).append("'");
+        if (Objects.equals(getLcCollate(), getLcCtype())) {
+            sbSQL.append("LOCALE = ").append(getLcCollate());
         } else {
-            sbSQL.append(" LC_COLLATE = '").append(getLcCollate()).append("', ");
-            sbSQL.append(" LC_CTYPE = '").append(getLcCtype()).append("'");
+            sbSQL.append("LC_COLLATE = ").append(getLcCollate());
+            sbSQL.append(", LC_CTYPE = ").append(getLcCtype());
         }
         if (getProvider() != null) {
-            sbSQL.append(", PROVIDER = '").append(getProvider()).append("'");
-        }
-        if (getVersion() != null) {
-            sbSQL.append(", VERSION = '").append(getVersion()).append("'");
+            sbSQL.append(", PROVIDER = ").append(getProvider());
         }
         if(!isDeterministic()) {
             sbSQL.append(", DETERMINISTIC = FALSE");
         }
         sbSQL.append(");");
 
+        appendOwnerSQL(sbSQL);
+
         if (comment != null && !comment.isEmpty()) {
             sbSQL.append("\n\n");
             appendCommentSql(sbSQL);
         }
-
-        appendOwnerSQL(sbSQL);
-        appendPrivileges(sbSQL);
 
         return sbSQL.toString();
     }
@@ -162,11 +99,7 @@ public class PgCollation extends PgStatementWithSearchPath {
         final int startLength = sb.length();
         PgCollation newCollation = (PgCollation) newCondition;
 
-        if (!Objects.equals(newCollation.getLocale(), getLocale())
-                || !Objects.equals(newCollation.getLcCtype(), getLcCtype())
-                || !Objects.equals(newCollation.getLcCollate(), getLcCollate())
-                || !Objects.equals(newCollation.getProvider(), getProvider())
-                || !(newCollation.isDeterministic() == isDeterministic())) {
+        if (!compareUnalterable(newCollation)) {
             isNeedDepcies.set(true);
             return true;
         }
@@ -180,7 +113,44 @@ public class PgCollation extends PgStatementWithSearchPath {
             newCollation.appendCommentSql(sb);
         }
 
-
         return sb.length() > startLength;
+    }
+
+    @Override
+    public boolean compare(PgStatement obj) {
+        if (this == obj) {
+            return true;
+        }
+
+        if (obj instanceof PgCollation && super.compare(obj)) {
+            PgCollation coll = (PgCollation) obj;
+            return compareUnalterable(coll);
+        }
+        return false;
+    }
+
+    private boolean compareUnalterable(PgCollation coll) {
+        return deterministic == coll.isDeterministic()
+                && Objects.equals(lcCollate, coll.getLcCollate())
+                && Objects.equals(lcCtype, coll.getLcCtype())
+                && Objects.equals(provider, coll.getProvider());
+    }
+
+    @Override
+    public void computeHash(Hasher hasher) {
+        hasher.put(deterministic);
+        hasher.put(lcCollate);
+        hasher.put(lcCtype);
+        hasher.put(provider);
+    }
+
+    @Override
+    public PgStatement shallowCopy() {
+        PgCollation collationDst = new PgCollation(getName());
+        collationDst.lcCollate = getLcCollate();
+        collationDst.lcCtype = getLcCtype();
+        collationDst.provider = getProvider();
+        collationDst.deterministic = isDeterministic();
+        return collationDst;
     }
 }

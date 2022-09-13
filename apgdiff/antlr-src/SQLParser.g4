@@ -782,7 +782,7 @@ alter_collation_statement
     ;
 
 collation_option
-    : (LOCALE | LC_COLLATE | LC_CTYPE | PROVIDER | VERSION) EQUAL (character_string | identifier)
+    : (LOCALE | LC_COLLATE | LC_CTYPE | PROVIDER | VERSION) EQUAL (character_string | identifier | DEFAULT)
     | DETERMINISTIC EQUAL boolean_value
     ;
 

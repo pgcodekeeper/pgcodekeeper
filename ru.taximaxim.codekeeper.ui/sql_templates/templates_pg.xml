@@ -100,7 +100,7 @@ $$$$;</template>
     description="%create.collation.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createcollation.protected"
-    >CREATE COLLATION ${objectName} (provider = LIBC, locale = 'ru_RU.utf8');</template>
+    >CREATE COLLATION ${schemaName}.${objectName} (provider = libc, locale = 'C');</template>
      
 <template 
     name="create_table"
