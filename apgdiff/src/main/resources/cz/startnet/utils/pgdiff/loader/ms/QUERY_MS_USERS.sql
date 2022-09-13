@@ -15,5 +15,5 @@ CROSS APPLY (
     ) cc 
     FOR XML RAW, ROOT
 ) aa (acl)
-WHERE dp.type IN ('S', 'U') 
+WHERE dp.type IN ('S', 'U', 'G') 
 AND NOT name IN ('guest', 'sys', 'INFORMATION_SCHEMA')
