@@ -165,19 +165,19 @@ implements IRelation {
     public abstract void addConstraint(final AbstractConstraint constraint);
 
     public void addIndex(final AbstractIndex index) {
-        addUnique(indexes, index, this);
+        addUnique(indexes, index);
     }
 
     public void addTrigger(final AbstractTrigger trigger) {
-        addUnique(triggers, trigger, this);
+        addUnique(triggers, trigger);
     }
 
     public void addRule(final PgRule rule) {
-        addUnique(rules, rule, this);
+        addUnique(rules, rule);
     }
 
     public void addPolicy(PgPolicy policy) {
-        addUnique(policies, policy, this);
+        addUnique(policies, policy);
     }
 
     @Override

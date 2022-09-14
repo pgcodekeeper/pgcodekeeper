@@ -430,51 +430,51 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
     }
 
     public void addDomain(PgDomain dom) {
-        addUnique(domains, dom, this);
+        addUnique(domains, dom);
     }
 
     public void addFunction(final AbstractFunction function) {
-        addUnique(functions, function, this);
+        addUnique(functions, function);
     }
 
     public void addSequence(final AbstractSequence sequence) {
-        addUnique(sequences, sequence, this);
+        addUnique(sequences, sequence);
     }
 
     public void addCollation(final PgCollation collation) {
-        addUnique(collations, collation, this);
+        addUnique(collations, collation);
     }
 
     public void addTable(final AbstractTable table) {
-        addUnique(tables, table, this);
+        addUnique(tables, table);
     }
 
     public void addView(final AbstractView view) {
-        addUnique(views, view, this);
+        addUnique(views, view);
     }
 
     public void addType(final AbstractType type) {
-        addUnique(types, type, this);
+        addUnique(types, type);
     }
 
     public void addFtsParser(final PgFtsParser parser) {
-        addUnique(parsers, parser, this);
+        addUnique(parsers, parser);
     }
 
     public void addFtsTemplate(final PgFtsTemplate template) {
-        addUnique(templates, template, this);
+        addUnique(templates, template);
     }
 
     public void addFtsDictionary(final PgFtsDictionary dictionary) {
-        addUnique(dictionaries, dictionary, this);
+        addUnique(dictionaries, dictionary);
     }
 
     public void addFtsConfiguration(final PgFtsConfiguration configuration) {
-        addUnique(configurations, configuration, this);
+        addUnique(configurations, configuration);
     }
 
     public void addOperator(final PgOperator oper) {
-        addUnique(operators, oper, this);
+        addUnique(operators, oper);
     }
 
     @Override

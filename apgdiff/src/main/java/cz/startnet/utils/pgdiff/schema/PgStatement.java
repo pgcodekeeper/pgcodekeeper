@@ -699,10 +699,10 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     protected <T extends PgStatement>
-    void addUnique(Map<String, T> map, T newSt, PgStatement parent) {
+    void addUnique(Map<String, T> map, T newSt) {
         PgStatement found = map.putIfAbsent(newSt.getName(), newSt);
         assertUnique(found, newSt);
-        newSt.setParent(parent);
-        parent.resetHash();
+        newSt.setParent(this);
+        resetHash();
     }
 }

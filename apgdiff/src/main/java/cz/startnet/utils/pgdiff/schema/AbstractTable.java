@@ -224,7 +224,7 @@ public abstract class AbstractTable extends PgStatementContainer implements PgOp
 
     @Override
     public void addConstraint(final AbstractConstraint constraint) {
-        addUnique(constraints, constraint, this);
+        addUnique(constraints, constraint);
     }
 
     public boolean containsColumn(final String name) {

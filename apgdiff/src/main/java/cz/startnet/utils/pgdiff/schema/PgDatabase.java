@@ -163,7 +163,7 @@ public class PgDatabase extends PgStatement implements IDatabase {
     }
 
     public void addSchema(final AbstractSchema schema) {
-        addUnique(schemas, schema, this);
+        addUnique(schemas, schema);
     }
 
     public boolean containsExtension(final String name) {
@@ -282,7 +282,7 @@ public class PgDatabase extends PgStatement implements IDatabase {
     }
 
     public void addExtension(final PgExtension extension) {
-        addUnique(extensions, extension, this);
+        addUnique(extensions, extension);
     }
 
     /**
@@ -306,7 +306,7 @@ public class PgDatabase extends PgStatement implements IDatabase {
     }
 
     public void addForeignDW(final PgForeignDataWrapper fDW) {
-        addUnique(fdws, fDW, this);
+        addUnique(fdws, fDW);
     }
 
     public PgServer getServer(final String name) {
@@ -318,7 +318,7 @@ public class PgDatabase extends PgStatement implements IDatabase {
     }
 
     public void addServer(final PgServer server) {
-        addUnique(servers, server, this);
+        addUnique(servers, server);
     }
 
     public PgUserMapping getUserMapping(final String name) {
@@ -330,7 +330,7 @@ public class PgDatabase extends PgStatement implements IDatabase {
     }
 
     public void addUserMapping(final PgUserMapping userMapping) {
-        addUnique(userMappings, userMapping, this);
+        addUnique(userMappings, userMapping);
     }
 
     /**
@@ -356,7 +356,7 @@ public class PgDatabase extends PgStatement implements IDatabase {
     }
 
     public void addCast(final PgCast cast) {
-        addUnique(casts, cast, this);
+        addUnique(casts, cast);
     }
 
     /**
@@ -420,15 +420,15 @@ public class PgDatabase extends PgStatement implements IDatabase {
     }
 
     public void addAssembly(final MsAssembly assembly) {
-        addUnique(assemblies, assembly, this);
+        addUnique(assemblies, assembly);
     }
 
     public void addRole(final MsRole role) {
-        addUnique(roles, role, this);
+        addUnique(roles, role);
     }
 
     public void addUser(final MsUser user) {
-        addUnique(users, user, this);
+        addUnique(users, user);
     }
 
     public void sortColumns() {
