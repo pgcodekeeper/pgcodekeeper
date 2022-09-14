@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
-import java.util.regex.Pattern;
 
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.IContentProposal;
@@ -41,8 +40,6 @@ class PgStatementAutoCompleteField {
 
 class PgStatementProposalProvider implements IContentProposalProvider {
 
-    private static final Pattern PATTERN_QUOTE = Pattern.compile("\"", Pattern.LITERAL); //$NON-NLS-1$
-
     private final List<IContentProposal> proposals;
 
     public PgStatementProposalProvider(List<IContentProposal> proposals) {
@@ -52,14 +49,14 @@ class PgStatementProposalProvider implements IContentProposalProvider {
     @Override
     public IContentProposal[] getProposals(String contents, int position) {
         String contentsLc = contents.toLowerCase(Locale.ROOT);
-        String contentsNq = PATTERN_QUOTE.matcher(contentsLc).replaceAll(""); //$NON-NLS-1$
+        String contentsNq = contentsLc.replace("\"", ""); //$NON-NLS-1$
 
         List<IContentProposal> list = new ArrayList<>();
         for (IContentProposal proposal : proposals) {
             String content = proposal.getContent();
             if (content.contains(contentsLc)
                     // ignore quotes
-                    || PATTERN_QUOTE.matcher(content).replaceAll("").contains(contentsNq)) { //$NON-NLS-1$
+                    || content.replace("\"", "").contains(contentsNq)) { //$NON-NLS-1$
                 list.add(proposal);
             }
         }

@@ -36,6 +36,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterView;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CommentOn;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateAggregate;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateCast;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateCollation;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateDatabase;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateDomain;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateExtension;
@@ -136,6 +137,8 @@ implements SqlContextProcessor {
             p = new CreateRule(ctx.create_rewrite_statement(), db);
         } else if (ctx.create_policy_statement() != null) {
             p = new CreatePolicy(ctx.create_policy_statement(), db);
+        } else if (ctx.create_collation_statement() != null) {
+            p = new CreateCollation(ctx.create_collation_statement(), db);
         } else if (ctx.create_function_statement() != null) {
             p = new CreateFunction(ctx.create_function_statement(), db, errors, antlrTasks);
         } else if (ctx.create_aggregate_statement() != null) {

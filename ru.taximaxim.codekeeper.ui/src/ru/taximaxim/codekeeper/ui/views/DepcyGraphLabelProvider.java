@@ -78,6 +78,8 @@ class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvi
                 return "FDW " + st.getBareName(); //$NON-NLS-1$
             case SERVER:
                 return "SRV " + st.getBareName(); //$NON-NLS-1$
+            case COLLATION:
+                return "COLL " + st.getBareName(); //$NON-NLS-1$
             case FUNCTION:
                 return "FUNC " + st.getBareName(); //$NON-NLS-1$
             case PROCEDURE:

@@ -115,3 +115,7 @@ COMMENT ON FOREIGN DATA WRAPPER test_fdw_2 IS 'test comment';
 CREATE SERVER test_server_0  FOREIGN DATA WRAPPER fdw1;
 
 COMMENT ON SERVER test_server_0 IS 'test_comment';
+
+CREATE COLLATION public.test_collation (LOCALE = 'ru_RU.utf8');
+
+COMMENT ON COLLATION  public.test_collation IS 'ru';

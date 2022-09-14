@@ -10,6 +10,8 @@ COMMENT ON FOREIGN DATA WRAPPER test_fdw_1 IS NULL;
 
 COMMENT ON SERVER test_server_0 IS NULL;
 
+COMMENT ON COLLATION public.test_collation IS NULL;
+
 COMMENT ON COLUMN public.typ_composite.key IS NULL;
 
 COMMENT ON COLUMN public.typ_composite.val IS NULL;

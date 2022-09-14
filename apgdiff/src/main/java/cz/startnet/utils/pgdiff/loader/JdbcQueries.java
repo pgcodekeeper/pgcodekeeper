@@ -43,6 +43,7 @@ public final class JdbcQueries {
     public static final JdbcQuery QUERY_TABLES = new JdbcQuery();
     public static final JdbcQuery QUERY_FUNCTIONS = new JdbcQuery();
     public static final JdbcQuery QUERY_SEQUENCES = new JdbcQuery();
+    public static final JdbcQuery QUERY_COLLATIONS = new JdbcQuery();
     public static final JdbcQuery QUERY_INDICES = new JdbcQuery();
     public static final JdbcQuery QUERY_CONSTRAINTS = new JdbcQuery();
     public static final JdbcQuery QUERY_TRIGGERS = new JdbcQuery();

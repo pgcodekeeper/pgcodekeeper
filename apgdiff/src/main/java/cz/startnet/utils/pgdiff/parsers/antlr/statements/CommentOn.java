@@ -188,6 +188,9 @@ public class CommentOn extends ParserAbstract {
         } else if (obj.DOMAIN() != null) {
             type = DbObjType.DOMAIN;
             st = getSafe(AbstractSchema::getDomain, schema, nameCtx);
+        } else if (obj.COLLATION() != null) {
+            type = DbObjType.COLLATION;
+            st = getSafe(AbstractSchema::getCollation, schema, nameCtx);
         } else if ((obj.TRIGGER() != null && obj.EVENT() == null)
                 || obj.POLICY() != null || obj.RULE() != null) {
             List<ParserRuleContext> parentIds = getIdentifiers(obj.table_name);

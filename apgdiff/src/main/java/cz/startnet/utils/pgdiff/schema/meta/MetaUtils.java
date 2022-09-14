@@ -124,6 +124,7 @@ public class MetaUtils {
         case ASSEMBLY:
             gc = new GenericColumn(st.getName(), type);
             break;
+        case COLLATION:
         case AGGREGATE:
         case DOMAIN:
         case FTS_CONFIGURATION:

@@ -24,6 +24,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Boolean_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Cast_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_user_mapping_statementContext;
@@ -287,6 +288,27 @@ public abstract class ParserAbstract {
         return new Pair<>(s, dollarText.get(0).getSymbol());
     }
 
+    public static boolean parseBoolean(Boolean_valueContext boolCtx) {
+        String bool = boolCtx.character_string() != null
+                ? unquoteQuotedString(boolCtx.character_string()).getFirst() : boolCtx.getText();
+        bool = bool.toLowerCase(Locale.ROOT);
+        switch (bool) {
+        case "1":
+        case "true":
+        case "on":
+        case "yes":
+            return true;
+        case "0":
+        case "false":
+        case "off":
+        case "no":
+            return false;
+        default:
+            // TODO throw instead?
+            return false;
+        }
+    }
+
     public static List<ParserRuleContext> getIdentifiers(Schema_qualified_nameContext qNameCtx) {
         List<ParserRuleContext> ids = new ArrayList<>(3);
         ids.add(qNameCtx.identifier());
@@ -471,6 +493,7 @@ public abstract class ParserAbstract {
         case TYPE:
         case VIEW:
         case INDEX:
+        case COLLATION:
         case FUNCTION:
         case PROCEDURE:
         case AGGREGATE:

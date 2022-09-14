@@ -86,6 +86,9 @@ public class AlterOwner extends ParserAbstract {
             } else if (ctx.TYPE() != null) {
                 st = getSafe(AbstractSchema::getType, schema, nameCtx);
                 type = DbObjType.TYPE;
+            } else if (ctx.COLLATION() != null) {
+                st = getSafe(AbstractSchema::getCollation, schema, nameCtx);
+                type = DbObjType.COLLATION;
             } else if (ctx.OPERATOR() != null) {
                 st = getSafe(AbstractSchema::getOperator, schema,
                         parseSignature(nameCtx.getText(), ctx.target_operator()),
@@ -160,6 +163,8 @@ public class AlterOwner extends ParserAbstract {
             type = DbObjType.AGGREGATE;
         } else if (ctx.OPERATOR() != null) {
             type = DbObjType.OPERATOR;
+        } else if (ctx.COLLATION() != null) {
+            type = DbObjType.COLLATION;
         } else {
             return null;
         }

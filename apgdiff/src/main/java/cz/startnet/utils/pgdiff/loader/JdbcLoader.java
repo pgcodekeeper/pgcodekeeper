@@ -11,6 +11,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.jdbc.CastsReader;
+import cz.startnet.utils.pgdiff.loader.jdbc.CollationsReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.ConstraintsReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.ExtensionsReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.ForeignDataWrappersReader;
@@ -103,6 +104,7 @@ public class JdbcLoader extends JdbcLoaderBase {
                     new UserMappingReader(this, d).read();
                 }
             }
+            new CollationsReader(this).read();
 
             if (!SupportedVersion.VERSION_10.isLE(version)) {
                 SequencesReader.querySequencesData(d, this);

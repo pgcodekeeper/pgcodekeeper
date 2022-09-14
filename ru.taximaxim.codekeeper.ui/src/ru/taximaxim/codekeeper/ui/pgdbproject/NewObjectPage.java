@@ -299,6 +299,7 @@ public final class NewObjectPage extends WizardPage {
             path = name;
             expectedFormat = NAME;
             break;
+        case COLLATION:
         case DOMAIN:
         case FUNCTION:
         case PROCEDURE:

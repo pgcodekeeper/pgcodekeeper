@@ -46,3 +46,4 @@ ALTER COLLATION "en-x-icu" REFRESH VERSION;
 CREATE COLLATION test0 FROM "C";
 create type textrange_c as range(subtype=text, collation="C");
 create type textrange_en_us as range(subtype=text, collation="en-x-icu");
+CREATE COLLATION pg_catalog."default" (provider = default, locale = '');

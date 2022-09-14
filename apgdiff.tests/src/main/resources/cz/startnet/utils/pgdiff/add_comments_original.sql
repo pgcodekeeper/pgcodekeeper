@@ -66,6 +66,8 @@ CREATE RULE test_rule AS ON DELETE TO public.test DO NOTHING;
 
 CREATE POLICY test_policy ON public.test;
 
+CREATE COLLATION public.test_collation (LOCALE = 'ru_RU.utf8');
+
 CREATE TEXT SEARCH TEMPLATE public.test_template (
     LEXIZE = dsnowball_lexize );
 

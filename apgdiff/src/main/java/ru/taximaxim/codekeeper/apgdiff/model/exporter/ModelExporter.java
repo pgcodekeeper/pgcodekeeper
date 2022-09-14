@@ -77,6 +77,7 @@ public class ModelExporter extends AbstractModelExporter {
             }
             break;
 
+        case COLLATION:
         case SEQUENCE:
         case TYPE:
         case DOMAIN:

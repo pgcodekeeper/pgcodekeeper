@@ -16,7 +16,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -33,8 +32,6 @@ import ru.taximaxim.codekeeper.apgdiff.sql.Keyword.KeywordCategory;
 public final class PgDiffUtils {
 
     public static final int ERROR_SUBSTRING_LENGTH = 20;
-    private static final Pattern PATTERN_SQ = Pattern.compile("'", Pattern.LITERAL);
-    private static final Pattern PATTERN_DQ = Pattern.compile("\"", Pattern.LITERAL);
     private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
 
     public static boolean isValidId(String id, boolean allowKeywords, boolean allowCaps) {
@@ -92,21 +89,11 @@ public final class PgDiffUtils {
     }
 
     public static String quoteName(String name) {
-        return new StringBuilder(name.length() + 2)
-                .append('"')
-                .append(name.indexOf('"') != -1 ? PATTERN_DQ.matcher(name).replaceAll("\"\"") : name)
-                .append('"')
-                .toString();
+        return '"' + name.replace("\"", "\"\"") + '"';
     }
 
     public static String quoteString(String s) {
-        return appendQuotedString(new StringBuilder(s.length() + 2), s).toString();
-    }
-
-    public static StringBuilder appendQuotedString(StringBuilder sb, String s) {
-        return sb.append('\'')
-                .append(s.indexOf('\'') != -1 ? PATTERN_SQ.matcher(s).replaceAll("''") : s)
-                .append('\'');
+        return '\'' + s.replace("'", "''") + '\'';
     }
 
     /**

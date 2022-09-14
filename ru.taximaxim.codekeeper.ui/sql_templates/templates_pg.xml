@@ -96,6 +96,13 @@ $$$$;</template>
     >CREATE POLICY ${objectName} ON ${schemaName}.${parentName};</template>
 
 <template 
+    name="create_collation"
+    description="%create.collation.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createcollation.protected"
+    >CREATE COLLATION ${schemaName}.${objectName} (provider = libc, locale = 'C');</template>
+     
+<template 
     name="create_table"
     description="%create.table.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 

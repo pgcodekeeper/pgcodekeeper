@@ -26,6 +26,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
     private final Map<String, PgFtsDictionary> dictionaries = new LinkedHashMap<>();
     private final Map<String, PgFtsConfiguration> configurations = new LinkedHashMap<>();
     private final Map<String, PgOperator> operators = new LinkedHashMap<>();
+    private final Map<String, PgCollation> collations = new LinkedHashMap<>();
 
     @Override
     public DbObjType getStatementType() {
@@ -122,6 +123,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         l.add(dictionaries.values());
         l.add(configurations.values());
         l.add(operators.values());
+        l.add(collations.values());
     }
 
     @Override
@@ -152,6 +154,8 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
             return getFtsConfiguration(name);
         case OPERATOR:
             return getOperator(name);
+        case COLLATION:
+            return getCollation(name);
         default:
             return null;
         }
@@ -196,6 +200,9 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         case VIEW:
             addView((AbstractView) st);
             break;
+        case COLLATION:
+            addCollation((PgCollation) st);
+            break;
         default:
             throw new IllegalArgumentException("Unsupported child type: " + type);
         }
@@ -213,12 +220,32 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
     }
 
     /**
+     * Finds collation according to specified collation {@code name}.
+     *
+     * @param name name of the collation to be searched
+     *
+     * @return found collation or null if no such collations has been found
+     */
+    public PgCollation getCollation(final String name) {
+        return collations.get(name);
+    }
+
+    /**
      * Getter for {@link #sequences}. The list cannot be modified.
      *
      * @return {@link #sequences}
      */
     public Collection<AbstractSequence> getSequences() {
         return Collections.unmodifiableCollection(sequences.values());
+    }
+
+    /**
+     * Getter for {@link #collations}. The list cannot be modified.
+     *
+     * @return {@link #collations}
+     */
+    public Collection<PgCollation> getColletions() {
+        return Collections.unmodifiableCollection(collations.values());
     }
 
     /**
@@ -414,6 +441,10 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         addUnique(sequences, sequence, this);
     }
 
+    public void addCollation(final PgCollation collation) {
+        addUnique(collations, collation, this);
+    }
+
     public void addTable(final AbstractTable table) {
         addUnique(tables, table, this);
     }
@@ -457,6 +488,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
             AbstractSchema schema = (AbstractSchema) obj;
             return domains.equals(schema.domains)
                     && sequences.equals(schema.sequences)
+                    && collations.equals(schema.collations)
                     && functions.equals(schema.functions)
                     && views.equals(schema.views)
                     && tables.equals(schema.tables)
@@ -479,6 +511,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
     protected void computeChildrenHash(Hasher hasher) {
         hasher.putUnordered(domains);
         hasher.putUnordered(sequences);
+        hasher.putUnordered(collations);
         hasher.putUnordered(functions);
         hasher.putUnordered(views);
         hasher.putUnordered(tables);

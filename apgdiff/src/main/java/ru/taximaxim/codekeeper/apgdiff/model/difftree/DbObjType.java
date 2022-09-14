@@ -17,6 +17,7 @@ public enum DbObjType {
     FOREIGN_DATA_WRAPPER,
     SERVER,
     USER_MAPPING,
+    COLLATION,
     TYPE,
     DOMAIN,
     SEQUENCE,

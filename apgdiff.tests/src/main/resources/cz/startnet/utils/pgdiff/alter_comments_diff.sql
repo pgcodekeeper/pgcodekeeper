@@ -10,6 +10,8 @@ COMMENT ON FOREIGN DATA WRAPPER test_fdw_2 IS 'new comment';
 
 COMMENT ON SERVER test_server_0 IS 'new_comment';
 
+COMMENT ON COLLATION public.test_collation IS 'ru Ru';
+
 COMMENT ON COLUMN public.typ_composite.key IS 'Type column of composite comment 2';
 
 COMMENT ON TYPE public.typ_composite IS 'This composite type 2';

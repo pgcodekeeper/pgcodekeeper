@@ -778,11 +778,11 @@ create_collation_statement
     ;
 
 alter_collation_statement
-    : COLLATION name=schema_qualified_name (REFRESH VERSION | rename_to | owner_to | set_schema)
+    : COLLATION name=schema_qualified_name (REFRESH VERSION | rename_to | set_schema)
     ;
 
 collation_option
-    : (LOCALE | LC_COLLATE | LC_CTYPE | PROVIDER | VERSION) EQUAL (character_string | identifier)
+    : (LOCALE | LC_COLLATE | LC_CTYPE | PROVIDER | VERSION) EQUAL (character_string | identifier | DEFAULT)
     | DETERMINISTIC EQUAL boolean_value
     ;
 
@@ -826,7 +826,7 @@ alter_owner_statement
     : (OPERATOR target_operator
         | LARGE OBJECT NUMBER_LITERAL
         | (FUNCTION | PROCEDURE | AGGREGATE) name=schema_qualified_name function_args
-        | (TEXT SEARCH DICTIONARY | TEXT SEARCH CONFIGURATION | FOREIGN DATA WRAPPER | SERVER | DOMAIN | SCHEMA | SEQUENCE | TYPE | MATERIALIZED? VIEW)
+        | (TEXT SEARCH DICTIONARY | TEXT SEARCH CONFIGURATION | FOREIGN DATA WRAPPER | SERVER | DOMAIN | SCHEMA | SEQUENCE | TYPE | COLLATION | MATERIALIZED? VIEW)
         if_exists? name=schema_qualified_name) owner_to
     ;
 
@@ -1162,7 +1162,7 @@ comment_member_object
     : ACCESS METHOD identifier 
     | (AGGREGATE | PROCEDURE | FUNCTION | ROUTINE) name=schema_qualified_name function_args
     | CAST LEFT_PAREN cast_name RIGHT_PAREN
-    | COLLATION identifier
+    | COLLATION name=schema_qualified_name
     | COLUMN name=schema_qualified_name
     | CONSTRAINT identifier ON DOMAIN? table_name=schema_qualified_name
     | CONVERSION name=schema_qualified_name
