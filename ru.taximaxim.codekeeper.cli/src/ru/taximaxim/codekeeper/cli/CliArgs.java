@@ -723,7 +723,10 @@ public class CliArgs extends PgDiffArguments {
                 badArgs("Cannot work with MS SQL database as PostgerSQL project.");
             }
         } else {
-            if ((getOldSrc() == null || getNewSrc() == null) && !clearLibCache) {
+            if ((getOldSrc() == null || getNewSrc() == null)) {
+                if (clearLibCache) {
+                    return true;
+                }
                 badArgs("Please specify both SOURCE and DEST.");
             }
             if (isAddTransaction() && isConcurrentlyMode() && !isMsSql()) {
