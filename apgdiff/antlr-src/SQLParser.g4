@@ -787,11 +787,15 @@ collation_option
     ;
 
 create_user_mapping_statement
-    : USER MAPPING if_not_exists? FOR (user_name | USER) SERVER identifier define_foreign_options?
+    : USER MAPPING if_not_exists? FOR user_mapping_name define_foreign_options?
     ;
 
 alter_user_mapping_statement
-    : USER MAPPING FOR (user_name | USER) SERVER identifier define_foreign_options?
+    : USER MAPPING FOR user_mapping_name define_foreign_options?
+    ;
+
+user_mapping_name
+    : (user_name | USER) SERVER identifier
     ;
 
 alter_user_or_role_statement
@@ -868,7 +872,7 @@ operator_set_restrict_join
     ;
 
 drop_user_mapping_statement
-    : USER MAPPING if_exists? FOR (user_name | USER) SERVER identifier
+    : USER MAPPING if_exists? FOR user_mapping_name
     ;
 
 drop_owned_statement

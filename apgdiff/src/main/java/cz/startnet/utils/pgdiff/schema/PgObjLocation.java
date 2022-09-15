@@ -225,6 +225,7 @@ public class PgObjLocation extends ContextLocation {
         private int charPositionInLine;
         private GenericColumn object;
         private ParserRuleContext ctx;
+        private ParserRuleContext endCtx;
         private LocationType locationType = LocationType.REFERENCE;
 
         public Builder setFilePath(String filePath) {
@@ -272,6 +273,11 @@ public class PgObjLocation extends ContextLocation {
             return this;
         }
 
+        public Builder setEndCtx(ParserRuleContext endCtx) {
+            this.endCtx = endCtx;
+            return this;
+        }
+
         public Builder setLocationType(LocationType locationType) {
             this.locationType = locationType;
             return this;
@@ -283,7 +289,8 @@ public class PgObjLocation extends ContextLocation {
                 int offset = start.getStartIndex();
                 int line = start.getLine();
                 int position = start.getCharPositionInLine();
-                int length =  ctx.getStop().getStopIndex() - offset + 1;
+                Token stop = (endCtx != null ? endCtx : ctx).getStop();
+                int length =  stop.getStopIndex() - offset + 1;
                 return new PgObjLocation(filePath, offset, line, position,
                         object, action, sql, alias, length, locationType);
             }

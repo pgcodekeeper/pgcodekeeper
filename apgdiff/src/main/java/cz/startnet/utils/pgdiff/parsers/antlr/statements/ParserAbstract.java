@@ -26,7 +26,6 @@ import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Cast_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_user_mapping_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
@@ -38,6 +37,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Predefined_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.User_mapping_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.MisplacedObjectException;
@@ -418,9 +418,9 @@ public abstract class ParserAbstract {
         ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
         switch (type) {
         case CAST:
-            return getCastLocation((Cast_nameContext) nameCtx, action);
+            return getCastLocation((Cast_nameContext) nameCtx, action, locationType);
         case USER_MAPPING:
-            return getUserMappingLocation((Create_user_mapping_statementContext) nameCtx, action);
+            return getUserMappingLocation((User_mapping_nameContext) nameCtx, action, locationType);
         case ASSEMBLY:
         case EXTENSION:
         case FOREIGN_DATA_WRAPPER:
@@ -498,34 +498,31 @@ public abstract class ParserAbstract {
         }
     }
 
-    private PgObjLocation getCastLocation(Cast_nameContext nameCtx, String action) {
+    private PgObjLocation getCastLocation(Cast_nameContext nameCtx, String action, LocationType locationType) {
         GenericColumn object = new GenericColumn(getCastName(nameCtx), DbObjType.CAST);
         return new PgObjLocation.Builder()
                 .setFilePath(fileName)
                 .setCtx(nameCtx)
                 .setObject(object)
                 .setAction(action)
+                .setLocationType(locationType)
                 .build();
     }
 
 
-    private PgObjLocation getUserMappingLocation(Create_user_mapping_statementContext nameCtx, String action) {
-        GenericColumn object = new GenericColumn(getUserMappingName(nameCtx), DbObjType.USER_MAPPING);
+    private PgObjLocation getUserMappingLocation(User_mapping_nameContext nameCtx, String action, LocationType locationType) {
+        GenericColumn object = new GenericColumn(getFullCtxText(nameCtx), DbObjType.USER_MAPPING);
         return new PgObjLocation.Builder()
                 .setFilePath(fileName)
                 .setCtx(nameCtx)
                 .setObject(object)
                 .setAction(action)
+                .setLocationType(locationType)
                 .build();
     }
 
     protected String getCastName(Cast_nameContext nameCtx) {
         return ICast.getSimpleName(getFullCtxText(nameCtx.source), getFullCtxText(nameCtx.target));
-    }
-
-    protected String getUserMappingName(Create_user_mapping_statementContext nameCtx) {
-        return (nameCtx.user_name() != null ? nameCtx.user_name().getText() : nameCtx.USER().get(1).getText())
-                + " SERVER " + nameCtx.identifier().getText();
     }
 
     protected <T extends IStatement, U extends Object> void doSafe(BiConsumer<T, U> adder,

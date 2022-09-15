@@ -115,7 +115,11 @@ public class RenameDefinitionProcessor extends RenameProcessor {
         } else if (isMsSql) {
             quotedName = MsDiffUtils.quoteName(newName);
         } else {
-            quotedName = PgDiffUtils.getQuotedName(newName);
+            if (selection.getType() == DbObjType.USER_MAPPING || selection.getType() == DbObjType.CAST ) {
+                quotedName = newName;
+            } else {
+                quotedName = PgDiffUtils.getQuotedName(newName);
+            }
         }
 
         IFile file = null;
