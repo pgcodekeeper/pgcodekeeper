@@ -10,6 +10,7 @@ Usage
  --help                                 : show this help
  --version                              : show version
  --list-charsets                        : show list of Java-supported charsets
+ --clear-lib-cache                      : clear library cache
  --parse                                : run in parser mode to save database
                                           schema as a directory hierarchy
  --graph                                : run in graph mode to show objects
