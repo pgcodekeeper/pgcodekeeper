@@ -511,7 +511,7 @@ public abstract class ParserAbstract {
 
 
     private PgObjLocation getUserMappingLocation(User_mapping_nameContext nameCtx, String action, LocationType locationType) {
-        GenericColumn object = new GenericColumn(getFullCtxText(nameCtx), DbObjType.USER_MAPPING);
+        GenericColumn object = new GenericColumn(getUserMappingName(nameCtx), DbObjType.USER_MAPPING);
         return new PgObjLocation.Builder()
                 .setFilePath(fileName)
                 .setCtx(nameCtx)
@@ -523,6 +523,11 @@ public abstract class ParserAbstract {
 
     protected String getCastName(Cast_nameContext nameCtx) {
         return ICast.getSimpleName(getFullCtxText(nameCtx.source), getFullCtxText(nameCtx.target));
+    }
+
+    protected String getUserMappingName(User_mapping_nameContext nameCtx) {
+        return (nameCtx.user_name() != null ? nameCtx.user_name().getText() : nameCtx.USER().getText())
+                + " SERVER " + nameCtx.identifier().getText();
     }
 
     protected <T extends IStatement, U extends Object> void doSafe(BiConsumer<T, U> adder,
