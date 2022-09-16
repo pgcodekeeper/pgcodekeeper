@@ -60,16 +60,14 @@ public final class Main {
             }
             if (arguments.isModeParse()) {
                 return parse(arguments);
-            } else if (arguments.isModeGraph()) {
-                return graph(writer, arguments);
-            } else if (arguments.getOldSrc() != null && arguments.getNewSrc() != null) {
-                return diff(writer, arguments);
-            } else if (arguments.isClearLibCache()) {
-                return true;
-            } else {
-                // should never happen due to old/new src checks in CliArgs.parse()
-                throw new IllegalStateException();
             }
+            if (arguments.isModeGraph()) {
+                return graph(writer, arguments);
+            }
+            if (arguments.getOldSrc() == null || arguments.getNewSrc() == null) {
+                return true; // clear cache
+            }
+            return diff(writer, arguments);
         } catch (CmdLineException | NotAllowedObjectException ex) {
             System.err.println(ex.getLocalizedMessage());
             return false;

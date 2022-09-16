@@ -743,10 +743,10 @@ public class CliArgs extends PgDiffArguments {
                 badArgs("Cannot work with PostgreSQL database with --ms-sql parameter.");
             }
             if (isRunOnTarget() && !getOldSrc().startsWith("jdbc:")) {
-                badArgs("Cannot run script on non-database target");
+                badArgs("Cannot run script on non-database target.");
             }
             if (getRunOnDb() != null && !getRunOnDb().startsWith("jdbc:")) {
-                badArgs("option -R (--run-on) must specify JDBC connection string");
+                badArgs("Option -R (--run-on) must specify JDBC connection string.");
             }
             // TODO Do we need to check DB types for dump and directories?
 
