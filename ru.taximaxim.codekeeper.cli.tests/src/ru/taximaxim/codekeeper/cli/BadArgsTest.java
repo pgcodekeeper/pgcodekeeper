@@ -32,7 +32,7 @@ public class BadArgsTest {
                         "Cannot work with MS SQL database as PostgerSQL project." },
 
                 { new String[] { "--graph", "jdbc:postgresql:q", "jdbc:postgresql:q2" },
-                        "DEST argument doesn't require." },
+                        "DEST argument isn't required." },
 
                 { new String[] { "--graph" },
                         "Please specify SCHEMA." },
