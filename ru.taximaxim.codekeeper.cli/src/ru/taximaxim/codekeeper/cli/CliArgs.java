@@ -165,7 +165,7 @@ public class CliArgs extends PgDiffArguments {
 
     @Option(name="--generate-constraint-not-valid",
             usage="print CONSTRAINT NOT VALID for no partitioned tables")
-    private boolean constraintNotValid;
+    private boolean generateConstraintNotValid;
 
     @Option(name="--using-off", forbids={"--graph", "--parse"},
             usage="do not print USING expression for ALTER COLUMN TYPE")
@@ -480,12 +480,12 @@ public class CliArgs extends PgDiffArguments {
 
     @Override
     public boolean isConstraintNotValid() {
-        return constraintNotValid;
+        return generateConstraintNotValid;
     }
 
     @Override
-    public void setConstraintNotValid(boolean constraintNotValid) {
-        this.constraintNotValid = constraintNotValid;
+    public void setConstraintNotValid(boolean generateConstraintNotValid) {
+        this.generateConstraintNotValid = generateConstraintNotValid;
     }
 
     @Override

@@ -31,7 +31,7 @@ public class PgConstraint extends AbstractConstraint {
         boolean isPartitionTable = getParent() instanceof PartitionPgTable
                 || (getParent() instanceof AbstractRegularTable
                         && ((AbstractRegularTable)getParent()).getPartitionBy() != null) ;
-        boolean generateNotValid = args != null && !isPartitionTable && args.isConstraintNotValid();
+        boolean generateNotValid = args != null && args.isConstraintNotValid() && !isPartitionTable && !isUnique() && !isPrimaryKey();
 
         if (isNotValid() || generateNotValid) {
             sbSQL.append(" NOT VALID");
@@ -58,9 +58,7 @@ public class PgConstraint extends AbstractConstraint {
     public String getDropSQL(boolean optionExists) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("ALTER ").append(getParent().getStatementType().name()).append(' ');
-        sbSQL.append(PgDiffUtils.getQuotedName(getParent().getParent().getName()));
-        sbSQL.append('.');
-        sbSQL.append(PgDiffUtils.getQuotedName(getParent().getName()));
+        sbSQL.append(getParent().getQualifiedName());
         sbSQL.append("\n\tDROP CONSTRAINT ");
         if (optionExists) {
             sbSQL.append("IF EXISTS ");
@@ -83,9 +81,7 @@ public class PgConstraint extends AbstractConstraint {
         }
         if (isNotValid() && !newConstr.isNotValid()) {
             sb.append("\n\nALTER ").append(getParent().getStatementType().name()).append(' ')
-            .append(PgDiffUtils.getQuotedName(getParent().getParent().getName()))
-            .append('.')
-            .append(PgDiffUtils.getQuotedName(getParent().getName()))
+            .append(getParent().getQualifiedName())
             .append("\n\tVALIDATE CONSTRAINT ")
             .append(PgDiffUtils.getQuotedName(getName()))
             .append(';');
@@ -114,9 +110,7 @@ public class PgConstraint extends AbstractConstraint {
 
     private StringBuilder appendAlterTable(StringBuilder sbSQL) {
         sbSQL.append("ALTER ").append(getParent().getStatementType().name()).append(' ');
-        sbSQL.append(PgDiffUtils.getQuotedName(getParent().getParent().getName()));
-        sbSQL.append('.');
-        sbSQL.append(PgDiffUtils.getQuotedName(getParent().getName()));
+        sbSQL.append(getParent().getQualifiedName());
         return sbSQL;
     }
 
