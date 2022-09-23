@@ -28,10 +28,14 @@ public class PgConstraint extends AbstractConstraint {
         sbSQL.append(getDefinition());
 
         PgDiffArguments args = getDatabase().getArguments();
-        boolean isPartitionTable = getParent() instanceof PartitionPgTable
-                || (getParent() instanceof AbstractRegularTable
-                        && ((AbstractRegularTable)getParent()).getPartitionBy() != null) ;
-        boolean generateNotValid = args != null && args.isConstraintNotValid() && !isPartitionTable && !isUnique() && !isPrimaryKey();
+        boolean generateNotValid = args != null && args.isConstraintNotValid()
+                && !isUnique() && !isPrimaryKey();
+        if (generateNotValid) {
+            boolean isPartitionTable = getParent() instanceof PartitionPgTable
+                    || (getParent() instanceof AbstractRegularTable
+                            && ((AbstractRegularTable)getParent()).getPartitionBy() != null);
+            generateNotValid = !isPartitionTable;
+        }
 
         if (isNotValid() || generateNotValid) {
             sbSQL.append(" NOT VALID");
@@ -40,8 +44,8 @@ public class PgConstraint extends AbstractConstraint {
 
         if (generateNotValid && !isNotValid() ) {
             sbSQL.append("\n\n");
-            appendAlterTable(sbSQL)
-            .append(" VALIDATE CONSTRAINT ")
+            appendAlterTable(sbSQL);
+            sbSQL.append(" VALIDATE CONSTRAINT ")
             .append(PgDiffUtils.getQuotedName(getName()))
             .append(';');
         }
@@ -57,8 +61,7 @@ public class PgConstraint extends AbstractConstraint {
     @Override
     public String getDropSQL(boolean optionExists) {
         final StringBuilder sbSQL = new StringBuilder();
-        sbSQL.append("ALTER ").append(getParent().getStatementType().name()).append(' ');
-        sbSQL.append(getParent().getQualifiedName());
+        appendAlterTable(sbSQL);
         sbSQL.append("\n\tDROP CONSTRAINT ");
         if (optionExists) {
             sbSQL.append("IF EXISTS ");
@@ -80,9 +83,9 @@ public class PgConstraint extends AbstractConstraint {
             return true;
         }
         if (isNotValid() && !newConstr.isNotValid()) {
-            sb.append("\n\nALTER ").append(getParent().getStatementType().name()).append(' ')
-            .append(getParent().getQualifiedName())
-            .append("\n\tVALIDATE CONSTRAINT ")
+            sb.append("\n\n");
+            appendAlterTable(sb);
+            sb.append("\n\tVALIDATE CONSTRAINT ")
             .append(PgDiffUtils.getQuotedName(getName()))
             .append(';');
         }
@@ -108,10 +111,9 @@ public class PgConstraint extends AbstractConstraint {
                 .append(';');
     }
 
-    private StringBuilder appendAlterTable(StringBuilder sbSQL) {
+    private void appendAlterTable(StringBuilder sbSQL) {
         sbSQL.append("ALTER ").append(getParent().getStatementType().name()).append(' ');
         sbSQL.append(getParent().getQualifiedName());
-        return sbSQL;
     }
 
     @Override
