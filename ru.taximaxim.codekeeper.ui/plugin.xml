@@ -405,6 +405,12 @@
                     style="push">
                 </command>
                 <command
+                    commandId="ru.taximaxim.codekeeper.ui.feedBack"
+                    label="%command.label.feedback"
+                    mnemonic="%command.mnemonic.feedback"
+                    style="push">
+                </command>
+                <command
                     commandId="ru.taximaxim.codekeeper.ui.command.OpenDocs"
                     label="%command.label.openDocs"
                     style="push">
