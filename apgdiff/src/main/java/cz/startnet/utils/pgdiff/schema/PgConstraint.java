@@ -27,13 +27,12 @@ public class PgConstraint extends AbstractConstraint {
         sbSQL.append(' ');
         sbSQL.append(getDefinition());
 
+        boolean generateNotValid = false;
         PgDiffArguments args = getDatabase().getArguments();
-        boolean generateNotValid = args != null && args.isConstraintNotValid()
-                && !isUnique() && !isPrimaryKey();
-        if (generateNotValid) {
+        if (args != null && args.isConstraintNotValid() && !isUnique() && !isPrimaryKey()) {
             boolean isPartitionTable = getParent() instanceof PartitionPgTable
                     || (getParent() instanceof AbstractRegularTable
-                            && ((AbstractRegularTable)getParent()).getPartitionBy() != null);
+                            && ((AbstractRegularTable) getParent()).getPartitionBy() != null);
             generateNotValid = !isPartitionTable;
         }
 
@@ -42,7 +41,7 @@ public class PgConstraint extends AbstractConstraint {
         }
         sbSQL.append(';');
 
-        if (generateNotValid && !isNotValid() ) {
+        if (generateNotValid && !isNotValid()) {
             sbSQL.append("\n\n");
             appendAlterTable(sbSQL);
             sbSQL.append(" VALIDATE CONSTRAINT ")

@@ -79,22 +79,22 @@ public class DbUpdateProperties extends PropertyPage {
             }
         });
 
-        btnScriptAddTransact = createPropertyButton(panel, DB_UPDATE_PREF
-                .SCRIPT_IN_TRANSACTION, Messages.dbUpdatePrefPage_script_add_transaction, overridePref);
-        btnCheckFuncBodies = createPropertyButton(panel, DB_UPDATE_PREF
-                .CHECK_FUNCTION_BODIES, Messages.dbUpdatePrefPage_check_function_bodies, overridePref);
-        btnAlterColUsingExpr = createPropertyButton(panel, DB_UPDATE_PREF
-                .USING_ON_OFF, Messages.dbUpdatePrefPage_switch_on_off_using, overridePref);
-        btnCreateIdxConcurrent = createPropertyButton(panel, DB_UPDATE_PREF
-                .PRINT_INDEX_WITH_CONCURRENTLY, Messages.DbUpdatePrefPage_print_index_with_concurrently, overridePref);
-        btnConstraintNotValid = createPropertyButton(panel, DB_UPDATE_PREF
-                .PRINT_CONSTRAINT_NOT_VALID, Messages.ApplyCustomDialog_constraint_not_valid, overridePref);
-        btnScriptFromSelObjs = createPropertyButton(panel, DB_UPDATE_PREF
-                .SCRIPT_FROM_SELECTED_OBJS, Messages.DbUpdatePrefPage_script_from_selected_objs, overridePref);
-        btnGenerateExists = createPropertyButton(panel, DB_UPDATE_PREF
-                .GENERATE_EXISTS, Messages.DbUpdatePrefPage_option_if_exists, overridePref);
-        btnDropBeforeCreate = createPropertyButton(panel, DB_UPDATE_PREF
-                .DROP_BEFORE_CREATE, Messages.DbUpdatePrefPage_option_drop_object, overridePref);
+        btnScriptAddTransact = createPropertyButton(panel, DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION,
+                Messages.dbUpdatePrefPage_script_add_transaction, overridePref);
+        btnCheckFuncBodies = createPropertyButton(panel, DB_UPDATE_PREF.CHECK_FUNCTION_BODIES,
+                Messages.dbUpdatePrefPage_check_function_bodies, overridePref);
+        btnAlterColUsingExpr = createPropertyButton(panel, DB_UPDATE_PREF.USING_ON_OFF,
+                Messages.dbUpdatePrefPage_switch_on_off_using, overridePref);
+        btnCreateIdxConcurrent = createPropertyButton(panel, DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY,
+                Messages.DbUpdatePrefPage_print_index_with_concurrently, overridePref);
+        btnConstraintNotValid = createPropertyButton(panel, DB_UPDATE_PREF.PRINT_CONSTRAINT_NOT_VALID,
+                Messages.ApplyCustomDialog_constraint_not_valid, overridePref);
+        btnScriptFromSelObjs = createPropertyButton(panel, DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS,
+                Messages.DbUpdatePrefPage_script_from_selected_objs, overridePref);
+        btnGenerateExists = createPropertyButton(panel, DB_UPDATE_PREF.GENERATE_EXISTS,
+                Messages.DbUpdatePrefPage_option_if_exists, overridePref);
+        btnDropBeforeCreate = createPropertyButton(panel, DB_UPDATE_PREF.DROP_BEFORE_CREATE,
+                Messages.DbUpdatePrefPage_option_drop_object, overridePref);
         btnAddPrePostScript = createPropertyButton(panel, DB_UPDATE_PREF.ADD_PRE_POST_SCRIPT,
                 Messages.DbUpdatePrefPage_add_pre_post_script, overridePref);
         btnDataMovementMode = createPropertyButton(panel, DB_UPDATE_PREF.DATA_MOVEMENT_MODE,
@@ -102,7 +102,6 @@ public class DbUpdateProperties extends PropertyPage {
 
         return panel;
     }
-
 
     private Button createPropertyButton(Composite panel, String prefName, String text, boolean overridePref) {
         Button btn = new Button(panel, SWT.CHECK);

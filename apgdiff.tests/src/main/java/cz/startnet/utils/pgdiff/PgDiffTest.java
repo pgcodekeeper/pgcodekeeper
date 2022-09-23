@@ -526,8 +526,6 @@ public class PgDiffTest {
                     {"add_column_and_change_table"},
                     // Tests scenario where view column comments is reordered.
                     {"change_view_column_comment_order"},
-                    // Tests scenario where not valid in constraint printed.
-                    {"generate_constraint_not_valid"},
                 });
     }
 
