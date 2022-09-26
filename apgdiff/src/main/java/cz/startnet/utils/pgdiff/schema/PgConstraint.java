@@ -8,6 +8,7 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -20,18 +21,33 @@ public class PgConstraint extends AbstractConstraint {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
-        sbSQL.append("ALTER ").append(getParent().getStatementType().name()).append(' ');
-        sbSQL.append(PgDiffUtils.getQuotedName(getParent().getParent().getName()));
-        sbSQL.append('.');
-        sbSQL.append(PgDiffUtils.getQuotedName(getParent().getName()));
+        appendAlterTable(sbSQL);
         sbSQL.append("\n\tADD CONSTRAINT ");
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));
         sbSQL.append(' ');
         sbSQL.append(getDefinition());
-        if (isNotValid()) {
+
+        boolean generateNotValid = false;
+        PgDiffArguments args = getDatabase().getArguments();
+        if (args != null && args.isConstraintNotValid() && !isUnique() && !isPrimaryKey()) {
+            boolean isPartitionTable = getParent() instanceof PartitionPgTable
+                    || (getParent() instanceof AbstractRegularTable
+                            && ((AbstractRegularTable) getParent()).getPartitionBy() != null);
+            generateNotValid = !isPartitionTable;
+        }
+
+        if (isNotValid() || generateNotValid) {
             sbSQL.append(" NOT VALID");
         }
         sbSQL.append(';');
+
+        if (generateNotValid && !isNotValid()) {
+            sbSQL.append("\n\n");
+            appendAlterTable(sbSQL);
+            sbSQL.append(" VALIDATE CONSTRAINT ")
+            .append(PgDiffUtils.getQuotedName(getName()))
+            .append(';');
+        }
 
         if (comment != null && !comment.isEmpty()) {
             sbSQL.append("\n\n");
@@ -44,10 +60,7 @@ public class PgConstraint extends AbstractConstraint {
     @Override
     public String getDropSQL(boolean optionExists) {
         final StringBuilder sbSQL = new StringBuilder();
-        sbSQL.append("ALTER ").append(getParent().getStatementType().name()).append(' ');
-        sbSQL.append(PgDiffUtils.getQuotedName(getParent().getParent().getName()));
-        sbSQL.append('.');
-        sbSQL.append(PgDiffUtils.getQuotedName(getParent().getName()));
+        appendAlterTable(sbSQL);
         sbSQL.append("\n\tDROP CONSTRAINT ");
         if (optionExists) {
             sbSQL.append("IF EXISTS ");
@@ -69,11 +82,9 @@ public class PgConstraint extends AbstractConstraint {
             return true;
         }
         if (isNotValid() && !newConstr.isNotValid()) {
-            sb.append("\n\nALTER ").append(getParent().getStatementType().name()).append(' ')
-            .append(PgDiffUtils.getQuotedName(getParent().getParent().getName()))
-            .append('.')
-            .append(PgDiffUtils.getQuotedName(getParent().getName()))
-            .append("\n\tVALIDATE CONSTRAINT ")
+            sb.append("\n\n");
+            appendAlterTable(sb);
+            sb.append("\n\tVALIDATE CONSTRAINT ")
             .append(PgDiffUtils.getQuotedName(getName()))
             .append(';');
         }
@@ -97,6 +108,11 @@ public class PgConstraint extends AbstractConstraint {
         return sb.append(" IS ")
                 .append(comment == null || comment.isEmpty() ? "NULL" : comment)
                 .append(';');
+    }
+
+    private void appendAlterTable(StringBuilder sbSQL) {
+        sbSQL.append("ALTER ").append(getParent().getStatementType().name()).append(' ');
+        sbSQL.append(getParent().getQualifiedName());
     }
 
     @Override

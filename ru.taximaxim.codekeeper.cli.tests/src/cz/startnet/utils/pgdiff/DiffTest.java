@@ -48,6 +48,7 @@ public class DiffTest {
             {new MoveDataMSIdentityArgumentsProvider()},
             {new MoveDataDiffColsIdentityArgumentsProvider()},
             {new MoveDataDropTableWithoutRename()},
+            {new AddConstraintNotValid()},
         });
     }
 
@@ -479,6 +480,25 @@ class MoveDataDropTableWithoutRename extends ArgumentsProvider {
         Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
         return new String[]{"--migrate-data", "--ms-sql", "-o",
                 getDiffResultFile().toString(),
+                fNew.toString(), fOriginal.toString()};
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation for generate CONSTRAINT NOT VALID test
+ */
+class AddConstraintNotValid extends ArgumentsProvider {
+
+    public AddConstraintNotValid() {
+        super("generate_constraint_not_valid");
+    }
+
+    @Override
+    protected String[] args() throws URISyntaxException, IOException {
+        Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
+        Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
+
+        return new String[] {"--generate-constraint-not-valid", "-o", getDiffResultFile().toString(),
                 fNew.toString(), fOriginal.toString()};
     }
 }

@@ -59,6 +59,8 @@ Usage
                                           paths
  --ignore-column-order                  : ignore differences in table column
                                           order
+ --generate-constraint-not-valid        : print CONSTRAINT NOT VALID for no
+                                          partitioned tables
  --using-off                            : do not print USING expression for
                                           ALTER COLUMN TYPE
  --migrate-data                         : migrate data when re-creating tables

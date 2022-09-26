@@ -72,6 +72,9 @@ public class DbUpdatePrefPage extends FieldEditorPreferencePage implements IWork
         addField(new BooleanFieldEditor(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY,
                 Messages.DbUpdatePrefPage_print_index_with_concurrently, getFieldEditorParent()));
 
+        addField(new BooleanFieldEditor(DB_UPDATE_PREF.PRINT_CONSTRAINT_NOT_VALID,
+                Messages.ApplyCustomDialog_constraint_not_valid, getFieldEditorParent()));
+
         addField(new BooleanFieldEditor(DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS,
                 Messages.DbUpdatePrefPage_script_from_selected_objs, getFieldEditorParent()));
         BooleanFieldEditor generateExists = new BooleanFieldEditor(

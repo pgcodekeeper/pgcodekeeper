@@ -162,6 +162,7 @@ class PageDiff extends WizardPage implements Listener {
     private Button btnCheckFuncBodies;
     private Button btnAlterColUsingExpr;
     private Button btnCreateIdxConcurrent;
+    private Button btnConstraintNotValid;
     private Button btnScriptFromSelObjs;
     private Button btnGenerateExists;
     private Button btnDropBeforeCreate;
@@ -266,6 +267,7 @@ class PageDiff extends WizardPage implements Listener {
                 btnCheckFuncBodies.setVisible(selected);
                 btnAlterColUsingExpr.setVisible(selected);
                 btnCreateIdxConcurrent.setVisible(selected);
+                btnConstraintNotValid.setVisible(selected);
                 btnScriptFromSelObjs.setVisible(selected);
                 btnGenerateExists.setVisible(selected);
                 btnDropBeforeCreate.setVisible(selected);
@@ -320,6 +322,11 @@ class PageDiff extends WizardPage implements Listener {
         btnCreateIdxConcurrent.setText(Messages.DbUpdatePrefPage_print_index_with_concurrently);
         btnCreateIdxConcurrent.setSelection(mainPrefs.getBoolean(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY));
         btnCreateIdxConcurrent.setVisible(false);
+
+        btnConstraintNotValid = new Button(container, SWT.CHECK);
+        btnConstraintNotValid.setText(Messages.ApplyCustomDialog_constraint_not_valid);
+        btnConstraintNotValid.setSelection(mainPrefs.getBoolean(DB_UPDATE_PREF.PRINT_CONSTRAINT_NOT_VALID));
+        btnConstraintNotValid.setVisible(false);
 
         btnScriptFromSelObjs = new Button(container, SWT.CHECK);
         btnScriptFromSelObjs.setText(Messages.DbUpdatePrefPage_script_from_selected_objs);
@@ -408,6 +415,7 @@ class PageDiff extends WizardPage implements Listener {
         oneTimePrefs.put(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES, btnCheckFuncBodies.getSelection());
         oneTimePrefs.put(DB_UPDATE_PREF.USING_ON_OFF, btnAlterColUsingExpr.getSelection());
         oneTimePrefs.put(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY, btnCreateIdxConcurrent.getSelection());
+        oneTimePrefs.put(DB_UPDATE_PREF.PRINT_CONSTRAINT_NOT_VALID, btnConstraintNotValid.getSelection());
         oneTimePrefs.put(DB_UPDATE_PREF.GENERATE_EXISTS, btnGenerateExists.getSelection());
         oneTimePrefs.put(DB_UPDATE_PREF.DROP_BEFORE_CREATE, btnDropBeforeCreate.getSelection());
         oneTimePrefs.put(PREF.SIMPLIFY_VIEW, btnSimplifyView.getSelection());

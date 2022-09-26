@@ -166,6 +166,10 @@ public class CliArgs extends PgDiffArguments {
             usage="ignore differences in table column order")
     private boolean ignoreColumnOrder;
 
+    @Option(name="--generate-constraint-not-valid",
+            usage="print CONSTRAINT NOT VALID for no partitioned tables")
+    private boolean generateConstraintNotValid;
+
     @Option(name="--using-off", forbids={"--graph", "--parse"},
             usage="do not print USING expression for ALTER COLUMN TYPE")
     private boolean usingTypeCastOff;
@@ -483,6 +487,16 @@ public class CliArgs extends PgDiffArguments {
     @Override
     public void setIgnoreColumnOrder(boolean ignoreColumnOrder) {
         this.ignoreColumnOrder = ignoreColumnOrder;
+    }
+
+    @Override
+    public boolean isConstraintNotValid() {
+        return generateConstraintNotValid;
+    }
+
+    @Override
+    public void setConstraintNotValid(boolean generateConstraintNotValid) {
+        this.generateConstraintNotValid = generateConstraintNotValid;
     }
 
     @Override
