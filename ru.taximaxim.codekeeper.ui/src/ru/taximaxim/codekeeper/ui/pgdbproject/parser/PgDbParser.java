@@ -233,6 +233,10 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         return objReferences.getOrDefault(pathToFile, Collections.emptySet());
     }
 
+    public List<MetaStatement> getDefsForPath(String pathToFile) {
+        return objDefinitions.getOrDefault(pathToFile, Collections.emptyList());
+    }
+
     public Stream<MetaStatement> getAllObjDefinitions() {
         return objDefinitions.values().stream().flatMap(List<MetaStatement>::stream);
     }
