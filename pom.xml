@@ -87,7 +87,6 @@
             <id>internal</id>
             <modules>
                 <module>../codekeeper-internal/ru.taximaxim.codekeeper.internal.tests</module>
-                <module>../codekeeper-internal/ru.taximaxim.codekeeper.internal.ui.tests</module>
             </modules>
         </profile>
         <profile>
