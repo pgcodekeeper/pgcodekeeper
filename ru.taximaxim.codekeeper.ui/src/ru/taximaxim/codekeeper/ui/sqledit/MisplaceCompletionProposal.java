@@ -67,7 +67,7 @@ public class MisplaceCompletionProposal implements ICompletionProposal{
 
     @Override
     public String getDisplayString() {
-        return Messages.MisplaceCompletionProposal_rename_file_to + AbstractModelExporter.getExportedFilenameSql(pgObjLocation.getObjName());
+        return Messages.MisplaceCompletionProposal_rename_file_to + AbstractModelExporter.getExportedFilenameSql(pgObjLocation.getBareName());
     }
 
     @Override

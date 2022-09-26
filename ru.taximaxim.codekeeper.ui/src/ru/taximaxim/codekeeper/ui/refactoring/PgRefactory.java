@@ -48,7 +48,7 @@ public class PgRefactory {
     public void fixFileName(PgObjLocation selection) throws CoreException {
         RenameDefinitionProcessor processor = new RenameDefinitionProcessor(selection);
         RenameRefactoring refactoring = new RenameRefactoring(processor);
-        processor.setNewName(selection.getObjName());
+        processor.setNewName(selection.getBareName());
         PerformRefactoringOperation op = new PerformRefactoringOperation(refactoring, CheckConditionsOperation.ALL_CONDITIONS);
         ResourcesPlugin.getWorkspace().run(op, new NullProgressMonitor());
         FileUtilsUi.getFileForLocation(selection).refreshLocal(IResource.DEPTH_ZERO, new NullProgressMonitor());
