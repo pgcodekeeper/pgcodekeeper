@@ -47,7 +47,7 @@ public class CreateUserMapping extends ParserAbstract {
     protected String getStmtAction() {
         StringBuilder sb = new StringBuilder();
         sb.append(ACTION_CREATE).append(' ').append(DbObjType.USER_MAPPING).append(" ");
-        sb.append(getFullCtxText(ctx.user_mapping_name()));
+        sb.append(getUserMappingName(ctx.user_mapping_name()));
         return sb.toString();
     }
 }
