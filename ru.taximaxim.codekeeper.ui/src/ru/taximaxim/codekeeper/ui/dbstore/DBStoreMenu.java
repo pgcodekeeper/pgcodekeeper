@@ -184,6 +184,8 @@ public class DBStoreMenu {
         dbAction.setImageDescriptor(Activator.getRegisteredDescriptor(dbInfo.isMsSql() ? FILE.MS_ICON : FILE.PG_ICON));
         if (dbInfo.equals(selection)) {
             dbAction.setChecked(true);
+            String group = dbInfo.getDbGroup();
+            submenu.setMenuText("\u2022 " + (group.isEmpty() ? Messages.DbMenu_no_group : group)); //$NON-NLS-1$
         }
     }
 }
