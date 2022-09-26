@@ -418,9 +418,11 @@ public abstract class ParserAbstract {
         ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
         switch (type) {
         case CAST:
-            return getCastLocation((Cast_nameContext) nameCtx, action, locationType);
+            return buildLocation(nameCtx, action, locationType,
+                    new GenericColumn(getCastName((Cast_nameContext) nameCtx), DbObjType.CAST));
         case USER_MAPPING:
-            return getUserMappingLocation((User_mapping_nameContext) nameCtx, action, locationType);
+            return buildLocation(nameCtx, action, locationType,
+                    new GenericColumn(getUserMappingName((User_mapping_nameContext) nameCtx), DbObjType.USER_MAPPING));
         case ASSEMBLY:
         case EXTENSION:
         case FOREIGN_DATA_WRAPPER:
@@ -429,14 +431,8 @@ public abstract class ParserAbstract {
         case ROLE:
         case USER:
         case DATABASE:
-            GenericColumn object = new GenericColumn(nameCtx.getText(), type);
-            return new PgObjLocation.Builder()
-                    .setFilePath(fileName)
-                    .setCtx(nameCtx)
-                    .setObject(object)
-                    .setAction(action)
-                    .setLocationType(locationType)
-                    .build();
+            return buildLocation(nameCtx, action, locationType,
+                    new GenericColumn(nameCtx.getText(), type));
         default:
             break;
         }
@@ -474,51 +470,29 @@ public abstract class ParserAbstract {
         case FUNCTION:
         case PROCEDURE:
         case AGGREGATE:
-            return new PgObjLocation.Builder()
-                    .setFilePath(fileName)
-                    .setCtx(nameCtx)
-                    .setObject(new GenericColumn(schemaName, name, type))
-                    .setAction(action)
-                    .setLocationType(locationType)
-                    .build();
+            return buildLocation(nameCtx, action, locationType,
+                    new GenericColumn(schemaName, name, type));
         case CONSTRAINT:
         case TRIGGER:
         case RULE:
         case POLICY:
         case COLUMN:
-            return new PgObjLocation.Builder()
-                    .setFilePath(fileName)
-                    .setCtx(nameCtx)
-                    .setObject(new GenericColumn(schemaName, QNameParser.getSecondName(ids), name, type))
-                    .setAction(action)
-                    .setLocationType(locationType)
-                    .build();
+            return buildLocation(nameCtx, action, locationType,
+                    new GenericColumn(schemaName, QNameParser.getSecondName(ids), name, type));
         default:
             return null;
         }
     }
 
-    private PgObjLocation getCastLocation(Cast_nameContext nameCtx, String action, LocationType locationType) {
-        GenericColumn object = new GenericColumn(getCastName(nameCtx), DbObjType.CAST);
+    private PgObjLocation buildLocation(ParserRuleContext nameCtx, String action, LocationType locationType,
+            GenericColumn object) {
         return new PgObjLocation.Builder()
-                .setFilePath(fileName)
-                .setCtx(nameCtx)
-                .setObject(object)
-                .setAction(action)
-                .setLocationType(locationType)
-                .build();
-    }
-
-
-    private PgObjLocation getUserMappingLocation(User_mapping_nameContext nameCtx, String action, LocationType locationType) {
-        GenericColumn object = new GenericColumn(getUserMappingName(nameCtx), DbObjType.USER_MAPPING);
-        return new PgObjLocation.Builder()
-                .setFilePath(fileName)
-                .setCtx(nameCtx)
-                .setObject(object)
-                .setAction(action)
-                .setLocationType(locationType)
-                .build();
+            .setFilePath(fileName)
+            .setCtx(nameCtx)
+            .setObject(object)
+            .setAction(action)
+            .setLocationType(locationType)
+            .build();
     }
 
     protected String getCastName(Cast_nameContext nameCtx) {
