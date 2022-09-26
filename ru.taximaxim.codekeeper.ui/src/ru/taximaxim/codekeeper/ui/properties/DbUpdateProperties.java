@@ -32,6 +32,7 @@ public class DbUpdateProperties extends PropertyPage {
     private Button btnCheckFuncBodies;
     private Button btnAlterColUsingExpr;
     private Button btnCreateIdxConcurrent;
+    private Button btnConstraintNotValid;
     private Button btnScriptFromSelObjs;
     private Button btnGenerateExists;
     private Button btnDropBeforeCreate;
@@ -56,6 +57,7 @@ public class DbUpdateProperties extends PropertyPage {
         panel.setLayout(layout);
 
         boolean overridePref = prefs.getBoolean(PROJ_PREF.ENABLE_PROJ_PREF_DB_UPDATE, false);
+
         btnEnableProjPref = new Button(panel, SWT.CHECK);
         btnEnableProjPref.setText(Messages.ProjectProperties_enable_proj_prefs);
         btnEnableProjPref.setLayoutData(new GridData(SWT.DEFAULT, SWT.DEFAULT, false, false, 2, 1));
@@ -68,6 +70,7 @@ public class DbUpdateProperties extends PropertyPage {
                 btnCheckFuncBodies.setEnabled(btnEnableProjPref.getSelection());
                 btnAlterColUsingExpr.setEnabled(btnEnableProjPref.getSelection());
                 btnCreateIdxConcurrent.setEnabled(btnEnableProjPref.getSelection());
+                btnConstraintNotValid.setEnabled(btnEnableProjPref.getSelection());
                 btnScriptFromSelObjs.setEnabled(btnEnableProjPref.getSelection());
                 btnGenerateExists.setEnabled(btnEnableProjPref.getSelection());
                 btnDropBeforeCreate.setEnabled(btnEnableProjPref.getSelection());
@@ -76,85 +79,39 @@ public class DbUpdateProperties extends PropertyPage {
             }
         });
 
-        btnScriptAddTransact = new Button(panel, SWT.CHECK);
-        btnScriptAddTransact.setText(Messages.dbUpdatePrefPage_script_add_transaction);
-        GridData gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
-        gd.horizontalIndent = 10;
-        btnScriptAddTransact.setLayoutData(gd);
-        btnScriptAddTransact.setSelection(prefs.getBoolean(DB_UPDATE_PREF
-                .SCRIPT_IN_TRANSACTION, false));
-        btnScriptAddTransact.setEnabled(overridePref);
-
-        btnCheckFuncBodies = new Button(panel, SWT.CHECK);
-        btnCheckFuncBodies.setText(Messages.dbUpdatePrefPage_check_function_bodies);
-        gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
-        gd.horizontalIndent = 10;
-        btnCheckFuncBodies.setLayoutData(gd);
-        btnCheckFuncBodies.setSelection(prefs.getBoolean(DB_UPDATE_PREF
-                .CHECK_FUNCTION_BODIES, false));
-        btnCheckFuncBodies.setEnabled(overridePref);
-
-        btnAlterColUsingExpr = new Button(panel, SWT.CHECK);
-        btnAlterColUsingExpr.setText(Messages.dbUpdatePrefPage_switch_on_off_using);
-        gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
-        gd.horizontalIndent = 10;
-        btnAlterColUsingExpr.setLayoutData(gd);
-        btnAlterColUsingExpr.setSelection(prefs.getBoolean(DB_UPDATE_PREF
-                .USING_ON_OFF, false));
-        btnAlterColUsingExpr.setEnabled(overridePref);
-
-        btnCreateIdxConcurrent = new Button(panel, SWT.CHECK);
-        btnCreateIdxConcurrent.setText(Messages.DbUpdatePrefPage_print_index_with_concurrently);
-        gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
-        gd.horizontalIndent = 10;
-        btnCreateIdxConcurrent.setLayoutData(gd);
-        btnCreateIdxConcurrent.setSelection(prefs.getBoolean(DB_UPDATE_PREF
-                .PRINT_INDEX_WITH_CONCURRENTLY, false));
-        btnCreateIdxConcurrent.setEnabled(overridePref);
-
-        btnScriptFromSelObjs = new Button(panel, SWT.CHECK);
-        btnScriptFromSelObjs.setText(Messages.DbUpdatePrefPage_script_from_selected_objs);
-        gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
-        gd.horizontalIndent = 10;
-        btnScriptFromSelObjs.setLayoutData(gd);
-        btnScriptFromSelObjs.setSelection(prefs.getBoolean(DB_UPDATE_PREF
-                .SCRIPT_FROM_SELECTED_OBJS, false));
-        btnScriptFromSelObjs.setEnabled(overridePref);
-
-        btnGenerateExists = new Button(panel, SWT.CHECK);
-        btnGenerateExists.setText(Messages.DbUpdatePrefPage_option_if_exists);
-        gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
-        gd.horizontalIndent = 10;
-        btnGenerateExists.setLayoutData(gd);
-        btnGenerateExists.setSelection(prefs.getBoolean(DB_UPDATE_PREF.GENERATE_EXISTS, false));
-        btnGenerateExists.setEnabled(overridePref);
-
-        btnDropBeforeCreate = new Button(panel, SWT.CHECK);
-        btnDropBeforeCreate.setText(Messages.DbUpdatePrefPage_option_drop_object);
-        gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
-        gd.horizontalIndent = 10;
-        btnDropBeforeCreate.setLayoutData(gd);
-        btnDropBeforeCreate.setSelection(prefs.getBoolean(DB_UPDATE_PREF.DROP_BEFORE_CREATE, false));
-        btnDropBeforeCreate.setEnabled(overridePref);
-
-        btnAddPrePostScript = new Button(panel, SWT.CHECK);
-        btnAddPrePostScript.setText(Messages.DbUpdatePrefPage_add_pre_post_script);
-        gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
-        gd.horizontalIndent = 10;
-        btnAddPrePostScript.setLayoutData(gd);
-        btnAddPrePostScript.setSelection(prefs.getBoolean(DB_UPDATE_PREF.ADD_PRE_POST_SCRIPT, false));
-        btnAddPrePostScript.setEnabled(overridePref);
-
-        btnDataMovementMode = new Button(panel, SWT.CHECK);
-        btnDataMovementMode.setText(Messages.DbUpdatePrefPage_allow_data_movement);
-        gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
-        gd.horizontalIndent = 10;
-        btnDataMovementMode.setLayoutData(gd);
-        btnDataMovementMode.setSelection(prefs.getBoolean(DB_UPDATE_PREF
-                .DATA_MOVEMENT_MODE, false));
-        btnDataMovementMode.setEnabled(overridePref);
+        btnScriptAddTransact = createPropertyButton(panel, DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION,
+                Messages.dbUpdatePrefPage_script_add_transaction, overridePref);
+        btnCheckFuncBodies = createPropertyButton(panel, DB_UPDATE_PREF.CHECK_FUNCTION_BODIES,
+                Messages.dbUpdatePrefPage_check_function_bodies, overridePref);
+        btnAlterColUsingExpr = createPropertyButton(panel, DB_UPDATE_PREF.USING_ON_OFF,
+                Messages.dbUpdatePrefPage_switch_on_off_using, overridePref);
+        btnCreateIdxConcurrent = createPropertyButton(panel, DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY,
+                Messages.DbUpdatePrefPage_print_index_with_concurrently, overridePref);
+        btnConstraintNotValid = createPropertyButton(panel, DB_UPDATE_PREF.PRINT_CONSTRAINT_NOT_VALID,
+                Messages.ApplyCustomDialog_constraint_not_valid, overridePref);
+        btnScriptFromSelObjs = createPropertyButton(panel, DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS,
+                Messages.DbUpdatePrefPage_script_from_selected_objs, overridePref);
+        btnGenerateExists = createPropertyButton(panel, DB_UPDATE_PREF.GENERATE_EXISTS,
+                Messages.DbUpdatePrefPage_option_if_exists, overridePref);
+        btnDropBeforeCreate = createPropertyButton(panel, DB_UPDATE_PREF.DROP_BEFORE_CREATE,
+                Messages.DbUpdatePrefPage_option_drop_object, overridePref);
+        btnAddPrePostScript = createPropertyButton(panel, DB_UPDATE_PREF.ADD_PRE_POST_SCRIPT,
+                Messages.DbUpdatePrefPage_add_pre_post_script, overridePref);
+        btnDataMovementMode = createPropertyButton(panel, DB_UPDATE_PREF.DATA_MOVEMENT_MODE,
+                Messages.DbUpdatePrefPage_allow_data_movement, overridePref);
 
         return panel;
+    }
+
+    private Button createPropertyButton(Composite panel, String prefName, String text, boolean overridePref) {
+        Button btn = new Button(panel, SWT.CHECK);
+        btn.setText(text);
+        GridData gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
+        gd.horizontalIndent = 10;
+        btn.setLayoutData(gd);
+        btn.setSelection(prefs.getBoolean(prefName, false));
+        btn.setEnabled(overridePref);
+        return btn;
     }
 
     @Override
@@ -165,6 +122,7 @@ public class DbUpdateProperties extends PropertyPage {
         setDefault(mainPS, btnCheckFuncBodies, DB_UPDATE_PREF.CHECK_FUNCTION_BODIES);
         setDefault(mainPS, btnAlterColUsingExpr, DB_UPDATE_PREF.USING_ON_OFF);
         setDefault(mainPS, btnCreateIdxConcurrent, DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY);
+        setDefault(mainPS, btnConstraintNotValid, DB_UPDATE_PREF.PRINT_CONSTRAINT_NOT_VALID);
         setDefault(mainPS, btnScriptFromSelObjs, DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS);
         setDefault(mainPS, btnGenerateExists, DB_UPDATE_PREF.GENERATE_EXISTS);
         setDefault(mainPS, btnDropBeforeCreate, DB_UPDATE_PREF.DROP_BEFORE_CREATE);
@@ -206,6 +164,7 @@ public class DbUpdateProperties extends PropertyPage {
         prefs.putBoolean(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES, btnCheckFuncBodies.getSelection());
         prefs.putBoolean(DB_UPDATE_PREF.USING_ON_OFF, btnAlterColUsingExpr.getSelection());
         prefs.putBoolean(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY, btnCreateIdxConcurrent.getSelection());
+        prefs.putBoolean(DB_UPDATE_PREF.PRINT_CONSTRAINT_NOT_VALID, btnConstraintNotValid.getSelection());
         prefs.putBoolean(DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS, btnScriptFromSelObjs.getSelection());
         prefs.putBoolean(DB_UPDATE_PREF.GENERATE_EXISTS, btnGenerateExists.getSelection());
         prefs.putBoolean(DB_UPDATE_PREF.DROP_BEFORE_CREATE, btnDropBeforeCreate.getSelection());

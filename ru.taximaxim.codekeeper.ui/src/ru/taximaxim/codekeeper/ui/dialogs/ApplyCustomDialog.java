@@ -29,6 +29,7 @@ public class ApplyCustomDialog extends Dialog {
     private Button btnCheckFuncBodies;
     private Button btnAlterColUsingExpr;
     private Button btnCreateIdxConcurrent;
+    private Button btnConstraintNotValid;
     private Button btnScriptFromSelObjs;
     private Button btnGenerateExists;
     private Button btndropBeforeCreate;
@@ -63,81 +64,49 @@ public class ApplyCustomDialog extends Dialog {
                 .format(Messages.getChangesCustomDialog_custom_prefs_description,
                         Messages.DiffTableViewer_apply_to));
 
-        btnScriptAddTransact = new Button(panel, SWT.CHECK);
-        btnScriptAddTransact.setText(Messages.dbUpdatePrefPage_script_add_transaction);
-        GridData gd = new GridData();
-        gd.horizontalIndent = 10;
-        btnScriptAddTransact.setLayoutData(gd);
-        btnScriptAddTransact.setSelection(prefs.getBooleanOfDbUpdatePref(
-                DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION));
+        btnScriptAddTransact = createCustomButton(panel, DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION,
+                Messages.dbUpdatePrefPage_script_add_transaction);
 
-        btnCreateIdxConcurrent = new Button(panel, SWT.CHECK);
-        btnCreateIdxConcurrent.setText(Messages.DbUpdatePrefPage_print_index_with_concurrently);
-        gd = new GridData();
-        gd.horizontalIndent = 10;
-        btnCreateIdxConcurrent.setLayoutData(gd);
-        btnCreateIdxConcurrent.setSelection(prefs.getBooleanOfDbUpdatePref(
-                DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY));
+        btnCreateIdxConcurrent = createCustomButton(panel, DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY,
+                Messages.DbUpdatePrefPage_print_index_with_concurrently);
 
-        btnGenerateExists = new Button(panel, SWT.CHECK);
-        btnGenerateExists.setText(Messages.DbUpdatePrefPage_option_if_exists);
-        gd = new GridData();
-        gd.horizontalIndent = 10;
-        btnGenerateExists.setLayoutData(gd);
-        btnGenerateExists.setSelection(prefs.getBooleanOfDbUpdatePref(
-                DB_UPDATE_PREF.GENERATE_EXISTS));
+        btnConstraintNotValid = createCustomButton(panel, DB_UPDATE_PREF.PRINT_CONSTRAINT_NOT_VALID,
+                Messages.ApplyCustomDialog_constraint_not_valid);
 
-        btndropBeforeCreate = new Button(panel, SWT.CHECK);
-        btndropBeforeCreate.setText(Messages.DbUpdatePrefPage_option_drop_object);
-        gd = new GridData();
-        gd.horizontalIndent = 10;
-        btndropBeforeCreate.setLayoutData(gd);
-        btndropBeforeCreate.setSelection(prefs.getBooleanOfDbUpdatePref(
-                DB_UPDATE_PREF.DROP_BEFORE_CREATE));
+        btnGenerateExists = createCustomButton(panel, DB_UPDATE_PREF.GENERATE_EXISTS,
+                Messages.DbUpdatePrefPage_option_if_exists);
 
-        btnAddPrePostScript = new Button(panel, SWT.CHECK);
-        btnAddPrePostScript.setText(Messages.DbUpdatePrefPage_add_pre_post_script);
-        gd = new GridData();
-        gd.horizontalIndent = 10;
-        btnAddPrePostScript.setLayoutData(gd);
-        btnAddPrePostScript.setSelection(prefs.getBooleanOfDbUpdatePref(
-                DB_UPDATE_PREF.ADD_PRE_POST_SCRIPT));
+        btndropBeforeCreate = createCustomButton(panel, DB_UPDATE_PREF.DROP_BEFORE_CREATE,
+                Messages.DbUpdatePrefPage_option_drop_object);
+
+        btnAddPrePostScript = createCustomButton(panel, DB_UPDATE_PREF.DROP_BEFORE_CREATE,
+                Messages.DbUpdatePrefPage_add_pre_post_script);
 
         if (!isMsSql) {
-            btnCheckFuncBodies = new Button(panel, SWT.CHECK);
-            btnCheckFuncBodies.setText(Messages.dbUpdatePrefPage_check_function_bodies);
-            gd = new GridData();
-            gd.horizontalIndent = 10;
-            btnCheckFuncBodies.setLayoutData(gd);
-            btnCheckFuncBodies.setSelection(prefs.getBooleanOfDbUpdatePref(
-                    DB_UPDATE_PREF.CHECK_FUNCTION_BODIES));
+            btnCheckFuncBodies = createCustomButton(panel, DB_UPDATE_PREF.CHECK_FUNCTION_BODIES,
+                    Messages.dbUpdatePrefPage_check_function_bodies);
 
-            btnAlterColUsingExpr = new Button(panel, SWT.CHECK);
-            btnAlterColUsingExpr.setText(Messages.dbUpdatePrefPage_switch_on_off_using);
-            gd = new GridData();
-            gd.horizontalIndent = 10;
-            btnAlterColUsingExpr.setLayoutData(gd);
-            btnAlterColUsingExpr.setSelection(prefs.getBooleanOfDbUpdatePref(
-                    DB_UPDATE_PREF.USING_ON_OFF));
+            btnAlterColUsingExpr = createCustomButton(panel, DB_UPDATE_PREF.USING_ON_OFF,
+                    Messages.dbUpdatePrefPage_switch_on_off_using);
         }
 
-        btnScriptFromSelObjs = new Button(panel, SWT.CHECK);
-        btnScriptFromSelObjs.setText(Messages.DbUpdatePrefPage_script_from_selected_objs);
-        gd = new GridData();
-        gd.horizontalIndent = 10;
-        btnScriptFromSelObjs.setLayoutData(gd);
-        btnScriptFromSelObjs.setSelection(prefs.getBooleanOfDbUpdatePref(
-                DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS));
+        btnScriptFromSelObjs = createCustomButton(panel, DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS,
+                Messages.DbUpdatePrefPage_script_from_selected_objs);
 
-        btnDataMovementMode = new Button(panel, SWT.CHECK);
-        btnDataMovementMode.setText(Messages.DbUpdatePrefPage_allow_data_movement);
-        gd = new GridData();
-        gd.horizontalIndent = 10;
-        btnDataMovementMode.setLayoutData(gd);
-        btnDataMovementMode.setSelection(prefs.getBooleanOfDbUpdatePref(
-                DB_UPDATE_PREF.DATA_MOVEMENT_MODE));
+        btnDataMovementMode = createCustomButton(panel, DB_UPDATE_PREF.DATA_MOVEMENT_MODE,
+                Messages.DbUpdatePrefPage_allow_data_movement);
 
         return panel;
+    }
+
+    private Button createCustomButton(Composite panel, String prefName, String text) {
+        GridData gd = new GridData();
+        Button btn = new Button(panel, SWT.CHECK);
+        gd.horizontalIndent = 10;
+        btn.setLayoutData(gd);
+        btn.setText(text);
+        btn.setSelection(prefs.getBooleanOfDbUpdatePref(prefName));
+        return btn;
     }
 
     @Override
@@ -155,6 +124,8 @@ public class ApplyCustomDialog extends Dialog {
                 btnScriptAddTransact.getSelection());
         customSettings.put(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY,
                 btnCreateIdxConcurrent.getSelection());
+        customSettings.put(DB_UPDATE_PREF.PRINT_CONSTRAINT_NOT_VALID,
+                btnConstraintNotValid.getSelection());
         customSettings.put(DB_UPDATE_PREF.GENERATE_EXISTS,
                 btnGenerateExists.getSelection());
         customSettings.put(DB_UPDATE_PREF.DROP_BEFORE_CREATE,
