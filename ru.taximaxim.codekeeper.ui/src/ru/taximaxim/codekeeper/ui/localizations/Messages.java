@@ -930,7 +930,6 @@ public final class Messages extends NLS {
     public static String e_mail;
 
     public static String edit;
-    public static String feedback_message;
     public static String add_log;
 
     public static String ApplyCustomDialog_constraint_not_valid;
