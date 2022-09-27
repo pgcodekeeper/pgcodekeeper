@@ -129,8 +129,8 @@ public class DbStoreEditorDialog extends TrayDialog {
                 String dbUser = ""; //$NON-NLS-1$
                 String dbPass = ""; //$NON-NLS-1$
                 String dbGroup = ""; //$NON-NLS-1$
-                String entryName = ""; //$NON-NLS-1$;
-                String domain = ""; //$NON-NLS-1$;
+                String entryName = ""; //$NON-NLS-1$
+                String domain = ""; //$NON-NLS-1$
                 List<String> ignoreList = null;
                 List<Entry<String, String>> properties = null;
 
@@ -162,7 +162,7 @@ public class DbStoreEditorDialog extends TrayDialog {
                     txtDumpParameters.setText(dbInitial.getPgdumpCustomParams());
                     if (dbInitial.isMsSql()) {
                         String msTrustCert = dbInitial.getProperties().get(ApgdiffConsts.TRUST_CERT);
-                        btnMsCert.setSelection(msTrustCert != null ? Boolean.valueOf(msTrustCert) : true);
+                        btnMsCert.setSelection(msTrustCert == null || Boolean.parseBoolean(msTrustCert));
                     }
                 }
 
@@ -175,7 +175,7 @@ public class DbStoreEditorDialog extends TrayDialog {
                     cmbGroups.setSelection(new StructuredSelection(dbGroup));
                 }
                 txtName.setText(entryName);
-                txtDomain.setText(domain != null ? domain : ""); //$NON-NLS-1$;
+                txtDomain.setText(domain != null ? domain : ""); //$NON-NLS-1$
                 btnGenerateName.setSelection(generateEntryName);
                 ignoreListEditor.setInputList(ignoreList != null ? ignoreList : new ArrayList<>());
                 propertyListEditor.setInputList(properties != null ? properties : new ArrayList<>());
@@ -303,6 +303,7 @@ public class DbStoreEditorDialog extends TrayDialog {
         btnMsCert = new Button(tabAreaDb, SWT.CHECK);
         btnMsCert.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, false, false, 3, 1));
         btnMsCert.setText(Messages.DbStoreEditorDialog_trust_mssql);
+        btnMsCert.setEnabled(false);
         btnMsCert.setSelection(true);
 
         new Label(tabAreaDb, SWT.NONE).setText(Messages.domain);
