@@ -185,7 +185,7 @@ public class DBStoreMenu {
         if (dbInfo.equals(selection)) {
             dbAction.setChecked(true);
             String group = dbInfo.getDbGroup();
-            submenu.setMenuText("\u2022 " + (group.isEmpty() ? Messages.DbMenu_no_group : group)); //$NON-NLS-1$
+            submenu.setMenuText((group.isEmpty() ? Messages.DbMenu_no_group : group) + " \u2022"); //$NON-NLS-1$
         }
     }
 }
