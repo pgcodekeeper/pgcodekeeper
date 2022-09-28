@@ -1,4 +1,4 @@
-package cz.startnet.utils.pgdiff;
+package ru.taximaxim.codekeeper.core;
 
 import java.io.IOException;
 

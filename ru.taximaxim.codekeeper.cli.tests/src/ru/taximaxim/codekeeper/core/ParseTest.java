@@ -1,4 +1,4 @@
-package cz.startnet.utils.pgdiff;
+package ru.taximaxim.codekeeper.core;
 
 import static org.junit.Assert.assertTrue;
 
@@ -14,9 +14,6 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import ru.taximaxim.codekeeper.cli.Main;
-import ru.taximaxim.codekeeper.core.TestUtils;
-import ru.taximaxim.codekeeper.core.Utils;
-import ru.taximaxim.codekeeper.core.PgDiffTest;
 
 @RunWith(value = Parameterized.class)
 public class ParseTest {

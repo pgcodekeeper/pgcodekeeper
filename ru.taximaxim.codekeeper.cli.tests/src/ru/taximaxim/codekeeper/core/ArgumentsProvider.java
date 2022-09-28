@@ -1,4 +1,4 @@
-package cz.startnet.utils.pgdiff;
+package ru.taximaxim.codekeeper.core;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -6,9 +6,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import ru.taximaxim.codekeeper.core.Utils;
-import ru.taximaxim.codekeeper.core.FILES_POSTFIX;
-import ru.taximaxim.codekeeper.core.PgDiffTest;
 import ru.taximaxim.codekeeper.core.fileutils.TempDir;
 
 public abstract class ArgumentsProvider {

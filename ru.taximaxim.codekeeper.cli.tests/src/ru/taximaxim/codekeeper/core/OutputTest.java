@@ -1,4 +1,4 @@
-package cz.startnet.utils.pgdiff;
+package ru.taximaxim.codekeeper.core;
 
 import static org.junit.Assert.assertEquals;
 
@@ -22,9 +22,6 @@ import org.osgi.framework.BundleContext;
 import ru.taximaxim.codekeeper.cli.Activator;
 import ru.taximaxim.codekeeper.cli.Main;
 import ru.taximaxim.codekeeper.cli.localizations.Messages;
-import ru.taximaxim.codekeeper.core.TestUtils;
-import ru.taximaxim.codekeeper.core.Utils;
-import ru.taximaxim.codekeeper.core.FILES_POSTFIX;
 
 @RunWith(value = Parameterized.class)
 public class OutputTest {
