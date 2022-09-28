@@ -1422,7 +1422,7 @@ public class DiffTableViewer extends Composite {
                 filterName = null;
                 regExPattern = null;
             } else {
-                isQualifiedName = value.contains(".") && !useRegEx;
+                isQualifiedName = !useRegEx && value.contains(".");
                 filterName = value.toLowerCase(Locale.ROOT);
                 try {
                     regExPattern = Pattern.compile(value, Pattern.CASE_INSENSITIVE);
