@@ -6,7 +6,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 
-import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
+import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 
 public abstract class CacheableLibrary extends AbstractLibrary {
 

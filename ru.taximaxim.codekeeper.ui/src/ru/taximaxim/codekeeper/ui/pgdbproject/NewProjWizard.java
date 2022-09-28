@@ -45,10 +45,10 @@ import org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard;
 import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 import org.osgi.service.prefs.BackingStoreException;
 
-import cz.startnet.utils.pgdiff.loader.JdbcConnector;
-import cz.startnet.utils.pgdiff.loader.JdbcRunner;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
+import ru.taximaxim.codekeeper.core.loader.JdbcRunner;
+import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
@@ -112,7 +112,7 @@ implements IExecutableExtension, INewWizard {
             boolean applyProps = false;
             if (isPostgres) {
                 String timezone = pageDb.getTimeZone();
-                if (!timezone.isEmpty() && !ApgdiffConsts.UTC.equals(timezone)) {
+                if (!timezone.isEmpty() && !Consts.UTC.equals(timezone)) {
                     props.getPrefs().put(PROJ_PREF.TIMEZONE, timezone);
                     applyProps = true;
                 }
@@ -175,7 +175,7 @@ implements IExecutableExtension, INewWizard {
 
         boolean forceUnixNewlines = props.getPrefs().getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true);
         String charset = props.getProjectCharset();
-        String timezone = props.getPrefs().get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC);
+        String timezone = props.getPrefs().get(PROJ_PREF.TIMEZONE, Consts.UTC);
 
         if (!pageDb.isInit()) {
             src = DbSource.fromDbObject(new PgDatabase(), "Empty DB"); //$NON-NLS-1$
@@ -348,7 +348,7 @@ class PageDb extends WizardPage {
         charsetCombo.getCombo().setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
         charsetCombo.setContentProvider(ArrayContentProvider.getInstance());
         charsetCombo.setInput(UIConsts.ENCODINGS);
-        charsetCombo.setSelection(new StructuredSelection(ApgdiffConsts.UTF_8));
+        charsetCombo.setSelection(new StructuredSelection(Consts.UTF_8));
 
         //time zones
         if (isPostgres) {
@@ -358,7 +358,7 @@ class PageDb extends WizardPage {
             timezoneCombo.getCombo().setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false));
             timezoneCombo.setContentProvider(ArrayContentProvider.getInstance());
             timezoneCombo.setInput(UIConsts.TIME_ZONES);
-            timezoneCombo.setSelection(new StructuredSelection(ApgdiffConsts.UTC));
+            timezoneCombo.setSelection(new StructuredSelection(Consts.UTC));
             timezoneCombo.getCombo().addModifyListener(e -> timeZoneWarn());
 
             btnGetTz = new Button(container, SWT.PUSH);
@@ -376,7 +376,7 @@ class PageDb extends WizardPage {
                         TimeZoneProgress progress = new TimeZoneProgress(dbinfo);
                         getContainer().run(true, true, progress);
                         String timezone = progress.timezone;
-                        timezoneCombo.getCombo().setText(timezone == null ? ApgdiffConsts.UTC : timezone);
+                        timezoneCombo.getCombo().setText(timezone == null ? Consts.UTC : timezone);
                     } catch (InterruptedException ex) {
                         // cancelled
                     } catch (InvocationTargetException ex) {
@@ -417,8 +417,8 @@ class PageDb extends WizardPage {
     private void timeZoneWarn() {
         String tz =  timezoneCombo.getCombo().getText();
         GridData data = (GridData) lblWarnPosix.getLayoutData();
-        if ((!ApgdiffConsts.UTC.equals(tz)
-                && tz.startsWith(ApgdiffConsts.UTC)) == data.exclude)  {
+        if ((!Consts.UTC.equals(tz)
+                && tz.startsWith(Consts.UTC)) == data.exclude)  {
             lblWarnPosix.setVisible(data.exclude);
             data.exclude = !data.exclude;
             lblWarnPosix.getParent().layout();
@@ -445,7 +445,7 @@ class PageDb extends WizardPage {
 
             JdbcConnector connector = new JdbcConnector(dbinfo.getDbHost(), dbinfo.getDbPort(),
                     dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(), dbinfo.getProperties(),
-                    dbinfo.isReadOnly(), ApgdiffConsts.UTC);
+                    dbinfo.isReadOnly(), Consts.UTC);
 
             try (Connection connection = connector.getConnection();
                     Statement st = connection.createStatement();

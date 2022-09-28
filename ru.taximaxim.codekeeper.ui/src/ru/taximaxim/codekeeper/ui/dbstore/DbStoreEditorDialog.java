@@ -40,9 +40,9 @@ import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Text;
 
-import cz.startnet.utils.pgdiff.loader.JdbcConnector;
-import cz.startnet.utils.pgdiff.loader.JdbcMsConnector;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
+import ru.taximaxim.codekeeper.core.loader.JdbcMsConnector;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.CMD_VARS;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -161,7 +161,7 @@ public class DbStoreEditorDialog extends TrayDialog {
                     txtDumpFile.setText(dbInitial.getPgdumpExePath());
                     txtDumpParameters.setText(dbInitial.getPgdumpCustomParams());
                     if (dbInitial.isMsSql()) {
-                        String msTrustCert = dbInitial.getProperties().get(ApgdiffConsts.TRUST_CERT);
+                        String msTrustCert = dbInitial.getProperties().get(Consts.TRUST_CERT);
                         btnMsCert.setSelection(msTrustCert == null || Boolean.parseBoolean(msTrustCert));
                     }
                 }
@@ -495,7 +495,7 @@ public class DbStoreEditorDialog extends TrayDialog {
                                 txtDbUser.getText(), txtDbPass.getText(),
                                 txtDbName.getText(), propertyListEditor.getList().stream()
                                 .collect(Collectors.toMap(Entry::getKey, Entry::getValue)),
-                                btnReadOnly.getSelection(), ApgdiffConsts.UTC);
+                                btnReadOnly.getSelection(), Consts.UTC);
                     }
 
                     try (Connection connection = connector.getConnection()) {
@@ -561,7 +561,7 @@ public class DbStoreEditorDialog extends TrayDialog {
             Map<String, String> properties = propertyListEditor.getList().stream()
                     .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
             if (isMsSql) {
-                properties.put(ApgdiffConsts.TRUST_CERT, String.valueOf(btnMsCert.getSelection()));
+                properties.put(Consts.TRUST_CERT, String.valueOf(btnMsCert.getSelection()));
             }
 
             dbInfo = new DbInfo(txtName.getText(), txtDbName.getText(),

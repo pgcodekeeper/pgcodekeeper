@@ -21,14 +21,14 @@ import org.kohsuke.args4j.OptionHandlerRegistry;
 import org.kohsuke.args4j.ParserProperties;
 import org.osgi.framework.BundleContext;
 
-import cz.startnet.utils.pgdiff.DangerStatement;
-import cz.startnet.utils.pgdiff.PgDiffArguments;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.cli.localizations.Messages;
 import ru.taximaxim.codekeeper.cli.opthandlers.BooleanNoDefOptionHandler;
 import ru.taximaxim.codekeeper.cli.opthandlers.DangerStatementOptionHandler;
 import ru.taximaxim.codekeeper.cli.opthandlers.DbObjTypeOptionHandler;
+import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.DangerStatement;
+import ru.taximaxim.codekeeper.core.PgDiffArguments;
+import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 
 /**
  * Extension of {@link PgDiffArguments} with annotated CLI fields.
@@ -54,8 +54,8 @@ public class CliArgs extends PgDiffArguments {
         this.targetLibs = new ArrayList<>();
         this.targetLibsWithoutPriv = new ArrayList<>();
         this.graphNames = new ArrayList<>();
-        this.inCharsetName = ApgdiffConsts.UTF_8;
-        this.outCharsetName = ApgdiffConsts.UTF_8;
+        this.inCharsetName = Consts.UTF_8;
+        this.outCharsetName = Consts.UTF_8;
         this.graphDepth = DEFAULT_DEPTH;
     }
     // SONAR-ON

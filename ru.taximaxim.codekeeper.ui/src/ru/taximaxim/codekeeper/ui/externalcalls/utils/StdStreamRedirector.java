@@ -9,7 +9,7 @@ import java.io.InputStreamReader;
 import java.text.MessageFormat;
 import java.util.concurrent.atomic.AtomicReference;
 
-import cz.startnet.utils.pgdiff.IProgressReporter;
+import ru.taximaxim.codekeeper.core.IProgressReporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.consoles.UiProgressReporter;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;

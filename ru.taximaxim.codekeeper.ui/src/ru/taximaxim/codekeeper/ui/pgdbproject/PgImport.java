@@ -28,7 +28,7 @@ import org.eclipse.ui.IWorkingSetManager;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.WorkingSetGroup;
 
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.WORKING_SET;
@@ -99,7 +99,7 @@ class PgImport extends WizardPage {
         charsetCombo.getCombo().setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
         charsetCombo.setContentProvider(ArrayContentProvider.getInstance());
         charsetCombo.setInput(UIConsts.ENCODINGS);
-        charsetCombo.setSelection(new StructuredSelection(ApgdiffConsts.UTF_8));
+        charsetCombo.setSelection(new StructuredSelection(Consts.UTF_8));
 
         btnMsSql = new Button(area, SWT.CHECK);
         btnMsSql.setText(Messages.PgImport_import_as_mssql);

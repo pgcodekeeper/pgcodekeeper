@@ -38,16 +38,16 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.BuildAction;
 import org.eclipse.ui.ide.ResourceUtil;
 
-import cz.startnet.utils.pgdiff.PgDiffArguments;
-import cz.startnet.utils.pgdiff.loader.DatabaseLoader;
-import cz.startnet.utils.pgdiff.loader.FullAnalyze;
-import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
-import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgObjLocation;
-import cz.startnet.utils.pgdiff.schema.meta.MetaStatement;
-import cz.startnet.utils.pgdiff.schema.meta.MetaUtils;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
+import ru.taximaxim.codekeeper.core.Utils;
+import ru.taximaxim.codekeeper.core.PgDiffArguments;
+import ru.taximaxim.codekeeper.core.loader.DatabaseLoader;
+import ru.taximaxim.codekeeper.core.loader.FullAnalyze;
+import ru.taximaxim.codekeeper.core.loader.ParserListenerMode;
+import ru.taximaxim.codekeeper.core.loader.PgDumpLoader;
+import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
+import ru.taximaxim.codekeeper.core.schema.meta.MetaStatement;
+import ru.taximaxim.codekeeper.core.schema.meta.MetaUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
@@ -110,7 +110,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         try {
             Path path = getPathToObject(name);
             Files.createDirectories(path.getParent());
-            ApgdiffUtils.serialize(path, this);
+            Utils.serialize(path, this);
         } catch (IOException e) {
             Log.log(Log.LOG_DEBUG, "Error while serialize parser!", e); //$NON-NLS-1$
         }

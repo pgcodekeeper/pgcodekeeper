@@ -18,19 +18,19 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 
-import cz.startnet.utils.pgdiff.IProgressReporter;
-import cz.startnet.utils.pgdiff.PgDiffArguments;
-import cz.startnet.utils.pgdiff.loader.DatabaseLoader;
-import cz.startnet.utils.pgdiff.loader.JdbcConnector;
-import cz.startnet.utils.pgdiff.loader.JdbcLoader;
-import cz.startnet.utils.pgdiff.loader.JdbcMsConnector;
-import cz.startnet.utils.pgdiff.loader.JdbcMsLoader;
-import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
-import cz.startnet.utils.pgdiff.loader.ProjectLoader;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.fileutils.InputStreamProvider;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreSchemaList;
+import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.IProgressReporter;
+import ru.taximaxim.codekeeper.core.PgDiffArguments;
+import ru.taximaxim.codekeeper.core.fileutils.InputStreamProvider;
+import ru.taximaxim.codekeeper.core.loader.DatabaseLoader;
+import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
+import ru.taximaxim.codekeeper.core.loader.JdbcLoader;
+import ru.taximaxim.codekeeper.core.loader.JdbcMsConnector;
+import ru.taximaxim.codekeeper.core.loader.JdbcMsLoader;
+import ru.taximaxim.codekeeper.core.loader.PgDumpLoader;
+import ru.taximaxim.codekeeper.core.loader.ProjectLoader;
+import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
+import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
@@ -107,7 +107,7 @@ public abstract class DbSource {
 
     static PgDiffArguments getPgDiffArgs(String charset, boolean forceUnixNewlines,
             boolean msSql, IProject proj, Map<String, Boolean> oneTimePrefs) {
-        return getPgDiffArgs(charset, ApgdiffConsts.UTC, forceUnixNewlines, msSql,
+        return getPgDiffArgs(charset, Consts.UTC, forceUnixNewlines, msSql,
                 proj, oneTimePrefs);
     }
 
@@ -446,7 +446,7 @@ class DbSourceJdbc extends DbSource {
     protected PgDatabase loadInternal(SubMonitor monitor)
             throws IOException, InterruptedException {
         monitor.subTask(Messages.reading_db_from_jdbc);
-        PgDiffArguments args = getPgDiffArgs(ApgdiffConsts.UTF_8, forceUnixNewlines,
+        PgDiffArguments args = getPgDiffArgs(Consts.UTF_8, forceUnixNewlines,
                 isMsSql, proj, oneTimePrefs);
 
         IgnoreSchemaList ignoreShemaList = null;

@@ -8,8 +8,8 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreSchemaList;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoredObject;
+import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
+import ru.taximaxim.codekeeper.core.model.difftree.IgnoredObject;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.CheckEditingSupport;
 import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.CheckEditingSupport.BooleanChangeValues;

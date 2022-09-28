@@ -15,8 +15,8 @@
     <version>${revision}</version>
     <packaging>pom</packaging>
     <modules>
-        <module>apgdiff</module>
-        <module>apgdiff.tests</module>
+        <module>ru.taximaxim.codekeeper.core</module>
+        <module>ru.taximaxim.codekeeper.core.tests</module>
         <module>ru.taximaxim.codekeeper.ui</module>
         <module>ru.taximaxim.codekeeper.ui.tests</module>
         <module>ru.taximaxim.codekeeper.cli</module>

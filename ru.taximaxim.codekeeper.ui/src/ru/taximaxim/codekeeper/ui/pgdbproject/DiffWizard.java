@@ -30,9 +30,9 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PartInitException;
 
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
+import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.model.difftree.IgnoreList;
+import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
@@ -228,7 +228,7 @@ class PageDiff extends WizardPage implements Listener {
         cmbTimezone.setContentProvider(ArrayContentProvider.getInstance());
         cmbTimezone.setLabelProvider(new LabelProvider());
         cmbTimezone.setInput(UIConsts.TIME_ZONES);
-        cmbTimezone.getCombo().setText(ApgdiffConsts.UTC);
+        cmbTimezone.getCombo().setText(Consts.UTC);
         cmbTimezone.getCombo().addModifyListener(e -> timeZoneWarn());
 
         lblWarnPosix = new CLabel(container, SWT.NONE);
@@ -357,8 +357,8 @@ class PageDiff extends WizardPage implements Listener {
     private void timeZoneWarn() {
         String tz = cmbTimezone.getCombo().getText();
         GridData data = (GridData) lblWarnPosix.getLayoutData();
-        if ((!ApgdiffConsts.UTC.equals(tz)
-                && tz.startsWith(ApgdiffConsts.UTC)) == data.exclude)  {
+        if ((!Consts.UTC.equals(tz)
+                && tz.startsWith(Consts.UTC)) == data.exclude)  {
             lblWarnPosix.setVisible(data.exclude);
             data.exclude = !data.exclude;
             lblWarnPosix.getParent().layout();

@@ -10,7 +10,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 
-import cz.startnet.utils.pgdiff.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class ManualDepciesDialog extends TrayDialog {

@@ -4,7 +4,7 @@ import java.nio.file.Path;
 
 import org.eclipse.swt.graphics.Image;
 
-import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
+import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 

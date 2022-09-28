@@ -31,8 +31,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.osgi.framework.Version;
 
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
+import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.Consts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
@@ -86,13 +86,13 @@ public final class OpenProjectUtils {
         message.setLength(0);
 
         File markerFile = new File(proj.getLocation().toFile(),
-                ApgdiffConsts.FILENAME_WORKING_DIR_MARKER);
+                Consts.FILENAME_WORKING_DIR_MARKER);
         try (FileInputStream stream = new FileInputStream(markerFile)) {
             Properties props = new Properties();
             props.load(stream);
 
             String verStr = props.getProperty(
-                    ApgdiffConsts.VERSION_PROP_NAME, "").trim(); //$NON-NLS-1$
+                    Consts.VERSION_PROP_NAME, "").trim(); //$NON-NLS-1$
             if (verStr.isEmpty()) {
                 message.append(Messages.OpenProjectUtils_unknown_proj_version);
                 return true;
@@ -105,12 +105,12 @@ public final class OpenProjectUtils {
                 message.append(Messages.OpenProjectUtils_unknown_proj_version);
                 return true;
             }
-            Version curVer = new Version(ApgdiffConsts.EXPORT_CURRENT_VERSION);
+            Version curVer = new Version(Consts.EXPORT_CURRENT_VERSION);
             if (ver.compareTo(curVer) > 0) {
                 message.append(Messages.OpenProjectUtils_high_proj_version)
                 .append(verStr)
                 .append(" > ") //$NON-NLS-1$
-                .append(ApgdiffConsts.EXPORT_CURRENT_VERSION);
+                .append(Consts.EXPORT_CURRENT_VERSION);
                 return false;
             }
             if (ver.compareTo(curVer) < 0) {

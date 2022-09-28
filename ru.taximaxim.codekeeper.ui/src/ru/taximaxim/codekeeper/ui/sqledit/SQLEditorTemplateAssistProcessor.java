@@ -21,7 +21,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
+import ru.taximaxim.codekeeper.core.PgDiffUtils;
 
 public class SQLEditorTemplateAssistProcessor extends TemplateCompletionProcessor {
 

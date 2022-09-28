@@ -1,7 +1,7 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
-import ru.taximaxim.codekeeper.apgdiff.sql.Keyword;
-import ru.taximaxim.codekeeper.apgdiff.sql.Keyword.KeywordCategory;
+import ru.taximaxim.codekeeper.core.sql.Keyword;
+import ru.taximaxim.codekeeper.core.sql.Keyword.KeywordCategory;
 
 public class SqlPostgresSyntax {
 

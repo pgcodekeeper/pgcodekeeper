@@ -20,12 +20,12 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import cz.startnet.utils.pgdiff.PgDiffArguments;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
-import ru.taximaxim.codekeeper.apgdiff.fileutils.TempDir;
-import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
+import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.TestUtils;
+import ru.taximaxim.codekeeper.core.PgDiffArguments;
+import ru.taximaxim.codekeeper.core.fileutils.TempDir;
+import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
+import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
@@ -34,7 +34,7 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public class ProjectUpdaterTest {
 
-    private static final String ENCODING = ApgdiffConsts.UTF_8;
+    private static final String ENCODING = Consts.UTF_8;
     private PgDatabase dbOld;
     private PgDatabase  dbNew;
     private TempDir workingDir;
@@ -44,12 +44,12 @@ public class ProjectUpdaterTest {
     public void before() throws IOException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(ENCODING);
-        dbOld = ApgdiffTestUtils.loadTestDump(
+        dbOld = TestUtils.loadTestDump(
                 "old.sql", ProjectUpdaterTest.class, args);
 
         args = new PgDiffArguments();
         args.setInCharsetName(ENCODING);
-        dbNew = ApgdiffTestUtils.loadTestDump(
+        dbNew = TestUtils.loadTestDump(
                 "new.sql", ProjectUpdaterTest.class, args);
 
         workingDir = new TempDir("test_new"); //$NON-NLS-1$
