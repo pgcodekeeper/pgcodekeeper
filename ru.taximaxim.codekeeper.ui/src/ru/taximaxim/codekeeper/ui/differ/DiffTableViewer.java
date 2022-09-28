@@ -1415,14 +1415,14 @@ public class DiffTableViewer extends Composite {
         private String filterName;
         private boolean useRegEx;
         private Pattern regExPattern;
-        private boolean filterSchema;
+        private boolean isQualifiedName;
 
         public void setFilter(String value) {
             if (value == null || value.isEmpty()) {
                 filterName = null;
                 regExPattern = null;
             } else {
-                filterSchema = value.contains(".") && !useRegEx;
+                isQualifiedName = value.contains(".") && !useRegEx;
                 filterName = value.toLowerCase(Locale.ROOT);
                 try {
                     regExPattern = Pattern.compile(value, Pattern.CASE_INSENSITIVE);
@@ -1534,7 +1534,7 @@ public class DiffTableViewer extends Composite {
         }
 
         private String getName(TreeElement el) {
-            return filterSchema ? el.getQualifiedName() : el.getName();
+            return isQualifiedName ? el.getQualifiedName() : el.getName();
         }
 
         private Region getMatchingLocation(String text, String filter, Pattern regExPattern) {
