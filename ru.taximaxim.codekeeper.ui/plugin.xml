@@ -73,12 +73,6 @@
         </command>
         <command
             categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
-            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.FeedBack"
-            id="ru.taximaxim.codekeeper.ui.feedBack"
-            name="%command.name.feedback">
-        </command>
-        <command
-            categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
             id="ru.taximaxim.codekeeper.ui.command.QuickUpdate"
             name="%command.commandname.QuickUpdate">
         </command>
@@ -408,12 +402,6 @@
                 <command
                     commandId="ru.taximaxim.codekeeper.ui.command.GetSystemObjects"
                     label="%command.commandname.GetSystemObjects"
-                    style="push">
-                </command>
-                <command
-                    commandId="ru.taximaxim.codekeeper.ui.feedBack"
-                    label="%command.label.feedback"
-                    mnemonic="%command.mnemonic.feedback"
                     style="push">
                 </command>
                 <command

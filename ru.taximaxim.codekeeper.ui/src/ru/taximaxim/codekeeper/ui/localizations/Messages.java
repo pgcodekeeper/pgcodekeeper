@@ -930,30 +930,9 @@ public final class Messages extends NLS {
     public static String e_mail;
 
     public static String edit;
-    public static String feedback_message;
     public static String add_log;
 
     public static String ApplyCustomDialog_constraint_not_valid;
-
-    public static String FeedBackDialog_bad_response;
-
-    public static String FeedBackDialog_could_not_send;
-
-    public static String FeedBackDialog_empty_fields_message;
-
-    public static String FeedBackDialog_empty_fields_title;
-
-    public static String FeedBackDialog_failure_instruction;
-
-    public static String FeedBackDialog_feedback;
-
-    public static String FeedBackDialog_feedback_sent;
-
-    public static String FeedBackDialog_send;
-
-    public static String FeedBackDialog_subject;
-
-    public static String FeedBackDialog_thank_you;
 
     public static String FilterDialog_cancel;
 
