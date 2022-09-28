@@ -21,9 +21,9 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 
-import cz.startnet.utils.pgdiff.ContextLocation;
-import cz.startnet.utils.pgdiff.schema.PgObjLocation;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.ContextLocation;
+import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorInput;
@@ -46,7 +46,7 @@ public final class FileUtilsUi {
         if (part instanceof ITextEditor) {
             IDocumentProvider prov = ((ITextEditor) part).getDocumentProvider();
             if (prov instanceof TextFileDocumentProvider) {
-                ((TextFileDocumentProvider) prov).setEncoding(input, ApgdiffConsts.UTF_8);
+                ((TextFileDocumentProvider) prov).setEncoding(input, Consts.UTF_8);
                 prov.resetDocument(input);
             }
         }

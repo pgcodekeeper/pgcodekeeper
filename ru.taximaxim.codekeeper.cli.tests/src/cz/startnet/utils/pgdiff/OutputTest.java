@@ -19,18 +19,19 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.osgi.framework.BundleContext;
 
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.cli.Activator;
 import ru.taximaxim.codekeeper.cli.Main;
 import ru.taximaxim.codekeeper.cli.localizations.Messages;
+import ru.taximaxim.codekeeper.core.TestUtils;
+import ru.taximaxim.codekeeper.core.Utils;
+import ru.taximaxim.codekeeper.core.FILES_POSTFIX;
 
 @RunWith(value = Parameterized.class)
 public class OutputTest {
 
     @Parameters
     public static Iterable<Object[]> parameters() {
-        return ApgdiffTestUtils.getParameters(new Object[][] {
+        return TestUtils.getParameters(new Object[][] {
             {new UsageArgumentsProvider()},
             {new VersionArgumentsProvider()},
             {new CharsetsArgumentsProvider()},
@@ -106,7 +107,7 @@ class UsageArgumentsProvider extends ArgumentsProvider {
     @Override
     public String output() {
         try {
-            return new String(Files.readAllBytes(ApgdiffUtils.getFileFromOsgiRes(
+            return new String(Files.readAllBytes(Utils.getFileFromOsgiRes(
                     OutputTest.class.getResource("usage_check.txt"))),
                     StandardCharsets.UTF_8);
         } catch (IOException | URISyntaxException ex) {
@@ -166,7 +167,7 @@ class EmptyArgumentsProvider extends ArgumentsProvider {
     @Override
     public String output() {
         try {
-            return new String(Files.readAllBytes(ApgdiffUtils.getFileFromOsgiRes(
+            return new String(Files.readAllBytes(Utils.getFileFromOsgiRes(
                     OutputTest.class.getResource("usage_check.txt"))),
                     StandardCharsets.UTF_8);
         } catch (IOException | URISyntaxException ex) {
@@ -538,7 +539,7 @@ class OverrideArgumentsProvider extends ArgumentsProvider {
     protected String[] args() throws URISyntaxException, IOException {
         Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
         Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
-        Path lib = ApgdiffUtils.getFileFromOsgiRes(OutputTest.class.getResource("lib.sql"));
+        Path lib = Utils.getFileFromOsgiRes(OutputTest.class.getResource("lib.sql"));
 
         return new String[] {"-o", getDiffResultFile().toString(),
                 "-t", fOriginal.toString(), "-s", fNew.toString(),

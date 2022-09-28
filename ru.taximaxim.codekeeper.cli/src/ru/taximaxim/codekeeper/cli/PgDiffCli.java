@@ -4,14 +4,14 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
 
-import cz.startnet.utils.pgdiff.PgCodekeeperException;
-import cz.startnet.utils.pgdiff.PgDiff;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import ru.taximaxim.codekeeper.apgdiff.fileutils.ProjectUpdater;
-import ru.taximaxim.codekeeper.apgdiff.ignoreparser.IgnoreParser;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
+import ru.taximaxim.codekeeper.core.PgCodekeeperException;
+import ru.taximaxim.codekeeper.core.PgDiff;
+import ru.taximaxim.codekeeper.core.fileutils.ProjectUpdater;
+import ru.taximaxim.codekeeper.core.ignoreparser.IgnoreParser;
+import ru.taximaxim.codekeeper.core.model.difftree.DiffTree;
+import ru.taximaxim.codekeeper.core.model.difftree.IgnoreList;
+import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
+import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 
 public class PgDiffCli extends PgDiff {
 

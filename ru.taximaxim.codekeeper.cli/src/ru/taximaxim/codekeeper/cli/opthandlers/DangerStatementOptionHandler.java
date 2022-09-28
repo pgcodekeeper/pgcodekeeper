@@ -8,7 +8,7 @@ import org.kohsuke.args4j.OptionDef;
 import org.kohsuke.args4j.spi.EnumOptionHandler;
 import org.kohsuke.args4j.spi.Setter;
 
-import cz.startnet.utils.pgdiff.DangerStatement;
+import ru.taximaxim.codekeeper.core.DangerStatement;
 
 public class DangerStatementOptionHandler extends EnumOptionHandler<DangerStatement> {
 

@@ -3,9 +3,9 @@ package ru.taximaxim.codekeeper.ui.formatter;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.text.edits.TextEdit;
 
-import cz.startnet.utils.pgdiff.formatter.FileFormatter;
-import cz.startnet.utils.pgdiff.formatter.FormatConfiguration;
-import cz.startnet.utils.pgdiff.formatter.FormatConfiguration.IndentType;
+import ru.taximaxim.codekeeper.core.formatter.FileFormatter;
+import ru.taximaxim.codekeeper.core.formatter.FormatConfiguration;
+import ru.taximaxim.codekeeper.core.formatter.FormatConfiguration.IndentType;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.FORMATTER_PREF;
 

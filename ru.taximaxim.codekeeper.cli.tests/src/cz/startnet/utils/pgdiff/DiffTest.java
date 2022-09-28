@@ -21,16 +21,18 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.cli.Main;
+import ru.taximaxim.codekeeper.core.TestUtils;
+import ru.taximaxim.codekeeper.core.Utils;
+import ru.taximaxim.codekeeper.core.FILES_POSTFIX;
+import ru.taximaxim.codekeeper.core.PgDiffTest;
 
 @RunWith(value = Parameterized.class)
 public class DiffTest {
 
     @Parameters
     public static Iterable<Object[]> parameters() {
-        return ApgdiffTestUtils.getParameters(new Object[][] {
+        return TestUtils.getParameters(new Object[][] {
             {new SourceTargerArgumentsProvider()},
             {new AddTestArgumentsProvider()},
             {new ModifyTestArgumentsProvider()},
@@ -281,7 +283,7 @@ class FlagsArgumentsProvider extends ArgumentsProvider {
     @Override
     public Path getPredefinedResultFile() throws URISyntaxException, IOException {
         URL resourceUrl = PgDiffTest.class.getResource("MainTest_" + resName + FILES_POSTFIX.DIFF_SQL);
-        return ApgdiffUtils.getFileFromOsgiRes(resourceUrl);
+        return Utils.getFileFromOsgiRes(resourceUrl);
     }
 }
 
@@ -296,10 +298,10 @@ class IgnoreListsArgumentsProvider extends ArgumentsProvider {
 
     @Override
     protected String[] args() throws URISyntaxException, IOException {
-        Path black = ApgdiffUtils.getFileFromOsgiRes(DiffTest.class.getResource("black.ignore"));
-        Path white = ApgdiffUtils.getFileFromOsgiRes(DiffTest.class.getResource("white.ignore"));
-        Path old = ApgdiffUtils.getFileFromOsgiRes(PgDiffTest.class.getResource("ignore_old.sql"));
-        Path new_ = ApgdiffUtils.getFileFromOsgiRes(PgDiffTest.class.getResource("ignore_new.sql"));
+        Path black = Utils.getFileFromOsgiRes(DiffTest.class.getResource("black.ignore"));
+        Path white = Utils.getFileFromOsgiRes(DiffTest.class.getResource("white.ignore"));
+        Path old = Utils.getFileFromOsgiRes(PgDiffTest.class.getResource("ignore_old.sql"));
+        Path new_ = Utils.getFileFromOsgiRes(PgDiffTest.class.getResource("ignore_new.sql"));
 
         return new String[] {"--ignore-list", black.toString(),
                 "-I", white.toString(), "-o", getDiffResultFile().toString(),
@@ -339,7 +341,7 @@ class LibrariesArgumentsProvider extends ArgumentsProvider {
     protected String[] args() throws URISyntaxException, IOException {
         Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
         Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
-        Path lib = ApgdiffUtils.getFileFromOsgiRes(DiffTest.class.getResource("lib.sql"));
+        Path lib = Utils.getFileFromOsgiRes(DiffTest.class.getResource("lib.sql"));
 
         return new String[] {"-o", getDiffResultFile().toString(),
                 "-t", fOriginal.toString(), "-s", fNew.toString(),

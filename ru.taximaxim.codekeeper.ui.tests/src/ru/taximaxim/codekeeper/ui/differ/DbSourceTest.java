@@ -24,15 +24,15 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import cz.startnet.utils.pgdiff.PgDiffArguments;
-import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
-import ru.taximaxim.codekeeper.apgdiff.fileutils.TempDir;
-import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
-import ru.taximaxim.codekeeper.apgdiff.model.exporter.MsModelExporter;
+import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.TestUtils;
+import ru.taximaxim.codekeeper.core.Utils;
+import ru.taximaxim.codekeeper.core.PgDiffArguments;
+import ru.taximaxim.codekeeper.core.fileutils.TempDir;
+import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
+import ru.taximaxim.codekeeper.core.model.exporter.MsModelExporter;
+import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
+import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
@@ -46,8 +46,8 @@ public class DbSourceTest {
     @BeforeClass
     public static void initDb() throws IOException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();
-        args.setInCharsetName(ApgdiffConsts.UTF_8);
-        dbPredefined = ApgdiffTestUtils.loadTestDump(ApgdiffTestUtils.RESOURCE_DUMP, ApgdiffTestUtils.class, args);
+        args.setInCharsetName(Consts.UTF_8);
+        dbPredefined = TestUtils.loadTestDump(TestUtils.RESOURCE_DUMP, TestUtils.class, args);
 
         workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
         workspacePath = workspaceRoot.getLocation().toFile();
@@ -58,20 +58,20 @@ public class DbSourceTest {
     public void testDirTree() throws IOException, InterruptedException, CoreException {
         try(TempDir exportDir = new TempDir("pgcodekeeper-test")){
             Path dir = exportDir.get();
-            new ModelExporter(dir, dbPredefined, ApgdiffConsts.UTF_8).exportFull();
+            new ModelExporter(dir, dbPredefined, Consts.UTF_8).exportFull();
 
             performTest(DbSource.fromDirTree(true, dir.toAbsolutePath().toString(),
-                    ApgdiffConsts.UTF_8, false, null));
+                    Consts.UTF_8, false, null));
         }
     }
 
     @Test
     public void testFile() throws IOException, URISyntaxException, InterruptedException,
     CoreException {
-        URL urla = ApgdiffTestUtils.class.getResource(ApgdiffTestUtils.RESOURCE_DUMP);
+        URL urla = TestUtils.class.getResource(TestUtils.RESOURCE_DUMP);
 
-        performTest(DbSource.fromFile(true, ApgdiffUtils.getFileFromOsgiRes(urla),
-                ApgdiffConsts.UTF_8, false, null));
+        performTest(DbSource.fromFile(true, Utils.getFileFromOsgiRes(urla),
+                Consts.UTF_8, false, null));
     }
 
     @Test
@@ -83,7 +83,7 @@ public class DbSourceTest {
             IProject project = createProjectInWorkspace(dir.getFileName().toString(), false);
 
             // populate project with data
-            new ModelExporter(dir, dbPredefined, ApgdiffConsts.UTF_8).exportFull();
+            new ModelExporter(dir, dbPredefined, Consts.UTF_8).exportFull();
             project.refreshLocal(IResource.DEPTH_INFINITE, null);
 
             // create pgcodekeeperignoreschema file in tempDir
@@ -107,17 +107,17 @@ public class DbSourceTest {
             IProject project = createProjectInWorkspace(dir.getFileName().toString(), false);
 
             // populate project with data
-            new ModelExporter(dir, dbPredefined, ApgdiffConsts.UTF_8).exportFull();
+            new ModelExporter(dir, dbPredefined, Consts.UTF_8).exportFull();
             project.refreshLocal(IResource.DEPTH_INFINITE, null);
 
             // create .pgcodekeeperignoreschema file with black list rule in tempDir
-            ApgdiffTestUtils.createIgnoredSchemaFile(dir);
+            TestUtils.createIgnoredSchemaFile(dir);
 
             DbSource dbSourceProj =  DbSource.fromProject(new PgDbProject(project));
             PgDatabase db = dbSourceProj.get(SubMonitor.convert(null, "", 1));
 
             for (AbstractSchema dbSchema : db.getSchemas()) {
-                if (ApgdiffTestUtils.IGNORED_SCHEMAS_LIST.contains(dbSchema.getName())) {
+                if (TestUtils.IGNORED_SCHEMAS_LIST.contains(dbSchema.getName())) {
                     Assert.fail("Ignored Schema loaded " + dbSchema.getName());
                 } else {
                     Assert.assertEquals("Schema from dump isn't equal schema from loader",
@@ -140,18 +140,18 @@ public class DbSourceTest {
             IProject project = createProjectInWorkspace(dir.getFileName().toString(), true);
 
             // populate project with data
-            PgDatabase msDb = ApgdiffTestUtils.loadTestDump(ApgdiffTestUtils.RESOURCE_MS_DUMP, ApgdiffTestUtils.class, args);
-            new MsModelExporter(dir, msDb, ApgdiffConsts.UTF_8).exportFull();
+            PgDatabase msDb = TestUtils.loadTestDump(TestUtils.RESOURCE_MS_DUMP, TestUtils.class, args);
+            new MsModelExporter(dir, msDb, Consts.UTF_8).exportFull();
             project.refreshLocal(IResource.DEPTH_INFINITE, null);
 
             // create .pgcodekeeperignoreschema file with black list rule in tempDir
-            ApgdiffTestUtils.createIgnoredSchemaFile(dir);
+            TestUtils.createIgnoredSchemaFile(dir);
 
             DbSource dbSourceProj =  DbSource.fromProject(new PgDbProject(project));
             PgDatabase db = dbSourceProj.get(SubMonitor.convert(null, "", 1));
 
             for (AbstractSchema dbSchema : db.getSchemas()) {
-                if (ApgdiffTestUtils.IGNORED_SCHEMAS_LIST.contains(dbSchema.getName())) {
+                if (TestUtils.IGNORED_SCHEMAS_LIST.contains(dbSchema.getName())) {
                     Assert.fail("Ignored Schema loaded " + dbSchema.getName());
                 } else {
                     Assert.assertEquals("Schema from ms dump isn't equal schema from loader",

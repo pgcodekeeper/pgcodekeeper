@@ -13,8 +13,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.dialogs.PropertyPage;
 
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreSchemaList;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoredObject;
+import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
+import ru.taximaxim.codekeeper.core.model.difftree.IgnoredObject;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;

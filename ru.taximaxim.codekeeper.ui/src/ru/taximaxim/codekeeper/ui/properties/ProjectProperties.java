@@ -26,7 +26,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.osgi.service.prefs.BackingStoreException;
 
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_BIND_PREF;
@@ -122,7 +122,7 @@ public class ProjectProperties extends PropertyPage {
             cmbTimezone = new Combo(panel, SWT.BORDER | SWT.DROP_DOWN);
             cmbTimezone.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             cmbTimezone.setItems(UIConsts.TIME_ZONES.toArray(new String[UIConsts.TIME_ZONES.size()]));
-            String tz = prefs.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC);
+            String tz = prefs.get(PROJ_PREF.TIMEZONE, Consts.UTC);
             cmbTimezone.setText(tz);
             cmbTimezone.addModifyListener(e -> checkSwitchWarnLbl());
 
@@ -205,7 +205,7 @@ public class ProjectProperties extends PropertyPage {
     private void checkSwitchWarnLbl() {
         String tz = cmbTimezone.getText();
         GridData data = (GridData) lblWarn.getLayoutData();
-        boolean show = !tz.equals(prefs.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
+        boolean show = !tz.equals(prefs.get(PROJ_PREF.TIMEZONE, Consts.UTC));
         data.exclude = !show;
         lblWarn.setVisible(show);
         lblWarn.getParent().layout();
@@ -215,8 +215,8 @@ public class ProjectProperties extends PropertyPage {
 
     private void timeZoneWarn(String tz) {
         GridData data = (GridData) lblWarnPosix.getLayoutData();
-        if ((!ApgdiffConsts.UTC.equals(tz)
-                && tz.startsWith(ApgdiffConsts.UTC)) == data.exclude)  {
+        if ((!Consts.UTC.equals(tz)
+                && tz.startsWith(Consts.UTC)) == data.exclude)  {
             lblWarnPosix.setVisible(data.exclude);
             data.exclude = !data.exclude;
             lblWarnPosix.getParent().layout();
@@ -246,7 +246,7 @@ public class ProjectProperties extends PropertyPage {
         btnBindProjToDb.setSelection(false);
         storePicker.setSelection(null);
         if (!isMsSql) {
-            cmbTimezone.setText(ApgdiffConsts.UTC);
+            cmbTimezone.setText(Consts.UTC);
             btnSimplifyView.setEnabled(enable);
             btnSimplifyView.setSelection(mainPS.getBoolean(PREF.SIMPLIFY_VIEW));
         }

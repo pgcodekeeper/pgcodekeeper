@@ -3,8 +3,8 @@ package ru.taximaxim.codekeeper.ui.differ.filters;
 import java.util.Map;
 import java.util.function.Function;
 
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
+import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
+import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.ElementMetaInfo;
 

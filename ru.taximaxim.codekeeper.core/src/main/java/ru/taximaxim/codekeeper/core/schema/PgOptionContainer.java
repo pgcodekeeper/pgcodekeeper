@@ -1,0 +1,10 @@
+package ru.taximaxim.codekeeper.core.schema;
+
+import java.util.Map;
+
+public interface PgOptionContainer extends IStatement {
+
+    void addOption(String key, String value);
+    Map<String, String> getOptions();
+    void compareOptions(PgOptionContainer newContainer, StringBuilder sb);
+}

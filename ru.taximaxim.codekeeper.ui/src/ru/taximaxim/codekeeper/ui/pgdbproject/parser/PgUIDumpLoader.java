@@ -13,11 +13,11 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
-import cz.startnet.utils.pgdiff.PgDiffArguments;
-import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
-import cz.startnet.utils.pgdiff.parsers.antlr.ErrorTypes;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.PgDiffArguments;
+import ru.taximaxim.codekeeper.core.loader.PgDumpLoader;
+import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrError;
+import ru.taximaxim.codekeeper.core.parsers.antlr.ErrorTypes;
+import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
 

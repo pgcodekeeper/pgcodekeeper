@@ -4,7 +4,7 @@ import java.util.Objects;
 
 import org.eclipse.swt.graphics.Image;
 
-import cz.startnet.utils.pgdiff.loader.JdbcConnector;
+import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 

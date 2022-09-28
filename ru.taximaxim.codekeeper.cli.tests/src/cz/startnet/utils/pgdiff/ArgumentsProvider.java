@@ -6,8 +6,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
-import ru.taximaxim.codekeeper.apgdiff.fileutils.TempDir;
+import ru.taximaxim.codekeeper.core.Utils;
+import ru.taximaxim.codekeeper.core.FILES_POSTFIX;
+import ru.taximaxim.codekeeper.core.PgDiffTest;
+import ru.taximaxim.codekeeper.core.fileutils.TempDir;
 
 public abstract class ArgumentsProvider {
 
@@ -37,7 +39,7 @@ public abstract class ArgumentsProvider {
     }
 
     protected final Path getFile(FILES_POSTFIX postfix) throws URISyntaxException, IOException {
-        return ApgdiffUtils.getFileFromOsgiRes(PgDiffTest.class.getResource(resName + postfix));
+        return Utils.getFileFromOsgiRes(PgDiffTest.class.getResource(resName + postfix));
     }
 
     public Path getDiffResultFile() throws IOException {

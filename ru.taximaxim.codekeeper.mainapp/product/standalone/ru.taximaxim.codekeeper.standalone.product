@@ -213,7 +213,7 @@
    </license>
 
    <plugins>
-      <plugin id="apgdiff"/>
+      <plugin id="ru.taximaxim.codekeeper.core"/>
       <plugin id="org.apache.felix.gogo.command"/>
       <plugin id="org.apache.felix.gogo.runtime"/>
       <plugin id="org.eclipse.core.contenttype"/>

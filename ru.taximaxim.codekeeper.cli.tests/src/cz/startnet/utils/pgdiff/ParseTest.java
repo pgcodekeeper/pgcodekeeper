@@ -13,16 +13,17 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.cli.Main;
+import ru.taximaxim.codekeeper.core.TestUtils;
+import ru.taximaxim.codekeeper.core.Utils;
+import ru.taximaxim.codekeeper.core.PgDiffTest;
 
 @RunWith(value = Parameterized.class)
 public class ParseTest {
 
     @Parameters
     public static Iterable<Object[]> parameters() {
-        return ApgdiffTestUtils.getParameters(new Object[][] {
+        return TestUtils.getParameters(new Object[][] {
             {new ParseTestArgumentsProvider()},
         });
     }
@@ -61,7 +62,7 @@ class ParseTestArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String[] args() throws URISyntaxException, IOException {
-        Path db = ApgdiffUtils.getFileFromOsgiRes(PgDiffTest.class.getResource(resName));
+        Path db = Utils.getFileFromOsgiRes(PgDiffTest.class.getResource(resName));
         return new String[]{"--parse", "-o", getParseResultDir().get().toAbsolutePath().toString(), db.toAbsolutePath().toString()};
     }
 }
