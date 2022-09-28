@@ -1415,12 +1415,14 @@ public class DiffTableViewer extends Composite {
         private String filterName;
         private boolean useRegEx;
         private Pattern regExPattern;
+        private boolean isQualifiedName;
 
         public void setFilter(String value) {
             if (value == null || value.isEmpty()) {
                 filterName = null;
                 regExPattern = null;
             } else {
+                isQualifiedName = !useRegEx && value.contains(".");
                 filterName = value.toLowerCase(Locale.ROOT);
                 try {
                     regExPattern = Pattern.compile(value, Pattern.CASE_INSENSITIVE);
@@ -1513,11 +1515,11 @@ public class DiffTableViewer extends Composite {
 
             // show all child, if parent have match
             TreeElement parent = el.getParent();
-            if (isSubElement && getMatchingLocation(parent.getName(), filterName, filterRegex) != null) {
+            if (isSubElement && getMatchingLocation(getName(parent), filterName, filterRegex) != null) {
                 return true;
             }
 
-            boolean found = getMatchingLocation(el.getName(), filterName, filterRegex) != null;
+            boolean found = getMatchingLocation(getName(el), filterName, filterRegex) != null;
 
             // also show containers that have content matching current filter
             if (!found && isContainer(el)) {
@@ -1525,10 +1527,14 @@ public class DiffTableViewer extends Composite {
                 while (!found && it.hasNext()) {
                     TreeElement child = it.next();
                     found |= elements.contains(child) &&
-                            getMatchingLocation(child.getName(), filterName, filterRegex) != null;
+                            getMatchingLocation(getName(child), filterName, filterRegex) != null;
                 }
             }
             return found;
+        }
+
+        private String getName(TreeElement el) {
+            return isQualifiedName ? el.getQualifiedName() : el.getName();
         }
 
         private Region getMatchingLocation(String text, String filter, Pattern regExPattern) {
