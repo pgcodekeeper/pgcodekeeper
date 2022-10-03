@@ -337,6 +337,16 @@ public abstract class ParserAbstract {
         return ids;
     }
 
+    public static List<ParserRuleContext> getIdentifiers(Qualified_nameContext qNameCtx) {
+        List<ParserRuleContext> ids = new ArrayList<>(2);
+        ParserRuleContext schemaRule = qNameCtx.schema;
+        if (schemaRule != null) {
+            ids.add(schemaRule);
+        }
+        ids.add(qNameCtx.name);
+        return ids;
+    }
+
     protected PgObjLocation addObjReference(List<? extends ParserRuleContext> ids,
             DbObjType type, String action, String signature) {
         PgObjLocation loc = getLocation(ids, type, action, false, signature, LocationType.REFERENCE);
@@ -576,7 +586,8 @@ public abstract class ParserAbstract {
         ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
         if (schemaCtx != null) {
             return schemaCtx.getText();
-        } else if (refMode) {
+        }
+        if (refMode) {
             return null;
         }
 
