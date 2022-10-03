@@ -15,10 +15,9 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
+import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.fileutils.TempDir;
-import ru.taximaxim.codekeeper.core.loader.ProjectLoader;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
@@ -41,11 +40,11 @@ import ru.taximaxim.codekeeper.core.schema.PgRule;
 import ru.taximaxim.codekeeper.core.schema.PgSchema;
 import ru.taximaxim.codekeeper.core.schema.PgSequence;
 import ru.taximaxim.codekeeper.core.schema.PgTrigger;
+import ru.taximaxim.codekeeper.core.schema.PgTrigger.TgTypes;
 import ru.taximaxim.codekeeper.core.schema.PgType;
+import ru.taximaxim.codekeeper.core.schema.PgType.PgTypeForm;
 import ru.taximaxim.codekeeper.core.schema.PgView;
 import ru.taximaxim.codekeeper.core.schema.SimplePgTable;
-import ru.taximaxim.codekeeper.core.schema.PgTrigger.TgTypes;
-import ru.taximaxim.codekeeper.core.schema.PgType.PgTypeForm;
 
 /**
  * An abstract 'factory' that creates 'artificial'
