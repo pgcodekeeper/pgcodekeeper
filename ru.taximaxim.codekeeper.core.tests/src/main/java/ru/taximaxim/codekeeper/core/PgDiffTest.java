@@ -12,8 +12,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import ru.taximaxim.codekeeper.core.PgDiff;
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.log.Log;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 

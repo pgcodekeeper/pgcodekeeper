@@ -22,14 +22,13 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.PgCodekeeperException;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
+import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.fileutils.TempDir;
 import ru.taximaxim.codekeeper.core.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeFlattener;
-import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 
 /**

@@ -1,20 +1,17 @@
 package ru.taximaxim.codekeeper.core.loader;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Path;
 
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.SubMonitor;
 import org.junit.Assert;
 import org.junit.Test;
 
 import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
+import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.fileutils.TempDir;
 import ru.taximaxim.codekeeper.core.ignoreparser.IgnoreParser;
-import ru.taximaxim.codekeeper.core.loader.ProjectLoader;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
@@ -23,8 +20,7 @@ import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 public class PgProjectLoaderTest {
 
     @Test
-    public void testProjectLoaderWithIgnoredSchemas() throws CoreException, IOException,
-    InterruptedException, URISyntaxException {
+    public void testProjectLoaderWithIgnoredSchemas() throws IOException, InterruptedException {
         try(TempDir tempDir = new TempDir("ignore-schemas-test-project")){
             Path dir = tempDir.get();
             PgDiffArguments args = new PgDiffArguments();

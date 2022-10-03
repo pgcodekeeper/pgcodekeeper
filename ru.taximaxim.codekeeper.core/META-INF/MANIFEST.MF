@@ -20,7 +20,7 @@ Export-Package: ru.taximaxim.codekeeper.core,
  ru.taximaxim.codekeeper.core.xmlstore,
  ru.taximaxim.pgpass
 x-core-comment: ru.taximaxim.codekeeper.core.utils - hidden use in deserialization
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ClassPath: .,
  lib/antlr4-runtime-4.9.3.jar,
  lib/jgrapht-core-1.4.0.jar,
