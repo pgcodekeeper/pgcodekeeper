@@ -76,30 +76,7 @@ public class GrantMsPrivilege extends ParserAbstract {
         PgStatement st = getStatement(nameCtx);
 
         if (st == null) {
-            DbObjType type = null;
-            if (nameCtx.table_columns() != null) {
-                type = DbObjType.TABLE;
-            } else if (nameCtx.class_type() != null) {
-                if (nameCtx.class_type().SCHEMA() != null) {
-                    type = DbObjType.SCHEMA;
-                } else if (nameCtx.class_type().DATABASE() != null) {
-                    type = DbObjType.DATABASE;
-                } else if (nameCtx.class_type().USER() != null) {
-                    type = DbObjType.USER;
-                } else if (nameCtx.class_type().TYPE() != null) {
-                    type = DbObjType.TYPE;
-                } else if (nameCtx.class_type().ROLE() != null) {
-                    type = DbObjType.ROLE;
-                } else if (nameCtx.class_type().ASSEMBLY() != null) {
-                    type = DbObjType.ASSEMBLY;
-                }
-            }
-
-            if (type == null) {
-                addOutlineRefForCommentOrRule(state, ctx);
-            } else {
-                addObjReference(getIdentifiers(nameCtx.qualified_name()), type, state);
-            }
+            addOutlineRefForCommentOrRule(state, ctx);
             return;
         }
 
