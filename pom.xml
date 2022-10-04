@@ -15,8 +15,8 @@
     <version>${revision}</version>
     <packaging>pom</packaging>
     <modules>
-        <module>apgdiff</module>
-        <module>apgdiff.tests</module>
+        <module>ru.taximaxim.codekeeper.core</module>
+        <module>ru.taximaxim.codekeeper.core.tests</module>
         <module>ru.taximaxim.codekeeper.ui</module>
         <module>ru.taximaxim.codekeeper.ui.tests</module>
         <module>ru.taximaxim.codekeeper.cli</module>
@@ -34,13 +34,13 @@
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <tycho.version>1.7.0</tycho.version>
+        <tycho.version>2.7.5</tycho.version>
         <target.definition.file>app</target.definition.file>
 
         <sonar.language>java</sonar.language>
         <sonar.java.binaries>${project.build.directory}/classes</sonar.java.binaries>
-        <sonar.java.source>1.8</sonar.java.source>
-        <sonar.java.target>1.8</sonar.java.target>
+        <sonar.java.source>11</sonar.java.source>
+        <sonar.java.target>11</sonar.java.target>
         <sonar.core.coveragePlugin>jacoco</sonar.core.coveragePlugin>
         <sonar.junit.reportPath>${project.build.directory}/surefire-reports/</sonar.junit.reportPath>
     </properties>
@@ -53,7 +53,7 @@
                     <plugin>
                         <groupId>org.jacoco</groupId>
                         <artifactId>jacoco-maven-plugin</artifactId>
-                        <version>0.8.5</version>
+                        <version>0.8.8</version>
                         <configuration>
                             <!-- задать при запуске мавена -->
                             <destFile>${sonar.jacoco.reportPaths}</destFile>
@@ -87,7 +87,6 @@
             <id>internal</id>
             <modules>
                 <module>../codekeeper-internal/ru.taximaxim.codekeeper.internal.tests</module>
-                <module>../codekeeper-internal/ru.taximaxim.codekeeper.internal.ui.tests</module>
             </modules>
         </profile>
         <profile>
@@ -124,8 +123,7 @@
                 <artifactId>tycho-compiler-plugin</artifactId>
                 <version>${tycho.version}</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <release>11</release>
                 </configuration>
             </plugin>
 
@@ -198,13 +196,5 @@
                 </plugin>
             </plugins>
         </pluginManagement>
-
-        <extensions>
-            <extension>
-                <groupId>org.apache.maven.wagon</groupId>
-                <artifactId>wagon-ssh</artifactId>
-                <version>3.4.1</version>
-            </extension>
-        </extensions>
     </build>
 </project>

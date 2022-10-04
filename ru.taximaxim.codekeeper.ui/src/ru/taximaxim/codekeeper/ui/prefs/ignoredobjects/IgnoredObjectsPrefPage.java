@@ -14,8 +14,8 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoredObject;
+import ru.taximaxim.codekeeper.core.model.difftree.IgnoreList;
+import ru.taximaxim.codekeeper.core.model.difftree.IgnoredObject;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;

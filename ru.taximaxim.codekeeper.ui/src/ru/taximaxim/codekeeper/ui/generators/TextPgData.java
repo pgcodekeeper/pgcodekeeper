@@ -2,7 +2,7 @@ package ru.taximaxim.codekeeper.ui.generators;
 
 import java.util.Random;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
+import ru.taximaxim.codekeeper.core.PgDiffUtils;
 
 /**
  * An implementation of a PostgreSql data generator for TEXT types.

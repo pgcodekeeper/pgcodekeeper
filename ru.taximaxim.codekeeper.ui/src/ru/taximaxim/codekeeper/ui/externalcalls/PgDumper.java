@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import cz.startnet.utils.pgdiff.IProgressReporter;
+import ru.taximaxim.codekeeper.core.IProgressReporter;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.ProcBuilderUtils;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;

@@ -3,7 +3,7 @@ package ru.taximaxim.codekeeper.ui.sqledit;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.source.Annotation;
 
-import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 
 public class SQLHoverInfo {
 

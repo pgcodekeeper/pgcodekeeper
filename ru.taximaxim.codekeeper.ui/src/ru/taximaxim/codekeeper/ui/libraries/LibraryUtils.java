@@ -9,8 +9,8 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Platform;
 
-import cz.startnet.utils.pgdiff.libraries.PgLibrary;
-import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
+import ru.taximaxim.codekeeper.core.libraries.PgLibrary;
+import ru.taximaxim.codekeeper.core.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 

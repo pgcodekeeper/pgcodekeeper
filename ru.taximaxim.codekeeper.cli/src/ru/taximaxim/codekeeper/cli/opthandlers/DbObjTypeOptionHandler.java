@@ -11,7 +11,7 @@ import org.kohsuke.args4j.OptionDef;
 import org.kohsuke.args4j.spi.EnumOptionHandler;
 import org.kohsuke.args4j.spi.Setter;
 
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 
 public class DbObjTypeOptionHandler extends EnumOptionHandler<DbObjType> {
 

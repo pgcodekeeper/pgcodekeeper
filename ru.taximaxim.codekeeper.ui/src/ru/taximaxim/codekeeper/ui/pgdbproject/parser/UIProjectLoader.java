@@ -27,23 +27,23 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.ide.ResourceUtil;
 
-import cz.startnet.utils.pgdiff.PgDiffArguments;
-import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.loader.DatabaseLoader;
-import cz.startnet.utils.pgdiff.loader.FullAnalyze;
-import cz.startnet.utils.pgdiff.loader.LibraryLoader;
-import cz.startnet.utils.pgdiff.loader.ProjectLoader;
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.MS_WORK_DIR_NAMES;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreSchemaList;
-import ru.taximaxim.codekeeper.apgdiff.model.exporter.AbstractModelExporter;
+import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.PgDiffArguments;
+import ru.taximaxim.codekeeper.core.PgDiffUtils;
+import ru.taximaxim.codekeeper.core.Consts.MS_WORK_DIR_NAMES;
+import ru.taximaxim.codekeeper.core.Consts.WORK_DIR_NAMES;
+import ru.taximaxim.codekeeper.core.loader.DatabaseLoader;
+import ru.taximaxim.codekeeper.core.loader.FullAnalyze;
+import ru.taximaxim.codekeeper.core.loader.LibraryLoader;
+import ru.taximaxim.codekeeper.core.loader.ProjectLoader;
+import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
+import ru.taximaxim.codekeeper.core.model.exporter.AbstractModelExporter;
+import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrError;
+import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
+import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
@@ -317,7 +317,7 @@ public class UIProjectLoader extends ProjectLoader {
         if (!arguments.isIgnorePrivileges()) {
             isOverrideMode = true;
             // read overrides from special folder
-            IFolder privs = iProject.getFolder(ApgdiffConsts.OVERRIDES_DIR);
+            IFolder privs = iProject.getFolder(Consts.OVERRIDES_DIR);
             try {
                 if (arguments.isMsSql()) {
                     loadMsStructure(privs, db);
@@ -383,13 +383,13 @@ public class UIProjectLoader extends ProjectLoader {
      */
     private static boolean isInProject(IPath path) {
         String dir = path.segment(0);
-        return dir != null && Arrays.stream(ApgdiffConsts.WORK_DIR_NAMES.values())
+        return dir != null && Arrays.stream(Consts.WORK_DIR_NAMES.values())
                 .map(Enum::name).anyMatch(dir::equals);
     }
 
     private static boolean isInMsProject(IPath path) {
         String dir = path.segment(0);
-        return dir != null && Arrays.stream(ApgdiffConsts.MS_WORK_DIR_NAMES.values())
+        return dir != null && Arrays.stream(Consts.MS_WORK_DIR_NAMES.values())
                 .map(MS_WORK_DIR_NAMES::getDirName).anyMatch(dir::equals);
     }
 
@@ -419,7 +419,7 @@ public class UIProjectLoader extends ProjectLoader {
     }
 
     public static boolean isPrivilegeFolder(IResourceDelta delta) {
-        return ApgdiffConsts.OVERRIDES_DIR.equals(delta.getProjectRelativePath().segment(0));
+        return Consts.OVERRIDES_DIR.equals(delta.getProjectRelativePath().segment(0));
     }
 
     public static boolean isInProject(IEditorInput editorInput) {

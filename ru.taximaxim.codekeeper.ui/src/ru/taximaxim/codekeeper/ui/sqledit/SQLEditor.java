@@ -88,16 +88,16 @@ import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.osgi.service.prefs.BackingStoreException;
 
-import cz.startnet.utils.pgdiff.DangerStatement;
-import cz.startnet.utils.pgdiff.IProgressReporter;
-import cz.startnet.utils.pgdiff.loader.JdbcConnector;
-import cz.startnet.utils.pgdiff.loader.JdbcMsConnector;
-import cz.startnet.utils.pgdiff.loader.JdbcRunner;
-import cz.startnet.utils.pgdiff.parsers.antlr.ScriptParser;
-import cz.startnet.utils.pgdiff.schema.PgObjLocation;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.JDBC_CONSTS;
-import ru.taximaxim.codekeeper.apgdiff.fileutils.TempFile;
+import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.DangerStatement;
+import ru.taximaxim.codekeeper.core.IProgressReporter;
+import ru.taximaxim.codekeeper.core.Consts.JDBC_CONSTS;
+import ru.taximaxim.codekeeper.core.fileutils.TempFile;
+import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
+import ru.taximaxim.codekeeper.core.loader.JdbcMsConnector;
+import ru.taximaxim.codekeeper.core.loader.JdbcRunner;
+import ru.taximaxim.codekeeper.core.parsers.antlr.ScriptParser;
+import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.IPartAdapter2;
 import ru.taximaxim.codekeeper.ui.ITextErrorReporter;
@@ -707,7 +707,7 @@ implements IResourceChangeListener, ITextErrorReporter {
                 connector = new JdbcConnector(
                         dbInfo.getDbHost(), dbInfo.getDbPort(), dbInfo.getDbUser(),
                         dbInfo.getDbPass(), dbInfo.getDbName(), dbInfo.getProperties(),
-                        dbInfo.isReadOnly(), ApgdiffConsts.UTC);
+                        dbInfo.isReadOnly(), Consts.UTC);
             }
 
             IProgressReporter reporter = new UiProgressReporter(monitor, SQLEditor.this, offset);
@@ -838,7 +838,7 @@ implements IResourceChangeListener, ITextErrorReporter {
             final StdStreamRedirector sr = new StdStreamRedirector(reporter);
             try (TempFile tempFile = new TempFile("tmp_migration_", ".sql")) { //$NON-NLS-1$ //$NON-NLS-2$
                 File outFile = tempFile.get().toFile();
-                try (PrintWriter writer = new PrintWriter(outFile, ApgdiffConsts.UTF_8)) {
+                try (PrintWriter writer = new PrintWriter(outFile, Consts.UTF_8)) {
                     writer.write(textRetrieved);
                 }
 

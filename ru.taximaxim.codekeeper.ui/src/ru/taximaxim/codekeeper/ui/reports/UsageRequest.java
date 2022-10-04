@@ -5,7 +5,7 @@ import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Random;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
+import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 

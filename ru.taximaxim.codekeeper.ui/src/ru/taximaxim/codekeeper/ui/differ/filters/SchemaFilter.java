@@ -2,9 +2,9 @@ package ru.taximaxim.codekeeper.ui.differ.filters;
 
 import java.util.Map;
 
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
+import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
+import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.ui.differ.ElementMetaInfo;
 
 /**

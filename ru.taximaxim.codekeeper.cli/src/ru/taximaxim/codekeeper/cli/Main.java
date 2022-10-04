@@ -21,21 +21,21 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.kohsuke.args4j.CmdLineException;
 
-import cz.startnet.utils.pgdiff.DangerStatement;
-import cz.startnet.utils.pgdiff.NotAllowedObjectException;
-import cz.startnet.utils.pgdiff.PgCodekeeperException;
-import cz.startnet.utils.pgdiff.PgDiff;
-import cz.startnet.utils.pgdiff.loader.JdbcConnector;
-import cz.startnet.utils.pgdiff.loader.JdbcRunner;
-import cz.startnet.utils.pgdiff.parsers.antlr.ScriptParser;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
-import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
-import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
-import ru.taximaxim.codekeeper.apgdiff.model.exporter.MsModelExporter;
-import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyWriter;
 import ru.taximaxim.codekeeper.cli.localizations.Messages;
+import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.DangerStatement;
+import ru.taximaxim.codekeeper.core.NotAllowedObjectException;
+import ru.taximaxim.codekeeper.core.PgCodekeeperException;
+import ru.taximaxim.codekeeper.core.PgDiff;
+import ru.taximaxim.codekeeper.core.UnixPrintWriter;
+import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
+import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
+import ru.taximaxim.codekeeper.core.loader.JdbcRunner;
+import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
+import ru.taximaxim.codekeeper.core.model.exporter.MsModelExporter;
+import ru.taximaxim.codekeeper.core.model.graph.DepcyWriter;
+import ru.taximaxim.codekeeper.core.parsers.antlr.ScriptParser;
+import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 
 /**
  * Compares two PostgreSQL dumps and outputs information about differences in
@@ -79,7 +79,7 @@ public final class Main {
                 System.err.println("Use -E to see exception stacktrace");
             }
 
-            Status error = new Status(IStatus.ERROR, ApgdiffConsts.APGDIFF_PLUGIN_ID,
+            Status error = new Status(IStatus.ERROR, Consts.PLUGIN_ID,
                     "pgCodeKeeper error", e);
             Platform.getLog(Activator.getContext().getBundle()).log(error);
             return false;

@@ -22,18 +22,18 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import cz.startnet.utils.pgdiff.schema.AbstractColumn;
-import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.AbstractSequence;
-import cz.startnet.utils.pgdiff.schema.AbstractTable;
-import cz.startnet.utils.pgdiff.schema.AbstractView;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.apgdiff.model.exporter.PartialExporterTest;
+import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.TestUtils;
+import ru.taximaxim.codekeeper.core.Utils;
+import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
+import ru.taximaxim.codekeeper.core.model.exporter.PartialExporterTest;
+import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
+import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
+import ru.taximaxim.codekeeper.core.schema.AbstractSequence;
+import ru.taximaxim.codekeeper.core.schema.AbstractTable;
+import ru.taximaxim.codekeeper.core.schema.AbstractView;
+import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 
@@ -44,7 +44,7 @@ public class DifferTest {
 
     @Parameters
     public static Iterable<Object[]> parameters() {
-        return ApgdiffTestUtils.getParameters(new Object[][] {
+        return TestUtils.getParameters(new Object[][] {
             { new DifferData1(), 1 },
             { new DifferData2(), 2 },
             { new DifferData3(), 3 },
@@ -80,11 +80,11 @@ public class DifferTest {
         String sourceFilename = "TestPartialExportSource.sql";
         String targetFilename = "TestPartialExportTarget.sql";
 
-        Path sourceFile = ApgdiffUtils.getFileFromOsgiRes(PartialExporterTest.class.getResource(sourceFilename));
-        Path targetFile = ApgdiffUtils.getFileFromOsgiRes(PartialExporterTest.class.getResource(targetFilename));
+        Path sourceFile = Utils.getFileFromOsgiRes(PartialExporterTest.class.getResource(sourceFilename));
+        Path targetFile = Utils.getFileFromOsgiRes(PartialExporterTest.class.getResource(targetFilename));
 
-        DbSource dbSource = DbSource.fromFile(true, sourceFile, ApgdiffConsts.UTF_8, false, null);
-        DbSource dbTarget = DbSource.fromFile(true, targetFile, ApgdiffConsts.UTF_8, false, null);
+        DbSource dbSource = DbSource.fromFile(true, sourceFile, Consts.UTF_8, false, null);
+        DbSource dbTarget = DbSource.fromFile(true, targetFile, Consts.UTF_8, false, null);
 
         final TreeDiffer newDiffer = new TreeDiffer(dbSource, dbTarget);
 
@@ -96,7 +96,7 @@ public class DifferTest {
         differData.setUserSelection(root);
 
         Differ differ = new Differ(dbSource.getDbObject(), dbTarget.getDbObject(),
-                root, true, ApgdiffConsts.UTC, false, null);
+                root, true, Consts.UTC, false, null);
         differ.setAdditionalDepciesSource(differData.getAdditionalDepciesSource(dbSource.getDbObject()));
         differ.setAdditionalDepciesTarget(differData.getAdditionalDepciesTarget(dbTarget.getDbObject()));
 
@@ -113,10 +113,10 @@ public class DifferTest {
 
         differ.getDiffDirect();
         assertEquals("Direct script differs", differ.getDiffDirect(),
-                ApgdiffTestUtils.inputStreamToString(DifferTest.class.getResourceAsStream(
+                TestUtils.inputStreamToString(DifferTest.class.getResourceAsStream(
                         caseNumber + "_direct_diff.sql")));
         assertEquals("Reverse script differs", differ.getDiffReverse(),
-                ApgdiffTestUtils.inputStreamToString(DifferTest.class.getResourceAsStream(
+                TestUtils.inputStreamToString(DifferTest.class.getResourceAsStream(
                         caseNumber + "_reverse_diff.sql")));
     }
 }
@@ -141,7 +141,7 @@ class DifferData1 implements DifferData {
 
     @Override
     public void setUserSelection(TreeElement root) {
-        root.getChild(ApgdiffConsts.PUBLIC).getChild("t4").getChild("t4_c2_key").setSelected(true);
+        root.getChild(Consts.PUBLIC).getChild("t4").getChild("t4_c2_key").setSelected(true);
     }
 }
 
@@ -153,13 +153,13 @@ class DifferData2 implements DifferData {
 
     @Override
     public void setUserSelection(TreeElement root) {
-        root.getChild(ApgdiffConsts.PUBLIC).getChild("t1").getChild("t1_c2_key").setSelected(true);
+        root.getChild(Consts.PUBLIC).getChild("t1").getChild("t1_c2_key").setSelected(true);
     }
 
     @Override
     public List<Entry<PgStatement, PgStatement>> getAdditionalDepciesSource(PgDatabase source) {
-        AbstractTable t = source.getSchema(ApgdiffConsts.PUBLIC).getTable("t1");
-        AbstractSequence s = source.getSchema(ApgdiffConsts.PUBLIC).getSequence("t1_c1_seq");
+        AbstractTable t = source.getSchema(Consts.PUBLIC).getTable("t1");
+        AbstractSequence s = source.getSchema(Consts.PUBLIC).getSequence("t1_c1_seq");
         Entry<PgStatement, PgStatement> arr = new AbstractMap.SimpleEntry<> (s, t);
         List<Entry<PgStatement, PgStatement>> list = new ArrayList<>();
         list.add(arr);
@@ -180,13 +180,13 @@ class DifferData3 implements DifferData {
 
     @Override
     public void setUserSelection(TreeElement root) {
-        root.getChild(ApgdiffConsts.PUBLIC).getChild("t1").getChild("t1_c2_key").setSelected(true);
+        root.getChild(Consts.PUBLIC).getChild("t1").getChild("t1_c2_key").setSelected(true);
     }
 
     @Override
     public List<Entry<PgStatement, PgStatement>> getAdditionalDepciesSource(PgDatabase source) {
-        AbstractColumn c = source.getSchema(ApgdiffConsts.PUBLIC).getTable("t1").getColumn("c1");
-        AbstractSequence s = source.getSchema(ApgdiffConsts.PUBLIC).getSequence("t1_c1_seq");
+        AbstractColumn c = source.getSchema(Consts.PUBLIC).getTable("t1").getColumn("c1");
+        AbstractSequence s = source.getSchema(Consts.PUBLIC).getSequence("t1_c1_seq");
         Entry<PgStatement, PgStatement> arr = new AbstractMap.SimpleEntry<> (s, c);
         List<Entry<PgStatement, PgStatement>> list = new ArrayList<>();
         list.add(arr);
@@ -218,13 +218,13 @@ class DifferData5 implements DifferData {
 
     @Override
     public void setUserSelection(TreeElement root) {
-        root.getChild(ApgdiffConsts.PUBLIC).getChild("v1").setSelected(true);
+        root.getChild(Consts.PUBLIC).getChild("v1").setSelected(true);
     }
 
     @Override
     public List<Entry<PgStatement, PgStatement>> getAdditionalDepciesTarget(PgDatabase target) {
         AbstractSchema s = target.getSchema("newschema");
-        AbstractView v = target.getSchema(ApgdiffConsts.PUBLIC).getView("v1");
+        AbstractView v = target.getSchema(Consts.PUBLIC).getView("v1");
         Entry<PgStatement, PgStatement> arr = new AbstractMap.SimpleEntry<> (v, s);
         List<Entry<PgStatement, PgStatement>> list = new ArrayList<>();
         list.add(arr);

@@ -32,18 +32,18 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.progress.IProgressConstants2;
 
-import cz.startnet.utils.pgdiff.DangerStatement;
-import cz.startnet.utils.pgdiff.loader.JdbcConnector;
-import cz.startnet.utils.pgdiff.loader.JdbcMsConnector;
-import cz.startnet.utils.pgdiff.loader.JdbcRunner;
-import cz.startnet.utils.pgdiff.parsers.antlr.ScriptParser;
-import cz.startnet.utils.pgdiff.schema.AbstractFunction;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.fileutils.ProjectUpdater;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
+import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.DangerStatement;
+import ru.taximaxim.codekeeper.core.fileutils.ProjectUpdater;
+import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
+import ru.taximaxim.codekeeper.core.loader.JdbcMsConnector;
+import ru.taximaxim.codekeeper.core.loader.JdbcRunner;
+import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
+import ru.taximaxim.codekeeper.core.parsers.antlr.ScriptParser;
+import ru.taximaxim.codekeeper.core.schema.AbstractFunction;
+import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
@@ -157,7 +157,7 @@ class QuickUpdateJob extends SingletonEditorJob {
 
         boolean isSchemaFile = UIProjectLoader.isSchemaFile(file.getProjectRelativePath(), isMsSql);
         IEclipsePreferences projPrefs = proj.getPrefs();
-        String timezone = projPrefs.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC);
+        String timezone = projPrefs.get(PROJ_PREF.TIMEZONE, Consts.UTC);
 
         PgDatabase dbProjectFragment = UIProjectLoader
                 .buildFiles(Arrays.asList(file), isMsSql, monitor.newChild(1));
@@ -208,7 +208,7 @@ class QuickUpdateJob extends SingletonEditorJob {
         } else {
             connector = new JdbcConnector(dbinfo.getDbHost(), dbinfo.getDbPort(),
                     dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(),
-                    dbinfo.getProperties(), dbinfo.isReadOnly(), ApgdiffConsts.UTC);
+                    dbinfo.getProperties(), dbinfo.isReadOnly(), Consts.UTC);
         }
 
         try {

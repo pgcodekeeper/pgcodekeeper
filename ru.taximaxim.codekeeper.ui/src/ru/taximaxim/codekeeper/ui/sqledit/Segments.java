@@ -4,8 +4,8 @@ import java.util.Objects;
 
 import org.eclipse.jface.text.Position;
 
-import cz.startnet.utils.pgdiff.schema.PgObjLocation;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 
 public class Segments extends Position {
 

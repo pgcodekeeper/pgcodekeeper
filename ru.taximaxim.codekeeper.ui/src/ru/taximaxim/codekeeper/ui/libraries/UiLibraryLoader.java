@@ -12,13 +12,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.libraries.PgLibrary;
-import cz.startnet.utils.pgdiff.libraries.PgLibrarySource;
-import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
-import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
+import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.PgDiffUtils;
+import ru.taximaxim.codekeeper.core.Consts.WORK_DIR_NAMES;
+import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
+import ru.taximaxim.codekeeper.core.libraries.PgLibrary;
+import ru.taximaxim.codekeeper.core.libraries.PgLibrarySource;
+import ru.taximaxim.codekeeper.core.xmlstore.DependenciesXmlStore;
 
 public class UiLibraryLoader {
 
@@ -97,7 +97,7 @@ public class UiLibraryLoader {
             return;
         }
 
-        if (Files.exists(path.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER))) {
+        if (Files.exists(path.resolve(Consts.FILENAME_WORKING_DIR_MARKER))) {
             readProject(parent, path);
             return;
         }
@@ -110,7 +110,7 @@ public class UiLibraryLoader {
     }
 
     private void readProject(AbstractLibrary parent, Path path) throws IOException {
-        for (WORK_DIR_NAMES name : ApgdiffConsts.WORK_DIR_NAMES.values()) {
+        for (WORK_DIR_NAMES name : Consts.WORK_DIR_NAMES.values()) {
             Path dirPath = path.resolve(name.name());
             if (Files.exists(dirPath)) {
                 readPath(parent, dirPath);

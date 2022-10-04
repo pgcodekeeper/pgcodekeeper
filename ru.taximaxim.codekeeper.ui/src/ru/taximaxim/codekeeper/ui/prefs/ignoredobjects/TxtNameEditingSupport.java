@@ -2,7 +2,7 @@ package ru.taximaxim.codekeeper.ui.prefs.ignoredobjects;
 
 import org.eclipse.jface.viewers.ColumnViewer;
 
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoredObject;
+import ru.taximaxim.codekeeper.core.model.difftree.IgnoredObject;
 import ru.taximaxim.codekeeper.ui.prefs.AbstractTxtEditingSupport;
 
 public class TxtNameEditingSupport extends

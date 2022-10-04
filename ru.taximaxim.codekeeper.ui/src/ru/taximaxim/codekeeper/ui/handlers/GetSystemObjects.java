@@ -15,11 +15,11 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import cz.startnet.utils.pgdiff.loader.JdbcConnector;
-import cz.startnet.utils.pgdiff.loader.JdbcSystemLoader;
-import cz.startnet.utils.pgdiff.schema.meta.MetaStorage;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
+import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.Utils;
+import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
+import ru.taximaxim.codekeeper.core.loader.JdbcSystemLoader;
+import ru.taximaxim.codekeeper.core.schema.meta.MetaStorage;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
@@ -43,12 +43,12 @@ public class GetSystemObjects extends AbstractHandler {
                     JdbcConnector jdbcConnector = new JdbcConnector(info.getDbHost(),
                             info.getDbPort(), info.getDbUser(), info.getDbPass(),
                             info.getDbName(), info.getProperties(), info.isReadOnly(),
-                            ApgdiffConsts.UTC);
+                            Consts.UTC);
                     try {
                         Serializable storage = new JdbcSystemLoader(jdbcConnector,
                                 SubMonitor.convert(new NullProgressMonitor())).getStorageFromJdbc();
 
-                        ApgdiffUtils.serialize(select, storage);
+                        Utils.serialize(select, storage);
 
                         MessageBox mb = new MessageBox(HandlerUtil.getActiveShell(event), SWT.ICON_INFORMATION);
                         mb.setText(Messages.GetSystemObjects_save_success_title);

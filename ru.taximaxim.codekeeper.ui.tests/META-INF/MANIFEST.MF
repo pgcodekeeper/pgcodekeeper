@@ -4,6 +4,6 @@ Bundle-Name: ru.taximaxim.codekeeper.ui.tests
 Bundle-SymbolicName: ru.taximaxim.codekeeper.ui.tests;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Fragment-Host: ru.taximaxim.codekeeper.ui
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Require-Bundle: org.junit
 Automatic-Module-Name: ru.taximaxim.codekeeper.ui.tests
