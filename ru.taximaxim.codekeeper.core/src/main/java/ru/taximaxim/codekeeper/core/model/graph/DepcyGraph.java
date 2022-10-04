@@ -53,7 +53,6 @@ public class DepcyGraph {
     }
 
     private final PgDatabase db;
-    private final boolean isShowColumns;
 
     /**
      * Copied database, graph source.<br>
@@ -65,15 +64,14 @@ public class DepcyGraph {
     }
 
     public DepcyGraph(PgDatabase graphSrc) {
-        this(graphSrc, false, false);
+        this(graphSrc, false);
     }
 
     /**
      * @param reduceGraph if true, merge column nodes into table nodes in the graph
      */
-    public DepcyGraph(PgDatabase graphSrc, boolean reduceGraph, boolean isShowColumns) {
+    public DepcyGraph(PgDatabase graphSrc, boolean reduceGraph) {
         db = (PgDatabase) graphSrc.deepCopy();
-        this.isShowColumns = isShowColumns;
         create();
         removeCycles();
 
@@ -140,7 +138,7 @@ public class DepcyGraph {
 
         List<PgStatement> toRemove = new ArrayList<>();
         for (PgStatement st : graph.vertexSet()) {
-            if (st.getStatementType() == DbObjType.COLUMN && !isShowColumns) {
+            if (st.getStatementType() == DbObjType.COLUMN) {
                 toRemove.add(st);
             }
         }

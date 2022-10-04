@@ -27,8 +27,8 @@ public class SimpleDepcyResolver {
     public SimpleDepcyResolver(PgDatabase oldDatabase, PgDatabase newDatabase, boolean isShowColumns) {
         this.oldDb = oldDatabase;
         this.newDb = newDatabase;
-        this.oldDepcyGraph = new DepcyGraph(oldDatabase, true, isShowColumns);
-        this.newDepcyGraph = newDatabase == null ? null : new DepcyGraph(newDatabase, true, isShowColumns);
+        this.oldDepcyGraph = new DepcyGraph(oldDatabase, !isShowColumns);
+        this.newDepcyGraph = newDatabase == null ? null : new DepcyGraph(newDatabase, !isShowColumns);
     }
 
     public Set<PgStatement> getCreateDepcies(PgStatement toCreate) {
