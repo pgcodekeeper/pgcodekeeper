@@ -14,9 +14,6 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import ru.taximaxim.codekeeper.core.Utils;
-import ru.taximaxim.codekeeper.core.formatter.FileFormatter;
-import ru.taximaxim.codekeeper.core.formatter.FormatConfiguration;
-import ru.taximaxim.codekeeper.core.formatter.FormatterException;
 import ru.taximaxim.codekeeper.core.formatter.FormatConfiguration.IndentType;
 import ru.taximaxim.codekeeper.core.log.Log;
 
