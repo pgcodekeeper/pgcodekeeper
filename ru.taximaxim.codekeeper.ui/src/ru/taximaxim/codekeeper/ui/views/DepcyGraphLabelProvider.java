@@ -61,7 +61,6 @@ class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvi
             case USER_MAPPING:
                 return "USER_MAPPING " + st.getBareName(); //$NON-NLS-1$
             case COLUMN:
-                // just for tests
                 return "COL " + st.getBareName(); //$NON-NLS-1$
             case CONSTRAINT:
                 if (!((AbstractConstraint)st).getForeignColumns().isEmpty()) {

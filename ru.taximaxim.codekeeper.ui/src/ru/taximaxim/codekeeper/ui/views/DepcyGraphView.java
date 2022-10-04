@@ -48,6 +48,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
 
     private final Action projectAction;
     private final Action remoteAction;
+    private final Action addColumnAction;
     private GraphViewer gv;
     private DepcyGraphLabelProvider labelProvider;
 
@@ -56,12 +57,15 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
     private IWorkbenchPart lastSelectionPart;
     private ISelection lastSelection;
     private IProject currentProject;
+    private boolean isShowColumns;
 
     public DepcyGraphView() {
         projectAction = new ProjectAction(Messages.DepcyGraphView_project, ImageDescriptor.createFromURL(
                 Activator.getContext().getBundle().getResource(FILE.ICONBALLBLUE)));
         remoteAction = new ToggleAction(Messages.DepcyGraphView_remote, ImageDescriptor.createFromURL(
                 Activator.getContext().getBundle().getResource(FILE.ICONBALLGREEN)));
+        addColumnAction = new ShowColumnAction(Messages.DepcyGraphView_show_columns, ImageDescriptor.createFromURL(
+                Activator.getContext().getBundle().getResource(FILE.ICONCOLUMN)));
     }
 
     @Override
@@ -74,9 +78,10 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
                 getViewSite(), null, COMMAND.ADD_DEPCY, CommandContributionItem.STYLE_PUSH);
         param.icon = ImageDescriptor.createFromURL(
                 Activator.getContext().getBundle().getResource(FILE.ICONADDDEP));
-        param.mode = CommandContributionItem.MODE_FORCE_TEXT;
 
         toolman.add(new CommandContributionItem(param));
+
+        toolman.add(new ActionContributionItem(addColumnAction));
 
         ActionContributionItem ac = new ActionContributionItem(projectAction);
         ac.setMode(ActionContributionItem.MODE_FORCE_TEXT);
@@ -169,11 +174,8 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
 
         boolean showProject = projectAction.isChecked();
         PgDatabase newDb = showProject ? dbPair.dbProject.getDbObject() : dbPair.dbRemote.getDbObject();
-        if (currentDb != newDb) {
-            currentDb = newDb;
-            depRes = new SimpleDepcyResolver(currentDb);
-        }
-
+        currentDb = newDb;
+        depRes = new SimpleDepcyResolver(currentDb, isShowColumns);
         if (currentDb == null || depRes == null) {
             gv.setInput(null);
             return;
@@ -220,6 +222,21 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         public ToggleAction(String text, ImageDescriptor imgDesc) {
             super(text, AS_RADIO_BUTTON);
             setImageDescriptor(imgDesc);
+        }
+    }
+
+    private class ShowColumnAction extends Action {
+
+        public ShowColumnAction(String text, ImageDescriptor imgDesc) {
+            super(text, AS_CHECK_BOX);
+            setImageDescriptor(imgDesc);
+            setToolTipText(text);
+        }
+
+        @Override
+        public void run() {
+            isShowColumns = addColumnAction.isChecked();
+            selectionChanged(lastSelectionPart, lastSelection);
         }
     }
 

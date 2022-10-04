@@ -198,6 +198,7 @@ public interface UIConsts {
         String ICONBALLBLUE = "/icons/ball_blue.png"; //$NON-NLS-1$
         String ICONBALLGREEN = "/icons/ball_green.png"; //$NON-NLS-1$
         String ICONADDDEP = "/icons/add_dep.png"; //$NON-NLS-1$
+        String ICONCOLUMN = "/icons/columns.png"; //$NON-NLS-1$
         String PGPASS = "/icons/pg_pass.png"; //$NON-NLS-1$
         String ZIP = "/icons/zip.png"; //$NON-NLS-1$
         String PG_ICON = "/icons/postgresql_icon.png"; //$NON-NLS-1$
