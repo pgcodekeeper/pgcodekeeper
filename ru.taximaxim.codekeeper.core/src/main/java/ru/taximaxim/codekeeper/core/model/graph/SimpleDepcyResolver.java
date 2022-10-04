@@ -20,15 +20,15 @@ public class SimpleDepcyResolver {
     private final DepcyGraph oldDepcyGraph;
     private final DepcyGraph newDepcyGraph;
 
-    public SimpleDepcyResolver(PgDatabase oldDatabase) {
-        this(oldDatabase, null);
+    public SimpleDepcyResolver(PgDatabase oldDatabase, boolean isShowColumns) {
+        this(oldDatabase, null, isShowColumns);
     }
 
-    public SimpleDepcyResolver(PgDatabase oldDatabase, PgDatabase newDatabase) {
+    public SimpleDepcyResolver(PgDatabase oldDatabase, PgDatabase newDatabase, boolean isShowColumns) {
         this.oldDb = oldDatabase;
         this.newDb = newDatabase;
-        this.oldDepcyGraph = new DepcyGraph(oldDatabase, true);
-        this.newDepcyGraph = newDatabase == null ? null : new DepcyGraph(newDatabase, true);
+        this.oldDepcyGraph = new DepcyGraph(oldDatabase, true, isShowColumns);
+        this.newDepcyGraph = newDatabase == null ? null : new DepcyGraph(newDatabase, true, isShowColumns);
     }
 
     public Set<PgStatement> getCreateDepcies(PgStatement toCreate) {

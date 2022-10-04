@@ -410,6 +410,8 @@ public final class Messages extends NLS {
 
     public static String DepcyGraphView_remote;
 
+    public static String DepcyGraphView_show_columns;
+
     public static String DependencyProperties_add_database;
 
     public static String DependencyProperties_add_directory;

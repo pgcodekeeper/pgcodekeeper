@@ -48,6 +48,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
 
     private final Action projectAction;
     private final Action remoteAction;
+    private Action addColumnAction;
     private GraphViewer gv;
     private DepcyGraphLabelProvider labelProvider;
 
@@ -56,6 +57,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
     private IWorkbenchPart lastSelectionPart;
     private ISelection lastSelection;
     private IProject currentProject;
+    boolean isShowColumns;
 
     public DepcyGraphView() {
         projectAction = new ProjectAction(Messages.DepcyGraphView_project, ImageDescriptor.createFromURL(
@@ -83,6 +85,21 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         toolman.add(ac);
 
         ac = new ActionContributionItem(remoteAction);
+        ac.setMode(ActionContributionItem.MODE_FORCE_TEXT);
+        toolman.add(ac);
+
+        addColumnAction = new Action("", Action.AS_CHECK_BOX) { //$NON-NLS-1$
+
+            @Override
+            public void run() {
+                isShowColumns = addColumnAction.isChecked();
+                selectionChanged(lastSelectionPart, lastSelection);
+            }
+        };
+        addColumnAction.setImageDescriptor(ImageDescriptor.createFromURL(
+                Activator.getContext().getBundle().getResource(FILE.ICONCOLUMN)));
+        addColumnAction.setToolTipText(Messages.DepcyGraphView_show_columns);
+        ac = new ActionContributionItem(addColumnAction);
         ac.setMode(ActionContributionItem.MODE_FORCE_TEXT);
         toolman.add(ac);
     }
@@ -169,11 +186,8 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
 
         boolean showProject = projectAction.isChecked();
         PgDatabase newDb = showProject ? dbPair.dbProject.getDbObject() : dbPair.dbRemote.getDbObject();
-        if (currentDb != newDb) {
-            currentDb = newDb;
-            depRes = new SimpleDepcyResolver(currentDb);
-        }
-
+        currentDb = newDb;
+        depRes = new SimpleDepcyResolver(currentDb, isShowColumns);
         if (currentDb == null || depRes == null) {
             gv.setInput(null);
             return;

@@ -8,8 +8,8 @@ import java.util.Set;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.core.model.difftree.TreeFlattener;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
+import ru.taximaxim.codekeeper.core.model.difftree.TreeFlattener;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
@@ -44,7 +44,7 @@ public class DepcyTreeExtender {
         this.dbTarget = dbTarget;
         this.root = root;
         userSelection = new TreeFlattener().onlySelected().flatten(root);
-        depRes = new SimpleDepcyResolver(dbSource, dbTarget);
+        depRes = new SimpleDepcyResolver(dbSource, dbTarget, false);
     }
 
     /**
