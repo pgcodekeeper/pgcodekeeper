@@ -13,7 +13,7 @@ A tool for easier PostgreSQL development.
 
 ## Download
 
-pgCodeKeeper requires Java (JRE) 1.8+ to run.
+pgCodeKeeper requires Java (JRE) 11+ to run.
 
 You can download prebuilt packages and CLI version from [GitHub releases](https://github.com/pgcodekeeper/pgcodekeeper/releases).
 
