@@ -5,7 +5,6 @@ import java.sql.SQLException;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.loader.JdbcQueries;
-import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.VexAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
@@ -59,9 +58,7 @@ public class PoliciesReader extends JdbcReader {
             }
         }
 
-        if (SupportedVersion.VERSION_10.isLE(loader.version)) {
-            p.setPermissive(res.getBoolean("polpermissive"));
-        }
+        p.setPermissive(res.getBoolean("polpermissive"));
 
         PgDatabase db = schema.getDatabase();
 

@@ -34,26 +34,19 @@ public class MetaStorage implements Serializable {
     }
 
     private static MetaStorage getObjectsFromResources(SupportedVersion ver) {
-        SupportedVersion version;
-        if (!SupportedVersion.VERSION_10.isLE(ver.getVersion())) {
-            version = SupportedVersion.VERSION_10;
-        } else {
-            version = ver;
-        }
-
-        MetaStorage db = STORAGE_CACHE.get(version);
+        MetaStorage db = STORAGE_CACHE.get(ver);
         if (db != null) {
             return db;
         }
 
         try {
             Path path = Utils.getFileFromOsgiRes(MetaStorage.class.getResource(
-                    FILE_NAME + version + ".ser"));
+                    FILE_NAME + ver + ".ser"));
             Object object = Utils.deserialize(path);
 
             if (object instanceof MetaStorage) {
                 MetaStorage storage = (MetaStorage) object;
-                MetaStorage other = STORAGE_CACHE.putIfAbsent(version, storage);
+                MetaStorage other = STORAGE_CACHE.putIfAbsent(ver, storage);
                 return other == null ? storage : other;
             }
         } catch (URISyntaxException | IOException e) {

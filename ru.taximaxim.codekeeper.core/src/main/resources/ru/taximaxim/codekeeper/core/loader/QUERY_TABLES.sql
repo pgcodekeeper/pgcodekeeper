@@ -32,6 +32,11 @@ SELECT  -- GENERAL
     tabsp.spcname AS table_space,
     d.description AS table_comment,
     am.amname AS access_method,
+    c.relispartition,
+    pg_catalog.pg_get_partkeydef(c.oid) AS partition_by,
+    pg_catalog.pg_get_expr(c.relpartbound, c.oid) AS partition_bound,
+    c.relrowsecurity AS row_security,
+    c.relforcerowsecurity AS force_security,
     
     -- inherits tables
     parents.inhrelnames,

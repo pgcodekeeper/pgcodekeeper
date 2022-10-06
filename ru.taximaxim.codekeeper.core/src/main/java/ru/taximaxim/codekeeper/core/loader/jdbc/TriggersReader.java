@@ -6,7 +6,6 @@ import java.sql.SQLException;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.loader.JdbcQueries;
-import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.CreateTrigger;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
@@ -142,10 +141,9 @@ public class TriggersReader extends JdbcReader {
         }
 
         //after Postgresql 10
-        if (SupportedVersion.VERSION_10.isLE(loader.version)) {
-            t.setOldTable(res.getString("tgoldtable"));
-            t.setNewTable(res.getString("tgnewtable"));
-        }
+        t.setOldTable(res.getString("tgoldtable"));
+        t.setNewTable(res.getString("tgnewtable"));
+
 
         String[] arrCols = getColArray(res, "cols");
         if (arrCols != null) {

@@ -108,13 +108,10 @@ public class FunctionsReader extends JdbcReader {
                     throws SQLException {
         function.setLanguageCost(res.getString("lang_name"), res.getFloat("procost"));
 
-        // since 9.5 PostgreSQL
-        if (SupportedVersion.VERSION_9_5.isLE(loader.version)) {
-            Long[] protrftypes = getColArray(res, "protrftypes");
-            if (protrftypes != null) {
-                for (Long s : protrftypes) {
-                    function.addTransform(loader.cachedTypesByOid.get(s).getFullName());
-                }
+        Long[] protrftypes = getColArray(res, "protrftypes");
+        if (protrftypes != null) {
+            for (Long s : protrftypes) {
+                function.addTransform(loader.cachedTypesByOid.get(s).getFullName());
             }
         }
 
@@ -129,14 +126,14 @@ public class FunctionsReader extends JdbcReader {
 
         // VOLATILE is default
         switch (res.getString("provolatile")) {
-            case "i":
-                function.setVolatileType("IMMUTABLE");
-                break;
-            case "s":
-                function.setVolatileType("STABLE");
-                break;
-            default :
-                break;
+        case "i":
+            function.setVolatileType("IMMUTABLE");
+            break;
+        case "s":
+            function.setVolatileType("STABLE");
+            break;
+        default:
+            break;
         }
 
         function.setStrict(res.getBoolean("proisstrict"));
@@ -145,18 +142,16 @@ public class FunctionsReader extends JdbcReader {
 
         // since 9.6 PostgreSQL
         // parallel mode: s - safe, r - restricted, u - unsafe
-        if (SupportedVersion.VERSION_9_6.isLE(loader.version)) {
-            String parMode = res.getString("proparallel");
-            switch (parMode) {
-                case "s":
-                    function.setParallel("SAFE");
-                    break;
-                case "r":
-                    function.setParallel("RESTRICTED");
-                    break;
-                default :
-                    break;
-            }
+        String parMode = res.getString("proparallel");
+        switch (parMode) {
+        case "s":
+            function.setParallel("SAFE");
+            break;
+        case "r":
+            function.setParallel("RESTRICTED");
+            break;
+        default:
+            break;
         }
 
         float rows = res.getFloat("prorows");
@@ -172,28 +167,28 @@ public class FunctionsReader extends JdbcReader {
                 String val = param.substring(eq + 1);
 
                 switch (par) {
-                    case "temp_tablespaces":
-                    case "session_preload_libraries":
-                    case "shared_preload_libraries":
-                    case "local_preload_libraries":
-                    case "search_path":
-                        function.addConfiguration(par, null);
-                        loader.submitAntlrTask(val, SQLParser::vex_eof,
-                                ctx -> {
-                                    StringBuilder sb = new StringBuilder();
-                                    for (VexContext vex : ctx.vex()) {
-                                        sb.append(PgDiffUtils.quoteString(
-                                                vex.getText()));
-                                        sb.append(", ");
-                                    }
-                                    sb.setLength(sb.length() - 2);
-                                    function.addConfiguration(par, sb.toString());
-                                });
-                        break;
-                    default :
-                        val = PgDiffUtils.quoteString(val);
-                        function.addConfiguration(PgDiffUtils.getQuotedName(par), val);
-                        break;
+                case "temp_tablespaces":
+                case "session_preload_libraries":
+                case "shared_preload_libraries":
+                case "local_preload_libraries":
+                case "search_path":
+                    function.addConfiguration(par, null);
+                    loader.submitAntlrTask(val, SQLParser::vex_eof,
+                            ctx -> {
+                                StringBuilder sb = new StringBuilder();
+                                for (VexContext vex : ctx.vex()) {
+                                    sb.append(PgDiffUtils.quoteString(
+                                            vex.getText()));
+                                    sb.append(", ");
+                                }
+                                sb.setLength(sb.length() - 2);
+                                function.addConfiguration(par, sb.toString());
+                            });
+                    break;
+                default :
+                    val = PgDiffUtils.quoteString(val);
+                    function.addConfiguration(PgDiffUtils.getQuotedName(par), val);
+                    break;
                 }
             }
         }
@@ -244,14 +239,14 @@ public class FunctionsReader extends JdbcReader {
         PgAggregate aggregate = new PgAggregate(funcName);
 
         switch (res.getString("aggkind")) {
-            case "o":
-                aggregate.setKind(AggKinds.ORDERED);
-                break;
-            case "h":
-                aggregate.setKind(AggKinds.HYPOTHETICAL);
-                break;
-            default:
-                break;
+        case "o":
+            aggregate.setKind(AggKinds.ORDERED);
+            break;
+        case "h":
+            aggregate.setKind(AggKinds.HYPOTHETICAL);
+            break;
+        default:
+            break;
         }
 
         //// The order is important for adding dependencies. Two steps.
@@ -299,26 +294,24 @@ public class FunctionsReader extends JdbcReader {
 
         // since 9.6 PostgreSQL
         // parallel mode: s - safe, r - restricted, u - unsafe
-        if (SupportedVersion.VERSION_9_6.isLE(loader.version)) {
-            String parMode = res.getString("proparallel");
-            switch (parMode) {
-                case "s":
-                    aggregate.setParallel("SAFE");
-                    break;
-                case "r":
-                    aggregate.setParallel("RESTRICTED");
-                    break;
-                default :
-                    break;
-            }
-
-            aggregate.setCombineFunc(getProcessedName(aggregate, res.getString("combinefunc_nsp"),
-                    res.getString("combinefunc"), AggFuncs.COMBINEFUNC));
-            aggregate.setSerialFunc(getProcessedName(aggregate, res.getString("serialfunc_nsp"),
-                    res.getString("serialfunc"), AggFuncs.SERIALFUNC));
-            aggregate.setDeserialFunc(getProcessedName(aggregate, res.getString("deserialfunc_nsp"),
-                    res.getString("deserialfunc"), AggFuncs.DESERIALFUNC));
+        String parMode = res.getString("proparallel");
+        switch (parMode) {
+        case "s":
+            aggregate.setParallel("SAFE");
+            break;
+        case "r":
+            aggregate.setParallel("RESTRICTED");
+            break;
+        default :
+            break;
         }
+
+        aggregate.setCombineFunc(getProcessedName(aggregate, res.getString("combinefunc_nsp"),
+                res.getString("combinefunc"), AggFuncs.COMBINEFUNC));
+        aggregate.setSerialFunc(getProcessedName(aggregate, res.getString("serialfunc_nsp"),
+                res.getString("serialfunc"), AggFuncs.SERIALFUNC));
+        aggregate.setDeserialFunc(getProcessedName(aggregate, res.getString("deserialfunc_nsp"),
+                res.getString("deserialfunc"), AggFuncs.DESERIALFUNC));
 
         // since 11 PostgreSQL
         if (SupportedVersion.VERSION_11.isLE(loader.version)) {
@@ -406,14 +399,14 @@ public class FunctionsReader extends JdbcReader {
 
     private ModifyType getModifyType(String modifier, AggKinds kind) {
         switch (modifier) {
-            case "r":
-                return AggKinds.NORMAL == kind ? null : ModifyType.READ_ONLY;
-            case "s":
-                return ModifyType.SHAREABLE;
-            case "w":
-                return AggKinds.NORMAL != kind ? null : ModifyType.READ_WRITE;
-            default :
-                throw new IllegalStateException("FinalFuncModifier '"+ modifier + "' doesn't support by AGGREGATE!");
+        case "r":
+            return AggKinds.NORMAL == kind ? null : ModifyType.READ_ONLY;
+        case "s":
+            return ModifyType.SHAREABLE;
+        case "w":
+            return AggKinds.NORMAL != kind ? null : ModifyType.READ_WRITE;
+        default :
+            throw new IllegalStateException("FinalFuncModifier '"+ modifier + "' doesn't support by AGGREGATE!");
         }
     }
 
