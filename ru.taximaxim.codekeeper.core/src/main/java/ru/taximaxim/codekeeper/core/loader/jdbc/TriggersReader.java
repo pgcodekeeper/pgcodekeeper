@@ -140,7 +140,6 @@ public class TriggersReader extends JdbcReader {
             }
         }
 
-        //after Postgresql 10
         t.setOldTable(res.getString("tgoldtable"));
         t.setNewTable(res.getString("tgnewtable"));
 
