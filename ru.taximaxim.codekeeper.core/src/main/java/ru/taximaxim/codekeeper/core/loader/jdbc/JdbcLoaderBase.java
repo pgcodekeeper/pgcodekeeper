@@ -164,15 +164,15 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
     public void setPrivileges(PgStatement st, String aclItemsArrayAsString, String columnName, String schemaName) {
         String signature;
         switch (st.getStatementType()) {
-            case FUNCTION:
-            case PROCEDURE:
-            case AGGREGATE:
-                signature = ((AbstractPgFunction) st).appendFunctionSignature(
-                        new StringBuilder(), false, true).toString();
-                break;
-            default:
-                signature = PgDiffUtils.getQuotedName(st.getName());
-                break;
+        case FUNCTION:
+        case PROCEDURE:
+        case AGGREGATE:
+            signature = ((AbstractPgFunction) st).appendFunctionSignature(
+                    new StringBuilder(), false, true).toString();
+            break;
+        default:
+            signature = PgDiffUtils.getQuotedName(st.getName());
+            break;
         }
 
         String owner = st.getOwner();
@@ -221,59 +221,59 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
         boolean isFunctionOrTypeOrDomain = false;
         String order;
         switch (type) {
-            case SEQUENCE:
-                order = "rUw";
-                break;
+        case SEQUENCE:
+            order = "rUw";
+            break;
 
-            case TABLE:
-            case VIEW:
-            case COLUMN:
-                stType = "TABLE";
-                if (columnId == null) {
-                    order = "raxdtDw";
-                } else {
-                    order = "raxw";
-                }
-                break;
+        case TABLE:
+        case VIEW:
+        case COLUMN:
+            stType = "TABLE";
+            if (columnId == null) {
+                order = "raxdtDw";
+            } else {
+                order = "raxw";
+            }
+            break;
 
-            case AGGREGATE:
-                // For grant permissions to AGGREGATE in postgres used operator 'FUNCTION'.
-                // For example grant permissions to AGGREGATE public.mode(boolean):
-                // GRANT ALL ON FUNCTION public.mode(boolean) TO test_user;
-                stType = "FUNCTION";
+        case AGGREGATE:
+            // For grant permissions to AGGREGATE in postgres used operator 'FUNCTION'.
+            // For example grant permissions to AGGREGATE public.mode(boolean):
+            // GRANT ALL ON FUNCTION public.mode(boolean) TO test_user;
+            stType = "FUNCTION";
 
-                // For grant permissions to AGGREGATE without arguments as signature
-                // used only left and right paren.
-                if (stSignature.contains("*")) {
-                    stSignature = stSignature.replace("*", "");
-                }
-                // $FALL-THROUGH$
-            case FUNCTION:
-            case PROCEDURE:
-                order = "X";
-                isFunctionOrTypeOrDomain = true;
-                break;
+            // For grant permissions to AGGREGATE without arguments as signature
+            // used only left and right paren.
+            if (stSignature.contains("*")) {
+                stSignature = stSignature.replace("*", "");
+            }
+            // $FALL-THROUGH$
+        case FUNCTION:
+        case PROCEDURE:
+            order = "X";
+            isFunctionOrTypeOrDomain = true;
+            break;
 
-            case SCHEMA:
-                order = "CU";
-                break;
+        case SCHEMA:
+            order = "CU";
+            break;
 
-            case TYPE:
-            case DOMAIN:
-                stType = "TYPE";
-                order = "U";
-                isFunctionOrTypeOrDomain = true;
-                break;
-            case SERVER:
-                stType = "FOREIGN SERVER";
-                order = "U";
-                break;
-            case FOREIGN_DATA_WRAPPER:
-                stType = "FOREIGN DATA WRAPPER";
-                order = "U";
-                break;
-            default:
-                throw new IllegalStateException(type + " doesn't support privileges!");
+        case TYPE:
+        case DOMAIN:
+            stType = "TYPE";
+            order = "U";
+            isFunctionOrTypeOrDomain = true;
+            break;
+        case SERVER:
+            stType = "FOREIGN SERVER";
+            order = "U";
+            break;
+        case FOREIGN_DATA_WRAPPER:
+            stType = "FOREIGN DATA WRAPPER";
+            order = "U";
+            break;
+        default:
+            throw new IllegalStateException(type + " doesn't support privileges!");
         }
         int possiblePrivilegeCount = order.length();
         if (stType == null) {
@@ -424,7 +424,7 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
     protected void queryCheckVersion() throws SQLException, InterruptedException {
         setCurrentOperation("version checking query");
         try (ResultSet res = runner.runScript(statement, JdbcQueries.QUERY_CHECK_VERSION)) {
-            version = res.next() ? res.getInt(1) : SupportedVersion.VERSION_9_2.getVersion();
+            version = res.next() ? res.getInt(1) : SupportedVersion.VERSION_10.getVersion();
         }
     }
 

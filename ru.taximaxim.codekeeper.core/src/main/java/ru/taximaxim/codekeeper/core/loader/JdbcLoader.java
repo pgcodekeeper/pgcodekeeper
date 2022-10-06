@@ -78,9 +78,7 @@ public class JdbcLoader extends JdbcLoaderBase {
             new ViewsReader(this).read();
             new TablesReader(this).read();
             new RulesReader(this).read();
-            if (SupportedVersion.VERSION_9_5.isLE(version)) {
-                new PoliciesReader(this).read();
-            }
+            new PoliciesReader(this).read();
             new TriggersReader(this).read();
             new IndicesReader(this).read();
             // non-ANTLR tasks
@@ -90,9 +88,7 @@ public class JdbcLoader extends JdbcLoaderBase {
             new FtsParsersReader(this).read();
             new FtsTemplatesReader(this).read();
             new FtsDictionariesReader(this).read();
-            if (SupportedVersion.VERSION_9_3.isLE(version)) {
-                new FtsConfigurationsReader(this).read();
-            }
+            new FtsConfigurationsReader(this).read();
             new OperatorsReader(this).read();
 
             new ExtensionsReader(this, d).read();
@@ -105,10 +101,6 @@ public class JdbcLoader extends JdbcLoaderBase {
                 }
             }
             new CollationsReader(this).read();
-
-            if (!SupportedVersion.VERSION_10.isLE(version)) {
-                SequencesReader.querySequencesData(d, this);
-            }
 
             connection.commit();
             finishLoaders();

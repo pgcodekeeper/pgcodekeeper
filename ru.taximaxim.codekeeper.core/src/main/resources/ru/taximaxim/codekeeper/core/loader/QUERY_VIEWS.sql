@@ -23,7 +23,8 @@ SELECT c.oid::bigint,
        subselect.column_acl,
        c.reloptions,
        c.relnamespace AS schema_oid,
-       am.amname AS access_method
+       am.amname AS access_method,
+       c.relispopulated
 FROM pg_catalog.pg_class c
 LEFT JOIN
     (SELECT attrelid,

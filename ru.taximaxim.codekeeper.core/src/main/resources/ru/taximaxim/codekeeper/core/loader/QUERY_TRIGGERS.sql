@@ -25,7 +25,9 @@ SELECT t.oid::bigint,
         WHERE a.attrelid = ccc.oid AND a.attnum = ANY(t.tgattr)) AS cols,
        pg_catalog.pg_get_triggerdef(t.oid,false) AS definition,
        d.description AS comment,
-       ccc.relnamespace AS schema_oid
+       ccc.relnamespace AS schema_oid,
+       t.tgoldtable, 
+       t.tgnewtable
 FROM pg_catalog.pg_class ccc
 RIGHT JOIN pg_catalog.pg_trigger t ON ccc.oid = t.tgrelid
 LEFT JOIN pg_catalog.pg_class relcon ON relcon.oid = t.tgconstrrelid
