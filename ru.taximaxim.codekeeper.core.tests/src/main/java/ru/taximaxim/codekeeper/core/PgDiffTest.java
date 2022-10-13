@@ -527,6 +527,8 @@ public class PgDiffTest {
                     {"add_column_and_change_table"},
                     // Tests scenario where view column comments is reordered.
                     {"change_view_column_comment_order"},
+                    // Tests scenario where logging of sequences changed.
+                    {"alter_sequence"},
                 });
     }
 

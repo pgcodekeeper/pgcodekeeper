@@ -17,6 +17,7 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 public class PgSequence extends AbstractSequence {
 
     private GenericColumn ownedBy;
+    private boolean islogged = true;
 
     public PgSequence(String name) {
         super(name);
@@ -26,7 +27,11 @@ public class PgSequence extends AbstractSequence {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
-        sbSQL.append("CREATE SEQUENCE ");
+        sbSQL.append("CREATE ");
+        if (!islogged) {
+            sbSQL.append("UNLOGGED ");
+        }
+        sbSQL.append("SEQUENCE ");
         appendIfNotExists(sbSQL);
         sbSQL.append(getQualifiedName());
 
@@ -125,6 +130,13 @@ public class PgSequence extends AbstractSequence {
 
         if (!Objects.equals(getOwner(), newSequence.getOwner())) {
             newSequence.alterOwnerSQL(sb);
+        }
+
+        if (islogged != newSequence.islogged) {
+            sb.append("\n\nALTER SEQUENCE ").append(newSequence.getQualifiedName())
+            .append(" SET")
+            .append(newSequence.islogged ? " LOGGED" : " UNLOGGED");
+            sb.append(';');
         }
 
         alterPrivileges(newSequence, sb);
@@ -227,7 +239,8 @@ public class PgSequence extends AbstractSequence {
     @Override
     public boolean compare(PgStatement obj) {
         return obj instanceof PgSequence && super.compare(obj)
-                && Objects.equals(ownedBy, ((PgSequence) obj).getOwnedBy());
+                && Objects.equals(ownedBy, ((PgSequence) obj).getOwnedBy())
+                && Objects.equals(isLogged(), ((PgSequence) obj).isLogged());
     }
 
     public GenericColumn getOwnedBy() {
@@ -244,10 +257,20 @@ public class PgSequence extends AbstractSequence {
         super.setDataType(dataType.toLowerCase(Locale.ROOT));
     }
 
+    public boolean isLogged() {
+        return islogged;
+    }
+
+    public void setLogged(boolean isLogged) {
+        this.islogged = isLogged;
+        resetHash();
+    }
+
     @Override
     public void computeHash(Hasher hasher) {
         super.computeHash(hasher);
         hasher.put(ownedBy == null ? 0 : ownedBy.hashCode());
+        hasher.put(islogged);
     }
 
     @Override
@@ -255,5 +278,12 @@ public class PgSequence extends AbstractSequence {
         PgSequence sequence = new PgSequence(getName());
         sequence.setOwnedBy(getOwnedBy());
         return sequence;
+    }
+
+    @Override
+    public AbstractSequence shallowCopy() {
+        PgSequence copy = (PgSequence) super.shallowCopy();
+        copy.setLogged(islogged);
+        return copy;
     }
 }

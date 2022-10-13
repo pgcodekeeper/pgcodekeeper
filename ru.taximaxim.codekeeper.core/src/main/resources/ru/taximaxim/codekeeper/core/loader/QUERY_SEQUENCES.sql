@@ -22,6 +22,7 @@ SELECT s.seqrelid AS oid,
        c.oid::bigint,
        c.relowner::bigint,
        c.relname,
+       c.relpersistence,
        descr.description AS comment,
        -- always in the same schema
        (SELECT t.relname FROM pg_catalog.pg_class t WHERE t.oid=d.refobjid) referenced_table_name,
