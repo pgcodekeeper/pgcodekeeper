@@ -6,9 +6,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.core.resources.IContainer;
@@ -41,7 +44,9 @@ import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.core.model.exporter.AbstractModelExporter;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrError;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
+import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -236,11 +241,20 @@ public class UIProjectLoader extends ProjectLoader {
         newDb.setArguments(args);
 
         // exclude empty schemas (except loaded from schema files) that have been loaded early
-        db.getSchemas().stream()
+        List<AbstractSchema> schemas = db.getSchemas().stream()
         .filter(sc -> schemaFiles.contains(AbstractModelExporter.getExportedFilename(sc))
-                || sc.hasChildren())
-        .forEach(st -> newDb.addChild(st.deepCopy()));
-        newDb.getObjReferences().putAll(db.getObjReferences());
+                || sc.hasChildren()).collect(Collectors.toList());
+        schemas.forEach(st -> newDb.addChild(st.deepCopy()));
+        db.getAssemblies().forEach(st -> newDb.addChild(st.deepCopy()));
+        db.getRoles().forEach(st -> newDb.addChild(st.deepCopy()));
+        db.getUsers().forEach(st -> newDb.addChild(st.deepCopy()));
+        for (Entry<String, Set<PgObjLocation>> entry : db.getObjReferences().entrySet()) {
+        	Set<PgObjLocation> locs = new HashSet<>();
+        	for (var val : entry.getValue()) {
+        		newDb.getDescendants().filter(st -> st.getBareName().equals(val.getBareName())).forEach(st -> locs.add(val));;
+        	}
+        	newDb.getObjReferences().put(entry.getKey(), locs);
+        }
         newDb.copyLaunchers(db);
         return newDb;
     }

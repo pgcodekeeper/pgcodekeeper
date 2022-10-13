@@ -178,6 +178,14 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
                 getAllObjDefinitions(), !isMsSql, db.getPostgresVersion()), errors);
         UIProjectLoader.markErrors(errors);
         objReferences.putAll(db.getObjReferences());
+        System.out.println();
+        for (List<MetaStatement> stList : objDefinitions.values()) {
+        	for (var st : stList) {
+        		System.out.print(st.getBareName() +", ");
+        	}
+        }
+        System.out.println();
+        System.out.println("референсы: " + objReferences.values());
         notifyListeners();
     }
 
