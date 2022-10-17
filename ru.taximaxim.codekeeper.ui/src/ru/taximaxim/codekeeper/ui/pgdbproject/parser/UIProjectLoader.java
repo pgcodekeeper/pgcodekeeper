@@ -248,12 +248,16 @@ public class UIProjectLoader extends ProjectLoader {
         db.getAssemblies().forEach(st -> newDb.addChild(st.deepCopy()));
         db.getRoles().forEach(st -> newDb.addChild(st.deepCopy()));
         db.getUsers().forEach(st -> newDb.addChild(st.deepCopy()));
+        List<PgStatement> descs = newDb.getDescendants().collect(Collectors.toList());
         for (Entry<String, Set<PgObjLocation>> entry : db.getObjReferences().entrySet()) {
         	Set<PgObjLocation> locs = new HashSet<>();
-        	for (var val : entry.getValue()) {
-        		newDb.getDescendants().filter(st -> st.getBareName().equals(val.getBareName())).forEach(st -> locs.add(val));;
+        	for (var val : entry.getValue()) {        		
+        			newDb.getDescendants().filter(st -> st.getName().equals(val.getObjName())).forEach(st -> locs.add(val));
+        		}
+        	
+        	if (!locs.isEmpty()) {        		
+        		newDb.getObjReferences().put(entry.getKey(), locs);
         	}
-        	newDb.getObjReferences().put(entry.getKey(), locs);
         }
         newDb.copyLaunchers(db);
         return newDb;
