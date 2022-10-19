@@ -170,16 +170,16 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
 
                 DbObjType type;
                 switch (result.getString("relkind")) {
-                    case "v":
-                    case "m":
-                        type = DbObjType.VIEW;
-                        break;
-                    case "S":
-                        type = DbObjType.SEQUENCE;
-                        break;
-                    default:
-                        type = DbObjType.TABLE;
-                        break;
+                case "v":
+                case "m":
+                    type = DbObjType.VIEW;
+                    break;
+                case "S":
+                    type = DbObjType.SEQUENCE;
+                    break;
+                default:
+                    type = DbObjType.TABLE;
+                    break;
                 }
                 MetaRelation relation = new MetaRelation(schemaName, relationName, type);
 
@@ -228,7 +228,9 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
     }
 
     private void readCasts(MetaStorage storage) throws InterruptedException, SQLException {
-        try (ResultSet result = statement.executeQuery(JdbcQueries.QUERY_SYSTEM_CASTS)) {
+        String sqlCast = SupportedVersion.VERSION_14.isLE(getVersion()) ? JdbcQueries.QUERY_SYSTEM_CASTS : JdbcQueries.QUERY_SYSTEM_CASTS_VERSION_15;
+
+        try (ResultSet result = statement.executeQuery(sqlCast)) {
             while (result.next()) {
                 PgDiffUtils.checkCancelled(monitor);
                 String source = result.getString("source");
@@ -238,17 +240,17 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                 String type = result.getString("castcontext");
                 CastContext ctx;
                 switch (type) {
-                    case "e":
-                        ctx = CastContext.EXPLICIT;
-                        break;
-                    case "a":
-                        ctx = CastContext.ASSIGNMENT;
-                        break;
-                    case "i":
-                        ctx = CastContext.IMPLICIT;
-                        break;
-                    default:
-                        throw new IllegalStateException("Unknown cast context: " + type);
+                case "e":
+                    ctx = CastContext.EXPLICIT;
+                    break;
+                case "a":
+                    ctx = CastContext.ASSIGNMENT;
+                    break;
+                case "i":
+                    ctx = CastContext.IMPLICIT;
+                    break;
+                default:
+                    throw new IllegalStateException("Unknown cast context: " + type);
                 }
                 storage.addMetaChild(new MetaCast(source, target, ctx));
             }

@@ -37,6 +37,7 @@ public final class JdbcQueries {
     public static final JdbcQuery QUERY_FOREIGN_DATA_WRAPPERS = new JdbcQuery();
     public static final JdbcQuery QUERY_SERVERS = new JdbcQuery();
     public static final JdbcQuery QUERY_CASTS = new JdbcQuery();
+    public static final JdbcQuery QUERY_CASTS_VERSION_15 = new JdbcQuery();
     public static final JdbcQuery QUERY_USER_MAPPING = new JdbcQuery();
     public static final JdbcQuery QUERY_SCHEMAS = new JdbcQuery();
 
@@ -61,6 +62,7 @@ public final class JdbcQueries {
     public static String QUERY_SYSTEM_RELATIONS;
     public static String QUERY_SYSTEM_OPERATORS;
     public static String QUERY_SYSTEM_CASTS;
+    public static String QUERY_SYSTEM_CASTS_VERSION_15;
 
     public static final JdbcQuery QUERY_MS_SCHEMAS = new JdbcQuery();
 

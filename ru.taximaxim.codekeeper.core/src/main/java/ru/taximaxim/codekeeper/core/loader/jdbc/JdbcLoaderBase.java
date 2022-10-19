@@ -430,8 +430,13 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
 
     protected void queryCheckLastSysOid() throws SQLException, InterruptedException {
         setCurrentOperation("last system oid checking query");
-        try (ResultSet res = runner.runScript(statement, JdbcQueries.QUERY_CHECK_LAST_SYS_OID)) {
-            lastSysOid = res.next() ? res.getLong(1) : 10_000;
+        if (!SupportedVersion.VERSION_14.isLE(getVersion())) {
+            try (ResultSet res = runner.runScript(statement,
+                    JdbcQueries.QUERY_CHECK_LAST_SYS_OID)) {
+                lastSysOid = res.next() ? res.getLong(1) : 10_000;
+            }
+        } else {
+            lastSysOid = 16383;
         }
     }
 
