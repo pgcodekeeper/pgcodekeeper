@@ -393,6 +393,7 @@ table_action
     | CLUSTER ON index_name=schema_qualified_name
     | SET WITHOUT (CLUSTER | OIDS)
     | SET WITH OIDS
+    | SET ACCESS METHOD access_method_name=schema_qualified_name
     | SET (LOGGED | UNLOGGED)
     | SET storage_parameters
     | RESET names_in_parens

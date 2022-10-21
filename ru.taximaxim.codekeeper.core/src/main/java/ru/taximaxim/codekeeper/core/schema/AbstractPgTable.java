@@ -193,6 +193,7 @@ public abstract class AbstractPgTable extends AbstractTable {
         compareOptions(newTable, sb);
         compareOwners(newTable, sb);
         compareTableOptions(newTable, sb);
+        compareAccesMethod(newTable, sb);
         alterPrivileges(newTable, sb);
         compareComment(newTable,sb);
 
@@ -201,7 +202,7 @@ public abstract class AbstractPgTable extends AbstractTable {
 
     @Override
     protected boolean isNeedRecreate(AbstractTable newTable) {
-        return !Objects.equals(getMethod(), ((AbstractPgTable) newTable).getMethod());
+        return false;
     }
 
     @Override
@@ -254,6 +255,21 @@ public abstract class AbstractPgTable extends AbstractTable {
             .append(" SET ")
             .append(newTable.getHasOids() ? "WITH" : "WITHOUT")
             .append(" OIDS;");
+        }
+    }
+
+    /**
+     * Compare <b>TABLE</b> access method by alter table statement
+     *
+     * @param newTable - new table
+     * @param sb - StringBuilder for statements
+     */
+    protected void compareAccesMethod(AbstractPgTable newTable, StringBuilder sb) {
+        if (!Objects.equals(method, newTable.getMethod())) {
+            sb.append(getAlterTable(true, true))
+            .append(" SET ACCESS METHOD ")
+            .append(newTable.getMethod())
+            .append(";");
         }
     }
 

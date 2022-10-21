@@ -49,11 +49,11 @@ DROP TABLE public.t10;
 
 DROP TABLE public.t11;
 
-DROP TABLE public.t12;
+ALTER TABLE ONLY public.t12 SET ACCESS METHOD gin;
 
-DROP TABLE public.t13;
+ALTER TABLE ONLY public.t13 SET ACCESS METHOD heap;
 
-DROP TABLE public.t14;
+ALTER TABLE ONLY public.t14 SET ACCESS METHOD hash;
 
 ALTER TABLE public.t15 SET (fillfactor=80);
 
@@ -124,17 +124,3 @@ CREATE TABLE public.t11 (
 	c2 character varying
 )
 PARTITION BY RANGE (c2 COLLATE public.french varchar_pattern_ops);
-
-CREATE TABLE public.t12 (
-	c1 integer
-)
-USING gin;
-
-CREATE TABLE public.t13 (
-	c1 integer
-);
-
-CREATE TABLE public.t14 (
-	c1 integer
-)
-USING hash;
