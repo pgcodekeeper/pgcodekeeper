@@ -1,5 +1,6 @@
 package ru.taximaxim.codekeeper.core.loader.jdbc;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -9,8 +10,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.loader.JdbcQueries;
-import ru.taximaxim.codekeeper.core.loader.JdbcQuery;
-import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser;
@@ -34,10 +33,11 @@ public class CastsReader implements PgCatalogStrings {
 
     public void read() throws SQLException, InterruptedException {
         loader.setCurrentOperation("casts query");
-        JdbcQuery queryCast = !SupportedVersion.VERSION_14.isLE(loader.version) ?  JdbcQueries.QUERY_CASTS : JdbcQueries.QUERY_CASTS_VERSION_15;
-        String query = queryCast.makeQuery(loader, "pg_cast");
+        String query = JdbcQueries.QUERY_CASTS.makeQuery(loader, "pg_cast");
 
-        try (ResultSet res = loader.runner.runScript(loader.statement, query)) {
+        try (PreparedStatement statement = loader.connection.prepareStatement(query)) {
+            statement.setLong(1, loader.lastSysOid);
+            ResultSet res = loader.runner.runScript(statement);
             while (res.next()) {
                 PgDiffUtils.checkCancelled(loader.monitor);
                 PgCast cast = getCast(res);
@@ -73,7 +73,6 @@ public class CastsReader implements PgCatalogStrings {
         default:
             throw new IllegalStateException("Unknown cast context: " + type);
         }
-
 
         String method = res.getString("castmethod");
         switch (method) {
