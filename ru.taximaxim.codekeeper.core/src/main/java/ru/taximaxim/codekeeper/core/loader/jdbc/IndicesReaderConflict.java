@@ -50,7 +50,6 @@ public class IndicesReader extends JdbcReader {
 
         i.setClusterIndex(res.getBoolean("isclustered"));
         i.setUnique(res.getBoolean("indisunique"));
-        i.setNullsDistinction(res.getBoolean("nullsnotdistinct"));
 
         // COMMENT
         String comment = res.getString("comment");
