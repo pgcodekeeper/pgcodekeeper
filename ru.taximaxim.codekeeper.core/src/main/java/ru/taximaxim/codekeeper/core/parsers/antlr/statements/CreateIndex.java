@@ -13,6 +13,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.IdentifierContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Including_indexContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Index_columnContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Index_columnsContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Index_nulls_distinctionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Index_restContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Index_whereContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Indirection_varContext;
@@ -80,7 +81,12 @@ public class CreateIndex extends ParserAbstract {
         }
 
         ind.setDefinition(getFullCtxText(sort));
-
+        Index_nulls_distinctionContext dist = rest.index_nulls_distinction();
+        if (dist != null && dist.getText().contains("NOT")) {
+        	ind.setNullsDistinction(false);
+        } else {
+        	ind.setNullsDistinction(true);
+        }
         With_storage_parameterContext options = rest.with_storage_parameter();
 
         if (options != null) {

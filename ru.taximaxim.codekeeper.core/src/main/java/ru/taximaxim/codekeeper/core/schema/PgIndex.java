@@ -74,6 +74,10 @@ public class PgIndex extends AbstractIndex {
             sbSQL.setLength(sbSQL.length() - 2);
             sbSQL.append(')');
         }
+        
+        if (!isNullsDistinct()) {
+        	sbSQL.append("\nNULLS NOT DISTINCT");
+        }
 
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, String> entry : options.entrySet()) {

@@ -30,9 +30,10 @@ implements PgSimpleOptionContainer {
     private String tablespace;
     private boolean unique;
     private boolean clusterIndex;
+    private boolean nullsDistinction;
 
     private final Set<String> columns = new HashSet<>();
-
+    
     protected final Set<String> includes = new LinkedHashSet<>();
     protected final Map<String, String> options = new LinkedHashMap<>();
 
@@ -54,7 +55,16 @@ implements PgSimpleOptionContainer {
         return definition;
     }
 
-    public void setClusterIndex(boolean value) {
+    public boolean isNullsDistinct() {
+		return nullsDistinction;
+	}
+
+	public void setNullsDistinction(boolean value) {
+		nullsDistinction = value;
+		resetHash();
+	}
+
+	public void setClusterIndex(boolean value) {
         clusterIndex = value;
         resetHash();
     }
