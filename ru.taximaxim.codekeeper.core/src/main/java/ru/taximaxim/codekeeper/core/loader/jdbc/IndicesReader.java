@@ -47,10 +47,13 @@ public class IndicesReader extends JdbcReader {
                 pair -> CreateIndex.parseIndex(pair.getFirst(), tablespace, schemaName, tableName, i,
                         schema.getDatabase(), loader.getCurrentLocation(), pair.getSecond()));
         loader.setAuthor(i, res);
-
+        
         i.setClusterIndex(res.getBoolean("isclustered"));
         i.setUnique(res.getBoolean("indisunique"));
-        i.setNullsDistinction(res.getBoolean("nullsnotdistinct"));
+        
+        if (loader.getVersion() >= 150000) {        	
+        	i.setNullsDistinction(res.getBoolean("nullsnotdistinct"));
+        }
 
         // COMMENT
         String comment = res.getString("comment");
