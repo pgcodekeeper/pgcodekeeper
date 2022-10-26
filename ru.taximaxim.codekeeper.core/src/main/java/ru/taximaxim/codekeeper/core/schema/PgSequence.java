@@ -238,9 +238,13 @@ public class PgSequence extends AbstractSequence {
 
     @Override
     public boolean compare(PgStatement obj) {
-        return obj instanceof PgSequence && super.compare(obj)
-                && Objects.equals(ownedBy, ((PgSequence) obj).getOwnedBy())
-                && Objects.equals(isLogged(), ((PgSequence) obj).isLogged());
+        if (obj instanceof PgSequence && super.compare(obj)) {
+            PgSequence seq = (PgSequence) obj;
+            return Objects.equals(ownedBy, seq.getOwnedBy())
+                    && isLogged == seq.isLogged();
+        }
+
+        return false;
     }
 
     public GenericColumn getOwnedBy() {
