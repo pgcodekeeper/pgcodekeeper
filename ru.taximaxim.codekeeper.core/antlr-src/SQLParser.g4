@@ -1424,9 +1424,25 @@ alter_conversion_statement
     ;
 
 create_publication_statement
-    : PUBLICATION identifier 
-    (FOR TABLE only_table_multiply (COMMA only_table_multiply)* | FOR ALL TABLES)?
+    : PUBLICATION identifier
+    (FOR ALL TABLES | FOR publication_object)?
     with_storage_parameter?
+    ;
+
+publication_object
+    : (TABLE publication_table_only? (COMMA publication_table_only)*)? (publication_schema? (COMMA publication_schema)*)?
+    ;
+
+publication_table_only
+    : only_table_multiply publication_body?
+    ;
+
+publication_body
+    : (col=names_in_parens (COMMA col=names_in_parens)*)? (WHERE LEFT_PAREN expression=vex RIGHT_PAREN)?
+    ;
+
+publication_schema
+    : TABLES IN SCHEMA (identifier | CURRENT_SCHEMA) (COMMA (identifier | CURRENT_SCHEMA))*
     ;
 
 alter_publication_statement
@@ -1437,7 +1453,7 @@ alter_publication_action
     : rename_to
     | owner_to
     | SET storage_parameters
-    | (ADD | DROP | SET) TABLE only_table_multiply (COMMA only_table_multiply)*
+    | (ADD | DROP | SET) publication_object
     ;
 
 only_table_multiply
