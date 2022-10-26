@@ -52,6 +52,7 @@ import ru.taximaxim.codekeeper.core.schema.PgStatementWithSearchPath;
 public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalogStrings {
 
     private static final int DEFAULT_OBJECTS_COUNT = 100;
+    private static final int LAST_SYS_OID = 16383;;
 
     protected final JdbcConnector connector;
     protected final SubMonitor monitor;
@@ -415,7 +416,7 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
                 long oid = res.getLong(OID);
                 JdbcType type = new JdbcType(oid, res.getString("typname"),
                         res.getLong("typelem"), res.getLong("typarray"),
-                        res.getString(NAMESPACE_NSPNAME), res.getString("elemname"), Consts.LASTSYSOID);
+                        res.getString(NAMESPACE_NSPNAME), res.getString("elemname"), lastSysOid);
                 cachedTypesByOid.put(oid, type);
             }
         }
@@ -430,13 +431,13 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
 
     protected void queryCheckLastSysOid() throws SQLException, InterruptedException {
         setCurrentOperation("last system oid checking query");
-        if (!SupportedVersion.VERSION_14.isLE(getVersion())) {
+        if (SupportedVersion.VERSION_15.isLE(getVersion())) {
+            lastSysOid = LAST_SYS_OID;
+        } else {
             try (ResultSet res = runner.runScript(statement,
                     JdbcQueries.QUERY_CHECK_LAST_SYS_OID)) {
                 lastSysOid = res.next() ? res.getLong(1) : 10_000;
             }
-        } else {
-            lastSysOid = Consts.LASTSYSOID;
         }
     }
 
