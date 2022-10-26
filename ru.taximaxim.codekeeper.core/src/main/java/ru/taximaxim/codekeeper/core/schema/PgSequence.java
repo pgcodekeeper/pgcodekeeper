@@ -17,7 +17,7 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 public class PgSequence extends AbstractSequence {
 
     private GenericColumn ownedBy;
-    private boolean islogged = true;
+    private boolean isLogged = true;
 
     public PgSequence(String name) {
         super(name);
@@ -28,7 +28,7 @@ public class PgSequence extends AbstractSequence {
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE ");
-        if (!islogged) {
+        if (!isLogged) {
             sbSQL.append("UNLOGGED ");
         }
         sbSQL.append("SEQUENCE ");
@@ -132,10 +132,10 @@ public class PgSequence extends AbstractSequence {
             newSequence.alterOwnerSQL(sb);
         }
 
-        if (islogged != newSequence.islogged) {
+        if (isLogged != newSequence.isLogged) {
             sb.append("\n\nALTER SEQUENCE ").append(newSequence.getQualifiedName())
             .append(" SET")
-            .append(newSequence.islogged ? " LOGGED" : " UNLOGGED");
+            .append(newSequence.isLogged ? " LOGGED" : " UNLOGGED");
             sb.append(';');
         }
 
@@ -258,11 +258,11 @@ public class PgSequence extends AbstractSequence {
     }
 
     public boolean isLogged() {
-        return islogged;
+        return isLogged;
     }
 
     public void setLogged(boolean isLogged) {
-        this.islogged = isLogged;
+        this.isLogged = isLogged;
         resetHash();
     }
 
@@ -270,7 +270,7 @@ public class PgSequence extends AbstractSequence {
     public void computeHash(Hasher hasher) {
         super.computeHash(hasher);
         hasher.put(ownedBy == null ? 0 : ownedBy.hashCode());
-        hasher.put(islogged);
+        hasher.put(isLogged);
     }
 
     @Override
@@ -283,7 +283,7 @@ public class PgSequence extends AbstractSequence {
     @Override
     public AbstractSequence shallowCopy() {
         PgSequence copy = (PgSequence) super.shallowCopy();
-        copy.setLogged(islogged);
+        copy.setLogged(isLogged);
         return copy;
     }
 }
