@@ -65,7 +65,7 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
     protected Map<Long, JdbcType> cachedTypesByOid;
     protected final Map<Long, AbstractSchema> schemaIds = new HashMap<>();
     protected int version;
-    protected long lastSysOid = 16383;
+    protected long lastSysOid;
     protected JdbcRunner runner;
     private String extensionSchema;
 
@@ -415,7 +415,7 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
                 long oid = res.getLong(OID);
                 JdbcType type = new JdbcType(oid, res.getString("typname"),
                         res.getLong("typelem"), res.getLong("typarray"),
-                        res.getString(NAMESPACE_NSPNAME), res.getString("elemname"), lastSysOid);
+                        res.getString(NAMESPACE_NSPNAME), res.getString("elemname"), Consts.LASTSYSOID);
                 cachedTypesByOid.put(oid, type);
             }
         }
@@ -435,6 +435,8 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
                     JdbcQueries.QUERY_CHECK_LAST_SYS_OID)) {
                 lastSysOid = res.next() ? res.getLong(1) : 10_000;
             }
+        } else {
+            lastSysOid = Consts.LASTSYSOID;
         }
     }
 

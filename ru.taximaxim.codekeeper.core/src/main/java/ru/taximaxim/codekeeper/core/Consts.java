@@ -42,6 +42,8 @@ public interface Consts {
 
     String TRUST_CERT = "trustServerCertificate";
 
+    long LASTSYSOID = 16383;
+
     enum WORK_DIR_NAMES {
         SCHEMA,
         EXTENSION,
