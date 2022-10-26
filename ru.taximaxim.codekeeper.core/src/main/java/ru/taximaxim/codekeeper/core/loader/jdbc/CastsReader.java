@@ -1,5 +1,6 @@
 package ru.taximaxim.codekeeper.core.loader.jdbc;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -34,7 +35,9 @@ public class CastsReader implements PgCatalogStrings {
         loader.setCurrentOperation("casts query");
         String query = JdbcQueries.QUERY_CASTS.makeQuery(loader, "pg_cast");
 
-        try (ResultSet res = loader.runner.runScript(loader.statement, query)) {
+        try (PreparedStatement statement = loader.connection.prepareStatement(query)) {
+            statement.setLong(1, loader.lastSysOid);
+            ResultSet res = loader.runner.runScript(statement);
             while (res.next()) {
                 PgDiffUtils.checkCancelled(loader.monitor);
                 PgCast cast = getCast(res);
@@ -58,46 +61,45 @@ public class CastsReader implements PgCatalogStrings {
 
         String type = res.getString("castcontext");
         switch (type) {
-            case "e":
-                cast.setContext(CastContext.EXPLICIT);
-                break;
-            case "a":
-                cast.setContext(CastContext.ASSIGNMENT);
-                break;
-            case "i":
-                cast.setContext(CastContext.IMPLICIT);
-                break;
-            default:
-                throw new IllegalStateException("Unknown cast context: " + type);
+        case "e":
+            cast.setContext(CastContext.EXPLICIT);
+            break;
+        case "a":
+            cast.setContext(CastContext.ASSIGNMENT);
+            break;
+        case "i":
+            cast.setContext(CastContext.IMPLICIT);
+            break;
+        default:
+            throw new IllegalStateException("Unknown cast context: " + type);
         }
-
 
         String method = res.getString("castmethod");
         switch (method) {
-            case "f":
-                cast.setMethod(CastMethod.FUNCTION);
-                String function = res.getString("func");
-                JdbcReader.checkObjectValidity(function, DbObjType.CAST, cast.getName());
-                cast.setFunction(function);
-                loader.submitAntlrTask(function, SQLParser::function_args_parser, ctx -> {
-                    List<ParserRuleContext> ids = ParserAbstract.getIdentifiers(ctx.schema_qualified_name());
-                    String schemaName = QNameParser.getSchemaName(ids);
-                    if (schemaName != null && !Utils.isPgSystemSchema(schemaName)) {
-                        String funcName = ParserAbstract.parseSignature(
-                                QNameParser.getFirstName(ids), ctx.function_args());
-                        cast.addDep(new GenericColumn(schemaName, funcName, DbObjType.FUNCTION));
-                    }
-                });
+        case "f":
+            cast.setMethod(CastMethod.FUNCTION);
+            String function = res.getString("func");
+            JdbcReader.checkObjectValidity(function, DbObjType.CAST, cast.getName());
+            cast.setFunction(function);
+            loader.submitAntlrTask(function, SQLParser::function_args_parser, ctx -> {
+                List<ParserRuleContext> ids = ParserAbstract.getIdentifiers(ctx.schema_qualified_name());
+                String schemaName = QNameParser.getSchemaName(ids);
+                if (schemaName != null && !Utils.isPgSystemSchema(schemaName)) {
+                    String funcName = ParserAbstract.parseSignature(
+                            QNameParser.getFirstName(ids), ctx.function_args());
+                    cast.addDep(new GenericColumn(schemaName, funcName, DbObjType.FUNCTION));
+                }
+            });
 
-                break;
-            case "i":
-                cast.setMethod(CastMethod.INOUT);
-                break;
-            case "b":
-                cast.setMethod(CastMethod.BINARY);
-                break;
-            default:
-                throw new IllegalStateException("Unknown cast method: " + type);
+            break;
+        case "i":
+            cast.setMethod(CastMethod.INOUT);
+            break;
+        case "b":
+            cast.setMethod(CastMethod.BINARY);
+            break;
+        default:
+            throw new IllegalStateException("Unknown cast method: " + type);
         }
 
         String comment = res.getString("description");

@@ -5,7 +5,8 @@ public enum SupportedVersion {
     VERSION_11 (110000, "11.0"),
     VERSION_12 (120000, "12.0"),
     VERSION_13 (130000, "13.0"),
-    VERSION_14 (140000, "14.0");
+    VERSION_14 (140000, "14.0"),
+    VERSION_15 (150000, "15.0");
 
     private final int version;
     private final String text;
