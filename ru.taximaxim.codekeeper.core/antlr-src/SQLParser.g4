@@ -1279,7 +1279,7 @@ argmode
     ;
 
 create_sequence_statement
-    : ((TEMPORARY | TEMP) | UNLOGGED)? SEQUENCE if_not_exists? name=schema_qualified_name (sequence_body)*
+    : (TEMPORARY | TEMP) | UNLOGGED? SEQUENCE if_not_exists? name=schema_qualified_name (sequence_body)*
     ;
 
 sequence_body
