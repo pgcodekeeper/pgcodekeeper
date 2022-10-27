@@ -394,7 +394,7 @@ table_action
     | SET WITHOUT (CLUSTER | OIDS)
     | SET WITH OIDS
     | SET ACCESS METHOD access_method_name=identifier
-    | SET (LOGGED | UNLOGGED)
+    | set_logged
     | SET storage_parameters
     | RESET names_in_parens
     | define_foreign_options
@@ -520,6 +520,7 @@ grant_option_for
 alter_sequence_statement
     : SEQUENCE if_exists? name=schema_qualified_name
      ( (sequence_body | RESTART (WITH? signed_number_literal)?)*
+    | set_logged
     | set_schema
     | rename_to)
     ;
@@ -1280,7 +1281,7 @@ argmode
     ;
 
 create_sequence_statement
-    : (TEMPORARY | TEMP)? SEQUENCE if_not_exists? name=schema_qualified_name (sequence_body)*
+    : (TEMPORARY | TEMP | UNLOGGED)? SEQUENCE if_not_exists? name=schema_qualified_name (sequence_body)*
     ;
 
 sequence_body
@@ -1755,6 +1756,10 @@ rename_to
 
 set_schema
     : SET SCHEMA identifier
+    ;
+
+set_logged
+    : SET (LOGGED | UNLOGGED)
     ;
 
 table_column_privilege

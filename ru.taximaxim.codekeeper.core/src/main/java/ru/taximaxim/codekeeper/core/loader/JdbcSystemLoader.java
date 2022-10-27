@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.core.loader;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -62,6 +63,8 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
             statement.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY");
             statement.execute("SET timezone = " + PgDiffUtils.quoteString(connector.getTimezone()));
 
+            queryCheckVersion();
+            queryCheckLastSysOid();
             queryTypesForCache();
 
             readRelations(storage);
@@ -228,9 +231,9 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
     }
 
     private void readCasts(MetaStorage storage) throws InterruptedException, SQLException {
-        String sqlCast = SupportedVersion.VERSION_14.isLE(getVersion()) ? JdbcQueries.QUERY_SYSTEM_CASTS : JdbcQueries.QUERY_SYSTEM_CASTS_VERSION_15;
-
-        try (ResultSet result = statement.executeQuery(sqlCast)) {
+        try (PreparedStatement statement = connection.prepareStatement(JdbcQueries.QUERY_SYSTEM_CASTS)) {
+            statement.setLong(1, lastSysOid);
+            ResultSet result = runner.runScript(statement);
             while (result.next()) {
                 PgDiffUtils.checkCancelled(monitor);
                 String source = result.getString("source");
