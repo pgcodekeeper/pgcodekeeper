@@ -164,9 +164,6 @@ public class AlterTable extends TableAbstract {
                     regTable.setRowSecurity(tablAction.ENABLE() != null);
                 }
             }
-            if (tablAction.ACCESS() != null) {
-                tabl.setMethod(tablAction.access_method_name.getText());
-            }
         }
     }
 
