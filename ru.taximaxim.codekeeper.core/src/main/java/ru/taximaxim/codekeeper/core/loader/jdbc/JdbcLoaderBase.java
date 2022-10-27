@@ -53,6 +53,13 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
 
     private static final int DEFAULT_OBJECTS_COUNT = 100;
 
+    /**
+     * OID of the first user object
+     *
+     * @see https://github.com/postgres/postgres/blob/master/src/include/access/transam.h
+     */
+    private static final int FIRST_NORMAL_OBJECT_ID = 16384;
+
     protected final JdbcConnector connector;
     protected final SubMonitor monitor;
     protected final PgDiffArguments args;
@@ -65,7 +72,7 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
     protected Map<Long, JdbcType> cachedTypesByOid;
     protected final Map<Long, AbstractSchema> schemaIds = new HashMap<>();
     protected int version;
-    private long lastSysOid;
+    protected long lastSysOid;
     protected JdbcRunner runner;
     private String extensionSchema;
 
@@ -430,8 +437,13 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
 
     protected void queryCheckLastSysOid() throws SQLException, InterruptedException {
         setCurrentOperation("last system oid checking query");
-        try (ResultSet res = runner.runScript(statement, JdbcQueries.QUERY_CHECK_LAST_SYS_OID)) {
-            lastSysOid = res.next() ? res.getLong(1) : 10_000;
+        if (SupportedVersion.VERSION_15.isLE(getVersion())) {
+            lastSysOid = FIRST_NORMAL_OBJECT_ID - 1L;
+        } else {
+            try (ResultSet res = runner.runScript(statement,
+                    JdbcQueries.QUERY_CHECK_LAST_SYS_OID)) {
+                lastSysOid = res.next() ? res.getLong(1) : 10_000;
+            }
         }
     }
 

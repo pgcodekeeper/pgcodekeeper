@@ -26,6 +26,10 @@ public class CreateSequence extends ParserAbstract {
     public void parseObject() {
         List<ParserRuleContext> ids = getIdentifiers(ctx.name);
         PgSequence sequence = new PgSequence(QNameParser.getFirstName(ids));
+        if (ctx.UNLOGGED() != null) {
+            sequence.setLogged(false);
+        }
+
         fillSequence(sequence, ctx.sequence_body());
         addSafe(getSchemaSafe(ids), sequence, ids);
     }
