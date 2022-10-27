@@ -393,6 +393,7 @@ table_action
     | CLUSTER ON index_name=schema_qualified_name
     | SET WITHOUT (CLUSTER | OIDS)
     | SET WITH OIDS
+    | SET ACCESS METHOD access_method_name=identifier
     | set_logged
     | SET storage_parameters
     | RESET names_in_parens
@@ -558,6 +559,7 @@ materialized_view_action
     | ALTER COLUMN? identifier SET STORAGE storage_option
     | CLUSTER ON index_name=schema_qualified_name
     | SET WITHOUT CLUSTER
+    | SET ACCESS METHOD access_method_name=identifier
     | SET storage_parameters
     | RESET names_in_parens
     ;
