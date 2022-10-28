@@ -31,5 +31,7 @@ ALTER SUBSCRIPTION testsub_foo SET (synchronous_commit = foobar);
 ALTER SUBSCRIPTION testsub_foo RENAME TO testsub;
 ALTER SUBSCRIPTION testsub OWNER TO regress_subscription_user2;
 ALTER SUBSCRIPTION testsub SET (slot_name = NONE);
+ALTER SUBSCRIPTION regress_testsub SKIP (lsn = NONE);
+ALTER SUBSCRIPTION regress_testsub SKIP (lsn = '0/12345');
 DROP SUBSCRIPTION IF EXISTS testsub;
 DROP SUBSCRIPTION testsub;
