@@ -52,6 +52,8 @@ ALTER DATABASE test_database SET TABLESPACE new_tablespace;
 ALTER DATABASE test_database SET TABLESPACE = 'test_tablespace';
 ALTER DATABASE test_database TABLESPACE 'test_tablespace';
 ALTER DATABASE test_database WITH TABLESPACE = test_tablespace;
+ALTER DATABASE test_database REFRESH COLLATION VERSION;
+
 ALTER DATABASE name SET enable_indexscan = DEFAULT;
 ALTER DATABASE name SET enable_indexscan TO off;
 ALTER DATABASE name SET enable_indexscan FROM CURRENT;

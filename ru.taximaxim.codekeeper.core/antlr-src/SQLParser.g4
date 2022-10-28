@@ -1540,6 +1540,7 @@ alter_database_action
     | rename_to
     | owner_to
     | set_tablespace
+    | REFRESH COLLATION VERSION
     | set_reset_parameter
     ;
 
