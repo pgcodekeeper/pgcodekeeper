@@ -1347,6 +1347,7 @@ alter_subscription_action
     | ENABLE
     | DISABLE
     | SET storage_parameters
+    | SKIP_ LEFT_PAREN storage_parameter_option RIGHT_PAREN
     | owner_to
     | rename_to
     ;
