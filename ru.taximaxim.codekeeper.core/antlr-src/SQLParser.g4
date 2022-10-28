@@ -393,7 +393,8 @@ table_action
     | CLUSTER ON index_name=schema_qualified_name
     | SET WITHOUT (CLUSTER | OIDS)
     | SET WITH OIDS
-    | SET (LOGGED | UNLOGGED)
+    | SET ACCESS METHOD access_method_name=identifier
+    | set_logged
     | SET storage_parameters
     | RESET names_in_parens
     | define_foreign_options
@@ -519,6 +520,7 @@ grant_option_for
 alter_sequence_statement
     : SEQUENCE if_exists? name=schema_qualified_name
      ( (sequence_body | RESTART (WITH? signed_number_literal)?)*
+    | set_logged
     | set_schema
     | rename_to)
     ;
@@ -557,6 +559,7 @@ materialized_view_action
     | ALTER COLUMN? identifier SET STORAGE storage_option
     | CLUSTER ON index_name=schema_qualified_name
     | SET WITHOUT CLUSTER
+    | SET ACCESS METHOD access_method_name=identifier
     | SET storage_parameters
     | RESET names_in_parens
     ;
@@ -1282,7 +1285,7 @@ argmode
     ;
 
 create_sequence_statement
-    : (TEMPORARY | TEMP)? SEQUENCE if_not_exists? name=schema_qualified_name (sequence_body)*
+    : (TEMPORARY | TEMP | UNLOGGED)? SEQUENCE if_not_exists? name=schema_qualified_name (sequence_body)*
     ;
 
 sequence_body
@@ -1428,9 +1431,18 @@ alter_conversion_statement
     ;
 
 create_publication_statement
-    : PUBLICATION identifier 
-    (FOR TABLE only_table_multiply (COMMA only_table_multiply)* | FOR ALL TABLES)?
+    : PUBLICATION identifier
+    (FOR ALL TABLES | FOR publication_object (COMMA publication_object)*)?
     with_storage_parameter?
+    ;
+
+publication_object
+    : TABLE publication_table_only? (COMMA publication_table_only)*
+    | TABLES IN SCHEMA (identifier | CURRENT_SCHEMA) (COMMA (identifier | CURRENT_SCHEMA))*
+    ;
+
+publication_table_only
+    : only_table_multiply names_in_parens? (WHERE LEFT_PAREN expression=vex RIGHT_PAREN)?
     ;
 
 alter_publication_statement
@@ -1441,7 +1453,7 @@ alter_publication_action
     : rename_to
     | owner_to
     | SET storage_parameters
-    | (ADD | DROP | SET) TABLE only_table_multiply (COMMA only_table_multiply)*
+    | (ADD | DROP | SET) publication_object (COMMA publication_object)*
     ;
 
 only_table_multiply
@@ -1757,6 +1769,10 @@ rename_to
 
 set_schema
     : SET SCHEMA identifier
+    ;
+
+set_logged
+    : SET (LOGGED | UNLOGGED)
     ;
 
 table_column_privilege

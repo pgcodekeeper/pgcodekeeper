@@ -29,6 +29,10 @@ public class SequencesReader extends JdbcReader {
         String refTable = res.getString("referenced_table_name");
         String refColumn = res.getString("ref_col_name");
 
+        if ("u".equals(res.getString("relpersistence"))) {
+            s.setLogged(false);
+        }
+
         String identityType = null;
         identityType = res.getString("attidentity");
         if (identityType != null && identityType.isEmpty()) {
