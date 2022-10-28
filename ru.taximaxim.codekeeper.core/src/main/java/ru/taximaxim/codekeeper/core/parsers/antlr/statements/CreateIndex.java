@@ -81,14 +81,11 @@ public class CreateIndex extends ParserAbstract {
         }
 
         ind.setDefinition(getFullCtxText(sort));
-        Index_nulls_distinctionContext dist = rest.index_nulls_distinction();
-        if (dist != null && dist.getText().contains("NOT")) {
-        	ind.setNullsDistinction(false);
-        } else {
-        	ind.setNullsDistinction(true);
-        }
-        With_storage_parameterContext options = rest.with_storage_parameter();
 
+        Index_nulls_distinctionContext dist = rest.index_nulls_distinction();
+        ind.setNullsDistinction(dist == null || dist.NOT() == null);
+
+        With_storage_parameterContext options = rest.with_storage_parameter();
         if (options != null) {
             for (Storage_parameter_optionContext option : options.storage_parameters().storage_parameter_option()) {
                 String key = option.storage_parameter_name().getText();
