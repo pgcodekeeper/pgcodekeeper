@@ -32,6 +32,14 @@ CREATE DATABASE test_database IS_TEMPLATE 0;
 CREATE DATABASE test_database IS_TEMPLATE = false;
 CREATE DATABASE test_database IS_TEMPLATE = 'false';
 CREATE DATABASE test_database WITH IS_TEMPLATE = false OWNER 'user_name' TEMPLATE DEFAULT TABLESPACE test_tablespace;
+CREATE DATABASE music2 LOCALE 'sv_SE.iso885915' ENCODING LATIN9 TEMPLATE template0;
+CREATE DATABASE test_database STRATEGY = strategy_method;
+CREATE DATABASE test_database icu_locale = test_icu_locale;
+CREATE DATABASE test_database LOCALE_PROVIDER = test_locale_p;
+CREATE DATABASE test_database OID = 15678;
+CREATE DATABASE test_database COLLATION_VERSION = 3.21;
+CREATE DATABASE test_database COLLATION_VERSION = 'version1';
+CREATE DATABASE test_database WITH STRATEGY wal_log LOCALE_PROVIDER test_locale_p IS_TEMPLATE false icu_locale test_icu_locale COLLATION_VERSION = 4 OID 15678;
 
 ALTER DATABASE test_database;
 ALTER DATABASE test_database WITH ALLOW_CONNECTIONS DEFAULT;
@@ -52,6 +60,8 @@ ALTER DATABASE test_database SET TABLESPACE new_tablespace;
 ALTER DATABASE test_database SET TABLESPACE = 'test_tablespace';
 ALTER DATABASE test_database TABLESPACE 'test_tablespace';
 ALTER DATABASE test_database WITH TABLESPACE = test_tablespace;
+ALTER DATABASE test_database REFRESH COLLATION VERSION;
+
 ALTER DATABASE name SET enable_indexscan = DEFAULT;
 ALTER DATABASE name SET enable_indexscan TO off;
 ALTER DATABASE name SET enable_indexscan FROM CURRENT;
