@@ -19,7 +19,7 @@ public class PgIndex extends AbstractIndex {
 
     private Inherits inherit;
     private String method;
-    private boolean nullsDistinction;
+    private boolean nullsDistinction = true;
 
     public PgIndex(String name) {
         super(name);
@@ -77,7 +77,7 @@ public class PgIndex extends AbstractIndex {
         }
 
         if (!isNullsDistinction()) {
-            sbSQL.append("\nNULLS NOT DISTINCT");
+            sbSQL.append(" NULLS NOT DISTINCT");
         }
 
         StringBuilder sb = new StringBuilder();
@@ -222,7 +222,7 @@ public class PgIndex extends AbstractIndex {
                 && super.compareUnalterable(index)
                 && Objects.equals(inherit, ((PgIndex) index).inherit)
                 && Objects.equals(method, ((PgIndex) index).method)
-                && Objects.equals(nullsDistinction, ((PgIndex) index).nullsDistinction);
+                && nullsDistinction == ((PgIndex) index).nullsDistinction;
     }
 
     @Override

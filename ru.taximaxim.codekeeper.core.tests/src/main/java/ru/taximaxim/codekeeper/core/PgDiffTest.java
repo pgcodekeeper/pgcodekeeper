@@ -529,6 +529,8 @@ public class PgDiffTest {
                     {"change_view_column_comment_order"},
                     // Tests scenario where logging of sequences changed.
                     {"alter_sequence"},
+                    // Tests scenario where NULLS DISTINCT option of index is altered.
+                    { "alter_index_nulls_distinction" },
                 });
     }
 
