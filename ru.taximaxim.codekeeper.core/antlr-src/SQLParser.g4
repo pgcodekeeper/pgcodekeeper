@@ -646,10 +646,10 @@ create_index_statement
     ;
 
 index_rest
-    : (USING method=identifier)? index_columns including_index? index_nulls_distinction? with_storage_parameter? table_space? index_where?
+    : (USING method=identifier)? index_columns including_index? nulls_distinction? with_storage_parameter? table_space? index_where?
     ;
 
-index_nulls_distinction
+nulls_distinction
     : NULLS NOT? DISTINCT
     ;
 
