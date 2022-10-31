@@ -16,6 +16,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Index_columnsContext
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Index_restContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Index_whereContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Indirection_varContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Nulls_distinctionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Value_expression_primaryContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.VexContext;
@@ -81,8 +82,10 @@ public class CreateIndex extends ParserAbstract {
 
         ind.setDefinition(getFullCtxText(sort));
 
-        With_storage_parameterContext options = rest.with_storage_parameter();
+        Nulls_distinctionContext dist = rest.nulls_distinction();
+        ind.setNullsDistinction(dist == null || dist.NOT() == null);
 
+        With_storage_parameterContext options = rest.with_storage_parameter();
         if (options != null) {
             for (Storage_parameter_optionContext option : options.storage_parameters().storage_parameter_option()) {
                 String key = option.storage_parameter_name().getText();
