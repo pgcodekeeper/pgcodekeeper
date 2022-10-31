@@ -612,6 +612,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     CANONICAL: [cC] [aA] [nN] [oO] [nN] [iI] [cC] [aA] [lL];
     CATEGORY: [cC] [aA] [tT] [eE] [gG] [oO] [rR] [yY];
     COLLATABLE: [cC] [oO] [lL] [lL] [aA] [tT] [aA] [bB] [lL] [eE];
+    COLLATION_VERSION: COLLATION UNDERLINE VERSION;
     COMBINEFUNC: [cC] [oO] [mM] [bB] [iI] [nN] [eE] [fF] [uU] [nN] [cC];
     COMMUTATOR: [cC] [oO] [mM] [mM] [uU] [tT] [aA] [tT] [oO] [rR];
     CONNECT: [cC] [oO] [nN] [nN] [eE] [cC] [tT];
@@ -641,6 +642,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     HEADLINE: [hH] [eE] [aA] [dD] [lL] [iI] [nN] [eE];
     HYPOTHETICAL: [hH] [yY] [pP] [oO] [tT] [hH] [eE] [tT] [iI] [cC] [aA] [lL];
 
+    ICU_LOCALE: [iI] [cC] [uU] UNDERLINE LOCALE;
     INDEX_CLEANUP: [iI] [nN] [dD] [eE] [xX] UNDERLINE [cC] [lL] [eE] [aA] [nN] [uU] [pP];
     INIT: [iI] [nN] [iI] [tT];
     INITCOND: [iI] [nN] [iI] [tT] [cC] [oO] [nN] [dD];
@@ -655,7 +657,8 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     LEXIZE: [lL] [eE] [xX] [iI] [zZ] [eE];
     LEXTYPES: [lL] [eE] [xX] [tT] [yY] [pP] [eE] [sS];
     LIST: [lL] [iI] [sS] [tT];
-    LOCALE: [lL] [oO] [cC] [aA] [lL] [eE]; 
+    LOCALE: [lL] [oO] [cC] [aA] [lL] [eE];
+    LOCALE_PROVIDER: LOCALE UNDERLINE PROVIDER;
     LOGIN: [lL] [oO] [gG] [iI] [nN];
 
     MAIN: [mM] [aA] [iI]  [nN];
@@ -680,6 +683,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     NOREPLICATION: [nN] [oO] [rR] [eE] [pP] [lL] [iI] [cC] [aA] [tT] [iI] [oO] [nN];
     NOSUPERUSER: [nN] [oO] [sS] [uU] [pP] [eE] [rR] [uU] [sS] [eE] [rR];
 
+    OID: [oO] [iI] [dD];
     OUTPUT: [oO] [uU] [tT] [pP] [uU] [tT];
 
     PASSEDBYVALUE: [pP] [aA] [sS] [sS] [eE] [dD] [bB] [yY] [vV] [aA] [lL] [uU] [eE];
@@ -707,6 +711,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     SKIP_LOCKED: [sS] [kK] [iI] [pP] UNDERLINE [lL] [oO] [cC] [kK] [eE] [dD];
     SORTOP: [sS] [oO] [rR] [tT] [oO] [pP];
     SSPACE: [sS] [sS] [pP] [aA] [cC] [eE];
+    STRATEGY: [sS] [tT] [rR] [aA] [tT] [eE] [gG] [yY];
     STYPE: [sS] [tT] [yY] [pP] [eE];
     SUBTYPE_DIFF: [sS] [uU] [bB] [tT] [yY] [pP] [eE] UNDERLINE [dD] [iI] [fF] [fF];
     SUBTYPE_OPCLASS: [sS] [uU] [bB] [tT] [yY] [pP] [eE] UNDERLINE [oO] [pP] [cC] [lL] [aA] [sS] [sS];

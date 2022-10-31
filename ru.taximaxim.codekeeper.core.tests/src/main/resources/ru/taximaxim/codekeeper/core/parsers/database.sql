@@ -32,6 +32,12 @@ CREATE DATABASE test_database IS_TEMPLATE 0;
 CREATE DATABASE test_database IS_TEMPLATE = false;
 CREATE DATABASE test_database IS_TEMPLATE = 'false';
 CREATE DATABASE test_database WITH IS_TEMPLATE = false OWNER 'user_name' TEMPLATE DEFAULT TABLESPACE test_tablespace;
+CREATE DATABASE music2 LOCALE 'sv_SE.iso885915' ENCODING LATIN9 TEMPLATE template0;
+CREATE DATABASE test_database STRATEGY = strategy_method;
+CREATE DATABASE test_database icu_locale = test_icu_locale;
+CREATE DATABASE test_database LOCALE_PROVIDER = test_locale_p;
+CREATE DATABASE test_database OID = 15678;
+CREATE DATABASE test_database WITH STRATEGY = strategy_method LOCALE_PROVIDER = test_locale_p IS_TEMPLATE = false icu_locale = test_icu_locale;
 
 ALTER DATABASE test_database;
 ALTER DATABASE test_database WITH ALLOW_CONNECTIONS DEFAULT;
