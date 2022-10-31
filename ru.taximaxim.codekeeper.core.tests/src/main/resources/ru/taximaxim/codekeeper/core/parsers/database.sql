@@ -37,7 +37,9 @@ CREATE DATABASE test_database STRATEGY = strategy_method;
 CREATE DATABASE test_database icu_locale = test_icu_locale;
 CREATE DATABASE test_database LOCALE_PROVIDER = test_locale_p;
 CREATE DATABASE test_database OID = 15678;
-CREATE DATABASE test_database WITH STRATEGY = strategy_method LOCALE_PROVIDER = test_locale_p IS_TEMPLATE = false icu_locale = test_icu_locale;
+CREATE DATABASE test_database COLLATION_VERSION = 3.21;
+CREATE DATABASE test_database COLLATION_VERSION = 'version1';
+CREATE DATABASE test_database WITH STRATEGY wal_log LOCALE_PROVIDER test_locale_p IS_TEMPLATE false icu_locale test_icu_locale COLLATION_VERSION = 4 OID 15678;
 
 ALTER DATABASE test_database;
 ALTER DATABASE test_database WITH ALLOW_CONNECTIONS DEFAULT;
