@@ -530,7 +530,7 @@ public class PgDiffTest {
                     // Tests scenario where logging of sequences changed.
                     {"alter_sequence"},
                     // Tests scenario where NULLS DISTINCT option of index is altered.
-                    { "alter_index_nulls_distinction" },
+                    {"alter_index_nulls_distinction"},
                 });
     }
 
