@@ -152,17 +152,14 @@ public abstract class TableAbstract extends ParserAbstract {
                 constr.setUnique(true);
                 constr.setPrimaryKey(false);
                 definition = new StringBuilder()
-                    .append("UNIQUE ");
+                    .append("UNIQUE");
                 Nulls_distinctionContext dist = body.nulls_distinction();
                 if (dist != null && dist.NOT() != null) {
-                    definition.append(" NULLS NOT DISTINCT (")
-                        .append(PgDiffUtils.getQuotedName(colName))
-                        .append(')');
-                } else {
-                    definition.append(" (")
-                    .append(PgDiffUtils.getQuotedName(colName))
-                    .append(')');
+                    definition.append(" NULLS NOT DISTINCT");
                 }
+                definition.append(" (")
+                .append(PgDiffUtils.getQuotedName(colName))
+                .append(')');
             }
 
             constr.addColumn(colName);
@@ -315,8 +312,6 @@ public abstract class TableAbstract extends ParserAbstract {
         boolean isPrimary = constrBody.PRIMARY() != null;
         constrBlank.setUnique(isUnique);
         constrBlank.setPrimaryKey(isPrimary);
-        Nulls_distinctionContext dist = constrBody.nulls_distinction();
-        constrBlank.setNullsDistinction(dist == null || dist.NOT() == null);
 
         Names_in_parensContext cols = constrBody.col;
         if (cols != null) {
