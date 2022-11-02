@@ -1540,8 +1540,10 @@ create_database_statement
     ;
 
 create_database_option
-    : (OWNER | TEMPLATE | ENCODING | LOCALE | LC_COLLATE | LC_CTYPE | TABLESPACE) EQUAL? (character_string | identifier | DEFAULT)
+    : (OWNER | TEMPLATE | ENCODING | STRATEGY | LOCALE | LC_COLLATE | LC_CTYPE | ICU_LOCALE | LOCALE_PROVIDER | TABLESPACE) EQUAL? (character_string | identifier | DEFAULT)
     | alter_database_option
+    | COLLATION_VERSION EQUAL (character_string | identifier | signed_numerical_literal)
+    | OID EQUAL? signed_numerical_literal
     ;
 
 alter_database_statement
@@ -1554,6 +1556,7 @@ alter_database_action
     | rename_to
     | owner_to
     | set_tablespace
+    | REFRESH COLLATION VERSION
     | set_reset_parameter
     ;
 
@@ -2822,6 +2825,7 @@ tokens_nonkeyword
     | CANONICAL
     | CATEGORY
     | COLLATABLE
+    | COLLATION_VERSION
     | COMBINEFUNC
     | COMMUTATOR
     | CONNECT
@@ -2845,6 +2849,7 @@ tokens_nonkeyword
     | HASHES
     | HEADLINE
     | HYPOTHETICAL
+    | ICU_LOCALE
     | INDEX_CLEANUP
     | INIT
     | INITCOND
@@ -2858,6 +2863,7 @@ tokens_nonkeyword
     | LEXTYPES
     | LIST
     | LOCALE
+    | LOCALE_PROVIDER
     | LOGIN
     | MAIN
     | MERGES
@@ -2879,6 +2885,7 @@ tokens_nonkeyword
     | NOLOGIN
     | NOREPLICATION
     | NOSUPERUSER
+    | OID
     | OUTPUT
     | PASSEDBYVALUE
     | PATH
@@ -2903,6 +2910,7 @@ tokens_nonkeyword
     | SKIP_LOCKED
     | SORTOP
     | SSPACE
+    | STRATEGY
     | STYPE
     | SUBTYPE_DIFF
     | SUBTYPE_OPCLASS
