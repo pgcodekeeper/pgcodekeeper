@@ -1685,7 +1685,8 @@ constr_body
         (MATCH (FULL | PARTIAL | SIMPLE))? (ON (DELETE | UPDATE) action)*
     | CHECK LEFT_PAREN expression=vex RIGHT_PAREN (NO INHERIT)?
     | NOT? NULL
-    | (UNIQUE | PRIMARY KEY) col=names_in_parens? index_parameters
+    | UNIQUE nulls_distinction? col=names_in_parens? index_parameters
+    | PRIMARY KEY col=names_in_parens? index_parameters
     | DEFAULT default_expr=vex
     | identity_body
     | GENERATED ALWAYS AS LEFT_PAREN vex RIGHT_PAREN STORED

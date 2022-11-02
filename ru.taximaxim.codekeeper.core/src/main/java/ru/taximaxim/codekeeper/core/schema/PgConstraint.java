@@ -10,12 +10,24 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
+import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 
 public class PgConstraint extends AbstractConstraint {
 
+    private boolean nullsDistinction = true;
+
     public PgConstraint(String name) {
         super(name);
+    }
+
+    public boolean isNullsDistinction() {
+        return nullsDistinction;
+    }
+
+    public void setNullsDistinction(boolean nullsDistinction) {
+        this.nullsDistinction = nullsDistinction;
+        resetHash();
     }
 
     @Override
@@ -118,5 +130,18 @@ public class PgConstraint extends AbstractConstraint {
     @Override
     protected AbstractConstraint getConstraintCopy() {
         return new PgConstraint(getName());
+    }
+
+    @Override
+    public void computeHash(Hasher hasher) {
+        super.computeHash(hasher);
+        hasher.put(nullsDistinction);
+    }
+
+    @Override
+    public boolean compare(PgStatement constr) {
+        return constr instanceof PgConstraint
+                && super.compare(constr)
+                && nullsDistinction == ((PgConstraint) constr).nullsDistinction;
     }
 }
