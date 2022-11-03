@@ -116,8 +116,8 @@ public class PgDiffTest {
                     {"add_table_with_generated_col"},
                     // Tests scenario where TABLE CONSTRAINT is added.
                     {"add_constraint"},
-                    //Tests scenario where uniqie nulls distinction constraint is added.
-                    {"add_constraint_nulls_distinction"},
+                    //Tests scenario where uniqie nulls distinction constraints is altered.
+                    {"alter_constraints_nulls_distinction"},
                     // Tests scenario where TABLE CONSTRAINT with tablespace is added.
                     {"add_constraint_with_tablespace"},
                     // Tests scenario where TABLE EXCLUDE CONSTRAINT is added.

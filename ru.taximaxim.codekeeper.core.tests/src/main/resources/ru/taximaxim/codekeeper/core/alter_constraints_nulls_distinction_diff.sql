@@ -1,0 +1,7 @@
+SET search_path = pg_catalog;
+
+ALTER TABLE public.t1
+	ADD CONSTRAINT t1_id_key UNIQUE NULLS NOT DISTINCT (id);
+
+ALTER TABLE public.t2
+	ADD CONSTRAINT uq_nulls UNIQUE NULLS NOT DISTINCT (id);
