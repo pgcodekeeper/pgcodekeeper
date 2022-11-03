@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.core;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -54,21 +55,20 @@ public final class Utils {
     /**
      * Deserializes object
      *
-     * @param path - full path to the serialized file
+     * @param inputStream
+     *            - stream of serialized file
      *
      * @return deserialized object or null if not found
      */
-    public static Object deserialize(Path path) {
-        try {
-            if (Files.exists(path)) {
-                try (ObjectInputStream oin = new ObjectInputStream(Files.newInputStream(path))) {
-                    return oin.readObject();
-                }
-            }
-        } catch (ClassNotFoundException | IOException e) {
-            Log.log(Log.LOG_DEBUG, "Error while deserialize object!", e);
+    public static Object deserialize(InputStream inputStream) {
+        if (inputStream == null) {
+            return null;
         }
-
+        try (ObjectInputStream oin = new ObjectInputStream(inputStream)) {
+            return oin.readObject();
+        } catch (ClassNotFoundException | IOException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 

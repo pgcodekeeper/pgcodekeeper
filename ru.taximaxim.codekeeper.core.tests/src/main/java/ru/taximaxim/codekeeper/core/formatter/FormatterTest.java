@@ -2,8 +2,6 @@ package ru.taximaxim.codekeeper.core.formatter;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
 
@@ -13,7 +11,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import ru.taximaxim.codekeeper.core.Utils;
+import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.formatter.FormatConfiguration.IndentType;
 import ru.taximaxim.codekeeper.core.log.Log;
 
@@ -65,9 +63,7 @@ interface FormatConfigProvider {
     }
 
     default String getFileContent(String fileName) throws IOException, URISyntaxException {
-        return new String(Files.readAllBytes(Utils.getFileFromOsgiRes(
-                FormatterTest.class.getResource(fileName))),
-                StandardCharsets.UTF_8);
+        return FileUtils.readResource(FormatterTest.class, fileName);
     }
 }
 
