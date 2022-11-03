@@ -1497,7 +1497,7 @@ copy_option
     | FREEZE truth_value?
     | DELIMITER AS? Character_String_Literal
     | NULL AS? Character_String_Literal
-    | HEADER truth_value?
+    | HEADER (truth_value | MATCH)?
     | QUOTE Character_String_Literal
     | ESCAPE Character_String_Literal
     | FORCE QUOTE (MULTIPLY | identifier_list)
