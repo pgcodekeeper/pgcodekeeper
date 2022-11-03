@@ -1,19 +1,11 @@
-CREATE TABLE public.t1 (
-    id integer UNIQUE
+CREATE TABLE public.testtable (
+    id integer UNIQUE NULLS NOT DISTINCT,
+    value1 integer UNIQUE NULLS DISTINCT,
+    value2 text,
+    value3 integer UNIQUE,
+    value4 text,
+    CONSTRAINT uq_nulls UNIQUE NULLS NOT DISTINCT (value2)
 );
 
-CREATE TABLE public.t2 (
-    id integer UNIQUE
-);
-
-CREATE TABLE public.t3 (
-    id integer
-);
-
-CREATE TABLE public.t4 (
-    id integer UNIQUE
-);
-
-CREATE TABLE public.t5 (
-    id integer UNIQUE NULLS NOT DISTINCT
-);
+ALTER TABLE public.testtable 
+    ADD CONSTRAINT uq_nulls1 UNIQUE NULLS NOT DISTINCT (value4);
