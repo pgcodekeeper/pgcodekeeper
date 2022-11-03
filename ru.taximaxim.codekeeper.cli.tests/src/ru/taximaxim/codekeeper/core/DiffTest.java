@@ -46,6 +46,7 @@ public class DiffTest {
             {new MoveDataMSIdentityArgumentsProvider()},
             {new MoveDataDiffColsIdentityArgumentsProvider()},
             {new MoveDataDropTableWithoutRename()},
+            {new MoveDataForeignArgumentsProvider()},
             {new AddConstraintNotValid()},
         });
     }
@@ -479,6 +480,25 @@ class MoveDataDropTableWithoutRename extends ArgumentsProvider {
         return new String[]{"--migrate-data", "--ms-sql", "-o",
                 getDiffResultFile().toString(),
                 fNew.toString(), fOriginal.toString()};
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation for foreign table data movement test in PG
+ */
+class MoveDataForeignArgumentsProvider extends ArgumentsProvider {
+
+    public MoveDataForeignArgumentsProvider() {
+        super("move_data_foreign");
+    }
+
+    @Override
+    protected String[] args() throws URISyntaxException, IOException {
+        Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
+        Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
+        return new String[] { "--migrate-data", "-o",
+                getDiffResultFile().toString(),
+                fNew.toString(), fOriginal.toString() };
     }
 }
 
