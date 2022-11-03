@@ -119,5 +119,4 @@ public class PgConstraint extends AbstractConstraint {
     protected AbstractConstraint getConstraintCopy() {
         return new PgConstraint(getName());
     }
-
 }

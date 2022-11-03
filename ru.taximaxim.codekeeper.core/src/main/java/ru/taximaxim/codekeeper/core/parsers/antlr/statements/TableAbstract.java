@@ -49,9 +49,10 @@ import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgSequence;
 
 public abstract class TableAbstract extends ParserAbstract {
+
     private final CommonTokenStream stream;
 
-    public TableAbstract(PgDatabase db, CommonTokenStream stream) {
+    protected TableAbstract(PgDatabase db, CommonTokenStream stream) {
         super(db);
         this.stream = stream;
     }
@@ -151,15 +152,12 @@ public abstract class TableAbstract extends ParserAbstract {
             } else {
                 constr.setUnique(true);
                 constr.setPrimaryKey(false);
-                definition = new StringBuilder()
-                    .append("UNIQUE");
+                definition = new StringBuilder().append("UNIQUE ");
                 Nulls_distinctionContext dist = body.nulls_distinction();
                 if (dist != null && dist.NOT() != null) {
-                    definition.append(" NULLS NOT DISTINCT");
+                    definition.append("NULLS NOT DISTINCT ");
                 }
-                definition.append(" (")
-                .append(PgDiffUtils.getQuotedName(colName))
-                .append(')');
+                definition.append('(').append(PgDiffUtils.getQuotedName(colName)).append(')');
             }
 
             constr.addColumn(colName);
