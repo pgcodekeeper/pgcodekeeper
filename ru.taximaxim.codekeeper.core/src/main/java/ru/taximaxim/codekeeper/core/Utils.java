@@ -67,7 +67,7 @@ public final class Utils {
         try (ObjectInputStream oin = new ObjectInputStream(inputStream)) {
             return oin.readObject();
         } catch (ClassNotFoundException | IOException e) {
-            e.printStackTrace();
+            Log.log(Log.LOG_DEBUG, "Error while deserialize object!", e);
         }
         return null;
     }
