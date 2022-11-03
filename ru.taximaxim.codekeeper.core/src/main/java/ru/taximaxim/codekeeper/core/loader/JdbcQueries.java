@@ -2,12 +2,8 @@ package ru.taximaxim.codekeeper.core.loader;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 
-import ru.taximaxim.codekeeper.core.Utils;
+import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.log.Log;
 
 /**
@@ -108,27 +104,23 @@ public final class JdbcQueries {
         query.setQuery(readResource(f.getName()));
 
         for (SupportedVersion version : SupportedVersion.values()) {
-            URL url = JdbcQueries.class.getResource(f.getName() + '_' + version + ".sql");
-            if (url != null) {
-                query.addSinceQuery(version, readResource(url));
+            String sinceQuery = readResource(f.getName() + '_' + version);
+            if (sinceQuery != null) {
+                query.addSinceQuery(version, sinceQuery);
             }
+
             for (SupportedVersion v2 : SupportedVersion.values()) {
-                URL urlInterval = JdbcQueries.class.getResource(f.getName() + '_'
-                        + version.getVersion() + '_' + v2.getVersion() + ".sql");
-                if (urlInterval != null) {
-                    query.addIntervalQuery(version, v2, readResource(urlInterval));
+                String intervalQuery = readResource(f.getName() + '_'
+                        + version.getVersion() + '_' + v2.getVersion());
+                if (intervalQuery != null) {
+                    query.addIntervalQuery(version, v2, intervalQuery);
                 }
             }
         }
     }
 
-    private static String readResource(String name) throws IOException, URISyntaxException {
-        return readResource(JdbcQueries.class.getResource(name + ".sql"));
-    }
-
-    private static String readResource(URL url) throws IOException, URISyntaxException {
-        return new String(Files.readAllBytes(Utils.getFileFromOsgiRes(url)),
-                StandardCharsets.UTF_8);
+    private static String readResource(String name) throws IOException {
+        return FileUtils.readResource(JdbcQueries.class, name + ".sql");
     }
 
     private JdbcQueries() {
