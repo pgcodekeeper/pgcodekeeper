@@ -78,6 +78,19 @@ REVOKE ALL ON SCHEMA public FROM postgres;
 GRANT ALL ON SCHEMA public TO postgres;
 GRANT ALL ON SCHEMA public TO PUBLIC;
 
+-- Testing the nulls not distinct option in constraints
+
+CREATE TABLE public.testtable3 (
+    id integer UNIQUE NULLS DISTINCT,
+    value1 integer UNIQUE NULLS NOT DISTINCT,
+    value2 text,
+    value3 integer UNIQUE NULLS DISTINCT,
+    value4 text,
+    CONSTRAINT uq_nulls UNIQUE (value2)
+);
+
+ALTER TABLE public.testtable3 
+    ADD CONSTRAINT uq_nulls1 UNIQUE NULLS DISTINCT (value4);
 
 --
 -- PostgreSQL database dump complete
