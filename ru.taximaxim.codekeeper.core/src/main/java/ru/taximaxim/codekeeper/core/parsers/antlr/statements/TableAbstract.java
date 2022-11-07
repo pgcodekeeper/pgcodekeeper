@@ -24,6 +24,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Index_columnContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Index_parametersContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.List_of_type_column_defContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Names_in_parensContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Nulls_distinctionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Sequence_bodyContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Storage_parameter_optionContext;
@@ -48,9 +49,10 @@ import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgSequence;
 
 public abstract class TableAbstract extends ParserAbstract {
+
     private final CommonTokenStream stream;
 
-    public TableAbstract(PgDatabase db, CommonTokenStream stream) {
+    protected TableAbstract(PgDatabase db, CommonTokenStream stream) {
         super(db);
         this.stream = stream;
     }
@@ -150,10 +152,12 @@ public abstract class TableAbstract extends ParserAbstract {
             } else {
                 constr.setUnique(true);
                 constr.setPrimaryKey(false);
-                definition = new StringBuilder()
-                        .append("UNIQUE (")
-                        .append(PgDiffUtils.getQuotedName(colName))
-                        .append(')');
+                definition = new StringBuilder().append("UNIQUE ");
+                Nulls_distinctionContext dist = body.nulls_distinction();
+                if (dist != null && dist.NOT() != null) {
+                    definition.append("NULLS NOT DISTINCT ");
+                }
+                definition.append('(').append(PgDiffUtils.getQuotedName(colName)).append(')');
             }
 
             constr.addColumn(colName);
