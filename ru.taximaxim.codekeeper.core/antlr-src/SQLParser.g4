@@ -1760,7 +1760,7 @@ set_tablespace
 
 action
     : cascade_restrict
-    | SET (NULL | DEFAULT)
+    | SET (NULL | DEFAULT) (col=names_in_parens)?
     | NO ACTION
     ;
 
