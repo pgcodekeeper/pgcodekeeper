@@ -338,18 +338,18 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
 
         List<IndirectionContext> ind = indList.indirection();
         switch (ind.size()) {
-            case 0:
-                return qualAster(Arrays.asList(id), cols);
-            case 1:
-                IndirectionContext second = ind.get(0);
-                if (second.LEFT_BRACKET() == null) {
-                    return qualAster(Arrays.asList(id, second.col_label()), cols);
-                }
-                // cannot handle asterisk indirection from an array element
-                //$FALL-THROUGH$
-            default:
-                // long indirections are unsupported
-                return false;
+        case 0:
+            return qualAster(Arrays.asList(id), cols);
+        case 1:
+            IndirectionContext second = ind.get(0);
+            if (second.LEFT_BRACKET() == null) {
+                return qualAster(Arrays.asList(id, second.col_label()), cols);
+            }
+            // cannot handle asterisk indirection from an array element
+            //$FALL-THROUGH$
+        default:
+            // long indirections are unsupported
+            return false;
         }
     }
 

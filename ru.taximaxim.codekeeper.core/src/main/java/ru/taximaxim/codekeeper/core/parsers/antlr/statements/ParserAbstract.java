@@ -78,6 +78,7 @@ public abstract class ParserAbstract {
     protected static final String ACTION_UPDATE = "UPDATE";
     protected static final String ACTION_INSERT = "INSERT";
     protected static final String ACTION_DELETE = "DELETE";
+    protected static final String ACTION_MERGE = "MERGE";
     protected static final String ACTION_COMMENT = "COMMENT";
 
     protected final PgDatabase db;
@@ -186,14 +187,14 @@ public abstract class ParserAbstract {
         String alias = type.toLowerCase(Locale.ROOT);
 
         switch (alias) {
-            case "int8": return "bigint";
-            case "bool": return "boolean";
-            case "float8": return "double precision";
-            case "int":
-            case "int4": return "integer";
-            case "float4": return "real";
-            case "int2": return "smallint";
-            default: break;
+        case "int8": return "bigint";
+        case "bool": return "boolean";
+        case "float8": return "double precision";
+        case "int":
+        case "int4": return "integer";
+        case "float4": return "real";
+        case "int2": return "smallint";
+        default: break;
         }
 
         if (PgDiffUtils.startsWithId(alias, "varbit", 0)) {
@@ -293,19 +294,19 @@ public abstract class ParserAbstract {
                 ? unquoteQuotedString(boolCtx.character_string()).getFirst() : boolCtx.getText();
         bool = bool.toLowerCase(Locale.ROOT);
         switch (bool) {
-            case "1":
-            case "true":
-            case "on":
-            case "yes":
-                return true;
-            case "0":
-            case "false":
-            case "off":
-            case "no":
-                return false;
-            default:
-                // TODO throw instead?
-                return false;
+        case "1":
+        case "true":
+        case "on":
+        case "yes":
+            return true;
+        case "0":
+        case "false":
+        case "off":
+        case "no":
+            return false;
+        default:
+            // TODO throw instead?
+            return false;
         }
     }
 
@@ -449,24 +450,24 @@ public abstract class ParserAbstract {
             LocationType locationType) {
         ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
         switch (type) {
-            case CAST:
-                return buildLocation(nameCtx, action, locationType,
-                        new GenericColumn(getCastName((Cast_nameContext) nameCtx), DbObjType.CAST));
-            case USER_MAPPING:
-                return buildLocation(nameCtx, action, locationType,
-                        new GenericColumn(getUserMappingName((User_mapping_nameContext) nameCtx), DbObjType.USER_MAPPING));
-            case ASSEMBLY:
-            case EXTENSION:
-            case FOREIGN_DATA_WRAPPER:
-            case SERVER:
-            case SCHEMA:
-            case ROLE:
-            case USER:
-            case DATABASE:
-                return buildLocation(nameCtx, action, locationType,
-                        new GenericColumn(nameCtx.getText(), type));
-            default:
-                break;
+        case CAST:
+            return buildLocation(nameCtx, action, locationType,
+                    new GenericColumn(getCastName((Cast_nameContext) nameCtx), DbObjType.CAST));
+        case USER_MAPPING:
+            return buildLocation(nameCtx, action, locationType,
+                    new GenericColumn(getUserMappingName((User_mapping_nameContext) nameCtx), DbObjType.USER_MAPPING));
+        case ASSEMBLY:
+        case EXTENSION:
+        case FOREIGN_DATA_WRAPPER:
+        case SERVER:
+        case SCHEMA:
+        case ROLE:
+        case USER:
+        case DATABASE:
+            return buildLocation(nameCtx, action, locationType,
+                    new GenericColumn(nameCtx.getText(), type));
+        default:
+            break;
         }
 
         ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
@@ -488,32 +489,32 @@ public abstract class ParserAbstract {
             name = PgDiffUtils.getQuotedName(name) + signature;
         }
         switch (type) {
-            case DOMAIN:
-            case FTS_CONFIGURATION:
-            case FTS_DICTIONARY:
-            case FTS_PARSER:
-            case FTS_TEMPLATE:
-            case OPERATOR:
-            case SEQUENCE:
-            case TABLE:
-            case TYPE:
-            case VIEW:
-            case INDEX:
-            case COLLATION:
-            case FUNCTION:
-            case PROCEDURE:
-            case AGGREGATE:
-                return buildLocation(nameCtx, action, locationType,
-                        new GenericColumn(schemaName, name, type));
-            case CONSTRAINT:
-            case TRIGGER:
-            case RULE:
-            case POLICY:
-            case COLUMN:
-                return buildLocation(nameCtx, action, locationType,
-                        new GenericColumn(schemaName, QNameParser.getSecondName(ids), name, type));
-            default:
-                return null;
+        case DOMAIN:
+        case FTS_CONFIGURATION:
+        case FTS_DICTIONARY:
+        case FTS_PARSER:
+        case FTS_TEMPLATE:
+        case OPERATOR:
+        case SEQUENCE:
+        case TABLE:
+        case TYPE:
+        case VIEW:
+        case INDEX:
+        case COLLATION:
+        case FUNCTION:
+        case PROCEDURE:
+        case AGGREGATE:
+            return buildLocation(nameCtx, action, locationType,
+                    new GenericColumn(schemaName, name, type));
+        case CONSTRAINT:
+        case TRIGGER:
+        case RULE:
+        case POLICY:
+        case COLUMN:
+            return buildLocation(nameCtx, action, locationType,
+                    new GenericColumn(schemaName, QNameParser.getSecondName(ids), name, type));
+        default:
+            return null;
         }
     }
 

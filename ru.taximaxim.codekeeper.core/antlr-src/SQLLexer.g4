@@ -203,6 +203,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     MATCH: [mM] [aA] [tT] [cC] [hH];
     MATERIALIZED: [mM] [aA] [tT] [eE] [rR] [iI] [aA] [lL] [iI] [zZ] [eE] [dD];
     MAXVALUE: [mM] [aA] [xX] [vV] [aA] [lL] [uU] [eE];
+    MERGE: [mM] [eE] [rR] [gG] [eE];
     METHOD: [mM] [eE] [tT] [hH] [oO] [dD];
     MINUTE: [mM] [iI] [nN] [uU] [tT] [eE];
     MINVALUE: [mM] [iI] [nN] [vV] [aA] [lL] [uU] [eE];
@@ -662,6 +663,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     LOGIN: [lL] [oO] [gG] [iI] [nN];
 
     MAIN: [mM] [aA] [iI]  [nN];
+    MATCHED: [mM] [aA] [tT] [cC] [hH] [eE] [dD];
     MERGES: [mM] [eE] [rR] [gG] [eE] [sS];
     MFINALFUNC: [mM] [fF] [iI] [nN] [aA] [lL] [fF] [uU] [nN] [cC];
     MFINALFUNC_EXTRA: MFINALFUNC UNDERLINE [eE] [xX] [tT] [rR] [aA];

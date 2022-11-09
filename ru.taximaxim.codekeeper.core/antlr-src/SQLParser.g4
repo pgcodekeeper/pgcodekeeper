@@ -50,6 +50,7 @@ statement
 data_statement
     : select_stmt
     | insert_stmt_for_psql
+    | merge_stmt_for_psql
     | update_stmt_for_psql
     | delete_stmt_for_psql
     ;
@@ -1059,6 +1060,7 @@ create_rewrite_statement
 
 rewrite_command
     : select_stmt
+    | merge_stmt_for_psql
     | insert_stmt_for_psql
     | update_stmt_for_psql
     | delete_stmt_for_psql
@@ -2134,8 +2136,10 @@ bare_label_keyword
     | LOGGED
     | MAPPING
     | MATCH
+    | MATCHED
     | MATERIALIZED
     | MAXVALUE
+    | MERGE
     | METHOD
     | MINVALUE
     | MODE
@@ -3407,6 +3411,35 @@ order_specification
 
 null_ordering
     : NULLS (FIRST | LAST)
+    ;
+
+   merge_stmt_for_psql
+    : with_clause?
+    MERGE INTO merge_table_name=schema_qualified_name (AS? alias=identifier)?
+    USING (source_table_name=schema_qualified_name (AS? source_alias=identifier)? | table_subquery AS? source_alias=identifier) ON vex
+    when_condition+
+    ;
+
+    when_condition
+    : WHEN MATCHED (AND vex)? THEN merge_matched
+    | WHEN NOT MATCHED (AND vex)? THEN merge_not_matched
+    ;
+
+    merge_matched
+    : UPDATE SET merge_update (COMMA merge_update)*
+    | DELETE
+    | DO NOTHING
+    ;
+
+    merge_not_matched
+    : INSERT insert_columns? (OVERRIDING (SYSTEM | USER) VALUE)? (values_stmt | DEFAULT VALUES)
+    | DO NOTHING
+    ;
+
+    merge_update
+    : column+=indirection_identifier EQUAL (value+=vex | DEFAULT)
+    | LEFT_PAREN column+=indirection_identifier (COMMA column+=indirection_identifier)* RIGHT_PAREN EQUAL
+    (LEFT_PAREN (value+=vex | DEFAULT) (COMMA (value+=vex | DEFAULT))* RIGHT_PAREN)
     ;
 
 insert_stmt_for_psql
