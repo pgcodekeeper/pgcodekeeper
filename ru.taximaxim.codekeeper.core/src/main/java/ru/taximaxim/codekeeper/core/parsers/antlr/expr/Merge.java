@@ -34,6 +34,13 @@ public class Merge extends AbstractExprWithNmspc<Merge_stmt_for_psqlContext>  {
         // this select is used to collect namespaces for this MERGE operation
         Select select = new Select(this);
 
+        With_clauseContext with = merge.with_clause();
+        if (with != null) {
+            select.analyzeCte(with);
+        }
+
+        select.addNameReference(merge.merge_table_name, merge.alias, null);
+
         Schema_qualified_nameContext source_table = merge.source_table_name;
         if (source_table != null) {
             select.addNameReference(source_table, merge.source_alias, null);
@@ -46,22 +53,15 @@ public class Merge extends AbstractExprWithNmspc<Merge_stmt_for_psqlContext>  {
             select.complexNamespace.put(tableSubQueryAlias, new ArrayList<>(columnList));
         }
 
-        With_clauseContext with = merge.with_clause();
-        if (with != null) {
-            select.analyzeCte(with);
-        }
-
-        select.addNameReference(merge.merge_table_name, merge.alias, null);
-
         ValueExpr vexOn = new ValueExpr(select);
         vexOn.analyze(new Vex(merge.vex()));
 
-        for(When_conditionContext whenCondition: merge.when_condition()) {
+        for (When_conditionContext whenCondition : merge.when_condition()) {
             Merge_matchedContext match = whenCondition.merge_matched();
             if (match != null) {
-                for(Merge_updateContext update: match.merge_update()) {
+                for (Merge_updateContext update : match.merge_update()) {
                     select.addColumnsDepcies(merge.merge_table_name, update.column);
-                    for(VexContext vex: update.value ) {
+                    for (VexContext vex : update.value) {
                         new ValueExpr(select).analyze(new Vex(vex));
                     }
                 }

@@ -9,13 +9,11 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Create_rewrite_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Delete_stmt_for_psqlContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Insert_stmt_for_psqlContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Merge_stmt_for_psqlContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Rewrite_commandContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Select_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Update_stmt_for_psqlContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.Delete;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.Insert;
-import ru.taximaxim.codekeeper.core.parsers.antlr.expr.Merge;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.Select;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.Update;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.ValueExprWithNmspc;
@@ -67,12 +65,7 @@ public class RuleAnalysisLauncher extends AbstractAnalysisLauncher {
         if ((update = cmd.update_stmt_for_psql()) != null) {
             return analyzeTableChild(update, new Update(meta));
         }
-
-        Merge_stmt_for_psqlContext merge;
-        if ((merge = cmd.merge_stmt_for_psql()) != null) {
-            return analyzeTableChild(merge, new Merge(meta));
-        }
-
+ 
         return Collections.emptySet();
     }
 }

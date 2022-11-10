@@ -61,5 +61,8 @@ select 1; BEGIN select 1; EXCEPTION WHEN condition THEN select 12; WHEN conditio
 
 /*DECLARE*/
 declare aa int; begin end;
+
+/*MERGE*/
+MERGE INTO customer_account ca USING (SELECT customer_id, transaction_value FROM recent_transactions) AS t ON t.customer_id = ca.customer_id WHEN MATCHED THEN UPDATE SET balance = balance + transaction_value WHEN NOT MATCHED THEN INSERT (customer_id, balance) VALUES (t.customer_id, t.transaction_value);
 END$$;
 ALTER FUNCTION public.fun2() OWNER TO user_m;

@@ -31,6 +31,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.If_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Insert_stmt_for_psqlContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Loop_startContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Loop_statementContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Merge_stmt_for_psqlContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.OpContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Op_charsContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Select_opsContext;
@@ -43,6 +44,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.StatementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Update_stmt_for_psqlContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.VexContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Vex_bContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.When_conditionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.rulectx.SelectOps;
 import ru.taximaxim.codekeeper.core.parsers.antlr.rulectx.SelectStmt;
 import ru.taximaxim.codekeeper.core.parsers.antlr.rulectx.Vex;
@@ -106,6 +108,8 @@ public class FormatParseTreeListener implements ParseTreeListener {
             formatUpdateStatement((Update_stmt_for_psqlContext) ctx);
         } else if (ctx instanceof Insert_stmt_for_psqlContext) {
             formatInsertStatement((Insert_stmt_for_psqlContext) ctx);
+        } else if (ctx instanceof Merge_stmt_for_psqlContext) {
+            formatMergeStatement((Merge_stmt_for_psqlContext) ctx);
         } else if (ctx instanceof Case_expressionContext) {
             formatCaseExpression((Case_expressionContext) ctx);
         } else if (ctx instanceof Exception_statementContext) {
@@ -304,6 +308,28 @@ public class FormatParseTreeListener implements ParseTreeListener {
         TerminalNode node = ctx.FROM();
         if (node != null) {
             putIndent(node.getSymbol(), IndentDirection.BLOCK_LINE);
+        }
+    }
+
+    private void formatMergeStatement(Merge_stmt_for_psqlContext ctx) {
+        putIndent(ctx.MERGE().getSymbol(), IndentDirection.BLOCK_LINE);
+        putIndent(ctx.USING().getSymbol(), IndentDirection.BLOCK_LINE);
+        putIndent(ctx.ON().getSymbol(), IndentDirection.BLOCK_LINE);
+
+        for (When_conditionContext whenCondition : ctx.when_condition()) {
+            TerminalNode whenNode = whenCondition.WHEN();
+            if (whenNode != null) {
+                putIndent(whenNode.getSymbol(), IndentDirection.BLOCK_LINE);
+            }
+            formatMatch(whenCondition.merge_matched());
+            formatMatch(whenCondition.merge_not_matched());
+        }
+    }
+
+    private void formatMatch(ParserRuleContext matchCtx) {
+        if (matchCtx != null) {
+            putIndent(matchCtx.getStart(), IndentDirection.BLOCK_START);
+            putIndent(matchCtx.getStop(), IndentDirection.BLOCK_STOP);
         }
     }
 
