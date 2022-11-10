@@ -69,7 +69,7 @@ public class Merge extends AbstractExprWithNmspc<Merge_stmt_for_psqlContext>  {
                 Merge_not_matchedContext notMatch = whenCondition.merge_not_matched();
                 Values_stmtContext selectCtx = notMatch.values_stmt();
                 if (selectCtx != null) {
-                    ValueExpr vex = new ValueExpr(this);
+                    ValueExpr vex = new ValueExpr(select);
                     for (Values_valuesContext values : selectCtx.values_values()) {
                         for (VexContext v : values.vex()) {
                             vex.analyze(new Vex(v));
