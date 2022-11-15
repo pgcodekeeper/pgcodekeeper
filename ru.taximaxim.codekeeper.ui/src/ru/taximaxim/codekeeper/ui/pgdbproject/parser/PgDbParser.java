@@ -38,8 +38,8 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.BuildAction;
 import org.eclipse.ui.ide.ResourceUtil;
 
-import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
+import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.loader.DatabaseLoader;
 import ru.taximaxim.codekeeper.core.loader.FullAnalyze;
 import ru.taximaxim.codekeeper.core.loader.ParserListenerMode;
@@ -172,13 +172,11 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         PgDatabase db = UIProjectLoader.buildFiles(files, isMsSql, monitor);
         files.forEach(this::removeResFromRefs);
         // fill definitions, view columns will be filled in the analysis
-        objDefinitions.clear();
         objDefinitions.putAll(MetaUtils.getObjDefinitions(db));
         List<Object> errors = new ArrayList<>();
         FullAnalyze.fullAnalyze(db, MetaUtils.createTreeFromDefs(
                 getAllObjDefinitions(), !isMsSql, db.getPostgresVersion()), errors);
         UIProjectLoader.markErrors(errors);
-        objReferences.clear();
         objReferences.putAll(db.getObjReferences());
         notifyListeners();
     }
