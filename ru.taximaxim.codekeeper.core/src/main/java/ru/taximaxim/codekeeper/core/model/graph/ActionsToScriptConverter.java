@@ -13,8 +13,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -26,6 +26,7 @@ import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
+import ru.taximaxim.codekeeper.core.schema.AbstractForeignTable;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.MsColumn;
 import ru.taximaxim.codekeeper.core.schema.MsView;
@@ -148,6 +149,7 @@ public class ActionsToScriptConverter {
 
             if (arguments.isDataMovementMode()
                     && DbObjType.TABLE == obj.getStatementType()
+                    && !(obj instanceof AbstractForeignTable)
                     && obj.getTwin(oldDbFull) != null) {
                 addCommandsForMoveData((AbstractTable) obj);
             }
@@ -158,6 +160,7 @@ public class ActionsToScriptConverter {
             }
             if (arguments.isDataMovementMode()
                     && DbObjType.TABLE == obj.getStatementType()
+                    && !(obj instanceof AbstractForeignTable)
                     && obj.getTwin(newDbFull) != null) {
                 addCommandsForRenameTbl((AbstractTable) obj);
             } else {
@@ -350,7 +353,7 @@ public class ActionsToScriptConverter {
             return;
         }
 
-        Function<String, String> quoter = arguments.isMsSql() ?
+        UnaryOperator<String> quoter = arguments.isMsSql() ?
                 MsDiffUtils::quoteName : PgDiffUtils::getQuotedName;
         String tblTmpQName = quoter.apply(oldTbl.getSchemaName()) + '.'
                 + quoter.apply(tblTmpBareName);
@@ -431,10 +434,10 @@ public class ActionsToScriptConverter {
         Stream<? extends AbstractColumn> cols = newTbl.getColumns().stream()
                 .filter(c -> oldTable.containsColumn(c.getName()));
         if (arguments.isMsSql()) {
-            cols = cols.map(col -> (MsColumn) col)
+            cols = cols.map(MsColumn.class::cast)
                     .filter(msCol -> msCol.getExpression() == null);
         } else {
-            cols = cols.map(col -> (PgColumn) col)
+            cols = cols.map(PgColumn.class::cast)
                     .filter(pgCol -> !pgCol.isGenerated());
         }
         return cols.map(AbstractColumn::getName).collect(Collectors.toList());

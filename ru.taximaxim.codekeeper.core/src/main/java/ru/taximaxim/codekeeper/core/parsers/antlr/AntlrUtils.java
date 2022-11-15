@@ -96,26 +96,27 @@ public class AntlrUtils {
             int type = stream.LA(1);
 
             switch (type) {
-                case SQLLexer.EOF:
-                    stream.seek(0);
-                    parser.setInputStream(stream);
-                    return;
-                case SQLLexer.SEMI_COLON:
-                    isImport = false;
+            case SQLLexer.EOF:
+                stream.seek(0);
+                parser.setInputStream(stream);
+                return;
+            case SQLLexer.SEMI_COLON:
+                isImport = false;
+                break;
+            case SQLLexer.IMPORT:
+                if (stream.LA(2) == SQLLexer.FOREIGN && stream.LA(3) == SQLLexer.SCHEMA) {
+                    isImport = true;
+                }
+                break;
+            case SQLLexer.INTO:
+                if (isImport || stream.LA(-1) == SQLLexer.INSERT
+                        || stream.LA(-1) == SQLLexer.MERGE) {
                     break;
-                case SQLLexer.IMPORT:
-                    if (stream.LA(2) == SQLLexer.FOREIGN && stream.LA(3) == SQLLexer.SCHEMA) {
-                        isImport = true;
-                    }
-                    break;
-                case SQLLexer.INTO:
-                    if (isImport || stream.LA(- 1) == SQLLexer.INSERT) {
-                        break;
-                    }
-                    hideIntoTokens(stream);
-                    break;
-                default:
-                    break;
+                }
+                hideIntoTokens(stream);
+                break;
+            default:
+                break;
             }
         }
     }

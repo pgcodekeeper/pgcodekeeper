@@ -7,8 +7,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.MessageFormat;
 
@@ -22,6 +20,7 @@ import org.osgi.framework.BundleContext;
 import ru.taximaxim.codekeeper.cli.Activator;
 import ru.taximaxim.codekeeper.cli.Main;
 import ru.taximaxim.codekeeper.cli.localizations.Messages;
+import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 
 @RunWith(value = Parameterized.class)
 public class OutputTest {
@@ -104,10 +103,8 @@ class UsageArgumentsProvider extends ArgumentsProvider {
     @Override
     public String output() {
         try {
-            return new String(Files.readAllBytes(Utils.getFileFromOsgiRes(
-                    OutputTest.class.getResource("usage_check.txt"))),
-                    StandardCharsets.UTF_8);
-        } catch (IOException | URISyntaxException ex) {
+            return FileUtils.readResource(OutputTest.class, "usage_check.txt");
+        } catch (IOException ex) {
             throw new IllegalStateException(ex);
         }
     }
@@ -164,10 +161,8 @@ class EmptyArgumentsProvider extends ArgumentsProvider {
     @Override
     public String output() {
         try {
-            return new String(Files.readAllBytes(Utils.getFileFromOsgiRes(
-                    OutputTest.class.getResource("usage_check.txt"))),
-                    StandardCharsets.UTF_8);
-        } catch (IOException | URISyntaxException ex) {
+            return FileUtils.readResource(OutputTest.class, "usage_check.txt");
+        } catch (IOException ex) {
             throw new IllegalStateException(ex);
         }
     }

@@ -20,7 +20,7 @@ import java.util.Map;
  * <ol>
  * <li>Copy code from
  * <a href='https://github.com/postgres/postgres/blob/REL9_6_STABLE/src/include/parser/kwlist.h'>
- * kwlist.h</a>, use your desired stable branch.</li>
+ * kwlist.h</a>, use your desired stable branch with actual version of postgres.</li>
  * <li>Paste it into {@link #addKeywords(Map)}, replacing the code there.</li>
  * <li>In pasted code, replace <code>PG_KEYWORD\(("\w+"), \w+, (\w+), (\w+)\)</code> by
  * <code>addKw\(map, $1, $2, $3\);</code> using regular expressions.</li>
@@ -276,8 +276,10 @@ public class Keyword {
         addKw(map, "logged", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "mapping", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "match", UNRESERVED_KEYWORD, BARE_LABEL);
+        addKw(map, "matched", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "materialized", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "maxvalue", UNRESERVED_KEYWORD, BARE_LABEL);
+        addKw(map, "merge", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "method", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "minute", UNRESERVED_KEYWORD, AS_LABEL);
         addKw(map, "minvalue", UNRESERVED_KEYWORD, BARE_LABEL);
@@ -332,6 +334,7 @@ public class Keyword {
         addKw(map, "owned", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "owner", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "parallel", UNRESERVED_KEYWORD, BARE_LABEL);
+        addKw(map, "parameter", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "parser", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "partial", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "partition", UNRESERVED_KEYWORD, BARE_LABEL);

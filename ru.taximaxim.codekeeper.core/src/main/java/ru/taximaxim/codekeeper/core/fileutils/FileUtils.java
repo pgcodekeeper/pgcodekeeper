@@ -2,9 +2,11 @@ package ru.taximaxim.codekeeper.core.fileutils;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.io.UncheckedIOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
@@ -112,6 +114,15 @@ public final class FileUtils {
         }
 
         return uri.toString();
+    }
+
+    public static String readResource(Class<?> clazz, String fileName) throws IOException {
+        try (InputStream inputStream = clazz.getResourceAsStream(fileName)) {
+            if (inputStream == null) {
+                return null;
+            }
+            return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+        }
     }
 
     private FileUtils() {

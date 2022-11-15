@@ -16,10 +16,9 @@ SELECT
     sp.data_compression_desc,
     ctt.is_track_columns_updated_on AS is_tracked
 FROM sys.tables o WITH (NOLOCK)
-JOIN sys.partitions sp WITH (NOLOCK) ON sp.object_id = o.object_id AND sp.index_id IN (0,1) AND sp.partition_number = 1
+JOIN sys.indexes ind WITH (NOLOCK) on ind.object_id = o.object_id
+JOIN sys.partitions sp WITH (NOLOCK) ON sp.object_id = o.object_id AND ind.index_id = sp.index_id AND sp.index_id IN (0,1) AND sp.partition_number = 1
 LEFT JOIN sys.database_principals p WITH (NOLOCK) ON p.principal_id=o.principal_id
-LEFT JOIN sys.indexes ind WITH (NOLOCK) on ind.object_id = o.object_id AND ind.index_id = 0
-LEFT JOIN sys.data_spaces dsp WITH (NOLOCK) on dsp.data_space_id = ind.data_space_id
 LEFT JOIN sys.data_spaces ds WITH (NOLOCK) ON o.filestream_data_space_id = ds.data_space_id
 LEFT JOIN sys.data_spaces dsx WITH (NOLOCK) ON dsx.data_space_id=o.lob_data_space_id
 LEFT JOIN sys.index_columns ic WITH (NOLOCK) ON ic.partition_ordinal > 0 AND ic.index_id = ind.index_id and ic.object_id = o.object_id

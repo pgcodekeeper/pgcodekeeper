@@ -7,6 +7,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.loader.JdbcQueries;
+import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.CreateIndex;
 import ru.taximaxim.codekeeper.core.schema.AbstractIndex;
@@ -50,6 +51,10 @@ public class IndicesReader extends JdbcReader {
 
         i.setClusterIndex(res.getBoolean("isclustered"));
         i.setUnique(res.getBoolean("indisunique"));
+
+        if (SupportedVersion.VERSION_15.isLE(loader.version)) {
+            i.setNullsDistinction(res.getBoolean("nullsnotdistinct"));
+        }
 
         // COMMENT
         String comment = res.getString("comment");

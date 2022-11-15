@@ -65,7 +65,7 @@ public class RuleAnalysisLauncher extends AbstractAnalysisLauncher {
         if ((update = cmd.update_stmt_for_psql()) != null) {
             return analyzeTableChild(update, new Update(meta));
         }
-
+ 
         return Collections.emptySet();
     }
 }

@@ -1,9 +1,7 @@
 package ru.taximaxim.codekeeper.core.schema.meta;
 
-import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
-import java.net.URISyntaxException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -12,7 +10,6 @@ import java.util.concurrent.ConcurrentMap;
 
 import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
-import ru.taximaxim.codekeeper.core.log.Log;
 
 public class MetaStorage implements Serializable {
 
@@ -39,18 +36,13 @@ public class MetaStorage implements Serializable {
             return db;
         }
 
-        try {
-            Path path = Utils.getFileFromOsgiRes(MetaStorage.class.getResource(
-                    FILE_NAME + ver + ".ser"));
-            Object object = Utils.deserialize(path);
+        InputStream inputStream = MetaStorage.class.getResourceAsStream(FILE_NAME + ver + ".ser");
 
-            if (object instanceof MetaStorage) {
-                MetaStorage storage = (MetaStorage) object;
-                MetaStorage other = STORAGE_CACHE.putIfAbsent(ver, storage);
-                return other == null ? storage : other;
-            }
-        } catch (URISyntaxException | IOException e) {
-            Log.log(Log.LOG_ERROR, "Error while reading systems objects from resources");
+        Object object = Utils.deserialize(inputStream);
+        if (object instanceof MetaStorage) {
+            MetaStorage storage = (MetaStorage) object;
+            MetaStorage other = STORAGE_CACHE.putIfAbsent(ver, storage);
+            return other == null ? storage : other;
         }
 
         return null;

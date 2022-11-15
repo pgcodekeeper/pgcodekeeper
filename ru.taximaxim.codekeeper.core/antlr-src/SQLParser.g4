@@ -50,6 +50,7 @@ statement
 data_statement
     : select_stmt
     | insert_stmt_for_psql
+    | merge_stmt_for_psql
     | update_stmt_for_psql
     | delete_stmt_for_psql
     ;
@@ -393,7 +394,8 @@ table_action
     | CLUSTER ON index_name=schema_qualified_name
     | SET WITHOUT (CLUSTER | OIDS)
     | SET WITH OIDS
-    | SET (LOGGED | UNLOGGED)
+    | SET ACCESS METHOD access_method_name=identifier
+    | set_logged
     | SET storage_parameters
     | RESET names_in_parens
     | define_foreign_options
@@ -519,6 +521,7 @@ grant_option_for
 alter_sequence_statement
     : SEQUENCE if_exists? name=schema_qualified_name
      ( (sequence_body | RESTART (WITH? signed_number_literal)?)*
+    | set_logged
     | set_schema
     | rename_to)
     ;
@@ -557,6 +560,7 @@ materialized_view_action
     | ALTER COLUMN? identifier SET STORAGE storage_option
     | CLUSTER ON index_name=schema_qualified_name
     | SET WITHOUT CLUSTER
+    | SET ACCESS METHOD access_method_name=identifier
     | SET storage_parameters
     | RESET names_in_parens
     ;
@@ -643,7 +647,11 @@ create_index_statement
     ;
 
 index_rest
-    : (USING method=identifier)? index_columns including_index? with_storage_parameter? table_space? index_where?
+    : (USING method=identifier)? index_columns including_index? nulls_distinction? with_storage_parameter? table_space? index_where?
+    ;
+
+nulls_distinction
+    : NULLS NOT? DISTINCT
     ;
 
 index_columns
@@ -1278,7 +1286,7 @@ argmode
     ;
 
 create_sequence_statement
-    : (TEMPORARY | TEMP)? SEQUENCE if_not_exists? name=schema_qualified_name (sequence_body)*
+    : (TEMPORARY | TEMP | UNLOGGED)? SEQUENCE if_not_exists? name=schema_qualified_name (sequence_body)*
     ;
 
 sequence_body
@@ -1344,6 +1352,7 @@ alter_subscription_action
     | ENABLE
     | DISABLE
     | SET storage_parameters
+    | SKIP_ LEFT_PAREN storage_parameter_option RIGHT_PAREN
     | owner_to
     | rename_to
     ;
@@ -1424,9 +1433,18 @@ alter_conversion_statement
     ;
 
 create_publication_statement
-    : PUBLICATION identifier 
-    (FOR TABLE only_table_multiply (COMMA only_table_multiply)* | FOR ALL TABLES)?
+    : PUBLICATION identifier
+    (FOR ALL TABLES | FOR publication_object (COMMA publication_object)*)?
     with_storage_parameter?
+    ;
+
+publication_object
+    : TABLE publication_table_only? (COMMA publication_table_only)*
+    | TABLES IN SCHEMA (identifier | CURRENT_SCHEMA) (COMMA (identifier | CURRENT_SCHEMA))*
+    ;
+
+publication_table_only
+    : only_table_multiply names_in_parens? (WHERE LEFT_PAREN expression=vex RIGHT_PAREN)?
     ;
 
 alter_publication_statement
@@ -1437,7 +1455,7 @@ alter_publication_action
     : rename_to
     | owner_to
     | SET storage_parameters
-    | (ADD | DROP | SET) TABLE only_table_multiply (COMMA only_table_multiply)*
+    | (ADD | DROP | SET) publication_object (COMMA publication_object)*
     ;
 
 only_table_multiply
@@ -1480,7 +1498,7 @@ copy_option
     | FREEZE truth_value?
     | DELIMITER AS? Character_String_Literal
     | NULL AS? Character_String_Literal
-    | HEADER truth_value?
+    | HEADER (truth_value | MATCH)?
     | QUOTE Character_String_Literal
     | ESCAPE Character_String_Literal
     | FORCE QUOTE (MULTIPLY | identifier_list)
@@ -1523,8 +1541,10 @@ create_database_statement
     ;
 
 create_database_option
-    : (OWNER | TEMPLATE | ENCODING | LOCALE | LC_COLLATE | LC_CTYPE | TABLESPACE) EQUAL? (character_string | identifier | DEFAULT)
+    : (OWNER | TEMPLATE | ENCODING | STRATEGY | LOCALE | LC_COLLATE | LC_CTYPE | ICU_LOCALE | LOCALE_PROVIDER | TABLESPACE) EQUAL? (character_string | identifier | DEFAULT)
     | alter_database_option
+    | COLLATION_VERSION EQUAL (character_string | identifier | signed_numerical_literal)
+    | OID EQUAL? signed_numerical_literal
     ;
 
 alter_database_statement
@@ -1537,6 +1557,7 @@ alter_database_action
     | rename_to
     | owner_to
     | set_tablespace
+    | REFRESH COLLATION VERSION
     | set_reset_parameter
     ;
 
@@ -1668,7 +1689,8 @@ constr_body
         (MATCH (FULL | PARTIAL | SIMPLE))? (ON (DELETE | UPDATE) action)*
     | CHECK LEFT_PAREN expression=vex RIGHT_PAREN (NO INHERIT)?
     | NOT? NULL
-    | (UNIQUE | PRIMARY KEY) col=names_in_parens? index_parameters
+    | UNIQUE nulls_distinction? col=names_in_parens? index_parameters
+    | PRIMARY KEY col=names_in_parens? index_parameters
     | DEFAULT default_expr=vex
     | identity_body
     | GENERATED ALWAYS AS LEFT_PAREN vex RIGHT_PAREN STORED
@@ -1739,7 +1761,7 @@ set_tablespace
 
 action
     : cascade_restrict
-    | SET (NULL | DEFAULT)
+    | SET (NULL | DEFAULT) (col=names_in_parens)?
     | NO ACTION
     ;
 
@@ -1753,6 +1775,10 @@ rename_to
 
 set_schema
     : SET SCHEMA identifier
+    ;
+
+set_logged
+    : SET (LOGGED | UNLOGGED)
     ;
 
 table_column_privilege
@@ -2110,8 +2136,10 @@ bare_label_keyword
     | LOGGED
     | MAPPING
     | MATCH
+    | MATCHED
     | MATERIALIZED
     | MAXVALUE
+    | MERGE
     | METHOD
     | MINVALUE
     | MODE
@@ -2800,6 +2828,7 @@ tokens_nonkeyword
     | CANONICAL
     | CATEGORY
     | COLLATABLE
+    | COLLATION_VERSION
     | COMBINEFUNC
     | COMMUTATOR
     | CONNECT
@@ -2823,6 +2852,7 @@ tokens_nonkeyword
     | HASHES
     | HEADLINE
     | HYPOTHETICAL
+    | ICU_LOCALE
     | INDEX_CLEANUP
     | INIT
     | INITCOND
@@ -2836,6 +2866,7 @@ tokens_nonkeyword
     | LEXTYPES
     | LIST
     | LOCALE
+    | LOCALE_PROVIDER
     | LOGIN
     | MAIN
     | MERGES
@@ -2857,6 +2888,7 @@ tokens_nonkeyword
     | NOLOGIN
     | NOREPLICATION
     | NOSUPERUSER
+    | OID
     | OUTPUT
     | PASSEDBYVALUE
     | PATH
@@ -2881,6 +2913,7 @@ tokens_nonkeyword
     | SKIP_LOCKED
     | SORTOP
     | SSPACE
+    | STRATEGY
     | STYPE
     | SUBTYPE_DIFF
     | SUBTYPE_OPCLASS
@@ -3378,6 +3411,35 @@ order_specification
 
 null_ordering
     : NULLS (FIRST | LAST)
+    ;
+
+merge_stmt_for_psql
+    : with_clause?
+    MERGE INTO merge_table_name=schema_qualified_name (AS? alias=identifier)?
+    USING (source_table_name=schema_qualified_name (AS? source_alias=identifier)? | table_subquery AS? source_alias=identifier) ON vex
+    when_condition+
+    ;
+
+when_condition
+    : WHEN MATCHED (AND vex)? THEN merge_matched
+    | WHEN NOT MATCHED (AND vex)? THEN merge_not_matched
+    ;
+
+merge_matched
+    : UPDATE SET merge_update (COMMA merge_update)*
+    | DELETE
+    | DO NOTHING
+    ;
+
+merge_not_matched
+    : INSERT insert_columns? (OVERRIDING (SYSTEM | USER) VALUE)? (values_stmt | DEFAULT VALUES)
+    | DO NOTHING
+    ;
+
+merge_update
+    : column+=indirection_identifier EQUAL (value+=vex | DEFAULT)
+    | LEFT_PAREN column+=indirection_identifier (COMMA column+=indirection_identifier)* RIGHT_PAREN EQUAL
+    (LEFT_PAREN (value+=vex | DEFAULT) (COMMA (value+=vex | DEFAULT))* RIGHT_PAREN)
     ;
 
 insert_stmt_for_psql

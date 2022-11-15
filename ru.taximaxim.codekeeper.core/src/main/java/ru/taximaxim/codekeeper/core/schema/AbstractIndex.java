@@ -54,8 +54,8 @@ implements PgSimpleOptionContainer {
         return definition;
     }
 
-    public void setClusterIndex(boolean value) {
-        clusterIndex = value;
+    public void setClusterIndex(boolean clusterIndex) {
+        this.clusterIndex = clusterIndex;
         resetHash();
     }
 

@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.core.loader;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -62,6 +63,8 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
             statement.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY");
             statement.execute("SET timezone = " + PgDiffUtils.quoteString(connector.getTimezone()));
 
+            queryCheckVersion();
+            queryCheckLastSysOid();
             queryTypesForCache();
 
             readRelations(storage);
@@ -170,16 +173,16 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
 
                 DbObjType type;
                 switch (result.getString("relkind")) {
-                    case "v":
-                    case "m":
-                        type = DbObjType.VIEW;
-                        break;
-                    case "S":
-                        type = DbObjType.SEQUENCE;
-                        break;
-                    default:
-                        type = DbObjType.TABLE;
-                        break;
+                case "v":
+                case "m":
+                    type = DbObjType.VIEW;
+                    break;
+                case "S":
+                    type = DbObjType.SEQUENCE;
+                    break;
+                default:
+                    type = DbObjType.TABLE;
+                    break;
                 }
                 MetaRelation relation = new MetaRelation(schemaName, relationName, type);
 
@@ -228,7 +231,9 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
     }
 
     private void readCasts(MetaStorage storage) throws InterruptedException, SQLException {
-        try (ResultSet result = statement.executeQuery(JdbcQueries.QUERY_SYSTEM_CASTS)) {
+        try (PreparedStatement statement = connection.prepareStatement(JdbcQueries.QUERY_SYSTEM_CASTS)) {
+            statement.setLong(1, lastSysOid);
+            ResultSet result = runner.runScript(statement);
             while (result.next()) {
                 PgDiffUtils.checkCancelled(monitor);
                 String source = result.getString("source");
@@ -238,17 +243,17 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                 String type = result.getString("castcontext");
                 CastContext ctx;
                 switch (type) {
-                    case "e":
-                        ctx = CastContext.EXPLICIT;
-                        break;
-                    case "a":
-                        ctx = CastContext.ASSIGNMENT;
-                        break;
-                    case "i":
-                        ctx = CastContext.IMPLICIT;
-                        break;
-                    default:
-                        throw new IllegalStateException("Unknown cast context: " + type);
+                case "e":
+                    ctx = CastContext.EXPLICIT;
+                    break;
+                case "a":
+                    ctx = CastContext.ASSIGNMENT;
+                    break;
+                case "i":
+                    ctx = CastContext.IMPLICIT;
+                    break;
+                default:
+                    throw new IllegalStateException("Unknown cast context: " + type);
                 }
                 storage.addMetaChild(new MetaCast(source, target, ctx));
             }

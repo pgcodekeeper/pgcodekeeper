@@ -19,6 +19,7 @@ public class PgIndex extends AbstractIndex {
 
     private Inherits inherit;
     private String method;
+    private boolean nullsDistinction = true;
 
     public PgIndex(String name) {
         super(name);
@@ -73,6 +74,10 @@ public class PgIndex extends AbstractIndex {
             }
             sbSQL.setLength(sbSQL.length() - 2);
             sbSQL.append(')');
+        }
+
+        if (!isNullsDistinction()) {
+            sbSQL.append(" NULLS NOT DISTINCT");
         }
 
         StringBuilder sb = new StringBuilder();
@@ -202,12 +207,22 @@ public class PgIndex extends AbstractIndex {
         resetHash();
     }
 
+    public boolean isNullsDistinction() {
+        return nullsDistinction;
+    }
+
+    public void setNullsDistinction(boolean nullsDistinction) {
+        this.nullsDistinction = nullsDistinction;
+        resetHash();
+    }
+
     @Override
     protected boolean compareUnalterable(AbstractIndex index) {
         return index instanceof PgIndex
                 && super.compareUnalterable(index)
                 && Objects.equals(inherit, ((PgIndex) index).inherit)
-                && Objects.equals(method, ((PgIndex) index).method);
+                && Objects.equals(method, ((PgIndex) index).method)
+                && nullsDistinction == ((PgIndex) index).nullsDistinction;
     }
 
     @Override
@@ -215,6 +230,7 @@ public class PgIndex extends AbstractIndex {
         super.computeHash(hasher);
         hasher.put(inherit);
         hasher.put(method);
+        hasher.put(nullsDistinction);
     }
 
     @Override
@@ -222,6 +238,7 @@ public class PgIndex extends AbstractIndex {
         PgIndex index =  new PgIndex(getName());
         index.inherit = inherit;
         index.setMethod(getMethod());
+        index.setNullsDistinction(isNullsDistinction());
         return index;
     }
 }

@@ -27,6 +27,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Data_statementContex
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Delete_stmt_for_psqlContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.IdentifierContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Insert_stmt_for_psqlContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Merge_stmt_for_psqlContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Select_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Update_stmt_for_psqlContext;
@@ -349,6 +350,7 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
             Delete_stmt_for_psqlContext delete;
             Insert_stmt_for_psqlContext insert;
             Update_stmt_for_psqlContext update;
+            Merge_stmt_for_psqlContext merge;
 
             List<ModPair<String, String>> pairs;
             if (withSelect != null) {
@@ -359,6 +361,8 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
                 pairs = new Insert(this).analyze(insert);
             } else if ((update = data.update_stmt_for_psql()) != null) {
                 pairs = new Update(this).analyze(update);
+            } else if ((merge = data.merge_stmt_for_psql()) != null) {
+                pairs = new Merge(this).analyze(merge);
             } else {
                 Log.log(Log.LOG_WARNING, "No alternative in Cte!");
                 continue;

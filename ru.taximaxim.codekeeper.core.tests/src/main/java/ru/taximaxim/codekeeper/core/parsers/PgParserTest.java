@@ -77,6 +77,7 @@ public class PgParserTest {
             {"lseg"},
             {"misc_functions"},
             {"misc_sanity"},
+            {"merge"},
             {"name"},
             {"namespace"},
             {"numeric_big"},
