@@ -28,10 +28,10 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.ide.ResourceUtil;
 
 import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
-import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.Consts.MS_WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.core.Consts.WORK_DIR_NAMES;
+import ru.taximaxim.codekeeper.core.PgDiffArguments;
+import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.loader.DatabaseLoader;
 import ru.taximaxim.codekeeper.core.loader.FullAnalyze;
 import ru.taximaxim.codekeeper.core.loader.LibraryLoader;
@@ -51,6 +51,8 @@ import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class UIProjectLoader extends ProjectLoader {
+
+    private static final String SQL_EXTENSION = "sql"; // $NON-NLS-1$
 
     private final IProject iProject;
 
@@ -133,17 +135,18 @@ public class UIProjectLoader extends ProjectLoader {
 
         IFolder securityFolder = baseDir.getFolder(new Path(MS_WORK_DIR_NAMES.SECURITY.getDirName()));
 
-        loadSubdir(securityFolder.getFolder("Schemas"), db, this::checkIgnoreSchemaList); //$NON-NLS-1$
+        loadSubdir(securityFolder.getFolder(MS_SCHEMAS_FOLDER), db, this::checkIgnoreSchemaList);
         // DBO schema check requires schema loads to finish first
         AntlrParser.finishAntlr(antlrTasks);
         addDboSchema(db);
 
-        loadSubdir(securityFolder.getFolder("Roles"), db); //$NON-NLS-1$
-        loadSubdir(securityFolder.getFolder("Users"), db); //$NON-NLS-1$
+        loadSubdir(securityFolder.getFolder(MS_ROLES_FOLDER), db);
+        loadSubdir(securityFolder.getFolder(MS_USERS_FOLDER), db);
 
         for (MS_WORK_DIR_NAMES dirSub : MS_WORK_DIR_NAMES.values()) {
             if (dirSub.isInSchema()) {
-                loadSubdir(baseDir.getFolder(new Path(dirSub.getDirName())), db, msFileName -> checkIgnoreSchemaList(msFileName.substring(0, msFileName.indexOf('.'))));
+                loadSubdir(baseDir.getFolder(new Path(dirSub.getDirName())), db,
+                        msFileName -> checkIgnoreSchemaList(msFileName.substring(0, msFileName.indexOf('.'))));
             } else {
                 loadSubdir(baseDir.getFolder(new Path(dirSub.getDirName())), db);
             }
@@ -163,8 +166,8 @@ public class UIProjectLoader extends ProjectLoader {
         if (!folder.exists()) {
             return;
         }
-        filterFile(folder.members(), monitor, db, f -> checkFilename == null ? true
-                : checkFilename.test(f.getName().substring(0, f.getName().length()-4)));
+        filterFile(folder.members(), monitor, db, f -> checkFilename == null ||
+                checkFilename.test(f.getName().substring(0, f.getName().length() - 4)));
     }
 
     /**
@@ -174,7 +177,7 @@ public class UIProjectLoader extends ProjectLoader {
             throws CoreException, InterruptedException {
 
         Stream<IResource> streamR = Arrays.stream(iResources)
-                .filter(r -> r.getType() == IResource.FILE && "sql".equals(r.getFileExtension())) //$NON-NLS-1$
+                .filter(r -> r.getType() == IResource.FILE && SQL_EXTENSION.equals(r.getFileExtension()))
                 .filter(checkFile);
 
         for (IResource resource : PgDiffUtils.sIter(streamR)) {
@@ -203,11 +206,11 @@ public class UIProjectLoader extends ProjectLoader {
         args.setMsSql(true);
         db.setArguments(args);
 
-        IPath schemasPath = new Path(MS_WORK_DIR_NAMES.SECURITY.getDirName()).append("Schemas"); //$NON-NLS-1$
+        IPath schemasPath = new Path(MS_WORK_DIR_NAMES.SECURITY.getDirName()).append(MS_SCHEMAS_FOLDER);
         boolean isLoaded = false;
         for (IFile file : files) {
             IPath filePath = file.getProjectRelativePath();
-            if (!"sql".equals(file.getFileExtension()) || !isInMsProject(filePath)) { //$NON-NLS-1$
+            if (!SQL_EXTENSION.equals(file.getFileExtension()) || !isInMsProject(filePath)) {
                 // skip non-sql or non-project files
                 // still report work
                 mon.worked(1);
@@ -237,10 +240,13 @@ public class UIProjectLoader extends ProjectLoader {
 
         // exclude empty schemas (except loaded from schema files) that have been loaded early
         db.getSchemas().stream()
-        .filter(sc -> schemaFiles.contains(AbstractModelExporter.getExportedFilename(sc))
-                || sc.hasChildren())
-        .forEach(st -> newDb.addChild(st.deepCopy()));
-        newDb.getObjReferences().putAll(db.getObjReferences());
+            .filter(sc -> schemaFiles.contains(AbstractModelExporter.getExportedFilename(sc)) || sc.hasChildren())
+            .forEach(st -> newDb.addChild(st.deepCopy()));
+
+        db.getAssemblies().forEach(st -> newDb.addChild(st.deepCopy()));
+        db.getRoles().forEach(st -> newDb.addChild(st.deepCopy()));
+        db.getUsers().forEach(st -> newDb.addChild(st.deepCopy()));
+
         newDb.copyLaunchers(db);
         return newDb;
     }
@@ -253,7 +259,7 @@ public class UIProjectLoader extends ProjectLoader {
 
         for (IFile file : files) {
             IPath filePath = file.getProjectRelativePath();
-            if (!"sql".equals(file.getFileExtension()) || !isInProject(filePath)) { //$NON-NLS-1$
+            if (!SQL_EXTENSION.equals(file.getFileExtension()) || !isInProject(filePath)) {
                 // skip non-sql or non-project files
                 // still report work
                 mon.worked(1);
@@ -456,7 +462,7 @@ public class UIProjectLoader extends ProjectLoader {
     private static boolean isMsSchemaFile(IPath path) {
         return path.segmentCount() == 3
                 && path.segment(0).equals(MS_WORK_DIR_NAMES.SECURITY.getDirName())
-                && "Schemas".equals(path.segment(1)) //$NON-NLS-1$
+                && MS_SCHEMAS_FOLDER.equals(path.segment(1))
                 && path.segment(2).endsWith(".sql"); //$NON-NLS-1$
     }
 }

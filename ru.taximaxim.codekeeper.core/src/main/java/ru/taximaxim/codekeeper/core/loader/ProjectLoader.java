@@ -17,10 +17,10 @@ import java.util.stream.Stream;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
-import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.Consts.MS_WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.core.Consts.WORK_DIR_NAMES;
+import ru.taximaxim.codekeeper.core.PgDiffArguments;
+import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
@@ -35,6 +35,11 @@ import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.StatementOverride;
 
 public class ProjectLoader extends DatabaseLoader {
+
+    protected static final String MS_SCHEMAS_FOLDER = "Schemas";
+    protected static final String MS_ROLES_FOLDER = "Roles";
+    protected static final String MS_USERS_FOLDER = "Users";
+
     /**
      * Loading order and directory names of the objects in exported DB schemas.
      * NOTE: constraints, triggers and indexes are now stored in tables,
@@ -138,13 +143,13 @@ public class ProjectLoader extends DatabaseLoader {
     private void loadMsStructure(Path dir, PgDatabase db) throws InterruptedException, IOException {
         Path securityFolder = dir.resolve(MS_WORK_DIR_NAMES.SECURITY.getDirName());
 
-        loadSubdir(securityFolder, "Schemas", db, this::checkIgnoreSchemaList);
+        loadSubdir(securityFolder, MS_SCHEMAS_FOLDER, db, this::checkIgnoreSchemaList);
         // DBO schema check requires schema loads to finish first
         AntlrParser.finishAntlr(antlrTasks);
         addDboSchema(db);
 
-        loadSubdir(securityFolder, "Roles", db);
-        loadSubdir(securityFolder, "Users", db);
+        loadSubdir(securityFolder, MS_ROLES_FOLDER, db);
+        loadSubdir(securityFolder, MS_USERS_FOLDER, db);
 
         for (MS_WORK_DIR_NAMES dirSub : MS_WORK_DIR_NAMES.values()) {
             if (dirSub.isInSchema()) {
