@@ -3,7 +3,6 @@ package ru.taximaxim.codekeeper.ui.reports;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.MessageFormat;
-import java.util.Random;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -24,6 +23,7 @@ public class UsageRequest {
 
     private static final String PARAM_ACCOUNT_NAME = "tid"; //$NON-NLS-1$
     private static final String PARAM_HOST_NAME = "dh"; //$NON-NLS-1$
+    private static final String CLIENT_ID = "cid";
 
     private static final String PARAM_CAMPAING_SOURSE = "cs"; //$NON-NLS-1$
     private static final String PARAM_CAMPAING_NAME = "cn"; //$NON-NLS-1$
@@ -35,12 +35,12 @@ public class UsageRequest {
     private static final String PARAM_JAVA_VERSION = "fl"; //$NON-NLS-1$
 
     private static final String VALUE_TRACKING_CODE_VERSION = "2"; //$NON-NLS-1$
-    private static final String VALUE_NO_REFERRAL = "0"; //$NON-NLS-1$
+    private static final String PARAM_EXTERNAL_EVENT = "ee";
 
     // The constants which maybe will be deleted
     private static final String PARAM_PAGE_TITLE = "utmdt"; //$NON-NLS-1$ //
-    private static final String PARAM_COOKIES_KEYWORD = "utmctr"; //$NON-NLS-1$ //
     private static final String PARAM_EVENT_TRACKING = "utme"; //$NON-NLS-1$ //
+
 
     private final EclipseEnvironment environment = Activator.getDefault().getEclipseEnvironment();
 
@@ -64,7 +64,6 @@ public class UsageRequest {
         }
         StringBuilder builder = new StringBuilder(TRACKING_URL).append('?');
         appendParameter(PARAM_TRACKING_CODE_VERSION, VALUE_TRACKING_CODE_VERSION, builder);
-        appendParameter(PARAM_UNIQUE_TRACKING_NUMBER, getRandomNumber(), builder);
         appendParameter(PARAM_HOST_NAME, GA_HOSTNAME, builder);
         appendParameter(PARAM_DOCUMENT_ENCODING, "UTF-8", builder); //$NON-NLS-1$
 
@@ -77,12 +76,13 @@ public class UsageRequest {
             appendParameter(PARAM_EVENT_TRACKING, event, builder);
         }
 
-        appendParameter(PARAM_REFERRAL, VALUE_NO_REFERRAL, builder);
-        appendParameter(PARAM_PAGE_REQUEST, pagePath, builder);
 
         appendParameter(PARAM_ACCOUNT_NAME, GA_ACCOUNT, builder);
-        appendParameter(PARAM_COOKIES, getCookies(environment), builder);
-        appendParameter(PARAM_GAQ, "1", false, builder); //$NON-NLS-1$
+        appendParameter(CLIENT_ID, environment.getUserId() + environment.getFirstVisit(), builder);
+        appendParameter(PARAM_CAMPAING_SOURSE, "=(direct)|", builder);
+        appendParameter(PARAM_CAMPAING_NAME, "=(direct)|", builder);
+        appendParameter(PARAM_CAMPAING_MEDIUM, "=(none)|", builder);
+        appendParameter(PARAM_EXTERNAL_EVENT, "1", false, builder); //$NON-NLS-1$
 
         String url = builder.toString();
 
@@ -117,51 +117,6 @@ public class UsageRequest {
         return environment;
     }
 
-    /**
-     * Returns the google analytics cookies. These cookies determines user
-     * identity, session identity etc.
-     *
-     * @return the cookies
-     *
-     * @see <a
-     *      href="http://www.analyticsexperts.com/google-analytics/information-about-the-utmlinker-and-the-__utma-__utmb-and-__utmc-cookies/">Information
-     *      about the utmLinker and the __utma, __utmb and __utmc cookies</a>
-     * @see <a
-     *      href="http://www.martynj.com/google-analytics-cookies-tracking-multiple-domains-filters">cookie
-     *      values and formats</a>
-     */
-    private String getCookies(EclipseEnvironment environment) {
-        StringBuilder builder = new StringBuilder();
-
-        /**
-         * unique visitor id cookie has to be unique per eclipse installation
-         */
-        builder.append(PARAM_COOKIES_UNIQUE_VISITOR_ID)
-        .append("=999.").append(environment.getUserId()) //$NON-NLS-1$
-        .append('.').append(environment.getFirstVisit())
-        .append('.').append(environment.getLastVisit())
-        .append('.').append(environment.getCurrentVisit())
-        .append('.').append(environment.getVisitCount());
-
-        builder.append(";+"); //$NON-NLS-1$
-
-        builder.append(PARAM_COOKIES_REFERRAL_TYPE).append("=999.") //$NON-NLS-1$
-        .append(environment.getFirstVisit()).append(".1.1."); //$NON-NLS-1$
-
-        builder.append(PARAM_CAMPAING_SOURSE).append("=(direct)|"); //$NON-NLS-1$
-
-        builder.append(PARAM_CAMPAING_NAME).append("=(direct)|"); //$NON-NLS-1$
-
-        builder.append(PARAM_CAMPAING_MEDIUM).append("=(none)|"); //$NON-NLS-1$
-
-        builder.append(PARAM_COOKIES_KEYWORD)
-        .append('=').append(environment.getKeyword());
-
-        builder.append(";+"); //$NON-NLS-1$
-
-        return PgDiffUtils.checkedEncodeUtf8(builder.toString());
-    }
-
     private void appendParameter(String name, UsageEvent event, StringBuilder builder) {
         String eventString = null;
         String label = event.getLabel();
@@ -186,9 +141,5 @@ public class UsageRequest {
         if (appendAmpersand) {
             builder.append('&');
         }
-    }
-
-    private String getRandomNumber() {
-        return Integer.toString(new Random().nextInt(Integer.MAX_VALUE));
     }
 }
