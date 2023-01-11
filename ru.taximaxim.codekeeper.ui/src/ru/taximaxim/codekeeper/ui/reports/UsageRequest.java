@@ -89,22 +89,24 @@ public class UsageRequest {
         try {
             HttpURLConnection urlConnection = (HttpURLConnection) new URL(url).openConnection();
             urlConnection.setInstanceFollowRedirects(true);
+            urlConnection.setFixedLengthStreamingMode(0);
+            urlConnection.setDoOutput(true);
             urlConnection.setRequestMethod(GET_METHOD_NAME);
             urlConnection.setRequestProperty(USER_AGENT, environment.getUserAgent());
             urlConnection.setConnectTimeout(TIMEOUT);
             urlConnection.connect();
             int responseCode = urlConnection.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_OK) {
+            if (responseCode == HttpURLConnection.HTTP_NO_CONTENT) {
                 Log.log(Log.LOG_DEBUG, MessageFormat.format(
-                        "HTTP GET to url \"{0}\" successfull!", url)); //$NON-NLS-1$
+                        "HTTP POST to url \"{0}\" successfull!", url)); //$NON-NLS-1$
                 return true;
             } else {
                 Log.log(Log.LOG_ERROR, MessageFormat.format(
-                        "HTTP GET to \"{0}\" failed, response code received \"{1}\"", url, responseCode)); //$NON-NLS-1$
+                        "HTTP POST to \"{0}\" failed, response code received \"{1}\"", url, responseCode)); //$NON-NLS-1$
             }
         } catch (Exception e) {
             Log.log(Log.LOG_DEBUG, MessageFormat.format(
-                    "HTTP GET to \"{0}\" failed, exception occured: \"{1}\"", url, e)); //$NON-NLS-1$
+                    "HTTP POST to \"{0}\" failed, exception occured: \"{1}\"", url, e)); //$NON-NLS-1$
         }
         return false;
 
