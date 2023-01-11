@@ -14,37 +14,33 @@ import ru.taximaxim.codekeeper.ui.Log;
  */
 public class UsageRequest {
 
-    private static final String GA_ACCOUNT = "UA-63353874-1"; //$NON-NLS-1$
+    private static final String GA_ACCOUNT = "G-B1L6VLS9K5"; //$NON-NLS-1$
     private static final String GA_HOSTNAME = "technology45.ru"; //$NON-NLS-1$
 
-    private static final String TRACKING_URL = "http://www.google-analytics.com/__utm.gif"; //$NON-NLS-1$
+    private static final String TRACKING_URL = "https://www.google-analytics.com/g/collect"; //$NON-NLS-1$
     private static final String USER_AGENT = "User-Agent"; //$NON-NLS-1$
-    private static final String GET_METHOD_NAME = "GET"; //$NON-NLS-1$
+    private static final String GET_METHOD_NAME = "POST"; //$NON-NLS-1$
     private static final int TIMEOUT = 10000; // Connection timeout is 10 seconds.
 
-    private static final String PARAM_PAGE_REQUEST = "utmp"; //$NON-NLS-1$
-    private static final String PARAM_ACCOUNT_NAME = "utmac"; //$NON-NLS-1$
-    private static final String PARAM_HOST_NAME = "utmhn"; //$NON-NLS-1$
-    private static final String PARAM_EVENT_TRACKING = "utme"; //$NON-NLS-1$
-    private static final String PARAM_COOKIES = "utmcc"; //$NON-NLS-1$
-    private static final String PARAM_COOKIES_UNIQUE_VISITOR_ID = "__utma"; //$NON-NLS-1$
-    private static final String PARAM_COOKIES_REFERRAL_TYPE = "__utmz"; //$NON-NLS-1$
-    private static final String PARAM_COOKIES_UTMCSR = "utmcsr"; //$NON-NLS-1$
-    private static final String PARAM_COOKIES_UTMCCN = "utmccn"; //$NON-NLS-1$
-    private static final String PARAM_COOKIES_UTMCMD = "utmcmd"; //$NON-NLS-1$
-    private static final String PARAM_COOKIES_KEYWORD = "utmctr"; //$NON-NLS-1$
+    private static final String PARAM_ACCOUNT_NAME = "tid"; //$NON-NLS-1$
+    private static final String PARAM_HOST_NAME = "dh"; //$NON-NLS-1$
 
-    private static final String PARAM_REFERRAL = "utmr"; //$NON-NLS-1$
-    private static final String PARAM_TRACKING_CODE_VERSION = "utmwv"; //$NON-NLS-1$
-    private static final String PARAM_UNIQUE_TRACKING_NUMBER = "utmn"; //$NON-NLS-1$
-    private static final String PARAM_LANGUAGE_ENCODING = "utmcs"; //$NON-NLS-1$
-    private static final String PARAM_PAGE_TITLE = "utmdt"; //$NON-NLS-1$
-    private static final String PARAM_JAVA_VERSION = "utmfl"; //$NON-NLS-1$
-    private static final String PARAM_GAQ = "gaq"; //$NON-NLS-1$
+    private static final String PARAM_CAMPAING_SOURSE = "cs"; //$NON-NLS-1$
+    private static final String PARAM_CAMPAING_NAME = "cn"; //$NON-NLS-1$
+    private static final String PARAM_CAMPAING_MEDIUM = "cm"; //$NON-NLS-1$
 
-    private static final String VALUE_TRACKING_CODE_VERSION = "4.7.2"; //$NON-NLS-1$
+
+    private static final String PARAM_TRACKING_CODE_VERSION = "v"; //$NON-NLS-1$
+    private static final String PARAM_DOCUMENT_ENCODING = "de"; //$NON-NLS-1$
+    private static final String PARAM_JAVA_VERSION = "fl"; //$NON-NLS-1$
+
+    private static final String VALUE_TRACKING_CODE_VERSION = "2"; //$NON-NLS-1$
     private static final String VALUE_NO_REFERRAL = "0"; //$NON-NLS-1$
 
+    // The constants which maybe will be deleted
+    private static final String PARAM_PAGE_TITLE = "utmdt"; //$NON-NLS-1$ //
+    private static final String PARAM_COOKIES_KEYWORD = "utmctr"; //$NON-NLS-1$ //
+    private static final String PARAM_EVENT_TRACKING = "utme"; //$NON-NLS-1$ //
 
     private final EclipseEnvironment environment = Activator.getDefault().getEclipseEnvironment();
 
@@ -70,7 +66,7 @@ public class UsageRequest {
         appendParameter(PARAM_TRACKING_CODE_VERSION, VALUE_TRACKING_CODE_VERSION, builder);
         appendParameter(PARAM_UNIQUE_TRACKING_NUMBER, getRandomNumber(), builder);
         appendParameter(PARAM_HOST_NAME, GA_HOSTNAME, builder);
-        appendParameter(PARAM_LANGUAGE_ENCODING, "UTF-8", builder); //$NON-NLS-1$
+        appendParameter(PARAM_DOCUMENT_ENCODING, "UTF-8", builder); //$NON-NLS-1$
 
         if (title != null) {
             String encoded = PgDiffUtils.checkedEncodeUtf8(title);
@@ -152,11 +148,11 @@ public class UsageRequest {
         builder.append(PARAM_COOKIES_REFERRAL_TYPE).append("=999.") //$NON-NLS-1$
         .append(environment.getFirstVisit()).append(".1.1."); //$NON-NLS-1$
 
-        builder.append(PARAM_COOKIES_UTMCSR).append("=(direct)|"); //$NON-NLS-1$
+        builder.append(PARAM_CAMPAING_SOURSE).append("=(direct)|"); //$NON-NLS-1$
 
-        builder.append(PARAM_COOKIES_UTMCCN).append("=(direct)|"); //$NON-NLS-1$
+        builder.append(PARAM_CAMPAING_NAME).append("=(direct)|"); //$NON-NLS-1$
 
-        builder.append(PARAM_COOKIES_UTMCMD).append("=(none)|"); //$NON-NLS-1$
+        builder.append(PARAM_CAMPAING_MEDIUM).append("=(none)|"); //$NON-NLS-1$
 
         builder.append(PARAM_COOKIES_KEYWORD)
         .append('=').append(environment.getKeyword());
