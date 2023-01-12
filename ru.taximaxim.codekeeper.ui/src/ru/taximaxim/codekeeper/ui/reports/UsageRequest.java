@@ -85,7 +85,7 @@ public class UsageRequest {
         appendParameter(PARAM_PAGE_REQUEST, pagePath, builder);
 
         appendParameter(PARAM_ACCOUNT_NAME, GA_ACCOUNT, builder);
-        appendParameter(CLIENT_ID, environment.getUserId() + environment.getFirstVisit(), builder);
+        appendParameter(CLIENT_ID, environment.getUserId() + "." + environment.getFirstVisit(), builder);
         appendParameter(PARAM_CAMPAING_SOURSE, "=(direct)|", builder);
         appendParameter(PARAM_CAMPAING_NAME, "=(direct)|", builder);
         appendParameter(PARAM_CAMPAING_MEDIUM, "=(none)|", builder);
