@@ -13,7 +13,7 @@ import ru.taximaxim.codekeeper.ui.Log;
  */
 public class UsageRequest {
 
-    private static final String GA_ACCOUNT = "G-B1L6VLS9K5"; //$NON-NLS-1$
+    private static final String GA_ACCOUNT = "G-B1L6VLS9K5"; //$NON-NLS-1$ // id for test account
     private static final String GA_HOSTNAME = "technology45.ru"; //$NON-NLS-1$
 
     private static final String TRACKING_URL = "https://www.google-analytics.com/g/collect"; //$NON-NLS-1$
@@ -35,7 +35,7 @@ public class UsageRequest {
     private static final String PARAM_JAVA_VERSION = "fl"; //$NON-NLS-1$
 
     private static final String VALUE_TRACKING_CODE_VERSION = "2"; //$NON-NLS-1$
-    private static final String PARAM_EXTERNAL_EVENT = "ee";
+    private static final String PARAM_EVENT_NAME = "en";
 
     // The constants which maybe will be deleted
     private static final String PARAM_PAGE_TITLE = "utmdt"; //$NON-NLS-1$ //
@@ -82,7 +82,7 @@ public class UsageRequest {
         appendParameter(PARAM_CAMPAING_SOURSE, "=(direct)|", builder);
         appendParameter(PARAM_CAMPAING_NAME, "=(direct)|", builder);
         appendParameter(PARAM_CAMPAING_MEDIUM, "=(none)|", builder);
-        appendParameter(PARAM_EXTERNAL_EVENT, "1", false, builder); //$NON-NLS-1$
+        appendParameter(PARAM_EVENT_NAME, "test2", false, builder); //$NON-NLS-1$
 
         String url = builder.toString();
 
