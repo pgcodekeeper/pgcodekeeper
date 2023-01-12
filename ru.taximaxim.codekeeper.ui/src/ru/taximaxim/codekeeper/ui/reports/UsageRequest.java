@@ -13,7 +13,11 @@ import ru.taximaxim.codekeeper.ui.Log;
  */
 public class UsageRequest {
 
-    private static final String GA_ACCOUNT = "G-B1L6VLS9K5"; //$NON-NLS-1$ // id for test account
+    /** 12.01.2023 all key u can look here https://developers.google.com/analytics/devguides/collection/protocol/v1/parameters#cd_
+    / and here https://www.thyngster.com/ga4-measurement-protocol-cheatsheet/
+     */
+
+    private static final String GA_ACCOUNT = "G-89BE28NHFV"; //$NON-NLS-1$ // id for test account
     private static final String GA_HOSTNAME = "technology45.ru"; //$NON-NLS-1$
 
     private static final String TRACKING_URL = "https://www.google-analytics.com/g/collect"; //$NON-NLS-1$
@@ -21,25 +25,27 @@ public class UsageRequest {
     private static final String GET_METHOD_NAME = "POST"; //$NON-NLS-1$
     private static final int TIMEOUT = 10000; // Connection timeout is 10 seconds.
 
-    private static final String PARAM_ACCOUNT_NAME = "tid"; //$NON-NLS-1$
-    private static final String PARAM_HOST_NAME = "dh"; //$NON-NLS-1$
-    private static final String CLIENT_ID = "cid";
+    private static final String PARAM_ACCOUNT_NAME = "tid"; // GA Tracking ID
+    private static final String PARAM_HOST_NAME = "dh"; // GA Document Host Name
+    private static final String CLIENT_ID = "cid"; // GA Client ID
+    private static final String PARAM_PAGE_REQUEST = "dl"; // GA document location URL
 
     private static final String PARAM_CAMPAING_SOURSE = "cs"; //$NON-NLS-1$
     private static final String PARAM_CAMPAING_NAME = "cn"; //$NON-NLS-1$
     private static final String PARAM_CAMPAING_MEDIUM = "cm"; //$NON-NLS-1$
 
 
-    private static final String PARAM_TRACKING_CODE_VERSION = "v"; //$NON-NLS-1$
+    private static final String PARAM_TRACKING_CODE_VERSION = "v"; // GA protocol version for GU=1, for GA4=2
     private static final String PARAM_DOCUMENT_ENCODING = "de"; //$NON-NLS-1$
-    private static final String PARAM_JAVA_VERSION = "fl"; //$NON-NLS-1$
+    private static final String PARAM_JAVA_VERSION = "fl"; // GA flash version
 
     private static final String VALUE_TRACKING_CODE_VERSION = "2"; //$NON-NLS-1$
-    private static final String PARAM_EVENT_NAME = "en";
+    private static final String PARAM_EVENT_NAME = "en"; //
 
     // The constants which maybe will be deleted
-    private static final String PARAM_PAGE_TITLE = "utmdt"; //$NON-NLS-1$ //
+    private static final String PARAM_PAGE_TITLE = "uafvl"; //$NON-NLS-1$ //
     private static final String PARAM_EVENT_TRACKING = "utme"; //$NON-NLS-1$ //
+
 
 
     private final EclipseEnvironment environment = Activator.getDefault().getEclipseEnvironment();
@@ -76,6 +82,7 @@ public class UsageRequest {
             appendParameter(PARAM_EVENT_TRACKING, event, builder);
         }
 
+        appendParameter(PARAM_PAGE_REQUEST, pagePath, builder);
 
         appendParameter(PARAM_ACCOUNT_NAME, GA_ACCOUNT, builder);
         appendParameter(CLIENT_ID, environment.getUserId() + environment.getFirstVisit(), builder);
