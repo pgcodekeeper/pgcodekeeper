@@ -1,4 +1,4 @@
-package ru.taximaxim.codekeeper.core;
+package ru.taximaxim.codekeeper.cli;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -8,14 +8,13 @@ import java.nio.file.Path;
 
 import ru.taximaxim.codekeeper.core.fileutils.TempDir;
 
-public abstract class ArgumentsProvider {
+public abstract class ArgumentsProvider implements AutoCloseable {
 
     protected static final String STANDALONE = "pgcodekeeper_standalone_";
 
     protected final String resName;
     protected Path resFile;
     protected TempDir resDir;
-
 
     protected ArgumentsProvider() {
         this(null);
@@ -36,7 +35,7 @@ public abstract class ArgumentsProvider {
     }
 
     protected final Path getFile(FILES_POSTFIX postfix) throws URISyntaxException, IOException {
-        return Utils.getFileFromOsgiRes(PgDiffTest.class.getResource(resName + postfix));
+        return TestUtils.getPathToResource(this.getClass(), resName + postfix);
     }
 
     public Path getDiffResultFile() throws IOException {
@@ -59,6 +58,7 @@ public abstract class ArgumentsProvider {
         return resDir;
     }
 
+    @Override
     public void close() {
         try {
             if (resFile != null && !Files.isDirectory(resFile)) {

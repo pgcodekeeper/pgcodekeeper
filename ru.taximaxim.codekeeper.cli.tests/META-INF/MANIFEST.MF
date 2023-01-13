@@ -5,6 +5,9 @@ Bundle-SymbolicName: ru.taximaxim.codekeeper.cli.tests;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Technology, LLC
 Fragment-Host: ru.taximaxim.codekeeper.cli
+Require-Bundle: org.junit;bundle-version="[4.11.0,5.0.0)",
+ org.junit.jupiter.api;bundle-version="[5.6.0,6.0.0)",
+ org.junit.jupiter.params;bundle-version="[5.6.0,6.0.0)"
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Require-Bundle: org.junit;bundle-version="[4.0.0,5.0.0)"
 Automatic-Module-Name: ru.taximaxim.codekeeper.cli.tests
+Import-Package: org.junit.platform.commons;version="[1.6.0,2.0.0)"

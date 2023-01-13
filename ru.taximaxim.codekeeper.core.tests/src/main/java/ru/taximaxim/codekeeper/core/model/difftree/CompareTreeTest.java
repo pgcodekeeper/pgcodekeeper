@@ -4,21 +4,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
 
-public class CompareTreeTest {
+class CompareTreeTest {
 
     private static final int N = 1000;
 
-    private List<TreeElement> list;
-
-    @Before
-    public void beforeTest() {
-        list = new ArrayList<>(N * DiffSide.values().length * DbObjType.values().length);
+    @Test
+    void test() {
+        List<TreeElement> list = new ArrayList<>(N * DiffSide.values().length * DbObjType.values().length);
         for (DiffSide side : DiffSide.values()) {
             for (DbObjType type : DbObjType.values()) {
                 for (int i = 0; i < N; ++i) {
@@ -26,11 +23,9 @@ public class CompareTreeTest {
                 }
             }
         }
-        Collections.shuffle(list);
-    }
 
-    @Test
-    public void test() {
+        Collections.shuffle(list);
+
         DiffSide prevSide = DiffSide.LEFT;
         DbObjType prevType = DbObjType.values()[DbObjType.values().length - 1];
 
@@ -38,7 +33,7 @@ public class CompareTreeTest {
         for (TreeElement el : list) {
             if (el.getSide() == DiffSide.LEFT
                     && prevSide != DiffSide.LEFT) {
-                Assert.fail("Side left is after another type");
+                Assertions.fail("Side left is after another type");
             }
 
             int res = el.getType().ordinal() - prevType.ordinal();
@@ -46,13 +41,13 @@ public class CompareTreeTest {
             if (el.getSide() == DiffSide.RIGHT
                     && prevSide == DiffSide.BOTH
                     && res <= 0) {
-                Assert.fail("Side wrong");
+                Assertions.fail("Side wrong");
             }
             if (el.getSide() == DiffSide.LEFT) {
                 res = -res;
             }
             if (res < 0) {
-                Assert.fail("Element type is less than expected");
+                Assertions.fail("Element type is less than expected");
             }
             prevSide = el.getSide();
             prevType = el.getType();

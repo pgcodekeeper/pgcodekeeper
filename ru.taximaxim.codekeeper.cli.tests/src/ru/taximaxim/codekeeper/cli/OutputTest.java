@@ -1,6 +1,4 @@
-package ru.taximaxim.codekeeper.core;
-
-import static org.junit.Assert.assertEquals;
+package ru.taximaxim.codekeeper.cli;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -9,66 +7,55 @@ import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.text.MessageFormat;
+import java.util.stream.Stream;
 
-import org.junit.After;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
-import org.osgi.framework.BundleContext;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-import ru.taximaxim.codekeeper.cli.Activator;
-import ru.taximaxim.codekeeper.cli.Main;
 import ru.taximaxim.codekeeper.cli.localizations.Messages;
-import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 
-@RunWith(value = Parameterized.class)
-public class OutputTest {
+class OutputTest {
 
-    @Parameters
-    public static Iterable<Object[]> parameters() {
-        return TestUtils.getParameters(new Object[][] {
-            {new UsageArgumentsProvider()},
-            {new VersionArgumentsProvider()},
-            {new CharsetsArgumentsProvider()},
-            {new EmptyArgumentsProvider()},
-            {new FailSourceArgumentsProvider()},
-            {new FailParseArgumentsProvider()},
-            {new FailDangerTableArgumentsProvider()},
-            {new FailDangerDropColArgumentsProvider()},
-            {new FailDangerAlterColArgumentsProvider()},
-            {new FailDangerRestartArgumentsProvider()},
-            {new DangerRestartArgumentsProvider()},
-            {new FailDangerUpdateArgumentsProvider()},
-            {new DangerUpdateArgumentsProvider()},
-            {new FailConcurrentlyArgumentsProvider()},
-            {new ConcurrentlyArgumentsProvider()},
-            {new MsConcurrentlyArgumentsProvider()},
-            {new FailMsArgumentsProvider()},
-            {new FailPgArgumentsProvider()},
-            {new FailCompareArgumentsProvider()},
-            {new FailMsParseArgumentsProvider()},
-            {new FailPgParseArgumentsProvider()},
-            {new OverrideArgumentsProvider()},
-            {new FailGraphReverseArgumentsProvider()},
-            {new FailGraphDepthArgumentsProvider()},
-            {new FailGraphNameArgumentsProvider()},
-            {new FailGraphArgumentsProvider()},
-            {new IgnoreColumnOrderArgumentsProvider()},
-        });
+    private static Stream<Arguments> generator() {
+        return Stream.of(
+                Arguments.of(new UsageArgumentsProvider()),
+                Arguments.of(new VersionArgumentsProvider()),
+                Arguments.of(new CharsetsArgumentsProvider()),
+                Arguments.of(new EmptyArgumentsProvider()),
+                Arguments.of(new FailSourceArgumentsProvider()),
+                Arguments.of(new FailParseArgumentsProvider()),
+                Arguments.of(new FailDangerTableArgumentsProvider()),
+                Arguments.of(new FailDangerDropColArgumentsProvider()),
+                Arguments.of(new FailDangerAlterColArgumentsProvider()),
+                Arguments.of(new FailDangerRestartArgumentsProvider()),
+                Arguments.of(new DangerRestartArgumentsProvider()),
+                Arguments.of(new FailDangerUpdateArgumentsProvider()),
+                Arguments.of(new DangerUpdateArgumentsProvider()),
+                Arguments.of(new FailConcurrentlyArgumentsProvider()),
+                Arguments.of(new ConcurrentlyArgumentsProvider()),
+                Arguments.of(new MsConcurrentlyArgumentsProvider()),
+                Arguments.of(new FailMsArgumentsProvider()),
+                Arguments.of(new FailPgArgumentsProvider()),
+                Arguments.of(new FailCompareArgumentsProvider()),
+                Arguments.of(new FailMsParseArgumentsProvider()),
+                Arguments.of(new FailPgParseArgumentsProvider()),
+                Arguments.of(new OverrideArgumentsProvider()),
+                Arguments.of(new FailGraphReverseArgumentsProvider()),
+                Arguments.of(new FailGraphDepthArgumentsProvider()),
+                Arguments.of(new FailGraphNameArgumentsProvider()),
+                Arguments.of(new FailGraphArgumentsProvider()),
+                Arguments.of(new IgnoreColumnOrderArgumentsProvider()));
     }
 
-    private final ArgumentsProvider args;
-
-    public OutputTest(ArgumentsProvider args) {
-        this.args = args;
-    }
-
-    @Test
-    public void mainTest() throws IOException, URISyntaxException, InterruptedException {
+    @ParameterizedTest
+    @MethodSource("generator")
+    void mainTest(ArgumentsProvider args) throws IOException, URISyntaxException, InterruptedException {
         PrintStream old = System.out;
         PrintStream olde = System.err;
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (args;
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 PrintStream ps = new PrintStream(baos)) {
             System.setOut(ps);
             System.setErr(ps);
@@ -76,17 +63,12 @@ public class OutputTest {
             Main.main(args.args());
 
             System.out.flush();
-            assertEquals(args.getClass().getSimpleName() + " - Output is not as expected",
-                    args.output(), baos.toString().replace("\r\n", "\n"));
+            Assertions.assertEquals(args.output(), baos.toString().replace("\r\n", "\n"),
+                    args.getClass().getSimpleName() + " - Output is not as expected");
         } finally {
             System.setOut(old);
             System.setErr(olde);
         }
-    }
-
-    @After
-    public void closeResources() {
-        args.close();
     }
 }
 
@@ -97,13 +79,13 @@ class UsageArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String[] args() {
-        return new String[]{"--help"};
+        return new String[] { "--help" };
     }
 
     @Override
     public String output() {
         try {
-            return FileUtils.readResource(OutputTest.class, "usage_check.txt");
+            return TestUtils.readResource(OutputTest.class, "usage_check.txt");
         } catch (IOException ex) {
             throw new IllegalStateException(ex);
         }
@@ -117,14 +99,12 @@ class VersionArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String[] args() {
-        return new String[]{"--version"};
+        return new String[] { "--version" };
     }
 
     @Override
     public String output() {
-        BundleContext ctx = Activator.getContext();
-        return MessageFormat.format(Messages.Version,
-                ctx == null ? "error: no OSGI running" : ctx.getBundle().getVersion()) + '\n';
+        return MessageFormat.format(Messages.Version, Utils.getVersion()) + '\n';
     }
 }
 
@@ -135,7 +115,7 @@ class CharsetsArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String[] args() {
-        return new String[]{"--list-charsets"};
+        return new String[] { "--list-charsets" };
     }
 
     @Override
@@ -155,13 +135,13 @@ class EmptyArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String[] args() {
-        return new String[]{};
+        return new String[] {};
     }
 
     @Override
     public String output() {
         try {
-            return FileUtils.readResource(OutputTest.class, "usage_check.txt");
+            return TestUtils.readResource(OutputTest.class, "usage_check.txt");
         } catch (IOException ex) {
             throw new IllegalStateException(ex);
         }
@@ -182,9 +162,9 @@ class FailSourceArgumentsProvider extends ArgumentsProvider {
         Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
         Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
 
-        return new String[]{"--safe-mode", "--ms-sql", "--allow-danger-ddl", "DROP_TABLE",
+        return new String[] { "--safe-mode", "--ms-sql", "--allow-danger-ddl", "DROP_TABLE",
                 "--output", getDiffResultFile().toString(),
-                "-s", fNew.toString(), fOriginal.toString()};
+                "-s", fNew.toString(), fOriginal.toString() };
     }
 
     @Override
@@ -200,7 +180,7 @@ class FailParseArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String[] args() throws URISyntaxException, IOException {
-        return new String[]{"--parse", "-o", "out", "-s", "dumb", "-t", "tgt"};
+        return new String[] { "--parse", "-o", "out", "-s", "dumb", "-t", "tgt" };
     }
 
     @Override
@@ -212,7 +192,7 @@ class FailParseArgumentsProvider extends ArgumentsProvider {
 /**
  * {@link ArgumentsProvider} implementation testing dangerous statements ERROR
  */
-class FailDangerTableArgumentsProvider extends ArgumentsProvider{
+class FailDangerTableArgumentsProvider extends ArgumentsProvider {
 
     public FailDangerTableArgumentsProvider() {
         super("drop_ms_table");
@@ -223,8 +203,8 @@ class FailDangerTableArgumentsProvider extends ArgumentsProvider{
         Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
         Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
 
-        return new String[]{ "-S", "--ms-sql", "-o", getDiffResultFile().toString(),
-                fNew.toString(), fOriginal.toString()};
+        return new String[] { "-S", "--ms-sql", "-o", getDiffResultFile().toString(),
+                fNew.toString(), fOriginal.toString() };
     }
 
     @Override
@@ -247,8 +227,8 @@ class FailDangerDropColArgumentsProvider extends ArgumentsProvider {
         Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
         Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
 
-        return new String[]{"-S", "-o", getDiffResultFile().toString(),
-                fNew.toString(), fOriginal.toString()};
+        return new String[] { "-S", "-o", getDiffResultFile().toString(),
+                fNew.toString(), fOriginal.toString() };
     }
 
     @Override
@@ -271,8 +251,8 @@ class FailDangerAlterColArgumentsProvider extends ArgumentsProvider {
         Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
         Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
 
-        return new String[]{"--safe-mode", "--output", getDiffResultFile().toString(),
-                fNew.toString(), fOriginal.toString()};
+        return new String[] { "--safe-mode", "--output", getDiffResultFile().toString(),
+                fNew.toString(), fOriginal.toString() };
     }
 
     @Override
@@ -282,8 +262,7 @@ class FailDangerAlterColArgumentsProvider extends ArgumentsProvider {
 }
 
 /**
- * {@link ArgumentsProvider} implementation testing ALTER SEQUENCE RESTART WITH
- * dangerous statements
+ * {@link ArgumentsProvider} implementation testing ALTER SEQUENCE RESTART WITH dangerous statements
  */
 class FailDangerRestartArgumentsProvider extends ArgumentsProvider {
 
@@ -296,21 +275,20 @@ class FailDangerRestartArgumentsProvider extends ArgumentsProvider {
         Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
         Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
 
-        return new String[]{"--safe-mode", "-o", getDiffResultFile().toString(),
-                fNew.toString(), fOriginal.toString()};
+        return new String[] { "--safe-mode", "-o", getDiffResultFile().toString(),
+                fNew.toString(), fOriginal.toString() };
     }
 
     @Override
     public String output() {
-        //return "Script contains dangerous statements: RESTART_WITH. Use --allow-danger-ddl to override.\n";
+        // return "Script contains dangerous statements: RESTART_WITH. Use --allow-danger-ddl to override.\n";
         // TODO we do not generate RESTART anymore
         return "";
     }
 }
 
 /**
- * {@link ArgumentsProvider} implementation testing successful ALTER SEQUENCE RESTART WITH
- * dangerous statements
+ * {@link ArgumentsProvider} implementation testing successful ALTER SEQUENCE RESTART WITH dangerous statements
  */
 class DangerRestartArgumentsProvider extends ArgumentsProvider {
 
@@ -323,9 +301,9 @@ class DangerRestartArgumentsProvider extends ArgumentsProvider {
         Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
         Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
 
-        return new String[]{"--safe-mode", "--allow-danger-ddl",
+        return new String[] { "--safe-mode", "--allow-danger-ddl",
                 "RESTART_WITH", "-o", getDiffResultFile().toString(),
-                fNew.toString(), fOriginal.toString()};
+                fNew.toString(), fOriginal.toString() };
     }
 }
 
@@ -343,8 +321,8 @@ class FailDangerUpdateArgumentsProvider extends ArgumentsProvider {
         Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
         Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
 
-        return new String[]{"--safe-mode", "-o", getDiffResultFile().toString(),
-                fNew.toString(), fOriginal.toString()};
+        return new String[] { "--safe-mode", "-o", getDiffResultFile().toString(),
+                fNew.toString(), fOriginal.toString() };
     }
 
     @Override
@@ -367,9 +345,9 @@ class DangerUpdateArgumentsProvider extends ArgumentsProvider {
         Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
         Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
 
-        return new String[]{"--safe-mode", "--allow-danger-ddl",
+        return new String[] { "--safe-mode", "--allow-danger-ddl",
                 "UPDATE", "-o", getDiffResultFile().toString(),
-                fNew.toString(), fOriginal.toString()};
+                fNew.toString(), fOriginal.toString() };
     }
 }
 
@@ -380,7 +358,7 @@ class FailConcurrentlyArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String[] args() throws URISyntaxException, IOException {
-        return new String[]{"-o", "out", "-s", "dumb", "--target", "tgt", "-X", "-C"};
+        return new String[] { "-o", "out", "-s", "dumb", "--target", "tgt", "-X", "-C" };
     }
 
     @Override
@@ -403,7 +381,7 @@ class ConcurrentlyArgumentsProvider extends ArgumentsProvider {
         Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
         Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
 
-        return new String[]{"-C", fNew.toString(), fOriginal.toString()};
+        return new String[] { "-C", fNew.toString(), fOriginal.toString() };
     }
 
     @Override
@@ -414,8 +392,8 @@ class ConcurrentlyArgumentsProvider extends ArgumentsProvider {
 }
 
 /**
- * {@link ArgumentsProvider} implementation testing CREATE INDEX CONCURRENTLY
- * options for MS SQL in TRANSACTION with output to console
+ * {@link ArgumentsProvider} implementation testing CREATE INDEX CONCURRENTLY options for MS SQL in TRANSACTION with
+ * output to console
  */
 class MsConcurrentlyArgumentsProvider extends ArgumentsProvider {
 
@@ -428,7 +406,7 @@ class MsConcurrentlyArgumentsProvider extends ArgumentsProvider {
         Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
         Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
 
-        return new String[]{"-C", "-X", "--ms-sql", fNew.toString(), fOriginal.toString()};
+        return new String[] { "-C", "-X", "--ms-sql", fNew.toString(), fOriginal.toString() };
     }
 
     @Override
@@ -445,7 +423,7 @@ class FailMsArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String[] args() throws URISyntaxException, IOException {
-        return new String[]{"-s", "dumb", "--target", "jdbc:sqlserver://xxx"};
+        return new String[] { "-s", "dumb", "--target", "jdbc:sqlserver://xxx" };
     }
 
     @Override
@@ -461,7 +439,7 @@ class FailPgArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String[] args() throws URISyntaxException, IOException {
-        return new String[]{"--ms-sql", "-s", "dumb", "--target", "jdbc:postgresql://xxx"};
+        return new String[] { "--ms-sql", "-s", "dumb", "--target", "jdbc:postgresql://xxx" };
     }
 
     @Override
@@ -477,7 +455,7 @@ class FailCompareArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String[] args() throws URISyntaxException, IOException {
-        return new String[]{"-s", "jdbc:sqlserver://xxx", "--target", "jdbc:postgresql://xxx"};
+        return new String[] { "-s", "jdbc:sqlserver://xxx", "--target", "jdbc:postgresql://xxx" };
     }
 
     @Override
@@ -493,7 +471,7 @@ class FailMsParseArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String[] args() throws URISyntaxException, IOException {
-        return new String[]{"--ms-sql", "--parse", "-o", "dir", "jdbc:postgresql://xxx"};
+        return new String[] { "--ms-sql", "--parse", "-o", "dir", "jdbc:postgresql://xxx" };
     }
 
     @Override
@@ -509,7 +487,7 @@ class FailPgParseArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String[] args() throws URISyntaxException, IOException {
-        return new String[]{"--parse", "-o", "dir", "jdbc:sqlserver://xxx"};
+        return new String[] { "--parse", "-o", "dir", "jdbc:sqlserver://xxx" };
     }
 
     @Override
@@ -531,11 +509,11 @@ class OverrideArgumentsProvider extends ArgumentsProvider {
     protected String[] args() throws URISyntaxException, IOException {
         Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
         Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
-        Path lib = Utils.getFileFromOsgiRes(OutputTest.class.getResource("lib.sql"));
+        Path lib = TestUtils.getPathToResource(OutputTest.class, "lib.sql");
 
-        return new String[] {"-o", getDiffResultFile().toString(),
+        return new String[] { "-o", getDiffResultFile().toString(),
                 "-t", fOriginal.toString(), "-s", fNew.toString(),
-                "--src-lib", lib.toString()};
+                "--src-lib", lib.toString() };
     }
 }
 
@@ -546,7 +524,7 @@ class FailGraphReverseArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String[] args() throws URISyntaxException, IOException {
-        return new String[]{"--graph-reverse", "fisrt", "second"};
+        return new String[] { "--graph-reverse", "fisrt", "second" };
     }
 
     @Override
@@ -562,7 +540,7 @@ class FailGraphDepthArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String[] args() throws URISyntaxException, IOException {
-        return new String[]{"--graph-depth", "5", "tgt", "src"};
+        return new String[] { "--graph-depth", "5", "tgt", "src" };
     }
 
     @Override
@@ -578,7 +556,7 @@ class FailGraphNameArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String[] args() throws URISyntaxException, IOException {
-        return new String[]{"--graph-name", "t1", "tgt", "src"};
+        return new String[] { "--graph-name", "t1", "tgt", "src" };
     }
 
     @Override
@@ -594,7 +572,7 @@ class FailGraphArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String[] args() throws URISyntaxException, IOException {
-        return new String[]{"--graph", "--graph-reverse", "db"};
+        return new String[] { "--graph", "--graph-reverse", "db" };
     }
 
     @Override
@@ -617,8 +595,7 @@ class IgnoreColumnOrderArgumentsProvider extends ArgumentsProvider {
         Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
         Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
 
-        return new String[]{"--ignore-column-order", fNew.toString(), fOriginal.toString()
-        };
+        return new String[] { "--ignore-column-order", fNew.toString(), fOriginal.toString() };
     }
 
     @Override

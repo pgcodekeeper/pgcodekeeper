@@ -183,15 +183,14 @@ public final class PgDiffUtils {
 
     /**
      * Compares 2 collections for equality unorderedly as if they were {@link Set}s.<br>
-     * Does not eliminate duplicate elements as sets do and counts them instead.
-     * Thus it achieves complementarity with {@link #setlikeHashcode}
-     * while not requiring it to eliminate duplicates, nor does it require
-     * a <code>List.containsAll()</code> O(N^2) call here.
-     * In general, duplicate elimination is an undesired side-effect of comparison using {@link Set}s,
-     * so this solution is overall better and only *slightly* slower.<br><br>
+     * Does not eliminate duplicate elements as sets do and counts them instead. Thus it achieves complementarity with
+     * setlikeHashcode while not requiring it to eliminate duplicates, nor does it require a
+     * <code>List.containsAll()</code> O(N^2) call here. In general, duplicate elimination is an undesired side-effect
+     * of comparison using {@link Set}s, so this solution is overall better and only *slightly* slower.<br>
+     * <br>
      *
-     * Performance: best case O(1), worst case O(N) + new {@link HashMap} (in case N1 == N2),
-     * assuming size() takes constant time.
+     * Performance: best case O(1), worst case O(N) + new {@link HashMap} (in case N1 == N2), assuming size() takes
+     * constant time.
      */
     public static boolean setlikeEquals(Collection<?> c1, Collection<?> c2) {
         final int s1 = c1.size();

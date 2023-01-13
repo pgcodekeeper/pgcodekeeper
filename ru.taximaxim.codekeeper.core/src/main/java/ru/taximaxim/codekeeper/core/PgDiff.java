@@ -36,8 +36,8 @@ import ru.taximaxim.codekeeper.core.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.core.model.difftree.TreeFlattener;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
+import ru.taximaxim.codekeeper.core.model.difftree.TreeFlattener;
 import ru.taximaxim.codekeeper.core.model.graph.ActionsToScriptConverter;
 import ru.taximaxim.codekeeper.core.model.graph.DepcyResolver;
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.LibraryObjectDuplicationException;
@@ -214,7 +214,7 @@ public class PgDiff {
 
     public String diffDatabaseSchemas(PgDatabase oldDbFull, PgDatabase newDbFull,
             IgnoreList ignoreList) throws InterruptedException, IOException {
-        TreeElement root = DiffTree.create(oldDbFull, newDbFull, null);
+        TreeElement root = DiffTree.create(oldDbFull, newDbFull);
         root.setAllChecked();
         return arguments.isMsSql() ? diffMsDatabaseSchemas(root, oldDbFull, newDbFull, null, null, ignoreList) :
             diffDatabaseSchemasAdditionalDepcies(root, oldDbFull, newDbFull, null, null, ignoreList);

@@ -36,11 +36,12 @@ public interface Consts {
     String FILENAME_WORKING_DIR_MARKER = ".pgcodekeeper";
     String VERSION_PROP_NAME = "version";
     String EXPORT_CURRENT_VERSION = "0.6.0";
-    String EXPORT_MIN_VERSION = "0.2.9";
 
     String EXTENSION_VERSION = "1.0.0";
 
     String TRUST_CERT = "trustServerCertificate";
+
+    String JDBC_SUCCESS = "success";
 
     enum WORK_DIR_NAMES {
         SCHEMA,
@@ -75,14 +76,6 @@ public interface Consts {
             return this != ASSEMBLIES && this != SECURITY;
         }
     }
-
-    interface JDBC_CONSTS{
-        String JDBC_DRIVER = "org.postgresql.Driver";
-        int JDBC_DEFAULT_PORT = 5432;
-        String JDBC_SUCCESS = "success";
-    }
-
-    Object[] EMPTY_ARRAY = new Object[0];
 
     @Deprecated
     // improve builtins detection using tokens and jdbc ways

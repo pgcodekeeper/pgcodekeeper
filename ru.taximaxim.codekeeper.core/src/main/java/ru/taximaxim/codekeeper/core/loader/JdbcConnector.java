@@ -22,6 +22,8 @@ import ru.taximaxim.pgpass.PgPassException;
 
 public class JdbcConnector {
 
+    private static final int DEFAULT_PORT = 5432;
+
     protected String host;
     protected int port;
     protected String user;
@@ -76,7 +78,7 @@ public class JdbcConnector {
     public JdbcConnector(String host, int port, String user, String pass, String dbName,
             Map<String, String> properties, boolean readOnly, String timezone) {
         this.host = host;
-        this.port = port < 1 ? Consts.JDBC_CONSTS.JDBC_DEFAULT_PORT : port;
+        this.port = port < 1 ? DEFAULT_PORT : port;
         this.dbName = dbName;
         this.user = user.isEmpty() ? System.getProperty("user.name") : user;
         this.pass = pass == null || pass.isEmpty() ? getPgPassPassword() : pass;
@@ -139,7 +141,7 @@ public class JdbcConnector {
             }
         }
         this.host = host == null ? "" : host;
-        this.port = port < 1 ? Consts.JDBC_CONSTS.JDBC_DEFAULT_PORT : port;
+        this.port = port < 1 ? DEFAULT_PORT : port;
         this.dbName = dbName == null ? "" : dbName;
         this.user = user == null || user.isEmpty() ? System.getProperty("user.name") : user;
         this.pass = pass == null || pass.isEmpty() ? getPgPassPassword() : pass;
@@ -207,13 +209,13 @@ public class JdbcConnector {
         return timezone;
     }
 
-    protected String getPgPassPassword(){
+    protected String getPgPassPassword() {
         Log.log(Log.LOG_INFO, "User provided an empty password. Reading password from pgpass file."); //$NON-NLS-1$
 
         try {
-            String pass = PgPass.get(host, String.valueOf(port), dbName, user);
-            if (pass != null) {
-                return pass;
+            String password = PgPass.get(host, String.valueOf(port), dbName, user);
+            if (password != null) {
+                return password;
             }
         } catch (PgPassException e) {
             Log.log(e);

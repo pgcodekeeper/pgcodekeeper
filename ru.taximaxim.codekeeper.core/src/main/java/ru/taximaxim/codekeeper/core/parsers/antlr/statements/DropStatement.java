@@ -16,6 +16,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Drop_policy_statemen
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Drop_rule_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Drop_statementsContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Drop_trigger_statementContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Drop_user_mapping_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.IdentifierContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Operator_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Schema_dropContext;
@@ -51,6 +52,8 @@ public class DropStatement extends ParserAbstract {
             dropOperator(ctx.drop_operator_statement());
         } else if (ctx.drop_cast_statement() != null) {
             dropCast(ctx.drop_cast_statement());
+        } else if (ctx.drop_user_mapping_statement() != null) {
+            dropUserMapping(ctx.drop_user_mapping_statement());
         }
     }
 
@@ -89,7 +92,13 @@ public class DropStatement extends ParserAbstract {
     }
 
     private void dropPolicy(Drop_policy_statementContext ctx) {
+        List<ParserRuleContext> ids = getIdentifiers(ctx.schema_qualified_name());
+        addObjReference(ids, DbObjType.TABLE, null);
         dropChild(getIdentifiers(ctx.schema_qualified_name()), ctx.identifier(), DbObjType.POLICY);
+    }
+
+    private void dropUserMapping(Drop_user_mapping_statementContext ctx) {
+        addObjReference(Arrays.asList(ctx.user_mapping_name()), DbObjType.USER_MAPPING, ACTION_DROP);
     }
 
     public void dropChild(List<ParserRuleContext> tableIds, IdentifierContext nameCtx, DbObjType type) {
@@ -118,28 +127,48 @@ public class DropStatement extends ParserAbstract {
     private DbObjType getTypeOfDropStmt(Drop_statementsContext ctx) {
         if (ctx.TABLE() != null) {
             return DbObjType.TABLE;
-        } else if (ctx.EXTENSION() != null) {
+        }
+        if (ctx.EXTENSION() != null) {
             return DbObjType.EXTENSION;
-        } else if (ctx.SCHEMA() != null) {
+        }
+        if (ctx.SCHEMA() != null) {
             return DbObjType.SCHEMA;
-        } else if (ctx.SEQUENCE() != null) {
+        }
+        if (ctx.SEQUENCE() != null) {
             return DbObjType.SEQUENCE;
-        } else if (ctx.VIEW() != null) {
+        }
+        if (ctx.VIEW() != null) {
             return DbObjType.VIEW;
-        } else if (ctx.INDEX() != null) {
+        }
+        if (ctx.INDEX() != null) {
             return DbObjType.INDEX;
-        } else if (ctx.DOMAIN() != null) {
+        }
+        if (ctx.DOMAIN() != null) {
             return DbObjType.DOMAIN;
-        } else if (ctx.TYPE() != null) {
+        }
+        if (ctx.TYPE() != null) {
             return DbObjType.TYPE;
-        } else if (ctx.DICTIONARY() != null) {
+        }
+        if (ctx.DICTIONARY() != null) {
             return DbObjType.FTS_DICTIONARY;
-        } else if (ctx.TEMPLATE() != null) {
+        }
+        if (ctx.TEMPLATE() != null) {
             return DbObjType.FTS_TEMPLATE;
-        } else if (ctx.PARSER() != null) {
+        }
+        if (ctx.PARSER() != null) {
             return DbObjType.FTS_PARSER;
-        } else if (ctx.CONFIGURATION() != null) {
+        }
+        if (ctx.CONFIGURATION() != null) {
             return DbObjType.FTS_CONFIGURATION;
+        }
+        if (ctx.SERVER() != null) {
+            return DbObjType.SERVER;
+        }
+        if (ctx.COLLATION() != null) {
+            return DbObjType.COLLATION;
+        }
+        if (ctx.WRAPPER() != null) {
+            return DbObjType.FOREIGN_DATA_WRAPPER;
         }
         return null;
     }
