@@ -1,0 +1,6 @@
+Reference: Object = public (SCHEMA), action = null, offset = 28, line number = 1, charPositionInLine = 28
+Reference: Object = public.template (FTS_TEMPLATE), action = CREATE, offset = 35, line number = 1, charPositionInLine = 35
+Reference: Object = public (SCHEMA), action = null, offset = 88, line number = 3, charPositionInLine = 27
+Reference: Object = public.template (FTS_TEMPLATE), action = ALTER, offset = 95, line number = 3, charPositionInLine = 34
+Reference: Object = private (SCHEMA), action = null, offset = 151, line number = 5, charPositionInLine = 26
+Reference: Object = private.template (FTS_TEMPLATE), action = DROP, offset = 159, line number = 5, charPositionInLine = 34

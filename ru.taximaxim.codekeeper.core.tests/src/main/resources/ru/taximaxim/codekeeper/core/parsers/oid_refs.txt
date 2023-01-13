@@ -1,0 +1,27 @@
+Reference: Object = oid_tbl (TABLE), action = CREATE, offset = 27, line number = 5, charPositionInLine = 13
+Reference: Object = oid_tbl (TABLE), action = INSERT, offset = 57, line number = 7, charPositionInLine = 12
+Reference: Object = oid_tbl (TABLE), action = INSERT, offset = 98, line number = 8, charPositionInLine = 12
+Reference: Object = oid_tbl (TABLE), action = INSERT, offset = 139, line number = 9, charPositionInLine = 12
+Reference: Object = oid_tbl (TABLE), action = INSERT, offset = 179, line number = 10, charPositionInLine = 12
+Reference: Object = oid_tbl (TABLE), action = INSERT, offset = 221, line number = 11, charPositionInLine = 12
+Reference: Object = oid_tbl (TABLE), action = INSERT, offset = 266, line number = 12, charPositionInLine = 12
+Reference: Object = oid_tbl (TABLE), action = INSERT, offset = 309, line number = 13, charPositionInLine = 12
+Reference: Object = oid_tbl (TABLE), action = INSERT, offset = 398, line number = 15, charPositionInLine = 12
+Reference: Object = oid_tbl (TABLE), action = INSERT, offset = 459, line number = 18, charPositionInLine = 12
+Reference: Object = oid_tbl (TABLE), action = INSERT, offset = 496, line number = 19, charPositionInLine = 12
+Reference: Object = oid_tbl (TABLE), action = INSERT, offset = 537, line number = 20, charPositionInLine = 12
+Reference: Object = oid_tbl (TABLE), action = INSERT, offset = 581, line number = 21, charPositionInLine = 12
+Reference: Object = oid_tbl (TABLE), action = INSERT, offset = 627, line number = 22, charPositionInLine = 12
+Reference: Object = oid_tbl (TABLE), action = INSERT, offset = 670, line number = 23, charPositionInLine = 12
+Reference: Object = oid_tbl (TABLE), action = INSERT, offset = 713, line number = 24, charPositionInLine = 12
+Reference: Object = oid_tbl (TABLE), action = INSERT, offset = 756, line number = 25, charPositionInLine = 12
+Reference: Object = oid_tbl (TABLE), action = INSERT, offset = 799, line number = 26, charPositionInLine = 12
+Reference: Object = oid_tbl (TABLE), action = INSERT, offset = 856, line number = 27, charPositionInLine = 12
+Reference: action = SELECT, offset = 903, line number = 29, charPositionInLine = 0
+Reference: action = SELECT, offset = 938, line number = 31, charPositionInLine = 0
+Reference: action = SELECT, offset = 995, line number = 33, charPositionInLine = 0
+Reference: action = SELECT, offset = 1056, line number = 35, charPositionInLine = 0
+Reference: action = SELECT, offset = 1118, line number = 37, charPositionInLine = 0
+Reference: action = SELECT, offset = 1177, line number = 39, charPositionInLine = 0
+Reference: action = SELECT, offset = 1238, line number = 41, charPositionInLine = 0
+Reference: Object = oid_tbl (TABLE), action = DROP, offset = 1310, line number = 43, charPositionInLine = 11

@@ -1,0 +1,589 @@
+Reference: Object = lp (TABLE), action = CREATE, offset = 53, line number = 4, charPositionInLine = 13
+Reference: Object = lp_default (TABLE), action = CREATE, offset = 101, line number = 5, charPositionInLine = 13
+Reference: Object = lp_ef (TABLE), action = CREATE, offset = 150, line number = 6, charPositionInLine = 13
+Reference: Object = lp_ad (TABLE), action = CREATE, offset = 211, line number = 7, charPositionInLine = 13
+Reference: Object = lp_bc (TABLE), action = CREATE, offset = 272, line number = 8, charPositionInLine = 13
+Reference: Object = lp_g (TABLE), action = CREATE, offset = 333, line number = 9, charPositionInLine = 13
+Reference: Object = lp_null (TABLE), action = CREATE, offset = 388, line number = 10, charPositionInLine = 13
+Reference: action = EXPLAIN, offset = 434, line number = 11, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 472, line number = 12, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 536, line number = 13, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 601, line number = 14, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 653, line number = 15, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 720, line number = 16, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 778, line number = 17, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 832, line number = 18, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 895, line number = 19, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 978, line number = 20, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 1031, line number = 21, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 1097, line number = 22, charPositionInLine = 0
+Reference: Object = coll_pruning (TABLE), action = CREATE, offset = 1238, line number = 25, charPositionInLine = 13
+Reference: Object = coll_pruning_a (TABLE), action = CREATE, offset = 1308, line number = 26, charPositionInLine = 13
+Reference: Object = coll_pruning_b (TABLE), action = CREATE, offset = 1383, line number = 27, charPositionInLine = 13
+Reference: Object = coll_pruning_def (TABLE), action = CREATE, offset = 1458, line number = 28, charPositionInLine = 13
+Reference: action = EXPLAIN, offset = 1510, line number = 29, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 1669, line number = 31, charPositionInLine = 0
+Reference: Object = rlp (TABLE), action = CREATE, offset = 1777, line number = 33, charPositionInLine = 13
+Reference: Object = rlp_default (TABLE), action = CREATE, offset = 1837, line number = 34, charPositionInLine = 13
+Reference: Object = rlp_default_default (TABLE), action = CREATE, offset = 1910, line number = 35, charPositionInLine = 13
+Reference: Object = rlp_default_10 (TABLE), action = CREATE, offset = 1977, line number = 36, charPositionInLine = 13
+Reference: Object = rlp_default_30 (TABLE), action = CREATE, offset = 2050, line number = 37, charPositionInLine = 13
+Reference: Object = rlp_default_null (TABLE), action = CREATE, offset = 2123, line number = 38, charPositionInLine = 13
+Reference: Object = rlp1 (TABLE), action = CREATE, offset = 2200, line number = 39, charPositionInLine = 13
+Reference: Object = rlp2 (TABLE), action = CREATE, offset = 2270, line number = 40, charPositionInLine = 13
+Reference: Object = rlp3 (TABLE), action = CREATE, offset = 2335, line number = 42, charPositionInLine = 13
+Reference: Object = rlp3_default (TABLE), action = CREATE, offset = 2407, line number = 43, charPositionInLine = 13
+Reference: Object = rlp3abcd (TABLE), action = CREATE, offset = 2460, line number = 44, charPositionInLine = 13
+Reference: Object = rlp3efgh (TABLE), action = CREATE, offset = 2528, line number = 45, charPositionInLine = 13
+Reference: Object = rlp3nullxy (TABLE), action = CREATE, offset = 2596, line number = 46, charPositionInLine = 13
+Reference: Object = rlp (TABLE), action = ALTER, offset = 2665, line number = 47, charPositionInLine = 12
+Reference: Object = rlp4 (TABLE), action = CREATE, offset = 2735, line number = 49, charPositionInLine = 13
+Reference: Object = rlp4_default (TABLE), action = CREATE, offset = 2823, line number = 50, charPositionInLine = 13
+Reference: Object = rlp4_1 (TABLE), action = CREATE, offset = 2876, line number = 51, charPositionInLine = 13
+Reference: Object = rlp4_2 (TABLE), action = CREATE, offset = 2944, line number = 52, charPositionInLine = 13
+Reference: Object = rlp5 (TABLE), action = CREATE, offset = 3013, line number = 54, charPositionInLine = 13
+Reference: Object = rlp5_default (TABLE), action = CREATE, offset = 3107, line number = 55, charPositionInLine = 13
+Reference: Object = rlp5_1 (TABLE), action = CREATE, offset = 3160, line number = 56, charPositionInLine = 13
+Reference: action = EXPLAIN, offset = 3216, line number = 58, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 3267, line number = 59, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 3333, line number = 60, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 3385, line number = 61, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 3436, line number = 62, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 3516, line number = 63, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 3594, line number = 64, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 3647, line number = 65, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 3699, line number = 66, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 3751, line number = 67, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 3804, line number = 68, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 3869, line number = 69, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 3921, line number = 70, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 4004, line number = 71, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 4069, line number = 72, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 4135, line number = 73, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 4201, line number = 74, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 4271, line number = 75, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 4326, line number = 76, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 4385, line number = 77, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 4437, line number = 78, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 4519, line number = 79, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 4572, line number = 80, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 4632, line number = 81, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 4696, line number = 83, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 4759, line number = 84, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 4811, line number = 85, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 4901, line number = 88, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 4982, line number = 89, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 5082, line number = 90, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 5155, line number = 91, charPositionInLine = 0
+Reference: Object = mc3p (TABLE), action = CREATE, offset = 5275, line number = 94, charPositionInLine = 13
+Reference: Object = mc3p_default (TABLE), action = CREATE, offset = 5350, line number = 95, charPositionInLine = 13
+Reference: Object = mc3p0 (TABLE), action = CREATE, offset = 5403, line number = 96, charPositionInLine = 13
+Reference: Object = mc3p1 (TABLE), action = CREATE, offset = 5501, line number = 97, charPositionInLine = 13
+Reference: Object = mc3p2 (TABLE), action = CREATE, offset = 5580, line number = 98, charPositionInLine = 13
+Reference: Object = mc3p3 (TABLE), action = CREATE, offset = 5662, line number = 99, charPositionInLine = 13
+Reference: Object = mc3p4 (TABLE), action = CREATE, offset = 5745, line number = 100, charPositionInLine = 13
+Reference: Object = mc3p5 (TABLE), action = CREATE, offset = 5840, line number = 101, charPositionInLine = 13
+Reference: Object = mc3p6 (TABLE), action = CREATE, offset = 5921, line number = 102, charPositionInLine = 13
+Reference: Object = mc3p7 (TABLE), action = CREATE, offset = 6004, line number = 103, charPositionInLine = 13
+Reference: action = EXPLAIN, offset = 6093, line number = 105, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 6145, line number = 106, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 6212, line number = 107, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 6279, line number = 108, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 6356, line number = 109, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 6437, line number = 110, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 6490, line number = 111, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 6544, line number = 112, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 6597, line number = 113, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 6667, line number = 114, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 6735, line number = 115, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 6816, line number = 116, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 6869, line number = 117, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 6923, line number = 118, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 7063, line number = 119, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 7212, line number = 120, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 7370, line number = 121, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 7445, line number = 122, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 7542, line number = 123, charPositionInLine = 0
+Reference: Object = mc2p (TABLE), action = CREATE, offset = 7688, line number = 126, charPositionInLine = 13
+Reference: Object = mc2p_default (TABLE), action = CREATE, offset = 7748, line number = 127, charPositionInLine = 13
+Reference: Object = mc2p0 (TABLE), action = CREATE, offset = 7801, line number = 128, charPositionInLine = 13
+Reference: Object = mc2p1 (TABLE), action = CREATE, offset = 7893, line number = 129, charPositionInLine = 13
+Reference: Object = mc2p2 (TABLE), action = CREATE, offset = 7971, line number = 130, charPositionInLine = 13
+Reference: Object = mc2p3 (TABLE), action = CREATE, offset = 8049, line number = 131, charPositionInLine = 13
+Reference: Object = mc2p4 (TABLE), action = CREATE, offset = 8127, line number = 132, charPositionInLine = 13
+Reference: Object = mc2p5 (TABLE), action = CREATE, offset = 8205, line number = 133, charPositionInLine = 13
+Reference: action = EXPLAIN, offset = 8285, line number = 135, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 8337, line number = 136, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 8399, line number = 137, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 8451, line number = 138, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 8569, line number = 141, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 8635, line number = 142, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 8705, line number = 143, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 8771, line number = 144, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 8827, line number = 145, charPositionInLine = 0
+Reference: Object = boolpart (TABLE), action = CREATE, offset = 8921, line number = 148, charPositionInLine = 13
+Reference: Object = boolpart_default (TABLE), action = CREATE, offset = 8975, line number = 149, charPositionInLine = 13
+Reference: Object = boolpart_t (TABLE), action = CREATE, offset = 9036, line number = 150, charPositionInLine = 13
+Reference: Object = boolpart_f (TABLE), action = CREATE, offset = 9106, line number = 151, charPositionInLine = 13
+Reference: action = EXPLAIN, offset = 9165, line number = 153, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 9234, line number = 154, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 9294, line number = 155, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 9358, line number = 156, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 9435, line number = 157, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 9499, line number = 158, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 9582, line number = 159, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 9645, line number = 160, charPositionInLine = 0
+Reference: Object = coercepart (TABLE), action = CREATE, offset = 9760, line number = 163, charPositionInLine = 13
+Reference: Object = coercepart_ab (TABLE), action = CREATE, offset = 9819, line number = 164, charPositionInLine = 13
+Reference: Object = coercepart_bc (TABLE), action = CREATE, offset = 9892, line number = 165, charPositionInLine = 13
+Reference: Object = coercepart_cd (TABLE), action = CREATE, offset = 9965, line number = 166, charPositionInLine = 13
+Reference: action = EXPLAIN, offset = 10026, line number = 168, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 10111, line number = 169, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 10180, line number = 170, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 10250, line number = 171, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 10322, line number = 172, charPositionInLine = 0
+Reference: Object = coercepart (TABLE), action = DROP, offset = 10407, line number = 174, charPositionInLine = 11
+Reference: Object = part (TABLE), action = CREATE, offset = 10433, line number = 176, charPositionInLine = 13
+Reference: Object = part_p1 (TABLE), action = CREATE, offset = 10489, line number = 177, charPositionInLine = 13
+Reference: Object = part_p2 (TABLE), action = CREATE, offset = 10557, line number = 178, charPositionInLine = 13
+Reference: Object = part_p2_p1 (TABLE), action = CREATE, offset = 10627, line number = 179, charPositionInLine = 13
+Reference: Object = part (TABLE), action = INSERT, offset = 10680, line number = 180, charPositionInLine = 12
+Reference: action = EXPLAIN, offset = 10741, line number = 181, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 11001, line number = 191, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 11240, line number = 195, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 11445, line number = 198, charPositionInLine = 0
+Reference: Object = rp (TABLE), action = CREATE, offset = 11693, line number = 205, charPositionInLine = 13
+Reference: Object = rp0 (TABLE), action = CREATE, offset = 11741, line number = 206, charPositionInLine = 13
+Reference: Object = rp1 (TABLE), action = CREATE, offset = 11809, line number = 207, charPositionInLine = 13
+Reference: Object = rp2 (TABLE), action = CREATE, offset = 11870, line number = 208, charPositionInLine = 13
+Reference: action = EXPLAIN, offset = 11926, line number = 210, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 11977, line number = 211, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 12104, line number = 214, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 12235, line number = 217, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 12302, line number = 218, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 12542, line number = 223, charPositionInLine = 0
+Reference: Object = coll_pruning_multi (TABLE), action = CREATE, offset = 12738, line number = 228, charPositionInLine = 13
+Reference: Object = coll_pruning_multi1 (TABLE), action = CREATE, offset = 12856, line number = 229, charPositionInLine = 13
+Reference: Object = coll_pruning_multi2 (TABLE), action = CREATE, offset = 12963, line number = 230, charPositionInLine = 13
+Reference: Object = coll_pruning_multi3 (TABLE), action = CREATE, offset = 13070, line number = 231, charPositionInLine = 13
+Reference: action = EXPLAIN, offset = 13217, line number = 234, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 13363, line number = 237, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 13506, line number = 240, charPositionInLine = 0
+Reference: Object = like_op_noprune (TABLE), action = CREATE, offset = 13686, line number = 245, charPositionInLine = 13
+Reference: Object = like_op_noprune1 (TABLE), action = CREATE, offset = 13747, line number = 246, charPositionInLine = 13
+Reference: Object = like_op_noprune2 (TABLE), action = CREATE, offset = 13829, line number = 247, charPositionInLine = 13
+Reference: action = EXPLAIN, offset = 13898, line number = 248, charPositionInLine = 0
+Reference: Object = lparted_by_int2 (TABLE), action = CREATE, offset = 14060, line number = 253, charPositionInLine = 13
+Reference: Object = lparted_by_int2_1 (TABLE), action = CREATE, offset = 14125, line number = 254, charPositionInLine = 13
+Reference: Object = lparted_by_int2_16384 (TABLE), action = CREATE, offset = 14204, line number = 255, charPositionInLine = 13
+Reference: action = EXPLAIN, offset = 14278, line number = 256, charPositionInLine = 0
+Reference: Object = rparted_by_int2 (TABLE), action = CREATE, offset = 14369, line number = 258, charPositionInLine = 13
+Reference: Object = rparted_by_int2_1 (TABLE), action = CREATE, offset = 14435, line number = 259, charPositionInLine = 13
+Reference: Object = rparted_by_int2_16384 (TABLE), action = CREATE, offset = 14524, line number = 260, charPositionInLine = 13
+Reference: action = EXPLAIN, offset = 14633, line number = 262, charPositionInLine = 0
+Reference: Object = rparted_by_int2_maxvalue (TABLE), action = CREATE, offset = 14723, line number = 263, charPositionInLine = 13
+Reference: action = EXPLAIN, offset = 14870, line number = 265, charPositionInLine = 0
+Reference: Object = lp (TABLE), action = DROP, offset = 14959, line number = 267, charPositionInLine = 11
+Reference: Object = coll_pruning (TABLE), action = DROP, offset = 14963, line number = 267, charPositionInLine = 15
+Reference: Object = rlp (TABLE), action = DROP, offset = 14977, line number = 267, charPositionInLine = 29
+Reference: Object = mc3p (TABLE), action = DROP, offset = 14982, line number = 267, charPositionInLine = 34
+Reference: Object = mc2p (TABLE), action = DROP, offset = 14988, line number = 267, charPositionInLine = 40
+Reference: Object = boolpart (TABLE), action = DROP, offset = 14994, line number = 267, charPositionInLine = 46
+Reference: Object = rp (TABLE), action = DROP, offset = 15004, line number = 267, charPositionInLine = 56
+Reference: Object = coll_pruning_multi (TABLE), action = DROP, offset = 15008, line number = 267, charPositionInLine = 60
+Reference: Object = like_op_noprune (TABLE), action = DROP, offset = 15028, line number = 267, charPositionInLine = 80
+Reference: Object = lparted_by_int2 (TABLE), action = DROP, offset = 15045, line number = 267, charPositionInLine = 97
+Reference: Object = rparted_by_int2 (TABLE), action = DROP, offset = 15062, line number = 267, charPositionInLine = 114
+Reference: Object = hp (TABLE), action = CREATE, offset = 15348, line number = 277, charPositionInLine = 13
+Reference: Object = hp0 (TABLE), action = CREATE, offset = 15444, line number = 278, charPositionInLine = 13
+Reference: Object = hp3 (TABLE), action = CREATE, offset = 15519, line number = 279, charPositionInLine = 13
+Reference: Object = hp1 (TABLE), action = CREATE, offset = 15594, line number = 280, charPositionInLine = 13
+Reference: Object = hp2 (TABLE), action = CREATE, offset = 15669, line number = 281, charPositionInLine = 13
+Reference: Object = hp (TABLE), action = INSERT, offset = 15744, line number = 283, charPositionInLine = 12
+Reference: Object = hp (TABLE), action = INSERT, offset = 15780, line number = 284, charPositionInLine = 12
+Reference: Object = hp (TABLE), action = INSERT, offset = 15813, line number = 285, charPositionInLine = 12
+Reference: Object = hp (TABLE), action = INSERT, offset = 15847, line number = 286, charPositionInLine = 12
+Reference: Object = hp (TABLE), action = INSERT, offset = 15884, line number = 287, charPositionInLine = 12
+Reference: Object = hp (TABLE), action = INSERT, offset = 15918, line number = 288, charPositionInLine = 12
+Reference: action = SELECT, offset = 15942, line number = 289, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 16055, line number = 292, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 16105, line number = 293, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 16159, line number = 294, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 16213, line number = 295, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 16267, line number = 296, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 16331, line number = 297, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 16396, line number = 298, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 16560, line number = 302, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 16628, line number = 303, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 16692, line number = 304, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 16756, line number = 305, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 16824, line number = 306, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 16888, line number = 307, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 16954, line number = 308, charPositionInLine = 0
+Reference: Object = hp (TABLE), action = DROP, offset = 17088, line number = 310, charPositionInLine = 11
+Reference: Object = ab (TABLE), action = CREATE, offset = 17146, line number = 315, charPositionInLine = 13
+Reference: Object = ab_a2 (TABLE), action = CREATE, offset = 17218, line number = 316, charPositionInLine = 13
+Reference: Object = ab_a2_b1 (TABLE), action = CREATE, offset = 17293, line number = 317, charPositionInLine = 13
+Reference: Object = ab_a2_b2 (TABLE), action = CREATE, offset = 17353, line number = 318, charPositionInLine = 13
+Reference: Object = ab_a2_b3 (TABLE), action = CREATE, offset = 17413, line number = 319, charPositionInLine = 13
+Reference: Object = ab_a1 (TABLE), action = CREATE, offset = 17473, line number = 320, charPositionInLine = 13
+Reference: Object = ab_a1_b1 (TABLE), action = CREATE, offset = 17548, line number = 321, charPositionInLine = 13
+Reference: Object = ab_a1_b2 (TABLE), action = CREATE, offset = 17608, line number = 322, charPositionInLine = 13
+Reference: Object = ab_a1_b3 (TABLE), action = CREATE, offset = 17668, line number = 323, charPositionInLine = 13
+Reference: Object = ab_a3 (TABLE), action = CREATE, offset = 17728, line number = 324, charPositionInLine = 13
+Reference: Object = ab_a3_b1 (TABLE), action = CREATE, offset = 17803, line number = 325, charPositionInLine = 13
+Reference: Object = ab_a3_b2 (TABLE), action = CREATE, offset = 17863, line number = 326, charPositionInLine = 13
+Reference: Object = ab_a3_b3 (TABLE), action = CREATE, offset = 17923, line number = 327, charPositionInLine = 13
+Reference: action = SET, offset = 18137, line number = 332, charPositionInLine = 0
+Reference: action = PREPARE, offset = 18170, line number = 334, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 18353, line number = 339, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 18378, line number = 340, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 18403, line number = 341, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 18428, line number = 342, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 18453, line number = 343, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 18479, line number = 345, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 18558, line number = 346, charPositionInLine = 0
+Reference: action = DEALLOCATE, offset = 18638, line number = 348, charPositionInLine = 0
+Reference: action = PREPARE, offset = 18700, line number = 351, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 18876, line number = 356, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 18898, line number = 357, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 18920, line number = 358, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 18942, line number = 359, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 18964, line number = 360, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 18987, line number = 362, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 19063, line number = 363, charPositionInLine = 0
+Reference: action = PREPARE, offset = 19248, line number = 367, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 19340, line number = 370, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 19362, line number = 371, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 19384, line number = 372, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 19406, line number = 373, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 19428, line number = 374, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 19451, line number = 376, charPositionInLine = 0
+Reference: action = PREPARE, offset = 19600, line number = 379, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 19692, line number = 382, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 19714, line number = 383, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 19736, line number = 384, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 19758, line number = 385, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 19780, line number = 386, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 19803, line number = 388, charPositionInLine = 0
+Reference: Object = list_part (TABLE), action = CREATE, offset = 19925, line number = 391, charPositionInLine = 13
+Reference: Object = list_part1 (TABLE), action = CREATE, offset = 19979, line number = 392, charPositionInLine = 13
+Reference: Object = list_part2 (TABLE), action = CREATE, offset = 20045, line number = 393, charPositionInLine = 13
+Reference: Object = list_part3 (TABLE), action = CREATE, offset = 20111, line number = 394, charPositionInLine = 13
+Reference: Object = list_part4 (TABLE), action = CREATE, offset = 20177, line number = 395, charPositionInLine = 13
+Reference: Object = list_part (TABLE), action = INSERT, offset = 20243, line number = 397, charPositionInLine = 12
+Reference: action = BEGIN, offset = 20283, line number = 399, charPositionInLine = 0
+Reference: action = DECLARE, offset = 20400, line number = 403, charPositionInLine = 0
+Reference: action = MOVE, offset = 20525, line number = 406, charPositionInLine = 0
+Reference: action = FETCH, offset = 20570, line number = 409, charPositionInLine = 0
+Reference: action = COMMIT, offset = 20600, line number = 411, charPositionInLine = 0
+Reference: action = BEGIN, offset = 20609, line number = 413, charPositionInLine = 0
+Reference: Object = list_part_fn(integer) (FUNCTION), action = CREATE, offset = 20681, line number = 416, charPositionInLine = 16
+Reference: action = EXPLAIN, offset = 20834, line number = 419, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 21016, line number = 422, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 21196, line number = 425, charPositionInLine = 0
+Reference: action = ROLLBACK, offset = 21306, line number = 427, charPositionInLine = 0
+Reference: Object = list_part (TABLE), action = DROP, offset = 21328, line number = 429, charPositionInLine = 11
+Reference: Object = explain_parallel_append(text) (FUNCTION), action = CREATE, offset = 21578, line number = 436, charPositionInLine = 16
+Reference: action = PREPARE, offset = 21963, line number = 454, charPositionInLine = 0
+Reference: action = SET, offset = 22086, line number = 458, charPositionInLine = 0
+Reference: action = SET, offset = 22115, line number = 459, charPositionInLine = 0
+Reference: action = SET, offset = 22144, line number = 460, charPositionInLine = 0
+Reference: action = SET, offset = 22182, line number = 461, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 22317, line number = 465, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 22339, line number = 466, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 22361, line number = 467, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 22383, line number = 468, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 22405, line number = 469, charPositionInLine = 0
+Reference: action = SELECT, offset = 22427, line number = 470, charPositionInLine = 0
+Reference: action = PREPARE, offset = 22524, line number = 473, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 22705, line number = 478, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 22730, line number = 479, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 22755, line number = 480, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 22780, line number = 481, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 22805, line number = 482, charPositionInLine = 0
+Reference: action = SELECT, offset = 22831, line number = 484, charPositionInLine = 0
+Reference: action = SELECT, offset = 22890, line number = 485, charPositionInLine = 0
+Reference: action = SELECT, offset = 23094, line number = 489, charPositionInLine = 0
+Reference: action = SELECT, offset = 23204, line number = 492, charPositionInLine = 0
+Reference: Object = lprt_a (TABLE), action = CREATE, offset = 23378, line number = 495, charPositionInLine = 13
+Reference: Object = lprt_a (TABLE), action = INSERT, offset = 23457, line number = 497, charPositionInLine = 12
+Reference: Object = lprt_a (TABLE), action = INSERT, offset = 23562, line number = 500, charPositionInLine = 12
+Reference: action = ANALYZE, offset = 23585, line number = 502, charPositionInLine = 0
+Reference: Object = ab_a2_b1_a_idx (INDEX), action = CREATE, offset = 23615, line number = 504, charPositionInLine = 13
+Reference: Object = ab_a2_b1 (TABLE), action = null, offset = 23633, line number = 504, charPositionInLine = 31
+Reference: Object = ab_a2_b2_a_idx (INDEX), action = CREATE, offset = 23660, line number = 505, charPositionInLine = 13
+Reference: Object = ab_a2_b2 (TABLE), action = null, offset = 23678, line number = 505, charPositionInLine = 31
+Reference: Object = ab_a2_b3_a_idx (INDEX), action = CREATE, offset = 23705, line number = 506, charPositionInLine = 13
+Reference: Object = ab_a2_b3 (TABLE), action = null, offset = 23723, line number = 506, charPositionInLine = 31
+Reference: Object = ab_a1_b1_a_idx (INDEX), action = CREATE, offset = 23750, line number = 507, charPositionInLine = 13
+Reference: Object = ab_a1_b1 (TABLE), action = null, offset = 23768, line number = 507, charPositionInLine = 31
+Reference: Object = ab_a1_b2_a_idx (INDEX), action = CREATE, offset = 23795, line number = 508, charPositionInLine = 13
+Reference: Object = ab_a1_b2 (TABLE), action = null, offset = 23813, line number = 508, charPositionInLine = 31
+Reference: Object = ab_a1_b3_a_idx (INDEX), action = CREATE, offset = 23840, line number = 509, charPositionInLine = 13
+Reference: Object = ab_a1_b3 (TABLE), action = null, offset = 23858, line number = 509, charPositionInLine = 31
+Reference: Object = ab_a3_b1_a_idx (INDEX), action = CREATE, offset = 23885, line number = 510, charPositionInLine = 13
+Reference: Object = ab_a3_b1 (TABLE), action = null, offset = 23903, line number = 510, charPositionInLine = 31
+Reference: Object = ab_a3_b2_a_idx (INDEX), action = CREATE, offset = 23930, line number = 511, charPositionInLine = 13
+Reference: Object = ab_a3_b2 (TABLE), action = null, offset = 23948, line number = 511, charPositionInLine = 31
+Reference: Object = ab_a3_b3_a_idx (INDEX), action = CREATE, offset = 23975, line number = 512, charPositionInLine = 13
+Reference: Object = ab_a3_b3 (TABLE), action = null, offset = 23993, line number = 512, charPositionInLine = 31
+Reference: action = SET, offset = 24008, line number = 514, charPositionInLine = 0
+Reference: action = SET, offset = 24033, line number = 515, charPositionInLine = 0
+Reference: action = SELECT, offset = 24060, line number = 517, charPositionInLine = 0
+Reference: action = SELECT, offset = 24295, line number = 521, charPositionInLine = 0
+Reference: Object = lprt_a (TABLE), action = INSERT, offset = 24428, line number = 523, charPositionInLine = 12
+Reference: action = SELECT, offset = 24451, line number = 525, charPositionInLine = 0
+Reference: action = SELECT, offset = 24567, line number = 526, charPositionInLine = 0
+Reference: Object = lprt_a (TABLE), action = DELETE, offset = 24696, line number = 528, charPositionInLine = 12
+Reference: action = SELECT, offset = 24717, line number = 530, charPositionInLine = 0
+Reference: action = RESET, offset = 24834, line number = 532, charPositionInLine = 0
+Reference: action = RESET, offset = 24857, line number = 533, charPositionInLine = 0
+Reference: action = RESET, offset = 24881, line number = 534, charPositionInLine = 0
+Reference: action = RESET, offset = 24908, line number = 535, charPositionInLine = 0
+Reference: action = RESET, offset = 24935, line number = 536, charPositionInLine = 0
+Reference: action = RESET, offset = 24971, line number = 537, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 25063, line number = 540, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 25270, line number = 544, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 25485, line number = 548, charPositionInLine = 0
+Reference: Object = xy_1 (TABLE), action = CREATE, offset = 25763, line number = 552, charPositionInLine = 13
+Reference: Object = xy_1 (TABLE), action = INSERT, offset = 25796, line number = 553, charPositionInLine = 12
+Reference: action = SET, offset = 25819, line number = 555, charPositionInLine = 0
+Reference: action = SET, offset = 25846, line number = 556, charPositionInLine = 0
+Reference: action = SET, offset = 25872, line number = 557, charPositionInLine = 0
+Reference: action = PREPARE, offset = 25917, line number = 559, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 26172, line number = 569, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 26281, line number = 572, charPositionInLine = 0
+Reference: action = RESET, offset = 26302, line number = 574, charPositionInLine = 0
+Reference: action = RESET, offset = 26327, line number = 575, charPositionInLine = 0
+Reference: action = RESET, offset = 26351, line number = 576, charPositionInLine = 0
+Reference: action = DEALLOCATE, offset = 26375, line number = 578, charPositionInLine = 0
+Reference: action = DEALLOCATE, offset = 26393, line number = 579, charPositionInLine = 0
+Reference: action = DEALLOCATE, offset = 26411, line number = 580, charPositionInLine = 0
+Reference: action = DEALLOCATE, offset = 26429, line number = 581, charPositionInLine = 0
+Reference: action = DEALLOCATE, offset = 26447, line number = 582, charPositionInLine = 0
+Reference: action = DEALLOCATE, offset = 26465, line number = 583, charPositionInLine = 0
+Reference: Object = ab (TABLE), action = INSERT, offset = 26561, line number = 586, charPositionInLine = 12
+Reference: action = EXPLAIN, offset = 26578, line number = 587, charPositionInLine = 0
+Reference: action = SELECT, offset = 26698, line number = 589, charPositionInLine = 0
+Reference: Object = ab (TABLE), action = DROP, offset = 26720, line number = 591, charPositionInLine = 11
+Reference: Object = lprt_a (TABLE), action = DROP, offset = 26724, line number = 591, charPositionInLine = 15
+Reference: Object = tbl1 (TABLE), action = CREATE, offset = 26754, line number = 594, charPositionInLine = 13
+Reference: Object = tbl1 (TABLE), action = INSERT, offset = 26782, line number = 595, charPositionInLine = 12
+Reference: Object = tprt (TABLE), action = CREATE, offset = 26837, line number = 598, charPositionInLine = 13
+Reference: Object = tprt_1 (TABLE), action = CREATE, offset = 26893, line number = 599, charPositionInLine = 13
+Reference: Object = tprt_2 (TABLE), action = CREATE, offset = 26961, line number = 600, charPositionInLine = 13
+Reference: Object = tprt_3 (TABLE), action = CREATE, offset = 27032, line number = 601, charPositionInLine = 13
+Reference: Object = tprt_4 (TABLE), action = CREATE, offset = 27104, line number = 602, charPositionInLine = 13
+Reference: Object = tprt_5 (TABLE), action = CREATE, offset = 27176, line number = 603, charPositionInLine = 13
+Reference: Object = tprt_6 (TABLE), action = CREATE, offset = 27248, line number = 604, charPositionInLine = 13
+Reference: Object = tprt1_idx (INDEX), action = CREATE, offset = 27321, line number = 606, charPositionInLine = 13
+Reference: Object = tprt_1 (TABLE), action = null, offset = 27334, line number = 606, charPositionInLine = 26
+Reference: Object = tprt2_idx (INDEX), action = CREATE, offset = 27362, line number = 607, charPositionInLine = 13
+Reference: Object = tprt_2 (TABLE), action = null, offset = 27375, line number = 607, charPositionInLine = 26
+Reference: Object = tprt3_idx (INDEX), action = CREATE, offset = 27403, line number = 608, charPositionInLine = 13
+Reference: Object = tprt_3 (TABLE), action = null, offset = 27416, line number = 608, charPositionInLine = 26
+Reference: Object = tprt4_idx (INDEX), action = CREATE, offset = 27444, line number = 609, charPositionInLine = 13
+Reference: Object = tprt_4 (TABLE), action = null, offset = 27457, line number = 609, charPositionInLine = 26
+Reference: Object = tprt5_idx (INDEX), action = CREATE, offset = 27485, line number = 610, charPositionInLine = 13
+Reference: Object = tprt_5 (TABLE), action = null, offset = 27498, line number = 610, charPositionInLine = 26
+Reference: Object = tprt6_idx (INDEX), action = CREATE, offset = 27526, line number = 611, charPositionInLine = 13
+Reference: Object = tprt_6 (TABLE), action = null, offset = 27539, line number = 611, charPositionInLine = 26
+Reference: Object = tprt (TABLE), action = INSERT, offset = 27567, line number = 613, charPositionInLine = 12
+Reference: action = SET, offset = 27629, line number = 615, charPositionInLine = 0
+Reference: action = SET, offset = 27656, line number = 616, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 27685, line number = 618, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 27795, line number = 621, charPositionInLine = 0
+Reference: action = SELECT, offset = 27905, line number = 624, charPositionInLine = 0
+Reference: action = SELECT, offset = 28016, line number = 628, charPositionInLine = 0
+Reference: Object = tbl1 (TABLE), action = INSERT, offset = 28162, line number = 633, charPositionInLine = 12
+Reference: action = EXPLAIN, offset = 28198, line number = 634, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 28314, line number = 637, charPositionInLine = 0
+Reference: action = SELECT, offset = 28430, line number = 640, charPositionInLine = 0
+Reference: action = SELECT, offset = 28541, line number = 644, charPositionInLine = 0
+Reference: Object = tbl1 (TABLE), action = DELETE, offset = 28682, line number = 649, charPositionInLine = 12
+Reference: Object = tbl1 (TABLE), action = INSERT, offset = 28700, line number = 650, charPositionInLine = 12
+Reference: action = EXPLAIN, offset = 28720, line number = 651, charPositionInLine = 0
+Reference: action = SELECT, offset = 28830, line number = 654, charPositionInLine = 0
+Reference: Object = tbl1 (TABLE), action = DELETE, offset = 28978, line number = 659, charPositionInLine = 12
+Reference: Object = tbl1 (TABLE), action = INSERT, offset = 28996, line number = 660, charPositionInLine = 12
+Reference: action = EXPLAIN, offset = 29017, line number = 661, charPositionInLine = 0
+Reference: action = SELECT, offset = 29127, line number = 664, charPositionInLine = 0
+Reference: Object = tbl1 (TABLE), action = DROP, offset = 29249, line number = 668, charPositionInLine = 11
+Reference: Object = tprt (TABLE), action = DROP, offset = 29255, line number = 668, charPositionInLine = 17
+Reference: Object = part_abc (TABLE), action = CREATE, offset = 29341, line number = 671, charPositionInLine = 13
+Reference: Object = part_bac (TABLE), action = CREATE, offset = 29435, line number = 672, charPositionInLine = 13
+Reference: Object = part_cab (TABLE), action = CREATE, offset = 29529, line number = 673, charPositionInLine = 13
+Reference: Object = part_abc_p1 (TABLE), action = CREATE, offset = 29623, line number = 674, charPositionInLine = 13
+Reference: Object = part_abc (TABLE), action = ALTER, offset = 29698, line number = 676, charPositionInLine = 12
+Reference: Object = part_bac (TABLE), action = ALTER, offset = 29763, line number = 677, charPositionInLine = 12
+Reference: Object = part_cab (TABLE), action = ALTER, offset = 29828, line number = 678, charPositionInLine = 12
+Reference: action = PREPARE, offset = 29885, line number = 680, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 30077, line number = 685, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 30108, line number = 686, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 30139, line number = 687, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 30170, line number = 688, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 30201, line number = 689, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 30272, line number = 692, charPositionInLine = 0
+Reference: action = DEALLOCATE, offset = 30358, line number = 694, charPositionInLine = 0
+Reference: Object = part_abc (TABLE), action = DROP, offset = 30394, line number = 696, charPositionInLine = 11
+Reference: Object = listp (TABLE), action = CREATE, offset = 30557, line number = 700, charPositionInLine = 13
+Reference: Object = listp_1 (TABLE), action = CREATE, offset = 30614, line number = 701, charPositionInLine = 13
+Reference: Object = listp_1_1 (TABLE), action = CREATE, offset = 30694, line number = 702, charPositionInLine = 13
+Reference: Object = listp_2 (TABLE), action = CREATE, offset = 30756, line number = 703, charPositionInLine = 13
+Reference: Object = listp_2_1 (TABLE), action = CREATE, offset = 30836, line number = 704, charPositionInLine = 13
+Reference: action = SELECT, offset = 30885, line number = 705, charPositionInLine = 0
+Reference: action = PREPARE, offset = 31113, line number = 710, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 31178, line number = 712, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 31196, line number = 713, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 31214, line number = 714, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 31232, line number = 715, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 31250, line number = 716, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 31269, line number = 718, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 31343, line number = 720, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 31526, line number = 724, charPositionInLine = 0
+Reference: action = DEALLOCATE, offset = 31600, line number = 726, charPositionInLine = 0
+Reference: action = PREPARE, offset = 31702, line number = 729, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 31798, line number = 731, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 31820, line number = 732, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 31842, line number = 733, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 31864, line number = 734, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 31886, line number = 735, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 31982, line number = 738, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 32213, line number = 742, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 32365, line number = 745, charPositionInLine = 0
+Reference: Object = listp (TABLE), action = DROP, offset = 32481, line number = 748, charPositionInLine = 11
+Reference: Object = boolvalues (TABLE), action = CREATE, offset = 32575, line number = 751, charPositionInLine = 13
+Reference: Object = boolvalues (TABLE), action = INSERT, offset = 32621, line number = 752, charPositionInLine = 12
+Reference: Object = boolp (TABLE), action = CREATE, offset = 32665, line number = 754, charPositionInLine = 13
+Reference: Object = boolp_t (TABLE), action = CREATE, offset = 32716, line number = 755, charPositionInLine = 13
+Reference: Object = boolp_f (TABLE), action = CREATE, offset = 32776, line number = 756, charPositionInLine = 13
+Reference: action = EXPLAIN, offset = 32824, line number = 758, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 32953, line number = 761, charPositionInLine = 0
+Reference: Object = boolp (TABLE), action = DROP, offset = 33097, line number = 764, charPositionInLine = 11
+Reference: action = SET, offset = 33160, line number = 769, charPositionInLine = 0
+Reference: action = SET, offset = 33186, line number = 770, charPositionInLine = 0
+Reference: Object = ma_test (TABLE), action = CREATE, offset = 33222, line number = 771, charPositionInLine = 13
+Reference: Object = ma_test_p1 (TABLE), action = CREATE, offset = 33275, line number = 772, charPositionInLine = 13
+Reference: Object = ma_test_p2 (TABLE), action = CREATE, offset = 33349, line number = 773, charPositionInLine = 13
+Reference: Object = ma_test_p3 (TABLE), action = CREATE, offset = 33424, line number = 774, charPositionInLine = 13
+Reference: Object = ma_test (TABLE), action = INSERT, offset = 33498, line number = 775, charPositionInLine = 12
+Reference: Object = ma_test (TABLE), action = null, offset = 33564, line number = 776, charPositionInLine = 16
+Reference: action = ANALYZE, offset = 33578, line number = 778, charPositionInLine = 0
+Reference: action = PREPARE, offset = 33595, line number = 779, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 33775, line number = 783, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 33793, line number = 784, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 33811, line number = 785, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 33829, line number = 786, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 33847, line number = 787, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 33866, line number = 789, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 33939, line number = 790, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 33958, line number = 791, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 34031, line number = 792, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 34113, line number = 794, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 34186, line number = 795, charPositionInLine = 0
+Reference: action = DEALLOCATE, offset = 34206, line number = 797, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 34277, line number = 800, charPositionInLine = 0
+Reference: action = RESET, offset = 34409, line number = 802, charPositionInLine = 0
+Reference: action = RESET, offset = 34431, line number = 803, charPositionInLine = 0
+Reference: Object = ma_test (TABLE), action = DROP, offset = 34462, line number = 805, charPositionInLine = 11
+Reference: action = RESET, offset = 34472, line number = 807, charPositionInLine = 0
+Reference: Object = pp_arrpart (TABLE), action = CREATE, offset = 34636, line number = 815, charPositionInLine = 13
+Reference: Object = pp_arrpart1 (TABLE), action = CREATE, offset = 34693, line number = 816, charPositionInLine = 13
+Reference: Object = pp_arrpart2 (TABLE), action = CREATE, offset = 34765, line number = 817, charPositionInLine = 13
+Reference: action = EXPLAIN, offset = 34837, line number = 818, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 34899, line number = 819, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 34964, line number = 820, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 35039, line number = 821, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 35104, line number = 822, charPositionInLine = 0
+Reference: Object = pp_arrpart (TABLE), action = DROP, offset = 35175, line number = 823, charPositionInLine = 11
+Reference: Object = pph_arrpart (TABLE), action = CREATE, offset = 35234, line number = 826, charPositionInLine = 13
+Reference: Object = pph_arrpart1 (TABLE), action = CREATE, offset = 35292, line number = 827, charPositionInLine = 13
+Reference: Object = pph_arrpart2 (TABLE), action = CREATE, offset = 35385, line number = 828, charPositionInLine = 13
+Reference: Object = pph_arrpart (TABLE), action = INSERT, offset = 35477, line number = 829, charPositionInLine = 12
+Reference: action = SELECT, offset = 35529, line number = 830, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 35587, line number = 831, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 35650, line number = 832, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 35716, line number = 833, charPositionInLine = 0
+Reference: Object = pph_arrpart (TABLE), action = DROP, offset = 35803, line number = 834, charPositionInLine = 11
+Reference: Object = pp_colors (TYPE), action = CREATE, offset = 35861, line number = 837, charPositionInLine = 12
+Reference: Object = pp_enumpart (TABLE), action = CREATE, offset = 35920, line number = 838, charPositionInLine = 13
+Reference: Object = pp_enumpart_green (TABLE), action = CREATE, offset = 35982, line number = 839, charPositionInLine = 13
+Reference: Object = pp_enumpart_blue (TABLE), action = CREATE, offset = 36063, line number = 840, charPositionInLine = 13
+Reference: action = EXPLAIN, offset = 36129, line number = 841, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 36193, line number = 842, charPositionInLine = 0
+Reference: Object = pp_enumpart (TABLE), action = DROP, offset = 36269, line number = 843, charPositionInLine = 11
+Reference: Object = pp_colors (TYPE), action = DROP, offset = 36292, line number = 844, charPositionInLine = 10
+Reference: Object = pp_rectype (TYPE), action = CREATE, offset = 36348, line number = 847, charPositionInLine = 12
+Reference: Object = pp_recpart (TABLE), action = CREATE, offset = 36391, line number = 848, charPositionInLine = 13
+Reference: Object = pp_recpart_11 (TABLE), action = CREATE, offset = 36453, line number = 849, charPositionInLine = 13
+Reference: Object = pp_recpart_23 (TABLE), action = CREATE, offset = 36529, line number = 850, charPositionInLine = 13
+Reference: action = EXPLAIN, offset = 36592, line number = 851, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 36668, line number = 852, charPositionInLine = 0
+Reference: Object = pp_recpart (TABLE), action = DROP, offset = 36755, line number = 853, charPositionInLine = 11
+Reference: Object = pp_rectype (TYPE), action = DROP, offset = 36777, line number = 854, charPositionInLine = 10
+Reference: Object = pp_intrangepart (TABLE), action = CREATE, offset = 36831, line number = 857, charPositionInLine = 13
+Reference: Object = pp_intrangepart12 (TABLE), action = CREATE, offset = 36897, line number = 858, charPositionInLine = 13
+Reference: Object = pp_intrangepart2inf (TABLE), action = CREATE, offset = 36982, line number = 859, charPositionInLine = 13
+Reference: action = EXPLAIN, offset = 37055, line number = 860, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 37135, line number = 861, charPositionInLine = 0
+Reference: Object = pp_intrangepart (TABLE), action = DROP, offset = 37226, line number = 862, charPositionInLine = 11
+Reference: Object = pp_lp (TABLE), action = CREATE, offset = 37342, line number = 868, charPositionInLine = 13
+Reference: Object = pp_lp1 (TABLE), action = CREATE, offset = 37403, line number = 869, charPositionInLine = 13
+Reference: Object = pp_lp2 (TABLE), action = CREATE, offset = 37460, line number = 870, charPositionInLine = 13
+Reference: action = EXPLAIN, offset = 37505, line number = 872, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 37558, line number = 873, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 37619, line number = 874, charPositionInLine = 0
+Reference: action = SET, offset = 37671, line number = 876, charPositionInLine = 0
+Reference: action = SET, offset = 37708, line number = 878, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 37787, line number = 880, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 37840, line number = 881, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 37901, line number = 882, charPositionInLine = 0
+Reference: action = SET, offset = 37953, line number = 884, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 38026, line number = 886, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 38079, line number = 887, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 38140, line number = 888, charPositionInLine = 0
+Reference: Object = pp_lp (TABLE), action = DROP, offset = 38203, line number = 890, charPositionInLine = 11
+Reference: Object = inh_lp (TABLE), action = CREATE, offset = 38298, line number = 894, charPositionInLine = 13
+Reference: Object = inh_lp1 (TABLE), action = CREATE, offset = 38338, line number = 895, charPositionInLine = 13
+Reference: Object = inh_lp2 (TABLE), action = CREATE, offset = 38411, line number = 896, charPositionInLine = 13
+Reference: action = SET, offset = 38472, line number = 898, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 38568, line number = 901, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 38622, line number = 902, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 38684, line number = 903, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 38836, line number = 907, charPositionInLine = 0
+Reference: Object = inh_lp (TABLE), action = DROP, offset = 38911, line number = 909, charPositionInLine = 11
+Reference: action = RESET, offset = 38928, line number = 911, charPositionInLine = 0
+Reference: action = RESET, offset = 38960, line number = 912, charPositionInLine = 0
+Reference: Object = pp_temp_parent (TABLE), action = CREATE, offset = 39081, line number = 915, charPositionInLine = 18
+Reference: Object = pp_temp_part_1 (TABLE), action = CREATE, offset = 39145, line number = 916, charPositionInLine = 18
+Reference: Object = pp_temp_part_def (TABLE), action = CREATE, offset = 39225, line number = 917, charPositionInLine = 18
+Reference: action = EXPLAIN, offset = 39279, line number = 918, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 39340, line number = 919, charPositionInLine = 0
+Reference: Object = pp_temp_parent (TABLE), action = DROP, offset = 39413, line number = 920, charPositionInLine = 11
+Reference: Object = p (TABLE), action = CREATE, offset = 39513, line number = 923, charPositionInLine = 18
+Reference: Object = p1 (TABLE), action = CREATE, offset = 39578, line number = 924, charPositionInLine = 18
+Reference: Object = p2 (TABLE), action = CREATE, offset = 39633, line number = 925, charPositionInLine = 18
+Reference: Object = q (TABLE), action = CREATE, offset = 39688, line number = 926, charPositionInLine = 18
+Reference: Object = q1 (TABLE), action = CREATE, offset = 39753, line number = 927, charPositionInLine = 18
+Reference: Object = q11 (TABLE), action = CREATE, offset = 39830, line number = 928, charPositionInLine = 18
+Reference: Object = q111 (TABLE), action = CREATE, offset = 39909, line number = 929, charPositionInLine = 18
+Reference: Object = q2 (TABLE), action = CREATE, offset = 39968, line number = 930, charPositionInLine = 18
+Reference: Object = q21 (TABLE), action = CREATE, offset = 40045, line number = 931, charPositionInLine = 18
+Reference: Object = q22 (TABLE), action = CREATE, offset = 40102, line number = 932, charPositionInLine = 18
+Reference: Object = q22 (TABLE), action = INSERT, offset = 40154, line number = 934, charPositionInLine = 12
+Reference: action = EXPLAIN, offset = 40177, line number = 936, charPositionInLine = 0
+Reference: action = SELECT, offset = 40378, line number = 947, charPositionInLine = 0
+Reference: action = PREPARE, offset = 40559, line number = 957, charPositionInLine = 0
+Reference: action = SET, offset = 40766, line number = 968, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 40810, line number = 970, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 40848, line number = 971, charPositionInLine = 0
+Reference: action = RESET, offset = 40867, line number = 973, charPositionInLine = 0
+Reference: Object = p (TABLE), action = DROP, offset = 40901, line number = 974, charPositionInLine = 11
+Reference: Object = q (TABLE), action = DROP, offset = 40904, line number = 974, charPositionInLine = 14
+Reference: Object = listp (TABLE), action = CREATE, offset = 41073, line number = 978, charPositionInLine = 13
+Reference: Object = listp1 (TABLE), action = CREATE, offset = 41130, line number = 979, charPositionInLine = 13
+Reference: Object = listp2 (TABLE), action = CREATE, offset = 41187, line number = 980, charPositionInLine = 13
+Reference: Object = listp2_10 (TABLE), action = CREATE, offset = 41265, line number = 981, charPositionInLine = 13
+Reference: action = EXPLAIN, offset = 41316, line number = 983, charPositionInLine = 0
+Reference: Object = listp (TABLE), action = DROP, offset = 41436, line number = 986, charPositionInLine = 11

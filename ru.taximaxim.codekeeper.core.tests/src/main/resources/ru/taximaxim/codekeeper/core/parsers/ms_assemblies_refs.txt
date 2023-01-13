@@ -1,0 +1,7 @@
+Reference: Object = "MyClass" (ASSEMBLY), action = ALTER, offset = 15, line number = 1, charPositionInLine = 15
+Reference: Object = "ComplexNumber" (ASSEMBLY), action = ALTER, offset = 83, line number = 3, charPositionInLine = 15
+Reference: Object = "ComplexNumber" (ASSEMBLY), action = ALTER, offset = 151, line number = 4, charPositionInLine = 15
+Reference: Object = "SQLCLRTest" (ASSEMBLY), action = CREATE, offset = 225, line number = 7, charPositionInLine = 16
+Reference: Object = "SQLCLRTest" (ASSEMBLY), action = CREATE, offset = 287, line number = 10, charPositionInLine = 16
+Reference: Object = "SQLCLRTest" (ASSEMBLY), action = CREATE, offset = 382, line number = 14, charPositionInLine = 16
+Reference: Object = "SQLCLRTest" (ASSEMBLY), action = CREATE, offset = 481, line number = 17, charPositionInLine = 16

@@ -1,0 +1,9 @@
+Reference: Object = text AS casttesttype (CAST), action = CREATE, offset = 13, line number = 1, charPositionInLine = 13
+Reference: Object = text AS casttesttype (CAST), action = DROP, offset = 64, line number = 2, charPositionInLine = 11
+Reference: Object = text AS casttesttype (CAST), action = CREATE, offset = 100, line number = 3, charPositionInLine = 13
+Reference: action = SELECT, offset = 152, line number = 4, charPositionInLine = 0
+Reference: Object = int4 AS casttesttype (CAST), action = CREATE, offset = 199, line number = 5, charPositionInLine = 13
+Reference: Object = int4 AS casttesttype (CAST), action = DROP, offset = 244, line number = 6, charPositionInLine = 11
+Reference: Object = int4 AS casttesttype (CAST), action = CREATE, offset = 280, line number = 7, charPositionInLine = 13
+Reference: Object = text AS int (CAST), action = DROP, offset = 364, line number = 8, charPositionInLine = 11
+Reference: Object = bigint AS int4 (CAST), action = CREATE, offset = 391, line number = 9, charPositionInLine = 13

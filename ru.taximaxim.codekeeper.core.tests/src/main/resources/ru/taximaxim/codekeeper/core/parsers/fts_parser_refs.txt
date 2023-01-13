@@ -1,0 +1,14 @@
+Reference: Object = public (SCHEMA), action = null, offset = 26, line number = 1, charPositionInLine = 26
+Reference: Object = public.parser (FTS_PARSER), action = CREATE, offset = 33, line number = 1, charPositionInLine = 33
+Reference: Object = public (SCHEMA), action = null, offset = 54, line number = 2, charPositionInLine = 12
+Reference: Object = public.start(internal, integer) (FUNCTION), action = null, offset = 61, line number = 2, charPositionInLine = 19
+Reference: Object = public (SCHEMA), action = null, offset = 84, line number = 3, charPositionInLine = 15
+Reference: Object = public.get_token(internal, internal, internal) (FUNCTION), action = null, offset = 91, line number = 3, charPositionInLine = 22
+Reference: Object = public (SCHEMA), action = null, offset = 112, line number = 4, charPositionInLine = 10
+Reference: Object = public."end"(internal) (FUNCTION), action = null, offset = 119, line number = 4, charPositionInLine = 17
+Reference: Object = public (SCHEMA), action = null, offset = 139, line number = 5, charPositionInLine = 15
+Reference: Object = public.lex(internal) (FUNCTION), action = null, offset = 146, line number = 5, charPositionInLine = 22
+Reference: Object = public (SCHEMA), action = null, offset = 179, line number = 8, charPositionInLine = 25
+Reference: Object = public.parser (FTS_PARSER), action = ALTER, offset = 186, line number = 8, charPositionInLine = 32
+Reference: Object = private (SCHEMA), action = null, offset = 238, line number = 10, charPositionInLine = 24
+Reference: Object = private.parser (FTS_PARSER), action = DROP, offset = 246, line number = 10, charPositionInLine = 32

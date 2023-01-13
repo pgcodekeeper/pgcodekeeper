@@ -1,0 +1,273 @@
+Reference: Object = insertconflicttest (TABLE), action = CREATE, offset = 69, line number = 4, charPositionInLine = 13
+Reference: Object = op_index_key (INDEX), action = CREATE, offset = 228, line number = 10, charPositionInLine = 20
+Reference: Object = insertconflicttest (TABLE), action = null, offset = 244, line number = 10, charPositionInLine = 36
+Reference: Object = collation_index_key (INDEX), action = CREATE, offset = 313, line number = 11, charPositionInLine = 20
+Reference: Object = insertconflicttest (TABLE), action = null, offset = 336, line number = 11, charPositionInLine = 43
+Reference: Object = both_index_key (INDEX), action = CREATE, offset = 400, line number = 12, charPositionInLine = 20
+Reference: Object = insertconflicttest (TABLE), action = null, offset = 418, line number = 12, charPositionInLine = 38
+Reference: Object = both_index_expr_key (INDEX), action = CREATE, offset = 499, line number = 13, charPositionInLine = 20
+Reference: Object = insertconflicttest (TABLE), action = null, offset = 522, line number = 13, charPositionInLine = 43
+Reference: action = EXPLAIN, offset = 600, line number = 16, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 704, line number = 17, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 823, line number = 20, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 934, line number = 21, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 1057, line number = 22, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 1194, line number = 23, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 1589, line number = 28, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 1814, line number = 31, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 2030, line number = 34, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 2289, line number = 37, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 3211, line number = 52, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 3351, line number = 53, charPositionInLine = 0
+Reference: Object = op_index_key (INDEX), action = DROP, offset = 3515, line number = 55, charPositionInLine = 11
+Reference: Object = collation_index_key (INDEX), action = DROP, offset = 3540, line number = 56, charPositionInLine = 11
+Reference: Object = both_index_key (INDEX), action = DROP, offset = 3572, line number = 57, charPositionInLine = 11
+Reference: Object = both_index_expr_key (INDEX), action = DROP, offset = 3599, line number = 58, charPositionInLine = 11
+Reference: Object = cross_match (INDEX), action = CREATE, offset = 3726, line number = 63, charPositionInLine = 20
+Reference: Object = insertconflicttest (TABLE), action = null, offset = 3741, line number = 63, charPositionInLine = 35
+Reference: action = EXPLAIN, offset = 3829, line number = 66, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 3995, line number = 68, charPositionInLine = 0
+Reference: Object = cross_match (INDEX), action = DROP, offset = 4163, line number = 70, charPositionInLine = 11
+Reference: Object = key_index (INDEX), action = CREATE, offset = 4223, line number = 75, charPositionInLine = 20
+Reference: Object = insertconflicttest (TABLE), action = null, offset = 4236, line number = 75, charPositionInLine = 33
+Reference: action = EXPLAIN, offset = 4285, line number = 80, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 4489, line number = 82, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 4706, line number = 84, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 4953, line number = 86, charPositionInLine = 0
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 5246, line number = 89, charPositionInLine = 12
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 5371, line number = 92, charPositionInLine = 12
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 5478, line number = 93, charPositionInLine = 12
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 5659, line number = 96, charPositionInLine = 12
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 5894, line number = 102, charPositionInLine = 12
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 6095, line number = 105, charPositionInLine = 12
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 6258, line number = 108, charPositionInLine = 12
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 6387, line number = 111, charPositionInLine = 12
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 6500, line number = 112, charPositionInLine = 12
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 6614, line number = 113, charPositionInLine = 12
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 6723, line number = 114, charPositionInLine = 12
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 6891, line number = 117, charPositionInLine = 12
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 7048, line number = 118, charPositionInLine = 12
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 7177, line number = 119, charPositionInLine = 12
+Reference: Object = key_index (INDEX), action = DROP, offset = 7347, line number = 121, charPositionInLine = 11
+Reference: Object = comp_key_index (INDEX), action = CREATE, offset = 7408, line number = 126, charPositionInLine = 20
+Reference: Object = insertconflicttest (TABLE), action = null, offset = 7426, line number = 126, charPositionInLine = 38
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 7494, line number = 129, charPositionInLine = 12
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 7612, line number = 130, charPositionInLine = 12
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 7746, line number = 133, charPositionInLine = 12
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 7854, line number = 134, charPositionInLine = 12
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 7976, line number = 135, charPositionInLine = 12
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 8099, line number = 136, charPositionInLine = 12
+Reference: Object = comp_key_index (INDEX), action = DROP, offset = 8220, line number = 138, charPositionInLine = 11
+Reference: Object = part_comp_key_index (INDEX), action = CREATE, offset = 8320, line number = 143, charPositionInLine = 20
+Reference: Object = insertconflicttest (TABLE), action = null, offset = 8343, line number = 143, charPositionInLine = 43
+Reference: Object = expr_part_comp_key_index (INDEX), action = CREATE, offset = 8409, line number = 144, charPositionInLine = 20
+Reference: Object = insertconflicttest (TABLE), action = null, offset = 8437, line number = 144, charPositionInLine = 48
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 8523, line number = 147, charPositionInLine = 12
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 8638, line number = 148, charPositionInLine = 12
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 8754, line number = 149, charPositionInLine = 12
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 8866, line number = 150, charPositionInLine = 12
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 8984, line number = 151, charPositionInLine = 12
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 9109, line number = 152, charPositionInLine = 12
+Reference: Object = part_comp_key_index (INDEX), action = DROP, offset = 9235, line number = 154, charPositionInLine = 11
+Reference: Object = expr_part_comp_key_index (INDEX), action = DROP, offset = 9267, line number = 155, charPositionInLine = 11
+Reference: Object = expr_key_index (INDEX), action = CREATE, offset = 9346, line number = 160, charPositionInLine = 20
+Reference: Object = insertconflicttest (TABLE), action = null, offset = 9364, line number = 160, charPositionInLine = 38
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 9434, line number = 163, charPositionInLine = 12
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 9552, line number = 164, charPositionInLine = 12
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 9710, line number = 167, charPositionInLine = 12
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 9829, line number = 168, charPositionInLine = 12
+Reference: Object = expr_key_index (INDEX), action = DROP, offset = 9944, line number = 170, charPositionInLine = 11
+Reference: Object = expr_comp_key_index (INDEX), action = CREATE, offset = 10035, line number = 175, charPositionInLine = 20
+Reference: Object = insertconflicttest (TABLE), action = null, offset = 10058, line number = 175, charPositionInLine = 43
+Reference: Object = tricky_expr_comp_key_index (INDEX), action = CREATE, offset = 10117, line number = 176, charPositionInLine = 20
+Reference: Object = insertconflicttest (TABLE), action = null, offset = 10147, line number = 176, charPositionInLine = 50
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 10236, line number = 179, charPositionInLine = 12
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 10357, line number = 180, charPositionInLine = 12
+Reference: action = EXPLAIN, offset = 10523, line number = 182, charPositionInLine = 0
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 10715, line number = 185, charPositionInLine = 12
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 10837, line number = 186, charPositionInLine = 12
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 10957, line number = 187, charPositionInLine = 12
+Reference: Object = expr_comp_key_index (INDEX), action = DROP, offset = 11069, line number = 189, charPositionInLine = 11
+Reference: Object = tricky_expr_comp_key_index (INDEX), action = DROP, offset = 11101, line number = 190, charPositionInLine = 11
+Reference: Object = key_index (INDEX), action = CREATE, offset = 11198, line number = 195, charPositionInLine = 20
+Reference: Object = insertconflicttest (TABLE), action = null, offset = 11211, line number = 195, charPositionInLine = 33
+Reference: Object = fruit_index (INDEX), action = CREATE, offset = 11256, line number = 196, charPositionInLine = 20
+Reference: Object = insertconflicttest (TABLE), action = null, offset = 11271, line number = 196, charPositionInLine = 35
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 11382, line number = 199, charPositionInLine = 12
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 11629, line number = 202, charPositionInLine = 12
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 11868, line number = 205, charPositionInLine = 12
+Reference: Object = key_index (INDEX), action = DROP, offset = 11976, line number = 207, charPositionInLine = 11
+Reference: Object = fruit_index (INDEX), action = DROP, offset = 11998, line number = 208, charPositionInLine = 11
+Reference: Object = partial_key_index (INDEX), action = CREATE, offset = 12077, line number = 213, charPositionInLine = 20
+Reference: Object = insertconflicttest (TABLE), action = null, offset = 12098, line number = 213, charPositionInLine = 41
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 12174, line number = 216, charPositionInLine = 12
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 12313, line number = 217, charPositionInLine = 12
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 12466, line number = 220, charPositionInLine = 12
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 12579, line number = 221, charPositionInLine = 12
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 12719, line number = 222, charPositionInLine = 12
+Reference: Object = partial_key_index (INDEX), action = DROP, offset = 12860, line number = 224, charPositionInLine = 11
+Reference: Object = plain (INDEX), action = CREATE, offset = 12970, line number = 229, charPositionInLine = 20
+Reference: Object = insertconflicttest (TABLE), action = null, offset = 12979, line number = 229, charPositionInLine = 29
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 13052, line number = 232, charPositionInLine = 12
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 13239, line number = 235, charPositionInLine = 12
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 13477, line number = 238, charPositionInLine = 12
+Reference: Object = insertconflicttest (TABLE), action = INSERT, offset = 13642, line number = 241, charPositionInLine = 12
+Reference: action = EXPLAIN, offset = 13812, line number = 244, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 13972, line number = 245, charPositionInLine = 0
+Reference: Object = plain (INDEX), action = DROP, offset = 14121, line number = 247, charPositionInLine = 11
+Reference: Object = insertconflicttest (TABLE), action = DROP, offset = 14151, line number = 250, charPositionInLine = 11
+Reference: Object = syscolconflicttest (TABLE), action = CREATE, offset = 14370, line number = 258, charPositionInLine = 13
+Reference: Object = syscolconflicttest (TABLE), action = INSERT, offset = 14423, line number = 259, charPositionInLine = 12
+Reference: Object = syscolconflicttest (TABLE), action = INSERT, offset = 14466, line number = 260, charPositionInLine = 12
+Reference: Object = syscolconflicttest (TABLE), action = DROP, offset = 14567, line number = 261, charPositionInLine = 11
+Reference: Object = insertconflict (TABLE), action = CREATE, offset = 14704, line number = 267, charPositionInLine = 13
+Reference: Object = insertconflicti1 (INDEX), action = CREATE, offset = 14762, line number = 269, charPositionInLine = 20
+Reference: Object = insertconflict (TABLE), action = null, offset = 14782, line number = 269, charPositionInLine = 40
+Reference: Object = insertconflicti2 (INDEX), action = CREATE, offset = 14835, line number = 271, charPositionInLine = 20
+Reference: Object = insertconflict (TABLE), action = null, offset = 14855, line number = 271, charPositionInLine = 40
+Reference: Object = insertconflict (TABLE), action = INSERT, offset = 14914, line number = 274, charPositionInLine = 12
+Reference: Object = insertconflict (TABLE), action = INSERT, offset = 14997, line number = 277, charPositionInLine = 12
+Reference: Object = insertconflict (TABLE), action = INSERT, offset = 15092, line number = 280, charPositionInLine = 12
+Reference: Object = insertconflict (TABLE), action = DROP, offset = 15186, line number = 283, charPositionInLine = 11
+Reference: Object = insertconflict (TABLE), action = CREATE, offset = 15254, line number = 289, charPositionInLine = 13
+Reference: Object = insertconflictv (VIEW), action = CREATE, offset = 15312, line number = 290, charPositionInLine = 12
+Reference: Object = insertconflictv (TABLE), action = INSERT, offset = 15403, line number = 293, charPositionInLine = 12
+Reference: action = SELECT, offset = 15487, line number = 295, charPositionInLine = 0
+Reference: Object = insertconflictv (TABLE), action = INSERT, offset = 15529, line number = 296, charPositionInLine = 12
+Reference: action = SELECT, offset = 15613, line number = 298, charPositionInLine = 0
+Reference: Object = insertconflictv (VIEW), action = DROP, offset = 15654, line number = 300, charPositionInLine = 10
+Reference: Object = insertconflict (TABLE), action = DROP, offset = 15682, line number = 301, charPositionInLine = 11
+Reference: Object = cities (TABLE), action = CREATE, offset = 16063, line number = 309, charPositionInLine = 13
+Reference: Object = capitals (TABLE), action = CREATE, offset = 16148, line number = 315, charPositionInLine = 13
+Reference: Object = cities_names_unique (INDEX), action = CREATE, offset = 16407, line number = 322, charPositionInLine = 20
+Reference: Object = cities (TABLE), action = null, offset = 16430, line number = 322, charPositionInLine = 43
+Reference: Object = capitals_names_unique (INDEX), action = CREATE, offset = 16465, line number = 323, charPositionInLine = 20
+Reference: Object = capitals (TABLE), action = null, offset = 16490, line number = 323, charPositionInLine = 45
+Reference: Object = cities (TABLE), action = INSERT, offset = 16547, line number = 326, charPositionInLine = 12
+Reference: Object = cities (TABLE), action = INSERT, offset = 16605, line number = 327, charPositionInLine = 12
+Reference: Object = cities (TABLE), action = INSERT, offset = 16662, line number = 328, charPositionInLine = 12
+Reference: Object = capitals (TABLE), action = INSERT, offset = 16715, line number = 330, charPositionInLine = 12
+Reference: Object = capitals (TABLE), action = INSERT, offset = 16779, line number = 331, charPositionInLine = 12
+Reference: action = SELECT, offset = 16863, line number = 334, charPositionInLine = 0
+Reference: Object = cities (TABLE), action = INSERT, offset = 16913, line number = 337, charPositionInLine = 12
+Reference: Object = capitals (TABLE), action = INSERT, offset = 16993, line number = 338, charPositionInLine = 12
+Reference: Object = capitals (TABLE), action = INSERT, offset = 17161, line number = 340, charPositionInLine = 12
+Reference: action = SELECT, offset = 17239, line number = 341, charPositionInLine = 0
+Reference: Object = cities (TABLE), action = INSERT, offset = 17275, line number = 342, charPositionInLine = 12
+Reference: action = SELECT, offset = 17415, line number = 343, charPositionInLine = 0
+Reference: Object = capitals (TABLE), action = INSERT, offset = 17469, line number = 344, charPositionInLine = 12
+Reference: action = SELECT, offset = 17636, line number = 346, charPositionInLine = 0
+Reference: action = SELECT, offset = 17768, line number = 349, charPositionInLine = 0
+Reference: Object = cities (TABLE), action = INSERT, offset = 17876, line number = 351, charPositionInLine = 12
+Reference: action = SELECT, offset = 18016, line number = 352, charPositionInLine = 0
+Reference: Object = capitals (TABLE), action = DROP, offset = 18082, line number = 355, charPositionInLine = 11
+Reference: Object = cities (TABLE), action = DROP, offset = 18103, line number = 356, charPositionInLine = 11
+Reference: Object = excluded (TABLE), action = CREATE, offset = 18182, line number = 360, charPositionInLine = 13
+Reference: Object = excluded (TABLE), action = INSERT, offset = 18236, line number = 361, charPositionInLine = 12
+Reference: Object = excluded (TABLE), action = INSERT, offset = 18293, line number = 363, charPositionInLine = 12
+Reference: Object = excluded (TABLE), action = INSERT, offset = 18410, line number = 365, charPositionInLine = 12
+Reference: Object = excluded (TABLE), action = INSERT, offset = 18537, line number = 367, charPositionInLine = 12
+Reference: Object = excluded (TABLE), action = INSERT, offset = 18705, line number = 369, charPositionInLine = 12
+Reference: Object = excluded (TABLE), action = DROP, offset = 18816, line number = 372, charPositionInLine = 11
+Reference: Object = dropcol (TABLE), action = CREATE, offset = 18921, line number = 376, charPositionInLine = 13
+Reference: Object = dropcol (TABLE), action = INSERT, offset = 19014, line number = 377, charPositionInLine = 12
+Reference: Object = dropcol (TABLE), action = INSERT, offset = 19116, line number = 379, charPositionInLine = 12
+Reference: Object = dropcol (TABLE), action = INSERT, offset = 19632, line number = 386, charPositionInLine = 12
+Reference: Object = dropcol (TABLE), action = ALTER, offset = 19856, line number = 390, charPositionInLine = 12
+Reference: Object = dropcol (TABLE), action = INSERT, offset = 19936, line number = 392, charPositionInLine = 12
+Reference: Object = dropcol (TABLE), action = INSERT, offset = 20260, line number = 399, charPositionInLine = 12
+Reference: Object = dropcol (TABLE), action = DROP, offset = 20416, line number = 404, charPositionInLine = 11
+Reference: Object = twoconstraints (TABLE), action = CREATE, offset = 20513, line number = 408, charPositionInLine = 13
+Reference: Object = twoconstraints (TABLE), action = INSERT, offset = 20626, line number = 410, charPositionInLine = 12
+Reference: Object = twoconstraints (TABLE), action = INSERT, offset = 20681, line number = 411, charPositionInLine = 12
+Reference: Object = twoconstraints (TABLE), action = INSERT, offset = 20751, line number = 412, charPositionInLine = 12
+Reference: Object = twoconstraints (TABLE), action = INSERT, offset = 20821, line number = 413, charPositionInLine = 12
+Reference: Object = twoconstraints (TABLE), action = INSERT, offset = 20952, line number = 415, charPositionInLine = 12
+Reference: action = SELECT, offset = 21072, line number = 417, charPositionInLine = 0
+Reference: Object = twoconstraints (TABLE), action = DROP, offset = 21113, line number = 418, charPositionInLine = 11
+Reference: Object = selfconflict (TABLE), action = CREATE, offset = 21208, line number = 422, charPositionInLine = 13
+Reference: action = BEGIN, offset = 21252, line number = 424, charPositionInLine = 0
+Reference: Object = selfconflict (TABLE), action = INSERT, offset = 21314, line number = 425, charPositionInLine = 12
+Reference: action = COMMIT, offset = 21371, line number = 426, charPositionInLine = 0
+Reference: action = BEGIN, offset = 21380, line number = 428, charPositionInLine = 0
+Reference: Object = selfconflict (TABLE), action = INSERT, offset = 21443, line number = 429, charPositionInLine = 12
+Reference: action = COMMIT, offset = 21500, line number = 430, charPositionInLine = 0
+Reference: action = BEGIN, offset = 21509, line number = 432, charPositionInLine = 0
+Reference: Object = selfconflict (TABLE), action = INSERT, offset = 21569, line number = 433, charPositionInLine = 12
+Reference: action = COMMIT, offset = 21626, line number = 434, charPositionInLine = 0
+Reference: action = BEGIN, offset = 21635, line number = 436, charPositionInLine = 0
+Reference: Object = selfconflict (TABLE), action = INSERT, offset = 21697, line number = 437, charPositionInLine = 12
+Reference: action = COMMIT, offset = 21768, line number = 438, charPositionInLine = 0
+Reference: action = BEGIN, offset = 21777, line number = 440, charPositionInLine = 0
+Reference: Object = selfconflict (TABLE), action = INSERT, offset = 21840, line number = 441, charPositionInLine = 12
+Reference: action = COMMIT, offset = 21911, line number = 442, charPositionInLine = 0
+Reference: action = BEGIN, offset = 21920, line number = 444, charPositionInLine = 0
+Reference: Object = selfconflict (TABLE), action = INSERT, offset = 21980, line number = 445, charPositionInLine = 12
+Reference: action = COMMIT, offset = 22051, line number = 446, charPositionInLine = 0
+Reference: action = SELECT, offset = 22060, line number = 448, charPositionInLine = 0
+Reference: Object = selfconflict (TABLE), action = DROP, offset = 22100, line number = 450, charPositionInLine = 11
+Reference: Object = parted_conflict_test (TABLE), action = CREATE, offset = 22182, line number = 453, charPositionInLine = 13
+Reference: Object = parted_conflict_test_1 (TABLE), action = CREATE, offset = 22262, line number = 454, charPositionInLine = 13
+Reference: Object = parted_conflict_test (TABLE), action = INSERT, offset = 22393, line number = 457, charPositionInLine = 12
+Reference: Object = parted_conflict_test (TABLE), action = INSERT, offset = 22518, line number = 460, charPositionInLine = 12
+Reference: Object = parted_conflict_test (TABLE), action = INSERT, offset = 22595, line number = 461, charPositionInLine = 12
+Reference: Object = parted_conflict_test_1 (TABLE), action = INSERT, offset = 22733, line number = 464, charPositionInLine = 12
+Reference: Object = parted_conflict_test_1 (TABLE), action = INSERT, offset = 22812, line number = 465, charPositionInLine = 12
+Reference: Object = parted_conflict_test (TABLE), action = INSERT, offset = 22964, line number = 468, charPositionInLine = 12
+Reference: Object = parted_conflict_test_1 (TABLE), action = INSERT, offset = 23102, line number = 471, charPositionInLine = 12
+Reference: action = SELECT, offset = 23211, line number = 474, charPositionInLine = 0
+Reference: Object = parted_conflict_test_2 (TABLE), action = CREATE, offset = 23373, line number = 478, charPositionInLine = 13
+Reference: Object = parted_conflict_test (TABLE), action = ALTER, offset = 23432, line number = 479, charPositionInLine = 12
+Reference: action = TRUNCATE, offset = 23512, line number = 480, charPositionInLine = 0
+Reference: Object = parted_conflict_test (TABLE), action = INSERT, offset = 23555, line number = 481, charPositionInLine = 12
+Reference: Object = parted_conflict_test (TABLE), action = INSERT, offset = 23650, line number = 482, charPositionInLine = 12
+Reference: action = SELECT, offset = 23757, line number = 485, charPositionInLine = 0
+Reference: Object = parted_conflict_test (TABLE), action = ALTER, offset = 23890, line number = 488, charPositionInLine = 12
+Reference: Object = parted_conflict_test_3 (TABLE), action = CREATE, offset = 23944, line number = 489, charPositionInLine = 13
+Reference: action = TRUNCATE, offset = 24020, line number = 490, charPositionInLine = 0
+Reference: Object = parted_conflict_test (TABLE), action = INSERT, offset = 24063, line number = 491, charPositionInLine = 12
+Reference: Object = parted_conflict_test (TABLE), action = INSERT, offset = 24165, line number = 492, charPositionInLine = 12
+Reference: action = SELECT, offset = 24314, line number = 495, charPositionInLine = 0
+Reference: Object = parted_conflict_test_4 (TABLE), action = CREATE, offset = 24413, line number = 498, charPositionInLine = 13
+Reference: Object = parted_conflict_test_4_1 (TABLE), action = CREATE, offset = 24524, line number = 499, charPositionInLine = 13
+Reference: action = TRUNCATE, offset = 24604, line number = 500, charPositionInLine = 0
+Reference: Object = parted_conflict_test (TABLE), action = INSERT, offset = 24647, line number = 501, charPositionInLine = 12
+Reference: Object = parted_conflict_test (TABLE), action = INSERT, offset = 24749, line number = 502, charPositionInLine = 12
+Reference: action = SELECT, offset = 24898, line number = 505, charPositionInLine = 0
+Reference: action = TRUNCATE, offset = 24973, line number = 508, charPositionInLine = 0
+Reference: Object = parted_conflict_test (TABLE), action = INSERT, offset = 25016, line number = 509, charPositionInLine = 12
+Reference: Object = parted_conflict_test (TABLE), action = INSERT, offset = 25161, line number = 510, charPositionInLine = 12
+Reference: action = SELECT, offset = 25338, line number = 513, charPositionInLine = 0
+Reference: Object = parted_conflict_test (TABLE), action = DROP, offset = 25397, line number = 515, charPositionInLine = 11
+Reference: Object = parted_conflict (TABLE), action = CREATE, offset = 25526, line number = 519, charPositionInLine = 13
+Reference: Object = parted_conflict_1 (TABLE), action = CREATE, offset = 25607, line number = 520, charPositionInLine = 13
+Reference: Object = parted_conflict_1_1 (TABLE), action = CREATE, offset = 25721, line number = 521, charPositionInLine = 13
+Reference: Object = parted_conflict (TABLE), action = INSERT, offset = 25814, line number = 522, charPositionInLine = 12
+Reference: Object = parted_conflict_1 (TABLE), action = INSERT, offset = 25864, line number = 523, charPositionInLine = 12
+Reference: Object = parted_conflict (TABLE), action = DROP, offset = 25965, line number = 525, charPositionInLine = 11
+Reference: Object = parted_conflict (TABLE), action = CREATE, offset = 26084, line number = 529, charPositionInLine = 13
+Reference: Object = parted_conflict_1 (TABLE), action = CREATE, offset = 26153, line number = 530, charPositionInLine = 13
+Reference: Object = parted_conflict_1_1 (TABLE), action = CREATE, offset = 26267, line number = 531, charPositionInLine = 13
+Reference: Object = parted_conflict_1 (TABLE), action = null, offset = 26376, line number = 532, charPositionInLine = 28
+Reference: Object = parted_conflict (TABLE), action = null, offset = 26427, line number = 533, charPositionInLine = 28
+Reference: Object = parted_conflict_1_a_idx (INDEX), action = ALTER, offset = 26499, line number = 534, charPositionInLine = 51
+Reference: Object = parted_conflict (TABLE), action = INSERT, offset = 26536, line number = 535, charPositionInLine = 12
+Reference: Object = parted_conflict_1 (TABLE), action = INSERT, offset = 26586, line number = 536, charPositionInLine = 12
+Reference: Object = parted_conflict (TABLE), action = DROP, offset = 26687, line number = 538, charPositionInLine = 11
+Reference: Object = parted_conflict (TABLE), action = CREATE, offset = 26768, line number = 541, charPositionInLine = 13
+Reference: Object = parted_conflict_1 (TABLE), action = CREATE, offset = 26844, line number = 542, charPositionInLine = 13
+Reference: Object = parted_conflict_1 (TABLE), action = ALTER, offset = 26908, line number = 543, charPositionInLine = 12
+Reference: Object = parted_conflict (TABLE), action = null, offset = 26966, line number = 544, charPositionInLine = 23
+Reference: Object = parted_conflict (TABLE), action = ALTER, offset = 27002, line number = 545, charPositionInLine = 12
+Reference: action = TRUNCATE, offset = 27084, line number = 546, charPositionInLine = 0
+Reference: Object = parted_conflict (TABLE), action = INSERT, offset = 27122, line number = 547, charPositionInLine = 12
+Reference: Object = parted_conflict (TABLE), action = INSERT, offset = 27179, line number = 548, charPositionInLine = 12
+Reference: action = SELECT, offset = 27424, line number = 554, charPositionInLine = 0
+Reference: Object = parted_conflict_update_func() (FUNCTION), action = CREATE, offset = 27532, line number = 557, charPositionInLine = 27
+Reference: Object = parted_conflict.parted_conflict_update (TRIGGER), action = CREATE, offset = 27768, line number = 568, charPositionInLine = 15
+Reference: Object = parted_conflict (TABLE), action = null, offset = 27811, line number = 569, charPositionInLine = 20
+Reference: action = TRUNCATE, offset = 27942, line number = 574, charPositionInLine = 0
+Reference: Object = parted_conflict (TABLE), action = INSERT, offset = 27981, line number = 576, charPositionInLine = 12
+Reference: Object = parted_conflict (TABLE), action = INSERT, offset = 28033, line number = 578, charPositionInLine = 12
+Reference: Object = parted_conflict (TABLE), action = DROP, offset = 28143, line number = 581, charPositionInLine = 11
+Reference: Object = parted_conflict_update_func (FUNCTION), action = DROP, offset = 28174, line number = 582, charPositionInLine = 14

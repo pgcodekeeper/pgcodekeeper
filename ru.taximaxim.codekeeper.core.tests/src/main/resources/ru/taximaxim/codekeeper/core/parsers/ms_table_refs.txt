@@ -1,0 +1,36 @@
+Reference: Object = dbo (SCHEMA), action = null, offset = 46, line number = 2, charPositionInLine = 13
+Reference: Object = dbo."Employee" (TABLE), action = CREATE, offset = 50, line number = 2, charPositionInLine = 17
+Reference: Object = dbo (SCHEMA), action = null, offset = 227, line number = 9, charPositionInLine = 13
+Reference: Object = dbo."Employee" (TABLE), action = CREATE, offset = 231, line number = 9, charPositionInLine = 17
+Reference: Object = "SpecialOfferProduct" (TABLE), action = null, offset = 432, line number = 15, charPositionInLine = 13
+Reference: Object = "#TestTable" (TABLE), action = CREATE, offset = 556, line number = 21, charPositionInLine = 13
+Reference: Object = "#TestTable" (TABLE), action = CREATE, offset = 709, line number = 27, charPositionInLine = 13
+Reference: Object = dbo (SCHEMA), action = null, offset = 1123, line number = 44, charPositionInLine = 13
+Reference: Object = dbo."TestTable" (TABLE), action = CREATE, offset = 1127, line number = 44, charPositionInLine = 17
+Reference: Object = dbo (SCHEMA), action = null, offset = 1358, line number = 51, charPositionInLine = 13
+Reference: Object = dbo."TestTable" (TABLE), action = CREATE, offset = 1362, line number = 51, charPositionInLine = 17
+Reference: action = IF, offset = 1723, line number = 62, charPositionInLine = 0
+Reference: action = IF, offset = 2109, line number = 75, charPositionInLine = 0
+Reference: Object = dbo (SCHEMA), action = null, offset = 2557, line number = 89, charPositionInLine = 12
+Reference: Object = dbo."TestTable" (TABLE), action = ALTER, offset = 2561, line number = 89, charPositionInLine = 16
+Reference: Object = dbo."TestTable"."DF_ModifiedDateUTC" (CONSTRAINT), action = CREATE, offset = 2586, line number = 89, charPositionInLine = 41
+Reference: Object = dbo (SCHEMA), action = null, offset = 2692, line number = 93, charPositionInLine = 12
+Reference: Object = dbo."TestTable" (TABLE), action = ALTER, offset = 2696, line number = 93, charPositionInLine = 16
+Reference: Object = "TestTable" (TABLE), action = ALTER, offset = 2802, line number = 97, charPositionInLine = 12
+Reference: Object = dbo (SCHEMA), action = null, offset = 2931, line number = 101, charPositionInLine = 13
+Reference: Object = dbo."TestTable" (TABLE), action = CREATE, offset = 2937, line number = 101, charPositionInLine = 19
+Reference: Object = dbo (SCHEMA), action = null, offset = 3214, line number = 111, charPositionInLine = 13
+Reference: Object = dbo."TestTable" (TABLE), action = CREATE, offset = 3220, line number = 111, charPositionInLine = 19
+Reference: action = IF, offset = 3417, line number = 119, charPositionInLine = 0
+Reference: Object = "TestTable" (TABLE), action = ALTER, offset = 3743, line number = 131, charPositionInLine = 12
+Reference: Object = "TestTable" (TABLE), action = ALTER, offset = 3890, line number = 137, charPositionInLine = 12
+Reference: Object = dbo (SCHEMA), action = null, offset = 4024, line number = 143, charPositionInLine = 12
+Reference: Object = dbo."TestTable" (TABLE), action = ALTER, offset = 4028, line number = 143, charPositionInLine = 16
+Reference: Object = dbo."TestTable"."DF_TestTable_Value" (CONSTRAINT), action = CREATE, offset = 4056, line number = 144, charPositionInLine = 17
+Reference: Object = dbo (SCHEMA), action = null, offset = 4171, line number = 149, charPositionInLine = 12
+Reference: Object = dbo."TestTable" (TABLE), action = ALTER, offset = 4175, line number = 149, charPositionInLine = 16
+Reference: Object = dbo."TestTable"."DF_Name" (CONSTRAINT), action = CREATE, offset = 4202, line number = 150, charPositionInLine = 17
+Reference: Object = "Source" (TABLE), action = ALTER, offset = 4321, line number = 156, charPositionInLine = 12
+Reference: Object = "Source" (TABLE), action = ALTER, offset = 4384, line number = 158, charPositionInLine = 12
+Reference: Object = "Source" (TABLE), action = ALTER, offset = 4435, line number = 160, charPositionInLine = 12
+Reference: Object = "Source" (TABLE), action = ALTER, offset = 4567, line number = 162, charPositionInLine = 12

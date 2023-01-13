@@ -1,0 +1,60 @@
+Reference: Object = case_tbl (TABLE), action = CREATE, offset = 55, line number = 6, charPositionInLine = 13
+Reference: Object = case2_tbl (TABLE), action = CREATE, offset = 117, line number = 11, charPositionInLine = 13
+Reference: Object = case_tbl (TABLE), action = INSERT, offset = 170, line number = 16, charPositionInLine = 12
+Reference: Object = case_tbl (TABLE), action = INSERT, offset = 209, line number = 17, charPositionInLine = 12
+Reference: Object = case_tbl (TABLE), action = INSERT, offset = 248, line number = 18, charPositionInLine = 12
+Reference: Object = case_tbl (TABLE), action = INSERT, offset = 288, line number = 19, charPositionInLine = 12
+Reference: Object = case2_tbl (TABLE), action = INSERT, offset = 328, line number = 21, charPositionInLine = 12
+Reference: Object = case2_tbl (TABLE), action = INSERT, offset = 366, line number = 22, charPositionInLine = 12
+Reference: Object = case2_tbl (TABLE), action = INSERT, offset = 404, line number = 23, charPositionInLine = 12
+Reference: Object = case2_tbl (TABLE), action = INSERT, offset = 442, line number = 24, charPositionInLine = 12
+Reference: Object = case2_tbl (TABLE), action = INSERT, offset = 480, line number = 25, charPositionInLine = 12
+Reference: Object = case2_tbl (TABLE), action = INSERT, offset = 520, line number = 26, charPositionInLine = 12
+Reference: action = SELECT, offset = 593, line number = 32, charPositionInLine = 0
+Reference: action = SELECT, offset = 668, line number = 37, charPositionInLine = 0
+Reference: action = SELECT, offset = 751, line number = 42, charPositionInLine = 0
+Reference: action = SELECT, offset = 837, line number = 48, charPositionInLine = 0
+Reference: action = SELECT, offset = 924, line number = 54, charPositionInLine = 0
+Reference: action = SELECT, offset = 1043, line number = 62, charPositionInLine = 0
+Reference: action = SELECT, offset = 1208, line number = 67, charPositionInLine = 0
+Reference: action = SELECT, offset = 1268, line number = 68, charPositionInLine = 0
+Reference: action = SELECT, offset = 1418, line number = 72, charPositionInLine = 0
+Reference: action = SELECT, offset = 1543, line number = 75, charPositionInLine = 0
+Reference: action = SELECT, offset = 1635, line number = 81, charPositionInLine = 0
+Reference: action = SELECT, offset = 1728, line number = 87, charPositionInLine = 0
+Reference: action = SELECT, offset = 1838, line number = 93, charPositionInLine = 0
+Reference: action = SELECT, offset = 2056, line number = 102, charPositionInLine = 0
+Reference: action = SELECT, offset = 2480, line number = 121, charPositionInLine = 0
+Reference: action = SELECT, offset = 2529, line number = 123, charPositionInLine = 0
+Reference: action = SELECT, offset = 2576, line number = 125, charPositionInLine = 0
+Reference: action = SELECT, offset = 2640, line number = 128, charPositionInLine = 0
+Reference: action = SELECT, offset = 2718, line number = 132, charPositionInLine = 0
+Reference: action = SELECT, offset = 2844, line number = 136, charPositionInLine = 0
+Reference: Object = case_tbl (TABLE), action = UPDATE, offset = 2981, line number = 144, charPositionInLine = 7
+Reference: action = SELECT, offset = 3063, line number = 148, charPositionInLine = 0
+Reference: Object = case_tbl (TABLE), action = UPDATE, offset = 3095, line number = 150, charPositionInLine = 7
+Reference: action = SELECT, offset = 3179, line number = 154, charPositionInLine = 0
+Reference: Object = case_tbl (TABLE), action = UPDATE, offset = 3211, line number = 156, charPositionInLine = 7
+Reference: action = SELECT, offset = 3340, line number = 162, charPositionInLine = 0
+Reference: action = BEGIN, offset = 3974, line number = 177, charPositionInLine = 0
+Reference: Object = vol(text) (FUNCTION), action = CREATE, offset = 3998, line number = 179, charPositionInLine = 16
+Reference: action = SELECT, offset = 4077, line number = 182, charPositionInLine = 0
+Reference: Object = foodomain (DOMAIN), action = CREATE, offset = 4425, line number = 193, charPositionInLine = 14
+Reference: Object = volfoo(text) (FUNCTION), action = CREATE, offset = 4461, line number = 195, charPositionInLine = 16
+Reference: Object = inline_eq(foodomain, foodomain) (FUNCTION), action = CREATE, offset = 4575, line number = 198, charPositionInLine = 16
+Reference: Object = "=" (OPERATOR), action = CREATE, offset = 4721, line number = 201, charPositionInLine = 16
+Reference: action = SELECT, offset = 4811, line number = 204, charPositionInLine = 0
+Reference: action = ROLLBACK, offset = 4897, line number = 206, charPositionInLine = 0
+Reference: action = BEGIN, offset = 5103, line number = 211, charPositionInLine = 0
+Reference: Object = arrdomain (DOMAIN), action = CREATE, offset = 5125, line number = 213, charPositionInLine = 14
+Reference: Object = make_ad(integer, integer) (FUNCTION), action = CREATE, offset = 5162, line number = 215, charPositionInLine = 16
+Reference: Object = ad_eq(arrdomain, arrdomain) (FUNCTION), action = CREATE, offset = 5324, line number = 222, charPositionInLine = 16
+Reference: Object = "=" (OPERATOR), action = CREATE, offset = 5445, line number = 225, charPositionInLine = 16
+Reference: action = SELECT, offset = 5531, line number = 228, charPositionInLine = 0
+Reference: action = ROLLBACK, offset = 5696, line number = 234, charPositionInLine = 0
+Reference: action = BEGIN, offset = 5769, line number = 237, charPositionInLine = 0
+Reference: Object = casetestenum (TYPE), action = CREATE, offset = 5789, line number = 239, charPositionInLine = 12
+Reference: action = SELECT, offset = 5828, line number = 241, charPositionInLine = 0
+Reference: action = ROLLBACK, offset = 5977, line number = 247, charPositionInLine = 0
+Reference: Object = case_tbl (TABLE), action = DROP, offset = 6018, line number = 253, charPositionInLine = 11
+Reference: Object = case2_tbl (TABLE), action = DROP, offset = 6039, line number = 254, charPositionInLine = 11

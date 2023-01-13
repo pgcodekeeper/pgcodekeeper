@@ -1,0 +1,46 @@
+Reference: Object = articles (TABLE), action = CREATE, offset = 95, line number = 3, charPositionInLine = 18
+Reference: Object = articles_in_category (TABLE), action = CREATE, offset = 267, line number = 11, charPositionInLine = 18
+Reference: action = SELECT, offset = 514, line number = 23, charPositionInLine = 0
+Reference: action = SELECT, offset = 624, line number = 28, charPositionInLine = 0
+Reference: action = SELECT, offset = 732, line number = 33, charPositionInLine = 0
+Reference: action = SELECT, offset = 838, line number = 38, charPositionInLine = 0
+Reference: action = SELECT, offset = 963, line number = 45, charPositionInLine = 0
+Reference: action = SELECT, offset = 1182, line number = 51, charPositionInLine = 0
+Reference: action = SELECT, offset = 1452, line number = 59, charPositionInLine = 0
+Reference: action = SELECT, offset = 1674, line number = 65, charPositionInLine = 0
+Reference: action = SELECT, offset = 1944, line number = 71, charPositionInLine = 0
+Reference: action = SELECT, offset = 2179, line number = 77, charPositionInLine = 0
+Reference: Object = products (TABLE), action = CREATE, offset = 2394, line number = 85, charPositionInLine = 18
+Reference: Object = sales (TABLE), action = CREATE, offset = 2465, line number = 86, charPositionInLine = 18
+Reference: action = SELECT, offset = 2507, line number = 89, charPositionInLine = 0
+Reference: action = SELECT, offset = 2676, line number = 94, charPositionInLine = 0
+Reference: Object = products (TABLE), action = ALTER, offset = 2832, line number = 98, charPositionInLine = 12
+Reference: action = SELECT, offset = 2882, line number = 101, charPositionInLine = 0
+Reference: Object = node (TABLE), action = CREATE, offset = 3095, line number = 108, charPositionInLine = 18
+Reference: Object = users (TABLE), action = CREATE, offset = 3424, line number = 120, charPositionInLine = 18
+Reference: action = SELECT, offset = 3617, line number = 130, charPositionInLine = 0
+Reference: action = SELECT, offset = 3756, line number = 136, charPositionInLine = 0
+Reference: Object = fdv1 (VIEW), action = CREATE, offset = 3940, line number = 145, charPositionInLine = 17
+Reference: Object = fdv1 (VIEW), action = CREATE, offset = 4043, line number = 151, charPositionInLine = 17
+Reference: Object = articles (TABLE), action = ALTER, offset = 4141, line number = 157, charPositionInLine = 12
+Reference: Object = articles.articles_pkey (CONSTRAINT), action = DROP, offset = 4166, line number = 157, charPositionInLine = 37
+Reference: Object = fdv1 (VIEW), action = DROP, offset = 4201, line number = 159, charPositionInLine = 10
+Reference: Object = fdv2 (VIEW), action = CREATE, offset = 4251, line number = 163, charPositionInLine = 17
+Reference: Object = articles (TABLE), action = ALTER, offset = 4503, line number = 169, charPositionInLine = 12
+Reference: Object = articles.articles_pkey (CONSTRAINT), action = DROP, offset = 4528, line number = 169, charPositionInLine = 37
+Reference: Object = articles_in_category (TABLE), action = ALTER, offset = 4572, line number = 170, charPositionInLine = 12
+Reference: Object = articles_in_category.articles_in_category_pkey (CONSTRAINT), action = DROP, offset = 4609, line number = 170, charPositionInLine = 49
+Reference: Object = fdv2 (VIEW), action = DROP, offset = 4663, line number = 172, charPositionInLine = 10
+Reference: Object = fdv3 (VIEW), action = CREATE, offset = 4707, line number = 177, charPositionInLine = 17
+Reference: Object = articles (TABLE), action = ALTER, offset = 4871, line number = 186, charPositionInLine = 12
+Reference: Object = articles.articles_pkey (CONSTRAINT), action = DROP, offset = 4896, line number = 186, charPositionInLine = 37
+Reference: Object = fdv3 (VIEW), action = DROP, offset = 4939, line number = 188, charPositionInLine = 10
+Reference: Object = fdv4 (VIEW), action = CREATE, offset = 4964, line number = 191, charPositionInLine = 17
+Reference: Object = articles (TABLE), action = ALTER, offset = 5065, line number = 194, charPositionInLine = 12
+Reference: Object = articles.articles_pkey (CONSTRAINT), action = DROP, offset = 5090, line number = 194, charPositionInLine = 37
+Reference: Object = fdv4 (VIEW), action = DROP, offset = 5133, line number = 196, charPositionInLine = 10
+Reference: action = PREPARE, offset = 5200, line number = 201, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 5291, line number = 206, charPositionInLine = 0
+Reference: Object = articles (TABLE), action = ALTER, offset = 5317, line number = 208, charPositionInLine = 12
+Reference: Object = articles.articles_pkey (CONSTRAINT), action = DROP, offset = 5342, line number = 208, charPositionInLine = 37
+Reference: action = EXECUTE, offset = 5367, line number = 210, charPositionInLine = 0

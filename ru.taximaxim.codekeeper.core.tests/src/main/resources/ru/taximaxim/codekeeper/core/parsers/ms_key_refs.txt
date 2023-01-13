@@ -1,0 +1,25 @@
+Reference: action = CREATE COLUMN MASTER KEY, offset = 0, line number = 1, charPositionInLine = 0
+Reference: action = CREATE COLUMN MASTER KEY, offset = 196, line number = 7, charPositionInLine = 0
+Reference: action = CREATE COLUMN MASTER KEY, offset = 344, line number = 12, charPositionInLine = 0
+Reference: action = CREATE COLUMN MASTER KEY, offset = 541, line number = 17, charPositionInLine = 0
+Reference: action = ALTER ASYMMETRIC KEY, offset = 689, line number = 23, charPositionInLine = 0
+Reference: action = ALTER ASYMMETRIC KEY, offset = 844, line number = 28, charPositionInLine = 0
+Reference: action = ALTER ASYMMETRIC KEY, offset = 975, line number = 31, charPositionInLine = 0
+Reference: action = CREATE ASYMMETRIC KEY, offset = 1089, line number = 34, charPositionInLine = 0
+Reference: action = CREATE ASYMMETRIC KEY, offset = 1217, line number = 38, charPositionInLine = 0
+Reference: action = CREATE ASYMMETRIC KEY, offset = 1397, line number = 42, charPositionInLine = 0
+Reference: action = ALTER COLUMN ENCRYPTION KEY, offset = 1577, line number = 46, charPositionInLine = 0
+Reference: action = ALTER COLUMN ENCRYPTION KEY, offset = 2986, line number = 54, charPositionInLine = 0
+Reference: action = CREATE COLUMN ENCRYPTION KEY, offset = 3069, line number = 60, charPositionInLine = 0
+Reference: action = ALTER MASTER KEY, offset = 5840, line number = 73, charPositionInLine = 0
+Reference: action = USE, offset = 5933, line number = 75, charPositionInLine = 0
+Reference: action = ALTER MASTER KEY, offset = 5945, line number = 76, charPositionInLine = 0
+Reference: action = CREATE MASTER KEY, offset = 6040, line number = 78, charPositionInLine = 0
+Reference: action = BACKUP, offset = 6112, line number = 80, charPositionInLine = 0
+Reference: action = BACKUP, offset = 6230, line number = 84, charPositionInLine = 0
+Reference: action = ALTER SERVICE MASTER KEY, offset = 6363, line number = 85, charPositionInLine = 0
+Reference: action = ALTER SYMMETRIC KEY, offset = 6403, line number = 87, charPositionInLine = 0
+Reference: action = ALTER SYMMETRIC KEY, offset = 6551, line number = 90, charPositionInLine = 0
+Reference: action = CREATE SYMMETRIC KEY, offset = 6637, line number = 92, charPositionInLine = 0
+Reference: action = CREATE SYMMETRIC KEY, offset = 6746, line number = 96, charPositionInLine = 0
+Reference: action = CREATE SYMMETRIC KEY, offset = 6977, line number = 103, charPositionInLine = 0

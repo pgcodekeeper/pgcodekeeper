@@ -1,0 +1,4 @@
+Reference: Object = "sikorskiy_da SERVER server" (USER_MAPPING), action = CREATE, offset = 24, line number = 1, charPositionInLine = 24
+Reference: Object = server (SERVER), action = null, offset = 44, line number = 1, charPositionInLine = 44
+Reference: Object = "sikorskiy_da SERVER server" (USER_MAPPING), action = ALTER, offset = 76, line number = 3, charPositionInLine = 23
+Reference: Object = "sikorskiy_da SERVER server" (USER_MAPPING), action = DROP, offset = 159, line number = 5, charPositionInLine = 22

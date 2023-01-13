@@ -1,0 +1,128 @@
+Reference: action = USE, offset = 0, line number = 1, charPositionInLine = 0
+Reference: action = IF, offset = 27, line number = 3, charPositionInLine = 0
+Reference: action = IF, offset = 102, line number = 6, charPositionInLine = 0
+Reference: Object = dbo (SCHEMA), action = null, offset = 190, line number = 9, charPositionInLine = 13
+Reference: Object = dbo."Table1" (TABLE), action = CREATE, offset = 194, line number = 9, charPositionInLine = 17
+Reference: Object = dbo (SCHEMA), action = null, offset = 272, line number = 12, charPositionInLine = 13
+Reference: Object = dbo."Table2" (TABLE), action = CREATE, offset = 276, line number = 12, charPositionInLine = 17
+Reference: Object = dbo (SCHEMA), action = null, offset = 365, line number = 15, charPositionInLine = 12
+Reference: Object = dbo."Table1" (TABLE), action = INSERT, offset = 369, line number = 15, charPositionInLine = 16
+Reference: Object = dbo (SCHEMA), action = null, offset = 416, line number = 16, charPositionInLine = 12
+Reference: Object = dbo."Table2" (TABLE), action = INSERT, offset = 420, line number = 16, charPositionInLine = 16
+Reference: Object = dbo (SCHEMA), action = null, offset = 453, line number = 18, charPositionInLine = 7
+Reference: Object = dbo."Table2" (TABLE), action = UPDATE, offset = 457, line number = 18, charPositionInLine = 11
+Reference: action = SELECT, offset = 612, line number = 24, charPositionInLine = 0
+Reference: action = USE, offset = 649, line number = 27, charPositionInLine = 0
+Reference: action = DECLARE, offset = 732, line number = 30, charPositionInLine = 0
+Reference: action = DECLARE, offset = 770, line number = 31, charPositionInLine = 0
+Reference: Object = x (TABLE), action = UPDATE, offset = 918, line number = 36, charPositionInLine = 7
+Reference: action = SELECT, offset = 1054, line number = 40, charPositionInLine = 0
+Reference: action = USE, offset = 1184, line number = 46, charPositionInLine = 0
+Reference: Object = "Person" (SCHEMA), action = null, offset = 1218, line number = 48, charPositionInLine = 7
+Reference: Object = "Person"."Address" (TABLE), action = UPDATE, offset = 1225, line number = 48, charPositionInLine = 14
+Reference: action = USE, offset = 1366, line number = 54, charPositionInLine = 0
+Reference: Object = "Sales" (SCHEMA), action = null, offset = 1400, line number = 56, charPositionInLine = 7
+Reference: Object = "Sales"."SalesPerson" (TABLE), action = UPDATE, offset = 1406, line number = 56, charPositionInLine = 13
+Reference: action = USE, offset = 1579, line number = 63, charPositionInLine = 0
+Reference: Object = "Production" (SCHEMA), action = null, offset = 1613, line number = 65, charPositionInLine = 7
+Reference: Object = "Production"."Product" (TABLE), action = UPDATE, offset = 1624, line number = 65, charPositionInLine = 18
+Reference: action = USE, offset = 1810, line number = 73, charPositionInLine = 0
+Reference: Object = "Production" (SCHEMA), action = null, offset = 1844, line number = 75, charPositionInLine = 7
+Reference: Object = "Production"."Product" (TABLE), action = UPDATE, offset = 1855, line number = 75, charPositionInLine = 18
+Reference: Object = "HumanResources" (SCHEMA), action = null, offset = 1951, line number = 80, charPositionInLine = 7
+Reference: Object = "HumanResources"."Employee" (TABLE), action = UPDATE, offset = 1966, line number = 80, charPositionInLine = 22
+Reference: action = USE, offset = 2309, line number = 90, charPositionInLine = 0
+Reference: Object = "Production" (SCHEMA), action = null, offset = 2918, line number = 107, charPositionInLine = 7
+Reference: Object = "Production"."BillOfMaterials" (TABLE), action = UPDATE, offset = 2929, line number = 107, charPositionInLine = 18
+Reference: action = USE, offset = 3218, line number = 116, charPositionInLine = 0
+Reference: action = DECLARE, offset = 3245, line number = 118, charPositionInLine = 0
+Reference: action = OPEN, offset = 3536, line number = 125, charPositionInLine = 0
+Reference: action = FETCH, offset = 3557, line number = 126, charPositionInLine = 0
+Reference: Object = "HumanResources" (SCHEMA), action = null, offset = 3591, line number = 127, charPositionInLine = 7
+Reference: Object = "HumanResources"."EmployeePayHistory" (TABLE), action = UPDATE, offset = 3606, line number = 127, charPositionInLine = 22
+Reference: action = CLOSE, offset = 3680, line number = 130, charPositionInLine = 0
+Reference: action = DEALLOCATE, offset = 3702, line number = 131, charPositionInLine = 0
+Reference: action = USE, offset = 3837, line number = 137, charPositionInLine = 0
+Reference: Object = "Production" (SCHEMA), action = null, offset = 3872, line number = 139, charPositionInLine = 7
+Reference: Object = "Production"."Product" (TABLE), action = UPDATE, offset = 3883, line number = 139, charPositionInLine = 18
+Reference: action = USE, offset = 4033, line number = 146, charPositionInLine = 0
+Reference: action = DECLARE, offset = 4060, line number = 148, charPositionInLine = 0
+Reference: Object = "Production" (SCHEMA), action = null, offset = 4095, line number = 149, charPositionInLine = 7
+Reference: Object = "Production"."Product" (TABLE), action = UPDATE, offset = 4106, line number = 149, charPositionInLine = 18
+Reference: action = USE, offset = 4283, line number = 157, charPositionInLine = 0
+Reference: Object = "Sales" (SCHEMA), action = null, offset = 4317, line number = 159, charPositionInLine = 7
+Reference: Object = "Sales"."SalesPerson" (TABLE), action = UPDATE, offset = 4323, line number = 159, charPositionInLine = 13
+Reference: action = USE, offset = 4824, line number = 173, charPositionInLine = 0
+Reference: Object = "Production" (SCHEMA), action = null, offset = 4858, line number = 175, charPositionInLine = 7
+Reference: Object = "Production"."Location" (TABLE), action = UPDATE, offset = 4869, line number = 175, charPositionInLine = 18
+Reference: action = USE, offset = 5041, line number = 182, charPositionInLine = 0
+Reference: Object = "Person" (SCHEMA), action = null, offset = 5075, line number = 184, charPositionInLine = 7
+Reference: Object = "Person"."vStateProvinceCountryRegion" (TABLE), action = UPDATE, offset = 5082, line number = 184, charPositionInLine = 14
+Reference: action = USE, offset = 5327, line number = 191, charPositionInLine = 0
+Reference: Object = sr (TABLE), action = UPDATE, offset = 5361, line number = 193, charPositionInLine = 7
+Reference: action = USE, offset = 5670, line number = 203, charPositionInLine = 0
+Reference: action = DECLARE, offset = 5727, line number = 206, charPositionInLine = 0
+Reference: action = SELECT, offset = 6261, line number = 223, charPositionInLine = 0
+Reference: action = USE, offset = 6482, line number = 230, charPositionInLine = 0
+Reference: Object = "Sales" (SCHEMA), action = null, offset = 6516, line number = 232, charPositionInLine = 7
+Reference: Object = "Sales"."SalesPerson" (TABLE), action = UPDATE, offset = 6522, line number = 232, charPositionInLine = 13
+Reference: action = USE, offset = 6981, line number = 245, charPositionInLine = 0
+Reference: action = EXEC, offset = 7135, line number = 250, charPositionInLine = 0
+Reference: action = USE, offset = 7315, line number = 256, charPositionInLine = 0
+Reference: Object = "HumanResources" (SCHEMA), action = null, offset = 7492, line number = 261, charPositionInLine = 39
+Reference: Object = "HumanResources"."Department" (TABLE), action = UPDATE, offset = 7507, line number = 261, charPositionInLine = 54
+Reference: action = USE, offset = 8317, line number = 281, charPositionInLine = 0
+Reference: action = DECLARE, offset = 8344, line number = 283, charPositionInLine = 0
+Reference: Object = "Production" (SCHEMA), action = null, offset = 8445, line number = 286, charPositionInLine = 7
+Reference: Object = "Production"."Document" (TABLE), action = UPDATE, offset = 8456, line number = 286, charPositionInLine = 18
+Reference: action = SELECT, offset = 8654, line number = 292, charPositionInLine = 0
+Reference: action = USE, offset = 8785, line number = 300, charPositionInLine = 0
+Reference: Object = "Production" (SCHEMA), action = null, offset = 8864, line number = 303, charPositionInLine = 7
+Reference: Object = "Production"."Document" (TABLE), action = UPDATE, offset = 8875, line number = 303, charPositionInLine = 18
+Reference: action = SELECT, offset = 8982, line number = 307, charPositionInLine = 0
+Reference: Object = "Production" (SCHEMA), action = null, offset = 9224, line number = 313, charPositionInLine = 7
+Reference: Object = "Production"."Document" (TABLE), action = UPDATE, offset = 9235, line number = 313, charPositionInLine = 18
+Reference: action = SELECT, offset = 9391, line number = 317, charPositionInLine = 0
+Reference: Object = "Production" (SCHEMA), action = null, offset = 9585, line number = 323, charPositionInLine = 7
+Reference: Object = "Production"."Document" (TABLE), action = UPDATE, offset = 9596, line number = 323, charPositionInLine = 18
+Reference: action = SELECT, offset = 9740, line number = 327, charPositionInLine = 0
+Reference: Object = "Production" (SCHEMA), action = null, offset = 9951, line number = 333, charPositionInLine = 7
+Reference: Object = "Production"."Document" (TABLE), action = UPDATE, offset = 9962, line number = 333, charPositionInLine = 18
+Reference: action = SELECT, offset = 10064, line number = 337, charPositionInLine = 0
+Reference: Object = "Production" (SCHEMA), action = null, offset = 10252, line number = 343, charPositionInLine = 7
+Reference: Object = "Production"."Document" (TABLE), action = UPDATE, offset = 10263, line number = 343, charPositionInLine = 18
+Reference: action = SELECT, offset = 10362, line number = 347, charPositionInLine = 0
+Reference: action = USE, offset = 10603, line number = 355, charPositionInLine = 0
+Reference: Object = "Production" (SCHEMA), action = null, offset = 10637, line number = 357, charPositionInLine = 7
+Reference: Object = "Production"."ProductPhoto" (TABLE), action = UPDATE, offset = 10648, line number = 357, charPositionInLine = 18
+Reference: Object = dbo (SCHEMA), action = null, offset = 10918, line number = 367, charPositionInLine = 15
+Reference: Object = dbo."Records" (TABLE), action = UPDATE, offset = 10922, line number = 367, charPositionInLine = 19
+Reference: Object = dbo (SCHEMA), action = null, offset = 11112, line number = 374, charPositionInLine = 7
+Reference: Object = dbo."Cities" (TABLE), action = UPDATE, offset = 11116, line number = 374, charPositionInLine = 11
+Reference: Object = dbo (SCHEMA), action = null, offset = 11294, line number = 381, charPositionInLine = 7
+Reference: Object = dbo."Cities" (TABLE), action = UPDATE, offset = 11298, line number = 381, charPositionInLine = 11
+Reference: Object = dbo (SCHEMA), action = null, offset = 11495, line number = 388, charPositionInLine = 7
+Reference: Object = dbo."Cities" (TABLE), action = UPDATE, offset = 11499, line number = 388, charPositionInLine = 11
+Reference: action = USE, offset = 11655, line number = 395, charPositionInLine = 0
+Reference: Object = "Production" (SCHEMA), action = null, offset = 11689, line number = 397, charPositionInLine = 7
+Reference: Object = "Production"."Product" (TABLE), action = UPDATE, offset = 11700, line number = 397, charPositionInLine = 18
+Reference: action = USE, offset = 11893, line number = 406, charPositionInLine = 0
+Reference: Object = "Production" (SCHEMA), action = null, offset = 11937, line number = 408, charPositionInLine = 17
+Reference: Object = "Production".uspProductUpdate (PROCEDURE), action = CREATE, offset = 11948, line number = 408, charPositionInLine = 28
+Reference: action = EXEC, offset = 12179, line number = 418, charPositionInLine = 0
+Reference: action = USE, offset = 12333, line number = 423, charPositionInLine = 0
+Reference: action = DECLARE, offset = 12360, line number = 425, charPositionInLine = 0
+Reference: Object = "HumanResources" (SCHEMA), action = null, offset = 12507, line number = 430, charPositionInLine = 16
+Reference: Object = "HumanResources"."Employee" (TABLE), action = UPDATE, offset = 12522, line number = 430, charPositionInLine = 31
+Reference: action = SELECT, offset = 12793, line number = 439, charPositionInLine = 0
+Reference: action = SELECT, offset = 12916, line number = 443, charPositionInLine = 0
+Reference: action = USE, offset = 13123, line number = 450, charPositionInLine = 0
+Reference: Object = "HumanResources" (SCHEMA), action = null, offset = 13167, line number = 452, charPositionInLine = 17
+Reference: Object = "HumanResources".Update_VacationHours (PROCEDURE), action = CREATE, offset = 13182, line number = 452, charPositionInLine = 32
+Reference: action = EXEC, offset = 13435, line number = 466, charPositionInLine = 0
+Reference: action = USE, offset = 13591, line number = 471, charPositionInLine = 0
+Reference: action = BEGIN TRANSACTION, offset = 13618, line number = 473, charPositionInLine = 0
+Reference: action = BEGIN, offset = 13638, line number = 475, charPositionInLine = 0
+Reference: action = IF, offset = 14152, line number = 494, charPositionInLine = 0
+Reference: action = SET, offset = 14211, line number = 499, charPositionInLine = 0
+Reference: action = SELECT, offset = 14227, line number = 500, charPositionInLine = 0

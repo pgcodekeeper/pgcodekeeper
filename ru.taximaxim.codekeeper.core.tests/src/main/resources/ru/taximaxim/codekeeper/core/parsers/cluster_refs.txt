@@ -1,0 +1,142 @@
+Reference: Object = clstr_tst_s (TABLE), action = CREATE, offset = 32, line number = 5, charPositionInLine = 13
+Reference: Object = clstr_tst (TABLE), action = CREATE, offset = 93, line number = 8, charPositionInLine = 13
+Reference: Object = clstr_tst_s (TABLE), action = null, offset = 205, line number = 12, charPositionInLine = 53
+Reference: Object = clstr_tst_b (INDEX), action = CREATE, offset = 233, line number = 14, charPositionInLine = 13
+Reference: Object = clstr_tst (TABLE), action = null, offset = 248, line number = 14, charPositionInLine = 28
+Reference: Object = clstr_tst_c (INDEX), action = CREATE, offset = 276, line number = 15, charPositionInLine = 13
+Reference: Object = clstr_tst (TABLE), action = null, offset = 291, line number = 15, charPositionInLine = 28
+Reference: Object = clstr_tst_c_b (INDEX), action = CREATE, offset = 319, line number = 16, charPositionInLine = 13
+Reference: Object = clstr_tst (TABLE), action = null, offset = 336, line number = 16, charPositionInLine = 30
+Reference: Object = clstr_tst_b_c (INDEX), action = CREATE, offset = 366, line number = 17, charPositionInLine = 13
+Reference: Object = clstr_tst (TABLE), action = null, offset = 383, line number = 17, charPositionInLine = 30
+Reference: Object = clstr_tst_s (TABLE), action = INSERT, offset = 413, line number = 19, charPositionInLine = 12
+Reference: Object = clstr_tst_s (TABLE), action = INSERT, offset = 453, line number = 20, charPositionInLine = 12
+Reference: Object = clstr_tst_s (TABLE), action = INSERT, offset = 508, line number = 21, charPositionInLine = 12
+Reference: Object = clstr_tst_s (TABLE), action = INSERT, offset = 563, line number = 22, charPositionInLine = 12
+Reference: Object = clstr_tst_s (TABLE), action = INSERT, offset = 618, line number = 23, charPositionInLine = 12
+Reference: Object = clstr_tst_s (TABLE), action = INSERT, offset = 673, line number = 24, charPositionInLine = 12
+Reference: Object = clstr_tst_inh (TABLE), action = CREATE, offset = 730, line number = 26, charPositionInLine = 13
+Reference: Object = clstr_tst (TABLE), action = INSERT, offset = 782, line number = 28, charPositionInLine = 12
+Reference: Object = clstr_tst (TABLE), action = INSERT, offset = 832, line number = 29, charPositionInLine = 12
+Reference: Object = clstr_tst (TABLE), action = INSERT, offset = 882, line number = 30, charPositionInLine = 12
+Reference: Object = clstr_tst (TABLE), action = INSERT, offset = 941, line number = 31, charPositionInLine = 12
+Reference: Object = clstr_tst (TABLE), action = INSERT, offset = 996, line number = 32, charPositionInLine = 12
+Reference: Object = clstr_tst (TABLE), action = INSERT, offset = 1045, line number = 33, charPositionInLine = 12
+Reference: Object = clstr_tst (TABLE), action = INSERT, offset = 1097, line number = 34, charPositionInLine = 12
+Reference: Object = clstr_tst (TABLE), action = INSERT, offset = 1153, line number = 35, charPositionInLine = 12
+Reference: Object = clstr_tst (TABLE), action = INSERT, offset = 1208, line number = 36, charPositionInLine = 12
+Reference: Object = clstr_tst (TABLE), action = INSERT, offset = 1259, line number = 37, charPositionInLine = 12
+Reference: Object = clstr_tst (TABLE), action = INSERT, offset = 1312, line number = 38, charPositionInLine = 12
+Reference: Object = clstr_tst (TABLE), action = INSERT, offset = 1360, line number = 39, charPositionInLine = 12
+Reference: Object = clstr_tst (TABLE), action = INSERT, offset = 1415, line number = 40, charPositionInLine = 12
+Reference: Object = clstr_tst (TABLE), action = INSERT, offset = 1472, line number = 41, charPositionInLine = 12
+Reference: Object = clstr_tst (TABLE), action = INSERT, offset = 1529, line number = 42, charPositionInLine = 12
+Reference: Object = clstr_tst (TABLE), action = INSERT, offset = 1580, line number = 43, charPositionInLine = 12
+Reference: Object = clstr_tst (TABLE), action = INSERT, offset = 1636, line number = 44, charPositionInLine = 12
+Reference: Object = clstr_tst (TABLE), action = INSERT, offset = 1695, line number = 45, charPositionInLine = 12
+Reference: Object = clstr_tst (TABLE), action = INSERT, offset = 1745, line number = 46, charPositionInLine = 12
+Reference: Object = clstr_tst (TABLE), action = INSERT, offset = 1802, line number = 47, charPositionInLine = 12
+Reference: Object = clstr_tst (TABLE), action = INSERT, offset = 1850, line number = 48, charPositionInLine = 12
+Reference: Object = clstr_tst (TABLE), action = INSERT, offset = 1908, line number = 49, charPositionInLine = 12
+Reference: Object = clstr_tst (TABLE), action = INSERT, offset = 1961, line number = 50, charPositionInLine = 12
+Reference: Object = clstr_tst (TABLE), action = INSERT, offset = 2011, line number = 51, charPositionInLine = 12
+Reference: Object = clstr_tst (TABLE), action = INSERT, offset = 2067, line number = 52, charPositionInLine = 12
+Reference: Object = clstr_tst (TABLE), action = INSERT, offset = 2117, line number = 53, charPositionInLine = 12
+Reference: Object = clstr_tst (TABLE), action = INSERT, offset = 2173, line number = 54, charPositionInLine = 12
+Reference: Object = clstr_tst (TABLE), action = INSERT, offset = 2229, line number = 55, charPositionInLine = 12
+Reference: Object = clstr_tst (TABLE), action = INSERT, offset = 2281, line number = 56, charPositionInLine = 12
+Reference: Object = clstr_tst (TABLE), action = INSERT, offset = 2331, line number = 57, charPositionInLine = 12
+Reference: Object = clstr_tst (TABLE), action = INSERT, offset = 2386, line number = 58, charPositionInLine = 12
+Reference: Object = clstr_tst (TABLE), action = INSERT, offset = 2509, line number = 60, charPositionInLine = 12
+Reference: action = CLUSTER, offset = 2575, line number = 62, charPositionInLine = 0
+Reference: action = SELECT, offset = 2610, line number = 64, charPositionInLine = 0
+Reference: action = SELECT, offset = 2670, line number = 65, charPositionInLine = 0
+Reference: action = SELECT, offset = 2741, line number = 66, charPositionInLine = 0
+Reference: action = SELECT, offset = 2812, line number = 67, charPositionInLine = 0
+Reference: Object = clstr_tst_inh (TABLE), action = INSERT, offset = 2940, line number = 70, charPositionInLine = 12
+Reference: action = SELECT, offset = 2989, line number = 71, charPositionInLine = 0
+Reference: Object = clstr_tst (TABLE), action = INSERT, offset = 3106, line number = 74, charPositionInLine = 12
+Reference: action = SELECT, offset = 3159, line number = 76, charPositionInLine = 0
+Reference: action = SELECT, offset = 3246, line number = 80, charPositionInLine = 0
+Reference: action = SELECT, offset = 3460, line number = 85, charPositionInLine = 0
+Reference: Object = clstr_tst (TABLE), action = ALTER, offset = 3694, line number = 92, charPositionInLine = 12
+Reference: action = SELECT, offset = 3730, line number = 93, charPositionInLine = 0
+Reference: Object = clstr_tst (TABLE), action = ALTER, offset = 3967, line number = 100, charPositionInLine = 12
+Reference: action = SELECT, offset = 3998, line number = 101, charPositionInLine = 0
+Reference: action = CREATE USER, offset = 4262, line number = 108, charPositionInLine = 0
+Reference: Object = clstr_1 (TABLE), action = CREATE, offset = 4307, line number = 109, charPositionInLine = 13
+Reference: Object = clstr_2 (TABLE), action = CREATE, offset = 4349, line number = 110, charPositionInLine = 13
+Reference: Object = clstr_3 (TABLE), action = CREATE, offset = 4391, line number = 111, charPositionInLine = 13
+Reference: Object = clstr_1 (TABLE), action = ALTER, offset = 4432, line number = 112, charPositionInLine = 12
+Reference: Object = clstr_3 (TABLE), action = ALTER, offset = 4481, line number = 113, charPositionInLine = 12
+Reference: Object = clstr_2 (TABLE), action = GRANT, offset = 4534, line number = 114, charPositionInLine = 16
+Reference: Object = clstr_1 (TABLE), action = INSERT, offset = 4577, line number = 115, charPositionInLine = 12
+Reference: Object = clstr_1 (TABLE), action = INSERT, offset = 4609, line number = 116, charPositionInLine = 12
+Reference: Object = clstr_2 (TABLE), action = INSERT, offset = 4641, line number = 117, charPositionInLine = 12
+Reference: Object = clstr_2 (TABLE), action = INSERT, offset = 4673, line number = 118, charPositionInLine = 12
+Reference: Object = clstr_3 (TABLE), action = INSERT, offset = 4705, line number = 119, charPositionInLine = 12
+Reference: Object = clstr_3 (TABLE), action = INSERT, offset = 4737, line number = 120, charPositionInLine = 12
+Reference: action = CLUSTER, offset = 4821, line number = 123, charPositionInLine = 0
+Reference: action = CLUSTER, offset = 4839, line number = 125, charPositionInLine = 0
+Reference: action = CLUSTER, offset = 4872, line number = 126, charPositionInLine = 0
+Reference: action = SELECT, offset = 4908, line number = 127, charPositionInLine = 0
+Reference: Object = clstr_1 (TABLE), action = DELETE, offset = 5044, line number = 132, charPositionInLine = 12
+Reference: Object = clstr_2 (TABLE), action = DELETE, offset = 5065, line number = 133, charPositionInLine = 12
+Reference: Object = clstr_3 (TABLE), action = DELETE, offset = 5086, line number = 134, charPositionInLine = 12
+Reference: Object = clstr_1 (TABLE), action = INSERT, offset = 5107, line number = 135, charPositionInLine = 12
+Reference: Object = clstr_1 (TABLE), action = INSERT, offset = 5139, line number = 136, charPositionInLine = 12
+Reference: Object = clstr_2 (TABLE), action = INSERT, offset = 5171, line number = 137, charPositionInLine = 12
+Reference: Object = clstr_2 (TABLE), action = INSERT, offset = 5203, line number = 138, charPositionInLine = 12
+Reference: Object = clstr_3 (TABLE), action = INSERT, offset = 5235, line number = 139, charPositionInLine = 12
+Reference: Object = clstr_3 (TABLE), action = INSERT, offset = 5267, line number = 140, charPositionInLine = 12
+Reference: action = SET, offset = 5380, line number = 144, charPositionInLine = 0
+Reference: action = CLUSTER, offset = 5426, line number = 145, charPositionInLine = 0
+Reference: action = SELECT, offset = 5435, line number = 146, charPositionInLine = 0
+Reference: Object = clstr_1 (TABLE), action = DELETE, offset = 5609, line number = 151, charPositionInLine = 12
+Reference: Object = clstr_1 (TABLE), action = INSERT, offset = 5630, line number = 152, charPositionInLine = 12
+Reference: Object = clstr_1 (TABLE), action = INSERT, offset = 5662, line number = 153, charPositionInLine = 12
+Reference: action = CLUSTER, offset = 5682, line number = 154, charPositionInLine = 0
+Reference: action = SELECT, offset = 5699, line number = 155, charPositionInLine = 0
+Reference: Object = clustertest (TABLE), action = CREATE, offset = 5846, line number = 160, charPositionInLine = 13
+Reference: Object = clustertest (TABLE), action = INSERT, offset = 5894, line number = 162, charPositionInLine = 12
+Reference: Object = clustertest (TABLE), action = INSERT, offset = 5931, line number = 163, charPositionInLine = 12
+Reference: Object = clustertest (TABLE), action = INSERT, offset = 5968, line number = 164, charPositionInLine = 12
+Reference: Object = clustertest (TABLE), action = INSERT, offset = 6005, line number = 165, charPositionInLine = 12
+Reference: Object = clustertest (TABLE), action = INSERT, offset = 6042, line number = 166, charPositionInLine = 12
+Reference: action = BEGIN, offset = 6145, line number = 169, charPositionInLine = 0
+Reference: Object = clustertest (TABLE), action = UPDATE, offset = 6228, line number = 172, charPositionInLine = 7
+Reference: Object = clustertest (TABLE), action = UPDATE, offset = 6346, line number = 175, charPositionInLine = 7
+Reference: Object = clustertest (TABLE), action = UPDATE, offset = 6423, line number = 178, charPositionInLine = 7
+Reference: Object = clustertest (TABLE), action = UPDATE, offset = 6471, line number = 179, charPositionInLine = 7
+Reference: Object = clustertest (TABLE), action = UPDATE, offset = 6519, line number = 180, charPositionInLine = 7
+Reference: action = SELECT, offset = 6561, line number = 182, charPositionInLine = 0
+Reference: action = CLUSTER, offset = 6588, line number = 183, charPositionInLine = 0
+Reference: action = SELECT, offset = 6629, line number = 184, charPositionInLine = 0
+Reference: action = COMMIT, offset = 6657, line number = 186, charPositionInLine = 0
+Reference: action = SELECT, offset = 6666, line number = 188, charPositionInLine = 0
+Reference: Object = clstr_temp (TABLE), action = CREATE, offset = 6755, line number = 191, charPositionInLine = 18
+Reference: Object = clstr_temp (TABLE), action = INSERT, offset = 6813, line number = 192, charPositionInLine = 12
+Reference: action = CLUSTER, offset = 6855, line number = 193, charPositionInLine = 0
+Reference: action = SELECT, offset = 6897, line number = 194, charPositionInLine = 0
+Reference: Object = clstr_temp (TABLE), action = DROP, offset = 6934, line number = 195, charPositionInLine = 11
+Reference: action = RESET, offset = 6947, line number = 197, charPositionInLine = 0
+Reference: Object = clstrpart (TABLE), action = CREATE, offset = 7043, line number = 200, charPositionInLine = 13
+Reference: Object = clstrpart_idx (INDEX), action = CREATE, offset = 7098, line number = 201, charPositionInLine = 13
+Reference: Object = clstrpart (TABLE), action = null, offset = 7115, line number = 201, charPositionInLine = 30
+Reference: Object = clstrpart (TABLE), action = ALTER, offset = 7142, line number = 202, charPositionInLine = 12
+Reference: action = CLUSTER, offset = 7178, line number = 203, charPositionInLine = 0
+Reference: Object = clstrpart (TABLE), action = DROP, offset = 7228, line number = 204, charPositionInLine = 11
+Reference: action = CREATE TABLE, offset = 7284, line number = 208, charPositionInLine = 0
+Reference: Object = cluster_sort (INDEX), action = CREATE, offset = 7342, line number = 209, charPositionInLine = 13
+Reference: Object = clstr_4 (TABLE), action = null, offset = 7358, line number = 209, charPositionInLine = 29
+Reference: action = SET, offset = 7466, line number = 211, charPositionInLine = 0
+Reference: action = SET, offset = 7517, line number = 214, charPositionInLine = 0
+Reference: action = CLUSTER, offset = 7551, line number = 215, charPositionInLine = 0
+Reference: action = SELECT, offset = 7587, line number = 216, charPositionInLine = 0
+Reference: action = RESET, offset = 7856, line number = 222, charPositionInLine = 0
+Reference: action = RESET, offset = 7880, line number = 223, charPositionInLine = 0
+Reference: Object = clustertest (TABLE), action = DROP, offset = 7932, line number = 226, charPositionInLine = 11
+Reference: Object = clstr_1 (TABLE), action = DROP, offset = 7956, line number = 227, charPositionInLine = 11
+Reference: Object = clstr_2 (TABLE), action = DROP, offset = 7976, line number = 228, charPositionInLine = 11
+Reference: Object = clstr_3 (TABLE), action = DROP, offset = 7996, line number = 229, charPositionInLine = 11
+Reference: Object = clstr_4 (TABLE), action = DROP, offset = 8016, line number = 230, charPositionInLine = 11
