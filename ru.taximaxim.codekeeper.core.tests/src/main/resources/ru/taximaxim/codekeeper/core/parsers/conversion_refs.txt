@@ -1,0 +1,8 @@
+Reference: action = CREATE CONVERSION, offset = 0, line number = 1, charPositionInLine = 0
+Reference: action = CREATE CONVERSION, offset = 72, line number = 2, charPositionInLine = 0
+Reference: action = CREATE CONVERSION, offset = 206, line number = 5, charPositionInLine = 0
+Reference: action = ALTER CONVERSION, offset = 281, line number = 6, charPositionInLine = 0
+Reference: action = ALTER CONVERSION, offset = 336, line number = 7, charPositionInLine = 0
+Reference: action = ALTER CONVERSION, offset = 408, line number = 8, charPositionInLine = 0
+Reference: action = COMMENT, offset = 463, line number = 9, charPositionInLine = 0
+Reference: action = COMMENT, offset = 506, line number = 10, charPositionInLine = 0

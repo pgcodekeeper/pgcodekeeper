@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
@@ -32,7 +33,7 @@ public final class TestUtils {
 
     public static PgDatabase loadTestDump(String resource, Class<?> c, PgDiffArguments args, boolean analysis)
             throws IOException, InterruptedException {
-        PgDumpLoader loader =  new PgDumpLoader(() -> c.getResourceAsStream(resource),
+        PgDumpLoader loader = new PgDumpLoader(() -> c.getResourceAsStream(resource),
                 "test/" + c.getName() + '/' + resource, args);
         PgDatabase db = analysis ? loader.loadAndAnalyze() : loader.load();
         if (!loader.getErrors().isEmpty()) {
@@ -52,8 +53,8 @@ public final class TestUtils {
         db.addSchema(schema);
         db.setDefaultSchema(schema.getName());
         PgObjLocation loc = new PgObjLocation.Builder()
-                .setObject(new GenericColumn(schema.getName(), DbObjType.SCHEMA))
-                .build();
+            .setObject(new GenericColumn(schema.getName(), DbObjType.SCHEMA))
+            .build();
         schema.setLocation(loc);
         return db;
     }
@@ -68,12 +69,14 @@ public final class TestUtils {
             Class<?> clazz) throws IOException {
         Assertions.assertEquals(
                 TestUtils.inputStreamToString(clazz.getResourceAsStream(
-                        template + FILES_POSTFIX.DIFF_SQL)).trim(),
-                script.trim(), "File name template: " + template);
+                        template + FILES_POSTFIX.DIFF_SQL))
+                    .trim(),
+                script.trim());
     }
 
     /**
-     * @param inputStream stream converted to string, closed after use
+     * @param inputStream
+     *            stream converted to string, closed after use
      * @return String read from inputStream as UTF-8
      * @throws IOException
      */

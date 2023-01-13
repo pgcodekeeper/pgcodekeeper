@@ -1,0 +1,59 @@
+Reference: action = SELECT, offset = 0, line number = 1, charPositionInLine = 0
+Reference: action = SELECT, offset = 58, line number = 2, charPositionInLine = 0
+Reference: action = SELECT, offset = 116, line number = 3, charPositionInLine = 0
+Reference: action = SELECT, offset = 186, line number = 4, charPositionInLine = 0
+Reference: Object = testdomain_sv (DOMAIN), action = CREATE, offset = 277, line number = 5, charPositionInLine = 14
+Reference: Object = testdomain_i (DOMAIN), action = CREATE, offset = 333, line number = 6, charPositionInLine = 14
+Reference: action = SELECT, offset = 382, line number = 7, charPositionInLine = 0
+Reference: action = SELECT, offset = 437, line number = 8, charPositionInLine = 0
+Reference: action = SELECT, offset = 477, line number = 9, charPositionInLine = 0
+Reference: action = SELECT, offset = 547, line number = 10, charPositionInLine = 0
+Reference: action = SELECT, offset = 618, line number = 11, charPositionInLine = 0
+Reference: action = SELECT, offset = 692, line number = 12, charPositionInLine = 0
+Reference: action = SELECT, offset = 752, line number = 13, charPositionInLine = 0
+Reference: action = SELECT, offset = 813, line number = 14, charPositionInLine = 0
+Reference: action = SELECT, offset = 869, line number = 15, charPositionInLine = 0
+Reference: action = SELECT, offset = 924, line number = 16, charPositionInLine = 0
+Reference: Object = collview1 (VIEW), action = CREATE, offset = 1007, line number = 17, charPositionInLine = 12
+Reference: Object = collview2 (VIEW), action = CREATE, offset = 1090, line number = 18, charPositionInLine = 12
+Reference: Object = collview3 (VIEW), action = CREATE, offset = 1170, line number = 19, charPositionInLine = 12
+Reference: Object = collate_test1_idx2 (INDEX), action = CREATE, offset = 1255, line number = 20, charPositionInLine = 13
+Reference: Object = collate_test1 (TABLE), action = null, offset = 1277, line number = 20, charPositionInLine = 35
+Reference: Object = collate_test1_idx3 (INDEX), action = CREATE, offset = 1325, line number = 21, charPositionInLine = 13
+Reference: Object = collate_test1 (TABLE), action = null, offset = 1347, line number = 21, charPositionInLine = 35
+Reference: Object = collate_test1_idx4 (INDEX), action = CREATE, offset = 1432, line number = 22, charPositionInLine = 13
+Reference: Object = collate_test1 (TABLE), action = null, offset = 1454, line number = 22, charPositionInLine = 35
+Reference: Object = collate_test1_idx5 (INDEX), action = CREATE, offset = 1513, line number = 23, charPositionInLine = 13
+Reference: Object = collate_test1 (TABLE), action = null, offset = 1535, line number = 23, charPositionInLine = 35
+Reference: Object = collate_test1_idx6 (INDEX), action = CREATE, offset = 1591, line number = 24, charPositionInLine = 13
+Reference: Object = collate_test1 (TABLE), action = null, offset = 1613, line number = 24, charPositionInLine = 35
+Reference: Object = mycoll1 (COLLATION), action = CREATE, offset = 1675, line number = 25, charPositionInLine = 17
+Reference: Object = mycoll2 (COLLATION), action = CREATE, offset = 1710, line number = 26, charPositionInLine = 17
+Reference: Object = mycoll3 (COLLATION), action = CREATE, offset = 1781, line number = 27, charPositionInLine = 17
+Reference: Object = mycoll1 (COLLATION), action = DROP, offset = 1850, line number = 28, charPositionInLine = 15
+Reference: Object = mycoll2 (COLLATION), action = DROP, offset = 1874, line number = 29, charPositionInLine = 15
+Reference: Object = case_coll (COLLATION), action = CREATE, offset = 1909, line number = 30, charPositionInLine = 17
+Reference: Object = test3 (COLLATION), action = CREATE, offset = 1980, line number = 31, charPositionInLine = 17
+Reference: Object = testx (COLLATION), action = CREATE, offset = 2071, line number = 32, charPositionInLine = 17
+Reference: Object = testx (COLLATION), action = DROP, offset = 2159, line number = 32, charPositionInLine = 105
+Reference: Object = test4 (COLLATION), action = CREATE, offset = 2183, line number = 33, charPositionInLine = 17
+Reference: Object = test5 (COLLATION), action = CREATE, offset = 2221, line number = 34, charPositionInLine = 17
+Reference: Object = test1 (COLLATION), action = ALTER, offset = 2255, line number = 35, charPositionInLine = 16
+Reference: Object = test0 (COLLATION), action = ALTER, offset = 2295, line number = 36, charPositionInLine = 16
+Reference: Object = test1 (COLLATION), action = ALTER, offset = 2343, line number = 37, charPositionInLine = 16
+Reference: Object = test11 (COLLATION), action = ALTER, offset = 2391, line number = 38, charPositionInLine = 16
+Reference: Object = test11 (COLLATION), action = ALTER, offset = 2442, line number = 39, charPositionInLine = 16
+Reference: Object = test11 (COLLATION), action = ALTER, offset = 2484, line number = 40, charPositionInLine = 16
+Reference: Object = test0 (COLLATION), action = COMMENT, offset = 2536, line number = 41, charPositionInLine = 21
+Reference: Object = test0 (COLLATION), action = DROP, offset = 2574, line number = 42, charPositionInLine = 15
+Reference: Object = test_schema (SCHEMA), action = null, offset = 2581, line number = 42, charPositionInLine = 22
+Reference: Object = test_schema.test11 (COLLATION), action = DROP, offset = 2593, line number = 42, charPositionInLine = 34
+Reference: Object = test5 (COLLATION), action = DROP, offset = 2601, line number = 42, charPositionInLine = 42
+Reference: Object = test0 (COLLATION), action = DROP, offset = 2623, line number = 43, charPositionInLine = 15
+Reference: Object = test0 (COLLATION), action = DROP, offset = 2663, line number = 44, charPositionInLine = 25
+Reference: Object = "en-x-icu" (COLLATION), action = ALTER, offset = 2686, line number = 45, charPositionInLine = 16
+Reference: Object = test0 (COLLATION), action = CREATE, offset = 2731, line number = 46, charPositionInLine = 17
+Reference: Object = textrange_c (TYPE), action = CREATE, offset = 2759, line number = 47, charPositionInLine = 12
+Reference: Object = textrange_en_us (TYPE), action = CREATE, offset = 2822, line number = 48, charPositionInLine = 12
+Reference: Object = pg_catalog (SCHEMA), action = null, offset = 2901, line number = 49, charPositionInLine = 17
+Reference: Object = pg_catalog."default" (COLLATION), action = CREATE, offset = 2912, line number = 49, charPositionInLine = 28

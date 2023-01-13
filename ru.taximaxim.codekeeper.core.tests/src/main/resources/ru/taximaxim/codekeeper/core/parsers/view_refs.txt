@@ -1,0 +1,95 @@
+Reference: Object = v1 (VIEW), action = CREATE, offset = 12, line number = 1, charPositionInLine = 12
+Reference: Object = v1 (VIEW), action = CREATE, offset = 51, line number = 2, charPositionInLine = 23
+Reference: Object = v1 (VIEW), action = CREATE, offset = 84, line number = 3, charPositionInLine = 17
+Reference: Object = v1 (VIEW), action = CREATE, offset = 122, line number = 4, charPositionInLine = 22
+Reference: Object = v1 (VIEW), action = CREATE, offset = 188, line number = 6, charPositionInLine = 12
+Reference: Object = v1 (VIEW), action = CREATE, offset = 221, line number = 7, charPositionInLine = 12
+Reference: Object = v1 (VIEW), action = CREATE, offset = 273, line number = 8, charPositionInLine = 12
+Reference: Object = v1 (VIEW), action = CREATE, offset = 332, line number = 9, charPositionInLine = 12
+Reference: Object = v1 (VIEW), action = CREATE, offset = 413, line number = 10, charPositionInLine = 12
+Reference: Object = v1 (VIEW), action = CREATE, offset = 459, line number = 11, charPositionInLine = 12
+Reference: Object = v1 (VIEW), action = CREATE, offset = 511, line number = 12, charPositionInLine = 12
+Reference: Object = v1 (VIEW), action = CREATE, offset = 592, line number = 13, charPositionInLine = 38
+Reference: Object = v1 (VIEW), action = ALTER, offset = 667, line number = 15, charPositionInLine = 11
+Reference: Object = v1 (VIEW), action = ALTER, offset = 706, line number = 16, charPositionInLine = 11
+Reference: Object = v1 (VIEW), action = ALTER, offset = 752, line number = 17, charPositionInLine = 11
+Reference: Object = v1 (VIEW), action = ALTER, offset = 799, line number = 18, charPositionInLine = 21
+Reference: Object = v1 (VIEW), action = ALTER, offset = 843, line number = 19, charPositionInLine = 11
+Reference: Object = v1 (VIEW), action = ALTER, offset = 951, line number = 22, charPositionInLine = 11
+Reference: Object = v1 (VIEW), action = ALTER, offset = 982, line number = 23, charPositionInLine = 11
+Reference: Object = v1 (VIEW), action = ALTER, offset = 1020, line number = 24, charPositionInLine = 11
+Reference: Object = v1 (VIEW), action = ALTER, offset = 1048, line number = 25, charPositionInLine = 11
+Reference: Object = v1 (VIEW), action = ALTER, offset = 1086, line number = 26, charPositionInLine = 11
+Reference: Object = v1 (VIEW), action = ALTER, offset = 1124, line number = 27, charPositionInLine = 11
+Reference: Object = v1 (VIEW), action = ALTER, offset = 1170, line number = 28, charPositionInLine = 11
+Reference: Object = v1 (VIEW), action = ALTER, offset = 1238, line number = 29, charPositionInLine = 11
+Reference: Object = v1 (VIEW), action = ALTER, offset = 1278, line number = 30, charPositionInLine = 11
+Reference: Object = v1 (VIEW), action = DROP, offset = 1332, line number = 32, charPositionInLine = 10
+Reference: Object = public (SCHEMA), action = null, offset = 1356, line number = 33, charPositionInLine = 20
+Reference: Object = public.v1 (VIEW), action = DROP, offset = 1363, line number = 33, charPositionInLine = 27
+Reference: Object = v1 (VIEW), action = DROP, offset = 1377, line number = 34, charPositionInLine = 10
+Reference: Object = v2 (VIEW), action = DROP, offset = 1381, line number = 34, charPositionInLine = 14
+Reference: Object = public (SCHEMA), action = null, offset = 1385, line number = 34, charPositionInLine = 18
+Reference: Object = public.v3 (VIEW), action = DROP, offset = 1392, line number = 34, charPositionInLine = 25
+Reference: Object = v1 (VIEW), action = DROP, offset = 1406, line number = 35, charPositionInLine = 10
+Reference: Object = v1 (VIEW), action = DROP, offset = 1428, line number = 36, charPositionInLine = 10
+Reference: Object = v1 (VIEW), action = DROP, offset = 1451, line number = 37, charPositionInLine = 10
+Reference: Object = v2 (VIEW), action = DROP, offset = 1455, line number = 37, charPositionInLine = 14
+Reference: Object = public (SCHEMA), action = null, offset = 1459, line number = 37, charPositionInLine = 18
+Reference: Object = public.v3 (VIEW), action = DROP, offset = 1466, line number = 37, charPositionInLine = 25
+Reference: Object = public (SCHEMA), action = null, offset = 1504, line number = 39, charPositionInLine = 25
+Reference: Object = public.v1 (VIEW), action = CREATE, offset = 1511, line number = 39, charPositionInLine = 32
+Reference: Object = public (SCHEMA), action = null, offset = 1566, line number = 40, charPositionInLine = 39
+Reference: Object = public.v1 (VIEW), action = CREATE, offset = 1573, line number = 40, charPositionInLine = 46
+Reference: Object = v1 (VIEW), action = CREATE, offset = 1614, line number = 41, charPositionInLine = 25
+Reference: Object = v1 (VIEW), action = CREATE, offset = 1660, line number = 42, charPositionInLine = 25
+Reference: Object = v1 (VIEW), action = CREATE, offset = 1712, line number = 43, charPositionInLine = 25
+Reference: Object = v1 (VIEW), action = CREATE, offset = 1779, line number = 44, charPositionInLine = 25
+Reference: Object = v1 (VIEW), action = CREATE, offset = 1873, line number = 45, charPositionInLine = 25
+Reference: Object = v1 (VIEW), action = CREATE, offset = 1941, line number = 46, charPositionInLine = 25
+Reference: Object = v1 (VIEW), action = CREATE, offset = 1992, line number = 47, charPositionInLine = 25
+Reference: Object = v1 (VIEW), action = CREATE, offset = 2060, line number = 48, charPositionInLine = 39
+Reference: Object = v1 (VIEW), action = ALTER MATERIALIZED, offset = 2156, line number = 50, charPositionInLine = 24
+Reference: Object = v1 (VIEW), action = ALTER MATERIALIZED, offset = 2218, line number = 51, charPositionInLine = 24
+Reference: Object = v1 (VIEW), action = ALTER MATERIALIZED, offset = 2284, line number = 52, charPositionInLine = 24
+Reference: Object = v1 (VIEW), action = ALTER MATERIALIZED, offset = 2377, line number = 53, charPositionInLine = 24
+Reference: Object = v1 (VIEW), action = ALTER MATERIALIZED, offset = 2440, line number = 54, charPositionInLine = 24
+Reference: Object = v1 (VIEW), action = ALTER MATERIALIZED, offset = 2525, line number = 55, charPositionInLine = 24
+Reference: Object = v1 (VIEW), action = ALTER MATERIALIZED, offset = 2590, line number = 56, charPositionInLine = 24
+Reference: Object = v1 (VIEW), action = ALTER MATERIALIZED, offset = 2631, line number = 57, charPositionInLine = 24
+Reference: Object = v1 (VIEW), action = ALTER MATERIALIZED, offset = 2679, line number = 58, charPositionInLine = 24
+Reference: Object = v1 (VIEW), action = ALTER MATERIALIZED, offset = 2732, line number = 59, charPositionInLine = 24
+Reference: Object = v1 (VIEW), action = ALTER MATERIALIZED, offset = 2793, line number = 60, charPositionInLine = 24
+Reference: Object = v1 (VIEW), action = ALTER MATERIALIZED, offset = 2871, line number = 61, charPositionInLine = 24
+Reference: Object = v1 (VIEW), action = ALTER MATERIALIZED, offset = 2926, line number = 62, charPositionInLine = 24
+Reference: Object = v1 (VIEW), action = ALTER, offset = 2993, line number = 63, charPositionInLine = 24
+Reference: Object = v1 (VIEW), action = ALTER MATERIALIZED, offset = 3140, line number = 66, charPositionInLine = 24
+Reference: Object = v1 (VIEW), action = ALTER MATERIALIZED, offset = 3193, line number = 67, charPositionInLine = 24
+Reference: Object = v1 (VIEW), action = ALTER MATERIALIZED, offset = 3249, line number = 68, charPositionInLine = 24
+Reference: Object = v1 (VIEW), action = ALTER MATERIALIZED, offset = 3293, line number = 69, charPositionInLine = 24
+Reference: Object = v1 (VIEW), action = ALTER MATERIALIZED, offset = 3344, line number = 70, charPositionInLine = 24
+Reference: Object = v1 (VIEW), action = ALTER MATERIALIZED, offset = 3395, line number = 71, charPositionInLine = 34
+Reference: Object = v1 (VIEW), action = ALTER MATERIALIZED, offset = 3436, line number = 72, charPositionInLine = 24
+Reference: Object = v1 (VIEW), action = ALTER MATERIALIZED, offset = 3497, line number = 73, charPositionInLine = 34
+Reference: action = ALTER MATERIALIZED VIEW ALL, offset = 3524, line number = 74, charPositionInLine = 0
+Reference: action = ALTER MATERIALIZED VIEW ALL, offset = 3608, line number = 75, charPositionInLine = 0
+Reference: action = ALTER MATERIALIZED VIEW ALL, offset = 3699, line number = 76, charPositionInLine = 0
+Reference: Object = v1 (VIEW), action = DROP, offset = 3827, line number = 78, charPositionInLine = 23
+Reference: Object = public (SCHEMA), action = null, offset = 3864, line number = 79, charPositionInLine = 33
+Reference: Object = public.v1 (VIEW), action = DROP, offset = 3871, line number = 79, charPositionInLine = 40
+Reference: Object = v1 (VIEW), action = DROP, offset = 3898, line number = 80, charPositionInLine = 23
+Reference: Object = v2 (VIEW), action = DROP, offset = 3902, line number = 80, charPositionInLine = 27
+Reference: Object = public (SCHEMA), action = null, offset = 3906, line number = 80, charPositionInLine = 31
+Reference: Object = public.v3 (VIEW), action = DROP, offset = 3913, line number = 80, charPositionInLine = 38
+Reference: Object = v1 (VIEW), action = DROP, offset = 3940, line number = 81, charPositionInLine = 23
+Reference: Object = v1 (VIEW), action = DROP, offset = 3975, line number = 82, charPositionInLine = 23
+Reference: Object = v1 (VIEW), action = DROP, offset = 4011, line number = 83, charPositionInLine = 23
+Reference: Object = v2 (VIEW), action = DROP, offset = 4015, line number = 83, charPositionInLine = 27
+Reference: Object = public (SCHEMA), action = null, offset = 4019, line number = 83, charPositionInLine = 31
+Reference: Object = public.v3 (VIEW), action = DROP, offset = 4026, line number = 83, charPositionInLine = 38
+Reference: action = REFRESH, offset = 4039, line number = 85, charPositionInLine = 0
+Reference: action = REFRESH, offset = 4069, line number = 86, charPositionInLine = 0
+Reference: action = REFRESH, offset = 4112, line number = 87, charPositionInLine = 0
+Reference: action = REFRESH, offset = 4152, line number = 88, charPositionInLine = 0
+Reference: action = REFRESH, offset = 4195, line number = 89, charPositionInLine = 0
+Reference: Object = mvtest_tvm (VIEW), action = ALTER MATERIALIZED, offset = 4321, line number = 92, charPositionInLine = 24

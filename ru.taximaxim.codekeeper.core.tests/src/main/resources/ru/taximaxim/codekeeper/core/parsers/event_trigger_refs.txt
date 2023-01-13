@@ -1,0 +1,169 @@
+Reference: action = CREATE EVENT TRIGGER, offset = 37, line number = 2, charPositionInLine = 0
+Reference: Object = test_event_trigger() (FUNCTION), action = CREATE, offset = 166, line number = 7, charPositionInLine = 16
+Reference: Object = test_event_trigger_arg(text) (FUNCTION), action = CREATE, offset = 387, line number = 14, charPositionInLine = 16
+Reference: Object = test_event_trigger_sql() (FUNCTION), action = CREATE, offset = 562, line number = 18, charPositionInLine = 16
+Reference: action = CREATE EVENT TRIGGER, offset = 692, line number = 22, charPositionInLine = 0
+Reference: action = CREATE EVENT TRIGGER, offset = 807, line number = 26, charPositionInLine = 0
+Reference: action = CREATE EVENT TRIGGER, offset = 921, line number = 30, charPositionInLine = 0
+Reference: action = CREATE EVENT TRIGGER, offset = 1082, line number = 34, charPositionInLine = 0
+Reference: action = CREATE EVENT TRIGGER, offset = 1272, line number = 39, charPositionInLine = 0
+Reference: action = CREATE EVENT TRIGGER, offset = 1472, line number = 44, charPositionInLine = 0
+Reference: action = CREATE EVENT TRIGGER, offset = 1696, line number = 49, charPositionInLine = 0
+Reference: action = CREATE EVENT TRIGGER, offset = 1903, line number = 54, charPositionInLine = 0
+Reference: action = CREATE EVENT TRIGGER, offset = 2103, line number = 59, charPositionInLine = 0
+Reference: action = CREATE EVENT TRIGGER, offset = 2307, line number = 64, charPositionInLine = 0
+Reference: action = CREATE EVENT TRIGGER, offset = 2507, line number = 69, charPositionInLine = 0
+Reference: action = CREATE EVENT TRIGGER, offset = 2716, line number = 74, charPositionInLine = 0
+Reference: action = CREATE EVENT TRIGGER, offset = 2853, line number = 78, charPositionInLine = 0
+Reference: action = COMMENT, offset = 3019, line number = 83, charPositionInLine = 0
+Reference: action = CREATE ROLE, offset = 3123, line number = 86, charPositionInLine = 0
+Reference: action = SET, offset = 3153, line number = 87, charPositionInLine = 0
+Reference: action = CREATE EVENT TRIGGER, offset = 3180, line number = 88, charPositionInLine = 0
+Reference: action = RESET, offset = 3295, line number = 90, charPositionInLine = 0
+Reference: action = ALTER EVENT TRIGGER, offset = 3339, line number = 93, charPositionInLine = 0
+Reference: Object = event_trigger_fire1 (TABLE), action = CREATE, offset = 3469, line number = 95, charPositionInLine = 13
+Reference: action = ALTER EVENT TRIGGER, offset = 3498, line number = 96, charPositionInLine = 0
+Reference: action = SET, offset = 3548, line number = 97, charPositionInLine = 0
+Reference: Object = event_trigger_fire2 (TABLE), action = CREATE, offset = 3618, line number = 99, charPositionInLine = 13
+Reference: action = ALTER EVENT TRIGGER, offset = 3647, line number = 100, charPositionInLine = 0
+Reference: Object = event_trigger_fire3 (TABLE), action = CREATE, offset = 3741, line number = 102, charPositionInLine = 13
+Reference: action = ALTER EVENT TRIGGER, offset = 3770, line number = 103, charPositionInLine = 0
+Reference: Object = event_trigger_fire4 (TABLE), action = CREATE, offset = 3863, line number = 105, charPositionInLine = 13
+Reference: action = RESET, offset = 3892, line number = 106, charPositionInLine = 0
+Reference: Object = event_trigger_fire5 (TABLE), action = CREATE, offset = 3956, line number = 108, charPositionInLine = 13
+Reference: Object = f1() (FUNCTION), action = CREATE, offset = 4026, line number = 110, charPositionInLine = 16
+Reference: action = SELECT, offset = 4136, line number = 117, charPositionInLine = 0
+Reference: Object = p1() (PROCEDURE), action = CREATE, offset = 4191, line number = 119, charPositionInLine = 17
+Reference: action = CALL, offset = 4277, line number = 125, charPositionInLine = 0
+Reference: action = ALTER EVENT TRIGGER, offset = 4301, line number = 128, charPositionInLine = 0
+Reference: Object = event_trigger_fire2 (TABLE), action = DROP, offset = 4363, line number = 129, charPositionInLine = 11
+Reference: Object = event_trigger_fire3 (TABLE), action = DROP, offset = 4384, line number = 129, charPositionInLine = 32
+Reference: Object = event_trigger_fire4 (TABLE), action = DROP, offset = 4405, line number = 129, charPositionInLine = 53
+Reference: Object = event_trigger_fire5 (TABLE), action = DROP, offset = 4426, line number = 129, charPositionInLine = 74
+Reference: Object = event_trigger_fire6 (TABLE), action = DROP, offset = 4447, line number = 129, charPositionInLine = 95
+Reference: Object = event_trigger_fire7 (TABLE), action = DROP, offset = 4468, line number = 129, charPositionInLine = 116
+Reference: Object = event_trigger_fire1 (TABLE), action = GRANT, offset = 4568, line number = 132, charPositionInLine = 19
+Reference: Object = event_trigger_fire1 (TABLE), action = COMMENT, offset = 4616, line number = 133, charPositionInLine = 17
+Reference: Object = event_trigger_fire1 (TABLE), action = REVOKE, offset = 4680, line number = 134, charPositionInLine = 20
+Reference: Object = event_trigger_fire1 (TABLE), action = DROP, offset = 4724, line number = 135, charPositionInLine = 11
+Reference: Object = useless (FOREIGN_DATA_WRAPPER), action = CREATE, offset = 4773, line number = 136, charPositionInLine = 28
+Reference: Object = useless_server (SERVER), action = CREATE, offset = 4796, line number = 137, charPositionInLine = 14
+Reference: Object = useless (FOREIGN_DATA_WRAPPER), action = null, offset = 4832, line number = 137, charPositionInLine = 50
+Reference: Object = "regress_evt_user SERVER useless_server" (USER_MAPPING), action = CREATE, offset = 4865, line number = 138, charPositionInLine = 24
+Reference: Object = useless_server (SERVER), action = null, offset = 4889, line number = 138, charPositionInLine = 48
+Reference: action = ALTER DEFAULT PRIVILEGES, offset = 4905, line number = 139, charPositionInLine = 0
+Reference: action = ALTER EVENT TRIGGER, offset = 5049, line number = 143, charPositionInLine = 0
+Reference: action = ALTER ROLE, offset = 5159, line number = 146, charPositionInLine = 0
+Reference: action = ALTER EVENT TRIGGER, offset = 5198, line number = 147, charPositionInLine = 0
+Reference: action = ALTER EVENT TRIGGER, offset = 5299, line number = 150, charPositionInLine = 0
+Reference: action = ALTER EVENT TRIGGER, offset = 5382, line number = 153, charPositionInLine = 0
+Reference: Object = schema_one (SCHEMA), action = CREATE, offset = 5952, line number = 169, charPositionInLine = 14
+Reference: Object = schema_two (SCHEMA), action = CREATE, offset = 6009, line number = 170, charPositionInLine = 14
+Reference: Object = audit_tbls (SCHEMA), action = CREATE, offset = 6066, line number = 171, charPositionInLine = 14
+Reference: Object = a_temp_tbl (TABLE), action = CREATE, offset = 6127, line number = 172, charPositionInLine = 18
+Reference: action = SET, offset = 6142, line number = 173, charPositionInLine = 0
+Reference: Object = schema_one (SCHEMA), action = null, offset = 6200, line number = 175, charPositionInLine = 13
+Reference: Object = schema_one.table_one (TABLE), action = CREATE, offset = 6211, line number = 175, charPositionInLine = 24
+Reference: Object = schema_one (SCHEMA), action = null, offset = 6242, line number = 176, charPositionInLine = 13
+Reference: Object = schema_one."table two" (TABLE), action = CREATE, offset = 6253, line number = 176, charPositionInLine = 24
+Reference: Object = schema_one (SCHEMA), action = null, offset = 6286, line number = 177, charPositionInLine = 13
+Reference: Object = schema_one.table_three (TABLE), action = CREATE, offset = 6297, line number = 177, charPositionInLine = 24
+Reference: Object = audit_tbls (SCHEMA), action = null, offset = 6330, line number = 178, charPositionInLine = 13
+Reference: Object = audit_tbls.schema_one_table_two (TABLE), action = CREATE, offset = 6341, line number = 178, charPositionInLine = 24
+Reference: Object = schema_two (SCHEMA), action = null, offset = 6393, line number = 180, charPositionInLine = 13
+Reference: Object = schema_two.table_two (TABLE), action = CREATE, offset = 6404, line number = 180, charPositionInLine = 24
+Reference: Object = schema_two (SCHEMA), action = null, offset = 6435, line number = 181, charPositionInLine = 13
+Reference: Object = schema_two.table_three (TABLE), action = CREATE, offset = 6446, line number = 181, charPositionInLine = 24
+Reference: Object = audit_tbls (SCHEMA), action = null, offset = 6487, line number = 182, charPositionInLine = 13
+Reference: Object = audit_tbls.schema_two_table_three (TABLE), action = CREATE, offset = 6498, line number = 182, charPositionInLine = 24
+Reference: Object = schema_two (SCHEMA), action = null, offset = 6566, line number = 184, charPositionInLine = 27
+Reference: Object = schema_two.add(integer, integer) (FUNCTION), action = CREATE, offset = 6577, line number = 184, charPositionInLine = 38
+Reference: Object = schema_two (SCHEMA), action = null, offset = 6768, line number = 188, charPositionInLine = 27
+Reference: Object = schema_two.add(int, int) (FUNCTION), action = null, offset = 6779, line number = 188, charPositionInLine = 38
+Reference: action = RESET, offset = 6799, line number = 190, charPositionInLine = 0
+Reference: Object = undroppable_objs (TABLE), action = CREATE, offset = 6842, line number = 192, charPositionInLine = 13
+Reference: Object = undroppable_objs (TABLE), action = INSERT, offset = 6923, line number = 196, charPositionInLine = 12
+Reference: Object = dropped_objects (TABLE), action = CREATE, offset = 7046, line number = 200, charPositionInLine = 13
+Reference: Object = undroppable() (FUNCTION), action = CREATE, offset = 7290, line number = 208, charPositionInLine = 27
+Reference: action = CREATE EVENT TRIGGER, offset = 7853, line number = 228, charPositionInLine = 0
+Reference: Object = test_evtrig_dropped_objects() (FUNCTION), action = CREATE, offset = 7963, line number = 231, charPositionInLine = 27
+Reference: action = CREATE EVENT TRIGGER, offset = 8499, line number = 250, charPositionInLine = 0
+Reference: Object = schema_one (SCHEMA), action = null, offset = 8746, line number = 255, charPositionInLine = 12
+Reference: Object = schema_one.table_one (TABLE), action = ALTER, offset = 8757, line number = 255, charPositionInLine = 23
+Reference: Object = schema_one (SCHEMA), action = DROP, offset = 8794, line number = 256, charPositionInLine = 12
+Reference: Object = schema_two (SCHEMA), action = DROP, offset = 8806, line number = 256, charPositionInLine = 24
+Reference: Object = undroppable_objs (TABLE), action = DELETE, offset = 8838, line number = 257, charPositionInLine = 12
+Reference: Object = schema_one (SCHEMA), action = DROP, offset = 8928, line number = 258, charPositionInLine = 12
+Reference: Object = schema_two (SCHEMA), action = DROP, offset = 8940, line number = 258, charPositionInLine = 24
+Reference: Object = undroppable_objs (TABLE), action = DELETE, offset = 8972, line number = 259, charPositionInLine = 12
+Reference: Object = schema_one (SCHEMA), action = DROP, offset = 9051, line number = 260, charPositionInLine = 12
+Reference: Object = schema_two (SCHEMA), action = DROP, offset = 9063, line number = 260, charPositionInLine = 24
+Reference: action = SELECT, offset = 9084, line number = 262, charPositionInLine = 0
+Reference: action = DROP OWNED BY, offset = 9161, line number = 264, charPositionInLine = 0
+Reference: action = SELECT, offset = 9193, line number = 265, charPositionInLine = 0
+Reference: Object = event_trigger_report_dropped() (FUNCTION), action = CREATE, offset = 9391, line number = 272, charPositionInLine = 27
+Reference: action = CREATE EVENT TRIGGER, offset = 9867, line number = 288, charPositionInLine = 0
+Reference: Object = evttrig (SCHEMA), action = CREATE, offset = 10005, line number = 290, charPositionInLine = 14
+Reference: Object = evttrig (SCHEMA), action = null, offset = 10027, line number = 291, charPositionInLine = 13
+Reference: Object = evttrig.one (TABLE), action = CREATE, offset = 10035, line number = 291, charPositionInLine = 21
+Reference: Object = evttrig.one_idx (INDEX), action = CREATE, offset = 10112, line number = 292, charPositionInLine = 13
+Reference: Object = evttrig (SCHEMA), action = null, offset = 10123, line number = 292, charPositionInLine = 24
+Reference: Object = evttrig.one (TABLE), action = null, offset = 10131, line number = 292, charPositionInLine = 32
+Reference: Object = evttrig (SCHEMA), action = null, offset = 10157, line number = 293, charPositionInLine = 13
+Reference: Object = evttrig.two (TABLE), action = CREATE, offset = 10165, line number = 293, charPositionInLine = 21
+Reference: Object = evttrig (SCHEMA), action = null, offset = 10291, line number = 296, charPositionInLine = 13
+Reference: Object = evttrig.parted (TABLE), action = CREATE, offset = 10299, line number = 296, charPositionInLine = 21
+Reference: Object = evttrig (SCHEMA), action = null, offset = 10374, line number = 299, charPositionInLine = 13
+Reference: Object = evttrig.part_1_10 (TABLE), action = CREATE, offset = 10382, line number = 299, charPositionInLine = 21
+Reference: Object = evttrig (SCHEMA), action = null, offset = 10405, line number = 299, charPositionInLine = 44
+Reference: Object = evttrig.parted (TABLE), action = null, offset = 10413, line number = 299, charPositionInLine = 52
+Reference: Object = evttrig (SCHEMA), action = null, offset = 10469, line number = 301, charPositionInLine = 13
+Reference: Object = evttrig.part_10_20 (TABLE), action = CREATE, offset = 10477, line number = 301, charPositionInLine = 21
+Reference: Object = evttrig (SCHEMA), action = null, offset = 10501, line number = 301, charPositionInLine = 45
+Reference: Object = evttrig.parted (TABLE), action = null, offset = 10509, line number = 301, charPositionInLine = 53
+Reference: Object = evttrig (SCHEMA), action = null, offset = 10590, line number = 303, charPositionInLine = 13
+Reference: Object = evttrig.part_10_15 (TABLE), action = CREATE, offset = 10598, line number = 303, charPositionInLine = 21
+Reference: Object = evttrig (SCHEMA), action = null, offset = 10622, line number = 303, charPositionInLine = 45
+Reference: Object = evttrig.part_10_20 (TABLE), action = null, offset = 10630, line number = 303, charPositionInLine = 53
+Reference: Object = evttrig (SCHEMA), action = null, offset = 10691, line number = 305, charPositionInLine = 13
+Reference: Object = evttrig.part_15_20 (TABLE), action = CREATE, offset = 10699, line number = 305, charPositionInLine = 21
+Reference: Object = evttrig (SCHEMA), action = null, offset = 10723, line number = 305, charPositionInLine = 45
+Reference: Object = evttrig.part_10_20 (TABLE), action = null, offset = 10731, line number = 305, charPositionInLine = 53
+Reference: Object = evttrig (SCHEMA), action = null, offset = 10792, line number = 308, charPositionInLine = 12
+Reference: Object = evttrig.two (TABLE), action = ALTER, offset = 10800, line number = 308, charPositionInLine = 20
+Reference: Object = evttrig (SCHEMA), action = null, offset = 10835, line number = 309, charPositionInLine = 12
+Reference: Object = evttrig.one (TABLE), action = ALTER, offset = 10843, line number = 309, charPositionInLine = 20
+Reference: Object = evttrig (SCHEMA), action = null, offset = 10892, line number = 310, charPositionInLine = 12
+Reference: Object = evttrig.one (TABLE), action = ALTER, offset = 10900, line number = 310, charPositionInLine = 20
+Reference: Object = evttrig.one.one_pkey (CONSTRAINT), action = DROP, offset = 10920, line number = 310, charPositionInLine = 40
+Reference: Object = evttrig (SCHEMA), action = null, offset = 10941, line number = 311, charPositionInLine = 11
+Reference: Object = evttrig.one_idx (INDEX), action = DROP, offset = 10949, line number = 311, charPositionInLine = 19
+Reference: Object = evttrig (SCHEMA), action = DROP, offset = 10970, line number = 312, charPositionInLine = 12
+Reference: Object = a_temp_tbl (TABLE), action = DROP, offset = 10998, line number = 313, charPositionInLine = 11
+Reference: action = SELECT, offset = 11136, line number = 318, charPositionInLine = 0
+Reference: Object = test_evtrig_no_rewrite() (FUNCTION), action = CREATE, offset = 11245, line number = 321, charPositionInLine = 27
+Reference: action = CREATE EVENT TRIGGER, offset = 11373, line number = 328, charPositionInLine = 0
+Reference: Object = rewriteme (TABLE), action = CREATE, offset = 11490, line number = 331, charPositionInLine = 13
+Reference: Object = rewriteme (TABLE), action = INSERT, offset = 11548, line number = 332, charPositionInLine = 12
+Reference: Object = rewriteme (TABLE), action = ALTER, offset = 11630, line number = 334, charPositionInLine = 12
+Reference: Object = rewriteme (TABLE), action = ALTER, offset = 11683, line number = 335, charPositionInLine = 12
+Reference: Object = test_evtrig_no_rewrite() (FUNCTION), action = CREATE, offset = 11811, line number = 338, charPositionInLine = 27
+Reference: Object = rewriteme (TABLE), action = ALTER, offset = 12090, line number = 347, charPositionInLine = 12
+Reference: Object = rewriteme (TABLE), action = ALTER, offset = 12265, line number = 353, charPositionInLine = 12
+Reference: Object = test_evtrig_no_rewrite() (FUNCTION), action = CREATE, offset = 12458, line number = 357, charPositionInLine = 27
+Reference: Object = rewritetype (TYPE), action = CREATE, offset = 12668, line number = 365, charPositionInLine = 12
+Reference: Object = rewritemetoo1 (TABLE), action = CREATE, offset = 12705, line number = 366, charPositionInLine = 13
+Reference: Object = rewritemetoo2 (TABLE), action = CREATE, offset = 12748, line number = 367, charPositionInLine = 13
+Reference: Object = rewritetype (TYPE), action = ALTER, offset = 12789, line number = 368, charPositionInLine = 11
+Reference: Object = rewritemetoo3 (TABLE), action = CREATE, offset = 12877, line number = 371, charPositionInLine = 13
+Reference: Object = rewritetype (TYPE), action = ALTER, offset = 12919, line number = 372, charPositionInLine = 11
+Reference: Object = rewriteme (TABLE), action = DROP, offset = 12983, line number = 374, charPositionInLine = 11
+Reference: Object = test_evtrig_no_rewrite (FUNCTION), action = DROP, offset = 13047, line number = 376, charPositionInLine = 14
+Reference: action = RESET, offset = 13109, line number = 379, charPositionInLine = 0
+Reference: Object = event_trigger_test (TABLE), action = CREATE, offset = 13151, line number = 380, charPositionInLine = 13
+Reference: Object = start_command() (FUNCTION), action = CREATE, offset = 13219, line number = 382, charPositionInLine = 27
+Reference: Object = end_command() (FUNCTION), action = CREATE, offset = 13369, line number = 389, charPositionInLine = 27
+Reference: Object = drop_sql_command() (FUNCTION), action = CREATE, offset = 13515, line number = 396, charPositionInLine = 27
+Reference: action = CREATE EVENT TRIGGER, offset = 13632, line number = 403, charPositionInLine = 0
+Reference: action = CREATE EVENT TRIGGER, offset = 13793, line number = 406, charPositionInLine = 0
+Reference: action = CREATE EVENT TRIGGER, offset = 13948, line number = 409, charPositionInLine = 0

@@ -1,0 +1,89 @@
+Reference: Object = functest_a_1(text, date) (FUNCTION), action = CREATE, offset = 16, line number = 1, charPositionInLine = 16
+Reference: Object = functest_a_2(text[]) (FUNCTION), action = CREATE, offset = 134, line number = 2, charPositionInLine = 16
+Reference: Object = functest_a_3() (FUNCTION), action = CREATE, offset = 220, line number = 3, charPositionInLine = 16
+Reference: Object = functest_b_1(integer) (FUNCTION), action = CREATE, offset = 296, line number = 4, charPositionInLine = 16
+Reference: Object = functest_b_2(integer) (FUNCTION), action = CREATE, offset = 376, line number = 5, charPositionInLine = 16
+Reference: Object = functest_b_3(integer) (FUNCTION), action = CREATE, offset = 466, line number = 6, charPositionInLine = 16
+Reference: Object = functest_b_4(integer) (FUNCTION), action = CREATE, offset = 553, line number = 7, charPositionInLine = 16
+Reference: Object = functest_b_2 (FUNCTION), action = ALTER, offset = 641, line number = 8, charPositionInLine = 15
+Reference: Object = functest_b_3 (FUNCTION), action = ALTER, offset = 684, line number = 9, charPositionInLine = 15
+Reference: Object = functest_c_1(integer) (FUNCTION), action = CREATE, offset = 760, line number = 10, charPositionInLine = 16
+Reference: Object = functest_c_2(integer) (FUNCTION), action = CREATE, offset = 840, line number = 11, charPositionInLine = 16
+Reference: Object = functest_c_3(integer) (FUNCTION), action = CREATE, offset = 937, line number = 12, charPositionInLine = 16
+Reference: Object = functest_c_1 (FUNCTION), action = ALTER, offset = 1033, line number = 13, charPositionInLine = 15
+Reference: Object = functest_c_2 (FUNCTION), action = ALTER, offset = 1108, line number = 14, charPositionInLine = 15
+Reference: Object = functest_c_3 (FUNCTION), action = ALTER, offset = 1159, line number = 15, charPositionInLine = 15
+Reference: Object = functest_e_2(integer) (FUNCTION), action = CREATE, offset = 1211, line number = 16, charPositionInLine = 16
+Reference: Object = functest_e_1 (FUNCTION), action = ALTER, offset = 1302, line number = 17, charPositionInLine = 15
+Reference: Object = functest_e_2 (FUNCTION), action = ALTER, offset = 1346, line number = 18, charPositionInLine = 15
+Reference: Object = functest_e_2 (FUNCTION), action = ALTER, offset = 1421, line number = 19, charPositionInLine = 15
+Reference: Object = functest_e_2(integer) (FUNCTION), action = ALTER, offset = 1499, line number = 20, charPositionInLine = 15
+Reference: Object = functest_e_1 (FUNCTION), action = ALTER, offset = 1562, line number = 21, charPositionInLine = 15
+Reference: Object = functest_e_2 (FUNCTION), action = ALTER, offset = 1610, line number = 22, charPositionInLine = 15
+Reference: Object = functest_f_1(integer) (FUNCTION), action = CREATE, offset = 1655, line number = 23, charPositionInLine = 16
+Reference: Object = functest_f_2(integer) (FUNCTION), action = CREATE, offset = 1736, line number = 24, charPositionInLine = 16
+Reference: Object = functest_f_3(integer) (FUNCTION), action = CREATE, offset = 1838, line number = 25, charPositionInLine = 16
+Reference: Object = functest_f_4(integer) (FUNCTION), action = CREATE, offset = 1946, line number = 26, charPositionInLine = 16
+Reference: Object = functest_f_1 (FUNCTION), action = ALTER, offset = 2033, line number = 27, charPositionInLine = 15
+Reference: Object = functest_f_2 (FUNCTION), action = ALTER, offset = 2108, line number = 28, charPositionInLine = 15
+Reference: Object = functest_f_3 (FUNCTION), action = ALTER, offset = 2149, line number = 29, charPositionInLine = 15
+Reference: Object = functest_is_1(integer, integer, text) (FUNCTION), action = CREATE, offset = 2205, line number = 30, charPositionInLine = 16
+Reference: Object = functest_is_2(integer) (FUNCTION), action = CREATE, offset = 2327, line number = 31, charPositionInLine = 16
+Reference: Object = functest_is_3(integer) (FUNCTION), action = CREATE, offset = 2426, line number = 32, charPositionInLine = 16
+Reference: Object = functest_is_1 (FUNCTION), action = DROP, offset = 2523, line number = 33, charPositionInLine = 14
+Reference: Object = functest_b_2(bigint) (FUNCTION), action = CREATE, offset = 2570, line number = 34, charPositionInLine = 16
+Reference: Object = functest_b_1 (FUNCTION), action = DROP, offset = 2661, line number = 35, charPositionInLine = 14
+Reference: Object = functest1(integer) (FUNCTION), action = CREATE, offset = 2693, line number = 36, charPositionInLine = 16
+Reference: Object = functest1(integer) (FUNCTION), action = CREATE, offset = 2778, line number = 37, charPositionInLine = 27
+Reference: Object = functest1(integer) (PROCEDURE), action = CREATE, offset = 2871, line number = 38, charPositionInLine = 28
+Reference: Object = functest1 (FUNCTION), action = DROP, offset = 2931, line number = 39, charPositionInLine = 14
+Reference: Object = voidtest1(integer) (FUNCTION), action = CREATE, offset = 2965, line number = 40, charPositionInLine = 16
+Reference: Object = voidtest2(integer, integer) (FUNCTION), action = CREATE, offset = 3047, line number = 41, charPositionInLine = 16
+Reference: Object = voidtest3(integer) (FUNCTION), action = CREATE, offset = 3147, line number = 42, charPositionInLine = 16
+Reference: Object = voidtest4(integer) (FUNCTION), action = CREATE, offset = 3252, line number = 43, charPositionInLine = 16
+Reference: Object = voidtest5(integer) (FUNCTION), action = CREATE, offset = 3370, line number = 44, charPositionInLine = 16
+Reference: Object = mylt(text, text) (FUNCTION), action = CREATE, offset = 3481, line number = 45, charPositionInLine = 16
+Reference: Object = mylt_noninline(text, text) (FUNCTION), action = CREATE, offset = 3569, line number = 46, charPositionInLine = 16
+Reference: Object = mylt_plpgsql(text, text) (FUNCTION), action = CREATE, offset = 3675, line number = 47, charPositionInLine = 16
+Reference: Object = mylt2(text, text) (FUNCTION), action = CREATE, offset = 3786, line number = 48, charPositionInLine = 16
+Reference: Object = sillysrf(integer) (FUNCTION), action = CREATE, offset = 3937, line number = 57, charPositionInLine = 16
+Reference: Object = sillysrf (FUNCTION), action = DROP, offset = 4037, line number = 58, charPositionInLine = 14
+Reference: Object = retset(integer) (FUNCTION), action = CREATE, offset = 4068, line number = 59, charPositionInLine = 16
+Reference: Object = retset (FUNCTION), action = DROP, offset = 4158, line number = 60, charPositionInLine = 14
+Reference: Object = plusone(integer) (FUNCTION), action = CREATE, offset = 4187, line number = 61, charPositionInLine = 16
+Reference: Object = plusone (FUNCTION), action = DROP, offset = 4263, line number = 62, charPositionInLine = 14
+Reference: Object = my_int4_sort(integer, integer) (FUNCTION), action = CREATE, offset = 4293, line number = 63, charPositionInLine = 16
+Reference: Object = my_int4_sort (FUNCTION), action = DROP, offset = 4431, line number = 64, charPositionInLine = 14
+Reference: Object = func_part_create() (FUNCTION), action = CREATE, offset = 4483, line number = 65, charPositionInLine = 27
+Reference: Object = func_part_create (FUNCTION), action = DROP, offset = 4685, line number = 71, charPositionInLine = 14
+Reference: Object = casttesttype_in(cstring) (FUNCTION), action = CREATE, offset = 4722, line number = 73, charPositionInLine = 16
+Reference: Object = casttesttype_out(casttesttype) (FUNCTION), action = CREATE, offset = 4832, line number = 74, charPositionInLine = 16
+Reference: Object = casttestfunc(casttesttype) (FUNCTION), action = CREATE, offset = 4944, line number = 75, charPositionInLine = 16
+Reference: Object = int4_casttesttype(integer) (FUNCTION), action = CREATE, offset = 5033, line number = 76, charPositionInLine = 16
+Reference: Object = least_accum(anyelement, anyarray) (FUNCTION), action = CREATE, offset = 5165, line number = 77, charPositionInLine = 16
+Reference: Object = sum3(bigint, bigint, bigint) (FUNCTION), action = CREATE, offset = 5357, line number = 81, charPositionInLine = 16
+Reference: Object = f_leak(text) (FUNCTION), action = CREATE, offset = 5474, line number = 82, charPositionInLine = 27
+Reference: Object = hs_subxids(integer) (FUNCTION), action = CREATE, offset = 5631, line number = 85, charPositionInLine = 27
+Reference: Object = f_leak(text) (FUNCTION), action = CREATE, offset = 5896, line number = 96, charPositionInLine = 16
+Reference: Object = sp_parallel_restricted(integer) (FUNCTION), action = CREATE, offset = 6048, line number = 99, charPositionInLine = 16
+Reference: Object = public (SCHEMA), action = null, offset = 6181, line number = 100, charPositionInLine = 27
+Reference: Object = public.xpath_name_agg(xml, text, text, text) (FUNCTION), action = CREATE, offset = 6188, line number = 100, charPositionInLine = 34
+Reference: Object = namelen(person_type) (FUNCTION), action = CREATE, offset = 6543, line number = 106, charPositionInLine = 16
+Reference: Object = report_guc (FUNCTION), action = ALTER, offset = 6637, line number = 107, charPositionInLine = 15
+Reference: Object = report_guc (FUNCTION), action = ALTER, offset = 6691, line number = 108, charPositionInLine = 15
+Reference: Object = myfunc(integer) (FUNCTION), action = CREATE, offset = 6746, line number = 109, charPositionInLine = 27
+Reference: Object = public (SCHEMA), action = null, offset = 6891, line number = 115, charPositionInLine = 15
+Reference: Object = public.namelen (FUNCTION), action = ALTER, offset = 6898, line number = 115, charPositionInLine = 22
+Reference: Object = public (SCHEMA), action = null, offset = 6960, line number = 116, charPositionInLine = 15
+Reference: Object = public.namelen (FUNCTION), action = ALTER, offset = 6967, line number = 116, charPositionInLine = 22
+Reference: Object = functest_s_1(text, date) (FUNCTION), action = CREATE, offset = 7062, line number = 122, charPositionInLine = 16
+Reference: Object = functest_s_2(text[]) (FUNCTION), action = CREATE, offset = 7184, line number = 125, charPositionInLine = 16
+Reference: Object = functest_s_3() (FUNCTION), action = CREATE, offset = 7257, line number = 127, charPositionInLine = 16
+Reference: Object = functest_s_3a() (FUNCTION), action = CREATE, offset = 7322, line number = 129, charPositionInLine = 16
+Reference: Object = functest_s_10(text, date) (FUNCTION), action = CREATE, offset = 7422, line number = 134, charPositionInLine = 16
+Reference: Object = functest_s_13() (FUNCTION), action = CREATE, offset = 7576, line number = 140, charPositionInLine = 16
+Reference: Object = functest_s_15(integer) (FUNCTION), action = CREATE, offset = 7709, line number = 147, charPositionInLine = 16
+Reference: Object = functest_s_14() (FUNCTION), action = CREATE, offset = 7851, line number = 153, charPositionInLine = 16
+Reference: Object = functest_is_6() (FUNCTION), action = CREATE, offset = 7949, line number = 156, charPositionInLine = 16
+Reference: Object = functest_is_7() (FUNCTION), action = CREATE, offset = 8048, line number = 161, charPositionInLine = 16
+Reference: Object = functest_sri2() (FUNCTION), action = CREATE, offset = 8159, line number = 166, charPositionInLine = 16

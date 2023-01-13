@@ -1,0 +1,12 @@
+Reference: action = BACKUP, offset = 0, line number = 1, charPositionInLine = 0
+Reference: action = BACKUP, offset = 333, line number = 9, charPositionInLine = 0
+Reference: action = BACKUP, offset = 677, line number = 17, charPositionInLine = 0
+Reference: action = BACKUP, offset = 781, line number = 21, charPositionInLine = 0
+Reference: action = BACKUP, offset = 836, line number = 23, charPositionInLine = 0
+Reference: action = BACKUP, offset = 971, line number = 28, charPositionInLine = 0
+Reference: action = BACKUP, offset = 1133, line number = 35, charPositionInLine = 0
+Reference: action = BACKUP, offset = 1329, line number = 43, charPositionInLine = 0
+Reference: action = BACKUP, offset = 1508, line number = 49, charPositionInLine = 0
+Reference: action = BACKUP, offset = 1622, line number = 53, charPositionInLine = 0
+Reference: action = BACKUP, offset = 1754, line number = 56, charPositionInLine = 0
+Reference: action = BACKUP, offset = 1804, line number = 59, charPositionInLine = 0

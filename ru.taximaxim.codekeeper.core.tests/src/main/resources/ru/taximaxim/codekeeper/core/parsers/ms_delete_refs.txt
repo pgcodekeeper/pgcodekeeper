@@ -1,0 +1,34 @@
+Reference: Object = "Sales" (SCHEMA), action = null, offset = 1116, line number = 39, charPositionInLine = 12
+Reference: Object = "Sales"."SalesPersonQuotaHistory" (TABLE), action = DELETE, offset = 1122, line number = 39, charPositionInLine = 18
+Reference: Object = "Production" (SCHEMA), action = null, offset = 1286, line number = 45, charPositionInLine = 12
+Reference: Object = "Production"."ProductCostHistory" (TABLE), action = DELETE, offset = 1297, line number = 45, charPositionInLine = 23
+Reference: Object = "Production" (SCHEMA), action = null, offset = 1357, line number = 49, charPositionInLine = 7
+Reference: Object = "Production"."ProductCostHistory" (TABLE), action = DELETE, offset = 1368, line number = 49, charPositionInLine = 18
+Reference: action = PRINT, offset = 1457, line number = 52, charPositionInLine = 0
+Reference: action = DECLARE, offset = 1646, line number = 57, charPositionInLine = 0
+Reference: action = OPEN, offset = 1937, line number = 64, charPositionInLine = 0
+Reference: action = FETCH, offset = 1958, line number = 65, charPositionInLine = 0
+Reference: Object = "HumanResources" (SCHEMA), action = null, offset = 1997, line number = 66, charPositionInLine = 12
+Reference: Object = "HumanResources"."EmployeePayHistory" (TABLE), action = DELETE, offset = 2012, line number = 66, charPositionInLine = 27
+Reference: action = CLOSE, offset = 2064, line number = 68, charPositionInLine = 0
+Reference: action = DEALLOCATE, offset = 2086, line number = 69, charPositionInLine = 0
+Reference: Object = "Sales" (SCHEMA), action = null, offset = 2285, line number = 75, charPositionInLine = 12
+Reference: Object = "Sales"."SalesPersonQuotaHistory" (TABLE), action = DELETE, offset = 2291, line number = 75, charPositionInLine = 18
+Reference: Object = "Sales" (SCHEMA), action = null, offset = 2453, line number = 82, charPositionInLine = 12
+Reference: Object = "Sales"."SalesPersonQuotaHistory" (TABLE), action = DELETE, offset = 2459, line number = 82, charPositionInLine = 18
+Reference: Object = spqh (TABLE), action = DELETE, offset = 2652, line number = 89, charPositionInLine = 7
+Reference: Object = "Purchasing" (SCHEMA), action = null, offset = 3003, line number = 100, charPositionInLine = 5
+Reference: Object = "Purchasing"."PurchaseOrderDetail" (TABLE), action = DELETE, offset = 3014, line number = 100, charPositionInLine = 16
+Reference: Object = "Purchasing" (SCHEMA), action = null, offset = 3078, line number = 104, charPositionInLine = 12
+Reference: Object = "Purchasing"."PurchaseOrderDetail" (TABLE), action = DELETE, offset = 3089, line number = 104, charPositionInLine = 23
+Reference: action = USE, offset = 3388, line number = 114, charPositionInLine = 0
+Reference: action = EXEC, offset = 3542, line number = 119, charPositionInLine = 0
+Reference: Object = "HumanResources" (SCHEMA), action = null, offset = 3758, line number = 126, charPositionInLine = 39
+Reference: Object = "HumanResources"."Department" (TABLE), action = DELETE, offset = 3773, line number = 126, charPositionInLine = 54
+Reference: Object = "Sales" (SCHEMA), action = null, offset = 4533, line number = 147, charPositionInLine = 7
+Reference: Object = "Sales"."ShoppingCartItem" (TABLE), action = DELETE, offset = 4539, line number = 147, charPositionInLine = 13
+Reference: action = SELECT, offset = 4681, line number = 152, charPositionInLine = 0
+Reference: action = DECLARE, offset = 4912, line number = 158, charPositionInLine = 0
+Reference: Object = "Production" (SCHEMA), action = null, offset = 5076, line number = 164, charPositionInLine = 7
+Reference: Object = "Production"."ProductProductPhoto" (TABLE), action = DELETE, offset = 5087, line number = 164, charPositionInLine = 18
+Reference: action = SELECT, offset = 5425, line number = 176, charPositionInLine = 0

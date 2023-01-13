@@ -1,0 +1,8 @@
+Reference: action = BACKUP, offset = 0, line number = 1, charPositionInLine = 0
+Reference: action = BACKUP, offset = 73, line number = 3, charPositionInLine = 0
+Reference: action = BACKUP, offset = 263, line number = 7, charPositionInLine = 0
+Reference: action = BACKUP, offset = 499, line number = 12, charPositionInLine = 0
+Reference: action = ALTER CERTIFICATE, offset = 707, line number = 16, charPositionInLine = 0
+Reference: action = ALTER CERTIFICATE, offset = 875, line number = 20, charPositionInLine = 0
+Reference: action = ALTER CERTIFICATE, offset = 1026, line number = 24, charPositionInLine = 0
+Reference: action = ALTER CERTIFICATE, offset = 1178, line number = 28, charPositionInLine = 0

@@ -1,0 +1,45 @@
+Reference: action = USE, offset = 217, line number = 5, charPositionInLine = 0
+Reference: Object = DaysToBuild (PROCEDURE), action = CREATE, offset = 263, line number = 8, charPositionInLine = 17
+Reference: Object = ManyDaysToComplete (PROCEDURE), action = CREATE, offset = 1362, line number = 46, charPositionInLine = 17
+Reference: action = SELECT, offset = 2170, line number = 70, charPositionInLine = 0
+Reference: action = USE, offset = 2482, line number = 81, charPositionInLine = 0
+Reference: action = SELECT, offset = 2509, line number = 83, charPositionInLine = 0
+Reference: action = USE, offset = 2842, line number = 94, charPositionInLine = 0
+Reference: action = SELECT, offset = 2869, line number = 96, charPositionInLine = 0
+Reference: action = USE, offset = 3307, line number = 107, charPositionInLine = 0
+Reference: action = SELECT, offset = 3334, line number = 109, charPositionInLine = 0
+Reference: action = USE, offset = 3689, line number = 122, charPositionInLine = 0
+Reference: action = SELECT, offset = 3716, line number = 124, charPositionInLine = 0
+Reference: action = USE, offset = 4178, line number = 138, charPositionInLine = 0
+Reference: Object = FindEmployee (PROCEDURE), action = CREATE, offset = 4222, line number = 140, charPositionInLine = 17
+Reference: action = EXEC, offset = 4454, line number = 147, charPositionInLine = 0
+Reference: action = USE, offset = 4496, line number = 150, charPositionInLine = 0
+Reference: Object = FindEmployee (PROCEDURE), action = CREATE, offset = 4540, line number = 152, charPositionInLine = 17
+Reference: action = EXEC, offset = 4775, line number = 159, charPositionInLine = 0
+Reference: Object = t (TABLE), action = CREATE, offset = 4977, line number = 165, charPositionInLine = 13
+Reference: Object = t (TABLE), action = INSERT, offset = 5008, line number = 166, charPositionInLine = 12
+Reference: action = SELECT, offset = 5034, line number = 167, charPositionInLine = 0
+Reference: Object = t (TABLE), action = CREATE, offset = 5157, line number = 172, charPositionInLine = 13
+Reference: Object = t (TABLE), action = INSERT, offset = 5189, line number = 173, charPositionInLine = 12
+Reference: action = SELECT, offset = 5215, line number = 174, charPositionInLine = 0
+Reference: Object = t (TABLE), action = CREATE, offset = 5351, line number = 179, charPositionInLine = 13
+Reference: Object = t (TABLE), action = INSERT, offset = 5384, line number = 180, charPositionInLine = 12
+Reference: action = SELECT, offset = 5410, line number = 181, charPositionInLine = 0
+Reference: action = USE, offset = 5588, line number = 188, charPositionInLine = 0
+Reference: action = SELECT, offset = 5615, line number = 190, charPositionInLine = 0
+Reference: action = USE, offset = 5793, line number = 198, charPositionInLine = 0
+Reference: action = SELECT, offset = 5820, line number = 200, charPositionInLine = 0
+Reference: action = USE, offset = 6150, line number = 211, charPositionInLine = 0
+Reference: action = SELECT, offset = 6177, line number = 213, charPositionInLine = 0
+Reference: action = USE, offset = 6515, line number = 224, charPositionInLine = 0
+Reference: action = IF, offset = 6530, line number = 226, charPositionInLine = 0
+Reference: action = USE, offset = 6649, line number = 230, charPositionInLine = 0
+Reference: Object = mytbl2 (TABLE), action = CREATE, offset = 6677, line number = 232, charPositionInLine = 13
+Reference: Object = mytbl2 (TABLE), action = INSERT, offset = 6711, line number = 237, charPositionInLine = 7
+Reference: action = SELECT, offset = 6785, line number = 239, charPositionInLine = 0
+Reference: action = USE, offset = 6964, line number = 247, charPositionInLine = 0
+Reference: action = SELECT, offset = 6991, line number = 249, charPositionInLine = 0
+Reference: action = USE, offset = 7095, line number = 254, charPositionInLine = 0
+Reference: action = SELECT, offset = 7122, line number = 256, charPositionInLine = 0
+Reference: action = USE, offset = 7419, line number = 266, charPositionInLine = 0
+Reference: action = SELECT, offset = 7446, line number = 268, charPositionInLine = 0

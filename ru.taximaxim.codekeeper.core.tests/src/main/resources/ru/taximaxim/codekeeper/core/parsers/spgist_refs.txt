@@ -1,0 +1,27 @@
+Reference: Object = spgist_point_tbl (TABLE), action = CREATE, offset = 151, line number = 7, charPositionInLine = 13
+Reference: Object = spgist_point_idx (INDEX), action = CREATE, offset = 200, line number = 8, charPositionInLine = 13
+Reference: Object = spgist_point_tbl (TABLE), action = null, offset = 220, line number = 8, charPositionInLine = 33
+Reference: Object = spgist_point_tbl (TABLE), action = INSERT, offset = 400, line number = 12, charPositionInLine = 12
+Reference: Object = spgist_point_tbl (TABLE), action = DELETE, offset = 496, line number = 14, charPositionInLine = 12
+Reference: action = VACUUM, offset = 527, line number = 15, charPositionInLine = 0
+Reference: Object = spgist_point_tbl (TABLE), action = INSERT, offset = 623, line number = 18, charPositionInLine = 12
+Reference: Object = spgist_point_tbl (TABLE), action = INSERT, offset = 727, line number = 20, charPositionInLine = 12
+Reference: Object = spgist_point_tbl (TABLE), action = DELETE, offset = 902, line number = 24, charPositionInLine = 12
+Reference: Object = spgist_point_tbl (TABLE), action = DELETE, offset = 1124, line number = 29, charPositionInLine = 12
+Reference: action = VACUUM, offset = 1160, line number = 31, charPositionInLine = 0
+Reference: Object = spgist_box_tbl (TABLE), action = CREATE, offset = 1338, line number = 37, charPositionInLine = 13
+Reference: Object = spgist_box_tbl (TABLE), action = INSERT, offset = 1384, line number = 38, charPositionInLine = 12
+Reference: Object = spgist_box_idx (INDEX), action = CREATE, offset = 1555, line number = 43, charPositionInLine = 13
+Reference: Object = spgist_box_tbl (TABLE), action = null, offset = 1573, line number = 43, charPositionInLine = 31
+Reference: action = SELECT, offset = 1607, line number = 45, charPositionInLine = 0
+Reference: Object = spgist_text_tbl (TABLE), action = CREATE, offset = 1968, line number = 53, charPositionInLine = 13
+Reference: Object = spgist_text_idx (INDEX), action = CREATE, offset = 2015, line number = 54, charPositionInLine = 13
+Reference: Object = spgist_text_tbl (TABLE), action = null, offset = 2034, line number = 54, charPositionInLine = 32
+Reference: Object = spgist_text_tbl (TABLE), action = INSERT, offset = 2080, line number = 56, charPositionInLine = 12
+Reference: Object = spgist_text_tbl (TABLE), action = INSERT, offset = 2452, line number = 64, charPositionInLine = 12
+Reference: Object = spgist_point_idx2 (INDEX), action = CREATE, offset = 2612, line number = 68, charPositionInLine = 13
+Reference: Object = spgist_point_tbl (TABLE), action = null, offset = 2633, line number = 68, charPositionInLine = 34
+Reference: Object = spgist_point_idx2 (INDEX), action = CREATE, offset = 2702, line number = 69, charPositionInLine = 13
+Reference: Object = spgist_point_tbl (TABLE), action = null, offset = 2723, line number = 69, charPositionInLine = 34
+Reference: Object = spgist_point_idx (INDEX), action = ALTER, offset = 2833, line number = 72, charPositionInLine = 12
+Reference: action = REINDEX, offset = 2873, line number = 73, charPositionInLine = 0

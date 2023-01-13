@@ -1,0 +1,4 @@
+Reference: action = IF, offset = 0, line number = 1, charPositionInLine = 0
+Reference: Object = dbo (SCHEMA), action = null, offset = 179, line number = 5, charPositionInLine = 12
+Reference: Object = dbo.udt_pk (TYPE), action = CREATE, offset = 185, line number = 5, charPositionInLine = 18
+Reference: Object = "LocationTableType" (TYPE), action = CREATE, offset = 277, line number = 9, charPositionInLine = 12

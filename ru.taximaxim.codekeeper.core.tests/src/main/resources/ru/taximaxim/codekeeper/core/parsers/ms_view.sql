@@ -1,0 +1,3 @@
+CREATE VIEW v1 AS
+SELECT c1, c2
+FROM t1;

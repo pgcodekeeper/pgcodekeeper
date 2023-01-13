@@ -30,6 +30,7 @@ class MsParserTest {
 
     @ParameterizedTest
     @ValueSource(strings =  {
+            "ms_aggregate",
             "ms_assemblies",
             "ms_authorizations",
             "ms_availability_group",
@@ -59,6 +60,7 @@ class MsParserTest {
             "ms_type",
             "ms_update",
             "ms_users",
+            "ms_view",
     })
     void parse(final String fileNameTemplate) throws IOException {
         parse(fileNameTemplate, 0);

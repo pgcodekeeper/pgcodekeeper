@@ -1,0 +1,55 @@
+Reference: action = USE, offset = 141, line number = 4, charPositionInLine = 0
+Reference: action = BEGIN TRANSACTION, offset = 168, line number = 6, charPositionInLine = 0
+Reference: action = IF, offset = 190, line number = 8, charPositionInLine = 0
+Reference: action = ROLLBACK, offset = 404, line number = 15, charPositionInLine = 0
+Reference: action = PRINT, offset = 426, line number = 16, charPositionInLine = 0
+Reference: action = DECLARE, offset = 1442, line number = 48, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 1484, line number = 49, charPositionInLine = 0
+Reference: action = IF, offset = 1572, line number = 52, charPositionInLine = 0
+Reference: action = IF, offset = 1966, line number = 64, charPositionInLine = 0
+Reference: action = USE, offset = 2166, line number = 70, charPositionInLine = 0
+Reference: action = IF, offset = 2193, line number = 72, charPositionInLine = 0
+Reference: action = USE, offset = 2491, line number = 81, charPositionInLine = 0
+Reference: action = DECLARE, offset = 2518, line number = 83, charPositionInLine = 0
+Reference: action = IF, offset = 2566, line number = 84, charPositionInLine = 0
+Reference: action = DECLARE, offset = 3449, line number = 111, charPositionInLine = 0
+Reference: action = SET, offset = 3470, line number = 112, charPositionInLine = 0
+Reference: action = IF, offset = 3488, line number = 113, charPositionInLine = 0
+Reference: Object = findjobs (PROCEDURE), action = CREATE, offset = 3824, line number = 127, charPositionInLine = 17
+Reference: Object = dbo (SCHEMA), action = null, offset = 4557, line number = 155, charPositionInLine = 13
+Reference: Object = dbo."TestRethrow" (TABLE), action = CREATE, offset = 4561, line number = 155, charPositionInLine = 17
+Reference: action = BEGIN, offset = 4600, line number = 158, charPositionInLine = 0
+Reference: action = EXEC, offset = 4946, line number = 172, charPositionInLine = 0
+Reference: action = DECLARE, offset = 5174, line number = 179, charPositionInLine = 0
+Reference: action = THROW, offset = 5268, line number = 181, charPositionInLine = 0
+Reference: action = IF, offset = 5493, line number = 187, charPositionInLine = 0
+Reference: Object = usp_GetErrorInfo (PROCEDURE), action = CREATE, offset = 5656, line number = 192, charPositionInLine = 17
+Reference: action = BEGIN, offset = 5903, line number = 203, charPositionInLine = 0
+Reference: action = BEGIN, offset = 6162, line number = 215, charPositionInLine = 0
+Reference: action = BEGIN TRANSACTION, offset = 6623, line number = 233, charPositionInLine = 0
+Reference: action = BEGIN, offset = 6643, line number = 235, charPositionInLine = 0
+Reference: action = IF, offset = 7099, line number = 253, charPositionInLine = 0
+Reference: action = IF, offset = 7308, line number = 261, charPositionInLine = 0
+Reference: Object = usp_GetErrorInfo (PROCEDURE), action = CREATE, offset = 7470, line number = 266, charPositionInLine = 17
+Reference: action = SET, offset = 7857, line number = 279, charPositionInLine = 0
+Reference: action = BEGIN, offset = 7877, line number = 281, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 9324, line number = 328, charPositionInLine = 0
+Reference: action = BEGIN, offset = 9366, line number = 329, charPositionInLine = 0
+Reference: action = BEGIN, offset = 9586, line number = 339, charPositionInLine = 0
+Reference: action = IF, offset = 9769, line number = 348, charPositionInLine = 0
+Reference: Object = dbo (SCHEMA), action = null, offset = 9887, line number = 351, charPositionInLine = 17
+Reference: Object = dbo.TimeDelay_hh_mm_ss (PROCEDURE), action = CREATE, offset = 9891, line number = 351, charPositionInLine = 21
+Reference: action = EXEC, offset = 10596, line number = 374, charPositionInLine = 0
+Reference: action = WAITFOR, offset = 10670, line number = 378, charPositionInLine = 0
+Reference: action = WAITFOR, offset = 10761, line number = 383, charPositionInLine = 0
+Reference: action = DECLARE, offset = 10881, line number = 388, charPositionInLine = 0
+Reference: action = WAITFOR, offset = 10927, line number = 389, charPositionInLine = 0
+Reference: action = USE, offset = 11321, line number = 400, charPositionInLine = 0
+Reference: action = WHILE, offset = 11348, line number = 402, charPositionInLine = 0
+Reference: action = PRINT, offset = 11629, line number = 412, charPositionInLine = 0
+Reference: action = DECLARE, offset = 11771, line number = 417, charPositionInLine = 0
+Reference: action = OPEN, offset = 11921, line number = 421, charPositionInLine = 0
+Reference: action = FETCH, offset = 11943, line number = 422, charPositionInLine = 0
+Reference: action = WHILE, offset = 11976, line number = 423, charPositionInLine = 0
+Reference: action = CLOSE, offset = 12057, line number = 427, charPositionInLine = 0
+Reference: action = DEALLOCATE, offset = 12080, line number = 428, charPositionInLine = 0

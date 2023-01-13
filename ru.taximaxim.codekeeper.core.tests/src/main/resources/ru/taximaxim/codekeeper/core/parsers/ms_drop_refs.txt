@@ -1,0 +1,40 @@
+Reference: Object = rolename (ROLE), action = DROP, offset = 54, line number = 2, charPositionInLine = 22
+Reference: Object = "Helloworld" (ASSEMBLY), action = DROP, offset = 77, line number = 3, charPositionInLine = 14
+Reference: action = DROP ASYMMETRIC KEY, offset = 90, line number = 4, charPositionInLine = 0
+Reference: action = DROP DATABASE ENCRYPTION KEY, offset = 660, line number = 20, charPositionInLine = 0
+Reference: action = DROP EXTERNAL LIBRARY, offset = 895, line number = 27, charPositionInLine = 0
+Reference: action = ALTER RESOURCE GOVERNOR, offset = 990, line number = 30, charPositionInLine = 0
+Reference: Object = "SalesPerson" (TABLE), action = DROP, offset = 1050, line number = 32, charPositionInLine = 20
+Reference: Object = dbo (SCHEMA), action = null, offset = 1083, line number = 33, charPositionInLine = 20
+Reference: Object = dbo."SalesPerson" (TABLE), action = DROP, offset = 1087, line number = 33, charPositionInLine = 24
+Reference: Object = dbo (SCHEMA), action = null, offset = 1136, line number = 34, charPositionInLine = 36
+Reference: Object = dbo."SalesPerson" (TABLE), action = DROP, offset = 1140, line number = 34, charPositionInLine = 40
+Reference: Object = dbo (SCHEMA), action = null, offset = 1189, line number = 35, charPositionInLine = 36
+Reference: Object = dbo."SalesPerson" (TABLE), action = DROP, offset = 1193, line number = 35, charPositionInLine = 40
+Reference: action = DROP EVENT NOTIFICATION, offset = 1206, line number = 36, charPositionInLine = 0
+Reference: action = DROP EVENT SESSION, offset = 1258, line number = 38, charPositionInLine = 0
+Reference: Object = "Sales" (SCHEMA), action = null, offset = 1413, line number = 42, charPositionInLine = 14
+Reference: Object = "Sales".fn_SalesByStore (FUNCTION), action = DROP, offset = 1419, line number = 42, charPositionInLine = 20
+Reference: action = DROP MASTER KEY, offset = 1459, line number = 45, charPositionInLine = 0
+Reference: Object = "//Adventure-Works.com/Expenses/SubmitExpense" (TYPE), action = DROP, offset = 1494, line number = 46, charPositionInLine = 18
+Reference: Object = myRangePF (FUNCTION), action = DROP, offset = 1567, line number = 47, charPositionInLine = 24
+Reference: Object = dbo (SCHEMA), action = null, offset = 1627, line number = 49, charPositionInLine = 15
+Reference: Object = dbo.uspMyProc (PROCEDURE), action = DROP, offset = 1631, line number = 49, charPositionInLine = 19
+Reference: action = ALTER RESOURCE GOVERNOR, offset = 1740, line number = 54, charPositionInLine = 0
+Reference: Object = purchasing (ROLE), action = DROP, offset = 1790, line number = 56, charPositionInLine = 10
+Reference: Object = schema_name (SCHEMA), action = DROP, offset = 1869, line number = 60, charPositionInLine = 12
+Reference: Object = "CountBy1" (SEQUENCE), action = DROP, offset = 1980, line number = 64, charPositionInLine = 14
+Reference: Object = purchasing (ROLE), action = DROP, offset = 2098, line number = 67, charPositionInLine = 17
+Reference: action = DROP SIGNATURE, offset = 2161, line number = 70, charPositionInLine = 0
+Reference: action = DROP SYMMETRIC KEY, offset = 2342, line number = 73, charPositionInLine = 0
+Reference: Object = dbo (SCHEMA), action = null, offset = 2434, line number = 75, charPositionInLine = 30
+Reference: Object = dbo."SalesPerson2" (TABLE), action = DROP, offset = 2438, line number = 75, charPositionInLine = 34
+Reference: Object = "#temptable" (TABLE), action = DROP, offset = 2464, line number = 76, charPositionInLine = 11
+Reference: Object = "T1" (TABLE), action = DROP, offset = 2497, line number = 77, charPositionInLine = 21
+Reference: Object = employee_insupd (TRIGGER), action = DROP, offset = 2514, line number = 78, charPositionInLine = 13
+Reference: Object = ssn (TYPE), action = DROP, offset = 2541, line number = 79, charPositionInLine = 10
+Reference: Object = "AbolrousHazem" (USER), action = DROP, offset = 2557, line number = 80, charPositionInLine = 10
+Reference: Object = dbo (SCHEMA), action = null, offset = 2585, line number = 82, charPositionInLine = 10
+Reference: Object = dbo."Reorder" (VIEW), action = DROP, offset = 2589, line number = 82, charPositionInLine = 14
+Reference: action = ALTER RESOURCE GOVERNOR, offset = 2632, line number = 86, charPositionInLine = 0
+Reference: Object = "ManuInstructionsSchemaCollection" (SCHEMA), action = DROP, offset = 2699, line number = 88, charPositionInLine = 27

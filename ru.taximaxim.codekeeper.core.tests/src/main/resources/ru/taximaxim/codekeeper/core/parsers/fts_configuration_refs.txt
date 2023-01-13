@@ -1,0 +1,6 @@
+Reference: Object = public (SCHEMA), action = null, offset = 33, line number = 1, charPositionInLine = 33
+Reference: Object = public.english_ns (FTS_CONFIGURATION), action = CREATE, offset = 40, line number = 1, charPositionInLine = 40
+Reference: Object = public (SCHEMA), action = null, offset = 104, line number = 3, charPositionInLine = 32
+Reference: Object = public.english_ns (FTS_CONFIGURATION), action = ALTER, offset = 111, line number = 3, charPositionInLine = 39
+Reference: Object = public (SCHEMA), action = null, offset = 200, line number = 6, charPositionInLine = 31
+Reference: Object = public.english_ns (FTS_CONFIGURATION), action = DROP, offset = 207, line number = 6, charPositionInLine = 38
