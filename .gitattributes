@@ -1,4 +1,4 @@
-ru.taximaxim.codekeeper.core.tests/src/main/resources/* linguist-vendored
-ru.taximaxim.codekeeper.ui.tests/resources/* linguist-vendored
-ru.taximaxim.codekeeper.cli.tests/resources/* linguist-vendored
+ru.taximaxim.codekeeper.core.tests/src/main/resources/** linguist-vendored
+ru.taximaxim.codekeeper.ui.tests/resources/** linguist-vendored
+ru.taximaxim.codekeeper.cli.tests/resources/** linguist-vendored
 

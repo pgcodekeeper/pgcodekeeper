@@ -69,11 +69,14 @@ public abstract class AbstractModelExporter {
     protected final Collection<TreeElement> changeList;
 
     /**
-     * Creates a new ModelExporter object with set {@link #outDir} and {@link #newDb}
-     * and {@link #sqlEncoding}.
+     * Creates a new ModelExporter object with set {@link #outDir} and {@link #newDb} and {@link #sqlEncoding}.
      *
-     * @param outDir outDir, directory should be empty or not exist
-     * @param newDb database
+     * @param outDir
+     *            outDir, directory should be empty or not exist
+     * @param db
+     *            database
+     * @param sqlEncoding
+     *            encoding
      */
     public AbstractModelExporter(Path outDir, PgDatabase db, String sqlEncoding) {
         this(outDir, db, null, null, sqlEncoding);

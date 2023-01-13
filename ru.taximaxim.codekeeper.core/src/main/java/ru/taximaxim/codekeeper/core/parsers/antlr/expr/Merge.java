@@ -41,9 +41,9 @@ public class Merge extends AbstractExprWithNmspc<Merge_stmt_for_psqlContext>  {
 
         select.addNameReference(merge.merge_table_name, merge.alias, null);
 
-        Schema_qualified_nameContext source_table = merge.source_table_name;
-        if (source_table != null) {
-            select.addNameReference(source_table, merge.source_alias, null);
+        Schema_qualified_nameContext sourceTable = merge.source_table_name;
+        if (sourceTable != null) {
+            select.addNameReference(sourceTable, merge.source_alias, null);
         } else {
             String tableSubQueryAlias = merge.source_alias.getText();
             select.addReference(tableSubQueryAlias, null);

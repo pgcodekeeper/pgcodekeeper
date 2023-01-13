@@ -218,9 +218,12 @@ public class CreateAggregate extends ParserAbstract {
     /**
      * Gets the signature for the given function name.
      *
-     * @param aggregate aggregate object
-     * @param paramName name of parameter
-     * @return
+     * @param aggregate
+     *            aggregate object
+     * @param paramName
+     *            name of parameter
+     *
+     * @return function signature
      */
     public static String getParamFuncSignature(PgAggregate aggregate, AggFuncs paramName) {
         StringBuilder sb = new StringBuilder();

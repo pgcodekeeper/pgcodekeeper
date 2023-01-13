@@ -1,4 +1,4 @@
-package ru.taximaxim.codekeeper.core;
+package ru.taximaxim.codekeeper.cli;
 
 import java.io.IOException;
 

@@ -136,8 +136,7 @@ public class AntlrParser {
 
     public static void parseSqlStream(InputStreamProvider inputStream, String charsetName,
             String parsedObjectName, List<Object> errors, IProgressMonitor mon, int monitoringLevel,
-            SqlContextProcessor listener, Queue<AntlrTask<?>> antlrTasks)
-                    throws InterruptedException {
+            SqlContextProcessor listener, Queue<AntlrTask<?>> antlrTasks) {
         submitAntlrTask(antlrTasks, () -> {
             PgDiffUtils.checkCancelled(mon);
             try(InputStream stream = inputStream.getStream()) {
@@ -161,8 +160,7 @@ public class AntlrParser {
 
     public static void parseTSqlStream(InputStreamProvider inputStream, String charsetName,
             String parsedObjectName, List<Object> errors, IProgressMonitor mon, int monitoringLevel,
-            TSqlContextProcessor listener, Queue<AntlrTask<?>> antlrTasks)
-                    throws InterruptedException {
+            TSqlContextProcessor listener, Queue<AntlrTask<?>> antlrTasks) {
         submitAntlrTask(antlrTasks, () -> {
             PgDiffUtils.checkCancelled(mon);
             try(InputStream stream = inputStream.getStream()) {

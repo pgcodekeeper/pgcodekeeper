@@ -6,11 +6,9 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 import ru.taximaxim.codekeeper.core.loader.PgDumpLoader;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
@@ -25,8 +23,7 @@ public final class TestUtils {
 
     public static final String RESOURCE_DUMP = "testing_dump.sql";
     public static final String RESOURCE_MS_DUMP = "testing_ms_dump.sql";
-    public static final List<String> IGNORED_SCHEMAS_LIST = Collections.unmodifiableList(Arrays.asList(
-            "worker", "country", "ignore1", "ignore4vrw"));
+    public static final List<String> IGNORED_SCHEMAS_LIST = List.of("worker", "country", "ignore1", "ignore4vrw");
 
     public static PgDatabase loadTestDump(String resource, Class<?> c, PgDiffArguments args)
             throws IOException, InterruptedException {
@@ -64,25 +61,15 @@ public final class TestUtils {
     public static void runDiffSame(PgDatabase db, String template, PgDiffArguments args)
             throws IOException, InterruptedException {
         String script = new PgDiff(args).diffDatabaseSchemas(db, db, null);
-        Assert.assertEquals("File name template: " + template, "", script.trim());
+        Assertions.assertEquals("", script.trim(), "File name template: " + template);
     }
 
     public static void compareResult(String script, String template,
             Class<?> clazz) throws IOException {
-        Assert.assertEquals("File name template: " + template,
+        Assertions.assertEquals(
                 TestUtils.inputStreamToString(clazz.getResourceAsStream(
                         template + FILES_POSTFIX.DIFF_SQL)).trim(),
-                script.trim());
-    }
-
-    public static Iterable<Object[]> getParameters(Object[][] objects) {
-        List<Object[]> p = Arrays.asList(objects);
-        int maxLength = p.stream()
-                .mapToInt(oo -> oo.length)
-                .max().getAsInt();
-        return p.stream()
-                .map(oo -> oo.length < maxLength ? Arrays.copyOf(oo, maxLength) : oo)
-                ::iterator;
+                script.trim(), "File name template: " + template);
     }
 
     /**
@@ -102,14 +89,14 @@ public final class TestUtils {
         }
     }
 
-    private TestUtils() {
-    }
-
     public static void createIgnoredSchemaFile(Path dir) throws IOException {
         String rule = "SHOW ALL \n"
                 + "HIDE NONE country \n"
                 + "HIDE NONE worker  \n"
                 + "HIDE REGEX 'ignore.*' ";
         Files.write(dir.resolve(".pgcodekeeperignoreschema"), rule.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private TestUtils() {
     }
 }

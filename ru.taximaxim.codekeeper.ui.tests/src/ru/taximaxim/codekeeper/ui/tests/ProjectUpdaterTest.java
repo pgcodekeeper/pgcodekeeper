@@ -1,7 +1,5 @@
 package ru.taximaxim.codekeeper.ui.tests;
 
-import static org.junit.Assert.fail;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitOption;
@@ -16,13 +14,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
+import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.fileutils.TempDir;
 import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
@@ -40,7 +39,7 @@ public class ProjectUpdaterTest {
     private TempDir workingDir;
     private TempDir referenceDir;
 
-    @Before
+    @BeforeEach
     public void before() throws IOException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(ENCODING);
@@ -59,7 +58,7 @@ public class ProjectUpdaterTest {
     }
 
     @Test
-    public void updateSuccessTest() throws IOException, PgCodekeeperUIException, CoreException{
+    public void updateSuccessTest() throws IOException, PgCodekeeperUIException, CoreException {
         File dir = workingDir.get().toFile();
         PgDbProject proj = PgDbProject.createPgDbProject(ResourcesPlugin.getWorkspace()
                 .getRoot().getProject(dir.getName()), dir.toURI(), false);
@@ -70,23 +69,23 @@ public class ProjectUpdaterTest {
 
         new ModelExporter(referenceDir.get(), dbOld, ENCODING).exportFull();
         if (compareFilesInPaths(workingDir.get(), referenceDir.get())){
-            fail("ProjectUpdate fail: expected bases to differ");
+            Assertions.fail("ProjectUpdate fail: expected bases to differ");
         }
         proj.getProject().close(null);
         proj.getProject().delete(false, true, null);
     }
 
-    @After
-    public void after(){
-        try{
+    @AfterEach
+    public void after() {
+        try {
             workingDir.close();
-        }catch(Exception ex){
+        } catch(Exception ex){
             Log.log(Log.LOG_WARNING, "Could not delete folder " +
                     (workingDir.get() == null ? "null" : workingDir.get()), ex);
         }
-        try{
+        try {
             referenceDir.close();
-        }catch(Exception ex){
+        } catch(Exception ex){
             Log.log(Log.LOG_WARNING, "Could not delete folder " +
                     (referenceDir.get() == null ? "null" : referenceDir.get()), ex);
         }
@@ -105,7 +104,7 @@ public class ProjectUpdaterTest {
         return !differs.get();
     }
 
-    private static class CompareHashFileVisitor extends SimpleFileVisitor<Path>{
+    private static class CompareHashFileVisitor extends SimpleFileVisitor<Path> {
         private final Path pathToBeCompared;
         private final Path pathToCompareTo;
         private final AtomicBoolean differs;
@@ -126,14 +125,13 @@ public class ProjectUpdaterTest {
 
         @Override
         public FileVisitResult visitFile(Path file1, BasicFileAttributes attrs)
-                throws IOException
-        {
-            if (file1.endsWith(PROJECT_FILE_NAME )){
+                throws IOException {
+            if (file1.endsWith(PROJECT_FILE_NAME )) {
                 return FileVisitResult.CONTINUE;
             }
             File file2 = new File(pathToCompareTo.toFile(),pathToBeCompared.relativize(file1).toString());
             if (!file2.exists() || file2.isDirectory() ||
-                    !Arrays.equals(Files.readAllBytes(file1), Files.readAllBytes(file2.toPath()))){
+                    !Arrays.equals(Files.readAllBytes(file1), Files.readAllBytes(file2.toPath()))) {
                 differs.set(true);
             }
             return FileVisitResult.CONTINUE;

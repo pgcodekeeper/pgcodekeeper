@@ -1,16 +1,15 @@
 package ru.taximaxim.codekeeper.core.model.graph;
 
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Stream;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
@@ -43,39 +42,20 @@ interface TreeElementCreator {
  *
  * @author ryabinin_av
  */
-@RunWith(value = Parameterized.class)
-public class DepcyTreeExtenderTest {
 
-    @Parameters
-    public static Iterable<Object[]> parameters() {
-        return TestUtils.getParameters(new Object[][] {
-            { new Predefined1(), 1 },
-            { new Predefined2(), 2 },
-            { new Predefined3(), 3 },
-            { new Predefined4(), 4 },
-            { new Predefined5(), 5 },
-            { new Predefined6(), 6 },
-        });
-    }
-
-    /**
-     * Index of the file that should be tested.
-     */
-    private final int fileIndex;
-    private final TreeElementCreator predefined;
-
-    public DepcyTreeExtenderTest(TreeElementCreator predefined, int fileIndex) {
-        this.predefined = predefined;
-        this.fileIndex = fileIndex;
-    }
-
+class DepcyTreeExtenderTest {
     /**
      * Тестирует зависимости от новых(и возможных edit) объектов, полученные из dte
      * @throws IOException
      * @throws InterruptedException
      */
-    @Test
-    public void testGetDependencies() throws IOException, InterruptedException {
+    @ParameterizedTest
+    @MethodSource("generator")
+    void testGetDependencies(TreeElementCreator predefined, int fileIndex) throws IOException, InterruptedException {
+        /**
+         * Index of the file that should be tested.
+         */
+
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(Consts.UTF_8);
 
@@ -92,7 +72,18 @@ public class DepcyTreeExtenderTest {
         DepcyTreeExtender dte = new DepcyTreeExtender(dbSource, dbTarget, tree);
         Set<TreeElement> depcy = dte.getDepcies();
         Set<TreeElement> depcyPredefined = predefined.getDepcySet(dbSource, dbTarget, tree);
-        assertTrue("List of dependencies is not as expected", depcy.equals(depcyPredefined));
+        Assertions.assertEquals(depcyPredefined, depcy, "List of dependencies is not as expected");
+    }
+
+    private static Stream<Arguments> generator() {
+
+        return Stream.of(
+                Arguments.of(new Predefined1(), 1),
+                Arguments.of(new Predefined2(), 2),
+                Arguments.of(new Predefined3(), 3),
+                Arguments.of(new Predefined4(), 4),
+                Arguments.of(new Predefined5(), 5),
+                Arguments.of(new Predefined6(), 6));
     }
 }
 

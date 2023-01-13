@@ -297,9 +297,9 @@ public class PgDatabase extends PgStatement implements IDatabase {
     }
 
     /**
-     * Getter for {@link #foreign data wrappers}. The list cannot be modified.
+     * Getter for {@link #fdws}. The list cannot be modified.
      *
-     * @return {@link #foreign data wrappers}
+     * @return {@link #fdws}
      */
     public Collection<PgForeignDataWrapper> getForeignDWs() {
         return Collections.unmodifiableCollection(fdws.values());
@@ -346,7 +346,7 @@ public class PgDatabase extends PgStatement implements IDatabase {
     }
 
     /**
-     * Getter for {@link #cast}. The list cannot be modified.
+     * Getter for {@link #casts}. The list cannot be modified.
      *
      * @return {@link #casts}
      */

@@ -99,7 +99,6 @@ public abstract class AbstractExpr {
     }
 
     /**
-     * @param schema optional schema qualification of name, may be null
      * @param name alias of the referenced object
      * @return a pair of (Alias, ColumnsList) where Alias is the given name.
      *          ColumnsList list of columns as pair 'columnName-columnType' of the internal query.<br>
@@ -248,8 +247,12 @@ public abstract class AbstractExpr {
     /**
      * Add a dependency only from the column of the user object. Always return its type.
      *
-     * @param relation user or system object which contains column 'colName'
-     * @param colName dependency from this column will be added
+     * @param schemaName
+     *            object schema
+     * @param relationName
+     *            user or system object which contains column 'colName'
+     * @param colName
+     *            dependency from this column will be added
      * @return column type
      */
     protected String addFilteredColumnDepcy(String schemaName, String relationName, String colName) {
@@ -281,25 +284,26 @@ public abstract class AbstractExpr {
     }
 
     /**
-     * Terminal operation must be called on the returned stream
-     * for depcy addition to take effect!
-     * <br><br>
-     * Returns a stream of relation columns filtered with the given predicate.
-     * When this stream is terminated, and if the relation is a user relation,
-     * side-effect depcy-addition is performed for all columns satisfying the predicate. <br>
-     * If a short-circuiting operation is used to terminate the stream
-     * then only some column depcies will be added.
-     *<br><br>
-     * This ugly solution was chosen because all others lead to any of the following:<ul>
-     * <li>code duplicaton </li>
-     * <li>depcy addition/relation search logic leaking into other classes </li>
-     * <li>inefficient filtering on the hot path (predicate matching a single column) </li>
-     * <li>and/or other performance/allocation inefficiencies </li>
+     * Terminal operation must be called on the returned stream for depcy addition to take effect! <br>
+     * <br>
+     * Returns a stream of relation columns filtered with the given predicate. When this stream is terminated, and if
+     * the relation is a user relation, side-effect depcy-addition is performed for all columns satisfying the
+     * predicate. <br>
+     * If a short-circuiting operation is used to terminate the stream then only some column depcies will be added. <br>
+     * <br>
+     * This ugly solution was chosen because all others lead to any of the following:<br>
+     * <ul>
+     * <li>code duplicaton</li>
+     * <li>depcy addition/relation search logic leaking into other classes</li>
+     * <li>inefficient filtering on the hot path (predicate matching a single column)</li>
+     * <li>and/or other performance/allocation inefficiencies</li>
+     * </ul>
+     *
      * @param schemaName
      * @param relationName
      * @param colNamePredicate
-     * @return column stream with  attached depcy-addition peek-step;
-     *          empty stream if no relation found
+     *
+     * @return column stream with attached depcy-addition peek-step; empty stream if no relation found
      */
     protected Stream<Pair<String, String>> addFilteredRelationColumnsDepcies(String schemaName,
             String relationName, Predicate<String> colNamePredicate) {

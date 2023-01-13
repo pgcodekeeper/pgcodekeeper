@@ -3,7 +3,7 @@ package ru.taximaxim.codekeeper.core.loader.callables;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 
-import ru.taximaxim.codekeeper.core.Consts.JDBC_CONSTS;
+import ru.taximaxim.codekeeper.core.Consts;
 
 public class QueryCallable extends StatementCallable<String> {
 
@@ -22,6 +22,6 @@ public class QueryCallable extends StatementCallable<String> {
         } else {
             st.execute(script);
         }
-        return JDBC_CONSTS.JDBC_SUCCESS;
+        return Consts.JDBC_SUCCESS;
     }
 }

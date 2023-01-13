@@ -93,7 +93,6 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.ISharedImages;
 import org.osgi.framework.Bundle;
 
-import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.libraries.PgLibrarySource;
 import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
@@ -136,6 +135,7 @@ public class DiffTableViewer extends Composite {
     private static final String GITLABEL_PROP = "GITLABEL_PROP"; //$NON-NLS-1$
 
     private static final ListXmlStore XML_HISTORY = new ListXmlStore(200, "fhistory.xml", "history", "element"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+    private static final Object[] EMPTY_ARRAY = new Object[0];
 
     private final boolean showGitUser;
     private boolean showDbUser;
@@ -1156,7 +1156,7 @@ public class DiffTableViewer extends Composite {
                 }
                 return childrenInInput.toArray();
             } else {
-                return Consts.EMPTY_ARRAY;
+                return EMPTY_ARRAY;
             }
         }
 

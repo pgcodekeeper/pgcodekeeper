@@ -12,17 +12,15 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.PgCodekeeperException;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.fileutils.TempDir;
@@ -88,48 +86,13 @@ import ru.taximaxim.codekeeper.core.schema.PgDatabase;
  *
  * @author ryabinin_av
  */
-
-@RunWith(value = Parameterized.class)
 public class PartialExporterTest {
 
     private static PgDatabase dbSource;
     private static PgDatabase dbTarget;
 
-    @Parameters
-    public static Iterable<Object[]> parameters() {
-        return TestUtils.getParameters(new PartialExportInfo[][] {
-            { new PartialExportInfoImpl1() },
-            { new PartialExportInfoImpl2() },
-            { new PartialExportInfoImpl3() },
-            { new PartialExportInfoImpl4() },
-            { new PartialExportInfoImpl5() },
-            { new PartialExportInfoImpl6() },
-            { new PartialExportInfoImpl7() },
-            { new PartialExportInfoImpl8() },
-            { new PartialExportInfoImpl9() },
-            { new PartialExportInfoImpl10() },
-            { new PartialExportInfoImpl11() },
-            { new PartialExportInfoImpl12() },
-            { new PartialExportInfoImpl13() },
-            { new PartialExportInfoImpl14() },
-            { new PartialExportInfoImpl15() },
-            { new PartialExportInfoImpl16() },
-            { new PartialExportInfoImpl17() },
-            { new PartialExportInfoImpl18() },
-            { new PartialExportInfoImpl19() },
-            { new PartialExportInfoImpl20() },
-            { new PartialExportInfoImpl21() },
-        });
-    }
-
-    private final PartialExportInfo info;
-
-    public PartialExporterTest(PartialExportInfo info) {
-        this.info = info;
-    }
-
-    @BeforeClass
-    public static void initDiffTree() throws InterruptedException, IOException {
+    @BeforeAll
+    static void initDiffTree() throws InterruptedException, IOException {
         String sourceFilename = "TestPartialExportSource.sql";
         String targetFilename = "TestPartialExportTarget.sql";
         PgDiffArguments args = new PgDiffArguments();
@@ -141,17 +104,14 @@ public class PartialExporterTest {
         dbTarget = TestUtils.loadTestDump(
                 targetFilename, PartialExporterTest.class, args, false);
 
-        Assert.assertNotNull(dbSource);
-        Assert.assertNotNull(dbTarget);
+        Assertions.assertNotNull(dbSource);
+        Assertions.assertNotNull(dbTarget);
     }
 
-    @Before
-    public void beforeTest() throws InterruptedException {
+    @ParameterizedTest
+    @MethodSource("generator")
+    void testExportPartial(PartialExportInfo info) throws Exception {
         info.setDiffTree(DiffTree.create(dbSource, dbTarget, null));
-    }
-
-    @Test
-    public void testExportPartial() throws IOException, PgCodekeeperException {
         Path exportDirFull = null;
         Path exportDirPartial = null;
         try  (TempDir dirFull = new TempDir("pgCodekeeper-test-files");
@@ -174,11 +134,36 @@ public class PartialExporterTest {
             new ModelExporter(exportDirPartial, dbTarget, dbSource,
                     list, Consts.UTF_8).exportPartial();
 
-            walkAndComare(exportDirFull, exportDirPartial);
+            walkAndComare(exportDirFull, exportDirPartial, info);
         }
     }
 
-    private void walkAndComare(Path exportDirFull, Path exportDirPartial) throws IOException {
+    private static Stream<Arguments> generator() {
+        return Stream.of(
+                Arguments.of(new PartialExportInfoImpl1()),
+                Arguments.of(new PartialExportInfoImpl2()),
+                Arguments.of(new PartialExportInfoImpl3()),
+                Arguments.of(new PartialExportInfoImpl4()),
+                Arguments.of(new PartialExportInfoImpl5()),
+                Arguments.of(new PartialExportInfoImpl6()),
+                Arguments.of(new PartialExportInfoImpl7()),
+                Arguments.of(new PartialExportInfoImpl8()),
+                Arguments.of(new PartialExportInfoImpl9()),
+                Arguments.of(new PartialExportInfoImpl10()),
+                Arguments.of(new PartialExportInfoImpl11()),
+                Arguments.of(new PartialExportInfoImpl12()),
+                Arguments.of(new PartialExportInfoImpl13()),
+                Arguments.of(new PartialExportInfoImpl14()),
+                Arguments.of(new PartialExportInfoImpl15()),
+                Arguments.of(new PartialExportInfoImpl16()),
+                Arguments.of(new PartialExportInfoImpl17()),
+                Arguments.of(new PartialExportInfoImpl18()),
+                Arguments.of(new PartialExportInfoImpl19()),
+                Arguments.of(new PartialExportInfoImpl20()),
+                Arguments.of(new PartialExportInfoImpl21()));
+    }
+
+    private void walkAndComare(Path exportDirFull, Path exportDirPartial, PartialExportInfo info) throws IOException {
         // first compare full export to partial
         Map<String, String> modifiedFiles = info.modifiedFiles();
         List<String> newFiles = info.newFiles();
@@ -188,9 +173,9 @@ public class PartialExporterTest {
                         exportDirFull, exportDirPartial,
                         modifiedFiles, newFiles, deletedFiles, true));
 
-        Assert.assertTrue("Not all objects in modified/deleted lists have been walked:\n"
-                + modifiedFiles + '\n' + deletedFiles,
-                modifiedFiles.isEmpty() && deletedFiles.isEmpty());
+        Assertions.assertTrue(
+                modifiedFiles.isEmpty() && deletedFiles.isEmpty(), "Not all objects in modified/deleted lists have been walked:\n"
+                        + modifiedFiles + '\n' + deletedFiles);
 
         // then compare partial export to full
         modifiedFiles = info.modifiedFiles();
@@ -202,9 +187,9 @@ public class PartialExporterTest {
                         exportDirPartial, exportDirFull,
                         modifiedFiles, newFiles, deletedFiles, false));
 
-        Assert.assertTrue("Not all objects in modified/new lists have been walked:\n"
-                + modifiedFiles + '\n' + newFiles,
-                modifiedFiles.isEmpty() && newFiles.isEmpty());
+        Assertions.assertTrue(
+                modifiedFiles.isEmpty() && newFiles.isEmpty(), "Not all objects in modified/new lists have been walked:\n"
+                        + modifiedFiles + '\n' + newFiles);
     }
 }
 

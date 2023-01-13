@@ -56,7 +56,7 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
     /**
      * OID of the first user object
      *
-     * @see https://github.com/postgres/postgres/blob/master/src/include/access/transam.h
+     * @see <a href="https://github.com/postgres/postgres/blob/master/src/include/access/transam.h">transam.h</a>
      */
     private static final int FIRST_NORMAL_OBJECT_ID = 16384;
 
@@ -470,7 +470,6 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
             }
         }
     }
-
 
     protected <T> void submitAntlrTask(String sql,
             Function<SQLParser, T> parserCtxReader, Consumer<T> finalizer) {

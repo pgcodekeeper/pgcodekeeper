@@ -20,7 +20,6 @@ import com.microsoft.sqlserver.jdbc.SQLServerException;
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.IProgressReporter;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.Consts.JDBC_CONSTS;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcType;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 
@@ -128,7 +127,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
         // where even successful statements are marked as Statement.EXECUTE_FAILED
         // so we cannot deduce which one failed to show more accurate error context
 
-        return JDBC_CONSTS.JDBC_SUCCESS;
+        return Consts.JDBC_SUCCESS;
     }
 
     private List<List<PgObjLocation>> getListBatchesFromSetBatches() {

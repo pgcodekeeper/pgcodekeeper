@@ -1,89 +1,69 @@
-package ru.taximaxim.codekeeper.core;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+package ru.taximaxim.codekeeper.cli;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
-import org.junit.After;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-import ru.taximaxim.codekeeper.cli.Main;
+class DiffTest {
 
-@RunWith(value = Parameterized.class)
-public class DiffTest {
-
-    @Parameters
-    public static Iterable<Object[]> parameters() {
-        return TestUtils.getParameters(new Object[][] {
-            {new SourceTargerArgumentsProvider()},
-            {new AddTestArgumentsProvider()},
-            {new ModifyTestArgumentsProvider()},
-            {new DangerTableArgumentsProvider()},
-            {new DangerDropColArgumentsProvider()},
-            {new DangerAlterColArgumentsProvider()},
-            {new FlagsArgumentsProvider()},
-            {new IgnoreListsArgumentsProvider()},
-            {new AllowedObjectsArgumentsProvider()},
-            {new LibrariesArgumentsProvider()},
-            {new SelectedOnlyArgumentsProvider()},
-            {new MoveDataArgumentsProvider()},
-            {new MoveDataIdentityArgumentsProvider()},
-            {new MoveDataMSArgumentsProvider()},
-            {new MoveDataMSIdentityArgumentsProvider()},
-            {new MoveDataDiffColsIdentityArgumentsProvider()},
-            {new MoveDataDropTableWithoutRename()},
-            {new MoveDataForeignArgumentsProvider()},
-            {new AddConstraintNotValid()},
-        });
+    private static Stream<Arguments> generator() {
+        return Stream.of(
+                Arguments.of(new SourceTargerArgumentsProvider()),
+                Arguments.of(new AddTestArgumentsProvider()),
+                Arguments.of(new ModifyTestArgumentsProvider()),
+                Arguments.of(new DangerTableArgumentsProvider()),
+                Arguments.of(new DangerDropColArgumentsProvider()),
+                Arguments.of(new DangerAlterColArgumentsProvider()),
+                Arguments.of(new FlagsArgumentsProvider()),
+                Arguments.of(new IgnoreListsArgumentsProvider()),
+                Arguments.of(new AllowedObjectsArgumentsProvider()),
+                Arguments.of(new LibrariesArgumentsProvider()),
+                Arguments.of(new SelectedOnlyArgumentsProvider()),
+                Arguments.of(new MoveDataArgumentsProvider()),
+                Arguments.of(new MoveDataIdentityArgumentsProvider()),
+                Arguments.of(new MoveDataMSArgumentsProvider()),
+                Arguments.of(new MoveDataMSIdentityArgumentsProvider()),
+                Arguments.of(new MoveDataDiffColsIdentityArgumentsProvider()),
+                Arguments.of(new MoveDataDropTableWithoutRename()),
+                Arguments.of(new MoveDataForeignArgumentsProvider()),
+                Arguments.of(new AddConstraintNotValid()));
     }
 
-    private final ArgumentsProvider args;
+    @ParameterizedTest
+    @MethodSource("generator")
+    void mainTest(ArgumentsProvider args) throws IOException, URISyntaxException, InterruptedException {
+        try (args) {
+            boolean result = Main.main(args.args());
+            Path resFile = args.getDiffResultFile();
+            Path predefined = args.getPredefinedResultFile();
+            String name = args.getClass().getSimpleName();
 
-    public DiffTest(ArgumentsProvider args) {
-        this.args = args;
-    }
+            Assertions.assertTrue(result, name + " - Diff finished with error");
+            Assertions.assertTrue(Files.exists(predefined), name + " - Predefined file does not exist: " + predefined);
+            Assertions.assertTrue(Files.exists(resFile), name + " - Resulting file does not exist: " + resFile);
 
-    @Test
-    public void mainTest() throws IOException, URISyntaxException, InterruptedException {
-        boolean result = Main.main(args.args());
-        Path resFile = args.getDiffResultFile();
-        Path predefined = args.getPredefinedResultFile();
-        String name = args.getClass().getSimpleName();
-
-        assertTrue(name + " - Diff finished with error", result);
-        assertTrue(name + " - Predefined file does not exist: "
-                + predefined, Files.exists(predefined));
-        assertTrue(name + " - Resulting file does not exist: "
-                + resFile, Files.exists(resFile));
-
-        assertFalse(name + " - Predefined file is a directory: "
-                + predefined, Files.isDirectory(predefined));
-        assertFalse(name + " - Resulting file is a directory: "
-                + resFile, Files.isDirectory(resFile));
-        if (!filesEqualIgnoreNewLines(predefined, resFile)) {
-            assertEquals(name + " - Predefined and resulting script differ",
-                    new String(Files.readAllBytes(predefined), StandardCharsets.UTF_8),
-                    args.getDiffFileContents());
+            Assertions.assertFalse(Files.isDirectory(predefined),
+                    name + " - Predefined file is a directory: " + predefined);
+            Assertions.assertFalse(Files.isDirectory(resFile), name + " - Resulting file is a directory: " + resFile);
+            if (!filesEqualIgnoreNewLines(predefined, resFile)) {
+                Assertions.assertEquals(
+                        new String(Files.readAllBytes(predefined), StandardCharsets.UTF_8),
+                        args.getDiffFileContents(),
+                        name + " - Predefined and resulting script differ");
+            }
         }
-    }
-
-    @After
-    public void closeResources() {
-        args.close();
     }
 
     private boolean filesEqualIgnoreNewLines(Path f1, Path f2) throws IOException {
@@ -279,8 +259,7 @@ class FlagsArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public Path getPredefinedResultFile() throws URISyntaxException, IOException {
-        URL resourceUrl = PgDiffTest.class.getResource("MainTest_" + resName + FILES_POSTFIX.DIFF_SQL);
-        return Utils.getFileFromOsgiRes(resourceUrl);
+        return TestUtils.getPathToResource(DiffTest.class, "MainTest_" + resName + FILES_POSTFIX.DIFF_SQL);
     }
 }
 
@@ -295,10 +274,10 @@ class IgnoreListsArgumentsProvider extends ArgumentsProvider {
 
     @Override
     protected String[] args() throws URISyntaxException, IOException {
-        Path black = Utils.getFileFromOsgiRes(DiffTest.class.getResource("black.ignore"));
-        Path white = Utils.getFileFromOsgiRes(DiffTest.class.getResource("white.ignore"));
-        Path old = Utils.getFileFromOsgiRes(PgDiffTest.class.getResource("ignore_old.sql"));
-        Path new_ = Utils.getFileFromOsgiRes(PgDiffTest.class.getResource("ignore_new.sql"));
+        Path black = TestUtils.getPathToResource(DiffTest.class, "black.ignore");
+        Path white = TestUtils.getPathToResource(DiffTest.class, "white.ignore");
+        Path old = TestUtils.getPathToResource(DiffTest.class, "ignore_old.sql");
+        Path new_ = TestUtils.getPathToResource(DiffTest.class, "ignore_new.sql");
 
         return new String[] {"--ignore-list", black.toString(),
                 "-I", white.toString(), "-o", getDiffResultFile().toString(),
@@ -338,7 +317,7 @@ class LibrariesArgumentsProvider extends ArgumentsProvider {
     protected String[] args() throws URISyntaxException, IOException {
         Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
         Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
-        Path lib = Utils.getFileFromOsgiRes(DiffTest.class.getResource("lib.sql"));
+        Path lib = TestUtils.getPathToResource(DiffTest.class, "lib.sql");
 
         return new String[] {"-o", getDiffResultFile().toString(),
                 "-t", fOriginal.toString(), "-s", fNew.toString(),
