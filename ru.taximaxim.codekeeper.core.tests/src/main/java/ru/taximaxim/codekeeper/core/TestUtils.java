@@ -74,15 +74,6 @@ public final class TestUtils {
                 script.trim());
     }
 
-    public static Iterable<Object[]> getParameters(Object[][] objects) {
-        List<Object[]> p = Arrays.asList(objects);
-        int maxLength = p.stream()
-            .mapToInt(oo -> oo.length)
-            .max().getAsInt();
-        return p.stream()
-            .map(oo -> oo.length < maxLength ? Arrays.copyOf(oo, maxLength) : oo)::iterator;
-    }
-
     /**
      * @param inputStream
      *            stream converted to string, closed after use
