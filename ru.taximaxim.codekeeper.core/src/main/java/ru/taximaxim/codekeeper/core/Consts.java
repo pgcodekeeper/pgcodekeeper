@@ -37,7 +37,7 @@ public interface Consts {
     String VERSION_PROP_NAME = "version";
     String EXPORT_CURRENT_VERSION = "0.6.0";
 
-    String EXTENSION_VERSION = "1.0.0";
+    String EXTENSION_VERSION = "1.";
 
     String TRUST_CERT = "trustServerCertificate";
 

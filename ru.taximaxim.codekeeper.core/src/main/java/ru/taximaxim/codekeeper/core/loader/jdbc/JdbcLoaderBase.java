@@ -459,7 +459,7 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
         try (ResultSet res = runner.runScript(statement, JdbcQueries.QUERY_CHECK_TIMESTAMPS)) {
             while (res.next()) {
                 String version = res.getString("extversion");
-                if (!version.equals(Consts.EXTENSION_VERSION)) {
+                if (!version.startsWith(Consts.EXTENSION_VERSION)) {
                     Log.log(Log.LOG_INFO, "pg_dbo_timestamps: old version of extension is used: " +
                             version + ", current version: " + Consts.EXTENSION_VERSION);
                 } else if (res.getBoolean("disabled")) {
