@@ -5,6 +5,7 @@ Reference: Object = dbo."Employee" (TABLE), action = CREATE, offset = 231, line 
 Reference: Object = "SpecialOfferProduct" (TABLE), action = null, offset = 432, line number = 15, charPositionInLine = 13
 Reference: Object = "#TestTable" (TABLE), action = CREATE, offset = 556, line number = 21, charPositionInLine = 13
 Reference: Object = "#TestTable" (TABLE), action = CREATE, offset = 709, line number = 27, charPositionInLine = 13
+Reference: Object = xyz (TABLE), action = CREATE, offset = 881, line number = 34, charPositionInLine = 13
 Reference: Object = dbo (SCHEMA), action = null, offset = 1123, line number = 44, charPositionInLine = 13
 Reference: Object = dbo."TestTable" (TABLE), action = CREATE, offset = 1127, line number = 44, charPositionInLine = 17
 Reference: Object = dbo (SCHEMA), action = null, offset = 1358, line number = 51, charPositionInLine = 13
