@@ -78,6 +78,8 @@ Reference: Object = audit_tbls (SCHEMA), action = null, offset = 6487, line numb
 Reference: Object = audit_tbls.schema_two_table_three (TABLE), action = CREATE, offset = 6498, line number = 182, charPositionInLine = 24
 Reference: Object = schema_two (SCHEMA), action = null, offset = 6566, line number = 184, charPositionInLine = 27
 Reference: Object = schema_two.add(integer, integer) (FUNCTION), action = CREATE, offset = 6577, line number = 184, charPositionInLine = 38
+Reference: Object = schema_two (SCHEMA), action = null, offset = 6723, line number = 187, charPositionInLine = 17
+Reference: Object = schema_two.newton (AGGREGATE), action = CREATE, offset = 6734, line number = 187, charPositionInLine = 28
 Reference: Object = schema_two (SCHEMA), action = null, offset = 6768, line number = 188, charPositionInLine = 27
 Reference: Object = schema_two.add(int, int) (FUNCTION), action = null, offset = 6779, line number = 188, charPositionInLine = 38
 Reference: action = RESET, offset = 6799, line number = 190, charPositionInLine = 0

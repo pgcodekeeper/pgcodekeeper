@@ -14,6 +14,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Another_statementCo
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.BatchContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Batch_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Batch_statement_bodyContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Create_or_alter_triggerContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Create_xml_indexContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Ddl_clauseContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Delete_statementContext;
@@ -170,6 +171,11 @@ implements TSqlContextProcessor {
         } else if (body.create_or_alter_view() != null) {
             p = new CreateMsView(ctx, db, ansiNulls, quotedIdentifier, stream);
         } else if (body.create_or_alter_trigger() != null) {
+            Create_or_alter_triggerContext triggerCtx = body.create_or_alter_trigger();
+            if (triggerCtx.SERVER() != null || triggerCtx.DATABASE() != null) {
+                addToQueries(ctx, "CREATE TRIGGER");
+                return;
+            }
             p = new CreateMsTrigger(ctx, db, ansiNulls, quotedIdentifier, stream);
         } else {
             addToQueries(ctx, getAction(ctx));
@@ -244,22 +250,22 @@ implements TSqlContextProcessor {
 
         String set = ctx.name.getText();
         switch (set.toLowerCase(Locale.ROOT)) {
-            case "ansi_nulls":
-                if (ctx.ON() != null) {
-                    ansiNulls = true;
-                } else if (ctx.OFF() != null) {
-                    ansiNulls = false;
-                }
-                break;
-            case "quoted_identifier":
-                if (ctx.ON() != null) {
-                    quotedIdentifier = true;
-                } else if (ctx.OFF() != null) {
-                    quotedIdentifier = false;
-                }
-                break;
-            default:
-                break;
+        case "ansi_nulls":
+            if (ctx.ON() != null) {
+                ansiNulls = true;
+            } else if (ctx.OFF() != null) {
+                ansiNulls = false;
+            }
+            break;
+        case "quoted_identifier":
+            if (ctx.ON() != null) {
+                quotedIdentifier = true;
+            } else if (ctx.OFF() != null) {
+                quotedIdentifier = false;
+            }
+            break;
+        default:
+            break;
         }
     }
 

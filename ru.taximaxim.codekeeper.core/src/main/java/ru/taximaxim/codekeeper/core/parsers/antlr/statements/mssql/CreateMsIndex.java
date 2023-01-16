@@ -39,7 +39,7 @@ public class CreateMsIndex extends MsTableAbstract {
         ClusteredContext cluster = ctx.clustered();
         ind.setClusterIndex(cluster != null && cluster.CLUSTERED() != null);
 
-        parseIndex(ctx.index_rest(), ind, schemaCtx.getText(), tableCtx.getText());
+        parseIndex(ctx.index_rest(), ind, schemaCtx == null ? null : schemaCtx.getText(), tableCtx.getText());
 
         PgStatementContainer table = getSafe(AbstractSchema::getStatementContainer, schema, tableCtx);
         addSafe(table, ind, Arrays.asList(schemaCtx, tableCtx, nameCtx));
