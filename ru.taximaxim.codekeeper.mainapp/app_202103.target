@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?pde version="3.8"?>
-<target includeMode="feature" name="app_202006" sequenceNumber="128">
+<target includeMode="feature" name="app_202103" sequenceNumber="128">
 	<locations>
 		<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-			<repository location="https://download.eclipse.org/releases/2020-06"/>
-			<unit id="org.eclipse.egit.feature.group" version="5.8.0.202006091008-r"/>
-			<unit id="org.eclipse.equinox.sdk.feature.group" version="3.20.200.v20200528-0603"/>
-			<unit id="org.eclipse.platform.feature.group" version="4.16.0.v20200604-0951"/>
+			<repository location="https://download.eclipse.org/releases/2021-03"/>
+			<unit id="org.eclipse.egit.feature.group" version="5.11.0.202103091610-r"/>
+			<unit id="org.eclipse.equinox.sdk.feature.group" version="3.22.0.v20210227-0235"/>
+			<unit id="org.eclipse.platform.feature.group" version="4.19.0.v20210303-1800"/>
 			<unit id="org.eclipse.zest.feature.group" version="1.7.0.201606061308"/>
 		</location>
 		<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-			<repository location="https://download.eclipse.org/tools/orbit/downloads/drops/R20200529191137/repository"/>
+			<repository location="https://download.eclipse.org/tools/orbit/downloads/drops/R20210223232630/repository"/>
 			<unit id="org.kohsuke.args4j" version="2.33.0.v20160323-2218"/>
-			<unit id="org.junit.jupiter.api" version="5.6.0.v20200203-2009"/>
-			<unit id="org.junit.jupiter.params" version="5.6.0.v20200203-2009"/>
-			<unit id="org.junit.jupiter.engine" version="5.6.0.v20200203-2009"/>
+			<unit id="org.junit.jupiter.api" version="5.7.1.v20210222-1948"/>
+			<unit id="org.junit.jupiter.params" version="5.7.1.v20210222-1948"/>
+			<unit id="org.junit.jupiter.engine" version="5.7.1.v20210222-1948"/>
 			<unit id="org.junit" version="4.13.0.v20200204-1500"/>
-			<unit id="org.junit.platform.commons" version="1.6.0.v20200203-2009"/>
+			<unit id="org.junit.platform.commons" version="1.7.1.v20210222-1948"/>
 		</location>
 		<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
 			<dependencies>
