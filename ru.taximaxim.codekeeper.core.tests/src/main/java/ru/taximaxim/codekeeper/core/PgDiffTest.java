@@ -28,6 +28,8 @@ class PgDiffTest {
     @ValueSource(strings = {
             // Tests scenario where COLUMN type is modified.
             "modify_column_type",
+            // Tests scenario where COLUMN type of foreign table is modified.
+            "modify_column_type_foreign_table",
             // Tests scenario where COLUMN type is modified, column has constraint.
             "modify_column_type_with_constraint",
             // Tests scenario where COLUMN type is modified, column has index.
