@@ -16,6 +16,87 @@
 			<unit id="org.junit.jupiter.params" version="5.6.0.v20200203-2009"/>
 			<unit id="org.junit.jupiter.engine" version="5.6.0.v20200203-2009"/>
 			<unit id="org.junit" version="4.13.0.v20200204-1500"/>
+			<unit id="org.junit.platform.commons" version="1.6.0.v20200203-2009"/>
+		</location>
+		<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
+			<dependencies>
+				<dependency>
+					<groupId>com.github.technology16</groupId>
+					<artifactId>PgPass</artifactId>
+					<version>1.0.0</version>
+					<type>jar</type>
+				</dependency>
+			</dependencies>
+		</location>
+		<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
+			<dependencies>
+				<dependency>
+					<groupId>org.postgresql</groupId>
+					<artifactId>postgresql</artifactId>
+					<version>42.5.1</version>
+					<type>jar</type>
+				</dependency>
+			</dependencies>
+		</location>
+		<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
+			<dependencies>
+				<dependency>
+					<groupId>com.microsoft.sqlserver</groupId>
+					<artifactId>mssql-jdbc</artifactId>
+					<version>10.2.0.jre8</version>
+					<type>jar</type>
+				</dependency>
+			</dependencies>
+		</location>
+		<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
+			<dependencies>
+				<dependency>
+					<groupId>org.osgi</groupId>
+					<artifactId>org.osgi.service.jdbc</artifactId>
+					<version>1.0.1</version>
+					<type>jar</type>
+				</dependency>
+			</dependencies>
+		</location>
+		<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
+			<dependencies>
+				<dependency>
+					<groupId>org.antlr</groupId>
+					<artifactId>antlr4-runtime</artifactId>
+					<version>4.9.3</version>
+					<type>jar</type>
+				</dependency>
+			</dependencies>
+		</location>
+		<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
+			<dependencies>
+				<dependency>
+					<groupId>org.jgrapht</groupId>
+					<artifactId>jgrapht-core</artifactId>
+					<version>1.5.1</version>
+					<type>jar</type>
+				</dependency>
+			</dependencies>
+		</location>
+		<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
+			<dependencies>
+				<dependency>
+					<groupId>org.jheaps</groupId>
+					<artifactId>jheaps</artifactId>
+					<version>0.14</version>
+					<type>jar</type>
+				</dependency>
+			</dependencies>
+		</location>
+		<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
+			<dependencies>
+				<dependency>
+					<groupId>org.javers</groupId>
+					<artifactId>javers-core</artifactId>
+					<version>6.8.2</version>
+					<type>jar</type>
+				</dependency>
+			</dependencies>
 		</location>
 	</locations>
 </target>

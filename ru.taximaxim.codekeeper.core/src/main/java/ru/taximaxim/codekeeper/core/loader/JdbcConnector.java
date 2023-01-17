@@ -22,6 +22,8 @@ import ru.taximaxim.pgpass.PgPassException;
 
 public class JdbcConnector {
 
+    private static final String DRIVER_NAME = "org.postgresql.Driver";
+
     private static final int DEFAULT_PORT = 5432;
 
     protected String host;
@@ -174,15 +176,21 @@ public class JdbcConnector {
             Connection connection = establishConnection();
             connection.setReadOnly(readOnly);
             return connection;
-        } catch (SQLException e) {
+        } catch (SQLException | ClassNotFoundException e) {
             throw new IOException(e.getLocalizedMessage(), e);
         }
     }
 
-    protected Connection establishConnection() throws SQLException, IOException {
+    protected Connection establishConnection() throws SQLException, IOException, ClassNotFoundException {
         Log.log(Log.LOG_INFO, "Establishing JDBC connection with host:port " +
                 host + ":" + port + ", db name " + dbName + ", username " + user);
+        // driver is not visible due to the way it is loaded from the target platform
+        Class.forName(getDriverName());
         return DriverManager.getConnection(url, makeProperties());
+    }
+
+    protected String getDriverName() {
+        return DRIVER_NAME;
     }
 
     protected Properties makeProperties() {

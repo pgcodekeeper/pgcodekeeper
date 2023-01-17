@@ -49,12 +49,12 @@ import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
-import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.Consts.WORK_DIR_NAMES;
+import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.exporter.AbstractModelExporter;
-import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
+import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParserWrapper;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.PgStatementWithSearchPath;
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -344,7 +344,7 @@ public final class NewObjectPage extends WizardPage {
             setDescription(Messages.PgObject_empty_name);
             return false;
         } else {
-            QNameParser<?> parser = QNameParser.parsePg(fullName);
+            QNameParserWrapper parser = QNameParserWrapper.parsePg(fullName);
             if (parser.hasErrors()) {
                 err = Messages.NewObjectWizard_invalid_input_format + expectedFormat;
             } else {

@@ -16,6 +16,7 @@ import ru.taximaxim.codekeeper.core.Consts;
 
 public class JdbcMsConnector extends JdbcConnector {
 
+    private static final String DRIVER_NAME = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
     private static final int DEFAULT_PORT = 1433;
     private static final Pattern PATTERN_PROPERTIES =
             Pattern.compile(";(?:(\\w+)=(\\w+|\\{[^}]*\\})?)?");
@@ -142,7 +143,12 @@ public class JdbcMsConnector extends JdbcConnector {
     }
 
     @Override
-    protected Connection establishConnection() throws SQLException, IOException {
+    protected String getDriverName() {
+        return DRIVER_NAME;
+    }
+
+    @Override
+    protected Connection establishConnection() throws SQLException, IOException, ClassNotFoundException {
         try {
             return super.establishConnection();
         } catch (SQLException ex) {
