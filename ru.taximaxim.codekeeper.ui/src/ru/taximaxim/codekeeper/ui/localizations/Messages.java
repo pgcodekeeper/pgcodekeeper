@@ -178,7 +178,7 @@ public final class Messages extends NLS {
     public static String treeDiffer_building_diff_tree;
     public static String reading_db_from_jdbc;
 
-    //change perspective
+    // change perspective
     public static String remember_choice_toggle;
     public static String change_perspective_message;
     public static String change_perspective_title;
@@ -250,6 +250,7 @@ public final class Messages extends NLS {
     public static String resultSetView_close_all;
 
     // ui.prefs
+    public static String AddCommentWizardPage_new_page;
     public static String dBUpdatePrefPage_alter_column_statement;
     public static String dBUpdatePrefPage_drop_column_statement;
     public static String dBUpdatePrefPage_drop_table;
@@ -462,7 +463,6 @@ public final class Messages extends NLS {
 
     public static String DiffPresentationPane_attention;
 
-
     public static String DiffPresentationPane_refresh_link;
     public static String DiffPresentationPane_close_link;
     public static String DiffPresentationPane_error_loading_changes;
@@ -602,7 +602,6 @@ public final class Messages extends NLS {
 
     public static String ImportProjWizard_title;
 
-
     public static String ManualDepciesDialog_set_add_depcies;
 
     public static String MisplaceCompletionProposal_rename_file_to;
@@ -621,7 +620,6 @@ public final class Messages extends NLS {
     public static String MockDataPage_column;
 
     public static String MockDataPage_column_up;
-
 
     public static String MockDataPage_delete_column;
 

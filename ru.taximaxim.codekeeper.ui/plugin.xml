@@ -138,6 +138,12 @@
             id="ru.taximaxim.codekeeper.ui.command.Format"
             name="%command.commandname.Format">
         </command>
+        <command
+              categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+              defaultHandler="ru.taximaxim.codekeeper.ui.handlers.AddComment"
+              id="ru.taximaxim.codekeeper.ui.addComment"
+              name="%command.commandname.AddComment">
+        </command>
     </extension>
     <extension point="org.eclipse.ui.handlers">
         <handler
@@ -565,6 +571,8 @@
                </visibleWhen>
             </command>
             <command commandId="ru.taximaxim.codekeeper.ui.command.Format">
+            </command>
+            <command commandId="ru.taximaxim.codekeeper.ui.command.addComment">
             </command>
         </menuContribution>
         <menuContribution locationURI="popup:org.eclipse.ui.projectConfigure?after=additions">
