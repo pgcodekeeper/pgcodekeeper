@@ -75,23 +75,17 @@ public class JdbcRunner {
      * @param connector contains database connection information
      * @param batches contains splited queries of Statements
      * @param reporter reports result
-     * @param limitRows contains limited count of rows
      * @throws SQLException
      * @throws IOException
      * @throws InterruptedException
      */
     public void runBatches(JdbcConnector connector, List<PgObjLocation> batches,
-            IProgressReporter reporter, int limitRows) throws SQLException, IOException, InterruptedException {
+            IProgressReporter reporter) throws SQLException, IOException, InterruptedException {
         try (Connection connection = connector.getConnection();
                 Statement st = connection.createStatement()) {
             boolean isMsSql = connector instanceof JdbcMsConnector;
-            runScript(new QueriesBatchCallable(st, batches, monitor, reporter, connection, isMsSql, limitRows));
+            runScript(new QueriesBatchCallable(st, batches, monitor, reporter, connection, isMsSql));
         }
-    }
-
-    public void runBatches(JdbcConnector connector, List<PgObjLocation> batches,
-            IProgressReporter reporter) throws SQLException, IOException, InterruptedException {
-        runBatches(connector, batches, reporter, 0);
     }
 
     /**

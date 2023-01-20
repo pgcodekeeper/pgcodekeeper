@@ -179,7 +179,7 @@ public class ResultSetView extends ViewPart {
         }
     }
 
-    public void addData(String query, List<List<Object>> results, int limitRows) {
+    public void addData(String query, List<List<Object>> results) {
         if (results.isEmpty()) {
             return;
         }
@@ -195,9 +195,8 @@ public class ResultSetView extends ViewPart {
         Label l = new Label(tabComposite, SWT.NONE);
 
         String preview = query.replaceAll("\\s+", " ").trim(); //$NON-NLS-1$ //$NON-NLS-2$
-        String text = limitRows != 0 ? " (limit " + limitRows + ")" : ""; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        String str = preview.length() > 60 ? preview.substring(0, 60) + " <...> "  : preview; //$NON-NLS-1$
-        l.setText(str + text);
+        l.setText(preview.length() > 60 ? preview.substring(0, 60) + " <...> " :
+            preview);
         l.setToolTipText(query);
 
         TableViewer viewer = new TableViewer(tabComposite);
