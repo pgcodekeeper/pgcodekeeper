@@ -141,7 +141,7 @@
         <command
               categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
               defaultHandler="ru.taximaxim.codekeeper.ui.handlers.AddComment"
-              id="ru.taximaxim.codekeeper.ui.addComment"
+              id="ru.taximaxim.codekeeper.ui.AddComment"
               name="%command.commandname.AddComment">
         </command>
     </extension>
@@ -572,7 +572,7 @@
             </command>
             <command commandId="ru.taximaxim.codekeeper.ui.command.Format">
             </command>
-            <command commandId="ru.taximaxim.codekeeper.ui.command.addComment">
+            <command commandId="ru.taximaxim.codekeeper.ui.command.AddComment">
             </command>
         </menuContribution>
         <menuContribution locationURI="popup:org.eclipse.ui.projectConfigure?after=additions">

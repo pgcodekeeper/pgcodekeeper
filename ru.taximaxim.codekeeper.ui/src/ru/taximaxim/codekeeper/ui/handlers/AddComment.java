@@ -1,10 +1,13 @@
 package ru.taximaxim.codekeeper.ui.handlers;
 
+import java.util.stream.Stream;
+
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.handlers.HandlerUtil;
 
+import ru.taximaxim.codekeeper.core.schema.meta.MetaStatement;
 import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
@@ -14,10 +17,11 @@ public class AddComment extends AbstractHandler {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         SQLEditor editor = (SQLEditor) HandlerUtil.getActiveEditor(event);
+
         PgDbParser parser = PgDbParser
             .getParser(FileUtilsUi.getFileForLocation(editor.getCurrentReference()
                 .getFilePath()));
-
+        AddCommentWizard wizard = new AddCommentWizard();
         return null;
     }
 
@@ -25,5 +29,11 @@ public class AddComment extends AbstractHandler {
     public boolean isEnabled() {
 
         return false;
+    }
+
+    private String getComment(Stream<MetaStatement> stream) {
+        String comment;
+        comment = stream.findFirst().get().getComment();
+        return comment;
     }
 }

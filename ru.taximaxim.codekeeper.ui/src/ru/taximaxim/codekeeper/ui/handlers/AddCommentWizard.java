@@ -4,9 +4,10 @@ import org.eclipse.jface.wizard.Wizard;
 
 public class AddCommentWizard extends Wizard {
 
+    private AddCommentWizardPage page;
+
     @Override
     public boolean performFinish() {
-        // TODO Auto-generated method stub
         return false;
     }
 

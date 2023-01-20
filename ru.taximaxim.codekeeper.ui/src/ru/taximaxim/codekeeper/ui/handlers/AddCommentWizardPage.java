@@ -9,7 +9,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 
 public class AddCommentWizardPage extends UserInputWizardPage {
 
@@ -17,7 +16,7 @@ public class AddCommentWizardPage extends UserInputWizardPage {
 
     private Text txtComment;
 
-    public AddCommentWizardPage(PgDbParser parser) {
+    public AddCommentWizardPage() {
         super(PAGE_NAME);
     }
 
@@ -33,6 +32,17 @@ public class AddCommentWizardPage extends UserInputWizardPage {
         label.setText(Messages.AddCommentWizardPage_new_page);
         txtComment = new Text(top, SWT.BORDER);
         txtComment.setLayoutData(new GridData());
+
+        txtComment.addModifyListener(null);
+    }
+
+    private void updatePageComplete() {
+        String txt = txtComment.getText();
+        if (txt.isEmpty()) {
+            setPageComplete(false);
+        } else {
+            setPageComplete(true);
+        }
     }
 
 }
