@@ -201,6 +201,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
 
     MAPPING: [mM] [aA] [pP] [pP] [iI] [nN] [gG];
     MATCH: [mM] [aA] [tT] [cC] [hH];
+    MATCHED: [mM] [aA] [tT] [cC] [hH] [eE] [dD];
     MATERIALIZED: [mM] [aA] [tT] [eE] [rR] [iI] [aA] [lL] [iI] [zZ] [eE] [dD];
     MAXVALUE: [mM] [aA] [xX] [vV] [aA] [lL] [uU] [eE];
     MERGE: [mM] [eE] [rR] [gG] [eE];
@@ -242,6 +243,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     OWNER: [oO] [wW] [nN] [eE] [rR];
 
     PARALLEL: [pP] [aA] [rR] [aA] [lL] [lL] [eE] [lL];
+    PARAMETER: [pP] [aA] [rR] [aA] [mM] [eE] [tT] [eE] [rR];
     PARSER: [pP] [aA] [rR] [sS] [eE] [rR];
     PARTIAL: [pP] [aA] [rR] [tT] [iI] [aA] [lL];
     PARTITION: [pP] [aA] [rR] [tT] [iI] [tT] [iI] [oO] [nN];
@@ -663,7 +665,6 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     LOGIN: [lL] [oO] [gG] [iI] [nN];
 
     MAIN: [mM] [aA] [iI]  [nN];
-    MATCHED: [mM] [aA] [tT] [cC] [hH] [eE] [dD];
     MERGES: [mM] [eE] [rR] [gG] [eE] [sS];
     MFINALFUNC: [mM] [fF] [iI] [nN] [aA] [lL] [fF] [uU] [nN] [cC];
     MFINALFUNC_EXTRA: MFINALFUNC UNDERLINE [eE] [xX] [tT] [rR] [aA];
