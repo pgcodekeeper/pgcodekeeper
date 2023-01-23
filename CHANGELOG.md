@@ -20,8 +20,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Fixed an error when changing the type of a FOREIGN TABLE column.
 - Fixed errors in parsing expressions.
-- Fixed missing references to objects in MS SQL.
-- Fixed missing keywords from PostgreSQL 15 to parser.
+- Fixed `pg_dbo_timestamp` version check.
+- Added missing references to objects in MS SQL.
+- Added missing keywords from PostgreSQL 15 to parser.
 
 ## [7.0.1] - 2022-11-14
 
@@ -256,7 +257,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
-- Fixed duplicate object error when using pg_dbo_timestamp extension.
+- Fixed duplicate object error when using `pg_dbo_timestamp` extension.
 
 ## [5.11.2] - 2021-03-25
 
@@ -564,12 +565,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- Database passwords are now stored in Eclipse's encrypted Secure storage. Passwords in .pgpass file are still supported.
+- Database passwords are now stored in Eclipse's encrypted [Secure storage](https://help.eclipse.org/2019-09/topic/org.eclipse.platform.doc.user/reference/ref-securestorage-start.htm). Passwords in .pgpass file are still supported.
 - It is now possible to free parser cache memory after a period of inactivity or on-demand. Default inactivity interval is 30 minutes and may be changed in the program settings. Parser cache significantly speeds up SQL parsing but may consume hundreds of MBs of Java heap space which may be undesirable if parsing rarely.
 
 ### Changed
 
-- Added a workaround for potential GUI deadlock on Linux
+- Added a workaround for potential GUI deadlock on Linux.
 - Added a dependency from SELECT queries to PRIMARY KEYs whose columns are used in GROUP BY section.
 - Added column dependencies to pgDependencies view graph.
 
@@ -582,7 +583,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- CLI is now able to run the generated script on a database (options --run-on and --run-on-target).
+- CLI is now able to run the generated script on a database (options `--run-on` and `--run-on-target`).
 
 ### Changed
 
@@ -618,11 +619,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-- Data format of copied query results changed for compatibility with both SQL and CSV (SQL strings are copied). (5.8.2)
+- Data format of copied query results changed for compatibility with both SQL and CSV (SQL strings are copied).
 
 ### Fixed
 
-- Fixed an error when opening Diff Wizard's script. (5.8.2)
+- Fixed an error when opening Diff Wizard's script.
 
 ## [5.8.1] - 2019-10-10
 
@@ -730,7 +731,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - SQL editor code templates have been updated. New SQL object wizard now creates new objects using templates for further editing convenience.
 - Code autocompletion in SQL editor has been split into categories: identifiers and keywords, and templates. Categories can be switched by repeatedly pressing the autocomplete hotkey (Ctrl+Space).
-- MS SQL JDBC driver has been updated. New version allows for NTLM domain authentication when supplied additional connection properties.
+- MS SQL JDBC driver has been updated. New version allows for NTLM domain authentication when supplied [additional connection](https://github.com/Microsoft/mssql-jdbc/pull/998) properties.
 
 ### Fixed
 
@@ -872,11 +873,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- Added parser support for empty SQL statements. (5.3.8)
+- Added parser support for empty SQL statements.
 
 ### Fixed
 
-- Fixed migrations generated for function dependent objects when its default parameters change. (5.3.8)
+- Fixed migrations generated for function dependent objects when its default parameters change.
 
 ## [5.3.7] - 2019-01-30
 
@@ -909,7 +910,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Fixed missing dependencies from functions being called using EXEC in MS SQL.
-
 
 ## [5.3.4] - 2018-12-11
 
@@ -1025,7 +1025,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- Added an option to use Windows authentication when connecting to MS SQL databases.
+- Added an option to use [Windows authentication](https://pgcodekeeper.readthedocs.io/ru/latest/windowsauth.html). when connecting to MS SQL databases.
 - Added a separate New Project Wizard for MS SQL.
 
 ### Changed
@@ -1046,7 +1046,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
-- Fixed several errors in MS SQL support. (5.1.3)
+- Fixed several errors in MS SQL support.
 
 ## [5.1.2] - 2018-09-24
 
@@ -1106,11 +1106,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [5.0.0] - 2018-08-01
 
-### Added
+### Changed
 
-- SQL code generation has been changed. All SQL statements are now created for search_path = pg_catalog. This improves security and stability of generated code, for more information see PostgreSQL 10.3 changelog. Because of this, differences in name qualification will be found when comparing projects with DBs. Projects need to be updated to the new format by saving these differences.
+- SQL code generation has been changed. All SQL statements are now created for `search_path = pg_catalog`. This improves security and stability of generated code, for more information see PostgreSQL 10.3 changelog. Because of this, differences in name qualification will be found when comparing projects with DBs. Projects need to be updated to the new format by saving these differences. Using constant `search_path` for SQL code generation allows JDBC loader to read objects from all schemas with a single query. This greatly improves schema load speeds and allows us to get rid of server helper functions, they are no longer used. Work with `pg_dbo_timestamp` extension is also greatly sped up.
 - Location of schema SQL files in projects has been changed. They are now stored in their schema directories instead of common SCHEMA directory. When opening older projects pgCodeKeeper will suggest moving schema files to their new location.
-- Using constant search_path for SQL code generation allows JDBC loader to read objects from all schemas with a single query. This greatly improves schema load speeds and allows us to get rid of server helper functions, they are no longer used. Work with pg_dbo_timestamp extension is also greatly sped up.
 
 ## [4.6.1] - 2018-07-19
 
@@ -1119,14 +1118,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fixed parsing of nameless function parameter of type character varying.
 - Fixed compatibility with Eclipse 4.8.
 - Fixed decrementing SEQUENCEs to comply with PostgreSQL 10 implementation.
-- Fixed CONSTRAINT processing when working with pg_dbo_timestamp extension.
+- Fixed CONSTRAINT processing when working with `pg_dbo_timestamp` extension.
 
 ## [4.6.0] - 2018-06-21
 
 ### Added
 
-- Added support from TEXT SEARCH objects: CONFIGURATION, DICTIONARY, PARSER, TEMPLATE. These objects are now also tracked by pg_dbo_timestamp extension.
-- pg_dbo_timestamp extension has been updated to work around the issue of object privilege tracking. This fix allows pgCodeKeeper to use the extension to speed up DB schema reads. An option has been added to general settings to enable this behaviour. It also enables showing DB users who last modified objects that were found to differ.
+- Added support from TEXT SEARCH objects: CONFIGURATION, DICTIONARY, PARSER, TEMPLATE. These objects are now also tracked by `pg_dbo_timestamp` extension.
+- `pg_dbo_timestamp` extension has been updated to work around the issue of object privilege tracking. This fix allows pgCodeKeeper to use the extension to speed up DB schema reads. An option has been added to general settings to enable this behaviour. It also enables showing DB users who last modified objects that were found to differ.
 - Parser now supports IMPORT FOREIGN SCHEMA command.
 
 ### Changed
@@ -1185,7 +1184,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- Ignored objects lists now allow to specify object types to which rule is applied. More in the manual.
+- Ignored objects lists now allow to specify object types to which rule is applied. More in the [manual](https://pgcodekeeper.readthedocs.io/en/latest/preferences.html#ignoredobjects).
 - pgCodeKeeper project libraries:
     - library structure is now shown in Project Explorer tree;
     - added Object overrides view, it shows overrides in current project editor;
@@ -1233,7 +1232,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-- pg_dbo_timestamp extension has been updated. A crash on PostgreSQL 10 has been fixed and additional data is now saved for events. From this release pgCodeKeeper supports extension of version 0.0.2 or above.
+- `pg_dbo_timestamp` extension has been updated. A crash on PostgreSQL 10 has been fixed and additional data is now saved for events. From this release pgCodeKeeper supports extension of version 0.0.2 or above.
 - In-product feedback function was not working and has been restored.
 - Improved quoted identifier handling by New Object wizard.
 - JDBC DB schema read queries have been secured against naming conflicts between internal PostgreSQL and user objects.
@@ -1259,7 +1258,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- Added pg_dbo_timestamp extension support. This extension gathers information about DB objects DDL modifications.
+- Added `pg_dbo_timestamp` extension support. This extension gathers information about DB objects DDL modifications.
 - pgCodeKeeper project editor settings now contain an option to show DB users who modified the objects that were found to differ. In the future we plan to speed up JDBC schema reads by using this extension.
 - Project editor can now filter objects by users who made changes in git or database.
 - New SQL object wizard will now try to deduce object name and location from context. Inputting object's name and type has been improved, unwanted focus shifts fixed.
@@ -1273,7 +1272,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Fixed an error when reading SEQUENCE objects from PostgreSQL 10.
-
 
 ## [4.2.3] - 2018-02-13
 
@@ -1313,7 +1311,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - Project editor shows last change author for projects in git repositories. Last change lookup uses `git log ‑‑full‑history ‑‑no‑merges` algorithm which results may differ from the standard one. This functionality may be disabled in pgCodeKeeper project editor settings.
-- Added support for column OPTIONs in CREATE FOREIGN TABLE. Added support for CREATE RECURSIVE VIEW.
+- Added support for column OPTIONs in CREATE FOREIGN TABLE.
+- Added support for CREATE RECURSIVE VIEW.
 - JDBC-loader now notifies of errors due to outdated helper functions installed in the DB, and also permission denied errors for SEQUENCE objects.
 
 ### Fixed
@@ -1448,11 +1447,11 @@ We increment major version in this release due to decision to shift our developm
 
 ### Changed
 
-- Server-side JDBC helpers have been updated and need to be reinstalled;
+- Server-side JDBC helpers have been updated and need to be reinstalled.
 
 ### Fixed
 
-- Fixed a bug with getting data type names via JDBC;
+- Fixed a bug with getting data type names via JDBC.
 
 ## [3.8.4] - 2016-12-22
 
