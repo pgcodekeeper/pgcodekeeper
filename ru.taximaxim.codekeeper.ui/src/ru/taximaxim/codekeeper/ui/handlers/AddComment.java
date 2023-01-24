@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.ui.handlers;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.Charset;
+import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -67,14 +68,19 @@ public class AddComment extends AbstractHandler {
     private void createComment(SQLEditor editor, IFile file, String comment, MetaStatement statement)
             throws CoreException {
         String ls = System.lineSeparator();
-
-        if (editor.getEditorText().contains("COMMENT ON")) {
+        String lineRegex = "COMMENT ON " + statement.getStatementType().toString() + " " + statement.getQualifiedName();
+        if (editor.getEditorText().contains(lineRegex)) {
+            Scanner scanner = new Scanner(editor.getEditorText());
             String commentRegex = "('([^']*)')";
             Pattern pattern = Pattern.compile(commentRegex);
             Matcher matcher = pattern.matcher(editor.getEditorText());
+            // while (scanner.)) { Обнаружил проблему с заменой существующих комментов, ищу способ исправления
+            // scanner.
+            // }
             if (matcher.find()) {
                 StringBuilder sb = new StringBuilder();
-                matcher.appendReplacement(sb, "'" + comment + "'");
+                String newEditorText = editor.getEditorText().replace(matcher.group(), comment);
+                sb.append(newEditorText);
                 file.setContents(new ByteArrayInputStream(sb.toString().getBytes(
                         Charset.forName(file.getCharset()))), false, false, null);
             }
@@ -87,7 +93,7 @@ public class AddComment extends AbstractHandler {
                 .append(" ")
                 .append(statement.getQualifiedName())
                 .append(" IS ")
-                .append("'" + comment + "'");
+                .append("'" + comment + "';");
             file.setContents(new ByteArrayInputStream(sb.toString().getBytes(
                     Charset.forName(file.getCharset()))), false, false, null);
         }
