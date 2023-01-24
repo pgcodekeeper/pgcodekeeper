@@ -38,18 +38,17 @@ public class AddComment extends AbstractHandler {
         PgDbParser parser = PgDbParser.getParser(file);
         MetaStatement statement = parser.getDefinitionsForObj(location).findFirst().orElse(null);
 
-        String comment = new String();
-        if (statement != null) {
+        String comment = "";
+        if (statement != null && statement.getComment() != null) {
             comment = statement.getComment();
-            if (comment == null) {
-                comment = "";
-            }
+
         }
 
         InputDialog dialog = new InputDialog(HandlerUtil.getActiveShell(event),
                 Messages.AddCommentDialogTitle, Messages.AddCommentDialogMessage, comment, null);
         if (dialog.open() == Window.OK && statement != null) {
             comment = dialog.getValue();
+            statement.setComment(comment);
         }
         try {
             createComment(editor, file, comment, statement);
@@ -68,22 +67,15 @@ public class AddComment extends AbstractHandler {
     private void createComment(SQLEditor editor, IFile file, String comment, MetaStatement statement)
             throws CoreException {
         String ls = System.lineSeparator();
-        String lineRegex = "COMMENT ON " + statement.getStatementType().toString() + " " + statement.getQualifiedName();
-        if (editor.getEditorText().contains(lineRegex)) {
-            Scanner scanner = new Scanner(editor.getEditorText());
-            String commentRegex = "('([^']*)')";
-            Pattern pattern = Pattern.compile(commentRegex);
-            Matcher matcher = pattern.matcher(editor.getEditorText());
-            // while (scanner.)) { Обнаружил проблему с заменой существующих комментов, ищу способ исправления
-            // scanner.
-            // }
-            if (matcher.find()) {
-                StringBuilder sb = new StringBuilder();
-                String newEditorText = editor.getEditorText().replace(matcher.group(), comment);
-                sb.append(newEditorText);
-                file.setContents(new ByteArrayInputStream(sb.toString().getBytes(
-                        Charset.forName(file.getCharset()))), false, false, null);
-            }
+        String commentStmt = "COMMENT ON " + statement.getStatementType().toString() +
+                " " + statement.getQualifiedName() + " IS \"('([^']*)')\"";
+
+        if (editor.getEditorText().contains(commentStmt)) {
+
+            file.setContents(new ByteArrayInputStream(
+                    changeComment(editor.getEditorText(), commentStmt, comment)
+                        .getBytes(Charset.forName(file.getCharset()))),
+                    true, false, null);
         } else {
             StringBuilder sb = new StringBuilder();
             sb.append(editor.getEditorText().strip())
@@ -95,9 +87,23 @@ public class AddComment extends AbstractHandler {
                 .append(" IS ")
                 .append("'" + comment + "';");
             file.setContents(new ByteArrayInputStream(sb.toString().getBytes(
-                    Charset.forName(file.getCharset()))), false, false, null);
+                    Charset.forName(file.getCharset()))), true, false, null);
         }
         openFileInEditor(file);
+    }
+
+    private String changeComment(String initialText, String oldCommentStmt, String comment, String regex) {
+        int lineNumber;
+        String newCommentStmt;
+        try (Scanner scanner = new Scanner(initialText)) {
+            Pattern pattern = Pattern.compile(oldCommentStmt);
+            Matcher matcher = pattern.matcher(regex);
+            for (String line : initialText.split(System.lineSeparator())) {
+                if (matcher.matches()) {
+
+                }
+            }
+        }
     }
 
     private IEditorPart openFileInEditor(IFile file) throws PartInitException {
