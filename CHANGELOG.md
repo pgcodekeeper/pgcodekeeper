@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fixed an error when changing the type of a FOREIGN TABLE column.
 - Fixed errors in parsing expressions.
 - Fixed `pg_dbo_timestamp` version check.
+- Fixed error when overriding privileges.
 - Added missing references to objects in MS SQL.
 - Added missing keywords from PostgreSQL 15 to parser.
 
