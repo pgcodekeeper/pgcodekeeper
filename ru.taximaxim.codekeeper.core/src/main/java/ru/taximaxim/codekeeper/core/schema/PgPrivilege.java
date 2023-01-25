@@ -74,30 +74,37 @@ public class PgPrivilege implements IHashable {
         return sb;
     }
 
-    public static StringBuilder appendDefaultPrivileges(PgStatement newObj, StringBuilder sb) {
+    public static StringBuilder appendDefaultPostgresPrivileges(PgStatement newObj, StringBuilder sb) {
         DbObjType type = newObj.getStatementType();
-        String owner = newObj.getOwner();
-        if (type == DbObjType.COLUMN) {
-            return sb;
-        }
-
         boolean isFunctionOrTypeOrDomain = false;
-        isFunctionOrTypeOrDomain = (DbObjType.FUNCTION == type) || (DbObjType.PROCEDURE == type)
-                || (DbObjType.AGGREGATE == type) || (DbObjType.TYPE == type)
-                || (DbObjType.DOMAIN == type);
-        if (type == DbObjType.VIEW) {
-            type = DbObjType.TABLE;
-        } else if (type == DbObjType.AGGREGATE) {
-            // for AGGREGATEs in GRANT/REVOKE the type will be the same as in FUNCTIONs
-            type = DbObjType.FUNCTION;
-        }
         String typeName;
-        if (type == DbObjType.FOREIGN_DATA_WRAPPER) {
-            typeName = "FOREIGN DATA WRAPPER";
-        } else if (type == DbObjType.SERVER) {
-            typeName = "FOREIGN SERVER";
-        } else {
+        switch (type) {
+        case FUNCTION:
+        case PROCEDURE:
+        case TYPE:
+        case DOMAIN:
+            isFunctionOrTypeOrDomain = true;
             typeName = type.name();
+            break;
+        case AGGREGATE:
+            isFunctionOrTypeOrDomain = true;
+            typeName = DbObjType.FUNCTION.name();
+            break;
+        case FOREIGN_DATA_WRAPPER:
+            typeName = "FOREIGN DATA WRAPPER";
+            break;
+        case SERVER:
+            typeName = "FOREIGN SERVER";
+            break;
+        case VIEW:
+            typeName = DbObjType.TABLE.name();
+            break;
+        case SCHEMA:
+        case SEQUENCE:
+            typeName = type.name();
+            break;
+        default:
+            return sb;
         }
 
         StringBuilder sbName = new StringBuilder()
@@ -119,6 +126,7 @@ public class PgPrivilege implements IHashable {
                 "ALL", name, "PUBLIC", false);
         sb.append('\n').append(priv.getCreationSQL()).append(';');
 
+        String owner = newObj.getOwner();
         if (owner == null) {
             return sb;
         }
