@@ -101,6 +101,7 @@ public class PgPrivilege implements IHashable {
             break;
         case SCHEMA:
         case SEQUENCE:
+        case TABLE:
             typeName = type.name();
             break;
         default:
