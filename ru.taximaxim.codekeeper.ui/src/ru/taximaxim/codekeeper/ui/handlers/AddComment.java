@@ -2,9 +2,6 @@ package ru.taximaxim.codekeeper.ui.handlers;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.Charset;
-import java.util.Scanner;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -12,6 +9,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.InputDialog;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
@@ -30,31 +28,41 @@ import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 
 public class AddComment extends AbstractHandler {
 
+    private String oldComment;
+
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         SQLEditor editor = (SQLEditor) HandlerUtil.getActiveEditor(event);
-        PgObjLocation location = editor.getCurrentReference();
+        PgObjLocation location = null;
+        if (editor.getCurrentReference() == null) {
+            MessageDialog msg = new MessageDialog(HandlerUtil.getActiveShell(event),
+                    Messages.AddCommentSelectionErrorDialogTitle, null,
+                    Messages.AddCommentSelectionErrorDialogMessage, 0, 0);
+            msg.open();
+            return null;
+        } else {
+            location = editor.getCurrentReference();
+        }
         IFile file = FileUtilsUi.getFileForLocation(location);
         PgDbParser parser = PgDbParser.getParser(file);
         MetaStatement statement = parser.getDefinitionsForObj(location).findFirst().orElse(null);
 
         String comment = "";
         if (statement != null && statement.getComment() != null) {
-            comment = statement.getComment();
-
+            oldComment = statement.getComment();
         }
 
         InputDialog dialog = new InputDialog(HandlerUtil.getActiveShell(event),
-                Messages.AddCommentDialogTitle, Messages.AddCommentDialogMessage, comment, null);
+                Messages.AddCommentDialogTitle, Messages.AddCommentDialogMessage, oldComment, null);
         if (dialog.open() == Window.OK && statement != null) {
             comment = dialog.getValue();
-            statement.setComment(comment);
+            try {
+                createComment(editor, file, comment, statement);
+            } catch (CoreException e) {
+                Log.log(Log.LOG_ERROR, e.getMessage(), e);
+            }
         }
-        try {
-            createComment(editor, file, comment, statement);
-        } catch (CoreException e) {
-            Log.log(Log.LOG_ERROR, e.getMessage(), e);
-        }
+
         return null;
     }
 
@@ -66,44 +74,40 @@ public class AddComment extends AbstractHandler {
 
     private void createComment(SQLEditor editor, IFile file, String comment, MetaStatement statement)
             throws CoreException {
-        String ls = System.lineSeparator();
         String commentStmt = "COMMENT ON " + statement.getStatementType().toString() +
-                " " + statement.getQualifiedName() + " IS \"('([^']*)')\"";
-
+                " " + statement.getQualifiedName() + " IS " + oldComment;
         if (editor.getEditorText().contains(commentStmt)) {
-
+            String newComment = changeComment(editor.getEditorText(), commentStmt, comment);
             file.setContents(new ByteArrayInputStream(
-                    changeComment(editor.getEditorText(), commentStmt, comment)
-                        .getBytes(Charset.forName(file.getCharset()))),
+                    newComment.getBytes(Charset.forName(file.getCharset()))),
                     true, false, null);
         } else {
-            StringBuilder sb = new StringBuilder();
-            sb.append(editor.getEditorText().strip())
-                .append(ls)
-                .append("COMMENT ON ")
-                .append(statement.getStatementType().toString())
-                .append(" ")
-                .append(statement.getQualifiedName())
-                .append(" IS ")
-                .append("'" + comment + "';");
-            file.setContents(new ByteArrayInputStream(sb.toString().getBytes(
+            String addCommentStmt = addComment(editor, statement, comment);
+            file.setContents(new ByteArrayInputStream(addCommentStmt.getBytes(
                     Charset.forName(file.getCharset()))), true, false, null);
         }
         openFileInEditor(file);
     }
 
-    private String changeComment(String initialText, String oldCommentStmt, String comment, String regex) {
-        int lineNumber;
-        String newCommentStmt;
-        try (Scanner scanner = new Scanner(initialText)) {
-            Pattern pattern = Pattern.compile(oldCommentStmt);
-            Matcher matcher = pattern.matcher(regex);
-            for (String line : initialText.split(System.lineSeparator())) {
-                if (matcher.matches()) {
-
-                }
-            }
+    private String changeComment(String initialText, String oldCommentStmt, String comment) {
+        if (initialText.contains(oldCommentStmt)) {
+            String newCommentStmt = oldCommentStmt.replace(oldComment, "'" + comment + "'");
+            return initialText.replace(oldCommentStmt, newCommentStmt);
         }
+        return initialText;
+    }
+
+    private String addComment(SQLEditor editor, MetaStatement statement, String comment) {
+        StringBuilder sb = new StringBuilder();
+        String ls = System.lineSeparator();
+        return sb.append(editor.getEditorText().strip())
+            .append(ls)
+            .append("COMMENT ON ")
+            .append(statement.getStatementType().toString())
+            .append(" ")
+            .append(statement.getQualifiedName())
+            .append(" IS ")
+            .append("'" + comment + "';").toString();
     }
 
     private IEditorPart openFileInEditor(IFile file) throws PartInitException {
