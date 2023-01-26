@@ -78,3 +78,26 @@ REVOKE ALL ON SCHEMA public FROM PUBLIC;
 REVOKE ALL ON SCHEMA public FROM postgres;
 GRANT ALL ON SCHEMA public TO postgres;
 GRANT ALL ON SCHEMA public TO PUBLIC;
+
+--------------------------------------------------------------------------------
+
+CREATE TABLE public.measurement (
+    id_key bigint,
+    id bigint,
+    city_id integer NOT NULL,
+    logdate integer
+)
+PARTITION BY RANGE (logdate); 
+
+ALTER TABLE public.measurement OWNER TO khazieva_gr;
+
+CREATE TABLE public.measurement_1 PARTITION OF public.measurement
+FOR VALUES FROM (1) TO (5);
+
+ALTER TABLE public.measurement_1 OWNER TO khazieva_gr; 
+
+CREATE TABLE public.measurement_2 PARTITION OF public.measurement
+FOR VALUES FROM (6) TO (10);
+
+ALTER TABLE public.measurement_2 OWNER TO khazieva_gr;
+

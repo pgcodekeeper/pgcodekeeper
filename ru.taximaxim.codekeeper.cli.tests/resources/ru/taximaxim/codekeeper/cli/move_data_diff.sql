@@ -32,6 +32,41 @@ DROP INDEX public.tbl_idx;
 
 ALTER TABLE public.tbl RENAME TO tbl_randomly_generated_part;
 
+-- DEPCY: This TABLE depends on the TABLE: public.measurement
+
+ALTER TABLE public.measurement_2 RENAME TO measurement_2_randomly_generated_part;
+
+-- DEPCY: This TABLE depends on the TABLE: public.measurement
+
+ALTER TABLE public.measurement_1 RENAME TO measurement_1_randomly_generated_part;
+
+ALTER TABLE public.measurement RENAME TO measurement_randomly_generated_part;
+
+CREATE TABLE public.measurement (
+	id_key bigint,
+	id bigint,
+	city_id integer NOT NULL,
+	logdate integer
+)
+PARTITION BY RANGE (logdate);
+
+ALTER TABLE public.measurement OWNER TO khazieva_gr;
+
+CREATE TABLE public.measurement_2 PARTITION OF public.measurement
+FOR VALUES FROM (6) TO (10);
+
+ALTER TABLE public.measurement_2 OWNER TO khazieva_gr;
+
+CREATE TABLE public.measurement_1 PARTITION OF public.measurement
+FOR VALUES FROM (1) TO (5);
+
+ALTER TABLE public.measurement_1 OWNER TO khazieva_gr;
+
+INSERT INTO public.measurement(id, city_id, logdate)
+SELECT id, city_id, logdate FROM public.measurement_randomly_generated_part;
+
+DROP TABLE public.measurement_randomly_generated_part;
+
 CREATE TABLE public.tbl (
 	id bigint DEFAULT nextval('public.seq_tbl_id'::regclass) NOT NULL,
 	id_2 bigint DEFAULT nextval('public.seq_tbl_id_2'::regclass) NOT NULL,

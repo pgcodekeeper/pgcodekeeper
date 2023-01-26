@@ -27,9 +27,12 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractForeignTable;
+import ru.taximaxim.codekeeper.core.schema.AbstractRegularTable;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
+import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.MsColumn;
 import ru.taximaxim.codekeeper.core.schema.MsView;
+import ru.taximaxim.codekeeper.core.schema.PartitionPgTable;
 import ru.taximaxim.codekeeper.core.schema.PgColumn;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgSequence;
@@ -93,6 +96,7 @@ public class ActionsToScriptConverter {
      */
     public void fillScript(List<TreeElement> selected) {
         Set<PgStatement> refreshed = new HashSet<>(toRefresh.size());
+        Map<String, List<PartitionPgTable>> partitionTables = getPartitionTables();
         for (ActionContainer action : actions) {
             PgStatement obj = action.getOldObj();
 
@@ -113,7 +117,7 @@ public class ActionsToScriptConverter {
             }
 
             processSequence(action);
-            printAction(action, obj);
+            printAction(action, obj, partitionTables);
         }
 
         for (PgSequence sequence : sequencesOwnedBy) {
@@ -139,19 +143,21 @@ public class ActionsToScriptConverter {
         }
     }
 
-    private void printAction(ActionContainer action, PgStatement obj) {
+    private void printAction(ActionContainer action, PgStatement obj, Map<String, List<PartitionPgTable>> partitionTables) {
         String depcy = getComment(action, obj);
         switch (action.getAction()) {
         case CREATE:
             if (depcy != null) {
                 script.addStatement(depcy);
             }
+            printPartitionTable(obj, partitionTables);
             script.addCreate(obj, null, obj.getCreationSQL(), true);
 
             if (arguments.isDataMovementMode()
                     && DbObjType.TABLE == obj.getStatementType()
                     && !(obj instanceof AbstractForeignTable)
-                    && obj.getTwin(oldDbFull) != null) {
+                    && obj.getTwin(oldDbFull) != null
+                    && !(obj instanceof PartitionPgTable)) {
                 addCommandsForMoveData((AbstractTable) obj);
             }
             break;
@@ -181,6 +187,36 @@ public class ActionsToScriptConverter {
             break;
         case NONE:
             throw new IllegalStateException("Not implemented action");
+        }
+    }
+
+    private Map<String, List<PartitionPgTable>> getPartitionTables() {
+        Map<String, List<PartitionPgTable>> partitionTables = new HashMap<>();
+
+        for (ActionContainer action : actions) {
+            PgStatement obj = action.getOldObj();
+
+            if (obj instanceof PartitionPgTable && action.getAction() == StatementActions.CREATE) {
+                for (GenericColumn dep : obj.getDeps()) {
+                    partitionTables.computeIfAbsent(dep.table,
+                            tables -> new ArrayList<>()).add((PartitionPgTable) obj);
+                }
+            }
+        }
+        return partitionTables;
+    }
+
+    private void printPartitionTable(PgStatement obj, Map<String, List<PartitionPgTable>> partitionTables) {
+        if (obj instanceof AbstractRegularTable
+                && ((AbstractRegularTable) obj).getPartitionBy() != null
+                && !partitionTables.isEmpty()) {
+            script.addCreate(obj, null, obj.getCreationSQL(), true);
+            partitionTables.get(obj.getBareName()).forEach(table -> script.addCreate(table, null, obj.getCreationSQL(), true));
+
+            if (arguments.isDataMovementMode()
+                    && obj.getTwin(oldDbFull) != null) {
+                addCommandsForMoveData((AbstractTable) obj);
+            }
         }
     }
 
