@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Improved deployment by replacing nested jars with maven dependencies.
 
 ### Fixed
-
+- Fixed an error of creating a partitioned table and pouring data into it.
 - Fixed an error when changing the type of a FOREIGN TABLE column.
 - Fixed errors in parsing expressions.
 - Fixed `pg_dbo_timestamp` version check.
