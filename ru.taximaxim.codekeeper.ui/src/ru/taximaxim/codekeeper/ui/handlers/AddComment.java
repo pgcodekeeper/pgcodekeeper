@@ -1,66 +1,102 @@
 package ru.taximaxim.codekeeper.ui.handlers;
 
-import java.io.ByteArrayInputStream;
-import java.nio.charset.Charset;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
+import java.util.List;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.dialogs.InputDialog;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.eclipse.ui.part.FileEditorInput;
 
+import ru.taximaxim.codekeeper.core.MsDiffUtils;
+import ru.taximaxim.codekeeper.core.PgDiffUtils;
+import ru.taximaxim.codekeeper.core.fileutils.ProjectUpdater;
+import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
+import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
-import ru.taximaxim.codekeeper.core.schema.meta.MetaStatement;
+import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
+import ru.taximaxim.codekeeper.ui.differ.DbSource;
+import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
+import ru.taximaxim.codekeeper.ui.fileutils.UIProjectUpdater;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
+import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
+import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 
 public class AddComment extends AbstractHandler {
 
-    private String oldComment;
-
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         SQLEditor editor = (SQLEditor) HandlerUtil.getActiveEditor(event);
-        PgObjLocation location = null;
-        if (editor.getCurrentReference() == null) {
-            MessageDialog msg = new MessageDialog(HandlerUtil.getActiveShell(event),
-                    Messages.AddCommentSelectionErrorDialogTitle, null,
-                    Messages.AddCommentSelectionErrorDialogMessage, 0, 0);
-            msg.open();
-            return null;
-        } else {
-            location = editor.getCurrentReference();
-        }
+        PgObjLocation location = editor.getCurrentReference();
         IFile file = FileUtilsUi.getFileForLocation(location);
-        PgDbParser parser = PgDbParser.getParser(file);
-        MetaStatement statement = parser.getDefinitionsForObj(location).findFirst().orElse(null);
+        PgDbProject proj = new PgDbProject(file.getProject());
+        boolean isMsSql = OpenProjectUtils.checkMsSql(file.getProject());
 
-        String comment = "";
-        if (statement != null && statement.getComment() != null) {
-            oldComment = statement.getComment();
+        PgDatabase dbProjectFragment;
+        try {
+            dbProjectFragment = UIProjectLoader
+                .buildFiles(Arrays.asList(file), isMsSql, null);
+        } catch (InterruptedException | IOException | CoreException e) {
+            Log.log(Log.LOG_ERROR, e.getMessage(), e);
+            return null;
+        }
+        PgDatabase bufferDb = (PgDatabase) dbProjectFragment.deepCopy();
+
+        PgStatement statement = location.getObj().getStatement(bufferDb);
+        if (statement == null) {
+            return null;
+        }
+
+        String oldComment = statement.getComment();
+        if (oldComment != null) {
+            oldComment = isMsSql ? MsDiffUtils.unquoteQuotedName(oldComment)
+                    : PgDiffUtils.unquoteQuotedString(oldComment, 1);
         }
 
         InputDialog dialog = new InputDialog(HandlerUtil.getActiveShell(event),
                 Messages.AddCommentDialogTitle, Messages.AddCommentDialogMessage, oldComment, null);
-        if (dialog.open() == Window.OK && statement != null) {
-            comment = dialog.getValue();
-            try {
-                createComment(editor, file, comment, statement);
-            } catch (CoreException e) {
-                Log.log(Log.LOG_ERROR, e.getMessage(), e);
-            }
+
+        if (dialog.open() != Window.OK) {
+            return null;
+        }
+
+        String newComment = dialog.getValue();
+        if (newComment.isBlank()) {
+            statement.setComment(null);
+        } else if (!newComment.equals(oldComment)) {
+            statement.setComment(isMsSql ? MsDiffUtils.quoteName(newComment) : PgDiffUtils.quoteString(newComment));
+        } else {
+            return null;
+        }
+
+        DbSource dbOld = DbSource.fromProject(new PgDbProject(file.getProject()));
+        DbSource dbNew = DbSource.fromDbObject(bufferDb, null);
+
+        try {
+            TreeDiffer treeDiffer = new TreeDiffer(dbNew, dbOld);
+            treeDiffer.run(new NullProgressMonitor());
+            TreeElement treeFull = treeDiffer.getDiffTree();
+            TreeElement el = treeFull.findElement(statement);
+
+            ProjectUpdater updater = new UIProjectUpdater(dbNew.getDbObject(), dbOld.getDbObject(), List.of(el),
+                    proj, false);
+            updater.updatePartial();
+            file.refreshLocal(IResource.DEPTH_INFINITE, null);
+        } catch (CoreException | IOException | InvocationTargetException | InterruptedException e) {
+            Log.log(Log.LOG_ERROR, e.getMessage(), e);
         }
 
         return null;
@@ -68,51 +104,13 @@ public class AddComment extends AbstractHandler {
 
     @Override
     public boolean isEnabled() {
-        IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-        return editor instanceof SQLEditor;
-    }
-
-    private void createComment(SQLEditor editor, IFile file, String comment, MetaStatement statement)
-            throws CoreException {
-        String commentStmt = "COMMENT ON " + statement.getStatementType().toString() +
-                " " + statement.getQualifiedName() + " IS " + oldComment;
-        if (editor.getEditorText().contains(commentStmt)) {
-            String newComment = changeComment(editor.getEditorText(), commentStmt, comment);
-            file.setContents(new ByteArrayInputStream(
-                    newComment.getBytes(Charset.forName(file.getCharset()))),
-                    true, false, null);
-        } else {
-            String addCommentStmt = addComment(editor, statement, comment);
-            file.setContents(new ByteArrayInputStream(addCommentStmt.getBytes(
-                    Charset.forName(file.getCharset()))), true, false, null);
+        IEditorPart part = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+        if (part instanceof SQLEditor) {
+            SQLEditor editor = (SQLEditor) part;
+            return UIProjectLoader.isInProject(editor.getEditorInput())
+                    && editor.getCurrentReference() != null;
         }
-        openFileInEditor(file);
-    }
 
-    private String changeComment(String initialText, String oldCommentStmt, String comment) {
-        if (initialText.contains(oldCommentStmt)) {
-            String newCommentStmt = oldCommentStmt.replace(oldComment, "'" + comment + "'");
-            return initialText.replace(oldCommentStmt, newCommentStmt);
-        }
-        return initialText;
+        return false;
     }
-
-    private String addComment(SQLEditor editor, MetaStatement statement, String comment) {
-        StringBuilder sb = new StringBuilder();
-        String ls = System.lineSeparator();
-        return sb.append(editor.getEditorText().strip())
-            .append(ls)
-            .append("COMMENT ON ")
-            .append(statement.getStatementType().toString())
-            .append(" ")
-            .append(statement.getQualifiedName())
-            .append(" IS ")
-            .append("'" + comment + "';").toString();
-    }
-
-    private IEditorPart openFileInEditor(IFile file) throws PartInitException {
-        return PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-            .openEditor(new FileEditorInput(file), EDITOR.SQL);
-    }
-
 }

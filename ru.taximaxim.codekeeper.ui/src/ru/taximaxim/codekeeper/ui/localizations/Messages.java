@@ -34,8 +34,6 @@ public final class Messages extends NLS {
     // ui
     public static String AddCommentDialogMessage;
     public static String AddCommentDialogTitle;
-    public static String AddCommentSelectionErrorDialogMessage;
-    public static String AddCommentSelectionErrorDialogTitle;
     public static String sqlScriptDialog_exception_during_script_execution;
     public static String ShowConsoleParticipant_remove;
 
