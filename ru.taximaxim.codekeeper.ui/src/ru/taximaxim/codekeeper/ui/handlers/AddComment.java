@@ -14,8 +14,10 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.part.FileEditorInput;
 
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
@@ -25,6 +27,7 @@ import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
@@ -38,7 +41,6 @@ public class AddComment extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-
         try {
             addComment(event);
         } catch (InvocationTargetException | InterruptedException | CoreException | IOException e) {
@@ -53,19 +55,17 @@ public class AddComment extends AbstractHandler {
         SQLEditor editor = (SQLEditor) HandlerUtil.getActiveEditor(event);
         PgObjLocation location = editor.getCurrentReference();
         IFile file = FileUtilsUi.getFileForLocation(location);
-        PgDbProject proj = new PgDbProject(file.getProject());
         boolean isMsSql = OpenProjectUtils.checkMsSql(file.getProject());
 
-        PgDatabase dbProjectFragment;
-        dbProjectFragment = UIProjectLoader
-            .buildFiles(List.of(file), isMsSql, null);
+        PgDatabase dbProjectFragment = UIProjectLoader.buildFiles(List.of(file), isMsSql, null);
 
-        PgDatabase bufferDb = (PgDatabase) dbProjectFragment.deepCopy();
+        PgDatabase newDb = (PgDatabase) dbProjectFragment.deepCopy();
 
-        PgStatement statement = location.getObj().getStatement(bufferDb);
+        PgStatement statement = location.getObj().getStatement(newDb);
         if (statement == null) {
             return;
         }
+        file = FileUtilsUi.getFileForLocation(statement.getLocation().getFilePath());
 
         String oldComment = statement.getComment();
         if (oldComment != null) {
@@ -83,24 +83,26 @@ public class AddComment extends AbstractHandler {
         String newComment = dialog.getValue();
         if (newComment.isBlank()) {
             statement.setComment(null);
-        } else if (!newComment.equals(oldComment)) {
+        } else if (!newComment.equals(oldComment) && oldComment != null) {
             statement.setComment(isMsSql ? MsDiffUtils.quoteName(newComment) : PgDiffUtils.quoteString(newComment));
         } else {
             return;
         }
 
-        DbSource dbOld = DbSource.fromProject(new PgDbProject(file.getProject()));
-        DbSource dbNew = DbSource.fromDbObject(bufferDb, null);
+        DbSource oldDbSource = DbSource.fromDbObject(dbProjectFragment, null);
+        DbSource newDbSource = DbSource.fromDbObject(newDb, null);
 
-        TreeDiffer treeDiffer = new TreeDiffer(dbNew, dbOld);
+        TreeDiffer treeDiffer = new TreeDiffer(newDbSource, oldDbSource);
         treeDiffer.run(new NullProgressMonitor());
         TreeElement treeFull = treeDiffer.getDiffTree();
         TreeElement el = treeFull.findElement(statement);
 
-        ProjectUpdater updater = new UIProjectUpdater(dbNew.getDbObject(), dbOld.getDbObject(), List.of(el),
+        PgDbProject proj = new PgDbProject(file.getProject());
+        ProjectUpdater updater = new UIProjectUpdater(newDbSource.getDbObject(), oldDbSource.getDbObject(), List.of(el),
                 proj, false);
         updater.updatePartial();
         file.refreshLocal(IResource.DEPTH_INFINITE, null);
+        openFileInEditor(file);
     }
 
     @Override
@@ -113,5 +115,10 @@ public class AddComment extends AbstractHandler {
         }
 
         return false;
+    }
+
+    private IEditorPart openFileInEditor(IFile file) throws PartInitException {
+        return PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+            .openEditor(new FileEditorInput(file), EDITOR.SQL);
     }
 }
