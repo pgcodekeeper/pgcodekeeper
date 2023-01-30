@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
  
 ## [Unreleased]
 
+- Ability to add a comment to an SQL-object when you click on object name with RMB 
+
 ### Added
 
 - Starting with this version, pgCodeKeeper requires Eclipse 2021-03 (4.19) or higher.
