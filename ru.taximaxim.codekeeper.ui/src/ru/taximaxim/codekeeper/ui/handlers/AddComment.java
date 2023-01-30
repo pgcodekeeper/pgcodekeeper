@@ -40,12 +40,17 @@ public class AddComment extends AbstractHandler {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
 
-        addComment(event);
+        try {
+            addComment(event);
+        } catch (InvocationTargetException | InterruptedException | CoreException | IOException e) {
+            Log.log(Log.LOG_ERROR, e.getMessage(), e);
+        }
 
         return null;
     }
 
-    private void addComment(ExecutionEvent event) {
+    private void addComment(ExecutionEvent event)
+            throws InvocationTargetException, InterruptedException, CoreException, IOException {
         SQLEditor editor = (SQLEditor) HandlerUtil.getActiveEditor(event);
         PgObjLocation location = editor.getCurrentReference();
         IFile file = FileUtilsUi.getFileForLocation(location);
@@ -53,13 +58,9 @@ public class AddComment extends AbstractHandler {
         boolean isMsSql = OpenProjectUtils.checkMsSql(file.getProject());
 
         PgDatabase dbProjectFragment;
-        try {
-            dbProjectFragment = UIProjectLoader
-                .buildFiles(Arrays.asList(file), isMsSql, null);
-        } catch (InterruptedException | IOException | CoreException e) {
-            Log.log(Log.LOG_ERROR, e.getMessage(), e);
-            return;
-        }
+        dbProjectFragment = UIProjectLoader
+            .buildFiles(Arrays.asList(file), isMsSql, null);
+
         PgDatabase bufferDb = (PgDatabase) dbProjectFragment.deepCopy();
 
         PgStatement statement = location.getObj().getStatement(bufferDb);
@@ -92,19 +93,15 @@ public class AddComment extends AbstractHandler {
         DbSource dbOld = DbSource.fromProject(new PgDbProject(file.getProject()));
         DbSource dbNew = DbSource.fromDbObject(bufferDb, null);
 
-        try {
-            TreeDiffer treeDiffer = new TreeDiffer(dbNew, dbOld);
-            treeDiffer.run(new NullProgressMonitor());
-            TreeElement treeFull = treeDiffer.getDiffTree();
-            TreeElement el = treeFull.findElement(statement);
+        TreeDiffer treeDiffer = new TreeDiffer(dbNew, dbOld);
+        treeDiffer.run(new NullProgressMonitor());
+        TreeElement treeFull = treeDiffer.getDiffTree();
+        TreeElement el = treeFull.findElement(statement);
 
-            ProjectUpdater updater = new UIProjectUpdater(dbNew.getDbObject(), dbOld.getDbObject(), List.of(el),
-                    proj, false);
-            updater.updatePartial();
-            file.refreshLocal(IResource.DEPTH_INFINITE, null);
-        } catch (CoreException | IOException | InvocationTargetException | InterruptedException e) {
-            Log.log(Log.LOG_ERROR, e.getMessage(), e);
-        }
+        ProjectUpdater updater = new UIProjectUpdater(dbNew.getDbObject(), dbOld.getDbObject(), List.of(el),
+                proj, false);
+        updater.updatePartial();
+        file.refreshLocal(IResource.DEPTH_INFINITE, null);
     }
 
     @Override
