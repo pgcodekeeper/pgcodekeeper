@@ -2,7 +2,6 @@ package ru.taximaxim.codekeeper.ui.handlers;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -59,7 +58,7 @@ public class AddComment extends AbstractHandler {
 
         PgDatabase dbProjectFragment;
         dbProjectFragment = UIProjectLoader
-            .buildFiles(Arrays.asList(file), isMsSql, null);
+            .buildFiles(List.of(file), isMsSql, null);
 
         PgDatabase bufferDb = (PgDatabase) dbProjectFragment.deepCopy();
 
