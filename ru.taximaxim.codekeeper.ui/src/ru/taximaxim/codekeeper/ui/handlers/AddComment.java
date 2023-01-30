@@ -39,6 +39,13 @@ public class AddComment extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
+
+        addComment(event);
+
+        return null;
+    }
+
+    private void addComment(ExecutionEvent event) {
         SQLEditor editor = (SQLEditor) HandlerUtil.getActiveEditor(event);
         PgObjLocation location = editor.getCurrentReference();
         IFile file = FileUtilsUi.getFileForLocation(location);
@@ -51,13 +58,13 @@ public class AddComment extends AbstractHandler {
                 .buildFiles(Arrays.asList(file), isMsSql, null);
         } catch (InterruptedException | IOException | CoreException e) {
             Log.log(Log.LOG_ERROR, e.getMessage(), e);
-            return null;
+            return;
         }
         PgDatabase bufferDb = (PgDatabase) dbProjectFragment.deepCopy();
 
         PgStatement statement = location.getObj().getStatement(bufferDb);
         if (statement == null) {
-            return null;
+            return;
         }
 
         String oldComment = statement.getComment();
@@ -70,7 +77,7 @@ public class AddComment extends AbstractHandler {
                 Messages.AddCommentDialogTitle, Messages.AddCommentDialogMessage, oldComment, null);
 
         if (dialog.open() != Window.OK) {
-            return null;
+            return;
         }
 
         String newComment = dialog.getValue();
@@ -79,7 +86,7 @@ public class AddComment extends AbstractHandler {
         } else if (!newComment.equals(oldComment)) {
             statement.setComment(isMsSql ? MsDiffUtils.quoteName(newComment) : PgDiffUtils.quoteString(newComment));
         } else {
-            return null;
+            return;
         }
 
         DbSource dbOld = DbSource.fromProject(new PgDbProject(file.getProject()));
@@ -98,8 +105,6 @@ public class AddComment extends AbstractHandler {
         } catch (CoreException | IOException | InvocationTargetException | InterruptedException e) {
             Log.log(Log.LOG_ERROR, e.getMessage(), e);
         }
-
-        return null;
     }
 
     @Override
