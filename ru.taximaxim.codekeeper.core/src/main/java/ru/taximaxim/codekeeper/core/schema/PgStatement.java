@@ -295,7 +295,7 @@ public abstract class PgStatement implements IStatement, IHashable {
                 // we may have revoked implicit owner GRANT in the previous step, it needs to be restored
                 // any privileges in non-default state will be set to their final state in the next step
                 // this solution also requires the least amount of handling code: no edge cases
-                PgPrivilege.appendDefaultPrivileges(newObj, sb);
+                PgPrivilege.appendDefaultPostgresPrivileges(newObj, sb);
             }
             newObj.appendPrivileges(sb);
         }
