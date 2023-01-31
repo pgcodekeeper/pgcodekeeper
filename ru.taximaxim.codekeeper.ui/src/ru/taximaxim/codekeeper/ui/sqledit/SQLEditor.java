@@ -89,7 +89,6 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.osgi.service.prefs.BackingStoreException;
 
 import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.Consts.JDBC_CONSTS;
 import ru.taximaxim.codekeeper.core.DangerStatement;
 import ru.taximaxim.codekeeper.core.IProgressReporter;
 import ru.taximaxim.codekeeper.core.fileutils.TempFile;

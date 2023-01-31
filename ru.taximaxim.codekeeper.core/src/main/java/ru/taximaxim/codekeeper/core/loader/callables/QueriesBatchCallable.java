@@ -18,7 +18,6 @@ import com.microsoft.sqlserver.jdbc.SQLServerError;
 import com.microsoft.sqlserver.jdbc.SQLServerException;
 
 import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.Consts.JDBC_CONSTS;
 import ru.taximaxim.codekeeper.core.IProgressReporter;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcType;
@@ -216,7 +215,6 @@ public class QueriesBatchCallable extends StatementCallable<String> {
                 }
             }
         }
-
         reporter.showData(query, results);
     }
 
