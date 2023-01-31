@@ -154,7 +154,6 @@ public class QueriesBatchCallable extends StatementCallable<String> {
             throws SQLException, InterruptedException {
         String sql = query.getSql();
 
-        // TODO find where use field under it
         finalModifiedQuery[0] = sql;
         if (st.execute(sql)) {
             writeResult(query.getSql());
