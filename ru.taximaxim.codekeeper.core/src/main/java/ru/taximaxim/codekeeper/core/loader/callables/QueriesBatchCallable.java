@@ -18,6 +18,7 @@ import com.microsoft.sqlserver.jdbc.SQLServerError;
 import com.microsoft.sqlserver.jdbc.SQLServerException;
 
 import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.Consts.JDBC_CONSTS;
 import ru.taximaxim.codekeeper.core.IProgressReporter;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcType;
@@ -30,20 +31,18 @@ public class QueriesBatchCallable extends StatementCallable<String> {
     private final Connection connection;
     private final IProgressReporter reporter;
     private final boolean isMsSql;
-    private final int limitRows;
 
     private boolean isAutoCommitEnabled = true;
 
     public QueriesBatchCallable(Statement st, List<PgObjLocation> batches,
             IProgressMonitor monitor, IProgressReporter reporter,
-            Connection connection, boolean isMsSql, int limitRows) {
+            Connection connection, boolean isMsSql) {
         super(st, null);
         this.batches = batches;
         this.monitor = monitor;
         this.connection = connection;
         this.reporter = reporter;
         this.isMsSql = isMsSql;
-        this.limitRows = limitRows;
     }
 
     @Override
@@ -154,9 +153,6 @@ public class QueriesBatchCallable extends StatementCallable<String> {
     private void executeSingleStatement(PgObjLocation query, String[] finalModifiedQuery)
             throws SQLException, InterruptedException {
         String sql = query.getSql();
-        if (limitRows > 0 && "SELECT".equals(query.getAction())) {
-            sql = "SELECT * FROM ( " + sql + " ) AS t LIMIT " + limitRows;
-        }
 
         finalModifiedQuery[0] = sql;
         if (st.execute(sql)) {
@@ -221,7 +217,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
             }
         }
 
-        reporter.showData(query, results, limitRows);
+        reporter.showData(query, results);
     }
 
     private void writeWarnings() throws SQLException {
