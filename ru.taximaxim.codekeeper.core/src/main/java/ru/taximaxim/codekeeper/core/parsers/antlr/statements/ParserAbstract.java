@@ -597,9 +597,12 @@ public abstract class ParserAbstract {
     }
 
     /**
-     * Заполняет владельца
-     * @param ctx контекст парсера с владельцем
-     * @param st объект
+     * Fill owner
+     *
+     * @param owner
+     *            parser context with owner
+     * @param st
+     *            object
      */
     protected void fillOwnerTo(IdentifierContext owner, PgStatement st) {
         if (owner == null || db.getArguments().isIgnorePrivileges() || refMode) {
@@ -707,7 +710,9 @@ public abstract class ParserAbstract {
                 sb.append(id.getText()).append('.');
             }
         }
-        sb.setLength(sb.length() - 1);
+        if (sb.length() > 0) {
+            sb.setLength(sb.length() - 1);
+        }
         return getStrForStmtAction(action, type, sb.toString());
     }
 
@@ -716,6 +721,30 @@ public abstract class ParserAbstract {
     }
 
     protected static String getStrForStmtAction(String action, DbObjType type, String id) {
-        return action + ' ' + type + ' ' + id;
+        String objType;
+        switch (type) {
+        case FTS_CONFIGURATION:
+            objType = "TEXT SEARCH CONFIGURATION";
+            break;
+        case FTS_DICTIONARY:
+            objType = "TEXT SEARCH DICTIONARY";
+            break;
+        case FTS_TEMPLATE:
+            objType = "TEXT SEARCH TEMPLATE";
+            break;
+        case FTS_PARSER:
+            objType = "TEXT SEARCH PARSER";
+            break;
+        case FOREIGN_DATA_WRAPPER:
+            objType = "FOREIGN DATA WRAPPER";
+            break;
+        case USER_MAPPING:
+            objType = "USER MAPPING";
+            break;
+        default:
+            objType = type.name();
+            break;
+        }
+        return action + ' ' + objType + ' ' + id;
     }
 }

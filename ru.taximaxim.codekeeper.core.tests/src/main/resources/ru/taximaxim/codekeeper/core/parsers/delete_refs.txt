@@ -1,0 +1,11 @@
+Reference: Object = delete_test (TABLE), action = DELETE, offset = 12, line number = 1, charPositionInLine = 12
+Reference: Object = delete_test (TABLE), action = DELETE, offset = 59, line number = 2, charPositionInLine = 12
+Reference: Object = r1 (TABLE), action = DELETE, offset = 112, line number = 3, charPositionInLine = 12
+Reference: Object = delete_test (TABLE), action = DELETE, offset = 171, line number = 4, charPositionInLine = 12
+Reference: Object = r2 (TABLE), action = DELETE, offset = 209, line number = 5, charPositionInLine = 12
+Reference: Object = gin_test_tbl (TABLE), action = DELETE, offset = 237, line number = 6, charPositionInLine = 12
+Reference: Object = gist_point_tbl (TABLE), action = DELETE, offset = 283, line number = 7, charPositionInLine = 12
+Reference: Object = gist_point_tbl (TABLE), action = DELETE, offset = 328, line number = 8, charPositionInLine = 12
+Reference: Object = f (TABLE), action = DELETE, offset = 373, line number = 9, charPositionInLine = 12
+Reference: Object = f (TABLE), action = DELETE, offset = 436, line number = 10, charPositionInLine = 12
+Reference: Object = f (TABLE), action = DELETE, offset = 541, line number = 11, charPositionInLine = 12

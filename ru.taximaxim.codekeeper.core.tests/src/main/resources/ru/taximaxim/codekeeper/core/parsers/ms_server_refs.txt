@@ -1,0 +1,47 @@
+Reference: action = USE, offset = 0, line number = 1, charPositionInLine = 0
+Reference: action = ALTER SERVER AUDIT, offset = 18, line number = 3, charPositionInLine = 0
+Reference: action = ALTER SERVER AUDIT, offset = 78, line number = 6, charPositionInLine = 0
+Reference: action = ALTER SERVER AUDIT, offset = 149, line number = 9, charPositionInLine = 0
+Reference: action = USE, offset = 212, line number = 12, charPositionInLine = 0
+Reference: action = ALTER SERVER AUDIT, offset = 230, line number = 14, charPositionInLine = 0
+Reference: action = ALTER SERVER AUDIT, offset = 290, line number = 17, charPositionInLine = 0
+Reference: action = ALTER SERVER AUDIT, offset = 499, line number = 24, charPositionInLine = 0
+Reference: action = ALTER SERVER AUDIT, offset = 558, line number = 27, charPositionInLine = 0
+Reference: action = ALTER SERVER AUDIT, offset = 628, line number = 29, charPositionInLine = 0
+Reference: action = ALTER SERVER AUDIT, offset = 715, line number = 32, charPositionInLine = 0
+Reference: action = ALTER SERVER AUDIT, offset = 785, line number = 34, charPositionInLine = 0
+Reference: action = ALTER SERVER AUDIT, offset = 855, line number = 36, charPositionInLine = 0
+Reference: action = ALTER SERVER AUDIT, offset = 922, line number = 39, charPositionInLine = 0
+Reference: action = ALTER SERVER AUDIT, offset = 990, line number = 41, charPositionInLine = 0
+Reference: action = ALTER SERVER AUDIT, offset = 1060, line number = 43, charPositionInLine = 0
+Reference: action = ALTER SERVER AUDIT, offset = 1144, line number = 46, charPositionInLine = 0
+Reference: action = CREATE SERVER AUDIT, offset = 1207, line number = 48, charPositionInLine = 0
+Reference: action = CREATE SERVER AUDIT, offset = 1287, line number = 50, charPositionInLine = 0
+Reference: action = CREATE SERVER AUDIT, offset = 1398, line number = 53, charPositionInLine = 0
+Reference: action = ALTER SERVER AUDIT SPECIFICATION, offset = 1520, line number = 57, charPositionInLine = 0
+Reference: action = CREATE SERVER AUDIT SPECIFICATION, offset = 1691, line number = 62, charPositionInLine = 0
+Reference: action = ALTER SERVER CONFIGURATION, offset = 1813, line number = 66, charPositionInLine = 0
+Reference: action = ALTER SERVER CONFIGURATION, offset = 1890, line number = 68, charPositionInLine = 0
+Reference: action = ALTER SERVER CONFIGURATION, offset = 1953, line number = 70, charPositionInLine = 0
+Reference: action = ALTER SERVER CONFIGURATION, offset = 2016, line number = 72, charPositionInLine = 0
+Reference: action = ALTER SERVER CONFIGURATION, offset = 2071, line number = 73, charPositionInLine = 0
+Reference: action = ALTER SERVER CONFIGURATION, offset = 2129, line number = 75, charPositionInLine = 0
+Reference: action = ALTER SERVER CONFIGURATION, offset = 2180, line number = 76, charPositionInLine = 0
+Reference: action = ALTER SERVER CONFIGURATION, offset = 2232, line number = 77, charPositionInLine = 0
+Reference: action = ALTER SERVER CONFIGURATION, offset = 2297, line number = 79, charPositionInLine = 0
+Reference: action = ALTER SERVER CONFIGURATION, offset = 2362, line number = 81, charPositionInLine = 0
+Reference: action = ALTER SERVER CONFIGURATION, offset = 2447, line number = 83, charPositionInLine = 0
+Reference: action = ALTER SERVER CONFIGURATION, offset = 2519, line number = 84, charPositionInLine = 0
+Reference: action = ALTER SERVER CONFIGURATION, offset = 2633, line number = 87, charPositionInLine = 0
+Reference: action = ALTER SERVER CONFIGURATION, offset = 2694, line number = 90, charPositionInLine = 0
+Reference: action = ALTER SERVER ROLE, offset = 2811, line number = 94, charPositionInLine = 0
+Reference: action = ALTER SERVER ROLE, offset = 2862, line number = 95, charPositionInLine = 0
+Reference: action = ALTER SERVER ROLE, offset = 2931, line number = 96, charPositionInLine = 0
+Reference: action = ALTER SERVER ROLE, offset = 2976, line number = 97, charPositionInLine = 0
+Reference: action = ALTER SERVER ROLE, offset = 3046, line number = 98, charPositionInLine = 0
+Reference: action = ALTER SERVER ROLE, offset = 3093, line number = 99, charPositionInLine = 0
+Reference: action = ALTER SERVER ROLE, offset = 3136, line number = 100, charPositionInLine = 0
+Reference: action = USE, offset = 3180, line number = 101, charPositionInLine = 0
+Reference: action = CREATE SERVER ROLE, offset = 3194, line number = 102, charPositionInLine = 0
+Reference: action = USE, offset = 3252, line number = 104, charPositionInLine = 0
+Reference: action = CREATE SERVER ROLE, offset = 3264, line number = 105, charPositionInLine = 0

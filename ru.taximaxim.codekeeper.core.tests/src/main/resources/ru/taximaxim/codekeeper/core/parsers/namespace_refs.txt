@@ -1,0 +1,20 @@
+Reference: Object = test_ns_schema_1 (SCHEMA), action = CREATE, offset = 66, line number = 5, charPositionInLine = 14
+Reference: Object = abc_a_idx (INDEX), action = CREATE, offset = 104, line number = 6, charPositionInLine = 20
+Reference: Object = abc (TABLE), action = null, offset = 117, line number = 6, charPositionInLine = 33
+Reference: Object = abc_view (VIEW), action = CREATE, offset = 139, line number = 8, charPositionInLine = 12
+Reference: Object = abc (TABLE), action = CREATE, offset = 208, line number = 11, charPositionInLine = 13
+Reference: action = SELECT, offset = 295, line number = 17, charPositionInLine = 0
+Reference: Object = test_ns_schema_1 (SCHEMA), action = null, offset = 430, line number = 20, charPositionInLine = 12
+Reference: Object = test_ns_schema_1.abc (TABLE), action = INSERT, offset = 447, line number = 20, charPositionInLine = 29
+Reference: Object = test_ns_schema_1 (SCHEMA), action = null, offset = 479, line number = 21, charPositionInLine = 12
+Reference: Object = test_ns_schema_1.abc (TABLE), action = INSERT, offset = 496, line number = 21, charPositionInLine = 29
+Reference: Object = test_ns_schema_1 (SCHEMA), action = null, offset = 528, line number = 22, charPositionInLine = 12
+Reference: Object = test_ns_schema_1.abc (TABLE), action = INSERT, offset = 545, line number = 22, charPositionInLine = 29
+Reference: action = SELECT, offset = 566, line number = 24, charPositionInLine = 0
+Reference: action = SELECT, offset = 602, line number = 25, charPositionInLine = 0
+Reference: Object = test_ns_schema_1 (SCHEMA), action = ALTER, offset = 657, line number = 27, charPositionInLine = 13
+Reference: action = SELECT, offset = 708, line number = 28, charPositionInLine = 0
+Reference: Object = test_ns_schema_renamed (SCHEMA), action = CREATE, offset = 873, line number = 32, charPositionInLine = 14
+Reference: Object = test_ns_schema_renamed (SCHEMA), action = CREATE, offset = 949, line number = 33, charPositionInLine = 28
+Reference: Object = test_ns_schema_renamed (SCHEMA), action = DROP, offset = 1004, line number = 35, charPositionInLine = 12
+Reference: action = SELECT, offset = 1077, line number = 38, charPositionInLine = 0

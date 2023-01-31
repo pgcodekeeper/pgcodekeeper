@@ -1,6 +1,6 @@
 package ru.taximaxim.codekeeper.core.model.exporter;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,12 +13,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 
-public class PartialExportTestFileVisitor extends SimpleFileVisitor<Path>{
+public class PartialExportTestFileVisitor extends SimpleFileVisitor<Path> {
+
     private final Path pathToBeCompared;
     private final Path pathToCompareTo;
 
@@ -45,7 +46,7 @@ public class PartialExportTestFileVisitor extends SimpleFileVisitor<Path>{
     }
 
     @Override
-    public FileVisitResult visitFile(Path file1, BasicFileAttributes attrs) throws IOException{
+    public FileVisitResult visitFile(Path file1, BasicFileAttributes attrs) throws IOException {
         String relativeFilePath = pathToBeCompared.relativize(file1).toString().replace('\\', '/');
         File file2 = new File(pathToCompareTo.toFile(), relativeFilePath);
 
@@ -65,7 +66,7 @@ public class PartialExportTestFileVisitor extends SimpleFileVisitor<Path>{
             fail(isInSource() + "file is a directory: " + relativeFilePath);
         }
 
-        if (file2.exists() && !Arrays.equals(Files.readAllBytes(file1), Files.readAllBytes(file2.toPath()))){
+        if (file2.exists() && !Arrays.equals(Files.readAllBytes(file1), Files.readAllBytes(file2.toPath()))) {
             if (!modifiedFiles.containsKey(relativeFilePath)) {
                 fail(isInSource() + "Source and target files differ, but this file is "
                         + "not in list of modified objects: " + relativeFilePath);
@@ -74,15 +75,15 @@ public class PartialExportTestFileVisitor extends SimpleFileVisitor<Path>{
             File file = isInSource ? file2 : file1.toFile();
             String partialFile = new String(Files.readAllBytes(file.toPath()), Consts.UTF_8);
 
-            Assert.assertEquals("Files differ, and partial file has unexpected hash"
-                    + "\nPartial file:\n" + partialFile,
+            Assertions.assertEquals(
                     hash,
-                    PgDiffUtils.md5(partialFile));
+                    PgDiffUtils.md5(partialFile), "Files differ, and partial file has unexpected hash"
+                            + "\nPartial file:\n" + partialFile);
         }
         return FileVisitResult.CONTINUE;
     }
 
-    private String isInSource(){
+    private String isInSource() {
         return "Walking " + (isInSource ? "full export" : "partial export") + " directory: ";
     }
 }

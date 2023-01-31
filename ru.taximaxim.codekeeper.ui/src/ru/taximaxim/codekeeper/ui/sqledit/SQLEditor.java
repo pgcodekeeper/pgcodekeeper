@@ -132,6 +132,8 @@ implements IResourceChangeListener, ITextErrorReporter {
 
     static final String CONTENT_ASSIST = "ContentAssist"; //$NON-NLS-1$
 
+    private static final int JDBC_DEFAULT_PORT = 5432;
+
     private final IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
     private SqlEditorPartListener partListener;
 
@@ -775,7 +777,7 @@ implements IResourceChangeListener, ITextErrorReporter {
                 }
                 int port = externalDbInfo.getDbPort();
                 if (port == 0) {
-                    port = JDBC_CONSTS.JDBC_DEFAULT_PORT;
+                    port = JDBC_DEFAULT_PORT;
                 }
                 s = s.replace(CMD_VARS.DB_PORT_PLACEHOLDER, "" + port); //$NON-NLS-1$
             }

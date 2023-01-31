@@ -1,0 +1,56 @@
+Reference: Object = reloptions_test (TABLE), action = CREATE, offset = 31, line number = 3, charPositionInLine = 13
+Reference: action = SELECT, offset = 147, line number = 5, charPositionInLine = 0
+Reference: Object = reloptions_test2 (TABLE), action = CREATE, offset = 263, line number = 8, charPositionInLine = 13
+Reference: Object = reloptions_test2 (TABLE), action = CREATE, offset = 321, line number = 9, charPositionInLine = 13
+Reference: Object = reloptions_test2 (TABLE), action = CREATE, offset = 381, line number = 10, charPositionInLine = 13
+Reference: Object = reloptions_test2 (TABLE), action = CREATE, offset = 466, line number = 11, charPositionInLine = 13
+Reference: Object = reloptions_test2 (TABLE), action = CREATE, offset = 599, line number = 14, charPositionInLine = 13
+Reference: Object = reloptions_test2 (TABLE), action = CREATE, offset = 666, line number = 15, charPositionInLine = 13
+Reference: Object = reloptions_test2 (TABLE), action = CREATE, offset = 786, line number = 18, charPositionInLine = 13
+Reference: Object = reloptions_test2 (TABLE), action = CREATE, offset = 847, line number = 19, charPositionInLine = 13
+Reference: Object = reloptions_test2 (TABLE), action = CREATE, offset = 912, line number = 20, charPositionInLine = 13
+Reference: Object = reloptions_test2 (TABLE), action = CREATE, offset = 973, line number = 21, charPositionInLine = 13
+Reference: Object = reloptions_test2 (TABLE), action = CREATE, offset = 1040, line number = 22, charPositionInLine = 13
+Reference: Object = reloptions_test2 (TABLE), action = CREATE, offset = 1109, line number = 23, charPositionInLine = 13
+Reference: Object = reloptions_test2 (TABLE), action = CREATE, offset = 1182, line number = 24, charPositionInLine = 13
+Reference: Object = reloptions_test2 (TABLE), action = CREATE, offset = 1268, line number = 25, charPositionInLine = 13
+Reference: Object = reloptions_test2 (TABLE), action = CREATE, offset = 1388, line number = 28, charPositionInLine = 13
+Reference: Object = reloptions_test2 (TABLE), action = CREATE, offset = 1524, line number = 31, charPositionInLine = 13
+Reference: Object = reloptions_test (TABLE), action = ALTER, offset = 1602, line number = 34, charPositionInLine = 12
+Reference: action = SELECT, offset = 1682, line number = 36, charPositionInLine = 0
+Reference: Object = reloptions_test (TABLE), action = ALTER, offset = 1823, line number = 39, charPositionInLine = 12
+Reference: action = SELECT, offset = 1880, line number = 40, charPositionInLine = 0
+Reference: Object = reloptions_test (TABLE), action = ALTER, offset = 1997, line number = 43, charPositionInLine = 12
+Reference: action = SELECT, offset = 2033, line number = 44, charPositionInLine = 0
+Reference: Object = reloptions_test (TABLE), action = ALTER, offset = 2176, line number = 47, charPositionInLine = 12
+Reference: action = SELECT, offset = 2257, line number = 49, charPositionInLine = 0
+Reference: Object = reloptions_test (TABLE), action = DROP, offset = 2396, line number = 53, charPositionInLine = 11
+Reference: Object = reloptions_test (TABLE), action = CREATE, offset = 2427, line number = 55, charPositionInLine = 13
+Reference: action = SELECT, offset = 2507, line number = 57, charPositionInLine = 0
+Reference: action = SELECT, offset = 2600, line number = 59, charPositionInLine = 0
+Reference: Object = reloptions_test (TABLE), action = ALTER, offset = 2668, line number = 61, charPositionInLine = 12
+Reference: action = SELECT, offset = 2731, line number = 62, charPositionInLine = 0
+Reference: Object = reloptions_test (TABLE), action = ALTER, offset = 2799, line number = 64, charPositionInLine = 12
+Reference: action = SELECT, offset = 2859, line number = 65, charPositionInLine = 0
+Reference: Object = reloptions_test2 (TABLE), action = CREATE, offset = 2979, line number = 68, charPositionInLine = 13
+Reference: Object = reloptions_test (TABLE), action = DROP, offset = 3075, line number = 71, charPositionInLine = 11
+Reference: Object = reloptions_test (TABLE), action = CREATE, offset = 3106, line number = 73, charPositionInLine = 13
+Reference: action = SELECT, offset = 3243, line number = 77, charPositionInLine = 0
+Reference: action = SELECT, offset = 3316, line number = 78, charPositionInLine = 0
+Reference: Object = reloptions_test_idx (INDEX), action = CREATE, offset = 3504, line number = 85, charPositionInLine = 13
+Reference: Object = reloptions_test (TABLE), action = null, offset = 3527, line number = 85, charPositionInLine = 36
+Reference: action = SELECT, offset = 3569, line number = 86, charPositionInLine = 0
+Reference: Object = reloptions_test_idx (INDEX), action = CREATE, offset = 3707, line number = 89, charPositionInLine = 13
+Reference: Object = reloptions_test (TABLE), action = null, offset = 3730, line number = 89, charPositionInLine = 36
+Reference: Object = reloptions_test_idx (INDEX), action = CREATE, offset = 3797, line number = 91, charPositionInLine = 13
+Reference: Object = reloptions_test (TABLE), action = null, offset = 3820, line number = 91, charPositionInLine = 36
+Reference: Object = reloptions_test_idx2 (INDEX), action = CREATE, offset = 3919, line number = 95, charPositionInLine = 13
+Reference: Object = reloptions_test (TABLE), action = null, offset = 3943, line number = 95, charPositionInLine = 37
+Reference: Object = reloptions_test_idx2 (INDEX), action = CREATE, offset = 3997, line number = 96, charPositionInLine = 13
+Reference: Object = reloptions_test (TABLE), action = null, offset = 4021, line number = 96, charPositionInLine = 37
+Reference: Object = reloptions_test_idx (INDEX), action = ALTER, offset = 4092, line number = 99, charPositionInLine = 12
+Reference: action = SELECT, offset = 4133, line number = 100, charPositionInLine = 0
+Reference: Object = reloptions_test_idx3 (INDEX), action = CREATE, offset = 4263, line number = 103, charPositionInLine = 13
+Reference: Object = reloptions_test (TABLE), action = null, offset = 4287, line number = 103, charPositionInLine = 37
+Reference: Object = reloptions_test_idx3 (INDEX), action = ALTER, offset = 4320, line number = 104, charPositionInLine = 12
+Reference: action = SELECT, offset = 4362, line number = 105, charPositionInLine = 0

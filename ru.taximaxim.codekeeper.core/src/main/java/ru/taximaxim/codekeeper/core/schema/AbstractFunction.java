@@ -83,14 +83,13 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
     }
 
     /**
-     * Compares two objects whether they are equal. If both objects are of the
-     * same class but they equal just in whitespace in {@link #body}, they are
-     * considered being equal.
+     * Compares two objects whether they are equal. If both objects are of the same class but they not equal just in
+     * whitespace in function body, they are considered being equal.
      *
-     * @param func                     object to be compared
-     * @return true if {@code object} is PgFunction and the function code is
-     *         the same when compared ignoring whitespace, otherwise returns
-     *         false
+     * @param func
+     *            object to be compared
+     * @return true if {@code object} is PgFunction and the function code is the same when compared ignoring whitespace,
+     *         otherwise returns false
      */
     protected boolean compareUnalterable(AbstractFunction func) {
         return arguments.equals(func.arguments);

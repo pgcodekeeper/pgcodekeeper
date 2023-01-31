@@ -1,26 +1,23 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.stream.Stream;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.TestUtils;
@@ -37,46 +34,35 @@ import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 
-@RunWith(value = Parameterized.class)
 public class DifferTest {
 
     private static boolean defaultCheckBodies;
 
-    @Parameters
-    public static Iterable<Object[]> parameters() {
-        return TestUtils.getParameters(new Object[][] {
-            { new DifferData1(), 1 },
-            { new DifferData2(), 2 },
-            { new DifferData3(), 3 },
-            { new DifferData4(), 4 },
-            { new DifferData5(), 5 },
-        });
+    private static Stream<Arguments> generator() {
+        return Stream.of(
+                Arguments.of(new DifferData1(), 1),
+                Arguments.of(new DifferData2(), 2),
+                Arguments.of(new DifferData3(), 3),
+                Arguments.of(new DifferData4(), 4),
+                Arguments.of(new DifferData5(), 5));
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() {
         IPreferenceStore prefs = Activator.getDefault().getPreferenceStore();
         defaultCheckBodies = prefs.getDefaultBoolean(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES);
         prefs.setValue(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES, true);
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() {
         IPreferenceStore prefs = Activator.getDefault().getPreferenceStore();
         prefs.setValue(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES, defaultCheckBodies);
     }
 
-    private final DifferData differData;
-    private final int caseNumber;
-
-    public DifferTest(DifferData differData, int caseNumber) {
-        this.differData = differData;
-        this.caseNumber = caseNumber;
-    }
-
-    @Test
-    public void testDiffer() throws URISyntaxException,
-    IOException, InvocationTargetException, InterruptedException{
+    @ParameterizedTest
+    @MethodSource("generator")
+    public void testDiffer(DifferData differData, int caseNumber) throws Exception {
         String sourceFilename = "TestPartialExportSource.sql";
         String targetFilename = "TestPartialExportTarget.sql";
 
@@ -102,7 +88,7 @@ public class DifferTest {
 
         try{
             differ.getDiffDirect();
-            Assert.fail("Expected to throw an exception");
+            Assertions.fail("Expected to throw an exception");
         } catch(IllegalStateException e) {
             // expected behavior
         }
@@ -112,12 +98,12 @@ public class DifferTest {
         job.join();
 
         differ.getDiffDirect();
-        assertEquals("Direct script differs", differ.getDiffDirect(),
+        assertEquals(differ.getDiffDirect(),
                 TestUtils.inputStreamToString(DifferTest.class.getResourceAsStream(
-                        caseNumber + "_direct_diff.sql")));
-        assertEquals("Reverse script differs", differ.getDiffReverse(),
+                        caseNumber + "_direct_diff.sql")), "Direct script differs");
+        assertEquals(differ.getDiffReverse(),
                 TestUtils.inputStreamToString(DifferTest.class.getResourceAsStream(
-                        caseNumber + "_reverse_diff.sql")));
+                        caseNumber + "_reverse_diff.sql")), "Reverse script differs");
     }
 }
 

@@ -1,0 +1,107 @@
+Reference: Object = ispell (FTS_DICTIONARY), action = CREATE, offset = 131, line number = 4, charPositionInLine = 30
+Reference: action = SELECT, offset = 279, line number = 10, charPositionInLine = 0
+Reference: action = SELECT, offset = 316, line number = 11, charPositionInLine = 0
+Reference: action = SELECT, offset = 356, line number = 12, charPositionInLine = 0
+Reference: action = SELECT, offset = 395, line number = 13, charPositionInLine = 0
+Reference: action = SELECT, offset = 431, line number = 14, charPositionInLine = 0
+Reference: action = SELECT, offset = 468, line number = 15, charPositionInLine = 0
+Reference: action = SELECT, offset = 510, line number = 16, charPositionInLine = 0
+Reference: action = SELECT, offset = 551, line number = 17, charPositionInLine = 0
+Reference: action = SELECT, offset = 589, line number = 18, charPositionInLine = 0
+Reference: action = SELECT, offset = 631, line number = 19, charPositionInLine = 0
+Reference: action = SELECT, offset = 672, line number = 20, charPositionInLine = 0
+Reference: action = SELECT, offset = 711, line number = 22, charPositionInLine = 0
+Reference: action = SELECT, offset = 754, line number = 23, charPositionInLine = 0
+Reference: action = SELECT, offset = 801, line number = 24, charPositionInLine = 0
+Reference: action = SELECT, offset = 845, line number = 25, charPositionInLine = 0
+Reference: Object = hunspell (FTS_DICTIONARY), action = CREATE, offset = 975, line number = 28, charPositionInLine = 30
+Reference: action = SELECT, offset = 1127, line number = 34, charPositionInLine = 0
+Reference: action = SELECT, offset = 1166, line number = 35, charPositionInLine = 0
+Reference: action = SELECT, offset = 1208, line number = 36, charPositionInLine = 0
+Reference: action = SELECT, offset = 1249, line number = 37, charPositionInLine = 0
+Reference: action = SELECT, offset = 1287, line number = 38, charPositionInLine = 0
+Reference: action = SELECT, offset = 1326, line number = 39, charPositionInLine = 0
+Reference: action = SELECT, offset = 1370, line number = 40, charPositionInLine = 0
+Reference: action = SELECT, offset = 1413, line number = 41, charPositionInLine = 0
+Reference: action = SELECT, offset = 1453, line number = 42, charPositionInLine = 0
+Reference: action = SELECT, offset = 1497, line number = 43, charPositionInLine = 0
+Reference: action = SELECT, offset = 1540, line number = 44, charPositionInLine = 0
+Reference: action = SELECT, offset = 1581, line number = 46, charPositionInLine = 0
+Reference: action = SELECT, offset = 1626, line number = 47, charPositionInLine = 0
+Reference: action = SELECT, offset = 1675, line number = 48, charPositionInLine = 0
+Reference: action = SELECT, offset = 1721, line number = 49, charPositionInLine = 0
+Reference: Object = hunspell_long (FTS_DICTIONARY), action = CREATE, offset = 1878, line number = 52, charPositionInLine = 30
+Reference: action = SELECT, offset = 2047, line number = 58, charPositionInLine = 0
+Reference: action = SELECT, offset = 2091, line number = 59, charPositionInLine = 0
+Reference: action = SELECT, offset = 2138, line number = 60, charPositionInLine = 0
+Reference: action = SELECT, offset = 2184, line number = 61, charPositionInLine = 0
+Reference: action = SELECT, offset = 2227, line number = 62, charPositionInLine = 0
+Reference: action = SELECT, offset = 2271, line number = 63, charPositionInLine = 0
+Reference: action = SELECT, offset = 2320, line number = 64, charPositionInLine = 0
+Reference: action = SELECT, offset = 2368, line number = 65, charPositionInLine = 0
+Reference: action = SELECT, offset = 2413, line number = 66, charPositionInLine = 0
+Reference: action = SELECT, offset = 2462, line number = 67, charPositionInLine = 0
+Reference: action = SELECT, offset = 2510, line number = 68, charPositionInLine = 0
+Reference: action = SELECT, offset = 2555, line number = 69, charPositionInLine = 0
+Reference: action = SELECT, offset = 2601, line number = 71, charPositionInLine = 0
+Reference: action = SELECT, offset = 2651, line number = 72, charPositionInLine = 0
+Reference: action = SELECT, offset = 2705, line number = 73, charPositionInLine = 0
+Reference: action = SELECT, offset = 2756, line number = 74, charPositionInLine = 0
+Reference: action = SELECT, offset = 2807, line number = 75, charPositionInLine = 0
+Reference: action = SELECT, offset = 2862, line number = 76, charPositionInLine = 0
+Reference: Object = hunspell_num (FTS_DICTIONARY), action = CREATE, offset = 3017, line number = 79, charPositionInLine = 30
+Reference: action = SELECT, offset = 3183, line number = 85, charPositionInLine = 0
+Reference: action = SELECT, offset = 3226, line number = 86, charPositionInLine = 0
+Reference: action = SELECT, offset = 3266, line number = 87, charPositionInLine = 0
+Reference: action = SELECT, offset = 3312, line number = 88, charPositionInLine = 0
+Reference: action = SELECT, offset = 3357, line number = 89, charPositionInLine = 0
+Reference: action = SELECT, offset = 3399, line number = 90, charPositionInLine = 0
+Reference: action = SELECT, offset = 3442, line number = 91, charPositionInLine = 0
+Reference: action = SELECT, offset = 3490, line number = 92, charPositionInLine = 0
+Reference: action = SELECT, offset = 3537, line number = 93, charPositionInLine = 0
+Reference: action = SELECT, offset = 3581, line number = 94, charPositionInLine = 0
+Reference: action = SELECT, offset = 3629, line number = 95, charPositionInLine = 0
+Reference: action = SELECT, offset = 3676, line number = 96, charPositionInLine = 0
+Reference: action = SELECT, offset = 3720, line number = 97, charPositionInLine = 0
+Reference: action = SELECT, offset = 3765, line number = 99, charPositionInLine = 0
+Reference: action = SELECT, offset = 3814, line number = 100, charPositionInLine = 0
+Reference: action = SELECT, offset = 3867, line number = 101, charPositionInLine = 0
+Reference: action = SELECT, offset = 3917, line number = 102, charPositionInLine = 0
+Reference: Object = synonym (FTS_DICTIONARY), action = CREATE, offset = 4024, line number = 105, charPositionInLine = 30
+Reference: action = SELECT, offset = 4092, line number = 110, charPositionInLine = 0
+Reference: action = SELECT, offset = 4133, line number = 111, charPositionInLine = 0
+Reference: action = SELECT, offset = 4171, line number = 112, charPositionInLine = 0
+Reference: Object = thesaurus (FTS_DICTIONARY), action = CREATE, offset = 4395, line number = 117, charPositionInLine = 30
+Reference: action = SELECT, offset = 4518, line number = 123, charPositionInLine = 0
+Reference: Object = ispell_tst (FTS_CONFIGURATION), action = CREATE, offset = 4633, line number = 126, charPositionInLine = 33
+Reference: Object = ispell_tst (FTS_CONFIGURATION), action = ALTER, offset = 4701, line number = 130, charPositionInLine = 32
+Reference: action = SELECT, offset = 4858, line number = 134, charPositionInLine = 0
+Reference: action = SELECT, offset = 4962, line number = 135, charPositionInLine = 0
+Reference: action = SELECT, offset = 5014, line number = 136, charPositionInLine = 0
+Reference: Object = hunspell_tst (FTS_CONFIGURATION), action = CREATE, offset = 5187, line number = 139, charPositionInLine = 33
+Reference: Object = hunspell_tst (FTS_CONFIGURATION), action = ALTER, offset = 5260, line number = 143, charPositionInLine = 32
+Reference: action = SELECT, offset = 5319, line number = 146, charPositionInLine = 0
+Reference: action = SELECT, offset = 5425, line number = 147, charPositionInLine = 0
+Reference: action = SELECT, offset = 5479, line number = 148, charPositionInLine = 0
+Reference: action = SELECT, offset = 5558, line number = 150, charPositionInLine = 0
+Reference: action = SELECT, offset = 5623, line number = 151, charPositionInLine = 0
+Reference: Object = hunspell_tst (FTS_CONFIGURATION), action = ALTER, offset = 5799, line number = 154, charPositionInLine = 32
+Reference: action = SELECT, offset = 5865, line number = 157, charPositionInLine = 0
+Reference: action = SELECT, offset = 5971, line number = 158, charPositionInLine = 0
+Reference: action = SELECT, offset = 6025, line number = 159, charPositionInLine = 0
+Reference: Object = hunspell_tst (FTS_CONFIGURATION), action = ALTER, offset = 6213, line number = 162, charPositionInLine = 32
+Reference: action = SELECT, offset = 6283, line number = 165, charPositionInLine = 0
+Reference: action = SELECT, offset = 6389, line number = 166, charPositionInLine = 0
+Reference: action = SELECT, offset = 6443, line number = 167, charPositionInLine = 0
+Reference: Object = synonym_tst (FTS_CONFIGURATION), action = CREATE, offset = 6599, line number = 170, charPositionInLine = 33
+Reference: Object = synonym_tst (FTS_CONFIGURATION), action = ALTER, offset = 6668, line number = 174, charPositionInLine = 32
+Reference: action = SELECT, offset = 6768, line number = 178, charPositionInLine = 0
+Reference: action = SELECT, offset = 6880, line number = 179, charPositionInLine = 0
+Reference: action = SELECT, offset = 6974, line number = 180, charPositionInLine = 0
+Reference: action = SELECT, offset = 7070, line number = 181, charPositionInLine = 0
+Reference: Object = thesaurus_tst (FTS_CONFIGURATION), action = CREATE, offset = 7259, line number = 185, charPositionInLine = 33
+Reference: Object = thesaurus_tst (FTS_CONFIGURATION), action = ALTER, offset = 7334, line number = 189, charPositionInLine = 32
+Reference: action = SELECT, offset = 7447, line number = 193, charPositionInLine = 0
+Reference: action = SELECT, offset = 7526, line number = 194, charPositionInLine = 0
+Reference: action = SELECT, offset = 7647, line number = 195, charPositionInLine = 0
+Reference: Object = tsdict_case (FTS_DICTIONARY), action = CREATE, offset = 7815, line number = 198, charPositionInLine = 30

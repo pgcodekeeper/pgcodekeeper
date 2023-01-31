@@ -1,0 +1,843 @@
+Reference: Object = pktable (TABLE), action = CREATE, offset = 88, line number = 9, charPositionInLine = 13
+Reference: Object = fktable (TABLE), action = CREATE, offset = 150, line number = 10, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = INSERT, offset = 298, line number = 13, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 339, line number = 14, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 380, line number = 15, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 421, line number = 16, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 462, line number = 17, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 544, line number = 20, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 579, line number = 21, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 614, line number = 22, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 649, line number = 23, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 725, line number = 26, charPositionInLine = 12
+Reference: action = SELECT, offset = 768, line number = 29, charPositionInLine = 0
+Reference: Object = pktable (TABLE), action = DELETE, offset = 834, line number = 32, charPositionInLine = 12
+Reference: action = SELECT, offset = 903, line number = 35, charPositionInLine = 0
+Reference: Object = pktable (TABLE), action = UPDATE, offset = 964, line number = 38, charPositionInLine = 7
+Reference: action = SELECT, offset = 1045, line number = 41, charPositionInLine = 0
+Reference: Object = fktable (TABLE), action = DROP, offset = 1080, line number = 43, charPositionInLine = 11
+Reference: Object = pktable (TABLE), action = DROP, offset = 1100, line number = 44, charPositionInLine = 11
+Reference: Object = pktable (TABLE), action = CREATE, offset = 1188, line number = 49, charPositionInLine = 13
+Reference: Object = fktable (TABLE), action = CREATE, offset = 1279, line number = 50, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = null, offset = 1409, line number = 51, charPositionInLine = 34
+Reference: Object = fktable.constrname_wrong (CONSTRAINT), action = COMMENT, offset = 1508, line number = 54, charPositionInLine = 22
+Reference: Object = fktable (TABLE), action = null, offset = 1528, line number = 54, charPositionInLine = 42
+Reference: Object = fktable.constrname (CONSTRAINT), action = COMMENT, offset = 1586, line number = 55, charPositionInLine = 22
+Reference: Object = fktable (TABLE), action = null, offset = 1600, line number = 55, charPositionInLine = 36
+Reference: Object = fktable.constrname (CONSTRAINT), action = COMMENT, offset = 1658, line number = 56, charPositionInLine = 22
+Reference: Object = fktable (TABLE), action = null, offset = 1672, line number = 56, charPositionInLine = 36
+Reference: Object = pktable (TABLE), action = INSERT, offset = 1735, line number = 59, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 1779, line number = 60, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 1825, line number = 61, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 1869, line number = 62, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 1913, line number = 63, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 1957, line number = 64, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 2043, line number = 67, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 2081, line number = 68, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 2119, line number = 69, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 2157, line number = 70, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 2196, line number = 71, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 2277, line number = 74, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 2317, line number = 75, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 2355, line number = 76, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 2396, line number = 77, charPositionInLine = 12
+Reference: action = SELECT, offset = 2443, line number = 80, charPositionInLine = 0
+Reference: Object = pktable (TABLE), action = DELETE, offset = 2509, line number = 83, charPositionInLine = 12
+Reference: action = SELECT, offset = 2591, line number = 86, charPositionInLine = 0
+Reference: Object = pktable (TABLE), action = DELETE, offset = 2663, line number = 89, charPositionInLine = 12
+Reference: action = SELECT, offset = 2741, line number = 92, charPositionInLine = 0
+Reference: Object = pktable (TABLE), action = UPDATE, offset = 2802, line number = 95, charPositionInLine = 7
+Reference: action = SELECT, offset = 2883, line number = 98, charPositionInLine = 0
+Reference: Object = fktable (TABLE), action = UPDATE, offset = 2952, line number = 101, charPositionInLine = 7
+Reference: Object = fktable (TABLE), action = UPDATE, offset = 3054, line number = 104, charPositionInLine = 7
+Reference: Object = pktable (TABLE), action = ALTER, offset = 3172, line number = 107, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = ALTER, offset = 3225, line number = 108, charPositionInLine = 12
+Reference: action = SELECT, offset = 3266, line number = 109, charPositionInLine = 0
+Reference: action = SELECT, offset = 3289, line number = 110, charPositionInLine = 0
+Reference: Object = pktable (TABLE), action = DROP, offset = 3324, line number = 112, charPositionInLine = 11
+Reference: Object = fktable (TABLE), action = DROP, offset = 3352, line number = 113, charPositionInLine = 11
+Reference: Object = pktable (TABLE), action = CREATE, offset = 3443, line number = 118, charPositionInLine = 13
+Reference: Object = fktable (TABLE), action = CREATE, offset = 3534, line number = 119, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = null, offset = 3687, line number = 120, charPositionInLine = 34
+Reference: Object = pktable (TABLE), action = INSERT, offset = 3806, line number = 123, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 3893, line number = 126, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 3937, line number = 127, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 3983, line number = 128, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 4027, line number = 129, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 4071, line number = 130, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 4115, line number = 131, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 4201, line number = 134, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 4239, line number = 135, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 4277, line number = 136, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 4315, line number = 137, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 4354, line number = 138, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 4435, line number = 141, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 4475, line number = 142, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 4513, line number = 143, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 4554, line number = 144, charPositionInLine = 12
+Reference: action = SELECT, offset = 4601, line number = 147, charPositionInLine = 0
+Reference: Object = pktable (TABLE), action = DELETE, offset = 4667, line number = 150, charPositionInLine = 12
+Reference: action = SELECT, offset = 4743, line number = 153, charPositionInLine = 0
+Reference: Object = pktable (TABLE), action = DELETE, offset = 4815, line number = 156, charPositionInLine = 12
+Reference: action = SELECT, offset = 4893, line number = 159, charPositionInLine = 0
+Reference: Object = pktable (TABLE), action = UPDATE, offset = 4954, line number = 162, charPositionInLine = 7
+Reference: action = SELECT, offset = 5035, line number = 165, charPositionInLine = 0
+Reference: Object = pktable (TABLE), action = DROP, offset = 5110, line number = 168, charPositionInLine = 11
+Reference: Object = pktable (TABLE), action = DROP, offset = 5130, line number = 169, charPositionInLine = 11
+Reference: Object = fktable (TABLE), action = DROP, offset = 5158, line number = 170, charPositionInLine = 11
+Reference: Object = pktable (TABLE), action = CREATE, offset = 5240, line number = 176, charPositionInLine = 13
+Reference: Object = fktable (TABLE), action = CREATE, offset = 5302, line number = 177, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = INSERT, offset = 5414, line number = 180, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 5455, line number = 181, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 5496, line number = 182, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 5537, line number = 183, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 5578, line number = 184, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 5660, line number = 187, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 5695, line number = 188, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 5730, line number = 189, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 5765, line number = 190, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 5841, line number = 193, charPositionInLine = 12
+Reference: action = SELECT, offset = 5884, line number = 196, charPositionInLine = 0
+Reference: action = SELECT, offset = 5925, line number = 199, charPositionInLine = 0
+Reference: Object = pktable (TABLE), action = DELETE, offset = 6005, line number = 202, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = DELETE, offset = 6089, line number = 205, charPositionInLine = 12
+Reference: action = SELECT, offset = 6143, line number = 208, charPositionInLine = 0
+Reference: Object = pktable (TABLE), action = UPDATE, offset = 6218, line number = 211, charPositionInLine = 7
+Reference: Object = pktable (TABLE), action = UPDATE, offset = 6310, line number = 214, charPositionInLine = 7
+Reference: action = SELECT, offset = 6377, line number = 217, charPositionInLine = 0
+Reference: Object = fktable (TABLE), action = DROP, offset = 6412, line number = 219, charPositionInLine = 11
+Reference: Object = pktable (TABLE), action = DROP, offset = 6432, line number = 220, charPositionInLine = 11
+Reference: Object = pktable (TABLE), action = CREATE, offset = 6501, line number = 225, charPositionInLine = 13
+Reference: Object = fktable (TABLE), action = CREATE, offset = 6579, line number = 226, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = INSERT, offset = 6628, line number = 228, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 6663, line number = 229, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = ALTER, offset = 6702, line number = 231, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = null, offset = 6753, line number = 231, charPositionInLine = 63
+Reference: Object = fktable (TABLE), action = DROP, offset = 6785, line number = 233, charPositionInLine = 11
+Reference: Object = pktable (TABLE), action = DROP, offset = 6805, line number = 234, charPositionInLine = 11
+Reference: Object = pktable (TABLE), action = CREATE, offset = 6885, line number = 240, charPositionInLine = 13
+Reference: Object = fktable (TABLE), action = CREATE, offset = 6996, line number = 241, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = null, offset = 7128, line number = 242, charPositionInLine = 50
+Reference: Object = pktable (TABLE), action = INSERT, offset = 7180, line number = 245, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 7227, line number = 246, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 7274, line number = 247, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 7321, line number = 248, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 7398, line number = 251, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 7439, line number = 252, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 7483, line number = 253, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 7527, line number = 254, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 7571, line number = 255, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 7642, line number = 258, charPositionInLine = 12
+Reference: action = SELECT, offset = 7688, line number = 261, charPositionInLine = 0
+Reference: Object = pktable (TABLE), action = UPDATE, offset = 7763, line number = 264, charPositionInLine = 7
+Reference: Object = pktable (TABLE), action = UPDATE, offset = 7855, line number = 267, charPositionInLine = 7
+Reference: Object = pktable (TABLE), action = DELETE, offset = 7949, line number = 270, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = DELETE, offset = 8056, line number = 273, charPositionInLine = 12
+Reference: action = SELECT, offset = 8109, line number = 276, charPositionInLine = 0
+Reference: action = SELECT, offset = 8133, line number = 278, charPositionInLine = 0
+Reference: Object = fktable (TABLE), action = DROP, offset = 8168, line number = 280, charPositionInLine = 11
+Reference: Object = pktable (TABLE), action = DROP, offset = 8188, line number = 281, charPositionInLine = 11
+Reference: Object = pktable (TABLE), action = CREATE, offset = 8240, line number = 284, charPositionInLine = 13
+Reference: Object = fktable (TABLE), action = CREATE, offset = 8346, line number = 285, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = null, offset = 8478, line number = 286, charPositionInLine = 50
+Reference: Object = pktable (TABLE), action = INSERT, offset = 8526, line number = 288, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 8573, line number = 289, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 8623, line number = 290, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 8674, line number = 292, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = DELETE, offset = 8716, line number = 294, charPositionInLine = 12
+Reference: action = SELECT, offset = 8743, line number = 296, charPositionInLine = 0
+Reference: action = SELECT, offset = 8766, line number = 297, charPositionInLine = 0
+Reference: Object = fktable (TABLE), action = DROP, offset = 8801, line number = 299, charPositionInLine = 11
+Reference: Object = pktable (TABLE), action = DROP, offset = 8821, line number = 300, charPositionInLine = 11
+Reference: Object = pktable (TABLE), action = CREATE, offset = 8869, line number = 303, charPositionInLine = 13
+Reference: Object = fktable (TABLE), action = CREATE, offset = 8980, line number = 304, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = null, offset = 9112, line number = 305, charPositionInLine = 50
+Reference: Object = pktable (TABLE), action = INSERT, offset = 9203, line number = 309, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 9250, line number = 310, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 9297, line number = 311, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 9344, line number = 312, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 9421, line number = 315, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 9462, line number = 316, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 9506, line number = 317, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 9550, line number = 318, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 9594, line number = 319, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 9665, line number = 322, charPositionInLine = 12
+Reference: action = SELECT, offset = 9711, line number = 325, charPositionInLine = 0
+Reference: Object = pktable (TABLE), action = UPDATE, offset = 9787, line number = 328, charPositionInLine = 7
+Reference: Object = pktable (TABLE), action = UPDATE, offset = 9883, line number = 331, charPositionInLine = 7
+Reference: action = SELECT, offset = 9949, line number = 334, charPositionInLine = 0
+Reference: action = SELECT, offset = 9972, line number = 335, charPositionInLine = 0
+Reference: Object = pktable (TABLE), action = DELETE, offset = 10055, line number = 338, charPositionInLine = 12
+Reference: action = SELECT, offset = 10134, line number = 341, charPositionInLine = 0
+Reference: action = SELECT, offset = 10157, line number = 342, charPositionInLine = 0
+Reference: Object = pktable (TABLE), action = DELETE, offset = 10251, line number = 345, charPositionInLine = 12
+Reference: action = SELECT, offset = 10304, line number = 348, charPositionInLine = 0
+Reference: action = SELECT, offset = 10327, line number = 349, charPositionInLine = 0
+Reference: Object = fktable (TABLE), action = DROP, offset = 10362, line number = 351, charPositionInLine = 11
+Reference: Object = pktable (TABLE), action = DROP, offset = 10382, line number = 352, charPositionInLine = 11
+Reference: Object = pktable (TABLE), action = CREATE, offset = 10445, line number = 355, charPositionInLine = 13
+Reference: Object = fktable (TABLE), action = CREATE, offset = 10556, line number = 356, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = null, offset = 10698, line number = 357, charPositionInLine = 50
+Reference: Object = pktable (TABLE), action = INSERT, offset = 10794, line number = 361, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 10841, line number = 362, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 10888, line number = 363, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 10935, line number = 364, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 11012, line number = 367, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 11053, line number = 368, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 11094, line number = 369, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 11138, line number = 370, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 11182, line number = 371, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 11226, line number = 372, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 11297, line number = 375, charPositionInLine = 12
+Reference: action = SELECT, offset = 11343, line number = 378, charPositionInLine = 0
+Reference: Object = pktable (TABLE), action = UPDATE, offset = 11420, line number = 381, charPositionInLine = 7
+Reference: Object = pktable (TABLE), action = UPDATE, offset = 11517, line number = 384, charPositionInLine = 7
+Reference: action = SELECT, offset = 11596, line number = 387, charPositionInLine = 0
+Reference: action = SELECT, offset = 11619, line number = 388, charPositionInLine = 0
+Reference: Object = pktable (TABLE), action = DELETE, offset = 11706, line number = 391, charPositionInLine = 12
+Reference: action = SELECT, offset = 11785, line number = 394, charPositionInLine = 0
+Reference: action = SELECT, offset = 11808, line number = 395, charPositionInLine = 0
+Reference: Object = pktable (TABLE), action = DELETE, offset = 11899, line number = 398, charPositionInLine = 12
+Reference: action = SELECT, offset = 11952, line number = 401, charPositionInLine = 0
+Reference: action = SELECT, offset = 11975, line number = 402, charPositionInLine = 0
+Reference: Object = fktable (TABLE), action = DROP, offset = 12010, line number = 404, charPositionInLine = 11
+Reference: Object = pktable (TABLE), action = DROP, offset = 12030, line number = 405, charPositionInLine = 11
+Reference: Object = pktable (TABLE), action = CREATE, offset = 12093, line number = 408, charPositionInLine = 13
+Reference: Object = fktable (TABLE), action = CREATE, offset = 12204, line number = 409, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = null, offset = 12367, line number = 410, charPositionInLine = 50
+Reference: Object = pktable (TABLE), action = INSERT, offset = 12463, line number = 414, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 12510, line number = 415, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 12557, line number = 416, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 12604, line number = 417, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 12651, line number = 418, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 12729, line number = 421, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 12770, line number = 422, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 12811, line number = 423, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 12852, line number = 424, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 12896, line number = 425, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 12940, line number = 426, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 12984, line number = 427, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 13055, line number = 430, charPositionInLine = 12
+Reference: action = SELECT, offset = 13101, line number = 433, charPositionInLine = 0
+Reference: Object = pktable (TABLE), action = UPDATE, offset = 13174, line number = 436, charPositionInLine = 7
+Reference: Object = pktable (TABLE), action = UPDATE, offset = 13268, line number = 439, charPositionInLine = 7
+Reference: Object = pktable (TABLE), action = UPDATE, offset = 13334, line number = 440, charPositionInLine = 7
+Reference: Object = pktable (TABLE), action = UPDATE, offset = 13435, line number = 443, charPositionInLine = 7
+Reference: action = SELECT, offset = 13514, line number = 446, charPositionInLine = 0
+Reference: action = SELECT, offset = 13537, line number = 447, charPositionInLine = 0
+Reference: Object = pktable (TABLE), action = DELETE, offset = 13621, line number = 450, charPositionInLine = 12
+Reference: action = SELECT, offset = 13700, line number = 453, charPositionInLine = 0
+Reference: action = SELECT, offset = 13723, line number = 454, charPositionInLine = 0
+Reference: Object = pktable (TABLE), action = DELETE, offset = 13811, line number = 457, charPositionInLine = 12
+Reference: action = SELECT, offset = 13878, line number = 460, charPositionInLine = 0
+Reference: action = SELECT, offset = 13901, line number = 461, charPositionInLine = 0
+Reference: Object = fktable (TABLE), action = DROP, offset = 13936, line number = 463, charPositionInLine = 11
+Reference: Object = pktable (TABLE), action = DROP, offset = 13956, line number = 464, charPositionInLine = 11
+Reference: Object = pktable (TABLE), action = CREATE, offset = 13979, line number = 466, charPositionInLine = 13
+Reference: Object = fktable_fail1 (TABLE), action = CREATE, offset = 14026, line number = 467, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = null, offset = 14105, line number = 467, charPositionInLine = 92
+Reference: Object = fktable_fail2 (TABLE), action = CREATE, offset = 14128, line number = 468, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = null, offset = 14207, line number = 468, charPositionInLine = 92
+Reference: Object = fktable_fail1 (TABLE), action = DROP, offset = 14237, line number = 470, charPositionInLine = 11
+Reference: Object = fktable_fail2 (TABLE), action = DROP, offset = 14263, line number = 471, charPositionInLine = 11
+Reference: Object = pktable (TABLE), action = DROP, offset = 14289, line number = 472, charPositionInLine = 11
+Reference: Object = pktable (TABLE), action = CREATE, offset = 14385, line number = 475, charPositionInLine = 13
+Reference: Object = fktable_fail1 (TABLE), action = CREATE, offset = 14456, line number = 476, charPositionInLine = 13
+Reference: Object = fktable_fail1 (TABLE), action = DROP, offset = 14523, line number = 478, charPositionInLine = 11
+Reference: Object = pktable (TABLE), action = DROP, offset = 14549, line number = 479, charPositionInLine = 11
+Reference: Object = pktable (TABLE), action = CREATE, offset = 14645, line number = 485, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = INSERT, offset = 14691, line number = 486, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = CREATE, offset = 14782, line number = 488, charPositionInLine = 13
+Reference: Object = fktable (TABLE), action = CREATE, offset = 14919, line number = 491, charPositionInLine = 13
+Reference: Object = fktable (TABLE), action = CREATE, offset = 15111, line number = 494, charPositionInLine = 13
+Reference: Object = fktable (TABLE), action = INSERT, offset = 15192, line number = 496, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 15243, line number = 497, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = UPDATE, offset = 15286, line number = 498, charPositionInLine = 7
+Reference: Object = fktable (TABLE), action = UPDATE, offset = 15340, line number = 499, charPositionInLine = 7
+Reference: Object = fktable (TABLE), action = DROP, offset = 15399, line number = 500, charPositionInLine = 11
+Reference: Object = fktable (TABLE), action = CREATE, offset = 15593, line number = 504, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = DROP, offset = 15649, line number = 505, charPositionInLine = 11
+Reference: Object = pktable (TABLE), action = CREATE, offset = 15795, line number = 508, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = INSERT, offset = 15845, line number = 509, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = CREATE, offset = 15878, line number = 510, charPositionInLine = 13
+Reference: Object = fktable (TABLE), action = INSERT, offset = 15958, line number = 512, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 16009, line number = 513, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = UPDATE, offset = 16052, line number = 514, charPositionInLine = 7
+Reference: Object = fktable (TABLE), action = UPDATE, offset = 16106, line number = 515, charPositionInLine = 7
+Reference: Object = fktable (TABLE), action = DROP, offset = 16165, line number = 516, charPositionInLine = 11
+Reference: Object = pktable (TABLE), action = DROP, offset = 16185, line number = 517, charPositionInLine = 11
+Reference: Object = pktable (TABLE), action = CREATE, offset = 16235, line number = 520, charPositionInLine = 13
+Reference: Object = fktable (TABLE), action = CREATE, offset = 16372, line number = 522, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = null, offset = 16451, line number = 522, charPositionInLine = 92
+Reference: Object = fktable (TABLE), action = CREATE, offset = 16502, line number = 524, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = null, offset = 16581, line number = 524, charPositionInLine = 92
+Reference: Object = fktable (TABLE), action = CREATE, offset = 16674, line number = 526, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = null, offset = 16747, line number = 526, charPositionInLine = 86
+Reference: Object = fktable (TABLE), action = CREATE, offset = 16789, line number = 528, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = null, offset = 16862, line number = 528, charPositionInLine = 86
+Reference: Object = fktable (TABLE), action = CREATE, offset = 16916, line number = 530, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = null, offset = 16989, line number = 530, charPositionInLine = 86
+Reference: Object = fktable (TABLE), action = CREATE, offset = 17045, line number = 532, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = null, offset = 17118, line number = 532, charPositionInLine = 86
+Reference: Object = fktable (TABLE), action = DROP, offset = 17155, line number = 533, charPositionInLine = 11
+Reference: Object = fktable (TABLE), action = CREATE, offset = 17193, line number = 535, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = null, offset = 17266, line number = 535, charPositionInLine = 86
+Reference: Object = fktable (TABLE), action = DROP, offset = 17303, line number = 536, charPositionInLine = 11
+Reference: Object = pktable (TABLE), action = DROP, offset = 17323, line number = 537, charPositionInLine = 11
+Reference: Object = pktable (TABLE), action = CREATE, offset = 17406, line number = 541, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = null, offset = 17533, line number = 542, charPositionInLine = 19
+Reference: Object = pktable (TABLE), action = DROP, offset = 17570, line number = 543, charPositionInLine = 11
+Reference: Object = pktable (TABLE), action = CREATE, offset = 17605, line number = 545, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = null, offset = 17732, line number = 546, charPositionInLine = 19
+Reference: Object = pktable (TABLE), action = DROP, offset = 17753, line number = 547, charPositionInLine = 11
+Reference: Object = pktable (TABLE), action = CREATE, offset = 17812, line number = 549, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = null, offset = 17939, line number = 550, charPositionInLine = 19
+Reference: Object = pktable (TABLE), action = CREATE, offset = 18065, line number = 552, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = null, offset = 18192, line number = 553, charPositionInLine = 19
+Reference: Object = pktable (TABLE), action = CREATE, offset = 18333, line number = 555, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = null, offset = 18460, line number = 556, charPositionInLine = 19
+Reference: Object = pktable_base (TABLE), action = CREATE, offset = 18573, line number = 561, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = CREATE, offset = 18621, line number = 562, charPositionInLine = 13
+Reference: Object = fktable (TABLE), action = CREATE, offset = 18723, line number = 563, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = INSERT, offset = 18809, line number = 565, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 18848, line number = 566, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 18933, line number = 568, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 19009, line number = 570, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 19048, line number = 571, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = DELETE, offset = 19146, line number = 573, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = UPDATE, offset = 19256, line number = 576, charPositionInLine = 7
+Reference: Object = pktable (TABLE), action = UPDATE, offset = 19337, line number = 578, charPositionInLine = 7
+Reference: Object = pktable (TABLE), action = DELETE, offset = 19423, line number = 580, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = DROP, offset = 19468, line number = 582, charPositionInLine = 11
+Reference: Object = pktable (TABLE), action = DELETE, offset = 19489, line number = 583, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = CREATE, offset = 19554, line number = 586, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = null, offset = 19626, line number = 586, charPositionInLine = 85
+Reference: Object = pktable (TABLE), action = INSERT, offset = 19689, line number = 588, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 19739, line number = 589, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 19835, line number = 591, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 19922, line number = 593, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = INSERT, offset = 19971, line number = 594, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = DELETE, offset = 20080, line number = 596, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = UPDATE, offset = 20190, line number = 599, charPositionInLine = 7
+Reference: Object = pktable (TABLE), action = UPDATE, offset = 20271, line number = 601, charPositionInLine = 7
+Reference: Object = pktable (TABLE), action = DELETE, offset = 20357, line number = 603, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = DROP, offset = 20402, line number = 605, charPositionInLine = 11
+Reference: Object = pktable (TABLE), action = DROP, offset = 20422, line number = 606, charPositionInLine = 11
+Reference: Object = pktable_base (TABLE), action = DROP, offset = 20442, line number = 607, charPositionInLine = 11
+Reference: Object = pktable_base (TABLE), action = CREATE, offset = 20538, line number = 610, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = CREATE, offset = 20596, line number = 611, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = null, offset = 20739, line number = 612, charPositionInLine = 45
+Reference: Object = pktable (TABLE), action = INSERT, offset = 20800, line number = 613, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 20872, line number = 614, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 20944, line number = 615, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 21016, line number = 616, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 21126, line number = 618, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = DELETE, offset = 21233, line number = 620, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = UPDATE, offset = 21306, line number = 622, charPositionInLine = 7
+Reference: Object = pktable (TABLE), action = DELETE, offset = 21452, line number = 624, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = DELETE, offset = 21487, line number = 625, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = DROP, offset = 21521, line number = 626, charPositionInLine = 11
+Reference: Object = pktable_base (TABLE), action = DROP, offset = 21541, line number = 627, charPositionInLine = 11
+Reference: Object = pktable_base (TABLE), action = CREATE, offset = 21611, line number = 630, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = CREATE, offset = 21658, line number = 631, charPositionInLine = 13
+Reference: Object = fktable (TABLE), action = CREATE, offset = 21834, line number = 633, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = null, offset = 21909, line number = 633, charPositionInLine = 88
+Reference: Object = fktable (TABLE), action = CREATE, offset = 21932, line number = 634, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = null, offset = 22007, line number = 634, charPositionInLine = 88
+Reference: Object = fktable (TABLE), action = CREATE, offset = 22091, line number = 636, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = null, offset = 22163, line number = 636, charPositionInLine = 85
+Reference: Object = fktable (TABLE), action = CREATE, offset = 22186, line number = 637, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = null, offset = 22258, line number = 637, charPositionInLine = 85
+Reference: Object = fktable (TABLE), action = CREATE, offset = 22296, line number = 638, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = null, offset = 22368, line number = 638, charPositionInLine = 85
+Reference: Object = pktable (TABLE), action = DROP, offset = 22404, line number = 639, charPositionInLine = 11
+Reference: Object = pktable_base (TABLE), action = DROP, offset = 22424, line number = 640, charPositionInLine = 11
+Reference: Object = pktable_base (TABLE), action = CREATE, offset = 22493, line number = 643, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = CREATE, offset = 22551, line number = 644, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = null, offset = 22698, line number = 645, charPositionInLine = 45
+Reference: Object = pktable (TABLE), action = CREATE, offset = 22760, line number = 646, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = null, offset = 22905, line number = 647, charPositionInLine = 45
+Reference: Object = pktable (TABLE), action = CREATE, offset = 22967, line number = 648, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = null, offset = 23112, line number = 649, charPositionInLine = 45
+Reference: Object = pktable (TABLE), action = CREATE, offset = 23174, line number = 650, charPositionInLine = 13
+Reference: Object = pktable (TABLE), action = null, offset = 23319, line number = 651, charPositionInLine = 45
+Reference: Object = pktable (TABLE), action = DROP, offset = 23379, line number = 652, charPositionInLine = 11
+Reference: Object = pktable_base (TABLE), action = DROP, offset = 23399, line number = 653, charPositionInLine = 11
+Reference: Object = pktable (TABLE), action = CREATE, offset = 23495, line number = 660, charPositionInLine = 13
+Reference: Object = fktable (TABLE), action = CREATE, offset = 23557, line number = 665, charPositionInLine = 13
+Reference: Object = fktable (TABLE), action = INSERT, offset = 23683, line number = 671, charPositionInLine = 12
+Reference: action = BEGIN, offset = 23743, line number = 674, charPositionInLine = 0
+Reference: action = SET, offset = 23751, line number = 676, charPositionInLine = 0
+Reference: Object = fktable (TABLE), action = INSERT, offset = 23794, line number = 678, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 23831, line number = 679, charPositionInLine = 12
+Reference: action = COMMIT, offset = 23884, line number = 681, charPositionInLine = 0
+Reference: Object = fktable (TABLE), action = DROP, offset = 23904, line number = 683, charPositionInLine = 11
+Reference: Object = pktable (TABLE), action = DROP, offset = 23913, line number = 683, charPositionInLine = 20
+Reference: Object = pktable (TABLE), action = CREATE, offset = 23970, line number = 686, charPositionInLine = 13
+Reference: Object = fktable (TABLE), action = CREATE, offset = 24032, line number = 691, charPositionInLine = 13
+Reference: action = BEGIN, offset = 24167, line number = 697, charPositionInLine = 0
+Reference: Object = fktable (TABLE), action = INSERT, offset = 24187, line number = 699, charPositionInLine = 12
+Reference: Object = pktable (TABLE), action = INSERT, offset = 24226, line number = 700, charPositionInLine = 12
+Reference: action = COMMIT, offset = 24282, line number = 702, charPositionInLine = 0
+Reference: action = BEGIN, offset = 24341, line number = 705, charPositionInLine = 0
+Reference: action = SET, offset = 24349, line number = 707, charPositionInLine = 0
+Reference: Object = fktable (TABLE), action = INSERT, offset = 24408, line number = 710, charPositionInLine = 12
+Reference: action = COMMIT, offset = 24437, line number = 712, charPositionInLine = 0
+Reference: Object = fktable (TABLE), action = DROP, offset = 24457, line number = 714, charPositionInLine = 11
+Reference: Object = pktable (TABLE), action = DROP, offset = 24466, line number = 714, charPositionInLine = 20
+Reference: Object = pktable (TABLE), action = CREATE, offset = 24726, line number = 720, charPositionInLine = 13
+Reference: Object = fktable (TABLE), action = CREATE, offset = 24788, line number = 725, charPositionInLine = 13
+Reference: action = BEGIN, offset = 24865, line number = 730, charPositionInLine = 0
+Reference: action = SET, offset = 24873, line number = 732, charPositionInLine = 0
+Reference: Object = fktable (TABLE), action = INSERT, offset = 24943, line number = 735, charPositionInLine = 12
+Reference: action = SET, offset = 25031, line number = 738, charPositionInLine = 0
+Reference: Object = pktable (TABLE), action = INSERT, offset = 25075, line number = 740, charPositionInLine = 12
+Reference: action = COMMIT, offset = 25114, line number = 742, charPositionInLine = 0
+Reference: Object = fktable (TABLE), action = DROP, offset = 25134, line number = 744, charPositionInLine = 11
+Reference: Object = pktable (TABLE), action = DROP, offset = 25143, line number = 744, charPositionInLine = 20
+Reference: Object = pktable (TABLE), action = CREATE, offset = 25200, line number = 747, charPositionInLine = 13
+Reference: Object = fktable (TABLE), action = CREATE, offset = 25262, line number = 752, charPositionInLine = 13
+Reference: action = BEGIN, offset = 25358, line number = 757, charPositionInLine = 0
+Reference: Object = fktable (TABLE), action = INSERT, offset = 25395, line number = 760, charPositionInLine = 12
+Reference: action = COMMIT, offset = 25447, line number = 763, charPositionInLine = 0
+Reference: Object = pktable (TABLE), action = DROP, offset = 25467, line number = 765, charPositionInLine = 11
+Reference: Object = fktable (TABLE), action = DROP, offset = 25476, line number = 765, charPositionInLine = 20
+Reference: Object = pktable (TABLE), action = CREATE, offset = 25635, line number = 770, charPositionInLine = 18
+Reference: Object = fktable (TABLE), action = CREATE, offset = 25795, line number = 777, charPositionInLine = 18
+Reference: Object = fktable (TABLE), action = ALTER, offset = 26111, line number = 790, charPositionInLine = 12
+Reference: Object = fktable.fk_2_3 (CONSTRAINT), action = CREATE, offset = 26134, line number = 790, charPositionInLine = 35
+Reference: Object = pktable (TABLE), action = null, offset = 26169, line number = 791, charPositionInLine = 28
+Reference: Object = fktable (TABLE), action = ALTER, offset = 26211, line number = 794, charPositionInLine = 12
+Reference: Object = fktable.fk_2_1 (CONSTRAINT), action = CREATE, offset = 26234, line number = 794, charPositionInLine = 35
+Reference: Object = pktable (TABLE), action = null, offset = 26269, line number = 795, charPositionInLine = 28
+Reference: Object = fktable (TABLE), action = ALTER, offset = 26329, line number = 798, charPositionInLine = 12
+Reference: Object = fktable.fk_3_1 (CONSTRAINT), action = CREATE, offset = 26352, line number = 798, charPositionInLine = 35
+Reference: Object = pktable (TABLE), action = null, offset = 26387, line number = 799, charPositionInLine = 28
+Reference: Object = fktable (TABLE), action = ALTER, offset = 26447, line number = 802, charPositionInLine = 12
+Reference: Object = fktable.fk_1_2 (CONSTRAINT), action = CREATE, offset = 26470, line number = 802, charPositionInLine = 35
+Reference: Object = pktable (TABLE), action = null, offset = 26505, line number = 803, charPositionInLine = 28
+Reference: Object = fktable (TABLE), action = ALTER, offset = 26576, line number = 808, charPositionInLine = 12
+Reference: Object = fktable.fk_1_3 (CONSTRAINT), action = CREATE, offset = 26599, line number = 808, charPositionInLine = 35
+Reference: Object = pktable (TABLE), action = null, offset = 26634, line number = 809, charPositionInLine = 28
+Reference: Object = fktable (TABLE), action = ALTER, offset = 26696, line number = 812, charPositionInLine = 12
+Reference: Object = fktable.fk_4_2 (CONSTRAINT), action = CREATE, offset = 26719, line number = 812, charPositionInLine = 35
+Reference: Object = pktable (TABLE), action = null, offset = 26754, line number = 813, charPositionInLine = 28
+Reference: Object = fktable (TABLE), action = ALTER, offset = 26827, line number = 816, charPositionInLine = 12
+Reference: Object = fktable.fk_5_1 (CONSTRAINT), action = CREATE, offset = 26850, line number = 816, charPositionInLine = 35
+Reference: Object = pktable (TABLE), action = null, offset = 26885, line number = 817, charPositionInLine = 28
+Reference: Object = fktable (TABLE), action = ALTER, offset = 26997, line number = 823, charPositionInLine = 12
+Reference: Object = fktable.fk_123_123 (CONSTRAINT), action = CREATE, offset = 27020, line number = 823, charPositionInLine = 35
+Reference: Object = pktable (TABLE), action = null, offset = 27065, line number = 824, charPositionInLine = 34
+Reference: Object = fktable (TABLE), action = ALTER, offset = 27100, line number = 826, charPositionInLine = 12
+Reference: Object = fktable.fk_213_213 (CONSTRAINT), action = CREATE, offset = 27123, line number = 826, charPositionInLine = 35
+Reference: Object = pktable (TABLE), action = null, offset = 27168, line number = 827, charPositionInLine = 34
+Reference: Object = fktable (TABLE), action = ALTER, offset = 27203, line number = 829, charPositionInLine = 12
+Reference: Object = fktable.fk_253_213 (CONSTRAINT), action = CREATE, offset = 27226, line number = 829, charPositionInLine = 35
+Reference: Object = pktable (TABLE), action = null, offset = 27271, line number = 830, charPositionInLine = 34
+Reference: Object = fktable (TABLE), action = ALTER, offset = 27328, line number = 834, charPositionInLine = 12
+Reference: Object = fktable.fk_123_231 (CONSTRAINT), action = CREATE, offset = 27351, line number = 834, charPositionInLine = 35
+Reference: Object = pktable (TABLE), action = null, offset = 27396, line number = 835, charPositionInLine = 34
+Reference: Object = fktable (TABLE), action = ALTER, offset = 27431, line number = 837, charPositionInLine = 12
+Reference: Object = fktable.fk_241_132 (CONSTRAINT), action = CREATE, offset = 27454, line number = 837, charPositionInLine = 35
+Reference: Object = pktable (TABLE), action = null, offset = 27499, line number = 838, charPositionInLine = 34
+Reference: Object = pktable (TABLE), action = DROP, offset = 27533, line number = 840, charPositionInLine = 11
+Reference: Object = fktable (TABLE), action = DROP, offset = 27542, line number = 840, charPositionInLine = 20
+Reference: Object = pktable (TABLE), action = CREATE, offset = 27970, line number = 849, charPositionInLine = 18
+Reference: Object = fktable (TABLE), action = CREATE, offset = 28040, line number = 854, charPositionInLine = 18
+Reference: Object = pktable (TABLE), action = INSERT, offset = 28150, line number = 859, charPositionInLine = 12
+Reference: action = BEGIN, offset = 28175, line number = 861, charPositionInLine = 0
+Reference: Object = fktable (TABLE), action = INSERT, offset = 28233, line number = 864, charPositionInLine = 12
+Reference: Object = fktable (TABLE), action = UPDATE, offset = 28284, line number = 867, charPositionInLine = 7
+Reference: action = COMMIT, offset = 28352, line number = 870, charPositionInLine = 0
+Reference: action = BEGIN, offset = 28438, line number = 874, charPositionInLine = 0
+Reference: Object = fktable (TABLE), action = INSERT, offset = 28496, line number = 877, charPositionInLine = 12
+Reference: action = SAVEPOINT, offset = 28552, line number = 880, charPositionInLine = 0
+Reference: Object = fktable (TABLE), action = UPDATE, offset = 28598, line number = 883, charPositionInLine = 7
+Reference: action = COMMIT, offset = 28666, line number = 886, charPositionInLine = 0
+Reference: action = BEGIN, offset = 28675, line number = 888, charPositionInLine = 0
+Reference: action = SAVEPOINT, offset = 28714, line number = 891, charPositionInLine = 0
+Reference: Object = fktable (TABLE), action = INSERT, offset = 28784, line number = 894, charPositionInLine = 12
+Reference: action = RELEASE, offset = 28809, line number = 896, charPositionInLine = 0
+Reference: Object = fktable (TABLE), action = UPDATE, offset = 28863, line number = 899, charPositionInLine = 7
+Reference: action = COMMIT, offset = 28931, line number = 902, charPositionInLine = 0
+Reference: action = BEGIN, offset = 28940, line number = 904, charPositionInLine = 0
+Reference: Object = fktable (TABLE), action = INSERT, offset = 28998, line number = 907, charPositionInLine = 12
+Reference: action = SAVEPOINT, offset = 29054, line number = 910, charPositionInLine = 0
+Reference: Object = fktable (TABLE), action = UPDATE, offset = 29100, line number = 913, charPositionInLine = 7
+Reference: action = ROLLBACK, offset = 29150, line number = 916, charPositionInLine = 0
+Reference: action = COMMIT, offset = 29214, line number = 919, charPositionInLine = 0
+Reference: Object = fktable (TABLE), action = INSERT, offset = 29268, line number = 925, charPositionInLine = 12
+Reference: action = BEGIN, offset = 29381, line number = 929, charPositionInLine = 0
+Reference: Object = pktable (TABLE), action = UPDATE, offset = 29440, line number = 932, charPositionInLine = 7
+Reference: action = COMMIT, offset = 29475, line number = 934, charPositionInLine = 0
+Reference: action = BEGIN, offset = 29484, line number = 936, charPositionInLine = 0
+Reference: Object = fktable (TABLE), action = INSERT, offset = 29548, line number = 939, charPositionInLine = 12
+Reference: action = COMMIT, offset = 29573, line number = 941, charPositionInLine = 0
+Reference: Object = users (TABLE), action = CREATE, offset = 29977, line number = 952, charPositionInLine = 18
+Reference: Object = users (TABLE), action = INSERT, offset = 30047, line number = 957, charPositionInLine = 12
+Reference: Object = users (TABLE), action = INSERT, offset = 30086, line number = 958, charPositionInLine = 12
+Reference: Object = users (TABLE), action = INSERT, offset = 30125, line number = 959, charPositionInLine = 12
+Reference: Object = tasks (TABLE), action = CREATE, offset = 30171, line number = 961, charPositionInLine = 18
+Reference: Object = tasks (TABLE), action = INSERT, offset = 30423, line number = 968, charPositionInLine = 12
+Reference: Object = tasks (TABLE), action = INSERT, offset = 30465, line number = 969, charPositionInLine = 12
+Reference: Object = tasks (TABLE), action = INSERT, offset = 30504, line number = 970, charPositionInLine = 12
+Reference: action = SELECT, offset = 30529, line number = 972, charPositionInLine = 0
+Reference: Object = users (TABLE), action = UPDATE, offset = 30558, line number = 974, charPositionInLine = 7
+Reference: action = SELECT, offset = 30590, line number = 976, charPositionInLine = 0
+Reference: Object = users (TABLE), action = DELETE, offset = 30624, line number = 978, charPositionInLine = 12
+Reference: action = SELECT, offset = 30645, line number = 980, charPositionInLine = 0
+Reference: action = BEGIN, offset = 30737, line number = 983, charPositionInLine = 0
+Reference: Object = tasks (TABLE), action = UPDATE, offset = 30751, line number = 984, charPositionInLine = 7
+Reference: action = SELECT, offset = 30779, line number = 985, charPositionInLine = 0
+Reference: Object = users (TABLE), action = DELETE, offset = 30812, line number = 986, charPositionInLine = 12
+Reference: action = SELECT, offset = 30832, line number = 987, charPositionInLine = 0
+Reference: action = COMMIT, offset = 30853, line number = 988, charPositionInLine = 0
+Reference: Object = selfref (TABLE), action = CREATE, offset = 30939, line number = 993, charPositionInLine = 18
+Reference: Object = selfref (TABLE), action = null, offset = 31014, line number = 996, charPositionInLine = 31
+Reference: Object = selfref (TABLE), action = INSERT, offset = 31086, line number = 1000, charPositionInLine = 12
+Reference: action = BEGIN, offset = 31133, line number = 1005, charPositionInLine = 0
+Reference: Object = selfref (TABLE), action = UPDATE, offset = 31151, line number = 1006, charPositionInLine = 11
+Reference: action = SELECT, offset = 31188, line number = 1007, charPositionInLine = 4
+Reference: Object = selfref (TABLE), action = UPDATE, offset = 31225, line number = 1008, charPositionInLine = 11
+Reference: action = SELECT, offset = 31264, line number = 1009, charPositionInLine = 4
+Reference: action = COMMIT, offset = 31290, line number = 1010, charPositionInLine = 0
+Reference: Object = defp (TABLE), action = CREATE, offset = 31392, line number = 1015, charPositionInLine = 18
+Reference: Object = defc (TABLE), action = CREATE, offset = 31437, line number = 1016, charPositionInLine = 18
+Reference: Object = defp (TABLE), action = INSERT, offset = 31536, line number = 1018, charPositionInLine = 12
+Reference: Object = defc (TABLE), action = INSERT, offset = 31575, line number = 1019, charPositionInLine = 12
+Reference: action = SELECT, offset = 31592, line number = 1020, charPositionInLine = 0
+Reference: Object = defp (TABLE), action = DELETE, offset = 31624, line number = 1021, charPositionInLine = 12
+Reference: action = SELECT, offset = 31643, line number = 1022, charPositionInLine = 0
+Reference: Object = defp (TABLE), action = DELETE, offset = 31675, line number = 1023, charPositionInLine = 12
+Reference: Object = defc (TABLE), action = ALTER, offset = 31714, line number = 1024, charPositionInLine = 12
+Reference: Object = defp (TABLE), action = DELETE, offset = 31762, line number = 1025, charPositionInLine = 12
+Reference: action = SELECT, offset = 31781, line number = 1026, charPositionInLine = 0
+Reference: Object = defp (TABLE), action = DELETE, offset = 31813, line number = 1027, charPositionInLine = 12
+Reference: Object = pp (TABLE), action = CREATE, offset = 31919, line number = 1032, charPositionInLine = 18
+Reference: Object = cc (TABLE), action = CREATE, offset = 31962, line number = 1033, charPositionInLine = 18
+Reference: Object = pp (TABLE), action = INSERT, offset = 32041, line number = 1034, charPositionInLine = 12
+Reference: Object = pp (TABLE), action = INSERT, offset = 32068, line number = 1035, charPositionInLine = 12
+Reference: Object = pp (TABLE), action = UPDATE, offset = 32090, line number = 1036, charPositionInLine = 7
+Reference: Object = cc (TABLE), action = INSERT, offset = 32118, line number = 1037, charPositionInLine = 12
+Reference: Object = pp (TABLE), action = UPDATE, offset = 32140, line number = 1038, charPositionInLine = 7
+Reference: Object = pp (TABLE), action = UPDATE, offset = 32163, line number = 1039, charPositionInLine = 7
+Reference: Object = pp (TABLE), action = DELETE, offset = 32199, line number = 1040, charPositionInLine = 12
+Reference: Object = pp (TABLE), action = DROP, offset = 32236, line number = 1041, charPositionInLine = 11
+Reference: Object = cc (TABLE), action = DROP, offset = 32240, line number = 1041, charPositionInLine = 15
+Reference: Object = pp (TABLE), action = CREATE, offset = 32263, line number = 1043, charPositionInLine = 18
+Reference: Object = cc (TABLE), action = CREATE, offset = 32306, line number = 1044, charPositionInLine = 18
+Reference: Object = pp (TABLE), action = INSERT, offset = 32383, line number = 1045, charPositionInLine = 12
+Reference: Object = pp (TABLE), action = INSERT, offset = 32410, line number = 1046, charPositionInLine = 12
+Reference: Object = pp (TABLE), action = UPDATE, offset = 32432, line number = 1047, charPositionInLine = 7
+Reference: Object = cc (TABLE), action = INSERT, offset = 32460, line number = 1048, charPositionInLine = 12
+Reference: Object = pp (TABLE), action = UPDATE, offset = 32482, line number = 1049, charPositionInLine = 7
+Reference: Object = pp (TABLE), action = DELETE, offset = 32518, line number = 1050, charPositionInLine = 12
+Reference: Object = pp (TABLE), action = DROP, offset = 32555, line number = 1051, charPositionInLine = 11
+Reference: Object = cc (TABLE), action = DROP, offset = 32559, line number = 1051, charPositionInLine = 15
+Reference: Object = t1 (TABLE), action = CREATE, offset = 32660, line number = 1056, charPositionInLine = 18
+Reference: Object = t2 (TABLE), action = CREATE, offset = 32714, line number = 1057, charPositionInLine = 18
+Reference: Object = t1.r1 (RULE), action = CREATE, offset = 32779, line number = 1058, charPositionInLine = 12
+Reference: Object = t1 (TABLE), action = null, offset = 32798, line number = 1058, charPositionInLine = 31
+Reference: Object = t1 (TABLE), action = DELETE, offset = 32852, line number = 1060, charPositionInLine = 12
+Reference: Object = pktable2 (TABLE), action = CREATE, offset = 32988, line number = 1064, charPositionInLine = 13
+Reference: Object = fktable2 (TABLE), action = CREATE, offset = 33067, line number = 1065, charPositionInLine = 13
+Reference: Object = pktable2 (TABLE), action = null, offset = 33121, line number = 1065, charPositionInLine = 67
+Reference: Object = pktable2 (TABLE), action = INSERT, offset = 33144, line number = 1066, charPositionInLine = 12
+Reference: Object = fktable2 (TABLE), action = INSERT, offset = 33189, line number = 1067, charPositionInLine = 12
+Reference: Object = pktable2 (TABLE), action = DELETE, offset = 33225, line number = 1068, charPositionInLine = 12
+Reference: Object = pktable2 (TABLE), action = UPDATE, offset = 33242, line number = 1069, charPositionInLine = 7
+Reference: Object = pktable2 (TABLE), action = DROP, offset = 33273, line number = 1070, charPositionInLine = 11
+Reference: Object = fktable2 (TABLE), action = DROP, offset = 33283, line number = 1070, charPositionInLine = 21
+Reference: Object = pktable2 (TABLE), action = CREATE, offset = 33390, line number = 1075, charPositionInLine = 13
+Reference: Object = fktable2 (TABLE), action = CREATE, offset = 33433, line number = 1076, charPositionInLine = 13
+Reference: Object = pktable2 (TABLE), action = INSERT, offset = 33513, line number = 1077, charPositionInLine = 12
+Reference: action = BEGIN, offset = 33534, line number = 1079, charPositionInLine = 0
+Reference: Object = fktable2 (TABLE), action = INSERT, offset = 33553, line number = 1080, charPositionInLine = 12
+Reference: action = SAVEPOINT, offset = 33573, line number = 1081, charPositionInLine = 0
+Reference: Object = fktable2 (TABLE), action = DELETE, offset = 33598, line number = 1082, charPositionInLine = 12
+Reference: action = ROLLBACK, offset = 33608, line number = 1083, charPositionInLine = 0
+Reference: action = COMMIT, offset = 33623, line number = 1084, charPositionInLine = 0
+Reference: action = BEGIN, offset = 33632, line number = 1086, charPositionInLine = 0
+Reference: Object = fktable2 (TABLE), action = INSERT, offset = 33651, line number = 1087, charPositionInLine = 12
+Reference: action = SAVEPOINT, offset = 33671, line number = 1088, charPositionInLine = 0
+Reference: Object = fktable2 (TABLE), action = DELETE, offset = 33696, line number = 1089, charPositionInLine = 12
+Reference: action = ROLLBACK, offset = 33706, line number = 1090, charPositionInLine = 0
+Reference: action = COMMIT, offset = 33721, line number = 1091, charPositionInLine = 0
+Reference: action = BEGIN, offset = 33819, line number = 1096, charPositionInLine = 0
+Reference: Object = fktable2 (TABLE), action = INSERT, offset = 33838, line number = 1097, charPositionInLine = 12
+Reference: Object = fktable2 (TABLE), action = ALTER, offset = 33870, line number = 1098, charPositionInLine = 12
+Reference: Object = fktable2.fktable2_f1_fkey (CONSTRAINT), action = DROP, offset = 33895, line number = 1098, charPositionInLine = 37
+Reference: action = COMMIT, offset = 33913, line number = 1099, charPositionInLine = 0
+Reference: action = BEGIN, offset = 33922, line number = 1101, charPositionInLine = 0
+Reference: Object = pktable2 (TABLE), action = DELETE, offset = 33941, line number = 1102, charPositionInLine = 12
+Reference: Object = fktable2 (TABLE), action = ALTER, offset = 33976, line number = 1103, charPositionInLine = 12
+Reference: Object = fktable2.fktable2_f1_fkey (CONSTRAINT), action = DROP, offset = 34001, line number = 1103, charPositionInLine = 37
+Reference: action = COMMIT, offset = 34019, line number = 1104, charPositionInLine = 0
+Reference: Object = pktable2 (TABLE), action = DROP, offset = 34039, line number = 1106, charPositionInLine = 11
+Reference: Object = fktable2 (TABLE), action = DROP, offset = 34049, line number = 1106, charPositionInLine = 21
+Reference: Object = fk_partitioned_pk (TABLE), action = CREATE, offset = 34180, line number = 1114, charPositionInLine = 13
+Reference: Object = fk_notpartitioned_fk (TABLE), action = CREATE, offset = 34313, line number = 1117, charPositionInLine = 13
+Reference: Object = fk_partitioned_pk (TABLE), action = null, offset = 34381, line number = 1118, charPositionInLine = 32
+Reference: Object = fk_notpartitioned_fk_2 (TABLE), action = CREATE, offset = 34444, line number = 1120, charPositionInLine = 13
+Reference: Object = fk_notpartitioned_fk_2 (TABLE), action = ALTER, offset = 34495, line number = 1121, charPositionInLine = 12
+Reference: Object = fk_partitioned_pk (TABLE), action = null, offset = 34554, line number = 1122, charPositionInLine = 13
+Reference: Object = fk_partitioned_pk (TABLE), action = DROP, offset = 34584, line number = 1123, charPositionInLine = 11
+Reference: Object = fk_notpartitioned_fk_2 (TABLE), action = DROP, offset = 34603, line number = 1123, charPositionInLine = 30
+Reference: Object = fk_notpartitioned_pk (TABLE), action = CREATE, offset = 34707, line number = 1126, charPositionInLine = 13
+Reference: Object = fk_notpartitioned_pk (TABLE), action = ALTER, offset = 34802, line number = 1128, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk (TABLE), action = CREATE, offset = 34876, line number = 1129, charPositionInLine = 13
+Reference: Object = fk_partitioned_fk (TABLE), action = ALTER, offset = 34960, line number = 1130, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk_1 (TABLE), action = CREATE, offset = 35011, line number = 1131, charPositionInLine = 13
+Reference: Object = fk_partitioned_fk_1 (TABLE), action = ALTER, offset = 35095, line number = 1132, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk (TABLE), action = ALTER, offset = 35187, line number = 1133, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk (TABLE), action = ALTER, offset = 35292, line number = 1134, charPositionInLine = 12
+Reference: Object = fk_notpartitioned_pk (TABLE), action = null, offset = 35344, line number = 1134, charPositionInLine = 64
+Reference: Object = fk_partitioned_fk_2 (TABLE), action = CREATE, offset = 35379, line number = 1135, charPositionInLine = 13
+Reference: Object = fk_partitioned_fk_2 (TABLE), action = ALTER, offset = 35451, line number = 1136, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk (TABLE), action = ALTER, offset = 35523, line number = 1137, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk_3 (TABLE), action = CREATE, offset = 35636, line number = 1139, charPositionInLine = 13
+Reference: Object = fk_partitioned_fk_3 (TABLE), action = ALTER, offset = 35756, line number = 1141, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk_3_0 (TABLE), action = CREATE, offset = 35870, line number = 1143, charPositionInLine = 13
+Reference: Object = fk_partitioned_fk_3_1 (TABLE), action = CREATE, offset = 35980, line number = 1144, charPositionInLine = 13
+Reference: Object = fk_partitioned_fk (TABLE), action = ALTER, offset = 36089, line number = 1145, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk (TABLE), action = ALTER, offset = 36313, line number = 1150, charPositionInLine = 17
+Reference: Object = fk_notpartitioned_pk (TABLE), action = null, offset = 36367, line number = 1151, charPositionInLine = 13
+Reference: Object = fk_partitioned_fk (TABLE), action = ALTER, offset = 36504, line number = 1154, charPositionInLine = 12
+Reference: Object = fk_notpartitioned_pk (TABLE), action = null, offset = 36558, line number = 1155, charPositionInLine = 13
+Reference: Object = fk_partitioned_fk (TABLE), action = INSERT, offset = 36712, line number = 1159, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk_1 (TABLE), action = INSERT, offset = 36767, line number = 1160, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk (TABLE), action = INSERT, offset = 36824, line number = 1161, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk_2 (TABLE), action = INSERT, offset = 36881, line number = 1162, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk (TABLE), action = INSERT, offset = 36940, line number = 1163, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk_3 (TABLE), action = INSERT, offset = 36997, line number = 1164, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk (TABLE), action = INSERT, offset = 37056, line number = 1165, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk_3 (TABLE), action = INSERT, offset = 37113, line number = 1166, charPositionInLine = 12
+Reference: Object = fk_notpartitioned_pk (TABLE), action = INSERT, offset = 37241, line number = 1169, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk (TABLE), action = INSERT, offset = 37337, line number = 1171, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk (TABLE), action = INSERT, offset = 37392, line number = 1172, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk (TABLE), action = INSERT, offset = 37449, line number = 1173, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk (TABLE), action = INSERT, offset = 37506, line number = 1174, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk (TABLE), action = UPDATE, offset = 37615, line number = 1177, charPositionInLine = 7
+Reference: Object = fk_notpartitioned_pk (TABLE), action = INSERT, offset = 37704, line number = 1179, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk (TABLE), action = UPDATE, offset = 37759, line number = 1180, charPositionInLine = 7
+Reference: Object = fk_notpartitioned_pk (TABLE), action = UPDATE, offset = 37894, line number = 1183, charPositionInLine = 7
+Reference: Object = fk_notpartitioned_pk (TABLE), action = UPDATE, offset = 37949, line number = 1184, charPositionInLine = 7
+Reference: Object = fk_notpartitioned_pk (TABLE), action = UPDATE, offset = 38006, line number = 1185, charPositionInLine = 7
+Reference: Object = fk_partitioned_fk (TABLE), action = ALTER, offset = 38068, line number = 1186, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk.fk_partitioned_fk_a_fkey (CONSTRAINT), action = DROP, offset = 38102, line number = 1186, charPositionInLine = 46
+Reference: Object = fk_notpartitioned_pk (TABLE), action = DROP, offset = 38148, line number = 1188, charPositionInLine = 11
+Reference: Object = fk_partitioned_fk (TABLE), action = DROP, offset = 38170, line number = 1188, charPositionInLine = 33
+Reference: Object = fk_notpartitioned_pk (TABLE), action = CREATE, offset = 38303, line number = 1192, charPositionInLine = 13
+Reference: Object = fk_partitioned_fk (TABLE), action = CREATE, offset = 38377, line number = 1193, charPositionInLine = 13
+Reference: Object = fk_partitioned_fk_1 (TABLE), action = CREATE, offset = 38486, line number = 1194, charPositionInLine = 13
+Reference: Object = fk_notpartitioned_pk (TABLE), action = INSERT, offset = 38591, line number = 1195, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk (TABLE), action = INSERT, offset = 38636, line number = 1196, charPositionInLine = 12
+Reference: Object = fk_notpartitioned_pk (TABLE), action = ALTER, offset = 38678, line number = 1197, charPositionInLine = 12
+Reference: Object = fk_notpartitioned_pk (TABLE), action = DELETE, offset = 38739, line number = 1198, charPositionInLine = 12
+Reference: Object = fk_notpartitioned_pk (TABLE), action = DROP, offset = 38784, line number = 1199, charPositionInLine = 11
+Reference: Object = fk_partitioned_fk (TABLE), action = DROP, offset = 38806, line number = 1199, charPositionInLine = 33
+Reference: Object = fk_notpartitioned_pk (TABLE), action = CREATE, offset = 38929, line number = 1203, charPositionInLine = 13
+Reference: Object = fk_partitioned_fk (TABLE), action = CREATE, offset = 38999, line number = 1204, charPositionInLine = 13
+Reference: Object = fk_partitioned_fk_1 (TABLE), action = CREATE, offset = 39096, line number = 1205, charPositionInLine = 13
+Reference: Object = fk_partitioned_fk (TABLE), action = ALTER, offset = 39193, line number = 1206, charPositionInLine = 12
+Reference: Object = fk_notpartitioned_pk (TABLE), action = null, offset = 39247, line number = 1207, charPositionInLine = 13
+Reference: Object = fk_partitioned_fk_2 (TABLE), action = CREATE, offset = 39335, line number = 1209, charPositionInLine = 13
+Reference: Object = fk_partitioned_fk_3 (TABLE), action = CREATE, offset = 39426, line number = 1210, charPositionInLine = 13
+Reference: Object = fk_partitioned_fk (TABLE), action = ALTER, offset = 39474, line number = 1211, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk (TABLE), action = INSERT, offset = 39600, line number = 1214, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk_3 (TABLE), action = INSERT, offset = 39658, line number = 1215, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk_3 (TABLE), action = INSERT, offset = 39772, line number = 1217, charPositionInLine = 12
+Reference: Object = fk_notpartitioned_pk (TABLE), action = INSERT, offset = 39869, line number = 1219, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk_3 (TABLE), action = INSERT, offset = 39956, line number = 1221, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk (TABLE), action = INSERT, offset = 40037, line number = 1223, charPositionInLine = 12
+Reference: Object = fk_notpartitioned_pk (TABLE), action = INSERT, offset = 40109, line number = 1226, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk_full (TABLE), action = CREATE, offset = 40158, line number = 1227, charPositionInLine = 13
+Reference: Object = fk_partitioned_fk_full_1 (TABLE), action = CREATE, offset = 40233, line number = 1228, charPositionInLine = 13
+Reference: Object = fk_partitioned_fk_full (TABLE), action = INSERT, offset = 40315, line number = 1229, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk_full (TABLE), action = ALTER, offset = 40368, line number = 1230, charPositionInLine = 12
+Reference: Object = fk_notpartitioned_pk (TABLE), action = null, offset = 40425, line number = 1230, charPositionInLine = 69
+Reference: action = TRUNCATE, offset = 40468, line number = 1231, charPositionInLine = 0
+Reference: Object = fk_partitioned_fk_full (TABLE), action = ALTER, offset = 40513, line number = 1232, charPositionInLine = 12
+Reference: Object = fk_notpartitioned_pk (TABLE), action = null, offset = 40570, line number = 1232, charPositionInLine = 69
+Reference: Object = fk_partitioned_fk_full (TABLE), action = INSERT, offset = 40615, line number = 1233, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk_full (TABLE), action = DROP, offset = 40677, line number = 1234, charPositionInLine = 11
+Reference: action = SELECT, offset = 40724, line number = 1237, charPositionInLine = 0
+Reference: Object = fk_notpartitioned_pk (TABLE), action = UPDATE, offset = 40814, line number = 1238, charPositionInLine = 7
+Reference: action = SELECT, offset = 40865, line number = 1239, charPositionInLine = 0
+Reference: Object = fk_partitioned_fk (TABLE), action = INSERT, offset = 40983, line number = 1242, charPositionInLine = 12
+Reference: action = SELECT, offset = 41022, line number = 1243, charPositionInLine = 0
+Reference: Object = fk_notpartitioned_pk (TABLE), action = DELETE, offset = 41090, line number = 1244, charPositionInLine = 12
+Reference: action = SELECT, offset = 41112, line number = 1245, charPositionInLine = 0
+Reference: Object = fk_partitioned_fk (TABLE), action = ALTER, offset = 41213, line number = 1248, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk.fk_partitioned_fk_a_fkey (CONSTRAINT), action = DROP, offset = 41247, line number = 1248, charPositionInLine = 46
+Reference: Object = fk_partitioned_fk (TABLE), action = ALTER, offset = 41285, line number = 1249, charPositionInLine = 12
+Reference: Object = fk_notpartitioned_pk (TABLE), action = null, offset = 41339, line number = 1250, charPositionInLine = 13
+Reference: Object = fk_notpartitioned_pk (TABLE), action = INSERT, offset = 41419, line number = 1252, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk_3 (TABLE), action = INSERT, offset = 41473, line number = 1253, charPositionInLine = 12
+Reference: Object = fk_notpartitioned_pk (TABLE), action = UPDATE, offset = 41634, line number = 1256, charPositionInLine = 7
+Reference: Object = fk_notpartitioned_pk (TABLE), action = INSERT, offset = 41742, line number = 1258, charPositionInLine = 12
+Reference: Object = fk_notpartitioned_pk (TABLE), action = UPDATE, offset = 41793, line number = 1259, charPositionInLine = 7
+Reference: action = SELECT, offset = 41843, line number = 1260, charPositionInLine = 0
+Reference: Object = fk_partitioned_fk (TABLE), action = ALTER, offset = 41934, line number = 1263, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk.fk_partitioned_fk_a_fkey (CONSTRAINT), action = DROP, offset = 41968, line number = 1263, charPositionInLine = 46
+Reference: Object = fk_partitioned_fk (TABLE), action = ALTER, offset = 42006, line number = 1264, charPositionInLine = 12
+Reference: Object = fk_notpartitioned_pk (TABLE), action = null, offset = 42060, line number = 1265, charPositionInLine = 13
+Reference: Object = fk_notpartitioned_pk (TABLE), action = UPDATE, offset = 42127, line number = 1267, charPositionInLine = 7
+Reference: action = SELECT, offset = 42177, line number = 1268, charPositionInLine = 0
+Reference: action = SELECT, offset = 42250, line number = 1271, charPositionInLine = 0
+Reference: Object = fk_notpartitioned_pk (TABLE), action = DELETE, offset = 42312, line number = 1272, charPositionInLine = 12
+Reference: action = SELECT, offset = 42369, line number = 1274, charPositionInLine = 0
+Reference: Object = fk_partitioned_fk_2 (TABLE), action = DROP, offset = 42457, line number = 1277, charPositionInLine = 11
+Reference: Object = fk_partitioned_fk_2 (TABLE), action = CREATE, offset = 42580, line number = 1281, charPositionInLine = 13
+Reference: Object = fk_partitioned_fk (TABLE), action = ALTER, offset = 42670, line number = 1282, charPositionInLine = 12
+Reference: action = BEGIN, offset = 42726, line number = 1283, charPositionInLine = 0
+Reference: Object = fk_partitioned_fk (TABLE), action = DROP, offset = 42744, line number = 1284, charPositionInLine = 11
+Reference: action = ROLLBACK, offset = 42799, line number = 1286, charPositionInLine = 0
+Reference: Object = fk_partitioned_fk (TABLE), action = ALTER, offset = 42821, line number = 1287, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk_2 (TABLE), action = DROP, offset = 42914, line number = 1288, charPositionInLine = 11
+Reference: Object = fk_partitioned_fk_2 (TABLE), action = CREATE, offset = 42948, line number = 1289, charPositionInLine = 13
+Reference: Object = fk_notpartitioned_pk (TABLE), action = null, offset = 43022, line number = 1290, charPositionInLine = 31
+Reference: Object = fk_partitioned_fk_2 (TABLE), action = ALTER, offset = 43093, line number = 1291, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk (TABLE), action = ALTER, offset = 43140, line number = 1292, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk_2 (TABLE), action = DROP, offset = 43268, line number = 1294, charPositionInLine = 11
+Reference: Object = fk_partitioned_fk_4 (TABLE), action = CREATE, offset = 43303, line number = 1296, charPositionInLine = 13
+Reference: Object = fk_notpartitioned_pk (TABLE), action = null, offset = 43368, line number = 1296, charPositionInLine = 78
+Reference: Object = fk_partitioned_fk_4_1 (TABLE), action = CREATE, offset = 43472, line number = 1297, charPositionInLine = 13
+Reference: Object = fk_partitioned_fk_4_2 (TABLE), action = CREATE, offset = 43576, line number = 1298, charPositionInLine = 13
+Reference: Object = fk_notpartitioned_pk (TABLE), action = null, offset = 43643, line number = 1298, charPositionInLine = 80
+Reference: Object = fk_partitioned_fk_4 (TABLE), action = ALTER, offset = 43703, line number = 1299, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk (TABLE), action = ALTER, offset = 43816, line number = 1300, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk (TABLE), action = ALTER, offset = 43910, line number = 1301, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk (TABLE), action = ALTER, offset = 43978, line number = 1302, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk_5 (TABLE), action = CREATE, offset = 44074, line number = 1304, charPositionInLine = 13
+Reference: Object = fk_notpartitioned_pk (TABLE), action = null, offset = 44140, line number = 1305, charPositionInLine = 31
+Reference: Object = fk_notpartitioned_pk (TABLE), action = null, offset = 44246, line number = 1306, charPositionInLine = 31
+Reference: Object = fk_partitioned_fk_5_1 (TABLE), action = CREATE, offset = 44360, line number = 1308, charPositionInLine = 13
+Reference: Object = fk_notpartitioned_pk (TABLE), action = null, offset = 44427, line number = 1308, charPositionInLine = 80
+Reference: Object = fk_partitioned_fk (TABLE), action = ALTER, offset = 44462, line number = 1309, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk_5 (TABLE), action = ALTER, offset = 44551, line number = 1310, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk (TABLE), action = ALTER, offset = 44651, line number = 1311, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk (TABLE), action = ALTER, offset = 44719, line number = 1312, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk_5 (TABLE), action = ALTER, offset = 44894, line number = 1315, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk_5 (TABLE), action = ALTER, offset = 44966, line number = 1316, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk_2 (TABLE), action = CREATE, offset = 45159, line number = 1320, charPositionInLine = 13
+Reference: Object = fk_partitioned_fk_2_1 (TABLE), action = CREATE, offset = 45231, line number = 1321, charPositionInLine = 13
+Reference: Object = fk_partitioned_fk_2_2 (TABLE), action = CREATE, offset = 45330, line number = 1322, charPositionInLine = 13
+Reference: Object = fk_partitioned_fk_2 (TABLE), action = INSERT, offset = 45431, line number = 1323, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk (TABLE), action = ALTER, offset = 45497, line number = 1324, charPositionInLine = 12
+Reference: Object = fk_notpartitioned_pk (TABLE), action = INSERT, offset = 45588, line number = 1326, charPositionInLine = 12
+Reference: Object = fk_partitioned_fk (TABLE), action = ALTER, offset = 45655, line number = 1327, charPositionInLine = 12
+Reference: Object = fkpart0 (SCHEMA), action = CREATE, offset = 46004, line number = 1335, charPositionInLine = 14
+Reference: Object = fkpart0 (SCHEMA), action = null, offset = 46026, line number = 1336, charPositionInLine = 13
+Reference: Object = fkpart0.pkey (TABLE), action = CREATE, offset = 46034, line number = 1336, charPositionInLine = 21
+Reference: Object = fkpart0 (SCHEMA), action = null, offset = 46073, line number = 1337, charPositionInLine = 13
+Reference: Object = fkpart0.fk_part (TABLE), action = CREATE, offset = 46081, line number = 1337, charPositionInLine = 21
+Reference: Object = fkpart0 (SCHEMA), action = null, offset = 46133, line number = 1338, charPositionInLine = 13
+Reference: Object = fkpart0.fk_part_1 (TABLE), action = CREATE, offset = 46149, line number = 1338, charPositionInLine = 29
+Reference: Object = fkpart0 (SCHEMA), action = null, offset = 46212, line number = 1339, charPositionInLine = 32
+Reference: Object = fkpart0.pkey (TABLE), action = null, offset = 46220, line number = 1339, charPositionInLine = 40
+Reference: Object = fkpart0 (SCHEMA), action = null, offset = 46258, line number = 1340, charPositionInLine = 13
+Reference: Object = fkpart0.fk_part_23 (TABLE), action = CREATE, offset = 46266, line number = 1340, charPositionInLine = 21
+Reference: Object = fkpart0 (SCHEMA), action = null, offset = 46330, line number = 1341, charPositionInLine = 32
+Reference: Object = fkpart0.pkey (TABLE), action = null, offset = 46338, line number = 1341, charPositionInLine = 40
+Reference: Object = fkpart0 (SCHEMA), action = null, offset = 46405, line number = 1343, charPositionInLine = 13
+Reference: Object = fkpart0.fk_part_23_2 (TABLE), action = CREATE, offset = 46413, line number = 1343, charPositionInLine = 21
+Reference: Object = fkpart0 (SCHEMA), action = null, offset = 46482, line number = 1345, charPositionInLine = 12
+Reference: Object = fkpart0.fk_part (TABLE), action = ALTER, offset = 46490, line number = 1345, charPositionInLine = 20
+Reference: Object = fkpart0 (SCHEMA), action = null, offset = 46529, line number = 1345, charPositionInLine = 59
+Reference: Object = fkpart0.pkey (TABLE), action = null, offset = 46537, line number = 1345, charPositionInLine = 67
+Reference: Object = fkpart0 (SCHEMA), action = null, offset = 46555, line number = 1346, charPositionInLine = 12
+Reference: Object = fkpart0.fk_part_1 (TABLE), action = ALTER, offset = 46563, line number = 1346, charPositionInLine = 20
+Reference: Object = fkpart0.fk_part_1.fk_part_1_a_fkey (CONSTRAINT), action = DROP, offset = 46589, line number = 1346, charPositionInLine = 46
+Reference: Object = fkpart0 (SCHEMA), action = null, offset = 46619, line number = 1347, charPositionInLine = 12
+Reference: Object = fkpart0.fk_part_23 (TABLE), action = ALTER, offset = 46627, line number = 1347, charPositionInLine = 20
+Reference: Object = fkpart0.fk_part_23.fk_part_23_a_fkey (CONSTRAINT), action = DROP, offset = 46654, line number = 1347, charPositionInLine = 47
+Reference: Object = fkpart0 (SCHEMA), action = null, offset = 46685, line number = 1348, charPositionInLine = 12
+Reference: Object = fkpart0.fk_part_23_2 (TABLE), action = ALTER, offset = 46693, line number = 1348, charPositionInLine = 20
+Reference: Object = fkpart0.fk_part_23_2.fk_part_23_a_fkey (CONSTRAINT), action = DROP, offset = 46722, line number = 1348, charPositionInLine = 49
+Reference: Object = fkpart0 (SCHEMA), action = null, offset = 46755, line number = 1350, charPositionInLine = 13
+Reference: Object = fkpart0.fk_part_4 (TABLE), action = CREATE, offset = 46763, line number = 1350, charPositionInLine = 21
+Reference: Object = fkpart0 (SCHEMA), action = null, offset = 46786, line number = 1350, charPositionInLine = 44
+Reference: Object = fkpart0.fk_part (TABLE), action = null, offset = 46794, line number = 1350, charPositionInLine = 52
+Reference: Object = fkpart0 (SCHEMA), action = null, offset = 46833, line number = 1351, charPositionInLine = 12
+Reference: Object = fkpart0.fk_part_4 (TABLE), action = ALTER, offset = 46841, line number = 1351, charPositionInLine = 20
+Reference: Object = fkpart0.fk_part_4.fk_part_a_fkey (CONSTRAINT), action = DROP, offset = 46867, line number = 1351, charPositionInLine = 46
+Reference: Object = fkpart0 (SCHEMA), action = null, offset = 46897, line number = 1353, charPositionInLine = 13
+Reference: Object = fkpart0.fk_part_56 (TABLE), action = CREATE, offset = 46905, line number = 1353, charPositionInLine = 21
+Reference: Object = fkpart0 (SCHEMA), action = null, offset = 46929, line number = 1353, charPositionInLine = 45
+Reference: Object = fkpart0.fk_part (TABLE), action = null, offset = 46937, line number = 1353, charPositionInLine = 53
+Reference: Object = fkpart0 (SCHEMA), action = null, offset = 47005, line number = 1355, charPositionInLine = 13
+Reference: Object = fkpart0.fk_part_56_5 (TABLE), action = CREATE, offset = 47013, line number = 1355, charPositionInLine = 21
+Reference: Object = fkpart0 (SCHEMA), action = null, offset = 47039, line number = 1355, charPositionInLine = 47
+Reference: Object = fkpart0.fk_part_56 (TABLE), action = null, offset = 47047, line number = 1355, charPositionInLine = 55
+Reference: Object = fkpart0 (SCHEMA), action = null, offset = 47093, line number = 1357, charPositionInLine = 12
+Reference: Object = fkpart0.fk_part_56 (TABLE), action = ALTER, offset = 47101, line number = 1357, charPositionInLine = 20
+Reference: Object = fkpart0.fk_part_56.fk_part_a_fkey (CONSTRAINT), action = DROP, offset = 47128, line number = 1357, charPositionInLine = 47
+Reference: Object = fkpart0 (SCHEMA), action = null, offset = 47156, line number = 1358, charPositionInLine = 12
+Reference: Object = fkpart0.fk_part_56_5 (TABLE), action = ALTER, offset = 47164, line number = 1358, charPositionInLine = 20
+Reference: Object = fkpart0.fk_part_56_5.fk_part_a_fkey (CONSTRAINT), action = DROP, offset = 47193, line number = 1358, charPositionInLine = 49
+Reference: Object = fkpart1 (SCHEMA), action = CREATE, offset = 47313, line number = 1362, charPositionInLine = 14
+Reference: Object = fkpart1 (SCHEMA), action = null, offset = 47335, line number = 1363, charPositionInLine = 13
+Reference: Object = fkpart1.pkey (TABLE), action = CREATE, offset = 47343, line number = 1363, charPositionInLine = 21
+Reference: Object = fkpart1 (SCHEMA), action = null, offset = 47382, line number = 1364, charPositionInLine = 13
+Reference: Object = fkpart1.fk_part (TABLE), action = CREATE, offset = 47390, line number = 1364, charPositionInLine = 21
+Reference: Object = fkpart1 (SCHEMA), action = null, offset = 47442, line number = 1365, charPositionInLine = 13
+Reference: Object = fkpart1.fk_part_1 (TABLE), action = CREATE, offset = 47450, line number = 1365, charPositionInLine = 21
+Reference: Object = fkpart1 (SCHEMA), action = null, offset = 47535, line number = 1366, charPositionInLine = 13
+Reference: Object = fkpart1.fk_part_1_1 (TABLE), action = CREATE, offset = 47543, line number = 1366, charPositionInLine = 21
+Reference: Object = fkpart1 (SCHEMA), action = null, offset = 47609, line number = 1367, charPositionInLine = 12
+Reference: Object = fkpart1.fk_part (TABLE), action = ALTER, offset = 47617, line number = 1367, charPositionInLine = 20
+Reference: Object = fkpart1 (SCHEMA), action = null, offset = 47656, line number = 1367, charPositionInLine = 59
+Reference: Object = fkpart1.pkey (TABLE), action = null, offset = 47664, line number = 1367, charPositionInLine = 67
+Reference: Object = fkpart1 (SCHEMA), action = null, offset = 47682, line number = 1368, charPositionInLine = 12
+Reference: Object = fkpart1.fk_part (TABLE), action = INSERT, offset = 47690, line number = 1368, charPositionInLine = 20
+Reference: Object = fkpart1 (SCHEMA), action = null, offset = 47738, line number = 1369, charPositionInLine = 12
+Reference: Object = fkpart1.pkey (TABLE), action = INSERT, offset = 47746, line number = 1369, charPositionInLine = 20
+Reference: Object = fkpart1 (SCHEMA), action = null, offset = 47775, line number = 1370, charPositionInLine = 12
+Reference: Object = fkpart1.fk_part (TABLE), action = INSERT, offset = 47783, line number = 1370, charPositionInLine = 20
+Reference: Object = fkpart1 (SCHEMA), action = null, offset = 47815, line number = 1371, charPositionInLine = 12
+Reference: Object = fkpart1.pkey (TABLE), action = DELETE, offset = 47823, line number = 1371, charPositionInLine = 20
+Reference: Object = fkpart1 (SCHEMA), action = null, offset = 47869, line number = 1372, charPositionInLine = 12
+Reference: Object = fkpart1.fk_part (TABLE), action = ALTER, offset = 47877, line number = 1372, charPositionInLine = 20
+Reference: Object = fkpart1 (SCHEMA), action = null, offset = 47934, line number = 1373, charPositionInLine = 13
+Reference: Object = fkpart1.fk_part_1_2 (TABLE), action = CREATE, offset = 47942, line number = 1373, charPositionInLine = 21
+Reference: Object = fkpart1 (SCHEMA), action = null, offset = 47967, line number = 1373, charPositionInLine = 46
+Reference: Object = fkpart1.fk_part_1 (TABLE), action = null, offset = 47975, line number = 1373, charPositionInLine = 54
+Reference: Object = fkpart1 (SCHEMA), action = null, offset = 48016, line number = 1374, charPositionInLine = 12
+Reference: Object = fkpart1.fk_part_1 (TABLE), action = INSERT, offset = 48024, line number = 1374, charPositionInLine = 20
+Reference: Object = fkpart1 (SCHEMA), action = null, offset = 48073, line number = 1375, charPositionInLine = 12
+Reference: Object = fkpart1.pkey (TABLE), action = DELETE, offset = 48081, line number = 1375, charPositionInLine = 20
+Reference: Object = fkpart2 (SCHEMA), action = CREATE, offset = 48240, line number = 1379, charPositionInLine = 14
+Reference: Object = fkpart2 (SCHEMA), action = null, offset = 48262, line number = 1380, charPositionInLine = 13
+Reference: Object = fkpart2.pkey (TABLE), action = CREATE, offset = 48270, line number = 1380, charPositionInLine = 21
+Reference: Object = fkpart2 (SCHEMA), action = null, offset = 48309, line number = 1381, charPositionInLine = 13
+Reference: Object = fkpart2.fk_part (TABLE), action = CREATE, offset = 48317, line number = 1381, charPositionInLine = 21
+Reference: Object = fkpart2 (SCHEMA), action = null, offset = 48376, line number = 1381, charPositionInLine = 80
+Reference: Object = fkpart2.pkey (TABLE), action = null, offset = 48384, line number = 1381, charPositionInLine = 88
+Reference: Object = fkpart2 (SCHEMA), action = null, offset = 48426, line number = 1382, charPositionInLine = 13
+Reference: Object = fkpart2.fk_part_1 (TABLE), action = CREATE, offset = 48434, line number = 1382, charPositionInLine = 21
+Reference: Object = fkpart2 (SCHEMA), action = null, offset = 48457, line number = 1382, charPositionInLine = 44
+Reference: Object = fkpart2.fk_part (TABLE), action = null, offset = 48465, line number = 1382, charPositionInLine = 52
+Reference: Object = fkpart2 (SCHEMA), action = null, offset = 48527, line number = 1383, charPositionInLine = 13
+Reference: Object = fkpart2.fk_part_1_1 (TABLE), action = CREATE, offset = 48535, line number = 1383, charPositionInLine = 21
+Reference: Object = fkpart2 (SCHEMA), action = null, offset = 48601, line number = 1383, charPositionInLine = 87
+Reference: Object = fkpart2.pkey (TABLE), action = null, offset = 48609, line number = 1383, charPositionInLine = 95
+Reference: Object = fkpart2 (SCHEMA), action = null, offset = 48628, line number = 1384, charPositionInLine = 12
+Reference: Object = fkpart2.fk_part_1 (TABLE), action = ALTER, offset = 48636, line number = 1384, charPositionInLine = 20
+Reference: Object = fkpart2 (SCHEMA), action = null, offset = 48714, line number = 1385, charPositionInLine = 12
+Reference: Object = fkpart2.fk_part_1 (TABLE), action = ALTER, offset = 48722, line number = 1385, charPositionInLine = 20
+Reference: Object = fkpart2.fk_part_1.fkey (CONSTRAINT), action = DROP, offset = 48748, line number = 1385, charPositionInLine = 46
+Reference: Object = fkpart2 (SCHEMA), action = null, offset = 48781, line number = 1386, charPositionInLine = 12
+Reference: Object = fkpart2.fk_part_1_1 (TABLE), action = ALTER, offset = 48789, line number = 1386, charPositionInLine = 20
+Reference: Object = fkpart2.fk_part_1_1.my_fkey (CONSTRAINT), action = DROP, offset = 48817, line number = 1386, charPositionInLine = 48
+Reference: Object = fkpart2 (SCHEMA), action = null, offset = 48853, line number = 1387, charPositionInLine = 12
+Reference: Object = fkpart2.fk_part (TABLE), action = ALTER, offset = 48861, line number = 1387, charPositionInLine = 20
+Reference: Object = fkpart2 (SCHEMA), action = null, offset = 48917, line number = 1388, charPositionInLine = 12
+Reference: Object = fkpart2.fk_part_1 (TABLE), action = ALTER, offset = 48925, line number = 1388, charPositionInLine = 20
+Reference: Object = fkpart2.fk_part_1.fkey (CONSTRAINT), action = DROP, offset = 48951, line number = 1388, charPositionInLine = 46
+Reference: Object = fkpart2 (SCHEMA), action = null, offset = 48975, line number = 1389, charPositionInLine = 12
+Reference: Object = fkpart2.fk_part_1_1 (TABLE), action = ALTER, offset = 48983, line number = 1389, charPositionInLine = 20
+Reference: Object = fkpart2.fk_part_1_1.my_fkey (CONSTRAINT), action = DROP, offset = 49011, line number = 1389, charPositionInLine = 48
+Reference: Object = fkpart0 (SCHEMA), action = DROP, offset = 49050, line number = 1391, charPositionInLine = 12
+Reference: Object = fkpart1 (SCHEMA), action = DROP, offset = 49059, line number = 1391, charPositionInLine = 21
+Reference: Object = fkpart2 (SCHEMA), action = DROP, offset = 49068, line number = 1391, charPositionInLine = 30

@@ -79,7 +79,8 @@ public class CreateMsTable extends MsTableAbstract {
         IdContext tableCtx = ctx.qualified_name().name;
 
         if (colCtx.table_constraint() != null) {
-            table.addConstraint(getMsConstraint(colCtx.table_constraint(), schemaCtx.getText(), tableCtx.getText()));
+            table.addConstraint(getMsConstraint(colCtx.table_constraint(),
+                    schemaCtx == null ? null : schemaCtx.getText(), tableCtx.getText()));
         } else if (colCtx.table_index() != null) {
             Table_indexContext indCtx = colCtx.table_index();
             MsIndex index = new MsIndex(indCtx.index_name.getText());

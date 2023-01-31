@@ -1,0 +1,22 @@
+Reference: action = ALTER LOGIN, offset = 0, line number = 1, charPositionInLine = 0
+Reference: action = ALTER LOGIN, offset = 28, line number = 2, charPositionInLine = 0
+Reference: action = ALTER LOGIN, offset = 91, line number = 3, charPositionInLine = 0
+Reference: action = ALTER LOGIN, offset = 128, line number = 4, charPositionInLine = 0
+Reference: action = ALTER LOGIN, offset = 177, line number = 5, charPositionInLine = 0
+Reference: action = ALTER LOGIN, offset = 227, line number = 8, charPositionInLine = 0
+Reference: action = ALTER LOGIN, offset = 283, line number = 11, charPositionInLine = 0
+Reference: action = ALTER LOGIN, offset = 328, line number = 12, charPositionInLine = 0
+Reference: action = ALTER LOGIN, offset = 375, line number = 14, charPositionInLine = 0
+Reference: action = ALTER LOGIN, offset = 479, line number = 17, charPositionInLine = 0
+Reference: action = ALTER LOGIN, offset = 531, line number = 19, charPositionInLine = 0
+Reference: action = CREATE LOGIN, offset = 582, line number = 23, charPositionInLine = 0
+Reference: action = CREATE LOGIN, offset = 654, line number = 25, charPositionInLine = 0
+Reference: action = CREATE LOGIN, offset = 738, line number = 27, charPositionInLine = 0
+Reference: action = USE, offset = 843, line number = 30, charPositionInLine = 0
+Reference: action = CREATE CERTIFICATE, offset = 855, line number = 31, charPositionInLine = 0
+Reference: action = CREATE LOGIN, offset = 991, line number = 35, charPositionInLine = 0
+Reference: action = CREATE LOGIN, offset = 1052, line number = 37, charPositionInLine = 0
+Reference: action = CREATE LOGIN, offset = 1106, line number = 39, charPositionInLine = 0
+Reference: action = CREATE LOGIN, offset = 1208, line number = 43, charPositionInLine = 0
+Reference: action = CREATE LOGIN, offset = 1258, line number = 45, charPositionInLine = 0
+Reference: action = CREATE LOGIN, offset = 1360, line number = 48, charPositionInLine = 0

@@ -1,0 +1,280 @@
+Reference: Object = update_test (TABLE), action = CREATE, offset = 43, line number = 5, charPositionInLine = 13
+Reference: Object = upsert_test (TABLE), action = CREATE, offset = 124, line number = 11, charPositionInLine = 13
+Reference: Object = update_test (TABLE), action = INSERT, offset = 192, line number = 16, charPositionInLine = 12
+Reference: Object = update_test (TABLE), action = INSERT, offset = 239, line number = 17, charPositionInLine = 12
+Reference: action = SELECT, offset = 275, line number = 19, charPositionInLine = 0
+Reference: Object = update_test (TABLE), action = UPDATE, offset = 310, line number = 21, charPositionInLine = 7
+Reference: action = SELECT, offset = 353, line number = 23, charPositionInLine = 0
+Reference: Object = update_test (TABLE), action = UPDATE, offset = 427, line number = 26, charPositionInLine = 7
+Reference: action = SELECT, offset = 472, line number = 28, charPositionInLine = 0
+Reference: Object = update_test (TABLE), action = UPDATE, offset = 507, line number = 30, charPositionInLine = 7
+Reference: action = SELECT, offset = 555, line number = 32, charPositionInLine = 0
+Reference: Object = update_test (TABLE), action = UPDATE, offset = 620, line number = 38, charPositionInLine = 7
+Reference: action = SELECT, offset = 706, line number = 41, charPositionInLine = 0
+Reference: Object = update_test (TABLE), action = UPDATE, offset = 767, line number = 44, charPositionInLine = 7
+Reference: Object = update_test (TABLE), action = INSERT, offset = 909, line number = 51, charPositionInLine = 12
+Reference: action = SELECT, offset = 954, line number = 52, charPositionInLine = 0
+Reference: Object = update_test (TABLE), action = UPDATE, offset = 989, line number = 54, charPositionInLine = 7
+Reference: action = SELECT, offset = 1057, line number = 55, charPositionInLine = 0
+Reference: Object = update_test (TABLE), action = UPDATE, offset = 1091, line number = 56, charPositionInLine = 7
+Reference: action = SELECT, offset = 1153, line number = 57, charPositionInLine = 0
+Reference: Object = update_test (TABLE), action = UPDATE, offset = 1229, line number = 59, charPositionInLine = 7
+Reference: Object = update_test (TABLE), action = UPDATE, offset = 1327, line number = 62, charPositionInLine = 7
+Reference: action = SELECT, offset = 1438, line number = 65, charPositionInLine = 0
+Reference: Object = update_test (TABLE), action = UPDATE, offset = 1498, line number = 67, charPositionInLine = 7
+Reference: action = SELECT, offset = 1635, line number = 70, charPositionInLine = 0
+Reference: Object = update_test (TABLE), action = UPDATE, offset = 1702, line number = 72, charPositionInLine = 7
+Reference: Object = update_test (TABLE), action = UPDATE, offset = 1802, line number = 74, charPositionInLine = 7
+Reference: action = SELECT, offset = 1889, line number = 76, charPositionInLine = 0
+Reference: Object = update_test (TABLE), action = UPDATE, offset = 1967, line number = 78, charPositionInLine = 7
+Reference: Object = update_test (TABLE), action = UPDATE, offset = 2142, line number = 81, charPositionInLine = 7
+Reference: Object = update_test (TABLE), action = UPDATE, offset = 2346, line number = 86, charPositionInLine = 7
+Reference: Object = update_test (TABLE), action = UPDATE, offset = 2466, line number = 89, charPositionInLine = 7
+Reference: action = SELECT, offset = 2522, line number = 90, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 2643, line number = 93, charPositionInLine = 0
+Reference: Object = update_test (TABLE), action = UPDATE, offset = 2801, line number = 97, charPositionInLine = 7
+Reference: action = SELECT, offset = 2916, line number = 100, charPositionInLine = 0
+Reference: Object = upsert_test (TABLE), action = INSERT, offset = 3005, line number = 103, charPositionInLine = 12
+Reference: Object = upsert_test (TABLE), action = INSERT, offset = 3116, line number = 105, charPositionInLine = 52
+Reference: Object = upsert_test (TABLE), action = INSERT, offset = 3262, line number = 109, charPositionInLine = 12
+Reference: Object = upsert_test (TABLE), action = INSERT, offset = 3481, line number = 113, charPositionInLine = 12
+Reference: Object = update_test (TABLE), action = DROP, offset = 3650, line number = 117, charPositionInLine = 11
+Reference: Object = upsert_test (TABLE), action = DROP, offset = 3674, line number = 118, charPositionInLine = 11
+Reference: Object = range_parted (TABLE), action = CREATE, offset = 4296, line number = 133, charPositionInLine = 13
+Reference: Object = part_b_20_b_30 (TABLE), action = CREATE, offset = 4575, line number = 143, charPositionInLine = 13
+Reference: Object = range_parted (TABLE), action = ALTER, offset = 4651, line number = 144, charPositionInLine = 12
+Reference: Object = part_b_10_b_20 (TABLE), action = CREATE, offset = 4749, line number = 145, charPositionInLine = 13
+Reference: Object = part_b_1_b_10 (TABLE), action = CREATE, offset = 4849, line number = 146, charPositionInLine = 13
+Reference: Object = range_parted (TABLE), action = ALTER, offset = 4940, line number = 147, charPositionInLine = 12
+Reference: Object = part_a_10_a_20 (TABLE), action = CREATE, offset = 5038, line number = 148, charPositionInLine = 13
+Reference: Object = part_a_1_a_10 (TABLE), action = CREATE, offset = 5132, line number = 149, charPositionInLine = 13
+Reference: Object = part_b_10_b_20 (TABLE), action = UPDATE, offset = 5334, line number = 153, charPositionInLine = 7
+Reference: Object = part_c_100_200 (TABLE), action = CREATE, offset = 5599, line number = 158, charPositionInLine = 13
+Reference: Object = part_c_100_200 (TABLE), action = ALTER, offset = 5703, line number = 159, charPositionInLine = 12
+Reference: Object = part_c_100_200 (TABLE), action = ALTER, offset = 5775, line number = 160, charPositionInLine = 12
+Reference: Object = part_c_100_200 (TABLE), action = ALTER, offset = 5865, line number = 161, charPositionInLine = 12
+Reference: Object = part_c_100_200 (TABLE), action = ALTER, offset = 5907, line number = 162, charPositionInLine = 12
+Reference: Object = part_d_1_15 (TABLE), action = CREATE, offset = 5956, line number = 163, charPositionInLine = 13
+Reference: Object = part_d_15_20 (TABLE), action = CREATE, offset = 6038, line number = 164, charPositionInLine = 13
+Reference: Object = part_b_10_b_20 (TABLE), action = ALTER, offset = 6122, line number = 166, charPositionInLine = 12
+Reference: Object = part_c_1_100 (TABLE), action = CREATE, offset = 6215, line number = 168, charPositionInLine = 13
+Reference: Object = part_b_10_b_20 (TABLE), action = ALTER, offset = 6289, line number = 169, charPositionInLine = 12
+Reference: action = EXPLAIN, offset = 6415, line number = 172, charPositionInLine = 0
+Reference: Object = part_c_100_200 (TABLE), action = UPDATE, offset = 6557, line number = 175, charPositionInLine = 7
+Reference: Object = part_b_10_b_20 (TABLE), action = UPDATE, offset = 6754, line number = 178, charPositionInLine = 7
+Reference: Object = range_parted (TABLE), action = UPDATE, offset = 6842, line number = 180, charPositionInLine = 7
+Reference: Object = range_parted (TABLE), action = UPDATE, offset = 6947, line number = 182, charPositionInLine = 7
+Reference: Object = part_c_1_100 (TABLE), action = UPDATE, offset = 6994, line number = 184, charPositionInLine = 7
+Reference: Object = part_b_10_b_20 (TABLE), action = UPDATE, offset = 7063, line number = 186, charPositionInLine = 7
+Reference: Object = part_b_10_b_20 (TABLE), action = UPDATE, offset = 7185, line number = 189, charPositionInLine = 7
+Reference: Object = range_parted (TABLE), action = UPDATE, offset = 7321, line number = 191, charPositionInLine = 7
+Reference: Object = mintab (TABLE), action = CREATE, offset = 7449, line number = 195, charPositionInLine = 13
+Reference: Object = mintab (TABLE), action = INSERT, offset = 7477, line number = 196, charPositionInLine = 12
+Reference: Object = upview (VIEW), action = CREATE, offset = 7557, line number = 199, charPositionInLine = 12
+Reference: Object = upview (TABLE), action = UPDATE, offset = 7660, line number = 201, charPositionInLine = 7
+Reference: Object = upview (TABLE), action = UPDATE, offset = 7731, line number = 203, charPositionInLine = 7
+Reference: Object = upview (TABLE), action = UPDATE, offset = 7820, line number = 205, charPositionInLine = 7
+Reference: Object = upview (TABLE), action = UPDATE, offset = 7917, line number = 207, charPositionInLine = 7
+Reference: Object = upview (VIEW), action = DROP, offset = 7979, line number = 210, charPositionInLine = 10
+Reference: Object = range_parted (TABLE), action = UPDATE, offset = 8031, line number = 213, charPositionInLine = 7
+Reference: Object = trans_updatetrigfunc() (FUNCTION), action = CREATE, offset = 8185, line number = 217, charPositionInLine = 16
+Reference: Object = range_parted.trans_updatetrig (TRIGGER), action = CREATE, offset = 8561, line number = 228, charPositionInLine = 15
+Reference: Object = range_parted (TABLE), action = null, offset = 8596, line number = 229, charPositionInLine = 18
+Reference: Object = range_parted (TABLE), action = UPDATE, offset = 8738, line number = 232, charPositionInLine = 7
+Reference: Object = range_parted.trans_deletetrig (TRIGGER), action = CREATE, offset = 9046, line number = 237, charPositionInLine = 15
+Reference: Object = range_parted (TABLE), action = null, offset = 9081, line number = 238, charPositionInLine = 18
+Reference: Object = range_parted.trans_inserttrig (TRIGGER), action = CREATE, offset = 9207, line number = 240, charPositionInLine = 15
+Reference: Object = range_parted (TABLE), action = null, offset = 9242, line number = 241, charPositionInLine = 18
+Reference: Object = range_parted (TABLE), action = UPDATE, offset = 9360, line number = 243, charPositionInLine = 7
+Reference: Object = range_parted.range_parted.trans_deletetrig (TRIGGER), action = DROP, offset = 9439, line number = 244, charPositionInLine = 13
+Reference: Object = range_parted (SCHEMA), action = null, offset = 9459, line number = 244, charPositionInLine = 33
+Reference: Object = range_parted.range_parted.trans_inserttrig (TRIGGER), action = DROP, offset = 9486, line number = 245, charPositionInLine = 13
+Reference: Object = range_parted (SCHEMA), action = null, offset = 9506, line number = 245, charPositionInLine = 33
+Reference: Object = func_parted_mod_b() (FUNCTION), action = CREATE, offset = 10124, line number = 255, charPositionInLine = 16
+Reference: Object = part_c_1_100.trig_c1_100 (TRIGGER), action = CREATE, offset = 10249, line number = 260, charPositionInLine = 15
+Reference: Object = part_c_1_100 (TABLE), action = null, offset = 10288, line number = 260, charPositionInLine = 54
+Reference: Object = part_d_1_15.trig_d1_15 (TRIGGER), action = CREATE, offset = 10371, line number = 262, charPositionInLine = 15
+Reference: Object = part_d_1_15 (TABLE), action = null, offset = 10409, line number = 262, charPositionInLine = 53
+Reference: Object = part_d_15_20.trig_d15_20 (TRIGGER), action = CREATE, offset = 10491, line number = 264, charPositionInLine = 15
+Reference: Object = part_d_15_20 (TABLE), action = null, offset = 10530, line number = 264, charPositionInLine = 54
+Reference: Object = range_parted (TABLE), action = UPDATE, offset = 10605, line number = 266, charPositionInLine = 7
+Reference: Object = range_parted (TABLE), action = UPDATE, offset = 10714, line number = 267, charPositionInLine = 7
+Reference: Object = range_parted (TABLE), action = UPDATE, offset = 11007, line number = 272, charPositionInLine = 7
+Reference: Object = range_parted.range_parted.trans_updatetrig (TRIGGER), action = DROP, offset = 11058, line number = 274, charPositionInLine = 13
+Reference: Object = range_parted (SCHEMA), action = null, offset = 11078, line number = 274, charPositionInLine = 33
+Reference: Object = part_c_1_100.part_c_1_100.trig_c1_100 (TRIGGER), action = DROP, offset = 11105, line number = 275, charPositionInLine = 13
+Reference: Object = part_c_1_100 (SCHEMA), action = null, offset = 11120, line number = 275, charPositionInLine = 28
+Reference: Object = part_d_1_15.part_d_1_15.trig_d1_15 (TRIGGER), action = DROP, offset = 11147, line number = 276, charPositionInLine = 13
+Reference: Object = part_d_1_15 (SCHEMA), action = null, offset = 11161, line number = 276, charPositionInLine = 27
+Reference: Object = part_d_15_20.part_d_15_20.trig_d15_20 (TRIGGER), action = DROP, offset = 11187, line number = 277, charPositionInLine = 13
+Reference: Object = part_d_15_20 (SCHEMA), action = null, offset = 11202, line number = 277, charPositionInLine = 28
+Reference: Object = func_parted_mod_b (FUNCTION), action = DROP, offset = 11230, line number = 278, charPositionInLine = 14
+Reference: Object = range_parted (TABLE), action = ALTER, offset = 11348, line number = 283, charPositionInLine = 12
+Reference: action = CREATE USER, offset = 11388, line number = 284, charPositionInLine = 0
+Reference: Object = range_parted (TABLE), action = GRANT, offset = 11440, line number = 285, charPositionInLine = 13
+Reference: Object = mintab (TABLE), action = GRANT, offset = 11454, line number = 285, charPositionInLine = 27
+Reference: action = SET, offset = 11670, line number = 289, charPositionInLine = 0
+Reference: Object = range_parted (TABLE), action = UPDATE, offset = 11876, line number = 292, charPositionInLine = 7
+Reference: action = RESET, offset = 11938, line number = 294, charPositionInLine = 0
+Reference: Object = func_d_1_15() (FUNCTION), action = CREATE, offset = 12018, line number = 296, charPositionInLine = 16
+Reference: Object = part_d_1_15.trig_d_1_15 (TRIGGER), action = CREATE, offset = 12177, line number = 301, charPositionInLine = 15
+Reference: Object = part_d_1_15 (TABLE), action = null, offset = 12206, line number = 301, charPositionInLine = 44
+Reference: action = SET, offset = 12268, line number = 304, charPositionInLine = 0
+Reference: Object = range_parted (TABLE), action = UPDATE, offset = 12551, line number = 309, charPositionInLine = 7
+Reference: action = RESET, offset = 12613, line number = 311, charPositionInLine = 0
+Reference: action = SET, offset = 12642, line number = 312, charPositionInLine = 0
+Reference: Object = range_parted (TABLE), action = UPDATE, offset = 12882, line number = 316, charPositionInLine = 7
+Reference: action = RESET, offset = 12955, line number = 319, charPositionInLine = 0
+Reference: Object = part_d_1_15.part_d_1_15.trig_d_1_15 (TRIGGER), action = DROP, offset = 12997, line number = 320, charPositionInLine = 13
+Reference: Object = part_d_1_15 (SCHEMA), action = null, offset = 13012, line number = 320, charPositionInLine = 28
+Reference: Object = func_d_1_15 (FUNCTION), action = DROP, offset = 13039, line number = 321, charPositionInLine = 14
+Reference: action = RESET, offset = 13093, line number = 324, charPositionInLine = 0
+Reference: action = SET, offset = 13287, line number = 328, charPositionInLine = 0
+Reference: Object = range_parted (TABLE), action = UPDATE, offset = 13385, line number = 330, charPositionInLine = 7
+Reference: Object = range_parted (TABLE), action = UPDATE, offset = 13459, line number = 332, charPositionInLine = 7
+Reference: action = RESET, offset = 13567, line number = 336, charPositionInLine = 0
+Reference: action = SET, offset = 13771, line number = 339, charPositionInLine = 0
+Reference: Object = range_parted (TABLE), action = UPDATE, offset = 13864, line number = 341, charPositionInLine = 7
+Reference: action = RESET, offset = 13925, line number = 342, charPositionInLine = 0
+Reference: action = SET, offset = 13954, line number = 343, charPositionInLine = 0
+Reference: Object = range_parted (TABLE), action = UPDATE, offset = 14059, line number = 345, charPositionInLine = 7
+Reference: action = RESET, offset = 14132, line number = 348, charPositionInLine = 0
+Reference: Object = range_parted (TABLE), action = REVOKE, offset = 14345, line number = 354, charPositionInLine = 14
+Reference: Object = mintab (TABLE), action = REVOKE, offset = 14359, line number = 354, charPositionInLine = 28
+Reference: Object = mintab (TABLE), action = DROP, offset = 14446, line number = 356, charPositionInLine = 11
+Reference: Object = trigfunc() (FUNCTION), action = CREATE, offset = 14573, line number = 363, charPositionInLine = 16
+Reference: Object = range_parted.parent_delete_trig (TRIGGER), action = CREATE, offset = 14810, line number = 372, charPositionInLine = 15
+Reference: Object = range_parted (TABLE), action = null, offset = 14847, line number = 373, charPositionInLine = 18
+Reference: Object = range_parted.parent_update_trig (TRIGGER), action = CREATE, offset = 14924, line number = 374, charPositionInLine = 15
+Reference: Object = range_parted (TABLE), action = null, offset = 14961, line number = 375, charPositionInLine = 18
+Reference: Object = range_parted.parent_insert_trig (TRIGGER), action = CREATE, offset = 15038, line number = 376, charPositionInLine = 15
+Reference: Object = range_parted (TABLE), action = null, offset = 15075, line number = 377, charPositionInLine = 18
+Reference: Object = part_c_1_100.c1_delete_trig (TRIGGER), action = CREATE, offset = 15196, line number = 380, charPositionInLine = 15
+Reference: Object = part_c_1_100 (TABLE), action = null, offset = 15229, line number = 381, charPositionInLine = 18
+Reference: Object = part_c_1_100.c1_update_trig (TRIGGER), action = CREATE, offset = 15306, line number = 382, charPositionInLine = 15
+Reference: Object = part_c_1_100 (TABLE), action = null, offset = 15339, line number = 383, charPositionInLine = 18
+Reference: Object = part_c_1_100.c1_insert_trig (TRIGGER), action = CREATE, offset = 15416, line number = 384, charPositionInLine = 15
+Reference: Object = part_c_1_100 (TABLE), action = null, offset = 15449, line number = 385, charPositionInLine = 18
+Reference: Object = part_d_1_15.d1_delete_trig (TRIGGER), action = CREATE, offset = 15569, line number = 388, charPositionInLine = 15
+Reference: Object = part_d_1_15 (TABLE), action = null, offset = 15602, line number = 389, charPositionInLine = 18
+Reference: Object = part_d_1_15.d1_update_trig (TRIGGER), action = CREATE, offset = 15678, line number = 390, charPositionInLine = 15
+Reference: Object = part_d_1_15 (TABLE), action = null, offset = 15711, line number = 391, charPositionInLine = 18
+Reference: Object = part_d_1_15.d1_insert_trig (TRIGGER), action = CREATE, offset = 15787, line number = 392, charPositionInLine = 15
+Reference: Object = part_d_1_15 (TABLE), action = null, offset = 15820, line number = 393, charPositionInLine = 18
+Reference: Object = part_d_15_20.d15_delete_trig (TRIGGER), action = CREATE, offset = 15939, line number = 395, charPositionInLine = 15
+Reference: Object = part_d_15_20 (TABLE), action = null, offset = 15973, line number = 396, charPositionInLine = 18
+Reference: Object = part_d_15_20.d15_update_trig (TRIGGER), action = CREATE, offset = 16050, line number = 397, charPositionInLine = 15
+Reference: Object = part_d_15_20 (TABLE), action = null, offset = 16084, line number = 398, charPositionInLine = 18
+Reference: Object = part_d_15_20.d15_insert_trig (TRIGGER), action = CREATE, offset = 16161, line number = 399, charPositionInLine = 15
+Reference: Object = part_d_15_20 (TABLE), action = null, offset = 16195, line number = 400, charPositionInLine = 18
+Reference: Object = range_parted (TABLE), action = UPDATE, offset = 16387, line number = 404, charPositionInLine = 7
+Reference: Object = range_parted.range_parted.parent_delete_trig (TRIGGER), action = DROP, offset = 16443, line number = 406, charPositionInLine = 13
+Reference: Object = range_parted (SCHEMA), action = null, offset = 16465, line number = 406, charPositionInLine = 35
+Reference: Object = range_parted.range_parted.parent_update_trig (TRIGGER), action = DROP, offset = 16492, line number = 407, charPositionInLine = 13
+Reference: Object = range_parted (SCHEMA), action = null, offset = 16514, line number = 407, charPositionInLine = 35
+Reference: Object = range_parted.range_parted.parent_insert_trig (TRIGGER), action = DROP, offset = 16541, line number = 408, charPositionInLine = 13
+Reference: Object = range_parted (SCHEMA), action = null, offset = 16563, line number = 408, charPositionInLine = 35
+Reference: Object = part_c_1_100.part_c_1_100.c1_delete_trig (TRIGGER), action = DROP, offset = 16590, line number = 409, charPositionInLine = 13
+Reference: Object = part_c_1_100 (SCHEMA), action = null, offset = 16608, line number = 409, charPositionInLine = 31
+Reference: Object = part_c_1_100.part_c_1_100.c1_update_trig (TRIGGER), action = DROP, offset = 16635, line number = 410, charPositionInLine = 13
+Reference: Object = part_c_1_100 (SCHEMA), action = null, offset = 16653, line number = 410, charPositionInLine = 31
+Reference: Object = part_c_1_100.part_c_1_100.c1_insert_trig (TRIGGER), action = DROP, offset = 16680, line number = 411, charPositionInLine = 13
+Reference: Object = part_c_1_100 (SCHEMA), action = null, offset = 16698, line number = 411, charPositionInLine = 31
+Reference: Object = part_d_1_15.part_d_1_15.d1_delete_trig (TRIGGER), action = DROP, offset = 16725, line number = 412, charPositionInLine = 13
+Reference: Object = part_d_1_15 (SCHEMA), action = null, offset = 16743, line number = 412, charPositionInLine = 31
+Reference: Object = part_d_1_15.part_d_1_15.d1_update_trig (TRIGGER), action = DROP, offset = 16769, line number = 413, charPositionInLine = 13
+Reference: Object = part_d_1_15 (SCHEMA), action = null, offset = 16787, line number = 413, charPositionInLine = 31
+Reference: Object = part_d_1_15.part_d_1_15.d1_insert_trig (TRIGGER), action = DROP, offset = 16813, line number = 414, charPositionInLine = 13
+Reference: Object = part_d_1_15 (SCHEMA), action = null, offset = 16831, line number = 414, charPositionInLine = 31
+Reference: Object = part_d_15_20.part_d_15_20.d15_delete_trig (TRIGGER), action = DROP, offset = 16857, line number = 415, charPositionInLine = 13
+Reference: Object = part_d_15_20 (SCHEMA), action = null, offset = 16876, line number = 415, charPositionInLine = 32
+Reference: Object = part_d_15_20.part_d_15_20.d15_update_trig (TRIGGER), action = DROP, offset = 16903, line number = 416, charPositionInLine = 13
+Reference: Object = part_d_15_20 (SCHEMA), action = null, offset = 16922, line number = 416, charPositionInLine = 32
+Reference: Object = part_d_15_20.part_d_15_20.d15_insert_trig (TRIGGER), action = DROP, offset = 16949, line number = 417, charPositionInLine = 13
+Reference: Object = part_d_15_20 (SCHEMA), action = null, offset = 16968, line number = 417, charPositionInLine = 32
+Reference: Object = part_def (TABLE), action = CREATE, offset = 17037, line number = 421, charPositionInLine = 13
+Reference: Object = range_parted (TABLE), action = INSERT, offset = 17094, line number = 423, charPositionInLine = 12
+Reference: Object = part_def (TABLE), action = UPDATE, offset = 17137, line number = 425, charPositionInLine = 7
+Reference: Object = part_def (TABLE), action = UPDATE, offset = 17188, line number = 427, charPositionInLine = 7
+Reference: Object = part_a_10_a_20 (TABLE), action = UPDATE, offset = 17350, line number = 431, charPositionInLine = 7
+Reference: Object = range_parted (TABLE), action = UPDATE, offset = 17406, line number = 433, charPositionInLine = 7
+Reference: Object = range_parted (TABLE), action = UPDATE, offset = 17454, line number = 434, charPositionInLine = 7
+Reference: Object = range_parted (TABLE), action = UPDATE, offset = 17571, line number = 437, charPositionInLine = 7
+Reference: Object = range_parted (TABLE), action = UPDATE, offset = 17619, line number = 438, charPositionInLine = 7
+Reference: Object = range_parted (TABLE), action = DROP, offset = 17715, line number = 441, charPositionInLine = 11
+Reference: Object = list_parted (TABLE), action = CREATE, offset = 17743, line number = 443, charPositionInLine = 13
+Reference: Object = list_part1 (TABLE), action = CREATE, offset = 17817, line number = 447, charPositionInLine = 13
+Reference: Object = list_default (TABLE), action = CREATE, offset = 17893, line number = 448, charPositionInLine = 13
+Reference: Object = list_part1 (TABLE), action = INSERT, offset = 17952, line number = 449, charPositionInLine = 12
+Reference: Object = list_default (TABLE), action = INSERT, offset = 17992, line number = 450, charPositionInLine = 12
+Reference: Object = list_default (TABLE), action = UPDATE, offset = 18039, line number = 453, charPositionInLine = 7
+Reference: Object = list_default (TABLE), action = UPDATE, offset = 18092, line number = 455, charPositionInLine = 7
+Reference: Object = list_parted (TABLE), action = DROP, offset = 18144, line number = 457, charPositionInLine = 11
+Reference: Object = list_parted (TABLE), action = CREATE, offset = 18321, line number = 465, charPositionInLine = 13
+Reference: Object = sub_parted (TABLE), action = CREATE, offset = 18396, line number = 466, charPositionInLine = 13
+Reference: Object = sub_part1 (TABLE), action = CREATE, offset = 18487, line number = 468, charPositionInLine = 13
+Reference: Object = sub_parted (TABLE), action = ALTER, offset = 18536, line number = 469, charPositionInLine = 12
+Reference: Object = sub_part2 (TABLE), action = CREATE, offset = 18606, line number = 470, charPositionInLine = 13
+Reference: Object = sub_parted (TABLE), action = ALTER, offset = 18655, line number = 471, charPositionInLine = 12
+Reference: Object = list_part1 (TABLE), action = CREATE, offset = 18726, line number = 473, charPositionInLine = 13
+Reference: Object = list_parted (TABLE), action = ALTER, offset = 18776, line number = 474, charPositionInLine = 12
+Reference: Object = list_parted (TABLE), action = INSERT, offset = 18850, line number = 476, charPositionInLine = 12
+Reference: Object = list_parted (TABLE), action = INSERT, offset = 18891, line number = 477, charPositionInLine = 12
+Reference: Object = sub_parted (TABLE), action = INSERT, offset = 18932, line number = 478, charPositionInLine = 12
+Reference: Object = sub_parted (TABLE), action = INSERT, offset = 18972, line number = 479, charPositionInLine = 12
+Reference: Object = sub_parted (TABLE), action = UPDATE, offset = 19130, line number = 483, charPositionInLine = 7
+Reference: action = SELECT, offset = 19271, line number = 487, charPositionInLine = 0
+Reference: Object = list_parted (TABLE), action = UPDATE, offset = 19354, line number = 488, charPositionInLine = 7
+Reference: action = SELECT, offset = 19393, line number = 489, charPositionInLine = 0
+Reference: Object = func_parted_mod_b() (FUNCTION), action = CREATE, offset = 19555, line number = 493, charPositionInLine = 16
+Reference: Object = sub_part1.parted_mod_b (TRIGGER), action = CREATE, offset = 19714, line number = 498, charPositionInLine = 15
+Reference: Object = sub_part1 (TABLE), action = null, offset = 19744, line number = 498, charPositionInLine = 45
+Reference: action = SELECT, offset = 19810, line number = 501, charPositionInLine = 0
+Reference: Object = list_parted (TABLE), action = UPDATE, offset = 20026, line number = 505, charPositionInLine = 7
+Reference: action = SELECT, offset = 20063, line number = 506, charPositionInLine = 0
+Reference: Object = sub_part1.sub_part1.parted_mod_b (TRIGGER), action = DROP, offset = 20150, line number = 508, charPositionInLine = 13
+Reference: Object = sub_part1 (SCHEMA), action = null, offset = 20166, line number = 508, charPositionInLine = 29
+Reference: Object = func_parted_mod_b() (FUNCTION), action = CREATE, offset = 20345, line number = 512, charPositionInLine = 27
+Reference: Object = sub_part2.trig_skip_delete (TRIGGER), action = CREATE, offset = 20516, line number = 517, charPositionInLine = 15
+Reference: Object = sub_part2 (TABLE), action = null, offset = 20550, line number = 517, charPositionInLine = 49
+Reference: Object = list_parted (TABLE), action = UPDATE, offset = 20622, line number = 519, charPositionInLine = 7
+Reference: action = SELECT, offset = 20658, line number = 520, charPositionInLine = 0
+Reference: Object = sub_part2.sub_part2.trig_skip_delete (TRIGGER), action = DROP, offset = 20794, line number = 522, charPositionInLine = 13
+Reference: Object = sub_part2 (SCHEMA), action = null, offset = 20814, line number = 522, charPositionInLine = 33
+Reference: Object = list_parted (TABLE), action = UPDATE, offset = 20832, line number = 523, charPositionInLine = 7
+Reference: action = SELECT, offset = 20868, line number = 524, charPositionInLine = 0
+Reference: Object = func_parted_mod_b (FUNCTION), action = DROP, offset = 20955, line number = 525, charPositionInLine = 14
+Reference: Object = non_parted (TABLE), action = CREATE, offset = 21189, line number = 530, charPositionInLine = 13
+Reference: Object = non_parted (TABLE), action = INSERT, offset = 21222, line number = 531, charPositionInLine = 12
+Reference: Object = list_parted (TABLE), action = UPDATE, offset = 21292, line number = 532, charPositionInLine = 7
+Reference: action = SELECT, offset = 21366, line number = 533, charPositionInLine = 0
+Reference: Object = non_parted (TABLE), action = DROP, offset = 21450, line number = 534, charPositionInLine = 11
+Reference: Object = list_parted (TABLE), action = DROP, offset = 21516, line number = 537, charPositionInLine = 11
+Reference: Object = dummy_hashint4(integer, bigint) (FUNCTION), action = CREATE, offset = 21558, line number = 540, charPositionInLine = 27
+Reference: Object = hash_parted (TABLE), action = CREATE, offset = 21809, line number = 545, charPositionInLine = 13
+Reference: Object = hpart1 (TABLE), action = CREATE, offset = 21915, line number = 549, charPositionInLine = 13
+Reference: Object = hpart2 (TABLE), action = CREATE, offset = 22002, line number = 550, charPositionInLine = 13
+Reference: Object = hpart3 (TABLE), action = CREATE, offset = 22089, line number = 551, charPositionInLine = 13
+Reference: Object = hpart4 (TABLE), action = CREATE, offset = 22176, line number = 552, charPositionInLine = 13
+Reference: Object = hpart1 (TABLE), action = INSERT, offset = 22262, line number = 553, charPositionInLine = 12
+Reference: Object = hpart2 (TABLE), action = INSERT, offset = 22296, line number = 554, charPositionInLine = 12
+Reference: Object = hpart4 (TABLE), action = INSERT, offset = 22330, line number = 555, charPositionInLine = 12
+Reference: Object = hpart1 (TABLE), action = UPDATE, offset = 22368, line number = 558, charPositionInLine = 7
+Reference: Object = hash_parted (TABLE), action = UPDATE, offset = 22430, line number = 560, charPositionInLine = 7
+Reference: Object = hash_parted (TABLE), action = UPDATE, offset = 22482, line number = 562, charPositionInLine = 7
+Reference: Object = hash_parted (TABLE), action = DROP, offset = 22544, line number = 565, charPositionInLine = 11
+Reference: Object = dummy_hashint4 (FUNCTION), action = DROP, offset = 22620, line number = 567, charPositionInLine = 14
+Reference: Object = rows (TABLE), action = UPDATE, offset = 22663, line number = 569, charPositionInLine = 7
+Reference: Object = r2 (TABLE), action = UPDATE, offset = 22701, line number = 570, charPositionInLine = 7
+Reference: Object = r1 (TABLE), action = UPDATE, offset = 22753, line number = 571, charPositionInLine = 7
+Reference: Object = current_check (TABLE), action = UPDATE, offset = 22825, line number = 572, charPositionInLine = 7
+Reference: Object = t2 (TABLE), action = UPDATE, offset = 22929, line number = 573, charPositionInLine = 7
+Reference: action = SELECT, offset = 23085, line number = 576, charPositionInLine = 0
+Reference: action = SELECT, offset = 23156, line number = 577, charPositionInLine = 0
+Reference: Object = combocidtest (TABLE), action = UPDATE, offset = 23230, line number = 578, charPositionInLine = 7
+Reference: Object = fewmore (TABLE), action = UPDATE, offset = 23276, line number = 579, charPositionInLine = 7
+Reference: Object = f (TABLE), action = UPDATE, offset = 23324, line number = 580, charPositionInLine = 7
+Reference: Object = f (TABLE), action = UPDATE, offset = 23399, line number = 581, charPositionInLine = 7
+Reference: Object = f (TABLE), action = UPDATE, offset = 23491, line number = 582, charPositionInLine = 7
+Reference: Object = f (TABLE), action = UPDATE, offset = 23605, line number = 583, charPositionInLine = 7
+Reference: Object = f (TABLE), action = UPDATE, offset = 23672, line number = 584, charPositionInLine = 7

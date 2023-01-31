@@ -1,0 +1,3 @@
+Reference: action = CREATE RULE, offset = 0, line number = 1, charPositionInLine = 0
+Reference: action = CREATE RULE, offset = 68, line number = 4, charPositionInLine = 0
+Reference: action = CREATE RULE, offset = 128, line number = 7, charPositionInLine = 0

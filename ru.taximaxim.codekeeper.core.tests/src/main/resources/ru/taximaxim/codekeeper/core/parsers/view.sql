@@ -2,7 +2,7 @@ CREATE VIEW v1 AS SELECT 1;
 CREATE OR REPLACE VIEW v1 AS select 1;
 CREATE TEMP VIEW v1 AS select 1;
 CREATE TEMPORARY VIEW v1 AS select 1;
-CREATE RECURSIVE VIEW v1 AS select 1;
+CREATE RECURSIVE VIEW v1 (c1) AS select 1;
 CREATE VIEW v1 (c1) AS select 1;
 CREATE VIEW v1 WITH (security_barrier) AS select 1;
 CREATE VIEW v1 WITH (security_barrier = true) AS select 1;

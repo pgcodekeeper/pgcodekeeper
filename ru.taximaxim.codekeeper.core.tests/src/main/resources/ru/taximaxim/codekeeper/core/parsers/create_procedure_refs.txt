@@ -1,0 +1,61 @@
+Reference: action = CALL, offset = 0, line number = 1, charPositionInLine = 0
+Reference: action = CALL, offset = 30, line number = 2, charPositionInLine = 0
+Reference: Object = cp_testfunc1(integer) (FUNCTION), action = CREATE, offset = 72, line number = 4, charPositionInLine = 16
+Reference: Object = cp_test (TABLE), action = CREATE, offset = 150, line number = 6, charPositionInLine = 13
+Reference: Object = ptest1(text) (PROCEDURE), action = CREATE, offset = 193, line number = 8, charPositionInLine = 17
+Reference: action = SELECT, offset = 268, line number = 15, charPositionInLine = 0
+Reference: action = SELECT, offset = 315, line number = 17, charPositionInLine = 0
+Reference: action = CALL, offset = 345, line number = 18, charPositionInLine = 0
+Reference: action = CALL, offset = 370, line number = 19, charPositionInLine = 0
+Reference: action = CALL, offset = 426, line number = 20, charPositionInLine = 0
+Reference: action = SELECT, offset = 510, line number = 22, charPositionInLine = 0
+Reference: Object = ptest1s(text) (PROCEDURE), action = CREATE, offset = 596, line number = 26, charPositionInLine = 17
+Reference: action = SELECT, offset = 681, line number = 32, charPositionInLine = 0
+Reference: action = CALL, offset = 729, line number = 34, charPositionInLine = 0
+Reference: action = SELECT, offset = 749, line number = 36, charPositionInLine = 0
+Reference: Object = ptestx() (PROCEDURE), action = CREATE, offset = 864, line number = 39, charPositionInLine = 17
+Reference: Object = ptest2() (PROCEDURE), action = CREATE, offset = 949, line number = 46, charPositionInLine = 17
+Reference: action = CALL, offset = 992, line number = 52, charPositionInLine = 0
+Reference: action = TRUNCATE, offset = 1024, line number = 56, charPositionInLine = 0
+Reference: Object = ptest3(text) (PROCEDURE), action = CREATE, offset = 1060, line number = 58, charPositionInLine = 17
+Reference: action = CALL, offset = 1132, line number = 65, charPositionInLine = 0
+Reference: action = SELECT, offset = 1151, line number = 67, charPositionInLine = 0
+Reference: Object = ptest4a(integer, integer) (PROCEDURE), action = CREATE, offset = 1214, line number = 72, charPositionInLine = 17
+Reference: action = CALL, offset = 1285, line number = 78, charPositionInLine = 0
+Reference: Object = ptest4b(integer, integer) (PROCEDURE), action = CREATE, offset = 1329, line number = 80, charPositionInLine = 17
+Reference: Object = ptest4a (PROCEDURE), action = DROP, offset = 1447, line number = 86, charPositionInLine = 15
+Reference: Object = ptest5(integer, text, integer) (PROCEDURE), action = CREATE, offset = 1521, line number = 91, charPositionInLine = 28
+Reference: action = TRUNCATE, offset = 1654, line number = 98, charPositionInLine = 0
+Reference: action = CALL, offset = 1673, line number = 100, charPositionInLine = 0
+Reference: action = CALL, offset = 1703, line number = 101, charPositionInLine = 0
+Reference: action = CALL, offset = 1729, line number = 102, charPositionInLine = 0
+Reference: action = CALL, offset = 1760, line number = 103, charPositionInLine = 0
+Reference: action = SELECT, offset = 1797, line number = 105, charPositionInLine = 0
+Reference: Object = ptest6(integer, anyelement) (PROCEDURE), action = CREATE, offset = 1861, line number = 110, charPositionInLine = 17
+Reference: action = CALL, offset = 1931, line number = 116, charPositionInLine = 0
+Reference: Object = ptest8(text) (PROCEDURE), action = CREATE, offset = 1983, line number = 120, charPositionInLine = 17
+Reference: action = CALL, offset = 2041, line number = 126, charPositionInLine = 0
+Reference: action = CALL, offset = 2084, line number = 127, charPositionInLine = 0
+Reference: Object = ptestx() (PROCEDURE), action = CREATE, offset = 2142, line number = 129, charPositionInLine = 17
+Reference: Object = ptestx() (PROCEDURE), action = CREATE, offset = 2234, line number = 130, charPositionInLine = 17
+Reference: Object = ptestx() (PROCEDURE), action = CREATE, offset = 2326, line number = 131, charPositionInLine = 17
+Reference: Object = ptest1 (PROCEDURE), action = ALTER, offset = 2420, line number = 133, charPositionInLine = 16
+Reference: Object = ptest1 (FUNCTION), action = ALTER, offset = 2456, line number = 134, charPositionInLine = 15
+Reference: Object = cp_testfunc1 (PROCEDURE), action = ALTER, offset = 2521, line number = 135, charPositionInLine = 16
+Reference: Object = nonexistent (PROCEDURE), action = ALTER, offset = 2592, line number = 136, charPositionInLine = 16
+Reference: Object = ptest1 (FUNCTION), action = DROP, offset = 2631, line number = 138, charPositionInLine = 14
+Reference: Object = cp_testfunc1 (PROCEDURE), action = DROP, offset = 2686, line number = 139, charPositionInLine = 15
+Reference: Object = nonexistent (PROCEDURE), action = DROP, offset = 2747, line number = 140, charPositionInLine = 15
+Reference: action = CREATE USER, offset = 2779, line number = 145, charPositionInLine = 0
+Reference: Object = cp_test (TABLE), action = GRANT, offset = 2825, line number = 146, charPositionInLine = 16
+Reference: Object = ptest1(text) (PROCEDURE), action = REVOKE, offset = 2882, line number = 147, charPositionInLine = 28
+Reference: action = SET, offset = 2908, line number = 148, charPositionInLine = 0
+Reference: action = CALL, offset = 2935, line number = 149, charPositionInLine = 0
+Reference: action = RESET, offset = 2963, line number = 150, charPositionInLine = 0
+Reference: Object = ptest1(text) (PROCEDURE), action = GRANT, offset = 3002, line number = 151, charPositionInLine = 27
+Reference: action = SET, offset = 3036, line number = 152, charPositionInLine = 0
+Reference: action = CALL, offset = 3063, line number = 153, charPositionInLine = 0
+Reference: action = RESET, offset = 3088, line number = 154, charPositionInLine = 0
+Reference: Object = ptest1 (PROCEDURE), action = DROP, offset = 3129, line number = 159, charPositionInLine = 15
+Reference: Object = ptest2 (PROCEDURE), action = DROP, offset = 3154, line number = 160, charPositionInLine = 15
+Reference: Object = cp_test (TABLE), action = DROP, offset = 3176, line number = 162, charPositionInLine = 11

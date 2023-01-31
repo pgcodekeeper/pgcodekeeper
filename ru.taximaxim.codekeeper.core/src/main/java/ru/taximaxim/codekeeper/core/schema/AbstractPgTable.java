@@ -104,12 +104,11 @@ public abstract class AbstractPgTable extends AbstractTable {
     }
 
     /**
-     * Appends table access method.
-     * <br />
-     * (defined here because the table access method is not used for partitioned
-     * and foreign tables)
+     * Appends table access method. <br>
+     * (defined here because the table access method is not used for partitioned and foreign tables)
      *
-     * @param sbSQL - StringBuilder for access method
+     * @param sbSQL
+     *            - StringBuilder for access method
      */
     protected void appendAccessMethod(StringBuilder sbSQL) {
         if (!Consts.HEAP.equals(method)) {
@@ -419,7 +418,6 @@ public abstract class AbstractPgTable extends AbstractTable {
     /**
      * Compare tables types and generate transform scripts for change tables type
      *
-     * @param oldTable - old table
      * @param newTable - new table
      * @param sb - StringBuilder for statements
      */

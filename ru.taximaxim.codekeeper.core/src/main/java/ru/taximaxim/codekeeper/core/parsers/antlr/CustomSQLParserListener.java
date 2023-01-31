@@ -205,7 +205,12 @@ implements SqlContextProcessor {
                 || ctx.alter_function_statement() != null
                 || ctx.alter_operator_statement() != null
                 || ctx.alter_schema_statement() != null
-                || ctx.alter_type_statement() != null) {
+                || ctx.alter_type_statement() != null
+                || ctx.alter_foreign_data_wrapper() != null
+                || ctx.alter_policy_statement() != null
+                || ctx.alter_server_statement() != null
+                || ctx.alter_collation_statement() != null
+                || ctx.alter_user_mapping_statement() != null) {
             p = new AlterOther(ctx, db);
         } else {
             addToQueries(ctx, getAction(ctx));
@@ -222,7 +227,9 @@ implements SqlContextProcessor {
                 || ctx.drop_rule_statement() != null
                 || ctx.drop_statements() != null
                 || ctx.drop_operator_statement() != null
-                || ctx.drop_cast_statement() != null) {
+                || ctx.drop_cast_statement() != null
+                || ctx.drop_policy_statement() != null
+                || ctx.drop_user_mapping_statement() != null) {
             p = new DropStatement(ctx, db);
         } else {
             addToQueries(ctx, getAction(ctx));

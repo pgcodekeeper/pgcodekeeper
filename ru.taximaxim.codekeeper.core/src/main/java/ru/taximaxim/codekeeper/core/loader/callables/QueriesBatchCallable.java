@@ -126,7 +126,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
         // where even successful statements are marked as Statement.EXECUTE_FAILED
         // so we cannot deduce which one failed to show more accurate error context
 
-        return JDBC_CONSTS.JDBC_SUCCESS;
+        return Consts.JDBC_SUCCESS;
     }
 
     private List<List<PgObjLocation>> getListBatchesFromSetBatches() {

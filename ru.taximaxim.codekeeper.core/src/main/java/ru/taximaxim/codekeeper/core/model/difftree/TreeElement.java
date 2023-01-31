@@ -161,7 +161,7 @@ public class TreeElement {
 
     /**
      * Создает копию элементов начиная с текущего, у которых стороны перевернуты:
-     * left -> right, right -> left, both -> both
+     * {@code left -> right, right -> left, both -> both}
      */
     public TreeElement getRevertedCopy() {
         TreeElement copy = getRevertedElement();

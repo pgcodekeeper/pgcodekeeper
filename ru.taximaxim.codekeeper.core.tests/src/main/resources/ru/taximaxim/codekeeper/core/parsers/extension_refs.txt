@@ -1,0 +1,4 @@
+Reference: Object = hstore (EXTENSION), action = CREATE, offset = 17, line number = 1, charPositionInLine = 17
+Reference: Object = addons (SCHEMA), action = null, offset = 31, line number = 1, charPositionInLine = 31
+Reference: Object = hstore (EXTENSION), action = ALTER, offset = 56, line number = 3, charPositionInLine = 16
+Reference: Object = hstore (EXTENSION), action = DROP, offset = 97, line number = 5, charPositionInLine = 15

@@ -56,7 +56,7 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
     /**
      * OID of the first user object
      *
-     * @see https://github.com/postgres/postgres/blob/master/src/include/access/transam.h
+     * @see <a href="https://github.com/postgres/postgres/blob/master/src/include/access/transam.h">transam.h</a>
      */
     private static final int FIRST_NORMAL_OBJECT_ID = 16384;
 
@@ -459,7 +459,7 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
         try (ResultSet res = runner.runScript(statement, JdbcQueries.QUERY_CHECK_TIMESTAMPS)) {
             while (res.next()) {
                 String version = res.getString("extversion");
-                if (!version.equals(Consts.EXTENSION_VERSION)) {
+                if (!version.startsWith(Consts.EXTENSION_VERSION)) {
                     Log.log(Log.LOG_INFO, "pg_dbo_timestamps: old version of extension is used: " +
                             version + ", current version: " + Consts.EXTENSION_VERSION);
                 } else if (res.getBoolean("disabled")) {
@@ -470,7 +470,6 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
             }
         }
     }
-
 
     protected <T> void submitAntlrTask(String sql,
             Function<SQLParser, T> parserCtxReader, Consumer<T> finalizer) {

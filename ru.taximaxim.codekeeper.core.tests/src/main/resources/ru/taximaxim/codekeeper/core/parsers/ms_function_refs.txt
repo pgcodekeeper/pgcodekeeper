@@ -1,0 +1,14 @@
+Reference: action = ALTER PARTITION FUNCTION, offset = 0, line number = 1, charPositionInLine = 0
+Reference: action = ALTER PARTITION FUNCTION, offset = 62, line number = 3, charPositionInLine = 0
+Reference: Object = main (SCHEMA), action = null, offset = 143, line number = 7, charPositionInLine = 16
+Reference: Object = main.TestParentheses (FUNCTION), action = CREATE, offset = 150, line number = 7, charPositionInLine = 23
+Reference: Object = Test (FUNCTION), action = CREATE, offset = 349, line number = 19, charPositionInLine = 16
+Reference: Object = dbo (SCHEMA), action = null, offset = 482, line number = 29, charPositionInLine = 16
+Reference: Object = dbo.FooBar (FUNCTION), action = CREATE, offset = 486, line number = 29, charPositionInLine = 20
+Reference: Object = dbo (SCHEMA), action = null, offset = 624, line number = 40, charPositionInLine = 25
+Reference: Object = dbo.Foo (FUNCTION), action = ALTER, offset = 630, line number = 40, charPositionInLine = 31
+Reference: Object = dbo (SCHEMA), action = null, offset = 832, line number = 49, charPositionInLine = 15
+Reference: Object = dbo.Foo (FUNCTION), action = ALTER, offset = 838, line number = 49, charPositionInLine = 21
+Reference: Object = Func1 (FUNCTION), action = DROP, offset = 1005, line number = 58, charPositionInLine = 14
+Reference: Object = Func1 (FUNCTION), action = DROP, offset = 1025, line number = 59, charPositionInLine = 14
+Reference: Object = Func2 (FUNCTION), action = DROP, offset = 1033, line number = 59, charPositionInLine = 22

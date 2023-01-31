@@ -1,0 +1,11 @@
+Reference: Object = "Mary5" (USER), action = ALTER, offset = 11, line number = 1, charPositionInLine = 11
+Reference: Object = "Mary51" (USER), action = ALTER, offset = 48, line number = 2, charPositionInLine = 11
+Reference: Object = "Philip" (USER), action = ALTER, offset = 100, line number = 3, charPositionInLine = 11
+Reference: Object = "AbolrousHazem" (USER), action = CREATE, offset = 279, line number = 10, charPositionInLine = 12
+Reference: Object = "Wanida" (USER), action = CREATE, offset = 337, line number = 12, charPositionInLine = 12
+Reference: Object = "JinghaoLiu" (USER), action = CREATE, offset = 418, line number = 14, charPositionInLine = 12
+Reference: Object = "CustomApp" (USER), action = CREATE, offset = 483, line number = 16, charPositionInLine = 12
+Reference: Object = "Carlo" (USER), action = CREATE, offset = 521, line number = 17, charPositionInLine = 12
+Reference: Object = "Contoso\Fritz" (USER), action = CREATE, offset = 644, line number = 22, charPositionInLine = 12
+Reference: Object = "CarmenW" (USER), action = CREATE, offset = 677, line number = 24, charPositionInLine = 12
+Reference: Object = "Chin" (USER), action = CREATE, offset = 797, line number = 26, charPositionInLine = 12

@@ -38,12 +38,15 @@ final class JdbcAclParser {
     /**
      * Receives AclItem[] as String and parses it to list of Privilege objects.
      *
-     * @param aclArrayAsString  String representation of AclItem array
-     * @param maxTypes  Maximum available privilege bits for target DB object
-     * @param order     Target order for privileges inside the privilege string
-     *                  (not a result list sorting)
-     * @param owner     Owner name (owner's privileges go first)
-     * @return
+     * @param aclArrayAsString
+     *            String representation of AclItem array
+     * @param maxTypes
+     *            Maximum available privilege bits for target DB object
+     * @param order
+     *            Target order for privileges inside the privilege string (not a result list sorting)
+     * @param owner
+     *            Owner name (owner's privileges go first)
+     * @return list of privilege
      */
     public static List<Privilege> parse(String aclArrayAsString, int maxTypes, String order, String owner){
         List<Privilege> privileges = new ArrayList<>();

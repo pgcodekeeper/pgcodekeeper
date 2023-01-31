@@ -35,8 +35,6 @@ CREATE AGGREGATE balk(int4)
     INITCOND = '0'
 );
 
-SELECT balk(hundred) FROM tenk1;
-
 CREATE AGGREGATE balk(int4)
 (
     SFUNC = int4_sum/*(int8, int4)*/,

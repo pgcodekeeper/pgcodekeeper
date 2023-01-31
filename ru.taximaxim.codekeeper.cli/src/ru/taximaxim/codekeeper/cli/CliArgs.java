@@ -19,7 +19,6 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.OptionHandlerRegistry;
 import org.kohsuke.args4j.ParserProperties;
-import org.osgi.framework.BundleContext;
 
 import ru.taximaxim.codekeeper.cli.localizations.Messages;
 import ru.taximaxim.codekeeper.cli.opthandlers.BooleanNoDefOptionHandler;
@@ -821,9 +820,7 @@ public class CliArgs extends PgDiffArguments {
     }
 
     private void printVersion(PrintWriter writer) {
-        BundleContext ctx = Activator.getContext();
-        writer.println(MessageFormat.format(Messages.Version,
-                ctx == null ? "error: no OSGI running" : ctx.getBundle().getVersion())); //$NON-NLS-1$
+        writer.println(MessageFormat.format(Messages.Version, Utils.getVersion()));
     }
 
     private void listCharsets(PrintWriter writer) {

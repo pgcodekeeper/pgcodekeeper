@@ -54,7 +54,9 @@ public class CreateAggregate extends ParserAbstract {
         addFuncAsDepcy(AggFuncs.SFUNC, sFuncCtx, aggregate);
 
         fillAggregate(ctx.aggregate_param(), aggregate);
-        addSafe(getSchemaSafe(ids), aggregate, ids, parseArguments(ctx.function_args()));
+
+        Function_argsContext argsCtx = ctx.function_args();
+        addSafe(getSchemaSafe(ids), aggregate, ids, argsCtx == null ? null : parseArguments(argsCtx));
     }
 
     private void fillAllArguments(PgAggregate aggregate) {
@@ -218,9 +220,12 @@ public class CreateAggregate extends ParserAbstract {
     /**
      * Gets the signature for the given function name.
      *
-     * @param aggregate aggregate object
-     * @param paramName name of parameter
-     * @return
+     * @param aggregate
+     *            aggregate object
+     * @param paramName
+     *            name of parameter
+     *
+     * @return function signature
      */
     public static String getParamFuncSignature(PgAggregate aggregate, AggFuncs paramName) {
         StringBuilder sb = new StringBuilder();
@@ -233,37 +238,37 @@ public class CreateAggregate extends ParserAbstract {
         List<Argument> orderByArgs = args.subList(directCount, args.size());
 
         switch(paramName) {
-            case SFUNC:
-            case MSFUNC:
-            case MINVFUNC:
-                sb.append(paramName == AggFuncs.SFUNC ? sType : mSType).append(", ");
-                fillStringByArgs(sb, orderByArgs.isEmpty() ? args : orderByArgs);
-                break;
-            case FINALFUNC:
-            case MFINALFUNC:
-                sb.append(paramName == AggFuncs.FINALFUNC ? sType : mSType).append(", ");
-                if (directCount > 0 && !orderByArgs.isEmpty()) {
-                    // for signature: aggregateName(mode name type, ... ORDER BY modeN nameN typeN, ....)
-                    fillStringByArgs(sb, args.subList(0, directCount));
-                }
-                break;
+        case SFUNC:
+        case MSFUNC:
+        case MINVFUNC:
+            sb.append(paramName == AggFuncs.SFUNC ? sType : mSType).append(", ");
+            fillStringByArgs(sb, orderByArgs.isEmpty() ? args : orderByArgs);
+            break;
+        case FINALFUNC:
+        case MFINALFUNC:
+            sb.append(paramName == AggFuncs.FINALFUNC ? sType : mSType).append(", ");
+            if (directCount > 0 && !orderByArgs.isEmpty()) {
+                // for signature: aggregateName(mode name type, ... ORDER BY modeN nameN typeN, ....)
+                fillStringByArgs(sb, args.subList(0, directCount));
+            }
+            break;
 
-            case COMBINEFUNC:
-                sb.append(sType).append(", ").append(sType).append(", ");
-                break;
+        case COMBINEFUNC:
+            sb.append(sType).append(", ").append(sType).append(", ");
+            break;
 
-            case DESERIALFUNC:
-                sb.append("bytea").append(", ");
-                // $FALL-THROUGH$
-            case SERIALFUNC:
-                // Signature 'aggregateName(*)' with 'SERIALFUNC'-parameter could not be created.
-                fillStringByArgs(sb, args);
-                break;
+        case DESERIALFUNC:
+            sb.append("bytea").append(", ");
+            // $FALL-THROUGH$
+        case SERIALFUNC:
+            // Signature 'aggregateName(*)' with 'SERIALFUNC'-parameter could not be created.
+            fillStringByArgs(sb, args);
+            break;
 
-            default:
-                throw new IllegalStateException("The parameter '" + paramName
-                        + "' of AGGREGATE '" + aggregate.getName()
-                        + "' is not processed!"); //$NON-NLS-1$
+        default:
+            throw new IllegalStateException("The parameter '" + paramName
+                    + "' of AGGREGATE '" + aggregate.getName()
+                    + "' is not processed!"); //$NON-NLS-1$
         }
 
         sb.setLength(sb.length() - 2);
