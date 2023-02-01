@@ -86,9 +86,10 @@ public class ActionsToScriptConverter {
     }
 
     /**
-     * Заполняет скрипт объектами с учетом их порядка по зависимостям
-     * @param script скрипт для печати
-     * @param selected коллекция выбранных элементов в панели сравнения
+     * Fills a script with objects based on their dependency order
+     *
+     * @param selected
+     *            list of selected elements
      */
     public void fillScript(List<TreeElement> selected) {
         Set<PgStatement> refreshed = new HashSet<>(toRefresh.size());

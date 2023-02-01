@@ -1,0 +1,12 @@
+Reference: Object = "===" (OPERATOR), action = CREATE, offset = 16, line number = 1, charPositionInLine = 16
+Reference: Object = "!==" (OPERATOR), action = CREATE, offset = 148, line number = 8, charPositionInLine = 16
+Reference: Object = "!==" (OPERATOR), action = DROP, offset = 301, line number = 16, charPositionInLine = 14
+Reference: action = SELECT, offset = 323, line number = 18, charPositionInLine = 0
+Reference: action = SELECT, offset = 489, line number = 23, charPositionInLine = 0
+Reference: Object = "===" (OPERATOR), action = DROP, offset = 678, line number = 28, charPositionInLine = 14
+Reference: Object = "<|" (OPERATOR), action = CREATE, offset = 716, line number = 30, charPositionInLine = 16
+Reference: Object = "|>" (OPERATOR), action = CREATE, offset = 821, line number = 36, charPositionInLine = 16
+Reference: Object = "|>" (OPERATOR), action = DROP, offset = 971, line number = 44, charPositionInLine = 14
+Reference: action = SELECT, offset = 992, line number = 46, charPositionInLine = 0
+Reference: action = SELECT, offset = 1158, line number = 51, charPositionInLine = 0
+Reference: Object = "<|" (OPERATOR), action = DROP, offset = 1347, line number = 56, charPositionInLine = 14

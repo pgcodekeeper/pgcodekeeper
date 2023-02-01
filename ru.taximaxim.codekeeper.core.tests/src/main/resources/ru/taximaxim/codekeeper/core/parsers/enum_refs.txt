@@ -1,0 +1,167 @@
+Reference: Object = rainbow (TYPE), action = CREATE, offset = 33, line number = 5, charPositionInLine = 12
+Reference: action = SELECT, offset = 155, line number = 10, charPositionInLine = 0
+Reference: action = SELECT, offset = 246, line number = 15, charPositionInLine = 0
+Reference: action = SELECT, offset = 269, line number = 16, charPositionInLine = 0
+Reference: Object = planets (TYPE), action = CREATE, offset = 335, line number = 22, charPositionInLine = 12
+Reference: action = SELECT, offset = 382, line number = 24, charPositionInLine = 0
+Reference: Object = planets (TYPE), action = ALTER, offset = 488, line number = 29, charPositionInLine = 11
+Reference: action = SELECT, offset = 517, line number = 31, charPositionInLine = 0
+Reference: Object = planets (TYPE), action = ALTER, offset = 623, line number = 36, charPositionInLine = 11
+Reference: Object = planets (TYPE), action = ALTER, offset = 678, line number = 37, charPositionInLine = 11
+Reference: Object = planets (TYPE), action = ALTER, offset = 733, line number = 38, charPositionInLine = 11
+Reference: Object = planets (TYPE), action = ALTER, offset = 786, line number = 39, charPositionInLine = 11
+Reference: action = SELECT, offset = 831, line number = 41, charPositionInLine = 0
+Reference: action = SELECT, offset = 926, line number = 46, charPositionInLine = 0
+Reference: Object = planets (TYPE), action = ALTER, offset = 1077, line number = 52, charPositionInLine = 11
+Reference: Object = planets (TYPE), action = ALTER, offset = 1183, line number = 55, charPositionInLine = 11
+Reference: Object = planets (TYPE), action = ALTER, offset = 1290, line number = 60, charPositionInLine = 11
+Reference: Object = planets (TYPE), action = ALTER, offset = 1368, line number = 63, charPositionInLine = 11
+Reference: action = SELECT, offset = 1446, line number = 66, charPositionInLine = 0
+Reference: Object = planets (TYPE), action = ALTER, offset = 1491, line number = 68, charPositionInLine = 11
+Reference: action = SELECT, offset = 1572, line number = 71, charPositionInLine = 0
+Reference: Object = insenum (TYPE), action = CREATE, offset = 1683, line number = 77, charPositionInLine = 12
+Reference: Object = insenum (TYPE), action = ALTER, offset = 1725, line number = 79, charPositionInLine = 11
+Reference: Object = insenum (TYPE), action = ALTER, offset = 1772, line number = 80, charPositionInLine = 11
+Reference: Object = insenum (TYPE), action = ALTER, offset = 1819, line number = 81, charPositionInLine = 11
+Reference: Object = insenum (TYPE), action = ALTER, offset = 1866, line number = 82, charPositionInLine = 11
+Reference: Object = insenum (TYPE), action = ALTER, offset = 1913, line number = 83, charPositionInLine = 11
+Reference: Object = insenum (TYPE), action = ALTER, offset = 1960, line number = 84, charPositionInLine = 11
+Reference: Object = insenum (TYPE), action = ALTER, offset = 2007, line number = 85, charPositionInLine = 11
+Reference: Object = insenum (TYPE), action = ALTER, offset = 2054, line number = 86, charPositionInLine = 11
+Reference: Object = insenum (TYPE), action = ALTER, offset = 2101, line number = 87, charPositionInLine = 11
+Reference: Object = insenum (TYPE), action = ALTER, offset = 2148, line number = 88, charPositionInLine = 11
+Reference: Object = insenum (TYPE), action = ALTER, offset = 2196, line number = 89, charPositionInLine = 11
+Reference: Object = insenum (TYPE), action = ALTER, offset = 2244, line number = 90, charPositionInLine = 11
+Reference: Object = insenum (TYPE), action = ALTER, offset = 2292, line number = 91, charPositionInLine = 11
+Reference: Object = insenum (TYPE), action = ALTER, offset = 2340, line number = 92, charPositionInLine = 11
+Reference: Object = insenum (TYPE), action = ALTER, offset = 2388, line number = 93, charPositionInLine = 11
+Reference: Object = insenum (TYPE), action = ALTER, offset = 2436, line number = 94, charPositionInLine = 11
+Reference: Object = insenum (TYPE), action = ALTER, offset = 2484, line number = 95, charPositionInLine = 11
+Reference: Object = insenum (TYPE), action = ALTER, offset = 2532, line number = 96, charPositionInLine = 11
+Reference: Object = insenum (TYPE), action = ALTER, offset = 2580, line number = 97, charPositionInLine = 11
+Reference: Object = insenum (TYPE), action = ALTER, offset = 2628, line number = 98, charPositionInLine = 11
+Reference: Object = insenum (TYPE), action = ALTER, offset = 2676, line number = 99, charPositionInLine = 11
+Reference: Object = insenum (TYPE), action = ALTER, offset = 2724, line number = 100, charPositionInLine = 11
+Reference: Object = insenum (TYPE), action = ALTER, offset = 2772, line number = 101, charPositionInLine = 11
+Reference: Object = insenum (TYPE), action = ALTER, offset = 2820, line number = 102, charPositionInLine = 11
+Reference: Object = insenum (TYPE), action = ALTER, offset = 2868, line number = 103, charPositionInLine = 11
+Reference: Object = insenum (TYPE), action = ALTER, offset = 2916, line number = 104, charPositionInLine = 11
+Reference: Object = insenum (TYPE), action = ALTER, offset = 2964, line number = 105, charPositionInLine = 11
+Reference: Object = insenum (TYPE), action = ALTER, offset = 3012, line number = 106, charPositionInLine = 11
+Reference: Object = insenum (TYPE), action = ALTER, offset = 3060, line number = 107, charPositionInLine = 11
+Reference: Object = insenum (TYPE), action = ALTER, offset = 3108, line number = 108, charPositionInLine = 11
+Reference: action = SELECT, offset = 3364, line number = 114, charPositionInLine = 0
+Reference: Object = enumtest (TABLE), action = CREATE, offset = 3590, line number = 123, charPositionInLine = 13
+Reference: Object = enumtest (TABLE), action = INSERT, offset = 3626, line number = 124, charPositionInLine = 12
+Reference: action = SELECT, offset = 3687, line number = 126, charPositionInLine = 0
+Reference: action = SELECT, offset = 3741, line number = 131, charPositionInLine = 0
+Reference: action = SELECT, offset = 3786, line number = 132, charPositionInLine = 0
+Reference: action = SELECT, offset = 3845, line number = 133, charPositionInLine = 0
+Reference: action = SELECT, offset = 3903, line number = 134, charPositionInLine = 0
+Reference: action = SELECT, offset = 3962, line number = 135, charPositionInLine = 0
+Reference: action = SELECT, offset = 4019, line number = 136, charPositionInLine = 0
+Reference: action = SELECT, offset = 4105, line number = 141, charPositionInLine = 0
+Reference: action = SELECT, offset = 4147, line number = 142, charPositionInLine = 0
+Reference: action = SELECT, offset = 4214, line number = 147, charPositionInLine = 0
+Reference: action = SELECT, offset = 4245, line number = 148, charPositionInLine = 0
+Reference: action = SELECT, offset = 4276, line number = 149, charPositionInLine = 0
+Reference: action = SET, offset = 4369, line number = 154, charPositionInLine = 0
+Reference: action = SET, offset = 4395, line number = 155, charPositionInLine = 0
+Reference: Object = enumtest_btree (INDEX), action = CREATE, offset = 4503, line number = 160, charPositionInLine = 20
+Reference: Object = enumtest (TABLE), action = null, offset = 4521, line number = 160, charPositionInLine = 38
+Reference: action = SELECT, offset = 4549, line number = 161, charPositionInLine = 0
+Reference: action = SELECT, offset = 4594, line number = 162, charPositionInLine = 0
+Reference: action = SELECT, offset = 4653, line number = 163, charPositionInLine = 0
+Reference: action = SELECT, offset = 4711, line number = 164, charPositionInLine = 0
+Reference: action = SELECT, offset = 4770, line number = 165, charPositionInLine = 0
+Reference: action = SELECT, offset = 4827, line number = 166, charPositionInLine = 0
+Reference: action = SELECT, offset = 4885, line number = 167, charPositionInLine = 0
+Reference: action = SELECT, offset = 4916, line number = 168, charPositionInLine = 0
+Reference: action = SELECT, offset = 4947, line number = 169, charPositionInLine = 0
+Reference: Object = enumtest_btree (INDEX), action = DROP, offset = 5009, line number = 170, charPositionInLine = 11
+Reference: Object = enumtest_hash (INDEX), action = CREATE, offset = 5089, line number = 175, charPositionInLine = 13
+Reference: Object = enumtest (TABLE), action = null, offset = 5106, line number = 175, charPositionInLine = 30
+Reference: action = SELECT, offset = 5133, line number = 176, charPositionInLine = 0
+Reference: Object = enumtest_hash (INDEX), action = DROP, offset = 5189, line number = 177, charPositionInLine = 11
+Reference: action = RESET, offset = 5230, line number = 182, charPositionInLine = 0
+Reference: action = RESET, offset = 5252, line number = 183, charPositionInLine = 0
+Reference: Object = rgb (DOMAIN), action = CREATE, offset = 5320, line number = 188, charPositionInLine = 14
+Reference: action = SELECT, offset = 5378, line number = 189, charPositionInLine = 0
+Reference: action = SELECT, offset = 5397, line number = 190, charPositionInLine = 0
+Reference: action = SELECT, offset = 5419, line number = 191, charPositionInLine = 0
+Reference: Object = rgb (DOMAIN), action = DROP, offset = 5462, line number = 192, charPositionInLine = 12
+Reference: action = SELECT, offset = 5484, line number = 197, charPositionInLine = 0
+Reference: action = SELECT, offset = 5522, line number = 198, charPositionInLine = 0
+Reference: action = SELECT, offset = 5565, line number = 199, charPositionInLine = 0
+Reference: action = SELECT, offset = 5617, line number = 200, charPositionInLine = 0
+Reference: action = SELECT, offset = 5672, line number = 201, charPositionInLine = 0
+Reference: action = SELECT, offset = 5724, line number = 202, charPositionInLine = 0
+Reference: action = SELECT, offset = 5797, line number = 207, charPositionInLine = 0
+Reference: action = SELECT, offset = 5831, line number = 208, charPositionInLine = 0
+Reference: action = SELECT, offset = 5867, line number = 209, charPositionInLine = 0
+Reference: action = SELECT, offset = 5901, line number = 210, charPositionInLine = 0
+Reference: action = SELECT, offset = 5957, line number = 211, charPositionInLine = 0
+Reference: action = SELECT, offset = 6000, line number = 212, charPositionInLine = 0
+Reference: action = SELECT, offset = 6044, line number = 213, charPositionInLine = 0
+Reference: Object = echo_me(anyenum) (FUNCTION), action = CREATE, offset = 6185, line number = 218, charPositionInLine = 16
+Reference: action = SELECT, offset = 6278, line number = 223, charPositionInLine = 0
+Reference: Object = echo_me(rainbow) (FUNCTION), action = CREATE, offset = 6381, line number = 227, charPositionInLine = 16
+Reference: action = SELECT, offset = 6474, line number = 232, charPositionInLine = 0
+Reference: Object = echo_me (FUNCTION), action = DROP, offset = 6641, line number = 237, charPositionInLine = 14
+Reference: action = SELECT, offset = 6659, line number = 238, charPositionInLine = 0
+Reference: Object = echo_me (FUNCTION), action = DROP, offset = 6696, line number = 239, charPositionInLine = 14
+Reference: Object = enumtest_parent (TABLE), action = CREATE, offset = 6763, line number = 244, charPositionInLine = 13
+Reference: Object = enumtest_child (TABLE), action = CREATE, offset = 6818, line number = 245, charPositionInLine = 13
+Reference: Object = enumtest_parent (TABLE), action = INSERT, offset = 6890, line number = 246, charPositionInLine = 12
+Reference: Object = enumtest_child (TABLE), action = INSERT, offset = 6934, line number = 247, charPositionInLine = 12
+Reference: Object = enumtest_child (TABLE), action = INSERT, offset = 6977, line number = 248, charPositionInLine = 12
+Reference: Object = enumtest_parent (TABLE), action = DELETE, offset = 7030, line number = 249, charPositionInLine = 12
+Reference: Object = bogus (TYPE), action = CREATE, offset = 7103, line number = 253, charPositionInLine = 12
+Reference: Object = enumtest_bogus_child (TABLE), action = CREATE, offset = 7154, line number = 254, charPositionInLine = 13
+Reference: Object = bogus (TYPE), action = DROP, offset = 7227, line number = 255, charPositionInLine = 10
+Reference: Object = rainbow (TYPE), action = ALTER, offset = 7272, line number = 258, charPositionInLine = 11
+Reference: action = SELECT, offset = 7313, line number = 259, charPositionInLine = 0
+Reference: Object = rainbow (TYPE), action = ALTER, offset = 7468, line number = 264, charPositionInLine = 11
+Reference: Object = rainbow (TYPE), action = ALTER, offset = 7570, line number = 266, charPositionInLine = 11
+Reference: Object = bogus (TYPE), action = CREATE, offset = 7690, line number = 271, charPositionInLine = 12
+Reference: action = BEGIN, offset = 7810, line number = 275, charPositionInLine = 0
+Reference: Object = bogus (TYPE), action = ALTER, offset = 7828, line number = 276, charPositionInLine = 11
+Reference: action = SAVEPOINT, offset = 7851, line number = 277, charPositionInLine = 0
+Reference: action = SELECT, offset = 7864, line number = 278, charPositionInLine = 0
+Reference: action = ROLLBACK, offset = 7896, line number = 279, charPositionInLine = 0
+Reference: action = SELECT, offset = 7911, line number = 280, charPositionInLine = 0
+Reference: action = SELECT, offset = 7952, line number = 281, charPositionInLine = 0
+Reference: action = ROLLBACK, offset = 7994, line number = 282, charPositionInLine = 0
+Reference: action = SELECT, offset = 8009, line number = 283, charPositionInLine = 0
+Reference: action = ROLLBACK, offset = 8052, line number = 284, charPositionInLine = 0
+Reference: action = COMMIT, offset = 8067, line number = 285, charPositionInLine = 0
+Reference: action = SELECT, offset = 8075, line number = 286, charPositionInLine = 0
+Reference: action = SELECT, offset = 8109, line number = 287, charPositionInLine = 0
+Reference: action = BEGIN, offset = 8344, line number = 294, charPositionInLine = 0
+Reference: Object = bogus (TYPE), action = ALTER, offset = 8362, line number = 295, charPositionInLine = 11
+Reference: Object = bogon (TYPE), action = ALTER, offset = 8396, line number = 296, charPositionInLine = 11
+Reference: action = SELECT, offset = 8419, line number = 297, charPositionInLine = 0
+Reference: action = ROLLBACK, offset = 8440, line number = 298, charPositionInLine = 0
+Reference: action = BEGIN, offset = 8515, line number = 301, charPositionInLine = 0
+Reference: Object = bogus (TYPE), action = ALTER, offset = 8533, line number = 302, charPositionInLine = 11
+Reference: action = SELECT, offset = 8569, line number = 303, charPositionInLine = 0
+Reference: action = ROLLBACK, offset = 8590, line number = 304, charPositionInLine = 0
+Reference: Object = bogus (TYPE), action = DROP, offset = 8611, line number = 306, charPositionInLine = 10
+Reference: action = BEGIN, offset = 8691, line number = 309, charPositionInLine = 0
+Reference: Object = bogus (TYPE), action = CREATE, offset = 8710, line number = 310, charPositionInLine = 12
+Reference: Object = bogus (TYPE), action = ALTER, offset = 8757, line number = 311, charPositionInLine = 11
+Reference: action = SELECT, offset = 8780, line number = 312, charPositionInLine = 0
+Reference: action = ROLLBACK, offset = 8812, line number = 313, charPositionInLine = 0
+Reference: action = BEGIN, offset = 8975, line number = 317, charPositionInLine = 0
+Reference: Object = bogus (TYPE), action = CREATE, offset = 8994, line number = 318, charPositionInLine = 12
+Reference: Object = bogus (TYPE), action = ALTER, offset = 9028, line number = 319, charPositionInLine = 11
+Reference: Object = bogon (TYPE), action = ALTER, offset = 9062, line number = 320, charPositionInLine = 11
+Reference: Object = bogon (TYPE), action = ALTER, offset = 9096, line number = 321, charPositionInLine = 11
+Reference: action = SELECT, offset = 9120, line number = 322, charPositionInLine = 0
+Reference: action = ROLLBACK, offset = 9162, line number = 323, charPositionInLine = 0
+Reference: Object = enumtest_child (TABLE), action = DROP, offset = 9201, line number = 328, charPositionInLine = 11
+Reference: Object = enumtest_parent (TABLE), action = DROP, offset = 9228, line number = 329, charPositionInLine = 11
+Reference: Object = enumtest (TABLE), action = DROP, offset = 9256, line number = 330, charPositionInLine = 11
+Reference: Object = rainbow (TYPE), action = DROP, offset = 9276, line number = 331, charPositionInLine = 10
+Reference: action = SELECT, offset = 9322, line number = 336, charPositionInLine = 0
+Reference: action = SELECT, offset = 9378, line number = 337, charPositionInLine = 0

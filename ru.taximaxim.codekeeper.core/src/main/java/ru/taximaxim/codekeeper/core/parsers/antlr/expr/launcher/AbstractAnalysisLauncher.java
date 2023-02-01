@@ -68,6 +68,9 @@ public abstract class AbstractAnalysisLauncher {
 
     /**
      * Updates the saved statement to the twin found in the given db
+     *
+     * @param db
+     *            database
      */
     public void updateStmt(PgDatabase db) {
         if (stmt.getDatabase() != db) {
@@ -145,7 +148,13 @@ public abstract class AbstractAnalysisLauncher {
 
     /**
      * Sets up namespace for Constraint/Index expr analysis
-     * @return
+     *
+     * @param ctx
+     *            expression context to analyze
+     * @param meta
+     *            database metadata
+     *
+     * @return dependencies from child expression
      */
     protected Set<PgObjLocation> analyzeTableChildVex(VexContext ctx, MetaContainer meta) {
         PgStatement table = stmt.getParent();
@@ -160,7 +169,15 @@ public abstract class AbstractAnalysisLauncher {
 
     /**
      * Sets up namespace for Trigger/Rule expr/command analysis
-     * @return
+     *
+     * @param <T>
+     *            analyzer type
+     * @param ctx
+     *            expression context to analyze
+     * @param analyzer
+     *            analyzer with database metadata
+     *
+     * @return dependencies from trigger/rule expression
      */
     protected <T extends ParserRuleContext> Set<PgObjLocation> analyzeTableChild (
             T ctx, AbstractExprWithNmspc<T> analyzer) {

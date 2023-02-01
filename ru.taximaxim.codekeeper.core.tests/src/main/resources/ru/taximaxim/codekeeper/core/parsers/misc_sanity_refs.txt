@@ -1,0 +1,4 @@
+Reference: action = SELECT, offset = 620, line number = 19, charPositionInLine = 0
+Reference: action = SELECT, offset = 1026, line number = 31, charPositionInLine = 0
+Reference: action = DO, offset = 1864, line number = 48, charPositionInLine = 0
+Reference: action = SELECT, offset = 3310, line number = 90, charPositionInLine = 0

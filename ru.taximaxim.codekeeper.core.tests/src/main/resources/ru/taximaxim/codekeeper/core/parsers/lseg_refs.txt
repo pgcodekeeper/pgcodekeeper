@@ -1,0 +1,14 @@
+Reference: Object = lseg_tbl (TABLE), action = CREATE, offset = 68, line number = 7, charPositionInLine = 13
+Reference: Object = lseg_tbl (TABLE), action = INSERT, offset = 100, line number = 9, charPositionInLine = 12
+Reference: Object = lseg_tbl (TABLE), action = INSERT, offset = 147, line number = 10, charPositionInLine = 12
+Reference: Object = lseg_tbl (TABLE), action = INSERT, offset = 192, line number = 11, charPositionInLine = 12
+Reference: Object = lseg_tbl (TABLE), action = INSERT, offset = 239, line number = 12, charPositionInLine = 12
+Reference: Object = lseg_tbl (TABLE), action = INSERT, offset = 293, line number = 13, charPositionInLine = 12
+Reference: Object = lseg_tbl (TABLE), action = INSERT, offset = 358, line number = 14, charPositionInLine = 12
+Reference: Object = lseg_tbl (TABLE), action = INSERT, offset = 421, line number = 15, charPositionInLine = 12
+Reference: Object = lseg_tbl (TABLE), action = INSERT, offset = 487, line number = 16, charPositionInLine = 12
+Reference: Object = lseg_tbl (TABLE), action = INSERT, offset = 580, line number = 19, charPositionInLine = 12
+Reference: Object = lseg_tbl (TABLE), action = INSERT, offset = 630, line number = 20, charPositionInLine = 12
+Reference: Object = lseg_tbl (TABLE), action = INSERT, offset = 673, line number = 21, charPositionInLine = 12
+Reference: Object = lseg_tbl (TABLE), action = INSERT, offset = 719, line number = 22, charPositionInLine = 12
+Reference: action = SELECT, offset = 754, line number = 24, charPositionInLine = 0

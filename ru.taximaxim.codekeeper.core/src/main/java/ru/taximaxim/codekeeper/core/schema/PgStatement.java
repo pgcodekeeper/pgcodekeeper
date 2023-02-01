@@ -295,7 +295,7 @@ public abstract class PgStatement implements IStatement, IHashable {
                 // we may have revoked implicit owner GRANT in the previous step, it needs to be restored
                 // any privileges in non-default state will be set to their final state in the next step
                 // this solution also requires the least amount of handling code: no edge cases
-                PgPrivilege.appendDefaultPrivileges(newObj, sb);
+                PgPrivilege.appendDefaultPostgresPrivileges(newObj, sb);
             }
             newObj.appendPrivileges(sb);
         }
@@ -428,25 +428,27 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     /**
-     * Метод заполняет sb выражением изменения объекта, можно ли изменить объект
-     * ALTER.<br><br>
+     * Метод заполняет sb выражением изменения объекта, можно ли изменить объект ALTER.<br>
+     * <br>
      *
-     * Результат работы метода определяется по паре значений:
-     * возвращаемое значение и длина sb.length().<br>
+     * Результат работы метода определяется по паре значений: возвращаемое значение и длина sb.length().<br>
      * Возвращаемое значение говорит о статусе объекта: изменился или нет.<br>
-     * sb.length() говорит о возможностиизменить состояние объекта ALTERом
-     * (если объект вообще изменился).<br><br>
+     * sb.length() говорит о возможностиизменить состояние объекта ALTERом (если объект вообще изменился).<br>
+     * <br>
      *
-     * <code>sb == 0 && rv == false</code> - не требуется действий<br>
-     * <code>sb >  0 && rv == false</code> - illegal state, неизмененный объект с ALTER<br>
-     * <code>sb == 0 && rv == true</code>  - ALTER невозможен, делаем DROP/CREATE<br>
-     * <code>sb >  0 && rv == true</code>  - делаем ALTER
+     * {@code sb == 0 and rv == false} - не требуется действий<br>
+     * {@code sb >  0 and rv == false} - illegal state, неизмененный объект с ALTER<br>
+     * {@code sb == 0 and rv == true} - ALTER невозможен, делаем DROP/CREATE<br>
+     * {@code sb >  0 and rv == true} - делаем ALTER
      *
-     * @param newCondition новое состоятние объекта
-     * @param sb скрипт изменения
-     * @param isNeedDepcies out параметр: нужно ли использовать зависимости объекта
-     * @return true - необходимо изменить объект, используя DROP в случае
-     *                 невозможности ALTER, false - объект не изменился
+     * @param newCondition
+     *            новое состоятние объекта
+     * @param sb
+     *            скрипт изменения
+     * @param isNeedDepcies
+     *            out параметр: нужно ли использовать зависимости объекта
+     * @return true - необходимо изменить объект, используя DROP в случае невозможности ALTER, false - объект не
+     *         изменился
      */
     public abstract boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies);
@@ -597,12 +599,12 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     /**
-     * Calls {@link #computeHash()}. Modifies that value with combined hashcode
+     * Calls {@link #computeHash}. Modifies that value with combined hashcode
      * of all parents of this object in the tree to complement
      * {@link #parentNamesEquals(PgStatement)} and {@link #equals(Object)}<br>
      * Caches the hashcode value until recalculation is requested via {@link #resetHash()}.
      * Always request recalculation when you change the hashed fields.<br>
-     * Do actual hashing in {@link #computeHash()}.
+     * Do actual hashing in {@link #computeHash}.
      * <hr><br>
      * {@inheritDoc}
      */

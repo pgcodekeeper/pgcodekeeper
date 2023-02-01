@@ -21,6 +21,7 @@ import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
+import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrUtils;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 /**
@@ -323,7 +324,7 @@ public class PgView extends AbstractView implements PgSimpleOptionContainer  {
 
     /**
      * @return query string with whitespace normalized.
-     * @see PgDiffUtils#normalizeWhitespaceUnquoted(String)
+     * @see AntlrUtils#normalizeWhitespaceUnquoted
      */
     public String getNormalizedQuery(){
         return normalizedQuery;

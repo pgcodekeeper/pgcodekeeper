@@ -603,9 +603,9 @@ public class Keyword {
                 sb = new StringBuilder();
                 map.put(v.getCategory(), sb);
             }
-            sb.append("  | ").append(v.getKeyword().toUpperCase(Locale.ROOT)).append("\n");
+            sb.append("    | ").append(v.getKeyword().toUpperCase(Locale.ROOT)).append("\n");
             if (v.getLabelCategory() == BARE_LABEL) {
-                sbBare.append("  | ").append(v.getKeyword().toUpperCase(Locale.ROOT)).append("\n");
+                sbBare.append("    | ").append(v.getKeyword().toUpperCase(Locale.ROOT)).append("\n");
             }
         });
         System.out.println("==================================================");

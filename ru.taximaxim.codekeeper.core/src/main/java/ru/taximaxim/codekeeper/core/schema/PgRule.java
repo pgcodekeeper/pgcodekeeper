@@ -79,7 +79,12 @@ public class PgRule extends PgStatementWithSearchPath{
     }
 
     /**
-     * Adds {@link #command} to {@link #commands} with newlines as requested in arguments.
+     * Adds command with newlines as requested in arguments.
+     *
+     * @param args
+     *            database arguments
+     * @param command
+     *            rule command
      */
     public void addCommand(PgDiffArguments args, String command) {
         addCommand(args.isKeepNewlines() ? command : command.replace("\r", ""));

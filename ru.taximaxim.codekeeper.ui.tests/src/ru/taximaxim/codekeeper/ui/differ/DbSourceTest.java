@@ -1,10 +1,10 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,14 +20,14 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.SubMonitor;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.Utils;
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.fileutils.TempDir;
 import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.model.exporter.MsModelExporter;
@@ -43,7 +43,7 @@ public class DbSourceTest {
     private static File workspacePath;
     private static IWorkspaceRoot workspaceRoot;
 
-    @BeforeClass
+    @BeforeAll
     public static void initDb() throws IOException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(Consts.UTF_8);
@@ -51,7 +51,7 @@ public class DbSourceTest {
 
         workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
         workspacePath = workspaceRoot.getLocation().toFile();
-        assertTrue("Workspace does not exist: " + workspacePath.getAbsolutePath(), workspacePath.exists());
+        assertTrue(workspacePath.exists(), "Workspace does not exist: " + workspacePath.getAbsolutePath());
     }
 
     @Test
@@ -91,7 +91,7 @@ public class DbSourceTest {
             Files.write(dir.resolve(".pgcodekeeperignoreschema"), rule.getBytes(StandardCharsets.UTF_8));
 
             // testing itself
-            assertEquals("Project name differs", dir.getFileName().toString(), project.getName());
+            assertEquals(dir.getFileName().toString(), project.getName(), "Project name differs");
             performTest(DbSource.fromProject(new PgDbProject(project)));
             project.delete(false, true, null);
         }
@@ -118,10 +118,10 @@ public class DbSourceTest {
 
             for (AbstractSchema dbSchema : db.getSchemas()) {
                 if (TestUtils.IGNORED_SCHEMAS_LIST.contains(dbSchema.getName())) {
-                    Assert.fail("Ignored Schema loaded " + dbSchema.getName());
+                    Assertions.fail("Ignored Schema loaded " + dbSchema.getName());
                 } else {
-                    Assert.assertEquals("Schema from dump isn't equal schema from loader",
-                            dbPredefined.getSchema(dbSchema.getName()), dbSchema);
+                    Assertions.assertEquals(dbPredefined.getSchema(dbSchema.getName()), dbSchema,
+                            "Schema from dump isn't equal schema from loader");
                 }
             }
             project.delete(false, true, null);
@@ -152,10 +152,10 @@ public class DbSourceTest {
 
             for (AbstractSchema dbSchema : db.getSchemas()) {
                 if (TestUtils.IGNORED_SCHEMAS_LIST.contains(dbSchema.getName())) {
-                    Assert.fail("Ignored Schema loaded " + dbSchema.getName());
+                    Assertions.fail("Ignored Schema loaded " + dbSchema.getName());
                 } else {
-                    Assert.assertEquals("Schema from ms dump isn't equal schema from loader",
-                            msDb.getSchema(dbSchema.getName()), dbSchema);
+                    Assertions.assertEquals(msDb.getSchema(dbSchema.getName()), dbSchema,
+                            "Schema from ms dump isn't equal schema from loader");
                 }
             }
             project.delete(false, true, null);
@@ -164,19 +164,19 @@ public class DbSourceTest {
 
     private void performTest(DbSource source)
             throws IOException, InterruptedException, CoreException {
-        assertFalse("DB source should not be loaded", source.isLoaded());
+        assertFalse(source.isLoaded(), "DB source should not be loaded");
 
         try{
             source.getDbObject();
             fail("Source is not loaded yet, exception expected");
-        }catch(IllegalStateException ex){
+        } catch (IllegalStateException ex) {
             // do nothing: expected behavior
         }
         PgDatabase dbSource = source.get(SubMonitor.convert(null, "", 1));
 
-        assertTrue("DB source should be loaded", source.isLoaded());
+        assertTrue(source.isLoaded(), "DB source should be loaded");
 
-        assertEquals("Db loaded not equal to predefined db", dbPredefined, dbSource);
+        assertEquals(dbPredefined, dbSource, "Db loaded not equal to predefined db");
     }
 
     private IProject createProjectInWorkspace(String projectName, boolean isMsSql) throws CoreException{
@@ -187,7 +187,7 @@ public class DbSourceTest {
             project.getNature(NATURE.MS).deconfigure();
         }
 
-        assertNotNull("Project location cannot be determined", project.getLocation());
+        assertNotNull(project.getLocation(), "Project location cannot be determined");
         return project;
     }
 }

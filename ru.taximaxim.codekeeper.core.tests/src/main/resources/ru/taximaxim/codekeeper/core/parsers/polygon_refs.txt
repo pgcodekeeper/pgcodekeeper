@@ -1,0 +1,63 @@
+Reference: Object = polygon_tbl (TABLE), action = CREATE, offset = 51, line number = 7, charPositionInLine = 13
+Reference: Object = polygon_tbl (TABLE), action = INSERT, offset = 90, line number = 10, charPositionInLine = 12
+Reference: Object = polygon_tbl (TABLE), action = INSERT, offset = 161, line number = 12, charPositionInLine = 12
+Reference: Object = polygon_tbl (TABLE), action = INSERT, offset = 232, line number = 14, charPositionInLine = 12
+Reference: Object = polygon_tbl (TABLE), action = INSERT, offset = 296, line number = 15, charPositionInLine = 12
+Reference: Object = polygon_tbl (TABLE), action = INSERT, offset = 371, line number = 16, charPositionInLine = 12
+Reference: Object = polygon_tbl (TABLE), action = INSERT, offset = 460, line number = 19, charPositionInLine = 12
+Reference: Object = polygon_tbl (TABLE), action = INSERT, offset = 511, line number = 21, charPositionInLine = 12
+Reference: Object = polygon_tbl (TABLE), action = INSERT, offset = 601, line number = 24, charPositionInLine = 12
+Reference: Object = polygon_tbl (TABLE), action = INSERT, offset = 646, line number = 26, charPositionInLine = 12
+Reference: Object = polygon_tbl (TABLE), action = INSERT, offset = 696, line number = 28, charPositionInLine = 12
+Reference: Object = polygon_tbl (TABLE), action = INSERT, offset = 745, line number = 30, charPositionInLine = 12
+Reference: Object = polygon_tbl (TABLE), action = INSERT, offset = 795, line number = 32, charPositionInLine = 12
+Reference: action = SELECT, offset = 830, line number = 35, charPositionInLine = 0
+Reference: Object = quad_poly_tbl (TABLE), action = CREATE, offset = 916, line number = 41, charPositionInLine = 13
+Reference: Object = quad_poly_tbl (TABLE), action = INSERT, offset = 964, line number = 43, charPositionInLine = 12
+Reference: Object = quad_poly_tbl (TABLE), action = INSERT, offset = 1138, line number = 48, charPositionInLine = 12
+Reference: Object = quad_poly_tbl (TABLE), action = INSERT, offset = 1263, line number = 52, charPositionInLine = 12
+Reference: Object = quad_poly_tbl_idx (INDEX), action = CREATE, offset = 1350, line number = 58, charPositionInLine = 13
+Reference: Object = quad_poly_tbl (TABLE), action = null, offset = 1371, line number = 58, charPositionInLine = 34
+Reference: action = SET, offset = 1464, line number = 61, charPositionInLine = 0
+Reference: action = SET, offset = 1489, line number = 62, charPositionInLine = 0
+Reference: action = SET, offset = 1517, line number = 63, charPositionInLine = 0
+Reference: action = CREATE TABLE, offset = 1547, line number = 65, charPositionInLine = 0
+Reference: action = CREATE TABLE, offset = 1693, line number = 69, charPositionInLine = 0
+Reference: action = SET, offset = 1943, line number = 74, charPositionInLine = 0
+Reference: action = SET, offset = 1969, line number = 75, charPositionInLine = 0
+Reference: action = SET, offset = 1997, line number = 76, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 2026, line number = 78, charPositionInLine = 0
+Reference: action = SELECT, offset = 2145, line number = 80, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 2245, line number = 82, charPositionInLine = 0
+Reference: action = SELECT, offset = 2364, line number = 84, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 2464, line number = 86, charPositionInLine = 0
+Reference: action = SELECT, offset = 2583, line number = 88, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 2683, line number = 90, charPositionInLine = 0
+Reference: action = SELECT, offset = 2802, line number = 92, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 2902, line number = 94, charPositionInLine = 0
+Reference: action = SELECT, offset = 3021, line number = 96, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 3121, line number = 98, charPositionInLine = 0
+Reference: action = SELECT, offset = 3241, line number = 100, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 3342, line number = 102, charPositionInLine = 0
+Reference: action = SELECT, offset = 3462, line number = 104, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 3563, line number = 106, charPositionInLine = 0
+Reference: action = SELECT, offset = 3683, line number = 108, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 3784, line number = 110, charPositionInLine = 0
+Reference: action = SELECT, offset = 3904, line number = 112, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 4005, line number = 114, charPositionInLine = 0
+Reference: action = SELECT, offset = 4124, line number = 116, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 4224, line number = 118, charPositionInLine = 0
+Reference: action = SELECT, offset = 4333, line number = 120, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 4423, line number = 122, charPositionInLine = 0
+Reference: action = SELECT, offset = 4535, line number = 124, charPositionInLine = 0
+Reference: action = SET, offset = 4654, line number = 127, charPositionInLine = 0
+Reference: action = SET, offset = 4681, line number = 128, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 4711, line number = 130, charPositionInLine = 0
+Reference: action = CREATE TABLE, offset = 4838, line number = 134, charPositionInLine = 0
+Reference: action = SELECT, offset = 4989, line number = 138, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 5216, line number = 145, charPositionInLine = 0
+Reference: action = CREATE TABLE, offset = 5406, line number = 149, charPositionInLine = 0
+Reference: action = SELECT, offset = 5620, line number = 153, charPositionInLine = 0
+Reference: action = RESET, offset = 5846, line number = 159, charPositionInLine = 0
+Reference: action = RESET, offset = 5868, line number = 160, charPositionInLine = 0
+Reference: action = RESET, offset = 5892, line number = 161, charPositionInLine = 0

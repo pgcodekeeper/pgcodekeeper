@@ -1,0 +1,11 @@
+Reference: Object = a (PROCEDURE), action = CREATE, offset = 17, line number = 1, charPositionInLine = 17
+Reference: Object = b (PROCEDURE), action = CREATE, offset = 62, line number = 5, charPositionInLine = 17
+Reference: action = IF, offset = 135, line number = 11, charPositionInLine = 0
+Reference: Object = dbo (SCHEMA), action = null, offset = 265, line number = 15, charPositionInLine = 17
+Reference: Object = dbo.TestSproc (PROCEDURE), action = CREATE, offset = 269, line number = 15, charPositionInLine = 21
+Reference: action = DECLARE, offset = 325, line number = 18, charPositionInLine = 0
+Reference: action = DECLARE, offset = 372, line number = 19, charPositionInLine = 0
+Reference: action = DECLARE, offset = 411, line number = 20, charPositionInLine = 0
+Reference: action = EXEC, offset = 440, line number = 21, charPositionInLine = 0
+Reference: action = SELECT, offset = 485, line number = 22, charPositionInLine = 0
+Reference: Object = What_DB_is_this (PROCEDURE), action = ALTER, offset = 526, line number = 26, charPositionInLine = 21

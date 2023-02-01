@@ -1,0 +1,5 @@
+Reference: Object = buyers (ROLE), action = ALTER, offset = 11, line number = 1, charPositionInLine = 11
+Reference: Object = "Sales" (ROLE), action = ALTER, offset = 55, line number = 2, charPositionInLine = 11
+Reference: Object = "Sales" (ROLE), action = ALTER, offset = 90, line number = 3, charPositionInLine = 11
+Reference: Object = buyers (ROLE), action = CREATE, offset = 127, line number = 4, charPositionInLine = 12
+Reference: Object = auditors (ROLE), action = CREATE, offset = 174, line number = 6, charPositionInLine = 12

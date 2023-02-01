@@ -1,0 +1,18 @@
+Reference: Object = time_tbl (TABLE), action = CREATE, offset = 28, line number = 5, charPositionInLine = 13
+Reference: Object = time_tbl (TABLE), action = INSERT, offset = 64, line number = 7, charPositionInLine = 12
+Reference: Object = time_tbl (TABLE), action = INSERT, offset = 103, line number = 8, charPositionInLine = 12
+Reference: Object = time_tbl (TABLE), action = INSERT, offset = 201, line number = 10, charPositionInLine = 12
+Reference: Object = time_tbl (TABLE), action = INSERT, offset = 244, line number = 11, charPositionInLine = 12
+Reference: Object = time_tbl (TABLE), action = INSERT, offset = 287, line number = 12, charPositionInLine = 12
+Reference: Object = time_tbl (TABLE), action = INSERT, offset = 326, line number = 13, charPositionInLine = 12
+Reference: Object = time_tbl (TABLE), action = INSERT, offset = 365, line number = 14, charPositionInLine = 12
+Reference: Object = time_tbl (TABLE), action = INSERT, offset = 404, line number = 15, charPositionInLine = 12
+Reference: Object = time_tbl (TABLE), action = INSERT, offset = 453, line number = 17, charPositionInLine = 12
+Reference: Object = time_tbl (TABLE), action = INSERT, offset = 523, line number = 18, charPositionInLine = 12
+Reference: Object = time_tbl (TABLE), action = INSERT, offset = 648, line number = 20, charPositionInLine = 12
+Reference: action = SELECT, offset = 697, line number = 23, charPositionInLine = 0
+Reference: action = SELECT, offset = 733, line number = 25, charPositionInLine = 0
+Reference: action = SELECT, offset = 792, line number = 27, charPositionInLine = 0
+Reference: action = SELECT, offset = 850, line number = 29, charPositionInLine = 0
+Reference: action = SELECT, offset = 905, line number = 31, charPositionInLine = 0
+Reference: action = SELECT, offset = 1261, line number = 42, charPositionInLine = 0

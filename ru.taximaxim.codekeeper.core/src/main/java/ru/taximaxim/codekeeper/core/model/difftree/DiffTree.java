@@ -18,6 +18,10 @@ import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public final class DiffTree {
 
+    public static TreeElement create(PgDatabase left, PgDatabase right) throws InterruptedException {
+        return create(left, right, null);
+    }
+
     public static TreeElement create(PgDatabase left, PgDatabase right, SubMonitor sMonitor) throws InterruptedException {
         return new DiffTree(sMonitor).createTree(left, right);
     }

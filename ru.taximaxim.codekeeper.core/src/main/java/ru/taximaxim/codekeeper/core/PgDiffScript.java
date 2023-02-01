@@ -11,8 +11,7 @@ import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 /**
  * Contains list of SQL statements.<br>
- * A set is used to ensure that {@link #addStatementUnique(String)} does not
- * add multiple entries.
+ * A set is used to ensure that {@link #addStatementUnique} does not add multiple entries.
  *
  * @author Alexander Levsha
  */

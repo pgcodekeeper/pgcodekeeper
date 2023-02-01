@@ -1,0 +1,287 @@
+Reference: Object = stfp(anyarray) (FUNCTION), action = CREATE, offset = 1087, line number = 41, charPositionInLine = 16
+Reference: Object = stfnp(integer[]) (FUNCTION), action = CREATE, offset = 1202, line number = 44, charPositionInLine = 16
+Reference: Object = tfp(anyarray, anyelement) (FUNCTION), action = CREATE, offset = 1303, line number = 48, charPositionInLine = 16
+Reference: Object = tfnp(integer[], integer) (FUNCTION), action = CREATE, offset = 1428, line number = 51, charPositionInLine = 16
+Reference: Object = tf1p(anyarray, integer) (FUNCTION), action = CREATE, offset = 1543, line number = 55, charPositionInLine = 16
+Reference: Object = tf2p(integer[], anyelement) (FUNCTION), action = CREATE, offset = 1657, line number = 58, charPositionInLine = 16
+Reference: Object = sum3(anyelement, anyelement, anyelement) (FUNCTION), action = CREATE, offset = 1765, line number = 62, charPositionInLine = 16
+Reference: Object = ffp(anyarray) (FUNCTION), action = CREATE, offset = 1905, line number = 66, charPositionInLine = 16
+Reference: Object = ffnp(integer[]) (FUNCTION), action = CREATE, offset = 2008, line number = 69, charPositionInLine = 16
+Reference: Object = myaggp01a() (AGGREGATE), action = CREATE, offset = 2622, line number = 86, charPositionInLine = 17
+Reference: Object = myaggp02a() (AGGREGATE), action = CREATE, offset = 2797, line number = 91, charPositionInLine = 17
+Reference: Object = myaggp03a() (AGGREGATE), action = CREATE, offset = 2930, line number = 96, charPositionInLine = 17
+Reference: Object = myaggp03b() (AGGREGATE), action = CREATE, offset = 3028, line number = 98, charPositionInLine = 17
+Reference: Object = myaggp04a() (AGGREGATE), action = CREATE, offset = 3169, line number = 103, charPositionInLine = 17
+Reference: Object = myaggp04b() (AGGREGATE), action = CREATE, offset = 3269, line number = 105, charPositionInLine = 17
+Reference: Object = myaggp05a (AGGREGATE), action = CREATE, offset = 3545, line number = 115, charPositionInLine = 17
+Reference: Object = myaggp06a (AGGREGATE), action = CREATE, offset = 3699, line number = 120, charPositionInLine = 17
+Reference: Object = myaggp07a (AGGREGATE), action = CREATE, offset = 3909, line number = 125, charPositionInLine = 17
+Reference: Object = myaggp08a (AGGREGATE), action = CREATE, offset = 4070, line number = 130, charPositionInLine = 17
+Reference: Object = myaggp09a (AGGREGATE), action = CREATE, offset = 4231, line number = 135, charPositionInLine = 17
+Reference: Object = myaggp09b (AGGREGATE), action = CREATE, offset = 4340, line number = 137, charPositionInLine = 17
+Reference: Object = myaggp10a (AGGREGATE), action = CREATE, offset = 4477, line number = 142, charPositionInLine = 17
+Reference: Object = myaggp10b (AGGREGATE), action = CREATE, offset = 4585, line number = 144, charPositionInLine = 17
+Reference: Object = myaggp11a (AGGREGATE), action = CREATE, offset = 4778, line number = 149, charPositionInLine = 17
+Reference: Object = myaggp11b (AGGREGATE), action = CREATE, offset = 4894, line number = 151, charPositionInLine = 17
+Reference: Object = myaggp12a (AGGREGATE), action = CREATE, offset = 5100, line number = 156, charPositionInLine = 17
+Reference: Object = myaggp12b (AGGREGATE), action = CREATE, offset = 5215, line number = 158, charPositionInLine = 17
+Reference: Object = myaggp13a (AGGREGATE), action = CREATE, offset = 5409, line number = 163, charPositionInLine = 17
+Reference: Object = myaggp14a (AGGREGATE), action = CREATE, offset = 5624, line number = 168, charPositionInLine = 17
+Reference: Object = myaggp15a (AGGREGATE), action = CREATE, offset = 5839, line number = 173, charPositionInLine = 17
+Reference: Object = myaggp16a (AGGREGATE), action = CREATE, offset = 6068, line number = 178, charPositionInLine = 17
+Reference: Object = myaggp17a (AGGREGATE), action = CREATE, offset = 6260, line number = 183, charPositionInLine = 17
+Reference: Object = myaggp17b (AGGREGATE), action = CREATE, offset = 6372, line number = 185, charPositionInLine = 17
+Reference: Object = myaggp18a (AGGREGATE), action = CREATE, offset = 6572, line number = 190, charPositionInLine = 17
+Reference: Object = myaggp18b (AGGREGATE), action = CREATE, offset = 6683, line number = 192, charPositionInLine = 17
+Reference: Object = myaggp19a (AGGREGATE), action = CREATE, offset = 6884, line number = 197, charPositionInLine = 17
+Reference: Object = myaggp19b (AGGREGATE), action = CREATE, offset = 7003, line number = 199, charPositionInLine = 17
+Reference: Object = myaggp20a (AGGREGATE), action = CREATE, offset = 7150, line number = 204, charPositionInLine = 17
+Reference: Object = myaggp20b (AGGREGATE), action = CREATE, offset = 7268, line number = 206, charPositionInLine = 17
+Reference: Object = myaggn01a() (AGGREGATE), action = CREATE, offset = 7496, line number = 215, charPositionInLine = 17
+Reference: Object = myaggn01b() (AGGREGATE), action = CREATE, offset = 7596, line number = 217, charPositionInLine = 17
+Reference: Object = myaggn02a() (AGGREGATE), action = CREATE, offset = 7754, line number = 222, charPositionInLine = 17
+Reference: Object = myaggn02b() (AGGREGATE), action = CREATE, offset = 7856, line number = 224, charPositionInLine = 17
+Reference: Object = myaggn03a() (AGGREGATE), action = CREATE, offset = 7972, line number = 229, charPositionInLine = 17
+Reference: Object = myaggn04a() (AGGREGATE), action = CREATE, offset = 8145, line number = 234, charPositionInLine = 17
+Reference: Object = myaggn05a (AGGREGATE), action = CREATE, offset = 8439, line number = 244, charPositionInLine = 17
+Reference: Object = myaggn05b (AGGREGATE), action = CREATE, offset = 8549, line number = 246, charPositionInLine = 17
+Reference: Object = myaggn06a (AGGREGATE), action = CREATE, offset = 8686, line number = 251, charPositionInLine = 17
+Reference: Object = myaggn06b (AGGREGATE), action = CREATE, offset = 8796, line number = 253, charPositionInLine = 17
+Reference: Object = myaggn07a (AGGREGATE), action = CREATE, offset = 8989, line number = 258, charPositionInLine = 17
+Reference: Object = myaggn07b (AGGREGATE), action = CREATE, offset = 9106, line number = 260, charPositionInLine = 17
+Reference: Object = myaggn08a (AGGREGATE), action = CREATE, offset = 9250, line number = 265, charPositionInLine = 17
+Reference: Object = myaggn08b (AGGREGATE), action = CREATE, offset = 9367, line number = 267, charPositionInLine = 17
+Reference: Object = myaggn09a (AGGREGATE), action = CREATE, offset = 9511, line number = 272, charPositionInLine = 17
+Reference: Object = myaggn10a (AGGREGATE), action = CREATE, offset = 9666, line number = 277, charPositionInLine = 17
+Reference: Object = myaggn11a (AGGREGATE), action = CREATE, offset = 9877, line number = 282, charPositionInLine = 17
+Reference: Object = myaggn12a (AGGREGATE), action = CREATE, offset = 10101, line number = 287, charPositionInLine = 17
+Reference: Object = myaggn13a (AGGREGATE), action = CREATE, offset = 10313, line number = 292, charPositionInLine = 17
+Reference: Object = myaggn13b (AGGREGATE), action = CREATE, offset = 10426, line number = 294, charPositionInLine = 17
+Reference: Object = myaggn14a (AGGREGATE), action = CREATE, offset = 10624, line number = 299, charPositionInLine = 17
+Reference: Object = myaggn14b (AGGREGATE), action = CREATE, offset = 10737, line number = 301, charPositionInLine = 17
+Reference: Object = myaggn15a (AGGREGATE), action = CREATE, offset = 10935, line number = 306, charPositionInLine = 17
+Reference: Object = myaggn15b (AGGREGATE), action = CREATE, offset = 11055, line number = 308, charPositionInLine = 17
+Reference: Object = myaggn16a (AGGREGATE), action = CREATE, offset = 11267, line number = 313, charPositionInLine = 17
+Reference: Object = myaggn16b (AGGREGATE), action = CREATE, offset = 11387, line number = 315, charPositionInLine = 17
+Reference: Object = myaggn17a (AGGREGATE), action = CREATE, offset = 11576, line number = 320, charPositionInLine = 17
+Reference: Object = myaggn18a (AGGREGATE), action = CREATE, offset = 11794, line number = 325, charPositionInLine = 17
+Reference: Object = myaggn19a (AGGREGATE), action = CREATE, offset = 12013, line number = 330, charPositionInLine = 17
+Reference: Object = myaggn20a (AGGREGATE), action = CREATE, offset = 12220, line number = 335, charPositionInLine = 17
+Reference: Object = mysum2(anyelement, anyelement) (AGGREGATE), action = CREATE, offset = 12365, line number = 339, charPositionInLine = 17
+Reference: Object = t (TABLE), action = CREATE, offset = 12515, line number = 343, charPositionInLine = 18
+Reference: Object = t (TABLE), action = INSERT, offset = 12557, line number = 344, charPositionInLine = 12
+Reference: Object = t (TABLE), action = INSERT, offset = 12595, line number = 345, charPositionInLine = 12
+Reference: Object = t (TABLE), action = INSERT, offset = 12634, line number = 346, charPositionInLine = 12
+Reference: Object = t (TABLE), action = INSERT, offset = 12674, line number = 347, charPositionInLine = 12
+Reference: Object = t (TABLE), action = INSERT, offset = 12712, line number = 348, charPositionInLine = 12
+Reference: Object = t (TABLE), action = INSERT, offset = 12751, line number = 349, charPositionInLine = 12
+Reference: Object = t (TABLE), action = INSERT, offset = 12791, line number = 350, charPositionInLine = 12
+Reference: Object = t (TABLE), action = INSERT, offset = 12829, line number = 351, charPositionInLine = 12
+Reference: action = SELECT, offset = 12912, line number = 354, charPositionInLine = 0
+Reference: action = SELECT, offset = 12968, line number = 355, charPositionInLine = 0
+Reference: action = SELECT, offset = 13024, line number = 356, charPositionInLine = 0
+Reference: action = SELECT, offset = 13080, line number = 357, charPositionInLine = 0
+Reference: action = SELECT, offset = 13137, line number = 358, charPositionInLine = 0
+Reference: action = SELECT, offset = 13194, line number = 359, charPositionInLine = 0
+Reference: action = SELECT, offset = 13251, line number = 360, charPositionInLine = 0
+Reference: action = SELECT, offset = 13308, line number = 361, charPositionInLine = 0
+Reference: action = SELECT, offset = 13365, line number = 362, charPositionInLine = 0
+Reference: action = SELECT, offset = 13422, line number = 363, charPositionInLine = 0
+Reference: action = SELECT, offset = 13479, line number = 364, charPositionInLine = 0
+Reference: action = SELECT, offset = 13536, line number = 365, charPositionInLine = 0
+Reference: action = SELECT, offset = 13593, line number = 366, charPositionInLine = 0
+Reference: action = SELECT, offset = 13649, line number = 367, charPositionInLine = 0
+Reference: action = SELECT, offset = 13705, line number = 368, charPositionInLine = 0
+Reference: action = SELECT, offset = 13761, line number = 369, charPositionInLine = 0
+Reference: action = SELECT, offset = 13818, line number = 370, charPositionInLine = 0
+Reference: action = SELECT, offset = 13875, line number = 371, charPositionInLine = 0
+Reference: action = SELECT, offset = 13932, line number = 372, charPositionInLine = 0
+Reference: action = SELECT, offset = 13989, line number = 373, charPositionInLine = 0
+Reference: action = SELECT, offset = 14046, line number = 374, charPositionInLine = 0
+Reference: action = SELECT, offset = 14103, line number = 375, charPositionInLine = 0
+Reference: action = SELECT, offset = 14160, line number = 376, charPositionInLine = 0
+Reference: action = SELECT, offset = 14217, line number = 377, charPositionInLine = 0
+Reference: Object = bleat(integer) (FUNCTION), action = CREATE, offset = 14314, line number = 380, charPositionInLine = 16
+Reference: Object = sql_if(boolean, anyelement, anyelement) (FUNCTION), action = CREATE, offset = 14433, line number = 386, charPositionInLine = 16
+Reference: action = SELECT, offset = 14689, line number = 391, charPositionInLine = 0
+Reference: action = SELECT, offset = 14757, line number = 393, charPositionInLine = 0
+Reference: Object = array_cat_accum(anyarray) (AGGREGATE), action = CREATE, offset = 14870, line number = 397, charPositionInLine = 17
+Reference: action = SELECT, offset = 14968, line number = 404, charPositionInLine = 0
+Reference: action = SELECT, offset = 15045, line number = 407, charPositionInLine = 0
+Reference: Object = add_group(anyarray, anyelement, integer) (FUNCTION), action = CREATE, offset = 15208, line number = 412, charPositionInLine = 16
+Reference: Object = build_group(anyelement, integer) (AGGREGATE), action = CREATE, offset = 15487, line number = 427, charPositionInLine = 17
+Reference: action = SELECT, offset = 15566, line number = 432, charPositionInLine = 0
+Reference: Object = build_group(bigint, integer) (AGGREGATE), action = CREATE, offset = 15684, line number = 435, charPositionInLine = 17
+Reference: Object = build_group(bigint, integer) (AGGREGATE), action = CREATE, offset = 15840, line number = 441, charPositionInLine = 17
+Reference: Object = first_el(anyarray) (FUNCTION), action = CREATE, offset = 16001, line number = 448, charPositionInLine = 16
+Reference: Object = first_el_agg_f8(double precision) (AGGREGATE), action = CREATE, offset = 16106, line number = 451, charPositionInLine = 17
+Reference: Object = first_el_agg_any(anyelement) (AGGREGATE), action = CREATE, offset = 16220, line number = 457, charPositionInLine = 17
+Reference: action = SELECT, offset = 16322, line number = 463, charPositionInLine = 0
+Reference: action = SELECT, offset = 16386, line number = 464, charPositionInLine = 0
+Reference: action = SELECT, offset = 16443, line number = 465, charPositionInLine = 0
+Reference: action = SELECT, offset = 16524, line number = 466, charPositionInLine = 0
+Reference: action = SELECT, offset = 16664, line number = 469, charPositionInLine = 0
+Reference: action = SELECT, offset = 16914, line number = 474, charPositionInLine = 0
+Reference: Object = myleast(anyarray) (FUNCTION), action = CREATE, offset = 17041, line number = 478, charPositionInLine = 16
+Reference: action = SELECT, offset = 17184, line number = 482, charPositionInLine = 0
+Reference: action = SELECT, offset = 17215, line number = 483, charPositionInLine = 0
+Reference: action = SELECT, offset = 17248, line number = 484, charPositionInLine = 0
+Reference: action = SELECT, offset = 17275, line number = 485, charPositionInLine = 0
+Reference: action = SELECT, offset = 17339, line number = 488, charPositionInLine = 0
+Reference: action = SELECT, offset = 17383, line number = 489, charPositionInLine = 0
+Reference: Object = concat(text, anyarray) (FUNCTION), action = CREATE, offset = 17576, line number = 495, charPositionInLine = 16
+Reference: action = SELECT, offset = 17696, line number = 499, charPositionInLine = 0
+Reference: action = SELECT, offset = 17731, line number = 500, charPositionInLine = 0
+Reference: action = SELECT, offset = 17772, line number = 501, charPositionInLine = 0
+Reference: Object = concat (FUNCTION), action = DROP, offset = 17878, line number = 504, charPositionInLine = 14
+Reference: Object = formarray(anyelement, anyarray) (FUNCTION), action = CREATE, offset = 17951, line number = 507, charPositionInLine = 16
+Reference: action = SELECT, offset = 18082, line number = 511, charPositionInLine = 0
+Reference: action = SELECT, offset = 18111, line number = 512, charPositionInLine = 0
+Reference: action = SELECT, offset = 18160, line number = 513, charPositionInLine = 0
+Reference: action = SELECT, offset = 18225, line number = 514, charPositionInLine = 0
+Reference: action = SELECT, offset = 18280, line number = 515, charPositionInLine = 0
+Reference: Object = formarray (FUNCTION), action = DROP, offset = 18366, line number = 517, charPositionInLine = 14
+Reference: action = SELECT, offset = 18438, line number = 520, charPositionInLine = 0
+Reference: action = SELECT, offset = 18483, line number = 521, charPositionInLine = 0
+Reference: action = SELECT, offset = 18528, line number = 522, charPositionInLine = 0
+Reference: action = SELECT, offset = 18573, line number = 523, charPositionInLine = 0
+Reference: action = SELECT, offset = 18618, line number = 524, charPositionInLine = 0
+Reference: action = SELECT, offset = 18663, line number = 525, charPositionInLine = 0
+Reference: action = SELECT, offset = 18705, line number = 526, charPositionInLine = 0
+Reference: action = SELECT, offset = 18750, line number = 527, charPositionInLine = 0
+Reference: action = SELECT, offset = 18798, line number = 528, charPositionInLine = 0
+Reference: Object = dfunc(integer, integer) (FUNCTION), action = CREATE, offset = 18950, line number = 533, charPositionInLine = 16
+Reference: action = SELECT, offset = 19030, line number = 537, charPositionInLine = 0
+Reference: action = SELECT, offset = 19046, line number = 538, charPositionInLine = 0
+Reference: action = SELECT, offset = 19064, line number = 539, charPositionInLine = 0
+Reference: action = SELECT, offset = 19086, line number = 540, charPositionInLine = 0
+Reference: Object = dfunc (FUNCTION), action = DROP, offset = 19136, line number = 542, charPositionInLine = 14
+Reference: Object = dfunc (FUNCTION), action = DROP, offset = 19168, line number = 543, charPositionInLine = 14
+Reference: Object = dfunc (FUNCTION), action = DROP, offset = 19203, line number = 544, charPositionInLine = 14
+Reference: Object = dfunc(integer, integer) (FUNCTION), action = CREATE, offset = 19294, line number = 547, charPositionInLine = 16
+Reference: Object = dfunc(integer, integer) (FUNCTION), action = CREATE, offset = 19418, line number = 552, charPositionInLine = 16
+Reference: action = SELECT, offset = 19501, line number = 556, charPositionInLine = 0
+Reference: Object = dfunc (FUNCTION), action = DROP, offset = 19562, line number = 561, charPositionInLine = 14
+Reference: Object = dfunc(integer, integer) (FUNCTION), action = CREATE, offset = 19623, line number = 564, charPositionInLine = 16
+Reference: action = SELECT, offset = 19719, line number = 567, charPositionInLine = 0
+Reference: Object = dfunc(text, text) (FUNCTION), action = CREATE, offset = 19752, line number = 569, charPositionInLine = 16
+Reference: action = SELECT, offset = 19870, line number = 573, charPositionInLine = 0
+Reference: action = SELECT, offset = 19938, line number = 574, charPositionInLine = 0
+Reference: action = SELECT, offset = 19965, line number = 575, charPositionInLine = 0
+Reference: action = SELECT, offset = 20000, line number = 576, charPositionInLine = 0
+Reference: action = SELECT, offset = 20024, line number = 577, charPositionInLine = 0
+Reference: Object = dfunc (FUNCTION), action = DROP, offset = 20068, line number = 579, charPositionInLine = 14
+Reference: Object = dfunc (FUNCTION), action = DROP, offset = 20099, line number = 580, charPositionInLine = 14
+Reference: Object = dfunc(integer, integer) (FUNCTION), action = CREATE, offset = 20135, line number = 582, charPositionInLine = 16
+Reference: Object = dfunc(integer, integer, integer, integer) (FUNCTION), action = CREATE, offset = 20223, line number = 586, charPositionInLine = 16
+Reference: action = SELECT, offset = 20412, line number = 593, charPositionInLine = 0
+Reference: action = SELECT, offset = 20437, line number = 594, charPositionInLine = 0
+Reference: action = SELECT, offset = 20463, line number = 595, charPositionInLine = 0
+Reference: action = SELECT, offset = 20492, line number = 596, charPositionInLine = 0
+Reference: action = SELECT, offset = 20522, line number = 597, charPositionInLine = 0
+Reference: Object = dfunc (FUNCTION), action = DROP, offset = 20570, line number = 599, charPositionInLine = 14
+Reference: Object = dfunc (FUNCTION), action = DROP, offset = 20601, line number = 600, charPositionInLine = 14
+Reference: Object = dfunc() (FUNCTION), action = CREATE, offset = 20701, line number = 603, charPositionInLine = 16
+Reference: Object = dfunc(anyelement) (FUNCTION), action = CREATE, offset = 20815, line number = 608, charPositionInLine = 16
+Reference: action = SELECT, offset = 20918, line number = 612, charPositionInLine = 0
+Reference: action = SELECT, offset = 20934, line number = 613, charPositionInLine = 0
+Reference: action = SELECT, offset = 20951, line number = 614, charPositionInLine = 0
+Reference: action = SELECT, offset = 20997, line number = 615, charPositionInLine = 0
+Reference: Object = dfunc (FUNCTION), action = DROP, offset = 21040, line number = 617, charPositionInLine = 14
+Reference: Object = dfunc(integer[]) (FUNCTION), action = CREATE, offset = 21109, line number = 621, charPositionInLine = 16
+Reference: action = SELECT, offset = 21195, line number = 624, charPositionInLine = 0
+Reference: action = SELECT, offset = 21220, line number = 625, charPositionInLine = 0
+Reference: action = SELECT, offset = 21238, line number = 626, charPositionInLine = 0
+Reference: Object = dfunc(integer[]) (FUNCTION), action = CREATE, offset = 21287, line number = 628, charPositionInLine = 27
+Reference: action = SELECT, offset = 21400, line number = 631, charPositionInLine = 0
+Reference: action = SELECT, offset = 21427, line number = 632, charPositionInLine = 0
+Reference: action = SELECT, offset = 21445, line number = 633, charPositionInLine = 0
+Reference: Object = dfunc(integer[]) (FUNCTION), action = CREATE, offset = 21537, line number = 636, charPositionInLine = 27
+Reference: Object = dfunc (FUNCTION), action = DROP, offset = 21639, line number = 641, charPositionInLine = 14
+Reference: Object = dfunc(integer, integer, integer) (FUNCTION), action = CREATE, offset = 21759, line number = 645, charPositionInLine = 16
+Reference: Object = dfunc(integer, integer) (FUNCTION), action = CREATE, offset = 21856, line number = 649, charPositionInLine = 16
+Reference: Object = dfunc(text) (FUNCTION), action = CREATE, offset = 21944, line number = 653, charPositionInLine = 16
+Reference: action = SELECT, offset = 22055, line number = 658, charPositionInLine = 0
+Reference: action = SELECT, offset = 22154, line number = 661, charPositionInLine = 0
+Reference: Object = dfunc (FUNCTION), action = DROP, offset = 22189, line number = 663, charPositionInLine = 14
+Reference: Object = dfunc (FUNCTION), action = DROP, offset = 22225, line number = 664, charPositionInLine = 14
+Reference: Object = dfunc (FUNCTION), action = DROP, offset = 22256, line number = 665, charPositionInLine = 14
+Reference: Object = dfunc(integer, integer, integer, integer) (FUNCTION), action = CREATE, offset = 22349, line number = 671, charPositionInLine = 16
+Reference: action = SELECT, offset = 22485, line number = 676, charPositionInLine = 0
+Reference: action = SELECT, offset = 22511, line number = 677, charPositionInLine = 0
+Reference: action = SELECT, offset = 22554, line number = 678, charPositionInLine = 0
+Reference: action = SELECT, offset = 22593, line number = 679, charPositionInLine = 0
+Reference: action = SELECT, offset = 22632, line number = 680, charPositionInLine = 0
+Reference: action = SELECT, offset = 22665, line number = 681, charPositionInLine = 0
+Reference: action = SELECT, offset = 22691, line number = 682, charPositionInLine = 0
+Reference: action = SELECT, offset = 22724, line number = 683, charPositionInLine = 0
+Reference: action = SELECT, offset = 22758, line number = 685, charPositionInLine = 0
+Reference: action = SELECT, offset = 22831, line number = 686, charPositionInLine = 0
+Reference: action = SELECT, offset = 22903, line number = 687, charPositionInLine = 0
+Reference: action = SELECT, offset = 22975, line number = 688, charPositionInLine = 0
+Reference: action = SELECT, offset = 23055, line number = 689, charPositionInLine = 0
+Reference: Object = dfunc (FUNCTION), action = DROP, offset = 23132, line number = 691, charPositionInLine = 14
+Reference: Object = dfunc(character varying, numeric, date) (FUNCTION), action = CREATE, offset = 23215, line number = 694, charPositionInLine = 16
+Reference: action = SELECT, offset = 23358, line number = 699, charPositionInLine = 0
+Reference: action = SELECT, offset = 23413, line number = 700, charPositionInLine = 0
+Reference: action = SELECT, offset = 23473, line number = 701, charPositionInLine = 0
+Reference: action = SELECT, offset = 23548, line number = 702, charPositionInLine = 0
+Reference: action = SELECT, offset = 23618, line number = 703, charPositionInLine = 0
+Reference: action = SELECT, offset = 23688, line number = 704, charPositionInLine = 0
+Reference: Object = dfunc (FUNCTION), action = DROP, offset = 23782, line number = 706, charPositionInLine = 14
+Reference: Object = dfunc(character varying, numeric) (FUNCTION), action = CREATE, offset = 23871, line number = 709, charPositionInLine = 16
+Reference: action = SELECT, offset = 24004, line number = 714, charPositionInLine = 0
+Reference: action = SELECT, offset = 24022, line number = 715, charPositionInLine = 0
+Reference: action = SELECT, offset = 24045, line number = 716, charPositionInLine = 0
+Reference: action = SELECT, offset = 24080, line number = 717, charPositionInLine = 0
+Reference: action = SELECT, offset = 24125, line number = 718, charPositionInLine = 0
+Reference: action = SELECT, offset = 24170, line number = 719, charPositionInLine = 0
+Reference: action = SELECT, offset = 24200, line number = 720, charPositionInLine = 0
+Reference: action = SELECT, offset = 24240, line number = 721, charPositionInLine = 0
+Reference: Object = dfunc(character varying, numeric) (FUNCTION), action = CREATE, offset = 24355, line number = 724, charPositionInLine = 27
+Reference: Object = dfunc(character varying, numeric) (FUNCTION), action = CREATE, offset = 24515, line number = 729, charPositionInLine = 27
+Reference: Object = dfunc (FUNCTION), action = DROP, offset = 24660, line number = 734, charPositionInLine = 14
+Reference: Object = testpolym(integer, integer) (FUNCTION), action = CREATE, offset = 24742, line number = 737, charPositionInLine = 16
+Reference: Object = testpolym(integer) (FUNCTION), action = CREATE, offset = 24826, line number = 738, charPositionInLine = 16
+Reference: Object = testpolym(integer) (FUNCTION), action = CREATE, offset = 24923, line number = 739, charPositionInLine = 16
+Reference: Object = testpolym(integer, integer) (FUNCTION), action = CREATE, offset = 25017, line number = 740, charPositionInLine = 16
+Reference: Object = testpolym(integer) (FUNCTION), action = CREATE, offset = 25117, line number = 743, charPositionInLine = 16
+Reference: action = SELECT, offset = 25190, line number = 744, charPositionInLine = 0
+Reference: Object = testpolym (FUNCTION), action = DROP, offset = 25226, line number = 745, charPositionInLine = 14
+Reference: Object = testpolym(integer) (FUNCTION), action = CREATE, offset = 25258, line number = 746, charPositionInLine = 16
+Reference: action = SELECT, offset = 25329, line number = 747, charPositionInLine = 0
+Reference: Object = testpolym (FUNCTION), action = DROP, offset = 25372, line number = 748, charPositionInLine = 14
+Reference: Object = dfunc(anyelement, anyelement, boolean) (FUNCTION), action = CREATE, offset = 25445, line number = 751, charPositionInLine = 16
+Reference: action = SELECT, offset = 25590, line number = 756, charPositionInLine = 0
+Reference: action = SELECT, offset = 25609, line number = 757, charPositionInLine = 0
+Reference: action = SELECT, offset = 25676, line number = 759, charPositionInLine = 0
+Reference: action = SELECT, offset = 25706, line number = 760, charPositionInLine = 0
+Reference: action = SELECT, offset = 25746, line number = 761, charPositionInLine = 0
+Reference: action = SELECT, offset = 25820, line number = 763, charPositionInLine = 0
+Reference: action = SELECT, offset = 25891, line number = 764, charPositionInLine = 0
+Reference: action = SELECT, offset = 25966, line number = 765, charPositionInLine = 0
+Reference: action = SELECT, offset = 26042, line number = 766, charPositionInLine = 0
+Reference: action = SELECT, offset = 26115, line number = 768, charPositionInLine = 0
+Reference: action = SELECT, offset = 26180, line number = 769, charPositionInLine = 0
+Reference: action = SELECT, offset = 26243, line number = 770, charPositionInLine = 0
+Reference: action = SELECT, offset = 26307, line number = 771, charPositionInLine = 0
+Reference: action = SELECT, offset = 26389, line number = 774, charPositionInLine = 0
+Reference: action = SELECT, offset = 26419, line number = 775, charPositionInLine = 0
+Reference: action = SELECT, offset = 26459, line number = 776, charPositionInLine = 0
+Reference: action = SELECT, offset = 26533, line number = 778, charPositionInLine = 0
+Reference: action = SELECT, offset = 26604, line number = 779, charPositionInLine = 0
+Reference: action = SELECT, offset = 26679, line number = 780, charPositionInLine = 0
+Reference: action = SELECT, offset = 26755, line number = 781, charPositionInLine = 0
+Reference: action = SELECT, offset = 26828, line number = 783, charPositionInLine = 0
+Reference: action = SELECT, offset = 26893, line number = 784, charPositionInLine = 0
+Reference: action = SELECT, offset = 26956, line number = 785, charPositionInLine = 0
+Reference: action = SELECT, offset = 27020, line number = 786, charPositionInLine = 0
+Reference: action = SELECT, offset = 27124, line number = 789, charPositionInLine = 0
+Reference: action = SELECT, offset = 27146, line number = 790, charPositionInLine = 0
+Reference: action = SELECT, offset = 27168, line number = 791, charPositionInLine = 0
+Reference: action = SELECT, offset = 27193, line number = 792, charPositionInLine = 0
+Reference: action = DO, offset = 27287, line number = 795, charPositionInLine = 0
+Reference: Object = dfview (VIEW), action = CREATE, offset = 27465, line number = 805, charPositionInLine = 12
+Reference: action = SELECT, offset = 27599, line number = 811, charPositionInLine = 0
+Reference: Object = dfview (VIEW), action = DROP, offset = 27634, line number = 815, charPositionInLine = 10
+Reference: Object = dfunc (FUNCTION), action = DROP, offset = 27656, line number = 816, charPositionInLine = 14

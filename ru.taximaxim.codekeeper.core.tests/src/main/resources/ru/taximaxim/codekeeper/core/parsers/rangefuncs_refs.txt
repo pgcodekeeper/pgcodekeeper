@@ -1,0 +1,363 @@
+Reference: Object = rngfunc2 (TABLE), action = CREATE, offset = 13, line number = 1, charPositionInLine = 13
+Reference: Object = rngfunc2 (TABLE), action = INSERT, offset = 58, line number = 2, charPositionInLine = 12
+Reference: Object = rngfunc2 (TABLE), action = INSERT, offset = 94, line number = 3, charPositionInLine = 12
+Reference: Object = rngfunc2 (TABLE), action = INSERT, offset = 130, line number = 4, charPositionInLine = 12
+Reference: Object = rngfunct(integer) (FUNCTION), action = CREATE, offset = 172, line number = 6, charPositionInLine = 16
+Reference: action = SELECT, offset = 314, line number = 9, charPositionInLine = 0
+Reference: action = SELECT, offset = 371, line number = 10, charPositionInLine = 0
+Reference: action = SELECT, offset = 505, line number = 12, charPositionInLine = 0
+Reference: action = SELECT, offset = 568, line number = 13, charPositionInLine = 0
+Reference: action = SELECT, offset = 638, line number = 14, charPositionInLine = 0
+Reference: action = SELECT, offset = 704, line number = 15, charPositionInLine = 0
+Reference: action = SELECT, offset = 778, line number = 16, charPositionInLine = 0
+Reference: action = SELECT, offset = 848, line number = 17, charPositionInLine = 0
+Reference: Object = vw_ord (VIEW), action = CREATE, offset = 965, line number = 19, charPositionInLine = 22
+Reference: action = SELECT, offset = 1066, line number = 20, charPositionInLine = 0
+Reference: action = SELECT, offset = 1088, line number = 21, charPositionInLine = 0
+Reference: Object = vw_ord (VIEW), action = DROP, offset = 1155, line number = 22, charPositionInLine = 10
+Reference: action = SELECT, offset = 1186, line number = 25, charPositionInLine = 0
+Reference: Object = vw_ord (VIEW), action = CREATE, offset = 1292, line number = 26, charPositionInLine = 22
+Reference: action = SELECT, offset = 1420, line number = 27, charPositionInLine = 0
+Reference: action = SELECT, offset = 1442, line number = 28, charPositionInLine = 0
+Reference: Object = vw_ord (VIEW), action = DROP, offset = 1509, line number = 29, charPositionInLine = 10
+Reference: action = SELECT, offset = 1544, line number = 32, charPositionInLine = 0
+Reference: action = SELECT, offset = 1610, line number = 33, charPositionInLine = 0
+Reference: action = SELECT, offset = 1708, line number = 34, charPositionInLine = 0
+Reference: action = SELECT, offset = 1817, line number = 35, charPositionInLine = 0
+Reference: Object = vw_ord (VIEW), action = CREATE, offset = 1963, line number = 36, charPositionInLine = 22
+Reference: action = SELECT, offset = 2051, line number = 37, charPositionInLine = 0
+Reference: action = SELECT, offset = 2073, line number = 38, charPositionInLine = 0
+Reference: Object = vw_ord (VIEW), action = DROP, offset = 2140, line number = 39, charPositionInLine = 10
+Reference: Object = vw_ord (VIEW), action = CREATE, offset = 2170, line number = 40, charPositionInLine = 22
+Reference: action = SELECT, offset = 2269, line number = 41, charPositionInLine = 0
+Reference: action = SELECT, offset = 2291, line number = 42, charPositionInLine = 0
+Reference: Object = vw_ord (VIEW), action = DROP, offset = 2358, line number = 43, charPositionInLine = 10
+Reference: Object = vw_ord (VIEW), action = CREATE, offset = 2388, line number = 44, charPositionInLine = 22
+Reference: action = SELECT, offset = 2498, line number = 45, charPositionInLine = 0
+Reference: action = SELECT, offset = 2520, line number = 46, charPositionInLine = 0
+Reference: Object = vw_ord (VIEW), action = DROP, offset = 2587, line number = 47, charPositionInLine = 10
+Reference: action = BEGIN, offset = 2661, line number = 50, charPositionInLine = 0
+Reference: action = DECLARE, offset = 2668, line number = 51, charPositionInLine = 0
+Reference: action = FETCH, offset = 2797, line number = 52, charPositionInLine = 0
+Reference: action = FETCH, offset = 2820, line number = 53, charPositionInLine = 0
+Reference: action = FETCH, offset = 2852, line number = 54, charPositionInLine = 0
+Reference: action = FETCH, offset = 2875, line number = 55, charPositionInLine = 0
+Reference: action = FETCH, offset = 2899, line number = 56, charPositionInLine = 0
+Reference: action = FETCH, offset = 2923, line number = 57, charPositionInLine = 0
+Reference: action = FETCH, offset = 2948, line number = 58, charPositionInLine = 0
+Reference: action = FETCH, offset = 2978, line number = 59, charPositionInLine = 0
+Reference: action = FETCH, offset = 3002, line number = 60, charPositionInLine = 0
+Reference: action = FETCH, offset = 3026, line number = 61, charPositionInLine = 0
+Reference: action = FETCH, offset = 3050, line number = 62, charPositionInLine = 0
+Reference: action = FETCH, offset = 3075, line number = 63, charPositionInLine = 0
+Reference: action = FETCH, offset = 3100, line number = 64, charPositionInLine = 0
+Reference: action = COMMIT, offset = 3125, line number = 65, charPositionInLine = 0
+Reference: action = SELECT, offset = 3168, line number = 68, charPositionInLine = 0
+Reference: action = SELECT, offset = 3308, line number = 71, charPositionInLine = 0
+Reference: action = SELECT, offset = 3452, line number = 74, charPositionInLine = 0
+Reference: action = SELECT, offset = 3614, line number = 77, charPositionInLine = 0
+Reference: action = SELECT, offset = 3759, line number = 80, charPositionInLine = 0
+Reference: action = SELECT, offset = 3899, line number = 83, charPositionInLine = 0
+Reference: Object = rngfunc (TABLE), action = CREATE, offset = 3998, line number = 85, charPositionInLine = 13
+Reference: Object = rngfunc (TABLE), action = INSERT, offset = 4108, line number = 86, charPositionInLine = 12
+Reference: Object = rngfunc (TABLE), action = INSERT, offset = 4147, line number = 87, charPositionInLine = 12
+Reference: Object = rngfunc (TABLE), action = INSERT, offset = 4185, line number = 88, charPositionInLine = 12
+Reference: Object = getrngfunc1(integer) (FUNCTION), action = CREATE, offset = 4268, line number = 91, charPositionInLine = 16
+Reference: action = SELECT, offset = 4327, line number = 92, charPositionInLine = 0
+Reference: action = SELECT, offset = 4363, line number = 93, charPositionInLine = 0
+Reference: Object = vw_getrngfunc (VIEW), action = CREATE, offset = 4432, line number = 94, charPositionInLine = 12
+Reference: action = SELECT, offset = 4479, line number = 95, charPositionInLine = 0
+Reference: Object = vw_getrngfunc (VIEW), action = DROP, offset = 4518, line number = 96, charPositionInLine = 10
+Reference: Object = vw_getrngfunc (VIEW), action = CREATE, offset = 4545, line number = 97, charPositionInLine = 12
+Reference: action = SELECT, offset = 4619, line number = 98, charPositionInLine = 0
+Reference: Object = vw_getrngfunc (VIEW), action = DROP, offset = 4658, line number = 99, charPositionInLine = 10
+Reference: Object = getrngfunc2(integer) (FUNCTION), action = CREATE, offset = 4728, line number = 102, charPositionInLine = 16
+Reference: action = SELECT, offset = 4834, line number = 103, charPositionInLine = 0
+Reference: action = SELECT, offset = 4870, line number = 104, charPositionInLine = 0
+Reference: Object = vw_getrngfunc (VIEW), action = CREATE, offset = 4939, line number = 105, charPositionInLine = 12
+Reference: action = SELECT, offset = 4986, line number = 106, charPositionInLine = 0
+Reference: Object = vw_getrngfunc (VIEW), action = DROP, offset = 5025, line number = 107, charPositionInLine = 10
+Reference: Object = vw_getrngfunc (VIEW), action = CREATE, offset = 5052, line number = 108, charPositionInLine = 12
+Reference: action = SELECT, offset = 5126, line number = 109, charPositionInLine = 0
+Reference: Object = vw_getrngfunc (VIEW), action = DROP, offset = 5165, line number = 110, charPositionInLine = 10
+Reference: Object = getrngfunc3(integer) (FUNCTION), action = CREATE, offset = 5235, line number = 113, charPositionInLine = 16
+Reference: action = SELECT, offset = 5344, line number = 114, charPositionInLine = 0
+Reference: action = SELECT, offset = 5380, line number = 115, charPositionInLine = 0
+Reference: Object = vw_getrngfunc (VIEW), action = CREATE, offset = 5449, line number = 116, charPositionInLine = 12
+Reference: action = SELECT, offset = 5496, line number = 117, charPositionInLine = 0
+Reference: Object = vw_getrngfunc (VIEW), action = DROP, offset = 5535, line number = 118, charPositionInLine = 10
+Reference: Object = vw_getrngfunc (VIEW), action = CREATE, offset = 5562, line number = 119, charPositionInLine = 12
+Reference: action = SELECT, offset = 5636, line number = 120, charPositionInLine = 0
+Reference: Object = vw_getrngfunc (VIEW), action = DROP, offset = 5675, line number = 121, charPositionInLine = 10
+Reference: Object = getrngfunc4(integer) (FUNCTION), action = CREATE, offset = 5745, line number = 124, charPositionInLine = 16
+Reference: action = SELECT, offset = 5841, line number = 125, charPositionInLine = 0
+Reference: action = SELECT, offset = 5877, line number = 126, charPositionInLine = 0
+Reference: Object = vw_getrngfunc (VIEW), action = CREATE, offset = 5950, line number = 127, charPositionInLine = 12
+Reference: action = SELECT, offset = 5997, line number = 128, charPositionInLine = 0
+Reference: Object = vw_getrngfunc (VIEW), action = DROP, offset = 6036, line number = 129, charPositionInLine = 10
+Reference: Object = vw_getrngfunc (VIEW), action = CREATE, offset = 6063, line number = 130, charPositionInLine = 12
+Reference: action = SELECT, offset = 6141, line number = 131, charPositionInLine = 0
+Reference: Object = vw_getrngfunc (VIEW), action = DROP, offset = 6180, line number = 132, charPositionInLine = 10
+Reference: Object = getrngfunc5(integer) (FUNCTION), action = CREATE, offset = 6250, line number = 135, charPositionInLine = 16
+Reference: action = SELECT, offset = 6352, line number = 136, charPositionInLine = 0
+Reference: action = SELECT, offset = 6388, line number = 137, charPositionInLine = 0
+Reference: Object = vw_getrngfunc (VIEW), action = CREATE, offset = 6461, line number = 138, charPositionInLine = 12
+Reference: action = SELECT, offset = 6508, line number = 139, charPositionInLine = 0
+Reference: Object = vw_getrngfunc (VIEW), action = DROP, offset = 6547, line number = 140, charPositionInLine = 10
+Reference: Object = vw_getrngfunc (VIEW), action = CREATE, offset = 6574, line number = 141, charPositionInLine = 12
+Reference: action = SELECT, offset = 6652, line number = 142, charPositionInLine = 0
+Reference: Object = vw_getrngfunc (VIEW), action = DROP, offset = 6691, line number = 143, charPositionInLine = 10
+Reference: Object = getrngfunc6(integer) (FUNCTION), action = CREATE, offset = 6766, line number = 146, charPositionInLine = 16
+Reference: action = SELECT, offset = 6861, line number = 147, charPositionInLine = 0
+Reference: action = SELECT, offset = 6948, line number = 148, charPositionInLine = 0
+Reference: Object = vw_getrngfunc (VIEW), action = CREATE, offset = 7074, line number = 149, charPositionInLine = 12
+Reference: action = SELECT, offset = 7176, line number = 151, charPositionInLine = 0
+Reference: Object = vw_getrngfunc (VIEW), action = DROP, offset = 7215, line number = 152, charPositionInLine = 10
+Reference: Object = vw_getrngfunc (VIEW), action = CREATE, offset = 7242, line number = 153, charPositionInLine = 12
+Reference: action = SELECT, offset = 7391, line number = 156, charPositionInLine = 0
+Reference: Object = vw_getrngfunc (VIEW), action = DROP, offset = 7430, line number = 157, charPositionInLine = 10
+Reference: Object = getrngfunc7(integer) (FUNCTION), action = CREATE, offset = 7505, line number = 160, charPositionInLine = 16
+Reference: action = SELECT, offset = 7606, line number = 161, charPositionInLine = 0
+Reference: action = SELECT, offset = 7693, line number = 162, charPositionInLine = 0
+Reference: Object = vw_getrngfunc (VIEW), action = CREATE, offset = 7819, line number = 163, charPositionInLine = 12
+Reference: action = SELECT, offset = 7921, line number = 165, charPositionInLine = 0
+Reference: Object = vw_getrngfunc (VIEW), action = DROP, offset = 7960, line number = 166, charPositionInLine = 10
+Reference: Object = vw_getrngfunc (VIEW), action = CREATE, offset = 7987, line number = 167, charPositionInLine = 12
+Reference: action = SELECT, offset = 8136, line number = 170, charPositionInLine = 0
+Reference: Object = vw_getrngfunc (VIEW), action = DROP, offset = 8175, line number = 171, charPositionInLine = 10
+Reference: Object = getrngfunc8(integer) (FUNCTION), action = CREATE, offset = 8249, line number = 174, charPositionInLine = 16
+Reference: action = SELECT, offset = 8423, line number = 175, charPositionInLine = 0
+Reference: action = SELECT, offset = 8459, line number = 176, charPositionInLine = 0
+Reference: Object = vw_getrngfunc (VIEW), action = CREATE, offset = 8528, line number = 177, charPositionInLine = 12
+Reference: action = SELECT, offset = 8575, line number = 178, charPositionInLine = 0
+Reference: Object = vw_getrngfunc (VIEW), action = DROP, offset = 8614, line number = 179, charPositionInLine = 10
+Reference: Object = vw_getrngfunc (VIEW), action = CREATE, offset = 8641, line number = 180, charPositionInLine = 12
+Reference: action = SELECT, offset = 8715, line number = 181, charPositionInLine = 0
+Reference: Object = vw_getrngfunc (VIEW), action = DROP, offset = 8754, line number = 182, charPositionInLine = 10
+Reference: Object = getrngfunc9(integer) (FUNCTION), action = CREATE, offset = 8828, line number = 185, charPositionInLine = 16
+Reference: action = SELECT, offset = 9010, line number = 186, charPositionInLine = 0
+Reference: action = SELECT, offset = 9046, line number = 187, charPositionInLine = 0
+Reference: Object = vw_getrngfunc (VIEW), action = CREATE, offset = 9119, line number = 188, charPositionInLine = 12
+Reference: action = SELECT, offset = 9166, line number = 189, charPositionInLine = 0
+Reference: Object = vw_getrngfunc (VIEW), action = DROP, offset = 9205, line number = 190, charPositionInLine = 10
+Reference: Object = vw_getrngfunc (VIEW), action = CREATE, offset = 9232, line number = 191, charPositionInLine = 12
+Reference: action = SELECT, offset = 9310, line number = 192, charPositionInLine = 0
+Reference: Object = vw_getrngfunc (VIEW), action = DROP, offset = 9349, line number = 193, charPositionInLine = 10
+Reference: action = SELECT, offset = 9429, line number = 197, charPositionInLine = 0
+Reference: action = SELECT, offset = 9840, line number = 202, charPositionInLine = 0
+Reference: Object = vw_rngfunc (VIEW), action = CREATE, offset = 10274, line number = 208, charPositionInLine = 22
+Reference: action = SELECT, offset = 10517, line number = 213, charPositionInLine = 0
+Reference: action = SELECT, offset = 10543, line number = 214, charPositionInLine = 0
+Reference: Object = vw_rngfunc (VIEW), action = DROP, offset = 10590, line number = 215, charPositionInLine = 10
+Reference: Object = getrngfunc1 (FUNCTION), action = DROP, offset = 10617, line number = 217, charPositionInLine = 14
+Reference: Object = getrngfunc2 (FUNCTION), action = DROP, offset = 10649, line number = 218, charPositionInLine = 14
+Reference: Object = getrngfunc3 (FUNCTION), action = DROP, offset = 10681, line number = 219, charPositionInLine = 14
+Reference: Object = getrngfunc4 (FUNCTION), action = DROP, offset = 10713, line number = 220, charPositionInLine = 14
+Reference: Object = getrngfunc5 (FUNCTION), action = DROP, offset = 10745, line number = 221, charPositionInLine = 14
+Reference: Object = getrngfunc6 (FUNCTION), action = DROP, offset = 10777, line number = 222, charPositionInLine = 14
+Reference: Object = getrngfunc7 (FUNCTION), action = DROP, offset = 10809, line number = 223, charPositionInLine = 14
+Reference: Object = getrngfunc8 (FUNCTION), action = DROP, offset = 10841, line number = 224, charPositionInLine = 14
+Reference: Object = getrngfunc9 (FUNCTION), action = DROP, offset = 10873, line number = 225, charPositionInLine = 14
+Reference: Object = rngfunct (FUNCTION), action = DROP, offset = 10905, line number = 226, charPositionInLine = 14
+Reference: Object = rngfunc2 (TABLE), action = DROP, offset = 10931, line number = 227, charPositionInLine = 11
+Reference: Object = rngfunc (TABLE), action = DROP, offset = 10952, line number = 228, charPositionInLine = 11
+Reference: Object = rngfunc_rescan_seq1 (SEQUENCE), action = CREATE, offset = 11007, line number = 231, charPositionInLine = 26
+Reference: Object = rngfunc_rescan_seq2 (SEQUENCE), action = CREATE, offset = 11054, line number = 232, charPositionInLine = 26
+Reference: Object = rngfunc_rescan_t (TYPE), action = CREATE, offset = 11087, line number = 233, charPositionInLine = 12
+Reference: Object = rngfunc_sql(integer, integer) (FUNCTION), action = CREATE, offset = 11147, line number = 235, charPositionInLine = 16
+Reference: Object = rngfunc_mat(integer, integer) (FUNCTION), action = CREATE, offset = 11350, line number = 237, charPositionInLine = 16
+Reference: action = SELECT, offset = 11755, line number = 243, charPositionInLine = 0
+Reference: action = SELECT, offset = 11839, line number = 244, charPositionInLine = 0
+Reference: action = SELECT, offset = 11922, line number = 245, charPositionInLine = 0
+Reference: action = SELECT, offset = 12006, line number = 246, charPositionInLine = 0
+Reference: action = SELECT, offset = 12118, line number = 248, charPositionInLine = 0
+Reference: action = SELECT, offset = 12202, line number = 249, charPositionInLine = 0
+Reference: action = SELECT, offset = 12285, line number = 250, charPositionInLine = 0
+Reference: action = SELECT, offset = 12369, line number = 251, charPositionInLine = 0
+Reference: action = SELECT, offset = 12480, line number = 252, charPositionInLine = 0
+Reference: action = SELECT, offset = 12564, line number = 253, charPositionInLine = 0
+Reference: action = SELECT, offset = 12721, line number = 255, charPositionInLine = 0
+Reference: action = SELECT, offset = 12813, line number = 256, charPositionInLine = 0
+Reference: action = SELECT, offset = 12927, line number = 258, charPositionInLine = 0
+Reference: action = SELECT, offset = 13020, line number = 259, charPositionInLine = 0
+Reference: action = SELECT, offset = 13215, line number = 263, charPositionInLine = 0
+Reference: action = SELECT, offset = 13299, line number = 264, charPositionInLine = 0
+Reference: action = SELECT, offset = 13362, line number = 265, charPositionInLine = 0
+Reference: action = SELECT, offset = 13446, line number = 266, charPositionInLine = 0
+Reference: action = SELECT, offset = 13537, line number = 267, charPositionInLine = 0
+Reference: action = SELECT, offset = 13621, line number = 268, charPositionInLine = 0
+Reference: action = SELECT, offset = 13684, line number = 269, charPositionInLine = 0
+Reference: action = SELECT, offset = 13768, line number = 270, charPositionInLine = 0
+Reference: action = SELECT, offset = 13859, line number = 271, charPositionInLine = 0
+Reference: action = SELECT, offset = 13943, line number = 272, charPositionInLine = 0
+Reference: action = SELECT, offset = 14020, line number = 273, charPositionInLine = 0
+Reference: action = SELECT, offset = 14104, line number = 274, charPositionInLine = 0
+Reference: action = SELECT, offset = 14210, line number = 276, charPositionInLine = 0
+Reference: action = SELECT, offset = 14294, line number = 277, charPositionInLine = 0
+Reference: action = SELECT, offset = 14357, line number = 278, charPositionInLine = 0
+Reference: action = SELECT, offset = 14441, line number = 279, charPositionInLine = 0
+Reference: action = SELECT, offset = 14532, line number = 280, charPositionInLine = 0
+Reference: action = SELECT, offset = 14616, line number = 281, charPositionInLine = 0
+Reference: action = SELECT, offset = 14679, line number = 282, charPositionInLine = 0
+Reference: action = SELECT, offset = 14763, line number = 283, charPositionInLine = 0
+Reference: action = SELECT, offset = 14854, line number = 284, charPositionInLine = 0
+Reference: action = SELECT, offset = 14938, line number = 285, charPositionInLine = 0
+Reference: action = SELECT, offset = 15015, line number = 286, charPositionInLine = 0
+Reference: action = SELECT, offset = 15099, line number = 287, charPositionInLine = 0
+Reference: action = SELECT, offset = 15249, line number = 291, charPositionInLine = 0
+Reference: action = SELECT, offset = 15333, line number = 292, charPositionInLine = 0
+Reference: action = SELECT, offset = 15429, line number = 293, charPositionInLine = 0
+Reference: action = SELECT, offset = 15513, line number = 294, charPositionInLine = 0
+Reference: action = SELECT, offset = 15609, line number = 295, charPositionInLine = 0
+Reference: action = SELECT, offset = 15693, line number = 296, charPositionInLine = 0
+Reference: action = SELECT, offset = 15792, line number = 298, charPositionInLine = 0
+Reference: action = SELECT, offset = 15876, line number = 299, charPositionInLine = 0
+Reference: action = SELECT, offset = 16001, line number = 301, charPositionInLine = 0
+Reference: action = SELECT, offset = 16075, line number = 302, charPositionInLine = 0
+Reference: action = SELECT, offset = 16171, line number = 304, charPositionInLine = 0
+Reference: action = SELECT, offset = 16248, line number = 305, charPositionInLine = 0
+Reference: action = SELECT, offset = 16364, line number = 309, charPositionInLine = 0
+Reference: action = SELECT, offset = 16588, line number = 312, charPositionInLine = 0
+Reference: action = SELECT, offset = 16815, line number = 315, charPositionInLine = 0
+Reference: action = SELECT, offset = 17041, line number = 318, charPositionInLine = 0
+Reference: Object = rngfunc_sql (FUNCTION), action = DROP, offset = 17284, line number = 322, charPositionInLine = 14
+Reference: Object = rngfunc_mat (FUNCTION), action = DROP, offset = 17320, line number = 323, charPositionInLine = 14
+Reference: Object = rngfunc_rescan_seq1 (SEQUENCE), action = DROP, offset = 17356, line number = 324, charPositionInLine = 14
+Reference: Object = rngfunc_rescan_seq2 (SEQUENCE), action = DROP, offset = 17391, line number = 325, charPositionInLine = 14
+Reference: Object = rngfunc(integer) (FUNCTION), action = CREATE, offset = 17475, line number = 331, charPositionInLine = 16
+Reference: action = SELECT, offset = 17537, line number = 333, charPositionInLine = 0
+Reference: action = SELECT, offset = 17557, line number = 334, charPositionInLine = 0
+Reference: action = SELECT, offset = 17584, line number = 335, charPositionInLine = 0
+Reference: Object = rngfunc(integer) (FUNCTION), action = CREATE, offset = 17685, line number = 338, charPositionInLine = 27
+Reference: Object = rngfunc(integer) (FUNCTION), action = CREATE, offset = 17814, line number = 341, charPositionInLine = 27
+Reference: Object = rngfunc(integer) (FUNCTION), action = CREATE, offset = 17974, line number = 344, charPositionInLine = 27
+Reference: Object = rngfunc(integer) (FUNCTION), action = CREATE, offset = 18088, line number = 346, charPositionInLine = 27
+Reference: Object = rngfuncr(integer) (FUNCTION), action = CREATE, offset = 18206, line number = 350, charPositionInLine = 27
+Reference: action = SELECT, offset = 18298, line number = 352, charPositionInLine = 0
+Reference: action = SELECT, offset = 18337, line number = 353, charPositionInLine = 0
+Reference: action = SELECT, offset = 18365, line number = 354, charPositionInLine = 0
+Reference: Object = rngfuncb(integer, integer) (FUNCTION), action = CREATE, offset = 18431, line number = 356, charPositionInLine = 27
+Reference: action = SELECT, offset = 18525, line number = 358, charPositionInLine = 0
+Reference: action = SELECT, offset = 18570, line number = 359, charPositionInLine = 0
+Reference: action = SELECT, offset = 18602, line number = 360, charPositionInLine = 0
+Reference: Object = rngfunc (FUNCTION), action = DROP, offset = 18726, line number = 363, charPositionInLine = 14
+Reference: Object = rngfuncr (FUNCTION), action = DROP, offset = 18754, line number = 364, charPositionInLine = 14
+Reference: Object = rngfuncb (FUNCTION), action = DROP, offset = 18811, line number = 365, charPositionInLine = 14
+Reference: action = SELECT, offset = 19022, line number = 373, charPositionInLine = 0
+Reference: action = SELECT, offset = 19038, line number = 374, charPositionInLine = 0
+Reference: action = SELECT, offset = 19066, line number = 375, charPositionInLine = 0
+Reference: action = SELECT, offset = 19091, line number = 376, charPositionInLine = 0
+Reference: Object = dup(anyelement) (FUNCTION), action = CREATE, offset = 19207, line number = 379, charPositionInLine = 27
+Reference: Object = dup (FUNCTION), action = DROP, offset = 19308, line number = 382, charPositionInLine = 14
+Reference: Object = dup(anyelement) (FUNCTION), action = CREATE, offset = 19421, line number = 385, charPositionInLine = 27
+Reference: action = SELECT, offset = 19507, line number = 387, charPositionInLine = 0
+Reference: Object = dup (FUNCTION), action = DROP, offset = 19538, line number = 389, charPositionInLine = 14
+Reference: Object = bad(integer) (FUNCTION), action = CREATE, offset = 19607, line number = 392, charPositionInLine = 16
+Reference: Object = rngfunc() (FUNCTION), action = CREATE, offset = 19753, line number = 399, charPositionInLine = 27
+Reference: action = SELECT, offset = 19847, line number = 402, charPositionInLine = 0
+Reference: Object = rngfunc (FUNCTION), action = DROP, offset = 19886, line number = 403, charPositionInLine = 14
+Reference: Object = rngfunc(integer) (FUNCTION), action = CREATE, offset = 19925, line number = 405, charPositionInLine = 27
+Reference: action = SELECT, offset = 20084, line number = 410, charPositionInLine = 0
+Reference: Object = rngfunc (FUNCTION), action = DROP, offset = 20124, line number = 411, charPositionInLine = 14
+Reference: Object = rngfunc() (FUNCTION), action = CREATE, offset = 20229, line number = 414, charPositionInLine = 27
+Reference: action = SELECT, offset = 20324, line number = 417, charPositionInLine = 0
+Reference: Object = rngfunc (FUNCTION), action = DROP, offset = 20374, line number = 418, charPositionInLine = 14
+Reference: Object = tt (TABLE), action = CREATE, offset = 20457, line number = 424, charPositionInLine = 18
+Reference: Object = insert_tt(text) (FUNCTION), action = CREATE, offset = 20500, line number = 426, charPositionInLine = 16
+Reference: action = SELECT, offset = 20597, line number = 430, charPositionInLine = 0
+Reference: action = SELECT, offset = 20622, line number = 431, charPositionInLine = 0
+Reference: action = SELECT, offset = 20647, line number = 432, charPositionInLine = 0
+Reference: Object = insert_tt(text) (FUNCTION), action = CREATE, offset = 20764, line number = 435, charPositionInLine = 27
+Reference: action = SELECT, offset = 20870, line number = 439, charPositionInLine = 0
+Reference: action = SELECT, offset = 20896, line number = 440, charPositionInLine = 0
+Reference: Object = insert_tt2(text, text) (FUNCTION), action = CREATE, offset = 20972, line number = 443, charPositionInLine = 27
+Reference: action = SELECT, offset = 21086, line number = 447, charPositionInLine = 0
+Reference: action = SELECT, offset = 21126, line number = 448, charPositionInLine = 0
+Reference: action = SELECT, offset = 21166, line number = 449, charPositionInLine = 0
+Reference: action = SELECT, offset = 21234, line number = 452, charPositionInLine = 0
+Reference: action = SELECT, offset = 21282, line number = 453, charPositionInLine = 0
+Reference: Object = noticetrigger() (FUNCTION), action = CREATE, offset = 21344, line number = 456, charPositionInLine = 16
+Reference: Object = tt.tnoticetrigger (TRIGGER), action = CREATE, offset = 21497, line number = 461, charPositionInLine = 15
+Reference: Object = tt (TABLE), action = null, offset = 21528, line number = 461, charPositionInLine = 46
+Reference: action = SELECT, offset = 21580, line number = 464, charPositionInLine = 0
+Reference: action = SELECT, offset = 21625, line number = 465, charPositionInLine = 0
+Reference: Object = tt_log (TABLE), action = CREATE, offset = 21680, line number = 468, charPositionInLine = 18
+Reference: Object = tt.insert_tt_rule (RULE), action = CREATE, offset = 21720, line number = 470, charPositionInLine = 12
+Reference: Object = tt (TABLE), action = null, offset = 21751, line number = 470, charPositionInLine = 43
+Reference: action = SELECT, offset = 21799, line number = 473, charPositionInLine = 0
+Reference: action = SELECT, offset = 21846, line number = 474, charPositionInLine = 0
+Reference: action = SELECT, offset = 21960, line number = 477, charPositionInLine = 0
+Reference: Object = rngfunc1(integer) (FUNCTION), action = CREATE, offset = 22041, line number = 480, charPositionInLine = 16
+Reference: action = SET, offset = 22197, line number = 485, charPositionInLine = 0
+Reference: action = SELECT, offset = 22218, line number = 486, charPositionInLine = 0
+Reference: action = RESET, offset = 22269, line number = 487, charPositionInLine = 0
+Reference: action = SELECT, offset = 22285, line number = 488, charPositionInLine = 0
+Reference: Object = rngfunc1 (FUNCTION), action = DROP, offset = 22351, line number = 490, charPositionInLine = 14
+Reference: Object = array_to_set(anyarray) (FUNCTION), action = CREATE, offset = 22533, line number = 496, charPositionInLine = 16
+Reference: action = SELECT, offset = 22692, line number = 500, charPositionInLine = 0
+Reference: action = SELECT, offset = 22734, line number = 501, charPositionInLine = 0
+Reference: action = SELECT, offset = 22804, line number = 502, charPositionInLine = 0
+Reference: Object = rngfunc (TABLE), action = CREATE, offset = 22880, line number = 504, charPositionInLine = 18
+Reference: Object = testrngfunc() (FUNCTION), action = CREATE, offset = 22924, line number = 506, charPositionInLine = 16
+Reference: action = SELECT, offset = 23025, line number = 510, charPositionInLine = 0
+Reference: action = SELECT, offset = 23047, line number = 511, charPositionInLine = 0
+Reference: action = SELECT, offset = 23098, line number = 512, charPositionInLine = 0
+Reference: Object = testrngfunc (FUNCTION), action = DROP, offset = 23150, line number = 514, charPositionInLine = 14
+Reference: Object = testrngfunc() (FUNCTION), action = CREATE, offset = 23182, line number = 516, charPositionInLine = 16
+Reference: action = SELECT, offset = 23296, line number = 520, charPositionInLine = 0
+Reference: action = SELECT, offset = 23318, line number = 521, charPositionInLine = 0
+Reference: action = SELECT, offset = 23369, line number = 522, charPositionInLine = 0
+Reference: Object = testrngfunc (FUNCTION), action = DROP, offset = 23421, line number = 524, charPositionInLine = 14
+Reference: Object = users (TABLE), action = CREATE, offset = 23534, line number = 530, charPositionInLine = 18
+Reference: Object = users (TABLE), action = INSERT, offset = 23629, line number = 531, charPositionInLine = 12
+Reference: Object = users (TABLE), action = INSERT, offset = 23685, line number = 532, charPositionInLine = 12
+Reference: Object = users (TABLE), action = ALTER, offset = 23743, line number = 533, charPositionInLine = 12
+Reference: Object = get_first_user() (FUNCTION), action = CREATE, offset = 23797, line number = 535, charPositionInLine = 27
+Reference: action = SELECT, offset = 23904, line number = 539, charPositionInLine = 0
+Reference: action = SELECT, offset = 23929, line number = 540, charPositionInLine = 0
+Reference: Object = get_users() (FUNCTION), action = CREATE, offset = 23989, line number = 542, charPositionInLine = 27
+Reference: action = SELECT, offset = 24089, line number = 546, charPositionInLine = 0
+Reference: action = SELECT, offset = 24109, line number = 547, charPositionInLine = 0
+Reference: action = SELECT, offset = 24136, line number = 548, charPositionInLine = 0
+Reference: action = SELECT, offset = 24254, line number = 551, charPositionInLine = 0
+Reference: action = SELECT, offset = 24332, line number = 552, charPositionInLine = 0
+Reference: Object = usersview (VIEW), action = CREATE, offset = 24492, line number = 555, charPositionInLine = 17
+Reference: action = SELECT, offset = 24584, line number = 558, charPositionInLine = 0
+Reference: Object = users (TABLE), action = ALTER, offset = 24621, line number = 559, charPositionInLine = 12
+Reference: action = SELECT, offset = 24649, line number = 560, charPositionInLine = 0
+Reference: action = BEGIN, offset = 24674, line number = 561, charPositionInLine = 0
+Reference: Object = users (TABLE), action = ALTER, offset = 24693, line number = 562, charPositionInLine = 12
+Reference: action = SELECT, offset = 24721, line number = 563, charPositionInLine = 0
+Reference: action = ROLLBACK, offset = 24771, line number = 564, charPositionInLine = 0
+Reference: Object = users (TABLE), action = ALTER, offset = 24793, line number = 565, charPositionInLine = 12
+Reference: action = SELECT, offset = 24830, line number = 566, charPositionInLine = 0
+Reference: Object = usersview (VIEW), action = DROP, offset = 24891, line number = 568, charPositionInLine = 10
+Reference: Object = get_first_user (FUNCTION), action = DROP, offset = 24916, line number = 569, charPositionInLine = 14
+Reference: Object = get_users (FUNCTION), action = DROP, offset = 24948, line number = 570, charPositionInLine = 14
+Reference: Object = users (TABLE), action = DROP, offset = 24972, line number = 571, charPositionInLine = 11
+Reference: Object = rngfuncbar() (FUNCTION), action = CREATE, offset = 25082, line number = 575, charPositionInLine = 27
+Reference: action = SELECT, offset = 25201, line number = 579, charPositionInLine = 0
+Reference: action = SELECT, offset = 25222, line number = 580, charPositionInLine = 0
+Reference: Object = rngfuncbar (FUNCTION), action = DROP, offset = 25265, line number = 582, charPositionInLine = 14
+Reference: Object = rngfuncbar() (FUNCTION), action = CREATE, offset = 25381, line number = 586, charPositionInLine = 27
+Reference: action = SELECT, offset = 25458, line number = 589, charPositionInLine = 0
+Reference: Object = rngfuncbar() (FUNCTION), action = CREATE, offset = 25514, line number = 591, charPositionInLine = 27
+Reference: action = SELECT, offset = 25589, line number = 594, charPositionInLine = 0
+Reference: Object = rngfuncbar() (FUNCTION), action = CREATE, offset = 25654, line number = 596, charPositionInLine = 27
+Reference: action = SELECT, offset = 25734, line number = 599, charPositionInLine = 0
+Reference: Object = rngfuncbar (FUNCTION), action = DROP, offset = 25786, line number = 601, charPositionInLine = 14
+Reference: Object = extractq2(int8_tbl) (FUNCTION), action = CREATE, offset = 25891, line number = 605, charPositionInLine = 16
+Reference: action = EXPLAIN, offset = 25974, line number = 609, charPositionInLine = 0
+Reference: action = SELECT, offset = 26054, line number = 612, charPositionInLine = 0
+Reference: Object = extractq2_2(int8_tbl) (FUNCTION), action = CREATE, offset = 26121, line number = 614, charPositionInLine = 16
+Reference: action = EXPLAIN, offset = 26235, line number = 618, charPositionInLine = 0
+Reference: action = SELECT, offset = 26317, line number = 621, charPositionInLine = 0
+Reference: Object = extractq2_2_opt(int8_tbl) (FUNCTION), action = CREATE, offset = 26461, line number = 625, charPositionInLine = 16
+Reference: action = EXPLAIN, offset = 26570, line number = 629, charPositionInLine = 0
+Reference: action = SELECT, offset = 26656, line number = 632, charPositionInLine = 0
+Reference: Object = rngfunc2 (TYPE), action = CREATE, offset = 26780, line number = 636, charPositionInLine = 12
+Reference: action = SELECT, offset = 26814, line number = 638, charPositionInLine = 0
+Reference: action = SELECT, offset = 26898, line number = 639, charPositionInLine = 0
+Reference: action = SELECT, offset = 26977, line number = 640, charPositionInLine = 0
+Reference: action = SELECT, offset = 27077, line number = 641, charPositionInLine = 0
+Reference: Object = rngfunc2 (TYPE), action = DROP, offset = 27149, line number = 643, charPositionInLine = 10

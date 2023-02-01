@@ -80,9 +80,9 @@ public class CustomParserListener {
     }
 
     /**
-     * Adding undescribed DB object to query storage for showing information
-     * about it in 'Outline' and in 'Console'.
-     * <br /><br />
+     * Adding undescribed DB object to query storage for showing information about it in 'Outline' and in 'Console'.
+     * <br>
+     * <br>
      * 'undescribed DB object' - means that it is not a child of
      * {@link ru.taximaxim.codekeeper.core.schema.PgStatement}.
      */

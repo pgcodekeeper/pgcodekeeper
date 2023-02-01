@@ -341,7 +341,7 @@ public class PgColumn extends AbstractColumn implements PgSimpleOptionContainer 
 
             PgDiffArguments arg = getDatabase().getArguments();
 
-            if (arg == null || !arg.isUsingTypeCastOff()) {
+            if ((arg == null || !arg.isUsingTypeCastOff()) && !(getParent() instanceof AbstractForeignTable)) {
                 sb.append(" USING ").append(PgDiffUtils.getQuotedName(newColumn.getName()))
                 .append("::").append(newType);
             }

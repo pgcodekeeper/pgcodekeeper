@@ -1,0 +1,15 @@
+Reference: action = ALTER BROKER PRIORITY, offset = 0, line number = 1, charPositionInLine = 0
+Reference: action = ALTER BROKER PRIORITY, offset = 109, line number = 4, charPositionInLine = 0
+Reference: action = CREATE BROKER PRIORITY, offset = 346, line number = 10, charPositionInLine = 0
+Reference: action = CREATE BROKER PRIORITY, offset = 586, line number = 16, charPositionInLine = 0
+Reference: action = CREATE BROKER PRIORITY, offset = 826, line number = 22, charPositionInLine = 0
+Reference: action = CREATE BROKER PRIORITY, offset = 1042, line number = 28, charPositionInLine = 0
+Reference: action = CREATE BROKER PRIORITY, offset = 1263, line number = 34, charPositionInLine = 0
+Reference: action = CREATE BROKER PRIORITY, offset = 1504, line number = 40, charPositionInLine = 0
+Reference: action = CREATE BROKER PRIORITY, offset = 1745, line number = 46, charPositionInLine = 0
+Reference: action = CREATE BROKER PRIORITY, offset = 1990, line number = 52, charPositionInLine = 0
+Reference: action = CREATE BROKER PRIORITY, offset = 2235, line number = 58, charPositionInLine = 0
+Reference: action = CREATE BROKER PRIORITY, offset = 2480, line number = 64, charPositionInLine = 0
+Reference: action = CREATE BROKER PRIORITY, offset = 2725, line number = 70, charPositionInLine = 0
+Reference: action = CREATE BROKER PRIORITY, offset = 2922, line number = 76, charPositionInLine = 0
+Reference: action = CREATE BROKER PRIORITY, offset = 3123, line number = 82, charPositionInLine = 0

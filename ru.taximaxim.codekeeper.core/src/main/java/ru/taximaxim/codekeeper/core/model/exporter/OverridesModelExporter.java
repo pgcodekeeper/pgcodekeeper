@@ -94,7 +94,7 @@ public class OverridesModelExporter extends AbstractModelExporter {
         PgStatement.appendOwnerSQL(st, st.getOwner(), false, sb);
         PgPrivilege.appendPrivileges(privs, st.isPostgres(), sb);
         if (privs.isEmpty() && st.isPostgres()) {
-            PgPrivilege.appendDefaultPrivileges(st, sb);
+            PgPrivilege.appendDefaultPostgresPrivileges(st, sb);
         }
 
         if (DbObjType.TABLE == st.getStatementType()) {

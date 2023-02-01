@@ -49,7 +49,7 @@
         <profile>
             <id>jenkins</id>
             <properties>
-                <target.definition.file>app_202006</target.definition.file>
+                <target.definition.file>app_202103</target.definition.file>
             </properties>
         </profile>
         <profile>
@@ -61,7 +61,7 @@
         <profile>
             <id>compat_check</id>
             <properties>
-                <target.definition.file>app_202006</target.definition.file>
+                <target.definition.file>app_202103</target.definition.file>
             </properties>
         </profile>
     </profiles>

@@ -2186,6 +2186,7 @@ bare_label_keyword
     | OWNED
     | OWNER
     | PARALLEL
+    | PARAMETER
     | PARSER
     | PARTIAL
     | PARTITION
@@ -2496,8 +2497,10 @@ tokens_nonreserved
     | LOGGED
     | MAPPING
     | MATCH
+    | MATCHED
     | MATERIALIZED
     | MAXVALUE
+    | MERGE
     | METHOD
     | MINUTE
     | MINVALUE
@@ -2533,6 +2536,7 @@ tokens_nonreserved
     | OWNED
     | OWNER
     | PARALLEL
+    | PARAMETER
     | PARSER
     | PARTIAL
     | PARTITION

@@ -35,10 +35,13 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath imple
     }
 
     /**
-     * Добавить колонку к списку колонок PrimaryKey или Unique
+     * Adds column to columns list for PK or Unique
+     *
+     * @param column
+     *            - column name
      */
-    public void addColumn(String genericColumn) {
-        columns.add(genericColumn);
+    public void addColumn(String column) {
+        columns.add(column);
     }
 
     public Set<String> getForeignColumns() {

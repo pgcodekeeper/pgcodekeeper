@@ -5,10 +5,8 @@ Bundle-SymbolicName: ru.taximaxim.codekeeper.core.tests
 Bundle-Version: 1.0.0.qualifier
 Fragment-Host: ru.taximaxim.codekeeper.core
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Require-Bundle: org.junit;bundle-version="4.11.0"
-Bundle-ClassPath: .,
- lib/javers-core-1.1.1.jar,
- lib/picocontainer-2.14.jar,
- lib/joda-time-2.7.jar,
- lib/slf4j-api-1.7.13.jar
+Require-Bundle: org.junit.jupiter.api;bundle-version="[5.6.0,6.0.0)",
+ org.junit.jupiter.params;bundle-version="[5.6.0,6.0.0)",
+ org.junit;bundle-version="[4.11.0,5.0.0)"
+Bundle-ClassPath: .
 Automatic-Module-Name: ru.taximaxim.codekeeper.core.tests

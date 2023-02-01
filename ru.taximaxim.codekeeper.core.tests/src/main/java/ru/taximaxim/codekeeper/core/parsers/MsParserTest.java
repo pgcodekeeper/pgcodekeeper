@@ -11,14 +11,12 @@ import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.atn.PredictionMode;
 import org.antlr.v4.runtime.dfa.DFA;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import ru.taximaxim.codekeeper.core.TestUtils;
-import ru.taximaxim.codekeeper.core.log.Log;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser;
 
@@ -28,66 +26,58 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser;
  * @author galiev_mr
  * @since 5.7.0
  */
-@RunWith(value = Parameterized.class)
-public class MsParserTest {
+class MsParserTest {
 
-    @Parameters
-    public static Iterable<Object[]> parameters() {
-        return TestUtils.getParameters(new Object[][] {
-            {"ms_assemblies"},
-            {"ms_authorizations"},
-            {"ms_availability_group"},
-            {"ms_backup"},
-            {"ms_broker_priority"},
-            {"ms_certificates"},
+    @ParameterizedTest
+    @ValueSource(strings =  {
+            "ms_aggregate",
+            "ms_assemblies",
+            "ms_authorizations",
+            "ms_availability_group",
+            "ms_backup",
+            "ms_broker_priority",
+            "ms_certificates",
             // TODO goto
-            {"ms_control_flow", 1},
-            {"ms_cursors"},
-            {"ms_database", 1},
-            {"ms_delete"},
-            {"ms_drop"},
-            {"ms_event"},
-            {"ms_full_width_chars"},
-            {"ms_function"},
-            {"ms_index"},
-            {"ms_insert"},
-            {"ms_key", 1},
-            {"ms_logins", 3},
-            {"ms_merge"},
-            {"ms_other", 3},
-            {"ms_predicates"},
-            {"ms_procedures"},
-            {"ms_roles"},
-            {"ms_rule"},
-            {"ms_schema"},
-            {"ms_select"},
-            {"ms_sequences"},
-            {"ms_server", 6},
-            {"ms_statements", 31},
-            {"ms_table"},
-            {"ms_transactions"},
-            {"ms_triggers"},
-            {"ms_type"},
-            {"ms_update"},
-            {"ms_users"},
-            {"ms_xml_data_type", 1},
-        });
+            "ms_cursors",
+            "ms_delete",
+            "ms_drop",
+            "ms_event",
+            "ms_full_width_chars",
+            "ms_function",
+            "ms_index",
+            "ms_insert",
+            "ms_merge",
+            "ms_predicates",
+            "ms_procedures",
+            "ms_roles",
+            "ms_rule",
+            "ms_schema",
+            "ms_select",
+            "ms_sequences",
+            "ms_table",
+            "ms_transactions",
+            "ms_triggers",
+            "ms_type",
+            "ms_update",
+            "ms_users",
+            "ms_view",
+    })
+    void parse(final String fileNameTemplate) throws IOException {
+        parse(fileNameTemplate, 0);
     }
 
-    /**
-     * Template name for file names that should be used for the test.
-     */
-    private final String fileNameTemplate;
-    private final int allowedAmbiguity;
-
-    public MsParserTest(final String fileNameTemplate, Integer allowedAmbiguity) {
-        this.fileNameTemplate = fileNameTemplate;
-        this.allowedAmbiguity = allowedAmbiguity != null ? allowedAmbiguity : 0;
-        Log.log(Log.LOG_DEBUG, fileNameTemplate);
-    }
-
-    @Test
-    public void runDiff() throws IOException {
+    @ParameterizedTest
+    @CsvSource({
+        "ms_control_flow, 1",
+        "ms_database, 1",
+        "ms_key, 1",
+        "ms_logins, 3",
+        "ms_other, 3",
+        "ms_server, 6",
+        "ms_statements, 31",
+        "ms_xml_data_type, 1",
+    })
+    void parse(String fileNameTemplate, Integer allowedAmbiguity) throws IOException {
         List<Object> errors = new ArrayList<>();
         AtomicInteger ambiguity = new AtomicInteger();
 
@@ -110,7 +100,7 @@ public class MsParserTest {
         parser.tsql_file();
 
         int count = ambiguity.intValue();
-        Assert.assertTrue("File: " + fileNameTemplate + " - ANTLR Error", errors.isEmpty());
-        Assert.assertFalse("File: " + fileNameTemplate + " - ANTLR Ambiguity " + count, count != allowedAmbiguity);
+        Assertions.assertTrue(errors.isEmpty(), "File: " + fileNameTemplate + " - ANTLR Error");
+        Assertions.assertEquals(allowedAmbiguity, count, "File: " + fileNameTemplate + " - ANTLR Ambiguity " + count);
     }
 }

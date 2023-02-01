@@ -1,0 +1,41 @@
+Reference: Object = "Sales"."Customer".reminder1 (TRIGGER), action = CREATE, offset = 15, line number = 1, charPositionInLine = 15
+Reference: Object = "Sales" (SCHEMA), action = null, offset = 30, line number = 2, charPositionInLine = 3
+Reference: Object = "Sales"."Customer" (TABLE), action = null, offset = 36, line number = 2, charPositionInLine = 9
+Reference: Object = "Sales"."Customer".reminder2 (TRIGGER), action = ALTER, offset = 153, line number = 7, charPositionInLine = 24
+Reference: Object = "Sales" (SCHEMA), action = null, offset = 166, line number = 8, charPositionInLine = 3
+Reference: Object = "Sales"."Customer" (TABLE), action = null, offset = 172, line number = 8, charPositionInLine = 9
+Reference: Object = "Purchasing" (SCHEMA), action = null, offset = 496, line number = 18, charPositionInLine = 15
+Reference: Object = "Purchasing"."PurchaseOrderHeader"."LowCredit" (TRIGGER), action = CREATE, offset = 507, line number = 18, charPositionInLine = 26
+Reference: Object = "Purchasing"."PurchaseOrderHeader" (TABLE), action = null, offset = 531, line number = 18, charPositionInLine = 50
+Reference: action = CREATE TRIGGER, offset = 1029, line number = 37, charPositionInLine = 0
+Reference: action = DROP TRIGGER, offset = 1190, line number = 44, charPositionInLine = 0
+Reference: action = CREATE TRIGGER, offset = 1233, line number = 48, charPositionInLine = 0
+Reference: action = DROP TRIGGER, offset = 1447, line number = 55, charPositionInLine = 0
+Reference: action = DISABLE, offset = 1502, line number = 58, charPositionInLine = 0
+Reference: Object = "Person"."Address"."uAddress" (TRIGGER), action = ALTER, offset = 1525, line number = 58, charPositionInLine = 23
+Reference: Object = "Person" (SCHEMA), action = null, offset = 1537, line number = 58, charPositionInLine = 35
+Reference: Object = "Person"."Address" (TABLE), action = null, offset = 1544, line number = 58, charPositionInLine = 42
+Reference: action = ENABLE, offset = 1556, line number = 60, charPositionInLine = 0
+Reference: Object = "Person"."Address"."uAddress" (TRIGGER), action = ALTER, offset = 1578, line number = 60, charPositionInLine = 22
+Reference: Object = "Person" (SCHEMA), action = null, offset = 1590, line number = 60, charPositionInLine = 34
+Reference: Object = "Person"."Address" (TABLE), action = null, offset = 1597, line number = 60, charPositionInLine = 41
+Reference: action = DISABLE, offset = 1606, line number = 61, charPositionInLine = 0
+Reference: action = ENABLE, offset = 1645, line number = 63, charPositionInLine = 0
+Reference: action = ENABLE, offset = 1680, line number = 64, charPositionInLine = 0
+Reference: action = DISABLE, offset = 1717, line number = 66, charPositionInLine = 0
+Reference: Object = "Person"."Address"."uAddress" (TRIGGER), action = ALTER, offset = 1740, line number = 66, charPositionInLine = 23
+Reference: Object = "Person" (SCHEMA), action = null, offset = 1752, line number = 66, charPositionInLine = 35
+Reference: Object = "Person"."Address" (TABLE), action = null, offset = 1759, line number = 66, charPositionInLine = 42
+Reference: action = DISABLE, offset = 1771, line number = 68, charPositionInLine = 0
+Reference: action = DISABLE, offset = 1810, line number = 70, charPositionInLine = 0
+Reference: Object = "Person"."Address".reminder (TRIGGER), action = CREATE, offset = 1863, line number = 72, charPositionInLine = 15
+Reference: Object = "Person" (SCHEMA), action = null, offset = 1877, line number = 73, charPositionInLine = 3
+Reference: Object = "Person"."Address" (TABLE), action = null, offset = 1884, line number = 73, charPositionInLine = 10
+Reference: Object = dbo (SCHEMA), action = null, offset = 2034, line number = 81, charPositionInLine = 15
+Reference: Object = dbo."employeeData"."updEmployeeData" (TRIGGER), action = CREATE, offset = 2038, line number = 81, charPositionInLine = 19
+Reference: Object = dbo."employeeData" (TABLE), action = null, offset = 2064, line number = 82, charPositionInLine = 7
+Reference: Object = "Person" (SCHEMA), action = null, offset = 2354, line number = 94, charPositionInLine = 15
+Reference: Object = "Person"."Person"."uContact2" (TRIGGER), action = CREATE, offset = 2361, line number = 94, charPositionInLine = 22
+Reference: Object = "Person"."Person" (TABLE), action = null, offset = 2381, line number = 94, charPositionInLine = 42
+Reference: action = CREATE TRIGGER, offset = 2572, line number = 100, charPositionInLine = 0
+Reference: action = CREATE TRIGGER, offset = 2873, line number = 111, charPositionInLine = 0

@@ -91,7 +91,6 @@ import org.osgi.service.prefs.BackingStoreException;
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DangerStatement;
 import ru.taximaxim.codekeeper.core.IProgressReporter;
-import ru.taximaxim.codekeeper.core.Consts.JDBC_CONSTS;
 import ru.taximaxim.codekeeper.core.fileutils.TempFile;
 import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
 import ru.taximaxim.codekeeper.core.loader.JdbcMsConnector;
@@ -110,7 +109,6 @@ import ru.taximaxim.codekeeper.ui.UIConsts.LANGUAGE;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
-import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PATH;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.SQL_EDITOR_PREF;
@@ -132,6 +130,8 @@ public class SQLEditor extends AbstractDecoratedTextEditor
 implements IResourceChangeListener, ITextErrorReporter {
 
     static final String CONTENT_ASSIST = "ContentAssist"; //$NON-NLS-1$
+
+    private static final int JDBC_DEFAULT_PORT = 5432;
 
     private final IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
     private SqlEditorPartListener partListener;
@@ -712,7 +712,7 @@ implements IResourceChangeListener, ITextErrorReporter {
 
             IProgressReporter reporter = new UiProgressReporter(monitor, SQLEditor.this, offset);
             try (IProgressReporter toClose = reporter) {
-                new JdbcRunner(monitor).runBatches(connector, parser.batch(), reporter, mainPrefs.getInt(PREF.LIMIT_SELECT_RESULTS));
+                new JdbcRunner(monitor).runBatches(connector, parser.batch(), reporter);
                 ProjectEditorDiffer.notifyDbChanged(dbInfo);
                 return Status.OK_STATUS;
             } catch (InterruptedException ex) {
@@ -776,7 +776,7 @@ implements IResourceChangeListener, ITextErrorReporter {
                 }
                 int port = externalDbInfo.getDbPort();
                 if (port == 0) {
-                    port = JDBC_CONSTS.JDBC_DEFAULT_PORT;
+                    port = JDBC_DEFAULT_PORT;
                 }
                 s = s.replace(CMD_VARS.DB_PORT_PLACEHOLDER, "" + port); //$NON-NLS-1$
             }

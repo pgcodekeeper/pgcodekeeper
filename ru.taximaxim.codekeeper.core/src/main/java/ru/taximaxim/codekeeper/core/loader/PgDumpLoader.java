@@ -6,7 +6,6 @@
 package ru.taximaxim.codekeeper.core.loader;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
@@ -20,14 +19,14 @@ import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.fileutils.InputStreamProvider;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrContextProcessor.SqlContextProcessor;
+import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrContextProcessor.TSqlContextProcessor;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrTask;
 import ru.taximaxim.codekeeper.core.parsers.antlr.CustomSQLParserListener;
 import ru.taximaxim.codekeeper.core.parsers.antlr.CustomTSQLParserListener;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLOverridesListener;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLOverridesListener;
-import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrContextProcessor.SqlContextProcessor;
-import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrContextProcessor.TSqlContextProcessor;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.MsSchema;
@@ -87,18 +86,15 @@ public class PgDumpLoader extends DatabaseLoader {
     }
 
     /**
-     * This constructor creates {@link InputStream} using inputFile parameter.
-     * Call {@link #close()} after this {@link PgDumpLoader} instance is no longer needed,
-     * or wrap usage of the instance with try-with-resources.
+     * This constructor creates {@link InputStreamProvider} using inputFile parameter.
      */
-    public PgDumpLoader(Path inputFile, PgDiffArguments args,
-            IProgressMonitor monitor, int monitoringLevel) {
+    public PgDumpLoader(Path inputFile, PgDiffArguments args, IProgressMonitor monitor, int monitoringLevel) {
         this(() -> Files.newInputStream(inputFile), inputFile.toString(), args, monitor, monitoringLevel);
     }
 
     /**
      * @see #PgDumpLoader(Path, PgDiffArguments, IProgressMonitor, int)
-     * @see #PgDumpLoader(InputStream, String, PgDiffArguments, IProgressMonitor)
+     * @see #PgDumpLoader(InputStreamProvider, String, PgDiffArguments, IProgressMonitor, int)
      */
     public PgDumpLoader(Path inputFile, PgDiffArguments args, IProgressMonitor monitor) {
         this(inputFile, args, monitor, 1);
@@ -106,7 +102,7 @@ public class PgDumpLoader extends DatabaseLoader {
 
     /**
      * @see #PgDumpLoader(Path, PgDiffArguments, IProgressMonitor, int)
-     * @see #PgDumpLoader(InputStream, String, PgDiffArguments)
+     * @see #PgDumpLoader(InputStreamProvider, String, PgDiffArguments, IProgressMonitor, int)
      */
     public PgDumpLoader(Path inputFile, PgDiffArguments args) {
         this(inputFile, args, new NullProgressMonitor(), 0);

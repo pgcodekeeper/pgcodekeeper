@@ -1,0 +1,20 @@
+Reference: Object = timetz_tbl (TABLE), action = CREATE, offset = 30, line number = 5, charPositionInLine = 13
+Reference: Object = timetz_tbl (TABLE), action = INSERT, offset = 83, line number = 7, charPositionInLine = 12
+Reference: Object = timetz_tbl (TABLE), action = INSERT, offset = 128, line number = 8, charPositionInLine = 12
+Reference: Object = timetz_tbl (TABLE), action = INSERT, offset = 173, line number = 9, charPositionInLine = 12
+Reference: Object = timetz_tbl (TABLE), action = INSERT, offset = 218, line number = 10, charPositionInLine = 12
+Reference: Object = timetz_tbl (TABLE), action = INSERT, offset = 263, line number = 11, charPositionInLine = 12
+Reference: Object = timetz_tbl (TABLE), action = INSERT, offset = 308, line number = 12, charPositionInLine = 12
+Reference: Object = timetz_tbl (TABLE), action = INSERT, offset = 353, line number = 13, charPositionInLine = 12
+Reference: Object = timetz_tbl (TABLE), action = INSERT, offset = 398, line number = 14, charPositionInLine = 12
+Reference: Object = timetz_tbl (TABLE), action = INSERT, offset = 443, line number = 15, charPositionInLine = 12
+Reference: Object = timetz_tbl (TABLE), action = INSERT, offset = 488, line number = 16, charPositionInLine = 12
+Reference: Object = timetz_tbl (TABLE), action = INSERT, offset = 543, line number = 18, charPositionInLine = 12
+Reference: Object = timetz_tbl (TABLE), action = INSERT, offset = 615, line number = 19, charPositionInLine = 12
+Reference: Object = timetz_tbl (TABLE), action = INSERT, offset = 742, line number = 21, charPositionInLine = 12
+Reference: action = SELECT, offset = 792, line number = 23, charPositionInLine = 0
+Reference: action = SELECT, offset = 833, line number = 25, charPositionInLine = 0
+Reference: action = SELECT, offset = 897, line number = 27, charPositionInLine = 0
+Reference: action = SELECT, offset = 961, line number = 29, charPositionInLine = 0
+Reference: action = SELECT, offset = 1021, line number = 31, charPositionInLine = 0
+Reference: action = SELECT, offset = 1380, line number = 42, charPositionInLine = 0

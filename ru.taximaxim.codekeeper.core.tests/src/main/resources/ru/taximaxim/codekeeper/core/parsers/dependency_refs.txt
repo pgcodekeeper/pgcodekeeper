@@ -1,0 +1,50 @@
+Reference: action = CREATE USER, offset = 23, line number = 5, charPositionInLine = 0
+Reference: action = CREATE USER, offset = 53, line number = 6, charPositionInLine = 0
+Reference: action = CREATE USER, offset = 84, line number = 7, charPositionInLine = 0
+Reference: action = CREATE GROUP, offset = 115, line number = 8, charPositionInLine = 0
+Reference: Object = deptest (TABLE), action = CREATE, offset = 161, line number = 10, charPositionInLine = 13
+Reference: Object = deptest (TABLE), action = GRANT, offset = 226, line number = 12, charPositionInLine = 22
+Reference: Object = deptest (TABLE), action = GRANT, offset = 281, line number = 13, charPositionInLine = 19
+Reference: Object = deptest (TABLE), action = REVOKE, offset = 520, line number = 20, charPositionInLine = 17
+Reference: Object = deptest (TABLE), action = REVOKE, offset = 713, line number = 24, charPositionInLine = 63
+Reference: Object = deptest (TABLE), action = REVOKE, offset = 820, line number = 28, charPositionInLine = 18
+Reference: Object = deptest (TABLE), action = REVOKE, offset = 949, line number = 32, charPositionInLine = 14
+Reference: Object = deptest (TABLE), action = ALTER, offset = 1168, line number = 39, charPositionInLine = 12
+Reference: Object = deptest (TABLE), action = DROP, offset = 1297, line number = 44, charPositionInLine = 11
+Reference: action = CREATE USER, offset = 1355, line number = 48, charPositionInLine = 0
+Reference: action = CREATE USER, offset = 1386, line number = 49, charPositionInLine = 0
+Reference: action = CREATE USER, offset = 1417, line number = 50, charPositionInLine = 0
+Reference: action = SET, offset = 1448, line number = 51, charPositionInLine = 0
+Reference: action = DROP OWNED BY, offset = 1514, line number = 53, charPositionInLine = 0
+Reference: action = DROP OWNED BY, offset = 1547, line number = 54, charPositionInLine = 0
+Reference: action = REASSIGN, offset = 1599, line number = 55, charPositionInLine = 0
+Reference: action = REASSIGN, offset = 1657, line number = 56, charPositionInLine = 0
+Reference: action = DROP OWNED BY, offset = 1738, line number = 58, charPositionInLine = 0
+Reference: Object = deptest1 (TABLE), action = CREATE, offset = 1785, line number = 60, charPositionInLine = 13
+Reference: Object = deptest1 (TABLE), action = GRANT, offset = 1824, line number = 61, charPositionInLine = 13
+Reference: action = SET, offset = 1874, line number = 63, charPositionInLine = 0
+Reference: Object = deptest (TABLE), action = CREATE, offset = 1932, line number = 64, charPositionInLine = 13
+Reference: Object = deptest1 (TABLE), action = GRANT, offset = 1985, line number = 65, charPositionInLine = 13
+Reference: action = RESET, offset = 2016, line number = 66, charPositionInLine = 0
+Reference: action = DROP OWNED BY, offset = 2047, line number = 69, charPositionInLine = 0
+Reference: Object = deptest1 (TABLE), action = GRANT, offset = 2162, line number = 76, charPositionInLine = 13
+Reference: action = GRANT, offset = 2193, line number = 77, charPositionInLine = 0
+Reference: action = SET, offset = 2252, line number = 79, charPositionInLine = 0
+Reference: Object = deptest (SCHEMA), action = CREATE, offset = 2311, line number = 80, charPositionInLine = 14
+Reference: Object = deptest (TABLE), action = CREATE, offset = 2333, line number = 81, charPositionInLine = 13
+Reference: action = ALTER DEFAULT PRIVILEGES, offset = 2373, line number = 82, charPositionInLine = 0
+Reference: Object = deptest_func() (FUNCTION), action = CREATE, offset = 2503, line number = 84, charPositionInLine = 16
+Reference: Object = deptest_enum (TYPE), action = CREATE, offset = 2583, line number = 86, charPositionInLine = 12
+Reference: Object = deptest_range (TYPE), action = CREATE, offset = 2625, line number = 87, charPositionInLine = 12
+Reference: Object = deptest2 (TABLE), action = CREATE, offset = 2680, line number = 89, charPositionInLine = 13
+Reference: Object = ss1 (SEQUENCE), action = CREATE, offset = 2752, line number = 91, charPositionInLine = 16
+Reference: Object = deptest2 (TABLE), action = ALTER, offset = 2769, line number = 92, charPositionInLine = 12
+Reference: Object = ss1 (SEQUENCE), action = ALTER, offset = 2830, line number = 93, charPositionInLine = 15
+Reference: Object = deptest2 (TABLE), action = null, offset = 2843, line number = 93, charPositionInLine = 28
+Reference: Object = deptest_t (TYPE), action = CREATE, offset = 2955, line number = 97, charPositionInLine = 12
+Reference: action = SELECT, offset = 2977, line number = 98, charPositionInLine = 0
+Reference: action = RESET, offset = 3083, line number = 101, charPositionInLine = 0
+Reference: action = REASSIGN, offset = 3112, line number = 102, charPositionInLine = 0
+Reference: action = SELECT, offset = 3172, line number = 105, charPositionInLine = 0
+Reference: action = DROP OWNED BY, offset = 3343, line number = 110, charPositionInLine = 0
+Reference: action = DROP OWNED BY, offset = 3436, line number = 115, charPositionInLine = 0

@@ -1,0 +1,24 @@
+Reference: Object = temp_float (TABLE), action = CREATE, offset = 244, line number = 12, charPositionInLine = 13
+Reference: Object = temp_float (TABLE), action = INSERT, offset = 281, line number = 14, charPositionInLine = 12
+Reference: Object = temp_float (TABLE), action = INSERT, offset = 345, line number = 17, charPositionInLine = 12
+Reference: action = SELECT, offset = 397, line number = 20, charPositionInLine = 0
+Reference: Object = temp_int4 (TABLE), action = CREATE, offset = 472, line number = 25, charPositionInLine = 13
+Reference: Object = temp_int4 (TABLE), action = INSERT, offset = 506, line number = 27, charPositionInLine = 12
+Reference: Object = temp_int4 (TABLE), action = INSERT, offset = 618, line number = 31, charPositionInLine = 12
+Reference: action = SELECT, offset = 667, line number = 34, charPositionInLine = 0
+Reference: Object = temp_int2 (TABLE), action = CREATE, offset = 742, line number = 39, charPositionInLine = 13
+Reference: Object = temp_int2 (TABLE), action = INSERT, offset = 776, line number = 41, charPositionInLine = 12
+Reference: Object = temp_int2 (TABLE), action = INSERT, offset = 880, line number = 45, charPositionInLine = 12
+Reference: action = SELECT, offset = 970, line number = 49, charPositionInLine = 0
+Reference: Object = temp_group (TABLE), action = CREATE, offset = 1068, line number = 56, charPositionInLine = 13
+Reference: Object = temp_group (TABLE), action = INSERT, offset = 1123, line number = 58, charPositionInLine = 12
+Reference: Object = temp_group (TABLE), action = INSERT, offset = 1211, line number = 62, charPositionInLine = 12
+Reference: action = SELECT, offset = 1279, line number = 66, charPositionInLine = 0
+Reference: action = SELECT, offset = 1334, line number = 68, charPositionInLine = 0
+Reference: action = SELECT, offset = 1611, line number = 75, charPositionInLine = 0
+Reference: action = SELECT, offset = 1744, line number = 80, charPositionInLine = 0
+Reference: action = SELECT, offset = 1882, line number = 85, charPositionInLine = 0
+Reference: Object = temp_int2 (TABLE), action = DROP, offset = 2049, line number = 92, charPositionInLine = 11
+Reference: Object = temp_int4 (TABLE), action = DROP, offset = 2072, line number = 94, charPositionInLine = 11
+Reference: Object = temp_float (TABLE), action = DROP, offset = 2095, line number = 96, charPositionInLine = 11
+Reference: Object = temp_group (TABLE), action = DROP, offset = 2119, line number = 98, charPositionInLine = 11

@@ -4,7 +4,6 @@ import java.sql.Array;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ConcurrentModificationException;
 import java.util.function.BiConsumer;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -15,6 +14,7 @@ import ru.taximaxim.codekeeper.core.loader.JdbcQuery;
 import ru.taximaxim.codekeeper.core.log.Log;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
+import ru.taximaxim.codekeeper.core.parsers.antlr.exception.ConcurrentModificationException;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
