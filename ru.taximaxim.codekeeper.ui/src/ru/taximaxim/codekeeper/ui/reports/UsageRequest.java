@@ -4,6 +4,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.MessageFormat;
 
+import org.eclipse.core.runtime.Platform;
+
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -17,36 +19,35 @@ public class UsageRequest {
     / and here https://www.thyngster.com/ga4-measurement-protocol-cheatsheet/
      */
 
-    private static final String GA_ACCOUNT = "G-89BE28NHFV"; //$NON-NLS-1$ // id for test account
-    private static final String GA_HOSTNAME = "technology45.ru"; //$NON-NLS-1$
-
-    private static final String TRACKING_URL = "https://www.google-analytics.com/g/collect"; //$NON-NLS-1$
     private static final String USER_AGENT = "User-Agent"; //$NON-NLS-1$
     private static final String GET_METHOD_NAME = "POST"; //$NON-NLS-1$
     private static final int TIMEOUT = 10000; // Connection timeout is 10 seconds.
 
-    private static final String PARAM_ACCOUNT_NAME = "tid"; // GA Tracking ID
-    private static final String PARAM_HOST_NAME = "dh"; // GA Document Host Name
-    private static final String CLIENT_ID = "cid"; // GA Client ID
-    private static final String PARAM_PAGE_REQUEST = "dl"; // GA document location URL
-
-    private static final String PARAM_CAMPAING_SOURSE = "cs"; //$NON-NLS-1$
-    private static final String PARAM_CAMPAING_NAME = "cn"; //$NON-NLS-1$
-    private static final String PARAM_CAMPAING_MEDIUM = "cm"; //$NON-NLS-1$
-
-
+    //required fields
+    private static final String TRACKING_URL = "https://www.google-analytics.com/g/collect"; //$NON-NLS-1$
     private static final String PARAM_TRACKING_CODE_VERSION = "v"; // GA protocol version for GU=1, for GA4=2
-    private static final String PARAM_DOCUMENT_ENCODING = "de"; //$NON-NLS-1$
-    private static final String PARAM_JAVA_VERSION = "fl"; // GA flash version
-
     private static final String VALUE_TRACKING_CODE_VERSION = "2"; //$NON-NLS-1$
+    private static final String PARAM_ACCOUNT_NAME = "tid"; // GA Tracking ID
+    private static final String GA_ACCOUNT = "G-89BE28NHFV"; //$NON-NLS-1$ // id for test account
+    private static final String CLIENT_ID = "cid"; // GA Client ID
+
+    //fields with data
+    private static final String PARAM_OS = "ep.OS";
+    private static final String PARAM_OS_VERSION = "ep.OS_version";
+    private static final String PARAM_ECLIPSE_VERSION = "ep.Ecplise_version";
+    private static final String PARAM_ECLIPSE_BUILD = "ep.Eclipse_build";
+    private static final String PARAM_KEEPER_VERSION = "ep.keeper_version";
+    private static final String PARAM_JVM_NAME = "ep.JVM_name";
+    private static final String PARAM_JAVA_VERSION = "ep.java_version"; // GA flash version
+
     private static final String PARAM_EVENT_NAME = "en"; //
+    private static final String VALUE_EVENT_NAME = "page_view";
 
-    // The constants which maybe will be deleted
-    private static final String PARAM_PAGE_TITLE = "uafvl"; //$NON-NLS-1$ //
+    //optional fields
     private static final String PARAM_EVENT_TRACKING = "utme"; //$NON-NLS-1$ //
-
-
+    private static final String GA_HOSTNAME = "technology45.ru"; //$NON-NLS-1$
+    private static final String PARAM_DOCUMENT_ENCODING = "de"; //$NON-NLS-1$
+    private static final String PARAM_HOST_NAME = "dh"; // GA Document Host Name
 
     private final EclipseEnvironment environment = Activator.getDefault().getEclipseEnvironment();
 
@@ -70,26 +71,24 @@ public class UsageRequest {
         }
         StringBuilder builder = new StringBuilder(TRACKING_URL).append('?');
         appendParameter(PARAM_TRACKING_CODE_VERSION, VALUE_TRACKING_CODE_VERSION, builder);
+        appendParameter(PARAM_ACCOUNT_NAME, GA_ACCOUNT, builder);
+        appendParameter(CLIENT_ID, environment.getUserId(), builder);
+
         appendParameter(PARAM_HOST_NAME, GA_HOSTNAME, builder);
         appendParameter(PARAM_DOCUMENT_ENCODING, "UTF-8", builder); //$NON-NLS-1$
-
-        if (title != null) {
-            String encoded = PgDiffUtils.checkedEncodeUtf8(title);
-            appendParameter(PARAM_PAGE_TITLE, encoded, builder);
-        }
-        appendParameter(PARAM_JAVA_VERSION, environment.getJavaVersion(), builder);
         if (event != null) {
             appendParameter(PARAM_EVENT_TRACKING, event, builder);
         }
 
-        appendParameter(PARAM_PAGE_REQUEST, pagePath, builder);
+        appendParameter(PARAM_JAVA_VERSION, environment.getJavaVersion(), builder);
+        appendParameter(PARAM_JVM_NAME, environment.getJavaVmName().replaceAll(" ", "_"), builder);
+        appendParameter(PARAM_KEEPER_VERSION, event.getType().getComponentVersion(), builder);
+        appendParameter(PARAM_OS, Platform.getOS(), builder);
+        appendParameter(PARAM_OS_VERSION, environment.getOSVersion(), builder);
+        appendParameter(PARAM_ECLIPSE_BUILD, environment.getApplicationName(), builder);
+        appendParameter(PARAM_ECLIPSE_VERSION, environment.getApplicationVersion(), builder);
 
-        appendParameter(PARAM_ACCOUNT_NAME, GA_ACCOUNT, builder);
-        appendParameter(CLIENT_ID, environment.getUserId() + "." + environment.getFirstVisit(), builder);
-        appendParameter(PARAM_CAMPAING_SOURSE, "=(direct)|", builder);
-        appendParameter(PARAM_CAMPAING_NAME, "=(direct)|", builder);
-        appendParameter(PARAM_CAMPAING_MEDIUM, "=(none)|", builder);
-        appendParameter(PARAM_EVENT_NAME, "test2", false, builder); //$NON-NLS-1$
+        appendParameter(PARAM_EVENT_NAME, VALUE_EVENT_NAME, false, builder);
 
         String url = builder.toString();
 

@@ -105,6 +105,7 @@ public class EclipseEnvironment {
     private String createIdentifier() {
         StringBuilder builder = new StringBuilder();
         builder.append(Math.abs(new Random().nextLong()));
+        builder.append(".");
         builder.append(System.currentTimeMillis());
         return builder.toString();
     }
