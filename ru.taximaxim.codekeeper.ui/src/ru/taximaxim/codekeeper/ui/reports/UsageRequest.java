@@ -76,6 +76,7 @@ public class UsageRequest {
 
         appendParameter(PARAM_HOST_NAME, GA_HOSTNAME, builder);
         appendParameter(PARAM_DOCUMENT_ENCODING, "UTF-8", builder); //$NON-NLS-1$
+
         if (event != null) {
             appendParameter(PARAM_EVENT_TRACKING, event, builder);
         }
