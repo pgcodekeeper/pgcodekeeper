@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Updated sending anonymous data from Google Universe to Google Analytics 4.
+- Removed pre-set limit when querying SELECT, ui freezes from 100k rows.
 - Improved deployment by replacing nested jars with maven dependencies.
 
 ### Fixed

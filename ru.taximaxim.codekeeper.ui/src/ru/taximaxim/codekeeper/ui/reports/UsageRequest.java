@@ -14,33 +14,33 @@ import ru.taximaxim.codekeeper.ui.Log;
  */
 public class UsageRequest {
 
-    /** 12.01.2023 all key u can look here https://developers.google.com/analytics/devguides/collection/protocol/v1/parameters#cd_
-    / and here https://www.thyngster.com/ga4-measurement-protocol-cheatsheet/
-     */
+    // 12.01.2023 all key for GA4 u can look here  https://www.thyngster.com/ga4-measurement-protocol-cheatsheet/
 
-    private static final String USER_AGENT = "User-Agent"; //$NON-NLS-1$
-    private static final String GET_METHOD_NAME = "POST"; //$NON-NLS-1$
+    private static final String USER_AGENT = "User-Agent";//$NON-NLS-1$
+    private static final String GET_METHOD_NAME = "POST";//$NON-NLS-1$
     private static final int TIMEOUT = 10000; // Connection timeout is 10 seconds.
 
     //required fields
-    private static final String TRACKING_URL = "https://www.google-analytics.com/g/collect"; //$NON-NLS-1$
-    private static final String PARAM_TRACKING_CODE_VERSION = "v"; // GA protocol version for GU=1, for GA4=2
-    private static final String VALUE_TRACKING_CODE_VERSION = "2"; //$NON-NLS-1$
-    private static final String PARAM_ACCOUNT_NAME = "tid"; // GA Tracking ID
-    private static final String GA_ACCOUNT = "G-89BE28NHFV"; //$NON-NLS-1$ // id for test account
-    private static final String CLIENT_ID = "cid"; // GA Client ID
+    private static final String TRACKING_URL = "https://www.google-analytics.com/g/collect";//$NON-NLS-1$
+    // GA protocol version for GU=1, for GA4=2
+    private static final String PARAM_TRACKING_CODE_VERSION = "v";//$NON-NLS-1$
+    private static final String VALUE_TRACKING_CODE_VERSION = "2";//$NON-NLS-1$
+
+    private static final String PARAM_ACCOUNT_NAME = "tid";//$NON-NLS-1$
+    private static final String GA_ACCOUNT = "G-89BE28NHFV";//$NON-NLS-1$
+    private static final String CLIENT_ID = "cid";//$NON-NLS-1$
 
     //fields with data
-    private static final String PARAM_OS = "ep.OS";
-    private static final String PARAM_OS_VERSION = "ep.OS_version";
-    private static final String PARAM_ECLIPSE_VERSION = "ep.Ecplise_version";
-    private static final String PARAM_ECLIPSE_BUILD = "ep.Eclipse_build";
-    private static final String PARAM_KEEPER_VERSION = "ep.keeper_version";
-    private static final String PARAM_JVM_NAME = "ep.JVM_name";
-    private static final String PARAM_JAVA_VERSION = "ep.java_version"; // GA flash version
+    private static final String PARAM_OS = "ep.os";//$NON-NLS-1$
+    private static final String PARAM_OS_VERSION = "ep.os_version";//$NON-NLS-1$
+    private static final String PARAM_ECLIPSE_VERSION = "ep.ecplise_version";//$NON-NLS-1$
+    private static final String PARAM_ECLIPSE_BUILD = "ep.eclipse_build";//$NON-NLS-1$
+    private static final String PARAM_KEEPER_VERSION = "ep.keeper_version";//$NON-NLS-1$
+    private static final String PARAM_JVM_NAME = "ep.jvm_name";//$NON-NLS-1$
+    private static final String PARAM_JAVA_VERSION = "ep.java_version";//$NON-NLS-1$
 
-    private static final String PARAM_EVENT_NAME = "en"; //
-    private static final String VALUE_EVENT_NAME = "start_up";
+    private static final String PARAM_EVENT_NAME = "en";//$NON-NLS-1$
+    private static final String VALUE_EVENT_NAME = "start_up";//$NON-NLS-1$
 
     private final EclipseEnvironment environment = Activator.getDefault().getEclipseEnvironment();
 
