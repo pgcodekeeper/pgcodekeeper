@@ -6,7 +6,6 @@ import java.text.MessageFormat;
 
 import org.eclipse.core.runtime.Platform;
 
-import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 
@@ -41,13 +40,7 @@ public class UsageRequest {
     private static final String PARAM_JAVA_VERSION = "ep.java_version"; // GA flash version
 
     private static final String PARAM_EVENT_NAME = "en"; //
-    private static final String VALUE_EVENT_NAME = "page_view";
-
-    //optional fields
-    private static final String PARAM_EVENT_TRACKING = "utme"; //$NON-NLS-1$ //
-    private static final String GA_HOSTNAME = "technology45.ru"; //$NON-NLS-1$
-    private static final String PARAM_DOCUMENT_ENCODING = "de"; //$NON-NLS-1$
-    private static final String PARAM_HOST_NAME = "dh"; // GA Document Host Name
+    private static final String VALUE_EVENT_NAME = "start_up";
 
     private final EclipseEnvironment environment = Activator.getDefault().getEclipseEnvironment();
 
@@ -73,13 +66,6 @@ public class UsageRequest {
         appendParameter(PARAM_TRACKING_CODE_VERSION, VALUE_TRACKING_CODE_VERSION, builder);
         appendParameter(PARAM_ACCOUNT_NAME, GA_ACCOUNT, builder);
         appendParameter(CLIENT_ID, environment.getUserId(), builder);
-
-        appendParameter(PARAM_HOST_NAME, GA_HOSTNAME, builder);
-        appendParameter(PARAM_DOCUMENT_ENCODING, "UTF-8", builder); //$NON-NLS-1$
-
-        if (event != null) {
-            appendParameter(PARAM_EVENT_TRACKING, event, builder);
-        }
 
         appendParameter(PARAM_JAVA_VERSION, environment.getJavaVersion(), builder);
         appendParameter(PARAM_JVM_NAME, environment.getJavaVmName().replaceAll(" ", "_"), builder);
@@ -124,21 +110,6 @@ public class UsageRequest {
      */
     public EclipseEnvironment getEnvironment() {
         return environment;
-    }
-
-    private void appendParameter(String name, UsageEvent event, StringBuilder builder) {
-        String eventString = null;
-        String label = event.getLabel();
-        if (label == null) {
-            eventString = MessageFormat.format("5({0})", event.getType().getActionName()); //$NON-NLS-1$
-        } else {
-            eventString = MessageFormat.format("5({0}*{1})", event.getType().getActionName(), label); //$NON-NLS-1$
-            if(event.getValue()!=null) {
-                eventString = eventString + MessageFormat.format("({0})", event.getValue()); //$NON-NLS-1$
-            }
-        }
-        String encoded = PgDiffUtils.checkedEncodeUtf8(eventString);
-        appendParameter(name, encoded, true, builder);
     }
 
     private void appendParameter(String name, String value, StringBuilder builder) {

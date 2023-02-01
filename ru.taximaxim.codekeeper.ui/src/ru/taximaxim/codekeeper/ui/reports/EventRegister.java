@@ -79,7 +79,7 @@ public class EventRegister {
      * @param countEvent
      * @return
      */
-    public synchronized Result checkTrackData(UsageEvent event, boolean countEvent) {
+    public synchronized Result checkTrackData(UsageEvent event) {
         Result result = new Result();
         init();
         // Check if the event type has been registered
@@ -92,11 +92,7 @@ public class EventRegister {
                 preferenceProperties = new UsageEventProperties();
                 preferenceProperties.type = event.getType();
                 preferenceProperties.date = today;
-                if(countEvent) {
-                    preferenceProperties.value = getValue(event);
-                } else {
-                    preferenceProperties.count = 1;
-                }
+                preferenceProperties.count = 1;
                 String label = event.getLabel();
                 if(label == null) {
                     label = eventTypeKey.label;
@@ -106,18 +102,9 @@ public class EventRegister {
                 addTypePropetiesToStorage(preferenceProperties, event.getType());
             } else {
                 if (!isSameDay(today, preferenceProperties.date)) {
-                    if (countEvent) {
-                        result.previousSumOfValues = preferenceProperties.value;
-                        preferenceProperties.value = getValue(event);
-                    } else {
-                        preferenceProperties.count = 1;
-                    }
+                    preferenceProperties.count = 1;
                 } else {
-                    if (countEvent) {
-                        preferenceProperties.value = preferenceProperties.value + getValue(event);
-                    } else {
-                        preferenceProperties.count++;
-                    }
+                    preferenceProperties.count++;
                 }
                 preferenceProperties.date = today;
             }
@@ -125,7 +112,7 @@ public class EventRegister {
             saveProperties(preferenceProperties);
             // Check remote usage.properties
             result.countEventLabel = preferenceProperties.countEventLabel;
-            result.okToSend = !countEvent || result.previousSumOfValues > 0;
+            result.okToSend = true;
         } else {
             Log.log(Log.LOG_ERROR, "Event type [" + event.toString() + "] is not registered and will be ignored."); //$NON-NLS-1$ //$NON-NLS-2$
         }
@@ -162,10 +149,6 @@ public class EventRegister {
             }
         }
         return results;
-    }
-
-    private int getValue(UsageEvent event) {
-        return event.getValue() != null ? event.getValue() : 1;
     }
 
     private boolean isSameDay(long date1, long date2) {

@@ -75,7 +75,7 @@ public class UsageReporter {
                     @Override
                     public void report() {
                         if (isEnabled()) {
-                            sendRequest(pagePath, title, event, startNewVisitSession, false);
+                            sendRequest(pagePath, title, event, startNewVisitSession);
                         }
                     }
                 };
@@ -150,24 +150,10 @@ public class UsageReporter {
     private synchronized void sendRequest(String pagePath,
             String title,
             UsageEvent event,
-            boolean startNewVisitSession,
-            boolean onceADayOnly) {
-        UsageEvent ev = onceADayOnly ? event.copy() : event;
-        if (onceADayOnly) {
-            if (ev.getLabel() == null) {
-                ev.setLabel(UsageReporter.NOT_APPLICABLE_LABEL);
-            }
-            if (ev.getValue() == null) {
-                ev.setValue(1);
-            }
-        }
-        EventRegister.Result result = EventRegister.getInstance().checkTrackData(ev, onceADayOnly);
+            boolean startNewVisitSession) {
+        UsageEvent ev = event;
+        EventRegister.Result result = EventRegister.getInstance().checkTrackData(ev);
         if (result.isOkToSend()) {
-            int value = result.getPreviousSumOfValues();
-            if (onceADayOnly && value > 0) {
-                ev.setValue(value);
-                ev.setLabel(result.getCountEventLabel());
-            }
             getUsageRequest().sendRequest(pagePath, title, ev, startNewVisitSession);
         }
     }
