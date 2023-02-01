@@ -17,11 +17,10 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
 
-import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
@@ -43,7 +42,7 @@ public class AddComment extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         try {
             addComment(event);
-        } catch (InvocationTargetException | InterruptedException | CoreException | IOException e) {
+        } catch (Exception e) {
             Log.log(Log.LOG_ERROR, e.getMessage(), e);
         }
 
@@ -55,22 +54,23 @@ public class AddComment extends AbstractHandler {
         SQLEditor editor = (SQLEditor) HandlerUtil.getActiveEditor(event);
         PgObjLocation location = editor.getCurrentReference();
         IFile file = FileUtilsUi.getFileForLocation(location);
-        boolean isMsSql = OpenProjectUtils.checkMsSql(file.getProject());
+        if (file == null || !IDE.saveAllEditors(new IResource[] { file.getProject() }, true)) {
+            return;
+        }
 
-        PgDatabase dbProjectFragment = UIProjectLoader.buildFiles(List.of(file), isMsSql, null);
-
-        PgDatabase newDb = (PgDatabase) dbProjectFragment.deepCopy();
+        PgDatabase oldDb = UIProjectLoader.buildFiles(List.of(file), false, null);
+        PgDatabase newDb = (PgDatabase) oldDb.deepCopy();
 
         PgStatement statement = location.getObj().getStatement(newDb);
         if (statement == null) {
             return;
         }
-        file = FileUtilsUi.getFileForLocation(statement.getLocation().getFilePath());
+        // for statements from other files
+        file = FileUtilsUi.getFileForLocation(statement.getLocation());
 
         String oldComment = statement.getComment();
         if (oldComment != null) {
-            oldComment = isMsSql ? MsDiffUtils.unquoteQuotedName(oldComment)
-                    : PgDiffUtils.unquoteQuotedString(oldComment, 1);
+            oldComment = PgDiffUtils.unquoteQuotedString(oldComment, 1);
         }
 
         InputDialog dialog = new InputDialog(HandlerUtil.getActiveShell(event),
@@ -83,24 +83,21 @@ public class AddComment extends AbstractHandler {
         String newComment = dialog.getValue();
         if (newComment.isBlank()) {
             statement.setComment(null);
-        } else if (!newComment.equals(oldComment) && oldComment != null) {
-            statement.setComment(isMsSql ? MsDiffUtils.quoteName(newComment) : PgDiffUtils.quoteString(newComment));
+        } else if (!newComment.equals(oldComment)) {
+            statement.setComment(PgDiffUtils.quoteString(newComment));
         } else {
             return;
         }
 
-        DbSource oldDbSource = DbSource.fromDbObject(dbProjectFragment, null);
-        DbSource newDbSource = DbSource.fromDbObject(newDb, null);
+        DbSource oldDbSource = DbSource.fromDbObject(oldDb, "old");
+        DbSource newDbSource = DbSource.fromDbObject(newDb, "new");
 
         TreeDiffer treeDiffer = new TreeDiffer(newDbSource, oldDbSource);
         treeDiffer.run(new NullProgressMonitor());
-        TreeElement treeFull = treeDiffer.getDiffTree();
-        TreeElement el = treeFull.findElement(statement);
+        TreeElement el = treeDiffer.getDiffTree().findElement(statement);
 
         PgDbProject proj = new PgDbProject(file.getProject());
-        ProjectUpdater updater = new UIProjectUpdater(newDbSource.getDbObject(), oldDbSource.getDbObject(), List.of(el),
-                proj, false);
-        updater.updatePartial();
+        new UIProjectUpdater(newDb, oldDb, List.of(el), proj, false).updatePartial();
         file.refreshLocal(IResource.DEPTH_INFINITE, null);
         openFileInEditor(file);
     }
@@ -110,8 +107,17 @@ public class AddComment extends AbstractHandler {
         IEditorPart part = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
         if (part instanceof SQLEditor) {
             SQLEditor editor = (SQLEditor) part;
-            return UIProjectLoader.isInProject(editor.getEditorInput())
-                    && editor.getCurrentReference() != null;
+            if (!UIProjectLoader.isInProject(editor.getEditorInput())) {
+                return false;
+            }
+
+            PgObjLocation location = editor.getCurrentReference();
+            if (location == null) {
+                return false;
+            }
+
+            IFile file = FileUtilsUi.getFileForLocation(location);
+            return !OpenProjectUtils.checkMsSql(file.getProject());
         }
 
         return false;
@@ -119,6 +125,6 @@ public class AddComment extends AbstractHandler {
 
     private IEditorPart openFileInEditor(IFile file) throws PartInitException {
         return PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-            .openEditor(new FileEditorInput(file), EDITOR.SQL);
+                .openEditor(new FileEditorInput(file), EDITOR.SQL);
     }
 }
