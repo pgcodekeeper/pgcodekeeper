@@ -367,11 +367,10 @@ class MoveDataArgumentsProvider extends DataMovementArgumentsProvider {
     @Override
     public String getDiffFileContents() throws IOException {
         String contents = super.getDiffFileContents();
-        return getChange(getChange(getChange(contents)));
-    }
-
-    private String getChange(String contents) {
-        return contents.replace(findRandomPart(contents), getRandomReplacement());
+        for (int i = 0; i < 11; i++) {
+            contents = contents.replace(findRandomPart(contents), getRandomReplacement());
+        }
+        return contents;
     }
 }
 
