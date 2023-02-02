@@ -81,7 +81,9 @@ public class AddComment extends AbstractHandler {
         }
 
         String newComment = dialog.getValue();
-        if (newComment.isBlank()) {
+        if (newComment.isBlank() && oldComment == null) {
+            return;
+        } else if (newComment.isBlank()) {
             statement.setComment(null);
         } else if (!newComment.equals(oldComment)) {
             statement.setComment(PgDiffUtils.quoteString(newComment));
@@ -95,10 +97,6 @@ public class AddComment extends AbstractHandler {
         TreeDiffer treeDiffer = new TreeDiffer(newDbSource, oldDbSource);
         treeDiffer.run(new NullProgressMonitor());
         TreeElement el = treeDiffer.getDiffTree().findElement(statement);
-
-        if (el == null) {
-            return;
-        }
 
         PgDbProject proj = new PgDbProject(file.getProject());
         new UIProjectUpdater(newDb, oldDb, List.of(el), proj, false).updatePartial();
