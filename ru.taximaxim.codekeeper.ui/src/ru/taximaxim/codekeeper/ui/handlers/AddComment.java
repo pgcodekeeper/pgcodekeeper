@@ -96,6 +96,10 @@ public class AddComment extends AbstractHandler {
         treeDiffer.run(new NullProgressMonitor());
         TreeElement el = treeDiffer.getDiffTree().findElement(statement);
 
+        if (el == null) {
+            return;
+        }
+
         PgDbProject proj = new PgDbProject(file.getProject());
         new UIProjectUpdater(newDb, oldDb, List.of(el), proj, false).updatePartial();
         file.refreshLocal(IResource.DEPTH_INFINITE, null);
