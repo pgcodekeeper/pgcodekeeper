@@ -81,9 +81,10 @@ public class AddComment extends AbstractHandler {
         }
 
         String newComment = dialog.getValue();
-        if (newComment.isBlank() && oldComment == null) {
-            return;
-        } else if (newComment.isBlank()) {
+        if (newComment.isBlank()) {
+            if (oldComment == null) {
+                return;
+            }
             statement.setComment(null);
         } else if (!newComment.equals(oldComment)) {
             statement.setComment(PgDiffUtils.quoteString(newComment));
