@@ -7,6 +7,7 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;
@@ -61,7 +62,8 @@ public class DepcyWriter {
 
     private boolean find(Collection<String> names, String statement) {
         for (String name : names) {
-            if (statement.contains(name)) {
+            Pattern regExPattern = Pattern.compile("\\w+\\."+ name + "(\\w)*");
+            if (regExPattern.matcher(statement).find()) {
                 return true;
             }
         }
