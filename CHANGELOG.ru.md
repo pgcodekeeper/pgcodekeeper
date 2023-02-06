@@ -5,12 +5,13 @@
 Формат основан на [Keep a Changelog](http://keepachangelog.com/)
 и этот проект придерживается [cемантического версионирования](https://semver.org/lang/ru/).
  
-## [Unreleased]
+## [Новое]
 
 ### Добавлено
 
 - Начиная с этой версии, pgCodeKeeper требует Eclipse 2021-03 (4.19) или выше.
 - Добавлены CHANGELOG файлы.
+- Добавлена возможность добавления комментария к объекту через контекстное меню редактора SQL.
 
 ### Изменено
 
@@ -1586,7 +1587,7 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.0.1...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.0.1...HEAD
 [7.0.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.0.0...v7.0.1
 [7.0.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v6.6.0...v7.0.0
 [6.6.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v6.5.3...v6.6.0

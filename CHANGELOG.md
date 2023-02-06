@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Starting with this version, pgCodeKeeper requires Eclipse 2021-03 (4.19) or higher.
 - Added CHANGELOG files.
+- It is now possible to add a comment on object via context menu of SQL editor.
 
 ### Changed
 
