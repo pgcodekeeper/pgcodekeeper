@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 - Improved deployment by replacing nested jars with maven dependencies.
+- Changed `--graph-name` parameter in CLI version: added support for regular expression.
 
 ### Fixed
 
