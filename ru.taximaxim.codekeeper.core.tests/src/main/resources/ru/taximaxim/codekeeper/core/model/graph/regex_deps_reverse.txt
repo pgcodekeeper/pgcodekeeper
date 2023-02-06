@@ -1,0 +1,10 @@
+TABLE public.t1
+	SCHEMA public
+TABLE public.t2
+	SCHEMA public
+TABLE public.t3
+	SCHEMA public
+TABLE public.t4
+	SCHEMA public
+TABLE public.t5
+	SCHEMA public
