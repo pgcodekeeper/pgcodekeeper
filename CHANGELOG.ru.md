@@ -7,6 +7,8 @@
  
 ## [Новое]
 
+## [7.1.0] - 2023-02-07
+
 ### Добавлено
 
 - Начиная с этой версии, pgCodeKeeper требует Eclipse 2021-03 (4.19) или выше.
@@ -26,6 +28,10 @@
 - Исправлена ошибка при переопределении привилегий.
 - Добавлены пропущенные ссылки на объекты в MS SQL.
 - Добавлены пропущенные ключевые слова из PostgreSQL 15.
+
+### Удалено
+
+- Удалена настройка ограничения количества строк, получаемых при выполнении SELECT.
 
 ## [7.0.1] - 2022-11-14
 
@@ -1588,7 +1594,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.0.1...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.1.0...HEAD
+[7.0.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.0.1...v7.1.0
 [7.0.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.0.0...v7.0.1
 [7.0.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v6.6.0...v7.0.0
 [6.6.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v6.5.3...v6.6.0
