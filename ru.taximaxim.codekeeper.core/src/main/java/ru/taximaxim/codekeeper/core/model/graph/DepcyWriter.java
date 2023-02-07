@@ -6,7 +6,10 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;
@@ -44,8 +47,10 @@ public class DepcyWriter {
 
     public void write(Collection<String> names) {
         if (!names.isEmpty()) {
+            List<Pattern> patterns = names.stream().map(Pattern::compile).collect(Collectors.toList());
+
             db.getDescendants().flatMap(AbstractTable::columnAdder)
-            .filter(st -> find(names, st.getQualifiedName()))
+            .filter(st -> find(patterns, st.getQualifiedName()))
             .forEach(st ->  printTree(st, START_LEVEL, new HashSet<>(), null, 0));
         } else {
             printTree(db, START_LEVEL, new HashSet<>(), null, 0);
@@ -59,9 +64,9 @@ public class DepcyWriter {
         }
     }
 
-    private boolean find(Collection<String> names, String statement) {
-        for (String name : names) {
-            if (statement.contains(name)) {
+    private boolean find(Collection<Pattern> patterns, String statement) {
+        for (Pattern pattern : patterns) {
+            if (pattern.matcher(statement).matches()) {
                 return true;
             }
         }

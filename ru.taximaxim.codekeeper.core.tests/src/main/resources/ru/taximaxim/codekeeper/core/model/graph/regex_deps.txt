@@ -1,0 +1,15 @@
+TABLE public.t1
+	COLUMN public.t1.c1
+	COLUMN public.t1.c2
+TABLE public.t2
+	COLUMN public.t2.c1
+	COLUMN public.t2.c2
+TABLE public.t3
+	COLUMN public.t3.c1
+	COLUMN public.t3.c2
+TABLE public.t4
+	COLUMN public.t4.c1
+	COLUMN public.t4.c2
+TABLE public.t5
+	COLUMN public.t5.c1
+	COLUMN public.t5.c2
