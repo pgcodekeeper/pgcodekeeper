@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
  
 ## [Unreleased]
 
+### Fixed
+
+- Fixed an error when printing query error message. 
+
 ## [7.1.0] - 2023-02-07
 
 ### Added
@@ -1594,7 +1598,7 @@ We increment major version in this release due to decision to shift our developm
 - ORDER BY parsing has been added to the aggregate functions.
 
 [Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.1.0...HEAD
-[7.0.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.0.1...v7.1.0
+[7.1.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.0.1...v7.1.0
 [7.0.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.0.0...v7.0.1
 [7.0.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v6.6.0...v7.0.0
 [6.6.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v6.5.3...v6.6.0
