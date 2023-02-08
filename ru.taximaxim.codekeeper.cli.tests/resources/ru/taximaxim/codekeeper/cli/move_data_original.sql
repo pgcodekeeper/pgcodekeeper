@@ -78,3 +78,27 @@ REVOKE ALL ON SCHEMA public FROM PUBLIC;
 REVOKE ALL ON SCHEMA public FROM postgres;
 GRANT ALL ON SCHEMA public TO postgres;
 GRANT ALL ON SCHEMA public TO PUBLIC;
+
+--------------------------------------------------------------------------------
+CREATE SEQUENCE public.cities2_city_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+ALTER SEQUENCE public.cities2_city_id_seq OWNER TO khazieva_gr;
+
+ALTER SEQUENCE public.cities2_city_id_seq
+    OWNED BY public.cities2.city_id;
+
+CREATE TABLE public.cities2 (
+    id1 text NOT NULL,
+    id2 text NOT NULL,
+    id text NOT NULL,
+    city_id bigint DEFAULT nextval('public.cities2_city_id_seq'::regclass) NOT NULL,
+    c_name text NOT NULL,
+    population bigint
+);
+
+ALTER TABLE public.cities2 OWNER TO khazieva_gr;

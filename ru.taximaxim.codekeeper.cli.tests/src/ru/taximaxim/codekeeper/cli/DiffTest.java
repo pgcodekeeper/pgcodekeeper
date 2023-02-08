@@ -102,7 +102,7 @@ class DiffTest {
 
 abstract class DataMovementArgumentsProvider extends RandomOutputArgumentsProvider {
 
-    private static final Pattern RANDOM_RENAMED_TABLE = Pattern.compile("tbl_([0-9a-fA-F]{32})");
+    private static final Pattern RANDOM_RENAMED_TABLE = Pattern.compile("([0-9a-fA-F]{32})");
 
     public DataMovementArgumentsProvider(String resName) {
         super(resName);
@@ -362,6 +362,15 @@ class MoveDataArgumentsProvider extends DataMovementArgumentsProvider {
         return new String[]{"--migrate-data", "-o",
                 getDiffResultFile().toString(),
                 fNew.toString(), fOriginal.toString()};
+    }
+
+    @Override
+    public String getDiffFileContents() throws IOException {
+        String contents = super.getDiffFileContents();
+        for (int i = 0; i < 2; i++) {
+            contents = contents.replace(findRandomPart(contents), getRandomReplacement());
+        }
+        return contents;
     }
 }
 
