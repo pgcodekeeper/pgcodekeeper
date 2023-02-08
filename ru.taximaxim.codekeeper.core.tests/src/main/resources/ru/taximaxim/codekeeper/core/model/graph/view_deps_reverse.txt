@@ -1,0 +1,7 @@
+VIEW public.v1
+	SCHEMA public
+	TABLE public.t1
+		SCHEMA public
+	COLUMN public.t1.c1
+		TABLE public.t1
+			SCHEMA public

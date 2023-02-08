@@ -7,16 +7,24 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
  
 ## [Unreleased]
 
+### Fixed
+
+- Fixed an error when printing query error message. 
+
+## [7.1.0] - 2023-02-07
+
 ### Added
 
 - Starting with this version, pgCodeKeeper requires Eclipse 2021-03 (4.19) or higher.
 - Added CHANGELOG files.
+- It is now possible to add a comment on object via context menu of SQL editor.
 
 ### Changed
 
 - Updated sending anonymous data from Google Universe to Google Analytics 4.
 - Removed pre-set limit when querying SELECT, ui freezes from 100k rows.
 - Improved deployment by replacing nested jars with maven dependencies.
+- Changed `--graph-name` parameter in CLI version: added support for regular expression.
 
 ### Fixed
 
@@ -26,6 +34,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fixed error when overriding privileges.
 - Added missing references to objects in MS SQL.
 - Added missing keywords from PostgreSQL 15 to parser.
+
+### Removed
+
+- Removed an option to limit number of rows returned by executed SELECT statements.
 
 ## [7.0.1] - 2022-11-14
 
@@ -1587,7 +1599,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.0.1...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.1.0...HEAD
+[7.1.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.0.1...v7.1.0
 [7.0.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.0.0...v7.0.1
 [7.0.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v6.6.0...v7.0.0
 [6.6.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v6.5.3...v6.6.0

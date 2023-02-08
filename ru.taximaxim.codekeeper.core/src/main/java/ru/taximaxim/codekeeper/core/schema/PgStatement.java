@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 import ru.taximaxim.codekeeper.core.Consts;
@@ -674,7 +674,7 @@ public abstract class PgStatement implements IStatement, IHashable {
      */
     @Override
     public String getQualifiedName() {
-        Function<String, String> quoter = isPostgres() ? PgDiffUtils::getQuotedName : MsDiffUtils::quoteName;
+        UnaryOperator<String> quoter = isPostgres() ? PgDiffUtils::getQuotedName : MsDiffUtils::quoteName;
         StringBuilder sb = new StringBuilder(quoter.apply(getName()));
 
         PgStatement par = this.parent;
