@@ -1,7 +1,7 @@
 package ru.taximaxim.codekeeper.ui.reports;
 
 import java.text.MessageFormat;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.eclipse.core.runtime.IBundleGroup;
 import org.eclipse.core.runtime.IBundleGroupProvider;
@@ -104,7 +104,7 @@ public class EclipseEnvironment {
      */
     private String createIdentifier() {
         StringBuilder builder = new StringBuilder();
-        builder.append(Math.abs(new Random().nextLong()));
+        builder.append(ThreadLocalRandom.current().nextLong(Long.MAX_VALUE));
         builder.append(".");
         builder.append(System.currentTimeMillis());
         return builder.toString();

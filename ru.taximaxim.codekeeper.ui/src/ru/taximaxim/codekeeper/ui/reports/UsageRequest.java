@@ -46,19 +46,14 @@ public class UsageRequest {
 
     /**
      * Sends a tracking request
-     * @param environment
-     * @param pagePath
-     * @param title can be null
-     * @param event can be null
-     * @param type if null, RequestType.PAGE is used
-     * @param startNewVisitSession if false, the current session from environment is used
+     *
+     * @param event
+     *            can be null
+     * @param startNewVisitSession
+     *            if false, the current session from environment is used
      * @return true if the request was sent successfully
      */
-    public synchronized boolean sendRequest(String pagePath,
-            String title,
-            UsageEvent event,
-            boolean startNewVisitSession) {
-
+    public synchronized boolean sendRequest(UsageEvent event, boolean startNewVisitSession) {
         if (startNewVisitSession) {
             environment.startNewVisitSession();
         }
@@ -68,7 +63,7 @@ public class UsageRequest {
         appendParameter(CLIENT_ID, environment.getUserId(), builder);
 
         appendParameter(PARAM_JAVA_VERSION, environment.getJavaVersion(), builder);
-        appendParameter(PARAM_JVM_NAME, environment.getJavaVmName().replaceAll(" ", "_"), builder);
+        appendParameter(PARAM_JVM_NAME, environment.getJavaVmName().replace(" ", "_"), builder);
         appendParameter(PARAM_KEEPER_VERSION, event.getType().getComponentVersion(), builder);
         appendParameter(PARAM_OS, Platform.getOS(), builder);
         appendParameter(PARAM_OS_VERSION, environment.getOSVersion(), builder);
