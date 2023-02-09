@@ -3,9 +3,9 @@ package ru.taximaxim.codekeeper.ui.reports;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.MessageFormat;
-import java.util.Random;
 
-import ru.taximaxim.codekeeper.core.PgDiffUtils;
+import org.eclipse.core.runtime.Platform;
+
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 
@@ -14,101 +14,87 @@ import ru.taximaxim.codekeeper.ui.Log;
  */
 public class UsageRequest {
 
-    private static final String GA_ACCOUNT = "UA-63353874-1"; //$NON-NLS-1$
-    private static final String GA_HOSTNAME = "technology45.ru"; //$NON-NLS-1$
+    // 12.01.2023 all key for GA4 u can look here  https://www.thyngster.com/ga4-measurement-protocol-cheatsheet/
 
-    private static final String TRACKING_URL = "http://www.google-analytics.com/__utm.gif"; //$NON-NLS-1$
-    private static final String USER_AGENT = "User-Agent"; //$NON-NLS-1$
-    private static final String GET_METHOD_NAME = "GET"; //$NON-NLS-1$
-    private static final int TIMEOUT = 10000; // Connection timeout is 10 seconds.
+    private static final String USER_AGENT = "User-Agent";//$NON-NLS-1$
+    private static final String GET_METHOD_NAME = "POST";//$NON-NLS-1$
+    private static final int TIMEOUT = 10_000; // Connection timeout is 10 seconds.
 
-    private static final String PARAM_PAGE_REQUEST = "utmp"; //$NON-NLS-1$
-    private static final String PARAM_ACCOUNT_NAME = "utmac"; //$NON-NLS-1$
-    private static final String PARAM_HOST_NAME = "utmhn"; //$NON-NLS-1$
-    private static final String PARAM_EVENT_TRACKING = "utme"; //$NON-NLS-1$
-    private static final String PARAM_COOKIES = "utmcc"; //$NON-NLS-1$
-    private static final String PARAM_COOKIES_UNIQUE_VISITOR_ID = "__utma"; //$NON-NLS-1$
-    private static final String PARAM_COOKIES_REFERRAL_TYPE = "__utmz"; //$NON-NLS-1$
-    private static final String PARAM_COOKIES_UTMCSR = "utmcsr"; //$NON-NLS-1$
-    private static final String PARAM_COOKIES_UTMCCN = "utmccn"; //$NON-NLS-1$
-    private static final String PARAM_COOKIES_UTMCMD = "utmcmd"; //$NON-NLS-1$
-    private static final String PARAM_COOKIES_KEYWORD = "utmctr"; //$NON-NLS-1$
+    //required fields
+    private static final String TRACKING_URL = "https://www.google-analytics.com/g/collect";//$NON-NLS-1$
+    // GA protocol version for GU=1, for GA4=2
+    private static final String PARAM_TRACKING_CODE_VERSION = "v";//$NON-NLS-1$
+    private static final String VALUE_TRACKING_CODE_VERSION = "2";//$NON-NLS-1$
 
-    private static final String PARAM_REFERRAL = "utmr"; //$NON-NLS-1$
-    private static final String PARAM_TRACKING_CODE_VERSION = "utmwv"; //$NON-NLS-1$
-    private static final String PARAM_UNIQUE_TRACKING_NUMBER = "utmn"; //$NON-NLS-1$
-    private static final String PARAM_LANGUAGE_ENCODING = "utmcs"; //$NON-NLS-1$
-    private static final String PARAM_PAGE_TITLE = "utmdt"; //$NON-NLS-1$
-    private static final String PARAM_JAVA_VERSION = "utmfl"; //$NON-NLS-1$
-    private static final String PARAM_GAQ = "gaq"; //$NON-NLS-1$
+    private static final String PARAM_ACCOUNT_NAME = "tid";//$NON-NLS-1$
+    private static final String GA_ACCOUNT = "G-89BE28NHFV";//$NON-NLS-1$
+    private static final String CLIENT_ID = "cid";//$NON-NLS-1$
 
-    private static final String VALUE_TRACKING_CODE_VERSION = "4.7.2"; //$NON-NLS-1$
-    private static final String VALUE_NO_REFERRAL = "0"; //$NON-NLS-1$
+    //fields with data
+    private static final String PARAM_OS = "ep.os";//$NON-NLS-1$
+    private static final String PARAM_OS_VERSION = "ep.os_version";//$NON-NLS-1$
+    private static final String PARAM_ECLIPSE_VERSION = "ep.eclipse_version";//$NON-NLS-1$
+    private static final String PARAM_ECLIPSE_BUILD = "ep.eclipse_build";//$NON-NLS-1$
+    private static final String PARAM_KEEPER_VERSION = "ep.keeper_version";//$NON-NLS-1$
+    private static final String PARAM_JVM_NAME = "ep.jvm_name";//$NON-NLS-1$
+    private static final String PARAM_JAVA_VERSION = "ep.java_version";//$NON-NLS-1$
 
+    private static final String PARAM_EVENT_NAME = "en";//$NON-NLS-1$
+    private static final String VALUE_EVENT_NAME = "start_up";//$NON-NLS-1$
 
     private final EclipseEnvironment environment = Activator.getDefault().getEclipseEnvironment();
 
     /**
      * Sends a tracking request
-     * @param environment
-     * @param pagePath
-     * @param title can be null
-     * @param event can be null
-     * @param type if null, RequestType.PAGE is used
-     * @param startNewVisitSession if false, the current session from environment is used
+     *
+     * @param event
+     *            can be null
+     * @param startNewVisitSession
+     *            if false, the current session from environment is used
      * @return true if the request was sent successfully
      */
-    public synchronized boolean sendRequest(String pagePath,
-            String title,
-            UsageEvent event,
-            boolean startNewVisitSession) {
-
+    public synchronized boolean sendRequest(UsageEvent event, boolean startNewVisitSession) {
         if (startNewVisitSession) {
             environment.startNewVisitSession();
         }
         StringBuilder builder = new StringBuilder(TRACKING_URL).append('?');
         appendParameter(PARAM_TRACKING_CODE_VERSION, VALUE_TRACKING_CODE_VERSION, builder);
-        appendParameter(PARAM_UNIQUE_TRACKING_NUMBER, getRandomNumber(), builder);
-        appendParameter(PARAM_HOST_NAME, GA_HOSTNAME, builder);
-        appendParameter(PARAM_LANGUAGE_ENCODING, "UTF-8", builder); //$NON-NLS-1$
-
-        if (title != null) {
-            String encoded = PgDiffUtils.checkedEncodeUtf8(title);
-            appendParameter(PARAM_PAGE_TITLE, encoded, builder);
-        }
-        appendParameter(PARAM_JAVA_VERSION, environment.getJavaVersion(), builder);
-        if (event != null) {
-            appendParameter(PARAM_EVENT_TRACKING, event, builder);
-        }
-
-        appendParameter(PARAM_REFERRAL, VALUE_NO_REFERRAL, builder);
-        appendParameter(PARAM_PAGE_REQUEST, pagePath, builder);
-
         appendParameter(PARAM_ACCOUNT_NAME, GA_ACCOUNT, builder);
-        appendParameter(PARAM_COOKIES, getCookies(environment), builder);
-        appendParameter(PARAM_GAQ, "1", false, builder); //$NON-NLS-1$
+        appendParameter(CLIENT_ID, environment.getUserId(), builder);
+
+        appendParameter(PARAM_JAVA_VERSION, environment.getJavaVersion(), builder);
+        appendParameter(PARAM_JVM_NAME, environment.getJavaVmName().replace(" ", "_"), builder);
+        appendParameter(PARAM_KEEPER_VERSION, event.getType().getComponentVersion(), builder);
+        appendParameter(PARAM_OS, Platform.getOS(), builder);
+        appendParameter(PARAM_OS_VERSION, environment.getOSVersion(), builder);
+        appendParameter(PARAM_ECLIPSE_BUILD, environment.getApplicationName(), builder);
+        appendParameter(PARAM_ECLIPSE_VERSION, environment.getApplicationVersion(), builder);
+
+        appendParameter(PARAM_EVENT_NAME, VALUE_EVENT_NAME, false, builder);
 
         String url = builder.toString();
 
         try {
             HttpURLConnection urlConnection = (HttpURLConnection) new URL(url).openConnection();
             urlConnection.setInstanceFollowRedirects(true);
+            urlConnection.setFixedLengthStreamingMode(0);
+            urlConnection.setDoOutput(true);
             urlConnection.setRequestMethod(GET_METHOD_NAME);
             urlConnection.setRequestProperty(USER_AGENT, environment.getUserAgent());
             urlConnection.setConnectTimeout(TIMEOUT);
             urlConnection.connect();
             int responseCode = urlConnection.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_OK) {
+            if (responseCode == HttpURLConnection.HTTP_NO_CONTENT) {
                 Log.log(Log.LOG_DEBUG, MessageFormat.format(
-                        "HTTP GET to url \"{0}\" successfull!", url)); //$NON-NLS-1$
+                        "HTTP POST to url \"{0}\" successfull!", url)); //$NON-NLS-1$
                 return true;
             } else {
                 Log.log(Log.LOG_ERROR, MessageFormat.format(
-                        "HTTP GET to \"{0}\" failed, response code received \"{1}\"", url, responseCode)); //$NON-NLS-1$
+                        "HTTP POST to \"{0}\" failed, response code received \"{1}\"", url, responseCode)); //$NON-NLS-1$
             }
         } catch (Exception e) {
             Log.log(Log.LOG_DEBUG, MessageFormat.format(
-                    "HTTP GET to \"{0}\" failed, exception occured: \"{1}\"", url, e)); //$NON-NLS-1$
+                    "HTTP POST to \"{0}\" failed, exception occured: \"{1}\"", url, e)); //$NON-NLS-1$
         }
         return false;
 
@@ -121,66 +107,6 @@ public class UsageRequest {
         return environment;
     }
 
-    /**
-     * Returns the google analytics cookies. These cookies determines user
-     * identity, session identity etc.
-     *
-     * @return the cookies
-     *
-     * @see <a
-     *      href="http://www.analyticsexperts.com/google-analytics/information-about-the-utmlinker-and-the-__utma-__utmb-and-__utmc-cookies/">Information
-     *      about the utmLinker and the __utma, __utmb and __utmc cookies</a>
-     * @see <a
-     *      href="http://www.martynj.com/google-analytics-cookies-tracking-multiple-domains-filters">cookie
-     *      values and formats</a>
-     */
-    private String getCookies(EclipseEnvironment environment) {
-        StringBuilder builder = new StringBuilder();
-
-        /**
-         * unique visitor id cookie has to be unique per eclipse installation
-         */
-        builder.append(PARAM_COOKIES_UNIQUE_VISITOR_ID)
-        .append("=999.").append(environment.getUserId()) //$NON-NLS-1$
-        .append('.').append(environment.getFirstVisit())
-        .append('.').append(environment.getLastVisit())
-        .append('.').append(environment.getCurrentVisit())
-        .append('.').append(environment.getVisitCount());
-
-        builder.append(";+"); //$NON-NLS-1$
-
-        builder.append(PARAM_COOKIES_REFERRAL_TYPE).append("=999.") //$NON-NLS-1$
-        .append(environment.getFirstVisit()).append(".1.1."); //$NON-NLS-1$
-
-        builder.append(PARAM_COOKIES_UTMCSR).append("=(direct)|"); //$NON-NLS-1$
-
-        builder.append(PARAM_COOKIES_UTMCCN).append("=(direct)|"); //$NON-NLS-1$
-
-        builder.append(PARAM_COOKIES_UTMCMD).append("=(none)|"); //$NON-NLS-1$
-
-        builder.append(PARAM_COOKIES_KEYWORD)
-        .append('=').append(environment.getKeyword());
-
-        builder.append(";+"); //$NON-NLS-1$
-
-        return PgDiffUtils.checkedEncodeUtf8(builder.toString());
-    }
-
-    private void appendParameter(String name, UsageEvent event, StringBuilder builder) {
-        String eventString = null;
-        String label = event.getLabel();
-        if (label == null) {
-            eventString = MessageFormat.format("5({0})", event.getType().getActionName()); //$NON-NLS-1$
-        } else {
-            eventString = MessageFormat.format("5({0}*{1})", event.getType().getActionName(), label); //$NON-NLS-1$
-            if(event.getValue()!=null) {
-                eventString = eventString + MessageFormat.format("({0})", event.getValue()); //$NON-NLS-1$
-            }
-        }
-        String encoded = PgDiffUtils.checkedEncodeUtf8(eventString);
-        appendParameter(name, encoded, true, builder);
-    }
-
     private void appendParameter(String name, String value, StringBuilder builder) {
         appendParameter(name, value, true, builder);
     }
@@ -190,9 +116,5 @@ public class UsageRequest {
         if (appendAmpersand) {
             builder.append('&');
         }
-    }
-
-    private String getRandomNumber() {
-        return Integer.toString(new Random().nextInt(Integer.MAX_VALUE));
     }
 }

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
  
 ## [Unreleased]
 
+### Added
+
+### Changed
+
+- Updated mechanism for sending anonymous data from Google Universe to Google Analytics 4.
+
 ### Fixed
 
 - Fixed an error when printing query error message. 
