@@ -11,6 +11,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Fixed an error when printing query error message. 
 
+## [7.1.1] - 2023-02-14
+
+### Added
+
+### Changed
+
+### Fixed
+
+- Fixed a bug when recreating a sequence when pouring data from a table.
+
+### Removed
+
+
 ## [7.1.0] - 2023-02-07
 
 ### Added
