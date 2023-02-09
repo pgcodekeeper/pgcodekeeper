@@ -11,7 +11,7 @@
 
 ### Изменено
 
-- Обновлен механизм отправка анонимных данных с Google Universe до Google Analytics 4.
+- Обновлен механизм отправки анонимных данных с Google Universe до Google Analytics 4.
 
 ### Исправлено
 
