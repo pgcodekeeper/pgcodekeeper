@@ -247,6 +247,11 @@ public class PgSequence extends AbstractSequence {
         return false;
     }
 
+    public boolean compareOption(PgStatement obj) {
+        return obj instanceof PgSequence && super.compare(obj)
+                && isLogged == ((PgSequence) obj).isLogged();
+    }
+
     public GenericColumn getOwnedBy() {
         return ownedBy;
     }
