@@ -27,7 +27,6 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractForeignTable;
-import ru.taximaxim.codekeeper.core.schema.AbstractSequence;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.MsColumn;
 import ru.taximaxim.codekeeper.core.schema.MsView;
@@ -150,7 +149,7 @@ public class ActionsToScriptConverter {
             if (arguments.isDataMovementMode() &&
                     DbObjType.SEQUENCE == obj.getStatementType()
                     && obj.getTwin(oldDbFull) != null) {
-                addCommandsForRenameSeq((AbstractSequence) obj);
+                script.addDrop(obj, null, obj.getDropSQL());
             }
             script.addCreate(obj, null, obj.getCreationSQL(), true);
 
@@ -288,15 +287,6 @@ public class ActionsToScriptConverter {
         default:
             throw new IllegalStateException("Not implemented action");
         }
-    }
-
-    private void addCommandsForRenameSeq(AbstractSequence oldSeq) {
-        String tmpSuffix = '_' + UUID.randomUUID().toString().replace("-", "");
-        String qname = oldSeq.getQualifiedName();
-        String tmpSeqName = oldSeq.getName() + tmpSuffix;
-
-        script.addStatement(getRenameCommand(oldSeq, tmpSeqName));
-        tblTmpNames.put(qname, tmpSeqName);
     }
 
     /**

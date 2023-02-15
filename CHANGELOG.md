@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
  
 ## [Unreleased]
 
+- Fixed a bug when recreating a sequence when pouring data from a table.
+
 ### Fixed
 
 - Fixed an error when printing query error message. 
@@ -18,8 +20,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 ### Fixed
-
-- Fixed a bug when recreating a sequence when pouring data from a table.
 
 ### Removed
 

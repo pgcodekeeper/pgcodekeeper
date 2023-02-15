@@ -54,7 +54,7 @@ ALTER TABLE public.tbl RENAME TO tbl_randomly_generated_part;
 
 -- DEPCY: This SEQUENCE is a dependency of COLUMN: public.cities2.city_id
 
-ALTER SEQUENCE public.cities2_city_id_seq RENAME TO cities2_city_id_seq_randomly_generated_part;
+DROP SEQUENCE public.cities2_city_id_seq;
 
 CREATE SEQUENCE public.cities2_city_id_seq
 	START WITH 1
