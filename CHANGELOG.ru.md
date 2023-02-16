@@ -7,7 +7,7 @@
  
 ## [Новое]
 
-- Fixed a bug when recreating a sequence when pouring data from a table.
+- Исправлена ошибка при пересоздании sequence при переливке данных с таблицы.
 
 ### Исправлено
 
