@@ -146,8 +146,8 @@ public class ActionsToScriptConverter {
             if (depcy != null) {
                 script.addStatement(depcy);
             }
-            if (arguments.isDataMovementMode() &&
-                    DbObjType.SEQUENCE == obj.getStatementType()
+            if (arguments.isDataMovementMode()
+                    && obj instanceof PgSequence
                     && obj.getTwin(oldDbFull) != null) {
                 script.addDrop(obj, null, obj.getDropSQL());
             }

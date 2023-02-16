@@ -63,3 +63,25 @@ CREATE VIEW [dbo].[v] AS
     a.[c5]
 FROM [dbo].[tbl] a
 GO
+
+-------------------------------------------------------------------------------
+ --drop sequence when migrate data
+CREATE SEQUENCE [dbo].[seq2]
+    AS integer
+    START WITH 555888
+    INCREMENT BY 555
+    MAXVALUE 5557772036854775807
+    MINVALUE 555777
+    CACHE 
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+CREATE TABLE [dbo].[table1](
+    [c1] [bigint] NOT NULL CONSTRAINT [DF__table1__c1__5629CD9C] DEFAULT (NEXT VALUE FOR [dbo].[seq2]),
+    [c2] [int] NOT NULL,
+    [c3] [varchar] (100) COLLATE Cyrillic_General_CI_AS NOT NULL
+) ON [PRIMARY]
+GO
