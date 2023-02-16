@@ -23,8 +23,7 @@ public class UsageReportDispatcher implements IStartup {
             UsageEventType type = new UsageEventType("pgCodeKeeper", version, platformVer, null); //$NON-NLS-1$
             String label = environment.getEventValue();
             reporter.registerEvent(type);
-            String title = getUsedJVM(environment);
-            reporter.trackEvent("pgCodeKeeper_version_on_startup/" + version, title, type.event(label), true); //$NON-NLS-1$
+            reporter.trackEvent(type.event(label));
             CountEventTimer.getInstance().start();
         });
     }
@@ -42,9 +41,5 @@ public class UsageReportDispatcher implements IStartup {
             }
         }
         return "version_unavalable"; //$NON-NLS-1$
-    }
-
-    private String getUsedJVM(EclipseEnvironment environment) {
-        return "jvm:" + environment.getJavaVmName() + " / "; //$NON-NLS-1$ //$NON-NLS-2$
     }
 }

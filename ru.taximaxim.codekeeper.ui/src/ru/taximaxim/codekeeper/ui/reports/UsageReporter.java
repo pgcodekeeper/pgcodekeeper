@@ -26,8 +26,6 @@ public class UsageReporter {
 
     public static final String NOT_APPLICABLE_LABEL = "N/A"; //$NON-NLS-1$
 
-    private static final String PATH_PREFIX = "/tools/"; //$NON-NLS-1$
-
     private static final UsageReporter INSTANCE = new UsageReporter();
 
     private UsageRequest usageRequest;
@@ -64,24 +62,23 @@ public class UsageReporter {
     /**
      * Tracks a user's event
      */
-    public void trackEvent(final String pagePath,
-            final String title,
-            final UsageEvent event,
-            final boolean startNewVisitSession) {
-        try {
-            if (isEnabled()) {
-                ReportingJob job = new ReportingJob() {
+    public void trackEvent(final UsageEvent event) {
+        if (!isEnabled()) {
+            return;
+        }
 
-                    @Override
-                    public void report() {
-                        if (isEnabled()) {
-                            sendRequest(pagePath, title, event, startNewVisitSession, false);
-                        }
+        try {
+            ReportingJob job = new ReportingJob() {
+
+                @Override
+                public void report() {
+                    if (isEnabled()) {
+                        sendRequest(event, true);
                     }
-                };
-                job.schedule();
-            }
-        } catch(Exception t) {
+                }
+            };
+            job.schedule();
+        } catch (Exception t) {
             // Catch all Exceptions to make sure, in case of bugs, Usage doesn't prevent JBT from working
             Log.log(Log.LOG_ERROR, t.getMessage());
         }
@@ -91,19 +88,20 @@ public class UsageReporter {
      * Sends a tracking request for all daily events if it's time to send them
      */
     public void trackCountEvents() {
+        if (!isEnabled()) {
+            return;
+        }
         try {
-            if (isEnabled()) {
-                ReportingJob job = new ReportingJob() {
+            ReportingJob job = new ReportingJob() {
 
-                    @Override
-                    public void report() {
-                        for (UsageEventType type : EventRegister.getInstance().getRegisteredEventTypes()) {
-                            checkCountEventInternal(type);
-                        }
+                @Override
+                public void report() {
+                    for (UsageEventType type : EventRegister.getInstance().getRegisteredEventTypes()) {
+                        checkCountEventInternal(type);
                     }
-                };
-                job.schedule();
-            }
+                }
+            };
+            job.schedule();
         } catch(Exception t) {
             // Catch all Exceptions to make sure, in case of bugs, Usage doesn't prevent JBT from working
             Log.log(Log.LOG_ERROR, t.getMessage());
@@ -128,7 +126,7 @@ public class UsageReporter {
                     int value = result.getPreviousSumOfValues();
                     String label = result.getCountEventLabel();
                     UsageEvent event = type.event(label, value);
-                    if (getUsageRequest().sendRequest(getPagePath(event), event.getType().getComponentName(), event, false)) {
+                    if (getUsageRequest().sendRequest(event, false)) {
                         sent++;
                     }
                 }
@@ -139,41 +137,17 @@ public class UsageReporter {
 
     /**
      * Sends a tracking request
-     * @param environment
+     *
      * @param pagePath
      * @param title may be null
      * @param event may not be null if onceADayOnly==true
-     * @param type if null, RequestType.PAGE is used
      * @param startNewVisitSession if false, the current session from environment is used
-     * @param onceADayOnly if true, send a request only once a day
      */
-    private synchronized void sendRequest(String pagePath,
-            String title,
-            UsageEvent event,
-            boolean startNewVisitSession,
-            boolean onceADayOnly) {
-        UsageEvent ev = onceADayOnly ? event.copy() : event;
-        if (onceADayOnly) {
-            if (ev.getLabel() == null) {
-                ev.setLabel(UsageReporter.NOT_APPLICABLE_LABEL);
-            }
-            if (ev.getValue() == null) {
-                ev.setValue(1);
-            }
-        }
-        EventRegister.Result result = EventRegister.getInstance().checkTrackData(ev, onceADayOnly);
+    private synchronized void sendRequest(UsageEvent event, boolean startNewVisitSession) {
+        EventRegister.Result result = EventRegister.getInstance().checkTrackData(event);
         if (result.isOkToSend()) {
-            int value = result.getPreviousSumOfValues();
-            if (onceADayOnly && value > 0) {
-                ev.setValue(value);
-                ev.setLabel(result.getCountEventLabel());
-            }
-            getUsageRequest().sendRequest(pagePath, title, ev, startNewVisitSession);
+            getUsageRequest().sendRequest(event, startNewVisitSession);
         }
-    }
-
-    private String getPagePath(UsageEvent event) {
-        return PATH_PREFIX + event.getType().getComponentName() + "/" + event.getType().getComponentVersion(); //$NON-NLS-1$
     }
 
     private UsageRequest getUsageRequest() {
