@@ -18,7 +18,7 @@ import ru.taximaxim.codekeeper.core.schema.PgDatabase;
  *
  * @author Gulnaz Khazieva
  */
-class MoveDataPgDiffest {
+class MoveDataDiffTest {
 
     /**
      * Template name for file names that should be used for the test. Testing
@@ -59,9 +59,9 @@ class MoveDataPgDiffest {
         args.setDataMovementMode(true);
         args.setMsSql(isMsSql);
         PgDatabase dbOld = TestUtils.loadTestDump(
-                fileNameTemplate + FILES_POSTFIX.ORIGINAL_SQL, MoveDataPgDiffest.class, args);
+                fileNameTemplate + FILES_POSTFIX.ORIGINAL_SQL, MoveDataDiffTest.class, args);
         PgDatabase dbNew = TestUtils.loadTestDump(
-                fileNameTemplate + FILES_POSTFIX.NEW_SQL, MoveDataPgDiffest.class, args);
+                fileNameTemplate + FILES_POSTFIX.NEW_SQL, MoveDataDiffTest.class, args);
 
         TestUtils.runDiffSame(dbOld, fileNameTemplate, args);
         TestUtils.runDiffSame(dbNew, fileNameTemplate, args);
@@ -69,6 +69,6 @@ class MoveDataPgDiffest {
         String script = new PgDiff(args).diffDatabaseSchemas(dbOld, dbNew, null);
         String content = script.replaceAll("([0-9a-fA-F]{32})", "randomly_generated_part");
 
-        TestUtils.compareResult(content, fileNameTemplate, MoveDataPgDiffest.class);
+        TestUtils.compareResult(content, fileNameTemplate, MoveDataDiffTest.class);
     }
 }
