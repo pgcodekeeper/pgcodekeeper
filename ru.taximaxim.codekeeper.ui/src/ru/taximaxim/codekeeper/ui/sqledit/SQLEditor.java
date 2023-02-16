@@ -109,7 +109,6 @@ import ru.taximaxim.codekeeper.ui.UIConsts.LANGUAGE;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
-import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PATH;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.SQL_EDITOR_PREF;
@@ -713,7 +712,7 @@ implements IResourceChangeListener, ITextErrorReporter {
 
             IProgressReporter reporter = new UiProgressReporter(monitor, SQLEditor.this, offset);
             try (IProgressReporter toClose = reporter) {
-                new JdbcRunner(monitor).runBatches(connector, parser.batch(), reporter, mainPrefs.getInt(PREF.LIMIT_SELECT_RESULTS));
+                new JdbcRunner(monitor).runBatches(connector, parser.batch(), reporter);
                 ProjectEditorDiffer.notifyDbChanged(dbInfo);
                 return Status.OK_STATUS;
             } catch (InterruptedException ex) {

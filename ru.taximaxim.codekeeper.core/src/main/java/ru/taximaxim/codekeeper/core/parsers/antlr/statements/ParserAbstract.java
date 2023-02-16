@@ -136,6 +136,10 @@ public abstract class ParserAbstract {
     }
 
     public static String getFullCtxText(Token start, Token end) {
+        if (start.getStartIndex() > end.getStopIndex()) {
+            // broken ctx
+            return "";
+        }
         return start.getInputStream().getText(
                 Interval.of(start.getStartIndex(), end.getStopIndex()));
     }

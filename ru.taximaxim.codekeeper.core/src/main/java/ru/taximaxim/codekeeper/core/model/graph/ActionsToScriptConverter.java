@@ -154,7 +154,11 @@ public class ActionsToScriptConverter {
             if (depcy != null) {
                 script.addStatement(depcy);
             }
-
+            if (arguments.isDataMovementMode()
+                    && obj instanceof PgSequence
+                    && obj.getTwin(oldDbFull) != null) {
+                script.addDrop(obj, null, obj.getDropSQL());
+            }
             /**
              * for partitioned tables print create tables and partitions
              */
@@ -577,8 +581,8 @@ public class ActionsToScriptConverter {
         }
         if (!(newTbl instanceof SimplePgTable
                 && ((AbstractRegularTable) newTbl).getPartitionBy() != null)) {
-            sb.append("\n\nDROP TABLE ").append(tblTmpQName)
-            .append(arguments.isMsSql() ? PgStatement.GO : ';');
+        sb.append("\n\nDROP TABLE ").append(tblTmpQName)
+        .append(arguments.isMsSql() ? PgStatement.GO : ';');
         }
         script.addStatement(sb.toString());
     }
