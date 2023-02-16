@@ -1,3 +1,12 @@
+EXEC sp_rename '[dbo].[table1]', 'table1_randomly_generated_part'
+GO
+
+ALTER TABLE [dbo].[table1_randomly_generated_part] DROP CONSTRAINT [DF__table1__c1__5629CD9C]
+GO
+
+DROP SEQUENCE [dbo].[seq2]
+GO
+
 -- DEPCY: This CONSTRAINT depends on the TABLE: [dbo].[tbl]
 
 ALTER TABLE [dbo].[tbl]
@@ -21,6 +30,36 @@ ALTER TABLE [dbo].[tbl_randomly_generated_part] DROP CONSTRAINT [DF__tbl__c5__26
 GO
 
 ALTER TABLE [dbo].[tbl_randomly_generated_part] DROP CONSTRAINT [DF__tbl__c6__2739D489]
+GO
+
+-- DEPCY: This SEQUENCE is a dependency of COLUMN: [dbo].[table1].[c1]
+
+CREATE SEQUENCE [dbo].[seq2]
+	AS bigint
+	START WITH 555888
+	INCREMENT BY 555
+	MAXVALUE 5557772036854775807
+	MINVALUE 555777
+	CACHE 
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+CREATE TABLE [dbo].[table1](
+	[c5] [int] NOT NULL,
+	[c1] [integer] NOT NULL CONSTRAINT [DF__table1__c1__5629CD9C] DEFAULT (NEXT VALUE FOR [dbo].[seq2]),
+	[c2] [int] NOT NULL,
+	[c3] [varchar] (100) COLLATE Cyrillic_General_CI_AS NOT NULL
+) ON [PRIMARY]
+GO
+
+INSERT INTO [dbo].[table1]([c1], [c2], [c3])
+SELECT [c1], [c2], [c3] FROM [dbo].[table1_randomly_generated_part]
+GO
+
+DROP TABLE [dbo].[table1_randomly_generated_part]
 GO
 
 SET QUOTED_IDENTIFIER ON

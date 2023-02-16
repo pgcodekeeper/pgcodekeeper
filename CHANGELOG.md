@@ -6,16 +6,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
  
 ## [Unreleased]
+- Fixed a bug when recreating a sequence when pouring data from a table.
+- Updated mechanism for sending anonymous data from Google Universe to Google Analytics 4.
 
 ### Added
 
 ### Changed
 
-- Updated mechanism for sending anonymous data from Google Universe to Google Analytics 4.
-
 ### Fixed
 
 - Fixed an error when printing query error message. 
+### Removed
+
 
 ## [7.1.0] - 2023-02-07
 
