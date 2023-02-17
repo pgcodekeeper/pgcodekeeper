@@ -7,15 +7,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
  
 ## [Unreleased]
 
-- Fixed an error of creating a partitioned table and pouring data into it.
-- Fixed a bug when recreating a sequence when pouring data from a table.
-- Updated mechanism for sending anonymous data from Google Universe to Google Analytics 4.
-
 ### Added
 
 ### Changed
 
+- Updated mechanism for sending anonymous data from Google Universe to Google Analytics 4.
+
 ### Fixed
+
+- Fixed an error when printing query error message. 
+- Fixed a bug with data migration code generation for partition tables.
+- Fixed a bug when recreating a sequence when pouring data from a table.
 
 ### Removed
 
