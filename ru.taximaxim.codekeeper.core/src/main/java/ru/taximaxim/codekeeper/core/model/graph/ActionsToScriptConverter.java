@@ -6,9 +6,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -28,12 +30,9 @@ import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractForeignTable;
 import ru.taximaxim.codekeeper.core.schema.AbstractPgTable;
-import ru.taximaxim.codekeeper.core.schema.AbstractRegularTable;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
-import ru.taximaxim.codekeeper.core.schema.Inherits;
 import ru.taximaxim.codekeeper.core.schema.MsColumn;
 import ru.taximaxim.codekeeper.core.schema.MsView;
-import ru.taximaxim.codekeeper.core.schema.PartitionForeignPgTable;
 import ru.taximaxim.codekeeper.core.schema.PartitionPgTable;
 import ru.taximaxim.codekeeper.core.schema.PgColumn;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
@@ -69,6 +68,11 @@ public class ActionsToScriptConverter {
      */
     private Map<String, List<String>> tblIdentityCols;
 
+    /**
+     * map where key - parent table and values - children tables
+     */
+    private Map<String, List<PartitionPgTable>> partitionTables;
+
     public ActionsToScriptConverter(PgDiffScript script, Set<ActionContainer> actions,
             PgDiffArguments arguments, PgDatabase oldDbFull, PgDatabase newDbFull) {
         this(script, actions, Collections.emptySet(), arguments, oldDbFull, newDbFull);
@@ -88,6 +92,7 @@ public class ActionsToScriptConverter {
         if (arguments.isDataMovementMode()) {
             tblTmpNames = new HashMap<>();
             tblIdentityCols = new HashMap<>();
+            partitionTables = new HashMap<>();
         }
     }
 
@@ -99,7 +104,9 @@ public class ActionsToScriptConverter {
      */
     public void fillScript(List<TreeElement> selected) {
         Set<PgStatement> refreshed = new HashSet<>(toRefresh.size());
-        Map<String, Set<AbstractPgTable>> partitionTables = getPartitionTables();
+        if (arguments.isDataMovementMode()) {
+            fillPartitionTables();
+        }
 
         for (ActionContainer action : actions) {
             PgStatement obj = action.getOldObj();
@@ -116,12 +123,10 @@ public class ActionsToScriptConverter {
                 continue;
             }
 
-            if (hideAction(action, selected)) {
-                continue;
+            if (!hideAction(action, selected)) {
+                processSequence(action);
+                printAction(action, obj);
             }
-
-            processSequence(action);
-            printAction(action, obj, partitionTables);
         }
 
         for (PgSequence sequence : sequencesOwnedBy) {
@@ -147,38 +152,34 @@ public class ActionsToScriptConverter {
         }
     }
 
-    private void printAction(ActionContainer action, PgStatement obj, Map<String, Set<AbstractPgTable>> partitionTables) {
+    private void printAction(ActionContainer action, PgStatement obj) {
         String depcy = getComment(action, obj);
         switch (action.getAction()) {
         case CREATE:
             if (depcy != null) {
                 script.addStatement(depcy);
             }
+
+            // explicitly deleting a sequence due to a name conflict.
             if (arguments.isDataMovementMode()
                     && obj instanceof PgSequence
                     && obj.getTwin(oldDbFull) != null) {
                 script.addDrop(obj, null, obj.getDropSQL());
             }
-            /**
-             * for partitioned tables print create tables and partitions
-             */
-            printCreatePartitionTable(obj, partitionTables);
+
             script.addCreate(obj, null, obj.getCreationSQL(), true);
 
             if (arguments.isDataMovementMode()
-                    && DbObjType.TABLE == obj.getStatementType()
-                    && !(obj instanceof AbstractForeignTable)
                     && obj.getTwin(oldDbFull) != null
-                    && !(obj instanceof PartitionPgTable)) {
-                addCommandsForMoveData((AbstractTable) obj);
+                    && DbObjType.TABLE == obj.getStatementType()) {
+
+                if (isPartitionTable(obj)) {
+                    addCommandsForMovePartitionData(obj);
+                } else if (!(obj instanceof AbstractForeignTable || obj instanceof PartitionPgTable)) {
+                    addCommandsForMoveData((AbstractTable) obj);
+                }
             }
 
-            /**
-             * only partitioned tables print drop temp tables
-             */
-            if (arguments.isDataMovementMode()) {
-                printDropPartitionTable(obj, partitionTables);
-            }
             break;
         case DROP:
             if (depcy != null) {
@@ -209,139 +210,64 @@ public class ActionsToScriptConverter {
         }
     }
 
-    private void printDropPartitionTable(PgStatement obj, Map<String, Set<AbstractPgTable>> partitionTables) {
-        if (obj instanceof SimplePgTable
-                && ((AbstractRegularTable) obj).getPartitionBy() != null) {
-            StringBuilder sb = new StringBuilder();
-
-            if (partitionTables.containsKey(obj.getBareName())) {
-                //reverse table order: from children to parent
-                List<AbstractPgTable> list = new ArrayList<>();
-                list.addAll(partitionTables.get(obj.getBareName()));
-                Set<AbstractPgTable> set = new LinkedHashSet<>();
-                for (int i = list.size()-1; i >= 0; i--) {
-                    set.add(list.get(i));
-                }
-
-                //print children drops
-                set.forEach(table -> printDrop(table, sb));
-            }
-
-            //print parent drops
-            AbstractPgTable parenTable = (AbstractPgTable) obj;
-            printDrop(parenTable, sb);
-            script.addStatement(sb.toString());
-        }
+    private boolean isPartitionTable(PgStatement obj) {
+        return obj instanceof SimplePgTable && ((SimplePgTable) obj).getPartitionBy() != null;
     }
 
     private void printDrop(AbstractPgTable table,  StringBuilder sb) {
-        UnaryOperator<String> quoter = arguments.isMsSql() ?
-                MsDiffUtils::quoteName : PgDiffUtils::getQuotedName;
+        UnaryOperator<String> quoter = PgDiffUtils::getQuotedName;
         String tblTmpName = tblTmpNames.get(table.getSchemaName() + '.' + table.getBareName());
         if (tblTmpName != null) {
             String tblTmpQName = quoter.apply(table.getSchemaName()) + '.' + quoter.apply(tblTmpName);
-            sb.append("\n\nDROP TABLE ").append(tblTmpQName)
-            .append(arguments.isMsSql() ? PgStatement.GO : ';');
+            sb.append("\n\nDROP TABLE ").append(tblTmpQName).append(';');
         }
     }
 
-    //get map where key - parent table and values - children tables
-    private Map<String, Set<AbstractPgTable>> getPartitionTables() {
-        Map<String, Set<AbstractPgTable>> partitionTables = new HashMap<>();
-        Map<String, Set<AbstractPgTable>> newPartitionTables = new HashMap<>();
-
-        /**removeKeys - parent tables keys(city_cd) which have children and they are children for another parent table: [cites = {city_cd, towns},
-         *city_cd ={cities_cd_10_to_103, cities_cd_10_to_102}]
-         */
-        List<String> removeKeys = new ArrayList<>();
+    private void fillPartitionTables() {
         for (ActionContainer action : actions) {
             PgStatement obj = action.getOldObj();
 
-            if ((obj instanceof PartitionPgTable || obj instanceof PartitionForeignPgTable)
-                    && action.getAction() == StatementActions.CREATE) {
-
-                AbstractPgTable table = (AbstractPgTable) obj;
-                for (Inherits parent : table.getInherits()) {
-                    partitionTables.computeIfAbsent(parent.getValue(),
-                            tables -> new LinkedHashSet<>()).add(table);
-                }
+            if ((obj instanceof PartitionPgTable) && action.getAction() == StatementActions.CREATE) {
+                PartitionPgTable table = (PartitionPgTable) obj;
+                partitionTables.computeIfAbsent(table.getParentTable(), tables -> new ArrayList<>()).add(table);
             }
         }
 
-        /**there we get new map with higher level parent for children tables
-         *  partitionTables = [cites = {city_cd, towns}, city_cd ={cities_cd_10_to_103, cities_cd_10_to_102},
-         *  cities_cd_10_to_103 = {cities56, cities57}],
-         *  newPartitionTables = [cites = {cities_cd_10_to_103, cities_cd_10_to_102}, city_cd = {cities56, cities57}]
-         */
-        for (Map.Entry<String, Set<AbstractPgTable>> item : partitionTables
-                .entrySet()) {
-            partitionTables.forEach((k, v) -> v.forEach(childTable -> {
-                if (Objects.equals(item.getKey(), childTable.getBareName())) {
-                    newPartitionTables.computeIfAbsent(k,
-                            tables -> new LinkedHashSet<>()).addAll(item.getValue());
-                    removeKeys.add(item.getKey());
+        Iterator<Entry<String, List<PartitionPgTable>>> iterator = partitionTables.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Entry<String, List<PartitionPgTable>> next = iterator.next();
+            String parent = next.getKey();
+            for (Entry<String, List<PartitionPgTable>> partitions : partitionTables.entrySet()) {
+                List<PartitionPgTable> tables = partitions.getValue();
+                if (tables.stream().map(PgStatement::getQualifiedName).anyMatch(el -> el.equals(parent))) {
+                    tables.addAll(next.getValue());
+                    iterator.remove();
+                    break;
                 }
-            }));
-        }
-
-        /**there we get new map with higher level parent for children tables
-         * secondPartitionTables = [cites = {cities_cd_10_to_103, cities_cd_10_to_102, cities56, cities57}
-         * This need where parent->children->children->children
-         */
-        Map<String, Set<AbstractPgTable>> secondPartitionTables = getLastList(newPartitionTables, partitionTables);
-
-        // partitionTables add childrens
-        addChildInPartitionTables(newPartitionTables, partitionTables);
-        addChildInPartitionTables(secondPartitionTables, partitionTables);
-
-        removeKeys.forEach(partitionTables::remove);
-        return partitionTables;
-    }
-
-    // merge child tables in global partitionTables
-    private void addChildInPartitionTables(
-            Map<String, Set<AbstractPgTable>> newPartitionTables,
-            Map<String, Set<AbstractPgTable>> partitionTables) {
-
-        newPartitionTables.forEach((k, v) -> {
-            partitionTables.computeIfPresent(k, (key, value) -> value).addAll(v);
-        });
-    }
-
-    private Map<String, Set<AbstractPgTable>> getLastList(
-            Map<String, Set<AbstractPgTable>> newPartitionTables,
-            Map<String, Set<AbstractPgTable>> partitionTables) {
-        Map<String, Set<AbstractPgTable>> secondPartitionTables = new HashMap<>();
-
-        for (Map.Entry<String, Set<AbstractPgTable>> item : newPartitionTables
-                .entrySet()) {
-            partitionTables.forEach((k, v) -> v.forEach(childTable -> {
-                if (Objects.equals(item.getKey(), childTable.getBareName())) {
-                    secondPartitionTables
-                    .computeIfAbsent(k, tables -> new LinkedHashSet<>())
-                    .addAll(item.getValue());
-                }
-            }));
-        }
-        return secondPartitionTables;
-    }
-
-    //print create for partition tables
-    private void printCreatePartitionTable(PgStatement obj, Map<String, Set<AbstractPgTable>> partitionTables) {
-        if (obj instanceof SimplePgTable
-                && ((AbstractRegularTable) obj).getPartitionBy() != null
-                && partitionTables.containsKey(obj.getBareName())) {
-            script.addCreate(obj, null, obj.getCreationSQL(), true);
-            Set<AbstractPgTable> tables = partitionTables.get(obj.getBareName());
-            if (tables != null) {
-                tables.forEach(table -> script.addCreate(table, null, table.getCreationSQL(), true));
-            }
-            //print insert for parent table
-            if (arguments.isDataMovementMode()
-                    && obj.getTwin(oldDbFull) != null) {
-                addCommandsForMoveData((AbstractTable) obj);
             }
         }
+    }
+
+    private void addCommandsForMovePartitionData(PgStatement obj) {
+        List<PartitionPgTable> tables = partitionTables.get(obj.getQualifiedName());
+        if (tables != null) {
+            // print create for partition tables
+            tables.forEach(table -> script.addCreate(table, null, table.getCreationSQL(), true));
+        }
+        // print insert for parent table
+        addCommandsForMoveData((AbstractTable) obj);
+
+        StringBuilder sb = new StringBuilder();
+        if (tables != null) {
+            List<PartitionPgTable> list = new ArrayList<>(tables);
+            Collections.reverse(list);
+            list.forEach(table -> printDrop(table, sb));
+        }
+
+        // print parent drops
+        SimplePgTable parenTable = (SimplePgTable) obj;
+        printDrop(parenTable, sb);
+        script.addStatement(sb.toString());
     }
 
     private String getComment(ActionContainer action, PgStatement oldObj) {
@@ -579,10 +505,8 @@ public class ActionsToScriptConverter {
                 }
             }
         }
-        if (!(newTbl instanceof SimplePgTable
-                && ((AbstractRegularTable) newTbl).getPartitionBy() != null)) {
-        sb.append("\n\nDROP TABLE ").append(tblTmpQName)
-        .append(arguments.isMsSql() ? PgStatement.GO : ';');
+        if (!isPartitionTable(newTbl)) {
+            sb.append("\n\nDROP TABLE ").append(tblTmpQName).append(arguments.isMsSql() ? PgStatement.GO : ';');
         }
         script.addStatement(sb.toString());
     }

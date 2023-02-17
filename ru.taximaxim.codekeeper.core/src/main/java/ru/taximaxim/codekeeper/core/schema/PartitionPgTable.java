@@ -11,7 +11,7 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
  * @since 4.1.1
  * @author galiev_mr
  */
-public class PartitionPgTable extends AbstractRegularTable {
+public class PartitionPgTable extends AbstractRegularTable implements IPartitionTable {
 
     private final String partitionBounds;
 
@@ -20,13 +20,19 @@ public class PartitionPgTable extends AbstractRegularTable {
         this.partitionBounds = partitionBounds;
     }
 
+    @Override
     public String getPartitionBounds() {
         return partitionBounds;
     }
 
     @Override
+    public String getParentTable() {
+        return inherits.get(0).getQualifiedName();
+    }
+
+    @Override
     protected void appendColumns(StringBuilder sbSQL, StringBuilder sbOption) {
-        sbSQL.append(" PARTITION OF ").append(inherits.get(0).getQualifiedName());
+        sbSQL.append(" PARTITION OF ").append(getParentTable());
 
         if (!columns.isEmpty()) {
             sbSQL.append(" (\n");
@@ -57,9 +63,8 @@ public class PartitionPgTable extends AbstractRegularTable {
     @Override
     protected void compareTableTypes(AbstractPgTable newTable, StringBuilder sb) {
         if (!(newTable instanceof PartitionPgTable)) {
-            final Inherits tableName = inherits.get(0);
-            sb.append("\n\nALTER TABLE ");
-            sb.append(tableName.getQualifiedName())
+            sb.append("\n\nALTER TABLE ")
+            .append(getParentTable())
             .append("\n\tDETACH PARTITION ")
             .append(PgDiffUtils.getQuotedName(getParent().getName()))
             .append('.')
