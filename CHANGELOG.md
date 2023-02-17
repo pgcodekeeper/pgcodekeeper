@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
  
 ## [Unreleased]
+
+- Fixed an error of creating a partitioned table and pouring data into it.
 - Fixed a bug when recreating a sequence when pouring data from a table.
 - Updated mechanism for sending anonymous data from Google Universe to Google Analytics 4.
 
@@ -15,7 +17,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
-- Fixed an error when printing query error message. 
 ### Removed
 
 
@@ -33,7 +34,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Changed `--graph-name` parameter in CLI version: added support for regular expression.
 
 ### Fixed
-- Fixed an error of creating a partitioned table and pouring data into it.
+
 - Fixed an error when changing the type of a FOREIGN TABLE column.
 - Fixed errors in parsing expressions.
 - Fixed `pg_dbo_timestamp` version check.
