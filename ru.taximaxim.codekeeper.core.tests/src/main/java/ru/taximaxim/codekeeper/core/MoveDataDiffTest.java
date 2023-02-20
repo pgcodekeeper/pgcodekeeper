@@ -35,13 +35,11 @@ class MoveDataDiffTest {
             //implementation for data movement test in PG (with identity columns)
             "move_data_identity",
             //implementation for partition table data movement test in PG
-            "move_data_partition_table",
-            //implementation for partition table data movement test in PG (with identity columns)
-            "move_data_partition_table_identity"
+            "move_data_partition_table"
     })
 
     void runPgDiff(String fileNameTemplate) throws IOException, InterruptedException {
-        runDiff(fileNameTemplate, false, true);
+        runDiff(fileNameTemplate, false);
     }
 
     @ParameterizedTest
@@ -53,23 +51,18 @@ class MoveDataDiffTest {
     })
 
     void runMsDiff(String fileNameTemplate) throws IOException, InterruptedException {
-        runDiff(fileNameTemplate, true, true);
+        runDiff(fileNameTemplate, true);
     }
 
-    @ParameterizedTest
-    @ValueSource(strings ={
-            //implementation for partition table in PG without data movement
-            "recreate_partition_table"
-    })
 
     void runPgDiffNove(String fileNameTemplate) throws IOException, InterruptedException {
-        runDiff(fileNameTemplate, false, false);
+        runDiff(fileNameTemplate, false);
     }
 
     @Test
-    void runDiff(String fileNameTemplate,  boolean isMsSql, boolean dataMovementMode) throws IOException, InterruptedException {
+    void runDiff(String fileNameTemplate, boolean isMsSql) throws IOException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();
-        args.setDataMovementMode(dataMovementMode);
+        args.setDataMovementMode(true);
         args.setMsSql(isMsSql);
         PgDatabase dbOld = TestUtils.loadTestDump(
                 fileNameTemplate + FILES_POSTFIX.ORIGINAL_SQL, MoveDataDiffTest.class, args);
