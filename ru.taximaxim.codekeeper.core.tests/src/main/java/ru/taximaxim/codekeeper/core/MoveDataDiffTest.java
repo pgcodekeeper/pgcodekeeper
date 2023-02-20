@@ -39,7 +39,7 @@ class MoveDataDiffTest {
     })
 
     void runPgDiff(String fileNameTemplate) throws IOException, InterruptedException {
-        runDiff(fileNameTemplate, false);
+        runDiff(fileNameTemplate, false, true);
     }
 
     @ParameterizedTest
@@ -51,13 +51,23 @@ class MoveDataDiffTest {
     })
 
     void runMsDiff(String fileNameTemplate) throws IOException, InterruptedException {
-        runDiff(fileNameTemplate, true);
+        runDiff(fileNameTemplate, true, true);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings ={
+            //implementation for partition table in PG without data movement
+            "recreate_partition_table"
+    })
+
+    void runPgDiffNove(String fileNameTemplate) throws IOException, InterruptedException {
+        runDiff(fileNameTemplate, false, false);
     }
 
     @Test
-    void runDiff(String fileNameTemplate,  boolean isMsSql) throws IOException, InterruptedException {
+    void runDiff(String fileNameTemplate,  boolean isMsSql, boolean dataMovementMode) throws IOException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();
-        args.setDataMovementMode(true);
+        args.setDataMovementMode(dataMovementMode);
         args.setMsSql(isMsSql);
         PgDatabase dbOld = TestUtils.loadTestDump(
                 fileNameTemplate + FILES_POSTFIX.ORIGINAL_SQL, MoveDataDiffTest.class, args);
