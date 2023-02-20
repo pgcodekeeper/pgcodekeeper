@@ -4,37 +4,21 @@ DROP TABLE public.cities_fg;
 
 DROP TABLE public.cities_4544;
 
--- DEPCY: This TABLE depends on the TABLE: public.measurement
-
 ALTER TABLE public.measurement_2 RENAME TO measurement_2_randomly_generated_part;
-
--- DEPCY: This TABLE depends on the TABLE: public.measurement
 
 ALTER TABLE public.measurement_1 RENAME TO measurement_1_randomly_generated_part;
 
 ALTER TABLE public.measurement RENAME TO measurement_randomly_generated_part;
 
--- DEPCY: This TABLE depends on the TABLE: public.cities
-
 ALTER TABLE public.towns RENAME TO towns_randomly_generated_part;
-
--- DEPCY: This TABLE depends on the TABLE: public.cities
 
 ALTER TABLE public.cities_cd_10_to_103 RENAME TO cities_cd_10_to_103_randomly_generated_part;
 
--- DEPCY: This TABLE depends on the TABLE: public.cities
-
 ALTER TABLE public.cities_cd_10_to_102 RENAME TO cities_cd_10_to_102_randomly_generated_part;
-
--- DEPCY: This TABLE depends on the TABLE: public.cities
 
 ALTER TABLE public.cities57 RENAME TO cities57_randomly_generated_part;
 
--- DEPCY: This TABLE depends on the TABLE: public.cities
-
 ALTER TABLE public.cities56 RENAME TO cities56_randomly_generated_part;
-
--- DEPCY: This TABLE depends on the TABLE: public.cities
 
 ALTER TABLE public.cities_cd_10_to_100 RENAME TO cities_cd_10_to_100_randomly_generated_part;
 
@@ -42,8 +26,6 @@ ALTER TABLE public.cities_cd_10_to_100 RENAME TO cities_cd_10_to_100_randomly_ge
 
 ALTER TABLE public.cities_cd
 	DROP CONSTRAINT constr_check;
-
--- DEPCY: This TABLE depends on the TABLE: public.cities
 
 ALTER TABLE public.cities_cd RENAME TO cities_cd_randomly_generated_part;
 
@@ -143,10 +125,6 @@ DROP TABLE public.cities_cd_randomly_generated_part;
 DROP TABLE public.towns_randomly_generated_part;
 
 DROP TABLE public.cities_randomly_generated_part;
-
--- DEPCY: This TABLE is a dependency of TABLE: public.cities_cd_10_to_103
-
--- DEPCY: This TABLE is a dependency of TABLE: public.cities57
 
 ALTER TABLE public.cities_cd
 	ADD CONSTRAINT constr_check CHECK ((c1 > 5));

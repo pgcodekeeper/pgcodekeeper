@@ -73,6 +73,8 @@ public class ActionsToScriptConverter {
      */
     private Map<String, List<PartitionPgTable>> partitionTables;
 
+    private List<String> partitionChildren;
+
     public ActionsToScriptConverter(PgDiffScript script, Set<ActionContainer> actions,
             PgDiffArguments arguments, PgDatabase oldDbFull, PgDatabase newDbFull) {
         this(script, actions, Collections.emptySet(), arguments, oldDbFull, newDbFull);
@@ -93,6 +95,7 @@ public class ActionsToScriptConverter {
             tblTmpNames = new HashMap<>();
             tblIdentityCols = new HashMap<>();
             partitionTables = new HashMap<>();
+            partitionChildren = new ArrayList<>();
         }
     }
 
@@ -214,20 +217,11 @@ public class ActionsToScriptConverter {
         return obj instanceof SimplePgTable && ((SimplePgTable) obj).getPartitionBy() != null;
     }
 
-    private void printDrop(AbstractPgTable table,  StringBuilder sb) {
-        UnaryOperator<String> quoter = PgDiffUtils::getQuotedName;
-        String tblTmpName = tblTmpNames.get(table.getSchemaName() + '.' + table.getBareName());
-        if (tblTmpName != null) {
-            String tblTmpQName = quoter.apply(table.getSchemaName()) + '.' + quoter.apply(tblTmpName);
-            sb.append("\n\nDROP TABLE ").append(tblTmpQName).append(';');
-        }
-    }
-
     private void fillPartitionTables() {
         for (ActionContainer action : actions) {
             PgStatement obj = action.getOldObj();
 
-            if ((obj instanceof PartitionPgTable) && action.getAction() == StatementActions.CREATE) {
+            if (obj instanceof PartitionPgTable && action.getAction() == StatementActions.CREATE) {
                 PartitionPgTable table = (PartitionPgTable) obj;
                 partitionTables.computeIfAbsent(table.getParentTable(), tables -> new ArrayList<>()).add(table);
             }
@@ -246,6 +240,11 @@ public class ActionsToScriptConverter {
                 }
             }
         }
+
+        partitionChildren = partitionTables.values().stream()
+                .flatMap(List::stream)
+                .map(PgStatement::getQualifiedName)
+                .collect(Collectors.toList());
     }
 
     private void addCommandsForMovePartitionData(PgStatement obj) {
@@ -261,13 +260,23 @@ public class ActionsToScriptConverter {
         if (tables != null) {
             List<PartitionPgTable> list = new ArrayList<>(tables);
             Collections.reverse(list);
-            list.forEach(table -> printDrop(table, sb));
+            list.forEach(table -> printDropPartition(table, sb));
         }
 
         // print parent drops
         SimplePgTable parenTable = (SimplePgTable) obj;
-        printDrop(parenTable, sb);
+        printDropPartition(parenTable, sb);
         script.addStatement(sb.toString());
+    }
+
+    private void printDropPartition(AbstractPgTable table, StringBuilder sb) {
+        UnaryOperator<String> quoter = PgDiffUtils::getQuotedName;
+        String tblTmpName = tblTmpNames.get(table.getQualifiedName());
+        if (tblTmpName != null) {
+            sb.append("\n\nDROP TABLE ")
+                .append(quoter.apply(table.getSchemaName())).append('.').append(quoter.apply(tblTmpName))
+                .append(';');
+        }
     }
 
     private String getComment(ActionContainer action, PgStatement oldObj) {
@@ -279,6 +288,11 @@ public class ActionsToScriptConverter {
         // skip column to parent
         if (objStarter.getStatementType() == DbObjType.COLUMN
                 && objStarter.getParent().equals(oldObj)) {
+            return null;
+        }
+
+        // skip partition tables in data move mode
+        if (arguments.isDataMovementMode() && partitionChildren.contains(oldObj.getQualifiedName())) {
             return null;
         }
 
