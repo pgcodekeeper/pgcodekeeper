@@ -56,11 +56,6 @@ class MoveDataDiffTest {
         runDiff(fileNameTemplate, true);
     }
 
-
-    void runPgDiffNove(String fileNameTemplate) throws IOException, InterruptedException {
-        runDiff(fileNameTemplate, false);
-    }
-
     @Test
     void runDiff(String fileNameTemplate, boolean isMsSql) throws IOException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();
