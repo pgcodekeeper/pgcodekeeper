@@ -163,6 +163,8 @@ class PgDiffTest {
             // выполняется раньше чем
             // DROP FOREIGN TABLE public.f_cities_e;
             "modify_partition_table",
+            // Tests scenario where compared PARTITION TABLE.
+            "compare_partition_table",
             // Tests scenario where new PARTITION TABLE is converted to TYPED TABLE.
             "chg_table_type",
             // Tests scenario where CYCLE is modified on SEQUENCE.

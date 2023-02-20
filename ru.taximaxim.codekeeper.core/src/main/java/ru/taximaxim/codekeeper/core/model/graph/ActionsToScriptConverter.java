@@ -6,9 +6,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -27,13 +29,16 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractForeignTable;
+import ru.taximaxim.codekeeper.core.schema.AbstractPgTable;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.MsColumn;
 import ru.taximaxim.codekeeper.core.schema.MsView;
+import ru.taximaxim.codekeeper.core.schema.PartitionPgTable;
 import ru.taximaxim.codekeeper.core.schema.PgColumn;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgSequence;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SimplePgTable;
 
 public class ActionsToScriptConverter {
 
@@ -63,6 +68,13 @@ public class ActionsToScriptConverter {
      */
     private Map<String, List<String>> tblIdentityCols;
 
+    /**
+     * map where key - parent table and values - children tables
+     */
+    private Map<String, List<PartitionPgTable>> partitionTables;
+
+    private List<String> partitionChildren;
+
     public ActionsToScriptConverter(PgDiffScript script, Set<ActionContainer> actions,
             PgDiffArguments arguments, PgDatabase oldDbFull, PgDatabase newDbFull) {
         this(script, actions, Collections.emptySet(), arguments, oldDbFull, newDbFull);
@@ -82,6 +94,8 @@ public class ActionsToScriptConverter {
         if (arguments.isDataMovementMode()) {
             tblTmpNames = new HashMap<>();
             tblIdentityCols = new HashMap<>();
+            partitionTables = new HashMap<>();
+            partitionChildren = new ArrayList<>();
         }
     }
 
@@ -93,6 +107,10 @@ public class ActionsToScriptConverter {
      */
     public void fillScript(List<TreeElement> selected) {
         Set<PgStatement> refreshed = new HashSet<>(toRefresh.size());
+        if (arguments.isDataMovementMode()) {
+            fillPartitionTables();
+        }
+
         for (ActionContainer action : actions) {
             PgStatement obj = action.getOldObj();
 
@@ -108,12 +126,10 @@ public class ActionsToScriptConverter {
                 continue;
             }
 
-            if (hideAction(action, selected)) {
-                continue;
+            if (!hideAction(action, selected)) {
+                processSequence(action);
+                printAction(action, obj);
             }
-
-            processSequence(action);
-            printAction(action, obj);
         }
 
         for (PgSequence sequence : sequencesOwnedBy) {
@@ -146,19 +162,27 @@ public class ActionsToScriptConverter {
             if (depcy != null) {
                 script.addStatement(depcy);
             }
+
+            // explicitly deleting a sequence due to a name conflict.
             if (arguments.isDataMovementMode()
                     && obj instanceof PgSequence
                     && obj.getTwin(oldDbFull) != null) {
                 script.addDrop(obj, null, obj.getDropSQL());
             }
+
             script.addCreate(obj, null, obj.getCreationSQL(), true);
 
             if (arguments.isDataMovementMode()
-                    && DbObjType.TABLE == obj.getStatementType()
-                    && !(obj instanceof AbstractForeignTable)
-                    && obj.getTwin(oldDbFull) != null) {
-                addCommandsForMoveData((AbstractTable) obj);
+                    && obj.getTwin(oldDbFull) != null
+                    && DbObjType.TABLE == obj.getStatementType()) {
+
+                if (isPartitionTable(obj)) {
+                    addCommandsForMovePartitionData(obj);
+                } else if (!(obj instanceof AbstractForeignTable || obj instanceof PartitionPgTable)) {
+                    addCommandsForMoveData((AbstractTable) obj);
+                }
             }
+
             break;
         case DROP:
             if (depcy != null) {
@@ -189,6 +213,72 @@ public class ActionsToScriptConverter {
         }
     }
 
+    private boolean isPartitionTable(PgStatement obj) {
+        return obj instanceof SimplePgTable && ((SimplePgTable) obj).getPartitionBy() != null;
+    }
+
+    private void fillPartitionTables() {
+        for (ActionContainer action : actions) {
+            PgStatement obj = action.getOldObj();
+
+            if (obj instanceof PartitionPgTable && action.getAction() == StatementActions.CREATE) {
+                PartitionPgTable table = (PartitionPgTable) obj;
+                partitionTables.computeIfAbsent(table.getParentTable(), tables -> new ArrayList<>()).add(table);
+            }
+        }
+
+        Iterator<Entry<String, List<PartitionPgTable>>> iterator = partitionTables.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Entry<String, List<PartitionPgTable>> next = iterator.next();
+            String parent = next.getKey();
+            for (Entry<String, List<PartitionPgTable>> partitions : partitionTables.entrySet()) {
+                List<PartitionPgTable> tables = partitions.getValue();
+                if (tables.stream().map(PgStatement::getQualifiedName).anyMatch(el -> el.equals(parent))) {
+                    tables.addAll(next.getValue());
+                    iterator.remove();
+                    break;
+                }
+            }
+        }
+
+        partitionChildren = partitionTables.values().stream()
+                .flatMap(List::stream)
+                .map(PgStatement::getQualifiedName)
+                .collect(Collectors.toList());
+    }
+
+    private void addCommandsForMovePartitionData(PgStatement obj) {
+        List<PartitionPgTable> tables = partitionTables.get(obj.getQualifiedName());
+        if (tables != null) {
+            // print create for partition tables
+            tables.forEach(table -> script.addCreate(table, null, table.getCreationSQL(), true));
+        }
+        // print insert for parent table
+        addCommandsForMoveData((AbstractTable) obj);
+
+        StringBuilder sb = new StringBuilder();
+        if (tables != null) {
+            List<PartitionPgTable> list = new ArrayList<>(tables);
+            Collections.reverse(list);
+            list.forEach(table -> printDropPartition(table, sb));
+        }
+
+        // print parent drops
+        SimplePgTable parenTable = (SimplePgTable) obj;
+        printDropPartition(parenTable, sb);
+        script.addStatement(sb.toString());
+    }
+
+    private void printDropPartition(AbstractPgTable table, StringBuilder sb) {
+        UnaryOperator<String> quoter = PgDiffUtils::getQuotedName;
+        String tblTmpName = tblTmpNames.get(table.getQualifiedName());
+        if (tblTmpName != null) {
+            sb.append("\n\nDROP TABLE ")
+                .append(quoter.apply(table.getSchemaName())).append('.').append(quoter.apply(tblTmpName))
+                .append(';');
+        }
+    }
+
     private String getComment(ActionContainer action, PgStatement oldObj) {
         PgStatement objStarter = action.getStarter();
         if (objStarter == null || objStarter == oldObj || objStarter == action.getNewObj()) {
@@ -198,6 +288,11 @@ public class ActionsToScriptConverter {
         // skip column to parent
         if (objStarter.getStatementType() == DbObjType.COLUMN
                 && objStarter.getParent().equals(oldObj)) {
+            return null;
+        }
+
+        // skip partition tables in data move mode
+        if (arguments.isDataMovementMode() && partitionChildren.contains(oldObj.getQualifiedName())) {
             return null;
         }
 
@@ -424,10 +519,9 @@ public class ActionsToScriptConverter {
                 }
             }
         }
-
-        sb.append("\n\nDROP TABLE ").append(tblTmpQName)
-        .append(arguments.isMsSql() ? PgStatement.GO : ';');
-
+        if (!isPartitionTable(newTbl)) {
+            sb.append("\n\nDROP TABLE ").append(tblTmpQName).append(arguments.isMsSql() ? PgStatement.GO : ';');
+        }
         script.addStatement(sb.toString());
     }
 

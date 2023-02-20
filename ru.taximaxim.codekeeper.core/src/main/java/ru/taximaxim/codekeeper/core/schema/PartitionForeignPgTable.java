@@ -10,7 +10,8 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
  * @since 4.1.1
  * @author galiev_mr
  */
-public class PartitionForeignPgTable extends AbstractForeignTable {
+public class PartitionForeignPgTable extends AbstractForeignTable implements IPartitionTable {
+
     private final String partitionBounds;
 
     public PartitionForeignPgTable(String name, String serverName, String partitionBounds) {
@@ -18,8 +19,14 @@ public class PartitionForeignPgTable extends AbstractForeignTable {
         this.partitionBounds = partitionBounds;
     }
 
+    @Override
     public String getPartitionBounds() {
         return partitionBounds;
+    }
+
+    @Override
+    public String getParentTable() {
+        return inherits.get(0).getQualifiedName();
     }
 
     @Override
@@ -31,7 +38,7 @@ public class PartitionForeignPgTable extends AbstractForeignTable {
 
     @Override
     protected void appendColumns(StringBuilder sbSQL, StringBuilder sbOption) {
-        sbSQL.append(" PARTITION OF ").append(inherits.get(0).getQualifiedName());
+        sbSQL.append(" PARTITION OF ").append(getParentTable());
 
         if (!columns.isEmpty()) {
             sbSQL.append(" (\n");

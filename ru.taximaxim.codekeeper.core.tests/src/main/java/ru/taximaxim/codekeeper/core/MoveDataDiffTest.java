@@ -33,8 +33,11 @@ class MoveDataDiffTest {
             //implementation for foreign table data movement test in PG
             "move_data_foreign",
             //implementation for data movement test in PG (with identity columns)
-            "move_data_identity"
-
+            "move_data_identity",
+            //implementation for partition table data movement test in PG
+            "move_data_partition_table",
+            //implementation for partition table data movement test in PG (with identity columns)
+            "move_data_partition_table_identity"
     })
 
     void runPgDiff(String fileNameTemplate) throws IOException, InterruptedException {
@@ -54,7 +57,7 @@ class MoveDataDiffTest {
     }
 
     @Test
-    void runDiff(String fileNameTemplate,  boolean isMsSql) throws IOException, InterruptedException {
+    void runDiff(String fileNameTemplate, boolean isMsSql) throws IOException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();
         args.setDataMovementMode(true);
         args.setMsSql(isMsSql);
