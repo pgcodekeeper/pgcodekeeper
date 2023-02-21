@@ -11,6 +11,12 @@
 
 ### Изменено
 
+### Исправлено
+
+## [7.2.0] - 2023-02-21
+
+### Изменено
+
 - Обновлен механизм отправки анонимных данных с Google Universe до Google Analytics 4.
 
 ### Исправлено
@@ -18,8 +24,6 @@
 - Исправлена ошибка при выводе сообщения об ошибке в запросе.
 - Исправлена ошибка с генерацией кода миграции данных для секционированных таблиц.
 - Исправлена ошибка при пересоздании sequence при переливке данных с таблицы.
-
-### Удалено
 
 ## [7.1.0] - 2023-02-07
 
@@ -1608,7 +1612,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.1.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.2.0...HEAD
+[7.2.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.1.0...v7.2.0
 [7.1.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.0.1...v7.1.0
 [7.0.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.0.0...v7.0.1
 [7.0.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v6.6.0...v7.0.0
