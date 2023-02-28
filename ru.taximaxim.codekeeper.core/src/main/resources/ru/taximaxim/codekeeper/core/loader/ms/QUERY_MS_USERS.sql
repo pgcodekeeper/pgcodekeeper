@@ -1,6 +1,8 @@
 SELECT dp.name AS name,
 suser_sname(dp.sid) AS loginname,
 dp.default_schema_name AS schema_name,
+dp.default_language_lcid AS default_lang,
+dp.allow_encrypted_value_modifications AS allow_encrypted,
 aa.acl
 FROM sys.database_principals AS dp WITH (NOLOCK)
 CROSS APPLY (
