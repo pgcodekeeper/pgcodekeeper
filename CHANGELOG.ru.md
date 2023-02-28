@@ -9,6 +9,8 @@
 
 ### Добавлено
 
+- Добавлена поддержка опций для объекта User в MS SQL: DEFAULT_LANGUAGE, ALLOW_ENCRYPTED_VALUE_MODIFICATIONS.
+
 ### Изменено
 
 ### Исправлено
