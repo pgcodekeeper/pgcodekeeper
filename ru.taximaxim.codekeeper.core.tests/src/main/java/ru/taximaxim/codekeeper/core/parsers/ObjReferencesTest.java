@@ -179,9 +179,8 @@ class ObjReferencesTest {
         PgDatabase db = loader.load();
 
         String expected = TestUtils
-                .inputStreamToString(ObjReferencesTest.class
-                        .getResourceAsStream(fileNameTemplate + REFS_POSTFIX))
-                .strip();
+                .readResource(fileNameTemplate + REFS_POSTFIX, getClass()).strip();
+
         String actual = getRefsAsString(db.getObjReferences()).strip();
 
         Assertions.assertTrue(loader.getErrors().isEmpty());

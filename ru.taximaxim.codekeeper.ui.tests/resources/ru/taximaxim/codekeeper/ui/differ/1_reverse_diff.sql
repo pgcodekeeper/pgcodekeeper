@@ -5,8 +5,11 @@ SET search_path = pg_catalog;
 ALTER TABLE public.t4
 	DROP CONSTRAINT t4_c2_key;
 
-ALTER TABLE public.t4
-	ALTER COLUMN c2 TYPE integer USING c2::integer; /* TYPE change - table: public.t4 original: text new: integer */
+ALTER TABLE ONLY public.t4
+	ALTER COLUMN c2 SET DEFAULT 0;
+
+UPDATE public.t4
+	SET c2 = DEFAULT WHERE c2 IS NULL;
 
 ALTER TABLE public.t4
 	ALTER COLUMN c2 SET NOT NULL;

@@ -6,8 +6,6 @@ SET search_path = pg_catalog;
 
 CREATE SCHEMA test;
 
-ALTER SCHEMA test OWNER TO galiev_mr;
-
 CREATE TABLE test.test_table (
 	c1 integer,
 	c2 integer,
@@ -15,5 +13,3 @@ CREATE TABLE test.test_table (
 	c4 date,
 	c5 integer
 );
-
-ALTER TABLE test.test_table OWNER TO galiev_mr;
