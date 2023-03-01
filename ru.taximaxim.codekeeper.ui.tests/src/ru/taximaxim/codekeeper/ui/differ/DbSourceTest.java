@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -27,13 +26,11 @@ import org.junit.jupiter.api.Test;
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.TestUtils;
-import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.fileutils.TempDir;
 import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.model.exporter.MsModelExporter;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
-import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
@@ -56,7 +53,7 @@ public class DbSourceTest {
 
     @Test
     public void testDirTree() throws IOException, InterruptedException, CoreException {
-        try(TempDir exportDir = new TempDir("pgcodekeeper-test")){
+        try (TempDir exportDir = new TempDir("pgcodekeeper-test")) {
             Path dir = exportDir.get();
             new ModelExporter(dir, dbPredefined, Consts.UTF_8).exportFull();
 
@@ -66,18 +63,14 @@ public class DbSourceTest {
     }
 
     @Test
-    public void testFile() throws IOException, URISyntaxException, InterruptedException,
-    CoreException {
-        URL urla = TestUtils.class.getResource(TestUtils.RESOURCE_DUMP);
-
-        performTest(DbSource.fromFile(true, Utils.getFileFromOsgiRes(urla),
-                Consts.UTF_8, false, null));
+    public void testFile() throws IOException, URISyntaxException, InterruptedException, CoreException {
+        Path path = TestUtils.getPathToResource(TestUtils.RESOURCE_DUMP, TestUtils.class);
+        performTest(DbSource.fromFile(true, path, Consts.UTF_8, false, null));
     }
 
     @Test
-    public void testProject() throws CoreException, IOException, PgCodekeeperUIException,
-    InterruptedException{
-        try(TempDir tempDir = new TempDir(workspacePath.toPath(), "dbSourceProjectTest")){
+    public void testProject() throws CoreException, IOException, InterruptedException {
+        try (TempDir tempDir = new TempDir(workspacePath.toPath(), "dbSourceProjectTest")) {
             Path dir = tempDir.get();
             // create empty project in temp dir
             IProject project = createProjectInWorkspace(dir.getFileName().toString(), false);
@@ -98,9 +91,8 @@ public class DbSourceTest {
     }
 
     @Test
-    public void testDbSourceWithIgnoreSchemas() throws CoreException, IOException, PgCodekeeperUIException,
-    InterruptedException{
-        try(TempDir tempDir = new TempDir(workspacePath.toPath(), "dbSourceProjectTest")){
+    public void testDbSourceWithIgnoreSchemas() throws CoreException, IOException, InterruptedException {
+        try (TempDir tempDir = new TempDir(workspacePath.toPath(), "dbSourceProjectTest")) {
             Path dir = tempDir.get();
 
             // create empty project in temp dir
@@ -113,25 +105,24 @@ public class DbSourceTest {
             // create .pgcodekeeperignoreschema file with black list rule in tempDir
             TestUtils.createIgnoredSchemaFile(dir);
 
-            DbSource dbSourceProj =  DbSource.fromProject(new PgDbProject(project));
+            DbSource dbSourceProj = DbSource.fromProject(new PgDbProject(project));
             PgDatabase db = dbSourceProj.get(SubMonitor.convert(null, "", 1));
 
             for (AbstractSchema dbSchema : db.getSchemas()) {
                 if (TestUtils.IGNORED_SCHEMAS_LIST.contains(dbSchema.getName())) {
                     Assertions.fail("Ignored Schema loaded " + dbSchema.getName());
-                } else {
-                    Assertions.assertEquals(dbPredefined.getSchema(dbSchema.getName()), dbSchema,
-                            "Schema from dump isn't equal schema from loader");
                 }
+
+                Assertions.assertEquals(dbPredefined.getSchema(dbSchema.getName()), dbSchema,
+                        "Schema from dump isn't equal schema from loader");
             }
             project.delete(false, true, null);
         }
     }
 
     @Test
-    public void testMsDbSourceWithIgnoreSchemas() throws CoreException, IOException, PgCodekeeperUIException,
-    InterruptedException{
-        try(TempDir tempDir = new TempDir(workspacePath.toPath(), "dbSourceProjectTest")){
+    public void testMsDbSourceWithIgnoreSchemas() throws CoreException, IOException, InterruptedException {
+        try (TempDir tempDir = new TempDir(workspacePath.toPath(), "dbSourceProjectTest")) {
             Path dir = tempDir.get();
             PgDiffArguments args = new PgDiffArguments();
             args.setMsSql(true);
@@ -147,7 +138,7 @@ public class DbSourceTest {
             // create .pgcodekeeperignoreschema file with black list rule in tempDir
             TestUtils.createIgnoredSchemaFile(dir);
 
-            DbSource dbSourceProj =  DbSource.fromProject(new PgDbProject(project));
+            DbSource dbSourceProj = DbSource.fromProject(new PgDbProject(project));
             PgDatabase db = dbSourceProj.get(SubMonitor.convert(null, "", 1));
 
             for (AbstractSchema dbSchema : db.getSchemas()) {
@@ -162,11 +153,10 @@ public class DbSourceTest {
         }
     }
 
-    private void performTest(DbSource source)
-            throws IOException, InterruptedException, CoreException {
+    private void performTest(DbSource source) throws IOException, InterruptedException, CoreException {
         assertFalse(source.isLoaded(), "DB source should not be loaded");
 
-        try{
+        try {
             source.getDbObject();
             fail("Source is not loaded yet, exception expected");
         } catch (IllegalStateException ex) {
@@ -179,7 +169,7 @@ public class DbSourceTest {
         assertEquals(dbPredefined, dbSource, "Db loaded not equal to predefined db");
     }
 
-    private IProject createProjectInWorkspace(String projectName, boolean isMsSql) throws CoreException{
+    private IProject createProjectInWorkspace(String projectName, boolean isMsSql) throws CoreException {
         IProject project = workspaceRoot.getProject(projectName);
         PgDbProject.createPgDbProject(project, null, isMsSql);
         project.getNature(NATURE.ID).deconfigure();

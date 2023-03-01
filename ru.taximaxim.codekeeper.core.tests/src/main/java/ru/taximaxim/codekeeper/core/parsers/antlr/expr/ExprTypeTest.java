@@ -54,8 +54,8 @@ class ExprTypeTest {
     })
     void runCheck(String fileNameTemplate) throws IOException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();
-        String typesForCompare = TestUtils.inputStreamToString(ExprTypeTest.class
-            .getResourceAsStream(fileNameTemplate + FILES_POSTFIX.DIFF_SQL));
+        String typesForCompare = TestUtils.readResource(
+                fileNameTemplate + FILES_POSTFIX.DIFF_SQL, getClass());
 
         runDiff(fileNameTemplate, args, typesForCompare);
     }

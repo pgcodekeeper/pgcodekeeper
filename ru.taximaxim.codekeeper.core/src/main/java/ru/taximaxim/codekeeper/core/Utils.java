@@ -5,28 +5,13 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.URIUtil;
-
 import ru.taximaxim.codekeeper.core.log.Log;
 
 public final class Utils {
-
-    /**
-     * @param url url should NOT be URL-encoded
-     */
-    public static Path getFileFromOsgiRes(URL url) throws URISyntaxException, IOException {
-        return Paths.get(
-                URIUtil.toURI("file".equals(url.getProtocol()) ?
-                        url : FileLocator.toFileURL(url)));
-    }
-
 
     public static void serialize(String path, Serializable object) {
         serialize(Paths.get(path), object);

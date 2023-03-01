@@ -26,7 +26,6 @@ import ru.taximaxim.codekeeper.core.fileutils.TempDir;
 import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.fileutils.UIProjectUpdater;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
@@ -58,7 +57,7 @@ public class ProjectUpdaterTest {
     }
 
     @Test
-    public void updateSuccessTest() throws IOException, PgCodekeeperUIException, CoreException {
+    public void updateSuccessTest() throws IOException, CoreException {
         File dir = workingDir.get().toFile();
         PgDbProject proj = PgDbProject.createPgDbProject(ResourcesPlugin.getWorkspace()
                 .getRoot().getProject(dir.getName()), dir.toURI(), false);
