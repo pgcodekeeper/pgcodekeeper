@@ -531,7 +531,9 @@ class PgDiffTest {
             // Tests scenario where view column comments is reordered.
             "change_view_column_comment_order",
             // Tests scenario where logging of sequences changed.
-            "alter_sequence",
+            "alter_sequence_logged",
+            // Tests scenario where OWNED BY of sequences changed.
+            "alter_sequence_owned_by",
             // Tests scenario where NULLS DISTINCT option of index is altered.
             "alter_index_nulls_distinction",
     })

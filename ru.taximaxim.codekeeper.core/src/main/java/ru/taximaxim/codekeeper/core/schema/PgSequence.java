@@ -146,6 +146,12 @@ public class PgSequence extends AbstractSequence {
             newSequence.appendCommentSql(sb);
         }
 
+        // OWNED BY will be changed separately
+        final GenericColumn newOwnedBy = newSequence.getOwnedBy();
+        if (!Objects.equals(getOwnedBy(), newOwnedBy) && newOwnedBy != null) {
+            sb.setLength(sb.length() + 1);
+        }
+
         return sb.length() > startLength;
     }
 
@@ -200,9 +206,8 @@ public class PgSequence extends AbstractSequence {
         }
 
         final GenericColumn newOwnedBy = newSequence.getOwnedBy();
-        if (!Objects.equals(getOwnedBy(), newOwnedBy)) {
-            sbSQL.append("\n\tOWNED BY ");
-            sbSQL.append(newOwnedBy != null ? newOwnedBy.getQualifiedName() : "NONE");
+        if (newOwnedBy == null && getOwnedBy() != null) {
+            sbSQL.append("\n\tOWNED BY NONE");
         }
 
         return sbSQL.length() > 0;
