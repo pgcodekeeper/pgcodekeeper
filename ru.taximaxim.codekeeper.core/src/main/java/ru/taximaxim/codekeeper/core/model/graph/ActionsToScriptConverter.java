@@ -199,16 +199,8 @@ public class ActionsToScriptConverter {
             break;
         case ALTER:
             StringBuilder sb = new StringBuilder();
-            boolean isSequence = obj instanceof PgSequence;
-            boolean isSequenceOwnedBy = false;
-            if (isSequence) {
-                isSequenceOwnedBy = isChangeSequenceOwnedBy(action);
-            }
-
-            if (!isSequence || isSequenceOwnedBy) {
             obj.appendAlterSQL(action.getNewObj(), sb,
                     new AtomicBoolean());
-            }
             if (sb.length() > 0) {
                 if (depcy != null) {
                     script.addStatement(depcy);
@@ -219,21 +211,6 @@ public class ActionsToScriptConverter {
         case NONE:
             throw new IllegalStateException("Not implemented action");
         }
-    }
-
-    /**
-     *Check sequences changes:
-     * - sequence's owned by option changed
-     * - sequence's owned by option is none
-     * - sequence's options is changed
-     */
-    private boolean isChangeSequenceOwnedBy(ActionContainer action) {
-        PgSequence oldSeq = (PgSequence) action.getOldObj();
-        PgSequence newSeq = (PgSequence) action.getNewObj();
-
-        return !Objects.equals(newSeq.getOwnedBy(), oldSeq.getOwnedBy())
-                && (!oldSeq.getOwnedBySQL().isEmpty() && newSeq.getOwnedBySQL().isEmpty())
-                || !oldSeq.compareOption(newSeq);
     }
 
     private boolean isPartitionTable(PgStatement obj) {

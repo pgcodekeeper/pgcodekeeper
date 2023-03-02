@@ -6,7 +6,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
  
 ## [Unreleased]
- -Fixed a bug with repeating ALTER SEQUENCE...OWNED BY in migration script 
 
 ### Added
 
@@ -17,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Fixed errors in tests when running on machines with RU locale.
+- Fixed issues in code generation when altering OWNED BY property of sequences
 
 ## [7.2.0] - 2023-02-21
 
