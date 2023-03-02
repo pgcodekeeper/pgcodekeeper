@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
  
 ## [Unreleased]
+ -Fixed a bug with repeating ALTER SEQUENCE...OWNED BY in migration script 
 
 ### Added
 
