@@ -7,10 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -31,13 +28,6 @@ class DiffTest {
                 Arguments.of(new AllowedObjectsArgumentsProvider()),
                 Arguments.of(new LibrariesArgumentsProvider()),
                 Arguments.of(new SelectedOnlyArgumentsProvider()),
-                Arguments.of(new MoveDataArgumentsProvider()),
-                Arguments.of(new MoveDataIdentityArgumentsProvider()),
-                Arguments.of(new MoveDataMSArgumentsProvider()),
-                Arguments.of(new MoveDataMSIdentityArgumentsProvider()),
-                Arguments.of(new MoveDataDiffColsIdentityArgumentsProvider()),
-                Arguments.of(new MoveDataDropTableWithoutRename()),
-                Arguments.of(new MoveDataForeignArgumentsProvider()),
                 Arguments.of(new AddConstraintNotValid()));
     }
 
@@ -100,26 +90,6 @@ class DiffTest {
     }
 }
 
-abstract class DataMovementArgumentsProvider extends RandomOutputArgumentsProvider {
-
-    private static final Pattern RANDOM_RENAMED_TABLE = Pattern.compile("tbl_([0-9a-fA-F]{32})");
-
-    public DataMovementArgumentsProvider(String resName) {
-        super(resName);
-    }
-
-    @Override
-    protected String findRandomPart(String contents) {
-        Matcher matcher = RANDOM_RENAMED_TABLE.matcher(contents);
-        matcher.find();
-        return matcher.group(1);
-    }
-
-    @Override
-    protected String getRandomReplacement() {
-        return "randomly_generated_part";
-    }
-}
 /**
  * {@link ArgumentsProvider} implementation testing src + target mode
  */
@@ -342,142 +312,6 @@ class SelectedOnlyArgumentsProvider extends ArgumentsProvider {
         return new String[]{"--selected-only", "-o",
                 getDiffResultFile().toString(),
                 fNew.toString(), fOriginal.toString()};
-    }
-}
-
-/**
- * {@link ArgumentsProvider} implementation for data movement test in PG
- * (without identity columns)
- */
-class MoveDataArgumentsProvider extends DataMovementArgumentsProvider {
-
-    public MoveDataArgumentsProvider() {
-        super("move_data");
-    }
-
-    @Override
-    protected String[] args() throws URISyntaxException, IOException {
-        Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
-        Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
-        return new String[]{"--migrate-data", "-o",
-                getDiffResultFile().toString(),
-                fNew.toString(), fOriginal.toString()};
-    }
-}
-
-/**
- * {@link ArgumentsProvider} implementation for data movement test in PG
- * (with identity columns)
- */
-class MoveDataIdentityArgumentsProvider extends DataMovementArgumentsProvider {
-
-    public MoveDataIdentityArgumentsProvider() {
-        super("move_data_identity");
-    }
-
-    @Override
-    protected String[] args() throws URISyntaxException, IOException {
-        Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
-        Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
-        return new String[]{"--migrate-data", "-o",
-                getDiffResultFile().toString(),
-                fNew.toString(), fOriginal.toString()};
-    }
-}
-
-/**
- * {@link ArgumentsProvider} implementation for data movement test in MS
- *  (without identity columns)
- */
-class MoveDataMSArgumentsProvider extends DataMovementArgumentsProvider {
-
-    public MoveDataMSArgumentsProvider() {
-        super("move_data_ms");
-    }
-
-    @Override
-    protected String[] args() throws URISyntaxException, IOException {
-        Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
-        Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
-        return new String[]{"--migrate-data", "--ms-sql", "-o",
-                getDiffResultFile().toString(),
-                fNew.toString(), fOriginal.toString()};
-    }
-}
-
-/**
- * {@link ArgumentsProvider} implementation for data movement test in MS
- * (with identity column)
- */
-class MoveDataMSIdentityArgumentsProvider extends DataMovementArgumentsProvider {
-
-    public MoveDataMSIdentityArgumentsProvider() {
-        super("move_data_ms_identity");
-    }
-
-    @Override
-    protected String[] args() throws URISyntaxException, IOException {
-        Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
-        Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
-        return new String[]{"--migrate-data", "--ms-sql", "-o",
-                getDiffResultFile().toString(),
-                fNew.toString(), fOriginal.toString()};
-    }
-}
-
-/**
- * {@link ArgumentsProvider} implementation for data movement test in PG
- * for case with different columns
- * (with identity columns)
- */
-class MoveDataDiffColsIdentityArgumentsProvider extends DataMovementArgumentsProvider {
-
-    public MoveDataDiffColsIdentityArgumentsProvider() {
-        super("move_data_diff_cols_identity");
-    }
-
-    @Override
-    protected String[] args() throws URISyntaxException, IOException {
-        Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
-        Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
-        return new String[]{"--migrate-data", "-o",
-                getDiffResultFile().toString(),
-                fNew.toString(), fOriginal.toString()};
-    }
-}
-
-class MoveDataDropTableWithoutRename extends ArgumentsProvider {
-
-    public MoveDataDropTableWithoutRename() {
-        super("drop_ms_table");
-    }
-
-    @Override
-    protected String[] args() throws URISyntaxException, IOException {
-        Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
-        Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
-        return new String[]{"--migrate-data", "--ms-sql", "-o",
-                getDiffResultFile().toString(),
-                fNew.toString(), fOriginal.toString()};
-    }
-}
-
-/**
- * {@link ArgumentsProvider} implementation for foreign table data movement test in PG
- */
-class MoveDataForeignArgumentsProvider extends ArgumentsProvider {
-
-    public MoveDataForeignArgumentsProvider() {
-        super("move_data_foreign");
-    }
-
-    @Override
-    protected String[] args() throws URISyntaxException, IOException {
-        Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
-        Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
-        return new String[] { "--migrate-data", "-o",
-                getDiffResultFile().toString(),
-                fNew.toString(), fOriginal.toString() };
     }
 }
 

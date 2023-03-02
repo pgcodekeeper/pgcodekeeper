@@ -81,8 +81,7 @@ class MsParserTest {
         List<Object> errors = new ArrayList<>();
         AtomicInteger ambiguity = new AtomicInteger();
 
-        String sql = TestUtils.inputStreamToString(MsParserTest.class
-                .getResourceAsStream(fileNameTemplate + ".sql"));
+        String sql = TestUtils.readResource(fileNameTemplate + ".sql", getClass());
 
         TSQLParser parser = AntlrParser
                 .makeBasicParser(TSQLParser.class, sql, fileNameTemplate, errors);

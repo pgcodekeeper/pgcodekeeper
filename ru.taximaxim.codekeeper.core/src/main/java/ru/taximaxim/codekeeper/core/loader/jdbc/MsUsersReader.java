@@ -33,6 +33,8 @@ public class MsUsersReader {
                 user.setLogin(res.getString("loginname"));
 
                 user.setSchema(res.getString("schema_name"));
+                user.setLanguage(res.getString("default_lang"));
+                user.setAllowEncrypted(res.getBoolean("allow_encrypted"));
 
                 loader.setPrivileges(user, XmlReader.readXML(res.getString("acl")));
                 db.addUser(user);

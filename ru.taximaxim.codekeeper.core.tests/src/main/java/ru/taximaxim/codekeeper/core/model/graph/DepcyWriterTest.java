@@ -42,7 +42,7 @@ public class DepcyWriterTest {
     void compareGraph(String fileName, String expectedPostfix, String objectName, boolean isReverse)
             throws IOException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();
-        PgDatabase db = TestUtils.loadTestDump(fileName + ".sql", DepcyWriterTest.class, args);
+        PgDatabase db = TestUtils.loadTestDump(fileName + ".sql", getClass(), args);
 
         StringWriter out = new StringWriter();
         PrintWriter writer = new PrintWriter(out);
@@ -50,9 +50,7 @@ public class DepcyWriterTest {
         new DepcyWriter(db, 10, writer, isReverse, Collections.emptyList(), false).write(List.of(objectName));
         writer.flush();
 
-        String expected = TestUtils
-                .inputStreamToString(DepcyWriterTest.class.getResourceAsStream(fileName + expectedPostfix))
-                .strip();
+        String expected = TestUtils.readResource(fileName + expectedPostfix, getClass());
 
         Assertions.assertEquals(expected.trim(), out.toString().trim());
     }

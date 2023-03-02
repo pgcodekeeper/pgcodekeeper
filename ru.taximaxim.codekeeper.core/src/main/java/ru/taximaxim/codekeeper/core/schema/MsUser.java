@@ -13,6 +13,8 @@ public class MsUser extends PgStatement {
     // TODO PASSWORD, DEFAULT_LANGUAGE, ALLOW_ENCRYPTED_VALUE_MODIFICATIONS
     private String schema;
     private String login;
+    private String language;
+    private boolean allowEncrypted;
 
     public MsUser(String name) {
         super(name);
@@ -36,8 +38,18 @@ public class MsUser extends PgStatement {
         if (login != null) {
             sbSQL.append(" FOR LOGIN ").append(MsDiffUtils.quoteName(login));
         }
-        if (schema != null) {
-            sbSQL.append(" WITH DEFAULT_SCHEMA=").append(MsDiffUtils.quoteName(schema));
+        if (schema != null || language != null || allowEncrypted) {
+            sbSQL.append(" WITH ");
+            if (schema != null) {
+                sbSQL.append("DEFAULT_SCHEMA = ").append(MsDiffUtils.quoteName(schema)).append(", ");
+            }
+            if (language != null) {
+                sbSQL.append("DEFAULT_LANGUAGE = ").append(language).append(", ");
+            }
+            if (allowEncrypted) {
+                sbSQL.append("ALLOW_ENCRYPTED_VALUE_MODIFICATIONS = ON, ");
+            }
+            sbSQL.setLength(sbSQL.length() - 2);
         }
 
         sbSQL.append(GO);
@@ -66,11 +78,20 @@ public class MsUser extends PgStatement {
             }
             sbSql.append("DEFAULT_SCHEMA = ").append(MsDiffUtils.quoteName(newSchema)).append(", ");
         }
+        if (!Objects.equals(getLanguage(), newUser.getLanguage())) {
+            sbSql.append("DEFAULT_LANGUAGE = ")
+                .append(newUser.getLanguage() == null ? "NONE" : newUser.getLanguage())
+                .append(", ");
+        }
+        if (!isAllowEncrypted() == newUser.allowEncrypted) {
+            sbSql.append("ALLOW_ENCRYPTED_VALUE_MODIFICATIONS = ").append(newUser.allowEncrypted ? "ON" : "OFF")
+                .append(", ");
+        }
 
         if (sbSql.length() > 0) {
             sbSql.setLength(sbSql.length() - 2);
             sb.append("ALTER USER ").append(MsDiffUtils.quoteName(name))
-            .append(" WITH ").append(sbSql).append(GO);
+                .append(" WITH ").append(sbSql).append(GO);
         }
 
         alterPrivileges(newUser, sb);
@@ -99,10 +120,30 @@ public class MsUser extends PgStatement {
         resetHash();
     }
 
+    public String getLanguage() {
+        return language;
+    }
+
+    public void setLanguage(String defaultLng) {
+        this.language = defaultLng;
+        resetHash();
+    }
+
+    public boolean isAllowEncrypted() {
+        return allowEncrypted;
+    }
+
+    public void setAllowEncrypted(boolean allowEncrypted) {
+        this.allowEncrypted = allowEncrypted;
+        resetHash();
+    }
+
     @Override
     public void computeHash(Hasher hasher) {
         hasher.put(schema);
         hasher.put(login);
+        hasher.put(language);
+        hasher.put(allowEncrypted);
     }
 
     @Override
@@ -111,6 +152,8 @@ public class MsUser extends PgStatement {
         copyBaseFields(userDst);
         userDst.setSchema(getSchema());
         userDst.setLogin(getLogin());
+        userDst.setLanguage(getLanguage());
+        userDst.setAllowEncrypted(isAllowEncrypted());
         return userDst;
     }
 
@@ -123,7 +166,9 @@ public class MsUser extends PgStatement {
         if (obj instanceof MsUser && super.compare(obj)) {
             MsUser user = (MsUser) obj;
             return Objects.equals(schema, user.getSchema())
-                    && Objects.equals(login, user.getLogin());
+                    && Objects.equals(login, user.getLogin())
+                    && Objects.equals(language, user.getLanguage())
+                    && allowEncrypted == user.isAllowEncrypted();
         }
         return false;
     }

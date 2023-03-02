@@ -8,9 +8,27 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
  -Fixed a bug with repeating ALTER SEQUENCE...OWNED BY in migration script 
 
+### Added
+
+- Added support for options for the User object in MS SQL: DEFAULT_LANGUAGE, ALLOW_ENCRYPTED_VALUE_MODIFICATIONS.
+
+### Changed
+
+### Fixed
+
+- Fixed errors in tests when running on machines with RU locale.
+
+## [7.2.0] - 2023-02-21
+
+### Changed
+
+- Updated mechanism for sending anonymous data from Google Universe to Google Analytics 4.
+
 ### Fixed
 
 - Fixed an error when printing query error message. 
+- Fixed a bug with data migration code generation for partition tables.
+- Fixed a bug when recreating a sequence when pouring data from a table.
 
 ## [7.1.0] - 2023-02-07
 
@@ -1598,7 +1616,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.1.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.2.0...HEAD
+[7.2.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.1.0...v7.2.0
 [7.1.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.0.1...v7.1.0
 [7.0.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.0.0...v7.0.1
 [7.0.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v6.6.0...v7.0.0

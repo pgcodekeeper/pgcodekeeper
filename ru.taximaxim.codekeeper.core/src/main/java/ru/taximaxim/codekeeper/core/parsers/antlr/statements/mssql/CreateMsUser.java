@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.core.parsers.antlr.statements.mssql;
 
 import java.util.Arrays;
 
+import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Create_userContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.IdContext;
@@ -32,6 +33,14 @@ public class CreateMsUser extends ParserAbstract {
         for (User_optionContext option : ctx.user_option()) {
             if (option.schema_name != null) {
                 user.setSchema(option.schema_name.getText());
+            }
+            if (option.DECIMAL() != null) {
+                user.setLanguage(option.DECIMAL().getText());
+            } else if (option.language_name_or_alias != null) {
+                user.setLanguage(MsDiffUtils.quoteName(option.language_name_or_alias.getText()));
+            }
+            if (option.on_off() != null) {
+                user.setAllowEncrypted(option.on_off().ON() != null);
             }
         }
 

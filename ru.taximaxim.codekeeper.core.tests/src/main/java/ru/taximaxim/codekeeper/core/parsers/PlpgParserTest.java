@@ -36,8 +36,7 @@ class PlpgParserTest {
         List<Object> errors = new ArrayList<>();
         AtomicInteger ambiguity = new AtomicInteger();
 
-        String sql = TestUtils.inputStreamToString(PlpgParserTest.class
-                .getResourceAsStream(fileNameTemplate + ".sql"));
+        String sql = TestUtils.readResource(fileNameTemplate + ".sql", getClass());
 
         SQLParser parser = AntlrParser
                 .makeBasicParser(SQLParser.class, sql, fileNameTemplate, errors);

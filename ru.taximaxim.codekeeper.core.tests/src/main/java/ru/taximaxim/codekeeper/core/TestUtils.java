@@ -1,14 +1,18 @@
 package ru.taximaxim.codekeeper.core;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.Locale;
 
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.URIUtil;
 import org.junit.jupiter.api.Assertions;
 
 import ru.taximaxim.codekeeper.core.loader.PgDumpLoader;
@@ -21,6 +25,11 @@ import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgSchema;
 
 public final class TestUtils {
+
+    static {
+        // explicit locale for tests with localization
+        Locale.setDefault(Locale.ENGLISH);
+    }
 
     public static final String RESOURCE_DUMP = "testing_dump.sql";
     public static final String RESOURCE_MS_DUMP = "testing_ms_dump.sql";
@@ -53,8 +62,8 @@ public final class TestUtils {
         db.addSchema(schema);
         db.setDefaultSchema(schema.getName());
         PgObjLocation loc = new PgObjLocation.Builder()
-            .setObject(new GenericColumn(schema.getName(), DbObjType.SCHEMA))
-            .build();
+                .setObject(new GenericColumn(schema.getName(), DbObjType.SCHEMA))
+                .build();
         schema.setLocation(loc);
         return db;
     }
@@ -68,27 +77,13 @@ public final class TestUtils {
     public static void compareResult(String script, String template,
             Class<?> clazz) throws IOException {
         Assertions.assertEquals(
-                TestUtils.inputStreamToString(clazz.getResourceAsStream(
-                        template + FILES_POSTFIX.DIFF_SQL))
-                    .trim(),
+                readResource(template + FILES_POSTFIX.DIFF_SQL, clazz).trim(),
                 script.trim());
     }
 
-    /**
-     * @param inputStream
-     *            stream converted to string, closed after use
-     * @return String read from inputStream as UTF-8
-     * @throws IOException
-     */
-    public static String inputStreamToString(InputStream inputStream) throws IOException {
-        try (InputStream is = inputStream) {
-            ByteArrayOutputStream result = new ByteArrayOutputStream();
-            byte[] buffer = new byte[1024];
-            int length;
-            while ((length = inputStream.read(buffer)) != -1) {
-                result.write(buffer, 0, length);
-            }
-            return result.toString(Consts.UTF_8);
+    public static String readResource(String resourceName, Class<?> clazz) throws IOException {
+        try (InputStream is = clazz.getResourceAsStream(resourceName)) {
+            return new String(is.readAllBytes(), StandardCharsets.UTF_8);
         }
     }
 
@@ -98,6 +93,11 @@ public final class TestUtils {
                 + "HIDE NONE worker  \n"
                 + "HIDE REGEX 'ignore.*' ";
         Files.write(dir.resolve(".pgcodekeeperignoreschema"), rule.getBytes(StandardCharsets.UTF_8));
+    }
+
+    public static Path getPathToResource(String resourceName, Class<?> clazz) throws URISyntaxException, IOException {
+        URL url = clazz.getResource(resourceName);
+        return Paths.get(URIUtil.toURI("file".equals(url.getProtocol()) ? url : FileLocator.toFileURL(url)));
     }
 
     private TestUtils() {
