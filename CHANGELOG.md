@@ -16,7 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Fixed errors in tests when running on machines with RU locale.
-- Fixed issues in code generation when altering OWNED BY property of sequences
+- Fixed issues in code generation when altering OWNED BY property of sequences.
+- Fixed vulnerability when reading XML files.
 
 ## [7.2.0] - 2023-02-21
 

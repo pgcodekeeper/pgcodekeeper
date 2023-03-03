@@ -11,6 +11,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
@@ -24,9 +25,9 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 
 public abstract class XmlStore<T> {
@@ -111,15 +112,13 @@ public abstract class XmlStore<T> {
      *
      * @param useCached immediately return the Document read in the previous call to this method
      */
-    protected Document readXml(boolean useCached) throws IOException, NoSuchFileException {
+    protected Document readXml(boolean useCached) throws IOException {
         Document xml = cachedDocument;
         if (useCached && xml != null) {
             return xml;
         }
         try (Reader reader = Files.newBufferedReader(getXmlFile(), StandardCharsets.UTF_8)) {
-            xml = DocumentBuilderFactory.newInstance().newDocumentBuilder()
-                    .parse(new InputSource(reader));
-            xml.normalize();
+            xml = Utils.readXml(reader);
 
             if (!xml.getDocumentElement().getNodeName().equals(rootTag)) {
                 throw new IOException(Messages.XmlStore_root_error);
@@ -137,7 +136,11 @@ public abstract class XmlStore<T> {
 
     private void serializeXml(Document xml, boolean formatting,
             Writer writer) throws TransformerException {
-        Transformer tf = TransformerFactory.newInstance().newTransformer();
+        TransformerFactory factory = TransformerFactory.newInstance();
+        factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+        factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
+
+        Transformer tf = factory.newTransformer();
         if (formatting) {
             tf.setOutputProperty(OutputKeys.INDENT, "yes"); //$NON-NLS-1$
             tf.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4"); //$NON-NLS-1$ //$NON-NLS-2$

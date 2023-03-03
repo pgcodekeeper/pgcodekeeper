@@ -4,10 +4,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Reader;
 import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import ru.taximaxim.codekeeper.core.log.Log;
 
@@ -55,6 +63,16 @@ public final class Utils {
             Log.log(Log.LOG_DEBUG, "Error while deserialize object!", e);
         }
         return null;
+    }
+
+    public static Document readXml(Reader reader) throws ParserConfigurationException, SAXException, IOException {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+        factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+        factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+        Document doc = factory.newDocumentBuilder().parse(new InputSource(reader));
+        doc.normalize();
+        return doc;
     }
 
     public static boolean isSystemSchema(String schema, boolean isPostgres) {
