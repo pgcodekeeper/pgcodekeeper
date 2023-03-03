@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Document;
@@ -18,8 +17,9 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
+import ru.taximaxim.codekeeper.core.Utils;
 
 public class XmlReader {
 
@@ -71,9 +71,7 @@ public class XmlReader {
         }
 
         try (Reader reader = new InputStreamReader(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)))) {
-            Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder()
-                    .parse(new InputSource(reader));
-            doc.normalize();
+            Document doc = Utils.readXml(reader);
 
             if (!doc.getDocumentElement().getNodeName().equals(ROOT)) {
                 throw new IOException("XML root element name is not as requested.");
