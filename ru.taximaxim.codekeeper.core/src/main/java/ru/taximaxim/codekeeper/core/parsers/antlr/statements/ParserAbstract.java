@@ -28,7 +28,7 @@ import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.loader.ParserListenerMode;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
+import ru.taximaxim.codekeeper.core.model.exporter.AbstractModelExporter;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Boolean_valueContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Cast_nameContext;
@@ -46,9 +46,13 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Schema_qualified_nam
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Target_operatorContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.User_mapping_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.VexContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Column_optionContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.ExpressionContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Identity_valueContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Qualified_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.MisplacedObjectException;
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.UnresolvedReferenceException;
+import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.MsExpressionAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.schema.AbstractPgFunction;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.ArgMode;
@@ -56,6 +60,8 @@ import ru.taximaxim.codekeeper.core.schema.Argument;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.ICast;
 import ru.taximaxim.codekeeper.core.schema.IStatement;
+import ru.taximaxim.codekeeper.core.schema.MsColumn;
+import ru.taximaxim.codekeeper.core.schema.MsType;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgFunction;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
@@ -86,7 +92,7 @@ public abstract class ParserAbstract {
     private boolean refMode;
     protected String fileName;
 
-    public ParserAbstract(PgDatabase db) {
+    protected ParserAbstract(PgDatabase db) {
         this.db = db;
     }
 
@@ -412,7 +418,7 @@ public abstract class ParserAbstract {
             return;
         }
 
-        String filePath = ModelExporter.getRelativeFilePath(statement).toString();
+        String filePath = AbstractModelExporter.getRelativeFilePath(statement).toString();
         if (!PgDiffUtils.endsWithIgnoreCase(fileName, filePath)
                 && isInProject(statement.isPostgres())) {
             throw new MisplacedObjectException(MessageFormat.format(LOCATION_ERROR,
@@ -750,5 +756,37 @@ public abstract class ParserAbstract {
             break;
         }
         return action + ' ' + objType + ' ' + id;
+    }
+
+    protected void fillMsColumnOption(Column_optionContext option, MsColumn col, MsType type) {
+        if (option.SPARSE() != null) {
+            col.setSparse(true);
+        } else if (option.COLLATE() != null) {
+            col.setCollation(getFullCtxText(option.collate));
+        } else if (option.PERSISTED() != null) {
+            col.setPersisted(true);
+        } else if (option.ROWGUIDCOL() != null) {
+            col.setRowGuidCol(true);
+        } else if (option.IDENTITY() != null) {
+            Identity_valueContext identity = option.identity_value();
+            if (identity == null) {
+                col.setIdentity("1", "1");
+            } else {
+                col.setIdentity(identity.seed.getText(), identity.increment.getText());
+            }
+
+            if (option.not_for_rep != null) {
+                col.setNotForRep(true);
+            }
+        } else if (option.NULL() != null) {
+            col.setNullValue(option.NOT() == null);
+        } else if (option.DEFAULT() != null) {
+            if (option.id() != null) {
+                col.setDefaultName(option.id().getText());
+            }
+            ExpressionContext exp = option.expression();
+            col.setDefaultValue(getFullCtxText(exp));
+            db.addAnalysisLauncher(new MsExpressionAnalysisLauncher(type != null ? type : col, exp, fileName));
+        }
     }
 }

@@ -35,11 +35,11 @@ public abstract class DatabaseLoader {
      */
     public abstract PgDatabase load() throws IOException, InterruptedException;
 
-    public DatabaseLoader() {
+    protected DatabaseLoader() {
         this(new ArrayList<>());
     }
 
-    public DatabaseLoader(List<Object> errors) {
+    protected DatabaseLoader(List<Object> errors) {
         this.errors = errors;
     }
 

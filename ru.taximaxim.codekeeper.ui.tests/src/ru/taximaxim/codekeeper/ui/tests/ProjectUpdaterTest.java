@@ -57,7 +57,7 @@ public class ProjectUpdaterTest {
     }
 
     @Test
-    public void updateSuccessTest() throws IOException, CoreException {
+    void updateSuccessTest() throws IOException, CoreException {
         File dir = workingDir.get().toFile();
         PgDbProject proj = PgDbProject.createPgDbProject(ResourcesPlugin.getWorkspace()
                 .getRoot().getProject(dir.getName()), dir.toURI(), false);

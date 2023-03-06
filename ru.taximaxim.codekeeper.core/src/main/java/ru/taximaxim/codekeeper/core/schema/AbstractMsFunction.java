@@ -12,7 +12,7 @@ implements SourceStatement {
     private String firstPart;
     private String secondPart;
 
-    public AbstractMsFunction(String name) {
+    protected AbstractMsFunction(String name) {
         super(name);
     }
 

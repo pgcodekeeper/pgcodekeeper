@@ -7,6 +7,7 @@ import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 
@@ -75,7 +76,7 @@ public class AntlrUtils {
      * 2. INSERT INTO.  This is relatively easy to recognize since the words
      * must appear adjacently; but we can't assume INSERT starts the command,
      * because it can appear in CREATE RULE or WITH.  Unfortunately, INSERT is
-     * *not* fully reserved, so that means there is a chance of a false match;
+     * *not* fully reserved, so that means there is a chance of a false match,
      * but it's not very likely.
      *
      * 3. IMPORT FOREIGN SCHEMA ... INTO.  This is not allowed in CREATE RULE
@@ -96,7 +97,7 @@ public class AntlrUtils {
             int type = stream.LA(1);
 
             switch (type) {
-            case SQLLexer.EOF:
+            case Recognizer.EOF:
                 stream.seek(0);
                 parser.setInputStream(stream);
                 return;

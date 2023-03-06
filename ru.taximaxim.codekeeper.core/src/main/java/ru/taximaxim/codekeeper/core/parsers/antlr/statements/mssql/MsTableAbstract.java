@@ -26,7 +26,7 @@ import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 
 public abstract class MsTableAbstract extends ParserAbstract {
 
-    public MsTableAbstract(PgDatabase db) {
+    protected MsTableAbstract(PgDatabase db) {
         super(db);
     }
 

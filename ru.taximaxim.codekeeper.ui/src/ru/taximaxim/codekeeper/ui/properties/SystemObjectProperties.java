@@ -52,7 +52,7 @@ public class SystemObjectProperties extends PropertyPage {
     @Override
     protected void performDefaults() {
         try {
-            editor.setInputList(new ArrayList<String>());
+            editor.setInputList(new ArrayList<>());
             fillPrefs();
         } catch (BackingStoreException e) {
             setErrorMessage(MessageFormat.format(

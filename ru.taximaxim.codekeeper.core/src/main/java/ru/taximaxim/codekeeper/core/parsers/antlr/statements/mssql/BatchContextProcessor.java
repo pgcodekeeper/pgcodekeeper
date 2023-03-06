@@ -18,7 +18,7 @@ public abstract class BatchContextProcessor extends ParserAbstract {
     private final ParserRuleContext batchCtx;
     private final CommonTokenStream stream;
 
-    public BatchContextProcessor(PgDatabase db, ParserRuleContext batchCtx,
+    protected BatchContextProcessor(PgDatabase db, ParserRuleContext batchCtx,
             CommonTokenStream stream) {
         super(db);
         this.batchCtx = batchCtx;

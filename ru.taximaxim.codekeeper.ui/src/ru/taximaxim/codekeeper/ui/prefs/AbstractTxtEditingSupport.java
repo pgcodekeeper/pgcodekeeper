@@ -18,7 +18,7 @@ extends CommonEditingSupport<TextCellEditor> {
     protected final Class<T> klass;
     private final K prefListEditor;
 
-    public AbstractTxtEditingSupport(ColumnViewer viewer, K prefListEditor, Class<T> klass) {
+    protected AbstractTxtEditingSupport(ColumnViewer viewer, K prefListEditor, Class<T> klass) {
         super(viewer, new TextCellEditor((Composite) viewer.getControl()));
         this.klass = klass;
         this.prefListEditor = prefListEditor;

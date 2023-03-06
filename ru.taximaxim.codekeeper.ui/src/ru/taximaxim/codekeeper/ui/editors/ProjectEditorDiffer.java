@@ -44,7 +44,6 @@ import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
-import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
@@ -60,6 +59,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.MouseAdapter;
@@ -332,7 +332,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                     PgDatabase.listPgObjects(dbRemote.getDbObject()),
                     PgDatabase.listPgObjects(dbProject.getDbObject()),
                     Messages.database, Messages.ProjectEditorDiffer_project);
-            if (dialog.open() == Dialog.OK) {
+            if (dialog.open() == Window.OK) {
                 manualDepciesSource = dialog.getDepciesSourceList();
                 manualDepciesTarget = dialog.getDepciesTargetList();
             }
@@ -447,7 +447,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
         boolean isDbInfo = currentRemote instanceof DbInfo;
         boolean isMsProj = OpenProjectUtils.checkMsSql(getProject());
-        if (isDbInfo && ((DbInfo)currentRemote).isMsSql() != isMsProj) {
+        if (isDbInfo && ((DbInfo) currentRemote).isMsSql() != isMsProj) {
             MessageBox mb = new MessageBox(parent.getShell(), SWT.ICON_INFORMATION);
             mb.setText(Messages.ProjectEditorDiffer_different_types);
             mb.setMessage(Messages.ProjectEditorDiffer_different_types_msg);
@@ -508,7 +508,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                     newDiffer.run(sub.newChild(90));
                     monitor.done();
                 } catch (InvocationTargetException | CoreException e) {
-                    return new Status(Status.ERROR, PLUGIN_ID.THIS,
+                    return new Status(IStatus.ERROR, PLUGIN_ID.THIS,
                             Messages.error_in_differ_thread, e);
                 } catch (InterruptedException e) {
                     return Status.CANCEL_STATUS;
@@ -607,18 +607,20 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     }
 
     private void openElementInEditor(TreeElement el) {
-        if (el != null && el.getSide() != DiffSide.RIGHT) {
-            try {
-                PgStatement st = el.getPgStatement(dbProject.getDbObject());
-                IProject project = getProject();
-                boolean isMsSql = project.hasNature(NATURE.MS);
-                FileUtilsUi.openFileInSqlEditor(
-                        st.getLocation(), project.getName(), isMsSql, st.isLib());
-            } catch (CoreException e) {
-                ExceptionNotifier.notifyCoreException(e);
-            }
+        if (el == null || el.getSide() == DiffSide.RIGHT) {
+            return;
+        }
+
+        try {
+            PgStatement st = el.getPgStatement(dbProject.getDbObject());
+            IProject project = getProject();
+            FileUtilsUi.openFileInSqlEditor(
+                    st.getLocation(), project.getName(), project.hasNature(NATURE.MS), st.isLib());
+        } catch (CoreException e) {
+            ExceptionNotifier.notifyCoreException(e);
         }
     }
+
     /**
      * @param remote remote DB schema: either {@link File} or {@link DbInfo}
      * @throws IllegalArgumentException invalid remote type
@@ -904,7 +906,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         CommitDialog cd = new CommitDialog(parent.getShell(), sumNewAndDelete,
                 dbProject, dbRemote, treeCopy, mainPrefs, isCommitCommandAvailable,
                 forceSave, saveOverrides, proj);
-        if (cd.open() != CommitDialog.OK) {
+        if (cd.open() != Window.OK) {
             return;
         }
         callEgitCommitCommand();
@@ -1169,7 +1171,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                         public void run() {
                             ApplyCustomDialog dialog = new ApplyCustomDialog(container.getShell(),
                                     new OverridablePrefs(proj.getProject(), null), isMsSql, oneTimePrefs);
-                            if (dialog.open() == Dialog.OK) {
+                            if (dialog.open() == Window.OK) {
                                 // 'oneTimePrefs' filled by one-time preferences
                                 // will be used in 'diff()'
                                 diff();
@@ -1235,7 +1237,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                         public void run() {
                             GetChangesCustomDialog dialog = new GetChangesCustomDialog(container.getShell(),
                                     new OverridablePrefs(proj.getProject(), null), isMsSql, oneTimePrefs);
-                            if (dialog.open() == Dialog.OK) {
+                            if (dialog.open() == Window.OK) {
                                 // 'oneTimePrefs' filled by one-time preferences
                                 // will be used in 'getChanges()'
                                 getChanges();

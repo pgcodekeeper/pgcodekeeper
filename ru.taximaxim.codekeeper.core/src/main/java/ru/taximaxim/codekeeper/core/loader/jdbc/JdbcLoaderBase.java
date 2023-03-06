@@ -76,7 +76,8 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
     protected JdbcRunner runner;
     private String extensionSchema;
 
-    public JdbcLoaderBase(JdbcConnector connector, SubMonitor monitor, PgDiffArguments args, IgnoreSchemaList ignoreListSchema) {
+    protected JdbcLoaderBase(JdbcConnector connector, SubMonitor monitor, PgDiffArguments args,
+            IgnoreSchemaList ignoreListSchema) {
         this.connector = connector;
         this.monitor = monitor;
         this.args = args;

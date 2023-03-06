@@ -32,7 +32,7 @@ public abstract class AbstractTable extends PgStatementContainer implements PgOp
         return DbObjType.TABLE;
     }
 
-    public AbstractTable(String name) {
+    protected AbstractTable(String name) {
         super(name);
     }
 

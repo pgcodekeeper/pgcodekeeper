@@ -25,7 +25,7 @@ public abstract class AbstractColumn extends PgStatementWithSearchPath {
         return DbObjType.COLUMN;
     }
 
-    public AbstractColumn(String name) {
+    protected AbstractColumn(String name) {
         super(name);
     }
 

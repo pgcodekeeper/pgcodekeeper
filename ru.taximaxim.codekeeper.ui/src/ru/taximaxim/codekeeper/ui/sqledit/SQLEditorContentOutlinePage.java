@@ -3,6 +3,7 @@ package ru.taximaxim.codekeeper.ui.sqledit;
 import java.util.stream.Stream;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -152,7 +153,7 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
         super.setActionBars(actionBars);
 
         Action sortAction = new Action(Messages.SQLEditorContentOutlinePage_sort_alphabetically,
-                Action.AS_CHECK_BOX) {
+                IAction.AS_CHECK_BOX) {
 
             @Override
             public void run() {
@@ -170,7 +171,7 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
                 Activator.getContext().getBundle().getResource(FILE.ICONSORT)));
 
         Action hideAction = new Action(Messages.SQLEditorContentOutlinePage_hide_non_dangerous,
-                Action.AS_CHECK_BOX) {
+                IAction.AS_CHECK_BOX) {
 
             @Override
             public void run() {
@@ -209,8 +210,8 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
         public Object[] getElements(Object inputElement) {
             Stream<PgObjLocation> stream = sqlEditor.getParser().getObjsForEditor(
                     sqlEditor.getEditorInput()).stream()
-                .filter(e -> e.getAction() != null)
-                .filter(loc -> loc.getObjLength() >= 0); // broken context
+                    .filter(e -> e.getAction() != null)
+                    .filter(loc -> loc.getObjLength() >= 0); // broken context
 
             if (filterDangerous) {
                 stream = stream.filter(PgObjLocation::isDanger);

@@ -1,9 +1,7 @@
 package ru.taximaxim.codekeeper.core;
 
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Stores string constants
@@ -77,9 +75,11 @@ public interface Consts {
         }
     }
 
+    /**
+     * @deprecated improve builtins detection using tokens and jdbc ways
+     */
     @Deprecated
-    // improve builtins detection using tokens and jdbc ways
-    Collection<String> SYS_TYPES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+    Collection<String> SYS_TYPES = Set.of(
             "abstime", //$NON-NLS-1$
             "aclitem", //$NON-NLS-1$
             "any", //$NON-NLS-1$
@@ -166,5 +166,5 @@ public interface Consts {
             "void", //$NON-NLS-1$
             "xid", //$NON-NLS-1$
             "xml" //$NON-NLS-1$
-            )));
+            );
 }

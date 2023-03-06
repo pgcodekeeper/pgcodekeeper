@@ -17,7 +17,7 @@ public abstract class SingletonEditorJob extends EditorJob {
         return evalProperty;
     }
 
-    public SingletonEditorJob(String name, IEditorPart editorPart, String evalProperty) {
+    protected SingletonEditorJob(String name, IEditorPart editorPart, String evalProperty) {
         super(name, editorPart);
         this.evalProperty = evalProperty;
 

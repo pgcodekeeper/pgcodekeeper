@@ -1,11 +1,9 @@
 package ru.taximaxim.codekeeper.core.schema;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
@@ -20,9 +18,8 @@ public class GenericColumn implements Serializable {
     @Deprecated
     // TODO detect these by separating their tokens from identifiers in parser
     // TODO might be fixed by handling these in AbstractExpr
-    private static final Collection<String> SYS_COLUMNS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
-            "oid", "tableoid", "xmin", "cmin", "xmax", "cmax", "ctid"
-            )));
+    private static final Collection<String> SYS_COLUMNS = Set.of(
+            "oid", "tableoid", "xmin", "cmin", "xmax", "cmax", "ctid");
 
     // SONAR-OFF
     public final String schema;

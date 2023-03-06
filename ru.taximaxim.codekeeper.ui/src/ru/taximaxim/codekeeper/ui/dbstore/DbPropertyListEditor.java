@@ -9,6 +9,7 @@ import org.eclipse.jface.layout.PixelConverter;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -35,7 +36,7 @@ public class DbPropertyListEditor extends PrefListEditor<Entry<String, String>> 
     @Override
     protected Entry<String, String> getNewObject(Entry<String, String> oldObject) {
         NewDbPropertyDialog d = new NewDbPropertyDialog(getShell(), oldObject);
-        return d.open() == NewDbPropertyDialog.OK ? d.getProperty() : null;
+        return d.open() == Window.OK ? d.getProperty() : null;
     }
 
     @Override

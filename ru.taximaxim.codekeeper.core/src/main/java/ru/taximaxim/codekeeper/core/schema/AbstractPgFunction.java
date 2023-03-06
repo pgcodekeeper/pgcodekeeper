@@ -40,7 +40,7 @@ public abstract class AbstractPgFunction extends AbstractFunction {
     private String signatureCache;
     private boolean inStatementBody;
 
-    public AbstractPgFunction(String name) {
+    protected AbstractPgFunction(String name) {
         super(name);
     }
 

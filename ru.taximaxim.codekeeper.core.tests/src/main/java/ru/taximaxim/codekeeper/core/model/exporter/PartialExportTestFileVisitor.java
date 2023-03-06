@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,7 +16,6 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Assertions;
 
-import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 
 public class PartialExportTestFileVisitor extends SimpleFileVisitor<Path> {
@@ -73,7 +73,7 @@ public class PartialExportTestFileVisitor extends SimpleFileVisitor<Path> {
             }
             String hash = modifiedFiles.remove(relativeFilePath);
             File file = isInSource ? file2 : file1.toFile();
-            String partialFile = new String(Files.readAllBytes(file.toPath()), Consts.UTF_8);
+            String partialFile = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
 
             Assertions.assertEquals(
                     hash,

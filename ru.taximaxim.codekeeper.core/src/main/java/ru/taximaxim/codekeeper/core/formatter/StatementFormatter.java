@@ -11,6 +11,7 @@ import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
@@ -132,7 +133,7 @@ public class StatementFormatter {
                 return;
             }
 
-            if (type == SQLLexer.EOF) {
+            if (type == Recognizer.EOF) {
                 removeTrailingWhitespace(tokenStart);
                 return;
             }

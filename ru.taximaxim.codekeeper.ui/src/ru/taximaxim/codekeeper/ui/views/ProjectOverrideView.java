@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -81,8 +82,8 @@ public class ProjectOverrideView extends ViewPart implements ISelectionListener 
         } else {
             viewer.setInput(overrides.stream()
                     .filter(o -> selected.stream()
-                            .filter(e -> e instanceof TreeElement)
-                            .map(e -> (TreeElement)e)
+                            .filter(TreeElement.class::isInstance)
+                            .map(TreeElement.class::cast)
                             .filter(e -> e.getSide() != DiffSide.RIGHT)
                             .map(e -> e.getPgStatement(db))
                             .anyMatch(st -> o.getNewStatement().equals(st)))
@@ -94,7 +95,7 @@ public class ProjectOverrideView extends ViewPart implements ISelectionListener 
     public void init(IViewSite site) throws PartInitException {
         super.init(site);
 
-        Action action = new Action(Messages.ProjectOverrideView_link_with_editor, Action.AS_CHECK_BOX) {
+        Action action = new Action(Messages.ProjectOverrideView_link_with_editor, IAction.AS_CHECK_BOX) {
 
             @Override
             public void run() {
@@ -162,9 +163,9 @@ public class ProjectOverrideView extends ViewPart implements ISelectionListener 
 
             @Override
             public void run() {
-                ISelection selection = viewer.getSelection();
-                if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
-                    Object obj = ((IStructuredSelection) selection).getFirstElement();
+                ISelection sel = viewer.getSelection();
+                if (!sel.isEmpty() && sel instanceof IStructuredSelection) {
+                    Object obj = ((IStructuredSelection) sel).getFirstElement();
                     if (obj instanceof PgOverride) {
                         CompareAction.openCompareEditor(new CompareInput((PgOverride)obj));
                     }
@@ -185,9 +186,9 @@ public class ProjectOverrideView extends ViewPart implements ISelectionListener 
     }
 
     private void openFile(boolean openOldFile) {
-        ISelection selection = viewer.getSelection();
-        if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
-            Object obj = ((IStructuredSelection) selection).getFirstElement();
+        ISelection sel = viewer.getSelection();
+        if (!sel.isEmpty() && sel instanceof IStructuredSelection) {
+            Object obj = ((IStructuredSelection) sel).getFirstElement();
             if (obj instanceof PgOverride) {
                 try {
                     PgOverride ov = (PgOverride) obj;
@@ -203,9 +204,9 @@ public class ProjectOverrideView extends ViewPart implements ISelectionListener 
     }
 
     private boolean canOpen(boolean isOld) {
-        ISelection selection = viewer.getSelection();
-        if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
-            Object obj = ((IStructuredSelection) selection).getFirstElement();
+        ISelection sel = viewer.getSelection();
+        if (!sel.isEmpty() && sel instanceof IStructuredSelection) {
+            Object obj = ((IStructuredSelection) sel).getFirstElement();
             if (obj instanceof PgOverride) {
                 PgOverride ov = (PgOverride) obj;
                 PgStatement st = isOld ? ov.getOldStatement() : ov.getNewStatement();

@@ -45,7 +45,7 @@ public abstract class AbstractAnalysisLauncher {
     private int lineOffset;
     private int inLineOffset;
 
-    public AbstractAnalysisLauncher(PgStatementWithSearchPath stmt,
+    protected AbstractAnalysisLauncher(PgStatementWithSearchPath stmt,
             ParserRuleContext ctx, String location) {
         this.stmt = stmt;
         this.ctx = ctx;

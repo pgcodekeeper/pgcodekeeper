@@ -8,7 +8,7 @@ package ru.taximaxim.codekeeper.core.schema;
  */
 public abstract class PgStatementWithSearchPath extends PgStatement implements ISearchPath {
 
-    public PgStatementWithSearchPath(String name) {
+    protected PgStatementWithSearchPath(String name) {
         super(name);
     }
 

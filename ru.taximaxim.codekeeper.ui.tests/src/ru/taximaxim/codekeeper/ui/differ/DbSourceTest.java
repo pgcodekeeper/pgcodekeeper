@@ -52,7 +52,7 @@ public class DbSourceTest {
     }
 
     @Test
-    public void testDirTree() throws IOException, InterruptedException, CoreException {
+    void testDirTree() throws IOException, InterruptedException, CoreException {
         try (TempDir exportDir = new TempDir("pgcodekeeper-test")) {
             Path dir = exportDir.get();
             new ModelExporter(dir, dbPredefined, Consts.UTF_8).exportFull();
@@ -63,13 +63,13 @@ public class DbSourceTest {
     }
 
     @Test
-    public void testFile() throws IOException, URISyntaxException, InterruptedException, CoreException {
+    void testFile() throws IOException, URISyntaxException, InterruptedException, CoreException {
         Path path = TestUtils.getPathToResource(TestUtils.RESOURCE_DUMP, TestUtils.class);
         performTest(DbSource.fromFile(true, path, Consts.UTF_8, false, null));
     }
 
     @Test
-    public void testProject() throws CoreException, IOException, InterruptedException {
+    void testProject() throws CoreException, IOException, InterruptedException {
         try (TempDir tempDir = new TempDir(workspacePath.toPath(), "dbSourceProjectTest")) {
             Path dir = tempDir.get();
             // create empty project in temp dir
@@ -91,7 +91,7 @@ public class DbSourceTest {
     }
 
     @Test
-    public void testDbSourceWithIgnoreSchemas() throws CoreException, IOException, InterruptedException {
+    void testDbSourceWithIgnoreSchemas() throws CoreException, IOException, InterruptedException {
         try (TempDir tempDir = new TempDir(workspacePath.toPath(), "dbSourceProjectTest")) {
             Path dir = tempDir.get();
 
@@ -121,7 +121,7 @@ public class DbSourceTest {
     }
 
     @Test
-    public void testMsDbSourceWithIgnoreSchemas() throws CoreException, IOException, InterruptedException {
+    void testMsDbSourceWithIgnoreSchemas() throws CoreException, IOException, InterruptedException {
         try (TempDir tempDir = new TempDir(workspacePath.toPath(), "dbSourceProjectTest")) {
             Path dir = tempDir.get();
             PgDiffArguments args = new PgDiffArguments();

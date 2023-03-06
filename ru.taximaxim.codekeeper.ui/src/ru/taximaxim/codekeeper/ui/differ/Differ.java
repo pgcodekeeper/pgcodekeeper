@@ -95,7 +95,7 @@ public class Differ implements IRunnableWithProgress {
                 try {
                     Differ.this.run(monitor);
                 } catch (InvocationTargetException e) {
-                    return new Status(Status.ERROR, PLUGIN_ID.THIS,
+                    return new Status(IStatus.ERROR, PLUGIN_ID.THIS,
                             Messages.error_in_the_project_modifier_thread, e);
                 } catch (InterruptedException e) {
                     return Status.CANCEL_STATUS;

@@ -41,7 +41,7 @@ public class DifferTest {
 
     @ParameterizedTest
     @MethodSource("generator")
-    public void testDiffer(DifferData differData) throws Exception {
+    void testDiffer(DifferData differData) throws Exception {
         Path sourceFile = TestUtils.getPathToResource("old.sql", ProjectUpdaterTest.class);
         Path targetFile = TestUtils.getPathToResource("new.sql", ProjectUpdaterTest.class);
 
