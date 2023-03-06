@@ -8,6 +8,7 @@ SELECT
     si.is_unique_constraint,
     INDEXPROPERTY(si.object_id, si.name, 'IsClustered') AS is_clustered,
     si.is_padded,
+	st.is_incremental,
     sp.data_compression,
     sp.data_compression_desc,
     cc.cols,
@@ -19,6 +20,7 @@ SELECT
 FROM sys.indexes si WITH (NOLOCK)
 LEFT JOIN sys.filegroups f WITH (NOLOCK) ON si.data_space_id = f.data_space_id
 LEFT JOIN sys.data_spaces d WITH (NOLOCK) ON si.data_space_id = d.data_space_id
+JOIN sys.stats st WITH (NOLOCK) ON si.name = st.name AND si.object_id = st.object_id AND si.index_id = st.stats_id
 JOIN sys.tables o WITH (NOLOCK) ON si.object_id = o.object_id
 JOIN sys.partitions sp WITH (NOLOCK) ON sp.object_id = si.object_id AND sp.index_id = si.index_id AND sp.partition_number = 1
 CROSS APPLY (

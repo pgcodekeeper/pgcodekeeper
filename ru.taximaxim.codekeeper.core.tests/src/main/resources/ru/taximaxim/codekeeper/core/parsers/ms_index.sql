@@ -18,6 +18,28 @@ CREATE NONCLUSTERED INDEX IX_Address_PostalCode
 CREATE NONCLUSTERED INDEX IX_BillOfMaterials_ComponentID
     ON Production.BillOfMaterials (ComponentID, StartDate)
     WHERE EndDate IS NOT NULL ;
+GO
+
+CREATE NONCLUSTERED INDEX [index_table1] ON [dbo].[table1] ([c1])
+WITH (
+ PAD_INDEX = OFF,
+ FILLFACTOR = 70,
+ SORT_IN_TEMPDB = OFF,
+ IGNORE_DUP_KEY = OFF,
+ STATISTICS_NORECOMPUTE = OFF,
+ STATISTICS_INCREMENTAL = OFF,
+ DROP_EXISTING = OFF,
+ ONLINE = OFF,
+ RESUMABLE = OFF,
+ MAX_DURATION = 4,
+ ALLOW_ROW_LOCKS = OFF,
+ ALLOW_PAGE_LOCKS = OFF,
+ OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF,
+ MAXDOP = 30,
+ DATA_COMPRESSION = ROW,
+ XML_COMPRESSION = OFF)
+ON [PRIMARY]
+GO
 
 -- this feature will be deprecated in future version of tsql 
 -- but need to support in case someone want to capture this and throw a warning
