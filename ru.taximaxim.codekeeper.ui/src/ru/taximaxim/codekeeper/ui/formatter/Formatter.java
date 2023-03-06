@@ -36,4 +36,7 @@ public class Formatter {
         FileFormatter formatter = new FileFormatter(source, offset, length, getFormatterConfig(), isMsSql);
         return formatter.getFormatEdit();
     }
+
+    private Formatter() {
+    }
 }

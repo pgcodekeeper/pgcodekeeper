@@ -8,11 +8,11 @@ import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeSelection;
-import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
@@ -85,14 +85,14 @@ public class DiffTreeViewer extends Composite {
             @Override
             public void run() {
                 TreePath path = ((TreeSelection) viewer.getSelection()).getPaths()[0];
-                viewer.expandToLevel(path, TreeViewer.ALL_LEVELS);
+                viewer.expandToLevel(path, AbstractTreeViewer.ALL_LEVELS);
             }
         });
         menuMgr.add(new Action(Messages.diffTreeViewer_collapse_subtree) {
             @Override
             public void run() {
                 TreePath path = ((TreeSelection) viewer.getSelection()).getPaths()[0];
-                viewer.collapseToLevel(path, TreeViewer.ALL_LEVELS);
+                viewer.collapseToLevel(path, AbstractTreeViewer.ALL_LEVELS);
             }
         });
         menuMgr.addMenuListener(manager -> {

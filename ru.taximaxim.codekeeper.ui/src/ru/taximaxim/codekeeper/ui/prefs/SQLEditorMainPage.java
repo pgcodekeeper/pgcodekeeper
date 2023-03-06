@@ -109,7 +109,7 @@ public class SQLEditorMainPage extends FieldEditorPreferencePage implements IWor
     @Override
     public void propertyChange(PropertyChangeEvent event) {
         FieldEditor source = (FieldEditor) event.getSource();
-        if (source.getPreferenceName() == SQL_EDITOR_PREF.MATCHING_BRACKETS) {
+        if (SQL_EDITOR_PREF.MATCHING_BRACKETS.equals(source.getPreferenceName())) {
             setEnableButtons((boolean) event.getNewValue());
         }
 

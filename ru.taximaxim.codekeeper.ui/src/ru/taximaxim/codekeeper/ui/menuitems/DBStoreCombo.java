@@ -24,6 +24,7 @@ import ru.taximaxim.codekeeper.ui.IPartAdapter2;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_BIND_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
+import ru.taximaxim.codekeeper.ui.dbstore.AbstractStorePicker;
 import ru.taximaxim.codekeeper.ui.dbstore.DbMenuStorePicker;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -50,7 +51,7 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
 
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.minimumWidth = new PixelConverter(composite)
-                .convertWidthInCharsToPixels(DbMenuStorePicker.DEFAULT_LENGTH);
+                .convertWidthInCharsToPixels(AbstractStorePicker.DEFAULT_LENGTH);
         storePicker.getControl().setLayoutData(gd);
 
         editorPartListener = new EditorPartListener();

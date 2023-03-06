@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui.search;
 
 import java.text.MessageFormat;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -106,9 +107,7 @@ implements IEditorMatchAdapter, IFileMatchAdapter {
         for (Object obj : result.getElements()) {
             PgObjLocation loc = (PgObjLocation) obj;
             if (loc.getFilePath().equals(path)) {
-                for (Match match : getMatches(loc)) {
-                    matches.add(match);
-                }
+                Collections.addAll(matches, getMatches(loc));
             }
         }
 

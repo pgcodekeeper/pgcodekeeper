@@ -122,7 +122,7 @@ public class DBStoreMenu {
 
                 @Override
                 public void run() {
-                    File dumpFile = DbStorePicker.chooseDbSource(prefStore, shell, false);
+                    File dumpFile = AbstractStorePicker.chooseDbSource(prefStore, shell, false);
                     if (dumpFile != null) {
                         notifyListeners(dumpFile);
                     }
@@ -141,7 +141,7 @@ public class DBStoreMenu {
 
                 @Override
                 public void run() {
-                    File dumpFile = DbStorePicker.chooseDbSource(prefStore, shell, false);
+                    File dumpFile = AbstractStorePicker.chooseDbSource(prefStore, shell, false);
                     if (dumpFile != null) {
                         notifyListeners(dumpFile);
                     }

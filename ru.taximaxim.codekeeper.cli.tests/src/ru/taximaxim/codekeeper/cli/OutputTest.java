@@ -51,7 +51,7 @@ class OutputTest {
 
     @ParameterizedTest
     @MethodSource("generator")
-    void mainTest(ArgumentsProvider args) throws IOException, URISyntaxException, InterruptedException {
+    void mainTest(ArgumentsProvider args) throws IOException, URISyntaxException {
         PrintStream old = System.out;
         PrintStream olde = System.err;
         try (args;

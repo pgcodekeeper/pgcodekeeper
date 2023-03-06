@@ -32,8 +32,8 @@ import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorInput;
 public class PrePostScriptPrefPage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 
     private IWorkbenchPage page;
-    private final String postFileName = FILE.POST_SCRIPT;
-    private final String preFileName = FILE.PRE_SCRIPT;
+    private static final String POST_FILE_NAME = FILE.POST_SCRIPT;
+    private static final String PRE_FILE_NAME = FILE.PRE_SCRIPT;
 
     public PrePostScriptPrefPage() {
         super(GRID);
@@ -65,7 +65,7 @@ public class PrePostScriptPrefPage extends FieldEditorPreferencePage implements 
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                openEditor(preFileName);
+                openEditor(PRE_FILE_NAME);
             }
         });
 
@@ -75,7 +75,7 @@ public class PrePostScriptPrefPage extends FieldEditorPreferencePage implements 
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                openEditor(postFileName);
+                openEditor(POST_FILE_NAME);
             }
         });
     }

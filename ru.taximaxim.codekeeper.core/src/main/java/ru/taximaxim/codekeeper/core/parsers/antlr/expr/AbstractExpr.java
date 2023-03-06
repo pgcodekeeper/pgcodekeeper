@@ -56,7 +56,7 @@ public abstract class AbstractExpr {
         return Collections.unmodifiableSet(depcies);
     }
 
-    public AbstractExpr(MetaContainer meta) {
+    protected AbstractExpr(MetaContainer meta) {
         parent = null;
         depcies = new LinkedHashSet<>();
         this.meta = meta;

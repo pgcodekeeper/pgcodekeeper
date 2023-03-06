@@ -26,6 +26,15 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath imple
     private final Set<String> refs = new HashSet<>();
     private boolean notValid;
 
+    protected AbstractConstraint(String name) {
+        super(name);
+    }
+
+    @Override
+    public DbObjType getStatementType() {
+        return DbObjType.CONSTRAINT;
+    }
+
     /**
      * Список колонок на которых установлен PrimaryKey или Unique
      */
@@ -88,15 +97,6 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath imple
     public void setNotValid(boolean notValid) {
         this.notValid = notValid;
         resetHash();
-    }
-
-    @Override
-    public DbObjType getStatementType() {
-        return DbObjType.CONSTRAINT;
-    }
-
-    public AbstractConstraint(String name) {
-        super(name);
     }
 
     public void setDefinition(final String definition) {

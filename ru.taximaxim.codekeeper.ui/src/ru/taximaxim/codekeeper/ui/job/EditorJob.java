@@ -7,7 +7,7 @@ public abstract class EditorJob extends Job {
 
     private final IEditorPart editorPart;
 
-    public EditorJob(String name, IEditorPart editorPart) {
+    protected EditorJob(String name, IEditorPart editorPart) {
         super(name);
         this.editorPart = editorPart;
     }

@@ -21,7 +21,7 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements Pg
     protected boolean isForceSecurity;
     protected String partitionBy;
 
-    public AbstractRegularTable(String name) {
+    protected AbstractRegularTable(String name) {
         super(name);
     }
 

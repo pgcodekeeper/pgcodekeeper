@@ -109,9 +109,9 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
                 if (idVar == null) {
                     idVar = dec.DOLLAR_NUMBER();
                 }
-                String var = idVar.getText();
+                String variable = idVar.getText();
 
-                declareAlias(alias, var);
+                declareAlias(alias, variable);
             } else if (dec.CURSOR() != null) {
                 Arguments_listContext list = dec.arguments_list();
                 if (list != null) {
@@ -138,18 +138,18 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
         }
     }
 
-    private void declareAlias(String alias, String var) {
-        Entry<String, GenericColumn> ref = findReference(null, var, null);
+    private void declareAlias(String alias, String variable) {
+        Entry<String, GenericColumn> ref = findReference(null, variable, null);
         if (ref != null) {
             addReference(alias, ref.getValue());
         } else {
-            Pair<String, String> pair = findColumnInComplex(var);
+            Pair<String, String> pair = findColumnInComplex(variable);
             String type;
             if (pair != null) {
                 type = pair.getSecond();
             } else {
                 type = TypesSetManually.UNKNOWN;
-                Log.log(Log.LOG_WARNING, "Variable not found: " + var);
+                Log.log(Log.LOG_WARNING, "Variable not found: " + variable);
             }
 
             addNamespaceVariable(new Pair<>(alias, type));

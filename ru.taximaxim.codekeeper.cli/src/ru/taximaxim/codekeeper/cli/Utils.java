@@ -8,4 +8,7 @@ public class Utils {
         BundleContext ctx = Activator.getContext();
         return ctx == null ? "error: no OSGI running" : ctx.getBundle().getVersion().toString(); //$NON-NLS-1$
     }
+
+    private Utils() {
+    }
 }

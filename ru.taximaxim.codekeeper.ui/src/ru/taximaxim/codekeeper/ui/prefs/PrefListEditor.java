@@ -54,7 +54,7 @@ public abstract class PrefListEditor<T> extends Composite {
 
     private final TableViewer viewerObjs;
 
-    public PrefListEditor(Composite parent) {
+    protected PrefListEditor(Composite parent) {
         super(parent, SWT.NONE);
 
         GridLayout gridLayout = new GridLayout(2, false);

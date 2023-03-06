@@ -83,7 +83,7 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
      */
     protected final Map<String, List<Pair<String, String>>> complexNamespace = new LinkedHashMap<>();
 
-    public AbstractExprWithNmspc(MetaContainer meta) {
+    protected AbstractExprWithNmspc(MetaContainer meta) {
         super(meta);
     }
 
@@ -261,9 +261,8 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
      * Adds a "free-standing" variable (e.g. a non-table function parameter)
      * into a special complexNamespace container.
      */
-    public void addNamespaceVariable(Pair<String, String> var) {
-        complexNamespace.computeIfAbsent(FUNC_ARGS_KEY, k -> new ArrayList<>())
-        .add(var);
+    public void addNamespaceVariable(Pair<String, String> variable) {
+        complexNamespace.computeIfAbsent(FUNC_ARGS_KEY, k -> new ArrayList<>()).add(variable);
     }
 
     /**

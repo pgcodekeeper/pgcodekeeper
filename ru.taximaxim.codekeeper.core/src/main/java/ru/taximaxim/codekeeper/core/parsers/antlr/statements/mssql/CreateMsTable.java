@@ -12,13 +12,10 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Column_def_table_co
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Column_optionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Create_tableContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Data_typeContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.ExpressionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.IdContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Identity_valueContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Index_optionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Table_indexContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Table_optionsContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.MsExpressionAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.schema.MsColumn;
 import ru.taximaxim.codekeeper.core.schema.MsIndex;
 import ru.taximaxim.codekeeper.core.schema.MsTable;
@@ -100,42 +97,10 @@ public class CreateMsTable extends MsTableAbstract {
             }
 
             for (Column_optionContext option : colCtx.column_option()) {
-                fillColumnOption(option, col);
+                fillMsColumnOption(option, col, null);
             }
 
             table.addColumn(col);
-        }
-    }
-
-    private void fillColumnOption(Column_optionContext option, MsColumn col) {
-        if (option.SPARSE() != null) {
-            col.setSparse(true);
-        } else if (option.COLLATE() != null) {
-            col.setCollation(getFullCtxText(option.collate));
-        } else if (option.PERSISTED() != null) {
-            col.setPersisted(true);
-        } else if (option.ROWGUIDCOL() != null) {
-            col.setRowGuidCol(true);
-        } else if (option.IDENTITY() != null) {
-            Identity_valueContext identity = option.identity_value();
-            if (identity == null) {
-                col.setIdentity("1", "1");
-            } else {
-                col.setIdentity(identity.seed.getText(), identity.increment.getText());
-            }
-
-            if (option.not_for_rep != null) {
-                col.setNotForRep(true);
-            }
-        } else if (option.NULL() != null) {
-            col.setNullValue(option.NOT() == null);
-        } else if (option.DEFAULT() != null) {
-            if (option.id() != null) {
-                col.setDefaultName(option.id().getText());
-            }
-            ExpressionContext exp = option.expression();
-            col.setDefaultValue(getFullCtxText(exp));
-            db.addAnalysisLauncher(new MsExpressionAnalysisLauncher(col, exp, fileName));
         }
     }
 

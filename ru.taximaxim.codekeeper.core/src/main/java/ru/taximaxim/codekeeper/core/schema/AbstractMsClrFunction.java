@@ -14,7 +14,7 @@ public abstract class AbstractMsClrFunction extends AbstractFunction {
     private final String assemblyClass;
     private final String assemblyMethod;
 
-    public AbstractMsClrFunction(String name, String assembly, String assemblyClass,
+    protected AbstractMsClrFunction(String name, String assembly, String assemblyClass,
             String assemblyMethod) {
         super(name);
         this.assembly = assembly;

@@ -12,7 +12,7 @@ public abstract class ContextLocation implements Serializable {
     private final int lineNumber;
     private final int charPositionInLine;
 
-    public ContextLocation(String filePath, int offset, int lineNumber, int charPositionInLine) {
+    protected ContextLocation(String filePath, int offset, int lineNumber, int charPositionInLine) {
         this.filePath = filePath;
         this.offset = offset;
         this.lineNumber = lineNumber;

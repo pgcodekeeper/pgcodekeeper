@@ -13,7 +13,7 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
 
     protected final List<Argument> arguments = new ArrayList<>();
 
-    public AbstractFunction(String name) {
+    protected AbstractFunction(String name) {
         super(name);
     }
 

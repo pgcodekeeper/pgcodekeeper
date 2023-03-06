@@ -4,7 +4,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 
 public abstract class AbstractType extends PgStatementWithSearchPath {
 
-    public AbstractType(String name) {
+    protected AbstractType(String name) {
         super(name);
     }
 

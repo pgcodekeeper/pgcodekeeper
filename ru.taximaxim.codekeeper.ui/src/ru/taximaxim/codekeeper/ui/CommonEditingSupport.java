@@ -8,7 +8,7 @@ public abstract class CommonEditingSupport<T extends CellEditor> extends Editing
 
     private final T cellEditor;
 
-    public CommonEditingSupport(ColumnViewer viewer, T cellEditor) {
+    protected CommonEditingSupport(ColumnViewer viewer, T cellEditor) {
         super(viewer);
         this.cellEditor = cellEditor;
     }

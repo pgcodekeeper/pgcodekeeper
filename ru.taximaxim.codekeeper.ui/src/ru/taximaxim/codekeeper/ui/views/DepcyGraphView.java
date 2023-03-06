@@ -52,7 +52,6 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
     private GraphViewer gv;
     private DepcyGraphLabelProvider labelProvider;
 
-    private PgDatabase currentDb;
     private SimpleDepcyResolver depRes;
     private IWorkbenchPart lastSelectionPart;
     private ISelection lastSelection;
@@ -174,7 +173,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
 
         boolean showProject = projectAction.isChecked();
         PgDatabase newDb = showProject ? dbPair.dbProject.getDbObject() : dbPair.dbRemote.getDbObject();
-        currentDb = newDb;
+        PgDatabase currentDb = newDb;
         depRes = new SimpleDepcyResolver(currentDb, isShowColumns);
         if (currentDb == null || depRes == null) {
             gv.setInput(null);

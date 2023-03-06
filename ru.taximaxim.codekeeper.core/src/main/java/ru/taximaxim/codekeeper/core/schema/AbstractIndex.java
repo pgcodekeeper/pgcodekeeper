@@ -41,7 +41,7 @@ implements PgSimpleOptionContainer {
         return DbObjType.INDEX;
     }
 
-    public AbstractIndex(String name) {
+    protected AbstractIndex(String name) {
         super(name);
     }
 

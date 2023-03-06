@@ -1,7 +1,7 @@
 package ru.taximaxim.codekeeper.ui.handlers;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -45,7 +45,7 @@ public class AddBuilder extends AbstractHandler implements IHandler {
             buildCommand.setBuilderName(BUILDER.ID);
 
             final List<ICommand> commands = new ArrayList<>();
-            commands.addAll(Arrays.asList(description.getBuildSpec()));
+            Collections.addAll(commands, description.getBuildSpec());
             commands.add(buildCommand);
 
             description.setBuildSpec(commands.toArray(new ICommand[commands.size()]));

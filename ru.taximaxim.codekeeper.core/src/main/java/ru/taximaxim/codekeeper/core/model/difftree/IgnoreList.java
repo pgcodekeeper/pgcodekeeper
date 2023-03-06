@@ -14,6 +14,7 @@ public class IgnoreList implements IIgnoreList {
     // black list (show all, hide some) by default
     private boolean isShow = true;
 
+    @Override
     public boolean isShow() {
         return isShow;
     }
@@ -85,7 +86,12 @@ public class IgnoreList implements IIgnoreList {
                 }
             }
         }
-        return status != null ? status : (inAddSubtree || isShow ? AddStatus.ADD : AddStatus.SKIP);
+
+        if (status != null) {
+            return status;
+        }
+
+        return inAddSubtree || isShow ? AddStatus.ADD : AddStatus.SKIP;
     }
 
     public String getListCode() {

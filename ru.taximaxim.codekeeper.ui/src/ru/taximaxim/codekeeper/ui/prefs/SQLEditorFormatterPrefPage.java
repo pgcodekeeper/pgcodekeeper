@@ -65,7 +65,7 @@ implements IWorkbenchPreferencePage {
     @Override
     public void propertyChange(PropertyChangeEvent event) {
         FieldEditor source = (FieldEditor) event.getSource();
-        if (source.getPreferenceName() == FORMATTER_PREF.INDENT_TYPE) {
+        if (FORMATTER_PREF.INDENT_TYPE.equals(source.getPreferenceName())) {
             indentSize.setEnabled(!event.getNewValue().equals(FORMATTER_PREF.DISABLE), getFieldEditorParent());
         }
 

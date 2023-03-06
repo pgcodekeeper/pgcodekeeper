@@ -17,7 +17,7 @@ implements IRelation {
     protected final Map<String, PgRule> rules = new LinkedHashMap<>();
     protected final Map<String, PgPolicy> policies = new LinkedHashMap<>();
 
-    public PgStatementContainer(String name) {
+    protected PgStatementContainer(String name) {
         super(name);
     }
 

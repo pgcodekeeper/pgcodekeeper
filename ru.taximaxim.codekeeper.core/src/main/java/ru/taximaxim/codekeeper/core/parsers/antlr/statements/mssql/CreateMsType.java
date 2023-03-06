@@ -12,9 +12,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.ClusteredContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Column_def_table_constraintContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Column_optionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Create_typeContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.ExpressionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.IdContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Identity_valueContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Index_optionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Index_optionsContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Index_restContext;
@@ -22,7 +20,6 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Index_whereContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Table_constraint_bodyContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Table_indexContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Type_definitionContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.MsExpressionAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.MsColumn;
 import ru.taximaxim.codekeeper.core.schema.MsType;
@@ -118,7 +115,7 @@ public class CreateMsType extends ParserAbstract {
             }
 
             for (Column_optionContext option : colCtx.column_option()) {
-                fillColumnOption(option, col, type);
+                fillMsColumnOption(option, col, type);
             }
 
             type.addColumn(col.getFullDefinition());
@@ -176,38 +173,6 @@ public class CreateMsType extends ParserAbstract {
         sb.append(colsCtx.stream().map(ParserAbstract::getFullCtxText)
                 .collect(Collectors.joining(",\n\t")));
         sb.append("\n)");
-    }
-
-    private void fillColumnOption(Column_optionContext option, MsColumn col, MsType type) {
-        if (option.SPARSE() != null) {
-            col.setSparse(true);
-        } else if (option.COLLATE() != null) {
-            col.setCollation(getFullCtxText(option.collate));
-        } else if (option.PERSISTED() != null) {
-            col.setPersisted(true);
-        } else if (option.ROWGUIDCOL() != null) {
-            col.setRowGuidCol(true);
-        } else if (option.IDENTITY() != null) {
-            Identity_valueContext identity = option.identity_value();
-            if (identity == null) {
-                col.setIdentity("1", "1");
-            } else {
-                col.setIdentity(identity.seed.getText(), identity.increment.getText());
-            }
-
-            if (option.not_for_rep != null) {
-                col.setNotForRep(true);
-            }
-        } else if (option.NULL() != null) {
-            col.setNullValue(option.NOT() == null);
-        } else if (option.DEFAULT() != null) {
-            if (option.id() != null) {
-                col.setDefaultName(option.id().getText());
-            }
-            ExpressionContext exp = option.expression();
-            col.setDefaultValue(getFullCtxText(exp));
-            db.addAnalysisLauncher(new MsExpressionAnalysisLauncher(type, exp, fileName));
-        }
     }
 
     @Override

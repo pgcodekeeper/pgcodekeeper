@@ -147,7 +147,6 @@ public class DependencyProperties extends PropertyPage {
                     FileUtils.deleteRecursive(LibraryUtils.META_PATH);
                 } catch (IOException ex) {
                     ExceptionNotifier.notifyDefault(Messages.DependencyProperties_clear_cache_error, ex);
-                    return;
                 }
             }
         });

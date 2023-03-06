@@ -14,7 +14,7 @@ public abstract class AbstractView extends PgStatementContainer {
         return DbObjType.VIEW;
     }
 
-    public AbstractView(String name) {
+    protected AbstractView(String name) {
         super(name);
     }
 

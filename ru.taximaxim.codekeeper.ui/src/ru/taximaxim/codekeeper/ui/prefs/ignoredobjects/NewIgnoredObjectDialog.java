@@ -92,8 +92,8 @@ public class NewIgnoredObjectDialog extends InputDialog {
                 : (String) ((StructuredSelection) comboType.getSelection()).getFirstElement();
 
         ignoredObject = new IgnoredObject(getValue(), btnPattern.getSelection(),
-                (isIgnoreSchemaList ? false : btnContent.getSelection()),
-                ( isIgnoreSchemaList ? false : btnQualified.getSelection()),
+                (!isIgnoreSchemaList && btnContent.getSelection()),
+                (!isIgnoreSchemaList && btnQualified.getSelection()),
                 TypesEditingSupport.COMBO_TYPE_ALL.equals(selectedType) ?
                         EnumSet.noneOf(DbObjType.class) : EnumSet.of(DbObjType.valueOf(selectedType)));
         super.okPressed();

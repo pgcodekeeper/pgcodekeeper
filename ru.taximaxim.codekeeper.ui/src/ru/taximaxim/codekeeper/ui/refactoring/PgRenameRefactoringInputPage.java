@@ -53,10 +53,6 @@ public class PgRenameRefactoringInputPage extends UserInputWizardPage {
 
     private void updatePageComplete() {
         String txt = txtName.getText();
-        if (txt.isEmpty() || txt.equals(getOldName())) {
-            setPageComplete(false);
-        } else {
-            setPageComplete(true);
-        }
+        setPageComplete(!txt.isEmpty() && !txt.equals(getOldName()));
     }
 }

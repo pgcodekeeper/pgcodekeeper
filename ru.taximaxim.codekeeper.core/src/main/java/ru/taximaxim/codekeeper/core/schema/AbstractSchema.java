@@ -33,7 +33,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         return DbObjType.SCHEMA;
     }
 
-    public AbstractSchema(String name) {
+    protected AbstractSchema(String name) {
         super(name);
     }
 

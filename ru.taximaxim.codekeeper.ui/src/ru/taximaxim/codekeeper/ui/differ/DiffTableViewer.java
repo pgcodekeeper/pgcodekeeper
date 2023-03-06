@@ -100,8 +100,8 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.core.model.difftree.TreeFlattener;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
+import ru.taximaxim.codekeeper.core.model.difftree.TreeFlattener;
 import ru.taximaxim.codekeeper.core.model.exporter.AbstractModelExporter;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
@@ -672,7 +672,7 @@ public class DiffTableViewer extends Composite {
 
             @Override
             public boolean isLabelProperty(Object element, String property) {
-                return property == GITLABEL_PROP;
+                return GITLABEL_PROP.equals(property);
             }
         });
 
@@ -1082,7 +1082,7 @@ public class DiffTableViewer extends Composite {
 
     private void setElementsChecked(Collection<?> elements, Predicate<TreeElement> state,
             boolean checkFilterMatch) {
-        Stream<TreeElement> stream = elements.stream().map(o -> (TreeElement) o);
+        Stream<TreeElement> stream = elements.stream().map(TreeElement.class::cast);
         if (checkFilterMatch) {
             stream = stream.filter(el -> viewerFilter.select(viewer, el.getParent(), el));
         }

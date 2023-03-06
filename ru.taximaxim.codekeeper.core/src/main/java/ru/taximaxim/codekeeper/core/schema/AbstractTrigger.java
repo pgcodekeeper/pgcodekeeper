@@ -12,7 +12,7 @@ public abstract class AbstractTrigger extends PgStatementWithSearchPath {
         return DbObjType.TRIGGER;
     }
 
-    public AbstractTrigger(String name) {
+    protected AbstractTrigger(String name) {
         super(name);
     }
 

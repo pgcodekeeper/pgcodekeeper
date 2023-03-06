@@ -78,11 +78,11 @@ public abstract class AbstractModelExporter {
      * @param sqlEncoding
      *            encoding
      */
-    public AbstractModelExporter(Path outDir, PgDatabase db, String sqlEncoding) {
+    protected AbstractModelExporter(Path outDir, PgDatabase db, String sqlEncoding) {
         this(outDir, db, null, null, sqlEncoding);
     }
 
-    public AbstractModelExporter(Path outDir, PgDatabase newDb, PgDatabase oldDb,
+    protected AbstractModelExporter(Path outDir, PgDatabase newDb, PgDatabase oldDb,
             Collection<TreeElement> changedObjects, String sqlEncoding) {
         this.outDir = outDir;
         this.newDb = newDb;

@@ -15,7 +15,7 @@ public abstract class AbstractForeignTable extends AbstractPgTable implements Pg
 
     protected final String serverName;
 
-    public AbstractForeignTable(String name, String serverName) {
+    protected AbstractForeignTable(String name, String serverName) {
         super(name);
         this.serverName = serverName;
     }
@@ -38,7 +38,7 @@ public abstract class AbstractForeignTable extends AbstractPgTable implements Pg
     protected boolean isNeedRecreate(AbstractTable newTable) {
         return super.isNeedRecreate(newTable)
                 || !this.getClass().equals(newTable.getClass())
-                || !Objects.equals(serverName, ((AbstractForeignTable)newTable).getServerName());
+                || !Objects.equals(serverName, ((AbstractForeignTable) newTable).getServerName());
     }
 
     @Override

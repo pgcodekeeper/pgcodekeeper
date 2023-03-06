@@ -167,7 +167,7 @@ public final class OpenProjectUtils {
         try {
             schemas = Arrays.stream(schemasDir.members())
                     .filter(r -> r.getType() == IResource.FILE && "sql".equals(r.getFileExtension())) //$NON-NLS-1$
-                    .map(r -> (IFile) r)
+                    .map(IFile.class::cast)
                     .filter(OpenProjectUtils::checkLegacySchemaFile)
                     .collect(Collectors.toList());
         } catch (CoreException ex) {

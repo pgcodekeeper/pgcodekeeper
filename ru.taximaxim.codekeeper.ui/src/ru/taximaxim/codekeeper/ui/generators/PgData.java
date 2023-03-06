@@ -146,7 +146,7 @@ public abstract class PgData<T> {
         this.generator = generator;
     }
 
-    public PgData(PgDataType type, T start, T end, T step) {
+    protected PgData(PgDataType type, T start, T end, T step) {
         this.type = type;
         this.start = start;
         this.end = end;

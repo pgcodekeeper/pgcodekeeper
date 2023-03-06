@@ -49,7 +49,7 @@ public abstract class PgStatement implements IStatement, IHashable {
     // 0 means not calculated yet and/or hash has been reset
     private int hash;
 
-    public PgStatement(String name) {
+    protected PgStatement(String name) {
         this.name = name;
     }
 

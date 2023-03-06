@@ -27,7 +27,7 @@ public abstract class AbstractStorePicker implements IStorePicker {
     protected final boolean useDirSources;
     protected boolean triggerEvent = true;
 
-    public AbstractStorePicker(Composite parent, boolean useFileSources, boolean useDirSources) {
+    protected AbstractStorePicker(Composite parent, boolean useFileSources, boolean useDirSources) {
         this.useFileSources = useFileSources;
         this.useDirSources = useDirSources;
         this.parent = parent;

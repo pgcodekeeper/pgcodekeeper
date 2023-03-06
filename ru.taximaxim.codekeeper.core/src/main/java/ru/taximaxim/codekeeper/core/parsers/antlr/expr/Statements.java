@@ -21,7 +21,7 @@ public abstract class Statements<T extends ParserRuleContext> extends AbstractEx
         super(parent);
     }
 
-    public Statements(MetaContainer meta) {
+    protected Statements(MetaContainer meta) {
         super(meta);
     }
 

@@ -96,7 +96,7 @@ public class JdbcLoader extends JdbcLoaderBase {
             new ForeignDataWrappersReader(this, d).read();
             new ServersReader(this, d).read();
             try (ResultSet res = runner.runScript(statement, JdbcQueries.QUERY_CHECK_USER_PRIVILEGES)) {
-                if (res.next() ? res.getBoolean("result") : false) {
+                if (res.next() && res.getBoolean("result")) {
                     new UserMappingReader(this, d).read();
                 }
             }

@@ -1,7 +1,5 @@
 package ru.taximaxim.codekeeper.ui;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public interface UIConsts {
@@ -243,7 +241,7 @@ public interface UIConsts {
 
     String DDL_DEFAULT_CMD = "psql -e -1 -w --set ON_ERROR_STOP=1 -X -h %host -p %port -U %user -f %script %db"; //$NON-NLS-1$
 
-    List<String> TIME_ZONES = Collections.unmodifiableList(Arrays.asList(
+    List<String> TIME_ZONES = List.of(
             "UTC-12:00", //$NON-NLS-1$
             "UTC-11:00", //$NON-NLS-1$
             "UTC-10:00", //$NON-NLS-1$
@@ -269,8 +267,8 @@ public interface UIConsts {
             "UTC+10:00", //$NON-NLS-1$
             "UTC+11:00", //$NON-NLS-1$
             "UTC+12:00" //$NON-NLS-1$
-            ));
-    List<String> ENCODINGS = Collections.unmodifiableList(Arrays.asList(
+            );
+    List<String> ENCODINGS = List.of(
             "UTF-8", //$NON-NLS-1$
             "UTF-16", //$NON-NLS-1$
             "UTF-16BE", //$NON-NLS-1$
@@ -279,5 +277,5 @@ public interface UIConsts {
             "KOI8-R", //$NON-NLS-1$
             "windows-1251", //$NON-NLS-1$
             "windows-1252" //$NON-NLS-1$
-            ));
+            );
 }

@@ -20,8 +20,7 @@ public class MessageDialogWithLink extends MessageDialog {
 
     public MessageDialogWithLink(Shell parentShell, String dialogTitle,
             String dialogMessage, int dialogImageType, String linkText, String link) {
-        super(parentShell, dialogTitle, null, dialogMessage, dialogImageType,
-                0, new String[] {IDialogConstants.OK_LABEL});
+        super(parentShell, dialogTitle, null, dialogMessage, dialogImageType, 0, IDialogConstants.OK_LABEL);
         this.linkText = linkText;
         this.link = link;
     }

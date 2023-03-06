@@ -19,13 +19,12 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
 
     protected static final String BIGINT = "bigint";
 
-    private static final List<Pair<String, String>> relationColumns = Collections
-            .unmodifiableList(new ArrayList<>(Arrays.asList(
+    private static final List<Pair<String, String>> relationColumns = List.of(
                     new Pair<>("sequence_name", "name"), new Pair<>("last_value", BIGINT),
                     new Pair<>("start_value", BIGINT), new Pair<>("increment_by", BIGINT),
                     new Pair<>("max_value", BIGINT), new Pair<>("min_value", BIGINT),
                     new Pair<>("cache_value", BIGINT), new Pair<>("log_cnt", BIGINT),
-                    new Pair<>("is_cycled", "boolean"), new Pair<>("is_called", "boolean"))));
+                    new Pair<>("is_cycled", "boolean"), new Pair<>("is_called", "boolean"));
 
     private String cache;
     protected String increment;
@@ -40,7 +39,7 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
         return DbObjType.SEQUENCE;
     }
 
-    public AbstractSequence(String name) {
+    protected AbstractSequence(String name) {
         super(name);
     }
 

@@ -20,7 +20,7 @@ class ParseTest {
 
     @ParameterizedTest
     @MethodSource("generator")
-    void mainTest(ArgumentsProvider args) throws IOException, URISyntaxException, InterruptedException {
+    void mainTest(ArgumentsProvider args) throws IOException, URISyntaxException {
         try (args) {
             Main.main(args.args());
             String name = args.getClass().getSimpleName();

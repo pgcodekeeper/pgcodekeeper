@@ -1,7 +1,6 @@
 package ru.taximaxim.codekeeper.ui.prefs;
 
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -31,8 +30,7 @@ import ru.taximaxim.codekeeper.ui.reports.UsageEventType;
 
 public class UsageReportPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 
-    private static final DateFormat DATE_FORMAT = SimpleDateFormat.getDateTimeInstance(DateFormat.MEDIUM,
-            DateFormat.SHORT);
+    private static final DateFormat DATE_FORMAT = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT);
 
     public UsageReportPreferencePage() {
         super(GRID);

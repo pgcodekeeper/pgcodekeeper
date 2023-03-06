@@ -34,4 +34,7 @@ public class TestUtils {
                 URIUtil.toURI("file".equals(url.getProtocol()) ?
                         url : FileLocator.toFileURL(url)));
     }
+
+    private TestUtils() {
+    }
 }

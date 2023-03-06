@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
 import java.util.stream.Stream;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -33,7 +34,7 @@ class DiffTest {
 
     @ParameterizedTest
     @MethodSource("generator")
-    void mainTest(ArgumentsProvider args) throws IOException, URISyntaxException, InterruptedException {
+    void mainTest(ArgumentsProvider args) throws IOException, URISyntaxException {
         try (args) {
             boolean result = Main.main(args.args());
             Path resFile = args.getDiffResultFile();

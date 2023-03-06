@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.ui.prefs;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -28,12 +29,12 @@ public class ExecutableFileFieldEditor extends FileFieldEditor {
     protected boolean checkState() {
         File f = null;
 
-        if(!super.checkState()) {
+        if (!super.checkState()) {
             // we cannot search filepaths in %PATH%,
             // only filenames are allowed in this case
             // always block '/' because on Windows File.separator will be '\'
             // but '/' will work as well
-            if(getStringValue().contains(File.separator)
+            if (getStringValue().contains(File.separator)
                     || getStringValue().indexOf('/') != -1) {
                 return false;
             }
@@ -45,31 +46,29 @@ public class ExecutableFileFieldEditor extends FileFieldEditor {
             pathExts.add(""); //$NON-NLS-1$
 
             String pathext = System.getenv("PATHEXT"); //$NON-NLS-1$
-            if(pathext != null) {
-                for(String ext : pathext.split(pathSep)) {
-                    pathExts.add(ext);
-                }
+            if (pathext != null) {
+                Collections.addAll(pathExts, pathext.split(pathSep));
             }
 
             String envVarPath = System.getenv("PATH"); //$NON-NLS-1$
-            for(String subVarPath : envVarPath.split(pathSep)) {
-                for(String ext : pathExts) {
+            for (String subVarPath : envVarPath.split(pathSep)) {
+                for (String ext : pathExts) {
                     File fTry = new File(subVarPath, getStringValue() + ext);
-                    if(fTry.isFile()) {
+                    if (fTry.isFile()) {
                         f = fTry;
                         break;
                     }
                 }
             }
 
-            if(f == null) {
+            if (f == null) {
                 return false;
             }
         } else {
             f = new File(getStringValue());
         }
 
-        if(!f.canExecute()) {
+        if (!f.canExecute()) {
             showErrorMessage(
                     Messages.executableFileFieldEditor_value_must_be_file_with_execute_permission_set);
             return false;

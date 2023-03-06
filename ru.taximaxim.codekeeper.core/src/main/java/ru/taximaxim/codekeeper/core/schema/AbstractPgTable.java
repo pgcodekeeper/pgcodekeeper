@@ -27,7 +27,7 @@ public abstract class AbstractPgTable extends AbstractTable {
     protected final List<Inherits> inherits = new ArrayList<>();
     private String method = Consts.HEAP;
 
-    public AbstractPgTable(String name) {
+    protected AbstractPgTable(String name) {
         super(name);
     }
 
@@ -136,7 +136,7 @@ public abstract class AbstractPgTable extends AbstractTable {
     protected abstract void appendAlterOptions(StringBuilder sbSQL);
 
     protected void appendColumnsStatistics(StringBuilder sbSQL) {
-        columns.stream().map(e -> (PgColumn) e).filter(c -> c.getStatistics() != null)
+        columns.stream().map(PgColumn.class::cast).filter(c -> c.getStatistics() != null)
         .forEach(column -> {
             sbSQL.append(getAlterTable(true, true));
             sbSQL.append(ALTER_COLUMN);
