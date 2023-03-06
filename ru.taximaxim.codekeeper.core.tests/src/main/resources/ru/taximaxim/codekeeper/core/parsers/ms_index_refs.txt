@@ -13,6 +13,9 @@ Reference: Object = "Person"."Address" (TABLE), action = null, offset = 634, lin
 Reference: Object = "Production"."IX_BillOfMaterials_ComponentID" (INDEX), action = CREATE, offset = 769, line number = 18, charPositionInLine = 26
 Reference: Object = "Production" (SCHEMA), action = null, offset = 807, line number = 19, charPositionInLine = 7
 Reference: Object = "Production"."BillOfMaterials" (TABLE), action = null, offset = 818, line number = 19, charPositionInLine = 18
-Reference: Object = "Purchasing"."IX_ProductVendor_BusinessEntityID" (INDEX), action = DROP, offset = 1074, line number = 26, charPositionInLine = 11
-Reference: Object = "Purchasing" (SCHEMA), action = null, offset = 1115, line number = 27, charPositionInLine = 7
-Reference: Object = "Purchasing"."ProductVendor" (TABLE), action = null, offset = 1126, line number = 27, charPositionInLine = 18
+Reference: Object = dbo.index_table1 (INDEX), action = CREATE, offset = 921, line number = 23, charPositionInLine = 26
+Reference: Object = dbo (SCHEMA), action = null, offset = 939, line number = 23, charPositionInLine = 44
+Reference: Object = dbo.table1 (TABLE), action = null, offset = 945, line number = 23, charPositionInLine = 50
+Reference: Object = "Purchasing"."IX_ProductVendor_BusinessEntityID" (INDEX), action = DROP, offset = 1533, line number = 48, charPositionInLine = 11
+Reference: Object = "Purchasing" (SCHEMA), action = null, offset = 1574, line number = 49, charPositionInLine = 7
+Reference: Object = "Purchasing"."ProductVendor" (TABLE), action = null, offset = 1585, line number = 49, charPositionInLine = 18

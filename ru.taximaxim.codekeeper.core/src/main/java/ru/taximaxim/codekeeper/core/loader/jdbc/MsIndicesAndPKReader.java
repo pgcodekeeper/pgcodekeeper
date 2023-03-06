@@ -37,6 +37,7 @@ public class MsIndicesAndPKReader extends JdbcReader {
         boolean isClustered = res.getBoolean("is_clustered");
         boolean isPadded = res.getBoolean("is_padded");
         boolean isMemoryOptimized = res.getBoolean("is_memory_optimized");
+        boolean isStatisticsIncremental = res.getBoolean("is_incremental");
 
         // cannot be used in memory_optimized tables
         boolean allowRowLocks = isMemoryOptimized || res.getBoolean("allow_row_locks");
@@ -87,6 +88,9 @@ public class MsIndicesAndPKReader extends JdbcReader {
                 if (isPadded) {
                     sb.append("PAD_INDEX = ON, ");
                 }
+                if (isStatisticsIncremental) {
+                    sb.append("STATISTICS_INCREMENTAL = ON, ");
+                }
 
                 if (!allowPageLocks) {
                     sb.append("ALLOW_PAGE_LOCKS = OFF, ");
@@ -132,7 +136,7 @@ public class MsIndicesAndPKReader extends JdbcReader {
             constraint.setDefinition(definition.toString());
 
             if (constraint.isUnique() || constraint.isPrimaryKey()) {
-                for (String column: cols) {
+                for (String column : cols) {
                     constraint.addColumn(column);
                 }
             }
@@ -154,6 +158,9 @@ public class MsIndicesAndPKReader extends JdbcReader {
 
             if (isPadded) {
                 index.addOption("PAD_INDEX", "ON");
+            }
+            if (isStatisticsIncremental) {
+                index.addOption("STATISTICS_INCREMENTAL", "ON");
             }
 
             if (!allowPageLocks) {

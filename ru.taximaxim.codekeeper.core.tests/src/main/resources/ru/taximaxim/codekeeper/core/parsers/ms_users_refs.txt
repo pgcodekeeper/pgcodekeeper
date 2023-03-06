@@ -9,3 +9,4 @@ Reference: Object = "Carlo" (USER), action = CREATE, offset = 521, line number =
 Reference: Object = "Contoso\Fritz" (USER), action = CREATE, offset = 644, line number = 22, charPositionInLine = 12
 Reference: Object = "CarmenW" (USER), action = CREATE, offset = 677, line number = 24, charPositionInLine = 12
 Reference: Object = "Chin" (USER), action = CREATE, offset = 797, line number = 26, charPositionInLine = 12
+Reference: Object = "Test_User" (USER), action = CREATE, offset = 900, line number = 31, charPositionInLine = 12
