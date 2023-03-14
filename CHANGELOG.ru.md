@@ -9,9 +9,16 @@
 
 ### Добавлено
 
-- Добавлена поддержка опций для объекта User в MS SQL: DEFAULT_LANGUAGE, ALLOW_ENCRYPTED_VALUE_MODIFICATIONS.
-
 ### Изменено
+
+### Исправлено
+
+## [7.3.0] - 2023-03-14
+
+### Добавлено
+
+- Добавлена поддержка опций для объекта User в MS SQL: DEFAULT_LANGUAGE, ALLOW_ENCRYPTED_VALUE_MODIFICATIONS.
+- Добавлена поддержка опции STATISTICS_INCREMENTAL для объекта Index в MS SQL.
 
 ### Исправлено
 
@@ -1618,7 +1625,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.2.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.3.0...HEAD
+[7.3.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.2.0...v7.3.0
 [7.2.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.1.0...v7.2.0
 [7.1.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.0.1...v7.1.0
 [7.0.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.0.0...v7.0.1

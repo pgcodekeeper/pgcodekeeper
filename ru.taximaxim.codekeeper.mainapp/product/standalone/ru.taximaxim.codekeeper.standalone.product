@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="pgCodeKeeper cli" uid="ru.taximaxim.codekeeper.standalone.product" id="ru.taximaxim.codekeeper.cli.product-codekeeper-standalone" application="ru.taximaxim.codekeeper.cli.application-standalone" version="7.2.0.qualifier" useFeatures="false" includeLaunchers="false">
+<product name="pgCodeKeeper cli" uid="ru.taximaxim.codekeeper.standalone.product" id="ru.taximaxim.codekeeper.cli.product-codekeeper-standalone" application="ru.taximaxim.codekeeper.cli.application-standalone" version="7.3.0.qualifier" useFeatures="false" includeLaunchers="false">
 
    <configIni use="default">
    </configIni>
@@ -213,7 +213,6 @@
    </license>
 
    <plugins>
-      <plugin id="ru.taximaxim.codekeeper.core"/>
       <plugin id="org.apache.felix.gogo.command"/>
       <plugin id="org.apache.felix.gogo.runtime"/>
       <plugin id="org.eclipse.core.contenttype"/>
@@ -231,6 +230,7 @@
       <plugin id="org.eclipse.osgi.compatibility.state" fragment="true"/>
       <plugin id="org.kohsuke.args4j"/>
       <plugin id="ru.taximaxim.codekeeper.cli"/>
+      <plugin id="ru.taximaxim.codekeeper.core"/>
       <plugin id="ru.taximaxim.codekeeper.mainapp"/>
    </plugins>
 

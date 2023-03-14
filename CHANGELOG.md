@@ -9,9 +9,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- Added support for options for the User object in MS SQL: DEFAULT_LANGUAGE, ALLOW_ENCRYPTED_VALUE_MODIFICATIONS.
-
 ### Changed
+
+### Fixed
+
+## [7.3.0] - 2023-03-14
+
+### Added
+
+- Added support for options for the User object in MS SQL: DEFAULT_LANGUAGE, ALLOW_ENCRYPTED_VALUE_MODIFICATIONS.
+- Added support for STATISTICS_INCREMENTAL option for the Index object in MS SQL.
 
 ### Fixed
 
@@ -1617,7 +1624,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.2.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.3.0...HEAD
+[7.3.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.2.0...v7.3.0
 [7.2.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.1.0...v7.2.0
 [7.1.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.0.1...v7.1.0
 [7.0.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.0.0...v7.0.1
