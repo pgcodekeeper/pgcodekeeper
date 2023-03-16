@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added signing jar files with a certificate.
+
 ### Changed
 
 - Updated license.
