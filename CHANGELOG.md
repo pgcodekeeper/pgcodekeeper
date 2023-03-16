@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Updated license.
+
 ### Fixed
 
 ## [7.3.0] - 2023-03-14
