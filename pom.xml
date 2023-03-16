@@ -44,7 +44,7 @@
         <sonar.core.coveragePlugin>jacoco</sonar.core.coveragePlugin>
         <sonar.junit.reportPath>${project.build.directory}/surefire-reports/</sonar.junit.reportPath>
 
-        <keystore>/etc/keystore.jks</keystore>
+        <keystore>/tmp/keystore.jks</keystore>
     </properties>
 
     <profiles>
