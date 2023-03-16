@@ -19,7 +19,7 @@
    </license>
 
    <url>
-      <update label="%url.update.label" url="http://pgcodekeeper.org/update/"/>
+      <update label="%url.update.label" url="https://pgcodekeeper.org/update/"/>
    </url>
 
    <requires>
