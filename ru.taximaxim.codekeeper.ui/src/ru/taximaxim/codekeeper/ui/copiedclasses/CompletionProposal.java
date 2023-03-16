@@ -1,16 +1,18 @@
-// modified copy of org.eclipse.jface.text.contentassist.CompletionProposal;
-
-package ru.taximaxim.codekeeper.ui.copiedclasses;
-
-import org.eclipse.core.runtime.Assert;
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.contentassist.ICompletionProposal;
-import org.eclipse.jface.text.contentassist.IContextInformation;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
-
 /*******************************************************************************
+ * Copyright 2017-2023 TAXTELECOM, LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
  * Copyright (c) 2000, 2007 IBM Corporation and others.
  *
  * This program and the accompanying materials
@@ -23,6 +25,15 @@ import org.eclipse.swt.graphics.Point;
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
+package ru.taximaxim.codekeeper.ui.copiedclasses;
+
+import org.eclipse.core.runtime.Assert;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.text.contentassist.IContextInformation;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 
 /**
  * The standard implementation of the <code>ICompletionProposal</code> interface.
