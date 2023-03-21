@@ -7,5 +7,7 @@ CREATE TABLE [dbo].[table1](
     [c2] [int] NOT NULL,
     [c3] [uniqueidentifier] NULL,
     [c4] AS ([c1]+[c2]),
-    [c5] [varchar] (50) COLLATE Cyrillic_General_CI_AS NULL)
+    [c5] [varchar] (50) COLLATE Cyrillic_General_CI_AS NULL,
+    [c6] [varchar] (100) NULL,
+    [c7] [int] IDENTITY(1,1) NOT NULL)
 GO

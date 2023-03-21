@@ -32,6 +32,7 @@ public class MsColumn extends AbstractColumn {
     private String increment;
     private String defaultName;
     private String expession;
+    private String maskingFunction;
 
     public MsColumn(String name) {
         super(name);
@@ -62,6 +63,10 @@ public class MsColumn extends AbstractColumn {
 
         if (isPersisted()) {
             sbDefinition.append(" PERSISTED");
+        }
+
+        if (getMaskingFunction() != null) {
+            sbDefinition.append(" MASKED WITH (FUNCTION = ").append(getMaskingFunction()).append(")");
         }
 
         if (getExpression() == null) {
@@ -186,6 +191,7 @@ public class MsColumn extends AbstractColumn {
                 newColumn.getDefaultValue(), sb);
 
         compareNullValues(newColumn, sb);
+        compareMaskingFunctions(newColumn, sb);
 
         compareOption(isNotForRep(), newColumn.isNotForRep(), "NOT FOR REPLICATION", sb);
         compareOption(isSparse(), newColumn.isSparse(), "SPARSE", sb);
@@ -250,6 +256,19 @@ public class MsColumn extends AbstractColumn {
             }
 
             sb.append(newColumn.getNullValue() ? NULL : NOT_NULL);
+            sb.append(GO);
+        }
+    }
+
+    private void compareMaskingFunctions( MsColumn newColumn, StringBuilder sb) {
+        if (!Objects.equals(newColumn.getMaskingFunction(), getMaskingFunction())) {
+            sb.append(getAlterColumn(true, false, newColumn.getName()));
+            if (newColumn.getMaskingFunction() != null) {
+                sb.append(" ADD MASKED WITH (FUNCTION = ").append(newColumn.getMaskingFunction()).append(")");
+            } else {
+                sb.append(" DROP MASKED");
+            }
+
             sb.append(GO);
         }
     }
@@ -337,6 +356,15 @@ public class MsColumn extends AbstractColumn {
         resetHash();
     }
 
+    public String getMaskingFunction() {
+        return maskingFunction;
+    }
+
+    public void setMaskingFunction(final String maskingFunction) {
+        this.maskingFunction = maskingFunction;
+        resetHash();
+    }
+
     public String getSeed() {
         return seed;
     }
@@ -368,7 +396,8 @@ public class MsColumn extends AbstractColumn {
                     && Objects.equals(seed, col.getSeed())
                     && Objects.equals(increment, col.getIncrement())
                     && Objects.equals(defaultName, col.getDefaultName())
-                    && Objects.equals(expession, col.getExpression());
+                    && Objects.equals(expession, col.getExpression())
+                    && Objects.equals(maskingFunction, col.getMaskingFunction());
         }
 
         return false;
@@ -386,6 +415,7 @@ public class MsColumn extends AbstractColumn {
         hasher.put(increment);
         hasher.put(defaultName);
         hasher.put(expession);
+        hasher.put(maskingFunction);
     }
 
     @Override
@@ -400,6 +430,7 @@ public class MsColumn extends AbstractColumn {
         copy.increment = getIncrement();
         copy.setDefaultName(getDefaultName());
         copy.setExpression(getExpression());
+        copy.setMaskingFunction(getMaskingFunction());
         return copy;
     }
 }

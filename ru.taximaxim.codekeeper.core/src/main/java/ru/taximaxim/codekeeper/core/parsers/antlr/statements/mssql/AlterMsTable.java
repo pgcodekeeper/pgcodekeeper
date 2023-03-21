@@ -80,14 +80,14 @@ public class AlterMsTable extends MsTableAbstract {
                 }
                 doSafe(MsConstraint::setDisabled, con, ctx.nocheck != null);
             }
-        } else if (ctx.DROP() != null) {
+        } else if (ctx.table_drop != null) {
             for (Table_action_dropContext drop : ctx.table_action_drop()) {
                 if (drop.COLUMN() != null) {
                     ref.setWarning(DangerStatement.DROP_COLUMN);
                     break;
                 }
             }
-        } else if (ctx.ALTER() != null && ctx.COLUMN() != null) {
+        } else if (ctx.column_definition() != null) {
             ref.setWarning(DangerStatement.ALTER_COLUMN);
         } else if (ctx.TRIGGER() != null) {
             for (IdContext trigger : ctx.id()) {
