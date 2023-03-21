@@ -111,6 +111,11 @@ public class MsTablesReader extends JdbcReader {
         column.setRowGuidCol(col.getBoolean("rgc"));
         column.setPersisted(col.getBoolean("ps"));
 
+        String maskingFunction = col.getString("mf");
+        if (maskingFunction != null) {
+            column.setMaskingFunction("'" + maskingFunction + "'");
+        }
+
         if (col.getBoolean("ii")) {
             column.setIdentity(Integer.toString(col.getInt("s")), Integer.toString(col.getInt("i")));
             column.setNotForRep(col.getBoolean("nfr"));

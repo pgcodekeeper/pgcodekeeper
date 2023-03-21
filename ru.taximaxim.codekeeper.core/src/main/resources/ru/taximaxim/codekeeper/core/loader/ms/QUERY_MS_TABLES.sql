@@ -69,6 +69,7 @@ CROSS APPLY (
             c.is_rowguidcol AS rgc,
             cc.is_persisted AS ps,
             t.is_user_defined AS ud,
+            mc.masking_function AS mf,
             --t.is_table_type AS tt,
             --c.is_filestream AS fs,
             cc.definition AS def,
@@ -79,6 +80,7 @@ CROSS APPLY (
         FROM sys.columns c WITH (NOLOCK)
         JOIN sys.types t WITH (NOLOCK) ON c.user_type_id = t.user_type_id
         LEFT JOIN sys.computed_columns cc WITH (NOLOCK) ON cc.object_id = c.object_id AND c.column_id = cc.column_id
+        LEFT JOIN sys.masked_columns mc WITH (NOLOCK) ON mc.object_id = c.object_id AND c.column_id = mc.column_id
         LEFT JOIN sys.identity_columns ic WITH (NOLOCK) ON c.object_id = ic.object_id AND c.column_id = ic.column_id
         LEFT JOIN sys.default_constraints dc WITH (NOLOCK) ON dc.parent_object_id = c.object_id AND c.column_id = dc.parent_column_id
         LEFT JOIN sys.objects so WITH (NOLOCK) ON so.object_id = c.object_id

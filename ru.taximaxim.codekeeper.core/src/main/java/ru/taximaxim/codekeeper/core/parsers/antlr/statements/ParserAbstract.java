@@ -793,6 +793,8 @@ public abstract class ParserAbstract {
             if (option.not_for_rep != null) {
                 col.setNotForRep(true);
             }
+        } else if (option.MASKED() != null) {
+            col.setMaskingFunction(option.STRING().getText());
         } else if (option.NULL() != null) {
             col.setNullValue(option.NOT() == null);
         } else if (option.DEFAULT() != null) {

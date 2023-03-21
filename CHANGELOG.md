@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - Added signing jar files with a certificate.
+- Added support for MASKED option for table columns in MSSQL.
+- Added support for ADD and DROP in ALTER for options ROWGUIDCOL, PERSISTED, SPARSE, NOT FOR REPLICATION of table columns in MSSQL.
 
 ### Changed
 

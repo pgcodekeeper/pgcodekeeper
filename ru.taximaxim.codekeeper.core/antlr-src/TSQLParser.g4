@@ -1711,8 +1711,8 @@ alter_table
     : TABLE name=qualified_name 
     (SET LR_BRACKET LOCK_ESCALATION EQUAL (AUTO | TABLE | DISABLE) RR_BRACKET
         | (WITH (CHECK | nocheck_add=NOCHECK))? ADD column_def_table_constraints
-        | ALTER COLUMN column_definition
-        | DROP table_action_drop (COMMA table_action_drop)*
+        | ALTER COLUMN (column_definition | id  alter_column_option)
+        | table_drop=DROP table_action_drop (COMMA table_action_drop)*
         | (WITH (CHECK | nocheck_check=NOCHECK))? (CHECK | nocheck=NOCHECK) CONSTRAINT id (COMMA id)*
         | (ENABLE | DISABLE) TRIGGER id (COMMA id)*
         | (ENABLE | DISABLE) CHANGE_TRACKING (WITH LR_BRACKET TRACK_COLUMNS_UPDATED EQUAL (ON|OFF) RR_BRACKET)?
@@ -2430,7 +2430,14 @@ column_option
     | IDENTITY identity_value? not_for_rep=not_for_replication?
     | (CONSTRAINT constraint=id)? column_constraint_body
     | (CONSTRAINT constraint=id)? DEFAULT expression (WITH VALUES)?
+    | MASKED WITH LR_BRACKET FUNCTION EQUAL STRING RR_BRACKET
     ;
+
+alter_column_option
+	: (ADD|DROP) (ROWGUIDCOL|PERSISTED|SPARSE|not_for_replication)
+	| ADD MASKED WITH LR_BRACKET FUNCTION EQUAL STRING RR_BRACKET
+	| DROP MASKED
+	;
 
 identity_value
     : (LR_BRACKET seed=DECIMAL COMMA increment=DECIMAL RR_BRACKET)
@@ -3402,6 +3409,7 @@ simple_id
     | LOW
     | MANUAL
     | MARK
+    | MASKED
     | MASTER
     | MATCHED
     | MATERIALIZED

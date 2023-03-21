@@ -10,28 +10,50 @@ Reference: Object = dbo (SCHEMA), action = null, offset = 1123, line number = 44
 Reference: Object = dbo."TestTable" (TABLE), action = CREATE, offset = 1127, line number = 44, charPositionInLine = 17
 Reference: Object = dbo (SCHEMA), action = null, offset = 1358, line number = 51, charPositionInLine = 13
 Reference: Object = dbo."TestTable" (TABLE), action = CREATE, offset = 1362, line number = 51, charPositionInLine = 17
-Reference: action = IF, offset = 1723, line number = 62, charPositionInLine = 0
-Reference: action = IF, offset = 2109, line number = 75, charPositionInLine = 0
-Reference: Object = dbo (SCHEMA), action = null, offset = 2557, line number = 89, charPositionInLine = 12
-Reference: Object = dbo."TestTable" (TABLE), action = ALTER, offset = 2561, line number = 89, charPositionInLine = 16
-Reference: Object = dbo."TestTable"."DF_ModifiedDateUTC" (CONSTRAINT), action = CREATE, offset = 2586, line number = 89, charPositionInLine = 41
-Reference: Object = dbo (SCHEMA), action = null, offset = 2692, line number = 93, charPositionInLine = 12
-Reference: Object = dbo."TestTable" (TABLE), action = ALTER, offset = 2696, line number = 93, charPositionInLine = 16
-Reference: Object = "TestTable" (TABLE), action = ALTER, offset = 2802, line number = 97, charPositionInLine = 12
-Reference: Object = dbo (SCHEMA), action = null, offset = 2931, line number = 101, charPositionInLine = 13
-Reference: Object = dbo."TestTable" (TABLE), action = CREATE, offset = 2937, line number = 101, charPositionInLine = 19
-Reference: Object = dbo (SCHEMA), action = null, offset = 3214, line number = 111, charPositionInLine = 13
-Reference: Object = dbo."TestTable" (TABLE), action = CREATE, offset = 3220, line number = 111, charPositionInLine = 19
-Reference: action = IF, offset = 3417, line number = 119, charPositionInLine = 0
-Reference: Object = "TestTable" (TABLE), action = ALTER, offset = 3743, line number = 131, charPositionInLine = 12
-Reference: Object = "TestTable" (TABLE), action = ALTER, offset = 3890, line number = 137, charPositionInLine = 12
-Reference: Object = dbo (SCHEMA), action = null, offset = 4024, line number = 143, charPositionInLine = 12
-Reference: Object = dbo."TestTable" (TABLE), action = ALTER, offset = 4028, line number = 143, charPositionInLine = 16
-Reference: Object = dbo."TestTable"."DF_TestTable_Value" (CONSTRAINT), action = CREATE, offset = 4056, line number = 144, charPositionInLine = 17
-Reference: Object = dbo (SCHEMA), action = null, offset = 4171, line number = 149, charPositionInLine = 12
-Reference: Object = dbo."TestTable" (TABLE), action = ALTER, offset = 4175, line number = 149, charPositionInLine = 16
-Reference: Object = dbo."TestTable"."DF_Name" (CONSTRAINT), action = CREATE, offset = 4202, line number = 150, charPositionInLine = 17
-Reference: Object = "Source" (TABLE), action = ALTER, offset = 4321, line number = 156, charPositionInLine = 12
-Reference: Object = "Source" (TABLE), action = ALTER, offset = 4384, line number = 158, charPositionInLine = 12
-Reference: Object = "Source" (TABLE), action = ALTER, offset = 4435, line number = 160, charPositionInLine = 12
-Reference: Object = "Source" (TABLE), action = ALTER, offset = 4567, line number = 162, charPositionInLine = 12
+Reference: Object = dbo (SCHEMA), action = null, offset = 1725, line number = 62, charPositionInLine = 13
+Reference: Object = dbo."TestTable" (TABLE), action = CREATE, offset = 1729, line number = 62, charPositionInLine = 17
+Reference: action = IF, offset = 2127, line number = 75, charPositionInLine = 0
+Reference: action = IF, offset = 2513, line number = 88, charPositionInLine = 0
+Reference: Object = dbo (SCHEMA), action = null, offset = 2961, line number = 102, charPositionInLine = 12
+Reference: Object = dbo."TestTable" (TABLE), action = ALTER, offset = 2965, line number = 102, charPositionInLine = 16
+Reference: Object = dbo."TestTable"."DF_ModifiedDateUTC" (CONSTRAINT), action = CREATE, offset = 2990, line number = 102, charPositionInLine = 41
+Reference: Object = dbo (SCHEMA), action = null, offset = 3096, line number = 106, charPositionInLine = 12
+Reference: Object = dbo."TestTable" (TABLE), action = ALTER, offset = 3100, line number = 106, charPositionInLine = 16
+Reference: Object = dbo (SCHEMA), action = null, offset = 3163, line number = 108, charPositionInLine = 12
+Reference: Object = dbo."TestTable" (TABLE), action = ALTER, offset = 3167, line number = 108, charPositionInLine = 16
+Reference: Object = dbo (SCHEMA), action = null, offset = 3222, line number = 110, charPositionInLine = 12
+Reference: Object = dbo."TestTable" (TABLE), action = ALTER, offset = 3226, line number = 110, charPositionInLine = 16
+Reference: Object = dbo (SCHEMA), action = null, offset = 3280, line number = 112, charPositionInLine = 12
+Reference: Object = dbo."TestTable" (TABLE), action = ALTER, offset = 3284, line number = 112, charPositionInLine = 16
+Reference: Object = dbo (SCHEMA), action = null, offset = 3335, line number = 114, charPositionInLine = 12
+Reference: Object = dbo."TestTable" (TABLE), action = ALTER, offset = 3339, line number = 114, charPositionInLine = 16
+Reference: Object = dbo (SCHEMA), action = null, offset = 3403, line number = 116, charPositionInLine = 12
+Reference: Object = dbo."TestTable" (TABLE), action = ALTER, offset = 3407, line number = 116, charPositionInLine = 16
+Reference: Object = dbo (SCHEMA), action = null, offset = 3488, line number = 118, charPositionInLine = 12
+Reference: Object = dbo."TestTable" (TABLE), action = ALTER, offset = 3492, line number = 118, charPositionInLine = 16
+Reference: Object = dbo (SCHEMA), action = null, offset = 3548, line number = 120, charPositionInLine = 12
+Reference: Object = dbo."TestTable" (TABLE), action = ALTER, offset = 3552, line number = 120, charPositionInLine = 16
+Reference: Object = dbo (SCHEMA), action = null, offset = 3607, line number = 122, charPositionInLine = 12
+Reference: Object = dbo."TestTable" (TABLE), action = ALTER, offset = 3611, line number = 122, charPositionInLine = 16
+Reference: Object = dbo (SCHEMA), action = null, offset = 3663, line number = 124, charPositionInLine = 12
+Reference: Object = dbo."TestTable" (TABLE), action = ALTER, offset = 3667, line number = 124, charPositionInLine = 16
+Reference: Object = dbo (SCHEMA), action = null, offset = 3732, line number = 126, charPositionInLine = 12
+Reference: Object = dbo."TestTable" (TABLE), action = ALTER, offset = 3736, line number = 126, charPositionInLine = 16
+Reference: Object = "TestTable" (TABLE), action = ALTER, offset = 3831, line number = 130, charPositionInLine = 12
+Reference: Object = dbo (SCHEMA), action = null, offset = 3960, line number = 134, charPositionInLine = 13
+Reference: Object = dbo."TestTable" (TABLE), action = CREATE, offset = 3966, line number = 134, charPositionInLine = 19
+Reference: Object = dbo (SCHEMA), action = null, offset = 4243, line number = 144, charPositionInLine = 13
+Reference: Object = dbo."TestTable" (TABLE), action = CREATE, offset = 4249, line number = 144, charPositionInLine = 19
+Reference: action = IF, offset = 4446, line number = 152, charPositionInLine = 0
+Reference: Object = "TestTable" (TABLE), action = ALTER, offset = 4772, line number = 164, charPositionInLine = 12
+Reference: Object = "TestTable" (TABLE), action = ALTER, offset = 4919, line number = 170, charPositionInLine = 12
+Reference: Object = dbo (SCHEMA), action = null, offset = 5053, line number = 176, charPositionInLine = 12
+Reference: Object = dbo."TestTable" (TABLE), action = ALTER, offset = 5057, line number = 176, charPositionInLine = 16
+Reference: Object = dbo."TestTable"."DF_TestTable_Value" (CONSTRAINT), action = CREATE, offset = 5085, line number = 177, charPositionInLine = 17
+Reference: Object = dbo (SCHEMA), action = null, offset = 5200, line number = 182, charPositionInLine = 12
+Reference: Object = dbo."TestTable" (TABLE), action = ALTER, offset = 5204, line number = 182, charPositionInLine = 16
+Reference: Object = dbo."TestTable"."DF_Name" (CONSTRAINT), action = CREATE, offset = 5231, line number = 183, charPositionInLine = 17
+Reference: Object = "Source" (TABLE), action = ALTER, offset = 5350, line number = 189, charPositionInLine = 12
+Reference: Object = "Source" (TABLE), action = ALTER, offset = 5413, line number = 191, charPositionInLine = 12
+Reference: Object = "Source" (TABLE), action = ALTER, offset = 5464, line number = 193, charPositionInLine = 12
+Reference: Object = "Source" (TABLE), action = ALTER, offset = 5596, line number = 195, charPositionInLine = 12
