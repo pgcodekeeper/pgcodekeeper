@@ -10,6 +10,7 @@
 ### Добавлено
 
 - Добавлена подпись jar-файлов сертификатом.
+- Добавлена поддержка версий PostgreSQL 9.4 - 9.6.
 - Добавлена поддержка опции MASKED для столбцов таблиц в MSSQL.
 - Добавлена поддержка ADD и DROP в ALTER для опций ROWGUIDCOL, PERSISTED, SPARSE, NOT FOR REPLICATION колонок таблиц в MSSQL.
 

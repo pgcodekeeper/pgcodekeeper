@@ -1,0 +1,1 @@
+SELECT start_value,increment_by,max_value,min_value,cache_value,is_cycled

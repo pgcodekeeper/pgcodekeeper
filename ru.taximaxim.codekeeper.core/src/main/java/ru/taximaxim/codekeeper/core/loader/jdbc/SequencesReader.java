@@ -15,20 +15,31 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.loader.jdbc;
 
+import java.sql.Array;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.loader.JdbcQueries;
+import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.core.log.Log;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
+import ru.taximaxim.codekeeper.core.schema.AbstractSequence;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgColumn;
+import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgSequence;
 
 public class SequencesReader extends JdbcReader {
+
+    private static final int DATA_SELECT_LENGTH;
 
     public SequencesReader(JdbcLoaderBase loader) {
         super(JdbcQueries.QUERY_SEQUENCES, loader);
@@ -49,10 +60,12 @@ public class SequencesReader extends JdbcReader {
         }
 
         String identityType = null;
-        identityType = res.getString("attidentity");
-        if (identityType != null && identityType.isEmpty()) {
-            // treat lack of table dependency and no identityType as a single case
-            identityType = null;
+        if (SupportedVersion.VERSION_10.isLE(loader.version)) {
+            identityType = res.getString("attidentity");
+            if (identityType != null && identityType.isEmpty()) {
+                // treat lack of table dependency and no identityType as a single case
+                identityType = null;
+            }
         }
 
         if (refTable != null && identityType == null) {
@@ -72,13 +85,15 @@ public class SequencesReader extends JdbcReader {
             s.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
 
-        s.setStartWith(Long.toString(res.getLong("seqstart")));
-        String dataType = loader.cachedTypesByOid.get(res.getLong("data_type")).getFullName();
-        s.setMinMaxInc(res.getLong("seqincrement"), res.getLong("seqmax"),
-                res.getLong("seqmin"), dataType, 0L);
-        s.setCache(Long.toString(res.getLong("seqcache")));
-        s.setCycle(res.getBoolean("seqcycle"));
-        s.setDataType(dataType);
+        if (SupportedVersion.VERSION_10.isLE(loader.version)) {
+            s.setStartWith(Long.toString(res.getLong("seqstart")));
+            String dataType = loader.cachedTypesByOid.get(res.getLong("data_type")).getFullName();
+            s.setMinMaxInc(res.getLong("seqincrement"), res.getLong("seqmax"),
+                    res.getLong("seqmin"), dataType, 0L);
+            s.setCache(Long.toString(res.getLong("seqcache")));
+            s.setCycle(res.getBoolean("seqcycle"));
+            s.setDataType(dataType);
+        }
 
         if ("d".equals(identityType) || "a".equals(identityType)) {
             AbstractTable table = schema.getTable(refTable);
@@ -104,5 +119,93 @@ public class SequencesReader extends JdbcReader {
     @Override
     protected String getClassId() {
         return "pg_class";
+    }
+
+    static {
+        DATA_SELECT_LENGTH =
+                // static part
+                JdbcQueries.QUERY_SEQUENCES_DATA.length() +
+                // dynamic part
+                (",'test_id78901234567890123456789.test_id78901234567890123456789' qname"
+                        + " FROM test_id78901234567890123456789.test_id78901234567890123456789 UNION ALL ").length();
+    }
+
+    public static void querySequencesData(PgDatabase db, JdbcLoaderBase loader) throws SQLException, InterruptedException {
+        loader.setCurrentOperation("sequences data query");
+
+        List<String> schemasAccess = new ArrayList<>();
+        try (PreparedStatement schemasAccessQuery = loader.connection.prepareStatement(JdbcQueries.QUERY_SCHEMAS_ACCESS)) {
+            Array arrSchemas = loader.connection.createArrayOf("text",
+                    db.getSchemas().stream().filter(s -> !s.getSequences().isEmpty()).map(AbstractSchema::getName).toArray());
+            schemasAccessQuery.setArray(1, arrSchemas);
+            try (ResultSet schemaRes = loader.runner.runScript(schemasAccessQuery)) {
+                while (schemaRes.next()) {
+                    String schema = schemaRes.getString("nspname");
+                    Object hasPriv = schemaRes.getObject("has_priv");
+                    JdbcReader.checkObjectValidity(hasPriv, DbObjType.SCHEMA, schema);
+
+                    if ((boolean)hasPriv) {
+                        schemasAccess.add(schema);
+                    } else {
+                        loader.addError("No USAGE privileges for schema " + schema +
+                                ". SEQUENCE data will be missing.");
+                    }
+                }
+            } finally {
+                arrSchemas.free();
+            }
+        }
+
+        Map<String, AbstractSequence> seqs = new HashMap<>();
+        for (String schema : schemasAccess) {
+            for (AbstractSequence seq : db.getSchema(schema).getSequences()) {
+                seqs.put(seq.getQualifiedName(), seq);
+            }
+        }
+
+        StringBuilder sbUnionQuery = new StringBuilder(DATA_SELECT_LENGTH * seqs.size());
+
+        try (PreparedStatement accessQuery = loader.connection.prepareStatement(JdbcQueries.QUERY_SEQUENCES_ACCESS)) {
+            Array arrSeqs = loader.connection.createArrayOf("text", seqs.keySet().toArray());
+            accessQuery.setArray(1, arrSeqs);
+            try (ResultSet res = loader.runner.runScript(accessQuery)) {
+                while (res.next()) {
+                    String qname = res.getString("qname");
+                    Object hasPriv = res.getObject("has_priv");
+                    JdbcReader.checkObjectValidity(hasPriv, DbObjType.SEQUENCE, qname);
+
+                    if ((boolean)hasPriv) {
+                        if (sbUnionQuery.length() > 0) {
+                            sbUnionQuery.append("\nUNION ALL\n");
+                        }
+                        sbUnionQuery.append(JdbcQueries.QUERY_SEQUENCES_DATA)
+                        .append(',')
+                        .append(PgDiffUtils.quoteString(qname))
+                        .append(" qname FROM ")
+                        .append(qname);
+                    } else {
+                        loader.addError("No SELECT privileges for sequence " + qname +
+                                ". Its data will be missing.");
+                    }
+                }
+            } finally {
+                arrSeqs.free();
+            }
+        }
+        if (sbUnionQuery.length() < 1) {
+            return;
+        }
+
+        try (ResultSet res = loader.runner.runScript(loader.statement, sbUnionQuery.toString())) {
+            while (res.next()) {
+                PgDiffUtils.checkCancelled(loader.monitor);
+                AbstractSequence seq = seqs.get(res.getString("qname"));
+                seq.setStartWith(res.getString("start_value"));
+                seq.setMinMaxInc(res.getLong("increment_by"), res.getLong("max_value"),
+                        res.getLong("min_value"), null, 0L);
+                seq.setCache(res.getString("cache_value"));
+                seq.setCycle(res.getBoolean("is_cycled"));
+            }
+        }
     }
 }

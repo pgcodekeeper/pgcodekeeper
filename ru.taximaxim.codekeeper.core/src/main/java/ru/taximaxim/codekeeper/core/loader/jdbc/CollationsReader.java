@@ -54,13 +54,14 @@ public class CollationsReader extends JdbcReader {
             coll.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
 
-        String provider = res.getString("collprovider");
-        switch (provider) {
-        case "c": coll.setProvider("libc"); break;
-        case "i": coll.setProvider("icu"); break;
-        case "d": coll.setProvider("default"); break;
+        if (SupportedVersion.VERSION_10.isLE(loader.version)) {
+            String provider = res.getString("collprovider");
+            switch (provider) {
+            case "c": coll.setProvider("libc"); break;
+            case "i": coll.setProvider("icu"); break;
+            case "d": coll.setProvider("default"); break;
+            }
         }
-
         if (SupportedVersion.VERSION_12.isLE(loader.version)) {
             coll.setDeterministic(res.getBoolean("collisdeterministic"));
         } else {

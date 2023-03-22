@@ -15,8 +15,7 @@ SELECT p.oid::bigint,
        pg_catalog.pg_get_expr(p.polqual, p.polrelid) AS polqual, 
        pg_catalog.pg_get_expr(p.polwithcheck, p.polrelid) AS polwithcheck,
        d.description AS comment,
-       c.relnamespace AS schema_oid,
-       p.polpermissive
+       c.relnamespace AS schema_oid
 FROM pg_catalog.pg_policy p
 JOIN pg_catalog.pg_class c ON c.oid = p.polrelid
 LEFT JOIN pg_catalog.pg_description d ON p.oid = d.objoid

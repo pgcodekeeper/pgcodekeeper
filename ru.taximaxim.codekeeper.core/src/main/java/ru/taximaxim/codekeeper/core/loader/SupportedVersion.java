@@ -16,6 +16,9 @@
 package ru.taximaxim.codekeeper.core.loader;
 
 public enum SupportedVersion {
+    VERSION_9_4 (90400, "9.4"),
+    VERSION_9_5 (90500, "9.5"),
+    VERSION_9_6 (90600, "9.6"),
     VERSION_10 (100000, "10.0"),
     VERSION_11 (110000, "11.0"),
     VERSION_12 (120000, "12.0"),
@@ -53,6 +56,6 @@ public enum SupportedVersion {
             }
         }
 
-        return SupportedVersion.VERSION_10;
+        return SupportedVersion.VERSION_9_4;
     }
 }

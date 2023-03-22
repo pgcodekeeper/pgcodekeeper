@@ -68,6 +68,11 @@ public final class JdbcQueries {
     public static final JdbcQuery QUERY_FTS_CONFIGURATIONS = new JdbcQuery();
     public static final JdbcQuery QUERY_OPERATORS = new JdbcQuery();
 
+
+    public static String QUERY_SCHEMAS_ACCESS;
+    public static String QUERY_SEQUENCES_ACCESS;
+    public static String QUERY_SEQUENCES_DATA;
+
     public static String QUERY_SYSTEM_FUNCTIONS;
     public static String QUERY_SYSTEM_RELATIONS;
     public static String QUERY_SYSTEM_OPERATORS;

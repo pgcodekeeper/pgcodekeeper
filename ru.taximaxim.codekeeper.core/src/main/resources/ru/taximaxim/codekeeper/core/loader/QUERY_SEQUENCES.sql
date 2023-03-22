@@ -10,15 +10,8 @@ WITH sys_schemas AS (
         AND dep.deptype = 'e'
 )
 
-SELECT s.seqrelid AS oid,
-       s.seqtypid::bigint AS data_type,
-       s.seqstart, 
-       s.seqincrement, 
-       s.seqmax, 
-       s.seqmin, 
-       s.seqcache, 
-       s.seqcycle,
-       a.attidentity,
+
+SELECT c.oid::bigint,
        c.relowner::bigint,
        c.relname,
        c.relpersistence,
@@ -28,17 +21,16 @@ SELECT s.seqrelid AS oid,
        a.attname AS ref_col_name,
        c.relacl::text AS aclarray,
        c.relnamespace AS schema_oid
-FROM pg_catalog.pg_sequence s
-LEFT JOIN pg_catalog.pg_class c ON c.oid = s.seqrelid
+FROM pg_catalog.pg_class c
+LEFT JOIN pg_catalog.pg_description descr ON c.oid = descr.objoid 
+    AND descr.classoid = 'pg_catalog.pg_class'::pg_catalog.regclass
+    AND descr.objsubid = 0
 LEFT JOIN pg_catalog.pg_depend d ON d.classid = c.tableoid
     AND d.objid = c.oid
     AND d.objsubid = 0
     AND d.refclassid = c.tableoid
     AND d.refobjsubid != 0
     AND d.deptype IN ('i', 'a')
-LEFT JOIN pg_catalog.pg_description descr ON c.oid = descr.objoid 
-    AND descr.classoid = 'pg_catalog.pg_class'::pg_catalog.regclass
-    AND descr.objsubid = 0
 LEFT JOIN pg_catalog.pg_attribute a ON a.attrelid = d.refobjid
     AND a.attnum = d.refobjsubid
     AND a.attisdropped IS FALSE
