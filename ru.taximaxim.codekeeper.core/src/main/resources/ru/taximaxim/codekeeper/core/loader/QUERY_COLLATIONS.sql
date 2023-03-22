@@ -16,7 +16,6 @@ SELECT
     c.collcollate,
     c.collctype,
     c.collowner::bigint,
-    c.collprovider,
     d.description AS comment
 FROM pg_catalog.pg_collation c
     LEFT JOIN pg_catalog.pg_description d ON c.oid = d.objoid

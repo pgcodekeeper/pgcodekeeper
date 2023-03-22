@@ -33,8 +33,7 @@ SELECT  -- common part (functions/procedures/aggregates)
         array(select pg_catalog.unnest(p.proargtypes))::bigint[] as argtypes,
         pg_catalog.pg_get_expr(p.proargdefaults, 0) AS default_values_as_string,
         p.pronamespace AS schema_oid,
-        p.protrftypes::bigint[],
-        p.proparallel,
+        p.pronargs,
       
         -- for aggregates
         sfunc.proname AS sfunc,
@@ -58,14 +57,7 @@ SELECT  -- common part (functions/procedures/aggregates)
         sortop.oprname AS sortop,
         sortop_n.nspname AS sortop_nsp,
         a.aggkind,
-        a.aggnumdirectargs,
-        combinefn.proname AS combinefunc,
-        combinefn_n.nspname AS combinefunc_nsp,
-        serialfn.proname AS serialfunc,
-        serialfn_n.nspname AS serialfunc_nsp,
-        deserialfn.proname AS deserialfunc,
-        deserialfn_n.nspname AS deserialfunc_nsp
-        
+        a.aggnumdirectargs
 FROM pg_catalog.pg_proc p
 
 -- common part (functions/procedures/aggregates)
@@ -87,14 +79,6 @@ LEFT JOIN pg_catalog.pg_proc mfinalfn ON a.aggmfinalfn = mfinalfn.oid
 LEFT JOIN pg_catalog.pg_namespace mfinalfn_n ON mfinalfn.pronamespace = mfinalfn_n.oid
 LEFT JOIN pg_catalog.pg_operator sortop ON a.aggsortop = sortop.oid
 LEFT JOIN pg_catalog.pg_namespace sortop_n ON sortop.oprnamespace = sortop_n.oid
-
-LEFT JOIN pg_catalog.pg_proc combinefn ON a.aggcombinefn = combinefn.oid
-LEFT JOIN pg_catalog.pg_namespace combinefn_n ON combinefn.pronamespace = combinefn_n.oid
-LEFT JOIN pg_catalog.pg_proc serialfn ON a.aggserialfn = serialfn.oid
-LEFT JOIN pg_catalog.pg_namespace serialfn_n ON serialfn.pronamespace = serialfn_n.oid
-LEFT JOIN pg_catalog.pg_proc deserialfn ON a.aggdeserialfn = deserialfn.oid
-LEFT JOIN pg_catalog.pg_namespace deserialfn_n ON deserialfn.pronamespace = deserialfn_n.oid
-
 WHERE p.pronamespace NOT IN (SELECT oid FROM sys_schemas)
     AND NOT EXISTS (SELECT 1 FROM pg_catalog.pg_depend dp WHERE dp.classid = 'pg_catalog.pg_proc'::pg_catalog.regclass AND dp.objid = p.oid AND dp.deptype = 'i')
     AND p.oid NOT IN (SELECT objid FROM extension_deps)

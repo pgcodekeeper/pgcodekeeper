@@ -123,10 +123,13 @@ public class FunctionsReader extends JdbcReader {
                     throws SQLException {
         function.setLanguageCost(res.getString("lang_name"), res.getFloat("procost"));
 
-        Long[] protrftypes = getColArray(res, "protrftypes");
-        if (protrftypes != null) {
-            for (Long s : protrftypes) {
-                function.addTransform(loader.cachedTypesByOid.get(s).getFullName());
+        // since 9.5 PostgreSQL
+        if (SupportedVersion.VERSION_9_5.isLE(loader.version)) {
+            Long[] protrftypes = getColArray(res, "protrftypes");
+            if (protrftypes != null) {
+                for (Long s : protrftypes) {
+                    function.addTransform(loader.cachedTypesByOid.get(s).getFullName());
+                }
             }
         }
 
@@ -157,16 +160,18 @@ public class FunctionsReader extends JdbcReader {
 
         // since 9.6 PostgreSQL
         // parallel mode: s - safe, r - restricted, u - unsafe
-        String parMode = res.getString("proparallel");
-        switch (parMode) {
-        case "s":
-            function.setParallel("SAFE");
-            break;
-        case "r":
-            function.setParallel("RESTRICTED");
-            break;
-        default:
-            break;
+        if (SupportedVersion.VERSION_9_6.isLE(loader.version)) {
+            String parMode = res.getString("proparallel");
+            switch (parMode) {
+            case "s":
+                function.setParallel("SAFE");
+                break;
+            case "r":
+                function.setParallel("RESTRICTED");
+                break;
+            default:
+                break;
+            }
         }
 
         float rows = res.getFloat("prorows");
@@ -309,25 +314,26 @@ public class FunctionsReader extends JdbcReader {
 
         // since 9.6 PostgreSQL
         // parallel mode: s - safe, r - restricted, u - unsafe
-        String parMode = res.getString("proparallel");
-        switch (parMode) {
-        case "s":
-            aggregate.setParallel("SAFE");
-            break;
-        case "r":
-            aggregate.setParallel("RESTRICTED");
-            break;
-        default :
-            break;
+        if (SupportedVersion.VERSION_9_6.isLE(loader.version)) {
+            String parMode = res.getString("proparallel");
+            switch (parMode) {
+            case "s":
+                aggregate.setParallel("SAFE");
+                break;
+            case "r":
+                aggregate.setParallel("RESTRICTED");
+                break;
+            default :
+                break;
+            }
+
+            aggregate.setCombineFunc(getProcessedName(aggregate, res.getString("combinefunc_nsp"),
+                    res.getString("combinefunc"), AggFuncs.COMBINEFUNC));
+            aggregate.setSerialFunc(getProcessedName(aggregate, res.getString("serialfunc_nsp"),
+                    res.getString("serialfunc"), AggFuncs.SERIALFUNC));
+            aggregate.setDeserialFunc(getProcessedName(aggregate, res.getString("deserialfunc_nsp"),
+                    res.getString("deserialfunc"), AggFuncs.DESERIALFUNC));
         }
-
-        aggregate.setCombineFunc(getProcessedName(aggregate, res.getString("combinefunc_nsp"),
-                res.getString("combinefunc"), AggFuncs.COMBINEFUNC));
-        aggregate.setSerialFunc(getProcessedName(aggregate, res.getString("serialfunc_nsp"),
-                res.getString("serialfunc"), AggFuncs.SERIALFUNC));
-        aggregate.setDeserialFunc(getProcessedName(aggregate, res.getString("deserialfunc_nsp"),
-                res.getString("deserialfunc"), AggFuncs.DESERIALFUNC));
-
         // since 11 PostgreSQL
         if (SupportedVersion.VERSION_11.isLE(loader.version)) {
             aggregate.setFinalFuncModify(getModifyType(

@@ -447,7 +447,7 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
     protected void queryCheckVersion() throws SQLException, InterruptedException {
         setCurrentOperation("version checking query");
         try (ResultSet res = runner.runScript(statement, JdbcQueries.QUERY_CHECK_VERSION)) {
-            version = res.next() ? res.getInt(1) : SupportedVersion.VERSION_10.getVersion();
+            version = res.next() ? res.getInt(1) : SupportedVersion.VERSION_9_4.getVersion();
         }
     }
 

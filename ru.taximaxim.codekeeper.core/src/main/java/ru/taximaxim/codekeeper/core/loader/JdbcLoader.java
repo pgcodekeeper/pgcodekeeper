@@ -93,7 +93,9 @@ public class JdbcLoader extends JdbcLoaderBase {
             new ViewsReader(this).read();
             new TablesReader(this).read();
             new RulesReader(this).read();
-            new PoliciesReader(this).read();
+            if (SupportedVersion.VERSION_9_5.isLE(version)) {
+                new PoliciesReader(this).read();
+            }
             new TriggersReader(this).read();
             new IndicesReader(this).read();
             // non-ANTLR tasks
@@ -117,6 +119,9 @@ public class JdbcLoader extends JdbcLoaderBase {
             }
             new CollationsReader(this).read();
 
+            if (!SupportedVersion.VERSION_10.isLE(version)) {
+                SequencesReader.querySequencesData(d, this);
+            }
             connection.commit();
             finishLoaders();
 
