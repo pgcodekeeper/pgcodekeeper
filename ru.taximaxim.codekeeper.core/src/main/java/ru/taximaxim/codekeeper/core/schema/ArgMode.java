@@ -26,7 +26,7 @@ public enum ArgMode {
     OUTPUT;
 
     public boolean isIn() {
-        return this == IN || this == INOUT;
+        return this == IN || this == INOUT || this == VARIADIC;
     }
 
     public static ArgMode of(String string) {
