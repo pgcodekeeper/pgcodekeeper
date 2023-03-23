@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed a bug when reading the default value of an argument with the VARIADIC parameter in the function signature.
+
 ## [7.3.0] - 2023-03-14
 
 ### Added
