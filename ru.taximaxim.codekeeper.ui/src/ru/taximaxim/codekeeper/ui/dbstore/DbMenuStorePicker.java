@@ -84,12 +84,17 @@ public class DbMenuStorePicker extends AbstractStorePicker implements IStorePick
 
     public void updateTextLbl() {
         String text;
+        String toolTip;
         if (selection != null) {
             text = (selection instanceof DbInfo) ? ((DbInfo) selection).getName() : ((File) selection).getName();
+            text = escapeLink(text);
+            toolTip = text;
         } else {
             text = Messages.LabelPicker_choice_db;
+            toolTip = null;
         }
-        lnkDb.setText("<a>" + escapeLink(text) + "</a>"); //$NON-NLS-1$ //$NON-NLS-2$
+        lnkDb.setText("<a>" + text + "</a>"); //$NON-NLS-1$ //$NON-NLS-2$
+        lnkDb.setToolTipText(toolTip);
     }
 
     private String escapeLink(String s) {
