@@ -115,6 +115,10 @@ public class MsColumn extends AbstractColumn {
             }
         }
 
+        if (getMaskingFunction() != null) {
+            sb.append(" MASKED WITH (FUNCTION = ").append(getMaskingFunction()).append(")");
+        }
+
         boolean isJoinNotNull = getExpression() == null && getDefaultValue() == null
                 && !getNullValue();
 
