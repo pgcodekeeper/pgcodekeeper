@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Updated license.
 
 ### Fixed
-
+- Fixed a bug dropping an index on the main table that occurs when dropping its partition.
 - Fixed a bug when reading the default value of an argument with the VARIADIC parameter in the function signature.
 - Fixed a bug when renaming objects with long names when migrating data.
 

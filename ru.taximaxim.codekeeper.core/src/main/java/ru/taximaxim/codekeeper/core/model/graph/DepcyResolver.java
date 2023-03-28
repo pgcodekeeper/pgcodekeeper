@@ -147,7 +147,7 @@ public class DepcyResolver {
                     oldDepcyGraph.getReversedGraph(), statement);
             customIteration(dfi, new DropTraversalAdapter(statement));
 
-            if (!statement.canDrop()) {
+            if (!statement.canDrop() && statement.getParent().getTwin(newDb) != null) {
                 customIteration(new DepthFirstIterator<>(oldDepcyGraph.getGraph(), statement),
                         new CannotDropTraversalListener(statement));
             }

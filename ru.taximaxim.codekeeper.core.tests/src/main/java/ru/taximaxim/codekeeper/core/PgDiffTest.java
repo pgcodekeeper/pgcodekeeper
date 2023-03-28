@@ -69,6 +69,8 @@ class PgDiffTest {
             // Tests scenario where INDEX that TABLE CLUSTER is based
             // on is dropped.
             "drop_index_with_cluster",
+            // Tests scenario where PARTITION TABLE with index is dropped.
+            "drop_partition_table_index",
             // Tests scenario where PARTITION INDEX is modified.
             "modify_partition_index",
             // Tests scenario where STATISTICS information is added
