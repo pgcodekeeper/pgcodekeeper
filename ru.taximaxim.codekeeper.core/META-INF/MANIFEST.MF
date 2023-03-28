@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: ru.taximaxim.codekeeper.core;singleton:=true
-Bundle-Version: 7.3.0.qualifier
+Bundle-Version: 7.4.0.qualifier
 Export-Package: ru.taximaxim.codekeeper.core,
  ru.taximaxim.codekeeper.core.fileutils,
  ru.taximaxim.codekeeper.core.formatter,
