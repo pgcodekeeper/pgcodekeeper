@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Fixed a bug when reading the default value of an argument with the VARIADIC parameter in the function signature.
+- Fixed a bug when renaming objects with long names when migrating data.
 
 ## [7.3.0] - 2023-03-14
 

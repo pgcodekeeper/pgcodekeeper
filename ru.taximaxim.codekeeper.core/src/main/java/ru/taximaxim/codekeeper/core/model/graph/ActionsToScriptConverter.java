@@ -408,7 +408,8 @@ public class ActionsToScriptConverter {
     private void addCommandsForRenameTbl(AbstractTable oldTbl) {
         String tmpSuffix = '_' + UUID.randomUUID().toString().replace("-", "");
         String qname = oldTbl.getQualifiedName();
-        String tmpTblName = oldTbl.getName() + tmpSuffix;
+
+        String tmpTblName = getTempName(oldTbl.getName(), tmpSuffix);
 
         script.addStatement(getRenameCommand(oldTbl, tmpTblName));
         tblTmpNames.put(qname, tmpTblName);
@@ -431,12 +432,21 @@ public class ActionsToScriptConverter {
                 PgColumn pgCol = (PgColumn) col;
                 if (pgCol.getSequence() != null) {
                     script.addStatement(getRenameCommand(pgCol.getSequence(),
-                            pgCol.getSequence().getName() + tmpSuffix));
+                            getTempName(pgCol.getSequence().getName(), tmpSuffix)));
+
                     tblIdentityCols.computeIfAbsent(qname, k -> new ArrayList<>())
                     .add(pgCol.getName());
                 }
             }
         }
+    }
+
+    private String getTempName(String name, String tmpSuffix) {
+        if (name.length() > 30) {
+            return name.substring(0, 30) + tmpSuffix;
+        }
+
+        return name + tmpSuffix;
     }
 
     /**
