@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: ru.taximaxim.codekeeper.ui;singleton:=true
-Bundle-Version: 3.9.0.qualifier
+Bundle-Version: 3.10.0.qualifier
 Bundle-Activator: ru.taximaxim.codekeeper.ui.Activator
 Require-Bundle: ru.taximaxim.codekeeper.core;bundle-version="[7.0.0,8.0.0)",
  ru.taximaxim.codekeeper.mainapp,

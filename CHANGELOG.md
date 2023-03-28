@@ -9,11 +9,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [7.4.0] - 2023-03-28
+
+### Added
+
 - Added signing jar files with a certificate.
 - Added support for PostgreSQL version 9.4 - 9.6.
-- Added support for MASKED option for table columns in MSSQL.
-- Added support for ADD and DROP in ALTER for options ROWGUIDCOL, PERSISTED, SPARSE, NOT FOR REPLICATION of table columns in MSSQL.
-- Added database name tooltip in project editor.
+- Added support for MASKED, ROWGUIDCOL, PERSISTED, SPARSE, NOT FOR REPLICATION options for table columns in MSSQL.
+- Added tooltip for database name in project editor.
 - Added support for MATCH syntax in MSSQL.
 
 ### Changed
@@ -21,8 +28,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Updated license.
 
 ### Fixed
-- Fixed a bug dropping an index on the main table that occurs when dropping its partition.
-- Fixed a bug when reading the default value of an argument with the VARIADIC parameter in the function signature.
+
+- Fixed issue with code generation when deleting a partition index with a table.
+- Fixed a bug when reading default value of VARIADIC function parameter.
 - Fixed a bug when renaming objects with long names when migrating data.
 
 ## [7.3.0] - 2023-03-14
@@ -1636,7 +1644,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.3.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.4.0...HEAD
+[7.4.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.3.0...v7.4.0
 [7.3.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.2.0...v7.3.0
 [7.2.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.1.0...v7.2.0
 [7.1.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.0.1...v7.1.0
