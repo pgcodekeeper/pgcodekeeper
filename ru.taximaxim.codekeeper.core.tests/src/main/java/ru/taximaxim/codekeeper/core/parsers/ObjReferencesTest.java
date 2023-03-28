@@ -168,6 +168,7 @@ class ObjReferencesTest {
             "ms_rule",
             "ms_schema",
             "ms_select",
+            "ms_select_match",
             "ms_sequences",
             "ms_server",
             "ms_statements",

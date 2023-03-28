@@ -15,16 +15,23 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.parsers.antlr.msexpr;
 
+import java.util.Map.Entry;
+
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.All_distinct_expressionContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Arbitrary_length_patternContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Case_expressionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Column_declarationContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Data_typeContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Date_expressionContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Edge_patternContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.ExpressionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Expression_listContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Full_column_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Function_callContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.IdContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Last_nodeContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Match_specificationContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Object_expressionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Order_by_clauseContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Order_by_expressionContext;
@@ -37,6 +44,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Search_condition_an
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Search_condition_notContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Select_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Select_stmt_no_parensContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Simple_match_patternContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Switch_search_condition_sectionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Switch_sectionContext;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
@@ -229,7 +237,61 @@ public class MsValueExpr extends MsAbstractExpr {
         } else if ((search = predicate.search_condition()) != null) {
             search(search);
         }
-
+        for (Match_specificationContext match : predicate.match_specification()) {
+            match(match);
+        }
         expressionList(predicate.expression_list());
+
+    }
+
+    private void match(Match_specificationContext matchExpr) {
+        for (Last_nodeContext lastNode : matchExpr.last_node()) {
+            addTableReference(lastNode.qualified_name());
+        }
+
+        for (Simple_match_patternContext simpleMatch : matchExpr.simple_match_pattern()) {
+            for (Qualified_nameContext tableName : simpleMatch.qualified_name()) {
+                addTableReference(tableName);
+            }
+
+            for (Last_nodeContext lastNode : simpleMatch.last_node()) {
+                addTableReference(lastNode.qualified_name());
+            }
+
+            if (simpleMatch.edge_pattern() != null) {
+                addTableReference(simpleMatch.edge_pattern().qualified_name());
+            }
+        }
+
+        for (Arbitrary_length_patternContext arbitaryLengthMatch : matchExpr.arbitrary_length_pattern()) {
+            for (Qualified_nameContext tableName : arbitaryLengthMatch.qualified_name()) {
+                addTableReference(tableName);
+            }
+
+            if (arbitaryLengthMatch.last_node() != null) {
+                addTableReference(arbitaryLengthMatch.last_node().qualified_name());
+            }
+
+            for (Edge_patternContext edge_pattern : arbitaryLengthMatch.edge_pattern()) {
+                addTableReference(edge_pattern.qualified_name());
+            }
+        }
+    }
+
+    private void addTableReference(Qualified_nameContext tableName) {
+        IdContext relationCtx = tableName.name;
+        String relationName = relationCtx.getText();
+
+        Entry<String, GenericColumn> ref = findReference(null, relationName);
+        if (ref != null) {
+            GenericColumn table = ref.getValue();
+            if (table != null) {
+                if (relationName.equals(table.table)) {
+                    addDepcy(table, relationCtx);
+                } else {
+                    addAliasReference(table, relationCtx);
+                }
+            }
+        }
     }
 }

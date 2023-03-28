@@ -68,6 +68,7 @@ class MsParserTest {
             "ms_rule",
             "ms_schema",
             "ms_select",
+            "ms_select_match",
             "ms_sequences",
             "ms_table",
             "ms_transactions",
