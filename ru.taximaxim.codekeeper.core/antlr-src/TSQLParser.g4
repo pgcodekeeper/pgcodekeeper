@@ -2633,6 +2633,7 @@ predicate
     | expression NOT? IN LR_BRACKET (select_statement | expression_list) RR_BRACKET
     | expression NOT? LIKE expression (ESCAPE expression)?
     | expression IS null_notnull
+    | MATCH LR_BRACKET match_specification (AND match_specification)* RR_BRACKET
     | LR_BRACKET search_condition RR_BRACKET
     | UPDATE LR_BRACKET expression_list? RR_BRACKET
     ;
@@ -2650,6 +2651,35 @@ query_specification
     (HAVING having=search_condition)?
     order_by_clause?
     | table_value_constructor
+    ;
+
+match_specification
+    : simple_match_pattern+
+    | SHORTEST_PATH LR_BRACKET arbitrary_length_pattern (AND? arbitrary_length_pattern)* RR_BRACKET
+    | last_node EQUAL last_node
+    ;
+
+simple_match_pattern
+    : (last_node | qualified_name) (edge_pattern qualified_name? | last_node)
+    ;
+
+arbitrary_length_pattern
+    : (last_node | qualified_name) LR_BRACKET (edge_pattern qualified_name)+ RR_BRACKET al_pattern_quantifier
+    | LR_BRACKET (qualified_name edge_pattern)+ RR_BRACKET al_pattern_quantifier (last_node | qualified_name)
+    ;
+
+last_node
+    : LAST_NODE LR_BRACKET qualified_name RR_BRACKET
+    ;
+
+edge_pattern
+    : MINUS LR_BRACKET qualified_name RR_BRACKET MINUS GREATER
+    | LESS MINUS LR_BRACKET qualified_name RR_BRACKET MINUS
+    ;
+
+al_pattern_quantifier
+    : PLUS
+    | LEFT_FIGURE_PAREN DECIMAL COMMA DECIMAL RIGHT_FIGURE_PAREN
     ;
 
 from_item
@@ -3388,6 +3418,7 @@ simple_id
     | KEYSET
     | LANGUAGE
     | LAST
+    | LAST_NODE
     | LEVEL
     | LIBRARY
     | LIFETIME
@@ -3411,6 +3442,7 @@ simple_id
     | MARK
     | MASKED
     | MASTER
+    | MATCH
     | MATCHED
     | MATERIALIZED
     | MAX_CPU_PERCENT
@@ -3643,6 +3675,7 @@ simple_id
     | SETERROR
     | SETS
     | SHARE
+    | SHORTEST_PATH
     | SHOWPLAN
     | SID
     | SIGNATURE

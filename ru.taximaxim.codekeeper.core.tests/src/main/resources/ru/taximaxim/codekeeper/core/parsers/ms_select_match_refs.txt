@@ -1,0 +1,17 @@
+Reference: action = SELECT, offset = 297, line number = 11, charPositionInLine = 0
+Reference: action = SELECT, offset = 462, line number = 18, charPositionInLine = 0
+Reference: action = SELECT, offset = 640, line number = 24, charPositionInLine = 0
+Reference: action = SELECT, offset = 896, line number = 31, charPositionInLine = 0
+Reference: action = SELECT, offset = 1148, line number = 38, charPositionInLine = 0
+Reference: action = SELECT, offset = 1382, line number = 45, charPositionInLine = 0
+Reference: action = SELECT, offset = 1625, line number = 58, charPositionInLine = 0
+Reference: action = SELECT, offset = 1846, line number = 70, charPositionInLine = 0
+Reference: action = SELECT, offset = 2187, line number = 86, charPositionInLine = 0
+Reference: action = SELECT, offset = 2490, line number = 93, charPositionInLine = 0
+Reference: action = SELECT, offset = 2719, line number = 100, charPositionInLine = 0
+Reference: action = SELECT, offset = 2850, line number = 107, charPositionInLine = 0
+Reference: action = SELECT, offset = 2950, line number = 111, charPositionInLine = 0
+Reference: action = SELECT, offset = 3019, line number = 115, charPositionInLine = 0
+Reference: action = SELECT, offset = 3109, line number = 119, charPositionInLine = 0
+Reference: action = SELECT, offset = 3217, line number = 123, charPositionInLine = 0
+Reference: action = SELECT, offset = 3350, line number = 127, charPositionInLine = 0
