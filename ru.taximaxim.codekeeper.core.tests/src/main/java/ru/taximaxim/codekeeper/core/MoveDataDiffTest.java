@@ -51,7 +51,9 @@ class MoveDataDiffTest {
             //implementation for partition table data movement test in PG
             "move_data_partition_table",
             //implementation for partition table data movement test in PG (with identity columns)
-            "move_data_partition_table_identity"
+            "move_data_partition_table_identity",
+            //implementation for partition table data movement test in PG with identity columns(dropped, changed identity col)
+            "move_data_change_col_identity"
     })
 
     void runPgDiff(String fileNameTemplate) throws IOException, InterruptedException {
