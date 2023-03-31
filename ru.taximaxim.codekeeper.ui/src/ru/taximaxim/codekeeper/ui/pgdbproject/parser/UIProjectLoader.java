@@ -255,13 +255,13 @@ public class UIProjectLoader extends ProjectLoader {
 
         // exclude empty schemas (except loaded from schema files) that have been loaded early
         db.getSchemas().stream()
-            .filter(sc -> schemaFiles.contains(AbstractModelExporter.getExportedFilename(sc)) || sc.hasChildren())
-            .forEach(st -> newDb.addChild(st.deepCopy()));
+        .filter(sc -> schemaFiles.contains(AbstractModelExporter.getExportedFilename(sc)) || sc.hasChildren())
+        .forEach(st -> newDb.addChild(st.deepCopy()));
 
         db.getAssemblies().forEach(st -> newDb.addChild(st.deepCopy()));
         db.getRoles().forEach(st -> newDb.addChild(st.deepCopy()));
         db.getUsers().forEach(st -> newDb.addChild(st.deepCopy()));
-
+        newDb.getObjReferences().putAll(db.getObjReferences());
         newDb.copyLaunchers(db);
         return newDb;
     }
