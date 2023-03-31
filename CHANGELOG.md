@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed display of object references in Outline for MSSQL.
+
 ## [7.4.0] - 2023-03-28
 
 ### Added
