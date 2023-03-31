@@ -216,10 +216,10 @@
    </plugins>
 
    <features>
-      <feature id="org.eclipse.platform"/>
+      <feature id="org.eclipse.platform" installMode="root"/>
       <feature id="org.eclipse.egit" installMode="root"/>
       <feature id="org.eclipse.epp.mpc" installMode="root"/>
-      <feature id="ru.taximaxim.codekeeper.feature"/>
+      <feature id="ru.taximaxim.codekeeper.feature" installMode="root"/>
    </features>
 
    <configurations>
@@ -233,7 +233,7 @@
    <repositories>
       <repository location="https://download.eclipse.org/releases/latest/" enabled="true" />
       <repository location="https://pgcodekeeper.org/update/" enabled="true" />
-      <repository location="http://download.eclipse.org/egit/updates/" enabled="true" />
+      <repository location="https://download.eclipse.org/egit/updates/" enabled="true" />
    </repositories>
 
    <preferencesInfo>
