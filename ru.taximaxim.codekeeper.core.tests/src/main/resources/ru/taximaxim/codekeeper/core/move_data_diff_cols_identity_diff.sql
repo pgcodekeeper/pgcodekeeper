@@ -24,8 +24,6 @@ ALTER TABLE public.tbl RENAME TO tbl_randomly_generated_part;
 
 ALTER SEQUENCE public.tbl_did_seq RENAME TO tbl_did_seq_randomly_generated_part;
 
-ALTER SEQUENCE public.tbl_did_2_seq RENAME TO tbl_did_2_seq_randomly_generated_part;
-
 CREATE TABLE public.tbl (
 	did integer NOT NULL,
 	did_3 integer NOT NULL,

@@ -45,6 +45,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractForeignTable;
 import ru.taximaxim.codekeeper.core.schema.AbstractPgTable;
+import ru.taximaxim.codekeeper.core.schema.AbstractSequence;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.MsColumn;
 import ru.taximaxim.codekeeper.core.schema.MsView;
@@ -289,8 +290,8 @@ public class ActionsToScriptConverter {
         String tblTmpName = tblTmpNames.get(table.getQualifiedName());
         if (tblTmpName != null) {
             sb.append("\n\nDROP TABLE ")
-                .append(quoter.apply(table.getSchemaName())).append('.').append(quoter.apply(tblTmpName))
-                .append(';');
+            .append(quoter.apply(table.getSchemaName())).append('.').append(quoter.apply(tblTmpName))
+            .append(';');
         }
     }
 
@@ -429,13 +430,16 @@ public class ActionsToScriptConverter {
                             + PgStatement.GO);
                 }
             } else {
-                PgColumn pgCol = (PgColumn) col;
-                if (pgCol.getSequence() != null) {
-                    script.addStatement(getRenameCommand(pgCol.getSequence(),
-                            getTempName(pgCol.getSequence().getName(), tmpSuffix)));
-
+                PgColumn oldPgCol = (PgColumn) col;
+                PgColumn newPgCol = (PgColumn) oldPgCol.getTwin(newDbFull);
+                if (newPgCol != null && newPgCol.getSequence() != null) {
+                    AbstractSequence seq = oldPgCol.getSequence();
+                    if (seq != null) {
+                        script.addStatement(getRenameCommand(seq,
+                                getTempName(seq.getName(), tmpSuffix)));
+                    }
                     tblIdentityCols.computeIfAbsent(qname, k -> new ArrayList<>())
-                    .add(pgCol.getName());
+                    .add(oldPgCol.getName());
                 }
             }
         }
