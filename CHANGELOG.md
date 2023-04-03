@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - It is now possible to update the plugin version in standalone pgCodeKeeper packages.
+- Added parser's support for REBUILD options for tables in MSSQL.
 
 ### Changed
 

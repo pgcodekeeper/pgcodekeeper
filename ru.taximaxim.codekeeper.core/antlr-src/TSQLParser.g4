@@ -1720,11 +1720,23 @@ alter_table
            TO qualified_name
            (PARTITION expression)?
            (WITH LR_BRACKET low_priority_lock_wait RR_BRACKET)?
-        | REBUILD table_options)
+        | REBUILD rebuild_options?)
     ;
 
 table_action_drop
     : (COLUMN | CONSTRAINT?) (IF EXISTS)? id (COMMA id)*
+    ;
+
+rebuild_options
+    : (PARTITION EQUAL (ALL|DECIMAL))? WITH
+    LR_BRACKET simple_id EQUAL rebuild_option_value (COMMA simple_id EQUAL rebuild_option_value)* RR_BRACKET
+    ;
+
+rebuild_option_value
+    : simple_id (ON (PARTITIONS LR_BRACKET DECIMAL RR_BRACKET)?| OFF)?
+    | ON (LR_BRACKET low_priority_lock_wait RR_BRACKET)?
+    | OFF
+    | DECIMAL
     ;
 
 low_priority_lock_wait
