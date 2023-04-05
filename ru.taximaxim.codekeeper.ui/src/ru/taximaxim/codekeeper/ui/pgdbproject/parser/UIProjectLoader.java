@@ -70,14 +70,17 @@ public class UIProjectLoader extends ProjectLoader {
     private static final String SQL_EXTENSION = "sql"; // $NON-NLS-1$
 
     private final IProject iProject;
+    private final boolean projectOnly;
 
     public UIProjectLoader(IProject iProject, PgDiffArguments arguments, IProgressMonitor monitor) {
-        this(iProject, arguments, monitor, null);
+        this(iProject, arguments, monitor, null, false);
     }
 
-    public UIProjectLoader(IProject iProject, PgDiffArguments arguments, IProgressMonitor monitor, IgnoreSchemaList ignoreSchemaList) {
+    public UIProjectLoader(IProject iProject, PgDiffArguments arguments, IProgressMonitor monitor,
+            IgnoreSchemaList ignoreSchemaList, boolean projectOnly) {
         super(null, arguments, monitor, new ArrayList<>(), ignoreSchemaList);
         this.iProject = iProject;
+        this.projectOnly = projectOnly;
     }
 
     @Override
@@ -326,6 +329,7 @@ public class UIProjectLoader extends ProjectLoader {
     private PgDatabase loadDatabaseWithLibraries()
             throws InterruptedException, IOException, CoreException {
         PgDatabase db = new PgDatabase(arguments);
+
         if (arguments.isMsSql()) {
             loadMsStructure(iProject, db);
         } else {
@@ -333,9 +337,11 @@ public class UIProjectLoader extends ProjectLoader {
         }
         AntlrParser.finishAntlr(antlrTasks);
 
-        loadLibraries(db, arguments);
+        if (!projectOnly) {
+            loadLibraries(db, arguments);
+        }
 
-        if (!arguments.isIgnorePrivileges()) {
+        if (!arguments.isIgnorePrivileges() && !projectOnly) {
             isOverrideMode = true;
             // read overrides from special folder
             IFolder privs = iProject.getFolder(Consts.OVERRIDES_DIR);
@@ -352,6 +358,7 @@ public class UIProjectLoader extends ProjectLoader {
             }
         }
         finishLoaders();
+
         return db;
     }
 

@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed a bug in the "normalization" mechanism for a project with libraries and overrides.
 - Fixed a bug in generating the migration script when data migration with deleting the identity column of the table.
 - Fixed display of object references in Outline for MSSQL.
 

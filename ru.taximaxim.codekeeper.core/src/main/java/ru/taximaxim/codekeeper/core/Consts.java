@@ -56,6 +56,8 @@ public interface Consts {
 
     String JDBC_SUCCESS = "success";
 
+    String PROJECT_ONLY = "projectOnly";
+
     enum WORK_DIR_NAMES {
         SCHEMA,
         EXTENSION,

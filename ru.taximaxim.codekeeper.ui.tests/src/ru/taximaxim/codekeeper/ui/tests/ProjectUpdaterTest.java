@@ -79,7 +79,7 @@ public class ProjectUpdaterTest {
         proj.getProject().getNature(NATURE.ID).deconfigure();
         proj.getProject().open(null);
         proj.getProject().setDefaultCharset(ENCODING, null);
-        new UIProjectUpdater(dbNew, proj).updateFull();
+        new UIProjectUpdater(dbNew, proj).updateFull(false);
 
         new ModelExporter(referenceDir.get(), dbOld, ENCODING).exportFull();
         if (compareFilesInPaths(workingDir.get(), referenceDir.get())){
