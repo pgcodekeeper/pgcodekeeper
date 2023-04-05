@@ -152,7 +152,7 @@ public class ProjectUpdater {
         }
     }
 
-    public void updateFull() throws IOException {
+    public void updateFull(boolean projectOnly) throws IOException {
         Log.log(Log.LOG_INFO, "Project updater: started full"); //$NON-NLS-1$
         boolean caughtProcessingEx = false;
         try (TempDir tmp = new TempDir(dirExport, "tmp-export")) { //$NON-NLS-1$
@@ -164,6 +164,9 @@ public class ProjectUpdater {
                     new MsModelExporter(dirExport, dbNew, encoding).exportFull();
                 } else {
                     new ModelExporter(dirExport, dbNew, encoding).exportFull();
+                }
+                if (projectOnly) {
+                    restoreFolder(dirTmp, Consts.OVERRIDES_DIR);
                 }
             } catch (Exception ex) {
                 caughtProcessingEx = true;

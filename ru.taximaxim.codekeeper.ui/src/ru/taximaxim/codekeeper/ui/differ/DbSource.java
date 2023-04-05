@@ -286,7 +286,10 @@ class DbSourceProject extends DbSource {
                 OpenProjectUtils.checkMsSql(project), project, oneTimePrefs);
 
         Path listFile = Paths.get(project.getLocationURI()).resolve(FILE.IGNORED_SCHEMA);
-        return load(new UIProjectLoader(project, arguments, monitor, InternalIgnoreList.getIgnoreSchemaList(listFile)));
+        boolean projectOnly = oneTimePrefs != null && Boolean.TRUE == oneTimePrefs.get(Consts.PROJECT_ONLY);
+
+        return load(new UIProjectLoader(project, arguments, monitor,
+                InternalIgnoreList.getIgnoreSchemaList(listFile), projectOnly));
     }
 }
 

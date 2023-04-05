@@ -16,6 +16,7 @@
 package ru.taximaxim.codekeeper.ui.handlers;
 
 import java.io.IOException;
+import java.util.Map;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -37,6 +38,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
+import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
@@ -73,9 +75,11 @@ public class NormalizeProject extends AbstractHandler {
                 SubMonitor mon = SubMonitor.convert(monitor,
                         Messages.NormalizeProject_normalizing_project, 2);
                 try {
-                    PgDatabase db = DbSource.fromProject(proj).get(mon.newChild(1));
+                    boolean projectOnly = true;
+                    Map<String, Boolean> oneTimePrefs = Map.of(Consts.PROJECT_ONLY, projectOnly);
+                    PgDatabase db = DbSource.fromProject(proj, oneTimePrefs).get(mon.newChild(1));
                     mon.newChild(1).subTask(Messages.NormalizeProject_exporting_project);
-                    new UIProjectUpdater(db, proj).updateFull();
+                    new UIProjectUpdater(db, proj).updateFull(projectOnly);
                 } catch (IOException | CoreException ex) {
                     return new Status(IStatus.ERROR, PLUGIN_ID.THIS,
                             Messages.NormalizeProject_error_while_updating_project, ex);
