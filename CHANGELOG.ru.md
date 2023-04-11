@@ -9,11 +9,17 @@
 
 ### Добавлено
 
+### Изменено
+
+### Исправлено
+
+## [7.5.0] - 2023-04-11
+
+### Добавлено
+
 - Добавлена возможность обновления версии плагина в самостоятельных сборках pgCodeKeeper.
 - Добавленна поддержка парсером опций REBUILD для таблиц в MSSQL.
 - Добавлены тесты для загрузчика библиотек.
-
-### Изменено
 
 ### Исправлено
 
@@ -22,7 +28,7 @@
 - Исправлена ошибка в сборщике MS SQL при сохранении файлов.
 - Исправлен NPE в агрегатных функциях postgres.
 - Исправлен NPE при чтении USER MAPPING с пользователем PUBLIC.
-- Добавлены пропущенное квотирование в столбцах композитных типов.
+- Исправлено пропущенное квотирование в столбцах композитных типов.
 
 ## [7.4.0] - 2023-03-28
 
@@ -1656,7 +1662,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.4.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.5.0...HEAD
+[7.5.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.4.0...v7.5.0
 [7.4.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.3.0...v7.4.0
 [7.3.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.2.0...v7.3.0
 [7.2.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.1.0...v7.2.0

@@ -9,11 +9,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [7.4.0] - 2023-04-11
+
+### Added
+
 - It is now possible to update the plugin version in standalone pgCodeKeeper packages.
 - Added parser's support for REBUILD options for tables in MSSQL.
 - Added tests for library loader.
-
-### Changed
 
 ### Fixed
 
@@ -1655,7 +1661,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.4.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.5.0...HEAD
+[7.5.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.4.0...v7.5.0
 [7.4.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.3.0...v7.4.0
 [7.3.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.2.0...v7.3.0
 [7.2.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.1.0...v7.2.0
