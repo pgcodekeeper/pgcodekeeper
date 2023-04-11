@@ -28,7 +28,7 @@ ALTER TABLE ONLY public.testtable
 DROP TABLE public.testtable;
 
 ALTER TYPE public.testtype
-	ADD ATTRIBUTE field4new numeric, 
+	ADD ATTRIBUTE field4new numeric,
 	DROP ATTRIBUTE field4;
 
 CREATE TABLE public.testtable OF public.testtype (

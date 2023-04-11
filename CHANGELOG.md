@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fixed a bug in MS SQL builder when saving files.
 - Fixed NPE in postgres aggregate functions.
 - Fixed NPE when reading USER MAPPING with PUBLIC user.
+- Fixed missing quotes in composite type columns.
 
 ## [7.4.0] - 2023-03-28
 
