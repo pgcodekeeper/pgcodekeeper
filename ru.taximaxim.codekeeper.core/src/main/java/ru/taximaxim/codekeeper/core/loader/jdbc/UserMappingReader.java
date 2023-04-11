@@ -52,6 +52,12 @@ public class UserMappingReader implements PgCatalogStrings {
     private PgUserMapping getUserMapping(ResultSet res) throws SQLException {
         String user  = res.getString("username");
         String server = res.getString("servername");
+        if (user == null) {
+            // https://www.postgresql.org/docs/current/catalog-pg-user-mapping.html
+            // zero if the user mapping is public
+            user = "PUBLIC";
+        }
+
         PgUserMapping usm = new PgUserMapping(user, server);
 
         loader.setCurrentObject(new GenericColumn(usm.getName(), DbObjType.USER_MAPPING));
