@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - It is now possible to update the plugin version in standalone pgCodeKeeper packages.
 - Added parser's support for REBUILD options for tables in MSSQL.
+- Added tests for library loader.
 
 ### Changed
 
@@ -18,7 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Fixed a bug in the "normalization" mechanism for a project with libraries and overrides.
 - Fixed a bug in generating the migration script when data migration with deleting the identity column of the table.
-- Fixed display of object references in Outline for MSSQL.
+- Fixed bug in MS SQL builder when saving files.
 
 ## [7.4.0] - 2023-03-28
 
