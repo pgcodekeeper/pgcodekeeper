@@ -65,11 +65,9 @@ CREATE TEXT SEARCH CONFIGURATION public.test_config (
 
 CREATE ROLE test_role;
 
-ALTER DEFAULT PRIVILEGES FOR ROLE test_role 
-	REVOKE ALL PRIVILEGES ON TABLES TO test_role;
-
 GRANT SELECT ON TABLE public.test TO test_role;
 
 GRANT INSERT ON TABLE public.test TO test_role;
 
 GRANT UPDATE ON TABLE public.test TO test_role;
+
