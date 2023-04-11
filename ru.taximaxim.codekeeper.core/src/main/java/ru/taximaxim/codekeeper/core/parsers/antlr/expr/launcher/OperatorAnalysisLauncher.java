@@ -27,11 +27,11 @@ import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgStatementWithSearchPath;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
 
-public class OperatorAnalysisLaincher extends AbstractAnalysisLauncher {
+public class OperatorAnalysisLauncher extends AbstractAnalysisLauncher {
 
     private final GenericColumn function;
 
-    public OperatorAnalysisLaincher(PgStatementWithSearchPath stmt, GenericColumn function, String location) {
+    public OperatorAnalysisLauncher(PgStatementWithSearchPath stmt, GenericColumn function, String location) {
         super(stmt, null, location);
         this.function = function;
     }

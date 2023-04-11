@@ -475,7 +475,7 @@ public class FunctionsReader extends JdbcReader {
             f.addArgument(a);
         }
 
-        if (DbObjType.FUNCTION == f.getStatementType()) {
+        if (DbObjType.FUNCTION == f.getStatementType() || DbObjType.AGGREGATE == f.getStatementType()) {
             // RETURN TYPE
             if (sb.length() != 0) {
                 sb.setLength(sb.length() - 2);

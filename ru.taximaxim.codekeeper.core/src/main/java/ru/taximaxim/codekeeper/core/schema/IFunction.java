@@ -22,4 +22,5 @@ public interface IFunction extends ISearchPath {
     String getReturns();
     Map<String, String> getReturnsColumns();
     List<Argument> getArguments();
+    void setReturns(String returns);
 }

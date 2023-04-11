@@ -56,6 +56,7 @@ public class PgAggregate extends AbstractPgFunction {
     private boolean isMFinalFuncExtra;
     private String mInitCond;
     private String sortOp;
+    private String returns;
 
     private ModifyType finalFuncModify;
     private ModifyType mFinalFuncModify;
@@ -466,6 +467,17 @@ public class PgAggregate extends AbstractPgFunction {
     }
 
     @Override
+    public String getReturns() {
+        return returns;
+    }
+
+    @Override
+    public void setReturns(String returns) {
+        this.returns = returns;
+        resetHash();
+    }
+
+    @Override
     protected AbstractPgFunction getFunctionCopy() {
         PgAggregate copy = new PgAggregate(getBareName());
         copy.setDirectCount(getDirectCount());
@@ -490,6 +502,7 @@ public class PgAggregate extends AbstractPgFunction {
         copy.setMInitCond(getMInitCond());
         copy.setSortOp(getSortOp());
         copy.setParallel(getParallel());
+        copy.setReturns(getReturns());
         return copy;
     }
 }

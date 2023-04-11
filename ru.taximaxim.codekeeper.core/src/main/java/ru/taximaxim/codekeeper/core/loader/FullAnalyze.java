@@ -24,7 +24,8 @@ import java.util.Queue;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrTask;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.AbstractAnalysisLauncher;
-import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.OperatorAnalysisLaincher;
+import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.AggregateAnalysisLauncher;
+import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.OperatorAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.ViewAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.schema.IRelation;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
@@ -58,6 +59,7 @@ public final class FullAnalyze {
 
     private void fullAnalyze() throws InterruptedException, IOException {
         analyzeOperators();
+        analyzeAggregate();
         analyzeView(null);
 
         for (AbstractAnalysisLauncher l : db.getAnalysisLaunchers()) {
@@ -100,7 +102,19 @@ public final class FullAnalyze {
         List<AbstractAnalysisLauncher> launchers = db.getAnalysisLaunchers();
         for (int i = 0; i < launchers.size(); ++i) {
             AbstractAnalysisLauncher l = launchers.get(i);
-            if (l instanceof OperatorAnalysisLaincher) {
+            if (l instanceof OperatorAnalysisLauncher) {
+                // allow GC to reclaim context memory immediately
+                launchers.set(i, null);
+                l.launchAnalyze(errors, meta);
+            }
+        }
+    }
+
+    private void analyzeAggregate() {
+        List<AbstractAnalysisLauncher> launchers = db.getAnalysisLaunchers();
+        for (int i = 0; i < launchers.size(); ++i) {
+            AbstractAnalysisLauncher l = launchers.get(i);
+            if (l instanceof AggregateAnalysisLauncher) {
                 // allow GC to reclaim context memory immediately
                 launchers.set(i, null);
                 l.launchAnalyze(errors, meta);
