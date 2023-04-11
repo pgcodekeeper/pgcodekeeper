@@ -112,6 +112,7 @@ public class MetaFunction extends MetaStatement implements IFunction {
         return returns;
     }
 
+    @Override
     public void setReturns(String returns) {
         this.returns = returns;
     }

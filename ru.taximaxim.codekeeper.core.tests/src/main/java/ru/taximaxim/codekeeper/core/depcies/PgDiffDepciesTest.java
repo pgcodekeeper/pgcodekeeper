@@ -233,6 +233,12 @@ class PgDiffDepciesTest {
             // проверка объекта user mapping
             // пользователь выбрал объект user mapping с зависимостью server
             "add_user_mapping_usr",
+            //добавление предсталение с перегруженной агрегатной функцией
+            //пользователь выбрал только представление v1 (с finalfunc)
+            "add_view_with_over_aggr_usr_v1",
+            //добавление предсталение с перегруженной агрегатной функцией
+            //пользователь выбрал только представление v2 (без finalFunc)
+            "add_view_with_over_aggr_usr_v2",
     })
 
     void runDiff(final String userSelTemplate) throws IOException, InterruptedException {

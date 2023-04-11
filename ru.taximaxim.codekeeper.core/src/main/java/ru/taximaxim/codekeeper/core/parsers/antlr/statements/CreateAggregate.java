@@ -33,7 +33,9 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Function_argumentsCo
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.IdentifierContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Identifier_nontypeContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Schema_qualified_nameContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.AggregateAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.schema.Argument;
+import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgAggregate;
 import ru.taximaxim.codekeeper.core.schema.PgAggregate.AggFuncs;
 import ru.taximaxim.codekeeper.core.schema.PgAggregate.AggKinds;
@@ -108,6 +110,7 @@ public class CreateAggregate extends ParserAbstract {
     private void fillAggregate(List<Aggregate_paramContext> params, PgAggregate aggregate) {
         ModifyType finalFuncModify = null;
         ModifyType mFinalFuncModify = null;
+
         if (params != null) {
             // The parameter 'MSTYPE' must be processed before parameters 'MSFUNC',
             // 'MINVFUNC', 'MFINALFUNC', for correctly adding dependencies on the
@@ -127,6 +130,8 @@ public class CreateAggregate extends ParserAbstract {
                     Schema_qualified_nameContext finalFuncCtx = paramOpt.final_func;
                     aggregate.setFinalFunc(getFullCtxText(finalFuncCtx));
                     addFuncAsDepcy(AggFuncs.FINALFUNC, finalFuncCtx, aggregate);
+                    db.addAnalysisLauncher(new AggregateAnalysisLauncher(aggregate,
+                            getAggregateFunction(aggregate, getIdentifiers(finalFuncCtx)), fileName));
                 } else if (paramOpt.FINALFUNC_EXTRA() != null) {
                     aggregate.setFinalFuncExtra(true);
                 } else if (paramOpt.FINALFUNC_MODIFY() != null) {
@@ -202,6 +207,10 @@ public class CreateAggregate extends ParserAbstract {
             }
         }
 
+        if (aggregate.getFinalFunc() == null) {
+            aggregate.setReturns(ctx.type.getText());
+        }
+
         if (AggKinds.HYPOTHETICAL != aggregate.getKind()
                 && aggregate.getArguments().size() != aggregate.getDirectCount()) {
             aggregate.setKind(AggKinds.ORDERED);
@@ -230,6 +239,12 @@ public class CreateAggregate extends ParserAbstract {
             addDepSafe(aggr, Arrays.asList(schemaCtx, QNameParser.getFirstNameCtx(ids)),
                     DbObjType.FUNCTION, true, getParamFuncSignature(aggr, paramName));
         }
+    }
+
+    private GenericColumn getAggregateFunction(PgAggregate aggregate, List<ParserRuleContext> ids) {
+        String name = QNameParser.getFirstName(ids) + getParamFuncSignature(aggregate, AggFuncs.FINALFUNC);
+        return new GenericColumn(QNameParser.getSchemaName(ids),
+                name, DbObjType.FUNCTION);
     }
 
     /**

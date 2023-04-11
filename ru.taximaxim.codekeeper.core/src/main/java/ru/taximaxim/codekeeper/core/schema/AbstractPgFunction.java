@@ -45,7 +45,6 @@ public abstract class AbstractPgFunction extends AbstractFunction {
     private String parallel;
     private String volatileType;
     private String body;
-    private String returns;
     private String supportFunc;
 
     protected final List<String> transforms = new ArrayList<>();
@@ -334,22 +333,6 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         resetHash();
     }
 
-    /**
-     * @return the returns
-     */
-    @Override
-    public String getReturns() {
-        return returns;
-    }
-
-    /**
-     * @param returns the returns to set
-     */
-    public void setReturns(String returns) {
-        this.returns = returns;
-        resetHash();
-    }
-
     public String getSupportFunc() {
         return supportFunc;
     }
@@ -407,7 +390,6 @@ public abstract class AbstractPgFunction extends AbstractFunction {
                     && isLeakproof == func.isLeakproof()
                     && rows == func.getRows()
                     && Objects.equals(cost, func.getCost())
-                    && Objects.equals(returns, func.getReturns())
                     && transforms.equals(func.transforms)
                     && configurations.equals(func.configurations)
                     && Objects.equals(supportFunc, func.getSupportFunc());
@@ -419,7 +401,6 @@ public abstract class AbstractPgFunction extends AbstractFunction {
     @Override
     public void computeHash(Hasher hasher) {
         super.computeHash(hasher);
-        hasher.put(returns);
         hasher.put(supportFunc);
         hasher.put(body);
         hasher.put(transforms);

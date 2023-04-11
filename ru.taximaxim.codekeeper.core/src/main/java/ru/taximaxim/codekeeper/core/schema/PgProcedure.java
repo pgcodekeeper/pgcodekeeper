@@ -20,13 +20,17 @@
 package ru.taximaxim.codekeeper.core.schema;
 
 import java.util.Iterator;
+import java.util.Objects;
 
+import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 
 /**
  * Stores Postgres procedure information.
  */
 public class PgProcedure extends AbstractPgFunction {
+
+    private String returns;
 
     public PgProcedure(String name) {
         super(name);
@@ -35,6 +39,16 @@ public class PgProcedure extends AbstractPgFunction {
     @Override
     public DbObjType getStatementType() {
         return DbObjType.PROCEDURE;
+    }
+
+    @Override
+    public String getReturns() {
+        return returns;
+    }
+
+    @Override
+    public void setReturns(String returns) {
+        this.returns = returns;
     }
 
     @Override
@@ -54,6 +68,20 @@ public class PgProcedure extends AbstractPgFunction {
         }
 
         return false;
+    }
+
+    @Override
+    protected boolean compareUnalterable(AbstractFunction function) {
+        if (function instanceof PgProcedure && super.compareUnalterable(function)) {
+            return Objects.equals(returns, ((PgProcedure)function).getReturns());
+        }
+        return false;
+    }
+
+    @Override
+    public void computeHash(Hasher hasher) {
+        super.computeHash(hasher);
+        hasher.put(returns);
     }
 
     @Override

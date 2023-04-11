@@ -44,6 +44,11 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
     }
 
     @Override
+    public void setReturns(String returns) {
+        throw new IllegalStateException();
+    }
+
+    @Override
     public Map<String, String> getReturnsColumns() {
         // subclasses may override if needed
         return Collections.emptyMap();

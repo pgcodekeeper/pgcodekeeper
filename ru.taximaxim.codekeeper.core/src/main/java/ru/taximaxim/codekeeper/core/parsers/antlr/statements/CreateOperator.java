@@ -28,7 +28,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Data_typeContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.IdentifierContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Operator_optionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Schema_qualified_nameContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.OperatorAnalysisLaincher;
+import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.OperatorAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgOperator;
@@ -96,7 +96,7 @@ public class CreateOperator extends ParserAbstract {
             oper.setProcedure(getFullCtxText(funcCtx));
             List<ParserRuleContext> funcIds = getIdentifiers(funcCtx);
             addDepSafe(oper, funcIds, DbObjType.FUNCTION, true, arguments);
-            db.addAnalysisLauncher(new OperatorAnalysisLaincher(
+            db.addAnalysisLauncher(new OperatorAnalysisLauncher(
                     oper, getOperatorFunction(oper, funcIds), fileName));
         }
 
