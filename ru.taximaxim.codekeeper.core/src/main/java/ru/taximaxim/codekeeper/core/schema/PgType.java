@@ -391,7 +391,7 @@ public class PgType extends AbstractType {
             } else {
                 sb.append(',');
             }
-            sb.append("\n\t").append(attr.getName()).append(' ').append(attr.getType());
+            sb.append("\n\t").append(PgDiffUtils.getQuotedName(attr.getName())).append(' ').append(attr.getType());
 
             if (attr.getCollation() != null) {
                 sb.append(" COLLATE ").append(attr.getCollation());
@@ -522,13 +522,13 @@ public class PgType extends AbstractType {
             if (oldAttr == null) {
                 isNeedDepcies.set(true);
                 attrSb.append("\n\tADD ATTRIBUTE ")
-                .append(attr.getName()).append(' ').append(attr.getType());
+                .append(PgDiffUtils.getQuotedName(attr.getName())).append(' ').append(attr.getType());
 
                 if (attr.getCollation() != null) {
                     attrSb.append(" COLLATE ").append(attr.getCollation());
                 }
 
-                attrSb.append(", ");
+                attrSb.append(",");
             } else if (!oldAttr.getType().equals(attr.getType()) ||
                     !Objects.equals(attr.getCollation(), oldAttr.getCollation())) {
                 isNeedDepcies.set(true);
@@ -540,7 +540,7 @@ public class PgType extends AbstractType {
                     attrSb.append(" COLLATE ")
                     .append(attr.getCollation());
                 }
-                attrSb.append(", ");
+                attrSb.append(",");
             }
         }
 
@@ -549,13 +549,13 @@ public class PgType extends AbstractType {
                 isNeedDepcies.set(true);
                 attrSb.append("\n\tDROP ATTRIBUTE ")
                 .append(PgDiffUtils.getQuotedName(attr.getName()))
-                .append(", ");
+                .append(",");
             }
         }
 
         if (attrSb.length() > 0) {
             // remove last comma
-            attrSb.setLength(attrSb.length() - 2);
+            attrSb.setLength(attrSb.length() - 1);
             sb.append("\n\nALTER TYPE ")
             .append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.')
             .append(PgDiffUtils.getQuotedName(newType.getName()))
