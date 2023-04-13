@@ -1,5 +1,9 @@
 SET search_path = pg_catalog;
 
+CREATE EXTENSION plpgsql SCHEMA pg_catalog;
+
+COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
+
 CREATE TYPE public.user_code AS (
     f1 integer,
     f2 text
@@ -88,10 +92,23 @@ ALTER SEQUENCE public.emp_id_seq
     
 GRANT ALL ON SCHEMA public TO PUBLIC;
 
-/*
+-- tests COLLATION
+
+CREATE COLLATION public.ru (LOCALE = 'ru_RU.utf8', PROVIDER = libc);
+
+ALTER COLLATION public.ru OWNER TO unit_test;
+
+-- tests FOREIGN DATA WRAPPER
+
+CREATE FOREIGN DATA WRAPPER dummy;
+
+ALTER FOREIGN DATA WRAPPER dummy OWNER TO unit_test;
+
 -- tests quoted server name
 
-CREATE SERVER "asdashSA/sdag" FOREIGN DATA WRAPPER wrap;
+CREATE SERVER "asdashSA/sdag" FOREIGN DATA WRAPPER dummy;
+
+ALTER SERVER "asdashSA/sdag" OWNER TO unit_test;
 
 CREATE FOREIGN TABLE public.ft (
     c1 integer
@@ -99,7 +116,10 @@ CREATE FOREIGN TABLE public.ft (
 SERVER "asdashSA/sdag";
 
 ALTER FOREIGN TABLE public.ft OWNER TO unit_test;
-*/
+
+-- tests USER MAPPING
+
+CREATE USER MAPPING FOR PUBLIC SERVER myserver;
 
 -- tests syntax sugar, alias, comments 
 
@@ -149,7 +169,6 @@ CREATE POLICY p3 ON public.test TO unit_test USING (true) WITH CHECK ((1 > 0));
 
 COMMENT ON POLICY p1 ON public.test IS 'test comment';
 
-/* 
 -- tests full text search statements
 
 CREATE TEXT SEARCH PARSER public.testparser (
@@ -186,7 +205,6 @@ COMMENT ON TEXT SEARCH CONFIGURATION public.testconfig IS 'is test configuration
 ALTER TEXT SEARCH CONFIGURATION public.testconfig
     ADD MAPPING FOR email WITH english_stem;
 
-*/
 -- tests aggregate
 
 CREATE AGGREGATE public.avg(double precision) (
@@ -254,14 +272,14 @@ ALTER TABLE ONLY public.child_ab ALTER COLUMN c1 SET NOT NULL;
 
 ALTER TABLE public.child_ab OWNER TO unit_test;
 
-/*
+
 CREATE FOREIGN TABLE public.child_xz PARTITION OF public.base
 FOR VALUES IN ('x', 'z')
 SERVER "asdashSA/sdag";
 ALTER TABLE ONLY public.child_xz ALTER COLUMN c1 SET NOT NULL;
 
 ALTER FOREIGN TABLE public.child_xz OWNER TO unit_test;
-*/
+
 -- tests mat view
 
 CREATE MATERIALIZED VIEW public.mv1
