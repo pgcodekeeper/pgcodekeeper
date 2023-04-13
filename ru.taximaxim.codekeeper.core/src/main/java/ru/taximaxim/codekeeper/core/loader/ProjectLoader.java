@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -60,10 +61,11 @@ public class ProjectLoader extends DatabaseLoader {
      * NOTE: constraints, triggers and indexes are now stored in tables,
      * those directories are here for backward compatibility only
      */
-    protected static final String[] DIR_LOAD_ORDER = new String[] { "TYPE",
-            "DOMAIN", "SEQUENCE", "FUNCTION", "PROCEDURE", "AGGREGATE", "OPERATOR",
-            "TABLE", "CONSTRAINT", "INDEX", "TRIGGER", "VIEW", "FTS_PARSER",
-            "FTS_TEMPLATE", "FTS_DICTIONARY", "FTS_CONFIGURATION" };
+    protected static final EnumSet<DbObjType> DIR_LOAD_ORDER = EnumSet.of(DbObjType.COLLATION, DbObjType.TYPE,
+            DbObjType.DOMAIN, DbObjType.SEQUENCE, DbObjType.FUNCTION, DbObjType.PROCEDURE,
+            DbObjType.AGGREGATE, DbObjType.OPERATOR, DbObjType.TABLE, DbObjType.CONSTRAINT,
+            DbObjType.INDEX, DbObjType.TRIGGER, DbObjType.VIEW, DbObjType.FTS_PARSER,
+            DbObjType.FTS_TEMPLATE, DbObjType.FTS_DICTIONARY, DbObjType.FTS_CONFIGURATION);
 
     private final String dirPath;
     protected final PgDiffArguments arguments;
@@ -147,8 +149,8 @@ public class ProjectLoader extends DatabaseLoader {
                 if (Files.isDirectory(schemaDir) &&
                         checkIgnoreSchemaList(schemaDir.getFileName().toString())) {
                     loadSubdir(schemasCommonDir, schemaDir.getFileName().toString(), db);
-                    for (String dirSub : DIR_LOAD_ORDER) {
-                        loadSubdir(schemaDir, dirSub, db);
+                    for (DbObjType dirSub : DIR_LOAD_ORDER) {
+                        loadSubdir(schemaDir, dirSub.name(), db);
                     }
                 }
             }

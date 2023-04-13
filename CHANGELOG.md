@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed a bug due to which the COLLATION directory was ignored.
+
 ## [7.5.0] - 2023-04-11
 
 ### Added
