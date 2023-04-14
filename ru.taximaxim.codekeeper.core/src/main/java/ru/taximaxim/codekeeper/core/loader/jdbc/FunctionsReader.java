@@ -315,7 +315,7 @@ public class FunctionsReader extends JdbcReader {
         // since 9.6 PostgreSQL
         // parallel mode: s - safe, r - restricted, u - unsafe
         if (SupportedVersion.VERSION_9_6.isLE(loader.version) || loader.isGreenPlum) {
-            if (SupportedVersion.VERSION_9_6.isLE(loader.version)) {
+            if (!loader.isGreenPlum) {
                 String parMode = res.getString("proparallel");
                 switch (parMode) {
                 case "s":
