@@ -138,6 +138,11 @@ public final class JdbcQueries {
                 }
             }
         }
+
+        String gpQuery = readResource(f.getName() + "_GP");
+        if (gpQuery != null) {
+            query.setGpQuery(gpQuery);
+        }
     }
 
     private static String readResource(String name) throws IOException {

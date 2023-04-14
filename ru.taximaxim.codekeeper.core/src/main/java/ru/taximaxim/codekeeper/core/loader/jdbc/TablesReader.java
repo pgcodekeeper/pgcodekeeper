@@ -54,7 +54,7 @@ public class TablesReader extends JdbcReader {
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, DbObjType.TABLE));
         String partitionBound = null;
 
-        if (SupportedVersion.VERSION_10.isLE(loader.version) &&
+        if ((SupportedVersion.VERSION_10.isLE(loader.version) || loader.isGreenPlum) &&
                 res.getBoolean("relispartition")) {
             partitionBound = res.getString("partition_bound");
             checkObjectValidity(partitionBound, DbObjType.TABLE, tableName);
