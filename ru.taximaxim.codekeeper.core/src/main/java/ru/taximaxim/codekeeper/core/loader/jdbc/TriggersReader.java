@@ -139,29 +139,27 @@ public class TriggersReader extends JdbcReader {
         if (res.getLong("tgconstraint") != 0) {
             t.setConstraint(true);
 
-            if (!loader.isGreenPlum) {
-                String refRelName = res.getString("refrelname");
-                if (refRelName != null) {
-                    String refSchemaName = res.getString("refnspname");
-                    StringBuilder sb = new StringBuilder();
-                    sb.append(PgDiffUtils.getQuotedName(refSchemaName)).append('.');
-                    sb.append(PgDiffUtils.getQuotedName(refRelName));
+            String refRelName = res.getString("refrelname");
+            if (refRelName != null) {
+                String refSchemaName = res.getString("refnspname");
+                StringBuilder sb = new StringBuilder();
+                sb.append(PgDiffUtils.getQuotedName(refSchemaName)).append('.');
+                sb.append(PgDiffUtils.getQuotedName(refRelName));
 
-                    t.setRefTableName(sb.toString());
-                    t.addDep(new GenericColumn(refSchemaName, refRelName, DbObjType.TABLE));
-                }
-
-                // before PostgreSQL 9.5
-                if (res.getBoolean("tgdeferrable")) {
-                    t.setImmediate(!res.getBoolean("tginitdeferred"));
-                }
+                t.setRefTableName(sb.toString());
+                t.addDep(new GenericColumn(refSchemaName, refRelName, DbObjType.TABLE));
             }
 
-            //after Postgresql 10
-            if (SupportedVersion.VERSION_10.isLE(loader.version)) {
-                t.setOldTable(res.getString("tgoldtable"));
-                t.setNewTable(res.getString("tgnewtable"));
+            // before PostgreSQL 9.5
+            if (res.getBoolean("tgdeferrable")) {
+                t.setImmediate(!res.getBoolean("tginitdeferred"));
             }
+        }
+
+        //after Postgresql 10
+        if (SupportedVersion.VERSION_10.isLE(loader.version)) {
+            t.setOldTable(res.getString("tgoldtable"));
+            t.setNewTable(res.getString("tgnewtable"));
         }
 
         String[] arrCols = getColArray(res, "cols");

@@ -314,19 +314,17 @@ public class FunctionsReader extends JdbcReader {
 
         // since 9.6 PostgreSQL
         // parallel mode: s - safe, r - restricted, u - unsafe
-        if (SupportedVersion.VERSION_9_6.isLE(loader.version) || loader.isGreenPlum) {
-            if (!loader.isGreenPlum) {
-                String parMode = res.getString("proparallel");
-                switch (parMode) {
-                case "s":
-                    aggregate.setParallel("SAFE");
-                    break;
-                case "r":
-                    aggregate.setParallel("RESTRICTED");
-                    break;
-                default :
-                    break;
-                }
+        if (SupportedVersion.VERSION_9_6.isLE(loader.version)) {
+            String parMode = res.getString("proparallel");
+            switch (parMode) {
+            case "s":
+                aggregate.setParallel("SAFE");
+                break;
+            case "r":
+                aggregate.setParallel("RESTRICTED");
+                break;
+            default :
+                break;
             }
 
             aggregate.setCombineFunc(getProcessedName(aggregate, res.getString("combinefunc_nsp"),
