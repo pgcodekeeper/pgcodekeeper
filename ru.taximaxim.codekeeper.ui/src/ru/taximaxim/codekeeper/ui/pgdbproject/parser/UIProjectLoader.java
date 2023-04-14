@@ -136,8 +136,8 @@ public class UIProjectLoader extends ProjectLoader {
                     IFolder schemaDir = (IFolder) sub;
                     if (checkIgnoreSchemaList(schemaDir.getName())) {
                         loadSubdir(schemaDir, db);
-                        for (String dirSub : DIR_LOAD_ORDER) {
-                            loadSubdir(schemaDir.getFolder(dirSub), db);
+                        for (DbObjType dirSub : DIR_LOAD_ORDER) {
+                            loadSubdir(schemaDir.getFolder(dirSub.name()), db);
                         }
                     }
                 }
