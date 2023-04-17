@@ -20,7 +20,6 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
-import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
 import ru.taximaxim.codekeeper.core.utils.Pair;
@@ -84,9 +83,9 @@ public class JdbcQuery {
         .forEach(e -> appendQuery(sb, e.getValue(),
                 e.getKey().getFirst().getVersion() + "_" + e.getKey().getSecond().getVersion()));
 
-        if (loader.isGreenPlum()) {
+        /*if (loader.isGreenPlum()) {
             appendQuery(sb, gpQuery, Consts.GREENPLUM);
-        }
+        }*/
 
         String extensionSchema = loader.getExtensionSchema();
         if (extensionSchema != null) {
