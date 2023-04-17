@@ -453,9 +453,9 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
         setCurrentOperation("version checking query");
         try (ResultSet res = runner.runScript(statement, JdbcQueries.QUERY_CHECK_VERSION)) {
             version = res.next() ? res.getInt(1) : SupportedVersion.VERSION_9_4.getVersion();
-
-            isGreenPlum = res.getStatement().getConnection().getMetaData()
-                    .getDatabaseProductVersion().contains("Greenplum");
+        }
+        if (SupportedVersion.VERSION_9_4.isLE(version)) {
+            queryCheckGreenPlum();
         }
     }
 
@@ -531,6 +531,15 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
             setCurrentObject(object);
             finalizer.accept(t);
         });
+    }
+
+    private void queryCheckGreenPlum() throws SQLException, InterruptedException {
+        setCurrentOperation("greenplum checking query");
+        try (ResultSet res = runner.runScript(statement, JdbcQueries.QUERY_CHECK_GREENPLUM)) {
+            if (res.next()) {
+                isGreenPlum = res.getString(1).contains(Consts.GREENPLUM);
+            }
+        }
     }
 
     @Override
