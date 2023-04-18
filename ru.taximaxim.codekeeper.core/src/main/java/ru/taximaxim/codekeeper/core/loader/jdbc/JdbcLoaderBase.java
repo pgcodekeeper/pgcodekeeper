@@ -454,9 +454,6 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
         try (ResultSet res = runner.runScript(statement, JdbcQueries.QUERY_CHECK_VERSION)) {
             version = res.next() ? res.getInt(1) : SupportedVersion.VERSION_9_4.getVersion();
         }
-        if (SupportedVersion.VERSION_9_4.isLE(version)) {
-            queryCheckGreenplumDb();
-        }
     }
 
     protected void queryCheckLastSysOid() throws SQLException, InterruptedException {
@@ -533,7 +530,7 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
         });
     }
 
-    private void queryCheckGreenplumDb() throws SQLException, InterruptedException {
+    protected void queryCheckGreenplumDb() throws SQLException, InterruptedException {
         setCurrentOperation("greenplum checking query");
         try (ResultSet res = runner.runScript(statement, JdbcQueries.QUERY_CHECK_GREENPLUM)) {
             if (res.next()) {
