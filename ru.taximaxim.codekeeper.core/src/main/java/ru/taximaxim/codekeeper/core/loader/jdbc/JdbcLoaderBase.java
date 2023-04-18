@@ -90,6 +90,7 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
     protected long lastSysOid;
     protected JdbcRunner runner;
     private String extensionSchema;
+    protected boolean isGreenplumDb;
 
     protected JdbcLoaderBase(JdbcConnector connector, SubMonitor monitor, PgDiffArguments args,
             IgnoreSchemaList ignoreListSchema) {
@@ -136,6 +137,10 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
             sb.append('/').append(currentObject.column);
         }
         return sb.toString();
+    }
+
+    public boolean isGreenplumDb() {
+        return isGreenplumDb;
     }
 
     protected void queryRoles() throws SQLException, InterruptedException {
@@ -523,6 +528,15 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
             setCurrentObject(object);
             finalizer.accept(t);
         });
+    }
+
+    protected void queryCheckGreenplumDb() throws SQLException, InterruptedException {
+        setCurrentOperation("greenplum checking query");
+        try (ResultSet res = runner.runScript(statement, JdbcQueries.QUERY_CHECK_GREENPLUM)) {
+            if (res.next()) {
+                isGreenplumDb = res.getString(1).contains(Consts.GREENPLUM);
+            }
+        }
     }
 
     @Override

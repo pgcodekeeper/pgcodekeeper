@@ -11,9 +11,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Greenplum support
+
 ### Changed
 
 ### Fixed
+
+- Fixed a bug due to which the COLLATION directory was ignored.
 
 ## [7.5.0] - 2023-04-11
 
