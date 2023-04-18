@@ -83,9 +83,10 @@ public class JdbcQuery {
         .forEach(e -> appendQuery(sb, e.getValue(),
                 e.getKey().getFirst().getVersion() + "_" + e.getKey().getSecond().getVersion()));
 
-        /*if (loader.isGreenPlum()) {
-            appendQuery(sb, gpQuery, Consts.GREENPLUM);
-        }*/
+        if (loader.isGreenplumDb()) {
+            // There need add gp queries
+            //appendQuery(sb, gpQuery, Consts.GREENPLUM);
+        }
 
         String extensionSchema = loader.getExtensionSchema();
         if (extensionSchema != null) {
