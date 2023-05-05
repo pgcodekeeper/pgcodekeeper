@@ -2,3 +2,6 @@ Reference: Object = myserver (SERVER), action = CREATE, offset = 14, line number
 Reference: Object = postgres_fdw (FOREIGN_DATA_WRAPPER), action = null, offset = 44, line number = 1, charPositionInLine = 44
 Reference: Object = myserver (SERVER), action = ALTER, offset = 122, line number = 3, charPositionInLine = 13
 Reference: Object = myserver (SERVER), action = DROP, offset = 167, line number = 5, charPositionInLine = 12
+Reference: Object = foreign_server (SERVER), action = CREATE, offset = 215, line number = 9, charPositionInLine = 14
+Reference: Object = postgres_fdw (FOREIGN_DATA_WRAPPER), action = null, offset = 251, line number = 9, charPositionInLine = 50
+Reference: Object = foreign_server (SERVER), action = ALTER, offset = 390, line number = 16, charPositionInLine = 13
