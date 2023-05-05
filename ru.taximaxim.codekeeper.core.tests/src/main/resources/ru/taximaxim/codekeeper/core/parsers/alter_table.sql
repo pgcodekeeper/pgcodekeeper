@@ -2617,3 +2617,7 @@ ALTER TABLE ONLY public.measurement_ym_y2016m12 SET ACCESS METHOD heap;
 --ALTER TABLE ADD FK CONSTRAINT
 ALTER TABLE public.t8 ADD CONSTRAINT fk FOREIGN KEY (quantity, kolvo) REFERENCES public.testtable(value3, value1) ON DELETE SET NULL(quantity);
 ALTER TABLE public.t8 ADD CONSTRAINT fk FOREIGN KEY (quantity) REFERENCES public.testtable(value3) ON DELETE SET DEFAULT(quantity);
+
+-- for Greenplum
+
+ALTER FOREIGN TABLE public.films OPTIONS (ADD mpp_execute 'all segments');

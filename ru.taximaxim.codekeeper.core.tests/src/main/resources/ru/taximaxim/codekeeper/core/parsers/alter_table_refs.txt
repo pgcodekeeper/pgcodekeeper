@@ -1640,3 +1640,5 @@ Reference: Object = public.t8 (TABLE), action = ALTER, offset = 99017, line numb
 Reference: Object = public.t8.fk (CONSTRAINT), action = CREATE, offset = 99035, line number = 2619, charPositionInLine = 37
 Reference: Object = public (SCHEMA), action = null, offset = 99072, line number = 2619, charPositionInLine = 74
 Reference: Object = public.testtable (TABLE), action = null, offset = 99079, line number = 2619, charPositionInLine = 81
+Reference: Object = public (SCHEMA), action = null, offset = 99169, line number = 2623, charPositionInLine = 20
+Reference: Object = public.films (TABLE), action = ALTER, offset = 99176, line number = 2623, charPositionInLine = 27

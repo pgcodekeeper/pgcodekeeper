@@ -913,3 +913,18 @@ CREATE TABLE cmdata(f1 text COMPRESSION pglz);
 CREATE TABLE cmpart2(f1 text COMPRESSION lz4);
 CREATE TABLE cmdata3 (f1 TEXT COMPRESSION pglz, f2 TEXT COMPRESSION lz4);
 CREATE TABLE cmdata4 (f1 TEXT COMPRESSION DEFAULT);
+
+-- for Greenplum
+
+CREATE FOREIGN TABLE public.films (
+    code character(5) NOT NULL,
+    title character varying(40) NOT NULL,
+    did integer NOT NULL,
+    date_prod date,
+    kind character varying(10),
+    len interval hour to minute
+)
+SERVER foreign_server
+OPTIONS (
+    mpp_execute 'all segments'
+);
