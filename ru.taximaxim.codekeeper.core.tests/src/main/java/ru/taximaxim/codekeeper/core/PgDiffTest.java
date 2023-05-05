@@ -105,6 +105,10 @@ class PgDiffTest {
             "modify_column_generated",
             // Tests scenario where new FOREIGN TABLE is added.
             "add_foreign_table",
+            // Test scenario for greenplum where new FOREIGN TABLE is added.
+            "add_greenplum_foreign_table",
+            // Test scenario for greenplum where altered FOREIGN TABLE.
+            "alter_greenplum_foreign_table",
             // Tests scenario where new TABLE with new SEQUENCE is added.
             "add_table_with_new_sequence",
             // Tests scenario where new TABLE with exist SEQUENCE is added.

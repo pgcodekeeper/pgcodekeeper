@@ -396,3 +396,6 @@ Reference: Object = cmdata (TABLE), action = CREATE, offset = 34747, line number
 Reference: Object = cmpart2 (TABLE), action = CREATE, offset = 34794, line number = 913, charPositionInLine = 13
 Reference: Object = cmdata3 (TABLE), action = CREATE, offset = 34841, line number = 914, charPositionInLine = 13
 Reference: Object = cmdata4 (TABLE), action = CREATE, offset = 34915, line number = 915, charPositionInLine = 13
+Reference: Object = public (SCHEMA), action = null, offset = 34994, line number = 919, charPositionInLine = 21
+Reference: Object = public.films (TABLE), action = CREATE, offset = 35001, line number = 919, charPositionInLine = 28
+Reference: Object = foreign_server (SERVER), action = null, offset = 35202, line number = 927, charPositionInLine = 7
