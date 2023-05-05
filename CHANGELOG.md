@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Removed Diff Wizard dialog modality.
+
 ### Fixed
 
 - Fixed a bug due to which the COLLATION directory was ignored.

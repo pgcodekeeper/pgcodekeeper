@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
- 
+
 package ru.taximaxim.codekeeper.ui.handlers;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 
@@ -36,9 +37,10 @@ public class Diff extends AbstractHandler {
         Shell shell = HandlerUtil.getActiveShell(event);
         IPreferenceStore prefStore = Activator.getDefault().getPreferenceStore();
         Log.log(Log.LOG_DEBUG, "Diff wizard about to show"); //$NON-NLS-1$
-            
+
         WizardDialog dialog = new WizardDialog(
                 shell, new DiffWizard(proj, prefStore));
+        dialog.setShellStyle(dialog.getShellStyle() & ~SWT.APPLICATION_MODAL);
         dialog.open();
         return null;
     }
