@@ -326,7 +326,10 @@ public class FunctionsReader extends JdbcReader {
             default :
                 break;
             }
+        }
 
+        // since 9.6 PostgreSQL and default for greenplum
+        if (SupportedVersion.VERSION_9_6.isLE(loader.version) || loader.isGreenplumDb) {
             aggregate.setCombineFunc(getProcessedName(aggregate, res.getString("combinefunc_nsp"),
                     res.getString("combinefunc"), AggFuncs.COMBINEFUNC));
             aggregate.setSerialFunc(getProcessedName(aggregate, res.getString("serialfunc_nsp"),
