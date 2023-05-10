@@ -621,7 +621,9 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     CONNECT: [cC] [oO] [nN] [nN] [eE] [cC] [tT];
     COSTS: [cC] [oO] [sS] [tT] [sS]; 
     CREATEDB: [cC] [rR] [eE] [aA] [tT] [eE] [dD] [bB];
+    CREATEEXTTABLE: [cC] [rR] [eE] [aA] [tT] [eE] [eE] [xX] [tT] [tT] [aA] [bB] [lL] [eE];
     CREATEROLE: [cC] [rR] [eE] [aA] [tT] [eE] [rR] [oO] [lL] [eE];
+    CREATEUSER: [cC] [rR] [eE] [aA] [tT] [eE] [uU] [sS] [eE] [rR];
 
     DESERIALFUNC: [dD] [eE] [sS] [eE] [rR] [iI] [aA] [lL] [fF] [uU] [nN] [cC];
     DETERMINISTIC: [dD] [eE] [tT] [eE] [rR] [mM] [iI] [nN] [iI] [sS] [tT] [iI] [cC];
@@ -680,7 +682,9 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     NEGATOR: [nN] [eE] [gG] [aA] [tT] [oO] [rR];
     NOBYPASSRLS: [nN] [oO] [bB] [yY] [pP] [aA] [sS] [sS] [rR] [lL] [sS];
     NOCREATEDB: [nN] [oO] [cC] [rR] [eE] [aA] [tT] [eE] [dD] [bB];
+    NOCREATEEXTTABLE: [nN] [oO] [cC] [rR] [eE] [aA] [tT] [eE] [eE] [xX] [tT] [tT] [aA] [bB] [lL] [eE];
     NOCREATEROLE: [nN] [oO] [cC] [rR] [eE] [aA] [tT] [eE] [rR] [oO] [lL] [eE];
+    NOCREATEUSER: [nN] [oO] [cC] [rR] [eE] [aA] [tT] [eE] [uU] [sS] [eE] [rR];
     NOINHERIT: [nN] [oO] [iI] [nN] [hH] [eE] [rR] [iI] [tT];
     NOLOGIN: [nN] [oO] [lL] [oO] [gG] [iI] [nN];
     NOREPLICATION: [nN] [oO] [rR] [eE] [pP] [lL] [iI] [cC] [aA] [tT] [iI] [oO] [nN];
@@ -694,6 +698,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     PERMISSIVE: [pP] [eE] [rR] [mM] [iI] [sS] [sS] [iI] [vV] [eE];
     PLAIN: [pP] [lL] [aA] [iI]  [nN];
     PREFERRED: [pP] [rR] [eE] [fF] [eE] [rR] [rR] [eE] [dD];
+    PROTOCOL: [pP] [rR] [oO] [tT] [oO] [cC] [oO] [lL];
     PROVIDER: [pP] [rR] [oO] [vV] [iI] [dD] [eE] [rR];
 
     READ_ONLY: READ UNDERLINE ONLY;
