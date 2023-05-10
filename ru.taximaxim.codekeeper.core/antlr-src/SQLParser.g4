@@ -912,7 +912,7 @@ create_access_method_statement
     ;
 
 create_user_or_role_statement
-    : (USER | ROLE) name=identifier (WITH? user_or_role_option user_or_role_option*)?
+    : (USER | ROLE) name=identifier (WITH? user_or_role_option+)?
     ;
 
 user_or_role_option
@@ -930,10 +930,16 @@ user_or_role_or_group_common_option
     : SUPERUSER | NOSUPERUSER
     | CREATEDB | NOCREATEDB
     | CREATEROLE | NOCREATEROLE
+    | CREATEUSER | NOCREATEUSER
+    | (CREATEEXTTABLE | NOCREATEEXTTABLE) LEFT_PAREN attribute (COMMA attribute)* RIGHT_PAREN
     | INHERIT | NOINHERIT
     | LOGIN | NOLOGIN
     | ENCRYPTED? PASSWORD (password=Character_String_Literal | NULL)
     | VALID UNTIL date_time=Character_String_Literal
+    ;
+
+attribute
+    : (TYPE | PROTOCOL) EQUAL Character_String_Literal
     ;
 
 user_or_role_common_option
@@ -2403,6 +2409,8 @@ tokens_nonreserved
     | CONVERSION
     | COPY
     | COST
+    | CREATEEXTTABLE
+    | CREATEUSER
     | CSV
     | CUBE
     | CURRENT
@@ -2516,6 +2524,8 @@ tokens_nonreserved
     | NFKC
     | NFKD
     | NO
+    | NOCREATEEXTTABLE
+    | NOCREATEUSER
     | NORMALIZED
     | NOTHING
     | NOTIFY
@@ -2554,6 +2564,7 @@ tokens_nonreserved
     | PROCEDURE
     | PROCEDURES
     | PROGRAM
+    | PROTOCOL
     | PUBLICATION
     | QUOTE
     | RANGE
@@ -2888,6 +2899,7 @@ tokens_nonkeyword
     | NOBYPASSRLS
     | NOCREATEDB
     | NOCREATEROLE
+    | NOCREATEUSER
     | NOINHERIT
     | NOLOGIN
     | NOREPLICATION
