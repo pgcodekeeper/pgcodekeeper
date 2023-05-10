@@ -518,6 +518,8 @@ class PgDiffTest {
             "compare_definitions",
             // Tests scenario where TABLE is compared.
             "compare_tables",
+            // Test scenario where in composit type changed position columns
+            "compare_type_composite",
             // Tests scenario where INDEX is compared.
             "compare_indices",
             // Tests scenario where FUNCTION is compared.

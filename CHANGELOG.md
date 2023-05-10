@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added type column order check in PostgreSQL
+
 ### Changed
 
 - Removed Diff Wizard dialog modality.
