@@ -7,13 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
  
 ## [Unreleased]
 
-- Greenplum support
-
 ### Added
 
-- Greenplum support
+- Added greenplum support (beta-version).
+- Added type column order check in PostgreSQL.
 
 ### Changed
+
+- Removed Diff Wizard dialog modality.
 
 ### Fixed
 

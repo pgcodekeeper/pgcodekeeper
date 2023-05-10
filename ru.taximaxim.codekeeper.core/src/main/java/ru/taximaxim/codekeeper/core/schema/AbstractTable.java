@@ -122,6 +122,15 @@ public abstract class AbstractTable extends PgStatementContainer implements PgOp
         return Collections.unmodifiableCollection(constraints.values());
     }
 
+    protected boolean isColumnsOrderChanged(AbstractTable newTable) {
+        PgDiffArguments args = getDatabase().getArguments();
+        if (args != null && args.isIgnoreColumnOrder()) {
+            return false;
+        }
+
+        return isColumnsOrderChanged(newTable.getColumns(), columns);
+    }
+
     /** Checks if the order of the table columns has changed.<br><br>
      *
      * <b>Example:</b><br><br>
@@ -157,25 +166,20 @@ public abstract class AbstractTable extends PgStatementContainer implements PgOp
      * @return true if order was changed or order is ignored
      * @since 5.1.7
      */
-    protected boolean isColumnsOrderChanged(AbstractTable newTable) {
-        PgDiffArguments args = getDatabase().getArguments();
-        if (args != null && args.isIgnoreColumnOrder()) {
-            return false;
-        }
-
+    protected static boolean isColumnsOrderChanged(List<AbstractColumn> newColumns, List<AbstractColumn> oldColumns) {
         // last founded column
         int i = -1;
-        for (AbstractColumn col : newTable.getColumns()) {
+        for (AbstractColumn col : newColumns) {
             // old column index
             int index = 0;
             // search old column index by new column name
-            for ( ; index < columns.size(); index++) {
-                if (col.getName().equals(columns.get(index).getName())) {
+            for ( ; index < oldColumns.size(); index++) {
+                if (col.getName().equals(oldColumns.get(index).getName())) {
                     break;
                 }
             }
 
-            if (index == columns.size()) {
+            if (index == oldColumns.size()) {
                 // New column was not found in original table.
                 // After this column can be only new columns.
                 i = Integer.MAX_VALUE;

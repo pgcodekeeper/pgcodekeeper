@@ -31,6 +31,8 @@ public class PgType extends AbstractType {
         COMPOSITE, ENUM, RANGE, BASE, SHELL
     }
 
+    private static final String COLLATE = " COLLATE ";
+
     private final PgTypeForm form;
 
     // attributes (fields) for composite type
@@ -394,7 +396,7 @@ public class PgType extends AbstractType {
             sb.append("\n\t").append(PgDiffUtils.getQuotedName(attr.getName())).append(' ').append(attr.getType());
 
             if (attr.getCollation() != null) {
-                sb.append(" COLLATE ").append(attr.getCollation());
+                sb.append(COLLATE).append(attr.getCollation());
             }
 
         }
@@ -494,7 +496,8 @@ public class PgType extends AbstractType {
         final int startLength = sb.length();
         PgType newType = (PgType) newCondition;
 
-        if (!equals(newType) && !canAlter(newType)) {
+        if ((!equals(newType) && !canAlter(newType))
+                || AbstractTable.isColumnsOrderChanged(newType.getAttrs(), attrs)) {
             isNeedDepcies.set(true);
             return true;
         }
@@ -525,7 +528,7 @@ public class PgType extends AbstractType {
                 .append(PgDiffUtils.getQuotedName(attr.getName())).append(' ').append(attr.getType());
 
                 if (attr.getCollation() != null) {
-                    attrSb.append(" COLLATE ").append(attr.getCollation());
+                    attrSb.append(COLLATE).append(attr.getCollation());
                 }
 
                 attrSb.append(",");
@@ -537,7 +540,7 @@ public class PgType extends AbstractType {
                 .append(" TYPE ")
                 .append(attr.getType());
                 if (attr.getCollation() != null) {
-                    attrSb.append(" COLLATE ")
+                    attrSb.append(COLLATE)
                     .append(attr.getCollation());
                 }
                 attrSb.append(",");
