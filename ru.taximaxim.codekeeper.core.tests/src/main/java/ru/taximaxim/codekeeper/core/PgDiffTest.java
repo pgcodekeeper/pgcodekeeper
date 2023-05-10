@@ -530,6 +530,8 @@ class PgDiffTest {
             "compare_casts",
             // Tests scenario where FOREIGN DATA WRAPPER is compared.
             "compare_fdw",
+            // Tests scenario where GP FOREIGN DATA WRAPPER is compared.
+            "compare_greenplum_fdw",
             // Tests scenario where SERVER is compared.
             "compare_servers",
             // Tests scenario where USER MAPPING is compared.
