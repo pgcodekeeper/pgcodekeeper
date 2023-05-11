@@ -374,6 +374,7 @@ alter_table_statement
         | set_schema
         | rename_to
         | RENAME CONSTRAINT identifier TO identifier
+        | SET (WITH LEFT_PAREN REORGANIZE EQUAL (TRUE | FALSE) RIGHT_PAREN)? distributed_clause
         | ATTACH PARTITION child=schema_qualified_name for_values_bound
         | DETACH PARTITION child=schema_qualified_name (CONCURRENTLY | FINALIZE)?)
     ;
@@ -1580,6 +1581,15 @@ create_table_statement
     storage_parameter_oid?
     on_commit?
     table_space?
+    distributed_clause?
+    ;
+
+distributed_clause
+    : DISTRIBUTED (BY LEFT_PAREN column_operator_class (COMMA column_operator_class)* RIGHT_PAREN | RANDOMLY | REPLICATED)
+    ;
+
+column_operator_class
+    : identifier schema_qualified_name?
     ;
 
 create_table_as_statement
@@ -2853,6 +2863,7 @@ tokens_nonkeyword
     | DESERIALFUNC
     | DETERMINISTIC
     | DISABLE_PAGE_SKIPPING
+    | DISTRIBUTED
     | ELEMENT
     | EXTENDED
     | FINALFUNC
@@ -2912,10 +2923,13 @@ tokens_nonkeyword
     | PLAIN
     | PREFERRED
     | PROVIDER
+    | RANDOMLY
     | READ_ONLY
     | READ_WRITE
     | RECEIVE
     | REMAINDER
+    | REORGANIZE
+    | REPLICATED
     | REPLICATION
     | RESTRICTED
     | RESTRICTIVE

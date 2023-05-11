@@ -627,7 +627,8 @@ private final Deque<String> _tags = new ArrayDeque<String>();
 
     DESERIALFUNC: [dD] [eE] [sS] [eE] [rR] [iI] [aA] [lL] [fF] [uU] [nN] [cC];
     DETERMINISTIC: [dD] [eE] [tT] [eE] [rR] [mM] [iI] [nN] [iI] [sS] [tT] [iI] [cC];
-    DISABLE_PAGE_SKIPPING: DISABLE UNDERLINE [pP] [aA] [gG] [eE] UNDERLINE [sS] [kK] [iI] [pP] [pP] [iI] [nN] [gG]; 
+    DISABLE_PAGE_SKIPPING: DISABLE UNDERLINE [pP] [aA] [gG] [eE] UNDERLINE [sS] [kK] [iI] [pP] [pP] [iI] [nN] [gG];
+    DISTRIBUTED: [dD] [iI] [sS] [tT] [rR] [iI] [bB] [uU] [tT] [eE] [dD];
 
     ELEMENT: [eE] [lL] [eE] [mM] [eE] [nN] [tT];
     EXTENDED: [eE] [xX] [tT] [eE] [nN] [dD] [eE] [dD];
@@ -701,10 +702,13 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     PROTOCOL: [pP] [rR] [oO] [tT] [oO] [cC] [oO] [lL];
     PROVIDER: [pP] [rR] [oO] [vV] [iI] [dD] [eE] [rR];
 
+    RANDOMLY: [rR] [aA] [nN] [dD] [oO] [mM] [lL] [yY];
     READ_ONLY: READ UNDERLINE ONLY;
     READ_WRITE: READ UNDERLINE WRITE;
     RECEIVE: [rR] [eE] [cC] [eE] [iI] [vV] [eE];
     REMAINDER: [rR] [eE] [mM] [aA] [iI] [nN] [dD] [eE] [rR];
+    REORGANIZE: [rR] [eE] [oO] [rR] [gG] [aA] [nN] [iI] [zZ] [eE];
+    REPLICATED: [rR] [eE] [pP] [lL] [iI] [cC] [aA] [tT] [eE] [dD];
     REPLICATION: [rR] [eE] [pP] [lL] [iI] [cC] [aA] [tT] [iI] [oO] [nN];
     RESTRICTED: [rR] [eE] [sS] [tT] [rR] [iI] [cC] [tT] [eE] [dD];
     RESTRICTIVE: [rR] [eE] [sS] [tT] [rR] [iI] [cC] [tT] [iI] [vV] [eE];

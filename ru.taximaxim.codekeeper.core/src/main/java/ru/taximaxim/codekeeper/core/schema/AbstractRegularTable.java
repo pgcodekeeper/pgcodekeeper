@@ -35,6 +35,7 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements Pg
     protected boolean isRowSecurity;
     protected boolean isForceSecurity;
     protected String partitionBy;
+    protected String distClause;
 
     protected AbstractRegularTable(String name) {
         super(name);
@@ -98,6 +99,11 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements Pg
             sbSQL.append("\nTABLESPACE ");
             sbSQL.append(tablespace);
         }
+
+        if (distClause != null) {
+            sbSQL.append("\n" + distClause);
+        }
+
         sbSQL.append(';');
     }
 
@@ -149,6 +155,57 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements Pg
             sb.append(getAlterTable(true, true))
             .append(newRegTable.isForceSecurity ? "" : " NO")
             .append(" FORCE ROW LEVEL SECURITY;");
+        }
+
+        // greenplum
+        if (!Objects.equals(distClause, newRegTable.getDistClause())) {
+            sb.append(getAlterTable(true, false));
+            sb.append(" SET ");
+            String newDistClause = newRegTable.getDistClause();
+            if (distClause != null && distClause.startsWith("DISTRIBUTED BY")
+                    && (newDistClause == null || !newDistClause.startsWith("DISTRIBUTED REPLICATED"))) {
+                sb.append("WITH (REORGANIZE=true) ");
+            }
+
+            if (newDistClause != null) {
+                sb.append(newDistClause);
+            } else {
+                appendDefaultDistClause(newRegTable, sb);
+            }
+            sb.append(";");
+        }
+    }
+
+    /**
+     * append default value for greenplum db DISTRIBUTED clause
+     */
+    protected void appendDefaultDistClause(AbstractRegularTable newTable, StringBuilder sb) {
+        sb.append("DISTRIBUTED ");
+
+        String columnName = null;
+        // search DISTRIBUTED column(s)
+        // 1 step - search in primary key
+        for (AbstractConstraint constraint : newTable.getConstraints()) {
+            if (constraint.isPrimaryKey()) {
+                columnName = String.join(", ", constraint.getColumns());
+                break;
+            }
+        }
+
+        // 2 step - search in columns list
+        if (columnName == null) {
+            for (var column : newTable.getColumns()) {
+                if (!column.getType().contains(".")) {
+                    columnName = column.getName();
+                    break;
+                }
+            }
+        }
+
+        if (columnName != null) {
+            sb.append("BY (").append(columnName).append(")");
+        } else {
+            sb.append("RANDOMLY");
         }
     }
 
@@ -207,6 +264,15 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements Pg
         resetHash();
     }
 
+    public String getDistClause() {
+        return distClause;
+    }
+
+    public void setDistClause(String distClause) {
+        this.distClause = distClause;
+        resetHash();
+    }
+
     @Override
     public boolean compare(PgStatement obj) {
         if (obj instanceof AbstractRegularTable && super.compare(obj)) {
@@ -215,7 +281,8 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements Pg
                     && isLogged == table.isLogged()
                     && isRowSecurity == table.isRowSecurity()
                     && isForceSecurity == table.isForceSecurity()
-                    && Objects.equals(partitionBy, table.getPartitionBy());
+                    && Objects.equals(partitionBy, table.getPartitionBy())
+                    && Objects.equals(distClause, table.getDistClause());
         }
 
         return false;
@@ -229,6 +296,7 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements Pg
         copy.setRowSecurity(isRowSecurity());
         copy.setForceSecurity(isForceSecurity());
         copy.setPartitionBy(getPartitionBy());
+        copy.setDistClause(getDistClause());
         return copy;
     }
 
@@ -240,5 +308,6 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements Pg
         hasher.put(isRowSecurity);
         hasher.put(isForceSecurity);
         hasher.put(partitionBy);
+        hasher.put(distClause);
     }
 }

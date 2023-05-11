@@ -23,13 +23,16 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Col_labelContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Column_operator_classContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Create_table_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Data_typeContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Define_columnsContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Define_partitionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Define_tableContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Define_typeContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Distributed_clauseContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Partition_byContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Storage_parameter_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Storage_parameter_oidContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Storage_parameter_optionContext;
@@ -120,6 +123,8 @@ public class CreateTable extends TableAbstract {
             table.setTablespace(tablespace);
         }
 
+        table.setDistClause(getStrDistClause());
+
         boolean explicitOids = false;
         Storage_parameter_oidContext storage = ctx.storage_parameter_oid();
         if (storage != null) {
@@ -175,6 +180,34 @@ public class CreateTable extends TableAbstract {
                 fillOptionParams(value, optionText, false, table::addOption);
             }
         }
+    }
+
+    // for greenplum table
+    private String getStrDistClause() {
+        Distributed_clauseContext dist = ctx.distributed_clause();
+        if (dist != null) {
+            StringBuilder distClause = new StringBuilder();
+            distClause.append("DISTRIBUTED ");
+            if (dist.BY() != null) {
+                distClause.append("BY (");
+                for (Column_operator_classContext column_op_class : dist.column_operator_class()) {
+                    distClause.append(column_op_class.identifier().getText());
+                    Schema_qualified_nameContext opClassCtx = column_op_class.schema_qualified_name();
+                    if (opClassCtx != null) {
+                        distClause.append(" ").append(opClassCtx.getText());
+                    }
+                    distClause.append(", ");
+                }
+                distClause.setLength(distClause.length() - 2);
+                distClause.append(")");
+            } else if (dist.RANDOMLY() != null) {
+                distClause.append("RANDOMLY");
+            } else {
+                distClause.append("REPLICATED");
+            }
+            return distClause.toString();
+        }
+        return null;
     }
 
     @Override
