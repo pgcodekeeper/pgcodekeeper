@@ -2618,6 +2618,11 @@ ALTER TABLE ONLY public.measurement_ym_y2016m12 SET ACCESS METHOD heap;
 ALTER TABLE public.t8 ADD CONSTRAINT fk FOREIGN KEY (quantity, kolvo) REFERENCES public.testtable(value3, value1) ON DELETE SET NULL(quantity);
 ALTER TABLE public.t8 ADD CONSTRAINT fk FOREIGN KEY (quantity) REFERENCES public.testtable(value3) ON DELETE SET DEFAULT(quantity);
 
+--ALTER TABLE in greenplum db
+ALTER TABLE public.ao1 SET DISTRIBUTED REPLICATED;
+ALTER TABLE public.testbug_char5_exchange SET WITH (REORGANIZE=true) DISTRIBUTED BY (user_id public.op_class, timest);
+ALTER TABLE public.distpol_person SET WITH (REORGANIZE=true) DISTRIBUTED BY (name, age public.op_class, location public.op_class_2);
+ALTER TABLE public.t2 SET WITH (REORGANIZE=true) DISTRIBUTED RANDOMLY;
 -- for Greenplum
 
 ALTER FOREIGN TABLE public.films OPTIONS (ADD mpp_execute 'all segments');

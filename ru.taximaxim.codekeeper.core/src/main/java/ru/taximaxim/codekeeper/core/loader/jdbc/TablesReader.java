@@ -140,6 +140,13 @@ public class TablesReader extends JdbcReader {
                 regTable.setTablespace(tableSpace);
             }
 
+            if (loader.isGreenplumDb) {
+                String distribution = res.getString("distribution");
+                if (distribution != null && !distribution.isBlank()) {
+                    regTable.setDistClause(distribution);
+                }
+            }
+
             // since 9.5 PostgreSQL
             if (SupportedVersion.VERSION_9_5.isLE(loader.version)) {
                 regTable.setRowSecurity(res.getBoolean("row_security"));
