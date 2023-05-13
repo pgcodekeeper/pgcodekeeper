@@ -24,6 +24,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Character_stringContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Create_type_statementContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Storage_directiveContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Table_column_definitionContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
@@ -164,6 +165,17 @@ public class CreateType extends ParserAbstract {
         if (ctx.collatable != null) {
             type.setCollatable(getFullCtxText(ctx.collatable));
         }
+
+        for (Storage_directiveContext storDirCtx : ctx.storage_directive()) {
+            if (storDirCtx.compress_type != null) {
+                type.setCompressType(storDirCtx.compress_type.getText());
+            } else if (storDirCtx.compress_level != null) {
+                type.setCompressLevel(Integer.parseInt(storDirCtx.compress_level.getText()));
+            } else if (storDirCtx.block_size != null) {
+                type.setBlockSize(Integer.parseInt(storDirCtx.block_size.getText()));
+            }
+        }
+
         if (newType != null) {
             // add only newly created type, not a filled SHELL that was added before
             addSafe(schema, type, ids);

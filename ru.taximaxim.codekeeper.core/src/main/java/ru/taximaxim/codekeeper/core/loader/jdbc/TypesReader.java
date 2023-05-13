@@ -40,6 +40,10 @@ public class TypesReader extends JdbcReader {
 
     private static final String ADD_CONSTRAINT = "ALTER DOMAIN noname ADD CONSTRAINT noname ";
 
+    private static final String COMPRESSTYPE = "compresstype";
+    private static final String COMPRESSLEVEL = "compresslevel";
+    private static final String BLOCKSIZE = "blocksize";
+
     public TypesReader(JdbcLoaderBase loader) {
         super(JdbcQueries.QUERY_TYPES, loader);
     }
@@ -227,6 +231,30 @@ public class TypesReader extends JdbcReader {
 
         if (res.getLong("typcollation") != 0) {
             t.setCollatable("true");
+        }
+
+        if (loader.isGreenplumDb ) {
+            String encodingOpts = res.getString("typoptions");
+            for (String pair : encodingOpts.split(",")) {
+                int sep = pair.indexOf('=');
+                if (sep != -1) {
+                    String option = pair.substring(0, sep).trim();
+                    String value = pair.substring(sep + 1);
+                    switch (option) {
+                    case COMPRESSTYPE:
+                        t.setCompressType(value);
+                        break;
+                    case COMPRESSLEVEL:
+                        t.setCompressLevel(Integer.parseInt(value));
+                        break;
+                    case BLOCKSIZE:
+                        t.setBlockSize(Integer.parseInt(value));
+                        break;
+                    default:
+                        break;
+                    }
+                }
+            }
         }
 
         return t;

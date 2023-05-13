@@ -609,6 +609,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     ALLOW_CONNECTIONS: [aA] [lL] [lL] [oO] [wW] UNDERLINE [cC] [oO] [nN] [nN] [eE] [cC] [tT] [iI] [oO] [nN] [sS];
 
     BASETYPE: [bB] [aA] [sS] [eE] [tT] [yY] [pP] [eE];
+    BLOCKSIZE: [bB] [lL] [oO] [cC] [kK] [sS] [iI] [zZ] [eE];
     BUFFERS: [bB] [uU] [fF] [fF] [eE] [rR] [sS]; 
     BYPASSRLS: [bB] [yY] [pP] [aA] [sS] [sS] [rR] [lL] [sS];
 
@@ -618,6 +619,8 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     COLLATION_VERSION: COLLATION UNDERLINE VERSION;
     COMBINEFUNC: [cC] [oO] [mM] [bB] [iI] [nN] [eE] [fF] [uU] [nN] [cC];
     COMMUTATOR: [cC] [oO] [mM] [mM] [uU] [tT] [aA] [tT] [oO] [rR];
+    COMPRESSLEVEL: [cC] [oO] [mM] [pP] [rR] [eE] [sS] [sS] [lL] [eE] [vV] [eE] [lL];
+    COMPRESSTYPE: [cC] [oO] [mM] [pP] [rR] [eE] [sS] [sS] [tT] [yY] [pP] [eE];
     CONNECT: [cC] [oO] [nN] [nN] [eE] [cC] [tT];
     CONTAINS: [cC] [oO] [nN] [tT] [aA] [iI] [nN] [sS];
     COSTS: [cC] [oO] [sS] [tT] [sS]; 
