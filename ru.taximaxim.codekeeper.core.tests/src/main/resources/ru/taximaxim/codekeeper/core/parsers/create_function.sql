@@ -115,6 +115,15 @@ language plpgsql;
 ALTER FUNCTION public.namelen(person_type) DEPENDS ON EXTENSION ext;
 ALTER FUNCTION public.namelen(person_type) NO DEPENDS ON EXTENSION ext;
 
+--
+-- Greenplum
+--
+CREATE OR REPLACE FUNCTION public.test_func(integer, OUT f1 integer, OUT f2 text) RETURNS record
+    LANGUAGE sql EXECUTE ON ANY CONTAINS SQL
+    AS $$ SELECT $1, CAST($1 AS text) || ' is text' $$ WITH (DESCRIBE = describe_func);
+
+ALTER FUNCTION public.test_func(integer, OUT f1 integer, OUT f2 text)
+    EXECUTE ON MASTER;
 
 --
 -- SQL-standard body

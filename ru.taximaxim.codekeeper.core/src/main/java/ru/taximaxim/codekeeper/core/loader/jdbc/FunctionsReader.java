@@ -140,6 +140,23 @@ public class FunctionsReader extends JdbcReader {
             }
         }
 
+        if (loader.isGreenplumDb) {
+            switch (res.getString("executeOn")) {
+                case "m":
+                    function.setExecuteOn("MASTER");
+                    break;
+                case "a":
+                    function.setExecuteOn("ANY");
+                    break;
+                case "s":
+                    function.setExecuteOn("ALL SEGMENTS");
+                    break;
+                case "i":
+                    function.setExecuteOn("INITPLAN");
+                    break;
+            }
+        }
+
         function.setWindow(res.getBoolean("proiswindow"));
 
         // VOLATILE is default

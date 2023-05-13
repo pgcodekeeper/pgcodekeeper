@@ -46,6 +46,7 @@ public abstract class AbstractPgFunction extends AbstractFunction {
     private String volatileType;
     private String body;
     private String supportFunc;
+    private String executeOn;
 
     protected final List<String> transforms = new ArrayList<>();
     protected final Map<String, String> configurations = new LinkedHashMap<>();
@@ -97,6 +98,10 @@ public abstract class AbstractPgFunction extends AbstractFunction {
 
         if (isStrict()) {
             sbSQL.append(" STRICT");
+        }
+
+        if (getExecuteOn() != null) {
+            sbSQL.append(" EXECUTE ON ").append(getExecuteOn());
         }
 
         if (isSecurityDefiner()) {
@@ -342,6 +347,15 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         resetHash();
     }
 
+    public String getExecuteOn() {
+        return executeOn;
+    }
+
+    public void setExecuteOn(String executeOn) {
+        this.executeOn = executeOn;
+        resetHash();
+    }
+
     /**
      * @return unmodifiable RETURNS TABLE map
      */
@@ -390,8 +404,9 @@ public abstract class AbstractPgFunction extends AbstractFunction {
                     && isLeakproof == func.isLeakproof()
                     && rows == func.getRows()
                     && Objects.equals(cost, func.getCost())
-                    && transforms.equals(func.transforms)
-                    && configurations.equals(func.configurations)
+                    && Objects.equals(transforms, func.transforms)
+                    && Objects.equals(configurations, func.configurations)
+                    && Objects.equals(executeOn, func.getExecuteOn())
                     && Objects.equals(supportFunc, func.getSupportFunc());
         }
 
@@ -414,6 +429,7 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         hasher.put(rows);
         hasher.put(cost);
         hasher.put(parallel);
+        hasher.put(executeOn);
     }
 
     @Override
@@ -435,6 +451,7 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         functionDst.returnsColumns.putAll(returnsColumns);
         functionDst.configurations.putAll(configurations);
         functionDst.setInStatementBody(isInStatementBody());
+        functionDst.setExecuteOn(getExecuteOn());
 
         return functionDst;
     }

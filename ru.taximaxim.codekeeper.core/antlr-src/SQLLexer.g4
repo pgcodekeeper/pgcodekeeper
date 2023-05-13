@@ -619,6 +619,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     COMBINEFUNC: [cC] [oO] [mM] [bB] [iI] [nN] [eE] [fF] [uU] [nN] [cC];
     COMMUTATOR: [cC] [oO] [mM] [mM] [uU] [tT] [aA] [tT] [oO] [rR];
     CONNECT: [cC] [oO] [nN] [nN] [eE] [cC] [tT];
+    CONTAINS: [cC] [oO] [nN] [tT] [aA] [iI] [nN] [sS];
     COSTS: [cC] [oO] [sS] [tT] [sS]; 
     CREATEDB: [cC] [rR] [eE] [aA] [tT] [eE] [dD] [bB];
     CREATEEXTTABLE: [cC] [rR] [eE] [aA] [tT] [eE] [eE] [xX] [tT] [tT] [aA] [bB] [lL] [eE];
@@ -652,6 +653,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     INDEX_CLEANUP: [iI] [nN] [dD] [eE] [xX] UNDERLINE [cC] [lL] [eE] [aA] [nN] [uU] [pP];
     INIT: [iI] [nN] [iI] [tT];
     INITCOND: [iI] [nN] [iI] [tT] [cC] [oO] [nN] [dD];
+    INITPLAN: [iI] [nN] [iI] [tT] [pP] [lL] [aA] [nN];
     INTERNALLENGTH: [iI] [nN] [tT] [eE] [rR] [nN] [aA] [lL] [lL] [eE] [nN] [gG] [tT] [hH];
     IS_TEMPLATE: [iI] [sS] UNDERLINE [tT] [eE] [mM] [pP] [lL] [aA] [tT] [eE];
 
@@ -668,12 +670,14 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     LOGIN: [lL] [oO] [gG] [iI] [nN];
 
     MAIN: [mM] [aA] [iI]  [nN];
+    MASTER: [mM] [aA] [sS] [tT] [eE] [rR];
     MERGES: [mM] [eE] [rR] [gG] [eE] [sS];
     MFINALFUNC: [mM] [fF] [iI] [nN] [aA] [lL] [fF] [uU] [nN] [cC];
     MFINALFUNC_EXTRA: MFINALFUNC UNDERLINE [eE] [xX] [tT] [rR] [aA];
     MFINALFUNC_MODIFY: MFINALFUNC UNDERLINE [mM] [oO] [dD] [iI] [fF] [yY];
     MINITCOND: [mM] [iI] [nN] [iI] [tT] [cC] [oO] [nN] [dD];
     MINVFUNC: [mM] [iI] [nN] [vV] [fF] [uU] [nN] [cC];
+    MODIFIES: [mM] [oO] [dD] [iI] [fF] [iI] [eE] [sS];
     MODULUS: [mM] [oO] [dD] [uU] [lL] [uU] [sS];
     MSFUNC: [mM] [sS] [fF] [uU] [nN] [cC];
     MSSPACE: [mM] [sS] [sS] [pP] [aA] [cC] [eE];
@@ -715,6 +719,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     RIGHTARG: [rR] [iI] [gG] [hH] [tT] [aA] [rR] [gG];
 
     SAFE: [sS] [aA] [fF] [eE];
+    SEGMENTS: [sS] [eE] [gG] [mM] [eE] [nN] [tT] [sS];
     SEND: [sS] [eE] [nN] [dD];
     SERIALFUNC: [sS] [eE] [rR] [iI] [aA] [lL] [fF] [uU] [nN] [cC];
     SETTINGS: [sS] [eE] [tT] [tT] [iI] [nN] [gG] [sS];
@@ -785,6 +790,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     QUERY: [qQ] [uU] [eE] [rR] [yY];
 
     RAISE: [rR] [aA] [iI] [sS] [eE];
+    READS: [rR] [eE] [aA] [dD] [sS];
     RECORD: [rR] [eE] [cC] [oO] [rR] [dD];
     REVERSE: [rR] [eE] [vV] [eE] [rR] [sS] [eE];
     ROWTYPE: [rR] [oO] [wW] [tT] [yY] [pP] [eE];
