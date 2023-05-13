@@ -34,7 +34,10 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Alter_server_stateme
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Alter_type_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Alter_user_mapping_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Schema_alterContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Storage_directiveContext;
+import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.PgType;
 
 public class AlterOther extends ParserAbstract {
 
@@ -95,7 +98,22 @@ public class AlterOther extends ParserAbstract {
     }
 
     public void alterType(Alter_type_statementContext ctx) {
-        addObjReference(getIdentifiers(ctx.name), DbObjType.TYPE, ACTION_ALTER);
+        List<ParserRuleContext> ids = getIdentifiers(ctx.name);
+        addObjReference(ids, DbObjType.TYPE, ACTION_ALTER);
+
+        AbstractSchema schema = getSchemaSafe(ids);
+        ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
+
+        PgType type = (PgType) getSafe(AbstractSchema::getType, schema, nameCtx);
+        for (Storage_directiveContext storDirCtx : ctx.storage_directive()) {
+            if (storDirCtx.compress_type != null) {
+                doSafe(PgType::setCompressType, type, storDirCtx.compress_type.getText());
+            } else if (storDirCtx.compress_level != null) {
+                doSafe(PgType::setCompressLevel, type, Integer.parseInt(storDirCtx.compress_level.getText()));
+            } else if (storDirCtx.block_size != null) {
+                doSafe(PgType::setBlockSize, type, Integer.parseInt(storDirCtx.block_size.getText()));
+            }
+        }
     }
 
     private void alterOperator(Alter_operator_statementContext ctx) {

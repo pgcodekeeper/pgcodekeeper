@@ -588,7 +588,8 @@ alter_type_statement
       | RENAME ATTRIBUTE attribute_name=identifier TO new_attribute_name=identifier cascade_restrict?
       | RENAME VALUE existing_enum_name=character_string TO new_enum_name=character_string
       | type_action (COMMA type_action)*
-      | SET LEFT_PAREN type_property (COMMA type_property)* RIGHT_PAREN)
+      | SET LEFT_PAREN type_property (COMMA type_property)* RIGHT_PAREN
+      | SET DEFAULT ENCODING LEFT_PAREN storage_directive (COMMA storage_directive)* RIGHT_PAREN)
     ;
 
 alter_domain_statement
@@ -733,7 +734,8 @@ create_type_statement
             | DEFAULT EQUAL default_value=vex
             | ELEMENT EQUAL element=data_type
             | DELIMITER EQUAL delimiter=character_string
-            | COLLATABLE EQUAL collatable=truth_value))*
+            | COLLATABLE EQUAL collatable=truth_value
+            | storage_directive))*
         RIGHT_PAREN)?
     ;
 
@@ -1824,6 +1826,12 @@ collate_identifier
     : COLLATE collation=schema_qualified_name
     ;
 
+storage_directive
+    : COMPRESSTYPE EQUAL compress_type=identifier
+    | COMPRESSLEVEL EQUAL compress_level=NUMBER_LITERAL
+    | BLOCKSIZE EQUAL block_size=NUMBER_LITERAL
+    ;
+
 indirection_var
     : (identifier | dollar_number) indirection_list?
     ;
@@ -2857,6 +2865,7 @@ tokens_nonkeyword
     : ALIGNMENT
     | ALLOW_CONNECTIONS
     | BASETYPE
+    | BLOCKSIZE
     | BUFFERS
     | BYPASSRLS
     | CANONICAL
@@ -2865,6 +2874,8 @@ tokens_nonkeyword
     | COLLATION_VERSION
     | COMBINEFUNC
     | COMMUTATOR
+    | COMPRESSLEVEL
+    | COMPRESSTYPE
     | CONNECT
     | COSTS
     | CREATEDB
