@@ -462,6 +462,8 @@ table_initialy_immed
 
 function_actions_common
     : (CALLED | RETURNS NULL) ON NULL INPUT
+    | (NO | CONTAINS | MODIFIES) SQL
+    | READS SQL DATA
     | TRANSFORM transform_for_type (COMMA transform_for_type)*
     | STRICT
     | IMMUTABLE
@@ -469,6 +471,7 @@ function_actions_common
     | STABLE
     | NOT? LEAKPROOF
     | EXTERNAL? SECURITY (INVOKER | DEFINER)
+    | EXECUTE ON (ANY | MASTER | ALL SEGMENTS | INITPLAN)
     | PARALLEL (SAFE | UNSAFE | RESTRICTED)
     | COST execution_cost=unsigned_numeric_literal
     | ROWS result_rows=unsigned_numeric_literal
@@ -2414,6 +2417,7 @@ tokens_nonreserved
     | CONFLICT
     | CONNECTION
     | CONSTRAINTS
+    | CONTAINS
     | CONTENT
     | CONTINUE
     | CONVERSION
@@ -2490,6 +2494,7 @@ tokens_nonreserved
     | INCREMENT
     | INDEX
     | INDEXES
+    | INITPLAN
     | INHERIT
     | INHERITS
     | INLINE
@@ -2514,6 +2519,7 @@ tokens_nonreserved
     | LOCKED
     | LOGGED
     | MAPPING
+    | MASTER
     | MATCH
     | MATCHED
     | MATERIALIZED
@@ -2523,6 +2529,7 @@ tokens_nonreserved
     | MINUTE
     | MINVALUE
     | MODE
+    | MODIFIES
     | MONTH
     | MOVE
     | NAME
@@ -2579,6 +2586,7 @@ tokens_nonreserved
     | QUOTE
     | RANGE
     | READ
+    | READS
     | REASSIGN
     | RECHECK
     | RECURSIVE
@@ -2612,6 +2620,7 @@ tokens_nonreserved
     | SEARCH
     | SECOND
     | SECURITY
+    | SEGMENTS
     | SEQUENCE
     | SEQUENCES
     | SERIALIZABLE

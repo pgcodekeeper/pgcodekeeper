@@ -247,6 +247,8 @@ class PgDiffTest {
             "depcy_function_defin_from_tbl_col",
             // Tests scenario where FUNCTION with depended column is modified
             "modify_function_depcy_col",
+            // Test scenario where Greenplum FUNCTION is added
+            "add_greenplum_function",
             // Tests scenario where TRIGGER is added.
             "add_trigger",
             // Tests scenario where TRIGGER with referencing is added.

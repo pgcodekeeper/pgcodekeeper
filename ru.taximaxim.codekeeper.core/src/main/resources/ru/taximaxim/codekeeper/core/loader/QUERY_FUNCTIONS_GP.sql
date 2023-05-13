@@ -7,8 +7,11 @@ SELECT -- common part (functions/procedures/aggregates)
        serialfn.proname AS serialfunc,
        serialfn_n.nspname AS serialfunc_nsp,
        deserialfn.proname AS deserialfunc,
-       deserialfn_n.nspname AS deserialfunc_nsp
-        
+       deserialfn_n.nspname AS deserialfunc_nsp,
+       
+       -- for functions
+       p.proexeclocation AS executeOn
+       
 FROM pg_catalog.pg_proc p
 
 -- for aggregates
