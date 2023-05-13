@@ -2425,14 +2425,11 @@ tokens_nonreserved
     | CONFLICT
     | CONNECTION
     | CONSTRAINTS
-    | CONTAINS
     | CONTENT
     | CONTINUE
     | CONVERSION
     | COPY
     | COST
-    | CREATEEXTTABLE
-    | CREATEUSER
     | CSV
     | CUBE
     | CURRENT
@@ -2502,7 +2499,6 @@ tokens_nonreserved
     | INCREMENT
     | INDEX
     | INDEXES
-    | INITPLAN
     | INHERIT
     | INHERITS
     | INLINE
@@ -2527,7 +2523,6 @@ tokens_nonreserved
     | LOCKED
     | LOGGED
     | MAPPING
-    | MASTER
     | MATCH
     | MATCHED
     | MATERIALIZED
@@ -2537,7 +2532,6 @@ tokens_nonreserved
     | MINUTE
     | MINVALUE
     | MODE
-    | MODIFIES
     | MONTH
     | MOVE
     | NAME
@@ -2549,8 +2543,6 @@ tokens_nonreserved
     | NFKC
     | NFKD
     | NO
-    | NOCREATEEXTTABLE
-    | NOCREATEUSER
     | NORMALIZED
     | NOTHING
     | NOTIFY
@@ -2589,7 +2581,6 @@ tokens_nonreserved
     | PROCEDURE
     | PROCEDURES
     | PROGRAM
-    | PROTOCOL
     | PUBLICATION
     | QUOTE
     | RANGE
@@ -2628,7 +2619,6 @@ tokens_nonreserved
     | SEARCH
     | SECOND
     | SECURITY
-    | SEGMENTS
     | SEQUENCE
     | SEQUENCES
     | SERIALIZABLE
@@ -2877,9 +2867,12 @@ tokens_nonkeyword
     | COMPRESSLEVEL
     | COMPRESSTYPE
     | CONNECT
+    | CONTAINS
     | COSTS
     | CREATEDB
+    | CREATEEXTTABLE
     | CREATEROLE
+    | CREATEUSER
     | DESERIALFUNC
     | DETERMINISTIC
     | DISABLE_PAGE_SKIPPING
@@ -2902,6 +2895,7 @@ tokens_nonkeyword
     | INDEX_CLEANUP
     | INIT
     | INITCOND
+    | INITPLAN
     | INTERNALLENGTH
     | IS_TEMPLATE
     | JSON
@@ -2915,12 +2909,14 @@ tokens_nonkeyword
     | LOCALE_PROVIDER
     | LOGIN
     | MAIN
+    | MASTER
     | MERGES
     | MFINALFUNC
     | MFINALFUNC_EXTRA
     | MFINALFUNC_MODIFY
     | MINITCOND
     | MINVFUNC
+    | MODIFIES
     | MODULUS
     | MSFUNC
     | MSSPACE
@@ -2929,6 +2925,7 @@ tokens_nonkeyword
     | NEGATOR
     | NOBYPASSRLS
     | NOCREATEDB
+    | NOCREATEEXTTABLE
     | NOCREATEROLE
     | NOCREATEUSER
     | NOINHERIT
@@ -2942,6 +2939,7 @@ tokens_nonkeyword
     | PERMISSIVE
     | PLAIN
     | PREFERRED
+    | PROTOCOL
     | PROVIDER
     | RANDOMLY
     | READ_ONLY
@@ -2955,6 +2953,7 @@ tokens_nonkeyword
     | RESTRICTIVE
     | RIGHTARG
     | SAFE
+    | SEGMENTS
     | SEND
     | SERIALFUNC
     | SETTINGS
