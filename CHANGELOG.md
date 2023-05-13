@@ -9,7 +9,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- Added type column order check in PostgreSQL
+### Changed
+
+### Fixed
+
+## [7.6.0] - 2023-05-16
 
 ### Changed
 
@@ -18,6 +22,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Fixed a bug due to which the COLLATION directory was ignored.
+- Fixed a bug in generating the migration script when changing the order of columns in a composite type.
 
 ## [7.5.0] - 2023-04-11
 
@@ -1667,7 +1672,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.5.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.6.0...HEAD
+[7.6.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.5.0...v7.6.0
 [7.5.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.4.0...v7.5.0
 [7.4.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.3.0...v7.4.0
 [7.3.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.2.0...v7.3.0

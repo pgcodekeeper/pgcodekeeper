@@ -9,7 +9,11 @@
 
 ### Добавлено
 
-- Добавлена проверка порядка столбцов типа в PostgreSQL
+### Изменено
+
+### Исправлено
+
+## [7.6.0] - 2023-05-16
 
 ### Изменено
 
@@ -18,6 +22,7 @@
 ### Исправлено
 
 - Исправлена ошибка из-за которой директория COLLATION игнорировалась.
+- Исправлена ошибка генерации скрипта миграции при изменении порядка колонок в композитном типе.
 
 ## [7.5.0] - 2023-04-11
 
@@ -1668,7 +1673,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.5.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.6.0...HEAD
+[7.6.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.5.0...v7.6.0
 [7.5.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.4.0...v7.5.0
 [7.4.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.3.0...v7.4.0
 [7.3.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.2.0...v7.3.0
