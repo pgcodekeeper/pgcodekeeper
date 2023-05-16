@@ -40,7 +40,7 @@ public class Diff extends AbstractHandler {
 
         WizardDialog dialog = new WizardDialog(
                 shell, new DiffWizard(proj, prefStore));
-        dialog.setShellStyle(dialog.getShellStyle() & ~SWT.APPLICATION_MODAL);
+        dialog.setShellStyle(dialog.getShellStyle() & ~SWT.PRIMARY_MODAL & ~SWT.APPLICATION_MODAL);
         dialog.open();
         return null;
     }
