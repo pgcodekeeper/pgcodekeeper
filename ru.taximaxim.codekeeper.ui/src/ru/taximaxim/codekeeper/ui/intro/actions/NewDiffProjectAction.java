@@ -28,7 +28,7 @@ public class NewDiffProjectAction {
         WizardDialog dialog = new WizardDialog(
                 PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
                 new DiffWizard(null, Activator.getDefault().getPreferenceStore()));
-        dialog.setShellStyle(dialog.getShellStyle() & ~SWT.APPLICATION_MODAL);
+        dialog.setShellStyle(dialog.getShellStyle() & ~SWT.PRIMARY_MODAL & ~SWT.APPLICATION_MODAL);
         dialog.open();
     }
 }
