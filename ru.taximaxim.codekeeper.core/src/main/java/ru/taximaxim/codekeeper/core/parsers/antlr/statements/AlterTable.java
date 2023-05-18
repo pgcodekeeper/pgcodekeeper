@@ -130,7 +130,7 @@ public class AlterTable extends TableAbstract {
             if (def != null) {
                 addColumn(def.identifier().getText(), def.data_type(),
                         def.collate_identifier(), def.compression_identifier(), def.constraint_common(),
-                        def.define_foreign_options(), tabl, getSchemaNameSafe(ids));
+                        def.encoding_identifier(), def.define_foreign_options(), tabl, getSchemaNameSafe(ids));
             }
 
             if (column != null && colAction != null) {

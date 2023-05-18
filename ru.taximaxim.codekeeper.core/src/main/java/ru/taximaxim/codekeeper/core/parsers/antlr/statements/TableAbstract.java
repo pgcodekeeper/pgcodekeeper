@@ -31,6 +31,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Constraint_commonCon
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Data_typeContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Define_columnsContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Define_foreign_optionsContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Encoding_identifierContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Foreign_optionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.IdentifierContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Identity_bodyContext;
@@ -42,6 +43,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Names_in_parensConte
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Nulls_distinctionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Sequence_bodyContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Storage_directiveContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Storage_parametersContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Table_column_defContext;
@@ -230,7 +232,7 @@ public abstract class TableAbstract extends ParserAbstract {
                 Table_column_definitionContext column = colCtx.table_column_definition();
                 addColumn(column.identifier().getText(), column.data_type(),
                         column.collate_identifier(), column.compression_identifier(),
-                        column.constraint_common(),
+                        column.constraint_common(), column.encoding_identifier(),
                         column.define_foreign_options(), table, schemaName);
             }
         }
@@ -245,7 +247,7 @@ public abstract class TableAbstract extends ParserAbstract {
 
     protected void addColumn(String columnName, Data_typeContext datatype,
             Collate_identifierContext collate, Compression_identifierContext compression,
-            List<Constraint_commonContext> constraints,
+            List<Constraint_commonContext> constraints,  Encoding_identifierContext encOptions,
             Define_foreign_optionsContext options, AbstractTable table, String schemaName) {
         PgColumn col = new PgColumn(columnName);
         if (datatype != null) {
@@ -272,12 +274,23 @@ public abstract class TableAbstract extends ParserAbstract {
                 //throw new IllegalStateException("Options used only for foreign table");
             }
         }
+        if (encOptions != null) {
+            for (Storage_directiveContext option : encOptions.storage_directive()) {
+                if (option.compress_type != null) {
+                    col.setCompressType(option.compress_type.getText());
+                } else if (option.compress_level != null) {
+                    col.setCompressLevel(Integer.parseInt(option.compress_level.getText()));
+                } else if (option.block_size != null) {
+                    col.setBlockSize(Integer.parseInt(option.block_size.getText()));
+                }
+            }
+        }
         doSafe(AbstractTable::addColumn, table, col);
     }
 
     protected void addColumn(String columnName, List<Constraint_commonContext> constraints,
             AbstractTable table, String schemaName) {
-        addColumn(columnName, null, null, null, constraints, null, table, schemaName);
+        addColumn(columnName, null, null, null, constraints, null, null, table, schemaName);
     }
 
     protected void addInherit(AbstractPgTable table, List<ParserRuleContext> idsInh) {

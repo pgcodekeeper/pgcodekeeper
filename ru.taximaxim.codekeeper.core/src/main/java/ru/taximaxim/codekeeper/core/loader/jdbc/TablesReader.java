@@ -28,6 +28,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractPgTable;
 import ru.taximaxim.codekeeper.core.schema.AbstractRegularTable;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
+import ru.taximaxim.codekeeper.core.schema.ICompressOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.PartitionForeignPgTable;
 import ru.taximaxim.codekeeper.core.schema.PartitionPgTable;
 import ru.taximaxim.codekeeper.core.schema.PgColumn;
@@ -202,6 +203,10 @@ public class TablesReader extends JdbcReader {
         if (SupportedVersion.VERSION_14.isLE(loader.version)) {
             colCompression = getColArray(res, "col_compression");
         }
+        String[] colEncOptions = null;
+        if (loader.isGreenplumDb) {
+            colEncOptions = getColArray(res, "col_enc_options");
+        }
 
         for (int i = 0; i < colNames.length; i++) {
             PgColumn column = new PgColumn(colNames[i]);
@@ -220,6 +225,9 @@ public class TablesReader extends JdbcReader {
             }
             if (colFOptions[i] != null) {
                 ParserAbstract.fillOptionParams(colFOptions[i].split(","), column::addForeignOption, false, true, false);
+            }
+            if (loader.isGreenplumDb && colEncOptions[i] != null) {
+                ICompressOptionContainer.fillCompressOptions(column, colEncOptions[i]);
             }
 
             if (!colStorages[i].equals(colDefaultStorages[i])) {

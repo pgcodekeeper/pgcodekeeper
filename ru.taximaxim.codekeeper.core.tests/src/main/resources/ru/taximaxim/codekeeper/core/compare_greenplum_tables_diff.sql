@@ -18,6 +18,10 @@ ALTER TABLE public.sales3 SET WITH (REORGANIZE=true) DISTRIBUTED BY (qty);
 
 ALTER TABLE public.sales2 SET WITH (REORGANIZE=true) DISTRIBUTED BY (txn_id, qty);
 
+DROP TABLE public.t4;
+
+ALTER TABLE public.t5 SET (fillfactor=50);
+
 ALTER TABLE public.sales5
 	ALTER COLUMN txn_id SET NOT NULL;
 
@@ -26,3 +30,7 @@ ALTER TABLE public.sales5
 
 ALTER TABLE public.sales2
 	ADD CONSTRAINT pk_sales2 PRIMARY KEY (txn_id, qty);
+
+CREATE TABLE public.t4 (
+)
+WITH (appendonly=true, compresstype=zlib);

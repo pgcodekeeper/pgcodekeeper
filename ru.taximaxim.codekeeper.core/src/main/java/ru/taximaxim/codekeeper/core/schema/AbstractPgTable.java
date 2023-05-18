@@ -215,7 +215,22 @@ public abstract class AbstractPgTable extends AbstractTable {
 
     @Override
     protected boolean isNeedRecreate(AbstractTable newTable) {
-        return !Objects.equals(getMethod(), ((AbstractPgTable) newTable).getMethod());
+        if (!Objects.equals(getMethod(), ((AbstractPgTable) newTable).getMethod())) {
+            return true;
+        }
+
+        // check greenplum options
+        if (options.equals(newTable.options)) {
+            return false;
+        }
+
+        for (String gpOption : GP_OPTION_LIST) {
+            if (!Objects.equals(options.get(gpOption), newTable.options.get(gpOption))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     @Override
