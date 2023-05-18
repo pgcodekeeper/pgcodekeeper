@@ -610,7 +610,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
 
     BASETYPE: [bB] [aA] [sS] [eE] [tT] [yY] [pP] [eE];
     BLOCKSIZE: [bB] [lL] [oO] [cC] [kK] [sS] [iI] [zZ] [eE];
-    BUFFERS: [bB] [uU] [fF] [fF] [eE] [rR] [sS]; 
+    BUFFERS: [bB] [uU] [fF] [fF] [eE] [rR] [sS];
     BYPASSRLS: [bB] [yY] [pP] [aA] [sS] [sS] [rR] [lL] [sS];
 
     CANONICAL: [cC] [aA] [nN] [oO] [nN] [iI] [cC] [aA] [lL];
@@ -623,7 +623,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     COMPRESSTYPE: [cC] [oO] [mM] [pP] [rR] [eE] [sS] [sS] [tT] [yY] [pP] [eE];
     CONNECT: [cC] [oO] [nN] [nN] [eE] [cC] [tT];
     CONTAINS: [cC] [oO] [nN] [tT] [aA] [iI] [nN] [sS];
-    COSTS: [cC] [oO] [sS] [tT] [sS]; 
+    COSTS: [cC] [oO] [sS] [tT] [sS];
     CREATEDB: [cC] [rR] [eE] [aA] [tT] [eE] [dD] [bB];
     CREATEEXTTABLE: [cC] [rR] [eE] [aA] [tT] [eE] [eE] [xX] [tT] [tT] [aA] [bB] [lL] [eE];
     CREATEROLE: [cC] [rR] [eE] [aA] [tT] [eE] [rR] [oO] [lL] [eE];

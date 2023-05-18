@@ -530,6 +530,8 @@ class PgDiffTest {
             "compare_type_composite",
             // Test scenario for where greenplum base type changed encoding options
             "compare_GP_base_type",
+            // Tests scenario where greenplum table column encoding is compared.
+            "compare_greenplum_table_column_encoding",
             // Tests scenario where INDEX is compared.
             "compare_indices",
             // Tests scenario where FUNCTION is compared.

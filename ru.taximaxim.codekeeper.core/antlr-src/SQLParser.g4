@@ -589,7 +589,7 @@ alter_type_statement
       | RENAME VALUE existing_enum_name=character_string TO new_enum_name=character_string
       | type_action (COMMA type_action)*
       | SET LEFT_PAREN type_property (COMMA type_property)* RIGHT_PAREN
-      | SET DEFAULT ENCODING LEFT_PAREN storage_directive (COMMA storage_directive)* RIGHT_PAREN)
+      | SET DEFAULT encoding_identifier)
     ;
 
 alter_domain_statement
@@ -1689,7 +1689,7 @@ table_of_type_column_def
     ;
 
 table_column_definition
-    : identifier data_type define_foreign_options? compression_identifier? collate_identifier? constraint_common*
+    : identifier data_type define_foreign_options? compression_identifier? collate_identifier? encoding_identifier? constraint_common*
     ;
 
 like_option
@@ -1824,6 +1824,10 @@ compression_identifier
 
 collate_identifier
     : COLLATE collation=schema_qualified_name
+    ;
+
+encoding_identifier
+    : ENCODING LEFT_PAREN storage_directive (COMMA storage_directive)* RIGHT_PAREN
     ;
 
 storage_directive

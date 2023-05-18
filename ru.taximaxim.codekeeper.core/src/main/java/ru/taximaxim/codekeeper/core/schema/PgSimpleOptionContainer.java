@@ -43,8 +43,7 @@ public interface PgSimpleOptionContainer extends PgOptionContainer {
                         setOptions.append(", ");
                     }
                 } else {
-                    resetOptions.append(key)
-                    .append(", ");
+                    resetOptions.append(key).append(", ");
                 }
             });
 

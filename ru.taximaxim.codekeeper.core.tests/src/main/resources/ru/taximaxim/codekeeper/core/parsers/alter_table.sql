@@ -2618,11 +2618,17 @@ ALTER TABLE ONLY public.measurement_ym_y2016m12 SET ACCESS METHOD heap;
 ALTER TABLE public.t8 ADD CONSTRAINT fk FOREIGN KEY (quantity, kolvo) REFERENCES public.testtable(value3, value1) ON DELETE SET NULL(quantity);
 ALTER TABLE public.t8 ADD CONSTRAINT fk FOREIGN KEY (quantity) REFERENCES public.testtable(value3) ON DELETE SET DEFAULT(quantity);
 
+-- GREENPLUMM
+-- ALTER TABLE ADD NEW COLUMN WITH ENCODIND OPTIONS
+ALTER TABLE public.t1 ADD COLUMN col1 text ENCODING (COMPRESSLEVEL=1);
+ALTER TABLE public.t1 ADD COLUMN col2 text ENCODING (COMPRESSTYPE=zltd);
+ALTER TABLE public.t1 ADD COLUMN col3 text ENCODING (BLOCKSIZE=32768);
+ALTER TABLE public.t1 ADD column col4 text ENCODING (COMPRESSTYPE=none, COMPRESSLEVEL=1, BLOCKSIZE=32768);
+
 --ALTER TABLE in greenplum db
 ALTER TABLE public.ao1 SET DISTRIBUTED REPLICATED;
 ALTER TABLE public.testbug_char5_exchange SET WITH (REORGANIZE=true) DISTRIBUTED BY (user_id public.op_class, timest);
 ALTER TABLE public.distpol_person SET WITH (REORGANIZE=true) DISTRIBUTED BY (name, age public.op_class, location public.op_class_2);
 ALTER TABLE public.t2 SET WITH (REORGANIZE=true) DISTRIBUTED RANDOMLY;
--- for Greenplum
 
 ALTER FOREIGN TABLE public.films OPTIONS (ADD mpp_execute 'all segments');

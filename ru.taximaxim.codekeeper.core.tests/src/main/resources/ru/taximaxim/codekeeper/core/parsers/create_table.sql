@@ -914,14 +914,22 @@ CREATE TABLE cmpart2(f1 text COMPRESSION lz4);
 CREATE TABLE cmdata3 (f1 TEXT COMPRESSION pglz, f2 TEXT COMPRESSION lz4);
 CREATE TABLE cmdata4 (f1 TEXT COMPRESSION DEFAULT);
 
-CREATE TABLE baby.rank (id int, rank int, year smallint, 
+-- for Greenplum
+CREATE TABLE baby.rank (id int, rank int, year smallint,
 gender char(1), count int ) DISTRIBUTED BY (rank, gender, year);
 
 CREATE TABLE table_1 (MY_ID integer, MY_INT integer, MY_DATE date, MY_TEXT varchar(40)) distributed replicated;
 CREATE TABLE table_2 (MY_ID integer, MY_INT integer, MY_DATE date, MY_TEXT varchar(40)) distributed randomly;
-CREATE TABLE baby.rank2 (id int, rank int, year smallint, 
+CREATE TABLE baby.rank2 (id int, rank int, year smallint,
 gender char(1), count int) DISTRIBUTED BY (rank, gender public.gist__int_ops, year);
--- for Greenplum
+
+CREATE TABLE public.test_table_elm2(
+col1 text ENCODING (COMPRESSTYPE=zlib),
+col2 text ENCODING (COMPRESSTYPE=none, COMPRESSLEVEL=1),
+col3 text ENCODING (BLOCKSIZE=32768),
+col4 text ENCODING (COMPRESSTYPE=none, COMPRESSLEVEL=1, BLOCKSIZE=32768)
+)
+WITH (appendonly='true',orientation='column');
 
 CREATE FOREIGN TABLE public.films (
     code character(5) NOT NULL,

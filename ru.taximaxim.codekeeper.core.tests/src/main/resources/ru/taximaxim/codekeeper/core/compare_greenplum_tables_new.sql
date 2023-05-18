@@ -5,12 +5,12 @@ create table public.ao1
 (col1 varchar(2), col2 int) DISTRIBUTED REPLICATED;
 
 --added timest and public.op_class on DISTRIBUTED + REORGANIZE
-create table public.testbug_char5_exchange 
+create table public.testbug_char5_exchange
 (timest character varying(6), user_id numeric(16,0) NOT NULL, tag1 char(5), tag2 char(5))
 DISTRIBUTED BY (user_id public.op_class, timest);
 
 --dropped DISTRIBUTED
-create table public.t_reorganize_false 
+create table public.t_reorganize_false
 (col1 varchar(2), col2 int);
 
 --added cols in DISTRIBUTED
@@ -58,3 +58,11 @@ CREATE TABLE public.sales2 (
 
 ALTER TABLE public.sales2
     ADD CONSTRAINT pk_sales2 PRIMARY KEY (txn_id, qty);
+
+--change compresstype
+CREATE TABLE public.t4()
+WITH (appendonly=true, compresstype=zlib);
+
+--change fillfactor
+CREATE TABLE public.t5()
+WITH (appendonly=true, compresstype=zlib, fillfactor=50);

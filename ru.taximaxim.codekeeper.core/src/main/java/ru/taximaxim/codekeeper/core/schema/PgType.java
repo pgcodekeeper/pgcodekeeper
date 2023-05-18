@@ -25,11 +25,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 
-public class PgType extends AbstractType {
-
-    private static final String DEFAULT_COMPESS_TYPE = "none";
-    private static final int DEFAULT_COMPESS_LEVEL = 0;
-    private static final int DEFAULT_BLOCK_SIZE = 32768;
+public class PgType extends AbstractType implements ICompressOptionContainer{
 
     private static final String COLLATE = " COLLATE ";
     private static final String ALTER_TYPE = "\n\nALTER TYPE ";
@@ -340,6 +336,7 @@ public class PgType extends AbstractType {
         return compressType;
     }
 
+    @Override
     public void setCompressType(String compressType) {
         this.compressType = compressType;
         resetHash();
@@ -349,6 +346,7 @@ public class PgType extends AbstractType {
         return compressLevel;
     }
 
+    @Override
     public void setCompressLevel(int compressLvl) {
         this.compressLevel = compressLvl;
         resetHash();
@@ -358,6 +356,7 @@ public class PgType extends AbstractType {
         return blockSize;
     }
 
+    @Override
     public void setBlockSize(int blockSize) {
         this.blockSize = blockSize;
         resetHash();
