@@ -134,6 +134,13 @@ public class ViewsReader extends JdbcReader {
             v.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
 
+        if (loader.isGreenplumDb) {
+            String distribution = res.getString("distribution");
+            if (distribution != null && !distribution.isBlank()) {
+                v.setDistribution(distribution);
+            }
+        }
+
         return v;
     }
 

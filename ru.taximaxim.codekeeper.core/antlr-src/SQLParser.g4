@@ -1530,6 +1530,7 @@ create_view_statement
     AS v_query=select_stmt
     with_check_option?
     (WITH NO? DATA)?
+    distributed_clause?
     ;
 
 if_exists
