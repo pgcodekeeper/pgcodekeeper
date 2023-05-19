@@ -94,3 +94,9 @@ Reference: action = REFRESH, offset = 4117, line number = 87, charPositionInLine
 Reference: action = REFRESH, offset = 4157, line number = 88, charPositionInLine = 0
 Reference: action = REFRESH, offset = 4200, line number = 89, charPositionInLine = 0
 Reference: Object = mvtest_tvm (VIEW), action = ALTER MATERIALIZED, offset = 4326, line number = 92, charPositionInLine = 24
+Reference: Object = public (SCHEMA), action = null, offset = 4402, line number = 95, charPositionInLine = 25
+Reference: Object = public.test_view (VIEW), action = CREATE, offset = 4409, line number = 95, charPositionInLine = 32
+Reference: Object = public (SCHEMA), action = null, offset = 4528, line number = 100, charPositionInLine = 25
+Reference: Object = public.test_view1 (VIEW), action = CREATE, offset = 4535, line number = 100, charPositionInLine = 32
+Reference: Object = public (SCHEMA), action = null, offset = 4657, line number = 105, charPositionInLine = 25
+Reference: Object = public.test_view2 (VIEW), action = CREATE, offset = 4664, line number = 105, charPositionInLine = 32

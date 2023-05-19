@@ -144,7 +144,7 @@ public class TablesReader extends JdbcReader {
             if (loader.isGreenplumDb) {
                 String distribution = res.getString("distribution");
                 if (distribution != null && !distribution.isBlank()) {
-                    regTable.setDistClause(distribution);
+                    regTable.setDistribution(distribution);
                 }
             }
 

@@ -35,7 +35,7 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements Pg
     protected boolean isRowSecurity;
     protected boolean isForceSecurity;
     protected String partitionBy;
-    protected String distClause;
+    protected String distribution;
 
     protected AbstractRegularTable(String name) {
         super(name);
@@ -100,8 +100,8 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements Pg
             sbSQL.append(tablespace);
         }
 
-        if (distClause != null) {
-            sbSQL.append("\n" + distClause);
+        if (distribution != null) {
+            sbSQL.append("\n").append(distribution);
         }
 
         sbSQL.append(';');
@@ -158,19 +158,19 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements Pg
         }
 
         // greenplum
-        if (!Objects.equals(distClause, newRegTable.getDistClause())) {
+        if (!Objects.equals(distribution, newRegTable.distribution)) {
             sb.append(getAlterTable(true, false));
             sb.append(" SET ");
-            String newDistClause = newRegTable.getDistClause();
-            if (distClause != null && distClause.startsWith("DISTRIBUTED BY")
-                    && (newDistClause == null || !newDistClause.startsWith("DISTRIBUTED REPLICATED"))) {
+            String newDistribution = newRegTable.getDistribution();
+            if (distribution != null && distribution.startsWith("DISTRIBUTED BY")
+                    && (newDistribution == null || !newDistribution.startsWith("DISTRIBUTED REPLICATED"))) {
                 sb.append("WITH (REORGANIZE=true) ");
             }
 
-            if (newDistClause != null) {
-                sb.append(newDistClause);
+            if (newDistribution != null) {
+                sb.append(newDistribution);
             } else {
-                appendDefaultDistClause(newRegTable, sb);
+                appendDefaultDistribution(newRegTable, sb);
             }
             sb.append(";");
         }
@@ -179,7 +179,7 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements Pg
     /**
      * append default value for greenplum db DISTRIBUTED clause
      */
-    protected void appendDefaultDistClause(AbstractRegularTable newTable, StringBuilder sb) {
+    protected void appendDefaultDistribution(AbstractRegularTable newTable, StringBuilder sb) {
         sb.append("DISTRIBUTED ");
 
         String columnName = null;
@@ -264,12 +264,12 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements Pg
         resetHash();
     }
 
-    public String getDistClause() {
-        return distClause;
+    public String getDistribution() {
+        return distribution;
     }
 
-    public void setDistClause(String distClause) {
-        this.distClause = distClause;
+    public void setDistribution(String distribution) {
+        this.distribution = distribution;
         resetHash();
     }
 
@@ -282,7 +282,7 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements Pg
                     && isRowSecurity == table.isRowSecurity()
                     && isForceSecurity == table.isForceSecurity()
                     && Objects.equals(partitionBy, table.getPartitionBy())
-                    && Objects.equals(distClause, table.getDistClause());
+                    && Objects.equals(distribution, table.getDistribution());
         }
 
         return false;
@@ -296,7 +296,7 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements Pg
         copy.setRowSecurity(isRowSecurity());
         copy.setForceSecurity(isForceSecurity());
         copy.setPartitionBy(getPartitionBy());
-        copy.setDistClause(getDistClause());
+        copy.setDistribution(getDistribution());
         return copy;
     }
 
@@ -308,6 +308,6 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements Pg
         hasher.put(isRowSecurity);
         hasher.put(isForceSecurity);
         hasher.put(partitionBy);
-        hasher.put(distClause);
+        hasher.put(distribution);
     }
 }

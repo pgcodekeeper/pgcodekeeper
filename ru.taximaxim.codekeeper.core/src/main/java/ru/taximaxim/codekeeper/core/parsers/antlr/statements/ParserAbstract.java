@@ -48,7 +48,9 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Boolean_valueContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Cast_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Character_stringContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Column_operator_classContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Data_typeContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Distributed_clauseContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Function_argsContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Function_argumentsContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.IdentifierContext;
@@ -805,5 +807,33 @@ public abstract class ParserAbstract {
             col.setDefaultValue(getFullCtxText(exp));
             db.addAnalysisLauncher(new MsExpressionAnalysisLauncher(type != null ? type : col, exp, fileName));
         }
+    }
+
+    // for greenplum
+    protected String parseDistribution(Distributed_clauseContext dist) {
+        if (dist == null) {
+            return null;
+        }
+
+        StringBuilder distribution = new StringBuilder();
+        distribution.append("DISTRIBUTED ");
+        if (dist.BY() != null) {
+            distribution.append("BY (");
+            for (Column_operator_classContext column_op_class : dist.column_operator_class()) {
+                distribution.append(column_op_class.identifier().getText());
+                Schema_qualified_nameContext opClassCtx = column_op_class.schema_qualified_name();
+                if (opClassCtx != null) {
+                    distribution.append(" ").append(opClassCtx.getText());
+                }
+                distribution.append(", ");
+            }
+            distribution.setLength(distribution.length() - 2);
+            distribution.append(")");
+        } else if (dist.RANDOMLY() != null) {
+            distribution.append("RANDOMLY");
+        } else {
+            distribution.append("REPLICATED");
+        }
+        return distribution.toString();
     }
 }

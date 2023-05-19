@@ -43,7 +43,7 @@ import ru.taximaxim.codekeeper.core.utils.Pair;
  *
  * @author fordfrog
  */
-public class PgView extends AbstractView implements PgSimpleOptionContainer  {
+public class PgView extends AbstractView implements PgSimpleOptionContainer {
 
     public static final String COLUMN_COMMENT = "\n\nCOMMENT ON COLUMN {0}.{1} IS {2};";
     public static final String CHECK_OPTION = "check_option";
@@ -52,6 +52,7 @@ public class PgView extends AbstractView implements PgSimpleOptionContainer  {
     private String normalizedQuery;
     private String method = Consts.HEAP;
     private String tablespace;
+    private String distribution;
     private Boolean isWithData;
     private final Map<String, String> defaultValues = new LinkedHashMap<>();
     private final Map<String, String> columnComments = new LinkedHashMap<>();
@@ -73,36 +74,24 @@ public class PgView extends AbstractView implements PgSimpleOptionContainer  {
         }
 
         sbSQL.append(getQualifiedName());
-
-        if (!columnNames.isEmpty()) {
-            sbSQL.append(" (");
-
-            for (int i = 0; i < columnNames.size(); i++) {
-                if (i > 0) {
-                    sbSQL.append(", ");
-                }
-
-                sbSQL.append(PgDiffUtils.getQuotedName(columnNames.get(i)));
-            }
-            sbSQL.append(')');
-        }
+        appendColumnNames(sbSQL);
 
         if (!Consts.HEAP.equals(method)) {
             sbSQL.append("\nUSING ").append(PgDiffUtils.getQuotedName(method));
         }
 
         StringBuilder sb = new StringBuilder();
-        for (Map.Entry<String, String> entry : options.entrySet()){
-            if (!CHECK_OPTION.equals(entry.getKey())){
+        for (Map.Entry<String, String> entry : options.entrySet()) {
+            if (!CHECK_OPTION.equals(entry.getKey())) {
                 sb.append(entry.getKey());
-                if (!entry.getValue().isEmpty()){
+                if (!entry.getValue().isEmpty()) {
                     sb.append("=").append(entry.getValue());
                 }
                 sb.append(", ");
             }
         }
 
-        if (sb.length() > 0){
+        if (sb.length() > 0) {
             sb.setLength(sb.length() - 2);
             sbSQL.append("\nWITH (").append(sb).append(")");
         }
@@ -113,16 +102,20 @@ public class PgView extends AbstractView implements PgSimpleOptionContainer  {
 
         sbSQL.append(" AS\n\t");
         sbSQL.append(getQuery());
-        if (isMatView()){
+        if (isMatView()) {
             sbSQL.append("\nWITH ");
-            if (!isWithData()){
+            if (!isWithData()) {
                 sbSQL.append("NO ");
             }
             sbSQL.append("DATA");
-        } else if (options.containsKey(CHECK_OPTION)){
+
+            if (distribution != null) {
+                sbSQL.append("\n").append(distribution);
+            }
+        } else if (options.containsKey(CHECK_OPTION)) {
             String chekOption = options.get(CHECK_OPTION);
             sbSQL.append("\nWITH ");
-            if (chekOption != null){
+            if (chekOption != null) {
                 sbSQL.append(chekOption.toUpperCase(Locale.ROOT));
             }
             sbSQL.append(" CHECK OPTION");
@@ -136,8 +129,7 @@ public class PgView extends AbstractView implements PgSimpleOptionContainer  {
             sbSQL.append("\n\nALTER VIEW ");
             sbSQL.append(getQualifiedName());
             sbSQL.append(" ALTER COLUMN ");
-            sbSQL.append(
-                    PgDiffUtils.getQuotedName(defaultValue.getKey()));
+            sbSQL.append(PgDiffUtils.getQuotedName(defaultValue.getKey()));
             sbSQL.append(" SET DEFAULT ");
             sbSQL.append(defaultValue.getValue());
             sbSQL.append(';');
@@ -156,6 +148,19 @@ public class PgView extends AbstractView implements PgSimpleOptionContainer  {
         return sbSQL.toString();
     }
 
+    private void appendColumnNames(final StringBuilder sbSQL) {
+        if (columnNames.isEmpty()) {
+            return;
+        }
+
+        sbSQL.append(" (");
+        for (int i = 0; i < columnNames.size(); i++) {
+            sbSQL.append(PgDiffUtils.getQuotedName(columnNames.get(i))).append(", ");
+        }
+        sbSQL.setLength(sbSQL.length() - 2);
+        sbSQL.append(')');
+    }
+
     @Override
     protected String getTypeName() {
         return isMatView() ? "MATERIALIZED VIEW" : "VIEW";
@@ -168,7 +173,8 @@ public class PgView extends AbstractView implements PgSimpleOptionContainer  {
         PgView newView = (PgView) newCondition;
 
         if (isViewModified(newView) || isMatView() != newView.isMatView()
-                || !Objects.equals(getMethod(), newView.getMethod())) {
+                || !Objects.equals(getMethod(), newView.getMethod())
+                || !Objects.equals(getDistribution(), newView.getDistribution())) {
             isNeedDepcies.set(true);
             return true;
         }
@@ -276,9 +282,9 @@ public class PgView extends AbstractView implements PgSimpleOptionContainer  {
 
         if (oldColumnNames.isEmpty() && newColumnNames.isEmpty()) {
             return !getNormalizedQuery().equals(newView.getNormalizedQuery());
-        } else {
-            return !oldColumnNames.equals(newColumnNames);
         }
+
+        return !oldColumnNames.equals(newColumnNames);
     }
 
     public void addColumnName(String colName) {
@@ -336,11 +342,20 @@ public class PgView extends AbstractView implements PgSimpleOptionContainer  {
         resetHash();
     }
 
+    public String getDistribution() {
+        return distribution;
+    }
+
+    public void setDistribution(String distribution) {
+        this.distribution = distribution;
+        resetHash();
+    }
+
     /**
      * @return query string with whitespace normalized.
      * @see AntlrUtils#normalizeWhitespaceUnquoted
      */
-    public String getNormalizedQuery(){
+    public String getNormalizedQuery() {
         return normalizedQuery;
     }
 
@@ -359,7 +374,7 @@ public class PgView extends AbstractView implements PgSimpleOptionContainer  {
     }
 
     @Override
-    public Map <String, String> getOptions() {
+    public Map<String, String> getOptions() {
         return Collections.unmodifiableMap(options);
     }
 
@@ -419,7 +434,8 @@ public class PgView extends AbstractView implements PgSimpleOptionContainer  {
                     && columnNames.equals(view.columnNames)
                     && defaultValues.equals(view.defaultValues)
                     && columnComments.equals(view.columnComments)
-                    && options.equals(view.options);
+                    && options.equals(view.options)
+                    && Objects.equals(distribution, view.getDistribution());
         }
 
         return false;
@@ -435,6 +451,7 @@ public class PgView extends AbstractView implements PgSimpleOptionContainer  {
         hasher.put(isWithData);
         hasher.put(method);
         hasher.put(tablespace);
+        hasher.put(distribution);
     }
 
     @Override
@@ -449,6 +466,7 @@ public class PgView extends AbstractView implements PgSimpleOptionContainer  {
         view.defaultValues.putAll(defaultValues);
         view.columnComments.putAll(columnComments);
         view.options.putAll(options);
+        view.setDistribution(getDistribution());
         return view;
     }
 }
