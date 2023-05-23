@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed a bug due to which the outline did not update while navigating through search results.
+
+
 ## [7.6.0] - 2023-05-16
 
 ### Changed

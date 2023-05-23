@@ -25,11 +25,13 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.search.ui.text.AbstractTextSearchViewPage;
 import org.eclipse.search.ui.text.Match;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
+import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 
 public class ReferenceResultPage extends AbstractTextSearchViewPage {
 
@@ -80,11 +82,15 @@ public class ReferenceResultPage extends AbstractTextSearchViewPage {
         }
 
         IWorkbenchPage page = getSite().getPage();
-
+        IEditorPart editor;
         if (offset >= 0 && length != 0) {
-            openAndSelect(page, file, offset, length, activate);
+            editor = openAndSelect(page, file, offset, length, activate);
         } else {
-            open(page, file, activate);
+            editor = open(page, file, activate);
+        }
+        if (editor instanceof SQLEditor) {
+            SQLEditor sqlEditor = (SQLEditor) editor;
+            sqlEditor.refreshReferences();
         }
     }
 

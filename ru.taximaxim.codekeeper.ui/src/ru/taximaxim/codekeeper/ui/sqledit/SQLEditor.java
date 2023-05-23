@@ -166,23 +166,7 @@ implements IResourceChangeListener, ITextErrorReporter {
 
     private EditorSelectionChangedListener changedListener;
 
-    private final Listener parserListener = e -> {
-        if (parentComposite == null) {
-            return;
-        }
-        UiSync.exec(parentComposite, () -> {
-            if (fOutlinePage != null) {
-                Control c = fOutlinePage.getControl();
-                if (c != null && !c.isDisposed()) {
-                    fOutlinePage.externalRefresh();
-                }
-            }
-            if (getSourceViewer() != null && getSourceViewer().getTextWidget() != null
-                    && !getSourceViewer().getTextWidget().isDisposed()) {
-                setLineBackground();
-            }
-        });
-    };
+    private final Listener parserListener = e -> refreshReferences();
 
     public boolean isMsSql() {
         return isMsSql;
@@ -209,6 +193,24 @@ implements IResourceChangeListener, ITextErrorReporter {
 
     public void setCurrentDb(DbInfo currentDB) {
         this.currentDB = currentDB;
+    }
+
+    public void refreshReferences() {
+        if (parentComposite == null) {
+            return;
+        }
+        UiSync.exec(parentComposite, () -> {
+            if (fOutlinePage != null) {
+                Control c = fOutlinePage.getControl();
+                if (c != null && !c.isDisposed()) {
+                    fOutlinePage.externalRefresh();
+                }
+            }
+            if (getSourceViewer() != null && getSourceViewer().getTextWidget() != null
+                    && !getSourceViewer().getTextWidget().isDisposed()) {
+                setLineBackground();
+            }
+        });
     }
 
     public DbInfo getCurrentDb() {
