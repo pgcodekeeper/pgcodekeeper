@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Improved RETURNS TABLE comparison mechanism for functions.
+
 ### Fixed
 
 - Fixed a bug due to which the outline did not update while navigating through search results.
