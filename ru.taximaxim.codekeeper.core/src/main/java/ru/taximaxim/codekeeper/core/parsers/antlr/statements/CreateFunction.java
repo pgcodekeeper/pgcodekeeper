@@ -81,11 +81,16 @@ public class CreateFunction extends ParserAbstract {
         fillFunction(function);
 
         if (ctx.ret_table != null) {
-            function.setReturns(getFullCtxText(ctx.ret_table));
+            StringBuilder sb = new StringBuilder();
             for (Function_column_name_typeContext ret_col : ctx.ret_table.function_column_name_type()) {
+                String columnName = ret_col.identifier().getText();
+                String type = getTypeName(ret_col.data_type());
                 addPgTypeDepcy(ret_col.data_type(), function);
-                function.addReturnsColumn(ret_col.identifier().getText(), getTypeName(ret_col.data_type()));
+                function.addReturnsColumn(ret_col.identifier().getText(), type);
+                sb.append(PgDiffUtils.getQuotedName(columnName)).append(" ").append(type).append(", ");
             }
+            sb.setLength(sb.length() - 2);
+            function.setReturns("TABLE(" + sb + ")");
         } else if (ctx.rettype_data != null) {
             function.setReturns(getTypeName(ctx.rettype_data));
             addPgTypeDepcy(ctx.rettype_data, function);
