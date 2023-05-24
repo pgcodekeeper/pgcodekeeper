@@ -19,9 +19,12 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.IOException;
 
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
@@ -220,8 +223,6 @@ class PgDiffTest {
             "modify_function_add_default",
             // Tests scenario where FUNCTION with args modify returns.
             "modify_function_modify_returns",
-            // Tests scenario where FUNCTION with args not modify default value.
-            "same_function_default",
             // Tests scenario where new FUNCTION with args is added.
             "add_function_args2",
             // Tests scenario where FUNCTION with args is dropped.
@@ -514,8 +515,6 @@ class PgDiffTest {
             "tabl_to_func_drop",
             // Tests scenario where owner and its privileges are both changed.
             "chg_owner_grant",
-            // Tests scenario where object definitions are compared.
-            "compare_definitions",
             // Tests scenario where TABLE is compared.
             "compare_tables",
             // Test scenario where in composit type changed position columns
@@ -556,17 +555,34 @@ class PgDiffTest {
             "alter_index_nulls_distinction",
     })
     void runDiff(String fileNameTemplate) throws IOException, InterruptedException {
+        String script = getScript(fileNameTemplate);
+        TestUtils.compareResult(script, fileNameTemplate, PgDiffTest.class);
+    }
+
+    /**
+     * Comparing two objects that have no differences
+     */
+    @ParameterizedTest(name = "[{0}]: {1}")
+    @CsvSource(delimiter = ';', value = {
+            "compare_view;                  Comparing a query in a view",
+            "compare_function;              Comparing a signature in a function",
+    })
+    void runCompare(String fileNameTemplate, String description) throws IOException, InterruptedException {
+        String script = getScript(fileNameTemplate);
+        assertEquals(script.trim(), "");
+    }
+
+    private String getScript(String fileNameTemplate) throws IOException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();
+
         PgDatabase dbOld = TestUtils.loadTestDump(
                 fileNameTemplate + FILES_POSTFIX.ORIGINAL_SQL, PgDiffTest.class, args);
+        TestUtils.runDiffSame(dbOld, fileNameTemplate, args);
+
         PgDatabase dbNew = TestUtils.loadTestDump(
                 fileNameTemplate + FILES_POSTFIX.NEW_SQL, PgDiffTest.class, args);
-
-        TestUtils.runDiffSame(dbOld, fileNameTemplate, args);
         TestUtils.runDiffSame(dbNew, fileNameTemplate, args);
 
-        String script = new PgDiff(args).diffDatabaseSchemas(dbOld, dbNew, null);
-
-        TestUtils.compareResult(script, fileNameTemplate, PgDiffTest.class);
+        return new PgDiff(args).diffDatabaseSchemas(dbOld, dbNew, null);
     }
 }
