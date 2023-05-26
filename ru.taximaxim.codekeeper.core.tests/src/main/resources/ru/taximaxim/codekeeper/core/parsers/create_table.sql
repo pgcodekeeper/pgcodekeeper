@@ -943,3 +943,87 @@ SERVER foreign_server
 OPTIONS (
     mpp_execute 'all segments'
 );
+
+-- external tables 
+
+CREATE EXTERNAL TABLE gp_dwh_test.public.ext_customer (
+    id int4,
+    name text,
+    sponsor text
+)
+LOCATION (
+    'gpfdist://filehost:8081/*.csv'
+)
+FORMAT 'CSV' ( delimiter ',' null '' escape '"' quote '"' )
+ENCODING 'UTF8';
+
+CREATE EXTERNAL TABLE gp_dwh_test.public.ext_customer1 (
+    id int4,
+    name text,
+    sponsor text
+)
+LOCATION (
+    'gpfdist://filehost:8081/*.txt'
+)
+FORMAT 'TEXT' ( delimiter '|' null ' ' escape '\' )
+ENCODING 'UTF8'
+SEGMENT REJECT LIMIT 5 ROWS;
+
+CREATE EXTERNAL TABLE public.ext_customer2 (
+    id text,
+    name text,
+    sponsor text,
+    test text)
+LOCATION (
+'gpfdist://filehost:8081/*.txt'
+)
+FORMAT 'CUSTOM' ( formatter='somefunction' )
+ENCODING 'UTF8'
+SEGMENT REJECT LIMIT 5 ROWS;
+
+CREATE EXTERNAL TABLE gp_dwh_test.public.ext_customer3 (
+    id int4,
+    name text,
+    sponsor text
+)
+LOCATION (
+    'gpfdist://filehost:8081/*.txt'
+)
+FORMAT 'TEXT' ( delimiter '|' null ' ' escape '"' header )
+ENCODING 'UTF8'
+SEGMENT REJECT LIMIT 5 ROWS;
+
+CREATE EXTERNAL TABLE public.ext_expenses (
+    name text,
+    date date,
+    amount real,
+    category text,
+    description text)
+LOCATION (
+'file://seghost1/dbfast/external/expenses1.csv'
+'file://seghost1/dbfast/external/expenses2.csv'
+'file://seghost2/dbfast/external/expenses3.csv'
+'file://seghost2/dbfast/external/expenses4.csv'
+'file://seghost3/dbfast/external/expenses5.csv'
+'file://seghost3/dbfast/external/expenses6.csv'
+)
+FORMAT 'CSV' ( delimiter ',' null '' escape '"' quote '"' header )
+ENCODING 'UTF8';
+
+CREATE EXTERNAL WEB TABLE gp_dwh_test.public.log_output (
+    linenum int4,
+    message text
+)
+EXECUTE '/var/load_scripts/get_log_data.sh' ON ALL
+FORMAT 'TEXT' ( delimiter '|' null '\N' escape '\' )
+ENCODING 'UTF8';
+
+CREATE EXTERNAL WEB TABLE gp_dwh_test.public.log_output1 (
+    linenum int4,
+    message text
+)
+EXECUTE '/var/load_scripts/get_log_data.sh' ON MASTER
+FORMAT 'TEXT' ( delimiter '|' null '\N' escape '\' )
+ENCODING 'UTF8';
+
+

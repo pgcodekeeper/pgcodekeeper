@@ -387,7 +387,9 @@ public class PgColumn extends AbstractColumn implements PgSimpleOptionContainer,
 
             PgDiffArguments arg = getDatabase().getArguments();
 
-            if ((arg == null || !arg.isUsingTypeCastOff()) && !(getParent() instanceof AbstractForeignTable)) {
+            if ((arg == null || !arg.isUsingTypeCastOff())
+                    && !(getParent() instanceof AbstractForeignTable)
+                    && !(getParent() instanceof GpExternalTable)) {
                 sb.append(" USING ").append(PgDiffUtils.getQuotedName(newColumn.getName()))
                 .append("::").append(newType);
             }

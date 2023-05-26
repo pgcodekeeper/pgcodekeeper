@@ -233,6 +233,7 @@ schema_create
     | create_subscription_statement
     | create_table_as_statement
     | create_table_statement
+    | create_table_external_statement
     | create_tablespace_statement
     | create_transform_statement
     | create_trigger_statement
@@ -368,7 +369,7 @@ alter_language_statement
     ;
 
 alter_table_statement
-    : FOREIGN? TABLE if_exists? ONLY? name=schema_qualified_name MULTIPLY?(
+    : (EXTERNAL | FOREIGN)? TABLE if_exists? ONLY? name=schema_qualified_name MULTIPLY?(
         table_action (COMMA table_action)*
         | RENAME COLUMN? identifier TO identifier
         | set_schema
@@ -1598,6 +1599,42 @@ column_operator_class
     : identifier schema_qualified_name?
     ;
 
+create_table_external_statement
+    : (READABLE | WRITABLE)? EXTERNAL WEB? (TEMPORARY | TEMP)? TABLE name=schema_qualified_name
+    (define_table | LEFT_PAREN LIKE schema_qualified_name RIGHT_PAREN)
+    (external_table_location | external_table_execute)
+    external_table_format
+    define_foreign_options?
+    (ENCODING character_string)? 
+    external_table_log? 
+    distributed_clause?
+    ;
+
+external_table_location
+    : LOCATION LEFT_PAREN character_string (COMMA character_string)* RIGHT_PAREN (ON MASTER | ON COORDINATOR)?
+    ;
+
+external_table_execute
+    : EXECUTE command=character_string
+    (ON (ALL | COORDINATOR| MASTER | segment_nubmer=NUMBER_LITERAL | HOST hostname=character_string? | SEGMENT segment_id=NUMBER_LITERAL))?
+    ;
+
+external_table_format
+    : FORMAT format_type=character_string (LEFT_PAREN format_options* RIGHT_PAREN | format_options*)
+    ;
+
+format_options
+    : HEADER
+    | (QUOTE | DELIMITER | NULL | ESCAPE | NEWLINE) AS? character_string
+    | FILL MISSING FIELDS
+    | FORCE NOT NULL identifier_list
+    | FORMATTER EQUAL character_string
+    ;
+
+external_table_log
+    : (LOG ERRORS PERSISTENTLY?)? SEGMENT REJECT LIMIT NUMBER_LITERAL (ROWS | PERCENT)?
+    ;
+
 create_table_as_statement
     : ((GLOBAL | LOCAL)? (TEMPORARY | TEMP) | UNLOGGED)? TABLE if_not_exists? name=schema_qualified_name
     names_in_parens?
@@ -1886,7 +1923,7 @@ drop_statements
     | EVENT TRIGGER
     | EXTENSION
     | GROUP
-    | FOREIGN? TABLE
+    | (FOREIGN | EXTERNAL)? TABLE
     | FOREIGN DATA WRAPPER
     | INDEX CONCURRENTLY?
     | MATERIALIZED? VIEW
@@ -2466,6 +2503,7 @@ tokens_nonreserved
     | ENCODING
     | ENCRYPTED
     | ENUM
+    | ERRORS
     | ESCAPE
     | EVENT
     | EXCLUDE
@@ -2492,6 +2530,7 @@ tokens_nonreserved
     | HANDLER
     | HEADER
     | HOLD
+    | HOST
     | HOUR
     | IDENTITY
     | IF
@@ -2574,6 +2613,8 @@ tokens_nonreserved
     | PARTITION
     | PASSING
     | PASSWORD
+    | PERCENT
+    | PERSISTENTLY
     | PLANS
     | POLICY
     | PRECEDING
@@ -2590,6 +2631,7 @@ tokens_nonreserved
     | QUOTE
     | RANGE
     | READ
+    | READABLE
     | READS
     | REASSIGN
     | RECHECK
@@ -2598,6 +2640,7 @@ tokens_nonreserved
     | REFERENCING
     | REFRESH
     | REINDEX
+    | REJECT
     | RELATIVE
     | RELEASE
     | RENAME
@@ -2624,6 +2667,7 @@ tokens_nonreserved
     | SEARCH
     | SECOND
     | SECURITY
+    | SEGMENT
     | SEQUENCE
     | SEQUENCES
     | SERIALIZABLE
@@ -2685,12 +2729,14 @@ tokens_nonreserved
     | VIEW
     | VIEWS
     | VOLATILE
+    | WEB
     | WHITESPACE
     | WITHIN
     | WITHOUT
     | WORK
     | WRAPPER
     | WRITE
+    | WRITABLE
     | XML
     | YEAR
     | YES
@@ -2873,6 +2919,7 @@ tokens_nonkeyword
     | COMPRESSTYPE
     | CONNECT
     | CONTAINS
+    | COORDINATOR
     | COSTS
     | CREATEDB
     | CREATEEXTTABLE
@@ -2884,6 +2931,8 @@ tokens_nonkeyword
     | DISTRIBUTED
     | ELEMENT
     | EXTENDED
+    | FIELDS
+    | FILL
     | FINALFUNC
     | FINALFUNC_EXTRA
     | FINALFUNC_MODIFY
@@ -2891,6 +2940,7 @@ tokens_nonkeyword
     | FORCE_NULL
     | FORCE_QUOTE
     | FORMAT
+    | FORMATTER
     | GETTOKEN
     | HASH
     | HASHES
@@ -2921,6 +2971,7 @@ tokens_nonkeyword
     | MFINALFUNC_MODIFY
     | MINITCOND
     | MINVFUNC
+    | MISSING
     | MODIFIES
     | MODULUS
     | MSFUNC
@@ -2928,6 +2979,7 @@ tokens_nonkeyword
     | MSTYPE
     | MULTIRANGE_TYPE_NAME
     | NEGATOR
+    | NEWLINE
     | NOBYPASSRLS
     | NOCREATEDB
     | NOCREATEEXTTABLE

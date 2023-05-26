@@ -407,3 +407,17 @@ Reference: Object = public.test_table_elm2 (TABLE), action = CREATE, offset = 35
 Reference: Object = public (SCHEMA), action = null, offset = 35777, line number = 934, charPositionInLine = 21
 Reference: Object = public.films (TABLE), action = CREATE, offset = 35784, line number = 934, charPositionInLine = 28
 Reference: Object = foreign_server (SERVER), action = null, offset = 35985, line number = 942, charPositionInLine = 7
+Reference: Object = gp_dwh_test (SCHEMA), action = null, offset = 36088, line number = 949, charPositionInLine = 22
+Reference: Object = gp_dwh_test.ext_customer (TABLE), action = CREATE, offset = 36107, line number = 949, charPositionInLine = 41
+Reference: Object = gp_dwh_test (SCHEMA), action = null, offset = 36318, line number = 960, charPositionInLine = 22
+Reference: Object = gp_dwh_test.ext_customer1 (TABLE), action = CREATE, offset = 36337, line number = 960, charPositionInLine = 41
+Reference: Object = public (SCHEMA), action = null, offset = 36569, line number = 972, charPositionInLine = 22
+Reference: Object = public.ext_customer2 (TABLE), action = CREATE, offset = 36576, line number = 972, charPositionInLine = 29
+Reference: Object = gp_dwh_test (SCHEMA), action = null, offset = 36811, line number = 984, charPositionInLine = 22
+Reference: Object = gp_dwh_test.ext_customer3 (TABLE), action = CREATE, offset = 36830, line number = 984, charPositionInLine = 41
+Reference: Object = public (SCHEMA), action = null, offset = 37069, line number = 996, charPositionInLine = 22
+Reference: Object = public.ext_expenses (TABLE), action = CREATE, offset = 37076, line number = 996, charPositionInLine = 29
+Reference: Object = gp_dwh_test (SCHEMA), action = null, offset = 37591, line number = 1013, charPositionInLine = 26
+Reference: Object = gp_dwh_test.log_output (TABLE), action = CREATE, offset = 37610, line number = 1013, charPositionInLine = 45
+Reference: Object = gp_dwh_test (SCHEMA), action = null, offset = 37808, line number = 1021, charPositionInLine = 26
+Reference: Object = gp_dwh_test.log_output1 (TABLE), action = CREATE, offset = 37827, line number = 1021, charPositionInLine = 45

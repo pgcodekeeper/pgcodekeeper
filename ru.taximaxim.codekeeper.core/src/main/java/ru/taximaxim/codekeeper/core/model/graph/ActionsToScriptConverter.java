@@ -47,6 +47,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractForeignTable;
 import ru.taximaxim.codekeeper.core.schema.AbstractPgTable;
 import ru.taximaxim.codekeeper.core.schema.AbstractSequence;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
+import ru.taximaxim.codekeeper.core.schema.GpExternalTable;
 import ru.taximaxim.codekeeper.core.schema.MsColumn;
 import ru.taximaxim.codekeeper.core.schema.MsView;
 import ru.taximaxim.codekeeper.core.schema.PartitionPgTable;
@@ -194,7 +195,8 @@ public class ActionsToScriptConverter {
 
                 if (isPartitionTable(obj)) {
                     addCommandsForMovePartitionData(obj);
-                } else if (!(obj instanceof AbstractForeignTable || obj instanceof PartitionPgTable)) {
+                } else if (!(obj instanceof AbstractForeignTable || obj instanceof PartitionPgTable
+                        || obj instanceof GpExternalTable)) {
                     addCommandsForMoveData((AbstractTable) obj);
                 }
             }
@@ -206,7 +208,7 @@ public class ActionsToScriptConverter {
             }
             if (arguments.isDataMovementMode()
                     && DbObjType.TABLE == obj.getStatementType()
-                    && !(obj instanceof AbstractForeignTable)
+                    && !(obj instanceof AbstractForeignTable || obj instanceof GpExternalTable)
                     && obj.getTwin(newDbFull) != null) {
                 addCommandsForRenameTbl((AbstractTable) obj);
             } else {

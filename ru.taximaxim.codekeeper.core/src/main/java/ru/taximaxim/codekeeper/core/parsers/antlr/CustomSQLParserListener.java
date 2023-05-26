@@ -63,6 +63,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.statements.CreateFtsDictionary
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.CreateFtsParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.CreateFtsTemplate;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.CreateFunction;
+import ru.taximaxim.codekeeper.core.parsers.antlr.statements.CreateGpExternalTable;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.CreateIndex;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.CreateOperator;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.CreatePolicy;
@@ -135,6 +136,8 @@ implements SqlContextProcessor {
             p = new CreateTable(ctx.create_table_statement(), db, tablespace, accessMethod, oids, stream);
         } else if (ctx.create_foreign_table_statement() != null) {
             p = new CreateForeignTable(ctx.create_foreign_table_statement(), db, stream);
+        } else if (ctx.create_table_external_statement() != null) {
+            p = new CreateGpExternalTable(db, stream, ctx.create_table_external_statement());
         } else if (ctx.create_index_statement() != null) {
             p = new CreateIndex(ctx.create_index_statement(), db, tablespace, stream);
         } else if (ctx.create_extension_statement() != null) {
