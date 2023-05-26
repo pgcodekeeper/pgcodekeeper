@@ -28,6 +28,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractPgTable;
 import ru.taximaxim.codekeeper.core.schema.AbstractRegularTable;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
+import ru.taximaxim.codekeeper.core.schema.GpExternalTable;
 import ru.taximaxim.codekeeper.core.schema.ICompressOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.PartitionForeignPgTable;
 import ru.taximaxim.codekeeper.core.schema.PartitionPgTable;
@@ -60,6 +61,7 @@ public class TablesReader extends JdbcReader {
             partitionBound = res.getString("partition_bound");
             checkObjectValidity(partitionBound, DbObjType.TABLE, tableName);
         }
+
         AbstractPgTable t;
         String serverName = res.getString("server_name");
         long ofTypeOid = res.getLong("of_type");
@@ -77,6 +79,9 @@ public class TablesReader extends JdbcReader {
             jdbcOfType.addTypeDepcy(t);
         } else if (partitionBound != null) {
             t = new PartitionPgTable(tableName, partitionBound);
+        } else if (loader.isGreenplumDb && res.getString("exloc") != null) {
+            t = new GpExternalTable(tableName);
+            readExternalTable((GpExternalTable) t, res);
         } else {
             t = new SimplePgTable(tableName);
         }
@@ -133,41 +138,46 @@ public class TablesReader extends JdbcReader {
         }
 
         if (t instanceof AbstractRegularTable) {
-            AbstractRegularTable regTable = (AbstractRegularTable) t;
+            fillRegularTable(t, res);
+        }
 
-            // TableSpace
-            String tableSpace = res.getString("table_space");
-            if (tableSpace != null && !tableSpace.isEmpty()) {
-                regTable.setTablespace(tableSpace);
-            }
+        return t;
+    }
 
-            if (loader.isGreenplumDb) {
-                String distribution = res.getString("distribution");
-                if (distribution != null && !distribution.isBlank()) {
-                    regTable.setDistribution(distribution);
-                }
-            }
+    private void fillRegularTable(AbstractPgTable t, ResultSet res) throws SQLException {
+        AbstractRegularTable regTable = (AbstractRegularTable) t;
 
-            // since 9.5 PostgreSQL
-            if (SupportedVersion.VERSION_9_5.isLE(loader.version)) {
-                regTable.setRowSecurity(res.getBoolean("row_security"));
-                regTable.setForceSecurity(res.getBoolean("force_security"));
-            }
+        // TableSpace
+        String tableSpace = res.getString("table_space");
+        if (tableSpace != null && !tableSpace.isEmpty()) {
+            regTable.setTablespace(tableSpace);
+        }
 
-            // since 10 PostgreSQL
-            if (SupportedVersion.VERSION_10.isLE(loader.version) &&
-                    "p".equals(res.getString("relkind"))) {
-                String partitionBy = res.getString("partition_by");
-                checkObjectValidity(partitionBy, DbObjType.TABLE, tableName);
-                regTable.setPartitionBy(partitionBy);
-            }
-
-            // persistence: U - unlogged, P - permanent, T - temporary
-            if ("u".equals(res.getString("persistence"))) {
-                regTable.setLogged(false);
+        if (loader.isGreenplumDb) {
+            String distribution = res.getString("distribution");
+            if (distribution != null && !distribution.isBlank()) {
+                regTable.setDistribution(distribution);
             }
         }
-        return t;
+
+        // since 9.5 PostgreSQL
+        if (SupportedVersion.VERSION_9_5.isLE(loader.version)) {
+            regTable.setRowSecurity(res.getBoolean("row_security"));
+            regTable.setForceSecurity(res.getBoolean("force_security"));
+        }
+
+        // since 10 PostgreSQL
+        if (SupportedVersion.VERSION_10.isLE(loader.version) &&
+                "p".equals(res.getString("relkind"))) {
+            String partitionBy = res.getString("partition_by");
+            checkObjectValidity(partitionBy, DbObjType.TABLE, t.getBareName());
+            regTable.setPartitionBy(partitionBy);
+        }
+
+        // persistence: U - unlogged, P - permanent, T - temporary
+        if ("u".equals(res.getString("persistence"))) {
+            regTable.setLogged(false);
+        }
     }
 
     private void readColumns(ResultSet res, AbstractPgTable t, long ofTypeOid,
@@ -326,6 +336,78 @@ public class TablesReader extends JdbcReader {
                 t.addColumn(column);
             }
         }
+    }
+
+    private void readExternalTable(GpExternalTable extTable, ResultSet res) throws SQLException {
+        String rowUrLoc = res.getString("urloc");
+        if (rowUrLoc != null) {
+            if (rowUrLoc.startsWith("{http")) {
+                extTable.setWeb(true);
+            }
+
+            for (String urLocation : PgDiffUtils.unquoteQuotedString(rowUrLoc, 1).split(",")) {
+                extTable.addUrLocation(PgDiffUtils.quoteString(urLocation));
+            }
+        }
+
+        String exLoc = PgDiffUtils.unquoteQuotedName(res.getString("exloc"));
+        if (exLoc.startsWith("HOST:")) {
+            extTable.setExLocation("ON HOST " + PgDiffUtils.quoteString(exLoc.substring("ON HOST:".length())));
+        } else if (exLoc.startsWith("PER_HOST")) {
+            extTable.setExLocation("ON HOST");
+        } else if (exLoc.startsWith("MASTER_ONLY")) {
+            extTable.setExLocation("ON MASTER");
+        } else if (exLoc.startsWith("COORDINATOR_ONLY")) {
+            extTable.setExLocation("ON COORDINATOR");
+        } else if (exLoc.startsWith("SEGMENT_ID:")) {
+            extTable.setExLocation("ON SEGMENT " + exLoc.substring("SEGMENT_ID:".length()));
+        } else if (exLoc.startsWith("TOTAL_SEGS:")) {
+            extTable.setExLocation("ON " + exLoc.substring("TOTAL_SEGS:".length()));
+        }
+
+        String command = res.getString("command");
+        if (command != null && !command.isBlank()) {
+            extTable.setWeb(true);
+            extTable.setCommand(PgDiffUtils.quoteString(command));
+        }
+
+        switch (res.getString("fmttype")) {
+        case "t":
+            extTable.setFormatType("'TEXT'");
+            break;
+        case "b":
+            extTable.setFormatType("'CUSTOM'");
+            break;
+        default:
+            extTable.setFormatType("'CSV'");
+            break;
+        }
+
+        String options = PgDiffUtils.unquoteQuotedString(res.getString("options"), 1);
+        if (!options.isBlank()) {
+            ParserAbstract.fillOptionParams(options.split(","), extTable::addOption, false, true, false);
+        }
+
+        extTable.setFormatOptions(appendFormatOptions(res));
+
+        extTable.setRejectLimit(res.getInt("rejlim"));
+        extTable.setIsLogErrors(res.getBoolean("logerrors"));
+        extTable.setRowReject(!"p".equals(res.getString("rejtyp")));
+        extTable.setEncoding(PgDiffUtils.quoteString(res.getString("enc")));
+        extTable.setWritable(res.getBoolean("writable"));
+
+        String distribution = res.getString("distribution");
+        if (distribution != null && !distribution.isBlank()) {
+            extTable.setDistribution(distribution);
+        }
+    }
+
+    private String appendFormatOptions(ResultSet res) throws SQLException {
+        String formatOptions = res.getString("fmtopts");
+        if (formatOptions.contains("formatter")) {
+            return formatOptions.trim().replace(" ", "=");
+        }
+        return formatOptions;
     }
 
     @Override
