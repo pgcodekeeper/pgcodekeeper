@@ -21,6 +21,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrUtils;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Col_labelContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Create_table_statementContext;
@@ -41,6 +42,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractRegularTable;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractSequence;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
+import ru.taximaxim.codekeeper.core.schema.PartitionGpTable;
 import ru.taximaxim.codekeeper.core.schema.PartitionPgTable;
 import ru.taximaxim.codekeeper.core.schema.PgColumn;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
@@ -52,6 +54,8 @@ public class CreateTable extends TableAbstract {
     private final String tablespace;
     private final String accessMethod;
     private final String oids;
+    private final CommonTokenStream stream;
+
 
     public CreateTable(Create_table_statementContext ctx, PgDatabase db,
             String tablespace, String accessMethod, String oids, CommonTokenStream stream) {
@@ -60,6 +64,7 @@ public class CreateTable extends TableAbstract {
         this.tablespace = tablespace;
         this.accessMethod = accessMethod;
         this.oids = oids;
+        this.stream = stream;
     }
 
     @Override
@@ -90,7 +95,13 @@ public class CreateTable extends TableAbstract {
         if (typeCtx != null) {
             table = defineType(typeCtx, tableName, schemaName);
         } else if (colCtx != null) {
-            table = fillRegularTable(new SimplePgTable(tableName));
+            AbstractRegularTable abstractRegTable;
+            if (ctx.partition_gp() != null) {
+                abstractRegTable = new PartitionGpTable(tableName);
+            } else {
+                abstractRegTable = new SimplePgTable(tableName);
+            }
+            table = fillRegularTable(abstractRegTable);
             fillColumns(colCtx, table, schemaName, tablespace);
         } else {
             String partBound = ParserAbstract.getFullCtxText(partCtx.for_values_bound());
@@ -121,6 +132,12 @@ public class CreateTable extends TableAbstract {
         }
 
         table.setDistribution(parseDistribution(ctx.distributed_clause()));
+
+        if (table instanceof PartitionGpTable) {
+            var partitionGP = ctx.partition_gp();
+            ((PartitionGpTable) table).setPartitionGpBound(getFullCtxText(partitionGP),
+                    AntlrUtils.normalizeWhitespaceUnquoted(partitionGP, stream));
+        }
 
         boolean explicitOids = false;
         Storage_parameter_oidContext storage = ctx.storage_parameter_oid();

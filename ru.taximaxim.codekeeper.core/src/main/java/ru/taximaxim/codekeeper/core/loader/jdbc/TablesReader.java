@@ -18,11 +18,15 @@ package ru.taximaxim.codekeeper.core.loader.jdbc;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.antlr.v4.runtime.CommonTokenStream;
+
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.loader.JdbcQueries;
 import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrUtils;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.VexAnalysisLauncher;
+import ru.taximaxim.codekeeper.core.parsers.antlr.statements.AlterTable;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.AbstractPgTable;
 import ru.taximaxim.codekeeper.core.schema.AbstractRegularTable;
@@ -31,13 +35,17 @@ import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.GpExternalTable;
 import ru.taximaxim.codekeeper.core.schema.ICompressOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.PartitionForeignPgTable;
+import ru.taximaxim.codekeeper.core.schema.PartitionGpTable;
 import ru.taximaxim.codekeeper.core.schema.PartitionPgTable;
 import ru.taximaxim.codekeeper.core.schema.PgColumn;
 import ru.taximaxim.codekeeper.core.schema.SimpleForeignPgTable;
 import ru.taximaxim.codekeeper.core.schema.SimplePgTable;
 import ru.taximaxim.codekeeper.core.schema.TypedPgTable;
+import ru.taximaxim.codekeeper.core.utils.Pair;
 
 public class TablesReader extends JdbcReader {
+
+    private static final String CREATE_TABLE = "CREATE TABLE noname () ";
 
     public TablesReader(JdbcLoaderBase loader) {
         super(JdbcQueries.QUERY_TABLES, loader);
@@ -55,11 +63,17 @@ public class TablesReader extends JdbcReader {
         String tableName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, DbObjType.TABLE));
         String partitionBound = null;
+        String partitionGpBound = null;
+        String partitionGpTemplate = null;
 
         if (SupportedVersion.VERSION_10.isLE(loader.version) &&
                 res.getBoolean("relispartition")) {
             partitionBound = res.getString("partition_bound");
             checkObjectValidity(partitionBound, DbObjType.TABLE, tableName);
+        }
+        if (loader.isGreenplumDb) {
+            partitionGpBound = res.getString("partclause");
+            partitionGpTemplate = res.getString("parttemplate");
         }
 
         AbstractPgTable t;
@@ -79,6 +93,8 @@ public class TablesReader extends JdbcReader {
             jdbcOfType.addTypeDepcy(t);
         } else if (partitionBound != null) {
             t = new PartitionPgTable(tableName, partitionBound);
+        } else if (partitionGpBound != null) {
+            t = createGpParttionTable(tableName, partitionGpBound, partitionGpTemplate);
         } else if (loader.isGreenplumDb && res.getString("exloc") != null) {
             t = new GpExternalTable(tableName);
             readExternalTable((GpExternalTable) t, res);
@@ -133,7 +149,7 @@ public class TablesReader extends JdbcReader {
             t.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
 
-        if (!SupportedVersion.VERSION_12.isLE(loader.version) && res.getBoolean("has_oids")){
+        if (!SupportedVersion.VERSION_12.isLE(loader.version) && res.getBoolean("has_oids")) {
             t.setHasOids(true);
         }
 
@@ -142,6 +158,32 @@ public class TablesReader extends JdbcReader {
         }
 
         return t;
+    }
+
+    private AbstractPgTable createGpParttionTable(String tableName, String partitionGpBound,
+            String partitionGpTemplate) {
+        PartitionGpTable table = new PartitionGpTable(tableName);
+        var partGp = partitionGpBound;
+
+        loader.submitAntlrTask(CREATE_TABLE + partitionGpBound + ';',
+                p -> new Pair<>(
+                        p.sql().statement(0).schema_statement().schema_create().create_table_statement().partition_gp(),
+                        (CommonTokenStream) p.getTokenStream()),
+                pair -> table.setPartitionGpBound(partGp,
+                        AntlrUtils.normalizeWhitespaceUnquoted(pair.getFirst(), pair.getSecond())));
+
+        if (partitionGpTemplate != null && !partitionGpTemplate.isEmpty()) {
+            for (String template : partitionGpTemplate.split(";")) {
+                loader.submitAntlrTask(template + ';',
+                        p -> new Pair<>(
+                                p.sql().statement(0).schema_statement().schema_alter().alter_table_statement()
+                                    .alter_partition_gp(),
+                                (CommonTokenStream) p.getTokenStream()),
+                        pair -> AlterTable.parseGpPartitionTemplate(table, pair.getFirst(), pair.getSecond()));
+            }
+        }
+
+        return table;
     }
 
     private void fillRegularTable(AbstractPgTable t, ResultSet res) throws SQLException {

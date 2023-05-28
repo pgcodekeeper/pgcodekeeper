@@ -645,6 +645,8 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     DISTRIBUTED: [dD] [iI] [sS] [tT] [rR] [iI] [bB] [uU] [tT] [eE] [dD];
 
     ELEMENT: [eE] [lL] [eE] [mM] [eE] [nN] [tT];
+    EVERY: [eE] [vV] [eE] [rR] [yY];
+    EXCHANGE: [eE] [xX] [cC] [hH] [aA] [nN] [gG] [eE];
     EXTENDED: [eE] [xX] [tT] [eE] [nN] [dD] [eE] [dD];
 
     FIELDS: [fF] [iI] [eE] [lL] [dD] [sS];
@@ -666,6 +668,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     HYPOTHETICAL: [hH] [yY] [pP] [oO] [tT] [hH] [eE] [tT] [iI] [cC] [aA] [lL];
 
     ICU_LOCALE: [iI] [cC] [uU] UNDERLINE LOCALE;
+    INCLUSIVE: [iI] [nN] [cC] [lL] [uU] [sS] [iI] [vV] [eE];
     INDEX_CLEANUP: [iI] [nN] [dD] [eE] [xX] UNDERLINE [cC] [lL] [eE] [aA] [nN] [uU] [pP];
     INIT: [iI] [nN] [iI] [tT];
     INITCOND: [iI] [nN] [iI] [tT] [cC] [oO] [nN] [dD];
@@ -725,6 +728,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     PROVIDER: [pP] [rR] [oO] [vV] [iI] [dD] [eE] [rR];
 
     RANDOMLY: [rR] [aA] [nN] [dD] [oO] [mM] [lL] [yY];
+    RANK: [rR] [aA] [nN] [kK];
     READ_ONLY: READ UNDERLINE ONLY;
     READ_WRITE: READ UNDERLINE WRITE;
     RECEIVE: [rR] [eE] [cC] [eE] [iI] [vV] [eE];
@@ -745,9 +749,11 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     SHAREABLE: [sS] [hH] [aA] [rR] [eE] [aA] [bB] [lL] [eE];
     SKIP_LOCKED: [sS] [kK] [iI] [pP] UNDERLINE [lL] [oO] [cC] [kK] [eE] [dD];
     SORTOP: [sS] [oO] [rR] [tT] [oO] [pP];
+    SPLIT: [sS] [pP] [lL] [iI] [tT];
     SSPACE: [sS] [sS] [pP] [aA] [cC] [eE];
     STRATEGY: [sS] [tT] [rR] [aA] [tT] [eE] [gG] [yY];
     STYPE: [sS] [tT] [yY] [pP] [eE];
+    SUBPARTITION: [sS] [uU] [bB] [pP] [aA] [rR] [tT] [iI] [tT] [iI] [oO] [nN];
     SUBTYPE_DIFF: [sS] [uU] [bB] [tT] [yY] [pP] [eE] UNDERLINE [dD] [iI] [fF] [fF];
     SUBTYPE_OPCLASS: [sS] [uU] [bB] [tT] [yY] [pP] [eE] UNDERLINE [oO] [pP] [cC] [lL] [aA] [sS] [sS];
     SUBTYPE: [sS] [uU] [bB] [tT] [yY] [pP] [eE];
@@ -762,6 +768,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     UNSAFE: [uU] [nN] [sS] [aA] [fF] [eE];
     USAGE: [uU] [sS] [aA] [gG] [eE];
 
+    VALIDATION: [vV] [aA] [lL] [iI] [dD] [aA] [tT] [iI] [oO] [nN];
     VARIABLE: [vV] [aA] [rR] [iI] [aA] [bB] [lL] [eE];
 
     WAL: [wW] [aA] [lL];
