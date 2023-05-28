@@ -377,7 +377,45 @@ alter_table_statement
         | RENAME CONSTRAINT identifier TO identifier
         | SET (WITH LEFT_PAREN REORGANIZE EQUAL (TRUE | FALSE) RIGHT_PAREN)? distributed_clause
         | ATTACH PARTITION child=schema_qualified_name for_values_bound
-        | DETACH PARTITION child=schema_qualified_name (CONCURRENTLY | FINALIZE)?)
+        | DETACH PARTITION child=schema_qualified_name (CONCURRENTLY | FINALIZE)?
+        | alter_partition_gp)
+    ;
+
+alter_partition_gp
+    : (ALTER PARTITION alter_partition_gp_name+)? partition_action
+    ;
+
+partition_action
+    : ALTER DEFAULT PARTITION
+    | DROP DEFAULT PARTITION if_exists?
+    | DROP PARTITION if_exists? alter_partition_gp_name cascade_restrict?
+    | TRUNCATE DEFAULT PARTITION
+    | TRUNCATE PARTITION alter_partition_gp_name
+    | RENAME DEFAULT PARTITION TO identifier
+    | RENAME PARTITION alter_partition_gp_name TO identifier
+    | ADD DEFAULT PARTITION identifier (LEFT_PAREN template_spec RIGHT_PAREN)?
+    | ADD PARTITION identifier? alter_partition_element gp_partition_with_clause? (LEFT_PAREN template_spec RIGHT_PAREN)?
+    | EXCHANGE PARTITION alter_partition_gp_name WITH TABLE name=schema_qualified_name (WITH | WITHOUT VALIDATION)?
+    | EXCHANGE DEFAULT PARTITION WITH TABLE identifier (WITH | WITHOUT VALIDATION)?
+    | SET SUBPARTITION TEMPLATE (LEFT_PAREN template_spec RIGHT_PAREN)
+    | SPLIT DEFAULT PARTITION (AT LEFT_PAREN Character_String_Literal RIGHT_PAREN | partition_start_clause) into_partition_gp_clause?
+    | SPLIT PARTITION alter_partition_gp_name AT LEFT_PAREN Character_String_Literal RIGHT_PAREN into_partition_gp_clause?
+    ;
+
+alter_partition_element
+    : partition_values
+    | partition_start_clause
+    | partition_end_clause
+    ;
+
+alter_partition_gp_name
+    : identifier
+    | FOR LEFT_PAREN RANK LEFT_PAREN NUMBER_LITERAL RIGHT_PAREN RIGHT_PAREN
+    | FOR LEFT_PAREN value=Character_String_Literal RIGHT_PAREN
+    ;
+
+into_partition_gp_clause
+    : INTO LEFT_PAREN PARTITION identifier COMMA PARTITION identifier RIGHT_PAREN
     ;
 
 table_action
@@ -1589,6 +1627,7 @@ create_table_statement
     on_commit?
     table_space?
     distributed_clause?
+    partition_gp?
     ;
 
 distributed_clause
@@ -1691,6 +1730,82 @@ partition_by
     : PARTITION BY partition_method
     ;
 
+partition_gp
+    : with_subpartition_template
+    | without_subpartition_template
+    ;
+
+with_subpartition_template
+    : PARTITION BY partition_type_col subpartition_pattern* LEFT_PAREN partition_spec RIGHT_PAREN
+    ;
+
+without_subpartition_template
+    : PARTITION BY partition_type_col (SUBPARTITION BY partition_type_col)*
+    LEFT_PAREN partition_spec_with_columns (COMMA partition_spec_with_columns)* RIGHT_PAREN
+    ;
+
+partition_spec_with_columns
+    : partition_spec (LEFT_PAREN subpartition_spec (COMMA subpartition_spec)* RIGHT_PAREN)?
+    ;
+
+subpartition_spec
+    : template_spec (LEFT_PAREN template_spec RIGHT_PAREN)?
+    ;
+
+subpartition_pattern
+    : SUBPARTITION BY partition_type_col SUBPARTITION TEMPLATE LEFT_PAREN template_spec RIGHT_PAREN
+    ;
+
+partition_type_col
+    : (LIST | RANGE) LEFT_PAREN identifier RIGHT_PAREN
+    ;
+
+template_spec
+    : subpartition_element (COMMA subpartition_element)*
+    ;
+
+partition_spec
+   : partition_element (COMMA partition_element)*
+   ;
+
+partition_element
+    : (DEFAULT PARTITION identifier | (PARTITION identifier)? (partition_values | partition_start_clause | partition_end_clause))
+    gp_partition_with_clause?
+    ;
+
+subpartition_element
+    : (DEFAULT SUBPARTITION identifier | (SUBPARTITION identifier)? (partition_values | partition_start_clause | partition_end_clause))
+    gp_partition_with_clause?
+    ;
+
+partition_values
+    : VALUES LEFT_PAREN Character_String_Literal (COMMA Character_String_Literal)* RIGHT_PAREN
+    ;
+
+gp_partition_with_clause
+    : with_storage_parameter (gp_table_column_definition)* table_space?
+    ;
+
+gp_table_column_definition
+    : COLUMN identifier encoding_identifier?
+    ;
+
+partition_start_clause
+    : START partition_start_end_val (END partition_start_end_val)? partition_every_clause?
+    ;
+
+partition_end_clause
+    : END partition_start_end_val partition_every_clause?
+    ;
+
+partition_start_end_val
+    : LEFT_PAREN val=vex RIGHT_PAREN (INCLUSIVE | EXCLUSIVE)?
+    ;
+
+partition_every_clause
+    : EVERY LEFT_PAREN interval_value=vex RIGHT_PAREN
+    ;
+
 partition_method
     : (RANGE | LIST | HASH) LEFT_PAREN partition_column (COMMA partition_column)* RIGHT_PAREN
     ;
@@ -1727,7 +1842,7 @@ table_of_type_column_def
     ;
 
 table_column_definition
-    : identifier data_type define_foreign_options? compression_identifier? collate_identifier? encoding_identifier? constraint_common*
+    : identifier data_type define_foreign_options? compression_identifier? collate_identifier? constraint_common*
     ;
 
 like_option
@@ -1753,6 +1868,7 @@ constr_body
     | DEFAULT default_expr=vex
     | identity_body
     | GENERATED ALWAYS AS LEFT_PAREN vex RIGHT_PAREN STORED
+    | encoding_identifier
     ;
 
 all_op
@@ -2930,6 +3046,8 @@ tokens_nonkeyword
     | DISABLE_PAGE_SKIPPING
     | DISTRIBUTED
     | ELEMENT
+    | EVERY
+    | EXCHANGE
     | EXTENDED
     | FIELDS
     | FILL
@@ -2947,6 +3065,7 @@ tokens_nonkeyword
     | HEADLINE
     | HYPOTHETICAL
     | ICU_LOCALE
+    | INCLUSIVE
     | INDEX_CLEANUP
     | INIT
     | INITCOND
@@ -2999,6 +3118,7 @@ tokens_nonkeyword
     | PROTOCOL
     | PROVIDER
     | RANDOMLY
+    | RANK
     | READ_ONLY
     | READ_WRITE
     | RECEIVE
@@ -3018,6 +3138,7 @@ tokens_nonkeyword
     | SHAREABLE
     | SKIP_LOCKED
     | SORTOP
+    | SPLIT
     | SSPACE
     | STRATEGY
     | STYPE
@@ -3025,6 +3146,7 @@ tokens_nonkeyword
     | SUBTYPE_OPCLASS
     | SUBTYPE
     | SUBSCRIPT
+    | SUBPARTITION
     | SUMMARY
     | SUPERUSER
     | TIMING
@@ -3032,6 +3154,7 @@ tokens_nonkeyword
     | TYPMOD_OUT
     | UNSAFE
     | USAGE
+    | VALIDATION
     | VARIABLE
     | WAL
     | YAML

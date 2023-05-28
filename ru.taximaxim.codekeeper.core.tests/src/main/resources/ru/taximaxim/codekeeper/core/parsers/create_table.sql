@@ -914,9 +914,19 @@ CREATE TABLE cmpart2(f1 text COMPRESSION lz4);
 CREATE TABLE cmdata3 (f1 TEXT COMPRESSION pglz, f2 TEXT COMPRESSION lz4);
 CREATE TABLE cmdata4 (f1 TEXT COMPRESSION DEFAULT);
 
--- for Greenplum
-CREATE TABLE baby.rank (id int, rank int, year smallint,
-gender char(1), count int ) DISTRIBUTED BY (rank, gender, year);
+-- for Greenplum:
+CREATE TABLE baby.rank (id int, rank int, year smallint, gender char(1), count int) DISTRIBUTED BY (rank, gender, year);
+CREATE TABLE table_1 
+(MY_ID integer, MY_INT integer, MY_DATE date, MY_TEXT varchar(40))
+distributed replicated;
+
+CREATE TABLE table_2
+(MY_ID integer, MY_INT integer, MY_DATE date, MY_TEXT varchar(40))
+distributed randomly;
+
+CREATE TABLE baby.rank2 
+(id int, rank int, year smallint, gender char(1), count int)
+DISTRIBUTED BY (rank, gender public.gist__int_ops, year);
 
 CREATE TABLE table_1 (MY_ID integer, MY_INT integer, MY_DATE date, MY_TEXT varchar(40)) distributed replicated;
 CREATE TABLE table_2 (MY_ID integer, MY_INT integer, MY_DATE date, MY_TEXT varchar(40)) distributed randomly;
@@ -944,6 +954,56 @@ OPTIONS (
     mpp_execute 'all segments'
 );
 
+--PARTITION TABLE
+create table region
+(
+    r_regionkey integer not null,
+    r_name char(25),
+    r_comment varchar(152)
+)
+distributed by (r_regionkey)
+partition by range (r_regionkey)
+subpartition by list (r_name)
+ subpartition template
+(
+    subpartition africa values ('AFRICA'),
+    subpartition america values ('AMERICA'),
+    subpartition asia values ('ASIA'),
+    subpartition europe values ('EUROPE'),
+    subpartition mideast values ('MIDDLE EAST'),
+    subpartition australia values ('AUSTRALIA'),
+    subpartition antarctica values ('ANTARCTICA')
+)
+(
+    partition region1 start (0),
+    partition region2 start (3),
+    partition region3 start (5) end (8)
+);
+
+
+-- more than one level partitioning table
+CREATE TABLE two_level_pt(a int, b int, c int)
+DISTRIBUTED BY (a)
+PARTITION BY RANGE (b)
+      SUBPARTITION BY RANGE (c)
+      SUBPARTITION TEMPLATE (
+      START (11) END (12) EVERY (1))
+      ( START (1) END (2) EVERY (1));
+ 
+ 
+Create table sto_ao_ao
+ (col1 bigint, col2 date, col3 text, col4 int) with(appendonly=true)
+ distributed randomly 
+ partition by range(col2)
+        subpartition by list (col3)
+        subpartition template 
+        (default subpartition subothers, 
+        subpartition sub1 values ('one'),
+        subpartition sub2 values ('two'))        
+        (default partition others,
+        start(date '2008-01-01') 
+        end(date '2008-04-30')
+        every(interval '1 month'));
 -- external tables 
 
 CREATE EXTERNAL TABLE gp_dwh_test.public.ext_customer (
@@ -1026,4 +1086,19 @@ EXECUTE '/var/load_scripts/get_log_data.sh' ON MASTER
 FORMAT 'TEXT' ( delimiter '|' null '\N' escape '\' )
 ENCODING 'UTF8';
 
+ALTER TABLE test SPLIT DEFAULT PARTITION 
+START ('2022-01-01') INCLUSIVE 
+END ('2022-02-01') EXCLUSIVE 
+INTO (PARTITION jan09, PARTITION other);
 
+ALTER TABLE test ADD PARTITION 
+START (date '2022-02-01') INCLUSIVE 
+END (date '2022-03-01') EXCLUSIVE;
+
+ALTER TABLE test 
+SET SUBPARTITION TEMPLATE (
+  SUBPARTITION ru VALUES('RU'), 
+  SUBPARTITION ir VALUES('IR'), 
+  SUBPARTITION sg VALUES('SG'), 
+  SUBPARTITION us VALUES('US'), 
+  DEFAULT SUBPARTITION other);
