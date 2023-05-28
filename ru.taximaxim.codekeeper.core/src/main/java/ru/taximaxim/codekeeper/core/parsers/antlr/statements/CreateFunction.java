@@ -115,6 +115,14 @@ public class CreateFunction extends ParserAbstract {
                 function.setSecurityDefiner(true);
             } else if (action.LEAKPROOF() != null) {
                 function.setLeakproof(action.NOT() == null);
+            } else if (action.ANY() != null) {
+                function.setExecuteOn("ANY");
+            } else if (action.SEGMENTS() != null) {
+                function.setExecuteOn("ALL SEGMENTS");
+            } else if (action.MASTER() != null) {
+                function.setExecuteOn("MASTER");
+            } else if (action.INITPLAN() != null) {
+                function.setExecuteOn("INITPLAN");
             } else if (action.LANGUAGE() != null) {
                 language = action.lang_name.getText();
             } else if (action.COST() != null) {
@@ -217,10 +225,10 @@ public class CreateFunction extends ParserAbstract {
             AntlrParser.submitAntlrTask(antlrTasks,
                     () -> AntlrParser.makeBasicParser(SQLParser.class, def,
                             name, err, start).sql(),
-                    ctx -> {
+                    funcCtx -> {
                         errors.addAll(err);
                         FuncProcAnalysisLauncher launcher = new FuncProcAnalysisLauncher(
-                                function, ctx, fileName, funcArgs);
+                                function, funcCtx, fileName, funcArgs);
                         launcher.setOffset(start);
                         db.addAnalysisLauncher(launcher);
                     });
@@ -231,10 +239,10 @@ public class CreateFunction extends ParserAbstract {
                         AntlrUtils.removeIntoStatements(parser);
                         return parser.plpgsql_function();
                     },
-                    ctx -> {
+                    funcCtx -> {
                         errors.addAll(err);
                         FuncProcAnalysisLauncher launcher = new FuncProcAnalysisLauncher(
-                                function, ctx, fileName, funcArgs);
+                                function, funcCtx, fileName, funcArgs);
                         launcher.setOffset(start);
                         db.addAnalysisLauncher(launcher);
                     });
@@ -245,9 +253,9 @@ public class CreateFunction extends ParserAbstract {
             List<Pair<String, GenericColumn>> funcArgs) {
         // finalizer-only task, defers analyzer until finalizing stage
         AntlrParser.submitAntlrTask(antlrTasks, () -> body,
-                ctx -> {
+                funcCtx -> {
                     FuncProcAnalysisLauncher launcher = new FuncProcAnalysisLauncher(
-                            function, ctx, fileName, funcArgs);
+                            function, funcCtx, fileName, funcArgs);
                     db.addAnalysisLauncher(launcher);
                 });
     }

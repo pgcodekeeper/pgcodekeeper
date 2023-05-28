@@ -823,3 +823,15 @@ DROP ROLE regress_foreign_data_user;
 SELECT fdwname, fdwhandler, fdwvalidator, fdwoptions FROM pg_foreign_data_wrapper;
 SELECT srvname, srvoptions FROM pg_foreign_server;
 SELECT * FROM pg_user_mapping;
+
+-- for Greenpplum
+
+CREATE FOREIGN DATA WRAPPER mywrapper OPTIONS (
+    mpp_execute 'master',
+    debug 'true'
+);
+
+
+ALTER FOREIGN DATA WRAPPER mywrapper OPTIONS (SET mpp_execute 'any');
+ALTER FOREIGN DATA WRAPPER mywrapper OPTIONS (DROP mpp_execute );
+ALTER FOREIGN DATA WRAPPER mywrapper OPTIONS (ADD mpp_execute 'master');

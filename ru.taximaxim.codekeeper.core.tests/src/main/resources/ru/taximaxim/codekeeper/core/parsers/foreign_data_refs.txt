@@ -577,3 +577,7 @@ Reference: Object = dummy (FOREIGN_DATA_WRAPPER), action = DROP, offset = 32491,
 Reference: action = SELECT, offset = 32619, line number = 823, charPositionInLine = 0
 Reference: action = SELECT, offset = 32702, line number = 824, charPositionInLine = 0
 Reference: action = SELECT, offset = 32753, line number = 825, charPositionInLine = 0
+Reference: Object = mywrapper (FOREIGN_DATA_WRAPPER), action = CREATE, offset = 32832, line number = 829, charPositionInLine = 28
+Reference: Object = mywrapper (FOREIGN_DATA_WRAPPER), action = ALTER, offset = 32927, line number = 835, charPositionInLine = 27
+Reference: Object = mywrapper (FOREIGN_DATA_WRAPPER), action = ALTER, offset = 32997, line number = 836, charPositionInLine = 27
+Reference: Object = mywrapper (FOREIGN_DATA_WRAPPER), action = ALTER, offset = 33063, line number = 837, charPositionInLine = 27

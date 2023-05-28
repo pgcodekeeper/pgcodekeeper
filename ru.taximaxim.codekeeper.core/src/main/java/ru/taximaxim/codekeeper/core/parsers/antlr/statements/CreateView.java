@@ -98,6 +98,9 @@ public class CreateView extends ParserAbstract {
                 view.addColumnName(column.getText());
             }
         }
+
+        view.setDistribution(parseDistribution(ctx.distributed_clause()));
+
         Storage_parametersContext storage = ctx.storage_parameters();
         if (storage != null){
             List <Storage_parameter_optionContext> options = storage.storage_parameter_option();

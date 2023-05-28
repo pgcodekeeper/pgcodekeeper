@@ -20,6 +20,7 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
+import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
 import ru.taximaxim.codekeeper.core.utils.Pair;
@@ -30,6 +31,7 @@ public class JdbcQuery {
             + "FROM {0}.dbots_event_data time WHERE time.classid = {1}::pg_catalog.regclass";
 
     private String query;
+    private String gpQuery;
     private final Map<SupportedVersion, String> sinceQueries = new EnumMap<>(SupportedVersion.class);
     private final Map<Pair<SupportedVersion, SupportedVersion>, String> intervalQueries = new HashMap<>();
 
@@ -47,6 +49,10 @@ public class JdbcQuery {
 
     void addIntervalQuery(SupportedVersion since, SupportedVersion until, String query) {
         intervalQueries.put(new Pair<>(since, until), query);
+    }
+
+    void setGpQuery(String gpQuery) {
+        this.gpQuery = gpQuery;
     }
 
     public String makeQuery(JdbcLoaderBase loader, String classId) {
@@ -77,6 +83,10 @@ public class JdbcQuery {
         .filter(e -> e.getKey().getFirst().isLE(version) && !e.getKey().getSecond().isLE(version))
         .forEach(e -> appendQuery(sb, e.getValue(),
                 e.getKey().getFirst().getVersion() + "_" + e.getKey().getSecond().getVersion()));
+
+        if (loader.isGreenplumDb() && gpQuery != null) {
+            appendQuery(sb, gpQuery, Consts.GREENPLUM);
+        }
 
         String extensionSchema = loader.getExtensionSchema();
         if (extensionSchema != null) {

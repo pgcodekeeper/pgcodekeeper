@@ -25,13 +25,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 
-public class PgType extends AbstractType {
+public class PgType extends AbstractType implements ICompressOptionContainer{
+
+    private static final String COLLATE = " COLLATE ";
+    private static final String ALTER_TYPE = "\n\nALTER TYPE ";
 
     public enum PgTypeForm {
         COMPOSITE, ENUM, RANGE, BASE, SHELL
     }
-
-    private static final String COLLATE = " COLLATE ";
 
     private final PgTypeForm form;
 
@@ -68,6 +69,11 @@ public class PgType extends AbstractType {
     private String element;
     private String delimiter;
     private String collatable;
+
+    // greenplum type fields
+    private String compressType = DEFAULT_COMPESS_TYPE;
+    private int compressLevel = DEFAULT_COMPESS_LEVEL;
+    private int blockSize = DEFAULT_BLOCK_SIZE;
 
     public PgTypeForm getForm() {
         return form;
@@ -326,6 +332,36 @@ public class PgType extends AbstractType {
         resetHash();
     }
 
+    public String getCompressType() {
+        return compressType;
+    }
+
+    @Override
+    public void setCompressType(String compressType) {
+        this.compressType = compressType;
+        resetHash();
+    }
+
+    public int getCompressLevel() {
+        return compressLevel;
+    }
+
+    @Override
+    public void setCompressLevel(int compressLvl) {
+        this.compressLevel = compressLvl;
+        resetHash();
+    }
+
+    public int getBlockSize() {
+        return blockSize;
+    }
+
+    @Override
+    public void setBlockSize(int blockSize) {
+        this.blockSize = blockSize;
+        resetHash();
+    }
+
     public PgType(String name, PgTypeForm form) {
         super(name);
         this.form = form;
@@ -368,6 +404,10 @@ public class PgType extends AbstractType {
         appendOwnerSQL(sb);
         appendPrivileges(sb);
 
+        if (checkGreenplumOptions()) {
+            appendGreenplumOptions(this, sb);
+        }
+
         if (PgDiffUtils.isStringNotEmpty(comment)) {
             sb.append("\n\n");
             appendCommentSql(sb);
@@ -398,7 +438,6 @@ public class PgType extends AbstractType {
             if (attr.getCollation() != null) {
                 sb.append(COLLATE).append(attr.getCollation());
             }
-
         }
     }
 
@@ -505,6 +544,7 @@ public class PgType extends AbstractType {
         compareAttr(newType, sb, isNeedDepcies);
         columnsComments(newType, sb);
         compareEnums(newType.getEnums(), getEnums(), sb);
+        compareGreenplumOptions(newType, sb);
 
         if (!Objects.equals(getOwner(), newType.getOwner())) {
             newType.appendOwnerSQL(sb);
@@ -559,10 +599,7 @@ public class PgType extends AbstractType {
         if (attrSb.length() > 0) {
             // remove last comma
             attrSb.setLength(attrSb.length() - 1);
-            sb.append("\n\nALTER TYPE ")
-            .append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.')
-            .append(PgDiffUtils.getQuotedName(newType.getName()))
-            .append(attrSb).append(';');
+            sb.append(ALTER_TYPE).append(getQualifiedName()).append(attrSb).append(';');
         }
     }
 
@@ -571,10 +608,7 @@ public class PgType extends AbstractType {
         for (int i = 0; i < newEnums.size(); ++i) {
             String value = newEnums.get(i);
             if (!oldEnums.contains(value)) {
-                sb.append("\n\nALTER TYPE ")
-                .append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.')
-                .append(PgDiffUtils.getQuotedName(getName()))
-                .append("\n\tADD VALUE ").append(value);
+                sb.append(ALTER_TYPE).append(getQualifiedName()).append("\n\tADD VALUE ").append(value);
                 if (i == 0) {
                     sb.append(" BEFORE ").append(oldEnums.get(0));
                 } else {
@@ -583,6 +617,29 @@ public class PgType extends AbstractType {
                 sb.append(';');
             }
         }
+    }
+
+    private void compareGreenplumOptions(PgType newType, StringBuilder sb) {
+        if (!Objects.equals(newType.getCompressType(), getCompressType())
+                || newType.getCompressLevel() != getCompressLevel()
+                || newType.getBlockSize() != getBlockSize()) {
+            appendGreenplumOptions(newType, sb);
+        }
+    }
+
+    private boolean checkGreenplumOptions() {
+        return compressLevel != DEFAULT_COMPESS_LEVEL
+                || blockSize != DEFAULT_BLOCK_SIZE
+                || !Objects.equals(DEFAULT_COMPESS_TYPE, compressType);
+    }
+
+    private void appendGreenplumOptions(PgType type, StringBuilder sb) {
+        sb.append(ALTER_TYPE).append(getQualifiedName())
+        .append(" SET DEFAULT ENCODING (")
+        .append("COMPRESSTYPE = ").append(type.getCompressType()).append(", ")
+        .append("COMPRESSLEVEL = ").append(type.getCompressLevel()).append(", ")
+        .append("BLOCKSIZE = ").append(type.getBlockSize())
+        .append(");");
     }
 
     private void columnsComments(PgType newType, StringBuilder sb) {
@@ -609,14 +666,12 @@ public class PgType extends AbstractType {
         }
         switch (getForm()) {
         case ENUM:
-            Iterator<String> oi = getEnums().iterator();
             Iterator<String> ni = newType.getEnums().iterator();
-            while (oi.hasNext()) {
+            for (String oldEnum : getEnums()) {
                 if (!ni.hasNext()) {
                     // some old members were removed in new, can't alter
                     return false;
                 }
-                String oldEnum = oi.next();
                 if (!oldEnum.equals(ni.next())) {
                     // iterate over new enums until old enum is met or end is reached
                     boolean found = false;
@@ -640,6 +695,8 @@ public class PgType extends AbstractType {
             return true;
         case COMPOSITE:
             return true;
+        case BASE:
+            return compareBaseOptionsWithoutEncoding(newType);
         default:
             return false;
         }
@@ -677,6 +734,9 @@ public class PgType extends AbstractType {
         copy.setElement(getElement());
         copy.setDelimiter(getDelimiter());
         copy.setCollatable(getCollatable());
+        copy.setCompressType(getCompressType());
+        copy.setCompressLevel(getCompressLevel());
+        copy.setBlockSize(getBlockSize());
         return copy;
     }
 
@@ -699,28 +759,35 @@ public class PgType extends AbstractType {
                     && Objects.equals(canonical, type.getCanonical())
                     && Objects.equals(subtypeDiff, type.getSubtypeDiff())
                     && Objects.equals(multirange, type.getMultirange())
-                    && Objects.equals(inputFunction, type.getInputFunction())
-                    && Objects.equals(outputFunction, type.getOutputFunction())
-                    && Objects.equals(receiveFunction, type.getReceiveFunction())
-                    && Objects.equals(sendFunction, type.getSendFunction())
-                    && Objects.equals(typmodInputFunction, type.getTypmodInputFunction())
-                    && Objects.equals(typmodOutputFunction, type.getTypmodOutputFunction())
-                    && Objects.equals(analyzeFunction, type.getAnalyzeFunction())
-                    && Objects.equals(subscriptFunction, type.getSubscriptFunction())
-                    && Objects.equals(internalLength, type.getInternalLength())
-                    && passedByValue == type.isPassedByValue()
-                    && Objects.equals(alignment, type.getAlignment())
-                    && Objects.equals(storage, type.getStorage())
-                    && Objects.equals(likeType, type.getLikeType())
-                    && Objects.equals(category, type.getCategory())
-                    && Objects.equals(preferred, type.getPreferred())
-                    && Objects.equals(defaultValue, type.getDefaultValue())
-                    && Objects.equals(element, type.getElement())
-                    && Objects.equals(delimiter, type.getDelimiter())
-                    && Objects.equals(collatable, type.getCollatable());
+                    && compareBaseOptionsWithoutEncoding(type)
+                    && Objects.equals(compressType, type.getCompressType())
+                    && compressLevel == type.compressLevel
+                    && blockSize == type.getBlockSize();
         }
 
         return false;
+    }
+
+    public boolean compareBaseOptionsWithoutEncoding (PgType type) {
+        return Objects.equals(inputFunction, type.getInputFunction())
+                && Objects.equals(outputFunction, type.getOutputFunction())
+                && Objects.equals(receiveFunction, type.getReceiveFunction())
+                && Objects.equals(sendFunction, type.getSendFunction())
+                && Objects.equals(typmodInputFunction, type.getTypmodInputFunction())
+                && Objects.equals(typmodOutputFunction, type.getTypmodOutputFunction())
+                && Objects.equals(analyzeFunction, type.getAnalyzeFunction())
+                && Objects.equals(subscriptFunction, type.getSubscriptFunction())
+                && Objects.equals(internalLength, type.getInternalLength())
+                && passedByValue == type.isPassedByValue()
+                && Objects.equals(alignment, type.getAlignment())
+                && Objects.equals(storage, type.getStorage())
+                && Objects.equals(likeType, type.getLikeType())
+                && Objects.equals(category, type.getCategory())
+                && Objects.equals(preferred, type.getPreferred())
+                && Objects.equals(defaultValue, type.getDefaultValue())
+                && Objects.equals(element, type.getElement())
+                && Objects.equals(delimiter, type.getDelimiter())
+                && Objects.equals(collatable, type.getCollatable());
     }
 
     @Override
@@ -753,6 +820,9 @@ public class PgType extends AbstractType {
         hasher.put(element);
         hasher.put(delimiter);
         hasher.put(collatable);
+        hasher.put(compressType);
+        hasher.put(compressLevel);
+        hasher.put(blockSize);
     }
 
     @Override

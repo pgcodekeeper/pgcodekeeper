@@ -14,6 +14,8 @@ ALTER SERVER test_server_4 OPTIONS (ADD port '5432');
 
 ALTER SERVER test_server_5 OWNER TO user1;
 
+ALTER SERVER foreign_server OPTIONS (SET mpp_execute 'master');
+
 CREATE SERVER test_server_1 TYPE 'new server' FOREIGN DATA WRAPPER fdw1;
 
 CREATE SERVER test_server_3 FOREIGN DATA WRAPPER fdw_new;

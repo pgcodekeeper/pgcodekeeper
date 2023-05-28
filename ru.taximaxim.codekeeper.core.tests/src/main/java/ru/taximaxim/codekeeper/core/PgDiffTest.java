@@ -108,6 +108,18 @@ class PgDiffTest {
             "modify_column_generated",
             // Tests scenario where new FOREIGN TABLE is added.
             "add_foreign_table",
+            // Test scenario for greenplum where new FOREIGN TABLE is added.
+            "add_greenplum_foreign_table",
+            // Test scenario for greenplum where new EXTERNAL tables is added.
+            "add_gp_external_tables",
+            // Test scenario for greenplum where drop EXTERNAL table.
+            "drop_gp_external_tables",
+            // Test scenario for greenplum where alter column in EXTERNAL table.
+            "alter_columns_gp_external_tables",
+            // Test scenario for greenplum where compare EXTERNAL table.
+            "compare_gp_external_table",
+            // Test scenario for greenplum where altered FOREIGN TABLE.
+            "alter_greenplum_foreign_table",
             // Tests scenario where new TABLE with new SEQUENCE is added.
             "add_table_with_new_sequence",
             // Tests scenario where new TABLE with exist SEQUENCE is added.
@@ -244,6 +256,8 @@ class PgDiffTest {
             "depcy_function_defin_from_tbl_col",
             // Tests scenario where FUNCTION with depended column is modified
             "modify_function_depcy_col",
+            // Test scenario where Greenplum FUNCTION is added
+            "add_greenplum_function",
             // Tests scenario where TRIGGER is added.
             "add_trigger",
             // Tests scenario where TRIGGER with referencing is added.
@@ -517,8 +531,14 @@ class PgDiffTest {
             "chg_owner_grant",
             // Tests scenario where TABLE is compared.
             "compare_tables",
+            // Tests scenario where greenplum distribution TABLE clause is compared.
+            "compare_greenplum_tables",
             // Test scenario where in composit type changed position columns
             "compare_type_composite",
+            // Test scenario for where greenplum base type changed encoding options
+            "compare_GP_base_type",
+            // Tests scenario where greenplum table column encoding is compared.
+            "compare_greenplum_table_column_encoding",
             // Tests scenario where INDEX is compared.
             "compare_indices",
             // Tests scenario where FUNCTION is compared.
@@ -527,6 +547,8 @@ class PgDiffTest {
             "compare_casts",
             // Tests scenario where FOREIGN DATA WRAPPER is compared.
             "compare_fdw",
+            // Tests scenario where GP FOREIGN DATA WRAPPER is compared.
+            "compare_greenplum_fdw",
             // Tests scenario where SERVER is compared.
             "compare_servers",
             // Tests scenario where USER MAPPING is compared.

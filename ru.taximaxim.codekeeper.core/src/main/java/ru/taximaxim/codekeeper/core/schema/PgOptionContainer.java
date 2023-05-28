@@ -15,9 +15,20 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema;
 
+import java.util.List;
 import java.util.Map;
 
 public interface PgOptionContainer extends IStatement {
+
+    List<String> GP_OPTION_LIST = List.of(
+            "appendonly",
+            "appendoptimized",
+            "blocksize",
+            "orientation",
+            "checksum",
+            "compresstype",
+            "compresslevel",
+            "analyze_hll_non_part_table");
 
     void addOption(String key, String value);
     Map<String, String> getOptions();

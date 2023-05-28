@@ -37,7 +37,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 /**
  * Stores column information.
  */
-public class PgColumn extends AbstractColumn implements PgSimpleOptionContainer  {
+public class PgColumn extends AbstractColumn implements PgSimpleOptionContainer, ICompressOptionContainer  {
 
     private static final String ALTER_FOREIGN_OPTION =  "{0} OPTIONS ({1} {2} {3});";
     protected static final String COMPRESSION = " COMPRESSION ";
@@ -51,6 +51,11 @@ public class PgColumn extends AbstractColumn implements PgSimpleOptionContainer 
     private String compression;
     private boolean isInherit;
     private boolean isGenerated;
+
+    // greenplum type fields
+    private String compressType;
+    private int compressLevel = -1;
+    private int blockSize;
 
     public PgColumn(String name) {
         super(name);
@@ -76,6 +81,7 @@ public class PgColumn extends AbstractColumn implements PgSimpleOptionContainer 
             }
         }
 
+        appendCompressOptions(sbDefinition);
         definitionDefaultNotNull(sbDefinition);
 
         generatedAlwaysAsStored(sbDefinition);
@@ -123,6 +129,7 @@ public class PgColumn extends AbstractColumn implements PgSimpleOptionContainer 
             if (getCollation() != null) {
                 sb.append(COLLATE).append(getCollation());
             }
+            appendCompressOptions(sb);
 
             mergeDefaultNotNull = !getNullValue();
             if (mergeDefaultNotNull) {
@@ -158,6 +165,24 @@ public class PgColumn extends AbstractColumn implements PgSimpleOptionContainer 
         }
 
         return sb.toString();
+    }
+
+    private void appendCompressOptions(StringBuilder sb) {
+        if (compressType != null || compressLevel != -1 || blockSize != 0) {
+            sb.append(" ENCODING (");
+            if (compressType != null) {
+                sb.append("COMPRESSTYPE = ").append(compressType);
+            }
+
+            if (compressLevel != -1) {
+                sb.append(", COMPRESSLEVEL = ").append(compressLevel);
+            }
+
+            if (blockSize != 0) {
+                sb.append(", BLOCKSIZE = ").append(blockSize);
+            }
+            sb.append(")");
+        }
     }
 
     private String getAlterColumn(boolean newLine, boolean only, String column) {
@@ -217,7 +242,8 @@ public class PgColumn extends AbstractColumn implements PgSimpleOptionContainer 
         PgColumn newColumn = (PgColumn) newCondition;
 
         if (isGenerated() != newColumn.isGenerated()
-                || (isGenerated() && !Objects.equals(getDefaultValue(), newColumn.getDefaultValue()))) {
+                || (isGenerated() && !Objects.equals(getDefaultValue(), newColumn.getDefaultValue()))
+                || !compareCompressOptions(newColumn)) {
             isNeedDepcies.set(true);
             return true;
         }
@@ -251,6 +277,12 @@ public class PgColumn extends AbstractColumn implements PgSimpleOptionContainer 
         }
 
         return sb.length() > startLength;
+    }
+
+    private boolean compareCompressOptions(PgColumn newColumn) {
+        return Objects.equals(getCompressType(), newColumn.getCompressType())
+                && getCompressLevel() == newColumn.getCompressLevel()
+                && getBlockSize() == newColumn.getBlockSize();
     }
 
     /**
@@ -355,7 +387,9 @@ public class PgColumn extends AbstractColumn implements PgSimpleOptionContainer 
 
             PgDiffArguments arg = getDatabase().getArguments();
 
-            if ((arg == null || !arg.isUsingTypeCastOff()) && !(getParent() instanceof AbstractForeignTable)) {
+            if ((arg == null || !arg.isUsingTypeCastOff())
+                    && !(getParent() instanceof AbstractForeignTable)
+                    && !(getParent() instanceof GpExternalTable)) {
                 sb.append(" USING ").append(PgDiffUtils.getQuotedName(newColumn.getName()))
                 .append("::").append(newType);
             }
@@ -557,6 +591,36 @@ public class PgColumn extends AbstractColumn implements PgSimpleOptionContainer 
         resetHash();
     }
 
+    @Override
+    public void setCompressType(String compressType) {
+        this.compressType = compressType;
+        resetHash();
+    }
+
+    public String getCompressType() {
+        return compressType;
+    }
+
+    @Override
+    public void setCompressLevel(int compressLevel) {
+        this.compressLevel = compressLevel;
+        resetHash();
+    }
+
+    public int getCompressLevel() {
+        return compressLevel;
+    }
+
+    @Override
+    public void setBlockSize(int blockSize) {
+        this.blockSize = blockSize;
+        resetHash();
+    }
+
+    public int getBlockSize() {
+        return blockSize;
+    }
+
     public boolean isInherit() {
         return isInherit;
     }
@@ -632,6 +696,7 @@ public class PgColumn extends AbstractColumn implements PgSimpleOptionContainer 
                     && isGenerated == col.isGenerated()
                     && options.equals(col.options)
                     && fOptions.equals(col.fOptions)
+                    && compareCompressOptions(col)
                     && Objects.equals(sequence, col.getSequence())
                     && Objects.equals(compression, col.getCompression());
         }
@@ -646,6 +711,9 @@ public class PgColumn extends AbstractColumn implements PgSimpleOptionContainer 
         hasher.put(storage);
         hasher.put(options);
         hasher.put(fOptions);
+        hasher.put(compressType);
+        hasher.put(compressLevel);
+        hasher.put(blockSize);
         hasher.put(sequence);
         hasher.put(compression);
         hasher.put(identityType);
@@ -660,6 +728,9 @@ public class PgColumn extends AbstractColumn implements PgSimpleOptionContainer 
         copy.setStorage(getStorage());
         copy.options.putAll(options);
         copy.fOptions.putAll(fOptions);
+        copy.setCompressType(getCompressType());
+        copy.setCompressLevel(getCompressLevel());
+        copy.setBlockSize(getBlockSize());
         copy.setIdentityType(getIdentityType());
         copy.setSequence(getSequence());
         copy.setCompression(getCompression());

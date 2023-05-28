@@ -43,6 +43,7 @@ public final class JdbcQueries {
     public static String QUERY_CHECK_LAST_SYS_OID;
     public static String QUERY_CHECK_TIMESTAMPS;
     public static String QUERY_CHECK_USER_PRIVILEGES;
+    public static String QUERY_CHECK_GREENPLUM;
 
     public static final JdbcQuery QUERY_EXTENSIONS = new JdbcQuery();
     public static final JdbcQuery QUERY_FOREIGN_DATA_WRAPPERS = new JdbcQuery();
@@ -136,6 +137,11 @@ public final class JdbcQueries {
                     query.addIntervalQuery(version, v2, intervalQuery);
                 }
             }
+        }
+
+        String gpQuery = readResource(f.getName() + "_GP");
+        if (gpQuery != null) {
+            query.setGpQuery(gpQuery);
         }
     }
 

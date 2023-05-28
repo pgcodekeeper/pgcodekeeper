@@ -1,0 +1,3 @@
+SET search_path = pg_catalog;
+
+ALTER TYPE public.int44 SET DEFAULT ENCODING (COMPRESSTYPE = zlib, COMPRESSLEVEL = 7, BLOCKSIZE = 32768);

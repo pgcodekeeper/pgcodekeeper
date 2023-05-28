@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- - Added support for Greenplum as a test phase.
+
 ### Changed
 
 - Improved RETURNS TABLE comparison mechanism for functions.

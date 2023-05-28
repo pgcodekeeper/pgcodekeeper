@@ -140,6 +140,23 @@ public class FunctionsReader extends JdbcReader {
             }
         }
 
+        if (loader.isGreenplumDb) {
+            switch (res.getString("executeOn")) {
+                case "m":
+                    function.setExecuteOn("MASTER");
+                    break;
+                case "a":
+                    function.setExecuteOn("ANY");
+                    break;
+                case "s":
+                    function.setExecuteOn("ALL SEGMENTS");
+                    break;
+                case "i":
+                    function.setExecuteOn("INITPLAN");
+                    break;
+            }
+        }
+
         function.setWindow(res.getBoolean("proiswindow"));
 
         // VOLATILE is default
@@ -326,7 +343,10 @@ public class FunctionsReader extends JdbcReader {
             default :
                 break;
             }
+        }
 
+        // since 9.6 PostgreSQL and default for greenplum
+        if (SupportedVersion.VERSION_9_6.isLE(loader.version) || loader.isGreenplumDb) {
             aggregate.setCombineFunc(getProcessedName(aggregate, res.getString("combinefunc_nsp"),
                     res.getString("combinefunc"), AggFuncs.COMBINEFUNC));
             aggregate.setSerialFunc(getProcessedName(aggregate, res.getString("serialfunc_nsp"),

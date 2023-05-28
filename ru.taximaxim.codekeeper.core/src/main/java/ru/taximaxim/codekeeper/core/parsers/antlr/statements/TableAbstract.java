@@ -42,6 +42,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Names_in_parensConte
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Nulls_distinctionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Sequence_bodyContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Storage_directiveContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Storage_parametersContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Table_column_defContext;
@@ -212,6 +213,16 @@ public abstract class TableAbstract extends ParserAbstract {
             VexContext genExpr = body.vex();
             col.setDefaultValue(getExpressionText(genExpr, stream));
             db.addAnalysisLauncher(new VexAnalysisLauncher(col, genExpr, fileName));
+        } else if (body.encoding_identifier() != null) {
+            for (Storage_directiveContext option : body.encoding_identifier().storage_directive()) {
+                if (option.compress_type != null) {
+                    col.setCompressType(option.compress_type.getText());
+                } else if (option.compress_level != null) {
+                    col.setCompressLevel(Integer.parseInt(option.compress_level.getText()));
+                } else if (option.block_size != null) {
+                    col.setBlockSize(Integer.parseInt(option.block_size.getText()));
+                }
+            }
         }
 
         if (constr != null) {

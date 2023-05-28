@@ -28,6 +28,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
+import ru.taximaxim.codekeeper.core.schema.ICompressOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.PgColumn;
 import ru.taximaxim.codekeeper.core.schema.PgConstraint;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
@@ -227,6 +228,10 @@ public class TypesReader extends JdbcReader {
 
         if (res.getLong("typcollation") != 0) {
             t.setCollatable("true");
+        }
+
+        if (loader.isGreenplumDb) {
+            ICompressOptionContainer.fillCompressOptions(t, res.getString("typoptions"));
         }
 
         return t;

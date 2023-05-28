@@ -233,6 +233,7 @@ schema_create
     | create_subscription_statement
     | create_table_as_statement
     | create_table_statement
+    | create_table_external_statement
     | create_tablespace_statement
     | create_transform_statement
     | create_trigger_statement
@@ -368,14 +369,53 @@ alter_language_statement
     ;
 
 alter_table_statement
-    : FOREIGN? TABLE if_exists? ONLY? name=schema_qualified_name MULTIPLY?(
+    : (EXTERNAL | FOREIGN)? TABLE if_exists? ONLY? name=schema_qualified_name MULTIPLY?(
         table_action (COMMA table_action)*
         | RENAME COLUMN? identifier TO identifier
         | set_schema
         | rename_to
         | RENAME CONSTRAINT identifier TO identifier
+        | SET (WITH LEFT_PAREN REORGANIZE EQUAL (TRUE | FALSE) RIGHT_PAREN)? distributed_clause
         | ATTACH PARTITION child=schema_qualified_name for_values_bound
-        | DETACH PARTITION child=schema_qualified_name (CONCURRENTLY | FINALIZE)?)
+        | DETACH PARTITION child=schema_qualified_name (CONCURRENTLY | FINALIZE)?
+        | alter_partition_gp)
+    ;
+
+alter_partition_gp
+    : (ALTER PARTITION alter_partition_gp_name+)? partition_action
+    ;
+
+partition_action
+    : ALTER DEFAULT PARTITION
+    | DROP DEFAULT PARTITION if_exists?
+    | DROP PARTITION if_exists? alter_partition_gp_name cascade_restrict?
+    | TRUNCATE DEFAULT PARTITION
+    | TRUNCATE PARTITION alter_partition_gp_name
+    | RENAME DEFAULT PARTITION TO identifier
+    | RENAME PARTITION alter_partition_gp_name TO identifier
+    | ADD DEFAULT PARTITION identifier (LEFT_PAREN template_spec RIGHT_PAREN)?
+    | ADD PARTITION identifier? alter_partition_element gp_partition_with_clause? (LEFT_PAREN template_spec RIGHT_PAREN)?
+    | EXCHANGE PARTITION alter_partition_gp_name WITH TABLE name=schema_qualified_name (WITH | WITHOUT VALIDATION)?
+    | EXCHANGE DEFAULT PARTITION WITH TABLE identifier (WITH | WITHOUT VALIDATION)?
+    | SET SUBPARTITION TEMPLATE (LEFT_PAREN template_spec RIGHT_PAREN)
+    | SPLIT DEFAULT PARTITION (AT LEFT_PAREN Character_String_Literal RIGHT_PAREN | partition_start_clause) into_partition_gp_clause?
+    | SPLIT PARTITION alter_partition_gp_name AT LEFT_PAREN Character_String_Literal RIGHT_PAREN into_partition_gp_clause?
+    ;
+
+alter_partition_element
+    : partition_values
+    | partition_start_clause
+    | partition_end_clause
+    ;
+
+alter_partition_gp_name
+    : identifier
+    | FOR LEFT_PAREN RANK LEFT_PAREN NUMBER_LITERAL RIGHT_PAREN RIGHT_PAREN
+    | FOR LEFT_PAREN value=Character_String_Literal RIGHT_PAREN
+    ;
+
+into_partition_gp_clause
+    : INTO LEFT_PAREN PARTITION identifier COMMA PARTITION identifier RIGHT_PAREN
     ;
 
 table_action
@@ -461,6 +501,8 @@ table_initialy_immed
 
 function_actions_common
     : (CALLED | RETURNS NULL) ON NULL INPUT
+    | (NO | CONTAINS | MODIFIES) SQL
+    | READS SQL DATA
     | TRANSFORM transform_for_type (COMMA transform_for_type)*
     | STRICT
     | IMMUTABLE
@@ -468,6 +510,7 @@ function_actions_common
     | STABLE
     | NOT? LEAKPROOF
     | EXTERNAL? SECURITY (INVOKER | DEFINER)
+    | EXECUTE ON (ANY | MASTER | ALL SEGMENTS | INITPLAN)
     | PARALLEL (SAFE | UNSAFE | RESTRICTED)
     | COST execution_cost=unsigned_numeric_literal
     | ROWS result_rows=unsigned_numeric_literal
@@ -584,7 +627,8 @@ alter_type_statement
       | RENAME ATTRIBUTE attribute_name=identifier TO new_attribute_name=identifier cascade_restrict?
       | RENAME VALUE existing_enum_name=character_string TO new_enum_name=character_string
       | type_action (COMMA type_action)*
-      | SET LEFT_PAREN type_property (COMMA type_property)* RIGHT_PAREN)
+      | SET LEFT_PAREN type_property (COMMA type_property)* RIGHT_PAREN
+      | SET DEFAULT encoding_identifier)
     ;
 
 alter_domain_statement
@@ -729,7 +773,8 @@ create_type_statement
             | DEFAULT EQUAL default_value=vex
             | ELEMENT EQUAL element=data_type
             | DELIMITER EQUAL delimiter=character_string
-            | COLLATABLE EQUAL collatable=truth_value))*
+            | COLLATABLE EQUAL collatable=truth_value
+            | storage_directive))*
         RIGHT_PAREN)?
     ;
 
@@ -912,7 +957,7 @@ create_access_method_statement
     ;
 
 create_user_or_role_statement
-    : (USER | ROLE) name=identifier (WITH? user_or_role_option user_or_role_option*)?
+    : (USER | ROLE) name=identifier (WITH? user_or_role_option+)?
     ;
 
 user_or_role_option
@@ -930,10 +975,16 @@ user_or_role_or_group_common_option
     : SUPERUSER | NOSUPERUSER
     | CREATEDB | NOCREATEDB
     | CREATEROLE | NOCREATEROLE
+    | CREATEUSER | NOCREATEUSER
+    | (CREATEEXTTABLE | NOCREATEEXTTABLE) LEFT_PAREN attribute (COMMA attribute)* RIGHT_PAREN
     | INHERIT | NOINHERIT
     | LOGIN | NOLOGIN
     | ENCRYPTED? PASSWORD (password=Character_String_Literal | NULL)
     | VALID UNTIL date_time=Character_String_Literal
+    ;
+
+attribute
+    : (TYPE | PROTOCOL) EQUAL Character_String_Literal
     ;
 
 user_or_role_common_option
@@ -1518,6 +1569,7 @@ create_view_statement
     AS v_query=select_stmt
     with_check_option?
     (WITH NO? DATA)?
+    distributed_clause?
     ;
 
 if_exists
@@ -1574,6 +1626,52 @@ create_table_statement
     storage_parameter_oid?
     on_commit?
     table_space?
+    distributed_clause?
+    partition_gp?
+    ;
+
+distributed_clause
+    : DISTRIBUTED (BY LEFT_PAREN column_operator_class (COMMA column_operator_class)* RIGHT_PAREN | RANDOMLY | REPLICATED)
+    ;
+
+column_operator_class
+    : identifier schema_qualified_name?
+    ;
+
+create_table_external_statement
+    : (READABLE | WRITABLE)? EXTERNAL WEB? (TEMPORARY | TEMP)? TABLE name=schema_qualified_name
+    (define_table | LEFT_PAREN LIKE schema_qualified_name RIGHT_PAREN)
+    (external_table_location | external_table_execute)
+    external_table_format
+    define_foreign_options?
+    (ENCODING character_string)? 
+    external_table_log? 
+    distributed_clause?
+    ;
+
+external_table_location
+    : LOCATION LEFT_PAREN character_string (COMMA character_string)* RIGHT_PAREN (ON MASTER | ON COORDINATOR)?
+    ;
+
+external_table_execute
+    : EXECUTE command=character_string
+    (ON (ALL | COORDINATOR| MASTER | segment_nubmer=NUMBER_LITERAL | HOST hostname=character_string? | SEGMENT segment_id=NUMBER_LITERAL))?
+    ;
+
+external_table_format
+    : FORMAT format_type=character_string (LEFT_PAREN format_options* RIGHT_PAREN | format_options*)
+    ;
+
+format_options
+    : HEADER
+    | (QUOTE | DELIMITER | NULL | ESCAPE | NEWLINE) AS? character_string
+    | FILL MISSING FIELDS
+    | FORCE NOT NULL identifier_list
+    | FORMATTER EQUAL character_string
+    ;
+
+external_table_log
+    : (LOG ERRORS PERSISTENTLY?)? SEGMENT REJECT LIMIT NUMBER_LITERAL (ROWS | PERCENT)?
     ;
 
 create_table_as_statement
@@ -1630,6 +1728,82 @@ define_type
 
 partition_by
     : PARTITION BY partition_method
+    ;
+
+partition_gp
+    : with_subpartition_template
+    | without_subpartition_template
+    ;
+
+with_subpartition_template
+    : PARTITION BY partition_type_col subpartition_pattern* LEFT_PAREN partition_spec RIGHT_PAREN
+    ;
+
+without_subpartition_template
+    : PARTITION BY partition_type_col (SUBPARTITION BY partition_type_col)*
+    LEFT_PAREN partition_spec_with_columns (COMMA partition_spec_with_columns)* RIGHT_PAREN
+    ;
+
+partition_spec_with_columns
+    : partition_spec (LEFT_PAREN subpartition_spec (COMMA subpartition_spec)* RIGHT_PAREN)?
+    ;
+
+subpartition_spec
+    : template_spec (LEFT_PAREN template_spec RIGHT_PAREN)?
+    ;
+
+subpartition_pattern
+    : SUBPARTITION BY partition_type_col SUBPARTITION TEMPLATE LEFT_PAREN template_spec RIGHT_PAREN
+    ;
+
+partition_type_col
+    : (LIST | RANGE) LEFT_PAREN identifier RIGHT_PAREN
+    ;
+
+template_spec
+    : subpartition_element (COMMA subpartition_element)*
+    ;
+
+partition_spec
+   : partition_element (COMMA partition_element)*
+   ;
+
+partition_element
+    : (DEFAULT PARTITION identifier | (PARTITION identifier)? (partition_values | partition_start_clause | partition_end_clause))
+    gp_partition_with_clause?
+    ;
+
+subpartition_element
+    : (DEFAULT SUBPARTITION identifier | (SUBPARTITION identifier)? (partition_values | partition_start_clause | partition_end_clause))
+    gp_partition_with_clause?
+    ;
+
+partition_values
+    : VALUES LEFT_PAREN Character_String_Literal (COMMA Character_String_Literal)* RIGHT_PAREN
+    ;
+
+gp_partition_with_clause
+    : with_storage_parameter (gp_table_column_definition)* table_space?
+    ;
+
+gp_table_column_definition
+    : COLUMN identifier encoding_identifier?
+    ;
+
+partition_start_clause
+    : START partition_start_end_val (END partition_start_end_val)? partition_every_clause?
+    ;
+
+partition_end_clause
+    : END partition_start_end_val partition_every_clause?
+    ;
+
+partition_start_end_val
+    : LEFT_PAREN val=vex RIGHT_PAREN (INCLUSIVE | EXCLUSIVE)?
+    ;
+
+partition_every_clause
+    : EVERY LEFT_PAREN interval_value=vex RIGHT_PAREN
     ;
 
 partition_method
@@ -1694,6 +1868,7 @@ constr_body
     | DEFAULT default_expr=vex
     | identity_body
     | GENERATED ALWAYS AS LEFT_PAREN vex RIGHT_PAREN STORED
+    | encoding_identifier
     ;
 
 all_op
@@ -1805,6 +1980,16 @@ collate_identifier
     : COLLATE collation=schema_qualified_name
     ;
 
+encoding_identifier
+    : ENCODING LEFT_PAREN storage_directive (COMMA storage_directive)* RIGHT_PAREN
+    ;
+
+storage_directive
+    : COMPRESSTYPE EQUAL compress_type=identifier
+    | COMPRESSLEVEL EQUAL compress_level=NUMBER_LITERAL
+    | BLOCKSIZE EQUAL block_size=NUMBER_LITERAL
+    ;
+
 indirection_var
     : (identifier | dollar_number) indirection_list?
     ;
@@ -1854,7 +2039,7 @@ drop_statements
     | EVENT TRIGGER
     | EXTENSION
     | GROUP
-    | FOREIGN? TABLE
+    | (FOREIGN | EXTERNAL)? TABLE
     | FOREIGN DATA WRAPPER
     | INDEX CONCURRENTLY?
     | MATERIALIZED? VIEW
@@ -2434,6 +2619,7 @@ tokens_nonreserved
     | ENCODING
     | ENCRYPTED
     | ENUM
+    | ERRORS
     | ESCAPE
     | EVENT
     | EXCLUDE
@@ -2460,6 +2646,7 @@ tokens_nonreserved
     | HANDLER
     | HEADER
     | HOLD
+    | HOST
     | HOUR
     | IDENTITY
     | IF
@@ -2542,6 +2729,8 @@ tokens_nonreserved
     | PARTITION
     | PASSING
     | PASSWORD
+    | PERCENT
+    | PERSISTENTLY
     | PLANS
     | POLICY
     | PRECEDING
@@ -2558,6 +2747,8 @@ tokens_nonreserved
     | QUOTE
     | RANGE
     | READ
+    | READABLE
+    | READS
     | REASSIGN
     | RECHECK
     | RECURSIVE
@@ -2565,6 +2756,7 @@ tokens_nonreserved
     | REFERENCING
     | REFRESH
     | REINDEX
+    | REJECT
     | RELATIVE
     | RELEASE
     | RENAME
@@ -2591,6 +2783,7 @@ tokens_nonreserved
     | SEARCH
     | SECOND
     | SECURITY
+    | SEGMENT
     | SEQUENCE
     | SEQUENCES
     | SERIALIZABLE
@@ -2652,12 +2845,14 @@ tokens_nonreserved
     | VIEW
     | VIEWS
     | VOLATILE
+    | WEB
     | WHITESPACE
     | WITHIN
     | WITHOUT
     | WORK
     | WRAPPER
     | WRITE
+    | WRITABLE
     | XML
     | YEAR
     | YES
@@ -2827,6 +3022,7 @@ tokens_nonkeyword
     : ALIGNMENT
     | ALLOW_CONNECTIONS
     | BASETYPE
+    | BLOCKSIZE
     | BUFFERS
     | BYPASSRLS
     | CANONICAL
@@ -2835,15 +3031,26 @@ tokens_nonkeyword
     | COLLATION_VERSION
     | COMBINEFUNC
     | COMMUTATOR
+    | COMPRESSLEVEL
+    | COMPRESSTYPE
     | CONNECT
+    | CONTAINS
+    | COORDINATOR
     | COSTS
     | CREATEDB
+    | CREATEEXTTABLE
     | CREATEROLE
+    | CREATEUSER
     | DESERIALFUNC
     | DETERMINISTIC
     | DISABLE_PAGE_SKIPPING
+    | DISTRIBUTED
     | ELEMENT
+    | EVERY
+    | EXCHANGE
     | EXTENDED
+    | FIELDS
+    | FILL
     | FINALFUNC
     | FINALFUNC_EXTRA
     | FINALFUNC_MODIFY
@@ -2851,15 +3058,18 @@ tokens_nonkeyword
     | FORCE_NULL
     | FORCE_QUOTE
     | FORMAT
+    | FORMATTER
     | GETTOKEN
     | HASH
     | HASHES
     | HEADLINE
     | HYPOTHETICAL
     | ICU_LOCALE
+    | INCLUSIVE
     | INDEX_CLEANUP
     | INIT
     | INITCOND
+    | INITPLAN
     | INTERNALLENGTH
     | IS_TEMPLATE
     | JSON
@@ -2873,21 +3083,27 @@ tokens_nonkeyword
     | LOCALE_PROVIDER
     | LOGIN
     | MAIN
+    | MASTER
     | MERGES
     | MFINALFUNC
     | MFINALFUNC_EXTRA
     | MFINALFUNC_MODIFY
     | MINITCOND
     | MINVFUNC
+    | MISSING
+    | MODIFIES
     | MODULUS
     | MSFUNC
     | MSSPACE
     | MSTYPE
     | MULTIRANGE_TYPE_NAME
     | NEGATOR
+    | NEWLINE
     | NOBYPASSRLS
     | NOCREATEDB
+    | NOCREATEEXTTABLE
     | NOCREATEROLE
+    | NOCREATEUSER
     | NOINHERIT
     | NOLOGIN
     | NOREPLICATION
@@ -2899,16 +3115,22 @@ tokens_nonkeyword
     | PERMISSIVE
     | PLAIN
     | PREFERRED
+    | PROTOCOL
     | PROVIDER
+    | RANDOMLY
+    | RANK
     | READ_ONLY
     | READ_WRITE
     | RECEIVE
     | REMAINDER
+    | REORGANIZE
+    | REPLICATED
     | REPLICATION
     | RESTRICTED
     | RESTRICTIVE
     | RIGHTARG
     | SAFE
+    | SEGMENTS
     | SEND
     | SERIALFUNC
     | SETTINGS
@@ -2916,6 +3138,7 @@ tokens_nonkeyword
     | SHAREABLE
     | SKIP_LOCKED
     | SORTOP
+    | SPLIT
     | SSPACE
     | STRATEGY
     | STYPE
@@ -2923,6 +3146,7 @@ tokens_nonkeyword
     | SUBTYPE_OPCLASS
     | SUBTYPE
     | SUBSCRIPT
+    | SUBPARTITION
     | SUMMARY
     | SUPERUSER
     | TIMING
@@ -2930,6 +3154,7 @@ tokens_nonkeyword
     | TYPMOD_OUT
     | UNSAFE
     | USAGE
+    | VALIDATION
     | VARIABLE
     | WAL
     | YAML

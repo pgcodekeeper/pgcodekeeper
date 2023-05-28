@@ -60,8 +60,15 @@ TABLESPACE test_tablespace;
 ALTER TABLE ONLY public.t31 ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ONLY public.t31 FORCE ROW LEVEL SECURITY;
 
- -- compression
- CREATE TABLE public.t33 (c1 integer, c2 integer COMPRESSION pglz);
- CREATE TABLE public.t34 (c1 integer COMPRESSION lz4, c2 integer COMPRESSION pglz, c3 integer);
- CREATE TABLE public.t35 (c1 integer COMPRESSION DEFAULT, c2 integer);
- 
+-- compression
+CREATE TABLE public.t33 (c1 integer, c2 integer COMPRESSION pglz);
+CREATE TABLE public.t34 (c1 integer COMPRESSION lz4, c2 integer COMPRESSION pglz, c3 integer);
+CREATE TABLE public.t35 (c1 integer COMPRESSION DEFAULT, c2 integer);
+
+-- partition
+CREATE TABLE public.t36(a int, b int, c int)
+DISTRIBUTED BY (a)
+PARTITION BY RANGE (b)
+SUBPARTITION BY RANGE (c)
+SUBPARTITION TEMPLATE (START (11) END (12) EVERY (1))
+(START (1) END (2) EVERY (1)); 

@@ -23,7 +23,9 @@ import org.antlr.v4.runtime.ParserRuleContext;
 
 import ru.taximaxim.codekeeper.core.DangerStatement;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrUtils;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
+import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Alter_partition_gpContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Alter_table_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Character_stringContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Column_actionContext;
@@ -50,6 +52,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractRegularTable;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.IRelation;
+import ru.taximaxim.codekeeper.core.schema.PartitionGpTable;
 import ru.taximaxim.codekeeper.core.schema.PgColumn;
 import ru.taximaxim.codekeeper.core.schema.PgConstraint;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
@@ -64,11 +67,13 @@ public class AlterTable extends TableAbstract {
 
     private final Alter_table_statementContext ctx;
     private final String tablespace;
+    private final CommonTokenStream stream;
 
     public AlterTable(Alter_table_statementContext ctx, PgDatabase db, String tablespace, CommonTokenStream stream) {
         super(db, stream);
         this.ctx = ctx;
         this.tablespace = tablespace;
+        this.stream = stream;
     }
 
     @Override
@@ -180,6 +185,18 @@ public class AlterTable extends TableAbstract {
                 }
             }
         }
+        var partitionGpTempl = ctx.alter_partition_gp();
+        if (partitionGpTempl != null && !isRefMode()) {
+            tabl = (PartitionGpTable) getSafe(AbstractSchema::getTable, schema, nameCtx);
+            parseGpPartitionTemplate((PartitionGpTable) tabl, partitionGpTempl, stream);
+        }
+    }
+
+    public static void parseGpPartitionTemplate(PartitionGpTable tabl, Alter_partition_gpContext partitionGpTempl,
+            CommonTokenStream stream) {
+        // TODO change to new construction instead of String
+        tabl.addTemplate(getFullCtxText(partitionGpTempl),
+                AntlrUtils.normalizeWhitespaceUnquoted(partitionGpTempl, stream));
     }
 
     private void parseColumnAction(AbstractSchema schema, PgColumn col,

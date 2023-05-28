@@ -62,6 +62,10 @@ USING hash
 WITH (autovacuum_enabled, fillfactor = 80, oids = true)
 TABLESPACE test_tablespace;
 
- -- compression
+-- compression
 CREATE TABLE public.t33 (c1 integer COMPRESSION lz4, c2 integer);
 CREATE TABLE public.t35 (c1 integer COMPRESSION pglz, c2 integer);
+
+-- partition
+CREATE TABLE public.t36(a int, b int, c int) DISTRIBUTED BY (a) PARTITION BY RANGE (b)
+SUBPARTITION BY RANGE (c) SUBPARTITION TEMPLATE (START (11) END (12) EVERY (1)) (START (1) END (2) EVERY (1));

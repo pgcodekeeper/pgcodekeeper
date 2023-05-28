@@ -58,6 +58,8 @@ public interface Consts {
 
     String PROJECT_ONLY = "projectOnly";
 
+    String GREENPLUM = "Greenplum";
+
     enum WORK_DIR_NAMES {
         SCHEMA,
         EXTENSION,
