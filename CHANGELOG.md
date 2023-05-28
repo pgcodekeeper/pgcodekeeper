@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- Added greenplum support (beta-version).
+- - Added support for Greenplum as a test phase.
 
 ### Changed
 
