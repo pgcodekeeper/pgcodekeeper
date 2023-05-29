@@ -8,7 +8,7 @@ SELECT
    x.command,
    x.rejectlimit AS rejlim,
    x.rejectlimittype AS rejtyp,
-   x.logerrors AS logerrors,
+   x.logerrors,
    x.options,
    pg_catalog.pg_encoding_to_char(x.encoding) AS enc,
    x.writable,

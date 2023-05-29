@@ -1655,7 +1655,7 @@ external_table_location
 
 external_table_execute
     : EXECUTE command=character_string
-    (ON (ALL | COORDINATOR| MASTER | segment_nubmer=NUMBER_LITERAL | HOST hostname=character_string? | SEGMENT segment_id=NUMBER_LITERAL))?
+    (ON (ALL | COORDINATOR | MASTER | segment_nubmer=NUMBER_LITERAL | HOST hostname=character_string? | SEGMENT segment_id=NUMBER_LITERAL))?
     ;
 
 external_table_format

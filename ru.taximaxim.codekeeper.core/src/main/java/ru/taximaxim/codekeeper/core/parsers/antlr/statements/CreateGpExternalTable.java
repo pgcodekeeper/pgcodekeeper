@@ -73,6 +73,8 @@ public final class CreateGpExternalTable extends TableAbstract {
             }
             if (locationCtx.MASTER() != null) {
                 table.setExLocation("ON MASTER");
+            } else if (locationCtx.COORDINATOR() != null) {
+                table.setExLocation("ON COORDINATOR");
             }
         }
 
