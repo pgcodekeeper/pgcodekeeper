@@ -115,8 +115,8 @@ public class CreateFunction extends ParserAbstract {
                 function.setSecurityDefiner(true);
             } else if (action.LEAKPROOF() != null) {
                 function.setLeakproof(action.NOT() == null);
-            } else if (action.ANY() != null) {
-                function.setExecuteOn("ANY");
+            } else if (action.COORDINATOR() != null) {
+                function.setExecuteOn("COORDINATOR");
             } else if (action.SEGMENTS() != null) {
                 function.setExecuteOn("ALL SEGMENTS");
             } else if (action.MASTER() != null) {

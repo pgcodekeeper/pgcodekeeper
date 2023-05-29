@@ -145,8 +145,8 @@ public class FunctionsReader extends JdbcReader {
                 case "m":
                     function.setExecuteOn("MASTER");
                     break;
-                case "a":
-                    function.setExecuteOn("ANY");
+                case "c":
+                    function.setExecuteOn("COORDINATOR");
                     break;
                 case "s":
                     function.setExecuteOn("ALL SEGMENTS");
