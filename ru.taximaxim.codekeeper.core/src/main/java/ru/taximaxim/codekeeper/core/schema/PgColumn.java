@@ -81,11 +81,11 @@ public class PgColumn extends AbstractColumn implements PgSimpleOptionContainer,
             }
         }
 
-        appendCompressOptions(sbDefinition);
         definitionDefaultNotNull(sbDefinition);
 
         generatedAlwaysAsStored(sbDefinition);
-
+        
+        appendCompressOptions(sbDefinition);
         return sbDefinition.toString();
     }
 
@@ -129,7 +129,6 @@ public class PgColumn extends AbstractColumn implements PgSimpleOptionContainer,
             if (getCollation() != null) {
                 sb.append(COLLATE).append(getCollation());
             }
-            appendCompressOptions(sb);
 
             mergeDefaultNotNull = !getNullValue();
             if (mergeDefaultNotNull) {
@@ -138,8 +137,9 @@ public class PgColumn extends AbstractColumn implements PgSimpleOptionContainer,
                 // this operation also becomes fast on PostgreSQL 11+ (metadata only operation)
                 definitionDefaultNotNull(sb);
             }
-
+            
             generatedAlwaysAsStored(sb);
+            appendCompressOptions(sb);
 
             sb.append(';');
         }
