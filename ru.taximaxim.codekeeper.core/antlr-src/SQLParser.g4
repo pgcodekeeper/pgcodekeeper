@@ -1842,7 +1842,8 @@ table_of_type_column_def
     ;
 
 table_column_definition
-    : identifier data_type define_foreign_options? compression_identifier? collate_identifier? constraint_common*
+    : identifier data_type define_foreign_options? compression_identifier? collate_identifier?
+    constraint_common* encoding_identifier?
     ;
 
 like_option
@@ -1868,7 +1869,6 @@ constr_body
     | DEFAULT default_expr=vex
     | identity_body
     | GENERATED ALWAYS AS LEFT_PAREN vex RIGHT_PAREN STORED
-    | encoding_identifier
     ;
 
 all_op
