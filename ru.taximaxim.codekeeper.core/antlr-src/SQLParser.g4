@@ -510,7 +510,7 @@ function_actions_common
     | STABLE
     | NOT? LEAKPROOF
     | EXTERNAL? SECURITY (INVOKER | DEFINER)
-    | EXECUTE ON (ANY | MASTER | ALL SEGMENTS | INITPLAN)
+    | EXECUTE ON (ANY | MASTER | COORDINATOR | ALL SEGMENTS | INITPLAN)
     | PARALLEL (SAFE | UNSAFE | RESTRICTED)
     | COST execution_cost=unsigned_numeric_literal
     | ROWS result_rows=unsigned_numeric_literal
