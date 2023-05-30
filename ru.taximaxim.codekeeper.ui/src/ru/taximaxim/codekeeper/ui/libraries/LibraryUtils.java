@@ -35,11 +35,10 @@ public class LibraryUtils {
             Activator.getContext().getBundle()).append("dependencies").toString()); //$NON-NLS-1$
 
     public static RootLibrary create(IProject proj) throws IOException, CoreException {
-        DependenciesXmlStore xml = new DependenciesXmlStore(
-                Paths.get(proj.getLocation().toString())
-                .resolve(DependenciesXmlStore.FILE_NAME));
+        Path xmlPath = Paths.get(proj.getLocation().toString()).resolve(DependenciesXmlStore.FILE_NAME);
+        DependenciesXmlStore xml = new DependenciesXmlStore(xmlPath);
         List<PgLibrary> libs = xml.readObjects();
-        return new UiLibraryLoader(proj.getName(), proj.hasNature(NATURE.MS), xml.readLoadNestedFlag())
+        return new UiLibraryLoader(proj.getName(), proj.hasNature(NATURE.MS), xml.readLoadNestedFlag(), xmlPath)
                 .load(libs);
     }
 

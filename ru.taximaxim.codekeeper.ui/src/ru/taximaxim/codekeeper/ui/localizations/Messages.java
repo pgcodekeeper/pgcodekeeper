@@ -429,13 +429,15 @@ public final class Messages extends NLS {
 
     public static String DepcyGraphView_show_columns;
 
-    public static String DependencyProperties_add_database;
+    public static String DependencyEditorDialog_name;
+
+    public static String DependencyEditorDialog_enter_path;
+
+    public static String DependencyEditorDialog_relative_path;
 
     public static String DependencyProperties_add_directory;
 
     public static String DependencyProperties_add_file;
-
-    public static String DependencyProperties_add_uri;
 
     public static String DependencyProperties_attention;
 
@@ -447,13 +449,11 @@ public final class Messages extends NLS {
 
     public static String DependencyProperties_clear_libraries_cache;
 
-    public static String DependencyProperties_connection_start;
+    public static String DependencyProperties_copy_dependency;
 
-    public static String DependencyProperties_empty_scheme;
+    public static String DependencyProperties_create_new_dependency;
 
-    public static String DependencyProperties_enter_connection_string;
-
-    public static String DependencyProperties_enter_uri;
+    public static String DependencyProperties_edit_dependency;
 
     public static String DependencyProperties_ignore_priv_warn;
 
@@ -860,6 +860,8 @@ public final class Messages extends NLS {
 
     public static String ProjectEditorDiffer_library_duplication_exception;
 
+    public static String ProjectEditorDiffer_library_duplication_title;
+
     public static String ProjectEditorDiffer_no_differences;
 
     public static String ProjectEditorDiffer_database;
@@ -943,10 +945,7 @@ public final class Messages extends NLS {
 
     public static String TreeDiffer_schema_load_error;
 
-    public static String e_mail;
-
     public static String edit;
-    public static String add_log;
 
     public static String ApplyCustomDialog_constraint_not_valid;
 

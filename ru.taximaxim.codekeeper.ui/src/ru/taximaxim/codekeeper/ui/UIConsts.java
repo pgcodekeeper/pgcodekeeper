@@ -72,6 +72,7 @@ public interface UIConsts {
     interface PREF_PAGE {
         String DB_STORE = PLUGIN_ID.THIS + ".dbstore"; //$NON-NLS-1$
         String SQL_EDITOR = PLUGIN_ID.THIS + ".sqleditor"; //$NON-NLS-1$
+        String DEPENDENCIES = PLUGIN_ID.THIS + ".dependencies"; //$NON-NLS-1$
     }
 
     interface PREF {

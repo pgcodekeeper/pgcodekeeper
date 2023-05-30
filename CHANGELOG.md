@@ -9,7 +9,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- - Added support for Greenplum as a test phase.
+- Added support for Greenplum as a test phase.
+- Added dialog box for editing library properties.
+- Added relative path support for the library.
+- Added an optional field "Name" in library properties to customize display name in the list.
+- Added transition to library settings page from dialog box with an error when overriding objects.
 
 ### Changed
 
@@ -18,7 +22,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Fixed a bug due to which the outline did not update while navigating through search results.
-
 
 ## [7.6.0] - 2023-05-16
 
