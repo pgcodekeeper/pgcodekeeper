@@ -9,9 +9,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [8.0.0] - 2023-05-30
+
+### Added
+
 - Added support for Greenplum as a test phase.
 - Added dialog box for editing library properties.
-- Added relative path support for the library.
+- Added relative path support for library.
 - Added an optional field "Name" in library properties to customize display name in the list.
 - Added transition to library settings page from dialog box with an error when overriding objects.
 
@@ -47,7 +55,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fixed a bug in the "normalization" mechanism for a project with libraries and overrides.
 - Fixed a bug in generating the migration script when data migration with deleting the identity column of the table.
 - Fixed a bug in MS SQL builder when saving files.
-- Fixed NPE in postgres aggregate functions.
+- Fixed NPE in PostgreSQL aggregate functions.
 - Fixed NPE when reading USER MAPPING with PUBLIC user.
 - Fixed missing quotes in composite type columns.
 
@@ -1682,7 +1690,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.6.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.0.0...HEAD
+[8.0.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.6.0...v8.0.0
 [7.6.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.5.0...v7.6.0
 [7.5.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.4.0...v7.5.0
 [7.4.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.3.0...v7.4.0
