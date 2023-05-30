@@ -80,12 +80,13 @@ public class LibraryLoader extends DatabaseLoader {
     public void loadXml(DependenciesXmlStore xmlStore, PgDiffArguments args)
             throws InterruptedException, IOException {
         List<PgLibrary> xmlLibs = xmlStore.readObjects();
+        Path xmlPath = xmlStore.getXmlFile();
         boolean oldLoadNested = loadNested;
         try {
             loadNested = xmlStore.readLoadNestedFlag();
             for (PgLibrary lib : xmlLibs) {
                 String path = lib.getPath();
-                PgDatabase l = getLibrary(path, args, lib.isIgnorePriv());
+                PgDatabase l = getLibrary(path, args, lib.isIgnorePriv(), xmlPath);
                 database.addLib(l, path, lib.getOwner());
             }
         } finally {
@@ -94,6 +95,11 @@ public class LibraryLoader extends DatabaseLoader {
     }
 
     private PgDatabase getLibrary(String path, PgDiffArguments arguments, boolean isIgnorePriv)
+            throws InterruptedException, IOException {
+        return getLibrary(path, arguments, isIgnorePriv, null);
+    }
+
+    private PgDatabase getLibrary(String path, PgDiffArguments arguments, boolean isIgnorePriv, Path xmlPath)
             throws InterruptedException, IOException {
         if (!loadedLibs.add(path)) {
             return new PgDatabase();
@@ -117,6 +123,9 @@ public class LibraryLoader extends DatabaseLoader {
             // continue below
         }
         Path p = Paths.get(path);
+        if (!p.isAbsolute() && xmlPath != null) {
+            p = xmlPath.resolveSibling(p).normalize();
+        }
 
         if (!Files.exists(p)) {
             throw new IOException(MessageFormat.format(

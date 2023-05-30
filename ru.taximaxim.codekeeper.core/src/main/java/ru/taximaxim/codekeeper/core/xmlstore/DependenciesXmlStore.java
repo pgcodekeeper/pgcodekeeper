@@ -38,6 +38,7 @@ public class DependenciesXmlStore extends XmlStore<PgLibrary> {
     public static final String FILE_NAME = ".dependencies"; //$NON-NLS-1$
 
     private static final String ENTRY = "dependency"; //$NON-NLS-1$
+    private static final String NAME = "name"; //$NON-NLS-1$
     private static final String PATH = "path"; //$NON-NLS-1$
     private static final String OWNER = "owner"; //$NON-NLS-1$
     private static final String IGNORE_PRIV = "ignorePriv"; //$NON-NLS-1$
@@ -52,7 +53,7 @@ public class DependenciesXmlStore extends XmlStore<PgLibrary> {
     }
 
     @Override
-    protected Path getXmlFile() {
+    public Path getXmlFile() {
         return xmlPath;
     }
 
@@ -85,7 +86,9 @@ public class DependenciesXmlStore extends XmlStore<PgLibrary> {
     protected PgLibrary parseElement(Node node) {
         NamedNodeMap attr = node.getAttributes();
         Node owner = attr.getNamedItem(OWNER);
-        return new PgLibrary(attr.getNamedItem(PATH).getTextContent(),
+        Node name = attr.getNamedItem(NAME);
+        return new PgLibrary(name == null ? "" : name.getTextContent(),
+                attr.getNamedItem(PATH).getTextContent(),
                 Boolean.parseBoolean(attr.getNamedItem(IGNORE_PRIV).getTextContent()),
                 owner == null ? "" : owner.getTextContent());
     }
@@ -94,6 +97,11 @@ public class DependenciesXmlStore extends XmlStore<PgLibrary> {
     protected void appendChildren(Document xml, Element root, List<PgLibrary> list) {
         for (PgLibrary lib : list) {
             Element newElement = xml.createElement(ENTRY);
+            String name = lib.getName();
+            if (!name.isBlank()) {
+                newElement.setAttribute(NAME, name);
+            }
+
             newElement.setAttribute(IGNORE_PRIV, Boolean.toString(lib.isIgnorePriv()));
             newElement.setAttribute(PATH, lib.getPath());
             newElement.setAttribute(OWNER, lib.getOwner());

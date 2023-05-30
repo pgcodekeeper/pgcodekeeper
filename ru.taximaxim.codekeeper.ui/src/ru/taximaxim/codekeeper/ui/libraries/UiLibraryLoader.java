@@ -28,8 +28,8 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.Consts.WORK_DIR_NAMES;
+import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.libraries.PgLibrary;
 import ru.taximaxim.codekeeper.core.libraries.PgLibrarySource;
@@ -48,14 +48,16 @@ public class UiLibraryLoader {
 
     private final String project;
     private final boolean isMsSql;
+    private final Path xmlPath;
     private boolean loadNested;
 
     private final Set<String> loadedLibs = new HashSet<>();
 
-    public UiLibraryLoader(String project, boolean isMsSql, boolean loadNested) {
+    public UiLibraryLoader(String project, boolean isMsSql, boolean loadNested, Path xmlPath) {
         this.project = project;
         this.isMsSql = isMsSql;
         this.loadNested = loadNested;
+        this.xmlPath = xmlPath;
     }
 
     public RootLibrary load(List<PgLibrary> libs) throws IOException {
@@ -97,6 +99,10 @@ public class UiLibraryLoader {
     }
 
     private void readPath(AbstractLibrary parent, Path path) throws IOException {
+        if (!path.isAbsolute()) {
+            path = xmlPath.resolveSibling(path).normalize();
+        }
+
         if (Files.isDirectory(path)) {
             readDir(new DirectoryLibrary(parent, path), path);
         } else if (FileUtils.isZipFile(path)) {

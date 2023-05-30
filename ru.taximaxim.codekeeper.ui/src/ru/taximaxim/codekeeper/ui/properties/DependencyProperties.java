@@ -16,8 +16,7 @@
 package ru.taximaxim.codekeeper.ui.properties;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -28,13 +27,9 @@ import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
-import org.eclipse.jface.dialogs.InputDialog;
-import org.eclipse.jface.viewers.CheckboxCellEditor;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
-import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
-import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -44,10 +39,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.DirectoryDialog;
-import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
@@ -59,7 +51,6 @@ import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.libraries.PgLibrary;
 import ru.taximaxim.codekeeper.core.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.CommonEditingSupport;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
@@ -67,12 +58,12 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.libraries.LibraryUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.prefs.AbstractTxtEditingSupport;
 import ru.taximaxim.codekeeper.ui.prefs.PrefListEditor;
 
 public class DependencyProperties extends PropertyPage {
 
     private final String defaultPath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString();
+    private Path xmlStorePath;
     private DependenciesXmlStore store;
     private IEclipsePreferences prefs;
 
@@ -85,8 +76,8 @@ public class DependencyProperties extends PropertyPage {
     public void setElement(IAdaptable element) {
         super.setElement(element);
         proj = element.getAdapter(IProject.class);
-        store = new DependenciesXmlStore(Paths.get(proj.getLocation()
-                .append(DependenciesXmlStore.FILE_NAME).toString()));
+        xmlStorePath = Paths.get(proj.getLocation().append(DependenciesXmlStore.FILE_NAME).toString());
+        store = new DependenciesXmlStore(xmlStorePath);
         prefs = new ProjectScope(proj).getNode(UIConsts.PLUGIN_ID.THIS);
     }
 
@@ -177,22 +168,23 @@ public class DependencyProperties extends PropertyPage {
 
     private class DependenciesListEditor extends PrefListEditor<PgLibrary> {
 
+        private String action;
+
         public DependenciesListEditor(Composite parent) {
             super(parent);
+            getViewer().addDoubleClickListener(event -> editObject());
         }
 
         @Override
         public boolean checkDuplicate(PgLibrary o1, PgLibrary o2) {
-            return o1.getPath().equals(o2.getPath());
+            return o1.getTitle().equals(o2.getTitle());
         }
 
         @Override
         protected PgLibrary getNewObject(PgLibrary oldObject) {
-            DirectoryDialog dialog = new DirectoryDialog(getShell());
-            dialog.setText(Messages.DependencyProperties_select_directory);
-            dialog.setFilterPath(defaultPath);
-            String path = dialog.open();
-            return path != null ? new PgLibrary(path) : null;
+            DependencyEditorDialog dialog = new DependencyEditorDialog(getShell(), oldObject, action,
+                    defaultPath, xmlStorePath);
+            return dialog.open() == Window.OK ? dialog.getLibrary() : null;
         }
 
         @Override
@@ -202,195 +194,41 @@ public class DependencyProperties extends PropertyPage {
 
         @Override
         protected void addColumns(TableViewer viewer) {
-            TableViewerColumn path = new TableViewerColumn(viewer, SWT.LEFT);
-            path.getColumn().setText(Messages.DependencyProperties_path);
-            path.getColumn().setResizable(true);
-            path.getColumn().setMoveable(true);
+            TableViewerColumn path = new TableViewerColumn(viewer, SWT.NONE);
             path.setLabelProvider(new ColumnLabelProvider() {
 
                 @Override
                 public String getText(Object element) {
                     PgLibrary obj = (PgLibrary) element;
-                    return obj.getPath();
+                    return obj.getTitle();
                 }
-            });
-            path.setEditingSupport(new TxtLibPathEditingSupport(viewer, this));
-
-            TableViewerColumn owner = new TableViewerColumn(viewer, SWT.CENTER);
-            owner.getColumn().setText(Messages.DependencyProperties_owner);
-            owner.getColumn().setResizable(true);
-            owner.getColumn().setMoveable(true);
-            owner.setLabelProvider(new ColumnLabelProvider() {
-
-                @Override
-                public String getText(Object element) {
-                    return ((PgLibrary) element).getOwner();
-                }
-            });
-
-            owner.setEditingSupport(new OwnerEditingSupport(viewer));
-
-            TableViewerColumn ignorePriv = new TableViewerColumn(viewer, SWT.CENTER);
-            ignorePriv.getColumn().setText(Messages.DependencyProperties_ignore_privileges);
-            ignorePriv.getColumn().setResizable(true);
-            ignorePriv.getColumn().setMoveable(true);
-            ignorePriv.setLabelProvider(new ColumnLabelProvider() {
-
-                @Override
-                public String getText(Object element) {
-                    return (((PgLibrary)element).isIgnorePriv()) ? "\u2611" : "\u2610"; //$NON-NLS-1$ //$NON-NLS-2$
-                }
-            });
-
-            ignorePriv.setEditingSupport(new IgnorePrivCheckEditingSupport(viewer));
-
-            viewer.getTable().addListener(SWT.Resize, event -> {
-                Table table = (Table)event.widget;
-                int width = (int)(table.getClientArea().width * 0.1f);
-                table.getColumns()[0].setWidth(width * 5);
-                table.getColumns()[1].setWidth(width * 3);
-                table.getColumns()[2].setWidth(width * 2);
             });
         }
 
         @Override
         protected void createButtonsForSideBar(Composite parent) {
-            createButton(parent, ADD_ID, Messages.DependencyProperties_add_directory,
-                    Activator.getEclipseImage(ISharedImages.IMG_OBJ_FOLDER));
-
-            Button btnAddDump = createButton(parent, CLIENT_ID, Messages.DependencyProperties_add_file,
-                    Activator.getEclipseImage(ISharedImages.IMG_OBJ_FILE));
-            btnAddDump.addSelectionListener(new SelectionAdapter() {
-
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    FileDialog dialog = new FileDialog(getShell());
-                    dialog.setText(Messages.choose_dump_file_with_changes);
-                    dialog.setFilterExtensions(new String[] {"*.sql", "*.zip", "*"}); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                    dialog.setFilterNames(new String[] {
-                            Messages.DiffPresentationPane_sql_file_filter,
-                            Messages.DiffPresentationPane_zip_file_filter,
-                            Messages.DiffPresentationPane_any_file_filter});
-                    dialog.setFilterPath(defaultPath);
-                    String value = dialog.open();
-                    if (value != null) {
-                        getList().add(new PgLibrary(value));
-                        getViewer().refresh();
-                    }
-                }
-            });
-
-            Button btnAddDb = createButton(parent, CLIENT_ID,
-                    Messages.DependencyProperties_add_database, FILE.ICONDATABASE);
-            btnAddDb.addSelectionListener(new SelectionAdapter() {
-
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    InputDialog dialog = new InputDialog(getShell(),
-                            Messages.DependencyProperties_add_database,
-                            Messages.DependencyProperties_enter_connection_string, "jdbc:",  //$NON-NLS-1$
-                            newText -> newText.startsWith("jdbc:") ? //$NON-NLS-1$
-                                    null : Messages.DependencyProperties_connection_start);
-
-                    if (dialog.open() == Window.OK) {
-                        getList().add(new PgLibrary(dialog.getValue()));
-                        getViewer().refresh();
-                    }
-                }
-            });
-
-            Button btnAddURI = createButton(parent, CLIENT_ID,
-                    Messages.DependencyProperties_add_uri, FILE.ICONCLOUD);
-            btnAddURI.addSelectionListener(new SelectionAdapter() {
-
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    InputDialog dialog = new InputDialog(getShell(),
-                            Messages.DependencyProperties_add_uri,
-                            Messages.DependencyProperties_enter_uri, "",   //$NON-NLS-1$
-                            DependencyProperties.this::validateUrl);
-
-                    if (dialog.open() == Window.OK) {
-                        getList().add(new PgLibrary(dialog.getValue()));
-                        getViewer().refresh();
-                    }
-                }
-            });
-
+            createButton(parent, ADD_ID, Messages.add, Activator.getEclipseImage(ISharedImages.IMG_OBJ_ADD));
+            createButton(parent, COPY_ID, Messages.copy, Activator.getEclipseImage(ISharedImages.IMG_TOOL_COPY));
+            createButton(parent, EDIT_ID, Messages.edit, Activator.getRegisteredImage(FILE.ICONEDIT));
             createButton(parent, DELETE_ID, Messages.delete, Activator.getEclipseImage(ISharedImages.IMG_ETOOL_DELETE));
         }
-    }
 
-    private String validateUrl(String newText) {
-        try {
-            if (new URI(newText).getScheme() == null) {
-                return Messages.DependencyProperties_empty_scheme;
-            }
-            return null;
-        } catch (URISyntaxException ex) {
-            return ex.getLocalizedMessage();
-        }
-    }
-
-    private static class IgnorePrivCheckEditingSupport extends CommonEditingSupport<CheckboxCellEditor> {
-
-        public IgnorePrivCheckEditingSupport(TableViewer tableViewer) {
-            super(tableViewer, new CheckboxCellEditor(tableViewer.getTable()));
+        @Override
+        protected void editObject() {
+            action = Messages.DependencyProperties_edit_dependency;
+            super.editObject();
         }
 
         @Override
-        protected Object getValue(Object element) {
-            return ((PgLibrary) element).isIgnorePriv();
+        protected void copyObject() {
+            action = Messages.DependencyProperties_copy_dependency;
+            super.copyObject();
         }
 
         @Override
-        protected void setValue(Object element, Object value) {
-            boolean val = (boolean) value;
-            ((PgLibrary) element).setIgnorePriv(val);
-            getViewer().update(element, null);
-            if (val) {
-                MessageBox mb = new MessageBox(getViewer().getControl().getShell(), SWT.ICON_INFORMATION);
-                mb.setText(Messages.DependencyProperties_attention);
-                mb.setMessage(Messages.DependencyProperties_ignore_priv_warn);
-                mb.open();
-            }
-        }
-    }
-
-    private static class OwnerEditingSupport extends CommonEditingSupport<TextCellEditor> {
-
-        public OwnerEditingSupport(TableViewer viewer) {
-            super(viewer, new TextCellEditor(viewer.getTable()));
-        }
-
-        @Override
-        protected Object getValue(Object element) {
-            return ((PgLibrary) element).getOwner();
-        }
-
-        @Override
-        protected void setValue(Object element, Object value) {
-            ((PgLibrary) element).setOwner((String) value);
-            getViewer().update(element, null);
-        }
-    }
-
-    private static class TxtLibPathEditingSupport extends
-    AbstractTxtEditingSupport<PgLibrary, DependenciesListEditor> {
-
-        public TxtLibPathEditingSupport(ColumnViewer viewer,
-                DependenciesListEditor dependenciesListEditor) {
-            super(viewer, dependenciesListEditor, PgLibrary.class);
-        }
-
-        @Override
-        protected String getText(PgLibrary obj) {
-            return obj.getPath();
-        }
-
-        @Override
-        protected PgLibrary getCopyWithNewTxt(PgLibrary obj, String newText) {
-            return new PgLibrary(newText, obj.isIgnorePriv(), obj.getOwner());
+        public void addNewObject(PgLibrary oldObject) {
+            action = Messages.DependencyProperties_create_new_dependency;
+            super.addNewObject(oldObject);
         }
     }
 }

@@ -103,6 +103,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.contexts.IContextService;
+import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.FileEditorInput;
@@ -122,7 +123,6 @@ import ru.taximaxim.codekeeper.core.schema.PgOverride;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
 import ru.taximaxim.codekeeper.ui.UIConsts.CONTEXT;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_BIND_PREF;
@@ -134,6 +134,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PERSPECTIVE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PG_EDIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF_PAGE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PATH;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.VIEW;
@@ -579,20 +580,31 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         job.schedule();
     }
 
-    private void showOverrideView(DbSource dbProject) throws PgCodekeeperUIException {
+    private boolean showOverrideView(DbSource dbProject) {
         List<PgOverride> overrides = dbProject.getDbObject().getOverrides();
-        if (!overrides.isEmpty()) {
-            try {
-                getSite().getPage().showView(VIEW.OVERRIDE_VIEW, null, IWorkbenchPage.VIEW_VISIBLE);
-                updateSelection();
-            } catch (PartInitException e) {
-                ExceptionNotifier.notifyDefault(e.getLocalizedMessage(), e);
-            }
-
-            if (proj.getPrefs().getBoolean(PROJ_PREF.LIB_SAFE_MODE, true)) {
-                throw new PgCodekeeperUIException(Messages.ProjectEditorDiffer_library_duplication_exception);
-            }
+        if (overrides.isEmpty()) {
+            return true;
         }
+
+        try {
+            getSite().getPage().showView(VIEW.OVERRIDE_VIEW, null, IWorkbenchPage.VIEW_VISIBLE);
+            updateSelection();
+        } catch (PartInitException e) {
+            ExceptionNotifier.notifyDefault(e.getLocalizedMessage(), e);
+        }
+
+        if (proj.getPrefs().getBoolean(PROJ_PREF.LIB_SAFE_MODE, true)) {
+            MessageBox mb = new MessageBox(parent.getShell(), SWT.ICON_ERROR | SWT.YES | SWT.NO);
+            mb.setText(Messages.ProjectEditorDiffer_library_duplication_title);
+            mb.setMessage(Messages.ProjectEditorDiffer_library_duplication_exception);
+            if (mb.open() == SWT.YES) {
+                PreferencesUtil.createPropertyDialogOn(
+                        parent.getShell(), proj.getProject(), PREF_PAGE.DEPENDENCIES, null, null).open();
+            }
+            return false;
+        }
+
+        return true;
     }
 
     private void askPerspectiveChange(IEditorSite site) {
@@ -737,13 +749,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         this.dbRemote = dbRemote;
         this.diffTree = diffTree;
 
-        if (dbProject != null) {
-            try {
-                showOverrideView(dbProject);
-            } catch (PgCodekeeperUIException e) {
-                ExceptionNotifier.notifyDefault(e.getLocalizedMessage(), e);
-                return;
-            }
+        if (dbProject != null && !showOverrideView(dbProject)) {
+            return;
         }
 
         diffPane.setDbSources(dbProject, dbRemote);

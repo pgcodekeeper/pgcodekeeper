@@ -15,20 +15,24 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.libraries;
 
+import java.util.Objects;
+
 public class PgLibrary {
 
+    private final String name;
     private final String path;
-    private boolean isIgnorePriv;
-    private String owner;
+    private final boolean isIgnorePriv;
+    private final String owner;
 
-    public PgLibrary(String path) {
-        this(path, true, "");
-    }
-
-    public PgLibrary(String path, boolean isIgnorePriv, String owner) {
+    public PgLibrary(String name, String path, boolean isIgnorePriv, String owner) {
+        this.name = name;
         this.path = path;
         this.isIgnorePriv = isIgnorePriv;
         this.owner = owner;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public String getPath() {
@@ -39,15 +43,32 @@ public class PgLibrary {
         return isIgnorePriv;
     }
 
-    public void setIgnorePriv(boolean isIgnorePriv) {
-        this.isIgnorePriv = isIgnorePriv;
-    }
-
     public String getOwner() {
         return owner;
     }
 
-    public void setOwner(String owner) {
-        this.owner = owner == null ? "" : owner;
+    public String getTitle() {
+        if (!name.isBlank()) {
+            return name;
+        }
+
+        return path;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getTitle());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof PgLibrary)) {
+            return false;
+        }
+        PgLibrary other = (PgLibrary) obj;
+        return Objects.equals(getTitle(), other.getTitle());
     }
 }
