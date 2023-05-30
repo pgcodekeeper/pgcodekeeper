@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="pgCodeKeeper" uid="ru.taximaxim.codekeeper.rcp.product" id="ru.taximaxim.codekeeper.mainapp.product" application="org.eclipse.ui.ide.workbench" version="7.6.0.qualifier" useFeatures="true" includeLaunchers="true">
+<product name="pgCodeKeeper" uid="ru.taximaxim.codekeeper.rcp.product" id="ru.taximaxim.codekeeper.mainapp.product" application="org.eclipse.ui.ide.workbench" version="8.0.0.qualifier" useFeatures="true" includeLaunchers="true">
 
    <configIni use="default">
    </configIni>
