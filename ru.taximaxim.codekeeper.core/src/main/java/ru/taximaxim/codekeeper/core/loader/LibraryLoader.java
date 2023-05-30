@@ -134,7 +134,7 @@ public class LibraryLoader extends DatabaseLoader {
 
         if (Files.isDirectory(p)) {
             if (Files.exists(p.resolve(Consts.FILENAME_WORKING_DIR_MARKER))) {
-                PgDatabase db = new ProjectLoader(path, args, errors).load();
+                PgDatabase db = new ProjectLoader(p.toString(), args, errors).load();
 
                 if (loadNested) {
                     new LibraryLoader(db, metaPath, errors, loadedLibs).loadXml(
