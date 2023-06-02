@@ -15,12 +15,13 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.sqledit;
 
+import java.text.MessageFormat;
+
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.AbstractInformationControl;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.IInformationControlExtension2;
-import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.custom.StyledText;
@@ -38,16 +39,17 @@ import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.editors.text.EditorsUI;
+
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class SQLEditorInformationControl extends AbstractInformationControl
-implements IInformationControlExtension2 {
+        implements IInformationControlExtension2 {
 
     private Composite parent;
     private SQLHoverInfo input;
 
     public SQLEditorInformationControl(Shell parentShell, String statusFieldText) {
-        //TODO statusFieldText is dissappearing when rename operation done. Need fix
+        // TODO statusFieldText is dissappearing when rename operation done. Need fix
         super(parentShell, statusFieldText);
         create();
     }
@@ -96,23 +98,27 @@ implements IInformationControlExtension2 {
     }
 
     protected void deferredCreateContent() {
-        createAnnotationInformation(input.annotation);
+        if (input.pgObjLocation == null) {
+            return;
+        }
 
-        Color foreground = parent.getForeground();
-        Color background = parent.getBackground();
-
-        setForegroundColor(foreground); // For main composite.
-        setBackgroundColor(background);
-        setColorAndFont(parent, foreground, background, JFaceResources.getDialogFont()); // For child elements.
-        if (input.pgObjLocation != null) {
-            MisplaceCompletionProposal [] misplaceCompletionProposals = MisplaceCompletionProposal.getMisplaceProposals(input.annotation, input.pgObjLocation);
-            if (misplaceCompletionProposals != null) {
-                createCompletionProposalsControl(misplaceCompletionProposals);
+        MisplaceCompletionProposal[] misplaceCompletionProposals = MisplaceCompletionProposal
+                .getMisplaceProposals(input.annotation, input.pgObjLocation);
+        if (misplaceCompletionProposals != null) {
+            createAnnotationInformation(input.annotation.getText());
+            createCompletionProposalsControl(misplaceCompletionProposals);
+        } else {
+            StringBuilder sb = new StringBuilder();
+            sb.append(input.pgObjLocation.getQualifiedName())
+                .append(" (").append(input.pgObjLocation.getType()).append(')'); //$NON-NLS-1$
+            if (!input.comment.isBlank()) {
+                sb.append(" - ").append(input.comment); //$NON-NLS-1$
             }
+            createAnnotationInformation(sb.toString());
         }
     }
 
-    private void createAnnotationInformation(Annotation annotation) {
+    private void createAnnotationInformation(String textValue) {
         Composite composite = new Composite(parent, SWT.NONE);
         composite.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
         GridLayout layout = new GridLayout(2, false);
@@ -126,18 +132,16 @@ implements IInformationControlExtension2 {
         GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
         text.setLayoutData(data);
         text.setAlwaysShowScrollBars(false);
-        if (annotation != null) {
-            String annotationText = annotation.getText();
-            if (annotationText != null) {
-                text.setText(annotationText);
-            }
-        } else if (input.comment != null) {
-            text.setText(input.comment);
-        }
+        text.setText(textValue);
+
+        Color foreground = parent.getForeground();
+        Color background = parent.getBackground();
+        setForegroundColor(foreground);
+        setBackgroundColor(background);
+        setColorAndFont(parent, foreground, background, JFaceResources.getDialogFont());
     }
 
-    private void createCompletionProposalsControl(
-            MisplaceCompletionProposal[] proposals) {
+    private void createCompletionProposalsControl(MisplaceCompletionProposal[] proposals) {
         Composite composite = new Composite(parent, SWT.NONE);
         composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         GridLayout layout2 = new GridLayout(1, false);
@@ -154,7 +158,14 @@ implements IInformationControlExtension2 {
         GridData layoutData = new GridData(SWT.BEGINNING, SWT.CENTER, false, false);
         layoutData.horizontalIndent = 4;
         quickFixLabel.setLayoutData(layoutData);
-        String text = proposals.length == 1 ? Messages.SQLEditorInformationControl_quick_fix_available : String.valueOf(proposals.length) + Messages.SQLEditorInformationControl_quick_fix_availableSQLEditorInformationControl_quick_fixes_available;
+
+        String text;
+        if (proposals.length == 1) {
+            text = Messages.SQLEditorInformationControl_quick_fix_available;
+        } else {
+            text = MessageFormat.format(Messages.SQLEditorInformationControl_multiple_quick_fix_available,
+                    proposals.length);
+        }
         quickFixLabel.setText(text);
 
         setColorAndFont(composite, parent.getForeground(), parent.getBackground(),
@@ -245,7 +256,6 @@ implements IInformationControlExtension2 {
 
     @Override
     public IInformationControlCreator getInformationPresenterControlCreator() {
-        return parent -> new SQLEditorInformationControl(parent,
-                EditorsUI.getTooltipAffordanceString());
+        return parentShell -> new SQLEditorInformationControl(parentShell, EditorsUI.getTooltipAffordanceString());
     }
 }

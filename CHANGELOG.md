@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed conflict of the tooltips for annotations when object name highlighting and pointing on the object name with cursor.
 - Fixed a bug due to which the outline did not update while navigating through search results.
 
 ## [7.6.0] - 2023-05-16
