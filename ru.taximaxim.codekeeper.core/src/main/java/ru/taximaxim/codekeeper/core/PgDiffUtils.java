@@ -242,10 +242,6 @@ public final class PgDiffUtils {
         return map.isEmpty();
     }
 
-    public static boolean isStringNotEmpty(String input) {
-        return input != null && !input.isEmpty();
-    }
-
     public static boolean startsWithId(String text, String id, int offset) {
         if (offset != 0 && isValidIdChar(text.charAt(offset - 1))) {
             return false;

@@ -57,7 +57,6 @@ implements PgSimpleOptionContainer {
         appendOwnerSQL(sbSql);
 
         if (comment != null && !comment.isEmpty()) {
-            sbSql.append("\n\n");
             appendCommentSql(sbSql);
         }
 
@@ -83,7 +82,6 @@ implements PgSimpleOptionContainer {
         compareOptions(newDictionary, sb);
 
         if (!Objects.equals(getComment(), newCondition.getComment())) {
-            sb.append("\n\n");
             newCondition.appendCommentSql(sb);
         }
 

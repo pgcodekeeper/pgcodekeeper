@@ -118,7 +118,6 @@ public class PgIndex extends AbstractIndex {
         sbSQL.append(getClusterSQL());
 
         if (comment != null && !comment.isEmpty()) {
-            sbSQL.append("\n\n");
             appendCommentSql(sbSQL);
         }
 
@@ -160,7 +159,7 @@ public class PgIndex extends AbstractIndex {
                 .append(PgDiffUtils.getQuotedName(tmpName))
                 .append(" RENAME TO ")
                 .append(PgDiffUtils.getQuotedName(getName()))
-                .append(";\n");
+                .append(";");
                 newIndex.appendCommentSql(sb);
                 sb.append("\nCOMMIT TRANSACTION;");
             }
@@ -185,7 +184,6 @@ public class PgIndex extends AbstractIndex {
         compareOptions(newIndex, sb);
 
         if (!Objects.equals(getComment(), newIndex.getComment())) {
-            sb.append("\n\n");
             newIndex.appendCommentSql(sb);
         }
         return sb.length() > startLength;

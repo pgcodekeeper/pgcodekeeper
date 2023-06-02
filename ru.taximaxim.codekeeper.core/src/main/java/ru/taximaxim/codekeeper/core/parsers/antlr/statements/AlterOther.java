@@ -37,8 +37,9 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Encoding_identifierC
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Schema_alterContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Storage_directiveContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
+import ru.taximaxim.codekeeper.core.schema.AbstractType;
+import ru.taximaxim.codekeeper.core.schema.PgBaseType;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
-import ru.taximaxim.codekeeper.core.schema.PgType;
 
 public class AlterOther extends ParserAbstract {
 
@@ -110,14 +111,17 @@ public class AlterOther extends ParserAbstract {
         AbstractSchema schema = getSchemaSafe(ids);
         ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
 
-        PgType type = (PgType) getSafe(AbstractSchema::getType, schema, nameCtx);
-        for (Storage_directiveContext storDirCtx : encodingCtx.storage_directive()) {
-            if (storDirCtx.compress_type != null) {
-                doSafe(PgType::setCompressType, type, storDirCtx.compress_type.getText());
-            } else if (storDirCtx.compress_level != null) {
-                doSafe(PgType::setCompressLevel, type, Integer.parseInt(storDirCtx.compress_level.getText()));
-            } else if (storDirCtx.block_size != null) {
-                doSafe(PgType::setBlockSize, type, Integer.parseInt(storDirCtx.block_size.getText()));
+        AbstractType type = getSafe(AbstractSchema::getType, schema, nameCtx);
+        if (type instanceof PgBaseType) {
+            PgBaseType baseType = (PgBaseType) type;
+            for (Storage_directiveContext storDirCtx : encodingCtx.storage_directive()) {
+                if (storDirCtx.compress_type != null) {
+                    doSafe(PgBaseType::setCompressType, baseType, storDirCtx.compress_type.getText());
+                } else if (storDirCtx.compress_level != null) {
+                    doSafe(PgBaseType::setCompressLevel, baseType, Integer.parseInt(storDirCtx.compress_level.getText()));
+                } else if (storDirCtx.block_size != null) {
+                    doSafe(PgBaseType::setBlockSize, baseType, Integer.parseInt(storDirCtx.block_size.getText()));
+                }
             }
         }
     }

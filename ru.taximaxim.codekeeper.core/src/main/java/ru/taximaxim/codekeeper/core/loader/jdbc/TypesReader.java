@@ -27,17 +27,20 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.statements.CreateDomain;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
+import ru.taximaxim.codekeeper.core.schema.AbstractType;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.ICompressOptionContainer;
+import ru.taximaxim.codekeeper.core.schema.PgBaseType;
 import ru.taximaxim.codekeeper.core.schema.PgColumn;
+import ru.taximaxim.codekeeper.core.schema.PgCompositeType;
 import ru.taximaxim.codekeeper.core.schema.PgConstraint;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgDomain;
+import ru.taximaxim.codekeeper.core.schema.PgEnumType;
+import ru.taximaxim.codekeeper.core.schema.PgRangeType;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.schema.PgType;
-import ru.taximaxim.codekeeper.core.schema.PgType.PgTypeForm;
 
-public class TypesReader extends JdbcReader {
+public final class TypesReader extends JdbcReader {
 
     private static final String ADD_CONSTRAINT = "ALTER DOMAIN noname ADD CONSTRAINT noname ";
 
@@ -52,7 +55,7 @@ public class TypesReader extends JdbcReader {
             if (typeOrDomain.getStatementType() == DbObjType.DOMAIN) {
                 schema.addDomain((PgDomain) typeOrDomain);
             } else {
-                schema.addType((PgType) typeOrDomain);
+                schema.addType((AbstractType) typeOrDomain);
             }
         }
     }
@@ -136,7 +139,7 @@ public class TypesReader extends JdbcReader {
         return d;
     }
 
-    private PgType getType(ResultSet res, String schemaName, String typtype) throws SQLException {
+    private AbstractType getType(ResultSet res, String schemaName, String typtype) throws SQLException {
         String name = res.getString("typname");
         loader.setCurrentObject(new GenericColumn(schemaName, name, DbObjType.TYPE));
         switch (typtype) {
@@ -148,28 +151,27 @@ public class TypesReader extends JdbcReader {
         }
     }
 
-    private PgType getBaseType(ResultSet res, String name) throws SQLException {
-        PgType t = new PgType(name, PgTypeForm.BASE);
-
-        setFunctionWithDep(PgType::setInputFunction, t, res.getString("typinput"));
-        setFunctionWithDep(PgType::setOutputFunction, t, res.getString("typoutput"));
+    private PgBaseType getBaseType(ResultSet res, String name) throws SQLException {
+        PgBaseType t = new PgBaseType(name);
+        setFunctionWithDep(PgBaseType::setInputFunction, t, res.getString("typinput"));
+        setFunctionWithDep(PgBaseType::setOutputFunction, t, res.getString("typoutput"));
         if (res.getBoolean("typreceiveset")) {
-            setFunctionWithDep(PgType::setReceiveFunction, t, res.getString("typreceive"));
+            setFunctionWithDep(PgBaseType::setReceiveFunction, t, res.getString("typreceive"));
         }
         if (res.getBoolean("typsendset")) {
-            setFunctionWithDep(PgType::setSendFunction, t, res.getString("typsend"));
+            setFunctionWithDep(PgBaseType::setSendFunction, t, res.getString("typsend"));
         }
         if (res.getBoolean("typmodinset")) {
-            setFunctionWithDep(PgType::setTypmodInputFunction, t, res.getString("typmodin"));
+            setFunctionWithDep(PgBaseType::setTypmodInputFunction, t, res.getString("typmodin"));
         }
         if (res.getBoolean("typmodoutset")) {
-            setFunctionWithDep(PgType::setTypmodOutputFunction, t, res.getString("typmodout"));
+            setFunctionWithDep(PgBaseType::setTypmodOutputFunction, t, res.getString("typmodout"));
         }
         if (res.getBoolean("typanalyzeset")) {
-            setFunctionWithDep(PgType::setAnalyzeFunction, t, res.getString("typanalyze"));
+            setFunctionWithDep(PgBaseType::setAnalyzeFunction, t, res.getString("typanalyze"));
         }
         if (SupportedVersion.VERSION_14.isLE(loader.version) &&  res.getBoolean("typsubscriptset")) {
-            setFunctionWithDep(PgType::setSubscriptFunction, t, res.getString("typsubscript"));
+            setFunctionWithDep(PgBaseType::setSubscriptFunction, t, res.getString("typsubscript"));
         }
 
         short len = res.getShort("typlen");
@@ -237,9 +239,8 @@ public class TypesReader extends JdbcReader {
         return t;
     }
 
-    private PgType getCompositeType(ResultSet res, String name) throws SQLException {
-        PgType t = new PgType(name, PgTypeForm.COMPOSITE);
-
+    private PgCompositeType getCompositeType(ResultSet res, String name) throws SQLException {
+        PgCompositeType t = new PgCompositeType(name);
         String[] attnames = getColArray(res, "comp_attnames");
         if (attnames == null) {
             return t;
@@ -274,9 +275,8 @@ public class TypesReader extends JdbcReader {
         return t;
     }
 
-    private PgType getEnumType(ResultSet res, String name) throws SQLException {
-        PgType t = new PgType(name, PgTypeForm.ENUM);
-
+    private PgEnumType getEnumType(ResultSet res, String name) throws SQLException {
+        PgEnumType t = new PgEnumType(name);
         String[] enums = getColArray(res, "enums");
         if (enums != null) {
             for (String enum_ : enums) {
@@ -287,9 +287,8 @@ public class TypesReader extends JdbcReader {
         return t;
     }
 
-    private PgType getRangeType(ResultSet res, String name) throws SQLException {
-        PgType t = new PgType(name, PgTypeForm.RANGE);
-
+    private PgRangeType getRangeType(ResultSet res, String name) throws SQLException {
+        PgRangeType t = new PgRangeType(name);
         JdbcType subtype = loader.cachedTypesByOid.get(res.getLong("rngsubtype"));
         t.setSubtype(subtype.getFullName());
         subtype.addTypeDepcy(t);
@@ -306,10 +305,10 @@ public class TypesReader extends JdbcReader {
         }
 
         if (res.getBoolean("rngcanonicalset")) {
-            setFunctionWithDep(PgType::setCanonical, t, res.getString("rngcanonical"));
+            setFunctionWithDep(PgRangeType::setCanonical, t, res.getString("rngcanonical"));
         }
         if (res.getBoolean("rngsubdiffset")) {
-            setFunctionWithDep(PgType::setSubtypeDiff, t, res.getString("rngsubdiff"));
+            setFunctionWithDep(PgRangeType::setSubtypeDiff, t, res.getString("rngsubdiff"));
         }
 
         if (SupportedVersion.VERSION_14.isLE(loader.version)) {

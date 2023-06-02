@@ -19,13 +19,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 
-public class MsType extends AbstractType {
+public final class MsType extends AbstractType {
 
     // base type
     private String baseType;
@@ -41,16 +40,12 @@ public class MsType extends AbstractType {
     private final List<String> constraints = new ArrayList<>();
     private final List<String> indices = new ArrayList<>();
 
-
     public MsType(String name) {
         super(name);
     }
 
     @Override
-    public String getCreationSQL() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("CREATE TYPE ").append(getQualifiedName());
-
+    protected void appendDef(StringBuilder sb) {
         if (getBaseType() != null) {
             sb.append(" FROM ").append(getBaseType());
             if (isNotNull()) {
@@ -85,51 +80,24 @@ public class MsType extends AbstractType {
                 sb.append("\nWITH ( MEMORY_OPTIMIZED = ON )");
             }
         }
-
         sb.append(GO);
-
-        appendOwnerSQL(sb);
-        appendPrivileges(sb);
-
-        return sb.toString();
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
-        MsType newType = (MsType) newCondition;
-
-        if (!compareUnalterable(newType)) {
-            isNeedDepcies.set(true);
+    protected boolean compareUnalterable(AbstractType newType) {
+        if (this == newType) {
             return true;
         }
 
-        if (!Objects.equals(getOwner(), newType.getOwner())) {
-            newType.alterOwnerSQL(sb);
-        }
-        alterPrivileges(newType, sb);
-
-        return sb.length() > startLength;
-    }
-
-    private boolean compareUnalterable(MsType newType) {
-        boolean equals = false;
-
-        if (this == newType) {
-            equals = true;
-        } else {
-            equals = isNotNull() == newType.isNotNull()
-                    && isMemoryOptimized() == newType.isMemoryOptimized()
-                    && Objects.equals(getBaseType(), newType.getBaseType())
-                    && Objects.equals(getAssemblyName(), newType.getAssemblyName())
-                    && Objects.equals(getAssemblyClass(), newType.getAssemblyClass())
-                    && columns.equals(newType.columns)
-                    && PgDiffUtils.setlikeEquals(indices, newType.indices)
-                    && PgDiffUtils.setlikeEquals(constraints, newType.constraints);
-        }
-
-        return equals;
+        MsType type = (MsType) newType;
+        return isNotNull() == type.isNotNull()
+                && isMemoryOptimized() == type.isMemoryOptimized()
+                && Objects.equals(getBaseType(), type.getBaseType())
+                && Objects.equals(getAssemblyName(), type.getAssemblyName())
+                && Objects.equals(getAssemblyClass(), type.getAssemblyClass())
+                && columns.equals(type.columns)
+                && PgDiffUtils.setlikeEquals(indices, type.indices)
+                && PgDiffUtils.setlikeEquals(constraints, type.constraints);
     }
 
     @Override

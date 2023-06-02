@@ -108,7 +108,6 @@ public class PgOperator extends PgStatementWithSearchPath implements IOperator {
         appendPrivileges(sbSQL);
 
         if (comment != null && !comment.isEmpty()) {
-            sbSQL.append("\n\n");
             appendCommentSql(sbSQL);
         }
 
@@ -181,7 +180,6 @@ public class PgOperator extends PgStatementWithSearchPath implements IOperator {
         }
 
         if (!Objects.equals(getComment(), newOperator.getComment())) {
-            sb.append("\n\n");
             newOperator.appendCommentSql(sb);
         }
         return sb.length() > startLength;

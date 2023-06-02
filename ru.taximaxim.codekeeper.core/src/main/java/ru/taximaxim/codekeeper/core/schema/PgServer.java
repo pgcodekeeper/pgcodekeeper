@@ -133,7 +133,6 @@ public class PgServer extends PgStatement implements PgForeignOptionContainer{
         appendPrivileges(sb);
 
         if (comment != null && !comment.isEmpty()) {
-            sb.append("\n\n");
             appendCommentSql(sb);
         }
         return sb.toString();
@@ -166,7 +165,6 @@ public class PgServer extends PgStatement implements PgForeignOptionContainer{
         alterPrivileges(newCondition, sb);
 
         if (!Objects.equals(newServer.getComment(), getComment())) {
-            sb.append("\n\n");
             newServer.appendCommentSql(sb);
         }
         return sb.length() > startLength;

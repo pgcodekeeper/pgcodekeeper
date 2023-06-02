@@ -155,7 +155,7 @@ public abstract class PgStatement implements IStatement, IHashable {
     public abstract PgDatabase getDatabase();
 
     public void setParent(PgStatement parent) {
-        if(this.parent != null) {
+        if(parent != null && this.parent != null) {
             throw new IllegalStateException("Statement already has a parent: "
                     + this.getClass() + " Name: " + this.getName());
         }
@@ -208,12 +208,27 @@ public abstract class PgStatement implements IStatement, IHashable {
         setComment(args.isKeepNewlines() ? comment : comment.replace("\r", ""));
     }
 
-    protected StringBuilder appendCommentSql(StringBuilder sb) {
-        sb.append("COMMENT ON ").append(getTypeName()).append(' ');
+    protected void appendComments(StringBuilder sb) {
+        appendComments(sb, Collections.emptyList());
+    }
+
+    protected void appendComments(StringBuilder sb, List<AbstractColumn> columns) {
+        if (comment != null && !comment.isEmpty()) {
+            appendCommentSql(sb);
+        }
+
+        for (final AbstractColumn column : columns) {
+            if (column.getComment() != null && !column.getComment().isEmpty()) {
+                column.appendCommentSql(sb);
+            }
+        }
+    }
+
+    protected void appendCommentSql(StringBuilder sb) {
+        sb.append("\n\n").append("COMMENT ON ").append(getTypeName()).append(' ');
         appendFullName(sb);
-        return sb.append(" IS ")
-                .append(comment == null || comment.isEmpty() ? "NULL" : comment)
-                .append(';');
+        sb.append(" IS ")
+        .append(comment == null || comment.isEmpty() ? "NULL" : comment).append(';');
     }
 
     public Set<PgPrivilege> getPrivileges() {

@@ -80,7 +80,6 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
         alterPrivileges(newFunction, sb);
 
         if (!Objects.equals(getComment(), newFunction.getComment())) {
-            sb.append("\n\n");
             newFunction.appendCommentSql(sb);
         }
 

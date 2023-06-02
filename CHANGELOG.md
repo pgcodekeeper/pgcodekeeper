@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Was refactor classes which responses for work with types
+
 ### Fixed
 
 - Fixed a bug when reading a library-project when using a relative path.

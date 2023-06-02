@@ -469,6 +469,12 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
     }
 
     public void addType(final AbstractType type) {
+        // replace shell type by real type
+        AbstractType oldType = types.get(type.getName());
+        if (oldType instanceof PgShellType && !(type instanceof PgShellType)) {
+            types.remove(type.getName());
+            oldType.setParent(null);
+        }
         addUnique(types, type);
     }
 

@@ -102,7 +102,6 @@ public class PgCollation extends PgStatementWithSearchPath {
         appendOwnerSQL(sbSQL);
 
         if (comment != null && !comment.isEmpty()) {
-            sbSQL.append("\n\n");
             appendCommentSql(sbSQL);
         }
 
@@ -124,7 +123,6 @@ public class PgCollation extends PgStatementWithSearchPath {
         }
 
         if (!Objects.equals(getComment(), newCollation.getComment())) {
-            sb.append("\n\n");
             newCollation.appendCommentSql(sb);
         }
 

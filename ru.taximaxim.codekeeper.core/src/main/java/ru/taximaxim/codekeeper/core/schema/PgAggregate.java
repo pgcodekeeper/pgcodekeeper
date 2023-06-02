@@ -180,7 +180,6 @@ public class PgAggregate extends AbstractPgFunction {
         appendPrivileges(sbSQL);
 
         if (comment != null && !comment.isEmpty()) {
-            sbSQL.append("\n\n");
             appendCommentSql(sbSQL);
         }
 

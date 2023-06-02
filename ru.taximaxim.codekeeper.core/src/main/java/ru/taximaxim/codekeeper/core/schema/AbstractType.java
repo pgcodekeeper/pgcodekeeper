@@ -15,12 +15,68 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema;
 
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 
-public abstract class AbstractType extends PgStatementWithSearchPath {
+public abstract class AbstractType extends PgStatementWithSearchPath{
 
     protected AbstractType(String name) {
         super(name);
+    }
+
+    @Override
+    public String getCreationSQL() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("CREATE TYPE ").append(getQualifiedName());
+        appendDef(sb);
+        appendOwnerSQL(sb);
+        appendPrivileges(sb);
+        appendComments(sb);
+        return sb.toString();
+    }
+
+    protected abstract void appendDef(StringBuilder sb);
+
+    @Override
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+            AtomicBoolean isNeedDepcies) {
+        final int startLength = sb.length();
+        AbstractType newType = (AbstractType) newCondition;
+
+        if (isNeedRecreate(newType)) {
+            isNeedDepcies.set(true);
+            return true;
+        }
+
+        compareType(newType, sb, isNeedDepcies);
+
+        if (!Objects.equals(getOwner(), newType.getOwner())) {
+            newType.alterOwnerSQL(sb);
+        }
+        alterPrivileges(newType, sb);
+        if (!Objects.equals(getComment(), newType.getComment())) {
+            newType.appendCommentSql(sb);
+        }
+        return sb.length() > startLength;
+    }
+
+    private final boolean isNeedRecreate(AbstractType newType) {
+        return !getClass().equals(newType.getClass()) || !compareUnalterable(newType);
+    }
+
+    protected abstract boolean compareUnalterable(AbstractType newType);
+
+    protected void compareType(AbstractType newType, StringBuilder sb,
+            AtomicBoolean isNeedDepcies) {
+        // subclasses may override if needed
+    }
+
+    protected void appendStringOption(StringBuilder sb, String name, String value) {
+        if (value != null && !value.isEmpty()) {
+            sb.append(",\n\t").append(name).append(" = ").append(value);
+        }
     }
 
     @Override
@@ -37,7 +93,14 @@ public abstract class AbstractType extends PgStatementWithSearchPath {
 
     @Override
     public boolean compare(PgStatement obj) {
-        return this == obj || obj instanceof AbstractType && super.compare(obj);
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof AbstractType) {
+            AbstractType type = (AbstractType) obj;
+            return super.compare(type);
+        }
+        return false;
     }
 
     protected abstract AbstractType getTypeCopy();

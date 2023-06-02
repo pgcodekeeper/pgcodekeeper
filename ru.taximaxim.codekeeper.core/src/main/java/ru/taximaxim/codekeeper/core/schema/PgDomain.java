@@ -132,12 +132,10 @@ public class PgDomain extends PgStatementWithSearchPath {
         appendPrivileges(sb);
 
         if (comment != null && !comment.isEmpty()) {
-            sb.append("\n\n");
             appendCommentSql(sb);
         }
         for (AbstractConstraint c : constraints) {
             if (c.getComment() != null && !c.getComment().isEmpty()) {
-                sb.append("\n\n");
                 c.appendCommentSql(sb);
             }
         }
@@ -197,7 +195,6 @@ public class PgDomain extends PgStatementWithSearchPath {
         }
         alterPrivileges(newDomain, sb);
         if (!Objects.equals(getComment(), newDomain.getComment())) {
-            sb.append("\n\n");
             newDomain.appendCommentSql(sb);
         }
         return sb.length() > startLength;

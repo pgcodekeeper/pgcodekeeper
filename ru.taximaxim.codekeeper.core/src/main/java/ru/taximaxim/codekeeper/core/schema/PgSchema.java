@@ -44,7 +44,6 @@ public class PgSchema extends AbstractSchema {
         appendPrivileges(sbSQL);
 
         if (comment != null && !comment.isEmpty()) {
-            sbSQL.append("\n\n");
             appendCommentSql(sbSQL);
         }
 
@@ -62,7 +61,6 @@ public class PgSchema extends AbstractSchema {
         alterPrivileges(newCondition, sb);
 
         if (!Objects.equals(getComment(), newCondition.getComment())) {
-            sb.append("\n\n");
             newCondition.appendCommentSql(sb);
         }
 

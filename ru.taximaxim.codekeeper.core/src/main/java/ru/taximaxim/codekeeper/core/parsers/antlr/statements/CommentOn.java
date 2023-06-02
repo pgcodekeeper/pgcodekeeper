@@ -39,7 +39,7 @@ import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgDomain;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
-import ru.taximaxim.codekeeper.core.schema.PgType;
+import ru.taximaxim.codekeeper.core.schema.PgCompositeType;
 import ru.taximaxim.codekeeper.core.schema.PgView;
 
 public class CommentOn extends ParserAbstract {
@@ -92,7 +92,7 @@ public class CommentOn extends ParserAbstract {
             if (table == null) {
                 PgView view = (PgView) schema.getView(tableName);
                 if (view == null) {
-                    PgType t = ((PgType) getSafe(AbstractSchema::getType, schema, tableCtx));
+                    PgCompositeType t = ((PgCompositeType) getSafe(AbstractSchema::getType, schema, tableCtx));
                     addObjReference(tableIds, DbObjType.TYPE, null);
                     t.getAttr(name).setComment(db.getArguments(), comment);
                 } else {

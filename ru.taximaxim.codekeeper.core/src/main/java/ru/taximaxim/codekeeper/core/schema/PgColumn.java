@@ -84,7 +84,7 @@ public class PgColumn extends AbstractColumn implements PgSimpleOptionContainer,
         definitionDefaultNotNull(sbDefinition);
 
         generatedAlwaysAsStored(sbDefinition);
-        
+
         appendCompressOptions(sbDefinition);
         return sbDefinition.toString();
     }
@@ -137,7 +137,7 @@ public class PgColumn extends AbstractColumn implements PgSimpleOptionContainer,
                 // this operation also becomes fast on PostgreSQL 11+ (metadata only operation)
                 definitionDefaultNotNull(sb);
             }
-            
+
             generatedAlwaysAsStored(sb);
             appendCompressOptions(sb);
 
@@ -160,7 +160,6 @@ public class PgColumn extends AbstractColumn implements PgSimpleOptionContainer,
         compareIdentity(null, getIdentityType(), null, getSequence(), sb);
 
         if (comment != null && !comment.isEmpty()) {
-            sb.append("\n\n");
             appendCommentSql(sb);
         }
 
@@ -228,7 +227,6 @@ public class PgColumn extends AbstractColumn implements PgSimpleOptionContainer,
         compareIdentity(getIdentityType(), null, getSequence(), null, sb);
 
         if (comment != null && !comment.isEmpty()) {
-            sb.append("\n\n");
             appendCommentSql(sb);
         }
 
@@ -272,7 +270,6 @@ public class PgColumn extends AbstractColumn implements PgSimpleOptionContainer,
                 getSequence(), newColumn.getSequence(), sb);
 
         if (!Objects.equals(getComment(), newColumn.getComment())) {
-            sb.append("\n\n");
             newColumn.appendCommentSql(sb);
         }
 

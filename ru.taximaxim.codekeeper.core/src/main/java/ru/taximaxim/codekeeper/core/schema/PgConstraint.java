@@ -64,7 +64,6 @@ public class PgConstraint extends AbstractConstraint {
         }
 
         if (comment != null && !comment.isEmpty()) {
-            sbSQL.append("\n\n");
             appendCommentSql(sbSQL);
         }
 
@@ -99,12 +98,10 @@ public class PgConstraint extends AbstractConstraint {
             sb.append("\n\n");
             appendAlterTable(sb);
             sb.append("\n\tVALIDATE CONSTRAINT ")
-            .append(PgDiffUtils.getQuotedName(getName()))
-            .append(';');
+            .append(PgDiffUtils.getQuotedName(getName())).append(';');
         }
 
         if (!Objects.equals(getComment(), newConstr.getComment())) {
-            sb.append("\n\n");
             newConstr.appendCommentSql(sb);
         }
 
@@ -112,16 +109,15 @@ public class PgConstraint extends AbstractConstraint {
     }
 
     @Override
-    protected StringBuilder appendCommentSql(StringBuilder sb) {
-        sb.append("COMMENT ON CONSTRAINT ");
+    protected void appendCommentSql(StringBuilder sb) {
+        sb.append("\n\n").append("COMMENT ON CONSTRAINT ");
         sb.append(PgDiffUtils.getQuotedName(getName())).append(" ON ");
         if (getParent().getStatementType() == DbObjType.DOMAIN) {
             sb.append("DOMAIN ");
         }
-        sb.append(getParent().getQualifiedName());
-        return sb.append(" IS ")
-                .append(comment == null || comment.isEmpty() ? "NULL" : comment)
-                .append(';');
+        sb.append(getParent().getQualifiedName()).append(" IS ")
+        .append(comment == null || comment.isEmpty() ? "NULL" : comment)
+        .append(';');
     }
 
     private void appendAlterTable(StringBuilder sbSQL) {
