@@ -127,7 +127,7 @@ public final class Messages extends NLS {
 
     public static String SQLEditorInformationControl_quick_fix_available;
 
-    public static String SQLEditorInformationControl_quick_fix_availableSQLEditorInformationControl_quick_fixes_available;
+    public static String SQLEditorInformationControl_multiple_quick_fix_available;
 
     public static String SqlEditor_update_ddl;
 
