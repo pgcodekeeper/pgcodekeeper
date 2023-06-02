@@ -469,7 +469,6 @@ public class PgDatabase extends PgStatement implements IDatabase {
         final int startLength = sb.length();
 
         if (!Objects.equals(getComment(), newCondition.getComment())) {
-            sb.append("\n\n");
             newCondition.appendCommentSql(sb);
         }
         return sb.length() > startLength;

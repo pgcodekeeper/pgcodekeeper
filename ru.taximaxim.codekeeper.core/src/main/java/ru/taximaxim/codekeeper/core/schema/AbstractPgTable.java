@@ -70,10 +70,9 @@ public abstract class AbstractPgTable extends AbstractTable {
         appendPrivileges(sbSQL);
         appendColumnsPriliges(sbSQL);
         appendColumnsStatistics(sbSQL);
-        appendComments(sbSQL);
+        appendComments(sbSQL, getColumns());
         return sbSQL.toString();
     }
-
 
     /**
      * Appends CREATE TABLE statement beginning
@@ -160,20 +159,6 @@ public abstract class AbstractPgTable extends AbstractTable {
             sbSQL.append(column.getStatistics());
             sbSQL.append(';');
         });
-    }
-
-    protected void appendComments(StringBuilder sbSQL) {
-        if (comment != null && !comment.isEmpty()) {
-            sbSQL.append("\n\n");
-            appendCommentSql(sbSQL);
-        }
-
-        for (final AbstractColumn column : columns) {
-            if (column.getComment() != null && !column.getComment().isEmpty()) {
-                sbSQL.append("\n\n");
-                column.appendCommentSql(sbSQL);
-            }
-        }
     }
 
     private void writeSequences(PgColumn column, StringBuilder sbOption) {

@@ -55,8 +55,7 @@ import ru.taximaxim.codekeeper.core.schema.PgSchema;
 import ru.taximaxim.codekeeper.core.schema.PgSequence;
 import ru.taximaxim.codekeeper.core.schema.PgTrigger;
 import ru.taximaxim.codekeeper.core.schema.PgTrigger.TgTypes;
-import ru.taximaxim.codekeeper.core.schema.PgType;
-import ru.taximaxim.codekeeper.core.schema.PgType.PgTypeForm;
+import ru.taximaxim.codekeeper.core.schema.PgCompositeType;
 import ru.taximaxim.codekeeper.core.schema.PgView;
 import ru.taximaxim.codekeeper.core.schema.SimplePgTable;
 
@@ -588,7 +587,7 @@ class PgDB8 implements DatabaseObjectCreator {
         AbstractSchema schema = d.getDefaultSchema();
         //    schema.setComment("'Standard public schema'");
 
-        PgType type = new PgType("testtt", PgTypeForm.COMPOSITE);
+        PgCompositeType type = new PgCompositeType("testtt");
         AbstractColumn col = new PgColumn("a");
         col.setType("integer");
         type.addAttr(col);

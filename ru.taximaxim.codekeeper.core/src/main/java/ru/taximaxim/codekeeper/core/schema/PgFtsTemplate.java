@@ -53,7 +53,6 @@ public class PgFtsTemplate extends PgStatementWithSearchPath {
         sbSql.append("LEXIZE = ").append(lexizeFunction).append(" );");
 
         if (comment != null && !comment.isEmpty()) {
-            sbSql.append("\n\n");
             appendCommentSql(sbSql);
         }
 
@@ -76,7 +75,6 @@ public class PgFtsTemplate extends PgStatementWithSearchPath {
         }
 
         if (!Objects.equals(getComment(), newCondition.getComment())) {
-            sb.append("\n\n");
             newCondition.appendCommentSql(sb);
         }
 

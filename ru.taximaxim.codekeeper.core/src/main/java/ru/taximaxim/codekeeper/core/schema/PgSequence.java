@@ -61,7 +61,6 @@ public class PgSequence extends AbstractSequence {
         appendPrivileges(sbSQL);
 
         if (comment != null && !comment.isEmpty()) {
-            sbSQL.append("\n\n");
             appendCommentSql(sbSQL);
         }
 
@@ -156,7 +155,6 @@ public class PgSequence extends AbstractSequence {
         alterPrivileges(newSequence, sb);
 
         if (!Objects.equals(getComment(), newSequence.getComment())) {
-            sb.append("\n\n");
             newSequence.appendCommentSql(sb);
         }
 

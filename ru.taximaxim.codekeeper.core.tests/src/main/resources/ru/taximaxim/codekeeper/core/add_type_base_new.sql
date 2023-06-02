@@ -1,3 +1,7 @@
+CREATE TYPE public.typ_base;
+
+ALTER TYPE public.typ_base OWNER TO botov_av;
+
 CREATE TYPE public.typ_base (
     INPUT = input_func,
     OUTPUT = output_func,

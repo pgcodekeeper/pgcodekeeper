@@ -200,7 +200,6 @@ public abstract class AbstractTable extends PgStatementContainer implements PgOp
 
     protected void compareComment(AbstractTable newTable, StringBuilder sb) {
         if (!Objects.equals(getComment(), newTable.getComment())) {
-            sb.append("\n\n");
             newTable.appendCommentSql(sb);
         }
     }

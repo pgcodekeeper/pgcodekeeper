@@ -28,12 +28,16 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Storage_directiveCon
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Table_column_definitionContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
+import ru.taximaxim.codekeeper.core.schema.AbstractType;
+import ru.taximaxim.codekeeper.core.schema.PgBaseType;
 import ru.taximaxim.codekeeper.core.schema.PgColumn;
+import ru.taximaxim.codekeeper.core.schema.PgCompositeType;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
-import ru.taximaxim.codekeeper.core.schema.PgType;
-import ru.taximaxim.codekeeper.core.schema.PgType.PgTypeForm;
+import ru.taximaxim.codekeeper.core.schema.PgEnumType;
+import ru.taximaxim.codekeeper.core.schema.PgRangeType;
+import ru.taximaxim.codekeeper.core.schema.PgShellType;
 
-public class CreateType extends ParserAbstract {
+public final class CreateType extends ParserAbstract {
 
     private final Create_type_statementContext ctx;
     public CreateType(Create_type_statementContext ctx, PgDatabase db) {
@@ -46,35 +50,42 @@ public class CreateType extends ParserAbstract {
         List<ParserRuleContext> ids = getIdentifiers(ctx.name);
         String name = QNameParser.getFirstName(ids);
         AbstractSchema schema = getSchemaSafe(ids);
-        PgTypeForm form = PgTypeForm.SHELL;
+        AbstractType type = null;
         if (ctx.RANGE() != null) {
-            form = PgTypeForm.RANGE;
+            type = createRangeType(name);
         } else if (ctx.ENUM() != null) {
-            form = PgTypeForm.ENUM;
+            type = createEnumType(name);
         } else if (ctx.AS() != null) {
-            form = PgTypeForm.COMPOSITE;
+            type = createCompositeType(name);
         } else if (ctx.INPUT() != null) {
-            form = PgTypeForm.BASE;
-        }
-        PgType type = null;
-        PgType newType = null;
-        if (form == PgTypeForm.BASE && schema != null) {
-            type = (PgType) schema.getType(name);
-            if (type != null && type.getForm() != PgTypeForm.SHELL) {
-                throw new IllegalStateException("Duplicate type but existing is not SHELL type!");
-            }
-        }
-        if (type == null) {
-            type = new PgType(name, form);
-            newType = type;
+            type = createBaseType(name);
+        } else {
+            type = new PgShellType(name);
         }
 
+        addSafe(schema, type, ids);
+    }
+
+    private PgCompositeType createCompositeType(String name) {
+        PgCompositeType type =  new PgCompositeType(name);
         for (Table_column_definitionContext attr : ctx.attrs) {
             addAttr(attr, type);
         }
+
+        return type;
+    }
+
+    private PgEnumType createEnumType(String name) {
+        PgEnumType type =  new PgEnumType(name);
         for (Character_stringContext enume : ctx.enums) {
             type.addEnum(enume.getText());
         }
+
+        return type;
+    }
+
+    private PgRangeType createRangeType(String name) {
+        PgRangeType type = new PgRangeType(name);
         if (ctx.subtype_name != null) {
             type.setSubtype(getTypeName(ctx.subtype_name));
             addPgTypeDepcy(ctx.subtype_name, type);
@@ -97,6 +108,12 @@ public class CreateType extends ParserAbstract {
             type.setMultirange(ctx.multirange_name.getText());
             addPgTypeDepcy(ctx.multirange_name, type);
         }
+
+        return type;
+    }
+
+    private PgBaseType createBaseType(String name) {
+        PgBaseType type = new PgBaseType(name);
         if (ctx.input_function != null) {
             type.setInputFunction(getFullCtxText(ctx.input_function));
             addDepSafe(type, getIdentifiers(ctx.input_function), DbObjType.FUNCTION, true);
@@ -176,13 +193,10 @@ public class CreateType extends ParserAbstract {
             }
         }
 
-        if (newType != null) {
-            // add only newly created type, not a filled SHELL that was added before
-            addSafe(schema, type, ids);
-        }
+        return type;
     }
 
-    private void addAttr(Table_column_definitionContext colCtx, PgType type) {
+    private void addAttr(Table_column_definitionContext colCtx, PgCompositeType type) {
         AbstractColumn col = new PgColumn(colCtx.identifier().getText());
         col.setType(getTypeName(colCtx.data_type()));
         addPgTypeDepcy(colCtx.data_type(), type);

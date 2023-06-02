@@ -551,6 +551,8 @@ class PgDiffTest {
             "compare_greenplum_fdw",
             // Tests scenario where SERVER is compared.
             "compare_servers",
+            // Test scenario where changes type of type from composite to enum
+            "compare_different_types",
             // Tests scenario where USER MAPPING is compared.
             "compare_user_mapping",
             // Tests scenario where USER MAPPING is added.

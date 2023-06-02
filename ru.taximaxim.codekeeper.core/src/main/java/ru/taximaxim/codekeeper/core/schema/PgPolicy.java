@@ -114,7 +114,6 @@ public class PgPolicy extends PgStatementWithSearchPath {
         sbSQL.append(';');
 
         if (comment != null && !comment.isEmpty()) {
-            sbSQL.append("\n\n");
             appendCommentSql(sbSQL);
         }
 
@@ -161,7 +160,6 @@ public class PgPolicy extends PgStatementWithSearchPath {
         }
 
         if (!Objects.equals(getComment(), newPolice.getComment())) {
-            sb.append("\n\n");
             newPolice.appendCommentSql(sb);
         }
 

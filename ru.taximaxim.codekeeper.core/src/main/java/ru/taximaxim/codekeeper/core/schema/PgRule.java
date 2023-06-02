@@ -152,7 +152,6 @@ public class PgRule extends PgStatementWithSearchPath{
         }
 
         if (comment != null && !comment.isEmpty()) {
-            sbSQL.append("\n\n");
             appendCommentSql(sbSQL);
         }
         return sbSQL.toString();
@@ -181,7 +180,6 @@ public class PgRule extends PgStatementWithSearchPath{
             .append(';');
         }
         if (!Objects.equals(getComment(), newRule.getComment())) {
-            sb.append("\n\n");
             newRule.appendCommentSql(sb);
         }
         return sb.length() > startLength;

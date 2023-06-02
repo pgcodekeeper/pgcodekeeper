@@ -126,7 +126,6 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
         appendPrivileges(sb);
 
         if (comment != null && !comment.isEmpty()) {
-            sb.append("\n\n");
             appendCommentSql(sb);
         }
         return sb.toString();
@@ -170,7 +169,6 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
         alterPrivileges(newCondition, sb);
 
         if (!Objects.equals(newForeign.getComment(), getComment())) {
-            sb.append("\n\n");
             newForeign.appendCommentSql(sb);
         }
         return sb.length() > startLength;

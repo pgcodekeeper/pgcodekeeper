@@ -136,7 +136,6 @@ public class PgView extends AbstractView implements PgSimpleOptionContainer {
         }
 
         if (comment != null && !comment.isEmpty()) {
-            sbSQL.append("\n\n");
             appendCommentSql(sbSQL);
         }
 
@@ -154,8 +153,8 @@ public class PgView extends AbstractView implements PgSimpleOptionContainer {
         }
 
         sbSQL.append(" (");
-        for (int i = 0; i < columnNames.size(); i++) {
-            sbSQL.append(PgDiffUtils.getQuotedName(columnNames.get(i))).append(", ");
+        for (String columnName : columnNames) {
+            sbSQL.append(PgDiffUtils.getQuotedName(columnName)).append(", ");
         }
         sbSQL.setLength(sbSQL.length() - 2);
         sbSQL.append(')');
@@ -205,7 +204,6 @@ public class PgView extends AbstractView implements PgSimpleOptionContainer {
         alterPrivileges(newView, sb);
 
         if (!Objects.equals(getComment(), newView.getComment())) {
-            sb.append("\n\n");
             newView.appendCommentSql(sb);
         }
 

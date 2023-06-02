@@ -181,7 +181,6 @@ public class PgTrigger extends AbstractTrigger {
         }
 
         if (comment != null && !comment.isEmpty()) {
-            sbSQL.append("\n\n");
             appendCommentSql(sbSQL);
         }
 
@@ -212,7 +211,6 @@ public class PgTrigger extends AbstractTrigger {
         }
 
         if (!Objects.equals(getComment(), newTrg.getComment())) {
-            sb.append("\n\n");
             newTrg.appendCommentSql(sb);
         }
         return sb.length() > startLength;
