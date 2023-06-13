@@ -42,7 +42,7 @@ CREATE TABLE public.t3 (
 
 CREATE OR REPLACE FUNCTION public.f1() RETURNS setof text
     LANGUAGE plpgsql
-    AS $$
+    AS $_$
 DECLARE
     rc refcursor;
     r record;
@@ -79,4 +79,4 @@ BEGIN
 
     return query explain insert into public.t12 (c1) values (1) returning c1;
 END;
-$$;
+$_$;

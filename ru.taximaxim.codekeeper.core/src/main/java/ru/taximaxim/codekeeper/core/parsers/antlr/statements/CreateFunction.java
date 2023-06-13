@@ -56,7 +56,7 @@ import ru.taximaxim.codekeeper.core.schema.PgFunction;
 import ru.taximaxim.codekeeper.core.schema.PgProcedure;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
-public class CreateFunction extends ParserAbstract {
+public final class CreateFunction extends ParserAbstract {
 
     private final List<Object> errors;
     private final Queue<AntlrTask<?>> antlrTasks;
@@ -134,7 +134,24 @@ public class CreateFunction extends ParserAbstract {
                 }
             } else if (action.AS() != null) {
                 funcDef = action.function_def();
-                function.setBody(db.getArguments(), getFullCtxText(funcDef));
+                StringBuilder sb = new StringBuilder();
+                if (funcDef.symbol != null) {
+                    String probin = unquoteQuotedString(funcDef.definition).getFirst();
+                    String symbol = unquoteQuotedString(funcDef.symbol).getFirst();
+
+                    sb.append(PgDiffUtils.quoteString(probin)).append(", ");
+
+                    if (!symbol.contains("\'") && !symbol.contains("\\")) {
+                        sb.append(PgDiffUtils.quoteString(symbol));
+                    } else {
+                        sb.append(PgDiffUtils.quoteStringDollar(symbol));
+                    }
+                } else {
+                    String definition = unquoteQuotedString(funcDef.definition).getFirst();
+                    sb.append(PgDiffUtils.quoteStringDollar(definition));
+                }
+
+                function.setBody(db.getArguments(), sb.toString());
             } else if (action.TRANSFORM() != null) {
                 for (Transform_for_typeContext transform : action.transform_for_type()) {
                     function.addTransform(ParserAbstract.getFullCtxText(transform.data_type()));

@@ -205,14 +205,12 @@ class PgDiffTest {
             "modify_generated_sequence",
             // Tests correct finding of function end.
             "modify_function_end_detection",
-            // Tests scenario where new FUNCTION without args is added.
-            "add_function_noargs",
+            // Tests scenario where new FUNCTION is added.
+            "add_function",
             // Tests scenario where FUNCTION without args is dropped.
             "drop_function_noargs",
             // Tests scenario where FUNCTION without args is modified.
             "modify_function_noargs",
-            // Tests scenario where new FUNCTION with args is added.
-            "add_function_args",
             // Tests scenario where FUNCTION with args is dropped.
             "drop_function_args",
             // Tests scenario where FUNCTION with args is modified.
@@ -235,15 +233,10 @@ class PgDiffTest {
             "modify_function_add_default",
             // Tests scenario where FUNCTION with args modify returns.
             "modify_function_modify_returns",
-            // Tests scenario where new FUNCTION with args is added.
-            "add_function_args2",
             // Tests scenario where FUNCTION with args is dropped.
             "drop_function_args2",
             // Tests scenario where FUNCTION with args is modified.
             "modify_function_args2",
-            // Tests scenario where FUNCTION with same name but
-            // different args is added.
-            "add_function_similar",
             // Tests scenario where FUNCTION with same name but
             // different args is dropped.
             "drop_function_similar",
@@ -517,8 +510,6 @@ class PgDiffTest {
             "add_aggregate_privileges",
             // Tests scenario where COLUMN types compared with aliases.
             "compare_column_type_aliases",
-            // Tests scenario where new FUNCTION with specific options is added.
-            "add_specific_function",
             // Tests scenario where generated SEQUENCE is compared.
             "compare_generated_sequence",
             // Tests scenario where PRIVILEGE added to object with quoted name.

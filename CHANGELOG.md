@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Fixed a bug when reading a library-project when using a relative path.
+- Fixed false differences in function body quoting.
 
 ## [8.0.0] - 2023-05-30
 
