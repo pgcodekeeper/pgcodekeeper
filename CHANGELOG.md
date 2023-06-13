@@ -11,12 +11,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-- Was refactor classes which responses for work with types
+### Fixed
+
+## [8.1.0] - 2023-06-13
+
+### Changed
+
+- Optimized work with custom types.
 
 ### Fixed
 
 - Fixed a bug when reading a library-project when using a relative path.
 - Fixed false differences in function body quoting.
+- Fixed tooltip conflicts for object name.
 
 ## [8.0.0] - 2023-05-30
 
@@ -34,7 +41,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
-- Fixed conflict of the tooltips for annotations when object name highlighting and pointing on the object name with cursor.
 - Fixed a bug due to which the outline did not update while navigating through search results.
 
 ## [7.6.0] - 2023-05-16
@@ -1696,7 +1702,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.0.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.1.0...HEAD
+[8.1.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.0.0...v8.1.0
 [8.0.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.6.0...v8.0.0
 [7.6.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.5.0...v7.6.0
 [7.5.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.4.0...v7.5.0
