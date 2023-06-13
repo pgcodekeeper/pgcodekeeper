@@ -43,6 +43,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.Argument;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgColumn;
+import ru.taximaxim.codekeeper.core.schema.PgCompositeType;
 import ru.taximaxim.codekeeper.core.schema.PgConstraint;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgEventType;
@@ -55,7 +56,6 @@ import ru.taximaxim.codekeeper.core.schema.PgSchema;
 import ru.taximaxim.codekeeper.core.schema.PgSequence;
 import ru.taximaxim.codekeeper.core.schema.PgTrigger;
 import ru.taximaxim.codekeeper.core.schema.PgTrigger.TgTypes;
-import ru.taximaxim.codekeeper.core.schema.PgCompositeType;
 import ru.taximaxim.codekeeper.core.schema.PgView;
 import ru.taximaxim.codekeeper.core.schema.SimplePgTable;
 
@@ -443,7 +443,7 @@ class PgDB5 implements DatabaseObjectCreator {
 
         func = new PgFunction("select_something");
         func.setLanguageCost("sql", null);
-        func.setBody("$_$SELECT number1 * number2$_$");
+        func.setBody("$$SELECT number1 * number2$$");
         func.setReturns("integer");
 
         arg = new Argument("number1", "integer");
@@ -456,7 +456,7 @@ class PgDB5 implements DatabaseObjectCreator {
 
         func = new PgFunction("select_something2");
         func.setLanguageCost("sql", null);
-        func.setBody("'SELECT number1 * number2 || ''text'''");
+        func.setBody("$$SELECT number1 * number2 || 'text'$$");
         func.setReturns("integer");
 
         arg = new Argument("number1", "integer");
@@ -469,7 +469,7 @@ class PgDB5 implements DatabaseObjectCreator {
 
         func = new PgFunction("select_something3");
         func.setLanguageCost("sql", null);
-        func.setBody("'\nSELECT number1 * number2 || ''text''\n'");
+        func.setBody("$$\nSELECT number1 * number2 || 'text'\n$$");
         func.setReturns("integer");
 
         arg = new Argument("number1", "integer");

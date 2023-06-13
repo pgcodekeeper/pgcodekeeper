@@ -20,7 +20,7 @@ CREATE OR REPLACE FUNCTION public.f1(p1 text, p2 integer) RETURNS integer
 
 CREATE OR REPLACE FUNCTION public.f2(s integer, k integer = 43) RETURNS integer
     LANGUAGE sql
-    AS $$ SELECT $2 ; $$;
+    AS $_$ SELECT $2 ; $_$;
 
 -- DEPCY: This TYPE is a dependency of COLUMN: public.t0.c4
 

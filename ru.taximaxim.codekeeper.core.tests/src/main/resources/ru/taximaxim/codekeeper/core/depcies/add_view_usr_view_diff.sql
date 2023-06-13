@@ -33,7 +33,7 @@ CREATE TABLE public.t2 (
 
 CREATE OR REPLACE FUNCTION public.f1(p1 text, p2 integer) RETURNS integer
     LANGUAGE sql
-    AS $$ select $2 LIMIT 1 $$;
+    AS $_$ select $2 LIMIT 1 $_$;
 
 CREATE VIEW public.test AS
 	SELECT * FROM (

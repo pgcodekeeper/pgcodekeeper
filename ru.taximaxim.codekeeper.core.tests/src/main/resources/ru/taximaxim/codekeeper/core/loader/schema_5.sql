@@ -1,7 +1,7 @@
 -- WARNING: THIS FILE INTENTIONALLY CONTAINS MIXED \n AND \r\n NEWLINES!
 -- EDIT WITH NOTEPAD++ OR SIMILAR EDITOR
 CREATE FUNCTION public.gtsq_in(cstring) RETURNS gtsq
-    AS '$libdir/tsearch2', 'gtsq_in'
+    AS '$libdir/tsearch2', $$gtsq_in$$
     LANGUAGE c STRICT;
 
 CREATE FUNCTION public.multiply_numbers(number1 integer, number2 integer) RETURNS integer
