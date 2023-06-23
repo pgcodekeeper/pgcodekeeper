@@ -177,7 +177,7 @@ public class TablesReader extends JdbcReader {
                 loader.submitAntlrTask(template + ';',
                         p -> new Pair<>(
                                 p.sql().statement(0).schema_statement().schema_alter().alter_table_statement()
-                                    .alter_partition_gp(),
+                                .alter_partition_gp(),
                                 (CommonTokenStream) p.getTokenStream()),
                         pair -> AlterTable.parseGpPartitionTemplate(table, pair.getFirst(), pair.getSecond()));
             }

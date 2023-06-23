@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Fixed version of Eclipse used in pgCodeKeeper builds to maintain compatibility with JAVA 11.
+- Fixed code generation when changing TABLE SUBPARTITION TEMPLATE properties in Greenplum.
 
 ## [8.1.0] - 2023-06-13
 

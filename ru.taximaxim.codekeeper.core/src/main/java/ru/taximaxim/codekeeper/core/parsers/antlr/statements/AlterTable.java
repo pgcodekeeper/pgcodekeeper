@@ -53,6 +53,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.IRelation;
 import ru.taximaxim.codekeeper.core.schema.PartitionGpTable;
+import ru.taximaxim.codekeeper.core.schema.PartitionTemplateContainer;
 import ru.taximaxim.codekeeper.core.schema.PgColumn;
 import ru.taximaxim.codekeeper.core.schema.PgConstraint;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
@@ -185,18 +186,33 @@ public class AlterTable extends TableAbstract {
                 }
             }
         }
-        var partitionGpTempl = ctx.alter_partition_gp();
-        if (partitionGpTempl != null && !isRefMode()) {
+        var alterPartition = ctx.alter_partition_gp();
+        if (alterPartition != null && !isRefMode()) {
             tabl = (PartitionGpTable) getSafe(AbstractSchema::getTable, schema, nameCtx);
-            parseGpPartitionTemplate((PartitionGpTable) tabl, partitionGpTempl, stream);
+            parseGpPartitionTemplate((PartitionGpTable) tabl, alterPartition, stream);
         }
     }
 
-    public static void parseGpPartitionTemplate(PartitionGpTable tabl, Alter_partition_gpContext partitionGpTempl,
+    public static void parseGpPartitionTemplate(PartitionGpTable tabl, Alter_partition_gpContext alterPartition,
             CommonTokenStream stream) {
-        // TODO change to new construction instead of String
-        tabl.addTemplate(getFullCtxText(partitionGpTempl),
-                AntlrUtils.normalizeWhitespaceUnquoted(partitionGpTempl, stream));
+        // ALTER PARTITION partition_name clause
+        String partitionName = null;
+        var alterPartitionClause = alterPartition.alter_partition_gp_name();
+        if (!alterPartitionClause.isEmpty() && alterPartitionClause.get(0).identifier() != null) {
+            partitionName = alterPartitionClause.get(0).identifier().getText();
+        }
+        PartitionTemplateContainer template = new PartitionTemplateContainer(partitionName);
+
+        // SET SUBPARTITION TEMPLATE clause
+        var partitionAction = alterPartition.partition_action();
+        var subpartitions = partitionAction.template_spec().subpartition_element();
+        for (var subpartElem : subpartitions) {
+            template.setSubElems(getFullCtxText(subpartElem),
+                    AntlrUtils.normalizeWhitespaceUnquoted(subpartElem, stream));
+        }
+        if (template.hasSubElements()) {
+            tabl.addTemplate(template);
+        }
     }
 
     private void parseColumnAction(AbstractSchema schema, PgColumn col,

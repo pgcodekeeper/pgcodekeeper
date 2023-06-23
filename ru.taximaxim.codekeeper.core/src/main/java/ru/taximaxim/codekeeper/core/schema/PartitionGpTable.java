@@ -16,9 +16,10 @@
 
 package ru.taximaxim.codekeeper.core.schema;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
@@ -28,9 +29,7 @@ public class PartitionGpTable extends AbstractRegularTable {
 
     private String partitionGpBounds;
     private String normalizedPartitionGpBounds;
-
-    private List<String> templates = new ArrayList<>();
-    private List<String> normalizedTemplates = new ArrayList<>();
+    private final Map<String, PartitionTemplateContainer> templates = new HashMap<>();
 
     public PartitionGpTable(String name) {
         super(name);
@@ -42,9 +41,8 @@ public class PartitionGpTable extends AbstractRegularTable {
         resetHash();
     }
 
-    public void addTemplate(String template, String normalizedTemplate) {
-        this.templates.add(template);
-        this.normalizedTemplates.add(normalizedTemplate);
+    public void addTemplate(PartitionTemplateContainer template) {
+        this.templates.put(template.getPartitionName(), template);
         resetHash();
     }
 
@@ -74,19 +72,16 @@ public class PartitionGpTable extends AbstractRegularTable {
         return partitionGpBounds;
     }
 
-    public List<String> getTemplates() {
-        return Collections.unmodifiableList(templates);
+    public Collection<PartitionTemplateContainer> getTemplates() {
+        return Collections.unmodifiableCollection(templates.values());
     }
+
     /**
      * @return query string with whitespace normalized.
      * @see AntlrUtils#normalizeWhitespaceUnquoted
      */
     public String getNormalizedPartitionGpBounds() {
         return normalizedPartitionGpBounds;
-    }
-
-    public List<String> getNormalizedTemplates() {
-        return Collections.unmodifiableList(normalizedTemplates);
     }
 
     @Override
@@ -104,9 +99,57 @@ public class PartitionGpTable extends AbstractRegularTable {
     @Override
     protected void appendAlterOptions(StringBuilder sbSQL) {
         super.appendAlterOptions(sbSQL);
-        for (String template : templates) {
-            sbSQL.append(getAlterTable(true, false)).append("\n").append(template).append(";");
+        for (var template : templates.values()) {
+            sbSQL.append(getAlterTable(true, false));
+            template.appendCreateSQL(sbSQL);
         }
+    }
+
+    @Override
+    public boolean compare(PgStatement obj) {
+        if (obj instanceof PartitionGpTable && super.compare(obj)) {
+            PartitionGpTable table = (PartitionGpTable) obj;
+            return Objects.equals(normalizedPartitionGpBounds, table.getNormalizedPartitionGpBounds())
+                    && Objects.equals(templates, table.templates);
+        }
+        return false;
+    }
+
+    @Override
+    protected void compareTableOptions(AbstractPgTable newTable, StringBuilder sb) {
+        super.compareTableOptions(newTable, sb);
+
+        PartitionGpTable newPartGptable = (PartitionGpTable) newTable;
+        if (!Objects.equals(normalizedPartitionGpBounds, newPartGptable.getNormalizedPartitionGpBounds())) {
+            sb.append("\n --The PARTTITION clause have differences. Add ALTER statement manually");
+        }
+        compareTemplates(newPartGptable, sb);
+    }
+
+    private void compareTemplates(PartitionGpTable newTable, StringBuilder sb) {
+        if (Objects.equals(templates, newTable.templates)) {
+            return;
+        }
+
+        templates.forEach((key, value) -> {
+            PartitionTemplateContainer newValue = newTable.templates.get(key);
+            if (newValue != null) {
+                if (!value.equals(newValue)) {
+                    sb.append(getAlterTable(true, false));
+                    newValue.appendCreateSQL(sb);
+                }
+            } else {
+                sb.append(getAlterTable(true, false));
+                value.appendDropSql(sb);
+            }
+        });
+
+        newTable.templates.forEach((key, value) -> {
+            if (!templates.containsKey(key)) {
+                sb.append(getAlterTable(true, false));
+                value.appendCreateSQL(sb);
+            }
+        });
     }
 
     @Override
@@ -120,34 +163,9 @@ public class PartitionGpTable extends AbstractRegularTable {
     }
 
     @Override
-    public boolean compare(PgStatement obj) {
-        if (obj instanceof PartitionGpTable && super.compare(obj)) {
-            PartitionGpTable table = (PartitionGpTable) obj;
-            return Objects.equals(normalizedPartitionGpBounds, table.getNormalizedPartitionGpBounds())
-                    && Objects.equals(normalizedTemplates, table.getNormalizedTemplates());
-        }
-        return false;
-    }
-
-
-    @Override
-    protected void compareTableOptions(AbstractPgTable newTable, StringBuilder sb) {
-        super.compareTableOptions(newTable, sb);
-
-        PartitionGpTable newPartGptable = (PartitionGpTable) newTable;
-        if (!Objects.equals(normalizedPartitionGpBounds, newPartGptable.getNormalizedPartitionGpBounds())) {
-            sb.append("\n --The PARTTITION clause have differences. Add ALTER statement manually");
-        }
-        if (!Objects.equals(normalizedTemplates, newPartGptable.getNormalizedTemplates())) {
-            sb.append("\n --The ALTER TEMPLATE clause have differences. Add ALTER statement manually");
-        }
-    }
-
-    @Override
     public AbstractTable shallowCopy() {
         PartitionGpTable copy = (PartitionGpTable) super.shallowCopy();
-        copy.templates.addAll(templates);
-        copy.normalizedTemplates.addAll(normalizedTemplates);
+        copy.templates.putAll(templates);
         copy.setPartitionGpBound(partitionGpBounds, normalizedPartitionGpBounds);
         return copy;
     }
@@ -155,7 +173,7 @@ public class PartitionGpTable extends AbstractRegularTable {
     @Override
     public void computeHash(Hasher hasher) {
         super.computeHash(hasher);
-        hasher.put(normalizedTemplates);
+        hasher.putUnordered(templates);
         hasher.put(normalizedPartitionGpBounds);
     }
 }
