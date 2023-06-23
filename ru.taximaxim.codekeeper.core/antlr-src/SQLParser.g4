@@ -382,7 +382,7 @@ alter_table_statement
     ;
 
 alter_partition_gp
-    : (ALTER PARTITION alter_partition_gp_name+)? partition_action
+    : (ALTER PARTITION alter_partition_gp_name)* partition_action
     ;
 
 partition_action
@@ -397,7 +397,7 @@ partition_action
     | ADD PARTITION identifier? alter_partition_element gp_partition_with_clause? (LEFT_PAREN template_spec RIGHT_PAREN)?
     | EXCHANGE PARTITION alter_partition_gp_name WITH TABLE name=schema_qualified_name (WITH | WITHOUT VALIDATION)?
     | EXCHANGE DEFAULT PARTITION WITH TABLE identifier (WITH | WITHOUT VALIDATION)?
-    | SET SUBPARTITION TEMPLATE (LEFT_PAREN template_spec RIGHT_PAREN)
+    | SET SUBPARTITION TEMPLATE (LEFT_PAREN template_spec? RIGHT_PAREN)
     | SPLIT DEFAULT PARTITION (AT LEFT_PAREN Character_String_Literal RIGHT_PAREN | partition_start_clause) into_partition_gp_clause?
     | SPLIT PARTITION alter_partition_gp_name AT LEFT_PAREN Character_String_Literal RIGHT_PAREN into_partition_gp_clause?
     ;
@@ -411,7 +411,7 @@ alter_partition_element
 alter_partition_gp_name
     : identifier
     | FOR LEFT_PAREN RANK LEFT_PAREN NUMBER_LITERAL RIGHT_PAREN RIGHT_PAREN
-    | FOR LEFT_PAREN value=Character_String_Literal RIGHT_PAREN
+    | FOR LEFT_PAREN value=(Character_String_Literal| NUMBER_LITERAL) RIGHT_PAREN
     ;
 
 into_partition_gp_clause
@@ -1779,7 +1779,7 @@ subpartition_element
     ;
 
 partition_values
-    : VALUES LEFT_PAREN Character_String_Literal (COMMA Character_String_Literal)* RIGHT_PAREN
+    : VALUES LEFT_PAREN val+=Character_String_Literal (COMMA val+=Character_String_Literal)* RIGHT_PAREN
     ;
 
 gp_partition_with_clause
@@ -1791,19 +1791,23 @@ gp_table_column_definition
     ;
 
 partition_start_clause
-    : START partition_start_end_val (END partition_start_end_val)? partition_every_clause?
+    : START partition_val end_clause? partition_every_clause?
     ;
 
 partition_end_clause
-    : END partition_start_end_val partition_every_clause?
+    : end_clause partition_every_clause?
     ;
 
-partition_start_end_val
+end_clause
+    : END partition_val
+    ;
+
+partition_val
     : LEFT_PAREN val=vex RIGHT_PAREN (INCLUSIVE | EXCLUSIVE)?
     ;
 
 partition_every_clause
-    : EVERY LEFT_PAREN interval_value=vex RIGHT_PAREN
+    : EVERY LEFT_PAREN val=vex RIGHT_PAREN
     ;
 
 partition_method

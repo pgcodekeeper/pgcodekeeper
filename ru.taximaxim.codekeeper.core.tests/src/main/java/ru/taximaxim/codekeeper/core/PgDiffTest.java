@@ -524,6 +524,8 @@ class PgDiffTest {
             "compare_tables",
             // Tests scenario where greenplum distribution TABLE clause is compared.
             "compare_greenplum_tables",
+            // Test scenario where greenplum ALTER TABLE TEMPLATE is compared
+            "compare_greenplum_tables_partition",
             // Test scenario where in composit type changed position columns
             "compare_type_composite",
             // Test scenario for where greenplum base type changed encoding options

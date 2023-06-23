@@ -1,0 +1,37 @@
+SET search_path = pg_catalog;
+
+ALTER TABLE public.rank1
+SET SUBPARTITION TEMPLATE (
+  START ('2001-01-01'::date) END ('2002-01-01'::date),
+  START ('2002-01-01'::date) END ('2003-01-01'::date),
+  START ('2003-01-01'::date) END ('2004-01-01'::date),
+  START ('2004-01-03'::date) END ('2005-01-01'::date),
+  START ('2005-01-01'::date)
+);
+
+ALTER TABLE public.ataprank
+SET SUBPARTITION TEMPLATE (
+  SUBPARTITION mass VALUES('MA'),
+  SUBPARTITION cali VALUES('GH'),
+  SUBPARTITION ohio VALUES('OH')
+);
+
+ALTER TABLE public.p3_sales ALTER PARTITION outlying_years
+SET SUBPARTITION TEMPLATE ();
+
+ALTER TABLE public.p3_sales ALTER PARTITION new_name
+SET SUBPARTITION TEMPLATE (
+  SUBPARTITION usa VALUES('usa'),
+  SUBPARTITION europe VALUES('europe'),
+  SUBPARTITION asia VALUES('asia'),
+  DEFAULT SUBPARTITION other_regions
+);
+
+ALTER TABLE public.p4_sales
+SET SUBPARTITION TEMPLATE ();
+
+ALTER TABLE public.p4_sales ALTER PARTITION outlying_years
+SET SUBPARTITION TEMPLATE ();
+
+ALTER TABLE public.p4_sales ALTER PARTITION second_partition_name
+SET SUBPARTITION TEMPLATE ();
