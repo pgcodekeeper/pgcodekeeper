@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added alphabetical order of child objects of the same type when saving to a project.
+
 ### Changed
 
 ### Fixed

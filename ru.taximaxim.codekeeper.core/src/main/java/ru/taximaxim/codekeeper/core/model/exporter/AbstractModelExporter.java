@@ -268,7 +268,12 @@ class ExportTableOrder implements Comparator<PgStatement> {
 
     @Override
     public int compare(PgStatement o1, PgStatement o2) {
-        return getTableSubelementRank(o1) - getTableSubelementRank(o2);
+        int result = Integer.compare(getTableSubelementRank(o1), getTableSubelementRank(o2));
+        if (result != 0) {
+            return result;
+        }
+
+        return o1.getBareName().compareTo(o2.getBareName());
     }
 
     private int getTableSubelementRank(PgStatement el) {
