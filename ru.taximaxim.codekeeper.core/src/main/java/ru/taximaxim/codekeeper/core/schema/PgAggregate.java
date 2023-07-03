@@ -71,9 +71,7 @@ public class PgAggregate extends AbstractPgFunction {
     }
 
     @Override
-    public String getCreationSQL() {
-        final StringBuilder sbSQL = new StringBuilder();
-        appendDropBeforeCreate(sbSQL);
+    protected void appendFunctionFullSQL(StringBuilder sbSQL, boolean isCreate) {
         sbSQL.append("CREATE AGGREGATE ");
         appendFullName(sbSQL);
 
@@ -175,15 +173,6 @@ public class PgAggregate extends AbstractPgFunction {
         }
 
         sbSQL.append("\n);");
-
-        appendOwnerSQL(sbSQL);
-        appendPrivileges(sbSQL);
-
-        if (comment != null && !comment.isEmpty()) {
-            appendCommentSql(sbSQL);
-        }
-
-        return sbSQL.toString();
     }
 
     @Override

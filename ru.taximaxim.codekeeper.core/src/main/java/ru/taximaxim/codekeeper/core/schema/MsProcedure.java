@@ -29,20 +29,7 @@ public class MsProcedure extends AbstractMsFunction {
     }
 
     @Override
-    public String getCreationSQL() {
-        final StringBuilder sbSQL = new StringBuilder();
-        appendDropBeforeCreate(sbSQL);
-        sbSQL.append(getFunctionFullSQL(true));
-
-        appendOwnerSQL(sbSQL);
-        appendPrivileges(sbSQL);
-
-        return sbSQL.toString();
-    }
-
-    @Override
-    protected String getFunctionFullSQL(boolean isCreate) {
-        final StringBuilder sbSQL = new StringBuilder();
+    protected void appendFunctionFullSQL(StringBuilder sbSQL, boolean isCreate) {
         sbSQL.append("SET QUOTED_IDENTIFIER ").append(isQuotedIdentified() ? "ON" : "OFF");
         sbSQL.append(GO).append('\n');
         sbSQL.append("SET ANSI_NULLS ").append(isAnsiNulls() ? "ON" : "OFF");
@@ -50,8 +37,6 @@ public class MsProcedure extends AbstractMsFunction {
 
         appendSourceStatement(isCreate, sbSQL);
         sbSQL.append(GO);
-
-        return sbSQL.toString();
     }
 
     @Override

@@ -570,6 +570,8 @@ class PgDiffTest {
             "alter_sequence_owned_by",
             // Tests scenario where NULLS DISTINCT option of index is altered.
             "alter_index_nulls_distinction",
+            // Tests scenario where FUNCTION with comment is altered.
+            "alter_function_with_comment",
     })
     void runDiff(String fileNameTemplate) throws IOException, InterruptedException {
         String script = getScript(fileNameTemplate);

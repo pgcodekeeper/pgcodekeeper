@@ -7,5 +7,3 @@ begin
 	return -1 + 2;
 end;
 $$;
-
-ALTER FUNCTION public.return_one() OWNER TO fordfrog;

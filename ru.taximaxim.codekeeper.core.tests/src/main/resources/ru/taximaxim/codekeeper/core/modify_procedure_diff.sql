@@ -5,5 +5,3 @@ CREATE OR REPLACE PROCEDURE public.insert_data(a integer, b integer)
     AS $$
 INSERT INTO tbl VALUES (a);
 $$;
-
-ALTER PROCEDURE public.insert_data(a integer, b integer) OWNER TO shamsutdinov_lr;
