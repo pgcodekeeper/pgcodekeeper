@@ -33,19 +33,7 @@ public class MsClrProcedure extends AbstractMsClrFunction {
     }
 
     @Override
-    public String getCreationSQL() {
-        final StringBuilder sbSQL = new StringBuilder();
-        appendDropBeforeCreate(sbSQL);
-        sbSQL.append(getFunctionFullSQL(true));
-
-        appendOwnerSQL(sbSQL);
-        appendPrivileges(sbSQL);
-        return sbSQL.toString();
-    }
-
-    @Override
-    protected String getFunctionFullSQL(boolean isCreate) {
-        final StringBuilder sbSQL = new StringBuilder();
+    protected void appendFunctionFullSQL(StringBuilder sbSQL, boolean isCreate) {
         sbSQL.append("SET QUOTED_IDENTIFIER OFF").append(GO).append('\n');
         sbSQL.append("SET ANSI_NULLS OFF").append(GO).append('\n');
         sbSQL.append(isCreate ? "CREATE" : "ALTER");
@@ -66,8 +54,6 @@ public class MsClrProcedure extends AbstractMsClrFunction {
         sbSQL.append(MsDiffUtils.quoteName(getAssemblyClass())).append('.');
         sbSQL.append(MsDiffUtils.quoteName(getAssemblyMethod()));
         sbSQL.append(GO);
-
-        return sbSQL.toString();
     }
 
     @Override

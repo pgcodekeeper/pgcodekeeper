@@ -55,6 +55,21 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
     }
 
     @Override
+    public final String getCreationSQL() {
+        final StringBuilder sbSQL = new StringBuilder();
+        appendDropBeforeCreate(sbSQL);
+        appendFunctionFullSQL(sbSQL, true);
+        appendOwnerSQL(sbSQL);
+        appendPrivileges(sbSQL);
+
+        if (comment != null && !comment.isEmpty()) {
+            appendCommentSql(sbSQL);
+        }
+
+        return sbSQL.toString();
+    }
+
+    @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
@@ -70,7 +85,7 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
                 isNeedDepcies.set(true);
             }
 
-            sb.append(newFunction.getFunctionFullSQL(false));
+            newFunction.appendFunctionFullSQL(sb, false);
         }
 
         if (!Objects.equals(getOwner(), newFunction.getOwner())) {
@@ -86,7 +101,7 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
         return sb.length() > startLength;
     }
 
-    protected abstract String getFunctionFullSQL(boolean isCreate);
+    protected abstract void appendFunctionFullSQL(StringBuilder sb, boolean isCreate);
 
     /**
      * Getter for {@link #arguments}. List cannot be modified.

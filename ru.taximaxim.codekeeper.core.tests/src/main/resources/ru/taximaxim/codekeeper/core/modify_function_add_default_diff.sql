@@ -7,5 +7,3 @@ begin
         return number1 * number2;
 end;
 $$;
-
-ALTER FUNCTION public.multiply_numbers(number1 integer, number2 integer) OWNER TO fordfrog;

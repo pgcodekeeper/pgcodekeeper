@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Removed unnecessary commands when generating the migration script for functions.
+
 ### Fixed
 
 - Fixed version of Eclipse used in pgCodeKeeper builds to maintain compatibility with JAVA 11.

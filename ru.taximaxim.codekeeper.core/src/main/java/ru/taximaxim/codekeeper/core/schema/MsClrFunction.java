@@ -38,17 +38,6 @@ public class MsClrFunction extends AbstractMsClrFunction {
     }
 
     @Override
-    public String getCreationSQL() {
-        final StringBuilder sbSQL = new StringBuilder();
-        appendDropBeforeCreate(sbSQL);
-        sbSQL.append(getFunctionFullSQL(true));
-
-        appendOwnerSQL(sbSQL);
-        appendPrivileges(sbSQL);
-        return sbSQL.toString();
-    }
-
-    @Override
     public String getDeclaration(Argument arg, boolean includeDefaultValue,
             boolean includeArgName) {
         final StringBuilder sbString = new StringBuilder();
@@ -70,8 +59,7 @@ public class MsClrFunction extends AbstractMsClrFunction {
     }
 
     @Override
-    protected String getFunctionFullSQL(boolean isCreate) {
-        final StringBuilder sbSQL = new StringBuilder();
+    protected void appendFunctionFullSQL(StringBuilder sbSQL, boolean isCreate) {
         sbSQL.append("SET QUOTED_IDENTIFIER OFF").append(GO).append('\n');
         sbSQL.append("SET ANSI_NULLS OFF").append(GO).append('\n');
         sbSQL.append(isCreate ? "CREATE" : "ALTER");
@@ -92,8 +80,6 @@ public class MsClrFunction extends AbstractMsClrFunction {
         sbSQL.append(MsDiffUtils.quoteName(getAssemblyClass())).append('.');
         sbSQL.append(MsDiffUtils.quoteName(getAssemblyMethod()));
         sbSQL.append(GO);
-
-        return sbSQL.toString();
     }
 
     public FuncTypes getFuncType() {
@@ -116,6 +102,7 @@ public class MsClrFunction extends AbstractMsClrFunction {
     /**
      * @param returns the returns to set
      */
+    @Override
     public void setReturns(String returns) {
         this.returns = returns;
         resetHash();

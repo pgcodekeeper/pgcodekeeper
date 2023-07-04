@@ -302,6 +302,8 @@ class MsDiffTest {
             // Tests scenario where MS COLUMN default dependency is modified.
             // TODO broken order, set default must be last
             "modify_ms_column_default_with_dep",
+            // Tests scenario where MS FUNCTION with grant is altered.
+            "alter_ms_function_with_grant",
     })
     void runDiff(String fileNameTemplate) throws IOException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();
