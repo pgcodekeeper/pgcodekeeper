@@ -1,15 +1,23 @@
 # Список изменений
 
 Все заметные изменения в этом проекте будут задокументированы в этом файле.
- 
+
 Формат основан на [Keep a Changelog](http://keepachangelog.com/)
 и этот проект придерживается [cемантического версионирования](https://semver.org/lang/ru/).
- 
+
 ## [Новое]
 
 ### Добавлено
 
-- Добавлен алфавитный порядок дочерних объектов одного типа при сохранение в проект.
+### Изменено
+
+### Исправлено
+
+## [8.2.0] - 2023-07-04
+
+### Добавлено
+
+- Добавлен алфавитный порядок дочерних объектов одного типа в файле при сохранении в проект.
 
 ### Изменено
 
@@ -1710,7 +1718,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.1.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.2.0...HEAD
+[8.2.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.1.0...v8.2.0
 [8.1.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.0.0...v8.1.0
 [8.0.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.6.0...v8.0.0
 [7.6.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.5.0...v7.6.0
