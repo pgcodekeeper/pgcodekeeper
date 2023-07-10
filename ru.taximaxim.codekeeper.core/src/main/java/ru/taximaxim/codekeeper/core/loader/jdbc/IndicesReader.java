@@ -20,12 +20,10 @@ import java.sql.SQLException;
 
 import org.antlr.v4.runtime.CommonTokenStream;
 
-import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.loader.JdbcQueries;
+import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
 import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.CreateIndex;
-import ru.taximaxim.codekeeper.core.schema.AbstractIndex;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgIndex;
@@ -35,26 +33,22 @@ import ru.taximaxim.codekeeper.core.utils.Pair;
 public class IndicesReader extends JdbcReader {
 
     public IndicesReader(JdbcLoaderBase loader) {
-        super(JdbcQueries.QUERY_INDICES, loader);
+        super(loader);
     }
 
     @Override
-    protected void processResult(ResultSet result, AbstractSchema schema) throws SQLException {
-        PgStatementContainer cont = schema.getStatementContainer(result.getString("table_name"));
-        if (cont != null) {
-            AbstractIndex index = getIndex(result, schema, cont.getName());
-            loader.monitor.worked(1);
-            cont.addIndex(index);
+    protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException {
+        String tableName = res.getString("table_name");
+        PgStatementContainer cont = schema.getStatementContainer(tableName);
+        if (cont == null) {
+            return;
         }
-    }
-
-    private AbstractIndex getIndex(ResultSet res, AbstractSchema schema, String tableName) throws SQLException {
         String schemaName = schema.getName();
-        String indexName = res.getString(CLASS_RELNAME);
+        String indexName = res.getString("relname");
         loader.setCurrentObject(new GenericColumn(schemaName, indexName, DbObjType.INDEX));
         PgIndex i = new PgIndex(indexName);
 
-        String tablespace = res.getString("table_space");
+        String tablespace = res.getString("spcname");
         String definition = res.getString("definition");
         checkObjectValidity(definition, DbObjType.INDEX, indexName);
         loader.submitAntlrTask(definition,
@@ -63,33 +57,63 @@ public class IndicesReader extends JdbcReader {
                 pair -> CreateIndex.parseIndex(pair.getFirst(), tablespace, schemaName, tableName, i,
                         schema.getDatabase(), loader.getCurrentLocation(), pair.getSecond()));
         loader.setAuthor(i, res);
+        loader.setComment(i, res);
 
-        i.setClusterIndex(res.getBoolean("isclustered"));
+        i.setClusterIndex(res.getBoolean("indisclustered"));
         i.setUnique(res.getBoolean("indisunique"));
 
         if (SupportedVersion.VERSION_15.isLE(loader.version)) {
-            i.setNullsDistinction(res.getBoolean("nullsnotdistinct"));
-        }
-
-        // COMMENT
-        String comment = res.getString("comment");
-        if (comment != null && !comment.isEmpty()) {
-            i.setComment(loader.args, PgDiffUtils.quoteString(comment));
+            i.setNullsDistinction(res.getBoolean("indnullsnotdistinct"));
         }
 
         String inhnspname = res.getString("inhnspname");
-
         if (inhnspname != null) {
             String inhrelname = res.getString("inhrelname");
             i.addInherit(inhnspname, inhrelname);
             i.addDep(new GenericColumn(inhnspname, inhrelname, DbObjType.INDEX));
         }
-
-        return i;
+        cont.addIndex(i);
     }
 
     @Override
     protected String getClassId() {
         return "pg_class";
+    }
+
+    @Override
+    protected String getSchemaColumn() {
+        return "res.relnamespace";
+    }
+
+    @Override
+    protected void fillQueryBuilder(QueryBuilder builder) {
+        addSysSchemasWithExtensionCte(builder);
+        addDescriptionPart(builder, true);
+
+        builder
+        .column("res.relname")
+        .column("clsrel.relname AS table_name")
+        .column("ind.indisunique")
+        .column("ind.indisclustered")
+        .column("t.spcname")
+        .column("pg_catalog.pg_get_indexdef(res.oid) AS definition")
+        .column("inhns.nspname AS inhnspname")
+        .column("inhrel.relname AS inhrelname")
+        .from("pg_catalog.pg_class res")
+        .join("JOIN pg_catalog.pg_index ind ON res.oid = ind.indexrelid")
+        .join("JOIN pg_catalog.pg_class clsrel ON clsrel.oid = ind.indrelid")
+        .join("LEFT JOIN pg_catalog.pg_tablespace t ON res.reltablespace = t.oid")
+        .join("LEFT JOIN pg_catalog.pg_constraint cons ON cons.conindid = ind.indexrelid AND cons.contype IN ('p', 'u', 'x')")
+        .join("LEFT JOIN pg_catalog.pg_inherits inh ON (inh.inhrelid = ind.indexrelid)")
+        .join("LEFT JOIN pg_catalog.pg_class inhrel ON (inh.inhparent = inhrel.oid)")
+        .join("LEFT JOIN pg_catalog.pg_namespace inhns ON inhrel.relnamespace = inhns.oid")
+        .where("res.relkind IN ('i', 'I')")
+        .where("ind.indisprimary = FALSE")
+        .where("ind.indisexclusion = FALSE")
+        .where("cons.conindid is NULL");
+
+        if (SupportedVersion.VERSION_15.isLE(loader.version)) {
+            builder.column("ind.indnullsnotdistinct");
+        }
     }
 }

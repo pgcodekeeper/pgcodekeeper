@@ -19,7 +19,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.loader.JdbcQueries;
+import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
 import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.VexAnalysisLauncher;
@@ -45,7 +45,7 @@ public final class TypesReader extends JdbcReader {
     private static final String ADD_CONSTRAINT = "ALTER DOMAIN noname ADD CONSTRAINT noname ";
 
     public TypesReader(JdbcLoaderBase loader) {
-        super(JdbcQueries.QUERY_TYPES, loader);
+        super(loader);
     }
 
     @Override
@@ -72,10 +72,7 @@ public final class TypesReader extends JdbcReader {
             loader.setOwner(st, res.getLong("typowner"));
             loader.setPrivileges(st, res.getString("typacl"), schema.getName());
             loader.setAuthor(st, res);
-            String comment = res.getString("description");
-            if (comment != null && !comment.isEmpty()) {
-                st.setComment(loader.args, PgDiffUtils.quoteString(comment));
-            }
+            loader.setComment(st, res);
         }
         return st;
     }
@@ -325,5 +322,142 @@ public final class TypesReader extends JdbcReader {
     @Override
     protected String getClassId() {
         return "pg_type";
+    }
+
+    @Override
+    protected String getSchemaColumn() {
+        return "res.typnamespace";
+    }
+
+    @Override
+    protected void fillQueryBuilder(QueryBuilder builder) {
+        addSysSchemasCte(builder);
+        addExtensionDepsCte(builder);
+        addConstraintsPart(builder);
+        addColumnsPart(builder);
+        addDescriptionPart(builder);
+
+        builder
+        .with("nspnames", "SELECT n.oid, n.nspname FROM pg_catalog.pg_namespace n")
+        .with("collations",
+                "SELECT c.oid, c.collname, n.nspname FROM pg_catalog.pg_collation c LEFT JOIN nspnames n ON n.oid = c.collnamespace")
+        .column("res.typname")
+        .column("res.typowner::bigint")
+        .column("res.typacl::text")
+        .column("res.typtype")
+        .column("res.typinput")
+        .column("res.typoutput")
+        .column("res.typreceive")
+        .column("res.typsend")
+        .column("res.typmodin")
+        .column("res.typmodout")
+        .column("res.typanalyze")
+        .column("res.typreceive != 0 AS typreceiveset")
+        .column("res.typsend != 0 AS typsendset")
+        .column("res.typmodin != 0 AS typmodinset")
+        .column("res.typmodout != 0 AS typmodoutset")
+        .column("res.typanalyze != 0 AS typanalyzeset")
+        .column("res.typlen")
+        .column("res.typbyval")
+        .column("res.typalign")
+        .column("res.typstorage")
+        .column("res.typcategory")
+        .column("res.typispreferred")
+        .column("pg_catalog.pg_get_expr(res.typdefaultbin, 0) AS typdefaultbin")
+        .column("res.typdefault")
+        .column("res.typelem::bigint")
+        .column("res.typdelim")
+        .column("res.typcollation::bigint")
+        .column("pg_catalog.format_type(res.typbasetype, res.typtypmod) AS dom_basetypefmt")
+        .column("res.typbasetype::bigint AS dom_basetype")
+        .column("(SELECT tbase.typcollation::bigint FROM pg_catalog.pg_type tbase WHERE tbase.oid = res.typbasetype) AS dom_basecollation")
+        .column("(SELECT cl.collname FROM collations cl WHERE cl.oid = res.typcollation) AS dom_collationname")
+        .column("(SELECT cl.nspname FROM collations cl WHERE cl.oid = res.typcollation) AS dom_collationnspname")
+        .column("pg_catalog.pg_get_expr(res.typdefaultbin, 'pg_catalog.pg_type'::pg_catalog.regclass) AS dom_defaultbin")
+        .column("res.typnotnull AS dom_notnull")
+        .column("(SELECT pg_catalog.array_agg(en.enumlabel ORDER BY en.enumsortorder) FROM pg_catalog.pg_enum en WHERE en.enumtypid = res.oid GROUP BY en.enumtypid) AS enums")
+        .column("r.rngsubtype::bigint")
+        .column("opc.opcname")
+        .column("(SELECT n.nspname FROM nspnames n WHERE n.oid = opc.opcnamespace) AS opcnspname")
+        .column("opc.opcdefault")
+        .column("r.rngcollation::bigint")
+        .column("(SELECT tsub.typcollation::bigint FROM pg_catalog.pg_type tsub WHERE tsub.oid = r.rngsubtype) AS rngsubtypcollation")
+        .column("(SELECT cl.collname FROM collations cl WHERE cl.oid = r.rngcollation) AS rngcollationname")
+        .column("(SELECT cl.nspname FROM collations cl WHERE cl.oid = r.rngcollation) AS rngcollationnspname")
+        .column("r.rngcanonical")
+        .column("r.rngsubdiff")
+        .column("r.rngcanonical != 0 AS rngcanonicalset")
+        .column("r.rngsubdiff != 0 AS rngsubdiffset")
+        .from("pg_catalog.pg_type res")
+        .join("LEFT JOIN pg_catalog.pg_range r ON r.rngtypid = res.oid")
+        .join("LEFT JOIN pg_catalog.pg_opclass opc ON opc.oid = r.rngsubopc")
+        .where("res.typisdefined = TRUE")
+        .where("(res.typrelid = 0 OR (SELECT c.relkind FROM pg_catalog.pg_class c WHERE c.oid = res.typrelid) = 'c')")
+        .where("NOT EXISTS(SELECT 1 FROM pg_catalog.pg_type el WHERE el.oid = res.typelem AND el.typarray = res.oid)");
+
+        if (SupportedVersion.VERSION_14.isLE(loader.version)) {
+            builder
+            .column("r.rngmultitypid::bigint AS rngmultirange")
+            .column("res.typsubscript")
+            .column("res.typsubscript != 0 AS typsubscriptset");
+        }
+
+        if (loader.isGreenplumDb) {
+            builder
+            .column("coalesce(array_to_string(e.typoptions, ', '), '') AS typoptions")
+            .join("LEFT JOIN pg_type_encoding e ON res.oid = e.typid");
+        }
+    }
+
+    private void addConstraintsPart(QueryBuilder builder) {
+        String constraints = "LEFT JOIN(\n"
+                + "  SELECT\n"
+                + "    c.contypid,\n"
+                + "    pg_catalog.array_agg(c.conname ORDER BY c.conname) AS connames,\n"
+                + "    pg_catalog.array_agg(pg_catalog.pg_get_constraintdef(c.oid) ORDER BY c.conname) AS condefs,\n"
+                + "    pg_catalog.array_agg(cd.description ORDER BY c.conname) AS concomments\n"
+                + "  FROM pg_catalog.pg_constraint c\n"
+                + "  LEFT JOIN pg_catalog.pg_description cd ON cd.objoid = c.oid\n"
+                + "    AND cd.classoid = 'pg_catalog.pg_constraint'::pg_catalog.regclass\n"
+                + "  WHERE c.contypid != 0\n"
+                + "  GROUP BY c.contypid\n"
+                + ") dom_constraints ON dom_constraints.contypid = res.oid";
+
+        builder.column("dom_constraints.connames AS dom_connames");
+        builder.column("dom_constraints.condefs AS dom_condefs");
+        builder.column("dom_constraints.concomments AS dom_concomments");
+        builder.join(constraints);
+    }
+
+    private void addColumnsPart(QueryBuilder builder) {
+        String columns = "LEFT JOIN(\n"
+                + "  SELECT\n"
+                + "    a.attrelid,\n"
+                + "    pg_catalog.array_agg(a.attname ORDER BY a.attnum) AS attnames,\n"
+                + "    pg_catalog.array_agg(pg_catalog.format_type(a.atttypid, a.atttypmod) ORDER BY a.attnum) AS atttypdefns,\n"
+                + "    pg_catalog.array_agg(a.atttypid::bigint ORDER BY a.attnum) AS atttypids,\n"
+                + "    pg_catalog.array_agg(a.attcollation::bigint ORDER BY a.attnum) AS attcollations,\n"
+                + "    pg_catalog.array_agg(ta.typcollation::bigint ORDER BY a.attnum) AS atttypcollations,\n"
+                + "    pg_catalog.array_agg(cl.collname ORDER BY a.attnum) AS attcollationnames,\n"
+                + "    pg_catalog.array_agg(cl.nspname ORDER BY a.attnum) AS attcollationnspnames,\n"
+                + "    pg_catalog.array_agg(d.description ORDER BY a.attnum) AS attcomments\n"
+                + "  FROM pg_catalog.pg_attribute a\n"
+                + "  LEFT JOIN pg_catalog.pg_type ta ON ta.oid = a.atttypid\n"
+                + "  LEFT JOIN collations cl ON cl.oid = a.attcollation\n"
+                + "  LEFT JOIN pg_catalog.pg_description d ON d.objoid = a.attrelid AND d.objsubid = a.attnum\n"
+                + "    AND d.classoid = 'pg_catalog.pg_class'::pg_catalog.regclass\n"
+                + "  WHERE a.attisdropped = FALSE\n"
+                + "  GROUP BY a.attrelid\n"
+                + ") comp_attrs ON comp_attrs.attrelid = res.typrelid";
+
+        builder.column("comp_attrs.attnames AS comp_attnames");
+        builder.column("comp_attrs.atttypdefns AS comp_atttypdefns");
+        builder.column("comp_attrs.atttypids AS comp_atttypids");
+        builder.column("comp_attrs.attcollations AS comp_attcollations");
+        builder.column("comp_attrs.atttypcollations AS comp_atttypcollations");
+        builder.column("comp_attrs.attcollationnames AS comp_attcollationnames");
+        builder.column("comp_attrs.attcollationnspnames AS comp_attcollationnspnames");
+        builder.column("comp_attrs.attcomments AS comp_attcomments");
+        builder.join(columns);
     }
 }

@@ -31,11 +31,11 @@ import ru.taximaxim.codekeeper.core.loader.jdbc.MsFKReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.MsFPVTReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.MsIndicesAndPKReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.MsRolesReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.MsSchemasReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.MsSequencesReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.MsTablesReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.MsTypesReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.MsUsersReader;
-import ru.taximaxim.codekeeper.core.loader.jdbc.SchemasMsReader;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.log.Log;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
@@ -73,7 +73,7 @@ public class JdbcMsLoader extends JdbcLoaderBase {
             // TODO add counting objects later
             //setupMonitorWork();
 
-            new SchemasMsReader(this, d).read();
+            new MsSchemasReader(this, d).read();
             new MsFPVTReader(this).read();
             new MsExtendedObjectsReader(this).read();
             new MsTablesReader(this).read();

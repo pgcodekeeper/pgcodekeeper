@@ -15,140 +15,149 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.loader;
 
-import java.io.IOException;
-import java.lang.reflect.Field;
+public class JdbcQueries {
 
-import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
-import ru.taximaxim.codekeeper.core.log.Log;
+    public static final String QUERY_TOTAL_OBJECTS_COUNT = new QueryBuilder()
+            .column("pg_catalog.count(c.oid)::integer")
+            .from("pg_catalog.pg_class c")
+            .where("c.relnamespace IN (SELECT nsp.oid FROM pg_catalog.pg_namespace nsp WHERE nsp.nspname NOT LIKE ('pg_%') AND nsp.nspname != 'information_schema')")
+            .where("c.relkind != 't'")
+            .build();
 
-/**
- * For every field in this class that starts with 'QUERY_'
- * the static initializer tries to: <br>
- * - if the field is String: find a file named %FIELD_NAME%.sql in this package
- *   and assign its contents to the field.<br>
- * - if the field is Map: load %FIELD_NAME%.sql as described above and map its contents to null,
- *   try to load every %FIELD_NAME%_%VERSION%.sql and map their contents with their versions.
- *
- * Similar to {@link org.eclipse.osgi.util.NLS}, OSGi localization classes.
- *
- * @author levsha_aa, galiev_mr
- */
-public final class JdbcQueries {
+    public static final String QUERY_TYPES_FOR_CACHE_ALL = new QueryBuilder()
+            .column("t.oid")
+            .column("t.typname")
+            .column("t.typelem")
+            .column("t.typarray")
+            .column("te.typname AS elemname")
+            .column("n.nspname")
+            .from("pg_catalog.pg_type t")
+            .join("LEFT JOIN pg_catalog.pg_namespace n ON t.typnamespace = n.oid")
+            .join("LEFT JOIN pg_catalog.pg_type te ON te.oid = t.typelem")
+            .build();
 
-    // SONAR-OFF
+    public static final String QUERY_CHECK_TIMESTAMPS = new QueryBuilder()
+            .column("n.nspname")
+            .column("e.extversion")
+            .column("EXISTS (SELECT 1 FROM pg_catalog.pg_event_trigger WHERE evtenabled != 'O' "
+                    + "AND (evtname = 'dbots_tg_on_ddl_event' OR evtname = 'dbots_tg_on_drop_event')) AS disabled")
+            .from("pg_catalog.pg_namespace n")
+            .join("LEFT JOIN pg_catalog.pg_extension e on e.extnamespace = n.oid")
+            .where("e.extname = 'pg_dbo_timestamp'")
+            .build();
 
-    public static String QUERY_TOTAL_OBJECTS_COUNT;
-    public static String QUERY_TYPES_FOR_CACHE_ALL;
-    public static String QUERY_CHECK_VERSION;
-    public static String QUERY_CHECK_LAST_SYS_OID;
-    public static String QUERY_CHECK_TIMESTAMPS;
-    public static String QUERY_CHECK_USER_PRIVILEGES;
-    public static String QUERY_CHECK_GREENPLUM;
+    public static final String QUERY_CHECK_LAST_SYS_OID = new QueryBuilder()
+            .column("datlastsysoid::bigint")
+            .from("pg_catalog.pg_database")
+            .where("datname = pg_catalog.current_database()")
+            .build();
 
-    public static final JdbcQuery QUERY_EXTENSIONS = new JdbcQuery();
-    public static final JdbcQuery QUERY_FOREIGN_DATA_WRAPPERS = new JdbcQuery();
-    public static final JdbcQuery QUERY_SERVERS = new JdbcQuery();
-    public static final JdbcQuery QUERY_CASTS = new JdbcQuery();
-    public static final JdbcQuery QUERY_USER_MAPPING = new JdbcQuery();
-    public static final JdbcQuery QUERY_SCHEMAS = new JdbcQuery();
+    public static final String QUERY_CHECK_USER_PRIVILEGES = new QueryBuilder()
+            .column("pg_catalog.has_table_privilege('pg_catalog.pg_user_mapping', 'SELECT') AS result")
+            .build();
 
-    public static final JdbcQuery QUERY_TABLES = new JdbcQuery();
-    public static final JdbcQuery QUERY_FUNCTIONS = new JdbcQuery();
-    public static final JdbcQuery QUERY_SEQUENCES = new JdbcQuery();
-    public static final JdbcQuery QUERY_COLLATIONS = new JdbcQuery();
-    public static final JdbcQuery QUERY_INDICES = new JdbcQuery();
-    public static final JdbcQuery QUERY_CONSTRAINTS = new JdbcQuery();
-    public static final JdbcQuery QUERY_TRIGGERS = new JdbcQuery();
-    public static final JdbcQuery QUERY_VIEWS = new JdbcQuery();
-    public static final JdbcQuery QUERY_TYPES = new JdbcQuery();
-    public static final JdbcQuery QUERY_RULES = new JdbcQuery();
-    public static final JdbcQuery QUERY_POLICIES = new JdbcQuery();
-    public static final JdbcQuery QUERY_FTS_PARSERS = new JdbcQuery();
-    public static final JdbcQuery QUERY_FTS_TEMPLATES = new JdbcQuery();
-    public static final JdbcQuery QUERY_FTS_DICTIONARIES = new JdbcQuery();
-    public static final JdbcQuery QUERY_FTS_CONFIGURATIONS = new JdbcQuery();
-    public static final JdbcQuery QUERY_OPERATORS = new JdbcQuery();
+    public static final String QUERY_CHECK_VERSION = new QueryBuilder()
+            .column("CAST (pg_catalog.current_setting('server_version_num') AS INT)")
+            .build();
 
+    public static final String QUERY_CHECK_GREENPLUM = new QueryBuilder()
+            .column("version()")
+            .build();
 
-    public static String QUERY_SCHEMAS_ACCESS;
-    public static String QUERY_SEQUENCES_ACCESS;
-    public static String QUERY_SEQUENCES_DATA;
+    public static final String QUERY_SCHEMAS_ACCESS = new QueryBuilder()
+            .column("n.nspname")
+            .column("pg_catalog.has_schema_privilege(n.nspname, 'USAGE') AS has_priv")
+            .from("(SELECT pg_catalog.unnest(?)) n(nspname)")
+            .build();
 
-    public static String QUERY_SYSTEM_FUNCTIONS;
-    public static String QUERY_SYSTEM_RELATIONS;
-    public static String QUERY_SYSTEM_OPERATORS;
-    public static String QUERY_SYSTEM_CASTS;
+    public static final String QUERY_SEQUENCES_ACCESS = getSequencesAccessQuery();
+    public static final String QUERY_SEQUENCES_DATA =   getSequencesDataQuery();
+    public static final String QUERY_SYSTEM_FUNCTIONS = getSystemFunctionsQuery();
+    public static final String QUERY_SYSTEM_RELATIONS = getSystemRelationsQuery();
+    public static final String QUERY_SYSTEM_OPERATORS = getSystemOperatorsQuery();
+    public static final String QUERY_SYSTEM_CASTS = getSystemCastsQuery();
 
-    public static final JdbcQuery QUERY_MS_SCHEMAS = new JdbcQuery();
-
-    public static final JdbcQuery QUERY_MS_TABLES = new JdbcQuery();
-    public static final JdbcQuery QUERY_MS_FUNCTIONS_PROCEDURES_VIEWS_TRIGGERS = new JdbcQuery();
-    public static final JdbcQuery QUERY_MS_EXTENDED_FUNCTIONS_AND_PROCEDURES = new JdbcQuery();
-    public static final JdbcQuery QUERY_MS_SEQUENCES = new JdbcQuery();
-    public static final JdbcQuery QUERY_MS_INDICES_AND_PK = new JdbcQuery();
-    public static final JdbcQuery QUERY_MS_FK = new JdbcQuery();
-    public static final JdbcQuery QUERY_MS_CHECK_CONSTRAINTS = new JdbcQuery();
-    public static final JdbcQuery QUERY_MS_ASSEMBLIES = new JdbcQuery();
-    public static final JdbcQuery QUERY_MS_ROLES = new JdbcQuery();
-    public static final JdbcQuery QUERY_MS_TYPES = new JdbcQuery();
-    public static final JdbcQuery QUERY_MS_USERS = new JdbcQuery();
-
-    // SONAR-ON
-
-    static {
-        for (Field f : JdbcQueries.class.getFields()) {
-            if (!f.getName().startsWith("QUERY")) {
-                continue;
-            }
-            try {
-                if (JdbcQuery.class.isAssignableFrom(f.getType())) {
-                    fillQueries(f);
-                } else if (String.class.isAssignableFrom(f.getType())) {
-                    String res = f.getName().startsWith("QUERY_SYSTEM") ? "system/" + f.getName() : f.getName();
-                    f.set(null, readResource(res));
-                }
-            } catch (Exception ex) {
-                Log.log(Log.LOG_ERROR,
-                        "Error while loading JDBC SQL Queries resource: " + f.getName(), ex);
-            }
-        }
+    private static String getSystemFunctionsQuery() {
+        return new QueryBuilder()
+                .column("p.proname AS name")
+                .column("n.nspname")
+                .column("p.proargmodes")
+                .column("p.proretset")
+                .column("p.proargnames")
+                .column("pg_catalog.format_type(p.prorettype, null) AS prorettype")
+                .column("p.proallargtypes::bigint[]")
+                .column("pg_catalog.pg_get_function_arguments(p.oid) AS proarguments")
+                .from("pg_catalog.pg_proc p")
+                .join("LEFT JOIN pg_catalog.pg_namespace n ON p.pronamespace = n.oid")
+                .where("NOT EXISTS (SELECT 1 FROM pg_catalog.pg_depend dp"
+                        + " WHERE dp.classid = 'pg_catalog.pg_proc'::pg_catalog.regclass"
+                        + " AND dp.objid = p.oid AND dp.deptype = 'i')")
+                .where("(n.nspname LIKE 'pg\\_%' OR n.nspname = 'information_schema')")
+                .build();
     }
 
-    private static void fillQueries (Field f) throws Exception {
-        JdbcQuery query = (JdbcQuery) f.get(null);
-
-        if (f.getName().startsWith("QUERY_MS")) {
-            query.setQuery(readResource("ms/" + f.getName()));
-            return;
-        }
-
-        query.setQuery(readResource(f.getName()));
-
-        for (SupportedVersion version : SupportedVersion.values()) {
-            String sinceQuery = readResource(f.getName() + '_' + version);
-            if (sinceQuery != null) {
-                query.addSinceQuery(version, sinceQuery);
-            }
-
-            for (SupportedVersion v2 : SupportedVersion.values()) {
-                String intervalQuery = readResource(f.getName() + '_'
-                        + version.getVersion() + '_' + v2.getVersion());
-                if (intervalQuery != null) {
-                    query.addIntervalQuery(version, v2, intervalQuery);
-                }
-            }
-        }
-
-        String gpQuery = readResource(f.getName() + "_GP");
-        if (gpQuery != null) {
-            query.setGpQuery(gpQuery);
-        }
+    private static String getSystemRelationsQuery() {
+        return new QueryBuilder()
+                .column("c.relname AS name")
+                .column("c.relkind")
+                .column("n.nspname")
+                .column("columns.col_names")
+                .column("columns.col_types")
+                .from("pg_catalog.pg_class c")
+                .join("LEFT JOIN (SELECT"
+                        + "   a.attrelid,"
+                        + "   pg_catalog.array_agg(a.attname ORDER BY a.attnum) AS col_names,"
+                        + "   pg_catalog.array_agg(pg_catalog.format_type(a.atttypid, a.atttypmod) ORDER BY a.attnum) AS col_types"
+                        + " FROM pg_catalog.pg_attribute a"
+                        + " WHERE a.attisdropped IS FALSE AND a.attnum > 0"
+                        + " GROUP BY attrelid) columns ON columns.attrelid = c.oid")
+                .join("LEFT JOIN pg_catalog.pg_namespace n ON c.relnamespace = n.oid")
+                .where("c.relkind IN ('f','r','p', 'v', 'm', 'S')")
+                .where("(n.nspname LIKE 'pg\\_%' OR n.nspname = 'information_schema')")
+                .build();
     }
 
-    private static String readResource(String name) throws IOException {
-        return FileUtils.readResource(JdbcQueries.class, name + ".sql");
+    private static String getSystemOperatorsQuery() {
+        return new QueryBuilder()
+                .column("o.oprname as name")
+                .column("n.nspname")
+                .column("o.oprleft::bigint AS left")
+                .column("o.oprright::bigint AS right")
+                .column("o.oprresult::bigint AS result")
+                .from("pg_catalog.pg_operator o")
+                .join("LEFT JOIN pg_catalog.pg_namespace n ON o.oprnamespace = n.oid")
+                .where("(n.nspname LIKE 'pg\\_%' OR n.nspname = 'information_schema')")
+                .build();
     }
 
-    private JdbcQueries() {
+    private static String getSystemCastsQuery() {
+        return new QueryBuilder()
+                .column("pg_catalog.format_type(c.castsource, null) AS source")
+                .column("pg_catalog.format_type(c.casttarget, null) AS target")
+                .column("c.castcontext")
+                .from("pg_catalog.pg_cast c")
+                .where("c.oid <= ?")
+                .build();
     }
+
+    private static String getSequencesAccessQuery() {
+        return new QueryBuilder()
+                .column("s.qname")
+                .column("pg_catalog.has_sequence_privilege(s.qname, 'SELECT') AS has_priv")
+                .from("(SELECT pg_catalog.unnest(?)) s(qname)")
+                .build();
+    }
+
+    private static String getSequencesDataQuery() {
+        return new QueryBuilder()
+                .column("start_value")
+                .column("increment_by")
+                .column("max_value")
+                .column("min_value")
+                .column("cache_value")
+                .column("is_cycled")
+                .build();
+    }
+
+    private JdbcQueries() {}
 }

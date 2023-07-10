@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.loader.JdbcQueries;
+import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractMsClrFunction;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
@@ -36,12 +36,11 @@ import ru.taximaxim.codekeeper.core.schema.MsColumn;
 public class MsExtendedObjectsReader extends JdbcReader {
 
     public MsExtendedObjectsReader(JdbcLoaderBase loader) {
-        super(JdbcQueries.QUERY_MS_EXTENDED_FUNCTIONS_AND_PROCEDURES, loader);
+        super(loader);
     }
 
     @Override
     protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException, XmlReaderException {
-        loader.monitor.worked(1);
         String name = res.getString("name");
         String funcType = res.getString("type");
         DbObjType type = "PC".equals(funcType) ? DbObjType.PROCEDURE : DbObjType.FUNCTION;
@@ -139,5 +138,93 @@ public class MsExtendedObjectsReader extends JdbcReader {
             argDst.setReadOnly(arg.getBoolean("ro"));
             func.addArgument(argDst);
         }
+    }
+
+    @Override
+    protected String getSchemaColumn() {
+        return "res.schema_id";
+    }
+
+    @Override
+    protected void fillQueryBuilder(QueryBuilder builder) {
+        addMsPriviligesPart(builder);
+        addMsColumnsPart(builder);
+        addMsArgsPart(builder);
+        addMsOwnerPart(builder);
+
+        builder
+        .column("res.name")
+        .column("res.type")
+        .column("SCHEMA_NAME(usrt.schema_id) AS return_type_sh")
+        .column("usrt.name AS return_type")
+        .column("CASE WHEN ret_param.max_length>=0 AND usrt.name IN (N'nchar', N'nvarchar') THEN ret_param.max_length/2 ELSE ret_param.max_length END AS return_type_size")
+        .column("usrt.precision AS return_type_pr")
+        .column("usrt.scale AS return_type_sc")
+        .column("usrt.is_user_defined AS return_type_ud")
+        .column("am.null_on_null_input")
+        .column("p2.name AS execute_as")
+        .column("a.name AS assembly")
+        .column("am.assembly_class")
+        .column("am.assembly_method")
+        .from("sys.objects res WITH (NOLOCK)")
+        .join("JOIN sys.assembly_modules am WITH (NOLOCK) ON am.object_id=res.object_id")
+        .join("JOIN sys.assemblies a WITH (NOLOCK) ON a.assembly_id=am.assembly_id")
+        .join("LEFT JOIN sys.database_principals p2 WITH (NOLOCK) ON p2.principal_id=am.execute_as_principal_id")
+        .join("LEFT JOIN sys.all_parameters ret_param WITH (NOLOCK) ON ret_param.object_id = res.object_id and ret_param.parameter_id = 0")
+        .join("LEFT JOIN sys.types usrt WITH (NOLOCK) ON usrt.user_type_id = ret_param.user_type_id")
+        .where("res.type IN ('PC', 'FT', 'FS')");
+    }
+
+    private void addMsColumnsPart(QueryBuilder builder) {
+        String cols = "CROSS APPLY (\n"
+                + "  SELECT * FROM (\n"
+                + "    SELECT\n"
+                + "      c.name,\n"
+                + "      c.column_id AS id,\n"
+                + "      t.name AS type,\n"
+                + "      SCHEMA_NAME(t.schema_id) AS st,\n"
+                + "      CASE WHEN c.max_length>=0 AND t.name IN (N'nchar', N'nvarchar') THEN c.max_length/2 ELSE c.max_length END AS size,\n"
+                + "      c.precision AS pr,\n"
+                + "      c.scale AS sc,\n"
+                + "      c.collation_name AS cn,\n"
+                + "      t.is_user_defined AS ud\n"
+                + "    FROM sys.columns as c WITH (NOLOCK)\n"
+                + "    JOIN sys.types t WITH (NOLOCK) ON c.user_type_id = t.user_type_id\n"
+                + "    WHERE c.object_id = res.object_id\n"
+                + "  ) ccc ORDER BY ccc.id\n"
+                + "  FOR XML RAW, ROOT\n"
+                + ") ccc (cols)";
+
+        builder.column("ccc.cols");
+        builder.join(cols);
+    }
+
+    private void addMsArgsPart(QueryBuilder builder) {
+        String args = "CROSS APPLY (\n"
+                + "  SELECT * FROM (\n"
+                + "    SELECT \n"
+                + "      p.name,\n"
+                + "      t.name AS type,\n"
+                + "      SCHEMA_NAME(t.schema_id) AS st,\n"
+                + "      TYPE_NAME(t.system_type_id) AS bt,\n"
+                + "      CASE WHEN p.max_length>=0 AND t.name IN (N'nchar', N'nvarchar') THEN p.max_length/2 ELSE p.max_length END AS size,\n"
+                + "      p.parameter_id AS id,\n"
+                + "      p.precision AS pr,\n"
+                + "      p.scale AS sc,\n"
+                + "      t.is_user_defined AS ud,\n"
+                + "      p.is_output AS ou,\n"
+                + "      p.has_default_value AS hd,\n"
+                + "      p.default_value AS dv,\n"
+                + "      p.is_readonly AS ro\n"
+                + "      FROM sys.objects so WITH (NOLOCK)\n"
+                + "      JOIN sys.parameters p WITH (NOLOCK) ON so.object_id = p.object_id\n"
+                + "      JOIN sys.types t WITH (NOLOCK) ON p.user_type_id = t.user_type_id\n"
+                + "      WHERE p.parameter_id > 0 AND so.object_id = res.object_id \n"
+                + "  ) cc ORDER BY cc.id\n"
+                + "  FOR XML RAW, ROOT\n"
+                + ") cc (args)";
+
+        builder.column("cc.args");
+        builder.join(args);
     }
 }

@@ -18,15 +18,14 @@ package ru.taximaxim.codekeeper.core.loader.jdbc;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.loader.JdbcQueries;
+import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.PgFtsTemplate;
 
 public class FtsTemplatesReader extends JdbcReader {
 
     public FtsTemplatesReader(JdbcLoaderBase loader) {
-        super(JdbcQueries.QUERY_FTS_TEMPLATES, loader);
+        super(loader);
     }
 
     @Override
@@ -42,11 +41,7 @@ public class FtsTemplatesReader extends JdbcReader {
                 template, res.getString("tmpllexize"));
 
         // COMMENT
-        String comment = res.getString("comment");
-        if (comment != null && !comment.isEmpty()) {
-            template.setComment(loader.args, PgDiffUtils.quoteString(comment));
-        }
-
+        loader.setComment(template, res);
         loader.setAuthor(template, res);
         schema.addFtsTemplate(template);
     }
@@ -54,5 +49,23 @@ public class FtsTemplatesReader extends JdbcReader {
     @Override
     protected String getClassId() {
         return "pg_ts_template";
+    }
+
+    @Override
+    protected String getSchemaColumn() {
+        return "res.tmplnamespace";
+    }
+
+    @Override
+    protected void fillQueryBuilder(QueryBuilder builder) {
+        addSysSchemasCte(builder);
+        addExtensionDepsCte(builder);
+        addDescriptionPart(builder);
+
+        builder
+        .column("res.tmplname")
+        .column("res.tmplinit")
+        .column("res.tmpllexize")
+        .from("pg_catalog.pg_ts_template res");
     }
 }

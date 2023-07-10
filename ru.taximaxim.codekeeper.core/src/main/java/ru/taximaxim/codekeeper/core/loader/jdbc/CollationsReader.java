@@ -19,7 +19,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.loader.JdbcQueries;
+import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
 import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
@@ -29,7 +29,7 @@ import ru.taximaxim.codekeeper.core.schema.PgCollation;
 public class CollationsReader extends JdbcReader {
 
     public CollationsReader(JdbcLoaderBase loader) {
-        super(JdbcQueries.QUERY_COLLATIONS, loader);
+        super(loader);
     }
 
     @Override
@@ -49,10 +49,7 @@ public class CollationsReader extends JdbcReader {
             coll.setLcCtype(PgDiffUtils.quoteString(lcCtype));
         }
 
-        String comment = res.getString("comment");
-        if (comment != null && !comment.isEmpty()) {
-            coll.setComment(loader.args, PgDiffUtils.quoteString(comment));
-        }
+        loader.setComment(coll, res);
 
         if (SupportedVersion.VERSION_10.isLE(loader.version)) {
             String provider = res.getString("collprovider");
@@ -77,5 +74,32 @@ public class CollationsReader extends JdbcReader {
     @Override
     protected String getClassId() {
         return "pg_collation";
+    }
+
+    @Override
+    protected String getSchemaColumn() {
+        return "res.collnamespace";
+    }
+
+    @Override
+    protected void fillQueryBuilder(QueryBuilder builder) {
+        addSysSchemasCte(builder);
+        addExtensionDepsCte(builder);
+        addDescriptionPart(builder);
+
+        builder
+        .column("res.collname")
+        .column("res.collcollate")
+        .column("res.collctype")
+        .column("res.collowner::bigint")
+        .from("pg_catalog.pg_collation res");
+
+        if (SupportedVersion.VERSION_10.isLE(loader.version)) {
+            builder.column("res.collprovider");
+        }
+
+        if (SupportedVersion.VERSION_12.isLE(loader.version)) {
+            builder.column("res.collisdeterministic");
+        }
     }
 }

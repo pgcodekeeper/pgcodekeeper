@@ -18,8 +18,7 @@ package ru.taximaxim.codekeeper.core.loader.jdbc;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.loader.JdbcQueries;
+import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.CreateRule;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
@@ -31,12 +30,12 @@ import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
 public class RulesReader extends JdbcReader {
 
     public RulesReader(JdbcLoaderBase loader) {
-        super(JdbcQueries.QUERY_RULES, loader);
+        super(loader);
     }
 
     @Override
     protected void processResult(ResultSet result, AbstractSchema schema) throws SQLException {
-        String contName = result.getString(CLASS_RELNAME);
+        String contName = result.getString("relname");
         PgStatementContainer c = schema.getStatementContainer(contName);
         if (c != null) {
             c.addRule(getRule(result, schema, contName));
@@ -89,16 +88,36 @@ public class RulesReader extends JdbcReader {
                         schema.getDatabase(), loader.getCurrentLocation()));
 
         loader.setAuthor(r, res);
-        // COMMENT
-        String comment = res.getString("comment");
-        if (comment != null && !comment.isEmpty()) {
-            r.setComment(loader.args, PgDiffUtils.quoteString(comment));
-        }
+        loader.setComment(r, res);
+
         return r;
     }
 
     @Override
     protected String getClassId() {
         return "pg_rewrite";
+    }
+
+    @Override
+    protected String getSchemaColumn() {
+        return "ccc.relnamespace";
+    }
+
+    @Override
+    protected void fillQueryBuilder(QueryBuilder builder) {
+        addSysSchemasWithExtensionCte(builder);
+        addDescriptionPart(builder);
+
+        builder
+        .column("ccc.relname")
+        .column("res.rulename")
+        .column("res.ev_type")
+        .column("res.is_instead")
+        .column("res.ev_enabled")
+        .column("pg_catalog.pg_get_ruledef(res.oid) AS rule_string")
+        .from("pg_catalog.pg_rewrite res")
+        .join("JOIN pg_catalog.pg_class ccc ON ccc.oid = res.ev_class")
+        // block rules that implement views
+        .where("NOT ((ccc.relkind = 'v' OR ccc.relkind = 'm') AND res.ev_type = '1' AND res.is_instead)");
     }
 }

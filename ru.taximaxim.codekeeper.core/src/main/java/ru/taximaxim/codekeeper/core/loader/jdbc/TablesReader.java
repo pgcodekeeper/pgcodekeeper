@@ -21,7 +21,7 @@ import java.sql.SQLException;
 import org.antlr.v4.runtime.CommonTokenStream;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.loader.JdbcQueries;
+import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
 import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrUtils;
@@ -48,19 +48,13 @@ public class TablesReader extends JdbcReader {
     private static final String CREATE_TABLE = "CREATE TABLE noname () ";
 
     public TablesReader(JdbcLoaderBase loader) {
-        super(JdbcQueries.QUERY_TABLES, loader);
+        super(loader);
     }
 
     @Override
-    protected void processResult(ResultSet result, AbstractSchema schema) throws SQLException {
-        AbstractPgTable table = getTable(result, schema);
-        loader.monitor.worked(1);
-        schema.addTable(table);
-    }
-
-    private AbstractPgTable getTable(ResultSet res, AbstractSchema schema) throws SQLException {
+    protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException {
         String schemaName = schema.getName();
-        String tableName = res.getString(CLASS_RELNAME);
+        String tableName = res.getString("relname");
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, DbObjType.TABLE));
         String partitionBound = null;
         String partitionGpBound = null;
@@ -115,9 +109,10 @@ public class TablesReader extends JdbcReader {
         }
 
         // PRIVILEGES, OWNER
-        loader.setOwner(t, res.getLong(CLASS_RELOWNER));
+        loader.setOwner(t, res.getLong("relowner"));
         loader.setPrivileges(t, res.getString("aclarray"), schemaName);
         loader.setAuthor(t, res);
+        loader.setComment(t, res);
 
         readColumns(res, t, ofTypeOid, schema);
 
@@ -143,12 +138,6 @@ public class TablesReader extends JdbcReader {
             ParserAbstract.fillOptionParams(toast, t::addOption, true, false, false);
         }
 
-        // Table COMMENTS
-        String comment = res.getString("table_comment");
-        if (comment != null && !comment.isEmpty()) {
-            t.setComment(loader.args, PgDiffUtils.quoteString(comment));
-        }
-
         if (!SupportedVersion.VERSION_12.isLE(loader.version) && res.getBoolean("has_oids")) {
             t.setHasOids(true);
         }
@@ -157,7 +146,7 @@ public class TablesReader extends JdbcReader {
             fillRegularTable(t, res);
         }
 
-        return t;
+        schema.addTable(t);
     }
 
     private AbstractPgTable createGpParttionTable(String tableName, String partitionGpBound,
@@ -455,5 +444,185 @@ public class TablesReader extends JdbcReader {
     @Override
     protected String getClassId() {
         return "pg_class";
+    }
+
+    @Override
+    protected String getSchemaColumn() {
+        return "res.relnamespace";
+    }
+
+    @Override
+    protected void fillQueryBuilder(QueryBuilder builder) {
+        addSysSchemasCte(builder);
+        addExtensionDepsCte(builder);
+        addDescriptionPart(builder, true);
+        addColumnsPart(builder);
+        addParentsPart(builder);
+
+        builder
+        .with("nspnames", "SELECT n.oid, n.nspname FROM pg_catalog.pg_namespace n")
+        .with("collations",
+                "SELECT c.oid, c.collname, n.nspname FROM pg_catalog.pg_collation c LEFT JOIN nspnames n ON n.oid = c.collnamespace")
+        .column("res.relname")
+        .column("res.relkind")
+        .column("res.relowner::bigint")
+        .column("res.relacl::text AS aclarray")
+        .column("res.relpersistence AS persistence")
+        .column("res.reloptions")
+        .column("tc.reloptions AS toast_reloptions")
+        .column("tabsp.spcname AS table_space")
+        .column("am.amname AS access_method")
+        .column("ftbl.ftoptions")
+        .column("ser.srvname AS server_name")
+        .column("res.reloftype::bigint AS of_type")
+        .from("pg_catalog.pg_class res")
+        .join("LEFT JOIN pg_catalog.pg_foreign_table ftbl ON ftbl.ftrelid = res.oid")
+        .join("LEFT JOIN pg_catalog.pg_foreign_server ser ON ser.oid = ftbl.ftserver")
+        .join("LEFT JOIN pg_catalog.pg_tablespace tabsp ON tabsp.oid = res.reltablespace")
+        .join("LEFT JOIN pg_catalog.pg_class tc ON tc.oid = res.reltoastrelid")
+        .join("LEFT JOIN pg_catalog.pg_am am ON am.oid = res.relam")
+        .where("res.relkind IN ('f','r','p')");
+
+        if (SupportedVersion.VERSION_9_5.isLE(loader.version)) {
+            builder
+            .column("res.relrowsecurity AS row_security")
+            .column("res.relforcerowsecurity AS force_security");
+        }
+
+        if (SupportedVersion.VERSION_10.isLE(loader.version)) {
+            builder
+            .column("res.relispartition")
+            .column("pg_catalog.pg_get_partkeydef(res.oid) AS partition_by")
+            .column("pg_catalog.pg_get_expr(res.relpartbound, res.oid) AS partition_bound");
+        }
+
+        if (!SupportedVersion.VERSION_12.isLE(loader.version)) {
+            builder.column("res.relhasoids AS has_oids");
+        }
+
+        if (loader.isGreenplumDb) {
+            builder
+            .column("pg_get_table_distributedby(res.oid) AS distribution")
+            .column("x.urilocation AS urloc")
+            .column("x.execlocation AS exloc")
+            .column("x.fmttype")
+            .column("x.fmtopts")
+            .column("x.command")
+            .column("x.rejectlimit AS rejlim")
+            .column("x.rejectlimittype AS rejtyp")
+            .column("x.logerrors")
+            .column("x.options")
+            .column("pg_catalog.pg_encoding_to_char(x.encoding) AS enc")
+            .column("x.writable")
+            .column("ps.tablename as parent_table")
+            .column("CASE WHEN pl.parlevel = 0 THEN (SELECT pg_get_partition_def(res.oid, true, false)) END AS partclause")
+            .column("CASE WHEN pl.parlevel = 0 THEN (SELECT pg_get_partition_template_def(res.oid, true, false)) END as parttemplate")
+            .join("LEFT JOIN pg_exttable x ON res.oid = x.reloid")
+            .join("LEFT JOIN pg_partitions ps on (res.relname = ps.partitiontablename)")
+            .join("LEFT JOIN pg_partition_rule pr ON res.oid = pr.parchildrelid")
+            .join("LEFT JOIN pg_partition p ON pr.paroid = p.oid")
+            .join("LEFT JOIN pg_partition pl ON (res.oid = pl.parrelid AND pl.parlevel = 0)")
+            .where("ps.tablename IS NULL");
+        }
+    }
+
+    private void addColumnsPart(QueryBuilder builder) {
+        QueryBuilder subQueryBuilder = new QueryBuilder();
+        subQueryBuilder
+        .column("a.attrelid")
+        .column("pg_catalog.array_agg(a.attname ORDER BY a.attnum) AS col_names")
+        .column("pg_catalog.array_agg(pg_catalog.array_to_string(a.attoptions, ',') ORDER BY a.attnum) AS col_options")
+        .column("pg_catalog.array_agg(pg_catalog.array_to_string(a.attfdwoptions, ',') ORDER BY a.attnum) AS col_foptions")
+        .column("pg_catalog.array_agg(a.attstorage ORDER BY a.attnum) AS col_storages")
+        .column("pg_catalog.array_agg(t.typstorage ORDER BY a.attnum) AS col_default_storages")
+        .column("pg_catalog.array_agg(a.atthasdef ORDER BY a.attnum) AS col_has_default")
+        .column("pg_catalog.array_agg(pg_catalog.pg_get_expr(attrdef.adbin, attrdef.adrelid) ORDER BY a.attnum) AS col_defaults")
+        .column("pg_catalog.array_agg(d.description ORDER BY a.attnum) AS col_comments")
+        .column("pg_catalog.array_agg(a.atttypid::bigint ORDER BY a.attnum) AS col_type_ids")
+        .column("pg_catalog.array_agg(pg_catalog.format_type(a.atttypid, a.atttypmod) ORDER BY a.attnum) AS col_type_name")
+        // skips not null for column, if parents have not null
+        .column("pg_catalog.array_agg(\n"
+                + "      (CASE WHEN a.attnotnull THEN \n"
+                + "        NOT EXISTS (\n"
+                + "          SELECT 1 FROM pg_catalog.pg_inherits inh \n"
+                + "          LEFT JOIN pg_catalog.pg_attribute attr ON attr.attrelid = inh.inhparent\n"
+                + "          WHERE inh.inhrelid = a.attrelid \n"
+                + "          AND attr.attnotnull\n"
+                + "          AND attr.attname = a.attname)\n"
+                + "        ELSE FALSE\n"
+                + "        END\n"
+                + "      ) ORDER BY a.attnum\n"
+                + "    ) AS col_notnull")
+        .column("pg_catalog.array_agg(a.attstattarget ORDER BY a.attnum) AS col_statictics")
+        .column("pg_catalog.array_agg(a.attislocal ORDER BY a.attnum) AS col_local")
+        .column("pg_catalog.array_agg(a.attacl::text ORDER BY a.attnum) AS col_acl")
+        .column("pg_catalog.array_agg(a.attcollation::bigint ORDER BY a.attnum) AS col_collation")
+        .column("pg_catalog.array_agg(t.typcollation::bigint ORDER BY a.attnum) AS col_typcollation")
+        .column("pg_catalog.array_agg(cl.collname ORDER BY a.attnum) AS col_collationname")
+        .column("pg_catalog.array_agg(cl.nspname ORDER BY a.attnum) AS col_collationnspname")
+        .from("pg_catalog.pg_attribute a")
+        .join("LEFT JOIN pg_catalog.pg_attrdef attrdef ON attrdef.adnum = a.attnum AND a.attrelid = attrdef.adrelid")
+        .join("LEFT JOIN pg_catalog.pg_description d ON d.objoid = a.attrelid AND d.objsubid = a.attnum AND d.classoid = 'pg_catalog.pg_class'::pg_catalog.regclass")
+        .join("LEFT JOIN pg_catalog.pg_type t ON t.oid = a.atttypid")
+        .join("LEFT JOIN collations cl ON cl.oid =  a.attcollation")
+        .where("a.attisdropped IS FALSE")
+        .where("a.attnum > 0 GROUP BY a.attrelid")
+        ;
+
+        if (SupportedVersion.VERSION_12.isLE(loader.version)) {
+            builder.column("columns.col_generated");
+            subQueryBuilder.column("pg_catalog.array_agg(a.attgenerated ORDER BY a.attnum) AS col_generated");
+        }
+
+        if (SupportedVersion.VERSION_14.isLE(loader.version)) {
+            builder.column("columns.col_compression");
+            subQueryBuilder.column("pg_catalog.array_agg(a.attcompression ORDER BY a.attnum) AS col_compression");
+        }
+
+        if (loader.isGreenplumDb) {
+            builder.column("columns.col_enc_options");
+            subQueryBuilder
+            .column("pg_catalog.array_agg(pg_catalog.array_to_string(enc_a.attoptions, ',') ORDER BY a.attnum) AS col_enc_options")
+            .join("LEFT JOIN pg_attribute_encoding enc_a ON enc_a.attnum = a.attnum AND a.attrelid = enc_a.attrelid");
+        }
+
+        String columns = "LEFT JOIN (\n" + subQueryBuilder.build() + "\n) columns ON columns.attrelid = res.oid";
+
+        builder.column("columns.col_names");
+        builder.column("columns.col_options");
+        builder.column("columns.col_foptions");
+        builder.column("columns.col_storages");
+        builder.column("columns.col_default_storages");
+        builder.column("columns.col_has_default");
+        builder.column("columns.col_defaults");
+        builder.column("columns.col_comments");
+        builder.column("columns.col_type_ids");
+        builder.column("columns.col_type_name");
+        builder.column("columns.col_notnull");
+        builder.column("columns.col_statictics");
+        builder.column("columns.col_local");
+        builder.column("columns.col_acl");
+        builder.column("columns.col_collation");
+        builder.column("columns.col_typcollation");
+        builder.column("columns.col_collationname");
+        builder.column("columns.col_collationnspname");
+        builder.join(columns);
+    }
+
+    private void addParentsPart(QueryBuilder builder) {
+        String parents = "LEFT JOIN (\n"
+                + "  SELECT\n"
+                + "    inh.inhrelid,\n"
+                + "    pg_catalog.array_agg(inhrel.relname ORDER BY inh.inhrelid, inh.inhseqno) AS inhrelnames,\n"
+                + "    pg_catalog.array_agg(inhns.nspname ORDER BY inh.inhrelid, inh.inhseqno) AS inhnspnames\n"
+                + "  FROM pg_catalog.pg_inherits inh\n"
+                + "  LEFT JOIN pg_catalog.pg_class inhrel ON inh.inhparent = inhrel.oid\n"
+                + "  LEFT JOIN pg_catalog.pg_namespace inhns ON inhrel.relnamespace = inhns.oid\n"
+                + "  GROUP BY inh.inhrelid\n"
+                + ") parents ON parents.inhrelid = res.oid";
+
+        builder.column("parents.inhrelnames");
+        builder.column("parents.inhnspnames");
+        builder.join(parents);
     }
 }

@@ -22,7 +22,7 @@ import java.sql.SQLException;
 import org.antlr.v4.runtime.CommonTokenStream;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.loader.JdbcQueries;
+import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
 import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrUtils;
@@ -30,7 +30,6 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.VexAnalysisLaunc
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.ViewAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
-import ru.taximaxim.codekeeper.core.schema.AbstractView;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgView;
@@ -39,19 +38,13 @@ import ru.taximaxim.codekeeper.core.utils.Pair;
 public class ViewsReader extends JdbcReader {
 
     public ViewsReader(JdbcLoaderBase loader) {
-        super(JdbcQueries.QUERY_VIEWS, loader);
+        super(loader);
     }
 
     @Override
-    protected void processResult(ResultSet result, AbstractSchema schema) throws SQLException {
-        AbstractView view = getView(result, schema);
-        loader.monitor.worked(1);
-        schema.addView(view);
-    }
-
-    private AbstractView getView(ResultSet res, AbstractSchema schema) throws SQLException {
+    protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException {
         String schemaName = schema.getName();
-        String viewName = res.getString(CLASS_RELNAME);
+        String viewName = res.getString("relname");
         loader.setCurrentObject(new GenericColumn(schemaName, viewName, DbObjType.VIEW));
 
         PgView v = new PgView(viewName);
@@ -87,8 +80,6 @@ public class ViewsReader extends JdbcReader {
                             pair.getFirst(), pair.getSecond()));
                 });
 
-        // OWNER
-        loader.setOwner(v, res.getLong(CLASS_RELOWNER));
 
         // Query columns default values and comments
         String[] colNames = getColArray(res, "column_names");
@@ -118,20 +109,15 @@ public class ViewsReader extends JdbcReader {
             }
         }
 
-        // Query view privileges
+        loader.setOwner(v, res.getLong("relowner"));
         loader.setPrivileges(v, res.getString("relacl"), schemaName);
         loader.setAuthor(v, res);
+        loader.setComment(v, res);
 
         // STORAGE PARAMETRS
         String[] options = getColArray(res, "reloptions");
         if (options != null) {
             ParserAbstract.fillOptionParams(options, v::addOption, false, false, false);
-        }
-
-        // COMMENT
-        String comment = res.getString("comment");
-        if (comment != null && !comment.isEmpty()) {
-            v.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
 
         if (loader.isGreenplumDb) {
@@ -140,8 +126,7 @@ public class ViewsReader extends JdbcReader {
                 v.setDistribution(distribution);
             }
         }
-
-        return v;
+        schema.addView(v);
     }
 
     @Override
@@ -152,5 +137,60 @@ public class ViewsReader extends JdbcReader {
     @Override
     protected String getClassId() {
         return "pg_class";
+    }
+
+    @Override
+    protected String getSchemaColumn() {
+        return "res.relnamespace";
+    }
+
+    @Override
+    protected void fillQueryBuilder(QueryBuilder builder) {
+        addSysSchemasCte(builder);
+        addExtensionDepsCte(builder);
+        addColumnsPart(builder);
+        addDescriptionPart(builder, true);
+
+        builder
+        .column("res.relname")
+        .column("res.relkind AS kind")
+        .column("tabsp.spcname as table_space")
+        .column("res.relacl::text")
+        .column("res.relowner::bigint")
+        .column("pg_catalog.pg_get_viewdef(res.oid, ?) AS definition")
+        .column("res.reloptions")
+        .column("am.amname AS access_method")
+        .column("res.relispopulated")
+        .from("pg_catalog.pg_class res")
+        .join("LEFT JOIN pg_catalog.pg_tablespace tabsp ON tabsp.oid = res.reltablespace")
+        .join("LEFT JOIN pg_catalog.pg_am am ON am.oid = res.relam")
+        .where("res.relkind IN ('v','m')");
+
+        if (loader.isGreenplumDb) {
+            builder.column("pg_get_table_distributedby(res.oid) AS distribution");
+        }
+    }
+
+    private void addColumnsPart(QueryBuilder builder) {
+        String columns = "LEFT JOIN\n"
+                + "  (SELECT attrelid,\n"
+                + "          pg_catalog.array_agg(attr.attname ORDER BY attr.attnum) AS column_names,\n"
+                + "          pg_catalog.array_agg(des.description ORDER BY attr.attnum) AS column_comments,\n"
+                + "          pg_catalog.array_agg(pg_catalog.pg_get_expr(def.adbin, def.adrelid) ORDER BY attr.attnum) AS column_defaults,\n"
+                + "          pg_catalog.array_agg(attr.attacl::text ORDER BY attr.attnum) AS column_acl\n"
+                + "   FROM pg_catalog.pg_attribute attr\n"
+                + "   LEFT JOIN pg_catalog.pg_attrdef def ON def.adnum = attr.attnum\n"
+                + "     AND attr.attrelid = def.adrelid\n"
+                + "     AND attr.attisdropped IS FALSE\n"
+                + "   LEFT JOIN pg_catalog.pg_description des ON des.objoid = attr.attrelid\n"
+                + "     AND des.classoid = 'pg_catalog.pg_class'::pg_catalog.regclass\n"
+                + "     AND des.objsubid = attr.attnum\n"
+                + "  GROUP BY attrelid) subselect ON subselect.attrelid = res.oid";
+
+        builder.column("subselect.column_names");
+        builder.column("subselect.column_comments");
+        builder.column("subselect.column_defaults");
+        builder.column("subselect.column_acl");
+        builder.join(columns);
     }
 }

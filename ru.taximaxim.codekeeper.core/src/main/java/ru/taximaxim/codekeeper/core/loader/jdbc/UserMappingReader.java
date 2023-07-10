@@ -18,38 +18,24 @@ package ru.taximaxim.codekeeper.core.loader.jdbc;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.loader.JdbcQueries;
+import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgUserMapping;
 
-public class UserMappingReader implements PgCatalogStrings {
+public class UserMappingReader extends AbstractStatementReader {
 
-    private final JdbcLoaderBase loader;
     private final PgDatabase db;
 
     public UserMappingReader(JdbcLoaderBase loader, PgDatabase db) {
-        this.loader = loader;
+        super(loader);
         this.db = db;
     }
 
-    public void read() throws SQLException, InterruptedException {
-        loader.setCurrentOperation("user_mapping_query");
-        String query = JdbcQueries.QUERY_USER_MAPPING.makeQuery(loader, "pg_user_mapping");
-        try (ResultSet res = loader.runner.runScript(loader.statement, query)) {
-            while (res.next()) {
-                PgDiffUtils.checkCancelled(loader.monitor);
-                PgUserMapping usm = getUserMapping(res);
-                db.addUserMapping(usm);
-                loader.setAuthor(usm, res);
-            }
-        }
-    }
-
-    private PgUserMapping getUserMapping(ResultSet res) throws SQLException {
+    @Override
+    protected void processResult(ResultSet res) throws SQLException {
         String user  = res.getString("username");
         String server = res.getString("servername");
         if (user == null) {
@@ -67,6 +53,26 @@ public class UserMappingReader implements PgCatalogStrings {
         if (options != null) {
             ParserAbstract.fillOptionParams(options, usm::addOption, false, true, false);
         }
-        return usm;
+
+        loader.setAuthor(usm, res);
+        db.addUserMapping(usm);
+    }
+
+    @Override
+    protected String getClassId() {
+        return "pg_user_mapping";
+    }
+
+    @Override
+    protected void fillQueryBuilder(QueryBuilder builder) {
+        addExtensionDepsCte(builder);
+
+        builder
+        .column("rol.rolname AS username")
+        .column("fsrv.srvname AS servername")
+        .column("res.umoptions")
+        .from("pg_catalog.pg_user_mapping res")
+        .join("LEFT JOIN pg_catalog.pg_foreign_server fsrv ON res.umserver = fsrv.oid")
+        .join("LEFT JOIN pg_catalog.pg_roles rol ON res.umuser = rol.oid");
     }
 }

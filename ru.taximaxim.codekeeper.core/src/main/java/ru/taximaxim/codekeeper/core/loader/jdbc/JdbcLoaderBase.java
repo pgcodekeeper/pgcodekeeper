@@ -64,7 +64,7 @@ import ru.taximaxim.codekeeper.core.schema.PgStatementWithSearchPath;
  *
  * @author levsha_aa
  */
-public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalogStrings {
+public abstract class JdbcLoaderBase extends DatabaseLoader {
 
     private static final int DEFAULT_OBJECTS_COUNT = 100;
 
@@ -151,7 +151,7 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
         setCurrentOperation("roles query");
         try (ResultSet res = runner.runScript(statement, "SELECT oid::bigint, rolname FROM pg_catalog.pg_roles")) {
             while (res.next()) {
-                cachedRolesNamesByOid.put(res.getLong(OID), res.getString("rolname"));
+                cachedRolesNamesByOid.put(res.getLong("oid"), res.getString("rolname"));
             }
         }
     }
@@ -165,6 +165,13 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
             return null;
         }
         return oid == 0 ? "PUBLIC" : cachedRolesNamesByOid.get(oid);
+    }
+
+    protected final void setComment(PgStatement f, ResultSet res) throws SQLException {
+        String comment = res.getString("description");
+        if (comment != null && !comment.isEmpty()) {
+            f.setComment(args, PgDiffUtils.quoteString(comment));
+        }
     }
 
     protected void setOwner(PgStatement statement, long ownerOid) {
@@ -181,7 +188,7 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
 
     protected void setAuthor(PgStatement st, ResultSet res) throws SQLException {
         if (getExtensionSchema() != null) {
-            st.setAuthor(res.getString(AUTHOR));
+            st.setAuthor(res.getString("ses_user"));
         }
     }
 
@@ -440,10 +447,10 @@ public abstract class JdbcLoaderBase extends DatabaseLoader implements PgCatalog
         setCurrentOperation("type cache query");
         try (ResultSet res = runner.runScript(statement, JdbcQueries.QUERY_TYPES_FOR_CACHE_ALL)) {
             while (res.next()) {
-                long oid = res.getLong(OID);
+                long oid = res.getLong("oid");
                 JdbcType type = new JdbcType(oid, res.getString("typname"),
                         res.getLong("typelem"), res.getLong("typarray"),
-                        res.getString(NAMESPACE_NSPNAME), res.getString("elemname"), lastSysOid);
+                        res.getString("nspname"), res.getString("elemname"), lastSysOid);
                 cachedTypesByOid.put(oid, type);
             }
         }

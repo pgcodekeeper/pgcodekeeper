@@ -19,9 +19,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.loader.JdbcQueries;
+import ru.taximaxim.codekeeper.core.Utils;
+import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
@@ -30,7 +30,7 @@ import ru.taximaxim.codekeeper.core.schema.PgOperator;
 public class OperatorsReader extends JdbcReader {
 
     public OperatorsReader(JdbcLoaderBase loader) {
-        super(JdbcQueries.QUERY_OPERATORS, loader);
+        super(loader);
     }
 
     @Override
@@ -40,14 +40,8 @@ public class OperatorsReader extends JdbcReader {
         loader.setCurrentObject(new GenericColumn(operSchemaName, operName, DbObjType.OPERATOR));
         PgOperator oper = new PgOperator(operName);
 
-        // OWNER
         loader.setOwner(oper, res.getLong("owner"));
-
-        // COMMENT
-        String comment = res.getString("comment");
-        if (comment != null && !comment.isEmpty()) {
-            oper.setComment(loader.args, PgDiffUtils.quoteString(comment));
-        }
+        loader.setComment(oper, res);
 
         long leftArgType = res.getLong("leftArg");
         if (leftArgType > 0) {
@@ -124,5 +118,47 @@ public class OperatorsReader extends JdbcReader {
     @Override
     protected String getClassId() {
         return "pg_operator";
+    }
+
+    @Override
+    protected String getSchemaColumn() {
+        return "res.oprnamespace";
+    }
+
+    @Override
+    protected void fillQueryBuilder(QueryBuilder builder) {
+        addExtensionDepsCte(builder);
+        addSysSchemasCte(builder);
+        addDescriptionPart(builder);
+
+        builder
+        .column("res.oprname AS name")
+        .column("prc.proname AS procedure")
+        .column("prc_n.nspname AS procedure_nsp")
+        .column("res.oprleft::bigint AS leftArg")
+        .column("res.oprright::bigint AS rightArg")
+        .column("res.oprresult::bigint AS result")
+        .column("com.oprname AS commutator")
+        .column("com_n.nspname AS commutator_nsp")
+        .column("neg.oprname AS negator")
+        .column("neg_n.nspname AS negator_nsp")
+        .column("res.oprcanmerge AS is_merges")
+        .column("res.oprcanhash AS is_hashes")
+        .column("prc_r.proname AS restrict")
+        .column("prc_r_n.nspname AS restrict_nsp")
+        .column("prc_j.proname AS join")
+        .column("prc_j_n.nspname AS join_nsp")
+        .column("res.oprowner AS owner")
+        .from("pg_catalog.pg_operator res")
+        .join("JOIN pg_catalog.pg_proc prc ON res.oprcode = prc.oid")
+        .join("LEFT JOIN pg_catalog.pg_namespace prc_n ON prc.pronamespace = prc_n.oid")
+        .join("LEFT JOIN pg_catalog.pg_operator com ON res.oprcom = com.oid")
+        .join("LEFT JOIN pg_catalog.pg_namespace com_n ON com.oprnamespace = com_n.oid")
+        .join("LEFT JOIN pg_catalog.pg_operator neg ON res.oprnegate = neg.oid")
+        .join("LEFT JOIN pg_catalog.pg_namespace neg_n ON neg.oprnamespace = neg_n.oid")
+        .join("LEFT JOIN pg_catalog.pg_proc prc_r ON res.oprrest = prc_r.oid")
+        .join("LEFT JOIN pg_catalog.pg_namespace prc_r_n ON prc_r.pronamespace = prc_r_n.oid")
+        .join("LEFT JOIN pg_catalog.pg_proc prc_j ON res.oprjoin = prc_j.oid")
+        .join("LEFT JOIN pg_catalog.pg_namespace prc_j_n ON prc_j.pronamespace = prc_j_n.oid");
     }
 }
