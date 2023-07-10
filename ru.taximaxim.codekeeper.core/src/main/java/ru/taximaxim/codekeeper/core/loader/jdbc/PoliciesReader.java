@@ -18,8 +18,7 @@ package ru.taximaxim.codekeeper.core.loader.jdbc;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.loader.JdbcQueries;
+import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
 import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.VexAnalysisLauncher;
@@ -33,19 +32,17 @@ import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
 public class PoliciesReader extends JdbcReader {
 
     public PoliciesReader(JdbcLoaderBase loader) {
-        super(JdbcQueries.QUERY_POLICIES, loader);
+        super(loader);
     }
 
     @Override
-    protected void processResult(ResultSet result, AbstractSchema schema) throws SQLException {
-        String contName = result.getString(CLASS_RELNAME);
-        PgStatementContainer c = schema.getStatementContainer(contName);
-        if (c != null) {
-            c.addPolicy(getPolicy(result, schema, contName));
+    protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException {
+        String tableName = res.getString("relname");
+        PgStatementContainer c = schema.getStatementContainer(tableName);
+        if (c == null) {
+            return;
         }
-    }
 
-    private PgPolicy getPolicy(ResultSet res, AbstractSchema schema, String tableName) throws SQLException {
         String schemaName = schema.getName();
         String policyName = res.getString("polname");
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, policyName, DbObjType.POLICY));
@@ -94,17 +91,38 @@ public class PoliciesReader extends JdbcReader {
         }
 
         loader.setAuthor(p, res);
+        loader.setComment(p, res);
 
-        String comment = res.getString("comment");
-        if (comment != null && !comment.isEmpty()) {
-            p.setComment(loader.args, PgDiffUtils.quoteString(comment));
-        }
-
-        return p;
+        c.addPolicy(p);
     }
 
     @Override
     protected String getClassId() {
         return "pg_policy";
+    }
+
+    @Override
+    protected String getSchemaColumn() {
+        return "c.relnamespace";
+    }
+
+    @Override
+    protected void fillQueryBuilder(QueryBuilder builder) {
+        addSysSchemasWithExtensionCte(builder);
+        addDescriptionPart(builder);
+
+        builder
+        .column("res.polname")
+        .column("c.relname")
+        .column("res.polcmd")
+        .column("ARRAY(SELECT pg_catalog.quote_ident(rolname) FROM pg_catalog.pg_roles WHERE oid = ANY(res.polroles)) AS polroles")
+        .column("pg_catalog.pg_get_expr(res.polqual, res.polrelid) AS polqual")
+        .column("pg_catalog.pg_get_expr(res.polwithcheck, res.polrelid) AS polwithcheck")
+        .from("pg_catalog.pg_policy res")
+        .join("JOIN pg_catalog.pg_class c ON c.oid = res.polrelid");
+
+        if (SupportedVersion.VERSION_10.isLE(loader.version)) {
+            builder.column("res.polpermissive");
+        }
     }
 }

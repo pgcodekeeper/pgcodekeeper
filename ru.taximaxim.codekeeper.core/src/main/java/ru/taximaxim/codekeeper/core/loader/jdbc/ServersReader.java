@@ -19,37 +19,24 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.loader.JdbcQueries;
+import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgServer;
 
-public class ServersReader implements PgCatalogStrings {
+public class ServersReader extends AbstractStatementReader {
 
-    private final JdbcLoaderBase loader;
     private final PgDatabase db;
 
     public ServersReader(JdbcLoaderBase loader, PgDatabase db) {
-        this.loader = loader;
+        super(loader);
         this.db = db;
     }
 
-    public void read() throws SQLException, InterruptedException {
-        loader.setCurrentOperation("server_query");
-        String query = JdbcQueries.QUERY_SERVERS.makeQuery(loader, "pg_foreign_server");
-        try(ResultSet res = loader.runner.runScript(loader.statement, query)) {
-            while (res.next()) {
-                PgDiffUtils.checkCancelled(loader.monitor);
-                PgServer server = getServer(res);
-                db.addServer(server);
-                loader.setAuthor(server, res);
-            }
-        }
-    }
-
-    private PgServer getServer(ResultSet res) throws SQLException {
+    @Override
+    protected void processResult(ResultSet res) throws SQLException {
         String srvName = res.getString("srvname");
         loader.setCurrentObject(new GenericColumn(srvName, DbObjType.SERVER));
         PgServer srv = new PgServer(srvName);
@@ -69,13 +56,32 @@ public class ServersReader implements PgCatalogStrings {
         if (options != null) {
             ParserAbstract.fillOptionParams(options, srv::addOption, false, true, false);
         }
-        String comment = res.getString("description");
-        if (comment != null && !comment.isEmpty()) {
-            srv.setComment(loader.args, PgDiffUtils.quoteString(comment));
-        }
-
+        loader.setComment(srv, res);
         loader.setOwner(srv, res.getLong("srvowner"));
         loader.setPrivileges(srv, res.getString("srvacl"), null);
-        return srv;
+        loader.setAuthor(srv, res);
+        db.addServer(srv);
+    }
+
+    @Override
+    protected String getClassId() {
+        return "pg_foreign_server";
+    }
+
+    @Override
+    protected void fillQueryBuilder(QueryBuilder builder) {
+        addExtensionDepsCte(builder);
+        addDescriptionPart(builder);
+
+        builder
+        .column("res.srvname")
+        .column("res.srvtype")
+        .column("res.srvversion")
+        .column("res.srvacl")
+        .column("res.srvoptions")
+        .column("res.srvowner")
+        .column("fdw.fdwname")
+        .from("pg_catalog.pg_foreign_server res")
+        .join("LEFT JOIN pg_catalog.pg_foreign_data_wrapper fdw ON res.srvfdw = fdw.oid");
     }
 }

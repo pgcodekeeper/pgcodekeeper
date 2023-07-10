@@ -20,12 +20,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.loader.JdbcQueries;
+import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
 import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.CreateTrigger;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
-import ru.taximaxim.codekeeper.core.schema.AbstractTrigger;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.core.schema.PgTrigger;
@@ -45,19 +44,17 @@ public class TriggersReader extends JdbcReader {
     // SONAR-ON
 
     public TriggersReader(JdbcLoaderBase loader) {
-        super(JdbcQueries.QUERY_TRIGGERS, loader);
+        super(loader);
     }
 
     @Override
-    protected void processResult(ResultSet result, AbstractSchema schema) throws SQLException {
-        String contName = result.getString(CLASS_RELNAME);
-        PgStatementContainer c = schema.getStatementContainer(contName);
-        if (c != null) {
-            c.addTrigger(getTrigger(result, schema, contName));
+    protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException {
+        String tableName = res.getString("relname");
+        PgStatementContainer c = schema.getStatementContainer(tableName);
+        if (c == null) {
+            return;
         }
-    }
 
-    private AbstractTrigger getTrigger(ResultSet res, AbstractSchema schema, String tableName) throws SQLException {
         String schemaName = schema.getName();
         String triggerName = res.getString("tgname");
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, triggerName, DbObjType.TRIGGER));
@@ -88,7 +85,7 @@ public class TriggersReader extends JdbcReader {
         }
 
         String funcName = res.getString("proname");
-        String funcSchema = res.getString(NAMESPACE_NSPNAME);
+        String funcSchema = res.getString("nspname");
 
         StringBuilder functionCall = new StringBuilder(funcName.length() + 2);
         functionCall.append(PgDiffUtils.getQuotedName(funcSchema)).append('.')
@@ -177,17 +174,54 @@ public class TriggersReader extends JdbcReader {
                 ctx -> CreateTrigger.parseWhen(ctx, t, schema.getDatabase(), loader.getCurrentLocation()));
 
         loader.setAuthor(t, res);
-
-        // COMMENT
-        String comment = res.getString("comment");
-        if (comment != null && !comment.isEmpty()) {
-            t.setComment(loader.args, PgDiffUtils.quoteString(comment));
-        }
-        return t;
+        loader.setComment(t, res);
+        c.addTrigger(t);
     }
 
     @Override
     protected String getClassId() {
         return "pg_trigger";
+    }
+
+    @Override
+    protected String getSchemaColumn() {
+        return "cls.relnamespace";
+    }
+
+    @Override
+    protected void fillQueryBuilder(QueryBuilder builder) {
+        addSysSchemasWithExtensionCte(builder);
+        addDescriptionPart(builder, true);
+
+        builder
+        .column("cls.relname")
+        .column("p.proname")
+        .column("nsp.nspname")
+        .column("res.tgname")
+        .column("res.tgtype")
+        .column("res.tgenabled")
+        .column("res.tgargs")
+        .column("res.tgconstraint::bigint")
+        .column("res.tgdeferrable")
+        .column("res.tginitdeferred")
+        .column("relcon.relname as refrelname")
+        .column("refnsp.nspname as refnspname")
+        .column("(SELECT pg_catalog.array_agg(attname ORDER BY attnum) FROM pg_catalog.pg_attribute a "
+                + "WHERE a.attrelid = cls.oid AND a.attnum = ANY(res.tgattr)) AS cols")
+        .column("pg_catalog.pg_get_triggerdef(res.oid,false) AS definition")
+        .from("pg_catalog.pg_trigger res")
+        .join("LEFT JOIN pg_catalog.pg_class cls ON cls.oid = res.tgrelid")
+        .join("LEFT JOIN pg_catalog.pg_class relcon ON relcon.oid = res.tgconstrrelid")
+        .join("LEFT JOIN pg_catalog.pg_namespace refnsp ON refnsp.oid = relcon.relnamespace")
+        .join("JOIN pg_catalog.pg_proc p ON p.oid = res.tgfoid")
+        .join("JOIN pg_catalog.pg_namespace nsp ON p.pronamespace = nsp.oid")
+        .where("cls.relkind IN ('r', 'f', 'p', 'm', 'v')")
+        .where("res.tgisinternal = FALSE");
+
+        if (SupportedVersion.VERSION_10.isLE(loader.version)) {
+            builder
+            .column("res.tgoldtable")
+            .column("res.tgnewtable");
+        }
     }
 }

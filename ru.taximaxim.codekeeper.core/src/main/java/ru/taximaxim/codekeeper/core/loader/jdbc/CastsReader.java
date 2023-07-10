@@ -22,9 +22,9 @@ import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.Utils;
-import ru.taximaxim.codekeeper.core.loader.JdbcQueries;
+import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
+import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser;
@@ -36,33 +36,17 @@ import ru.taximaxim.codekeeper.core.schema.PgCast.CastMethod;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
-public class CastsReader implements PgCatalogStrings {
+public class CastsReader extends AbstractStatementReader {
 
-    private final JdbcLoaderBase loader;
     private final PgDatabase db;
 
     public CastsReader(JdbcLoaderBase loader, PgDatabase db) {
-        this.loader = loader;
+        super(loader);
         this.db = db;
     }
 
-    public void read() throws SQLException, InterruptedException {
-        loader.setCurrentOperation("casts query");
-        String query = JdbcQueries.QUERY_CASTS.makeQuery(loader, "pg_cast");
-
-        try (PreparedStatement statement = loader.connection.prepareStatement(query)) {
-            statement.setLong(1, loader.lastSysOid);
-            ResultSet res = loader.runner.runScript(statement);
-            while (res.next()) {
-                PgDiffUtils.checkCancelled(loader.monitor);
-                PgCast cast = getCast(res);
-                db.addCast(cast);
-                loader.setAuthor(cast, res);
-            }
-        }
-    }
-
-    private PgCast getCast(ResultSet res) throws SQLException {
+    @Override
+    protected void processResult(ResultSet res) throws SQLException {
         String source = res.getString("source");
         JdbcReader.checkTypeValidity(source);
         String target = res.getString("target");
@@ -117,12 +101,10 @@ public class CastsReader implements PgCatalogStrings {
             throw new IllegalStateException("Unknown cast method: " + type);
         }
 
-        String comment = res.getString("description");
-        if (comment != null && !comment.isEmpty()) {
-            cast.setComment(loader.args, PgDiffUtils.quoteString(comment));
-        }
+        loader.setComment(cast, res);
+        loader.setAuthor(cast, res);
 
-        return cast;
+        db.addCast(cast);
     }
 
     private void addDep(PgStatement statement, String objectName) {
@@ -132,6 +114,35 @@ public class CastsReader implements PgCatalogStrings {
             if (schemaName != null && !Utils.isPgSystemSchema(schemaName)) {
                 statement.addDep(new GenericColumn(schemaName, parser.getFirstName(), DbObjType.TYPE));
             }
+        }
+    }
+
+    @Override
+    protected void setParams(PreparedStatement statement) throws SQLException {
+        statement.setLong(1, loader.lastSysOid);
+    }
+
+    @Override
+    protected String getClassId() {
+        return "pg_cast";
+    }
+
+    @Override
+    protected void fillQueryBuilder(QueryBuilder builder) {
+        addExtensionDepsCte(builder);
+        addDescriptionPart(builder);
+
+        builder
+        .column("pg_catalog.format_type(res.castsource, null) AS source")
+        .column("pg_catalog.format_type(res.casttarget, null) AS target")
+        .column("res.castfunc::regprocedure AS func")
+        .column("res.castcontext")
+        .column("res.castmethod")
+        .from("pg_catalog.pg_cast res")
+        .where("res.oid > ?");
+
+        if (SupportedVersion.VERSION_14.isLE(loader.version)) {
+            builder.where("NOT EXISTS (SELECT 1 FROM pg_range r WHERE res.castsource = r.rngtypid AND res.casttarget = r.rngmultitypid)");
         }
     }
 }

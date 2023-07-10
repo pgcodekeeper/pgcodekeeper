@@ -23,9 +23,9 @@ import java.util.List;
 import java.util.Map;
 
 import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.loader.JdbcQueries;
+import ru.taximaxim.codekeeper.core.Utils;
+import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
@@ -34,7 +34,7 @@ import ru.taximaxim.codekeeper.core.schema.PgFtsConfiguration;
 public class FtsConfigurationsReader extends JdbcReader {
 
     public FtsConfigurationsReader(JdbcLoaderBase loader) {
-        super(JdbcQueries.QUERY_FTS_CONFIGURATIONS, loader);
+        super(loader);
     }
 
     @Override
@@ -76,13 +76,7 @@ public class FtsConfigurationsReader extends JdbcReader {
         }
 
         loader.setOwner(config, res.getLong("cfgowner"));
-
-        // COMMENT
-        String comment = res.getString("comment");
-        if (comment != null && !comment.isEmpty()) {
-            config.setComment(loader.args, PgDiffUtils.quoteString(comment));
-        }
-
+        loader.setComment(config, res);
         loader.setAuthor(config, res);
         schema.addFtsConfiguration(config);
     }
@@ -90,5 +84,50 @@ public class FtsConfigurationsReader extends JdbcReader {
     @Override
     protected String getClassId() {
         return "pg_ts_config";
+    }
+
+    @Override
+    protected String getSchemaColumn() {
+        return "res.cfgnamespace";
+    }
+
+    @Override
+    protected void fillQueryBuilder(QueryBuilder builder) {
+        addSysSchemasCte(builder);
+        addExtensionDepsCte(builder);
+        addDescriptionPart(builder);
+        addWordsPart(builder);
+
+        builder
+        .column("res.cfgname")
+        .column("res.cfgowner::bigint")
+        .column("p.prsname")
+        .column("n.nspname AS prsnspname")
+        .from("pg_ts_config res")
+        .join("LEFT JOIN pg_catalog.pg_ts_parser p ON p.oid = res.cfgparser")
+        .join("LEFT JOIN pg_catalog.pg_namespace n ON p.prsnamespace = n.oid");
+    }
+
+    private void addWordsPart(QueryBuilder builder) {
+        String words = "LEFT JOIN LATERAL (\n"
+                + "  SELECT\n"
+                + "    m.mapcfg,\n"
+                + "    pg_catalog.array_agg(\n"
+                + "    (SELECT alias \n"
+                + "      FROM pg_catalog.ts_token_type(res.cfgparser::pg_catalog.oid) AS t\n"
+                + "      WHERE t.tokid = m.maptokentype) \n"
+                + "      ORDER BY m.mapseqno) AS tokennames,\n"
+                + "    pg_catalog.array_agg(nsp.nspname ORDER BY m.mapseqno) AS dictschemas,\n"
+                + "    pg_catalog.array_agg(dict.dictname ORDER BY m.mapseqno) AS dictnames\n"
+                + "  FROM pg_catalog.pg_ts_config_map m\n"
+                + "  LEFT JOIN pg_catalog.pg_ts_dict dict ON m.mapdict = dict.oid\n"
+                + "  LEFT JOIN pg_catalog.pg_namespace nsp ON dict.dictnamespace = nsp.oid\n"
+                + "  GROUP BY m.mapcfg\n"
+                + ") words ON words.mapcfg = res.oid";
+
+        builder.column("words.tokennames");
+        builder.column("words.dictschemas");
+        builder.column("words.dictnames");
+        builder.join(words);
     }
 }

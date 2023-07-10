@@ -20,12 +20,10 @@ import java.sql.SQLException;
 
 import org.antlr.v4.runtime.CommonTokenStream;
 
-import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.loader.JdbcQueries;
+import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
 import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.AlterTable;
-import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgConstraint;
@@ -37,25 +35,22 @@ public class ConstraintsReader extends JdbcReader {
     private static final String ADD_CONSTRAINT = "ALTER TABLE noname ADD CONSTRAINT noname ";
 
     public ConstraintsReader(JdbcLoaderBase loader) {
-        super(JdbcQueries.QUERY_CONSTRAINTS, loader);
+        super(loader);
     }
 
     @Override
-    protected void processResult(ResultSet result, AbstractSchema schema) throws SQLException {
-        if (SupportedVersion.VERSION_11.isLE(loader.version) && result.getInt("conparentid") != 0) {
+    protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException {
+        if (SupportedVersion.VERSION_11.isLE(loader.version) && res.getInt("conparentid") != 0) {
             return;
         }
 
-        PgStatementContainer cont = schema.getStatementContainer(result.getString(CLASS_RELNAME));
-        if (cont != null) {
-            cont.addConstraint(getConstraint(result, schema, cont.getName()));
+        String tableName = res.getString("relname");
+        PgStatementContainer cont = schema.getStatementContainer(tableName);
+        if (cont == null) {
+            return;
         }
-    }
 
-    private AbstractConstraint getConstraint(ResultSet res, AbstractSchema schema, String tableName)
-            throws SQLException {
         String schemaName = schema.getName();
-
         String constraintName = res.getString("conname");
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, constraintName, DbObjType.CONSTRAINT));
         PgConstraint c = new PgConstraint(constraintName);
@@ -69,16 +64,42 @@ public class ConstraintsReader extends JdbcReader {
                 pair -> new AlterTable(null, schema.getDatabase(), tablespace, pair.getSecond()).parseAlterTableConstraint(
                         pair.getFirst(), c, schemaName, tableName, loader.getCurrentLocation()));
         loader.setAuthor(c, res);
+        loader.setComment(c, res);
 
-        String comment = res.getString("description");
-        if (comment != null && !comment.isEmpty()) {
-            c.setComment(loader.args, PgDiffUtils.quoteString(comment));
-        }
-        return c;
+        cont.addConstraint(c);
     }
 
     @Override
     protected String getClassId() {
         return "pg_constraint";
+    }
+
+    @Override
+    protected String getSchemaColumn() {
+        return "ccc.relnamespace";
+    }
+
+    @Override
+    protected void fillQueryBuilder(QueryBuilder builder) {
+        addSysSchemasWithExtensionCte(builder);
+        addDescriptionPart(builder);
+
+        builder
+        .column("ccc.relname")
+        .column("res.conname")
+        .column("ts.spcname")
+        .column("pg_catalog.pg_get_constraintdef(res.oid) AS definition")
+        .from("pg_catalog.pg_constraint res")
+        .join("LEFT JOIN pg_catalog.pg_class ccc ON ccc.oid = res.conrelid")
+        .join("LEFT JOIN pg_catalog.pg_class cf ON cf.oid = res.confrelid")
+        .join("LEFT JOIN pg_catalog.pg_class ci ON ci.oid = res.conindid AND res.contype != 'f'")
+        .join("LEFT JOIN pg_catalog.pg_tablespace ts ON ts.oid = ci.reltablespace")
+        .where("ccc.relkind IN ('r', 'p', 'f')")
+        .where("res.contype != 't'")
+        .where("res.coninhcount = 0");
+
+        if (SupportedVersion.VERSION_11.isLE(loader.version)) {
+            builder.column("res.conparentid::bigint");
+        }
     }
 }

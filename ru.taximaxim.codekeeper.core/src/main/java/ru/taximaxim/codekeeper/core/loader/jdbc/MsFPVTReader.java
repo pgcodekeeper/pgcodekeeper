@@ -21,7 +21,7 @@ import java.util.List;
 
 import org.antlr.v4.runtime.CommonTokenStream;
 
-import ru.taximaxim.codekeeper.core.loader.JdbcQueries;
+import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Batch_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.mssql.CreateMsFunction;
@@ -38,12 +38,11 @@ import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 public class MsFPVTReader extends JdbcReader {
 
     public MsFPVTReader(JdbcLoaderBase loader) {
-        super(JdbcQueries.QUERY_MS_FUNCTIONS_PROCEDURES_VIEWS_TRIGGERS, loader);
+        super(loader);
     }
 
     @Override
     protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException, XmlReaderException {
-        loader.monitor.worked(1);
         String name = res.getString("name");
 
         String type = res.getString("type");
@@ -56,18 +55,18 @@ public class MsFPVTReader extends JdbcReader {
         // FN - SQL scalar function
         // TF - SQL table-valued-function
         switch (type) {
-            case "TR":
-                tt = DbObjType.TRIGGER;
-                break;
-            case "V ":
-                tt = DbObjType.VIEW;
-                break;
-            case "P ":
-                tt = DbObjType.PROCEDURE;
-                break;
-            default:
-                tt = DbObjType.FUNCTION;
-                break;
+        case "TR":
+            tt = DbObjType.TRIGGER;
+            break;
+        case "V ":
+            tt = DbObjType.VIEW;
+            break;
+        case "P ":
+            tt = DbObjType.PROCEDURE;
+            break;
+        default:
+            tt = DbObjType.FUNCTION;
+            break;
         }
 
         loader.setCurrentObject(new GenericColumn(schema.getName(), name, tt));
@@ -118,5 +117,29 @@ public class MsFPVTReader extends JdbcReader {
                 loader.setPrivileges(st, acls);
             });
         }
+    }
+
+    @Override
+    protected String getSchemaColumn() {
+        return "res.schema_id";
+    }
+
+    @Override
+    protected void fillQueryBuilder(QueryBuilder builder) {
+        addMsPriviligesPart(builder);
+        addMsOwnerPart(builder);
+
+        builder
+        .column("res.name")
+        .column("res.type")
+        .column("sm.definition")
+        .column("sm.uses_ansi_nulls AS ansi_nulls")
+        .column("sm.uses_quoted_identifier AS quoted_identifier")
+        .column("t.is_disabled")
+        .from("sys.objects res WITH (NOLOCK)")
+        .join("JOIN sys.sql_modules sm WITH (NOLOCK) ON sm.object_id=res.object_id")
+        .join("LEFT JOIN sys.triggers t WITH(NOLOCK) ON t.object_id=res.object_id")
+        .where("res.type IN (N'TR', N'V', N'IF', N'FN', N'TF', N'P')")
+        .where("definition IS NOT NULL");
     }
 }

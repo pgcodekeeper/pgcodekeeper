@@ -18,42 +18,68 @@ package ru.taximaxim.codekeeper.core.loader.jdbc;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.loader.JdbcQueries;
+import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.MsUser;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 
-public class MsUsersReader {
+public class MsUsersReader extends AbstractStatementReader {
 
-    private final JdbcLoaderBase loader;
     private final PgDatabase db;
 
     public MsUsersReader(JdbcLoaderBase loader, PgDatabase db) {
-        this.loader = loader;
+        super(loader);
         this.db = db;
     }
 
-    public void read() throws SQLException, InterruptedException, XmlReaderException {
-        loader.setCurrentOperation("users query");
-        String query = JdbcQueries.QUERY_MS_USERS.getQuery();
-        try (ResultSet res = loader.runner.runScript(loader.statement, query)) {
-            while (res.next()) {
-                PgDiffUtils.checkCancelled(loader.monitor);
-                String name = res.getString("name");
-                loader.setCurrentObject(new GenericColumn(name, DbObjType.USER));
+    @Override
+    protected void processResult(ResultSet res) throws SQLException, XmlReaderException {
+        String name = res.getString("name");
+        loader.setCurrentObject(new GenericColumn(name, DbObjType.USER));
 
-                MsUser user = new MsUser(name);
-                user.setLogin(res.getString("loginname"));
+        MsUser user = new MsUser(name);
+        user.setLogin(res.getString("loginname"));
 
-                user.setSchema(res.getString("schema_name"));
-                user.setLanguage(res.getString("default_lang"));
-                user.setAllowEncrypted(res.getBoolean("allow_encrypted"));
+        user.setSchema(res.getString("schema_name"));
+        user.setLanguage(res.getString("default_lang"));
+        user.setAllowEncrypted(res.getBoolean("allow_encrypted"));
 
-                loader.setPrivileges(user, XmlReader.readXML(res.getString("acl")));
-                db.addUser(user);
-            }
-        }
+        loader.setPrivileges(user, XmlReader.readXML(res.getString("acl")));
+        db.addUser(user);
+    }
+
+    @Override
+    protected void fillQueryBuilder(QueryBuilder builder) {
+        addMsPriviligesPart(builder);
+
+        builder
+        .column("res.name")
+        .column("suser_sname(res.sid) AS loginname")
+        .column("res.default_schema_name AS schema_name")
+        .column("res.default_language_lcid AS default_lang")
+        .column("res.allow_encrypted_value_modifications AS allow_encrypted")
+        .from("sys.database_principals res WITH (NOLOCK)")
+        .where("res.type IN ('S', 'U', 'G')")
+        .where("NOT name IN ('guest', 'sys', 'INFORMATION_SCHEMA')");
+    }
+
+    @Override
+    protected void addMsPriviligesPart(QueryBuilder builder) {
+        String acl = "CROSS APPLY (\n"
+                + "  SELECT * FROM (\n"
+                + "    SELECT\n"
+                + "      perm.state_desc AS sd,\n"
+                + "      perm.permission_name AS pn,\n"
+                + "      roleprinc.name AS r\n"
+                + "    FROM sys.database_principals roleprinc WITH (NOLOCK)\n"
+                + "    JOIN sys.database_permissions perm WITH (NOLOCK) ON perm.grantee_principal_id = roleprinc.principal_id\n"
+                + "    WHERE major_id = res.principal_id AND perm.class = 4\n"
+                + "  ) cc \n"
+                + "  FOR XML RAW, ROOT\n"
+                + ") aa (acl)";
+
+        builder.column("aa.acl");
+        builder.join(acl);
     }
 }

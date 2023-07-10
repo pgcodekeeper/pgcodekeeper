@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
-import ru.taximaxim.codekeeper.core.loader.JdbcQueries;
+import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
@@ -30,13 +30,12 @@ import ru.taximaxim.codekeeper.core.schema.MsConstraint;
 public class MsFKReader extends JdbcReader {
 
     public MsFKReader(JdbcLoaderBase loader) {
-        super(JdbcQueries.QUERY_MS_FK, loader);
+        super(loader);
     }
 
     @Override
     protected void processResult(ResultSet res, AbstractSchema schema)
             throws SQLException, XmlReaderException {
-        loader.monitor.worked(1);
         String name = res.getString("name");
         loader.setCurrentObject(new GenericColumn(schema.getName(), name, DbObjType.CONSTRAINT));
 
@@ -105,5 +104,48 @@ public class MsFKReader extends JdbcReader {
         con.setDefinition(sb.toString());
 
         schema.getTable(res.getString("table_name")).addConstraint(con);
+    }
+
+    @Override
+    protected void fillQueryBuilder(QueryBuilder builder) {
+        addMsColsPart(builder);
+
+        builder
+        .column("fs.name AS table_name")
+        .column("res.name")
+        .column("SCHEMA_NAME(rs.schema_id) AS referenced_schema_name")
+        .column("rs.name AS referenced_table_name")
+        .column("res.is_disabled")
+        .column("res.is_not_for_replication")
+        .column("res.update_referential_action")
+        .column("res.is_not_trusted AS with_no_check")
+        .column("res.delete_referential_action")
+        .from("sys.foreign_keys res WITH (NOLOCK)")
+        .join("JOIN sys.objects fs WITH (NOLOCK) ON res.parent_object_id=fs.object_id")
+        .join("JOIN sys.objects rs WITH (NOLOCK) ON res.referenced_object_id=rs.object_id");
+    }
+
+    protected void addMsColsPart(QueryBuilder builder) {
+        String cols = "CROSS APPLY (\n"
+                + "  SELECT * FROM (\n"
+                + "    SELECT \n"
+                + "      sfkc.constraint_column_id AS id,\n"
+                + "      fc.name AS f,\n"
+                + "      rc.name AS r\n"
+                + "    FROM sys.foreign_key_columns AS sfkc WITH (NOLOCK) \n"
+                + "    JOIN sys.columns fc WITH (NOLOCK) ON sfkc.parent_column_id=fc.column_id AND fc.object_id=sfkc.parent_object_id\n"
+                + "    JOIN sys.columns rc WITH (NOLOCK) ON sfkc.referenced_column_id=rc.column_id AND rc.object_id=sfkc.referenced_object_id\n"
+                + "    WHERE res.object_id=sfkc.constraint_object_id\n"
+                + "  ) cc ORDER BY cc.id\n"
+                + "  FOR XML RAW, ROOT\n"
+                + ") aa (cols)";
+
+        builder.column("aa.cols");
+        builder.join(cols);
+    }
+
+    @Override
+    protected String getSchemaColumn() {
+        return "fs.schema_id";
     }
 }

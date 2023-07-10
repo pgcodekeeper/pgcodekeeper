@@ -23,7 +23,7 @@ import java.util.ListIterator;
 
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.loader.JdbcQueries;
+import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
 import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser;
@@ -53,7 +53,7 @@ import ru.taximaxim.codekeeper.core.utils.Pair;
 public class FunctionsReader extends JdbcReader {
 
     public FunctionsReader(JdbcLoaderBase loader) {
-        super(JdbcQueries.QUERY_FUNCTIONS, loader);
+        super(loader);
     }
 
     @Override
@@ -63,16 +63,8 @@ public class FunctionsReader extends JdbcReader {
         AbstractFunction f = res.getBoolean("proisagg") ? getAgg(res, schemaName, funcName)
                 : getFunc(res, schema, funcName);
 
-        // OWNER
         loader.setOwner(f, res.getLong("proowner"));
-
-        // COMMENT
-        String comment = res.getString("comment");
-        if (comment != null && !comment.isEmpty()) {
-            f.setComment(loader.args, PgDiffUtils.quoteString(comment));
-        }
-
-        // PRIVILEGES
+        loader.setComment(f, res);
         loader.setPrivileges(f, res.getString("aclarray"), schemaName);
         loader.setAuthor(f, res);
 
@@ -142,18 +134,18 @@ public class FunctionsReader extends JdbcReader {
 
         if (loader.isGreenplumDb) {
             switch (res.getString("executeOn")) {
-                case "m":
-                    function.setExecuteOn("MASTER");
-                    break;
-                case "c":
-                    function.setExecuteOn("COORDINATOR");
-                    break;
-                case "s":
-                    function.setExecuteOn("ALL SEGMENTS");
-                    break;
-                case "i":
-                    function.setExecuteOn("INITPLAN");
-                    break;
+            case "m":
+                function.setExecuteOn("MASTER");
+                break;
+            case "c":
+                function.setExecuteOn("COORDINATOR");
+                break;
+            case "s":
+                function.setExecuteOn("ALL SEGMENTS");
+                break;
+            case "i":
+                function.setExecuteOn("INITPLAN");
+                break;
             }
         }
 
@@ -514,5 +506,128 @@ public class FunctionsReader extends JdbcReader {
     @Override
     protected String getClassId() {
         return "pg_proc";
+    }
+
+    @Override
+    protected String getSchemaColumn() {
+        return "res.pronamespace";
+    }
+
+    @Override
+    protected void fillQueryBuilder(QueryBuilder builder) {
+        addSysSchemasCte(builder);
+        addExtensionDepsCte(builder);
+        addDescriptionPart(builder);
+
+        builder
+        .column("res.proname")
+        .column("res.proowner::bigint")
+        .column("l.lanname AS lang_name")
+        .column("res.prosrc")
+        .column("res.provolatile")
+        .column("res.proleakproof")
+        .column("res.proisstrict")
+        .column("res.prosecdef")
+        .column("res.procost::real")
+        .column("res.prorows::real")
+        .column("res.proconfig")
+        .column("res.probin")
+        .column("res.prorettype::bigint")
+        .column("res.proallargtypes::bigint[]")
+        .column("res.proargmodes")
+        .column("res.proargnames")
+        .column("res.proacl::text AS aclarray")
+        .column("res.proretset")
+        .column("array(select pg_catalog.unnest(res.proargtypes))::bigint[] as argtypes")
+        .column("pg_catalog.pg_get_expr(res.proargdefaults, 0) AS default_values_as_string")
+        .column("res.pronargs")
+        .column("sfunc.proname AS sfunc")
+        .column("sfunc_n.nspname AS sfunc_nsp")
+        .column("a.aggtranstype AS stype")
+        .column("a.aggtransspace AS sspace")
+        .column("finalfn.proname AS finalfunc")
+        .column("finalfn_n.nspname AS finalfunc_nsp")
+        .column("a.aggfinalextra AS is_finalfunc_extra")
+        .column("a.agginitval AS initcond")
+        .column("msfunc.proname AS msfunc")
+        .column("msfunc_n.nspname AS msfunc_nsp")
+        .column("minvfunc.proname AS minvfunc")
+        .column("minvfunc_n.nspname AS minvfunc_nsp")
+        .column("a.aggmtranstype AS mstype")
+        .column("a.aggmtransspace AS msspace")
+        .column("mfinalfn.proname AS mfinalfunc")
+        .column("mfinalfn_n.nspname AS mfinalfunc_nsp")
+        .column("a.aggmfinalextra AS is_mfinalfunc_extra")
+        .column("a.aggminitval AS minitcond")
+        .column("sortop.oprname AS sortop")
+        .column("sortop_n.nspname AS sortop_nsp")
+        .column("a.aggkind")
+        .column("a.aggnumdirectargs")
+        .from("pg_catalog.pg_proc res")
+        .join("LEFT JOIN pg_catalog.pg_language l ON l.oid = res.prolang")
+        .join("LEFT JOIN pg_catalog.pg_aggregate a ON a.aggfnoid = res.oid")
+        .join("LEFT JOIN pg_catalog.pg_proc sfunc ON a.aggtransfn = sfunc.oid")
+        .join("LEFT JOIN pg_catalog.pg_namespace sfunc_n ON sfunc.pronamespace = sfunc_n.oid")
+        .join("LEFT JOIN pg_catalog.pg_proc finalfn ON a.aggfinalfn = finalfn.oid")
+        .join("LEFT JOIN pg_catalog.pg_namespace finalfn_n ON finalfn.pronamespace = finalfn_n.oid")
+        .join("LEFT JOIN pg_catalog.pg_proc msfunc ON a.aggmtransfn = msfunc.oid")
+        .join("LEFT JOIN pg_catalog.pg_namespace msfunc_n ON msfunc.pronamespace = msfunc_n.oid")
+        .join("LEFT JOIN pg_catalog.pg_proc minvfunc ON a.aggminvtransfn = minvfunc.oid")
+        .join("LEFT JOIN pg_catalog.pg_namespace minvfunc_n ON minvfunc.pronamespace = minvfunc_n.oid")
+        .join("LEFT JOIN pg_catalog.pg_proc mfinalfn ON a.aggmfinalfn = mfinalfn.oid")
+        .join("LEFT JOIN pg_catalog.pg_namespace mfinalfn_n ON mfinalfn.pronamespace = mfinalfn_n.oid")
+        .join("LEFT JOIN pg_catalog.pg_operator sortop ON a.aggsortop = sortop.oid")
+        .join("LEFT JOIN pg_catalog.pg_namespace sortop_n ON sortop.oprnamespace = sortop_n.oid")
+        .where("NOT EXISTS (SELECT 1 FROM pg_catalog.pg_depend dp WHERE dp.classid = 'pg_catalog.pg_proc'::pg_catalog.regclass AND dp.objid = res.oid AND dp.deptype = 'i')");
+
+        if (SupportedVersion.VERSION_9_5.isLE(loader.version)) {
+            builder.column("res.protrftypes::bigint[]");
+        }
+
+        if (SupportedVersion.VERSION_9_6.isLE(loader.version)) {
+            builder
+            .column("res.proparallel");
+        }
+
+        if (SupportedVersion.VERSION_9_6.isLE(loader.version) || loader.isGreenplumDb) {
+            builder
+            .column("combinefn.proname AS combinefunc")
+            .column("combinefn_n.nspname AS combinefunc_nsp")
+            .column("serialfn.proname AS serialfunc")
+            .column("serialfn_n.nspname AS serialfunc_nsp")
+            .column("deserialfn.proname AS deserialfunc")
+            .column("deserialfn_n.nspname AS deserialfunc_nsp")
+            .join("LEFT JOIN pg_catalog.pg_proc combinefn ON a.aggcombinefn = combinefn.oid")
+            .join("LEFT JOIN pg_catalog.pg_namespace combinefn_n ON combinefn.pronamespace = combinefn_n.oid")
+            .join("LEFT JOIN pg_catalog.pg_proc serialfn ON a.aggserialfn = serialfn.oid")
+            .join("LEFT JOIN pg_catalog.pg_namespace serialfn_n ON serialfn.pronamespace = serialfn_n.oid")
+            .join("LEFT JOIN pg_catalog.pg_proc deserialfn ON a.aggdeserialfn = deserialfn.oid")
+            .join("LEFT JOIN pg_catalog.pg_namespace deserialfn_n ON deserialfn.pronamespace = deserialfn_n.oid");
+        }
+
+        if (SupportedVersion.VERSION_11.isLE(loader.version)) {
+            builder
+            .column("res.prokind = 'a' AS proisagg")
+            .column("res.prokind = 'w' AS proiswindow")
+            .column("res.prokind = 'p' AS proisproc")
+            .column("a.aggfinalmodify AS finalfunc_modify")
+            .column("a.aggmfinalmodify AS mfinalfunc_modify");
+        } else {
+            builder
+            .column("res.proisagg")
+            .column("res.proiswindow");
+        }
+
+        if (SupportedVersion.VERSION_12.isLE(loader.version)) {
+            builder.column("res.prosupport AS support_func");
+        }
+
+        if (SupportedVersion.VERSION_14.isLE(loader.version)) {
+            builder.column("pg_get_function_sqlbody(res.oid) AS prosqlbody");
+        }
+
+        if (loader.isGreenplumDb) {
+            builder.column("res.proexeclocation AS executeOn");
+        }
     }
 }

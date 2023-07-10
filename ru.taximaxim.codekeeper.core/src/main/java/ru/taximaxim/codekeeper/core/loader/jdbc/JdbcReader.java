@@ -16,16 +16,15 @@
 package ru.taximaxim.codekeeper.core.loader.jdbc;
 
 import java.sql.Array;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.function.BiConsumer;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.loader.JdbcQuery;
+import ru.taximaxim.codekeeper.core.Utils;
+import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
 import ru.taximaxim.codekeeper.core.log.Log;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
@@ -34,57 +33,53 @@ import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
-public abstract class JdbcReader implements PgCatalogStrings {
+public abstract class JdbcReader extends AbstractStatementReader {
 
-    protected final JdbcQuery queries;
-    protected final JdbcLoaderBase loader;
+    private static final String SYS_SCHEMAS = "sys_schemas";
 
-    protected JdbcReader(JdbcQuery queries, JdbcLoaderBase loader) {
-        this.queries = queries;
-        this.loader = loader;
+    protected JdbcReader(JdbcLoaderBase loader) {
+        super(loader);
     }
 
-    public void read() throws SQLException, InterruptedException, XmlReaderException {
-        String query = queries.makeQuery(loader, true, getClassId());
-        if (query == null) {
-            return;
-        }
-
-        loader.setCurrentOperation(getClass().getSimpleName() + " query");
-        try (PreparedStatement statement = loader.connection.prepareStatement(query)) {
-            setParams(statement);
-            ResultSet result = loader.runner.runScript(statement);
-            while (result.next()) {
-                PgDiffUtils.checkCancelled(loader.monitor);
-                long schemaId = result.getLong("schema_oid");
-                AbstractSchema schema = loader.schemaIds.get(schemaId);
-                if (schema != null) {
-                    try {
-                        processResult(result, schema);
-                    } catch (ConcurrentModificationException ex) {
-                        if (!loader.args.isIgnoreConcurrentModification()) {
-                            throw ex;
-                        }
-                        Log.log(ex);
-                    }
-                } else {
-                    Log.log(Log.LOG_WARNING, "No schema found for id " + schemaId);
+    @Override
+    protected void processResult(ResultSet result) throws SQLException, XmlReaderException {
+        String schemaColumn = getSchemaColumn();
+        long schemaId = result.getLong(schemaColumn.substring(schemaColumn.indexOf('.') + 1));
+        AbstractSchema schema = loader.schemaIds.get(schemaId);
+        if (schema != null) {
+            try {
+                processResult(result, schema);
+            } catch (ConcurrentModificationException ex) {
+                if (!loader.args.isIgnoreConcurrentModification()) {
+                    throw ex;
                 }
+                Log.log(ex);
             }
+        } else {
+            Log.log(Log.LOG_WARNING, "No schema found for id " + schemaId);
         }
     }
 
-    protected void setParams(PreparedStatement statement) throws SQLException {
-        // subclasses will override if needed
-    }
+    @Override
+    protected QueryBuilder makeQuery() {
+        if (loader.getSchemas().isEmpty()) {
+            return null;
+        }
 
-    /**
-     * Override for postgres for correct dbo_ts extension work.
-     *
-     * @return object class's catalog name
-     */
-    protected String getClassId() {
-        return null;
+        QueryBuilder builder = super.makeQuery();
+        builder.column(getSchemaColumn());
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(getSchemaColumn()).append(" IN (");
+        for (Long id : loader.getSchemas().keySet()) {
+            sb.append(id).append(',');
+        }
+        sb.setLength(sb.length() - 1);
+        sb.append(')');
+
+        builder.where(sb.toString());
+
+        return builder;
     }
 
     /**
@@ -148,4 +143,24 @@ public abstract class JdbcReader implements PgCatalogStrings {
 
     protected abstract void processResult(ResultSet result, AbstractSchema schema)
             throws SQLException, XmlReaderException;
+
+    protected abstract String getSchemaColumn();
+
+    protected void addSysSchemasCte(QueryBuilder builder) {
+        builder.with(SYS_SCHEMAS,
+                "SELECT oid FROM pg_catalog.pg_namespace WHERE nspname LIKE 'pg\\_%' OR nspname = 'information_schema'");
+        builder.where(getSchemaColumn() + " NOT IN (SELECT oid FROM sys_schemas)");
+    }
+
+    protected void addSysSchemasWithExtensionCte(QueryBuilder builder) {
+        builder.with(SYS_SCHEMAS, SYS_SCHEMAS_WITH_EXTENSION_DEPS_CTE);
+        builder.where(getSchemaColumn() + " NOT IN (SELECT oid FROM sys_schemas)");
+    }
+
+    @Override
+    protected void addMsOwnerPart(String field, QueryBuilder builder) {
+        builder.column("p.name AS owner");
+        // left join
+        builder.join("LEFT JOIN sys.database_principals p WITH (NOLOCK) ON p.principal_id=" + field);
+    }
 }

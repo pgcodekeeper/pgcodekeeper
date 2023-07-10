@@ -18,7 +18,7 @@ package ru.taximaxim.codekeeper.core.loader.jdbc;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import ru.taximaxim.codekeeper.core.loader.JdbcQueries;
+import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
@@ -28,12 +28,11 @@ import ru.taximaxim.codekeeper.core.schema.MsConstraint;
 public class MsCheckConstraintsReader extends JdbcReader {
 
     public MsCheckConstraintsReader(JdbcLoaderBase loader) {
-        super(JdbcQueries.QUERY_MS_CHECK_CONSTRAINTS, loader);
+        super(loader);
     }
 
     @Override
     protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException {
-        loader.monitor.worked(1);
         String name = res.getString("name");
         loader.setCurrentObject(new GenericColumn(schema.getName(), name, DbObjType.CONSTRAINT));
 
@@ -58,5 +57,24 @@ public class MsCheckConstraintsReader extends JdbcReader {
 
         con.setDefinition(sb.toString());
         table.addConstraint(con);
+    }
+
+    @Override
+    protected String getSchemaColumn() {
+        return "so.schema_id";
+    }
+
+    @Override
+    protected void fillQueryBuilder(QueryBuilder builder) {
+        builder
+        .column("so.name AS table_name")
+        .column("res.name")
+        .column("res.is_not_for_replication")
+        .column("res.is_not_trusted AS with_no_check")
+        .column("res.is_disabled")
+        .column("res.definition")
+        .from("sys.check_constraints res WITH (NOLOCK)")
+        .join("INNER JOIN sys.objects so WITH (NOLOCK) ON so.object_id=res.parent_object_id")
+        .where("SCHEMA_NAME(so.schema_id) <> 'sys'");
     }
 }

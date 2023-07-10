@@ -18,15 +18,14 @@ package ru.taximaxim.codekeeper.core.loader.jdbc;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.loader.JdbcQueries;
+import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.PgFtsParser;
 
 public class FtsParsersReader extends JdbcReader {
 
     public FtsParsersReader(JdbcLoaderBase loader) {
-        super(JdbcQueries.QUERY_FTS_PARSERS, loader);
+        super(loader);
     }
 
     @Override
@@ -43,12 +42,7 @@ public class FtsParsersReader extends JdbcReader {
             setFunctionWithDep(PgFtsParser::setHeadLineFunction, parser, headline);
         }
 
-        // COMMENT
-        String comment = res.getString("comment");
-        if (comment != null && !comment.isEmpty()) {
-            parser.setComment(loader.args, PgDiffUtils.quoteString(comment));
-        }
-
+        loader.setComment(parser, res);
         loader.setAuthor(parser, res);
         schema.addFtsParser(parser);
     }
@@ -56,5 +50,26 @@ public class FtsParsersReader extends JdbcReader {
     @Override
     protected String getClassId() {
         return "pg_ts_parser";
+    }
+
+    @Override
+    protected String getSchemaColumn() {
+        return "res.prsnamespace";
+    }
+
+    @Override
+    protected void fillQueryBuilder(QueryBuilder builder) {
+        addSysSchemasCte(builder);
+        addDescriptionPart(builder);
+        addExtensionDepsCte(builder);
+
+        builder
+        .column("res.prsname")
+        .column("res.prsstart")
+        .column("res.prstoken")
+        .column("res.prsend")
+        .column("res.prsheadline")
+        .column("res.prslextype")
+        .from("pg_catalog.pg_ts_parser res");
     }
 }

@@ -18,9 +18,9 @@ package ru.taximaxim.codekeeper.core.loader.jdbc;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.loader.JdbcQueries;
+import ru.taximaxim.codekeeper.core.Utils;
+import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
@@ -30,7 +30,7 @@ import ru.taximaxim.codekeeper.core.schema.PgFtsDictionary;
 public class FtsDictionariesReader extends JdbcReader {
 
     public FtsDictionariesReader(JdbcLoaderBase loader) {
-        super(JdbcQueries.QUERY_FTS_DICTIONARIES, loader);
+        super(loader);
     }
 
     @Override
@@ -56,11 +56,7 @@ public class FtsDictionariesReader extends JdbcReader {
                 + PgDiffUtils.getQuotedName(tmplname));
 
         // COMMENT
-        String comment = res.getString("comment");
-        if (comment != null && !comment.isEmpty()) {
-            dic.setComment(loader.args, PgDiffUtils.quoteString(comment));
-        }
-
+        loader.setComment(dic, res);
         loader.setAuthor(dic, res);
         schema.addFtsDictionary(dic);
     }
@@ -68,5 +64,27 @@ public class FtsDictionariesReader extends JdbcReader {
     @Override
     protected String getClassId() {
         return "pg_ts_dict";
+    }
+
+    @Override
+    protected String getSchemaColumn() {
+        return "res.dictnamespace";
+    }
+
+    @Override
+    protected void fillQueryBuilder(QueryBuilder builder) {
+        addExtensionDepsCte(builder);
+        addSysSchemasCte(builder);
+        addDescriptionPart(builder);
+
+        builder
+        .column("res.dictname")
+        .column("res.dictowner::bigint")
+        .column("t.tmplname")
+        .column("n.nspname AS tmplnspname")
+        .column("res.dictinitoption")
+        .from("pg_catalog.pg_ts_dict res")
+        .join("LEFT JOIN pg_catalog.pg_ts_template t ON res.dicttemplate = t.oid")
+        .join("LEFT JOIN pg_catalog.pg_namespace n ON t.tmplnamespace = n.oid");
     }
 }

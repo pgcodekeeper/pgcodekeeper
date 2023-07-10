@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Optimized queries for getting objects from DB.
+
 ### Fixed
 
 ## [8.2.0] - 2023-07-04

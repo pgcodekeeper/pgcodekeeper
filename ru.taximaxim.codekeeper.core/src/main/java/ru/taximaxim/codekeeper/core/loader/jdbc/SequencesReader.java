@@ -26,6 +26,7 @@ import java.util.Map;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.loader.JdbcQueries;
+import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
 import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.core.log.Log;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
@@ -42,13 +43,12 @@ public class SequencesReader extends JdbcReader {
     private static final int DATA_SELECT_LENGTH;
 
     public SequencesReader(JdbcLoaderBase loader) {
-        super(JdbcQueries.QUERY_SEQUENCES, loader);
+        super(loader);
     }
 
     @Override
     protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException {
-        loader.monitor.worked(1);
-        String sequenceName = res.getString(CLASS_RELNAME);
+        String sequenceName = res.getString("relname");
         loader.setCurrentObject(new GenericColumn(schema.getName(), sequenceName, DbObjType.SEQUENCE));
         PgSequence s = new PgSequence(sequenceName);
 
@@ -74,16 +74,12 @@ public class SequencesReader extends JdbcReader {
         }
 
         if (identityType == null) {
-            loader.setOwner(s, res.getLong(CLASS_RELOWNER));
+            loader.setOwner(s, res.getLong("relowner"));
             // PRIVILEGES
             loader.setPrivileges(s, res.getString("aclarray"), schema.getName());
         }
 
-        // COMMENT
-        String comment = res.getString("comment");
-        if (comment != null && !comment.isEmpty()) {
-            s.setComment(loader.args, PgDiffUtils.quoteString(comment));
-        }
+        loader.setComment(s, res);
 
         if (SupportedVersion.VERSION_10.isLE(loader.version)) {
             s.setStartWith(Long.toString(res.getLong("seqstart")));
@@ -116,11 +112,6 @@ public class SequencesReader extends JdbcReader {
         }
     }
 
-    @Override
-    protected String getClassId() {
-        return "pg_class";
-    }
-
     static {
         DATA_SELECT_LENGTH =
                 // static part
@@ -134,7 +125,8 @@ public class SequencesReader extends JdbcReader {
         loader.setCurrentOperation("sequences data query");
 
         List<String> schemasAccess = new ArrayList<>();
-        try (PreparedStatement schemasAccessQuery = loader.connection.prepareStatement(JdbcQueries.QUERY_SCHEMAS_ACCESS)) {
+        try (PreparedStatement schemasAccessQuery = loader.connection
+                .prepareStatement(JdbcQueries.QUERY_SCHEMAS_ACCESS)) {
             Array arrSchemas = loader.connection.createArrayOf("text",
                     db.getSchemas().stream().filter(s -> !s.getSequences().isEmpty()).map(AbstractSchema::getName).toArray());
             schemasAccessQuery.setArray(1, arrSchemas);
@@ -165,7 +157,8 @@ public class SequencesReader extends JdbcReader {
 
         StringBuilder sbUnionQuery = new StringBuilder(DATA_SELECT_LENGTH * seqs.size());
 
-        try (PreparedStatement accessQuery = loader.connection.prepareStatement(JdbcQueries.QUERY_SEQUENCES_ACCESS)) {
+        try (PreparedStatement accessQuery = loader.connection
+                .prepareStatement(JdbcQueries.QUERY_SEQUENCES_ACCESS)) {
             Array arrSeqs = loader.connection.createArrayOf("text", seqs.keySet().toArray());
             accessQuery.setArray(1, arrSeqs);
             try (ResultSet res = loader.runner.runScript(accessQuery)) {
@@ -207,5 +200,49 @@ public class SequencesReader extends JdbcReader {
                 seq.setCycle(res.getBoolean("is_cycled"));
             }
         }
+    }
+
+    @Override
+    protected String getClassId() {
+        return "pg_class";
+    }
+
+    @Override
+    protected String getSchemaColumn() {
+        return "res.relnamespace";
+    }
+
+    @Override
+    protected void fillQueryBuilder(QueryBuilder builder) {
+        addSysSchemasCte(builder);
+        addExtensionDepsCte(builder);
+        addDescriptionPart(builder, true);
+
+        builder
+        .column("res.relowner::bigint")
+        .column("res.relname")
+        .column("res.relpersistence")
+        .column("(SELECT t.relname FROM pg_catalog.pg_class t WHERE t.oid=dep.refobjid) referenced_table_name")
+        .column("a.attname AS ref_col_name")
+        .column("res.relacl::text AS aclarray")
+        .from("pg_catalog.pg_class res")
+        .join("LEFT JOIN pg_catalog.pg_depend dep ON dep.classid = res.tableoid AND dep.objid = res.oid AND dep.objsubid = 0"
+                + " AND dep.refclassid = res.tableoid AND dep.refobjsubid != 0 AND dep.deptype IN ('i', 'a')")
+        .join("LEFT JOIN pg_catalog.pg_attribute a ON a.attrelid = dep.refobjid AND a.attnum = dep.refobjsubid AND a.attisdropped IS FALSE")
+        .where("res.relkind = 'S'");
+
+        if (SupportedVersion.VERSION_10.isLE(loader.version)) {
+            builder
+            .column("s.seqtypid::bigint AS data_type")
+            .column("s.seqstart")
+            .column("s.seqincrement")
+            .column("s.seqmax")
+            .column("s.seqmin")
+            .column("s.seqcache")
+            .column("s.seqcycle")
+            .column("a.attidentity")
+            .join("LEFT JOIN pg_catalog.pg_sequence s ON s.seqrelid = res.oid");
+        }
+
     }
 }

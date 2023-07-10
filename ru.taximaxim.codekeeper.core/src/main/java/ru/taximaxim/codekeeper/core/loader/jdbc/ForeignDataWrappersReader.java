@@ -18,8 +18,7 @@ package ru.taximaxim.codekeeper.core.loader.jdbc;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.loader.JdbcQueries;
+import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.CreateFdw;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
@@ -27,39 +26,26 @@ import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgForeignDataWrapper;
 
-public class ForeignDataWrappersReader implements PgCatalogStrings {
-    private final JdbcLoaderBase loader;
+public class ForeignDataWrappersReader extends AbstractStatementReader {
+
     private final PgDatabase db;
 
     public ForeignDataWrappersReader(JdbcLoaderBase loader, PgDatabase db) {
-        this.loader = loader;
+        super(loader);
         this.db = db;
     }
 
-    public void read() throws SQLException, InterruptedException {
-        loader.setCurrentOperation("foreign_data_wrapper query");
-        String query = JdbcQueries.QUERY_FOREIGN_DATA_WRAPPERS
-                .makeQuery(loader, "pg_foreign_data_wrapper");
-        try (ResultSet res = loader.runner.runScript(loader.statement, query)) {
-            while (res.next()) {
-                PgDiffUtils.checkCancelled(loader.monitor);
-                PgForeignDataWrapper foreignDW = getForeignDW(res);
-                db.addForeignDW(foreignDW);
-                loader.setAuthor(foreignDW, res);
-            }
-        }
-    }
-
-    private PgForeignDataWrapper getForeignDW(ResultSet res) throws SQLException {
+    @Override
+    protected void processResult(ResultSet res) throws SQLException {
         String fdwName = res.getString("fdwname");
         loader.setCurrentObject(new GenericColumn(fdwName, DbObjType.FOREIGN_DATA_WRAPPER));
         PgForeignDataWrapper f = new PgForeignDataWrapper(fdwName);
 
         String fdwHandler = res.getString("fdwhandler");
-
         if (!"-".equals(fdwHandler)) {
             JdbcReader.setFunctionWithDep(PgForeignDataWrapper::setHandler, f, fdwHandler, CreateFdw.HANDLER_SIGNATURE);
         }
+
         String fdwValidator = res.getString("fdwvalidator");
         if (!"-".equals(fdwValidator)) {
             JdbcReader.setFunctionWithDep(PgForeignDataWrapper::setValidator, f, fdwValidator, CreateFdw.VALIDATOR_SIGNATURE);
@@ -69,13 +55,30 @@ public class ForeignDataWrappersReader implements PgCatalogStrings {
         if (options != null) {
             ParserAbstract.fillOptionParams(options, f::addOption, false, true, false);
         }
-        String comment = res.getString("description");
-        if (comment != null && !comment.isEmpty()) {
-            f.setComment(loader.args, PgDiffUtils.quoteString(comment));
-        }
+        loader.setComment(f, res);
         loader.setOwner(f, res.getLong("fdwowner"));
         loader.setPrivileges(f, res.getString("fdwacl"), null);
+        loader.setAuthor(f, res);
+        db.addForeignDW(f);
+    }
 
-        return f;
+    @Override
+    protected String getClassId() {
+        return "pg_foreign_data_wrapper";
+    }
+
+    @Override
+    protected void fillQueryBuilder(QueryBuilder builder) {
+        addExtensionDepsCte(builder);
+        addDescriptionPart(builder);
+
+        builder
+        .column("res.fdwname")
+        .column("res.fdwhandler::pg_catalog.regproc")
+        .column("res.fdwvalidator::pg_catalog.regproc")
+        .column("res.fdwoptions")
+        .column("res.fdwacl")
+        .column("res.fdwowner")
+        .from("pg_catalog.pg_foreign_data_wrapper res");
     }
 }
