@@ -140,7 +140,7 @@ public class DbStorePicker extends AbstractStorePicker implements IStorePicker {
     private void loadStore(ISelection newSelection) {
         ISelection selection = newSelection == null ? cmbDbNames.getSelection() : newSelection;
 
-        List<DbInfo> store = DbInfo.readStoreFromXml();
+        List<DbInfo> store = DbXmlStore.readStoreFromXml();
         Collection<File> files;
         if (useFileSources || useDirSources) {
             files = stringToDumpFileHistory(prefStore.getString(PREF.DB_STORE_FILES));

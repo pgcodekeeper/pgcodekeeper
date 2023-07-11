@@ -20,8 +20,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -32,6 +30,12 @@ import org.eclipse.equinox.security.storage.StorageException;
 import org.eclipse.jface.layout.PixelConverter;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.resource.LocalResourceManager;
+import org.eclipse.jface.resource.ResourceManager;
+import org.eclipse.jface.resource.StringConverter;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
@@ -39,6 +43,7 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
@@ -50,17 +55,21 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.UIConsts.CONN_TYPE_PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.DB_STORE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
+import ru.taximaxim.codekeeper.ui.dbstore.ConnectionTypeInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStoreEditorDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.dialogs.PgPassDialog;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.xmlstore.ConnectioTypeXMLStore;
 import ru.taximaxim.codekeeper.ui.xmlstore.DbXmlStore;
 import ru.taximaxim.pgpass.PgPass;
 
-public class DbStorePrefPage extends FieldEditorPreferencePage
+public final class DbStorePrefPage extends FieldEditorPreferencePage
 implements IWorkbenchPreferencePage {
 
     private DbStorePrefListEditor dbList;
@@ -73,14 +82,16 @@ implements IWorkbenchPreferencePage {
 
     @Override
     public void init(IWorkbench workbench) {
-        setPreferenceStore(Activator.getDefault().getPreferenceStore());
+        IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+        store.addPropertyChangeListener(this);
+        setPreferenceStore(store);
     }
 
     @Override
     protected void createFieldEditors() {
         dbList = new DbStorePrefListEditor(getFieldEditorParent());
         dbList.setLayoutData(new GridData(GridData.FILL_BOTH));
-        List<DbInfo> dbInfoList = DbInfo.readStoreFromXml();
+        List<DbInfo> dbInfoList = DbXmlStore.readStoreFromXml();
 
         DbInfo.sortDbGroups(dbInfoList);
         dbList.setInputList(dbInfoList);
@@ -93,10 +104,7 @@ implements IWorkbenchPreferencePage {
 
     @Override
     protected void performDefaults() {
-        dbList.setInputList(Arrays.asList(
-                new DbInfo("default", "", "", "", "", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
-                        0, false, false, new ArrayList<>(), new HashMap<>(), false, false, "", //$NON-NLS-1$
-                        DbInfo.DEFAULT_EXECUTE_PATH, DbInfo.DEFAULT_CUSTOM_PARAMS, false, ""))); //$NON-NLS-1$
+        dbList.setInputList(List.of(new DbInfo("default", "", "", "", "", 0))); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
     }
 
     @Override
@@ -126,15 +134,31 @@ implements IWorkbenchPreferencePage {
             }
             DbXmlStore.INSTANCE.writeObjects(dbList.getList());
             super.performOk();
+            getPreferenceStore().setValue(DB_STORE_PREF.LAST_DB_STORE_CHANGE_TIME, System.currentTimeMillis());
             return true;
         } catch (IOException e) {
             setErrorMessage(e.getLocalizedMessage());
             return false;
         }
     }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent event) {
+        if (CONN_TYPE_PREF.LAST_CONN_TYPE_CHANGE_TIME.equals(event.getProperty()) && !dbList.isDisposed()) {
+            dbList.refresh();
+        }
+
+        super.propertyChange(event);
+    }
+
+    @Override
+    public void dispose() {
+        getPreferenceStore().removePropertyChangeListener(this);
+        super.dispose();
+    }
 }
 
-class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
+final class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
 
     private String action;
 
@@ -145,7 +169,7 @@ class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
 
     @Override
     protected DbInfo getNewObject(DbInfo oldObject) {
-        DbStoreEditorDialog dialog = new DbStoreEditorDialog(getShell(), oldObject, action, getDbGroups() );
+        DbStoreEditorDialog dialog = new DbStoreEditorDialog(getShell(), oldObject, action, getDbGroups());
         return dialog.open() == Window.OK ? dialog.getDbInfo() : null;
     }
 
@@ -174,6 +198,9 @@ class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
 
     @Override
     protected void addColumns(TableViewer tableViewer) {
+        ResourceManager resourceManager = new LocalResourceManager(JFaceResources.getResources(),
+                tableViewer.getControl());
+
         TableViewerColumn dbGroupCol = new TableViewerColumn(tableViewer, SWT.NONE);
         dbGroupCol.getColumn().setText(Messages.DbStorePrefPage_db_group);
         dbGroupCol.getColumn().setResizable(true);
@@ -201,7 +228,22 @@ class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
             public Image getImage(Object element) {
                 return Activator.getRegisteredImage(((DbInfo) element).isMsSql() ? FILE.MS_ICON : FILE.PG_ICON);
             }
+
+            @Override
+            public Color getBackground(Object element) {
+                String conType = ((DbInfo) element).getConType();
+                if (conType == null) {
+                    return null;
+                }
+                for (ConnectionTypeInfo t : ConnectioTypeXMLStore.readStoreFromXml()) {
+                    if (t.getName().equals(conType)) {
+                        return resourceManager.createColor(StringConverter.asRGB(t.getColor()));
+                    }
+                }
+                return null;
+            }
         });
+
         dbNameCol.getColumn().setWidth(pc.convertWidthInCharsToPixels(50));
     }
 

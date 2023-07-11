@@ -45,7 +45,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 
-public class DbXmlStore extends XmlStore<DbInfo> {
+public final class DbXmlStore extends XmlStore<DbInfo> {
 
     private static final String FILE_NAME = "dbstore.xml"; //$NON-NLS-1$
     public static final DbXmlStore INSTANCE = new DbXmlStore(Paths.get(Platform.getStateLocation(Activator.getContext().getBundle())
@@ -80,7 +80,8 @@ public class DbXmlStore extends XmlStore<DbInfo> {
         PROPERTY_VALUE("value"), //$NON-NLS-1$
         MSSQL("mssql"), //$NON-NLS-1$
         WIN_AUTH("win_auth"), //$NON-NLS-1$
-        DOMAIN("domain"); //$NON-NLS-1$
+        DOMAIN("domain"), //$NON-N:S-1$
+        CON_TYPE("con_type"); //$NON-NLS-1$
 
         String name;
 
@@ -114,6 +115,15 @@ public class DbXmlStore extends XmlStore<DbInfo> {
         }
 
         securePrefs = pref;
+    }
+
+    public static List<DbInfo> readStoreFromXml() {
+        try {
+            return INSTANCE.readObjects();
+        } catch (IOException e) {
+            Log.log(e);
+            return new ArrayList<>();
+        }
     }
 
     @Override
@@ -166,6 +176,7 @@ public class DbXmlStore extends XmlStore<DbInfo> {
             createSubElement(xml, keyElement, Tags.PG_DUMP_SWITCH.toString(), String.valueOf(dbInfo.isPgDumpSwitch()));
             createSubElement(xml, keyElement, Tags.PGDUMP_CUSTOM_PARAMS.toString(), dbInfo.getPgdumpCustomParams());
             createSubElement(xml, keyElement, Tags.PGDUMP_EXE_PATH.toString(), dbInfo.getPgdumpExePath());
+            createSubElement(xml, keyElement, Tags.CON_TYPE.toString(), dbInfo.getConType());
 
             Element ignoreList = xml.createElement(Tags.IGNORE_LIST.toString());
             keyElement.appendChild(ignoreList);
@@ -216,6 +227,7 @@ public class DbXmlStore extends XmlStore<DbInfo> {
                 case PG_DUMP_SWITCH:
                 case PGDUMP_CUSTOM_PARAMS:
                 case PGDUMP_EXE_PATH:
+                case CON_TYPE:
                     object.put(tag, param.getTextContent());
                     break;
                 case IGNORE_LIST:
@@ -249,7 +261,8 @@ public class DbXmlStore extends XmlStore<DbInfo> {
                 object.get(Tags.DOMAIN), object.get(Tags.PGDUMP_EXE_PATH),
                 object.get(Tags.PGDUMP_CUSTOM_PARAMS),
                 Boolean.parseBoolean(object.get(Tags.PG_DUMP_SWITCH)),
-                !object.containsKey(Tags.DBGROUP) ? "" : object.get(Tags.DBGROUP)); //$NON-NLS-1$
+                !object.containsKey(Tags.DBGROUP) ? "" : object.get(Tags.DBGROUP), //$NON-NLS-1$
+                !object.containsKey(Tags.CON_TYPE) ? "" : object.get(Tags.CON_TYPE)); //$NON-NLS-1$
     }
 
     private void fillIgnoreFileList(NodeList xml, List<String> list) {

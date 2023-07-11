@@ -180,6 +180,14 @@ public interface UIConsts {
         String NAME_OF_BOUND_DB = "nameOfBoundDatabase"; //$NON-NLS-1$
     }
 
+    interface DB_STORE_PREF {
+        String LAST_DB_STORE_CHANGE_TIME = "prefLastDbStoreChangeTime"; //$NON-NLS-1$
+    }
+
+    interface CONN_TYPE_PREF {
+        String LAST_CONN_TYPE_CHANGE_TIME = "prefLastConnTypeChangeTime"; //$NON-NLS-1$
+    }
+
     interface PROJ_PATH {
         String MIGRATION_DIR = "MIGRATION"; //$NON-NLS-1$
     }

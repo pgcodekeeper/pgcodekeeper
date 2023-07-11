@@ -9,6 +9,8 @@
 
 ### Добавлено
 
+- Добавлены настройки для типов подключения.
+
 ### Изменено
 
 - Оптимизированы запросы на получение объектов из БД.
@@ -404,8 +406,8 @@
 
 ### Добавлено
 
-- Added full support for new object syntaxes introduced in PostgreSQL 13.
-- Project editor now clearly shows currently selected source for schema comparison and destination for application of selected changes
+- Добавлена полная поддержка нового синтаксиса объектов, представленных в PostgreSQL 13.
+- Редактор проекта теперь четко показывает выбранный в данный момент источник для сравнения схем и место назначения для применения выбранных изменений.
 
 ## [5.11.0] - 2021-03-18
 

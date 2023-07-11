@@ -163,6 +163,7 @@ import ru.taximaxim.codekeeper.ui.properties.OverridablePrefs;
 import ru.taximaxim.codekeeper.ui.propertytests.ChangesJobTester;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 import ru.taximaxim.codekeeper.ui.views.DBPair;
+import ru.taximaxim.codekeeper.ui.xmlstore.DbXmlStore;
 import ru.taximaxim.codekeeper.ui.xmlstore.IgnoreListsXmlStore;
 
 public class ProjectEditorDiffer extends EditorPart implements IResourceChangeListener {
@@ -1268,7 +1269,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                     });
                     menuMgrGetChangesCustom.add(new Separator());
                     DBStoreMenu dbMenu = new DBStoreMenu(menuMgrGetChangesCustom, true, false, isMsSql, parent.getShell(), getCurrentDb());
-                    dbMenu.fillDbMenu(DbInfo.readStoreFromXml());
+                    dbMenu.fillDbMenu(DbXmlStore.readStoreFromXml());
                     dbMenu.addSelectionListener(ProjectEditorDiffer.this::setCurrentDb);
                     return menuMgrGetChangesCustom.createContextMenu(parent);
                 }
