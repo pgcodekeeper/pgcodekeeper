@@ -17,7 +17,6 @@ package ru.taximaxim.codekeeper.ui.dialogs;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import org.eclipse.jface.dialogs.Dialog;
@@ -43,7 +42,7 @@ import ru.taximaxim.pgpass.PgPass;
 import ru.taximaxim.pgpass.PgPassEntry;
 import ru.taximaxim.pgpass.PgPassException;
 
-public class PgPassDialog extends Dialog {
+public final class PgPassDialog extends Dialog {
 
     private final String path;
     private TableViewer viewer;
@@ -167,9 +166,7 @@ public class PgPassDialog extends Dialog {
                 }
 
                 editor.addNewObject(new DbInfo(info.getDbName(), info.getDbName(),
-                        info.getUser(), "", info.getHost(), dbport, false, true,  //$NON-NLS-1$
-                        new ArrayList<>(), new HashMap<>(), false, false, "", //$NON-NLS-1$
-                        DbInfo.DEFAULT_EXECUTE_PATH, DbInfo.DEFAULT_CUSTOM_PARAMS, false, "")); //$NON-NLS-1$
+                        info.getUser(), "", info.getHost(), dbport)); //$NON-NLS-1$
             }
         });
 

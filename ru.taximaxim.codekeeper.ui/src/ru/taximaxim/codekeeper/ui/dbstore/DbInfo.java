@@ -28,10 +28,10 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
 import ru.taximaxim.codekeeper.ui.xmlstore.DbXmlStore;
 
-public class DbInfo {
+public final class DbInfo {
 
     public static final String DEFAULT_EXECUTE_PATH = "pg_dump"; //$NON-NLS-1$
-    public static final String DEFAULT_CUSTOM_PARAMS = "--schema-only --no-password"; //$NON-NLS-1$
+    private static final String DEFAULT_CUSTOM_PARAMS = "--schema-only --no-password"; //$NON-NLS-1$
 
     private final String name;
     private final String dbname;
@@ -50,6 +50,7 @@ public class DbInfo {
     private final boolean generateName;
     private final List<String> ignoreFiles;
     private final Map<String, String> properties;
+    private final String conType;
 
     public String getName() {
         return name;
@@ -119,10 +120,22 @@ public class DbInfo {
         return pgDumpSwitch;
     }
 
+    public String getConType() {
+        return conType;
+    }
+    
+    public DbInfo(String name, String dbname, String dbuser, String dbpass,
+            String dbhost, int dbport) {
+        this(name, dbname, dbuser, dbpass, dbhost, dbport, false, false, Collections.emptyList(), 
+                Collections.emptyMap(), false, false, "", //$NON-NLS-1$
+                DbInfo.DEFAULT_EXECUTE_PATH, DbInfo.DEFAULT_CUSTOM_PARAMS, false, "", ""); //$NON-NLS-1$ //$NON-NLS-2$ 
+    }
+
     public DbInfo(String name, String dbname, String dbuser, String dbpass,
             String dbhost, int dbport, boolean readOnly, boolean generateName,
             List<String> ignoreFiles, Map<String, String> properties, boolean msSql, boolean winAuth,
-            String domain, String pgdumpExePath, String pgdumpCustomParams, boolean pgDumpSwitch, String dbGroup) {
+            String domain, String pgdumpExePath, String pgdumpCustomParams, boolean pgDumpSwitch,
+            String dbGroup, String conType) {
         this.name = name;
         this.dbname = dbname;
         this.dbuser = dbuser;
@@ -140,6 +153,7 @@ public class DbInfo {
         this.pgdumpCustomParams = pgdumpCustomParams == null ? DEFAULT_CUSTOM_PARAMS : pgdumpCustomParams;
         this.pgDumpSwitch = pgDumpSwitch;
         this.dbGroup = dbGroup;
+        this.conType = conType;
     }
 
     @Override
@@ -163,16 +177,6 @@ public class DbInfo {
         int result = 1;
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         return result;
-    }
-
-    public static List<DbInfo> readStoreFromXml() {
-        try {
-            return DbXmlStore.INSTANCE.readObjects();
-        } catch (IOException e) {
-            Log.log(e);
-        }
-
-        return new ArrayList<>();
     }
 
     /**

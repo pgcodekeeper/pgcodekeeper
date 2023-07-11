@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added settings for connecting types.
+
 ### Changed
 
 - Optimized queries for getting objects from DB.

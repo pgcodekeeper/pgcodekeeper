@@ -21,6 +21,7 @@ import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -32,6 +33,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
@@ -62,13 +64,15 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.CMD_VARS;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.properties.IgnoreListProperties.IgnoreListEditor;
+import ru.taximaxim.codekeeper.ui.xmlstore.ConnectioTypeXMLStore;
 
-public class DbStoreEditorDialog extends TrayDialog {
+public final class DbStoreEditorDialog extends TrayDialog {
 
     private final String action;
 
     private static final String DEFAULT_HOST = "127.0.0.1"; //$NON-NLS-1$
     private static final String DEFAULT_PORT = "5432"; //$NON-NLS-1$
+    private static final String WARNING_IMAGE = "\u2757"; //$NON-NLS-1$
 
     private final DbInfo dbInitial;
     private DbInfo dbInfo;
@@ -89,6 +93,7 @@ public class DbStoreEditorDialog extends TrayDialog {
     private Button btnUseDump;
     private Button btnWinAuth;
     private ComboViewer cmbGroups;
+    private ComboViewer cmbConTypes;
     private final Set<String> dbGroups;
 
     private IgnoreListEditor ignoreListEditor;
@@ -118,7 +123,8 @@ public class DbStoreEditorDialog extends TrayDialog {
         return btnWinAuth != null && btnWinAuth.getSelection();
     }
 
-    public DbStoreEditorDialog(Shell shell, DbInfo dbInitial, String action, Set<String> dbGroups) {
+    public DbStoreEditorDialog(Shell shell, DbInfo dbInitial, String action,
+            Set<String> dbGroups) {
         super(shell);
         this.dbInitial = dbInitial;
         this.action = action;
@@ -144,6 +150,7 @@ public class DbStoreEditorDialog extends TrayDialog {
                 String dbUser = ""; //$NON-NLS-1$
                 String dbPass = ""; //$NON-NLS-1$
                 String dbGroup = ""; //$NON-NLS-1$
+                String dbConType = ""; //$NON-NLS-1$
                 String entryName = ""; //$NON-NLS-1$
                 String domain = ""; //$NON-NLS-1$
                 List<String> ignoreList = null;
@@ -156,6 +163,7 @@ public class DbStoreEditorDialog extends TrayDialog {
                     dbUser = dbInitial.getDbUser();
                     dbPass = dbInitial.getDbPass();
                     dbGroup = dbInitial.getDbGroup();
+                    dbConType = dbInitial.getConType();
                     generateEntryName = dbInitial.isGeneratedName();
                     entryName = dbInitial.getName();
                     domain = dbInitial.getDomain();
@@ -188,6 +196,9 @@ public class DbStoreEditorDialog extends TrayDialog {
                 txtDbPass.setText(dbPass);
                 if (dbGroup != null) {
                     cmbGroups.setSelection(new StructuredSelection(dbGroup));
+                }
+                if (dbConType != null) {
+                    cmbConTypes.setSelection(new StructuredSelection(dbConType));
                 }
                 txtName.setText(entryName);
                 txtDomain.setText(domain != null ? domain : ""); //$NON-NLS-1$
@@ -388,6 +399,33 @@ public class DbStoreEditorDialog extends TrayDialog {
         dbGroups.removeIf(String::isEmpty);
         cmbGroups.setInput(dbGroups);
 
+        Label lblType = new Label(tabAreaDb, SWT.NONE);
+        lblType.setText(Messages.DbStoreEditorDialog_connection_type);
+
+        cmbConTypes = new ComboViewer(tabAreaDb, SWT.DROP_DOWN | SWT.READ_ONLY);
+        cmbConTypes.getCombo().setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, false, false, 3, 1));
+        cmbConTypes.setContentProvider(ArrayContentProvider.getInstance());
+
+        Label warning = new Label(tabAreaDb, SWT.CENTER);
+        warning.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, false, false, 3, 1));
+        warning.setText(WARNING_IMAGE + Messages.DbStoreEditorDialog_warning_message);
+        warning.setVisible(false);
+
+        Set<String> conTypes = new LinkedHashSet<>();
+        conTypes.add(""); //$NON-NLS-1$
+        ConnectioTypeXMLStore.readStoreFromXml().forEach(e -> conTypes.add(e.getName()));
+        if (dbInitial != null) {
+            String brokenType = dbInitial.getConType();
+            if (brokenType != null && conTypes.add(brokenType)) {
+                cmbConTypes.addSelectionChangedListener(e -> {
+                    var sel = (IStructuredSelection) e.getSelection();
+                    var selConTypeName = (String) sel.getFirstElement();
+                    warning.setVisible(brokenType.equals(selConTypeName));
+                });
+            }
+        }
+        cmbConTypes.setInput(conTypes);
+
         //// Creating tab item "Ignored objects files" and fill it by components.
 
         ignoreListEditor = new IgnoreListEditor(createTabItemWithComposite(tabFolder,
@@ -585,7 +623,7 @@ public class DbStoreEditorDialog extends TrayDialog {
                     btnGenerateName.getSelection(), ignoreListEditor.getList(),
                     properties, isMsSql, isWinAuth(), txtDomain.getText(),
                     exePath, txtDumpParameters.getText(), btnUseDump.getSelection(),
-                    cmbGroups.getCombo().getText());
+                    cmbGroups.getCombo().getText(), cmbConTypes.getCombo().getText());
             super.okPressed();
         }
     }

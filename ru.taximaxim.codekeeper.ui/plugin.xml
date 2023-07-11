@@ -663,6 +663,12 @@
             name="%page.name.dbstore">
         </page>
         <page
+            category="ru.taximaxim.codekeeper.ui.dbstore"
+            class="ru.taximaxim.codekeeper.ui.prefs.ConnectionTypePrefPage"
+            id="ru.taximaxim.codekeeper.ui.connectiontype"
+            name="%page.name.connectiontype">
+        </page>
+        <page
             category="ru.taximaxim.codekeeper.ui.general"
             class="ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.IgnoredObjectsPrefPage"
             id="ru.taximaxim.codekeeper.ui.ignoredobjects"
