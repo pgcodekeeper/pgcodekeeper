@@ -21,6 +21,8 @@ import org.junit.jupiter.api.Test;
 
 public class QueryBuilderTest {
 
+    private static final String SELECT = "SELECT\n";
+
     @Test
     void testColumns() {
         String actual = new QueryBuilder()
@@ -30,7 +32,7 @@ public class QueryBuilderTest {
                 .column("c4")
                 .build();
 
-        String expected = "SELECT\n"
+        String expected = SELECT
                 + "  c1,\n"
                 + "  c2,\n"
                 + "  c3,\n"
@@ -49,7 +51,7 @@ public class QueryBuilderTest {
                 .build();
 
         String expected = "WITH cols AS (select c1, c2 from public.t1)\n"
-                + "SELECT\n"
+                + SELECT
                 + "  c1,\n"
                 + "  c2\n"
                 + "FROM cols";
@@ -65,7 +67,7 @@ public class QueryBuilderTest {
                 .where("c2 IS NOT NULL")
                 .build();
 
-        String expected = "SELECT\n"
+        String expected = SELECT
                 + "  \n"
                 + "FROM public.t1\n"
                 + "WHERE c1 > 0\n"
@@ -83,7 +85,7 @@ public class QueryBuilderTest {
                 .join("LEFT JOIN public.t3 t3 ON t3.c1 = t1.c3")
                 .build();
 
-        String expected = "SELECT\n"
+        String expected = SELECT
                 + "  c1\n"
                 + "FROM public.t1\n"
                 + "LEFT JOIN public.t2 t2 ON t2.c1 = t1.c2\n"

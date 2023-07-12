@@ -25,7 +25,6 @@ import org.eclipse.core.runtime.SubMonitor;
 
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.loader.jdbc.AggregatesReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.CastsReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.CollationsReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.ConstraintsReader;
@@ -92,7 +91,6 @@ public class JdbcLoader extends JdbcLoaderBase {
             // NOTE: order of readers has been changed to move the heaviest ANTLR tasks to the beginning
             // to give them a chance to finish while JDBC processes other non-ANTLR stuff
             new FunctionsReader(this).read();
-            new AggregatesReader(this).read();
             new ViewsReader(this).read();
             new TablesReader(this).read();
             new RulesReader(this).read();

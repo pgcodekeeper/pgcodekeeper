@@ -17,59 +17,17 @@ package ru.taximaxim.codekeeper.core.loader;
 
 public class JdbcQueries {
 
-    public static final String QUERY_TOTAL_OBJECTS_COUNT = new QueryBuilder()
-            .column("pg_catalog.count(c.oid)::integer")
-            .from("pg_catalog.pg_class c")
-            .where("c.relnamespace IN (SELECT nsp.oid FROM pg_catalog.pg_namespace nsp WHERE nsp.nspname NOT LIKE ('pg_%') AND nsp.nspname != 'information_schema')")
-            .where("c.relkind != 't'")
-            .build();
+    private static final String NSPNAME = "n.nspname";
+    private static final String SYSTEM_SCHEMAS = "(n.nspname LIKE 'pg\\_%' OR n.nspname = 'information_schema')";
 
-    public static final String QUERY_TYPES_FOR_CACHE_ALL = new QueryBuilder()
-            .column("t.oid")
-            .column("t.typname")
-            .column("t.typelem")
-            .column("t.typarray")
-            .column("te.typname AS elemname")
-            .column("n.nspname")
-            .from("pg_catalog.pg_type t")
-            .join("LEFT JOIN pg_catalog.pg_namespace n ON t.typnamespace = n.oid")
-            .join("LEFT JOIN pg_catalog.pg_type te ON te.oid = t.typelem")
-            .build();
-
-    public static final String QUERY_CHECK_TIMESTAMPS = new QueryBuilder()
-            .column("n.nspname")
-            .column("e.extversion")
-            .column("EXISTS (SELECT 1 FROM pg_catalog.pg_event_trigger WHERE evtenabled != 'O' "
-                    + "AND (evtname = 'dbots_tg_on_ddl_event' OR evtname = 'dbots_tg_on_drop_event')) AS disabled")
-            .from("pg_catalog.pg_namespace n")
-            .join("LEFT JOIN pg_catalog.pg_extension e on e.extnamespace = n.oid")
-            .where("e.extname = 'pg_dbo_timestamp'")
-            .build();
-
-    public static final String QUERY_CHECK_LAST_SYS_OID = new QueryBuilder()
-            .column("datlastsysoid::bigint")
-            .from("pg_catalog.pg_database")
-            .where("datname = pg_catalog.current_database()")
-            .build();
-
-    public static final String QUERY_CHECK_USER_PRIVILEGES = new QueryBuilder()
-            .column("pg_catalog.has_table_privilege('pg_catalog.pg_user_mapping', 'SELECT') AS result")
-            .build();
-
-    public static final String QUERY_CHECK_VERSION = new QueryBuilder()
-            .column("CAST (pg_catalog.current_setting('server_version_num') AS INT)")
-            .build();
-
-    public static final String QUERY_CHECK_GREENPLUM = new QueryBuilder()
-            .column("version()")
-            .build();
-
-    public static final String QUERY_SCHEMAS_ACCESS = new QueryBuilder()
-            .column("n.nspname")
-            .column("pg_catalog.has_schema_privilege(n.nspname, 'USAGE') AS has_priv")
-            .from("(SELECT pg_catalog.unnest(?)) n(nspname)")
-            .build();
-
+    public static final String QUERY_TOTAL_OBJECTS_COUNT = getObjectsCountQuery();
+    public static final String QUERY_TYPES_FOR_CACHE_ALL = getTypesForCacheQuery();
+    public static final String QUERY_CHECK_TIMESTAMPS = getCheckTimestampsQuery();
+    public static final String QUERY_CHECK_LAST_SYS_OID = getCheckLastSysOidQuery();
+    public static final String QUERY_CHECK_USER_PRIVILEGES = getCheckUserPrivilegesQuery();
+    public static final String QUERY_CHECK_VERSION = getCheckVersionQuery();
+    public static final String QUERY_CHECK_GREENPLUM = getCheckGreenplumQuery();
+    public static final String QUERY_SCHEMAS_ACCESS = getSchemasAccessQuery();
     public static final String QUERY_SEQUENCES_ACCESS = getSequencesAccessQuery();
     public static final String QUERY_SEQUENCES_DATA =   getSequencesDataQuery();
     public static final String QUERY_SYSTEM_FUNCTIONS = getSystemFunctionsQuery();
@@ -77,10 +35,79 @@ public class JdbcQueries {
     public static final String QUERY_SYSTEM_OPERATORS = getSystemOperatorsQuery();
     public static final String QUERY_SYSTEM_CASTS = getSystemCastsQuery();
 
+    private static String getObjectsCountQuery() {
+        return new QueryBuilder()
+                .column("pg_catalog.count(c.oid)::integer")
+                .from("pg_catalog.pg_class c")
+                .where("c.relnamespace IN (SELECT nsp.oid FROM pg_catalog.pg_namespace nsp WHERE nsp.nspname NOT LIKE ('pg_%') AND nsp.nspname != 'information_schema')")
+                .where("c.relkind != 't'")
+                .build();
+    }
+
+    private static String getTypesForCacheQuery() {
+        return new QueryBuilder()
+                .column("t.oid")
+                .column("t.typname")
+                .column("t.typelem")
+                .column("t.typarray")
+                .column("te.typname AS elemname")
+                .column(NSPNAME)
+                .from("pg_catalog.pg_type t")
+                .join("LEFT JOIN pg_catalog.pg_namespace n ON t.typnamespace = n.oid")
+                .join("LEFT JOIN pg_catalog.pg_type te ON te.oid = t.typelem")
+                .build();
+    }
+
+    private static String getCheckTimestampsQuery() {
+        return new QueryBuilder()
+                .column(NSPNAME)
+                .column("e.extversion")
+                .column("EXISTS (SELECT 1 FROM pg_catalog.pg_event_trigger WHERE evtenabled != 'O' "
+                        + "AND (evtname = 'dbots_tg_on_ddl_event' OR evtname = 'dbots_tg_on_drop_event')) AS disabled")
+                .from("pg_catalog.pg_namespace n")
+                .join("LEFT JOIN pg_catalog.pg_extension e on e.extnamespace = n.oid")
+                .where("e.extname = 'pg_dbo_timestamp'")
+                .build();
+    }
+
+    private static String getCheckLastSysOidQuery() {
+        return new QueryBuilder()
+                .column("datlastsysoid::bigint")
+                .from("pg_catalog.pg_database")
+                .where("datname = pg_catalog.current_database()")
+                .build();
+    }
+
+    private static String getCheckUserPrivilegesQuery() {
+        return new QueryBuilder()
+                .column("pg_catalog.has_table_privilege('pg_catalog.pg_user_mapping', 'SELECT') AS result")
+                .build();
+    }
+
+    private static String getCheckVersionQuery() {
+        return new QueryBuilder()
+                .column("CAST (pg_catalog.current_setting('server_version_num') AS INT)")
+                .build();
+    }
+
+    private static String getCheckGreenplumQuery() {
+        return new QueryBuilder()
+            .column("version()")
+            .build();
+    }
+
+    private static String getSchemasAccessQuery() {
+        return new QueryBuilder()
+                .column(NSPNAME)
+                .column("pg_catalog.has_schema_privilege(n.nspname, 'USAGE') AS has_priv")
+                .from("(SELECT pg_catalog.unnest(?)) n(nspname)")
+                .build();
+    }
+
     private static String getSystemFunctionsQuery() {
         return new QueryBuilder()
                 .column("p.proname AS name")
-                .column("n.nspname")
+                .column(NSPNAME)
                 .column("p.proargmodes")
                 .column("p.proretset")
                 .column("p.proargnames")
@@ -92,7 +119,7 @@ public class JdbcQueries {
                 .where("NOT EXISTS (SELECT 1 FROM pg_catalog.pg_depend dp"
                         + " WHERE dp.classid = 'pg_catalog.pg_proc'::pg_catalog.regclass"
                         + " AND dp.objid = p.oid AND dp.deptype = 'i')")
-                .where("(n.nspname LIKE 'pg\\_%' OR n.nspname = 'information_schema')")
+                .where(SYSTEM_SCHEMAS)
                 .build();
     }
 
@@ -100,7 +127,7 @@ public class JdbcQueries {
         return new QueryBuilder()
                 .column("c.relname AS name")
                 .column("c.relkind")
-                .column("n.nspname")
+                .column(NSPNAME)
                 .column("columns.col_names")
                 .column("columns.col_types")
                 .from("pg_catalog.pg_class c")
@@ -113,20 +140,20 @@ public class JdbcQueries {
                         + " GROUP BY attrelid) columns ON columns.attrelid = c.oid")
                 .join("LEFT JOIN pg_catalog.pg_namespace n ON c.relnamespace = n.oid")
                 .where("c.relkind IN ('f','r','p', 'v', 'm', 'S')")
-                .where("(n.nspname LIKE 'pg\\_%' OR n.nspname = 'information_schema')")
+                .where(SYSTEM_SCHEMAS)
                 .build();
     }
 
     private static String getSystemOperatorsQuery() {
         return new QueryBuilder()
                 .column("o.oprname as name")
-                .column("n.nspname")
+                .column(NSPNAME)
                 .column("o.oprleft::bigint AS left")
                 .column("o.oprright::bigint AS right")
                 .column("o.oprresult::bigint AS result")
                 .from("pg_catalog.pg_operator o")
                 .join("LEFT JOIN pg_catalog.pg_namespace n ON o.oprnamespace = n.oid")
-                .where("(n.nspname LIKE 'pg\\_%' OR n.nspname = 'information_schema')")
+                .where(SYSTEM_SCHEMAS)
                 .build();
     }
 

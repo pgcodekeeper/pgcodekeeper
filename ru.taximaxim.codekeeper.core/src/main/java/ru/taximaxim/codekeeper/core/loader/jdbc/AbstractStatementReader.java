@@ -25,6 +25,8 @@ import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
 
 public abstract class AbstractStatementReader {
 
+    private static final String PG_CATALOG = "pg_catalog.";
+
     private static final String MS_PRIVILIGES_JOIN = "CROSS APPLY (\n"
             + "  SELECT * FROM (\n"
             + "    SELECT\n"
@@ -60,9 +62,12 @@ public abstract class AbstractStatementReader {
             + "      AND dp.classid = 'pg_catalog.pg_namespace'::pg_catalog.regclass)";
 
     protected final JdbcLoaderBase loader;
+    private final String classId;
 
     protected AbstractStatementReader(JdbcLoaderBase loader) {
         this.loader = loader;
+        String tmpClassId = getClassId();
+        this.classId = tmpClassId == null ? null : PgDiffUtils.quoteString(PG_CATALOG + tmpClassId);
     }
 
     public final void read() throws SQLException, InterruptedException, XmlReaderException {
@@ -96,15 +101,13 @@ public abstract class AbstractStatementReader {
         if (extensionSchema != null) {
             builder.column("time.ses_user");
             builder.join(MessageFormat.format(EXTENSION_JOIN,
-                    PgDiffUtils.getQuotedName(extensionSchema),
-                    PgDiffUtils.quoteString("pg_catalog." + getClassId())));
+                    PgDiffUtils.getQuotedName(extensionSchema), classId));
         }
     }
 
     protected void addExtensionDepsCte(QueryBuilder builder) {
         builder.with("extension_deps",
-                MessageFormat.format(EXTENSION_DEPS_CTE,
-                        PgDiffUtils.quoteString("pg_catalog." + getClassId())));
+                MessageFormat.format(EXTENSION_DEPS_CTE, classId));
         builder.where("res.oid NOT IN (SELECT objid FROM extension_deps)");
     }
 
@@ -114,8 +117,7 @@ public abstract class AbstractStatementReader {
 
     protected void addDescriptionPart(QueryBuilder builder, boolean checkColumn) {
         builder.column("d.description");
-        builder.join(MessageFormat.format(DESCRIPTION_JOIN,
-                PgDiffUtils.quoteString("pg_catalog." + getClassId()),
+        builder.join(MessageFormat.format(DESCRIPTION_JOIN, classId,
                 checkColumn ? "AND d.objsubid = 0" : ""));
     }
 
@@ -142,11 +144,11 @@ public abstract class AbstractStatementReader {
     }
 
     /**
-     * Override for postgres for correct dbo_ts extension work.
+     * Override for postgres.
      *
      * @return object class's catalog name
      */
     protected String getClassId() {
-        throw new IllegalStateException("unknown class id");
+        return null;
     }
 }
