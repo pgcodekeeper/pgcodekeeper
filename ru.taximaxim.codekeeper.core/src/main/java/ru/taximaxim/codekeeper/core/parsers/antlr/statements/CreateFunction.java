@@ -165,7 +165,7 @@ public final class CreateFunction extends ParserAbstract {
             } else if (action.SUPPORT() != null) {
                 List<ParserRuleContext> suppFuncIds = getIdentifiers(action.schema_qualified_name());
                 function.setSupportFunc(getFullCtxText(suppFuncIds));
-                addDepSafe(function, suppFuncIds, DbObjType.FUNCTION, true);
+                addDepSafe(function, suppFuncIds, DbObjType.FUNCTION, true, "(internal)");
             }
         }
 

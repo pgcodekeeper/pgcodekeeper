@@ -71,64 +71,20 @@ public class FunctionsReader extends JdbcReader {
         schema.addFunction(f);
     }
 
-    private AbstractFunction getFunc(ResultSet res, AbstractSchema schema,
-            String funcName) throws SQLException {
-        boolean isProc = SupportedVersion.VERSION_11.isLE(loader.version)
-                && (res.getBoolean("proisproc"));
+    private AbstractPgFunction getFunc(ResultSet res, AbstractSchema schema, String funcName) throws SQLException {
+        boolean isProc = SupportedVersion.VERSION_11.isLE(loader.version) && res.getBoolean("proisproc");
+        AbstractPgFunction function = isProc ? new PgProcedure(funcName) : new PgFunction(funcName);
+        loader.setCurrentObject(new GenericColumn(schema.getName(), funcName, function.getStatementType()));
 
-        loader.setCurrentObject(new GenericColumn(schema.getName(), funcName,
-                isProc ? DbObjType.PROCEDURE : DbObjType.FUNCTION));
-
-        AbstractPgFunction f = isProc ? new PgProcedure(funcName) : new PgFunction(funcName);
-
-        PgDatabase db = schema.getDatabase();
-
-        fillFunction(f, res, db, fillArguments(f, res));
-
-        String defaultValuesAsString = res.getString("default_values_as_string");
-        if (defaultValuesAsString != null) {
-            loader.submitAntlrTask(defaultValuesAsString, SQLParser::vex_eof,
-                    ctx -> {
-                        List<VexContext> vexCtxList = ctx.vex();
-                        ListIterator<VexContext> vexCtxListIterator = vexCtxList.listIterator(vexCtxList.size());
-
-                        for (int i = (f.getArguments().size() - 1); i >= 0; i--) {
-                            if (!vexCtxListIterator.hasPrevious()) {
-                                break;
-                            }
-                            Argument a = f.getArguments().get(i);
-                            if (a.getMode().isIn()) {
-                                VexContext vx = vexCtxListIterator.previous();
-                                a.setDefaultExpression(ParserAbstract.getFullCtxText(vx));
-                                db.addAnalysisLauncher(new VexAnalysisLauncher(
-                                        f, vx, loader.getCurrentLocation()));
-                            }
-                        }
-                    });
-        }
-
-        return f;
-    }
-
-    private void fillFunction(AbstractPgFunction function, ResultSet res,
-            PgDatabase db, List<Pair<String, GenericColumn>> argsQualTypes)
-                    throws SQLException {
         function.setLanguageCost(res.getString("lang_name"), res.getFloat("procost"));
 
         // since 9.5 PostgreSQL
-        if (SupportedVersion.VERSION_9_5.isLE(loader.version)) {
-            Long[] protrftypes = getColArray(res, "protrftypes");
-            if (protrftypes != null) {
-                for (Long s : protrftypes) {
-                    function.addTransform(loader.cachedTypesByOid.get(s).getFullName());
-                }
-            }
-        }
+        fillTransform(function, res);
 
         if (SupportedVersion.VERSION_12.isLE(loader.version)) {
             String supportFunc = res.getString("support_func");
             if (!"-".equals(supportFunc)) {
-                setFunctionWithDep(AbstractPgFunction::setSupportFunc, function, supportFunc);
+                setFunctionWithDep(AbstractPgFunction::setSupportFunc, function, supportFunc, "(internal)");
             }
         }
 
@@ -188,39 +144,90 @@ public class FunctionsReader extends JdbcReader {
             function.setRows(rows);
         }
 
-        String[] proconfig = getColArray(res, "proconfig");
-        if (proconfig != null) {
-            for (String param : proconfig) {
-                int eq = param.indexOf('=');
-                final String par = param.substring(0, eq);
-                String val = param.substring(eq + 1);
+        PgDatabase db = schema.getDatabase();
+        fillBody(function, db, res);
+        fillDefaultValues(function, db, res);
+        fillConfiguration(function, res);
 
-                switch (par) {
-                case "temp_tablespaces":
-                case "session_preload_libraries":
-                case "shared_preload_libraries":
-                case "local_preload_libraries":
-                case "search_path":
-                    function.addConfiguration(par, null);
-                    loader.submitAntlrTask(val, SQLParser::vex_eof,
-                            ctx -> {
-                                StringBuilder sb = new StringBuilder();
-                                for (VexContext vex : ctx.vex()) {
-                                    sb.append(PgDiffUtils.quoteString(
-                                            vex.getText()));
-                                    sb.append(", ");
-                                }
-                                sb.setLength(sb.length() - 2);
-                                function.addConfiguration(par, sb.toString());
-                            });
-                    break;
-                default :
-                    val = PgDiffUtils.quoteString(val);
-                    function.addConfiguration(PgDiffUtils.getQuotedName(par), val);
-                    break;
+        return function;
+    }
+
+    private void fillTransform(AbstractPgFunction function, ResultSet res) throws SQLException {
+        if (SupportedVersion.VERSION_9_5.isLE(loader.version)) {
+            Long[] protrftypes = getColArray(res, "protrftypes");
+            if (protrftypes != null) {
+                for (Long s : protrftypes) {
+                    function.addTransform(loader.cachedTypesByOid.get(s).getFullName());
                 }
             }
         }
+    }
+
+    private void fillDefaultValues(AbstractPgFunction function, PgDatabase db, ResultSet res) throws SQLException {
+        String defaultValuesAsString = res.getString("default_values_as_string");
+        if (defaultValuesAsString == null) {
+            return;
+        }
+
+        loader.submitAntlrTask(defaultValuesAsString, SQLParser::vex_eof,
+                ctx -> {
+                    List<VexContext> vexCtxList = ctx.vex();
+                    ListIterator<VexContext> vexCtxListIterator = vexCtxList.listIterator(vexCtxList.size());
+
+                    for (int i = (function.getArguments().size() - 1); i >= 0; i--) {
+                        if (!vexCtxListIterator.hasPrevious()) {
+                            break;
+                        }
+                        Argument a = function.getArguments().get(i);
+                        if (a.getMode().isIn()) {
+                            VexContext vx = vexCtxListIterator.previous();
+                            a.setDefaultExpression(ParserAbstract.getFullCtxText(vx));
+                            db.addAnalysisLauncher(new VexAnalysisLauncher(
+                                    function, vx, loader.getCurrentLocation()));
+                        }
+                    }
+                });
+    }
+
+    private void fillConfiguration(AbstractPgFunction function, ResultSet res) throws SQLException {
+        String[] proconfig = getColArray(res, "proconfig");
+        if (proconfig == null) {
+            return;
+        }
+
+        for (String param : proconfig) {
+            int eq = param.indexOf('=');
+            final String par = param.substring(0, eq);
+            String val = param.substring(eq + 1);
+
+            switch (par) {
+            case "temp_tablespaces":
+            case "session_preload_libraries":
+            case "shared_preload_libraries":
+            case "local_preload_libraries":
+            case "search_path":
+                function.addConfiguration(par, null);
+                loader.submitAntlrTask(val, SQLParser::vex_eof,
+                        ctx -> {
+                            StringBuilder sb = new StringBuilder();
+                            for (VexContext vex : ctx.vex()) {
+                                sb.append(PgDiffUtils.quoteString(vex.getText()));
+                                sb.append(", ");
+                            }
+                            sb.setLength(sb.length() - 2);
+                            function.addConfiguration(par, sb.toString());
+                        });
+                break;
+            default:
+                val = PgDiffUtils.quoteString(val);
+                function.addConfiguration(PgDiffUtils.getQuotedName(par), val);
+                break;
+            }
+        }
+    }
+
+    private void fillBody(AbstractPgFunction function, PgDatabase db, ResultSet res) throws SQLException {
+        List<Pair<String, GenericColumn>> argsQualTypes = fillArguments(function, res);
 
         String body = "";
         String definition = res.getString("prosrc");
@@ -332,7 +339,7 @@ public class FunctionsReader extends JdbcReader {
             case "r":
                 aggregate.setParallel("RESTRICTED");
                 break;
-            default :
+            default:
                 break;
             }
         }
@@ -382,7 +389,6 @@ public class FunctionsReader extends JdbcReader {
             mSType.addTypeDepcy(aggregate);
         }
 
-
         aggregate.setMSFunc(getProcessedName(aggregate, res.getString("msfunc_nsp"),
                 res.getString("msfunc"), AggFuncs.MSFUNC));
         aggregate.setMInvFunc(getProcessedName(aggregate, res.getString("minvfunc_nsp"),
@@ -428,8 +434,6 @@ public class FunctionsReader extends JdbcReader {
         return sb.toString();
     }
 
-
-
     private ModifyType getModifyType(String modifier, AggKinds kind) {
         switch (modifier) {
         case "r":
@@ -438,14 +442,14 @@ public class FunctionsReader extends JdbcReader {
             return ModifyType.SHAREABLE;
         case "w":
             return AggKinds.NORMAL != kind ? null : ModifyType.READ_WRITE;
-        default :
-            throw new IllegalStateException("FinalFuncModifier '"+ modifier + "' doesn't support by AGGREGATE!");
+        default:
+            throw new IllegalStateException("FinalFuncModifier '" + modifier + "' doesn't support by AGGREGATE!");
         }
     }
 
     /**
-     * Returns a list of pairs, each of which contains the name of the argument
-     * and its full type name in GenericColumn object (typeSchema, typeName, DbObjType.TYPE).
+     * Returns a list of pairs, each of which contains the name of the argument and its full type name in GenericColumn
+     * object (typeSchema, typeName, DbObjType.TYPE).
      */
     private List<Pair<String, GenericColumn>> fillArguments(AbstractPgFunction f,
             ResultSet res) throws SQLException {
@@ -520,8 +524,20 @@ public class FunctionsReader extends JdbcReader {
         addDescriptionPart(builder);
 
         builder
+        // common part (functions/procedures/aggregates)
         .column("res.proname")
         .column("res.proowner::bigint")
+        .column("res.prorettype::bigint")
+        .column("res.proallargtypes::bigint[]")
+        .column("res.proargmodes")
+        .column("res.proargnames")
+        .column("res.proacl::text AS aclarray")
+        .column("res.proretset")
+        .column("array(select pg_catalog.unnest(res.proargtypes))::bigint[] as argtypes")
+        .from("pg_catalog.pg_proc res")
+        .where("NOT EXISTS (SELECT 1 FROM pg_catalog.pg_depend dp WHERE dp.classid = 'pg_catalog.pg_proc'::pg_catalog.regclass AND dp.objid = res.oid AND dp.deptype = 'i')")
+
+        // for functions/procedures
         .column("l.lanname AS lang_name")
         .column("res.prosrc")
         .column("res.provolatile")
@@ -532,15 +548,11 @@ public class FunctionsReader extends JdbcReader {
         .column("res.prorows::real")
         .column("res.proconfig")
         .column("res.probin")
-        .column("res.prorettype::bigint")
-        .column("res.proallargtypes::bigint[]")
-        .column("res.proargmodes")
-        .column("res.proargnames")
-        .column("res.proacl::text AS aclarray")
-        .column("res.proretset")
-        .column("array(select pg_catalog.unnest(res.proargtypes))::bigint[] as argtypes")
         .column("pg_catalog.pg_get_expr(res.proargdefaults, 0) AS default_values_as_string")
         .column("res.pronargs")
+        .join("LEFT JOIN pg_catalog.pg_language l ON l.oid = res.prolang")
+
+        // for aggregates
         .column("sfunc.proname AS sfunc")
         .column("sfunc_n.nspname AS sfunc_nsp")
         .column("a.aggtranstype AS stype")
@@ -563,8 +575,6 @@ public class FunctionsReader extends JdbcReader {
         .column("sortop_n.nspname AS sortop_nsp")
         .column("a.aggkind")
         .column("a.aggnumdirectargs")
-        .from("pg_catalog.pg_proc res")
-        .join("LEFT JOIN pg_catalog.pg_language l ON l.oid = res.prolang")
         .join("LEFT JOIN pg_catalog.pg_aggregate a ON a.aggfnoid = res.oid")
         .join("LEFT JOIN pg_catalog.pg_proc sfunc ON a.aggtransfn = sfunc.oid")
         .join("LEFT JOIN pg_catalog.pg_namespace sfunc_n ON sfunc.pronamespace = sfunc_n.oid")
@@ -577,16 +587,14 @@ public class FunctionsReader extends JdbcReader {
         .join("LEFT JOIN pg_catalog.pg_proc mfinalfn ON a.aggmfinalfn = mfinalfn.oid")
         .join("LEFT JOIN pg_catalog.pg_namespace mfinalfn_n ON mfinalfn.pronamespace = mfinalfn_n.oid")
         .join("LEFT JOIN pg_catalog.pg_operator sortop ON a.aggsortop = sortop.oid")
-        .join("LEFT JOIN pg_catalog.pg_namespace sortop_n ON sortop.oprnamespace = sortop_n.oid")
-        .where("NOT EXISTS (SELECT 1 FROM pg_catalog.pg_depend dp WHERE dp.classid = 'pg_catalog.pg_proc'::pg_catalog.regclass AND dp.objid = res.oid AND dp.deptype = 'i')");
+        .join("LEFT JOIN pg_catalog.pg_namespace sortop_n ON sortop.oprnamespace = sortop_n.oid");
 
         if (SupportedVersion.VERSION_9_5.isLE(loader.version)) {
             builder.column("res.protrftypes::bigint[]");
         }
 
         if (SupportedVersion.VERSION_9_6.isLE(loader.version)) {
-            builder
-            .column("res.proparallel");
+            builder.column("res.proparallel");
         }
 
         if (SupportedVersion.VERSION_9_6.isLE(loader.version) || loader.isGreenplumDb) {
