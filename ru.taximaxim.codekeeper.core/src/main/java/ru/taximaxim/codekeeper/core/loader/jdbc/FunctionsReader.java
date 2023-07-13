@@ -71,7 +71,7 @@ public class FunctionsReader extends JdbcReader {
         schema.addFunction(f);
     }
 
-    protected AbstractPgFunction getFunc(ResultSet res, AbstractSchema schema, String funcName) throws SQLException {
+    private AbstractPgFunction getFunc(ResultSet res, AbstractSchema schema, String funcName) throws SQLException {
         boolean isProc = SupportedVersion.VERSION_11.isLE(loader.version) && res.getBoolean("proisproc");
         AbstractPgFunction function = isProc ? new PgProcedure(funcName) : new PgFunction(funcName);
         loader.setCurrentObject(new GenericColumn(schema.getName(), funcName, function.getStatementType()));
@@ -84,7 +84,7 @@ public class FunctionsReader extends JdbcReader {
         if (SupportedVersion.VERSION_12.isLE(loader.version)) {
             String supportFunc = res.getString("support_func");
             if (!"-".equals(supportFunc)) {
-                setFunctionWithDep(AbstractPgFunction::setSupportFunc, function, supportFunc);
+                setFunctionWithDep(AbstractPgFunction::setSupportFunc, function, supportFunc, "(internal)");
             }
         }
 
