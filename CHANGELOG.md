@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed expression analysis and dependency search for columns.
+
 ## [8.2.0] - 2023-07-04
 
 ### Added

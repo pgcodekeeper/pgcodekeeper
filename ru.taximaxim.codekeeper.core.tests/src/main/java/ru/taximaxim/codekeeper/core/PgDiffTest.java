@@ -572,6 +572,8 @@ class PgDiffTest {
             "alter_index_nulls_distinction",
             // Tests scenario where FUNCTION with comment is altered.
             "alter_function_with_comment",
+            // Tests scenario where generated COLUMN with function is altered.
+            "alter_column_generated_function",
     })
     void runDiff(String fileNameTemplate) throws IOException, InterruptedException {
         String script = getScript(fileNameTemplate);

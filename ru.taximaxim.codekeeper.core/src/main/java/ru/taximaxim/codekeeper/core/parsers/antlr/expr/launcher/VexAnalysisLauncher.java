@@ -22,6 +22,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.VexContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.ValueExpr;
 import ru.taximaxim.codekeeper.core.parsers.antlr.rulectx.Vex;
+import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgStatementWithSearchPath;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
@@ -34,6 +35,10 @@ public class VexAnalysisLauncher extends AbstractAnalysisLauncher {
 
     @Override
     public Set<PgObjLocation> analyze(ParserRuleContext ctx, MetaContainer meta) {
+        if (stmt instanceof AbstractColumn) {
+            return analyzeTableChildVex((VexContext) ctx, meta);
+        }
+
         ValueExpr expr = new ValueExpr(meta);
         expr.analyze(new Vex((VexContext) ctx));
         return expr.getDepcies();
