@@ -23,6 +23,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 
 import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.Consts.FUNC_SIGN;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
@@ -165,7 +166,7 @@ public final class CreateFunction extends ParserAbstract {
             } else if (action.SUPPORT() != null) {
                 List<ParserRuleContext> suppFuncIds = getIdentifiers(action.schema_qualified_name());
                 function.setSupportFunc(getFullCtxText(suppFuncIds));
-                addDepSafe(function, suppFuncIds, DbObjType.FUNCTION, true, "(internal)");
+                addDepSafe(function, suppFuncIds, DbObjType.FUNCTION, true, FUNC_SIGN.INTERNAL.getName());
             }
         }
 
