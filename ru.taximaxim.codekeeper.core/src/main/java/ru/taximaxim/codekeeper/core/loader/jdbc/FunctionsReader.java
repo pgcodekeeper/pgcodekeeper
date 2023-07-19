@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.ListIterator;
 
 import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.Consts.FUNC_SIGN;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
 import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
@@ -84,7 +85,8 @@ public class FunctionsReader extends JdbcReader {
         if (SupportedVersion.VERSION_12.isLE(loader.version)) {
             String supportFunc = res.getString("support_func");
             if (!"-".equals(supportFunc)) {
-                setFunctionWithDep(AbstractPgFunction::setSupportFunc, function, supportFunc, "(internal)");
+                setFunctionWithDep(AbstractPgFunction::setSupportFunc, function, supportFunc,
+                        FUNC_SIGN.INTERNAL.getName());
             }
         }
 

@@ -60,6 +60,27 @@ public interface Consts {
 
     String GREENPLUM = "Greenplum";
 
+    enum FUNC_SIGN {
+        IN("(cstring)"),
+        IN_ADVANCED("(cstring, oid, integer)"),
+        INTERNAL("(internal)"),
+        TYPMOD_IN ("(cstring[])"),
+        TYPMOD_OUT ("(integer)"),
+        REC_ADVANCED("(internal, oid, integer)"),
+        SUBTYPE_DIFF("({0}, {0})"),
+        TYPE_NAME("({0}.{1})");
+
+        private final String name;
+
+        FUNC_SIGN(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+    }
+
     enum WORK_DIR_NAMES {
         SCHEMA,
         EXTENSION,
