@@ -32,7 +32,6 @@ import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.eclipse.equinox.security.storage.StorageException;
 import org.eclipse.equinox.security.storage.provider.IProviderHints;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.util.IPropertyChangeListener;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -48,14 +47,15 @@ import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 public final class DbXmlStore extends XmlStore<DbInfo> {
 
     private static final String FILE_NAME = "dbstore.xml"; //$NON-NLS-1$
-    public static final DbXmlStore INSTANCE = new DbXmlStore(Paths.get(Platform.getStateLocation(Activator.getContext().getBundle())
-            .append(FILE_NAME).toString()));
-
-    private final List<IPropertyChangeListener> listeners = new ArrayList<>();
+    public static final DbXmlStore INSTANCE = new DbXmlStore(Paths.get(
+            Platform.getStateLocation(Activator.getContext().getBundle()).append(FILE_NAME).toString()));
 
     private final ISecurePreferences securePrefs;
     private final IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
     private final Path path;
+
+    private List<DbInfo> store = new ArrayList<>();
+    private boolean isDirty = true;
 
     private enum Tags {
         DB_STORE("db_store"), //$NON-NLS-1$
@@ -117,9 +117,22 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
         securePrefs = pref;
     }
 
-    public static List<DbInfo> readStoreFromXml() {
+    public static List<DbInfo> getStore() {
+        return INSTANCE.readStore();
+    }
+
+    private List<DbInfo> readStore() {
+        if (isDirty) {
+            store = readStoreFromXml();
+            isDirty = false;
+        }
+
+        return store;
+    }
+
+    private List<DbInfo> readStoreFromXml() {
         try {
-            return INSTANCE.readObjects();
+            return readObjects();
         } catch (IOException e) {
             Log.log(e);
             return new ArrayList<>();
@@ -133,8 +146,8 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
 
     @Override
     public void writeObjects(List<DbInfo> list) throws IOException {
+        isDirty = true;
         super.writeObjects(list);
-        notifyListeners();
     }
 
     public void savePasswords(List<DbInfo> list, List<DbInfo> oldlist) throws IOException, StorageException {
@@ -296,18 +309,6 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
                 }
             }
         }
-    }
-
-    public void addListener(IPropertyChangeListener listener) {
-        listeners.add(listener);
-    }
-
-    public void deleteListener(IPropertyChangeListener listener) {
-        listeners.remove(listener);
-    }
-
-    private void notifyListeners() {
-        listeners.forEach(e -> e.propertyChange(null));
     }
 }
 

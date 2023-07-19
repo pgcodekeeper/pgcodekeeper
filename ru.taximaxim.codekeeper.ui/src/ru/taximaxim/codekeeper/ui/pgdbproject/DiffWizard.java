@@ -439,6 +439,13 @@ class PageDiff extends WizardPage implements Listener {
 
         return oneTimePrefs;
     }
+
+    @Override
+    public void dispose() {
+        dbSource.dispose();
+        dbTarget.dispose();
+        super.dispose();
+    }
 }
 
 class PagePartial extends WizardPage {

@@ -145,4 +145,10 @@ class DbSourcePicker extends Composite {
         }
         return project == null ? null : new PgDbProject(project);
     }
+
+    @Override
+    public void dispose() {
+        storePicker.dispose();
+        super.dispose();
+    }
 }

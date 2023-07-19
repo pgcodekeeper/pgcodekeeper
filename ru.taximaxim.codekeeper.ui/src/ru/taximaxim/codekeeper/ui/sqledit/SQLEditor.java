@@ -232,7 +232,7 @@ implements IResourceChangeListener, ITextErrorReporter {
     private DbInfo getDbFromPref(String prefName) {
         IEclipsePreferences auxPrefs = getProjDbBindPrefs();
         return auxPrefs == null ? null :
-            DbInfo.getLastDb(auxPrefs.get(prefName, "")); //$NON-NLS-1$
+                DbInfo.getLastDb(auxPrefs.get(prefName, ""), isMsSql); //$NON-NLS-1$
     }
 
     public IEclipsePreferences getProjDbBindPrefs() {

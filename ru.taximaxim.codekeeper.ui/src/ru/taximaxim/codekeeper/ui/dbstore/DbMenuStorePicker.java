@@ -42,6 +42,8 @@ import ru.taximaxim.codekeeper.ui.xmlstore.DbXmlStore;
 
 public final class DbMenuStorePicker extends AbstractStorePicker implements IStorePicker, IPropertyChangeListener {
 
+    private final Runnable menuRunnable;
+
     private final Link lnkDb;
 
     private Boolean isMsSql;
@@ -55,17 +57,16 @@ public final class DbMenuStorePicker extends AbstractStorePicker implements ISto
         Activator.getDefault().getPreferenceStore().addPropertyChangeListener(this);
         lnkDb = new Link(parent, SWT.NONE);
         updateTextLbl();
-        Runnable menuRunnable = () -> {
+        menuRunnable = () -> {
             Menu oldMenu = lnkDb.getMenu();
             if (oldMenu != null) {
                 oldMenu.dispose();
             }
 
-            List<DbInfo> store = DbXmlStore.readStoreFromXml();
+            List<DbInfo> store = DbXmlStore.getStore();
             MenuManager menuMgr = new MenuManager();
             DBStoreMenu dbMenu = new DBStoreMenu(menuMgr,
-                    DbMenuStorePicker.this.useFileSources,
-                    DbMenuStorePicker.this.useDirSources, isMsSql, parent.getShell(), selection);
+                    this.useFileSources, this.useDirSources, isMsSql, parent.getShell(), selection);
             dbMenu.fillDbMenu(store);
             dbMenu.addSelectionListener(this::setSelection);
             lnkDb.setMenu(menuMgr.createContextMenu(lnkDb));
@@ -81,6 +82,20 @@ public final class DbMenuStorePicker extends AbstractStorePicker implements ISto
     @Override
     public Control getControl() {
         return lnkDb;
+    }
+
+    public void updateSelection() {
+        if (selection instanceof DbInfo) {
+            List<DbInfo> store = DbXmlStore.getStore();
+            if (store.contains(selection)) {
+                var newSelection = store.get(store.indexOf(selection));
+                if (isMsSql == null || newSelection.isMsSql() == isMsSql.booleanValue()) {
+                    setSelection(newSelection);
+                    return;
+                }
+            }
+            clearSelection();
+        }
     }
 
     @Override
@@ -148,7 +163,7 @@ public final class DbMenuStorePicker extends AbstractStorePicker implements ISto
     public void filter(Boolean isMsSql) {
         this.isMsSql = isMsSql;
         DbInfo dbInfo = getDbInfo();
-        if (isMsSql != null && dbInfo != null && dbInfo.isMsSql() != isMsSql) {
+        if (isMsSql != null && dbInfo != null && dbInfo.isMsSql() != isMsSql.booleanValue()) {
             clearSelection();
         }
     }
@@ -183,8 +198,7 @@ public final class DbMenuStorePicker extends AbstractStorePicker implements ISto
     public void propertyChange(PropertyChangeEvent event) {
         String propertyName = event.getProperty();
         if (DB_STORE_PREF.LAST_DB_STORE_CHANGE_TIME.equals(propertyName)) {
-            setBackground();
-            notifyListeners();
+            updateSelection();
         } else if (CONN_TYPE_PREF.LAST_CONN_TYPE_CHANGE_TIME.equals(propertyName)) {
             setBackground();
         }

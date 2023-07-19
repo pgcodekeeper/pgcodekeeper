@@ -178,7 +178,9 @@ public class DBStoreMenu {
 
             @Override
             public void run() {
-                notifyListeners(file);
+                if (isChecked()) {
+                    notifyListeners(file);
+                }
             }
         };
         menuMgr.add(fileAction);
@@ -192,7 +194,9 @@ public class DBStoreMenu {
 
             @Override
             public void run() {
-                notifyListeners(dbInfo);
+                if (isChecked()) {
+                    notifyListeners(dbInfo);
+                }
             }
         };
         submenu.add(dbAction);
