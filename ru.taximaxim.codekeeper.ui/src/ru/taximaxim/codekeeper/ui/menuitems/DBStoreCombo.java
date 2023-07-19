@@ -144,6 +144,7 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
             storePicker.clearSelection();
         } else {
             storePicker.setSelection(lastDb);
+            storePicker.updateSelection();
         }
         update();
     }

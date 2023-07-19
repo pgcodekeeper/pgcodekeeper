@@ -15,7 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.dbstore;
 
-import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreList;
-import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
 import ru.taximaxim.codekeeper.ui.xmlstore.DbXmlStore;
 
@@ -123,12 +121,12 @@ public final class DbInfo {
     public String getConType() {
         return conType;
     }
-    
+
     public DbInfo(String name, String dbname, String dbuser, String dbpass,
             String dbhost, int dbport) {
-        this(name, dbname, dbuser, dbpass, dbhost, dbport, false, false, Collections.emptyList(), 
+        this(name, dbname, dbuser, dbpass, dbhost, dbport, false, false, Collections.emptyList(),
                 Collections.emptyMap(), false, false, "", //$NON-NLS-1$
-                DbInfo.DEFAULT_EXECUTE_PATH, DbInfo.DEFAULT_CUSTOM_PARAMS, false, "", ""); //$NON-NLS-1$ //$NON-NLS-2$ 
+                DEFAULT_EXECUTE_PATH, DEFAULT_CUSTOM_PARAMS, false, "", ""); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     public DbInfo(String name, String dbname, String dbuser, String dbpass,
@@ -200,15 +198,10 @@ public final class DbInfo {
         return map;
     }
 
-    public static DbInfo getLastDb(String preference) {
-        try {
-            return DbXmlStore.INSTANCE.readObjects().stream()
-                    .filter(e -> preference.equals(e.getName())).findAny().orElse(null);
-        } catch (IOException ex) {
-            Log.log(ex);
-        }
-
-        return null;
+    public static DbInfo getLastDb(String preference, boolean isMsSql) {
+        return DbXmlStore.getStore().stream()
+                .filter(e -> e.isMsSql() == isMsSql && preference.equals(e.getName()))
+                .findAny().orElse(null);
     }
 
     public void appendIgnoreFiles(IgnoreList ignoreList) {

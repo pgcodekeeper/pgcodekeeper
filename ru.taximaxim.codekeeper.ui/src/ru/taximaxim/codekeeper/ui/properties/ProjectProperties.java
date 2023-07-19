@@ -123,7 +123,7 @@ public class ProjectProperties extends PropertyPage {
             }
         });
 
-        dbForBind = DbInfo.getLastDb(nameOfBoundDb);
+        dbForBind = DbInfo.getLastDb(nameOfBoundDb, isMsSql);
         storePicker = new DbMenuStorePicker(panel, false, false);
         storePicker.filter(isMsSql);
         storePicker.setSelection(dbForBind);
@@ -303,6 +303,12 @@ public class ProjectProperties extends PropertyPage {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public void dispose() {
+        storePicker.dispose();
+        super.dispose();
     }
 
     private void fillPrefs() throws BackingStoreException {

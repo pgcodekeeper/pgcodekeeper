@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Fixed expression analysis and dependency search for columns.
+- Fixed database menu caching and selected DB.
 
 ## [8.2.0] - 2023-07-04
 

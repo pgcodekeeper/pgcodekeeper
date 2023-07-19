@@ -91,7 +91,7 @@ implements IWorkbenchPreferencePage {
     protected void createFieldEditors() {
         dbList = new DbStorePrefListEditor(getFieldEditorParent());
         dbList.setLayoutData(new GridData(GridData.FILL_BOTH));
-        List<DbInfo> dbInfoList = DbXmlStore.readStoreFromXml();
+        List<DbInfo> dbInfoList = DbXmlStore.getStore();
 
         DbInfo.sortDbGroups(dbInfoList);
         dbList.setInputList(dbInfoList);

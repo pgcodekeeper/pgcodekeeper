@@ -445,6 +445,12 @@ class PageDb extends WizardPage {
         return !btnInit.getSelection() || storePicker.getDbInfo() != null || storePicker.getPathOfFile() != null;
     }
 
+    @Override
+    public void dispose() {
+        storePicker.dispose();
+        super.dispose();
+    }
+
     private static class TimeZoneProgress implements IRunnableWithProgress {
 
         private final DbInfo dbinfo;

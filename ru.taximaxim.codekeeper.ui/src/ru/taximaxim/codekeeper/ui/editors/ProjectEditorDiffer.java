@@ -396,6 +396,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     @Override
     public void dispose() {
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
+        dbStorePicker.dispose();
         super.dispose();
     }
 
@@ -668,7 +669,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
      */
     public Object getCurrentDb() {
         IEclipsePreferences prefs = proj.getDbBindPrefs();
-        DbInfo boundDb = DbInfo.getLastDb(prefs.get(DB_BIND_PREF.NAME_OF_BOUND_DB, "")); //$NON-NLS-1$
+        DbInfo boundDb = DbInfo.getLastDb(prefs.get(DB_BIND_PREF.NAME_OF_BOUND_DB, ""), isMsSql); //$NON-NLS-1$
         if (boundDb != null) {
             dbStorePicker.setEnabled(false);
             return boundDb;
@@ -678,7 +679,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             return currentRemote;
         }
 
-        return DbInfo.getLastDb(prefs.get(DB_BIND_PREF.LAST_DB_STORE, "")); //$NON-NLS-1$
+        return DbInfo.getLastDb(prefs.get(DB_BIND_PREF.LAST_DB_STORE, ""), isMsSql); //$NON-NLS-1$
     }
 
     public void saveLastDb(DbInfo lastDb) {
@@ -1269,7 +1270,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                     });
                     menuMgrGetChangesCustom.add(new Separator());
                     DBStoreMenu dbMenu = new DBStoreMenu(menuMgrGetChangesCustom, true, false, isMsSql, parent.getShell(), getCurrentDb());
-                    dbMenu.fillDbMenu(DbXmlStore.readStoreFromXml());
+                    dbMenu.fillDbMenu(DbXmlStore.getStore());
                     dbMenu.addSelectionListener(ProjectEditorDiffer.this::setCurrentDb);
                     return menuMgrGetChangesCustom.createContextMenu(parent);
                 }
