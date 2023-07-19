@@ -9,6 +9,14 @@
 
 ### Добавлено
 
+### Изменено
+
+### Исправлено
+
+## [8.3.0] - 2023-07-19
+
+### Добавлено
+
 - Добавлены настройки для типов подключения.
 
 ### Изменено
@@ -18,7 +26,7 @@
 ### Исправлено
 
 - Исправлен анализ выражений и поиск зависимостей для колонок.
-- Исправлено кеширование меню базы данных и выбранной БД.
+- Исправлено кеширование меню базы данных.
 
 ## [8.2.0] - 2023-07-04
 
@@ -1725,7 +1733,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.2.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.3.0...HEAD
+[8.3.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.2.0...v8.3.0
 [8.2.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.1.0...v8.2.0
 [8.1.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.0.0...v8.1.0
 [8.0.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.6.0...v8.0.0

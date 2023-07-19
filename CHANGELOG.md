@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [8.3.0] - 2023-07-19
+
+### Added
+
 - Added settings for connecting types.
 
 ### Changed
@@ -18,7 +26,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Fixed expression analysis and dependency search for columns.
-- Fixed database menu caching and selected DB.
+- Fixed database menu caching.
 
 ## [8.2.0] - 2023-07-04
 
@@ -1724,7 +1732,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.2.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.3.0...HEAD
+[8.3.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.2.0...v8.3.0
 [8.2.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.1.0...v8.2.0
 [8.1.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.0.0...v8.1.0
 [8.0.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v7.6.0...v8.0.0
