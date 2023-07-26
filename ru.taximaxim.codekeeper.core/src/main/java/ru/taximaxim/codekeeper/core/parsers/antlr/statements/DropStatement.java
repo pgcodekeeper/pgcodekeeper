@@ -128,8 +128,8 @@ public class DropStatement extends ParserAbstract {
             return;
         }
 
-        for (Schema_qualified_nameContext objName :
-            ctx.if_exist_names_restrict_cascade().names_references().schema_qualified_name()) {
+        for (Schema_qualified_nameContext objName : ctx.if_exist_names_restrict_cascade().names_references()
+            .schema_qualified_name()) {
             List<ParserRuleContext> ids = getIdentifiers(objName);
             PgObjLocation loc = addObjReference(ids, type, ACTION_DROP);
 
@@ -185,6 +185,9 @@ public class DropStatement extends ParserAbstract {
         if (ctx.WRAPPER() != null) {
             return DbObjType.FOREIGN_DATA_WRAPPER;
         }
+        if (ctx.EVENT() != null) {
+            return DbObjType.EVENT_TRIGGER;
+        }
         return null;
     }
 
@@ -239,7 +242,7 @@ public class DropStatement extends ParserAbstract {
             type = getTypeOfDropStmt(dropStmtCtx);
             if (type != null) {
                 List<Schema_qualified_nameContext> objNames = dropStmtCtx
-                        .if_exist_names_restrict_cascade().names_references().schema_qualified_name();
+                    .if_exist_names_restrict_cascade().names_references().schema_qualified_name();
                 ids = objNames.size() == 1 ? getIdentifiers(objNames.get(0))
                         : Collections.emptyList();
             }

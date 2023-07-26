@@ -37,9 +37,8 @@ import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 class PgDiffTest {
 
     /**
-     * Template name for file names that should be used for the test. Testing
-     * method adds _original.sql, _new.sql and _diff.sql to the file name
-     * template.
+     * Template name for file names that should be used for the test. Testing method adds _original.sql, _new.sql and
+     * _diff.sql to the file name template.
      */
     @ParameterizedTest
     @ValueSource(strings = {
@@ -106,6 +105,12 @@ class PgDiffTest {
             "add_column_generated",
             // Tests scenario where generated COLUMN is modified.
             "modify_column_generated",
+            // Test scenario where new EVENT TRIGGER is added.
+            "add_event_trigger",
+            // Test scenario where EVENT TRIGGER is modified.
+            "modify_event_trigger",
+            // Test scenario where EVENT TRIGGER is dropped.
+            "drop_event_trigger",
             // Tests scenario where new FOREIGN TABLE is added.
             "add_foreign_table",
             // Test scenario for greenplum where new FOREIGN TABLE is added.
@@ -163,7 +168,7 @@ class PgDiffTest {
             // Tests scenario where TABLE with generated SEQUENCE is added.
             "add_generated_sequence",
             // Tests scenario where original and new TABLE contain
-            //different INHERITS.
+            // different INHERITS.
             "modify_inherits",
             // Tests scenario where SEQUENCE is added.
             "add_sequence",
@@ -340,21 +345,21 @@ class PgDiffTest {
             "alter_type_composite_add_attr",
             "alter_type_composite_drop_attr",
             "alter_type_composite_alter_attr",
-            //Test enum type
+            // Test enum type
             "add_type_enum",
             "drop_type_enum",
             "type_enum_add_value",
             "type_enum_drop_value",
             "type_enum_swap_values",
-            //Test range type
+            // Test range type
             "add_type_range",
             "drop_type_range",
             "type_range_chg",
-            //Test base type
+            // Test base type
             "add_type_base",
             "drop_type_base",
             "type_base_chg",
-            //Test domain
+            // Test domain
             "add_domain",
             "drop_domain",
             "alter_domain_drop_def",
@@ -430,9 +435,9 @@ class PgDiffTest {
             "modify_materialized_view_access_method",
             // Tests scenario where materialized VIEW is changed.
             "modify_materialized_view",
-            //Tests scenario where empty SEQUENCE is compared.
+            // Tests scenario where empty SEQUENCE is compared.
             "compare_empty_sequence",
-            //Tests scenario where TRIGGER with multiple events is added.
+            // Tests scenario where TRIGGER with multiple events is added.
             "add_multiple_events_trigger",
             // Tests scenario where RULE is disabled.
             "disable_rule",

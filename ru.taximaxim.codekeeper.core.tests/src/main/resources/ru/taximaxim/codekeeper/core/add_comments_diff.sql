@@ -6,6 +6,8 @@ COMMENT ON CAST (integer AS bigint) IS 'test cast';
 
 COMMENT ON EXTENSION test_ext IS 'test extension';
 
+COMMENT ON EVENT TRIGGER evt1 IS 'This is event trigger';
+
 COMMENT ON FOREIGN DATA WRAPPER test_fdw_1 IS 'test_comment';
 
 COMMENT ON SERVER srv111 IS 'test_comment';

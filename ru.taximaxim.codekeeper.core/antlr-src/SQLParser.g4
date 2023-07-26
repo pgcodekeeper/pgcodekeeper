@@ -615,7 +615,6 @@ alter_event_trigger_statement
 alter_event_trigger_action
     : DISABLE
     | ENABLE (REPLICA | ALWAYS)?
-    | owner_to
     | rename_to
     ;
 
@@ -729,9 +728,13 @@ create_language_statement
     ;
 
 create_event_trigger_statement
-    : EVENT TRIGGER name=identifier ON identifier
-    (WHEN (schema_qualified_name IN LEFT_PAREN character_string (COMMA character_string)* RIGHT_PAREN AND?)+ )?
-    EXECUTE (PROCEDURE | FUNCTION) vex
+    : EVENT TRIGGER name=identifier ON event=identifier
+    (WHEN event_trigger_filter_variables (AND event_trigger_filter_variables)*)?
+    EXECUTE (PROCEDURE | FUNCTION) func_name=function_call
+    ;
+
+event_trigger_filter_variables
+    : identifier IN LEFT_PAREN filter_values+=character_string (COMMA filter_values+=character_string)* RIGHT_PAREN
     ;
 
 create_type_statement
@@ -883,7 +886,7 @@ alter_owner_statement
     : (OPERATOR target_operator
         | LARGE OBJECT NUMBER_LITERAL
         | (FUNCTION | PROCEDURE | AGGREGATE) name=schema_qualified_name function_args
-        | (TEXT SEARCH DICTIONARY | TEXT SEARCH CONFIGURATION | FOREIGN DATA WRAPPER | SERVER | DOMAIN | SCHEMA | SEQUENCE | TYPE | COLLATION | MATERIALIZED? VIEW)
+        | (TEXT SEARCH DICTIONARY | TEXT SEARCH CONFIGURATION | FOREIGN DATA WRAPPER | EVENT TRIGGER | SERVER | DOMAIN | SCHEMA | SEQUENCE | TYPE | COLLATION | MATERIALIZED? VIEW)
         if_exists? name=schema_qualified_name) owner_to
     ;
 

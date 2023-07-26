@@ -485,6 +485,7 @@ public abstract class ParserAbstract {
                     new GenericColumn(getUserMappingName((User_mapping_nameContext) nameCtx), DbObjType.USER_MAPPING));
         case ASSEMBLY:
         case EXTENSION:
+        case EVENT_TRIGGER:
         case FOREIGN_DATA_WRAPPER:
         case SERVER:
         case SCHEMA:

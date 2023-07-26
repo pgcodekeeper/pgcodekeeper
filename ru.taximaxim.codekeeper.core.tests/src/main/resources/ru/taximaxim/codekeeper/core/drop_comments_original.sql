@@ -14,6 +14,22 @@ CREATE TYPE public.typ_composite AS (
     val text COLLATE pg_catalog."en_GB"
 );
 
+CREATE OR REPLACE FUNCTION public.proc1()
+    RETURNS event_trigger
+    LANGUAGE plpgsql
+    COST 100
+    VOLATILE NOT LEAKPROOF
+AS $BODY$
+BEGIN
+END;
+$BODY$;
+
+CREATE EVENT TRIGGER evt1
+ON ddl_command_start
+EXECUTE PROCEDURE proc1();
+
+COMMENT ON EVENT TRIGGER evt1 IS 'event trigger';
+
 COMMENT ON TYPE public.typ_composite IS 'test type';
 
 COMMENT ON COLUMN public.typ_composite.key IS 'Type composite key comment';

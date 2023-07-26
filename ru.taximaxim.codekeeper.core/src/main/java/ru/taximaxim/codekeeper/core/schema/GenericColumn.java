@@ -113,6 +113,7 @@ public class GenericColumn implements Serializable {
             case EXTENSION: return db.getExtension(schema);
             case FOREIGN_DATA_WRAPPER: return db.getForeignDW(schema);
             case SERVER: return db.getServer(schema);
+            case EVENT_TRIGGER: return db.getEventTrigger(schema); 
             case CAST: return db.getCast(schema);
             case USER_MAPPING: return db.getUserMapping(schema);
             case ASSEMBLY: return db.getAssembly(schema);

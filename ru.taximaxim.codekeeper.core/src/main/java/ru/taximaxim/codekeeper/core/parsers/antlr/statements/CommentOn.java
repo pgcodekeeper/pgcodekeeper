@@ -35,11 +35,11 @@ import ru.taximaxim.codekeeper.core.schema.AbstractPgTable;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.PgColumn;
+import ru.taximaxim.codekeeper.core.schema.PgCompositeType;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgDomain;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
-import ru.taximaxim.codekeeper.core.schema.PgCompositeType;
 import ru.taximaxim.codekeeper.core.schema.PgView;
 
 public class CommentOn extends ParserAbstract {
@@ -123,7 +123,7 @@ public class CommentOn extends ParserAbstract {
             schema = getSchemaSafe(getIdentifiers(obj.table_name));
         } else if (obj.EXTENSION() == null && obj.SCHEMA() == null && obj.DATABASE() == null
                 && obj.CAST() == null && obj.SERVER() == null
-                && (obj.DATA() == null || obj.WRAPPER() == null)) {
+                && (obj.DATA() == null || obj.WRAPPER() == null) && obj.EVENT() == null) {
             schema = getSchemaSafe(ids);
         }
 
@@ -148,6 +148,9 @@ public class CommentOn extends ParserAbstract {
         } else if (obj.EXTENSION() != null) {
             type = DbObjType.EXTENSION;
             st = getSafe(PgDatabase::getExtension, db, nameCtx);
+        } else if (obj.EVENT() != null) {
+            type = DbObjType.EVENT_TRIGGER;
+            st = getSafe(PgDatabase::getEventTrigger, db, nameCtx);
         } else if (obj.FOREIGN() != null && obj.DATA() != null && obj.WRAPPER() != null) {
             type = DbObjType.FOREIGN_DATA_WRAPPER;
             st = getSafe(PgDatabase::getForeignDW, db, nameCtx);
@@ -177,11 +180,11 @@ public class CommentOn extends ParserAbstract {
             type = DbObjType.DATABASE;
         } else if (obj.INDEX() != null) {
             type = DbObjType.INDEX;
-            st = getSafe((sc,n) -> sc.getStatementContainers()
-                    .flatMap(c -> Stream.concat(c.getIndexes().stream(), c.getConstraints().stream()))
-                    .filter(s -> s.getName().equals(n))
-                    .collect(Collectors.reducing((a,b) -> b.getStatementType() == DbObjType.INDEX ? b : a))
-                    .orElse(null),
+            st = getSafe((sc, n) -> sc.getStatementContainers()
+                .flatMap(c -> Stream.concat(c.getIndexes().stream(), c.getConstraints().stream()))
+                .filter(s -> s.getName().equals(n))
+                .collect(Collectors.reducing((a, b) -> b.getStatementType() == DbObjType.INDEX ? b : a))
+                .orElse(null),
                     schema, nameCtx);
         } else if (obj.SCHEMA() != null && !Consts.PUBLIC.equals(name)) {
             type = DbObjType.SCHEMA;
@@ -238,7 +241,7 @@ public class CommentOn extends ParserAbstract {
             return;
         }
 
-        doSafe((s,c) -> s.setComment(db.getArguments(), c), st, comment);
+        doSafe((s, c) -> s.setComment(db.getArguments(), c), st, comment);
         if (type == DbObjType.FUNCTION || type == DbObjType.PROCEDURE || type == DbObjType.AGGREGATE) {
             addObjReference(ids, type, ACTION_ALTER,
                     parseArguments(obj.function_args()));

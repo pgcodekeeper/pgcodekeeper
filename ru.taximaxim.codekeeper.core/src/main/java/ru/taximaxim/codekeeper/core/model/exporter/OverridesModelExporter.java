@@ -79,6 +79,7 @@ public class OverridesModelExporter extends AbstractModelExporter {
                 case RULE:
                 case POLICY:
                 case EXTENSION:
+                case EVENT_TRIGGER:
                 case CAST:
                 case COLUMN:
                     break;

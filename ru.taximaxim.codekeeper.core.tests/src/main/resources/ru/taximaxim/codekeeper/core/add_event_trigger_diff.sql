@@ -1,0 +1,23 @@
+SET search_path = pg_catalog;
+
+CREATE EVENT TRIGGER evt1
+	ON ddl_command_end
+	EXECUTE PROCEDURE proc1();
+
+CREATE EVENT TRIGGER evt2
+	ON ddl_command_start
+	WHEN TAG IN ('ALTER AGGREGATE')
+	EXECUTE PROCEDURE proc2();
+
+CREATE EVENT TRIGGER evt3
+	ON ddl_command_start
+	WHEN TAG IN ('ALTER AGGREGATE', 'ALTER COLLATION')
+	EXECUTE PROCEDURE proc3();
+
+CREATE EVENT TRIGGER evt5
+	ON sql_drop
+	EXECUTE PROCEDURE proc5();
+
+CREATE EVENT TRIGGER evt6
+	ON table_rewrite
+	EXECUTE PROCEDURE proc6();

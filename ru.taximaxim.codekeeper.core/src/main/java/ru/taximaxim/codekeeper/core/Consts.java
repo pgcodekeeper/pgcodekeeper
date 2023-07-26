@@ -84,6 +84,7 @@ public interface Consts {
     enum WORK_DIR_NAMES {
         SCHEMA,
         EXTENSION,
+        EVENT_TRIGGER,
         USER_MAPPING,
         CAST,
         SERVER,

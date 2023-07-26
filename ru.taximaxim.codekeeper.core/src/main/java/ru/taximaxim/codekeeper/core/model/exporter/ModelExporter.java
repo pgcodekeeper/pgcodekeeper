@@ -77,6 +77,7 @@ public class ModelExporter extends AbstractModelExporter {
         case SERVER:
         case USER_MAPPING:
         case CAST:
+        case EVENT_TRIGGER:
             path = baseDir.resolve(type.name());
             break;
 

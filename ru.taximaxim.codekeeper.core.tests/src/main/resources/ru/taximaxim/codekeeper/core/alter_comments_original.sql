@@ -68,6 +68,22 @@ COMMENT ON CONSTRAINT text_check ON public.test IS 'text check';
 
 COMMENT ON INDEX public.test_index IS 'test table index';
 
+CREATE OR REPLACE FUNCTION public.proc1()
+    RETURNS event_trigger
+    LANGUAGE plpgsql
+    COST 100
+    VOLATILE NOT LEAKPROOF
+AS $BODY$
+BEGIN
+END;
+$BODY$;
+
+CREATE EVENT TRIGGER evt1
+ON ddl_command_start
+EXECUTE PROCEDURE proc1();
+
+COMMENT ON EVENT TRIGGER evt1 IS 'event trigger';
+
 CREATE SEQUENCE public.test_id_seq
     START WITH 1
     INCREMENT BY 1

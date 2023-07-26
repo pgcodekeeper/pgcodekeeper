@@ -18,6 +18,22 @@ COMMENT ON TYPE public.typ_composite IS 'This composite type 2';
 
 COMMENT ON COLUMN public.typ_composite."key" IS 'Type column of composite comment 2';
 
+CREATE OR REPLACE FUNCTION public.proc1()
+    RETURNS event_trigger
+    LANGUAGE plpgsql
+    COST 100
+    VOLATILE NOT LEAKPROOF
+AS $BODY$
+BEGIN
+END;
+$BODY$;
+
+CREATE EVENT TRIGGER evt1
+ON ddl_command_start
+EXECUTE PROCEDURE proc1();
+
+COMMENT ON EVENT TRIGGER evt1 IS 'altered comment of the event trigger';
+
 CREATE DOMAIN public.dom AS integer NOT NULL DEFAULT (-1)
     CONSTRAINT dom_check CHECK ((VALUE <> 0));
     

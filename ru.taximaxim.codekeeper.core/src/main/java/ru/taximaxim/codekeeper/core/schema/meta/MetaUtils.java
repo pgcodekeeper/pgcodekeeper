@@ -33,8 +33,8 @@ import ru.taximaxim.codekeeper.core.schema.IRelation;
 import ru.taximaxim.codekeeper.core.schema.IStatement;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
-import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation.LocationType;
+import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 public class MetaUtils {
@@ -132,6 +132,7 @@ public class MetaUtils {
         case USER_MAPPING:
         case SCHEMA:
         case EXTENSION:
+        case EVENT_TRIGGER:
         case FOREIGN_DATA_WRAPPER:
         case SERVER:
         case ROLE:

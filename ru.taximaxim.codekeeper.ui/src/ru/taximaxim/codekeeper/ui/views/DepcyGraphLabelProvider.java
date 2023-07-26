@@ -88,6 +88,8 @@ class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvi
                 return "DOM " + st.getBareName(); //$NON-NLS-1$
             case EXTENSION:
                 return "EXT " + st.getBareName(); //$NON-NLS-1$
+            case EVENT_TRIGGER:
+                return "EVT " + st.getBareName(); //$NON-NLS-1$
             case FOREIGN_DATA_WRAPPER:
                 return "FDW " + st.getBareName(); //$NON-NLS-1$
             case SERVER:
