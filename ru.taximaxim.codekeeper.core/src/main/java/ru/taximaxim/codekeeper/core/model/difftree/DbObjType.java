@@ -29,6 +29,7 @@ public enum DbObjType {
     ASSEMBLY,
     SCHEMA,
     EXTENSION,
+    EVENT_TRIGGER,
     FOREIGN_DATA_WRAPPER,
     SERVER,
     USER_MAPPING,

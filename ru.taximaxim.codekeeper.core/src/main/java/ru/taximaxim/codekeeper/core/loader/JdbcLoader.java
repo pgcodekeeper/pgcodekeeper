@@ -28,6 +28,7 @@ import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.loader.jdbc.CastsReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.CollationsReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.ConstraintsReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.EventTriggersReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.ExtensionsReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.ForeignDataWrappersReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.FtsConfigurationsReader;
@@ -110,6 +111,7 @@ public class JdbcLoader extends JdbcLoaderBase {
             new OperatorsReader(this).read();
 
             new ExtensionsReader(this, d).read();
+            new EventTriggersReader(this, d).read();
             new CastsReader(this, d).read();
             new ForeignDataWrappersReader(this, d).read();
             new ServersReader(this, d).read();

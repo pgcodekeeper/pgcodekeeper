@@ -55,6 +55,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.statements.CreateCast;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.CreateCollation;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.CreateDatabase;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.CreateDomain;
+import ru.taximaxim.codekeeper.core.parsers.antlr.statements.CreateEventTrigger;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.CreateExtension;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.CreateFdw;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.CreateForeignTable;
@@ -86,7 +87,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.statements.UpdateStatement;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 
 public class CustomSQLParserListener extends CustomParserListener
-implements SqlContextProcessor {
+        implements SqlContextProcessor {
 
     private String tablespace;
     private String accessMethod;
@@ -180,6 +181,8 @@ implements SqlContextProcessor {
             p = new CreateFtsTemplate(ctx.create_fts_template_statement(), db);
         } else if (ctx.create_fts_parser_statement() != null) {
             p = new CreateFtsParser(ctx.create_fts_parser_statement(), db);
+        } else if (ctx.create_event_trigger_statement() != null) {
+            p = new CreateEventTrigger(ctx.create_event_trigger_statement(), db);
         } else if (ctx.create_fts_dictionary_statement() != null) {
             p = new CreateFtsDictionary(ctx.create_fts_dictionary_statement(), db);
         } else if (ctx.comment_on_statement() != null) {
@@ -228,6 +231,7 @@ implements SqlContextProcessor {
                 || ctx.alter_policy_statement() != null
                 || ctx.alter_server_statement() != null
                 || ctx.alter_collation_statement() != null
+                || ctx.alter_event_trigger_statement() != null
                 || ctx.alter_user_mapping_statement() != null) {
             p = new AlterOther(ctx, db);
         } else {
@@ -259,11 +263,11 @@ implements SqlContextProcessor {
     private void data(Data_statementContext ctx) {
         ParserAbstract p;
         if (ctx.update_stmt_for_psql() != null) {
-            p =  new UpdateStatement(ctx.update_stmt_for_psql(), db);
+            p = new UpdateStatement(ctx.update_stmt_for_psql(), db);
         } else if (ctx.insert_stmt_for_psql() != null) {
-            p =  new InsertStatement(ctx.insert_stmt_for_psql(), db);
+            p = new InsertStatement(ctx.insert_stmt_for_psql(), db);
         } else if (ctx.delete_stmt_for_psql() != null) {
-            p =  new DeleteStatement(ctx.delete_stmt_for_psql(), db);
+            p = new DeleteStatement(ctx.delete_stmt_for_psql(), db);
         } else if (ctx.merge_stmt_for_psql() != null) {
             p = new MergeStatement(ctx.merge_stmt_for_psql(), db);
         } else {
@@ -290,32 +294,32 @@ implements SqlContextProcessor {
         String confValue = vex.get(0).getText();
 
         switch (confParam.toLowerCase(Locale.ROOT)) {
-        case "search_path":
-            if (ParserListenerMode.NORMAL == mode
-            && (vex.size() != 1 || !Consts.PG_CATALOG.equals(confValue))) {
-                throw new UnresolvedReferenceException("Unsupported search_path", ctx.start);
-            }
-            break;
-        case "default_with_oids":
-            oids = confValue;
-            if ("false".equals(oids)) {
-                oids = null;
-            }
-            break;
-        case "default_tablespace":
-            tablespace = confValue;
-            if (tablespace.isEmpty()
-                    // special case for pg_dump's unset default_tablespace
-                    // remove after good unquoting mechanism would be introduced
-                    || "''".equals(tablespace)) {
-                tablespace = null;
-            }
-            break;
-        case "default_table_access_method":
-            accessMethod = confValue;
-            break;
-        default:
-            break;
+            case "search_path":
+                if (ParserListenerMode.NORMAL == mode
+                        && (vex.size() != 1 || !Consts.PG_CATALOG.equals(confValue))) {
+                    throw new UnresolvedReferenceException("Unsupported search_path", ctx.start);
+                }
+                break;
+            case "default_with_oids":
+                oids = confValue;
+                if ("false".equals(oids)) {
+                    oids = null;
+                }
+                break;
+            case "default_tablespace":
+                tablespace = confValue;
+                if (tablespace.isEmpty()
+                        // special case for pg_dump's unset default_tablespace
+                        // remove after good unquoting mechanism would be introduced
+                        || "''".equals(tablespace)) {
+                    tablespace = null;
+                }
+                break;
+            case "default_table_access_method":
+                accessMethod = confValue;
+                break;
+            default:
+                break;
         }
     }
 

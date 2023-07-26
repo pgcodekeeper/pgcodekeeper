@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added support for EVENT TRIGGER object.
+
 ### Changed
 
 ### Fixed

@@ -282,7 +282,8 @@ class QuickUpdateJob extends SingletonEditorJob {
                 .map(PgStatement::getStatementType)
                 .allMatch(ty -> ty == DbObjType.SCHEMA
                 || ty == DbObjType.EXTENSION
-                || ty == DbObjType.CAST);
+                    || ty == DbObjType.CAST
+                    || ty == DbObjType.EVENT_TRIGGER);
 
         Set<TreeElement> checked = new HashSet<>();
         for (PgStatement st : listPgObjectsFragment){

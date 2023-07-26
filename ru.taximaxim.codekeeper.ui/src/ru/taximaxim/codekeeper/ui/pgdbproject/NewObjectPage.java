@@ -139,8 +139,7 @@ public final class NewObjectPage extends WizardPage {
                 .findAny().orElse(null);
         IContainer container = resource.getParent();
         if (container != null) {
-            if (type != null && type != DbObjType.SCHEMA && type != DbObjType.EXTENSION
-                    && type != DbObjType.FOREIGN_DATA_WRAPPER && type != DbObjType.SERVER) {
+            if (type != null && !isSchemaLevel()) {
                 schema = container.getName();
             } else if (DbObjType.SCHEMA.name().equals(container.getName())) {
                 schema = resource.getName();
@@ -151,7 +150,7 @@ public final class NewObjectPage extends WizardPage {
     private void parseFile(IResource resource) {
         try {
             PgStatement st = UIProjectLoader.parseStatement((IFile)resource,
-                    EnumSet.of(DbObjType.EXTENSION, DbObjType.FOREIGN_DATA_WRAPPER,
+                    EnumSet.of(DbObjType.EXTENSION, DbObjType.EVENT_TRIGGER, DbObjType.FOREIGN_DATA_WRAPPER,
                             DbObjType.USER_MAPPING,
                             DbObjType.SERVER, DbObjType.TABLE,
                             DbObjType.VIEW, DbObjType.DOMAIN,
@@ -309,6 +308,7 @@ public final class NewObjectPage extends WizardPage {
         switch (type) {
         case SCHEMA:
         case EXTENSION:
+        case EVENT_TRIGGER:
         case FOREIGN_DATA_WRAPPER:
         case SERVER:
             path = name;
@@ -365,13 +365,9 @@ public final class NewObjectPage extends WizardPage {
             } else {
                 String third = parser.getThirdName();
                 String second = parser.getSecondName();
-                if ((type == DbObjType.SCHEMA || type == DbObjType.EXTENSION
-                        || type == DbObjType.FOREIGN_DATA_WRAPPER
-                        || type == DbObjType.SERVER) && second != null) {
+                if (isSchemaLevel() && second != null) {
                     err = Messages.NewObjectWizard_invalid_schema_format;
-                } else if (isSubElement() == (third == null)
-                        || (second == null && type != DbObjType.SCHEMA && type != DbObjType.EXTENSION
-                        && type != DbObjType.FOREIGN_DATA_WRAPPER && type != DbObjType.SERVER)) {
+                } else if (isSubElement() == (third == null) || (second == null && !isSchemaLevel())) {
                     err = Messages.NewObjectWizard_invalid_input_format + expectedFormat;
                 }
 
@@ -380,8 +376,7 @@ public final class NewObjectPage extends WizardPage {
                     if (isSubElement()) {
                         container = second;
                         schema = third;
-                    } else if (type != DbObjType.EXTENSION && type != DbObjType.SCHEMA
-                            && type != DbObjType.FOREIGN_DATA_WRAPPER && type != DbObjType.SERVER) {
+                    } else if (!isSchemaLevel()) {
                         schema = second;
                     }
                 }
@@ -392,6 +387,14 @@ public final class NewObjectPage extends WizardPage {
             setDescription(Messages.PgObject_create_object);
         }
         return err == null;
+    }
+
+    private boolean isSchemaLevel() {
+        return type == DbObjType.EXTENSION
+                || type == DbObjType.SCHEMA
+                || type == DbObjType.FOREIGN_DATA_WRAPPER
+                || type == DbObjType.SERVER
+                || type == DbObjType.EVENT_TRIGGER;
     }
 
     private boolean isHaveChoise() {
@@ -406,7 +409,8 @@ public final class NewObjectPage extends WizardPage {
     public boolean createFile() {
         try {
             mainPrefs.setValue(PREF.LAST_CREATED_OBJECT_TYPE, type.name());
-            if (type == DbObjType.EXTENSION || type == DbObjType.FOREIGN_DATA_WRAPPER || type == DbObjType.SERVER) {
+            if (type == DbObjType.EXTENSION || type == DbObjType.FOREIGN_DATA_WRAPPER
+                    || type == DbObjType.SERVER || type == DbObjType.EVENT_TRIGGER) {
                 createObject(null, name, type, true, currentProj);
             } else if (type == DbObjType.SCHEMA) {
                 createSchema(name, true, currentProj);

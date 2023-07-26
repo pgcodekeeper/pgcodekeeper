@@ -24,6 +24,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Alter_collation_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Alter_database_statementContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Alter_event_trigger_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Alter_extension_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Alter_foreign_data_wrapperContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Alter_function_statementContext;
@@ -40,6 +41,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractType;
 import ru.taximaxim.codekeeper.core.schema.PgBaseType;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.PgEventTrigger;
 
 public class AlterOther extends ParserAbstract {
 
@@ -74,6 +76,8 @@ public class AlterOther extends ParserAbstract {
             alterServer(ctx.alter_server_statement());
         } else if (ctx.alter_user_mapping_statement() != null) {
             alterUserMapping(ctx.alter_user_mapping_statement());
+        } else if (ctx.alter_event_trigger_statement() != null) {
+            alterEventTrigger(ctx.alter_event_trigger_statement());
         }
     }
 
@@ -118,7 +122,8 @@ public class AlterOther extends ParserAbstract {
                 if (storDirCtx.compress_type != null) {
                     doSafe(PgBaseType::setCompressType, baseType, storDirCtx.compress_type.getText());
                 } else if (storDirCtx.compress_level != null) {
-                    doSafe(PgBaseType::setCompressLevel, baseType, Integer.parseInt(storDirCtx.compress_level.getText()));
+                    doSafe(PgBaseType::setCompressLevel, baseType,
+                            Integer.parseInt(storDirCtx.compress_level.getText()));
                 } else if (storDirCtx.block_size != null) {
                     doSafe(PgBaseType::setBlockSize, baseType, Integer.parseInt(storDirCtx.block_size.getText()));
                 }
@@ -132,6 +137,20 @@ public class AlterOther extends ParserAbstract {
 
     private void alterExtension(Alter_extension_statementContext ctx) {
         addObjReference(Arrays.asList(ctx.identifier()), DbObjType.EXTENSION, ACTION_ALTER);
+    }
+
+    private void alterEventTrigger(Alter_event_trigger_statementContext ctx) {
+        addObjReference(Arrays.asList(ctx.identifier()), DbObjType.EVENT_TRIGGER, ACTION_ALTER);
+        PgEventTrigger eventTrigger = getSafe(PgDatabase::getEventTrigger, db, ctx.name);
+        if (eventTrigger != null) {
+            if (ctx.alter_event_trigger_action().DISABLE() != null) {
+                eventTrigger.setMode("DISABLE");
+            } else if (ctx.alter_event_trigger_action().REPLICA() != null) {
+                eventTrigger.setMode("ENABLE REPLICA");
+            } else if (ctx.alter_event_trigger_action().ALWAYS() != null) {
+                eventTrigger.setMode("ENABLE ALWAYS");
+            }
+        }
     }
 
     private void alterForeignDataWrapper(Alter_foreign_data_wrapperContext ctx) {
@@ -169,26 +188,39 @@ public class AlterOther extends ParserAbstract {
     private DbObjType getType() {
         if (ctx.alter_operator_statement() != null) {
             return DbObjType.OPERATOR;
-        } else if (ctx.alter_function_statement() != null) {
+        }
+        if (ctx.alter_function_statement() != null) {
             return DbObjType.FUNCTION;
-        } else if (ctx.alter_schema_statement() != null) {
+        }
+        if (ctx.alter_schema_statement() != null) {
             return DbObjType.SCHEMA;
-        } else if (ctx.alter_type_statement() != null) {
+        }
+        if (ctx.alter_type_statement() != null) {
             return DbObjType.TYPE;
-        } else if (ctx.alter_extension_statement() != null) {
+        }
+        if (ctx.alter_extension_statement() != null) {
             return DbObjType.EXTENSION;
-        } else if (ctx.alter_database_statement() != null) {
+        }
+        if (ctx.alter_database_statement() != null) {
             return DbObjType.DATABASE;
-        } else if (ctx.alter_foreign_data_wrapper() != null) {
+        }
+        if (ctx.alter_foreign_data_wrapper() != null) {
             return DbObjType.FOREIGN_DATA_WRAPPER;
-        } else if (ctx.alter_policy_statement() != null) {
+        }
+        if (ctx.alter_policy_statement() != null) {
             return DbObjType.POLICY;
-        } else if (ctx.alter_server_statement() != null) {
+        }
+        if (ctx.alter_server_statement() != null) {
             return DbObjType.SERVER;
-        } else if (ctx.alter_user_mapping_statement() != null) {
+        }
+        if (ctx.alter_user_mapping_statement() != null) {
             return DbObjType.USER_MAPPING;
-        } else if (ctx.alter_collation_statement() != null) {
+        }
+        if (ctx.alter_collation_statement() != null) {
             return DbObjType.COLLATION;
+        }
+        if (ctx.alter_event_trigger_statement() != null) {
+            return DbObjType.EVENT_TRIGGER;
         }
         return null;
     }
@@ -227,6 +259,9 @@ public class AlterOther extends ParserAbstract {
         }
         if (ctx.alter_user_mapping_statement() != null) {
             return ctx.alter_user_mapping_statement().user_mapping_name().identifier();
+        }
+        if (ctx.alter_event_trigger_statement() != null) {
+            return ctx.alter_event_trigger_statement().name;
         }
         return null;
     }

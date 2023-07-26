@@ -1,0 +1,12 @@
+CREATE EVENT TRIGGER evt1
+ON ddl_command_start
+EXECUTE PROCEDURE proc1();
+
+CREATE EVENT TRIGGER evt2
+ON ddl_command_start
+WHEN TAG IN ('ALTER TABLE')
+EXECUTE PROCEDURE proc2();
+
+CREATE EVENT TRIGGER evt3
+ON ddl_command_start
+EXECUTE PROCEDURE proc3();

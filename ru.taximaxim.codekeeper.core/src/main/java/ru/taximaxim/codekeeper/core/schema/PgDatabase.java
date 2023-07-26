@@ -51,6 +51,7 @@ public class PgDatabase extends PgStatement implements IDatabase {
 
     private final Map<String, AbstractSchema> schemas = new LinkedHashMap<>();
     private final Map<String, PgExtension> extensions = new LinkedHashMap<>();
+    private final Map<String, PgEventTrigger> eventTriggers = new LinkedHashMap<>();
     private final Map<String, PgForeignDataWrapper> fdws = new LinkedHashMap<>();
     private final Map<String, PgServer> servers = new LinkedHashMap<>();
     private final Map<String, PgUserMapping> userMappings = new LinkedHashMap<>();
@@ -125,8 +126,8 @@ public class PgDatabase extends PgStatement implements IDatabase {
     /**
      * Add 'analysis launcher' for deferred analyze.
      *
-     * @param launcher launcher that contains almost everything needed to
-     * analyze an statement contained in it
+     * @param launcher
+     *            launcher that contains almost everything needed to analyze an statement contained in it
      */
     public void addAnalysisLauncher(AbstractAnalysisLauncher launcher) {
         analysisLaunchers.add(launcher);
@@ -150,10 +151,11 @@ public class PgDatabase extends PgStatement implements IDatabase {
     }
 
     /**
-     * Returns schema of given name or null if the schema has not been found. If
-     * schema name is null then default schema is returned.
+     * Returns schema of given name or null if the schema has not been found. If schema name is null then default schema
+     * is returned.
      *
-     * @param name schema name or null which means default schema
+     * @param name
+     *            schema name or null which means default schema
      *
      * @return found schema or null
      */
@@ -204,6 +206,7 @@ public class PgDatabase extends PgStatement implements IDatabase {
     protected void fillChildrenList(List<Collection<? extends PgStatement>> l) {
         l.add(schemas.values());
         l.add(extensions.values());
+        l.add(eventTriggers.values());
         l.add(fdws.values());
         l.add(servers.values());
         l.add(userMappings.values());
@@ -220,6 +223,8 @@ public class PgDatabase extends PgStatement implements IDatabase {
             return getSchema(name);
         case EXTENSION:
             return getExtension(name);
+        case EVENT_TRIGGER:
+            return getEventTrigger(name);
         case FOREIGN_DATA_WRAPPER:
             return getForeignDW(name);
         case SERVER:
@@ -248,6 +253,9 @@ public class PgDatabase extends PgStatement implements IDatabase {
             break;
         case EXTENSION:
             addExtension((PgExtension) st);
+            break;
+        case EVENT_TRIGGER:
+            addEventTrigger((PgEventTrigger) st);
             break;
         case FOREIGN_DATA_WRAPPER:
             addForeignDW((PgForeignDataWrapper) st);
@@ -278,7 +286,8 @@ public class PgDatabase extends PgStatement implements IDatabase {
     /**
      * Returns extension of given name or null if the extension has not been found.
      *
-     * @param name extension name
+     * @param name
+     *            extension name
      *
      * @return found extension or null
      */
@@ -299,10 +308,23 @@ public class PgDatabase extends PgStatement implements IDatabase {
         addUnique(extensions, extension);
     }
 
+    public Collection<PgEventTrigger> getEventTriggers() {
+        return Collections.unmodifiableCollection(eventTriggers.values());
+    }
+
+    public PgEventTrigger getEventTrigger(final String name) {
+        return eventTriggers.get(name);
+    }
+
+    public void addEventTrigger(final PgEventTrigger et) {
+        addUnique(eventTriggers, et);
+    }
+
     /**
      * Returns foreign data wrapper of given name or null if the foreign data wrapper has not been found.
      *
-     * @param name foreign data wrapper name
+     * @param name
+     *            foreign data wrapper name
      *
      * @return found foreign data wrapper or null
      */
@@ -350,7 +372,8 @@ public class PgDatabase extends PgStatement implements IDatabase {
     /**
      * Returns cast of given name or null if the cast has not been found.
      *
-     * @param name cast name
+     * @param name
+     *            cast name
      *
      * @return found cast or null
      */
@@ -376,7 +399,8 @@ public class PgDatabase extends PgStatement implements IDatabase {
     /**
      * Returns assembly of given name or null if the assembly has not been found.
      *
-     * @param name assembly name
+     * @param name
+     *            assembly name
      *
      * @return found assembly or null
      */
@@ -387,7 +411,8 @@ public class PgDatabase extends PgStatement implements IDatabase {
     /**
      * Returns role of given name or null if the role has not been found.
      *
-     * @param name role name
+     * @param name
+     *            role name
      *
      * @return found role or null
      */
@@ -398,7 +423,8 @@ public class PgDatabase extends PgStatement implements IDatabase {
     /**
      * Returns user of given name or null if the user has not been found.
      *
-     * @param name user name
+     * @param name
+     *            user name
      *
      * @return found user or null
      */
@@ -489,6 +515,7 @@ public class PgDatabase extends PgStatement implements IDatabase {
         if (obj instanceof PgDatabase) {
             PgDatabase db = (PgDatabase) obj;
             return extensions.equals(db.extensions)
+                    && eventTriggers.equals(db.eventTriggers)
                     && fdws.equals(db.fdws)
                     && servers.equals(db.servers)
                     && casts.equals(db.casts)
@@ -508,6 +535,7 @@ public class PgDatabase extends PgStatement implements IDatabase {
     @Override
     public void computeChildrenHash(Hasher hasher) {
         hasher.putUnordered(extensions);
+        hasher.putUnordered(eventTriggers);
         hasher.putUnordered(fdws);
         hasher.putUnordered(servers);
         hasher.putUnordered(casts);
@@ -560,6 +588,7 @@ public class PgDatabase extends PgStatement implements IDatabase {
         case SCHEMA:
         case EXTENSION:
         case FOREIGN_DATA_WRAPPER:
+        case EVENT_TRIGGER:
         case SERVER:
         case CAST:
             orig = getChild(name, type);
@@ -584,7 +613,7 @@ public class PgDatabase extends PgStatement implements IDatabase {
                 cont.addChild(st.shallowCopy());
             }
             break;
-        default :
+        default:
             AbstractSchema schema = getSchema(parentName);
             orig = schema.getChild(name, type);
             if (orig == null) {

@@ -150,3 +150,18 @@ COMMENT ON FOREIGN DATA WRAPPER test_fdw_1 IS 'test_comment';
 CREATE SERVER srv111  FOREIGN DATA WRAPPER fdw1 ;
 COMMENT ON SERVER srv111 IS 'test_comment';
 
+CREATE OR REPLACE FUNCTION public.proc1()
+    RETURNS event_trigger
+    LANGUAGE plpgsql
+    COST 100
+    VOLATILE NOT LEAKPROOF
+AS $BODY$
+BEGIN
+END;
+$BODY$;
+
+CREATE EVENT TRIGGER evt1
+ON ddl_command_start
+EXECUTE PROCEDURE proc1();
+
+COMMENT ON EVENT TRIGGER evt1 IS 'This is event trigger';

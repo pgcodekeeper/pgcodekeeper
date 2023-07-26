@@ -16,6 +16,20 @@ CREATE FUNCTION public.test_fnc(arg character varying) RETURNS boolean
 RETURN true;
 END;$$;
 
+CREATE OR REPLACE FUNCTION public.proc1()
+    RETURNS event_trigger
+    LANGUAGE plpgsql
+    COST 100
+    VOLATILE NOT LEAKPROOF
+AS $BODY$
+BEGIN
+END;
+$BODY$;
+
+CREATE EVENT TRIGGER evt1
+ON ddl_command_start
+EXECUTE PROCEDURE proc1();
+
 CREATE PROCEDURE public.test_proc(arg integer)
     LANGUAGE SQL
     AS $$ $$;

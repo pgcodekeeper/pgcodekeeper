@@ -58,7 +58,6 @@ ALTER TABLE public.test ALTER COLUMN id SET DEFAULT nextval('public.test_id_seq'
 ALTER TABLE ONLY public.test
     ADD CONSTRAINT test_pkey PRIMARY KEY (id);
 
-
 CREATE TRIGGER test_trigger BEFORE UPDATE ON public.test
 FOR EACH STATEMENT EXECUTE PROCEDURE trigger_fnc();
 
@@ -89,3 +88,17 @@ CREATE TEXT SEARCH CONFIGURATION public.test_config (
  CREATE FOREIGN DATA WRAPPER test_fdw_1;
  
  CREATE SERVER srv111 FOREIGN DATA WRAPPER fdw1 ;
+
+ CREATE OR REPLACE FUNCTION public.proc1()
+    RETURNS event_trigger
+    LANGUAGE plpgsql
+    COST 100
+    VOLATILE NOT LEAKPROOF
+AS $BODY$
+BEGIN
+END;
+$BODY$;
+
+CREATE EVENT TRIGGER evt1
+ON ddl_command_start
+EXECUTE PROCEDURE proc1();

@@ -72,12 +72,15 @@ public class AlterOwner extends ParserAbstract {
         if (ctx.SCHEMA() != null) {
             st = getSafe(PgDatabase::getSchema, db, nameCtx);
             type = DbObjType.SCHEMA;
-        } else if (ctx.FOREIGN() != null && ctx.DATA() != null && ctx.WRAPPER() != null ) {
+        } else if (ctx.FOREIGN() != null && ctx.DATA() != null && ctx.WRAPPER() != null) {
             st = getSafe(PgDatabase::getForeignDW, db, nameCtx);
             type = DbObjType.FOREIGN_DATA_WRAPPER;
-        } else if (ctx.SERVER() != null ) {
+        } else if (ctx.SERVER() != null) {
             st = getSafe(PgDatabase::getServer, db, nameCtx);
             type = DbObjType.SERVER;
+        } else if (ctx.EVENT() != null) {
+            st = getSafe(PgDatabase::getEventTrigger, db, nameCtx);
+            type = DbObjType.EVENT_TRIGGER;
         } else {
             AbstractSchema schema = getSchemaSafe(ids);
             if (ctx.DOMAIN() != null) {
@@ -142,7 +145,8 @@ public class AlterOwner extends ParserAbstract {
             fillOwnerTo(owner, st);
         } else {
             overrides.computeIfAbsent(st,
-                    k -> new StatementOverride()).setOwner(owner.getText());
+                    k -> new StatementOverride())
+                .setOwner(owner.getText());
         }
     }
 
@@ -155,6 +159,8 @@ public class AlterOwner extends ParserAbstract {
             type = DbObjType.FOREIGN_DATA_WRAPPER;
         } else if (ctx.SERVER() != null) {
             type = DbObjType.SERVER;
+        } else if (ctx.EVENT() != null) {
+            type = DbObjType.EVENT_TRIGGER;
         } else if (ctx.DOMAIN() != null) {
             type = DbObjType.DOMAIN;
         } else if (ctx.VIEW() != null) {

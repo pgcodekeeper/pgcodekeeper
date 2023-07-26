@@ -86,6 +86,7 @@ public abstract class PgStatement implements IStatement, IHashable {
         switch (getStatementType()) {
         case FOREIGN_DATA_WRAPPER:
         case SERVER:
+        case EVENT_TRIGGER:
         case FTS_CONFIGURATION:
         case FTS_DICTIONARY:
         case TABLE:

@@ -120,6 +120,15 @@ $$$$;</template>
     BEFORE UPDATE ON ${schemaName}.${parentName}
     FOR EACH STATEMENT
     EXECUTE PROCEDURE ${schemaName}.${functionName}();</template>
+    
+<template
+    name="create_event_trigger"
+    description="%create.event_trigger.desc"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg"
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createevent_trigger.protected"
+    >CREATE EVENT TRIGGER ${objectName}
+    ON ${event}
+    EXECUTE PROCEDURE ${schemaName}.${functionName}();</template>
 
 <template 
     name="create_type"

@@ -6,7 +6,7 @@ Reference: Object = set(name) (FUNCTION), action = CREATE, offset = 181, line nu
 Reference: Object = comp() (FUNCTION), action = CREATE, offset = 491, line number = 22, charPositionInLine = 16
 Reference: Object = log_rewrite() (FUNCTION), action = CREATE, offset = 872, line number = 36, charPositionInLine = 16
 Reference: action = CREATE TABLE, offset = 1339, line number = 55, charPositionInLine = 0
-Reference: action = CREATE EVENT TRIGGER, offset = 1410, line number = 59, charPositionInLine = 0
+Reference: Object = has_volatile_rewrite (EVENT_TRIGGER), action = CREATE, offset = 1431, line number = 59, charPositionInLine = 21
 Reference: Object = has_volatile (TABLE), action = ALTER, offset = 1587, line number = 64, charPositionInLine = 12
 Reference: Object = has_volatile (TABLE), action = ALTER, offset = 1626, line number = 65, charPositionInLine = 12
 Reference: Object = has_volatile (TABLE), action = ALTER, offset = 1675, line number = 66, charPositionInLine = 12
@@ -225,6 +225,7 @@ Reference: Object = set (FUNCTION), action = DROP, offset = 14758, line number =
 Reference: Object = comp (FUNCTION), action = DROP, offset = 14783, line number = 516, charPositionInLine = 14
 Reference: Object = m (TABLE), action = DROP, offset = 14802, line number = 517, charPositionInLine = 11
 Reference: Object = has_volatile (TABLE), action = DROP, offset = 14816, line number = 518, charPositionInLine = 11
+Reference: Object = has_volatile_rewrite (EVENT_TRIGGER), action = DROP, offset = 14849, line number = 519, charPositionInLine = 19
 Reference: Object = log_rewrite (FUNCTION), action = DROP, offset = 14885, line number = 520, charPositionInLine = 14
 Reference: Object = fast_default (SCHEMA), action = DROP, offset = 14912, line number = 521, charPositionInLine = 12
 Reference: action = SET, offset = 15005, line number = 524, charPositionInLine = 0
