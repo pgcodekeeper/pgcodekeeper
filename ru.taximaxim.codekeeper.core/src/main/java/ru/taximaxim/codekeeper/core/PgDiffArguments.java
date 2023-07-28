@@ -379,8 +379,11 @@ public class PgDiffArguments {
         arg.simplifyView = isSimplifyView();
         arg.ignoreErrors = isIgnoreErrors();
         arg.ignoreColumnOrder = isIgnoreColumnOrder();
+        arg.projUpdate = isProjUpdate();
         arg.autoFormatObjectCode = isAutoFormatObjectCode();
         arg.formatConfiguration = formatConfiguration.copy();
+        arg.generateExists = isGenerateExists();
+        arg.dropBeforeCreate = isDropBeforeCreate();
         arg.preFilePath.addAll(getPreFilePath());
         arg.postFilePath.addAll(getPostFilePath());
         return arg;

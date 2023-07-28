@@ -35,7 +35,6 @@ public class MsView extends AbstractView implements SourceStatement {
     @Override
     public String getCreationSQL() {
         StringBuilder sbSQL = new StringBuilder();
-        appendDropBeforeCreate(sbSQL);
         sbSQL.append(getViewFullSQL(true));
 
         appendOwnerSQL(sbSQL);
@@ -76,6 +75,11 @@ public class MsView extends AbstractView implements SourceStatement {
         alterPrivileges(newView, sb);
 
         return sb.length() > startLength;
+    }
+
+    @Override
+    public boolean canDropBeforeCreate() {
+        return true;
     }
 
     @Override

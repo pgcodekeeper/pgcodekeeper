@@ -37,7 +37,6 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
     @Override
     public String getCreationSQL() {
         StringBuilder sb = new StringBuilder();
-        appendDropBeforeCreate(sb);
         sb.append(getTriggerFullSQL(true));
 
         if (isDisable()) {
@@ -103,6 +102,11 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
         .append('.')
         .append(MsDiffUtils.quoteName(getName()));
         return sb;
+    }
+
+    @Override
+    public boolean canDropBeforeCreate() {
+        return true;
     }
 
     @Override

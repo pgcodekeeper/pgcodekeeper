@@ -66,7 +66,6 @@ public class PgView extends AbstractView implements PgSimpleOptionContainer {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder(getQuery().length() * 2);
-        appendDropBeforeCreate(sbSQL);
         sbSQL.append("CREATE ");
         sbSQL.append(getTypeName()).append(' ');
         if (isMatView()) {
@@ -212,6 +211,11 @@ public class PgView extends AbstractView implements PgSimpleOptionContainer {
         compareOptions(newView, sb);
 
         return sb.length() > startLength;
+    }
+
+    @Override
+    public boolean canDropBeforeCreate() {
+        return true;
     }
 
     private void alterColumnComments(final StringBuilder sb, final PgView newView) {

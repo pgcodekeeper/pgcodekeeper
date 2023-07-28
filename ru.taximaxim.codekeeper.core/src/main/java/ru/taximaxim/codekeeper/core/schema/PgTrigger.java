@@ -76,7 +76,6 @@ public class PgTrigger extends AbstractTrigger {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
-        appendDropBeforeCreate(sbSQL);
         sbSQL.append("CREATE");
         if (isConstraint()) {
             sbSQL.append(" CONSTRAINT");
@@ -214,6 +213,11 @@ public class PgTrigger extends AbstractTrigger {
             newTrg.appendCommentSql(sb);
         }
         return sb.length() > startLength;
+    }
+
+    @Override
+    public boolean canDropBeforeCreate() {
+        return true;
     }
 
     @Override

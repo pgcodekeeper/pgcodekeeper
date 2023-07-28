@@ -44,7 +44,8 @@ class DiffTest {
                 Arguments.of(new AllowedObjectsArgumentsProvider()),
                 Arguments.of(new LibrariesArgumentsProvider()),
                 Arguments.of(new SelectedOnlyArgumentsProvider()),
-                Arguments.of(new AddConstraintNotValid()));
+                Arguments.of(new AddConstraintNotValid()),
+                Arguments.of(new AddDropBeforeCreate()));
     }
 
     @ParameterizedTest
@@ -346,6 +347,24 @@ class AddConstraintNotValid extends ArgumentsProvider {
         Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
 
         return new String[] {"--generate-constraint-not-valid", "-o", getDiffResultFile().toString(),
+                fNew.toString(), fOriginal.toString()};
+    }
+}
+/**
+ * {@link ArgumentsProvider} implementation for generate DROP before CREATE test
+ */
+class AddDropBeforeCreate extends ArgumentsProvider {
+
+    public AddDropBeforeCreate() {
+        super("drop_before_create");
+    }
+
+    @Override
+    protected String[] args() throws URISyntaxException, IOException {
+        Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
+        Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
+
+        return new String[] {"--drop-before-create", "-o", getDiffResultFile().toString(),
                 fNew.toString(), fOriginal.toString()};
     }
 }
