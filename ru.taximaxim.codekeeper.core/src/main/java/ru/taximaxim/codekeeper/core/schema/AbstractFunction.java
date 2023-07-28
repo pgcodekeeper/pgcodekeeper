@@ -57,7 +57,6 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
     @Override
     public final String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
-        appendDropBeforeCreate(sbSQL);
         appendFunctionFullSQL(sbSQL, true);
         appendOwnerSQL(sbSQL);
         appendPrivileges(sbSQL);
@@ -67,6 +66,11 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
         }
 
         return sbSQL.toString();
+    }
+
+    @Override
+    public boolean canDropBeforeCreate() {
+        return true;
     }
 
     @Override

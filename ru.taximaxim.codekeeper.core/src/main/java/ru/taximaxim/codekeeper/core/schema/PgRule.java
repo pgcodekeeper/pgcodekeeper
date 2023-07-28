@@ -112,7 +112,6 @@ public class PgRule extends PgStatementWithSearchPath{
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
-        appendDropBeforeCreate(sbSQL);
         sbSQL.append("CREATE RULE ");
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));
         sbSQL.append(" AS\n    ON ").append(getEvent());
@@ -190,6 +189,11 @@ public class PgRule extends PgStatementWithSearchPath{
         sb.append(PgDiffUtils.getQuotedName(getName())).append(" ON ");
         sb.append(getParent().getQualifiedName());
         return sb;
+    }
+
+    @Override
+    public boolean canDropBeforeCreate() {
+        return true;
     }
 
     @Override

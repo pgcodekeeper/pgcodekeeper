@@ -124,7 +124,7 @@ public class PgUserMapping extends PgStatement implements PgForeignOptionContain
     }
 
     @Override
-    protected String getDropSQL(boolean generateExists) {
+    public String getDropSQL(boolean generateExists) {
         final StringBuilder sbString = new StringBuilder();
         sbString.append("DROP USER MAPPING ");
         if (generateExists) {

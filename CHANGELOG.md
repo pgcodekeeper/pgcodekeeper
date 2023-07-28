@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed bug with adding an extra DROP construct in the migration script.
+
 ## [8.3.0] - 2023-07-19
 
 ### Added

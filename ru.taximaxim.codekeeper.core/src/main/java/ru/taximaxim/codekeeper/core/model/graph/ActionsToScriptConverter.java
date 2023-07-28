@@ -187,6 +187,10 @@ public class ActionsToScriptConverter {
                 script.addDrop(obj, null, obj.getDropSQL());
             }
 
+            if (obj.isDropBeforeCreate()) {
+                script.addDrop(obj, null, obj.getDropSQL(true));
+            }
+
             script.addCreate(obj, null, obj.getCreationSQL(), true);
 
             if (arguments.isDataMovementMode()
