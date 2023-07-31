@@ -35,8 +35,7 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.properties.OverridablePrefs;
 
 /**
- * Dialog box for filling in one-time preferences that will be used
- * when showing the difference.
+ * Dialog box for filling in one-time preferences that will be used when showing the difference.
  */
 public class GetChangesCustomDialog extends Dialog {
 
@@ -72,8 +71,8 @@ public class GetChangesCustomDialog extends Dialog {
         panel.setLayout(new GridLayout());
 
         new Label(panel, SWT.NONE).setText(MessageFormat
-                .format(Messages.getChangesCustomDialog_custom_prefs_description,
-                        Messages.DiffTableViewer_get_changes));
+            .format(Messages.getChangesCustomDialog_custom_prefs_description,
+                    Messages.DiffTableViewer_get_changes));
 
         btnIgnoreColumnOrder = new Button(panel, SWT.CHECK);
         btnIgnoreColumnOrder.setText(Messages.GeneralPrefPage_ignore_column_order);

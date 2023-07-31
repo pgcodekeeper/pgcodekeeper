@@ -107,7 +107,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
 
             try {
                 getContainer().run(true, true, treediffer);
-            }  catch (InvocationTargetException ex) {
+            } catch (InvocationTargetException ex) {
                 e.doit = false;
                 ExceptionNotifier.notifyDefault(Messages.error_in_differ_thread, ex);
                 return;
@@ -373,7 +373,7 @@ class PageDiff extends WizardPage implements Listener {
         String tz = cmbTimezone.getCombo().getText();
         GridData data = (GridData) lblWarnPosix.getLayoutData();
         if ((!Consts.UTC.equals(tz)
-                && tz.startsWith(Consts.UTC)) == data.exclude)  {
+                && tz.startsWith(Consts.UTC)) == data.exclude) {
             lblWarnPosix.setVisible(data.exclude);
             data.exclude = !data.exclude;
             lblWarnPosix.getParent().layout();

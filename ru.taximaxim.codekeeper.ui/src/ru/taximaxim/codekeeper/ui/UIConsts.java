@@ -45,7 +45,6 @@ public interface UIConsts {
         String OBJECT_OCCURRENCE = PLUGIN_ID.THIS + ".sql.objectoccurrence"; //$NON-NLS-1$
         String ERROR_TYPE = PLUGIN_ID.THIS + ".sql.error_type"; //$NON-NLS-1$
         String MISPLACE_ERROR = PLUGIN_ID.THIS + ".sql.misplace_error"; //$NON-NLS-1$
-
     }
 
     interface DECORATOR {
@@ -62,8 +61,9 @@ public interface UIConsts {
     }
 
     interface COMMAND {
-        /* EGit commit command id
-        (value of org.eclipse.egit.ui.internal.actions.ActionCommands.COMMIT_ACTION) */
+        /*
+         * EGit commit command id (value of org.eclipse.egit.ui.internal.actions.ActionCommands.COMMIT_ACTION)
+         */
         String COMMIT_COMMAND_ID = "org.eclipse.egit.ui.team.Commit"; //$NON-NLS-1$
 
         String ADD_DEPCY = PLUGIN_ID.THIS + ".command.AddDepcy"; //$NON-NLS-1$
@@ -105,15 +105,15 @@ public interface UIConsts {
         String UPDATE_STATEMENT = "prefUpdateStatement"; //$NON-NLS-1$
         String SCRIPT_IN_TRANSACTION = "prefScriptInTransaction"; //$NON-NLS-1$
         String CHECK_FUNCTION_BODIES = "prefCheckFunctionBodies"; //$NON-NLS-1$
-        String USING_ON_OFF = "prefUsingOnOff"; //$NON-NLS-1$;
-        String COMMAND_LINE_DDL_UPDATE = "prefCommandLineDdlUpdate"; //$NON-NLS-1$;
-        String MIGRATION_COMMAND = "prefMigrationCommand"; //$NON-NLS-1$;
-        String PRINT_INDEX_WITH_CONCURRENTLY = "prefPrintIndexWithConcurrently"; //$NON-NLS-1$;
-        String PRINT_CONSTRAINT_NOT_VALID = "prefPrintConstraintNotValid"; //$NON-NLS-1$;
-        String SCRIPT_FROM_SELECTED_OBJS = "prefScriptFromSelectedObjs"; //$NON-NLS-1$;
-        String DATA_MOVEMENT_MODE = "prefDataMovementMode"; //$NON-NLS-1$;
-        String GENERATE_EXISTS = "prefGenerateExist"; //$NON-NLS-1$;
-        String DROP_BEFORE_CREATE = "prefDropBeforeCreate"; //$NON-NLS-1$;
+        String USING_ON_OFF = "prefUsingOnOff"; //$NON-NLS-1$
+        String COMMAND_LINE_DDL_UPDATE = "prefCommandLineDdlUpdate"; //$NON-NLS-1$
+        String MIGRATION_COMMAND = "prefMigrationCommand"; //$NON-NLS-1$
+        String PRINT_INDEX_WITH_CONCURRENTLY = "prefPrintIndexWithConcurrently"; //$NON-NLS-1$
+        String PRINT_CONSTRAINT_NOT_VALID = "prefPrintConstraintNotValid"; //$NON-NLS-1$
+        String SCRIPT_FROM_SELECTED_OBJS = "prefScriptFromSelectedObjs"; //$NON-NLS-1$
+        String DATA_MOVEMENT_MODE = "prefDataMovementMode"; //$NON-NLS-1$
+        String GENERATE_EXISTS = "prefGenerateExist"; //$NON-NLS-1$
+        String DROP_BEFORE_CREATE = "prefDropBeforeCreate"; //$NON-NLS-1$
     }
 
     interface PG_EDIT_PREF {
@@ -124,6 +124,7 @@ public interface UIConsts {
         String RESET = "RESET"; //$NON-NLS-1$
         String NO_ACTION = "NO_ACTION"; //$NON-NLS-1$
         String SHOW_DIFF_ERRORS = "showDiffErrors"; //$NON-NLS-1$
+        String SHOW_FULL_CODE = "showFullCode"; //$NON-NLS-1$
     }
 
     interface SQL_EDITOR_PREF {
