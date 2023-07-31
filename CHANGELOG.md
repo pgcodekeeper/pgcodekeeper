@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - Added support for EVENT TRIGGER object.
+- Added option for showing code of all child objects when comparing.
 
 ### Changed
 

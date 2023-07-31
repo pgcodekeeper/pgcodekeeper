@@ -15,7 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.properties;
 
-
 import java.text.MessageFormat;
 
 import org.eclipse.core.resources.IProject;
@@ -231,7 +230,7 @@ public class ProjectProperties extends PropertyPage {
     private void timeZoneWarn(String tz) {
         GridData data = (GridData) lblWarnPosix.getLayoutData();
         if ((!Consts.UTC.equals(tz)
-                && tz.startsWith(Consts.UTC)) == data.exclude)  {
+                && tz.startsWith(Consts.UTC)) == data.exclude) {
             lblWarnPosix.setVisible(data.exclude);
             data.exclude = !data.exclude;
             lblWarnPosix.getParent().layout();
@@ -333,7 +332,7 @@ public class ProjectProperties extends PropertyPage {
 
     private void activateEditor() {
         IWorkbenchPage activePage = PlatformUI.getWorkbench()
-                .getActiveWorkbenchWindow().getActivePage();
+            .getActiveWorkbenchWindow().getActivePage();
         IEditorPart activeEditor = activePage.getActiveEditor();
         // it's need to do for refresh state and content DbCombo
         // of opened and active sql/project editor, after setting of the binding

@@ -30,7 +30,9 @@ import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.core.schema.MsAssembly;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.PG_EDIT_PREF;
 import ru.taximaxim.codekeeper.ui.comparetools.CompareItem;
 import ru.taximaxim.codekeeper.ui.comparetools.SqlMergeViewer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -89,33 +91,44 @@ public class DiffPaneViewer extends Composite {
 
     private String getSql(TreeElement el, boolean project, boolean format) {
         String elSql = getElementSql(el, project, format);
-        if (elSql != null && availableElements != null && el.hasChildren()
-                && DiffTableViewer.isContainer(el)) {
-            StringBuilder sb = new StringBuilder(elSql);
-            for (TreeElement child : el.getChildren()) {
-                if (availableElements.contains(child)) {
-                    String childSql = getElementSql(child, project, format);
-                    if (childSql != null) {
-                        sb.append(UIConsts._NL).append(UIConsts._NL).append(childSql);
-                    }
-                }
-            }
-            return sb.toString();
-        } else {
+        if (elSql == null || availableElements == null || !el.hasChildren() || !DiffTableViewer.isContainer(el)
+                || Activator.getDefault().getPreferenceStore().getBoolean(PG_EDIT_PREF.SHOW_FULL_CODE)) {
             return elSql;
         }
+
+        StringBuilder sb = new StringBuilder(elSql);
+        for (TreeElement child : el.getChildren()) {
+            if (availableElements.contains(child)) {
+                String childSql = getElementSql(child, project, format);
+                if (childSql != null) {
+                    sb.append(UIConsts._NL).append(UIConsts._NL).append(childSql);
+                }
+            }
+        }
+
+        return sb.toString();
     }
 
     private String getElementSql(TreeElement el, boolean project, boolean isFormatted) {
-        if (el.getSide() == DiffSide.LEFT == project || el.getSide() == DiffSide.BOTH) {
-            DbSource db = project ? dbProject : dbRemote;
-            PgStatement st = el.getPgStatement(db.getDbObject());
-            if (st.getStatementType() == DbObjType.ASSEMBLY) {
-                return ((MsAssembly)st).getPreview();
-            }
-            return isFormatted ? st.getFullFormattedSQL() : st.getFullSQL();
-        } else {
+        if ((el.getSide() == DiffSide.LEFT) != project && el.getSide() != DiffSide.BOTH) {
             return null;
         }
+
+        DbSource db = project ? dbProject : dbRemote;
+        PgStatement st = el.getPgStatement(db.getDbObject());
+        if (st.getStatementType() == DbObjType.ASSEMBLY) {
+            return ((MsAssembly) st).getPreview();
+        }
+
+        String result = isFormatted ? st.getFullFormattedSQL() : st.getFullSQL();
+        if (!DiffTableViewer.isContainer(el)
+                || !Activator.getDefault().getPreferenceStore().getBoolean(PG_EDIT_PREF.SHOW_FULL_CODE)) {
+            return result;
+        }
+
+        StringBuilder sb = new StringBuilder(result);
+        st.getChildren().forEach(c -> sb.append(UIConsts._NL).append(UIConsts._NL)
+                .append(isFormatted ? c.getFullFormattedSQL() : c.getFullSQL()));
+        return sb.toString();
     }
 }

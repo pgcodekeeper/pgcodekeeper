@@ -105,7 +105,7 @@ public abstract class DbSource {
         }
     }
 
-    public boolean isLoaded(){
+    public boolean isLoaded() {
         return dbObject != null;
     }
 
@@ -167,7 +167,7 @@ public abstract class DbSource {
         }
     }
 
-    public static DbSource fromDirTree(boolean forceUnixNewlines,String dirTreePath,
+    public static DbSource fromDirTree(boolean forceUnixNewlines, String dirTreePath,
             String encoding, boolean isMsSql, Map<String, Boolean> oneTimePrefs) {
         return new DbSourceDirTree(forceUnixNewlines, dirTreePath, encoding,
                 isMsSql, oneTimePrefs);

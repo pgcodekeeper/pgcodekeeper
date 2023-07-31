@@ -1006,6 +1006,8 @@ public final class Messages extends NLS {
 
     public static String GeneralPrefPage_ignore_column_order;
 
+    public static String GeneralPrefPage_show_full_code;
+
     public static String GeneralPrefPage_ignore_concurrent_modification;
 
     public static String GeneralPrefPage_alert_if_heap_size_less_than_necessary;
