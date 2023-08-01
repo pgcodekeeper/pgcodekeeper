@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Changed core module logging to use slf4j.
+
 ### Fixed
 
 ## [8.4.0] - 2023-08-01

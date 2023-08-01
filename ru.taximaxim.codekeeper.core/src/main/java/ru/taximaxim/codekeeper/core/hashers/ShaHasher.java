@@ -23,12 +23,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import ru.taximaxim.codekeeper.core.log.Log;
-
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class ShaHasher implements Hasher {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ShaHasher.class);
 
     private static final byte[] TRUE;
     private static final byte[] FALSE;
@@ -49,7 +51,7 @@ public class ShaHasher implements Hasher {
             empty = MessageDigest.getInstance(ALGORITHM).digest(zero);
         } catch (NoSuchAlgorithmException ex) {
             empty = new byte[256/8];
-            Log.log(ex);
+            LOG.error(ex.getLocalizedMessage(), ex);
         }
         EMPTY = empty;
     }

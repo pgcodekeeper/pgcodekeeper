@@ -24,10 +24,12 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
-import ru.taximaxim.codekeeper.core.log.Log;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 /**
@@ -37,6 +39,8 @@ import ru.taximaxim.codekeeper.core.utils.Pair;
  * @author galiev_mr
  */
 public abstract class AbstractPgTable extends AbstractTable {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractPgTable.class);
 
     protected boolean hasOids;
     protected final List<Inherits> inherits = new ArrayList<>();
@@ -236,10 +240,10 @@ public abstract class AbstractPgTable extends AbstractTable {
                 if (inhtTable != null) {
                     inhColumns = Stream.concat(inhColumns, inhtTable.getRelationColumns());
                 } else {
-                    Log.log(Log.LOG_WARNING, "Inherit table not found: " + schemaName + '.' + tableName);
+                    LOG.warn("Inherit table not found: {}.{} ", schemaName, tableName);
                 }
             } else {
-                Log.log(Log.LOG_WARNING, "Inherit schema not found: " + schemaName);
+                LOG.warn("Inherit schema not found: {}", schemaName);
             }
         }
         return Stream.concat(inhColumns, localColumns);

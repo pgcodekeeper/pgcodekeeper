@@ -20,7 +20,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 
-import ru.taximaxim.codekeeper.core.log.Log;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.As_table_aliasContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Change_tableContext;
@@ -119,7 +118,7 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
                 ret = select(query);
             }
         } else {
-            log(Log.LOG_WARNING, "No alternative in SelectOps!");
+            log("No alternative in SelectOps!");
         }
         return ret;
     }
@@ -241,7 +240,7 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
         } else if ((primary = item.from_primary()) != null) {
             primary(primary);
         } else {
-            log(Log.LOG_WARNING, "No alternative in from_item!");
+            log("No alternative in from_item!");
         }
     }
 

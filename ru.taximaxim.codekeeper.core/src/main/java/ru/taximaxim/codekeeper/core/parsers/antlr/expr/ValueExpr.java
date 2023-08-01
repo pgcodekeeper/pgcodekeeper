@@ -29,9 +29,10 @@ import java.util.Set;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.log.Log;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser;
@@ -88,6 +89,8 @@ import ru.taximaxim.codekeeper.core.utils.ModPair;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 public class ValueExpr extends AbstractExpr {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ValueExpr.class);
 
     public ValueExpr(MetaContainer meta) {
         super(meta);
@@ -205,7 +208,7 @@ public class ValueExpr extends AbstractExpr {
             // TODO pending DbObjType.COLLATION
             ret = operandsList.get(0);
         } else {
-            Log.log(Log.LOG_WARNING, "No alternative in Vex!");
+            LOG.warn("No alternative in Vex!");
             ret = new ModPair<>(NONAME, TypesSetManually.UNKNOWN);
         }
 
@@ -376,7 +379,7 @@ public class ValueExpr extends AbstractExpr {
             }
             ret = new ModPair<>("overlaps", TypesSetManually.BOOLEAN);
         } else {
-            Log.log(Log.LOG_WARNING, "No alternative in Vex Primary!");
+            LOG.warn("No alternative in Vex Primary!");
             ret = new ModPair<>(NONAME, TypesSetManually.UNKNOWN);
         }
         return ret;
@@ -385,7 +388,7 @@ public class ValueExpr extends AbstractExpr {
     private ModPair<String, String> getSubselectColumn(
             List<ModPair<String, String>> list) {
         if (list.isEmpty()) {
-            Log.log(Log.LOG_WARNING, "Subselect return 0 element");
+            LOG.warn("Subselect return 0 element");
             return new ModPair<>(NONAME, TypesSetManually.UNKNOWN);
         } else {
             return list.get(0);
@@ -435,7 +438,7 @@ public class ValueExpr extends AbstractExpr {
 
         ModPair<String, String> ret;
         if (ids.size() > 3) {
-            Log.log(Log.LOG_WARNING, "Very long indirection!");
+            LOG.warn("Very long indirection!");
             ret = new ModPair<>(NONAME, TypesSetManually.UNKNOWN);
         } else {
             ret = processColumn(ids);
@@ -530,7 +533,7 @@ public class ValueExpr extends AbstractExpr {
             if (argnameCtx != null) {
                 String argname = argnameCtx.getText();
                 if (argsName.put(argname, argType) != null) {
-                    Log.log(Log.LOG_WARNING, "Duplicate values for function named arg: " + argname);
+                    LOG.warn("Duplicate values for function named arg: {}", argname);
                 }
             } else {
                 argsType.add(argType);
@@ -616,7 +619,7 @@ public class ValueExpr extends AbstractExpr {
                 colname = "timestamp";
                 coltype = TypesSetManually.TIMESTAMP;
             } else {
-                Log.log(Log.LOG_WARNING, "No alternative in date_time_function!");
+                LOG.warn("No alternative in date_time_function!");
                 colname = NONAME;
                 coltype = TypesSetManually.UNKNOWN;
             }
@@ -686,7 +689,7 @@ public class ValueExpr extends AbstractExpr {
             }
             ret = new ModPair<>(colname, coltype);
         } else {
-            Log.log(Log.LOG_WARNING, "No alternative in functionSpecial!");
+            LOG.warn("No alternative in functionSpecial!");
             ret = new ModPair<>(NONAME, TypesSetManually.UNKNOWN);
         }
 
@@ -845,15 +848,15 @@ public class ValueExpr extends AbstractExpr {
             return null;
         }
         switch (token.getSymbol().getType()) {
-            case SQLParser.PLUS:
-            case SQLParser.MINUS:
-            case SQLParser.EXP:
-            case SQLParser.MULTIPLY:
-            case SQLParser.DIVIDE:
-            case SQLParser.MODULAR:
-                return token.getText();
-            default:
-                return null;
+        case SQLParser.PLUS:
+        case SQLParser.MINUS:
+        case SQLParser.EXP:
+        case SQLParser.MULTIPLY:
+        case SQLParser.DIVIDE:
+        case SQLParser.MODULAR:
+            return token.getText();
+        default:
+            return null;
         }
     }
 
@@ -901,35 +904,35 @@ public class ValueExpr extends AbstractExpr {
         Token start = pair.getSecond();
 
         switch (regcast) {
-            case "regproc":
-                // In this case, the function is not overloaded.
-                addFunctionDepcyNotOverloaded(QNameParser.parsePg(s).getIds(), start);
-                break;
-            case "regclass":
-                addDepcy(QNameParser.parsePg(s).getIds(), DbObjType.TABLE, start);
-                break;
-            case "regtype":
-                addDepcy(QNameParser.parsePg(s).getIds(), DbObjType.TYPE, start);
-                break;
-            case "regnamespace":
-                addSchemaDepcy(QNameParser.parsePg(s).getIds(), start);
-                break;
-            case "regprocedure":
-                addFunctionSigDepcy(s, start);
-                break;
-            case "regoper":
-                // TODO operator without argumnets
-            case "regoperator":
-                // TODO operator with argumnets
-                break;
-            case "regconfig":
-                addDepcy(QNameParser.parsePg(s).getIds(), DbObjType.FTS_CONFIGURATION, start);
-                break;
-            case "regdictionary":
-                addDepcy(QNameParser.parsePg(s).getIds(), DbObjType.FTS_DICTIONARY, start);
-                break;
-            default:
-                break;
+        case "regproc":
+            // In this case, the function is not overloaded.
+            addFunctionDepcyNotOverloaded(QNameParser.parsePg(s).getIds(), start);
+            break;
+        case "regclass":
+            addDepcy(QNameParser.parsePg(s).getIds(), DbObjType.TABLE, start);
+            break;
+        case "regtype":
+            addDepcy(QNameParser.parsePg(s).getIds(), DbObjType.TYPE, start);
+            break;
+        case "regnamespace":
+            addSchemaDepcy(QNameParser.parsePg(s).getIds(), start);
+            break;
+        case "regprocedure":
+            addFunctionSigDepcy(s, start);
+            break;
+        case "regoper":
+            // TODO operator without argumnets
+        case "regoperator":
+            // TODO operator with argumnets
+            break;
+        case "regconfig":
+            addDepcy(QNameParser.parsePg(s).getIds(), DbObjType.FTS_CONFIGURATION, start);
+            break;
+        case "regdictionary":
+            addDepcy(QNameParser.parsePg(s).getIds(), DbObjType.FTS_DICTIONARY, start);
+            break;
+        default:
+            break;
         }
     }
 
@@ -961,7 +964,7 @@ public class ValueExpr extends AbstractExpr {
                 ret = TypesSetManually.TEXT;
             }
         } else {
-            Log.log(Log.LOG_WARNING, "No alternative in unsigned_value_specification!");
+            LOG.warn("No alternative in unsigned_value_specification!");
             ret = TypesSetManually.UNKNOWN;
         }
         return ret;
@@ -970,16 +973,14 @@ public class ValueExpr extends AbstractExpr {
     private String stripBrackets(String type) {
         if (type.endsWith("[]")) {
             return type.substring(0, type.length() - 2);
-        } else {
-            return type;
         }
+        return type;
     }
 
     private String stripParens(String type) {
         if (type.endsWith(")")) {
             return type.substring(0, type.lastIndexOf('('));
-        } else {
-            return type;
         }
+        return type;
     }
 }

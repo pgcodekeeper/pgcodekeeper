@@ -33,8 +33,9 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import ru.taximaxim.codekeeper.core.log.Log;
 import ru.taximaxim.codekeeper.core.sql.Keyword;
 import ru.taximaxim.codekeeper.core.sql.Keyword.KeywordCategory;
 
@@ -44,6 +45,8 @@ import ru.taximaxim.codekeeper.core.sql.Keyword.KeywordCategory;
  * @author fordfrog
  */
 public final class PgDiffUtils {
+
+    private static final Logger LOG = LoggerFactory.getLogger(PgDiffUtils.class);
 
     public static final int ERROR_SUBSTRING_LENGTH = 20;
     private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
@@ -150,7 +153,7 @@ public final class PgDiffUtils {
             }
             return sb.toString();
         } catch (NoSuchAlgorithmException e) {
-            Log.log(e);
+            LOG.error(e.getLocalizedMessage(), e);
             return instance +"_ERROR_" + new Random().nextInt();
         }
     }

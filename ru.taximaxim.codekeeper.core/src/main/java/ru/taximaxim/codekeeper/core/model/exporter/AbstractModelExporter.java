@@ -32,12 +32,14 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.PgCodekeeperException;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.UnixPrintWriter;
 import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
-import ru.taximaxim.codekeeper.core.log.Log;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
@@ -54,6 +56,8 @@ import ru.taximaxim.codekeeper.core.schema.PgStatement;
  * @author Alexander Levsha
  */
 public abstract class AbstractModelExporter {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractModelExporter.class);
 
     protected static final String GROUP_DELIMITER =
             "\n\n--------------------------------------------------------------------------------\n\n";
@@ -216,8 +220,7 @@ public abstract class AbstractModelExporter {
         Path toDelete = outDir.resolve(getRelativeFilePath(st, true));
 
         if (Files.deleteIfExists(toDelete)) {
-            Log.log(Log.LOG_INFO, "Deleted file " + toDelete +
-                    " for object " + st.getStatementType() + ' ' + st.getName());
+            LOG.info("Deleted file {} for object {} {}", toDelete, st.getStatementType(), st.getName());
         }
     }
 

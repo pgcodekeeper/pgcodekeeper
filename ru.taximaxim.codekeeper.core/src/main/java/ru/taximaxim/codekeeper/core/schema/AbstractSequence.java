@@ -15,15 +15,14 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
-import ru.taximaxim.codekeeper.core.log.Log;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
@@ -31,6 +30,8 @@ import ru.taximaxim.codekeeper.core.utils.Pair;
  * Stores sequence information.
  */
 public abstract class AbstractSequence extends PgStatementWithSearchPath implements IRelation {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractSequence.class);
 
     protected static final String BIGINT = "bigint";
 
@@ -99,7 +100,7 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
             long boundaryTypeVal = (long) (Math.pow(10, presicion)) - 1;
             return needMaxVal ? boundaryTypeVal : - boundaryTypeVal;
         default:
-            Log.log(Log.LOG_WARNING, "Unsupported sequence type: " + type);
+            LOG.warn("Unsupported sequence type: {}", type);
             // $FALL-THROUGH$
         case BIGINT:
             return needMaxVal ? Long.MAX_VALUE : Long.MIN_VALUE;

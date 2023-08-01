@@ -20,13 +20,17 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.Utils;
-import ru.taximaxim.codekeeper.core.log.Log;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 
 public class GenericColumn implements Serializable {
+
+    private static final Logger LOG = LoggerFactory.getLogger(GenericColumn.class);
 
     private static final long serialVersionUID = -3196057456408062736L;
 
@@ -59,13 +63,13 @@ public class GenericColumn implements Serializable {
     }
 
     public PgStatement getStatement(PgDatabase db) {
-        return doGetStatement(db, type);
+        return doGetStatementLog(db, type);
     }
 
     // debug method with selective logging
     private PgStatement doGetStatementLog(PgDatabase db, DbObjType type) {
         PgStatement st = doGetStatement(db, type);
-        if (st != null) {
+        if (st != null || !LOG.isTraceEnabled()) {
             return st;
         }
 
@@ -92,7 +96,7 @@ public class GenericColumn implements Serializable {
         }
 
         // not a silent failure, log
-        Log.log(Log.LOG_WARNING, "Could not find statement for reference: " + this);
+        LOG.trace("Could not find statement for reference: {}", this);
         return null;
     }
 
@@ -108,18 +112,18 @@ public class GenericColumn implements Serializable {
         }
 
         switch (type) {
-            case DATABASE: return db;
-            case SCHEMA: return db.getSchema(schema);
-            case EXTENSION: return db.getExtension(schema);
-            case FOREIGN_DATA_WRAPPER: return db.getForeignDW(schema);
-            case SERVER: return db.getServer(schema);
-            case EVENT_TRIGGER: return db.getEventTrigger(schema); 
-            case CAST: return db.getCast(schema);
-            case USER_MAPPING: return db.getUserMapping(schema);
-            case ASSEMBLY: return db.getAssembly(schema);
-            case USER: return db.getUser(schema);
-            case ROLE: return db.getRole(schema);
-            default: break;
+        case DATABASE: return db;
+        case SCHEMA: return db.getSchema(schema);
+        case EXTENSION: return db.getExtension(schema);
+        case FOREIGN_DATA_WRAPPER: return db.getForeignDW(schema);
+        case SERVER: return db.getServer(schema);
+        case EVENT_TRIGGER: return db.getEventTrigger(schema);
+        case CAST: return db.getCast(schema);
+        case USER_MAPPING: return db.getUserMapping(schema);
+        case ASSEMBLY: return db.getAssembly(schema);
+        case USER: return db.getUser(schema);
+        case ROLE: return db.getRole(schema);
+        default: break;
         }
 
         AbstractSchema s = db.getSchema(schema);
@@ -128,40 +132,40 @@ public class GenericColumn implements Serializable {
         }
 
         switch (type) {
-            case TYPE: return getType(s);
-            case DOMAIN: return s.getDomain(table);
-            case SEQUENCE: return s.getSequence(table);
-            case FUNCTION:
-            case PROCEDURE:
-            case AGGREGATE: return resolveFunctionCall(s);
-            case OPERATOR: return resolveOperatorCall(s);
-            case TABLE: return getRelation(s);
-            case VIEW: return s.getView(table);
+        case TYPE: return getType(s);
+        case DOMAIN: return s.getDomain(table);
+        case SEQUENCE: return s.getSequence(table);
+        case FUNCTION:
+        case PROCEDURE:
+        case AGGREGATE: return resolveFunctionCall(s);
+        case OPERATOR: return resolveOperatorCall(s);
+        case TABLE: return getRelation(s);
+        case VIEW: return s.getView(table);
 
-            case FTS_PARSER: return s.getFtsParser(table);
-            case FTS_TEMPLATE: return s.getFtsTemplate(table);
-            case FTS_DICTIONARY: return s.getFtsDictionary(table);
-            case FTS_CONFIGURATION: return s.getFtsConfiguration(table);
-            case INDEX: return s.getIndexByName(table);
-            // handled in getStatement, left here for consistency
-            case COLUMN:
-                AbstractTable t = s.getTable(table);
-                return t == null ? null : t.getColumn(column);
-            default: break;
+        case FTS_PARSER: return s.getFtsParser(table);
+        case FTS_TEMPLATE: return s.getFtsTemplate(table);
+        case FTS_DICTIONARY: return s.getFtsDictionary(table);
+        case FTS_CONFIGURATION: return s.getFtsConfiguration(table);
+        case INDEX: return s.getIndexByName(table);
+        // handled in getStatement, left here for consistency
+        case COLUMN:
+            AbstractTable t = s.getTable(table);
+            return t == null ? null : t.getColumn(column);
+        default: break;
         }
 
         PgStatementContainer sc = s.getStatementContainer(table);
         switch (type) {
-            case CONSTRAINT:
-                return sc == null ? null : sc.getConstraint(column);
-            case TRIGGER:
-                return sc == null ? null : sc.getTrigger(column);
-            case RULE:
-                return sc == null ? null : sc.getRule(column);
-            case POLICY:
-                return sc == null ? null : sc.getPolicy(column);
+        case CONSTRAINT:
+            return sc == null ? null : sc.getConstraint(column);
+        case TRIGGER:
+            return sc == null ? null : sc.getTrigger(column);
+        case RULE:
+            return sc == null ? null : sc.getRule(column);
+        case POLICY:
+            return sc == null ? null : sc.getPolicy(column);
 
-            default: throw new IllegalStateException("Unhandled DbObjType: " + type);
+        default: throw new IllegalStateException("Unhandled DbObjType: " + type);
         }
     }
 
@@ -288,13 +292,13 @@ public class GenericColumn implements Serializable {
                 sb.append('.');
             }
             switch (type) {
-                case FUNCTION:
-                case PROCEDURE:
-                case AGGREGATE:
-                    sb.append(table);
-                    break;
-                default:
-                    sb.append(PgDiffUtils.getQuotedName(table));
+            case FUNCTION:
+            case PROCEDURE:
+            case AGGREGATE:
+                sb.append(table);
+                break;
+            default:
+                sb.append(PgDiffUtils.getQuotedName(table));
             }
         }
         if (column != null) {

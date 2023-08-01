@@ -24,8 +24,9 @@ import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import ru.taximaxim.codekeeper.core.log.Log;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrError;
 import ru.taximaxim.codekeeper.core.parsers.antlr.ErrorTypes;
@@ -49,6 +50,8 @@ import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
  * implementation of logic for launch the analysis of statement's contexts.
  */
 public abstract class AbstractAnalysisLauncher {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractAnalysisLauncher.class);
 
     private final List<PgObjLocation> references = new ArrayList<>();
 
@@ -124,14 +127,14 @@ public abstract class AbstractAnalysisLauncher {
                 AntlrError err = new AntlrError(t, location, t.getLine(),
                         t.getCharPositionInLine(), ex.getMessage(), errorType)
                         .copyWithOffset(offset, lineOffset, inLineOffset);
-                Log.log(Log.LOG_WARNING, err.toString(), ex);
+                LOG.warn(err.toString(), ex);
                 errors.add(err);
             } else {
-                Log.log(Log.LOG_WARNING, ex.toString(), ex);
+                LOG.warn(ex.toString(), ex);
                 errors.add(location + ' ' + ex.getLocalizedMessage());
             }
         } catch (Exception ex) {
-            Log.log(Log.LOG_ERROR, ex.toString(), ex);
+            LOG.error(ex.toString(), ex);
             errors.add(location + ' ' + ex);
         }
 

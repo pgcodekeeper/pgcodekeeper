@@ -25,11 +25,13 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.text.MessageFormat;
 import java.util.Collection;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.Consts.MS_WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.core.Consts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
-import ru.taximaxim.codekeeper.core.log.Log;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.exporter.AbstractModelExporter;
 import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
@@ -38,6 +40,8 @@ import ru.taximaxim.codekeeper.core.model.exporter.OverridesModelExporter;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 
 public class ProjectUpdater {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ProjectUpdater.class);
 
     private final PgDatabase dbNew;
     private final PgDatabase dbOld;
@@ -68,7 +72,7 @@ public class ProjectUpdater {
 
     public void updatePartial() throws IOException {
 
-        Log.log(Log.LOG_INFO, "Project updater: started partial"); //$NON-NLS-1$
+        LOG.info("Project updater: started partial"); //$NON-NLS-1$
         if (dbOld == null){
             throw new IOException(Messages.ProjectUpdater_old_db_null);
         }
@@ -103,14 +107,12 @@ public class ProjectUpdater {
             } catch (Exception ex) {
                 caughtProcessingEx = true;
 
-                Log.log(Log.LOG_ERROR, "Error while updating project!", ex); //$NON-NLS-1$
+                LOG.error("Error while updating project!", ex); //$NON-NLS-1$
 
                 try {
                     restoreProjectDir(dirTmp);
                 } catch (Exception exRestore) {
-                    Log.log(Log.LOG_ERROR,
-                            "Error while restoring backups after update error!", //$NON-NLS-1$
-                            exRestore);
+                    LOG.error("Error while restoring backups after update error!", exRestore); //$NON-NLS-1$
                     IOException exNew = new IOException(
                             Messages.ProjectUpdater_error_backup_restore, exRestore);
                     exNew.addSuppressed(ex);
@@ -153,7 +155,7 @@ public class ProjectUpdater {
     }
 
     public void updateFull(boolean projectOnly) throws IOException {
-        Log.log(Log.LOG_INFO, "Project updater: started full"); //$NON-NLS-1$
+        LOG.info("Project updater: started full"); //$NON-NLS-1$
         boolean caughtProcessingEx = false;
         try (TempDir tmp = new TempDir(dirExport, "tmp-export")) { //$NON-NLS-1$
             Path dirTmp = tmp.get();
@@ -171,15 +173,12 @@ public class ProjectUpdater {
             } catch (Exception ex) {
                 caughtProcessingEx = true;
 
-                Log.log(Log.LOG_ERROR,
-                        "Error while updating project! Trying to restore data from backup", ex); //$NON-NLS-1$
+                LOG.error("Error while updating project! Trying to restore data from backup", ex); //$NON-NLS-1$
 
                 try {
                     restoreProjectDir(dirTmp);
                 } catch (Exception exRestore) {
-                    Log.log(Log.LOG_ERROR,
-                            "Error while restoring backups after update error!", //$NON-NLS-1$
-                            exRestore);
+                    LOG.error("Error while restoring backups after update error!", exRestore); //$NON-NLS-1$
                     IOException exNew = new IOException(
                             Messages.ProjectUpdater_error_backup_restore, exRestore);
                     exNew.addSuppressed(ex);
