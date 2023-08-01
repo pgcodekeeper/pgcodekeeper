@@ -26,12 +26,13 @@ import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.loader.FullAnalyze;
-import ru.taximaxim.codekeeper.core.log.Log;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
@@ -53,6 +54,8 @@ import ru.taximaxim.codekeeper.core.utils.ModPair;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 public abstract class AbstractExpr {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractExpr.class);
 
     protected static final String NONAME = "?column?";
 
@@ -244,16 +247,14 @@ public abstract class AbstractExpr {
                         .map(Pair::getSecond)
                         .findAny()
                         .orElseGet(() -> {
-                            log(Log.LOG_WARNING, "Column " + columnName +
-                                    " not found in complex " + columnParent);
+                            log("Column {} not found in complex {}", columnName, columnParent);
                             return TypesSetManually.COLUMN;
                         });
             } else {
-                log(Log.LOG_WARNING, "Complex not found: " + columnParent);
+                log("Complex not found: {}", columnParent);
             }
         } else {
-            log(Log.LOG_WARNING, "Unknown column reference: "
-                    + schemaName + ' ' + columnParent + ' ' + columnName);
+            log("Unknown column reference: {} {} {}", schemaName, columnParent, columnName);
         }
 
         return new ModPair<>(columnName, columnType);
@@ -276,24 +277,23 @@ public abstract class AbstractExpr {
         // handle system columns; look for relation anyway for a potential 'not found' warning
         // do not use the stream nor add the depcy though
         switch (colName) {
-            case "oid":
-            case "tableoid":
-                return "oid";
-            case "xmin":
-            case "xmax":
-                return "xid";
-            case "cmin":
-            case "cmax":
-                return "cid";
-            case "ctid":
-                return "tid";
-            default:
-                break;
+        case "oid":
+        case "tableoid":
+            return "oid";
+        case "xmin":
+        case "xmax":
+            return "xid";
+        case "cmin":
+        case "cmax":
+            return "cid";
+        case "ctid":
+            return "tid";
+        default:
+            break;
         }
 
         return columns.findAny().map(Pair::getSecond).orElseGet(() -> {
-            log(Log.LOG_WARNING,
-                    "Column " + colName + " not found in relation " + relationName);
+            log("Column {} not found in relation {}", colName, relationName);
             return TypesSetManually.COLUMN;
         });
     }
@@ -324,7 +324,7 @@ public abstract class AbstractExpr {
             String relationName, Predicate<String> colNamePredicate) {
         IRelation relation = findRelation(schemaName, relationName);
         if (relation == null) {
-            log(Log.LOG_WARNING, "Relation not found: " + schemaName + '.' + relationName);
+            log("Relation not found: {}.{}", schemaName, relationName);
             return Stream.empty();
         }
 
@@ -359,7 +359,7 @@ public abstract class AbstractExpr {
         if (col == null) {
             Pair<IRelation, Pair<String, String>> relCol = findColumn(name);
             if (relCol == null) {
-                log(Log.LOG_WARNING, "Tableless column not resolved: " + name);
+                log("Tableless column not resolved: {}", name);
                 return new ModPair<>(name, TypesSetManually.COLUMN);
             }
             IRelation rel = relCol.getFirst();
@@ -452,8 +452,7 @@ public abstract class AbstractExpr {
         return schemaName == null ? Consts.PG_CATALOG : schemaName;
     }
 
-    protected void log(int level, String msg) {
-        // debug method
-        // Log.log(level, msg);
+    protected void log(String msg, Object... args) {
+        LOG.trace(msg, args);
     }
 }

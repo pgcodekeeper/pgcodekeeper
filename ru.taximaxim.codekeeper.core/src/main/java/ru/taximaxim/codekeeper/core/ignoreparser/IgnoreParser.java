@@ -24,9 +24,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.RuleContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.log.Log;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.IIgnoreList;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoredObject;
@@ -41,6 +42,8 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.IgnoreListParser.Show_ruleCont
 import ru.taximaxim.codekeeper.core.parsers.antlr.IgnoreListParser.WhiteContext;
 
 public class IgnoreParser {
+
+    private static final Logger LOG = LoggerFactory.getLogger(IgnoreParser.class);
 
     private final IIgnoreList list;
 
@@ -58,8 +61,7 @@ public class IgnoreParser {
         try {
             parse(parser);
         } catch (Exception ex) {
-            Log.log(Log.LOG_ERROR, "Error while analyzing parser tree for IgnoreList file: "
-                    + parsedObjectName, ex);
+            LOG.error("Error while analyzing parser tree for IgnoreList file: " + parsedObjectName, ex);
         }
         return this;
     }

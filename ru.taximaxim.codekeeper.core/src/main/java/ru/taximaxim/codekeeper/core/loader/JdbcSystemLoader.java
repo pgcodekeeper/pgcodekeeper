@@ -28,13 +28,14 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 import org.eclipse.core.runtime.SubMonitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcType;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
-import ru.taximaxim.codekeeper.core.log.Log;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Function_argsContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Function_argumentsContext;
@@ -53,6 +54,8 @@ import ru.taximaxim.codekeeper.core.utils.Pair;
 
 public class JdbcSystemLoader extends JdbcLoaderBase {
 
+    private static final Logger LOG = LoggerFactory.getLogger(JdbcSystemLoader.class);
+
     private static final String NAMESPACE_NAME = "nspname";
     private static final String NAME = "name";
 
@@ -67,7 +70,7 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
 
     public MetaStorage getStorageFromJdbc() throws IOException, InterruptedException {
         MetaStorage storage = new MetaStorage();
-        Log.log(Log.LOG_INFO, "Reading db using JDBC.");
+        LOG.info("Reading db using JDBC.");
         setCurrentOperation("connection setup");
 
         try (Connection connection = connector.getConnection();
@@ -89,7 +92,7 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
 
             connection.commit();
             finishLoaders();
-            Log.log(Log.LOG_INFO, "Database object has been successfully queried from JDBC");
+            LOG.info("Database object has been successfully queried from JDBC");
         } catch (InterruptedException ex) {
             throw ex;
         } catch (Exception e) {

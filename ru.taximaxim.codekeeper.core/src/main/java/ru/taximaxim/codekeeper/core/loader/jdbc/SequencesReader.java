@@ -24,11 +24,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.loader.JdbcQueries;
 import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
 import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
-import ru.taximaxim.codekeeper.core.log.Log;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractSequence;
@@ -39,6 +41,8 @@ import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgSequence;
 
 public class SequencesReader extends JdbcReader {
+
+    private static final Logger LOG = LoggerFactory.getLogger(SequencesReader.class);
 
     private static final int DATA_SELECT_LENGTH;
 
@@ -94,7 +98,7 @@ public class SequencesReader extends JdbcReader {
         if ("d".equals(identityType) || "a".equals(identityType)) {
             AbstractTable table = schema.getTable(refTable);
             if (table == null) {
-                Log.log(Log.LOG_ERROR, "Not found table " + table + " for sequence " + s);
+                LOG.error("Not found table {} for sequence {}", table, s);
                 return;
             }
             PgColumn column = (PgColumn) table.getColumn(refColumn);

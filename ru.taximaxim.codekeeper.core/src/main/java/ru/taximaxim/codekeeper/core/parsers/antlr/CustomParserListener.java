@@ -23,10 +23,11 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.loader.ParserListenerMode;
-import ru.taximaxim.codekeeper.core.log.Log;
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.MisplacedObjectException;
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.MonitorCancelledRuntimeException;
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.ObjectCreationException;
@@ -36,6 +37,8 @@ import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 
 public class CustomParserListener {
+
+    private static final Logger LOG = LoggerFactory.getLogger(CustomParserListener.class);
 
     protected final PgDatabase db;
     protected final ParserListenerMode mode;
@@ -71,7 +74,7 @@ public class CustomParserListener {
             if (ctx != null) {
                 errors.add(handleParserContextException(e, filename, ctx));
             } else {
-                Log.log(Log.LOG_ERROR, "Statement context is missing", e);
+                LOG.error("Statement context is missing", e);
             }
         }
     }
@@ -82,15 +85,20 @@ public class CustomParserListener {
         ErrorTypes errorType = ex instanceof MisplacedObjectException ? ErrorTypes.MISPLACEERROR : ErrorTypes.OTHER;
         AntlrError err = new AntlrError(t, filename, t.getLine(),
                 t.getCharPositionInLine(), ex.getMessage(), errorType);
-        Log.log(Log.LOG_WARNING, err.toString(), ex);
+        String errorMessage = err.toString();
+        LOG.warn(errorMessage, ex);
         return err;
     }
 
     private AntlrError handleParserContextException(Exception ex, String filename, ParserRuleContext ctx) {
         Token t = ctx.getStart();
         AntlrError err = new AntlrError(t, filename, t.getLine(), t.getCharPositionInLine(),  ex.getMessage());
-        Log.log(ex instanceof ObjectCreationException ? Log.LOG_WARNING : Log.LOG_ERROR,
-                err.toString(), ex);
+        String errorMessage = err.toString();
+        if (ex instanceof ObjectCreationException) {
+            LOG.warn(errorMessage, ex);
+        } else {
+            LOG.error(errorMessage, ex);
+        }
         return err;
     }
 

@@ -15,7 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.model.graph;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -26,8 +25,9 @@ import org.jgrapht.alg.cycle.CycleDetector;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.EdgeReversedGraph;
 import org.jgrapht.graph.SimpleDirectedGraph;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import ru.taximaxim.codekeeper.core.log.Log;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
@@ -45,6 +45,8 @@ import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 public class DepcyGraph {
+
+    private static final Logger LOG = LoggerFactory.getLogger(DepcyGraph.class);
 
     private static final String REMOVE_DEP = "Remove dependency from {0} to {1}";
 
@@ -171,13 +173,11 @@ public class DepcyGraph {
             for (PgStatement vertex : detector.findCyclesContainingVertex(st)) {
                 if (vertex.getStatementType() == DbObjType.COLUMN) {
                     graph.removeEdge(st, vertex);
-                    Log.log(Log.LOG_INFO, MessageFormat.format(REMOVE_DEP,
-                            st.getQualifiedName(), vertex.getQualifiedName()));
+                    LOG.info(REMOVE_DEP, st.getQualifiedName(), vertex.getQualifiedName());
 
                     PgStatement table = vertex.getParent();
                     if (graph.removeEdge(st, table) != null) {
-                        Log.log(Log.LOG_INFO, MessageFormat.format(REMOVE_DEP,
-                                st.getQualifiedName(), table.getQualifiedName()));
+                        LOG.info(REMOVE_DEP, st.getQualifiedName(), table.getQualifiedName());
                     }
                 }
             }
@@ -231,8 +231,7 @@ public class DepcyGraph {
             PgStatement parentTbl = new GenericColumn(in.getKey(), in.getValue(),
                     DbObjType.TABLE).getStatement(db);
             if (parentTbl == null) {
-                Log.log(Log.LOG_ERROR, "There is no such partitioned table as: "
-                        + in.getQualifiedName());
+                LOG.error("There is no such partitioned table as: {}", in.getQualifiedName());
                 continue;
             }
 
@@ -244,10 +243,8 @@ public class DepcyGraph {
                 if (parentCol != null) {
                     graph.addEdge(col, parentCol);
                 } else {
-                    Log.log(Log.LOG_ERROR, "The parent '" + in.getQualifiedName()
-                    + '.' + colName + "' column for '" + col.getSchemaName()
-                    + '.' + col.getParent().getName()
-                    + '.' + colName + "' column is missed.");
+                    LOG.error("The parent ''{}.{}'' column for ''{}.{}.{}'' column is missed.",
+                            in.getQualifiedName(), colName, col.getSchemaName(), col.getParent().getName(), colName);
                 }
             }
         }

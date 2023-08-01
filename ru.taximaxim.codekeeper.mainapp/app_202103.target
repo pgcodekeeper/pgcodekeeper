@@ -17,6 +17,8 @@
 			<unit id="org.junit.jupiter.engine" version="5.7.1.v20210222-1948"/>
 			<unit id="org.junit" version="4.13.0.v20200204-1500"/>
 			<unit id="org.junit.platform.commons" version="1.7.1.v20210222-1948"/>
+			<unit id="org.slf4j.api" version="1.7.2.v20121108-1250"/>
+			<unit id="ch.qos.logback.slf4j" version="1.2.3.v20200428-2012"/>
 		</location>
 		<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
 			<dependencies>

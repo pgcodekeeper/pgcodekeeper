@@ -31,10 +31,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.log.Log;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Alias_clauseContext;
@@ -57,6 +58,8 @@ import ru.taximaxim.codekeeper.core.utils.ModPair;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends AbstractExpr {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractExprWithNmspc.class);
 
     private static final String FUNC_ARGS_KEY = "\\_SPECIAL_CONTAINER_FOR_PRIMITIVE_VARS\\";
 
@@ -149,7 +152,7 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
                             break;
                         }
                     } else {
-                        Log.log(Log.LOG_WARNING, "Ambiguous reference: " + name);
+                        LOG.warn("Ambiguous reference: {}", name);
                     }
                 }
             }
@@ -286,7 +289,7 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
     public boolean addReference(String alias, GenericColumn object) {
         boolean exists = namespace.containsKey(alias);
         if (exists) {
-            Log.log(Log.LOG_WARNING, "Duplicate namespace entry: " + alias);
+            LOG.warn("Duplicate namespace entry: {}", alias);
         } else {
             namespace.put(alias, object);
         }
@@ -296,8 +299,7 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
     public boolean addRawTableReference(GenericColumn qualifiedTable) {
         boolean exists = !unaliasedNamespace.add(qualifiedTable);
         if (exists) {
-            Log.log(Log.LOG_WARNING,
-                    "Duplicate unaliased table: " + qualifiedTable.schema + ' ' + qualifiedTable.table);
+            LOG.warn("Duplicate unaliased table: {} {}", qualifiedTable.schema, qualifiedTable.table);
         }
         return !exists;
     }
@@ -306,7 +308,7 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
         Set<String> columns = columnAliases.computeIfAbsent(alias, k -> new HashSet<>());
         boolean exists = !columns.add(column);
         if (exists) {
-            Log.log(Log.LOG_WARNING, "Duplicate column alias: " + alias + ' ' + column);
+            LOG.warn("Duplicate column alias: {} {}", alias, column);
         }
         return !exists;
     }
@@ -378,12 +380,12 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
             } else if ((merge = data.merge_stmt_for_psql()) != null) {
                 pairs = new Merge(this).analyze(merge);
             } else {
-                Log.log(Log.LOG_WARNING, "No alternative in Cte!");
+                LOG.warn("No alternative in Cte!");
                 continue;
             }
 
             if (addCteSignature(withQuery, pairs)) {
-                Log.log(Log.LOG_WARNING, "Duplicate CTE " + withName);
+                LOG.warn("Duplicate CTE {}", withName);
             }
         }
     }
@@ -396,7 +398,7 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
         List<IdentifierContext> paramNamesIdentifers = withQuery.column_name;
         for (int i = 0; i < paramNamesIdentifers.size(); ++i) {
             if (i >= resultTypes.size()) {
-                Log.log(Log.LOG_WARNING, "Cte contains fewer columns than specified: " +  withName);
+                LOG.warn("Cte contains fewer columns than specified: {}", withName);
                 break;
             }
             resultTypes.get(i).setFirst(paramNamesIdentifers.get(i).getText());

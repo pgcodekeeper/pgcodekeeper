@@ -21,11 +21,12 @@ import java.sql.SQLException;
 import java.util.function.BiConsumer;
 
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
-import ru.taximaxim.codekeeper.core.log.Log;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.ConcurrentModificationException;
@@ -34,6 +35,8 @@ import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public abstract class JdbcReader extends AbstractStatementReader {
+
+    private static final Logger LOG = LoggerFactory.getLogger(JdbcReader.class);
 
     private static final String SYS_SCHEMAS = "sys_schemas";
 
@@ -53,10 +56,10 @@ public abstract class JdbcReader extends AbstractStatementReader {
                 if (!loader.args.isIgnoreConcurrentModification()) {
                     throw ex;
                 }
-                Log.log(ex);
+                LOG.error(ex.getLocalizedMessage(), ex);
             }
         } else {
-            Log.log(Log.LOG_WARNING, "No schema found for id " + schemaId);
+            LOG.warn("No schema found for id {}", schemaId);
         }
     }
 
