@@ -9,14 +9,20 @@
 
 ### Добавлено
 
-- Добавлена поддержка объекта EVENT TRIGGER.
-- Добавлена опция для отображения кода всех дочерних объектов при сравнения.
-
 ### Изменено
 
 ### Исправлено
 
-- Исправлена ошибка добавления лишней конструкции DROP в скрипте миграции.
+## [8.4.0] - 2023-08-01
+
+### Добавлено
+
+- Добавлена поддержка объекта EVENT TRIGGER.
+- Добавлена опция для отображения кода всех дочерних объектов при сравнении.
+
+### Исправлено
+
+- Исправлена генерация кода с опцией `Печатать DROP перед CREATE конструкцией` при пересоздании объекта.
 
 ## [8.3.0] - 2023-07-19
 
@@ -1738,7 +1744,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.3.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.4.0...HEAD
+[8.4.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.3.0...v8.4.0
 [8.3.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.2.0...v8.3.0
 [8.2.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.1.0...v8.2.0
 [8.1.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.0.0...v8.1.0
