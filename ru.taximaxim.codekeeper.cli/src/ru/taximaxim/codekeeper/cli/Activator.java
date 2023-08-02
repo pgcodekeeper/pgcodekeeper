@@ -15,8 +15,20 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.cli;
 
+import java.io.IOException;
+import java.net.URL;
+
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Path;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
+import org.slf4j.ILoggerFactory;
+import org.slf4j.LoggerFactory;
+
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.joran.JoranConfigurator;
+import ch.qos.logback.core.joran.spi.JoranException;
 
 public class Activator implements BundleActivator {
 
@@ -32,7 +44,21 @@ public class Activator implements BundleActivator {
      */
     @Override
     public void start(BundleContext bundleContext) throws Exception {
+        configureLogbackInBundle(bundleContext.getBundle());
         Activator.context = bundleContext;
+    }
+
+    private void configureLogbackInBundle(Bundle bundle) throws JoranException, IOException {
+        ILoggerFactory factory = LoggerFactory.getILoggerFactory();
+        if (factory instanceof LoggerContext) {
+            LoggerContext loggerContext = (LoggerContext) factory;
+            JoranConfigurator jc = new JoranConfigurator();
+            jc.setContext(loggerContext);
+            loggerContext.reset();
+
+            URL logbackConfigFileUrl = FileLocator.find(bundle, new Path("logback.xml"), null);
+            jc.doConfigure(logbackConfigFileUrl.openStream());
+        }
     }
 
     /*

@@ -367,7 +367,7 @@ class CustomAntlrErrorListener extends BaseErrorListener {
         AntlrError error = new AntlrError(token, parsedObjectName, line, charPositionInLine, msg)
                 .copyWithOffset(offset, lineOffset, inLineOffset);
 
-        LOG.warn("ANTLR Error:\n{}", error.toString());
+        LOG.warn("ANTLR Error:\n{}", error);
         if (errors != null) {
             errors.add(error);
         }
