@@ -52,7 +52,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.exception.ObjectCreationExcept
  */
 public abstract class PgStatement implements IStatement, IHashable {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PgColumn.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PgStatement.class);
 
     //TODO move to MS SQL statement abstract class.
     public static final String GO = "\nGO";
