@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 - Changed core module logging to use slf4j.
+- Disabled standalone pgCodeKeeper package for macOS.
 
 ### Fixed
 
