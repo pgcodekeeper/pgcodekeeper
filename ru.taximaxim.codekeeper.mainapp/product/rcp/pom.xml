@@ -41,11 +41,18 @@
                             <ws>gtk</ws>
                             <arch>x86_64</arch>
                         </environment>
+                        <!-- -
+                        <environment>
+                            <os>macosx</os>
+                            <ws>cocoa</ws>
+                            <arch>aarch64</arch>
+                        </environment>
                         <environment>
                             <os>macosx</os>
                             <ws>cocoa</ws>
                             <arch>x86_64</arch>
                         </environment>
+                        <!- -->
                     </environments>
                 </configuration>
             </plugin>
@@ -62,9 +69,11 @@
                     <products>
                         <product>
                             <id>ru.taximaxim.codekeeper.rcp.product</id>
+                            <!-- -
                              <rootFolders>
                                  <macosx>pgCodeKeeper.app</macosx>
                              </rootFolders>
+                             <!- -->
                             <archiveFileName>pgCodeKeeper-${unqualifiedVersion}</archiveFileName>
                         </product>
                     </products>
