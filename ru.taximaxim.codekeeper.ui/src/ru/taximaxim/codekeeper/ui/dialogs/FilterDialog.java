@@ -53,6 +53,8 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
  */
 public class FilterDialog extends Dialog {
 
+    private static final int START_HEIGHT_SIZE = 410;
+
     private CheckboxTableViewer objViewer;
     private CheckboxTableViewer chgViewer;
     private final Collection<DbObjType> types;
@@ -136,7 +138,9 @@ public class FilterDialog extends Dialog {
     protected Control createDialogArea(Composite parent) {
         Composite container = new Composite(parent, SWT.NONE);
         container.setLayout(new GridLayout(2, false));
-        container.setLayoutData(new GridData(GridData.FILL_BOTH));
+        GridData gb = new GridData(GridData.FILL_BOTH);
+        gb.heightHint = START_HEIGHT_SIZE;
+        container.setLayoutData(gb);
 
         Composite leftComposite = new Composite(container, SWT.NONE);
         leftComposite.setLayout(new GridLayout());
@@ -243,9 +247,11 @@ public class FilterDialog extends Dialog {
         new Label(container, SWT.NONE).setText(Messages.FilterDialog_show_object_types);
 
         objViewer = CheckboxTableViewer.newCheckList(container, SWT.BORDER);
-        objViewer.add(EnumSet.complementOf(EnumSet.of(DbObjType.DATABASE)).toArray());
+        EnumSet<DbObjType> typeList = EnumSet.complementOf(EnumSet.of(DbObjType.DATABASE, DbObjType.COLUMN));
+        Object[] sortedTypeList = typeList.stream().sorted((e1, e2) -> e1.name().compareTo(e2.name())).toArray();
+        objViewer.add(sortedTypeList);
         objViewer.setCheckedElements(types.toArray());
-        objViewer.getControl().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+        objViewer.getControl().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
     }
 
     @Override
