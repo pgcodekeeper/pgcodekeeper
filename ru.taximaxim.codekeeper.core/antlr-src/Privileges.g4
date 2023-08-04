@@ -3,7 +3,7 @@ grammar Privileges;
 options {
     language=Java;
 }
-@header {package ru.taximaxim.codekeeper.core.parsers.antlr;}
+@header {package ru.taximaxim.codekeeper.core.parsers.antlr.generated;}
 
 privileges : '{' acls+=privilege (COMMA acls+=privilege)* '}' EOF;
   

@@ -21,10 +21,10 @@ import java.util.List;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.ClusteredContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Create_indexContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.IdContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Qualified_nameContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.ClusteredContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Create_indexContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Qualified_nameContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractIndex;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.MsIndex;

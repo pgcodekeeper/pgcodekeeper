@@ -22,9 +22,9 @@ import org.antlr.v4.runtime.ParserRuleContext;
 
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.ExpressionContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Select_statementContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Sql_clausesContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.ExpressionContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Select_statementContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Sql_clausesContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.msexpr.MsSelect;
 import ru.taximaxim.codekeeper.core.parsers.antlr.msexpr.MsSqlClauses;
 import ru.taximaxim.codekeeper.core.parsers.antlr.msexpr.MsValueExpr;

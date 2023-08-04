@@ -22,13 +22,13 @@ import org.antlr.v4.runtime.ParserRuleContext;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Collate_identifierContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Create_domain_statementContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Domain_constraintContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.IdentifierContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.VexContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.DomainAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.VexAnalysisLauncher;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Collate_identifierContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_domain_statementContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Domain_constraintContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.IdentifierContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
 import ru.taximaxim.codekeeper.core.schema.PgConstraint;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;

@@ -20,6 +20,8 @@ import java.util.stream.Stream;
 import org.antlr.v4.runtime.Vocabulary;
 import org.antlr.v4.runtime.misc.IntervalSet;
 
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLLexer;
+
 class CustomSQLAntlrErrorStrategy extends CustomAntlrErrorStrategy {
 
     @Override
@@ -38,20 +40,20 @@ class CustomSQLAntlrErrorStrategy extends CustomAntlrErrorStrategy {
     @Override
     protected String getTokenName(Integer token, Vocabulary vocabulary) {
         switch (token) {
-            case SQLLexer.OP_CHARS:
-                return OPERATOR;
-            case SQLLexer.DOLLAR_NUMBER:
-            case SQLLexer.Identifier:
-            case SQLLexer.QuotedIdentifier:
-                return IDENTIFIER;
-            case SQLLexer.Character_String_Literal:
-            case SQLLexer.BeginDollarStringConstant:
-                return STRING;
-            case SQLLexer.NUMBER_LITERAL:
-            case SQLLexer.REAL_NUMBER:
-                return NUMBER;
-            default:
-                return vocabulary.getDisplayName(token);
+        case SQLLexer.OP_CHARS:
+            return OPERATOR;
+        case SQLLexer.DOLLAR_NUMBER:
+        case SQLLexer.Identifier:
+        case SQLLexer.QuotedIdentifier:
+            return IDENTIFIER;
+        case SQLLexer.Character_String_Literal:
+        case SQLLexer.BeginDollarStringConstant:
+            return STRING;
+        case SQLLexer.NUMBER_LITERAL:
+        case SQLLexer.REAL_NUMBER:
+            return NUMBER;
+        default:
+            return vocabulary.getDisplayName(token);
         }
     }
 }

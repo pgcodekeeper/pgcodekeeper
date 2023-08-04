@@ -21,9 +21,9 @@ import org.antlr.v4.runtime.ParserRuleContext;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Character_stringContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Collation_optionContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Create_collation_statementContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Character_stringContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Collation_optionContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_collation_statementContext;
 import ru.taximaxim.codekeeper.core.schema.PgCollation;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 

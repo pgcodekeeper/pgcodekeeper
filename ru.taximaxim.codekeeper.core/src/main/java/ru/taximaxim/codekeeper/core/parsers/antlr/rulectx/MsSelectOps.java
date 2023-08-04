@@ -19,11 +19,11 @@ import java.util.List;
 
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Query_specificationContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Select_opsContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Select_ops_no_parensContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Select_statementContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Set_qualifierContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Query_specificationContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Select_opsContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Select_ops_no_parensContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Select_statementContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Set_qualifierContext;
 
 public class MsSelectOps {
 

@@ -19,8 +19,8 @@ import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.VexContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.ValueExpr;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.rulectx.Vex;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;

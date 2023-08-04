@@ -5,7 +5,7 @@ options {
     tokenVocab=TSQLLexer;
 }
 
-@header {package ru.taximaxim.codekeeper.core.parsers.antlr;}
+@header {package ru.taximaxim.codekeeper.core.parsers.antlr.generated;}
 
 tsql_file
     : BOM? go_statement* batch* EOF

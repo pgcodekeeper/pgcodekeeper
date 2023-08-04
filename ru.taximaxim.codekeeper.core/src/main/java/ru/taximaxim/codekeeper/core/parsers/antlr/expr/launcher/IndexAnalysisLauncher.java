@@ -20,10 +20,10 @@ import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Index_columnContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Index_restContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Storage_parameter_optionContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Storage_parametersContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Index_columnContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Index_restContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Storage_parameter_optionContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Storage_parametersContext;
 import ru.taximaxim.codekeeper.core.schema.PgIndex;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;

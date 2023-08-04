@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Changed core module logging to use slf4j.
 - Disabled standalone pgCodeKeeper package for macOS.
 - Now the types list in filter is sorted by alphabet.
+- Moved generated classes.
 
 ### Fixed
 

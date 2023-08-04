@@ -22,12 +22,12 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Batch_statementContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Create_or_alter_viewContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.IdContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Qualified_nameContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Select_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.MsViewAnalysisLauncher;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Batch_statementContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Create_or_alter_viewContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Qualified_nameContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Select_statementContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.MsView;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;

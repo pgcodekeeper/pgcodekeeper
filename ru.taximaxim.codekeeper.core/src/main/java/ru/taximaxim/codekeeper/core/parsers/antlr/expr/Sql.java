@@ -17,8 +17,8 @@ package ru.taximaxim.codekeeper.core.parsers.antlr.expr;
 
 import java.util.List;
 
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.SqlContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.StatementContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.SqlContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.StatementContext;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
 
 public class Sql extends Statements<SqlContext> {

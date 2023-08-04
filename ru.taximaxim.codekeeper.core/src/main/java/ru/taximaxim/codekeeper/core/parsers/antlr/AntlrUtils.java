@@ -26,6 +26,8 @@ import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLLexer;
+
 public class AntlrUtils {
 
     public static String normalizeWhitespaceUnquoted(ParserRuleContext ctx, CommonTokenStream stream) {

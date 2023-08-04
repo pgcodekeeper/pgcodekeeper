@@ -32,14 +32,14 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.IIgnoreList;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoredObject;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
-import ru.taximaxim.codekeeper.core.parsers.antlr.IgnoreListParser;
-import ru.taximaxim.codekeeper.core.parsers.antlr.IgnoreListParser.BlackContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.IgnoreListParser.FlagContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.IgnoreListParser.Hide_ruleContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.IgnoreListParser.Rule_listContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.IgnoreListParser.Rule_restContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.IgnoreListParser.Show_ruleContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.IgnoreListParser.WhiteContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.IgnoreListParser;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.IgnoreListParser.BlackContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.IgnoreListParser.FlagContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.IgnoreListParser.Hide_ruleContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.IgnoreListParser.Rule_listContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.IgnoreListParser.Rule_restContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.IgnoreListParser.Show_ruleContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.IgnoreListParser.WhiteContext;
 
 public class IgnoreParser {
 

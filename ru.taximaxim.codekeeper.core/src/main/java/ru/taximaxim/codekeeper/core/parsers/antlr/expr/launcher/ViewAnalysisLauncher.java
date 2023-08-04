@@ -20,8 +20,8 @@ import java.util.Set;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import ru.taximaxim.codekeeper.core.loader.FullAnalyze;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Select_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.Select;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Select_stmtContext;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgView;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;

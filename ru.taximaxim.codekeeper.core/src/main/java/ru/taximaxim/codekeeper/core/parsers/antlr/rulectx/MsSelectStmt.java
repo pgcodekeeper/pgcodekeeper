@@ -15,11 +15,11 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.parsers.antlr.rulectx;
 
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.For_clauseContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Option_clauseContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Select_statementContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Select_stmt_no_parensContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.With_expressionContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.For_clauseContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Option_clauseContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Select_statementContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Select_stmt_no_parensContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.With_expressionContext;
 
 public class MsSelectStmt {
 

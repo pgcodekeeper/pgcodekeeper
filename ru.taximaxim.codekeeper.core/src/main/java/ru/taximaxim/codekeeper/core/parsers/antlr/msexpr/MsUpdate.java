@@ -18,14 +18,14 @@ package ru.taximaxim.codekeeper.core.parsers.antlr.msexpr;
 import java.util.Collections;
 import java.util.List;
 
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.ExpressionContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.From_itemContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Full_column_nameContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Qualified_nameContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Search_conditionContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Update_elemContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Update_statementContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.With_expressionContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.ExpressionContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.From_itemContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Full_column_nameContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Qualified_nameContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Search_conditionContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Update_elemContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Update_statementContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.With_expressionContext;
 
 public class MsUpdate extends MsAbstractExprWithNmspc<Update_statementContext> {
 

@@ -26,7 +26,7 @@ import ru.taximaxim.codekeeper.core.DangerStatement;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 
 public class PgObjLocation extends ContextLocation {

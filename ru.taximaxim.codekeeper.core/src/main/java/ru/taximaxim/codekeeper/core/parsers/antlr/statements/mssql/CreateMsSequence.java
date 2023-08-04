@@ -22,11 +22,11 @@ import java.util.Locale;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Create_sequenceContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Data_typeContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Data_type_sizeContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.IdContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Sequence_bodyContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Create_sequenceContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Data_typeContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Data_type_sizeContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Sequence_bodyContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.MsSequence;

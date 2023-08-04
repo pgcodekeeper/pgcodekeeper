@@ -18,8 +18,8 @@ package ru.taximaxim.codekeeper.core.parsers.antlr.expr;
 import java.util.Arrays;
 import java.util.List;
 
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.VexContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Vex_bContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Vex_bContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.rulectx.Vex;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
 import ru.taximaxim.codekeeper.core.utils.ModPair;

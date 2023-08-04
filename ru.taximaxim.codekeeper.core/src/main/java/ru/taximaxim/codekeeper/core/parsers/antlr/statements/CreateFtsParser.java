@@ -21,7 +21,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Create_fts_parser_statementContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_fts_parser_statementContext;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgFtsParser;
 

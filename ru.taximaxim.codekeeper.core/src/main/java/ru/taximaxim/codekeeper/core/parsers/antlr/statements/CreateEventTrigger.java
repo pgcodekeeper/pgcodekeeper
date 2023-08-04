@@ -19,10 +19,10 @@ import java.util.Arrays;
 import java.util.Locale;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Character_stringContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Create_event_trigger_statementContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Event_trigger_filter_variablesContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Character_stringContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_event_trigger_statementContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Event_trigger_filter_variablesContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qualified_name_nontypeContext;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgEventTrigger;
 

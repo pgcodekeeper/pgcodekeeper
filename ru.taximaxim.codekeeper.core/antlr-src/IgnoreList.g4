@@ -3,7 +3,7 @@ grammar IgnoreList;
 options {
     language=Java;
 }
-@header {package ru.taximaxim.codekeeper.core.parsers.antlr;}
+@header {package ru.taximaxim.codekeeper.core.parsers.antlr.generated;}
 
 compileUnit: NewLine* rule_list NewLine* EOF;
 rule_list: white | black;

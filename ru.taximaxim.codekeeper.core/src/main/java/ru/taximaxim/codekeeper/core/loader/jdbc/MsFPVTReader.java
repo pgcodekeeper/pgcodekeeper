@@ -23,7 +23,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 
 import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Batch_statementContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Batch_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.mssql.CreateMsFunction;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.mssql.CreateMsProcedure;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.mssql.CreateMsTrigger;

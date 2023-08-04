@@ -22,10 +22,10 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Batch_statement_bodyContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Create_or_alter_triggerContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.IdContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Qualified_nameContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Batch_statement_bodyContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Create_or_alter_triggerContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Qualified_nameContext;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 

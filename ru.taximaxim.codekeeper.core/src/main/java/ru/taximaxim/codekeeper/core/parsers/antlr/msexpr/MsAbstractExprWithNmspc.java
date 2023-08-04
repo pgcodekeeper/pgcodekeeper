@@ -25,10 +25,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.As_table_aliasContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Common_table_expressionContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Qualified_nameContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.With_expressionContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.As_table_aliasContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Common_table_expressionContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Qualified_nameContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.With_expressionContext;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 
 /**

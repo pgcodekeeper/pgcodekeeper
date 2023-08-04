@@ -30,16 +30,16 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.text.edits.TextEdit;
 
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLLexer;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Create_function_statementContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Function_actions_commonContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Function_bodyContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Function_defContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Schema_createContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Schema_statementContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.SqlContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.StatementContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLLexer;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_function_statementContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Function_actions_commonContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Function_bodyContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Function_defContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_createContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_statementContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.SqlContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.StatementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 

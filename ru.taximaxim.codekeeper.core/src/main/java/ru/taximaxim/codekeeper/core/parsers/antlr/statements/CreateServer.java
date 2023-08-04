@@ -19,10 +19,10 @@ import java.util.Arrays;
 import java.util.List;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Create_server_statementContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Define_foreign_optionsContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Foreign_optionContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.IdentifierContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_server_statementContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Define_foreign_optionsContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Foreign_optionContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.IdentifierContext;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgServer;
 

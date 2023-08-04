@@ -22,10 +22,10 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Character_stringContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Create_type_statementContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Storage_directiveContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Table_column_definitionContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Character_stringContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_type_statementContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Storage_directiveContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Table_column_definitionContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractType;

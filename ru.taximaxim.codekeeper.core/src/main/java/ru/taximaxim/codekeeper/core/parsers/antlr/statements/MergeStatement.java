@@ -16,7 +16,7 @@
 package ru.taximaxim.codekeeper.core.parsers.antlr.statements;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Merge_stmt_for_psqlContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Merge_stmt_for_psqlContext;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 
 public class MergeStatement extends ParserAbstract {

@@ -45,31 +45,31 @@ import ru.taximaxim.codekeeper.core.loader.ParserListenerMode;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.exporter.AbstractModelExporter;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Boolean_valueContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Cast_nameContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Character_stringContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Column_operator_classContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Data_typeContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Distributed_clauseContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Function_argsContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Function_argumentsContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.IdentifierContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Identifier_nontypeContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Including_indexContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Operator_nameContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Predefined_typeContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Schema_qualified_nameContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Target_operatorContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.User_mapping_nameContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.VexContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Column_optionContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.ExpressionContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Identity_valueContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Qualified_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.MisplacedObjectException;
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.UnresolvedReferenceException;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.MsExpressionAnalysisLauncher;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Boolean_valueContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Cast_nameContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Character_stringContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Column_operator_classContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Data_typeContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Distributed_clauseContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Function_argsContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Function_argumentsContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.IdentifierContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Identifier_nontypeContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Including_indexContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Operator_nameContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Predefined_typeContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qualified_nameContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qualified_name_nontypeContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Target_operatorContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.User_mapping_nameContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Column_optionContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.ExpressionContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Identity_valueContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Qualified_nameContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractPgFunction;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.ArgMode;
@@ -646,7 +646,7 @@ public abstract class ParserAbstract {
         }
     }
 
-    protected void addMsTypeDepcy(ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Data_typeContext ctx,
+    protected void addMsTypeDepcy(ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Data_typeContext ctx,
             PgStatement st) {
         Qualified_nameContext qname = ctx.qualified_name();
         if (qname != null && qname.schema != null) {

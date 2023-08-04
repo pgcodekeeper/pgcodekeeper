@@ -17,11 +17,11 @@ package ru.taximaxim.codekeeper.core.parsers.antlr.rulectx;
 
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Select_opsContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Select_ops_no_parensContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Select_primaryContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Select_stmtContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Set_qualifierContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Select_opsContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Select_ops_no_parensContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Select_primaryContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Select_stmtContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Set_qualifierContext;
 
 /**
  * Merging wrapper for select_ops/select_ops_no_parens

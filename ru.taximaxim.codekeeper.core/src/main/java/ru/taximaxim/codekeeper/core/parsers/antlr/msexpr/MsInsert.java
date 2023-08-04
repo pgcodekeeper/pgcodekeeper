@@ -19,15 +19,15 @@ import java.util.Collections;
 import java.util.List;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Column_name_listContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Execute_moduleContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Execute_statementContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.ExpressionContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.IdContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Insert_statementContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Qualified_nameContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Select_statementContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.With_expressionContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Column_name_listContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Execute_moduleContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Execute_statementContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.ExpressionContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Insert_statementContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Qualified_nameContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Select_statementContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.With_expressionContext;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 
 public class MsInsert extends MsAbstractExprWithNmspc<Insert_statementContext> {

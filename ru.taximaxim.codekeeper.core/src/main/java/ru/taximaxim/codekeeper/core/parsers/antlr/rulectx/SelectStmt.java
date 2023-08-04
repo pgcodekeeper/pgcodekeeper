@@ -19,10 +19,10 @@ import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.After_opsContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Select_stmtContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Select_stmt_no_parensContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.With_clauseContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.After_opsContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Select_stmtContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Select_stmt_no_parensContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.With_clauseContext;
 
 /**
  * Merging wrapper for select_stmt/select_stmt_no_parens

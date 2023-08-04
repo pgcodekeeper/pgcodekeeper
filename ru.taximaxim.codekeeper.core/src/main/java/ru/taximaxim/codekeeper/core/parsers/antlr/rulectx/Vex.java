@@ -23,16 +23,16 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Collate_identifierContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Data_typeContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Indirection_listContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.OpContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Select_stmt_no_parensContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Truth_valueContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Type_listContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Value_expression_primaryContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.VexContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Vex_bContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Collate_identifierContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Data_typeContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Indirection_listContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.OpContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Select_stmt_no_parensContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Truth_valueContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Type_listContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Value_expression_primaryContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Vex_bContext;
 
 /**
  * Merging wrapper for vex/vex_b

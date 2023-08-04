@@ -19,7 +19,7 @@ import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.ExpressionContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.ExpressionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.msexpr.MsValueExpr;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgStatementWithSearchPath;
