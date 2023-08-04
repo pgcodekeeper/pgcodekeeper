@@ -19,6 +19,8 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
+import ru.taximaxim.codekeeper.core.PgDiffUtils;
+
 /**
  * An abstract base implementation of a PostgreSql data generator.
  * <p>
@@ -45,7 +47,6 @@ public abstract class PgData<T> {
     private boolean isNotNull;
     protected PgDataGenerator generator;
 
-    private final Random ran = new Random();
     protected final Set<T> objects = new HashSet<>();
 
     public T getStep() {
@@ -182,12 +183,12 @@ public abstract class PgData<T> {
     }
 
     protected T generateRandom() {
-        if (!isUnique && !isNotNull && ran.nextDouble() < 0.05) {
+        if (!isUnique && !isNotNull && PgDiffUtils.RANDOM.nextDouble() < 0.05) {
             return null;
         }
         T object;
         do {
-            object = generateRandom(ran);
+            object = generateRandom(PgDiffUtils.RANDOM);
         } while (isUnique && !objects.add(object));
         return object;
     }
@@ -214,15 +215,15 @@ public abstract class PgData<T> {
         boolean isPrev = true;
         for (int i = 0; i < length; i++) {
             if (isChar) {
-                if (!isOneWord && !isPrev && ran.nextDouble() < 0.1) {
+                if (!isOneWord && !isPrev && PgDiffUtils.RANDOM.nextDouble() < 0.1) {
                     sb.append(' ');
                     isPrev = true;
                 } else {
-                    sb.append((char)(ran.nextInt(26) + 'a'));
+                    sb.append((char)(PgDiffUtils.RANDOM.nextInt(26) + 'a'));
                     isPrev = false;
                 }
             } else {
-                sb.append(ran.nextInt(2));
+                sb.append(PgDiffUtils.RANDOM.nextInt(2));
             }
         }
         return sb.toString();

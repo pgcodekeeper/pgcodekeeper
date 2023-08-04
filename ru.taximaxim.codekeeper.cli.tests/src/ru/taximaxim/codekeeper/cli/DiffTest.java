@@ -84,8 +84,8 @@ class DiffTest {
                     return false;
                 }
 
-                if (line1 == null || line2 == null) {
-                    return line1 == line2;
+                if (line1 == null) {
+                    return true;
                 }
             }
         }

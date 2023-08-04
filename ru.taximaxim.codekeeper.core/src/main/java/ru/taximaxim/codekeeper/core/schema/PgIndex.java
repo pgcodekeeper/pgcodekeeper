@@ -147,7 +147,7 @@ public class PgIndex extends AbstractIndex {
             boolean concurrently = args != null && args.isConcurrentlyMode();
             if (concurrently) {
                 // generate optimized command sequence for concurrent index creation
-                String tmpName = "tmp" + new Random().nextInt(Integer.MAX_VALUE)
+                String tmpName = "tmp" + PgDiffUtils.RANDOM.nextInt(Integer.MAX_VALUE)
                         + "_" + getName();
                 sb.append("\n\n")
                 .append(newIndex.getCreationSQL(tmpName))

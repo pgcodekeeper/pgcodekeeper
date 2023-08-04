@@ -24,6 +24,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Locale;
@@ -48,6 +49,7 @@ public final class PgDiffUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(PgDiffUtils.class);
 
+    public static final Random RANDOM = new SecureRandom();
     public static final int ERROR_SUBSTRING_LENGTH = 20;
     private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
 
@@ -154,7 +156,7 @@ public final class PgDiffUtils {
             return sb.toString();
         } catch (NoSuchAlgorithmException e) {
             LOG.error(e.getLocalizedMessage(), e);
-            return instance +"_ERROR_" + new Random().nextInt();
+            return instance +"_ERROR_" + RANDOM.nextInt();
         }
     }
 
