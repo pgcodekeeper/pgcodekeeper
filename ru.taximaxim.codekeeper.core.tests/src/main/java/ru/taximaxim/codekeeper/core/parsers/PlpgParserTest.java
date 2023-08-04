@@ -33,7 +33,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrUtils;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser;
 
 /**
  * Tests for plpgsql function bodies.

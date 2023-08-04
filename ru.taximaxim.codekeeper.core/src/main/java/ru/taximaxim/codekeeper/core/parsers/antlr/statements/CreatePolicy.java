@@ -24,10 +24,10 @@ import org.antlr.v4.runtime.ParserRuleContext;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Create_policy_statementContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.User_nameContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.VexContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.VexAnalysisLauncher;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_policy_statementContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.User_nameContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgEventType;

@@ -22,9 +22,9 @@ import java.util.function.Consumer;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
-import ru.taximaxim.codekeeper.core.parsers.antlr.PrivilegesParser;
-import ru.taximaxim.codekeeper.core.parsers.antlr.PrivilegesParser.PrivilegeContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.PrivilegesParser.PrivilegesContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.PrivilegesParser;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.PrivilegesParser.PrivilegeContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.PrivilegesParser.PrivilegesContext;
 
 /**
  * Parser for aclItem arrays

@@ -23,13 +23,13 @@ import org.antlr.v4.runtime.ParserRuleContext;
 
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Function_bodyContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Plpgsql_functionContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.SqlContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.AbstractExprWithNmspc;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.Function;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.Sql;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.SqlFunctionBody;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Function_bodyContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Plpgsql_functionContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.SqlContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractPgFunction;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;

@@ -18,10 +18,10 @@ package ru.taximaxim.codekeeper.core.parsers.antlr.statements;
 import java.util.Arrays;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Cast_nameContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Create_cast_statementContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Data_typeContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Schema_qualified_nameContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Cast_nameContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_cast_statementContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Data_typeContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qualified_nameContext;
 import ru.taximaxim.codekeeper.core.schema.ICast.CastContext;
 import ru.taximaxim.codekeeper.core.schema.PgCast;
 import ru.taximaxim.codekeeper.core.schema.PgCast.CastMethod;

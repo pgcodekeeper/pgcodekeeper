@@ -18,11 +18,11 @@ package ru.taximaxim.codekeeper.core.parsers.antlr.expr;
 import java.util.Collections;
 import java.util.List;
 
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Table_subqueryContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Update_setContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Update_stmt_for_psqlContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.VexContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.With_clauseContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Table_subqueryContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Update_setContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Update_stmt_for_psqlContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.With_clauseContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.rulectx.Vex;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
 import ru.taximaxim.codekeeper.core.utils.ModPair;

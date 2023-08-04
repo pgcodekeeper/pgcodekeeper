@@ -23,7 +23,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser;
 import ru.taximaxim.codekeeper.core.sql.Keyword;
 import ru.taximaxim.codekeeper.core.sql.Keyword.LabelCategory;
 

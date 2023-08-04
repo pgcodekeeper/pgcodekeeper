@@ -21,17 +21,17 @@ import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Create_rewrite_statementContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Delete_stmt_for_psqlContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Insert_stmt_for_psqlContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Rewrite_commandContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Select_stmtContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Update_stmt_for_psqlContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.Delete;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.Insert;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.Select;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.Update;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.ValueExprWithNmspc;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_rewrite_statementContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Delete_stmt_for_psqlContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Insert_stmt_for_psqlContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Rewrite_commandContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Select_stmtContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Update_stmt_for_psqlContext;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgRule;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;

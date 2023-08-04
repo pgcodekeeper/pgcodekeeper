@@ -18,7 +18,7 @@ package ru.taximaxim.codekeeper.core.parsers.antlr.statements;
 import java.util.Arrays;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Create_database_statementContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_database_statementContext;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 
 public class CreateDatabase extends ParserAbstract {

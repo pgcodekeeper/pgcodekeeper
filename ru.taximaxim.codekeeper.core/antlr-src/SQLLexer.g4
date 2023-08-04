@@ -19,7 +19,7 @@
 lexer grammar SQLLexer;
 
 @header {
-package ru.taximaxim.codekeeper.core.parsers.antlr;
+package ru.taximaxim.codekeeper.core.parsers.antlr.generated;
 import java.util.ArrayDeque;
 import java.util.Deque;
 }

@@ -33,9 +33,9 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import ru.taximaxim.codekeeper.core.formatter.FormatConfiguration.IndentType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrUtils;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLLexer;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Function_bodyContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLLexer;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Function_bodyContext;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 public class StatementFormatter {

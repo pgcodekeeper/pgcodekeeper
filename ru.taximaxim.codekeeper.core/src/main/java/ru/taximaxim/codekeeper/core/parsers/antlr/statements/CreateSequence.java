@@ -21,9 +21,9 @@ import org.antlr.v4.runtime.ParserRuleContext;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Create_sequence_statementContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Sequence_bodyContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Tokens_nonreserved_except_function_typeContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_sequence_statementContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Sequence_bodyContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Tokens_nonreserved_except_function_typeContext;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgSequence;

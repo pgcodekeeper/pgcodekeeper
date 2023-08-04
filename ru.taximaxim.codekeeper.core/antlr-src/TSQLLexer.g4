@@ -1,6 +1,6 @@
 lexer grammar TSQLLexer;
 
-@header {package ru.taximaxim.codekeeper.core.parsers.antlr;}
+@header {package ru.taximaxim.codekeeper.core.parsers.antlr.generated;}
 
 // Basic keywords (from https://msdn.microsoft.com/en-us/library/ms189822.aspx)
 ADD: A D D;  // first identifier rule, sync with CustomTSQLAntlrErrorStrategy

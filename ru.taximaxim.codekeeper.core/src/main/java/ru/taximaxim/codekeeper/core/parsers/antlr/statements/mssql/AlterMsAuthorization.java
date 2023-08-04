@@ -22,9 +22,9 @@ import java.util.Map;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Alter_authorizationContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Class_typeContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.IdContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Alter_authorizationContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Class_typeContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;

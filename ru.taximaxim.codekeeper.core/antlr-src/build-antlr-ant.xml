@@ -61,7 +61,7 @@
       <arg value="-no-listener" />
       <arg value="-no-visitor" />
       <arg value="-o" />
-      <arg file="${build-project-location}/target/generated-sources/antlr4/ru/taximaxim/codekeeper/core/parsers/antlr" />
+      <arg file="${build-project-location}/target/generated-sources/antlr4/ru/taximaxim/codekeeper/core/parsers/antlr/generated/" />
       <arg line="${build-fileset-final}" />
     </java>
   </target>

@@ -18,13 +18,13 @@ package ru.taximaxim.codekeeper.core.parsers.antlr.msexpr;
 import java.util.Collections;
 import java.util.List;
 
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Delete_statementContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.ExpressionContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.From_itemContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Qualified_nameContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Search_conditionContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Top_countContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.With_expressionContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Delete_statementContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.ExpressionContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.From_itemContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Qualified_nameContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Search_conditionContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Top_countContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.With_expressionContext;
 
 public class MsDelete extends MsAbstractExprWithNmspc<Delete_statementContext> {
 

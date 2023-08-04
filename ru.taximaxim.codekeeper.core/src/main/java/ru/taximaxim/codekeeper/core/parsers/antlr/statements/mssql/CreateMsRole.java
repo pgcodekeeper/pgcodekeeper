@@ -18,8 +18,8 @@ package ru.taximaxim.codekeeper.core.parsers.antlr.statements.mssql;
 import java.util.Arrays;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Create_db_roleContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.IdContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Create_db_roleContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.MsRole;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;

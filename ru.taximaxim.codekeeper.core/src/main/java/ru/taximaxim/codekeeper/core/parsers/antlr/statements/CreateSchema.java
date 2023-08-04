@@ -19,9 +19,9 @@ import java.util.Arrays;
 
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Create_schema_statementContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.IdentifierContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.User_nameContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_schema_statementContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.IdentifierContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.User_nameContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgSchema;

@@ -19,10 +19,10 @@ import java.util.Arrays;
 
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Create_userContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.IdContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.User_loginContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.User_optionContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Create_userContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.User_loginContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.User_optionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.MsUser;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;

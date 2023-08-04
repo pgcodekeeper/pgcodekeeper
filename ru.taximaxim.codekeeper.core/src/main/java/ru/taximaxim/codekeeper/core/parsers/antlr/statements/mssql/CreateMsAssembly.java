@@ -20,10 +20,10 @@ import java.util.Locale;
 import java.util.regex.Pattern;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Assembly_permissionContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.Create_assemblyContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.ExpressionContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser.IdContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Assembly_permissionContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Create_assemblyContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.ExpressionContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.MsAssembly;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;

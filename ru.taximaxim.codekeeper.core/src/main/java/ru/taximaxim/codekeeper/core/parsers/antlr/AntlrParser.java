@@ -52,6 +52,14 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrContextProcessor.SqlConte
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrContextProcessor.TSqlContextProcessor;
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.MonitorCancelledRuntimeException;
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.UnresolvedReferenceException;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.IgnoreListLexer;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.IgnoreListParser;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.PrivilegesLexer;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.PrivilegesParser;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLLexer;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLLexer;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 public class AntlrParser {

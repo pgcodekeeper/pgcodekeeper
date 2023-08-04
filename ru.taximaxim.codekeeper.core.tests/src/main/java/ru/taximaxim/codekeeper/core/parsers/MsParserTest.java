@@ -33,7 +33,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
-import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLParser;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser;
 
 /**
  * Tests for MS SQL parser rules.

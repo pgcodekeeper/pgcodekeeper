@@ -20,7 +20,7 @@ import java.util.List;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Alter_materialized_view_statementContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Alter_materialized_view_statementContext;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 

@@ -18,9 +18,9 @@ package ru.taximaxim.codekeeper.core.parsers.antlr.expr;
 import java.util.Collections;
 import java.util.List;
 
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Function_bodyContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Function_returnContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.StatementContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Function_bodyContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Function_returnContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.StatementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.rulectx.Vex;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
 import ru.taximaxim.codekeeper.core.utils.ModPair;

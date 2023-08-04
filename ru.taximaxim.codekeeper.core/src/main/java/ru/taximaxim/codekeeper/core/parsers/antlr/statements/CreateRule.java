@@ -24,9 +24,9 @@ import org.antlr.v4.runtime.ParserRuleContext;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Create_rewrite_statementContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Rewrite_commandContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.RuleAnalysisLauncher;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_rewrite_statementContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Rewrite_commandContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgEventType;

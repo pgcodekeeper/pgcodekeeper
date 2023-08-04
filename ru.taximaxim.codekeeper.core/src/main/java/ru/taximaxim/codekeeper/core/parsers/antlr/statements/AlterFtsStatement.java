@@ -22,10 +22,10 @@ import org.antlr.v4.runtime.ParserRuleContext;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Alter_fts_configurationContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Alter_fts_statementContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.IdentifierContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.SQLParser.Schema_qualified_nameContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Alter_fts_configurationContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Alter_fts_statementContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.IdentifierContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qualified_nameContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgFtsConfiguration;

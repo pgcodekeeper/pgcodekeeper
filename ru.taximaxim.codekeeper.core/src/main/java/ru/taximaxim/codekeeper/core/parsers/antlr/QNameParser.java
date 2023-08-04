@@ -23,6 +23,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 
 public final class QNameParser<T extends ParserRuleContext> {

@@ -5,7 +5,7 @@ options {
     tokenVocab=SQLLexer;
 }
 
-@header {package ru.taximaxim.codekeeper.core.parsers.antlr;}
+@header {package ru.taximaxim.codekeeper.core.parsers.antlr.generated;}
 
 // to start parsing, it is recommended to use only rules with EOF
 // this eliminates the ambiguous parsing options and speeds up the process
