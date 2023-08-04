@@ -21,7 +21,6 @@ package ru.taximaxim.codekeeper.core.schema;
 
 import java.util.Map;
 import java.util.Objects;
-import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.Consts;
