@@ -21,7 +21,6 @@ package ru.taximaxim.codekeeper.core.schema;
 
 import java.util.Map;
 import java.util.Objects;
-import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.Consts;
@@ -147,7 +146,7 @@ public class PgIndex extends AbstractIndex {
             boolean concurrently = args != null && args.isConcurrentlyMode();
             if (concurrently) {
                 // generate optimized command sequence for concurrent index creation
-                String tmpName = "tmp" + new Random().nextInt(Integer.MAX_VALUE)
+                String tmpName = "tmp" + PgDiffUtils.RANDOM.nextInt(Integer.MAX_VALUE)
                         + "_" + getName();
                 sb.append("\n\n")
                 .append(newIndex.getCreationSQL(tmpName))

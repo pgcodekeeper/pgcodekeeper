@@ -474,9 +474,9 @@ implements IResourceChangeListener, ITextErrorReporter {
             return PgDbParser.getParser(res);
         }
 
-        PgDbParser parser = new PgDbParser();
-        refreshParser(parser, res, null);
-        return parser;
+        PgDbParser pgDbParser = new PgDbParser();
+        refreshParser(pgDbParser, res, null);
+        return pgDbParser;
     }
 
     void refreshParser() {
@@ -632,13 +632,13 @@ implements IResourceChangeListener, ITextErrorReporter {
         ScriptParser [] parsers = new ScriptParser[1];
         IRunnableWithProgress runnable = monitor -> {
             try {
-                ScriptParser parser = new ScriptParser(
+                ScriptParser scriptParser = new ScriptParser(
                         getEditorInput().getName(), textRetrieved, dbInfo.isMsSql());
-                String error = parser.getErrorMessage();
+                String error = scriptParser.getErrorMessage();
                 if (error != null) {
                     UiProgressReporter.writeSingleError(error);
                 } else {
-                    parsers[0] = parser;
+                    parsers[0] = scriptParser;
                 }
             } catch (InterruptedException | IOException ex) {
                 UiProgressReporter.writeSingleError(ex.getLocalizedMessage());
