@@ -62,6 +62,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Waitfor_r
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Waitfor_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.While_statementContext;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
+import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
 
 public class MsSqlClauses extends MsAbstractExpr {
 
@@ -69,8 +70,8 @@ public class MsSqlClauses extends MsAbstractExpr {
         super(parent);
     }
 
-    public MsSqlClauses(String schema) {
-        super(schema);
+    public MsSqlClauses(String schema, MetaContainer meta) {
+        super(schema, meta);
     }
 
     public List<String> analyze(Sql_clausesContext sql) {

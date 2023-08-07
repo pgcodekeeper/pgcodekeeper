@@ -48,6 +48,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.With_expr
 import ru.taximaxim.codekeeper.core.parsers.antlr.rulectx.MsSelectOps;
 import ru.taximaxim.codekeeper.core.parsers.antlr.rulectx.MsSelectStmt;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
+import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
 
 public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
 
@@ -69,8 +70,8 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
         super(parent);
     }
 
-    public MsSelect(String schema) {
-        super(schema);
+    public MsSelect(String schema, MetaContainer meta) {
+        super(schema, meta);
     }
 
     @Override

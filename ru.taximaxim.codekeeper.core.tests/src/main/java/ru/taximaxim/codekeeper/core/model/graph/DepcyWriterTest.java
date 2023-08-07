@@ -39,24 +39,22 @@ public class DepcyWriterTest {
         "table, public.t1",
         "regex, public\\.t.",
         "view, public.v1",
+        "ms_procedure, \\[dbo\\].\\[test_poc\\]",
+        "function_circle, public.f1\\(\\)",
     })
-    void compareDirectGraph(String fileName, String objectName) throws IOException, InterruptedException {
+    void compareGraph(String fileName, String objectName) throws IOException, InterruptedException {
         compareGraph(fileName, DEPS_POSTFIX, objectName, false);
-    }
-
-    @ParameterizedTest
-    @CsvSource({
-        "table, public.t1",
-        "regex, public\\.t.",
-        "view, public.v1",
-    })
-    void compareReverseGraph(String fileName, String objectName) throws IOException, InterruptedException {
         compareGraph(fileName, DEPS_REVERSE_POSTFIX, objectName, true);
     }
 
     void compareGraph(String fileName, String expectedPostfix, String objectName, boolean isReverse)
             throws IOException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();
+        if (fileName.startsWith("ms_")) {
+            args.setMsSql(true);
+        }
+        args.setEnableFunctionBodiesDependencies(true);
+
         PgDatabase db = TestUtils.loadTestDump(fileName + ".sql", getClass(), args);
 
         StringWriter out = new StringWriter();

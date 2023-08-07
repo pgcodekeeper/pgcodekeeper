@@ -34,7 +34,7 @@ public class MsExpressionAnalysisLauncher extends AbstractAnalysisLauncher {
 
     @Override
     public Set<PgObjLocation> analyze(ParserRuleContext ctx, MetaContainer meta) {
-        MsValueExpr expr = new MsValueExpr(stmt.getSchemaName());
+        MsValueExpr expr = new MsValueExpr(stmt.getSchemaName(), meta);
         return analyze((ExpressionContext) ctx, expr);
     }
 }

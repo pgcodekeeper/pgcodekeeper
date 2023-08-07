@@ -60,17 +60,17 @@ public class MsFuncProcTrigAnalysisLauncher extends AbstractAnalysisLauncher {
         String schema = stmt.getSchemaName();
 
         if (ctx instanceof Sql_clausesContext) {
-            MsSqlClauses clauses = new MsSqlClauses(schema);
+            MsSqlClauses clauses = new MsSqlClauses(schema, meta);
             clauses.analyze((Sql_clausesContext) ctx);
             return clauses.getDepcies();
         }
 
         if (ctx instanceof Select_statementContext) {
-            MsSelect select = new MsSelect(schema);
+            MsSelect select = new MsSelect(schema, meta);
             return analyze((Select_statementContext) ctx, select);
         }
 
-        MsValueExpr expr = new MsValueExpr(schema);
+        MsValueExpr expr = new MsValueExpr(schema, meta);
         return analyze((ExpressionContext) ctx, expr);
     }
 
