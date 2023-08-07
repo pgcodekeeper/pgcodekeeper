@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed bug with dependency search.
+
 ## [8.4.0] - 2023-08-01
 
 ### Added

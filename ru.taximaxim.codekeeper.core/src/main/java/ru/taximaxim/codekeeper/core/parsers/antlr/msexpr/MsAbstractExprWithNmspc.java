@@ -16,6 +16,7 @@
 package ru.taximaxim.codekeeper.core.parsers.antlr.msexpr;
 
 import java.util.AbstractMap.SimpleEntry;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -23,13 +24,18 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Stream;
 
+import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.As_table_aliasContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Common_table_expressionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Qualified_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.With_expressionContext;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
+import ru.taximaxim.codekeeper.core.schema.IRelation;
+import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
+import ru.taximaxim.codekeeper.core.utils.Pair;
 
 /**
  * @author levsha_aa
@@ -57,8 +63,8 @@ public abstract class MsAbstractExprWithNmspc<T> extends MsAbstractExpr {
      */
     private final Set<String> cte = new HashSet<>();
 
-    protected MsAbstractExprWithNmspc(String schema) {
-        super(schema);
+    protected MsAbstractExprWithNmspc(String schema, MetaContainer meta) {
+        super(schema, meta);
     }
 
     protected MsAbstractExprWithNmspc(MsAbstractExpr parent) {
@@ -105,6 +111,35 @@ public abstract class MsAbstractExprWithNmspc<T> extends MsAbstractExpr {
         }
 
         return found ? new SimpleEntry<>(name, dereferenced) : null;
+    }
+
+    @Override
+    protected Pair<IRelation, Pair<String, String>> findColumn(String name) {
+        Pair<IRelation, Pair<String, String>> ret = findColumn(name, namespace.values());
+        if (ret == null) {
+            ret = findColumn(name, unaliasedNamespace);
+        }
+        return ret != null ? ret : super.findColumn(name);
+    }
+
+    private Pair<IRelation, Pair<String, String>> findColumn(String name, Collection<GenericColumn> refs) {
+        for (GenericColumn ref : refs) {
+            if (ref == null) {
+                continue;
+            }
+            IRelation rel = findRelation(ref.schema, ref.table);
+            if (rel == null) {
+                continue;
+            }
+
+            Stream<Pair<String, String>> columns = rel.getRelationColumns();
+            for (Pair<String, String> col : PgDiffUtils.sIter(columns)) {
+                if (col.getFirst().equals(name)) {
+                    return new Pair<>(rel, col);
+                }
+            }
+        }
+        return null;
     }
 
     /**

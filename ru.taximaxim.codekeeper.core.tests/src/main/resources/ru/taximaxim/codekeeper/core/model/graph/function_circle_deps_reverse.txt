@@ -1,0 +1,5 @@
+FUNCTION public.f1()
+	SCHEMA public
+	FUNCTION public.f2()
+		SCHEMA public
+		FUNCTION public.f1() - cyclic dependency

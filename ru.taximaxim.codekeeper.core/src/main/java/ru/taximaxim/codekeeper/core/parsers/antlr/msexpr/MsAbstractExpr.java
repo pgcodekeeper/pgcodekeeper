@@ -31,13 +31,17 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Full_colu
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Qualified_nameContext;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
+import ru.taximaxim.codekeeper.core.schema.IRelation;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation.LocationType;
+import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
+import ru.taximaxim.codekeeper.core.utils.Pair;
 
 public abstract class MsAbstractExpr {
 
     private static final Logger LOG = LoggerFactory.getLogger(MsAbstractExpr.class);
 
+    private final MetaContainer meta;
     private final String schema;
     private final MsAbstractExpr parent;
     private final Set<PgObjLocation> depcies;
@@ -46,18 +50,19 @@ public abstract class MsAbstractExpr {
         return Collections.unmodifiableSet(depcies);
     }
 
-    protected MsAbstractExpr(String schema) {
-        this(schema, null, new LinkedHashSet<>());
+    protected MsAbstractExpr(String schema, MetaContainer meta) {
+        this(schema, null, new LinkedHashSet<>(), meta);
     }
 
     protected MsAbstractExpr(MsAbstractExpr parent) {
-        this(parent.schema, parent, parent.depcies);
+        this(parent.schema, parent, parent.depcies, parent.meta);
     }
 
-    private MsAbstractExpr(String schema, MsAbstractExpr parent, Set<PgObjLocation> depcies) {
+    private MsAbstractExpr(String schema, MsAbstractExpr parent, Set<PgObjLocation> depcies, MetaContainer meta) {
         this.schema = schema;
         this.parent = parent;
         this.depcies = depcies;
+        this.meta = meta;
     }
 
     protected MsAbstractExprWithNmspc<?> findCte(String cteName) {
@@ -83,6 +88,14 @@ public abstract class MsAbstractExpr {
 
     protected final Entry<String, GenericColumn> findReference(String schema, String name) {
         return findReferenceRecursive(schema, name.toLowerCase(Locale.ROOT));
+    }
+
+    protected Pair<IRelation, Pair<String, String>> findColumn(String name) {
+        return parent == null ? null : parent.findColumn(name);
+    }
+
+    protected IRelation findRelation(String schemaName, String relationName) {
+        return meta.findRelation(schemaName, relationName);
     }
 
     protected GenericColumn addObjectDepcy(Qualified_nameContext qualifiedName, DbObjType type) {
@@ -140,12 +153,23 @@ public abstract class MsAbstractExpr {
 
     protected void addColumnDepcy(Full_column_nameContext fcn) {
         Qualified_nameContext tableName = fcn.qualified_name();
+        IdContext columnCtx = fcn.id();
+        String columnName = columnCtx.getText();
+
         if (tableName == null) {
+            Pair<IRelation, Pair<String, String>> relCol = findColumn(columnName);
+            if (relCol == null) {
+                return;
+            }
+
+            IRelation rel = relCol.getFirst();
+            Pair<String, String> col = relCol.getSecond();
+            addDepcy(new GenericColumn(rel.getSchemaName(), rel.getName(), col.getFirst(), DbObjType.COLUMN),
+                    columnCtx);
             return;
         }
 
         IdContext schemaCtx = tableName.schema;
-
         String schemaName = null;
         if (schemaCtx != null) {
             schemaName = schemaCtx.getText();
@@ -154,9 +178,6 @@ public abstract class MsAbstractExpr {
 
         IdContext relationCtx = tableName.name;
         String relationName = relationCtx.getText();
-
-        IdContext columnCtx = fcn.id();
-        String columnName = columnCtx.getText();
 
         Entry<String, GenericColumn> ref = findReference(schemaName, relationName);
         if (ref != null) {

@@ -48,6 +48,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Simple_ma
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Switch_search_condition_sectionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Switch_sectionContext;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
+import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
 
 public class MsValueExpr extends MsAbstractExpr {
 
@@ -55,8 +56,8 @@ public class MsValueExpr extends MsAbstractExpr {
         super(parent);
     }
 
-    public MsValueExpr(String schema) {
-        super(schema);
+    public MsValueExpr(String schema, MetaContainer meta) {
+        super(schema, meta);
     }
 
     public void analyze(ExpressionContext exp) {

@@ -34,7 +34,7 @@ public class MsViewAnalysisLauncher extends AbstractAnalysisLauncher {
 
     @Override
     public Set<PgObjLocation> analyze(ParserRuleContext ctx, MetaContainer meta) {
-        MsSelect select = new MsSelect(stmt.getSchemaName());
+        MsSelect select = new MsSelect(stmt.getSchemaName(), meta);
         return analyze((Select_statementContext) ctx, select);
     }
 }

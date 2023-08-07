@@ -16,11 +16,11 @@
 package ru.taximaxim.codekeeper.core.model.graph;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -44,7 +44,7 @@ public class DepcyWriter {
     private final PrintWriter writer;
     private final EnumSet<DbObjType> filterObjTypes;
     private final boolean isInvertFilter;
-    protected final LinkedHashSet<PrintObj> printObjects = new LinkedHashSet<>();
+    protected final List<PrintObj> printObjects = new ArrayList<>();
 
     public DepcyWriter(PgDatabase db, int depth, PrintWriter writer, boolean isReverse, Collection<DbObjType> filterObjTypes, boolean isInvertFilter) {
         this.db = db;
@@ -66,16 +66,13 @@ public class DepcyWriter {
 
             db.getDescendants().flatMap(AbstractTable::columnAdder)
             .filter(st -> find(patterns, st.getQualifiedName()))
-            .forEach(st ->  printTree(st, START_LEVEL, new HashSet<>(), null, 0));
+            .forEach(st ->  fillTree(st, START_LEVEL, new HashSet<>(), null, 0));
         } else {
-            printTree(db, START_LEVEL, new HashSet<>(), null, 0);
+            fillTree(db, START_LEVEL, new HashSet<>(), null, 0);
         }
 
         for (PrintObj prObj : printObjects) {
-            printIndent(prObj.getIndent());
-            writer.println(prObj.getStatement().getStatementType() + " "
-                    + prObj.getStatement().getQualifiedName() + (prObj.getHiddenObj() != 0 ?
-                            " (hidden " + prObj.getHiddenObj() + " objects)" : ""));
+            writer.println(prObj);
         }
     }
 
@@ -88,9 +85,33 @@ public class DepcyWriter {
         return false;
     }
 
-    private void printIndent(int level) {
-        for (int i = 0; i < level; i++) {
-            writer.print("\t");
+    private void fillTree(PgStatement st, int level, Set<PgStatement> added, PgStatement parentSt, int hiddenObj) {
+        DbObjType type = st.getStatementType();
+
+        if (DbObjType.DATABASE == type && START_LEVEL != level) {
+            // do not show database in reverse graph
+            return;
+        }
+
+        boolean isCyclic = !added.add(st);
+
+        final PgStatement finalParentSt;
+        if (isPrintObj(st)) {
+            printObjects.add(new PrintObj(st, parentSt, level, hiddenObj, isCyclic));
+            finalParentSt = st;
+            hiddenObj = 0;
+            level++;
+        } else {
+            hiddenObj++;
+            finalParentSt = parentSt;
+        }
+        if (depth > level && !isCyclic) {
+            final int finalLevel = level;
+            final int finalHiddenObj = hiddenObj;
+
+            graph.outgoingEdgesOf(st).stream().map(graph::getEdgeTarget)
+            .sorted(Comparator.comparing(PgStatement::getStatementType))
+            .forEach(pgSt -> fillTree(pgSt, finalLevel, new HashSet<>(added), finalParentSt, finalHiddenObj));
         }
     }
 
@@ -104,38 +125,5 @@ public class DepcyWriter {
             return filterObjTypes.contains(type);
         }
         return !filterObjTypes.contains(type);
-    }
-
-    private void printTree(PgStatement st, int level, Set<PgStatement> added, PgStatement parentSt, int hiddenObj) {
-        DbObjType type = st.getStatementType();
-
-        if (DbObjType.DATABASE == type && START_LEVEL != level) {
-            // do not show database in reverse graph
-            return;
-        }
-
-        if (!added.add(st)) {
-            writer.println(type + " " + st.getQualifiedName() + " - cyclic dependency");
-            return;
-        }
-
-        final PgStatement finalParentSt;
-        if (isPrintObj(st)) {
-            printObjects.add(new PrintObj(st, parentSt, level, hiddenObj));
-            finalParentSt = st;
-            hiddenObj = 0;
-            level++;
-        } else {
-            hiddenObj++;
-            finalParentSt = parentSt;
-        }
-        if (depth > level) {
-            final int finalLevel = level;
-            final int finalHiddenObj = hiddenObj;
-
-            graph.outgoingEdgesOf(st).stream().map(graph::getEdgeTarget)
-            .sorted(Comparator.comparing(PgStatement::getStatementType))
-            .forEach(pgSt -> printTree(pgSt, finalLevel, new HashSet<>(added), finalParentSt, finalHiddenObj));
-        }
     }
 }
