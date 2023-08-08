@@ -590,6 +590,7 @@ public class PgDatabase extends PgStatement implements IDatabase {
         case FOREIGN_DATA_WRAPPER:
         case EVENT_TRIGGER:
         case SERVER:
+        case USER_MAPPING:
         case CAST:
             orig = getChild(name, type);
             if (orig == null) {

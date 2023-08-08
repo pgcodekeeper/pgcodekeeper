@@ -16,8 +16,6 @@
 package ru.taximaxim.codekeeper.cli.opthandlers;
 
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -31,9 +29,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 public class DbObjTypeOptionHandler extends EnumOptionHandler<DbObjType> {
 
     // TODO add VIEWCOLUMN when merged
-    private static final Set<DbObjType> HIDE = Collections.unmodifiableSet(EnumSet.of(
-            DbObjType.DATABASE,
-            DbObjType.COLUMN));
+    private static final Set<DbObjType> HIDE = Set.of(DbObjType.DATABASE, DbObjType.COLUMN);
 
     public DbObjTypeOptionHandler(CmdLineParser parser, OptionDef option, Setter<DbObjType> setter) {
         super(parser, option, setter, DbObjType.class);
