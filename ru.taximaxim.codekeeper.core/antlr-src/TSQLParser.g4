@@ -1713,8 +1713,8 @@ alter_table
         | (WITH (CHECK | nocheck_add=NOCHECK))? ADD column_def_table_constraints
         | ALTER COLUMN (column_definition | id  alter_column_option)
         | table_drop=DROP table_action_drop (COMMA table_action_drop)*
-        | (WITH (CHECK | nocheck_check=NOCHECK))? (CHECK | nocheck=NOCHECK) CONSTRAINT id (COMMA id)*
-        | (ENABLE | DISABLE) TRIGGER id (COMMA id)*
+        | (WITH (CHECK | nocheck_check=NOCHECK))? (CHECK | nocheck=NOCHECK) CONSTRAINT (ALL | id (COMMA id)*)
+        | (ENABLE | DISABLE) TRIGGER (ALL | id (COMMA id)*)
         | (ENABLE | DISABLE) CHANGE_TRACKING (WITH LR_BRACKET TRACK_COLUMNS_UPDATED EQUAL (ON|OFF) RR_BRACKET)?
         | SWITCH (PARTITION expression)?
            TO qualified_name

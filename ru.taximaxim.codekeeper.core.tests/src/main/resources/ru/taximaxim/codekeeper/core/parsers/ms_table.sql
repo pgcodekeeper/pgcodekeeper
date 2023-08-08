@@ -227,4 +227,10 @@ GO
 ALTER TABLE Source SWITCH TO Target PARTITION $PARTITION.PF_TEST_DT( '20121201' )
 GO
 
+-- Alter Table With Constraint and Trigger (param ALL) 
+ALTER TABLE dbo.doc_exa NOCHECK CONSTRAINT ALL;
+GO
+ALTER TABLE dbo.doc_exa DISABLE TRIGGER ALL;
+GO
+
 --
