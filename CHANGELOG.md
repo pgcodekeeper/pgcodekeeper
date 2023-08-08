@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added support ALL to rule alter_table in MsSQL parser.
+
 ### Changed
 
 - Changed core module logging to use slf4j.

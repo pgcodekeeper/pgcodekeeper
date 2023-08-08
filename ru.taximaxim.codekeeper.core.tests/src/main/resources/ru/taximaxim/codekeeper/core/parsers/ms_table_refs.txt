@@ -64,3 +64,7 @@ Reference: Object = "Source" (TABLE), action = ALTER, offset = 6062, line number
 Reference: Object = "Source" (TABLE), action = ALTER, offset = 6125, line number = 223, charPositionInLine = 12
 Reference: Object = "Source" (TABLE), action = ALTER, offset = 6176, line number = 225, charPositionInLine = 12
 Reference: Object = "Source" (TABLE), action = ALTER, offset = 6308, line number = 227, charPositionInLine = 12
+Reference: Object = dbo (SCHEMA), action = null, offset = 6450, line number = 231, charPositionInLine = 12
+Reference: Object = dbo.doc_exa (TABLE), action = ALTER, offset = 6454, line number = 231, charPositionInLine = 16
+Reference: Object = dbo (SCHEMA), action = null, offset = 6501, line number = 233, charPositionInLine = 12
+Reference: Object = dbo.doc_exa (TABLE), action = ALTER, offset = 6505, line number = 233, charPositionInLine = 16
