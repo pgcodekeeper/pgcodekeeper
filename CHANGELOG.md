@@ -9,17 +9,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- Added support ALL to rule alter_table in MsSQL parser.
+### Changed
+
+### Fixed
+
+## [8.5.0] - 2023-08-15
 
 ### Changed
 
 - Changed core module logging to use slf4j.
 - Disabled standalone pgCodeKeeper package for macOS.
-- Now the types list in filter is sorted by alphabet.
+- Sorted list of types in object filter.
 - Moved generated classes.
+- Improved parser rules for MS SQL.
 
 ### Fixed
 
+- Fixed bug with reading USER MAPPING from libraries.
 - Fixed bug with dependency search.
 
 ## [8.4.0] - 2023-08-01
@@ -1752,7 +1758,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.4.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.5.0...HEAD
+[8.5.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.4.0...v8.5.0
 [8.4.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.3.0...v8.4.0
 [8.3.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.2.0...v8.3.0
 [8.2.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.1.0...v8.2.0
