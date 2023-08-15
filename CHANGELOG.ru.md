@@ -9,17 +9,23 @@
 
 ### Добавлено
 
-- Добавлена поддержка ALL для правила alter_table в парсере MsSQL.
+### Изменено
+
+### Исправлено
+
+## [8.5.0] - 2023-08-15
 
 ### Изменено
 
 - Изменено логирование core модуля на использование slf4j.
 - Отключена самостоятельная сборка pgCodeKeeper для macOS.
-- Теперь список типов в фильтре отсортирован по алфавиту.
+- Отсортирован список типов в фильтре объектов.
 - Перемещены сгенерированные классы.
+- Улучшены правила парсера для MS SQL.
 
 ### Исправлено
 
+- Исправлена ошибка с чтением USER MAPPING из библиотек.
 - Исправлена ошибка с поиском зависимостей.
 
 ## [8.4.0] - 2023-08-01
@@ -1753,7 +1759,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.4.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.5.0...HEAD
+[8.5.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.4.0...v8.5.0
 [8.4.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.3.0...v8.4.0
 [8.3.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.2.0...v8.3.0
 [8.2.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.1.0...v8.2.0
