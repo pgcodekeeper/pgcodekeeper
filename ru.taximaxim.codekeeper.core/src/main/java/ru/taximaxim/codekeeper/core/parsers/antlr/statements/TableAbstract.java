@@ -380,7 +380,7 @@ public abstract class TableAbstract extends ParserAbstract {
         }
 
         appendConstrCommon(sb, ctx);
-
+        constrBlank.setNotValid(ctx.VALID() != null);
         constrBlank.setDefinition(sb.toString());
 
         for (Index_columnContext c : constrBody.index_column()) {

@@ -2632,3 +2632,36 @@ ALTER TABLE public.distpol_person SET WITH (REORGANIZE=true) DISTRIBUTED BY (nam
 ALTER TABLE public.t2 SET WITH (REORGANIZE=true) DISTRIBUTED RANDOMLY;
 
 ALTER FOREIGN TABLE public.films OPTIONS (ADD mpp_execute 'all segments');
+
+
+ALTER TABLE test SPLIT DEFAULT PARTITION 
+START ('2022-01-01') INCLUSIVE 
+END ('2022-02-01') EXCLUSIVE 
+INTO (PARTITION jan09, PARTITION other);
+
+ALTER TABLE test ADD PARTITION 
+START (date '2022-02-01') INCLUSIVE 
+END (date '2022-03-01') EXCLUSIVE;
+
+ALTER TABLE test 
+SET SUBPARTITION TEMPLATE (
+  SUBPARTITION ru VALUES('RU'), 
+  SUBPARTITION ir VALUES('IR'), 
+  SUBPARTITION sg VALUES('SG'), 
+  SUBPARTITION us VALUES('US'), 
+  DEFAULT SUBPARTITION other);
+
+
+-- Once check_b is added to the parent, it should be made non-local for part_b
+ALTER TABLE parted ADD CONSTRAINT check_b CHECK (b >= 0);
+
+-- Neither check_a nor check_b are droppable from part_b
+ALTER TABLE part_b DROP CONSTRAINT check_a;
+ALTER TABLE part_b DROP CONSTRAINT check_b;
+
+-- And dropping it from parted should leave no trace of them on part_b, unlike
+-- traditional inheritance where they will be left behind, because they would
+-- be local constraints.
+ALTER TABLE parted DROP CONSTRAINT check_a, DROP CONSTRAINT check_b;
+
+alter table nv_parent add constraint c check(c1 > 0) no inherit not valid;

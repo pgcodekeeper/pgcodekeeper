@@ -247,7 +247,6 @@ CREATE TABLE tas_case WITH ("Fillfactor" = 10) AS SELECT 1 a;
 
 CREATE UNLOGGED TABLE unlogged1 (a int primary key);            -- OK
 CREATE TEMPORARY TABLE unlogged2 (a int primary key);           -- OK
-DROP TABLE unlogged2;
 INSERT INTO unlogged1 VALUES (42);
 CREATE UNLOGGED TABLE public.unlogged2 (a int primary key);     -- also OK
 CREATE UNLOGGED TABLE pg_temp.unlogged3 (a int primary key);    -- not OK
@@ -255,12 +254,10 @@ CREATE TABLE pg_temp.implicitly_temp (a int primary key);       -- OK
 CREATE TEMP TABLE explicitly_temp (a int primary key);          -- also OK
 CREATE TEMP TABLE pg_temp.doubly_temp (a int primary key);      -- also OK
 CREATE TEMP TABLE public.temp_to_perm (a int primary key);      -- not OK
-DROP TABLE unlogged1, public.unlogged2;
 
 CREATE TABLE as_select1 AS SELECT * FROM pg_class WHERE relkind = 'r';
 CREATE TABLE as_select1 AS SELECT * FROM pg_class WHERE relkind = 'r';
 CREATE TABLE IF NOT EXISTS as_select1 AS SELECT * FROM pg_class WHERE relkind = 'r';
-DROP TABLE as_select1;
 
 -- check that tables with oids cannot be created anymore
 CREATE TABLE withoid() WITH OIDS;
@@ -268,8 +265,8 @@ CREATE TABLE withoid() WITH (oids);
 CREATE TABLE withoid() WITH (oids = true);
 
 -- but explicitly not adding oids is still supported
-CREATE TEMP TABLE withoutoid() WITHOUT OIDS; DROP TABLE withoutoid;
-CREATE TEMP TABLE withoutoid() WITH (oids = false); DROP TABLE withoutoid;
+CREATE TEMP TABLE withoutoid() WITHOUT OIDS;
+CREATE TEMP TABLE withoutoid() WITH (oids = false);
 
 --
 -- Partitioned tables
@@ -314,12 +311,6 @@ CREATE TABLE partitioned (
     a int
 ) PARTITION BY RANGE (('a'));
 
-CREATE FUNCTION const_func () RETURNS int AS $$ SELECT 1; $$ LANGUAGE SQL IMMUTABLE;
-CREATE TABLE partitioned (
-    a int
-) PARTITION BY RANGE (const_func());
-DROP FUNCTION const_func();
-
 -- specified column must be present in the table
 CREATE TABLE partitioned (
     a int
@@ -332,10 +323,6 @@ CREATE TABLE partitioned (
 
 -- functions in key must be immutable
 CREATE FUNCTION immut_func (a int) RETURNS int AS $$ SELECT a + random()::int; $$ LANGUAGE SQL;
-CREATE TABLE partitioned (
-    a int
-) PARTITION BY RANGE (immut_func(a));
-DROP FUNCTION immut_func(int);
 
 -- cannot contain whole-row references
 CREATE TABLE partitioned (
@@ -377,8 +364,6 @@ CREATE TABLE partitioned2 (
 CREATE TABLE fail () INHERITS (partitioned2);
 
 CREATE TABLE part2_1 PARTITION OF partitioned2 FOR VALUES FROM (-1, 'aaaaa') TO (100, 'ccccc');
-DROP TABLE partitioned, partitioned2;
-
 --
 -- Partitions
 --
@@ -415,7 +400,6 @@ CREATE TABLE bools (
     a bool
 ) PARTITION BY LIST (a);
 CREATE TABLE bools_true PARTITION OF bools FOR VALUES IN (1);
-DROP TABLE bools;
 
 -- specified literal can be cast, and the cast might not be immutable
 CREATE TABLE moneyp (
@@ -424,7 +408,6 @@ CREATE TABLE moneyp (
 CREATE TABLE moneyp_10 PARTITION OF moneyp FOR VALUES IN (10);
 CREATE TABLE moneyp_11 PARTITION OF moneyp FOR VALUES IN ('11');
 CREATE TABLE moneyp_12 PARTITION OF moneyp FOR VALUES IN (to_char(12, '99')::int);
-DROP TABLE moneyp;
 
 -- cast is immutable
 CREATE TABLE bigintp (
@@ -433,7 +416,6 @@ CREATE TABLE bigintp (
 CREATE TABLE bigintp_10 PARTITION OF bigintp FOR VALUES IN (10);
 -- fails due to overlap:
 CREATE TABLE bigintp_10_2 PARTITION OF bigintp FOR VALUES IN ('10');
-DROP TABLE bigintp;
 
 CREATE TABLE range_parted (
     a date
@@ -481,14 +463,12 @@ CREATE TABLE unparted (
 );
 CREATE TABLE fail_part PARTITION OF unparted FOR VALUES IN ('a');
 CREATE TABLE fail_part PARTITION OF unparted FOR VALUES WITH (MODULUS 2, REMAINDER 1);
-DROP TABLE unparted;
 
 -- cannot create a permanent rel as partition of a temp rel
 CREATE TEMP TABLE temp_parted (
     a int
 ) PARTITION BY LIST (a);
 CREATE TABLE fail_part PARTITION OF temp_parted FOR VALUES IN ('a');
-DROP TABLE temp_parted;
 
 -- check for partition bound overlap and other invalid specifications
 
@@ -594,18 +574,6 @@ CREATE TABLE part_b PARTITION OF parted (
     CONSTRAINT check_b CHECK (b >= 0)
 ) FOR VALUES IN ('b');
 
--- Once check_b is added to the parent, it should be made non-local for part_b
-ALTER TABLE parted ADD CONSTRAINT check_b CHECK (b >= 0);
-
--- Neither check_a nor check_b are droppable from part_b
-ALTER TABLE part_b DROP CONSTRAINT check_a;
-ALTER TABLE part_b DROP CONSTRAINT check_b;
-
--- And dropping it from parted should leave no trace of them on part_b, unlike
--- traditional inheritance where they will be left behind, because they would
--- be local constraints.
-ALTER TABLE parted DROP CONSTRAINT check_a, DROP CONSTRAINT check_b;
-
 -- specify PARTITION BY for a partition
 CREATE TABLE fail_part_col_not_found PARTITION OF parted FOR VALUES IN ('c') PARTITION BY RANGE (c);
 CREATE TABLE part_c PARTITION OF parted (b WITH OPTIONS NOT NULL DEFAULT 0) FOR VALUES IN ('c') PARTITION BY RANGE ((b));
@@ -618,8 +586,6 @@ create table parted_notnull_inh_test (a int default 1, b int not null default 0)
 create table parted_notnull_inh_test1 partition of parted_notnull_inh_test (a not null, b default 1) for values in (1);
 -- note that while b's default is overriden, a's default is preserved
 
-drop table parted_notnull_inh_test;
-
 -- check for a conflicting COLLATE clause
 create table parted_collate_must_match (a text collate "C", b text collate "C")
   partition by range (a);
@@ -629,7 +595,6 @@ create table parted_collate_must_match1 partition of parted_collate_must_match
 -- on another column
 create table parted_collate_must_match2 partition of parted_collate_must_match
   (b /*collate "POSIX"*/) for values from ('m') to ('z');
-drop table parted_collate_must_match;
 
 -- check that specifying incompatible collations for partition bound
 -- expressions fails promptly
@@ -651,8 +616,6 @@ create table test_part_coll_cast partition of test_part_coll_posix for values fr
 -- ok; partition collation silently overrides the default collation of type 'name'
 create table test_part_coll_cast2 partition of test_part_coll_posix for values from (name 's') to ('z');
 
-drop table test_part_coll_posix;
-
 -- Partition bound in describe output
 
 
@@ -673,23 +636,16 @@ drop table test_part_coll_posix;
 CREATE TABLE range_parted4 (a int, b int, c int) PARTITION BY RANGE (abs(a), abs(b), c);
 CREATE TABLE unbounded_range_part PARTITION OF range_parted4 FOR VALUES FROM (MINVALUE, MINVALUE, MINVALUE) TO (MAXVALUE, MAXVALUE, MAXVALUE);
 
-DROP TABLE unbounded_range_part;
 CREATE TABLE range_parted4_1 PARTITION OF range_parted4 FOR VALUES FROM (MINVALUE, MINVALUE, MINVALUE) TO (1, MAXVALUE, MAXVALUE);
 
 CREATE TABLE range_parted4_2 PARTITION OF range_parted4 FOR VALUES FROM (3, 4, 5) TO (6, 7, MAXVALUE);
 
 CREATE TABLE range_parted4_3 PARTITION OF range_parted4 FOR VALUES FROM (6, 8, MINVALUE) TO (9, MAXVALUE, MAXVALUE);
 
-DROP TABLE range_parted4;
-
 CREATE TABLE partkey_t (a int4) PARTITION BY RANGE (a test_int4_ops);
 CREATE TABLE partkey_t_1 PARTITION OF partkey_t FOR VALUES FROM (0) TO (1000);
 INSERT INTO partkey_t VALUES (100);
 INSERT INTO partkey_t VALUES (200);
-
--- cleanup
-DROP TABLE parted, list_parted, range_parted, list_parted2, range_parted2, range_parted3;
-DROP TABLE partkey_t, hash_parted, hash_parted2;
 
 -- comments on partitioned tables columns
 CREATE TABLE parted_col_comment (a int, b text) PARTITION BY LIST (a);
@@ -697,20 +653,14 @@ COMMENT ON TABLE parted_col_comment IS 'Am partitioned table';
 COMMENT ON COLUMN parted_col_comment.a IS 'Partition key';
 SELECT obj_description('parted_col_comment'::regclass);
 
-DROP TABLE parted_col_comment;
-
 -- list partitioning on array type column
 CREATE TABLE arrlp (a int[]) PARTITION BY LIST (a);
 CREATE TABLE arrlp12 PARTITION OF arrlp FOR VALUES IN ('{1}', '{2}');
-
-DROP TABLE arrlp;
 
 -- partition on boolean column
 create table boolspart (a bool) partition by list (a);
 create table boolspart_t partition of boolspart for values in (true);
 create table boolspart_f partition of boolspart for values in (false);
-
-drop table boolspart;
 
 -- partitions mixing temporary and permanent relations
 create table perm_parted (a int) partition by list (a);
@@ -718,12 +668,7 @@ create temporary table temp_parted (a int) partition by list (a);
 create table perm_part partition of temp_parted default; -- error
 create temp table temp_part partition of perm_parted default; -- error
 create temp table temp_part partition of temp_parted default; -- ok
-drop table perm_parted cascade;
-drop table temp_parted cascade;
-
--- check that adding partitions to a table while it is being used is prevented
 create table tab_part_create (a int) partition by list (a);
-drop table tab_part_create;
 
 -- test using a volatile expression as partition bound
 create table volatile_partbound_test (partkey timestamp) partition by range (partkey);
@@ -732,7 +677,6 @@ create table volatile_partbound_test2 partition of volatile_partbound_test for v
 -- this should go into the partition volatile_partbound_test2
 insert into volatile_partbound_test values (current_timestamp);
 select tableoid::regclass from volatile_partbound_test;
-drop table volatile_partbound_test;
 
 CREATE TABLE BIT_TABLE(b BIT(11));
 CREATE TABLE VARBIT_TABLE(v BIT VARYING(11));
@@ -1086,19 +1030,4 @@ EXECUTE '/var/load_scripts/get_log_data.sh' ON MASTER
 FORMAT 'TEXT' ( delimiter '|' null '\N' escape '\' )
 ENCODING 'UTF8';
 
-ALTER TABLE test SPLIT DEFAULT PARTITION 
-START ('2022-01-01') INCLUSIVE 
-END ('2022-02-01') EXCLUSIVE 
-INTO (PARTITION jan09, PARTITION other);
-
-ALTER TABLE test ADD PARTITION 
-START (date '2022-02-01') INCLUSIVE 
-END (date '2022-03-01') EXCLUSIVE;
-
-ALTER TABLE test 
-SET SUBPARTITION TEMPLATE (
-  SUBPARTITION ru VALUES('RU'), 
-  SUBPARTITION ir VALUES('IR'), 
-  SUBPARTITION sg VALUES('SG'), 
-  SUBPARTITION us VALUES('US'), 
-  DEFAULT SUBPARTITION other);
+create table nv_parent (d date, check (false) no inherit not valid);

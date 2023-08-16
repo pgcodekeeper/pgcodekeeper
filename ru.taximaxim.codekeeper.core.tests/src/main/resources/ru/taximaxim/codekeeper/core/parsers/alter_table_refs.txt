@@ -1658,3 +1658,17 @@ Reference: Object = public (SCHEMA), action = null, offset = 99865, line number 
 Reference: Object = public.t2 (TABLE), action = ALTER, offset = 99872, line number = 2632, charPositionInLine = 19
 Reference: Object = public (SCHEMA), action = null, offset = 99945, line number = 2634, charPositionInLine = 20
 Reference: Object = public.films (TABLE), action = ALTER, offset = 99952, line number = 2634, charPositionInLine = 27
+Reference: Object = test (TABLE), action = ALTER, offset = 100014, line number = 2637, charPositionInLine = 12
+Reference: Object = test (TABLE), action = ALTER, offset = 100160, line number = 2642, charPositionInLine = 12
+Reference: Object = test (TABLE), action = ALTER, offset = 100265, line number = 2646, charPositionInLine = 12
+Reference: Object = parted (TABLE), action = ALTER, offset = 100555, line number = 2656, charPositionInLine = 12
+Reference: Object = parted.check_b (CONSTRAINT), action = CREATE, offset = 100577, line number = 2656, charPositionInLine = 34
+Reference: Object = part_b (TABLE), action = ALTER, offset = 100671, line number = 2659, charPositionInLine = 12
+Reference: Object = part_b.check_a (CONSTRAINT), action = DROP, offset = 100694, line number = 2659, charPositionInLine = 35
+Reference: Object = part_b (TABLE), action = ALTER, offset = 100715, line number = 2660, charPositionInLine = 12
+Reference: Object = part_b.check_b (CONSTRAINT), action = DROP, offset = 100738, line number = 2660, charPositionInLine = 35
+Reference: Object = parted (TABLE), action = ALTER, offset = 100942, line number = 2665, charPositionInLine = 12
+Reference: Object = parted.check_a (CONSTRAINT), action = DROP, offset = 100965, line number = 2665, charPositionInLine = 35
+Reference: Object = parted.check_b (CONSTRAINT), action = DROP, offset = 100990, line number = 2665, charPositionInLine = 60
+Reference: Object = nv_parent (TABLE), action = ALTER, offset = 101012, line number = 2667, charPositionInLine = 12
+Reference: Object = nv_parent.c (CONSTRAINT), action = CREATE, offset = 101037, line number = 2667, charPositionInLine = 37
