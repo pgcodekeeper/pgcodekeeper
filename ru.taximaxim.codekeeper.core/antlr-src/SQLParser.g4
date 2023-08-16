@@ -422,7 +422,7 @@ table_action
     : ADD COLUMN? if_not_exists? table_column_definition
     | DROP COLUMN? if_exists? column=identifier cascade_restrict?
     | ALTER COLUMN? column=identifier column_action
-    | ADD tabl_constraint=constraint_common (NOT not_valid=VALID)?
+    | ADD tabl_constraint=constraint_common
     | validate_constraint
     | drop_constraint
     | (DISABLE | ENABLE) TRIGGER (trigger_name=schema_qualified_name | ALL | USER)?
@@ -1860,7 +1860,7 @@ like_option
 * EXCLUDE, FOREIGN KEY - table_constraint
 */
 constraint_common
-    : (CONSTRAINT identifier)? constr_body table_deferrable? table_initialy_immed?
+    : (CONSTRAINT identifier)? constr_body (NOT VALID)? table_deferrable? table_initialy_immed?
     ;
 
 constr_body

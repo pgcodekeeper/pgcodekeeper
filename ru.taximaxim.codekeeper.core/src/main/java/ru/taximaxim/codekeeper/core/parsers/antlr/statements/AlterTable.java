@@ -318,7 +318,6 @@ public class AlterTable extends TableAbstract {
 
     public AbstractConstraint parseAlterTableConstraint(Table_actionContext tableAction,
             PgConstraint constrBlank, String schemaName, String tableName, String location) {
-        constrBlank.setNotValid(tableAction.not_valid != null);
         processTableConstraintBlank(tableAction.tabl_constraint, constrBlank,
                 schemaName, tableName, tablespace, location);
         return constrBlank;
