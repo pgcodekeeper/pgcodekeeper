@@ -515,7 +515,7 @@ function_actions_common
     | COST execution_cost=unsigned_numeric_literal
     | ROWS result_rows=unsigned_numeric_literal
     | SUPPORT schema_qualified_name
-    | SET (config_scope=identifier DOT)? config_param=identifier ((TO | EQUAL) set_statement_value | FROM CURRENT)
+    | SET session_local_option
     | LANGUAGE lang_name=identifier
     | WINDOW
     | AS function_def
@@ -1088,14 +1088,14 @@ set_action
     | TRANSACTION SNAPSHOT Character_String_Literal
     | SESSION CHARACTERISTICS AS TRANSACTION transaction_mode (COMMA transaction_mode)*
     | (SESSION | LOCAL)? session_local_option
-    | XML OPTION (DOCUMENT | CONTENT)
     ;
 
 session_local_option
-    : SESSION AUTHORIZATION (Character_String_Literal | identifier | DEFAULT)
+    : SESSION AUTHORIZATION (Character_String_Literal | session_param=identifier | DEFAULT)
     | TIME ZONE (Character_String_Literal | signed_numerical_literal | LOCAL | DEFAULT)
-    | (identifier DOT)? config_param=identifier (TO | EQUAL) set_statement_value
-    | ROLE (identifier | NONE)
+    | (config_scope=identifier DOT)? config_param=identifier ((TO | EQUAL) set_statement_value | FROM CURRENT)
+    | ROLE (role_param=identifier)
+    | XML OPTION (DOCUMENT | CONTENT)
     ;
 
 set_statement_value

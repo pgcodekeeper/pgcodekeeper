@@ -44,6 +44,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Function_d
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.IdentifierContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Identifier_nontypeContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qualified_name_nontypeContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Session_local_optionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Set_statement_valueContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Storage_parameter_optionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Transform_for_typeContext;
@@ -58,6 +59,8 @@ import ru.taximaxim.codekeeper.core.schema.PgProcedure;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 public final class CreateFunction extends ParserAbstract {
+
+    private static final String DEFAULT = "DEFAULT";
 
     private final List<Object> errors;
     private final Queue<AntlrTask<?>> antlrTasks;
@@ -201,30 +204,72 @@ public final class CreateFunction extends ParserAbstract {
     }
 
     private void setConfigParams(Function_actions_commonContext action, AbstractPgFunction function) {
-        IdentifierContext scope = action.config_scope;
-        String par;
-        if (scope != null) {
-            par = PgDiffUtils.getQuotedName(
-                    scope.getText() + '.' + action.config_param.getText());
-        } else {
-            par = PgDiffUtils.getQuotedName(action.config_param.getText());
+        Session_local_optionContext setOpts = action.session_local_option();
+        if (setOpts.XML() != null) {
+            function.addConfiguration("xmloption", setOpts.DOCUMENT() != null ? "'document'" : "'content'");
+            return;
         }
 
-        if (action.FROM() != null) {
-            function.addConfiguration(par, AbstractPgFunction.FROM_CURRENT);
-        } else {
-            Set_statement_valueContext set = action.set_statement_value();
-            if (set.DEFAULT() != null) {
-                function.addConfiguration(par, "DEFAULT");
-            } else {
-                StringBuilder sb = new StringBuilder();
-                for (VexContext val : set.vex()) {
-                    sb.append(getFullCtxText(val)).append(", ");
-                }
-                sb.setLength(sb.length() - 2);
-                function.addConfiguration(par, sb.toString());
-            }
+        if (setOpts.ROLE() != null) {
+            String role = setOpts.role_param.getText();
+            String val = role.equalsIgnoreCase("none") ? "none" : role;
+            function.addConfiguration("role", PgDiffUtils.quoteString(val));
+            return;
         }
+
+        if (setOpts.SESSION() != null) {
+            String val;
+            if (setOpts.Character_String_Literal() != null) {
+                val = setOpts.Character_String_Literal().getText();
+            } else if (setOpts.session_param != null) {
+                val = PgDiffUtils.quoteString(setOpts.session_param.getText());
+            } else {
+                return;
+            }
+            function.addConfiguration("session_authorization", val);
+            return;
+        }
+
+        if (setOpts.TIME() != null) {
+            String val;
+            if (setOpts.Character_String_Literal() != null) {
+                val = setOpts.Character_String_Literal().getText();
+            } else if (setOpts.signed_numerical_literal() != null) {
+                val = PgDiffUtils.quoteString(setOpts.signed_numerical_literal().getText());
+            } else {
+                return;
+            }
+            function.addConfiguration("\"TimeZone\"", val);
+            return;
+        }
+
+        IdentifierContext scope = setOpts.config_scope;
+        String configParam = setOpts.config_param.getText();
+        String par;
+        if (scope != null) {
+            par = PgDiffUtils.getQuotedName(scope.getText() + '.' + configParam);
+        } else {
+            par = PgDiffUtils.getQuotedName(configParam);
+            par = par.equalsIgnoreCase("timezone") ? "\"TimeZone\"" : par;
+        }
+
+        if (setOpts.FROM() != null) {
+            function.addConfiguration(par, AbstractPgFunction.FROM_CURRENT);
+            return;
+        }
+
+        Set_statement_valueContext set = setOpts.set_statement_value();
+        if (set.DEFAULT() != null) {
+            function.addConfiguration(par, DEFAULT);
+            return;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (VexContext val : set.vex()) {
+            sb.append(getFullCtxText(val)).append(", ");
+        }
+        sb.setLength(sb.length() - 2);
+        function.addConfiguration(par, sb.toString());
     }
 
     private void analyzeFunctionDefinition(AbstractPgFunction function, String language,

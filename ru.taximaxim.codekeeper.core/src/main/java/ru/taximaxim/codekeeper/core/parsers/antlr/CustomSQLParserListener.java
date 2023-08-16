@@ -87,7 +87,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.statements.UpdateStatement;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 
 public class CustomSQLParserListener extends CustomParserListener
-        implements SqlContextProcessor {
+implements SqlContextProcessor {
 
     private String tablespace;
     private String accessMethod;
@@ -280,7 +280,8 @@ public class CustomSQLParserListener extends CustomParserListener
 
     private void set(Set_statementContext ctx) {
         Session_local_optionContext sesLocOpt = ctx.set_action().session_local_option();
-        if (sesLocOpt == null || sesLocOpt.config_param == null || sesLocOpt.DOT() != null) {
+        if (sesLocOpt == null || sesLocOpt.config_param == null || sesLocOpt.DOT() != null
+                || sesLocOpt.FROM() != null) {
             return;
         }
         String confParam = sesLocOpt.config_param.getText();
@@ -294,32 +295,32 @@ public class CustomSQLParserListener extends CustomParserListener
         String confValue = vex.get(0).getText();
 
         switch (confParam.toLowerCase(Locale.ROOT)) {
-            case "search_path":
-                if (ParserListenerMode.NORMAL == mode
-                        && (vex.size() != 1 || !Consts.PG_CATALOG.equals(confValue))) {
-                    throw new UnresolvedReferenceException("Unsupported search_path", ctx.start);
-                }
-                break;
-            case "default_with_oids":
-                oids = confValue;
-                if ("false".equals(oids)) {
-                    oids = null;
-                }
-                break;
-            case "default_tablespace":
-                tablespace = confValue;
-                if (tablespace.isEmpty()
-                        // special case for pg_dump's unset default_tablespace
-                        // remove after good unquoting mechanism would be introduced
-                        || "''".equals(tablespace)) {
-                    tablespace = null;
-                }
-                break;
-            case "default_table_access_method":
-                accessMethod = confValue;
-                break;
-            default:
-                break;
+        case "search_path":
+            if (ParserListenerMode.NORMAL == mode
+            && (vex.size() != 1 || !Consts.PG_CATALOG.equals(confValue))) {
+                throw new UnresolvedReferenceException("Unsupported search_path", ctx.start);
+            }
+            break;
+        case "default_with_oids":
+            oids = confValue;
+            if ("false".equals(oids)) {
+                oids = null;
+            }
+            break;
+        case "default_tablespace":
+            tablespace = confValue;
+            if (tablespace.isEmpty()
+                    // special case for pg_dump's unset default_tablespace
+                    // remove after good unquoting mechanism would be introduced
+                    || "''".equals(tablespace)) {
+                tablespace = null;
+            }
+            break;
+        case "default_table_access_method":
+            accessMethod = confValue;
+            break;
+        default:
+            break;
         }
     }
 
