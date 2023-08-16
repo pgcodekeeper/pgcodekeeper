@@ -199,7 +199,7 @@ class ObjReferencesTest {
 
         String actual = getRefsAsString(db.getObjReferences()).strip();
 
-        Assertions.assertTrue(loader.getErrors().isEmpty());
+        Assertions.assertEquals("[]", loader.getErrors().toString());
         Assertions.assertEquals(expected, actual);
     }
 

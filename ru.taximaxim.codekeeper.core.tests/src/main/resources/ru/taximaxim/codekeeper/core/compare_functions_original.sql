@@ -55,3 +55,7 @@ CREATE FUNCTION public.f33(integer) RETURNS void LANGUAGE sql SET zero_damaged_p
 CREATE FUNCTION public.f34(integer) RETURNS void LANGUAGE sql SET zero_damaged_pages = true AS $$ $$;
 CREATE FUNCTION public.f35(integer) RETURNS void LANGUAGE sql SET zero_damaged_pages = true AS $$ $$;
 CREATE FUNCTION public.f36(integer) RETURNS void LANGUAGE sql AS $$ $$;
+CREATE FUNCTION public.f37(integer) RETURNS void LANGUAGE sql AS $$ $$;
+CREATE FUNCTION public.f38(integer) RETURNS void LANGUAGE sql AS $$ $$;
+CREATE FUNCTION public.f39(integer) RETURNS void LANGUAGE sql AS $$ $$;
+

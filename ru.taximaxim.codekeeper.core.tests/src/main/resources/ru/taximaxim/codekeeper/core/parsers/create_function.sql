@@ -178,3 +178,50 @@ STABLE
 BEGIN ATOMIC
     SELECT * FROM functest3;
 END;
+
+CREATE FUNCTION public.f33(integer) RETURNS void
+LANGUAGE sql
+SET XML OPTION CONTENT
+SET TIME ZONE 'Europe/Rome'
+AS $$ $$;
+
+CREATE FUNCTION public.f34(integer) RETURNS void
+LANGUAGE sql
+SET debug_deadlocks = true 
+SET TIME ZONE 1 
+SET ROLE FROM CURRENT 
+AS $$ $$;
+
+CREATE FUNCTION public.f35(integer) RETURNS void 
+LANGUAGE sql 
+SET ROLE NONE 
+AS $$ $$;
+
+CREATE FUNCTION public.f36(integer) RETURNS void 
+LANGUAGE sql 
+SET XML OPTION DOCUMENT 
+SET zero_damaged_pages = true 
+SET SESSION AUTHORIZATION 'a' 
+SET TIME ZONE DEFAULT 
+AS $$ $$;
+
+CREATE FUNCTION public.f37(integer) RETURNS void 
+LANGUAGE sql 
+SET XML OPTION CONTENT 
+SET TIME ZONE 'Europe/Rome' 
+SET SESSION AUTHORIZATION DEFAULT 
+AS $$ $$;
+
+CREATE FUNCTION public.f38(integer) RETURNS void 
+LANGUAGE sql 
+SET SESSION AUTHORIZATION test 
+SET ROLE test 
+SET TIME ZONE LOCAL 
+AS $$ $$;
+
+CREATE FUNCTION public.f39(integer) RETURNS void 
+LANGUAGE sql 
+SET XMLOPTION TO DEFAULT 
+SET session.timezone TO 'Europe/Rome' 
+AS $$ $$;
+

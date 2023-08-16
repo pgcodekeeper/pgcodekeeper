@@ -91,3 +91,17 @@ Reference: Object = functest_s_14() (FUNCTION), action = CREATE, offset = 8194, 
 Reference: Object = functest_is_6() (FUNCTION), action = CREATE, offset = 8292, line number = 165, charPositionInLine = 16
 Reference: Object = functest_is_7() (FUNCTION), action = CREATE, offset = 8391, line number = 170, charPositionInLine = 16
 Reference: Object = functest_sri2() (FUNCTION), action = CREATE, offset = 8502, line number = 175, charPositionInLine = 16
+Reference: Object = public (SCHEMA), action = null, offset = 8620, line number = 182, charPositionInLine = 16
+Reference: Object = public.f33(integer) (FUNCTION), action = CREATE, offset = 8627, line number = 182, charPositionInLine = 23
+Reference: Object = public (SCHEMA), action = null, offset = 8744, line number = 188, charPositionInLine = 16
+Reference: Object = public.f34(integer) (FUNCTION), action = CREATE, offset = 8751, line number = 188, charPositionInLine = 23
+Reference: Object = public (SCHEMA), action = null, offset = 8885, line number = 195, charPositionInLine = 16
+Reference: Object = public.f35(integer) (FUNCTION), action = CREATE, offset = 8892, line number = 195, charPositionInLine = 23
+Reference: Object = public (SCHEMA), action = null, offset = 8975, line number = 200, charPositionInLine = 16
+Reference: Object = public.f36(integer) (FUNCTION), action = CREATE, offset = 8982, line number = 200, charPositionInLine = 23
+Reference: Object = public (SCHEMA), action = null, offset = 9160, line number = 208, charPositionInLine = 16
+Reference: Object = public.f37(integer) (FUNCTION), action = CREATE, offset = 9167, line number = 208, charPositionInLine = 23
+Reference: Object = public (SCHEMA), action = null, offset = 9323, line number = 215, charPositionInLine = 16
+Reference: Object = public.f38(integer) (FUNCTION), action = CREATE, offset = 9330, line number = 215, charPositionInLine = 23
+Reference: Object = public (SCHEMA), action = null, offset = 9466, line number = 222, charPositionInLine = 16
+Reference: Object = public.f39(integer) (FUNCTION), action = CREATE, offset = 9473, line number = 222, charPositionInLine = 23
