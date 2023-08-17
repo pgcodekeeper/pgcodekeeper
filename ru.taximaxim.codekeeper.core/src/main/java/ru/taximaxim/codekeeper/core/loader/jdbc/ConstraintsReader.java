@@ -58,10 +58,12 @@ public class ConstraintsReader extends JdbcReader {
         String definition = res.getString("definition");
         checkObjectValidity(definition, DbObjType.CONSTRAINT, constraintName);
         String tablespace = res.getString("spcname");
+        c.setClustered(res.getBoolean("isclustered"));
         loader.submitAntlrTask(ADD_CONSTRAINT + definition + ';',
                 p -> new Pair<>(p.sql().statement(0).schema_statement().schema_alter()
                         .alter_table_statement().table_action(0), (CommonTokenStream) p.getTokenStream()),
-                pair -> new AlterTable(null, schema.getDatabase(), tablespace, pair.getSecond()).parseAlterTableConstraint(
+                pair -> new AlterTable(null, schema.getDatabase(), tablespace, pair.getSecond())
+                .parseAlterTableConstraint(
                         pair.getFirst(), c, schemaName, tableName, loader.getCurrentLocation()));
         loader.setAuthor(c, res);
         loader.setComment(c, res);
@@ -89,11 +91,13 @@ public class ConstraintsReader extends JdbcReader {
         .column("res.conname")
         .column("ts.spcname")
         .column("pg_catalog.pg_get_constraintdef(res.oid) AS definition")
+        .column("idx.indisclustered as isclustered")
         .from("pg_catalog.pg_constraint res")
         .join("LEFT JOIN pg_catalog.pg_class ccc ON ccc.oid = res.conrelid")
         .join("LEFT JOIN pg_catalog.pg_class cf ON cf.oid = res.confrelid")
         .join("LEFT JOIN pg_catalog.pg_class ci ON ci.oid = res.conindid AND res.contype != 'f'")
         .join("LEFT JOIN pg_catalog.pg_tablespace ts ON ts.oid = ci.reltablespace")
+        .join("LEFT JOIN pg_catalog.pg_index idx ON idx.indexrelid = ci.oid")
         .where("ccc.relkind IN ('r', 'p', 'f')")
         .where("res.contype != 't'")
         .where("res.coninhcount = 0");

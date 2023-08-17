@@ -86,6 +86,20 @@ implements IRelation {
         }
     }
 
+    public final boolean isClustered() {
+        for (AbstractIndex ind : getIndexes()) {
+            if (ind.isClustered()) {
+                return true;
+            }
+        }
+        for (AbstractConstraint c : getConstraints()) {
+            if (c.isClustered()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Finds constraint according to specified constraint {@code name}.
      *

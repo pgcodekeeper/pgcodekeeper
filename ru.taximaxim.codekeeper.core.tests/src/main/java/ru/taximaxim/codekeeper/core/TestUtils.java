@@ -60,9 +60,7 @@ public final class TestUtils {
         PgDumpLoader loader = new PgDumpLoader(() -> c.getResourceAsStream(resource),
                 "test/" + c.getName() + '/' + resource, args);
         PgDatabase db = analysis ? loader.loadAndAnalyze() : loader.load();
-        if (!loader.getErrors().isEmpty()) {
-            throw new IOException("Test resource caused  loader errors!");
-        }
+        Assertions.assertEquals("[]", loader.getErrors().toString(), "Test resource caused loader errors!");
         return db;
     }
 

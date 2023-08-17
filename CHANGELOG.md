@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed an error when parsing CLUSTER ON for tables and materialized views.
+
 ## [8.5.0] - 2023-08-15
 
 ### Changed
@@ -27,8 +29,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
-- Fixed bug with reading USER MAPPING from libraries.
-- Fixed bug with dependency search.
+- Fixed an error with reading USER MAPPING from libraries.
+- Fixed an error with dependency search.
 
 ## [8.4.0] - 2023-08-01
 

@@ -1,30 +1,14 @@
 SET search_path = pg_catalog;
 
--- DEPCY: This SEQUENCE is a dependency of COLUMN: public.testtable2.id
+CREATE INDEX t_test_3_i ON public.t_test_3 USING btree (c1, c2);
 
-CREATE SEQUENCE public.testtable2_id_seq
-	START WITH 1
-	INCREMENT BY 1
-	NO MAXVALUE
-	NO MINVALUE
-	CACHE 1;
+ALTER TABLE public.t_test_3 CLUSTER ON t_test_3_i;
 
-ALTER SEQUENCE public.testtable2_id_seq OWNER TO fordfrog;
+ALTER MATERIALIZED VIEW public.mv1 CLUSTER ON mv1_i;
 
-CREATE TABLE public.testtable2 (
-	id integer DEFAULT nextval('public.testtable2_id_seq'::regclass) NOT NULL,
-	col1 boolean NOT NULL
-);
+ALTER TABLE public.t_test_2
+	ADD CONSTRAINT t_test_2_pkey PRIMARY KEY (c1);
 
-ALTER TABLE public.testtable2 OWNER TO fordfrog;
+ALTER TABLE public.t_test_2 CLUSTER ON t_test_2_pkey;
 
-CREATE INDEX testindex ON public.testtable USING btree (field1);
-
-ALTER TABLE public.testtable CLUSTER ON testindex;
-
-CREATE INDEX testtable2_col1 ON public.testtable2 USING btree (col1);
-
-ALTER TABLE public.testtable2 CLUSTER ON testtable2_col1;
-
-ALTER SEQUENCE public.testtable2_id_seq
-	OWNED BY public.testtable2.id;
+ALTER TABLE public.t_test CLUSTER ON t_test_pkey;

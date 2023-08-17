@@ -114,7 +114,10 @@ public class PgIndex extends AbstractIndex {
             sbSQL.append("\nWHERE ").append(getWhere());
         }
         sbSQL.append(';');
-        sbSQL.append(getClusterSQL());
+
+        if (isClustered()) {
+            appendClusterSql(sbSQL);
+        }
 
         if (comment != null && !comment.isEmpty()) {
             appendCommentSql(sbSQL);
@@ -146,8 +149,8 @@ public class PgIndex extends AbstractIndex {
             boolean concurrently = args != null && args.isConcurrentlyMode();
             if (concurrently) {
                 // generate optimized command sequence for concurrent index creation
-                String tmpName = "tmp" + PgDiffUtils.RANDOM.nextInt(Integer.MAX_VALUE)
-                        + "_" + getName();
+                String tmpName = "tmp" + PgDiffUtils.RANDOM.nextInt(Integer.MAX_VALUE) + "_" + getName();
+
                 sb.append("\n\n")
                 .append(newIndex.getCreationSQL(tmpName))
                 .append("\n\nBEGIN TRANSACTION;\n")
@@ -173,11 +176,14 @@ public class PgIndex extends AbstractIndex {
             sb.append(newSpace == null ? Consts.PG_DEFAULT : newSpace).append(';');
         }
 
-        if (isClusterIndex() && !newIndex.isClusterIndex() &&
-                !((AbstractPgTable)newIndex.getParent()).isClustered()) {
-            sb.append("\n\nALTER TABLE ")
-            .append(getParent().getQualifiedName())
-            .append(" SET WITHOUT CLUSTER;");
+        if (newIndex.isClustered() != isClustered()) {
+            if (newIndex.isClustered()) {
+                newIndex.appendClusterSql(sb);
+            } else if (!((PgStatementContainer) newIndex.getParent()).isClustered()) {
+                sb.append("\n\nALTER TABLE ")
+                .append(newIndex.getParent().getQualifiedName())
+                .append(" SET WITHOUT CLUSTER;");
+            }
         }
 
         compareOptions(newIndex, sb);
@@ -188,16 +194,13 @@ public class PgIndex extends AbstractIndex {
         return sb.length() > startLength;
     }
 
-    private String getClusterSQL() {
-        final StringBuilder sbSQL = new StringBuilder();
-        if (isClusterIndex()) {
-            sbSQL.append("\n\nALTER TABLE ");
-            sbSQL.append(getParent().getQualifiedName());
-            sbSQL.append(" CLUSTER ON ");
-            sbSQL.append(getName());
-            sbSQL.append(';');
-        }
-        return sbSQL.toString();
+    private void appendClusterSql(StringBuilder sb) {
+        sb.append("\n\nALTER ");
+        sb.append(getParent().getTypeName()).append(' ');
+        sb.append(getParent().getQualifiedName());
+        sb.append(" CLUSTER ON ");
+        sb.append(getName());
+        sb.append(';');
     }
 
     public String getMethod() {

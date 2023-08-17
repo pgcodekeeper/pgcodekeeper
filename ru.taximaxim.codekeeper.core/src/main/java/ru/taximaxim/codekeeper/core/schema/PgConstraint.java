@@ -35,7 +35,7 @@ public class PgConstraint extends AbstractConstraint {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
-        appendAlterTable(sbSQL);
+        appendAlterTable(sbSQL, false);
         sbSQL.append("\n\tADD CONSTRAINT ");
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));
         sbSQL.append(' ');
@@ -56,11 +56,14 @@ public class PgConstraint extends AbstractConstraint {
         sbSQL.append(';');
 
         if (generateNotValid && !isNotValid()) {
-            sbSQL.append("\n\n");
-            appendAlterTable(sbSQL);
+            appendAlterTable(sbSQL, true);
             sbSQL.append(" VALIDATE CONSTRAINT ")
             .append(PgDiffUtils.getQuotedName(getName()))
             .append(';');
+        }
+        if (isClustered()) {
+            appendAlterTable(sbSQL, true);
+            sbSQL.append(" CLUSTER ON ").append(getName()).append(";");
         }
 
         if (comment != null && !comment.isEmpty()) {
@@ -73,7 +76,7 @@ public class PgConstraint extends AbstractConstraint {
     @Override
     public String getDropSQL(boolean optionExists) {
         final StringBuilder sbSQL = new StringBuilder();
-        appendAlterTable(sbSQL);
+        appendAlterTable(sbSQL, false);
         sbSQL.append("\n\tDROP CONSTRAINT ");
         if (optionExists) {
             sbSQL.append("IF EXISTS ");
@@ -95,10 +98,19 @@ public class PgConstraint extends AbstractConstraint {
             return true;
         }
         if (isNotValid() && !newConstr.isNotValid()) {
-            sb.append("\n\n");
-            appendAlterTable(sb);
+            appendAlterTable(sb, true);
             sb.append("\n\tVALIDATE CONSTRAINT ")
             .append(PgDiffUtils.getQuotedName(getName())).append(';');
+        }
+
+        if (newConstr.isClustered() != isClustered()) {
+            if (newConstr.isClustered()) {
+                appendAlterTable(sb, true);
+                sb.append(" CLUSTER ON ").append(getName()).append(";");
+            } else if (!((PgStatementContainer) newConstr.getParent()).isClustered()) {
+                appendAlterTable(sb, true);
+                sb.append(" SET WITHOUT CLUSTER;");
+            }
         }
 
         if (!Objects.equals(getComment(), newConstr.getComment())) {
@@ -120,9 +132,12 @@ public class PgConstraint extends AbstractConstraint {
         .append(';');
     }
 
-    private void appendAlterTable(StringBuilder sbSQL) {
-        sbSQL.append("ALTER ").append(getParent().getStatementType().name()).append(' ');
-        sbSQL.append(getParent().getQualifiedName());
+    private void appendAlterTable(StringBuilder sb, boolean isNewLine) {
+        if (isNewLine) {
+            sb.append("\n\n");
+        }
+        sb.append("ALTER ").append(getParent().getStatementType().name()).append(' ');
+        sb.append(getParent().getQualifiedName());
     }
 
     @Override

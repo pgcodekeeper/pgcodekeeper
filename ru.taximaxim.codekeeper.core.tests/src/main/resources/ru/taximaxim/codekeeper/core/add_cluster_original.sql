@@ -1,49 +1,34 @@
---
--- PostgreSQL database dump
---
-
-SET client_encoding = 'UTF8';
-SET check_function_bodies = false;
-SET client_min_messages = warning;
-
---
--- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: postgres
---
-
-COMMENT ON SCHEMA public IS 'Standard public schema';
-
-
-SET search_path = pg_catalog;
-
-SET default_tablespace = '';
-
-SET default_with_oids = false;
-
---
--- Name: testtable; Type: TABLE; Schema: public; Owner: fordfrog; Tablespace: 
---
-
-CREATE TABLE public.testtable (
-    field1 integer,
-    field2 integer,
-    field3 character varying(150) DEFAULT 'none'::character varying,
-    field4 double precision
+CREATE TABLE public.t_test (
+	c1 bigint NOT NULL,
+	c2 bigint NOT NULL,
+	c3 bigint NOT NULL
 );
 
+ALTER TABLE public.t_test
+	ADD CONSTRAINT t_test_pkey PRIMARY KEY (c1);
 
-ALTER TABLE public.testtable OWNER TO fordfrog;
+--------------------------------------------------------------------------------
 
---
--- Name: public; Type: ACL; Schema: -; Owner: postgres
---
+CREATE TABLE public.t_test_2 (
+	c1 bigint NOT NULL,
+	c2 bigint NOT NULL,
+	c3 bigint NOT NULL
+);
 
-REVOKE ALL ON SCHEMA public FROM PUBLIC;
-REVOKE ALL ON SCHEMA public FROM postgres;
-GRANT ALL ON SCHEMA public TO postgres;
-GRANT ALL ON SCHEMA public TO PUBLIC;
+--------------------------------------------------------------------------------
 
+CREATE TABLE public.t_test_3 (
+	c1 bigint NOT NULL,
+	c2 bigint NOT NULL,
+	c3 bigint NOT NULL
+);
 
---
--- PostgreSQL database dump complete
---
+--------------------------------------------------------------------------------
 
+CREATE MATERIALIZED VIEW public.mv1 AS
+	SELECT t1.c1,
+    t1.c2
+   FROM public.t1
+WITH DATA;
+
+CREATE INDEX mv1_i ON public.mv1 USING btree (c1);
