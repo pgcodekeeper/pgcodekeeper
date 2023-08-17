@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Improved parser's rules.
+
 ### Fixed
 
 ## [8.5.0] - 2023-08-15

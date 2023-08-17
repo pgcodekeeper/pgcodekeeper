@@ -1049,7 +1049,7 @@ operator_option
 
 create_aggregate_statement
     : (OR REPLACE)? AGGREGATE name=schema_qualified_name function_args? LEFT_PAREN
-    (BASETYPE EQUAL base_type=data_type COMMA)?
+    (BASETYPE EQUAL (base_type=data_type | ANY) COMMA)?
     SFUNC EQUAL sfunc_name=schema_qualified_name COMMA
     STYPE EQUAL type=data_type
     (COMMA aggregate_param)*

@@ -85,14 +85,11 @@ public class CreateAggregate extends ParserAbstract {
                 fillArguments(argumentsCtx.agg_order().function_arguments(), aggregate);
             }
             aggregate.setDirectCount(directArgs.size());
-        } else {
+        } else if (ctx.ANY() == null && ctx.BASETYPE() != null) {
             Data_typeContext baseTypeCtx = ctx.base_type;
-            String baseType = getFullCtxText(baseTypeCtx);
-            if (!"ANY".equals(baseType)) {
-                aggregate.addArgument(new Argument(null, baseType));
-                addPgTypeDepcy(baseTypeCtx, aggregate);
-                aggregate.setDirectCount(1);
-            }
+            aggregate.addArgument(new Argument(null, getFullCtxText(baseTypeCtx)));
+            addPgTypeDepcy(baseTypeCtx, aggregate);
+            aggregate.setDirectCount(1);
         }
     }
 

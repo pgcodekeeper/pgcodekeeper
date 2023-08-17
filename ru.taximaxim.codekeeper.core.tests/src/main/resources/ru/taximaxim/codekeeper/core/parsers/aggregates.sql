@@ -67,9 +67,12 @@ CREATE AGGREGATE newcnt (*) (
    initcond = '0', parallel = safe
 );
 
+--old-style zero-argument aggregate
+CREATE AGGREGATE newcnt2 (basetype = ANY, sfunc = int8inc, stype = int8);
+
 -- old-style spelling of same (except without parallel-safe; that's too new)
 CREATE AGGREGATE oldcnt (
-   basetype = int8 /*'ANY'*/, 
+   basetype = int8, 
    sfunc = int8inc, 
    stype = int8, 
    initcond = '0'

@@ -525,6 +525,8 @@ class PgDiffTest {
             "tabl_to_func_drop",
             // Tests scenario where owner and its privileges are both changed.
             "chg_owner_grant",
+            // Tests scenario where AGGREGATE is compared.
+            "compare_aggregate",
             // Tests scenario where TABLE is compared.
             "compare_tables",
             // Tests scenario where greenplum distribution TABLE clause is compared.
