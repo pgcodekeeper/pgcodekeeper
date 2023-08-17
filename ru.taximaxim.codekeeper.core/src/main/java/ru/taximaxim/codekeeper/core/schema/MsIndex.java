@@ -40,7 +40,7 @@ public class MsIndex extends AbstractIndex {
             sbSQL.append("UNIQUE ");
         }
 
-        if (!isClusterIndex()) {
+        if (!isClustered()) {
             sbSQL.append("NON");
         }
         sbSQL.append("CLUSTERED ");
@@ -104,7 +104,7 @@ public class MsIndex extends AbstractIndex {
             isNeedDepcies.set(true);
 
             MsIndex newIndex = (MsIndex) newCondition;
-            if (!isClusterIndex() || newIndex.isClusterIndex()) {
+            if (!isClustered() || newIndex.isClustered()) {
                 sb.append("\n\n")
                 .append(newIndex.getCreationSQL(true));
             }

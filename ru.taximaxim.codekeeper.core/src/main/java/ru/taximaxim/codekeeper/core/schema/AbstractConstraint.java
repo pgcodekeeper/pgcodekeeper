@@ -38,6 +38,7 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath imple
     private final Set<String> columns = new HashSet<>();
     private GenericColumn refTable;
     private final Set<String> refs = new HashSet<>();
+    private boolean isClustered;
     private boolean notValid;
 
     protected AbstractConstraint(String name) {
@@ -104,6 +105,15 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath imple
         this.unique = unique;
     }
 
+    public boolean isClustered() {
+        return isClustered;
+    }
+
+    public void setClustered(boolean isClustered) {
+        this.isClustered = isClustered;
+        resetHash();
+    }
+
     public boolean isNotValid() {
         return notValid;
     }
@@ -144,7 +154,8 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath imple
 
         return obj instanceof AbstractConstraint && super.compare(obj)
                 && Objects.equals(definition, ((AbstractConstraint) obj).getDefinition())
-                && notValid == ((AbstractConstraint) obj).isNotValid();
+                && notValid == ((AbstractConstraint) obj).isNotValid()
+                && isClustered == ((AbstractConstraint) obj).isClustered;
     }
 
     @Override
@@ -164,6 +175,7 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath imple
         constraintDst.setForeignTable(getForeignTable());
         constraintDst.refs.addAll(refs);
         constraintDst.setNotValid(isNotValid());
+        constraintDst.setClustered(isClustered());
         return constraintDst;
     }
 

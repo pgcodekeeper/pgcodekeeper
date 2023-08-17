@@ -97,7 +97,7 @@ public class CreateMsTable extends MsTableAbstract {
             Table_indexContext indCtx = colCtx.table_index();
             MsIndex index = new MsIndex(indCtx.index_name.getText());
             ClusteredContext cluster = indCtx.clustered();
-            index.setClusterIndex(cluster != null && cluster.CLUSTERED() != null);
+            index.setClustered(cluster != null && cluster.CLUSTERED() != null);
 
             parseIndex(indCtx.index_rest(), index, schemaCtx.getText(), tableCtx.getText());
             addSafe(table, index, Arrays.asList(schemaCtx, tableCtx, indCtx.index_name));

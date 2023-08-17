@@ -43,7 +43,7 @@ implements PgSimpleOptionContainer {
     private String where;
     private String tablespace;
     private boolean unique;
-    private boolean clusterIndex;
+    private boolean isClustered;
 
     private final Set<String> columns = new HashSet<>();
 
@@ -68,13 +68,13 @@ implements PgSimpleOptionContainer {
         return definition;
     }
 
-    public void setClusterIndex(boolean clusterIndex) {
-        this.clusterIndex = clusterIndex;
-        resetHash();
+    public boolean isClustered() {
+        return isClustered;
     }
 
-    public boolean isClusterIndex() {
-        return clusterIndex;
+    public void setClustered(boolean isClustered) {
+        this.isClustered = isClustered;
+        resetHash();
     }
 
     public void addColumn(String column) {
@@ -139,7 +139,7 @@ implements PgSimpleOptionContainer {
         if (obj instanceof AbstractIndex && super.compare(obj)) {
             AbstractIndex index = (AbstractIndex) obj;
             return compareUnalterable(index)
-                    && clusterIndex == index.isClusterIndex()
+                    && isClustered == index.isClustered()
                     && Objects.equals(tablespace, index.getTablespace())
                     && Objects.equals(options, index.options);
         }
@@ -158,7 +158,7 @@ implements PgSimpleOptionContainer {
     public void computeHash(Hasher hasher) {
         hasher.put(definition);
         hasher.put(unique);
-        hasher.put(clusterIndex);
+        hasher.put(isClustered);
         hasher.put(where);
         hasher.put(tablespace);
         hasher.put(options);
@@ -171,7 +171,7 @@ implements PgSimpleOptionContainer {
         copyBaseFields(indexDst);
         indexDst.setDefinition(getDefinition());
         indexDst.setUnique(isUnique());
-        indexDst.setClusterIndex(isClusterIndex());
+        indexDst.setClustered(isClustered());
         indexDst.setWhere(getWhere());
         indexDst.setTablespace(getTablespace());
         indexDst.columns.addAll(columns);

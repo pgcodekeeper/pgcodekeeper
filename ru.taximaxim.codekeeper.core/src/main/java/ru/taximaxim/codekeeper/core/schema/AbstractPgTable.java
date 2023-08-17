@@ -50,15 +50,6 @@ public abstract class AbstractPgTable extends AbstractTable {
         super(name);
     }
 
-    public boolean isClustered() {
-        for (AbstractIndex ind : indexes.values()) {
-            if (ind.isClusterIndex()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     @Override
     public String getCreationSQL() {
         final StringBuilder sbOption = new StringBuilder();
@@ -197,7 +188,7 @@ public abstract class AbstractPgTable extends AbstractTable {
         compareOwners(newTable, sb);
         compareTableOptions(newTable, sb);
         alterPrivileges(newTable, sb);
-        compareComment(newTable,sb);
+        compareComment(newTable, sb);
 
         return sb.length() > startLength;
     }

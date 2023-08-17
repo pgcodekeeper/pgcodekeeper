@@ -59,7 +59,7 @@ public class IndicesReader extends JdbcReader {
         loader.setAuthor(i, res);
         loader.setComment(i, res);
 
-        i.setClusterIndex(res.getBoolean("indisclustered"));
+        i.setClustered(res.getBoolean("indisclustered"));
         i.setUnique(res.getBoolean("indisunique"));
 
         if (SupportedVersion.VERSION_15.isLE(loader.version)) {

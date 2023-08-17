@@ -52,7 +52,7 @@ public class CreateMsIndex extends MsTableAbstract {
         AbstractIndex ind = new MsIndex(nameCtx.getText());
         ind.setUnique(ctx.UNIQUE() != null);
         ClusteredContext cluster = ctx.clustered();
-        ind.setClusterIndex(cluster != null && cluster.CLUSTERED() != null);
+        ind.setClustered(cluster != null && cluster.CLUSTERED() != null);
 
         parseIndex(ctx.index_rest(), ind, schemaCtx == null ? null : schemaCtx.getText(), tableCtx.getText());
 

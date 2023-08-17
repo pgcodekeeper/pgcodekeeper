@@ -20,9 +20,13 @@ import java.util.List;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Alter_materialized_view_statementContext;
+import ru.taximaxim.codekeeper.core.schema.AbstractIndex;
+import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
+import ru.taximaxim.codekeeper.core.schema.PgView;
 
 public class AlterMatView extends ParserAbstract {
 
@@ -40,6 +44,21 @@ public class AlterMatView extends ParserAbstract {
         if (ctx.ALL() == null) {
             List<ParserRuleContext> ids = getIdentifiers(ctx.schema_qualified_name());
             addObjReference(ids, DbObjType.VIEW, action);
+
+            PgView view = (PgView) getSafe(AbstractSchema::getView,
+                    getSchemaSafe(ids), QNameParser.getFirstNameCtx(ids));
+
+            var alterAction = ctx.alter_materialized_view_action();
+            if (alterAction != null) {
+                for (var act : alterAction.materialized_view_action()) {
+                    var indexNameCtx = act.index_name;
+                    if (indexNameCtx != null) {
+                        ParserRuleContext indexName = QNameParser.getFirstNameCtx(getIdentifiers(indexNameCtx));
+                        AbstractIndex index = getSafe(PgView::getIndex, view, indexName);
+                        doSafe(AbstractIndex::setClustered, index, true);
+                    }
+                }
+            }
         } else {
             db.addReference(fileName, new PgObjLocation.Builder()
                     .setAction(action).setCtx(ctx.getParent()).build());

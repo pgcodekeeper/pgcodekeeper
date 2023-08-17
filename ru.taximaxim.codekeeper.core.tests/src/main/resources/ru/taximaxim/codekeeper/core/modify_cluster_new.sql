@@ -1,12 +1,54 @@
-CREATE TABLE public.testtable (
-    f1 integer,
-    f2 integer
+CREATE TABLE public.t_test (
+	c1 bigint NOT NULL,
+	c2 bigint NOT NULL,
+	c3 bigint NOT NULL
 );
 
-ALTER TABLE public.testtable OWNER TO fordfrog;
+CREATE INDEX t_test_i ON public.t_test USING btree (c1);
 
-CREATE INDEX testindex ON public.testtable USING btree (f1);
+CREATE INDEX t_test_i2 ON public.t_test USING btree (c2);
 
-CREATE INDEX testindex2 ON public.testtable USING btree (f2);
+ALTER TABLE public.t_test CLUSTER ON t_test_i2;
 
-ALTER TABLE public.testtable CLUSTER ON testindex2;
+--------------------------------------------------------------------------------
+
+CREATE TABLE public.t_test_2 (
+	c1 bigint NOT NULL,
+	c2 bigint NOT NULL,
+	c3 bigint NOT NULL
+);
+
+ALTER TABLE public.t_test_2
+	ADD CONSTRAINT t_test_2_pkey PRIMARY KEY (c1);
+
+ALTER TABLE public.t_test_2 CLUSTER ON t_test_2_pkey;
+
+--------------------------------------------------------------------------------
+
+CREATE TABLE public.t_test_3 (
+	c1 bigint NOT NULL,
+	c2 bigint NOT NULL,
+	c3 bigint NOT NULL
+);
+
+ALTER TABLE public.t_test_3
+	ADD CONSTRAINT t_test_3_pkey PRIMARY KEY (c1);
+
+CREATE INDEX t_test_3_i ON public.t_test_3 USING btree (c2);
+
+ALTER TABLE public.t_test_3 CLUSTER ON t_test_3_i;
+
+--------------------------------------------------------------------------------
+
+
+CREATE MATERIALIZED VIEW public.mv1 AS
+	SELECT t1.c1,
+    t1.c2
+   FROM public.t1
+WITH DATA;
+
+CREATE INDEX mv1_i ON public.mv1 USING btree (c1);
+
+CREATE INDEX mv1_i2 ON public.mv1 USING btree (c2);
+
+ALTER MATERIALIZED VIEW public.mv1 CLUSTER ON mv1_i2;

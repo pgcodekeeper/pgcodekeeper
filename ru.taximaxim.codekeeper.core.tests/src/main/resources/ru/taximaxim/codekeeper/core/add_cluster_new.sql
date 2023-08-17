@@ -1,128 +1,47 @@
---
--- PostgreSQL database dump
---
-
-SET client_encoding = 'UTF8';
-SET standard_conforming_strings = off;
-SET check_function_bodies = false;
-SET client_min_messages = warning;
-SET escape_string_warning = off;
-
---
--- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: postgres
---
-
-COMMENT ON SCHEMA public IS 'Standard public schema';
-
-
-SET search_path = pg_catalog;
-
-SET default_tablespace = '';
-
-SET default_with_oids = false;
-
---
--- Name: testtable; Type: TABLE; Schema: public; Owner: fordfrog; Tablespace: 
---
-
-CREATE TABLE public.testtable (
-    field1 integer,
-    field2 integer,
-    field3 character varying(150) DEFAULT 'none'::character varying,
-    field4 double precision
+CREATE TABLE public.t_test (
+	c1 bigint NOT NULL,
+	c2 bigint NOT NULL,
+	c3 bigint NOT NULL
 );
 
+ALTER TABLE public.t_test
+	ADD CONSTRAINT t_test_pkey PRIMARY KEY (c1);
 
-ALTER TABLE public.testtable OWNER TO fordfrog;
+ALTER TABLE public.t_test CLUSTER ON t_test_pkey;
 
---
--- Name: testtable2; Type: TABLE; Schema: public; Owner: fordfrog; Tablespace: 
---
+--------------------------------------------------------------------------------
 
-CREATE TABLE public.testtable2 (
-    id integer NOT NULL,
-    col1 boolean NOT NULL
+CREATE TABLE public.t_test_2 (
+	c1 bigint NOT NULL,
+	c2 bigint NOT NULL,
+	c3 bigint NOT NULL
 );
 
+ALTER TABLE public.t_test_2
+	ADD CONSTRAINT t_test_2_pkey PRIMARY KEY (c1);
 
-ALTER TABLE public.testtable2 OWNER TO fordfrog;
+ALTER TABLE public.t_test_2 CLUSTER ON t_test_2_pkey;
 
---
--- Name: testtable2_id_seq; Type: SEQUENCE; Schema: public; Owner: fordfrog
---
+--------------------------------------------------------------------------------
 
-CREATE SEQUENCE public.testtable2_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MAXVALUE
-    NO MINVALUE
-    CACHE 1;
+CREATE TABLE public.t_test_3 (
+	c1 bigint NOT NULL,
+	c2 bigint NOT NULL,
+	c3 bigint NOT NULL
+);
 
+CREATE INDEX t_test_3_i ON public.t_test_3 USING btree (c1, c2);
 
-ALTER TABLE public.testtable2_id_seq OWNER TO fordfrog;
+ALTER TABLE public.t_test_3 CLUSTER ON t_test_3_i;
 
---
--- Name: testtable2_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: fordfrog
---
+--------------------------------------------------------------------------------
 
-ALTER SEQUENCE public.testtable2_id_seq OWNED BY public.testtable2.id;
+CREATE MATERIALIZED VIEW public.mv1 AS
+	SELECT t1.c1,
+    t1.c2
+   FROM public.t1
+WITH DATA;
 
+CREATE INDEX mv1_i ON public.mv1 USING btree (c1);
 
---
--- Name: testtable2_id_seq; Type: SEQUENCE SET; Schema: public; Owner: fordfrog
---
-
-SELECT pg_catalog.setval('public.testtable2_id_seq', 1, false);
-
-
---
--- Name: id; Type: DEFAULT; Schema: public; Owner: fordfrog
---
-
-ALTER TABLE public.testtable2 ALTER COLUMN id SET DEFAULT nextval('public.testtable2_id_seq'::regclass);
-
-
---
--- Data for Name: testtable; Type: TABLE DATA; Schema: public; Owner: fordfrog
---
-
-
-
---
--- Data for Name: testtable2; Type: TABLE DATA; Schema: public; Owner: fordfrog
---
-
-
-
---
--- Name: testindex; Type: INDEX; Schema: public; Owner: fordfrog; Tablespace: 
---
-
-CREATE INDEX testindex ON public.testtable USING btree (field1);
-
-ALTER TABLE public.testtable CLUSTER ON testindex;
-
-
---
--- Name: testtable2_col1; Type: INDEX; Schema: public; Owner: fordfrog; Tablespace: 
---
-
-CREATE INDEX testtable2_col1 ON public.testtable2 USING btree (col1);
-
-ALTER TABLE public.testtable2 CLUSTER ON testtable2_col1;
-
-
---
--- Name: public; Type: ACL; Schema: -; Owner: postgres
---
-
-REVOKE ALL ON SCHEMA public FROM PUBLIC;
-REVOKE ALL ON SCHEMA public FROM postgres;
-GRANT ALL ON SCHEMA public TO postgres;
-GRANT ALL ON SCHEMA public TO PUBLIC;
-
-
---
--- PostgreSQL database dump complete
---
-
+ALTER TABLE public.mv1 CLUSTER ON mv1_i;

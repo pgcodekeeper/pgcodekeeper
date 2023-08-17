@@ -35,7 +35,6 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Foreign_op
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.IdentifierContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Identity_bodyContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_alterContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qualified_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Sequence_bodyContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Set_def_columnContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Set_statisticsContext;
@@ -96,11 +95,8 @@ public class AlterTable extends TableAbstract {
                 loc.setWarning(DangerStatement.ALTER_COLUMN);
             }
 
-            if (tablAction.owner_to() != null) {
-                IRelation r = getSafe(AbstractSchema::getRelation, schema, nameCtx);
-                if (r instanceof PgStatement) {
-                    fillOwnerTo(tablAction.owner_to().user_name().identifier(), (PgStatement) r);
-                }
+            if (tablAction.owner_to() != null || tablAction.index_name != null) {
+                fillRelationAction(schema, nameCtx, tablAction);
                 continue;
             }
 
@@ -120,7 +116,6 @@ public class AlterTable extends TableAbstract {
                     doSafe(AbstractPgTable::addConstraint, tabl, con);
                 }
             }
-
 
             if (tablAction.drop_constraint() != null) {
                 addObjReference(Arrays.asList(QNameParser.getSchemaNameCtx(ids), nameCtx,
@@ -155,13 +150,6 @@ public class AlterTable extends TableAbstract {
                 parseColumnAction(schema, col, colAction);
             }
 
-            Schema_qualified_nameContext ind = tablAction.index_name;
-            if (ind != null) {
-                ParserRuleContext indexName = QNameParser.getFirstNameCtx(getIdentifiers(ind));
-                AbstractIndex index = getSafe(AbstractTable::getIndex, tabl, indexName);
-                index.setClusterIndex(true);
-            }
-
             if (tablAction.WITHOUT() != null && tablAction.OIDS() != null) {
                 tabl.setHasOids(false);
             } else if (tablAction.WITH() != null && tablAction.OIDS() != null) {
@@ -191,6 +179,31 @@ public class AlterTable extends TableAbstract {
             tabl = (PartitionGpTable) getSafe(AbstractSchema::getTable, schema, nameCtx);
             parseGpPartitionTemplate((PartitionGpTable) tabl, alterPartition, stream);
         }
+    }
+
+    private void fillRelationAction(AbstractSchema schema, ParserRuleContext nameCtx, Table_actionContext tablAction) {
+        IRelation r = getSafe(AbstractSchema::getRelation, schema, nameCtx);
+        if (tablAction.owner_to() != null) {
+            if (r instanceof PgStatement) {
+                fillOwnerTo(tablAction.owner_to().user_name().identifier(), (PgStatement) r);
+            }
+            return;
+        }
+
+        if (r instanceof PgStatementContainer) {
+            var indexNameCtx = tablAction.index_name;
+            PgStatementContainer cont = (PgStatementContainer) r;
+
+            ParserRuleContext indexName = QNameParser.getFirstNameCtx(getIdentifiers(indexNameCtx));
+            AbstractConstraint c = cont.getConstraint(indexName.getText());
+            if (c != null) {
+                doSafe(AbstractConstraint::setClustered, c, true);
+            } else {
+                AbstractIndex index = getSafe(PgStatementContainer::getIndex, cont, indexName);
+                doSafe(AbstractIndex::setClustered, index, true);
+            }
+        }
+
     }
 
     public static void parseGpPartitionTemplate(PartitionGpTable tabl, Alter_partition_gpContext alterPartition,
