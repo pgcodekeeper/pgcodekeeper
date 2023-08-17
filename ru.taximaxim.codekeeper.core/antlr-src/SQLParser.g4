@@ -1332,7 +1332,9 @@ character_string
     ;
 
 function_arguments
-    : argmode? identifier_nontype? data_type ((DEFAULT | EQUAL) vex)?
+    : argmode identifier_nontype? data_type ((DEFAULT | EQUAL) vex)?
+    | identifier_nontype argmode? data_type ((DEFAULT | EQUAL) vex)?
+    | data_type ((DEFAULT | EQUAL) vex)?
     ;
 
 argmode

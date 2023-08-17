@@ -1,5 +1,6 @@
 -- no diff
 CREATE FUNCTION public.f1(integer) RETURNS void LANGUAGE sql AS $$ $$;
+CREATE FUNCTION public.f40(test in integer) RETURNS void LANGUAGE sql AS $$ $$;
 
 -- cost
 CREATE FUNCTION public.f2(integer) RETURNS void LANGUAGE sql AS $$ $$;

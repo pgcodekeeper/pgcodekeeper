@@ -179,13 +179,13 @@ BEGIN ATOMIC
     SELECT * FROM functest3;
 END;
 
-CREATE FUNCTION public.f33(integer) RETURNS void
+CREATE FUNCTION public.f33(in test integer) RETURNS void
 LANGUAGE sql
 SET XML OPTION CONTENT
 SET TIME ZONE 'Europe/Rome'
 AS $$ $$;
 
-CREATE FUNCTION public.f34(integer) RETURNS void
+CREATE FUNCTION public.f34(test in integer) RETURNS void
 LANGUAGE sql
 SET debug_deadlocks = true 
 SET TIME ZONE 1 
@@ -224,4 +224,3 @@ LANGUAGE sql
 SET XMLOPTION TO DEFAULT 
 SET session.timezone TO 'Europe/Rome' 
 AS $$ $$;
-
