@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 - Improved parser's rules.
+- Added SEQUENCE and AGGREGATE in New Object wizard.
 
 ### Fixed
 

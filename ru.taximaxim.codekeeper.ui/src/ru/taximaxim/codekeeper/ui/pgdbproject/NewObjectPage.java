@@ -21,8 +21,10 @@ import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -94,8 +96,20 @@ public final class NewObjectPage extends WizardPage {
 
     private static final String PATTERN = "CREATE {0} {1};"; //$NON-NLS-1$
 
-    private static final String GROUP_DELIMITER =
-            "\n\n--------------------------------------------------------------------------------\n\n"; //$NON-NLS-1$
+    private static final String GROUP_DELIMITER = "\n\n--------------------------------------------------------------------------------\n\n"; //$NON-NLS-1$
+
+    private final EnumSet<DbObjType> firstLevelTypes = EnumSet.of(DbObjType.SCHEMA, DbObjType.EXTENSION,
+            DbObjType.EVENT_TRIGGER, DbObjType.FOREIGN_DATA_WRAPPER, DbObjType.SERVER);
+
+    private final EnumSet<DbObjType> secondLevelTypes = EnumSet.of(DbObjType.COLLATION,
+            DbObjType.DOMAIN, DbObjType.FUNCTION, DbObjType.PROCEDURE, DbObjType.SEQUENCE,
+            DbObjType.AGGREGATE, DbObjType.TABLE, DbObjType.VIEW, DbObjType.TYPE,
+            DbObjType.FTS_PARSER, DbObjType.FTS_TEMPLATE, DbObjType.FTS_DICTIONARY, DbObjType.FTS_CONFIGURATION);
+
+    private final EnumSet<DbObjType> thirdLevelTypes = EnumSet.of(DbObjType.TRIGGER, DbObjType.RULE,
+            DbObjType.POLICY, DbObjType.INDEX, DbObjType.CONSTRAINT);
+
+    private final List<DbObjType> allowedTypes = new ArrayList<>();
 
     private DbObjType type;
     private String name = NAME;
@@ -104,10 +118,6 @@ public final class NewObjectPage extends WizardPage {
     private String expectedFormat;
     private IProject currentProj;
     private boolean parentIsTable = true;
-    private final EnumSet<DbObjType> allowedTypes = EnumSet.complementOf(
-            EnumSet.of(DbObjType.COLUMN, DbObjType.DATABASE, DbObjType.SEQUENCE,
-                    DbObjType.ASSEMBLY, DbObjType.ROLE, DbObjType.USER,
-                    DbObjType.OPERATOR, DbObjType.AGGREGATE, DbObjType.CAST, DbObjType.USER_MAPPING));
 
     private ComboViewer viewerProject;
     private ComboViewer viewerType;
@@ -116,9 +126,11 @@ public final class NewObjectPage extends WizardPage {
 
     public NewObjectPage(String pageName, IStructuredSelection selection) {
         super(pageName, pageName, null);
+        fillAllowedTypes();
+
         Object element = selection.getFirstElement();
         if (element instanceof IResource) {
-            IResource resource = (IResource)element;
+            IResource resource = (IResource) element;
             if (resource.getType() == IResource.FILE && UIProjectLoader.isInProject(resource)) {
                 parseFile(resource);
             } else if (resource.getType() == IResource.FOLDER) {
@@ -134,28 +146,34 @@ public final class NewObjectPage extends WizardPage {
         }
     }
 
+    private void fillAllowedTypes() {
+        allowedTypes.addAll(firstLevelTypes);
+        allowedTypes.addAll(secondLevelTypes);
+        allowedTypes.addAll(thirdLevelTypes);
+        allowedTypes.sort((e1, e2) -> e1.name().compareTo(e2.name()));
+    }
+
     private void parseFolder(IResource resource) {
-        type = allowedTypes.stream().filter(e -> e.toString().equals(resource.getName()))
+        type = allowedTypes.stream().filter(e -> getDirName(e).equals(resource.getName()))
                 .findAny().orElse(null);
-        IContainer container = resource.getParent();
-        if (container != null) {
+        IContainer cont = resource.getParent();
+        if (cont != null) {
             if (type != null && !isSchemaLevel()) {
-                schema = container.getName();
-            } else if (DbObjType.SCHEMA.name().equals(container.getName())) {
+                schema = cont.getName();
+            } else if (DbObjType.SCHEMA.name().equals(cont.getName())) {
                 schema = resource.getName();
             }
         }
     }
 
     private void parseFile(IResource resource) {
+        Set<DbObjType> types = new HashSet<>();
+        types.addAll(firstLevelTypes);
+        types.addAll(secondLevelTypes);
+        types.remove(DbObjType.SCHEMA);
+
         try {
-            PgStatement st = UIProjectLoader.parseStatement((IFile)resource,
-                    EnumSet.of(DbObjType.EXTENSION, DbObjType.EVENT_TRIGGER, DbObjType.FOREIGN_DATA_WRAPPER,
-                            DbObjType.USER_MAPPING,
-                            DbObjType.SERVER, DbObjType.TABLE,
-                            DbObjType.VIEW, DbObjType.DOMAIN,
-                            DbObjType.TYPE, DbObjType.FUNCTION,
-                            DbObjType.PROCEDURE));
+            PgStatement st = UIProjectLoader.parseStatement((IFile) resource, types);
             if (st != null) {
                 type = st.getStatementType();
                 if (st instanceof PgStatementWithSearchPath) {
@@ -210,7 +228,7 @@ public final class NewObjectPage extends WizardPage {
             @Override
             public String getText(Object element) {
                 if (element instanceof IProject) {
-                    return ((IProject)element).getName();
+                    return ((IProject) element).getName();
                 }
                 return super.getText(element);
             }
@@ -297,7 +315,7 @@ public final class NewObjectPage extends WizardPage {
     }
 
     private void showGroup(boolean isShow) {
-        GridData data =  (GridData) group.getLayoutData();
+        GridData data = (GridData) group.getLayoutData();
         data.exclude = !isShow;
         group.setVisible(!data.exclude);
         group.getParent().layout(false);
@@ -305,38 +323,16 @@ public final class NewObjectPage extends WizardPage {
 
     private void setDefaultName() {
         String path;
-        switch (type) {
-        case SCHEMA:
-        case EXTENSION:
-        case EVENT_TRIGGER:
-        case FOREIGN_DATA_WRAPPER:
-        case SERVER:
+        if (isSchemaLevel()) {
             path = name;
             expectedFormat = NAME;
-            break;
-        case COLLATION:
-        case DOMAIN:
-        case FUNCTION:
-        case PROCEDURE:
-        case TABLE:
-        case VIEW:
-        case TYPE:
-        case FTS_PARSER:
-        case FTS_TEMPLATE:
-        case FTS_DICTIONARY:
-        case FTS_CONFIGURATION:
+        } else if (secondLevelTypes.contains(type)) {
             path = schema + '.' + name;
             expectedFormat = SCHEMA + '.' + NAME;
-            break;
-        case TRIGGER:
-        case RULE:
-        case POLICY:
-        case INDEX:
-        case CONSTRAINT:
+        } else if (isSubElement()) {
             path = schema + '.' + container + '.' + name;
             expectedFormat = SCHEMA + '.' + CONTAINER + '.' + NAME;
-            break;
-        default:
+        } else {
             return;
         }
         txtName.setText(path);
@@ -355,33 +351,36 @@ public final class NewObjectPage extends WizardPage {
         if (viewerProject.getStructuredSelection().getFirstElement() == null) {
             setDescription(Messages.PgObject_select_project);
             return false;
-        } else if (fullName.isEmpty()) {
+        }
+
+        if (fullName.isEmpty()) {
             setDescription(Messages.PgObject_empty_name);
             return false;
-        } else {
-            QNameParserWrapper parser = QNameParserWrapper.parsePg(fullName);
-            if (parser.hasErrors()) {
-                err = Messages.NewObjectWizard_invalid_input_format + expectedFormat;
-            } else {
-                String third = parser.getThirdName();
-                String second = parser.getSecondName();
-                if (isSchemaLevel() && second != null) {
-                    err = Messages.NewObjectWizard_invalid_schema_format;
-                } else if (isSubElement() == (third == null) || (second == null && !isSchemaLevel())) {
-                    err = Messages.NewObjectWizard_invalid_input_format + expectedFormat;
-                }
+        }
 
-                if (err == null) {
-                    name = parser.getFirstName();
-                    if (isSubElement()) {
-                        container = second;
-                        schema = third;
-                    } else if (!isSchemaLevel()) {
-                        schema = second;
-                    }
+        QNameParserWrapper parser = QNameParserWrapper.parsePg(fullName);
+        if (parser.hasErrors()) {
+            err = Messages.NewObjectWizard_invalid_input_format + expectedFormat;
+        } else {
+            String third = parser.getThirdName();
+            String second = parser.getSecondName();
+            if (isSchemaLevel() && second != null) {
+                err = Messages.NewObjectWizard_invalid_schema_format;
+            } else if (isSubElement() == (third == null) || (second == null && !isSchemaLevel())) {
+                err = Messages.NewObjectWizard_invalid_input_format + expectedFormat;
+            }
+
+            if (err == null) {
+                name = parser.getFirstName();
+                if (isSubElement()) {
+                    container = second;
+                    schema = third;
+                } else if (!isSchemaLevel()) {
+                    schema = second;
                 }
             }
         }
+
         setErrorMessage(err);
         if (err == null) {
             setDescription(Messages.PgObject_create_object);
@@ -390,30 +389,26 @@ public final class NewObjectPage extends WizardPage {
     }
 
     private boolean isSchemaLevel() {
-        return type == DbObjType.EXTENSION
-                || type == DbObjType.SCHEMA
-                || type == DbObjType.FOREIGN_DATA_WRAPPER
-                || type == DbObjType.SERVER
-                || type == DbObjType.EVENT_TRIGGER;
+        return firstLevelTypes.contains(type);
     }
 
     private boolean isHaveChoise() {
-        return type == DbObjType.TRIGGER || type == DbObjType.RULE
-                || type == DbObjType.INDEX || type == DbObjType.POLICY;
+        return type != DbObjType.CONSTRAINT && isSubElement();
     }
 
     public boolean isSubElement() {
-        return isHaveChoise() || type == DbObjType.CONSTRAINT;
+        return thirdLevelTypes.contains(type);
     }
 
     public boolean createFile() {
         try {
             mainPrefs.setValue(PREF.LAST_CREATED_OBJECT_TYPE, type.name());
-            if (type == DbObjType.EXTENSION || type == DbObjType.FOREIGN_DATA_WRAPPER
-                    || type == DbObjType.SERVER || type == DbObjType.EVENT_TRIGGER) {
-                createObject(null, name, type, true, currentProj);
-            } else if (type == DbObjType.SCHEMA) {
-                createSchema(name, true, currentProj);
+            if (isSchemaLevel()) {
+                if (type == DbObjType.SCHEMA) {
+                    createSchema(name, true, currentProj);
+                } else {
+                    createObject(null, name, type, true, currentProj);
+                }
             } else if (!isSubElement()) {
                 createObject(schema, name, type, true, currentProj);
             } else {
@@ -436,7 +431,7 @@ public final class NewObjectPage extends WizardPage {
 
     private void openFileInEditor(IFile file, String tmplId, String schema,
             String object, String parent) throws CoreException {
-        String schemaName = schema != null ? PgDiffUtils.getQuotedName(schema): null;
+        String schemaName = schema != null ? PgDiffUtils.getQuotedName(schema) : null;
         String objectName = PgDiffUtils.getQuotedName(object);
 
         Template newObjTmpl = SQLEditorTemplateManager.getInstance()
@@ -533,7 +528,7 @@ public final class NewObjectPage extends WizardPage {
     }
 
     private void createSubElement(String schema, String parent,
-            String name, boolean parentIsTable,  IProject project, DbObjType type) throws CoreException {
+            String name, boolean parentIsTable, IProject project, DbObjType type) throws CoreException {
         DbObjType parentType = parentIsTable ? DbObjType.TABLE : DbObjType.VIEW;
         IFile file = getFolder(schema, parentType, project)
                 .getFile(AbstractModelExporter.getExportedFilenameSql(parent));
@@ -541,7 +536,8 @@ public final class NewObjectPage extends WizardPage {
         if (!file.exists()) {
             file.create(new ByteArrayInputStream(
                     createParentCodeOfSubEl(schema, parent, parentType)
-                    .getBytes(Charset.forName(file.getCharset()))), false, null);
+                    .getBytes(Charset.forName(file.getCharset()))),
+                    false, null);
         }
 
         String tmplCtxTypeId = SQLEditorTemplateContextType.CONTEXT_TYPE_PG;
@@ -575,17 +571,18 @@ public final class NewObjectPage extends WizardPage {
     }
 
     /**
-     * Returns template id with special postfix ".protected".
-     * <br /><br />
-     * ".protected" - this is a marker of belonging to the templates of
-     * mechanism for creating new objects;
+     * Returns template id with special postfix ".protected". <br />
      * <br />
-     * such marker is written at the end of the template id and means that this
-     * template is not displayed in the properties and cannot be edited by users.
+     * ".protected" - this is a marker of belonging to the templates of mechanism for creating new objects; <br />
+     * such marker is written at the end of the template id and means that this template is not displayed in the
+     * properties and cannot be edited by users.
      *
-     * @param tmplCtxTypeId template context type id
-     * @param tmplIdPostfix postfix of template id
-     * @param objType type of creating object
+     * @param tmplCtxTypeId
+     *            template context type id
+     * @param tmplIdPostfix
+     *            postfix of template id
+     * @param objType
+     *            type of creating object
      * @return
      */
     private String getTmplIdProtected(String tmplCtxTypeId, String tmplIdPostfix,
