@@ -23,6 +23,28 @@
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createindex.protected"
     >CREATE INDEX ${objectName} ON ${schemaName}.${parentName} USING btree (${columnName});</template>
 
+<template
+    name="create_sequence"
+    description="%create.sequence.desc"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg"
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createsequence.protected"
+    >CREATE SEQUENCE ${schemaName}.${objectName}
+    START WITH ${startValue}
+    INCREMENT BY ${incrementValue}
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE ${cacheValue};</template>
+
+<template
+    name="create_aggregate"
+    description="%create.aggregate.desc"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg"
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createaggregate.protected"
+    >CREATE AGGREGATE ${schemaName}.${objectName} (${args}) (
+    BASETYPE = ${basetype},
+    SFUNC = ${sfuncName},
+    STYPE = ${stypeName});</template>
+
 <template 
     name="create_fts_configuration"
     description="%create.fts_configuration.desc" 
