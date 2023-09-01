@@ -19,12 +19,12 @@ import java.util.Collections;
 import java.util.List;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Column_name_listContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Execute_moduleContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Execute_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.ExpressionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Insert_statementContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Name_list_in_bracketsContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Qualified_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Select_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.With_expressionContext;
@@ -64,9 +64,9 @@ public class MsInsert extends MsAbstractExprWithNmspc<Insert_statementContext> {
         Qualified_nameContext tableName = insert.qualified_name();
         if (tableName != null) {
             GenericColumn gc = addNameReference(tableName, null);
-            Column_name_listContext columns;
+            Name_list_in_bracketsContext columns;
 
-            if (gc != null && (columns = insert.column_name_list()) != null) {
+            if (gc != null && (columns = insert.name_list_in_brackets()) != null) {
                 for (IdContext id : columns.id()) {
                     addDepcy(new GenericColumn(gc.schema, gc.table, id.getText(),
                             DbObjType.COLUMN), id);

@@ -25,9 +25,9 @@ import ru.taximaxim.codekeeper.core.DangerStatement;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Drop_backward_compatible_indexContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Drop_indexContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Drop_relational_or_xml_or_spatial_indexContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Drop_statementsContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Index_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Qualified_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Schema_dropContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
@@ -47,15 +47,14 @@ public class DropMsStatement extends ParserAbstract {
     @Override
     public void parseObject() {
         if (ctx.drop_assembly() != null) {
-            for (IdContext id : ctx.drop_assembly().id()) {
+            for (IdContext id : ctx.drop_assembly().name_list().id()) {
                 addObjReference(Arrays.asList(id), DbObjType.ASSEMBLY, ACTION_DROP);
             }
         } else if (ctx.drop_index() != null) {
-            for (Drop_relational_or_xml_or_spatial_indexContext ind :
-                ctx.drop_index().drop_relational_or_xml_or_spatial_index()) {
+            for (Index_nameContext ind : ctx.drop_index().index_name()) {
                 Qualified_nameContext tableIds = ind.qualified_name();
                 IdContext schemaCtx = tableIds.schema;
-                IdContext nameCtx = ind.index_name;
+                IdContext nameCtx = ind.id();
                 addObjReference(Arrays.asList(schemaCtx, tableIds.name),
                         DbObjType.TABLE, null);
                 addObjReference(Arrays.asList(schemaCtx, nameCtx),
@@ -77,12 +76,14 @@ public class DropMsStatement extends ParserAbstract {
         }
 
         if (type != null) {
-            for (Qualified_nameContext qname : ctx.qualified_name()) {
+            for (Qualified_nameContext qname : ctx.names_references().name) {
                 addObjReference(Arrays.asList(qname.name), type, ACTION_DROP);
             }
             return;
-        } else if (ctx.TRIGGER() != null) {
-            for (Qualified_nameContext qname : ctx.qualified_name()) {
+        }
+
+        if (ctx.TRIGGER() != null) {
+            for (Qualified_nameContext qname : ctx.names_references().name) {
                 // TODO ref to table, need ctx
                 addObjReference(Arrays.asList(qname.schema, null, qname.name),
                         DbObjType.TRIGGER, ACTION_DROP);
@@ -105,7 +106,7 @@ public class DropMsStatement extends ParserAbstract {
         }
 
         if (type != null) {
-            for (Qualified_nameContext qname : ctx.qualified_name()) {
+            for (Qualified_nameContext qname : ctx.names_references().name) {
                 List<ParserRuleContext> ids = Arrays.asList(qname.schema, qname.name);
                 PgObjLocation ref = addObjReference(ids, type, ACTION_DROP);
                 if (type == DbObjType.TABLE) {
@@ -130,19 +131,18 @@ public class DropMsStatement extends ParserAbstract {
         DbObjType type = null;
         List<IdContext> ids = null;
         if (ctx.drop_assembly() != null) {
-            ids = ctx.drop_assembly().id();
+            ids = ctx.drop_assembly().name_list().id();
             type = DbObjType.ASSEMBLY;
         } else if (ctx.drop_index() != null) {
             Drop_indexContext dropIdxCtx = ctx.drop_index();
-            List<Drop_relational_or_xml_or_spatial_indexContext> indicesRel = dropIdxCtx
-                    .drop_relational_or_xml_or_spatial_index();
+            List<Index_nameContext> indicesRel = dropIdxCtx.index_name();
             if (indicesRel != null && !indicesRel.isEmpty() && indicesRel.size() == 1) {
-                ids = Arrays.asList(indicesRel.get(0).index_name);
+                ids = Arrays.asList(indicesRel.get(0).id());
             } else {
                 List<Drop_backward_compatible_indexContext> indicesBack = dropIdxCtx
                         .drop_backward_compatible_index();
                 if (indicesBack != null && !indicesBack.isEmpty() && indicesBack.size() == 1) {
-                    ids = Arrays.asList(indicesBack.get(0).index_name);
+                    ids = Arrays.asList(indicesBack.get(0).index);
                 } else {
                     ids = Collections.emptyList();
                 }
@@ -184,7 +184,7 @@ public class DropMsStatement extends ParserAbstract {
         }
 
         if (type != null) {
-            List<Qualified_nameContext> qnames = dropStmtCtx.qualified_name();
+            List<Qualified_nameContext> qnames = dropStmtCtx.names_references().name;
             return new Pair<>(type, qnames.size() == 1 ? qnames.get(0).id() : null);
         }
 

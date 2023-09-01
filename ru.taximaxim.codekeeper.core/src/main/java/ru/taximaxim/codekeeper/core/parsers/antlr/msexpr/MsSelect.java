@@ -267,9 +267,7 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
                 lateralAllowed = oldLateral;
             }
         } else if ((xml = item.open_xml()) != null) {
-            for (ExpressionContext exp : xml.expression()) {
-                new MsValueExpr(this).analyze(exp);
-            }
+            new MsValueExpr(this).expressionList(xml.expression_list());
             Schema_declarationContext dec = xml.schema_declaration();
             if (dec != null) {
                 for (Column_declarationContext col : dec.column_declaration()) {

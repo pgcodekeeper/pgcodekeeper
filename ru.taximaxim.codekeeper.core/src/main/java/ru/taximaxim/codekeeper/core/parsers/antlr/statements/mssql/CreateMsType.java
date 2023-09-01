@@ -140,7 +140,7 @@ public class CreateMsType extends ParserAbstract {
     private void fillTableIndex(Table_indexContext indCtx, MsType type) {
         final StringBuilder sb = new StringBuilder();
         sb.append("INDEX ");
-        sb.append(MsDiffUtils.quoteName(indCtx.index_name.getText()));
+        sb.append(MsDiffUtils.quoteName(indCtx.id().getText()));
         sb.append(" ");
 
         ClusteredContext cluster = indCtx.clustered();

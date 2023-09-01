@@ -3,6 +3,16 @@ Reference: action = BEGIN TRANSACTION, offset = 168, line number = 6, charPositi
 Reference: action = IF, offset = 190, line number = 8, charPositionInLine = 0
 Reference: action = ROLLBACK, offset = 404, line number = 15, charPositionInLine = 0
 Reference: action = PRINT, offset = 426, line number = 16, charPositionInLine = 0
+Reference: action = DECLARE, offset = 827, line number = 28, charPositionInLine = 0
+Reference: action = SET, offset = 849, line number = 29, charPositionInLine = 0
+Reference: action = WHILE, offset = 867, line number = 30, charPositionInLine = 0
+Reference: action = BRANCH_ONE, offset = 1079, line number = 37, charPositionInLine = 0
+Reference: action = SELECT, offset = 1095, line number = 38, charPositionInLine = 4
+Reference: action = GOTO, offset = 1131, line number = 39, charPositionInLine = 4
+Reference: action = BRANCH_TWO, offset = 1197, line number = 40, charPositionInLine = 0
+Reference: action = SELECT, offset = 1213, line number = 41, charPositionInLine = 4
+Reference: action = BRANCH_THREE, offset = 1245, line number = 42, charPositionInLine = 0
+Reference: action = SELECT, offset = 1263, line number = 43, charPositionInLine = 4
 Reference: action = DECLARE, offset = 1442, line number = 48, charPositionInLine = 0
 Reference: action = EXECUTE, offset = 1484, line number = 49, charPositionInLine = 0
 Reference: action = IF, offset = 1572, line number = 52, charPositionInLine = 0
@@ -53,3 +63,10 @@ Reference: action = FETCH, offset = 11943, line number = 422, charPositionInLine
 Reference: action = WHILE, offset = 11976, line number = 423, charPositionInLine = 0
 Reference: action = CLOSE, offset = 12057, line number = 427, charPositionInLine = 0
 Reference: action = DEALLOCATE, offset = 12080, line number = 428, charPositionInLine = 0
+Reference: action = DECLARE, offset = 12112, line number = 431, charPositionInLine = 0
+Reference: action = LOOP, offset = 12138, line number = 432, charPositionInLine = 0
+Reference: action = SET, offset = 12144, line number = 433, charPositionInLine = 0
+Reference: action = IF, offset = 12172, line number = 434, charPositionInLine = 0
+Reference: action = GOTO, offset = 12228, line number = 437, charPositionInLine = 0
+Reference: action = FINISH_LINE, offset = 12238, line number = 438, charPositionInLine = 0
+Reference: action = PRINT, offset = 12251, line number = 439, charPositionInLine = 0

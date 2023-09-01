@@ -155,8 +155,8 @@ public class MsSqlClauses extends MsAbstractExpr {
     }
 
     private void updateStatistics(Update_statisticsContext us) {
-        GenericColumn cont = addObjectDepcy(us.table_name, DbObjType.TABLE);
-        Qualified_nameContext index = us.index_name;
+        GenericColumn cont = addObjectDepcy(us.table, DbObjType.TABLE);
+        Qualified_nameContext index = us.index;
         Names_referencesContext names;
         if (index != null) {
             IdContext nameCtx = index.name;

@@ -95,12 +95,12 @@ public class CreateMsTable extends MsTableAbstract {
                     schemaCtx == null ? null : schemaCtx.getText(), tableCtx.getText()));
         } else if (colCtx.table_index() != null) {
             Table_indexContext indCtx = colCtx.table_index();
-            MsIndex index = new MsIndex(indCtx.index_name.getText());
+            MsIndex index = new MsIndex(indCtx.id().getText());
             ClusteredContext cluster = indCtx.clustered();
             index.setClustered(cluster != null && cluster.CLUSTERED() != null);
 
             parseIndex(indCtx.index_rest(), index, schemaCtx.getText(), tableCtx.getText());
-            addSafe(table, index, Arrays.asList(schemaCtx, tableCtx, indCtx.index_name));
+            addSafe(table, index, Arrays.asList(schemaCtx, tableCtx, indCtx.id()));
         } else {
             MsColumn col = new MsColumn(colCtx.id().getText());
             if (colCtx.data_type() != null) {

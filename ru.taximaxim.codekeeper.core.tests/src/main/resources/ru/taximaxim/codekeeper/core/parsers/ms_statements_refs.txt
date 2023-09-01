@@ -104,3 +104,4 @@ Reference: action = ALTER QUEUE, offset = 11057, line number = 357, charPosition
 Reference: action = ALTER QUEUE, offset = 11140, line number = 361, charPositionInLine = 0
 Reference: action = ALTER QUEUE, offset = 11226, line number = 365, charPositionInLine = 0
 Reference: action = ALTER QUEUE, offset = 11319, line number = 369, charPositionInLine = 0
+Reference: action = CREATE CONTRACT, offset = 11371, line number = 372, charPositionInLine = 0

@@ -313,6 +313,7 @@ implements TSqlContextProcessor {
                     || createCtx.create_fulltext_index() != null
                     || createCtx.create_fulltext_stoplist() != null
                     || createCtx.create_key() != null
+                    || createCtx.create_master_key_sql_server() != null
                     || createCtx.create_message_type() != null
                     || createCtx.create_or_alter_broker_priority() != null
                     || createCtx.create_or_alter_event_session() != null
@@ -331,7 +332,6 @@ implements TSqlContextProcessor {
                     || createCtx.create_database_encryption_key() != null
                     || createCtx.create_database_scoped_credential() != null
                     || createCtx.create_external_resource_pool() != null
-                    || createCtx.create_master_key_sql_server() != null
                     || createCtx.create_remote_service_binding() != null
                     || createCtx.create_search_property_list() != null
                     || createCtx.create_selective_index() != null
@@ -362,13 +362,11 @@ implements TSqlContextProcessor {
                     || alterCtx.alter_server_audit() != null
                     || alterCtx.alter_server_configuration() != null
                     || alterCtx.alter_server_role() != null
-                    || alterCtx.alter_server_role_pdw() != null
                     || alterCtx.alter_symmetric_key() != null
                     || alterCtx.alter_workload_group() != null
                     || alterCtx.create_or_alter_broker_priority() != null
                     || alterCtx.create_or_alter_event_session() != null
-                    || alterCtx.create_or_alter_resource_pool() != null
-                    || alterCtx.create_symmetric_key() != null) {
+                    || alterCtx.create_or_alter_resource_pool() != null) {
                 descrWordsCount = 3;
             } else if (alterCtx.alter_column_encryption_key() != null
                     || alterCtx.alter_database_encryption_key() != null

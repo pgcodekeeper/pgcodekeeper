@@ -72,8 +72,8 @@ public class AlterMsTable extends MsTableAbstract {
                     }
                 }
             }
-        } else if (ctx.CONSTRAINT() != null) {
-            for (IdContext id : ctx.id()) {
+        } else if (ctx.CONSTRAINT() != null && ctx.ALL() == null) {
+            for (IdContext id : ctx.name_list().id()) {
                 MsConstraint con = (MsConstraint) getSafe(AbstractTable::getConstraint, table, id);
                 if (ctx.WITH() != null) {
                     doSafe(AbstractConstraint::setNotValid, con, ctx.nocheck_check != null);
@@ -89,15 +89,15 @@ public class AlterMsTable extends MsTableAbstract {
             }
         } else if (ctx.column_definition() != null) {
             ref.setWarning(DangerStatement.ALTER_COLUMN);
-        } else if (ctx.TRIGGER() != null) {
-            for (IdContext trigger : ctx.id()) {
+        } else if (ctx.TRIGGER() != null && ctx.ALL() == null) {
+            for (IdContext trigger : ctx.name_list().id()) {
                 MsTrigger tr = (MsTrigger) getSafe(AbstractTable::getTrigger, table, trigger);
                 doSafe(MsTrigger::setDisable, tr, ctx.ENABLE() == null);
                 addObjReference(Arrays.asList(schemaCtx, nameCtx, trigger),
                         DbObjType.TRIGGER, ACTION_ALTER);
             }
         } else if (ctx.CHANGE_TRACKING() != null && ctx.ENABLE() != null) {
-            doSafe(MsTable::setTracked, ((MsTable) table), ctx.ON() != null);
+            doSafe(MsTable::setTracked, ((MsTable) table), ctx.on_off().ON() != null);
         }
     }
 

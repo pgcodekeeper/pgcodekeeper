@@ -193,7 +193,7 @@ public abstract class MsAbstractExprWithNmspc<T> extends MsAbstractExpr {
         for (Common_table_expressionContext withQuery : with.common_table_expression()) {
             new MsSelect(this).analyze(withQuery.select_statement());
 
-            String withName = withQuery.expression_name.getText();
+            String withName = withQuery.id().getText();
             if (!cte.add(withName)) {
                 log("Duplicate CTE " + withName);
             }

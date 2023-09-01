@@ -43,7 +43,7 @@ public class AlterMsAssembly extends ParserAbstract {
         if (options != null) {
             for (Assembly_optionContext option : options) {
                 if (option.VISIBILITY() != null) {
-                    doSafe(MsAssembly::setVisible, assembly, option.ON() != null);
+                    doSafe(MsAssembly::setVisible, assembly, option.on_off().ON() != null);
                 }
             }
         }
