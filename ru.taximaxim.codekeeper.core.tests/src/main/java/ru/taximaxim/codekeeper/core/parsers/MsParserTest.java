@@ -52,8 +52,9 @@ class MsParserTest {
             "ms_backup",
             "ms_broker_priority",
             "ms_certificates",
-            // TODO goto
+            "ms_control_flow",
             "ms_cursors",
+            "ms_database",
             "ms_delete",
             "ms_drop",
             "ms_event",
@@ -61,7 +62,10 @@ class MsParserTest {
             "ms_function",
             "ms_index",
             "ms_insert",
+            "ms_key",
+            "ms_logins",
             "ms_merge",
+            "ms_other",
             "ms_predicates",
             "ms_procedures",
             "ms_roles",
@@ -69,6 +73,7 @@ class MsParserTest {
             "ms_schema",
             "ms_select",
             "ms_select_match",
+            "ms_server",
             "ms_sequences",
             "ms_table",
             "ms_transactions",
@@ -84,13 +89,7 @@ class MsParserTest {
 
     @ParameterizedTest
     @CsvSource({
-        "ms_control_flow, 1",
-        "ms_database, 1",
-        "ms_key, 1",
-        "ms_logins, 3",
-        "ms_other, 3",
-        "ms_server, 6",
-        "ms_statements, 31",
+        "ms_statements, 1",
         "ms_xml_data_type, 1",
     })
     void parse(String fileNameTemplate, Integer allowedAmbiguity) throws IOException {

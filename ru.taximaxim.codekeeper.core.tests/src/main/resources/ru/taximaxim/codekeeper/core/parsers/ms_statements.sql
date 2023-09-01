@@ -368,3 +368,6 @@ GO;
 -- Moving queue internal table to another filegroup
 ALTER QUEUE ExpenseQueue MOVE TO [NewFilegroup]
 GO
+
+CREATE CONTRACT [//A] (SENT BY INITIATOR)
+GO

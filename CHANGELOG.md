@@ -9,7 +9,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added support for GOTO syntax in MS SQL.
+
 ### Changed
+
+- Improved parser rules for MS SQL.
 
 ### Fixed
 
@@ -126,7 +130,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - It is now possible to update the plugin version in standalone pgCodeKeeper packages.
-- Added parser's support for REBUILD options for tables in MSSQL.
+- Added parser's support for REBUILD options for tables in MS SQL.
 - Added tests for library loader.
 
 ### Fixed
@@ -144,9 +148,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Added signing jar files with a certificate.
 - Added support for PostgreSQL version 9.4 - 9.6.
-- Added support for MASKED, ROWGUIDCOL, PERSISTED, SPARSE, NOT FOR REPLICATION options for table columns in MSSQL.
+- Added support for MASKED, ROWGUIDCOL, PERSISTED, SPARSE, NOT FOR REPLICATION options for table columns in MS SQL.
 - Added tooltip for database name in project editor.
-- Added support for MATCH syntax in MSSQL.
+- Added support for MATCH syntax in MS SQL.
 
 ### Changed
 

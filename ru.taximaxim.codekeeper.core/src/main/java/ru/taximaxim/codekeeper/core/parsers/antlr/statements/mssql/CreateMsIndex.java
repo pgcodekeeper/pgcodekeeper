@@ -24,6 +24,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.ClusteredContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Create_indexContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Index_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Qualified_nameContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractIndex;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
@@ -42,9 +43,10 @@ public class CreateMsIndex extends MsTableAbstract {
 
     @Override
     public void parseObject() {
-        IdContext schemaCtx = ctx.qualified_name().schema;
-        IdContext tableCtx = ctx.qualified_name().name;
-        IdContext nameCtx = ctx.name;
+        Index_nameContext indexNameCtx = ctx.index_name();
+        IdContext schemaCtx = indexNameCtx.table_name.schema;
+        IdContext tableCtx = indexNameCtx.table_name.name;
+        IdContext nameCtx = indexNameCtx.name;
         List<ParserRuleContext> ids = Arrays.asList(schemaCtx, nameCtx);
         AbstractSchema schema = getSchemaSafe(ids);
         addObjReference(Arrays.asList(schemaCtx, tableCtx), DbObjType.TABLE, null);
@@ -62,8 +64,8 @@ public class CreateMsIndex extends MsTableAbstract {
 
     @Override
     protected String getStmtAction() {
-        Qualified_nameContext qualNameCtx = ctx.qualified_name();
+        Qualified_nameContext qualNameCtx = ctx.index_name().qualified_name();
         return getStrForStmtAction(ACTION_CREATE, DbObjType.INDEX,
-                Arrays.asList(qualNameCtx.schema, qualNameCtx.name, ctx.name));
+                Arrays.asList(qualNameCtx.schema, qualNameCtx.name, ctx.index_name().name));
     }
 }

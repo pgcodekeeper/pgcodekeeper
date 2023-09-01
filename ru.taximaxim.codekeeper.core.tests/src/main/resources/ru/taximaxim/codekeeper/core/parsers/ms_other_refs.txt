@@ -6,77 +6,83 @@ Reference: action = ALTER CREDENTIAL, offset = 344, line number = 14, charPositi
 Reference: action = ALTER CREDENTIAL, offset = 445, line number = 18, charPositionInLine = 0
 Reference: action = CREATE CREDENTIAL, offset = 501, line number = 20, charPositionInLine = 0
 Reference: action = CREATE CREDENTIAL, offset = 598, line number = 23, charPositionInLine = 0
-Reference: action = CREATE EXTERNAL LIBRARY, offset = 749, line number = 27, charPositionInLine = 0
-Reference: action = ALTER EXTERNAL DATA SOURCE, offset = 860, line number = 30, charPositionInLine = 0
-Reference: action = ALTER EXTERNAL DATA SOURCE, offset = 1011, line number = 34, charPositionInLine = 0
-Reference: action = ALTER EXTERNAL DATA SOURCE, offset = 1091, line number = 37, charPositionInLine = 0
-Reference: action = ALTER WORKLOAD GROUP, offset = 1285, line number = 46, charPositionInLine = 0
-Reference: action = ALTER RESOURCE GOVERNOR, offset = 1348, line number = 49, charPositionInLine = 0
-Reference: action = ALTER WORKLOAD GROUP, offset = 1388, line number = 51, charPositionInLine = 0
-Reference: action = ALTER RESOURCE GOVERNOR, offset = 1435, line number = 54, charPositionInLine = 0
-Reference: action = CREATE WORKLOAD GROUP, offset = 1475, line number = 56, charPositionInLine = 0
-Reference: action = CREATE XML SCHEMA COLLECTION, offset = 1534, line number = 60, charPositionInLine = 0
-Reference: action = TRUNCATE, offset = 1601, line number = 62, charPositionInLine = 0
-Reference: action = TRUNCATE, offset = 1650, line number = 64, charPositionInLine = 0
-Reference: action = TRUNCATE, offset = 1718, line number = 67, charPositionInLine = 0
-Reference: action = ALTER APPLICATION ROLE, offset = 1763, line number = 69, charPositionInLine = 0
-Reference: action = ALTER APPLICATION ROLE, offset = 1834, line number = 72, charPositionInLine = 0
-Reference: action = CREATE APPLICATION ROLE, offset = 1968, line number = 77, charPositionInLine = 0
-Reference: action = DBCC, offset = 2083, line number = 81, charPositionInLine = 0
-Reference: action = DBCC, offset = 2118, line number = 82, charPositionInLine = 0
-Reference: action = DBCC, offset = 2134, line number = 83, charPositionInLine = 0
-Reference: action = DBCC, offset = 2205, line number = 84, charPositionInLine = 0
-Reference: action = DBCC, offset = 2238, line number = 85, charPositionInLine = 0
-Reference: action = ALTER ENDPOINT, offset = 2269, line number = 86, charPositionInLine = 0
-Reference: action = LOCK, offset = 2496, line number = 94, charPositionInLine = 0
-Reference: action = PRINT, offset = 2537, line number = 95, charPositionInLine = 0
-Reference: action = PRINT, offset = 2552, line number = 96, charPositionInLine = 0
-Reference: action = PRINT, offset = 2580, line number = 97, charPositionInLine = 0
-Reference: action = RAISERROR, offset = 2618, line number = 98, charPositionInLine = 0
-Reference: action = RAISERROR, offset = 2655, line number = 99, charPositionInLine = 0
-Reference: action = RAISERROR, offset = 2696, line number = 100, charPositionInLine = 0
-Reference: action = USE, offset = 2721, line number = 101, charPositionInLine = 0
-Reference: action = ALTER FULLTEXT CATALOG, offset = 2752, line number = 103, charPositionInLine = 0
-Reference: action = CREATE FULLTEXT CATALOG, offset = 2832, line number = 106, charPositionInLine = 0
-Reference: action = ALTER MESSAGE TYPE, offset = 2878, line number = 107, charPositionInLine = 0
-Reference: action = ALTER REMOTE SERVICE BINDING, offset = 3040, line number = 111, charPositionInLine = 0
-Reference: action = CREATE REMOTE SERVICE BINDING, offset = 3114, line number = 113, charPositionInLine = 0
-Reference: action = CREATE REMOTE SERVICE BINDING, offset = 3243, line number = 116, charPositionInLine = 0
-Reference: action = ALTER RESOURCE GOVERNOR, offset = 3386, line number = 119, charPositionInLine = 0
-Reference: action = ALTER RESOURCE GOVERNOR, offset = 3423, line number = 120, charPositionInLine = 0
-Reference: action = ALTER RESOURCE GOVERNOR, offset = 3485, line number = 122, charPositionInLine = 0
-Reference: action = ALTER RESOURCE GOVERNOR, offset = 3522, line number = 123, charPositionInLine = 0
-Reference: action = ALTER RESOURCE GOVERNOR, offset = 3597, line number = 125, charPositionInLine = 0
-Reference: action = ALTER RESOURCE GOVERNOR, offset = 3637, line number = 127, charPositionInLine = 0
-Reference: action = ALTER RESOURCE GOVERNOR, offset = 3679, line number = 128, charPositionInLine = 0
-Reference: action = CREATE EXTERNAL RESOURCE POOL, offset = 3746, line number = 130, charPositionInLine = 0
-Reference: action = ALTER RESOURCE GOVERNOR, offset = 3875, line number = 137, charPositionInLine = 0
-Reference: action = ALTER EXTERNAL RESOURCE POOL, offset = 3915, line number = 139, charPositionInLine = 0
-Reference: action = CREATE RESOURCE POOL, offset = 4057, line number = 146, charPositionInLine = 0
-Reference: action = ALTER RESOURCE GOVERNOR, offset = 4090, line number = 148, charPositionInLine = 0
-Reference: action = CREATE RESOURCE POOL, offset = 4130, line number = 150, charPositionInLine = 0
-Reference: action = CREATE RESOURCE POOL, offset = 4366, line number = 160, charPositionInLine = 0
-Reference: action = CREATE ROUTE, offset = 4473, line number = 165, charPositionInLine = 0
-Reference: action = CREATE ROUTE, offset = 4686, line number = 170, charPositionInLine = 0
-Reference: action = CREATE ROUTE, offset = 4874, line number = 175, charPositionInLine = 0
-Reference: action = CREATE ROUTE, offset = 5066, line number = 180, charPositionInLine = 0
-Reference: action = CREATE ROUTE, offset = 5154, line number = 183, charPositionInLine = 0
-Reference: action = CREATE ROUTE, offset = 5268, line number = 187, charPositionInLine = 0
-Reference: action = CREATE ROUTE, offset = 5437, line number = 192, charPositionInLine = 0
-Reference: action = CREATE ROUTE, offset = 5729, line number = 198, charPositionInLine = 0
-Reference: action = CREATE SEARCH PROPERTY LIST, offset = 5794, line number = 200, charPositionInLine = 0
-Reference: action = CREATE SEARCH PROPERTY LIST, offset = 5844, line number = 201, charPositionInLine = 0
-Reference: action = CREATE SECURITY POLICY, offset = 5941, line number = 203, charPositionInLine = 0
-Reference: action = CREATE SECURITY POLICY, offset = 6083, line number = 206, charPositionInLine = 0
-Reference: action = CREATE SECURITY POLICY, offset = 6412, line number = 214, charPositionInLine = 0
-Reference: action = CREATE SERVICE, offset = 6608, line number = 217, charPositionInLine = 0
-Reference: action = CREATE SERVICE, offset = 6752, line number = 220, charPositionInLine = 0
-Reference: action = CREATE SERVICE, offset = 6938, line number = 223, charPositionInLine = 0
-Reference: action = ALTER FULLTEXT STOPLIST, offset = 7010, line number = 224, charPositionInLine = 0
-Reference: action = ALTER FULLTEXT STOPLIST, offset = 7090, line number = 225, charPositionInLine = 0
-Reference: action = CREATE FULLTEXT STOPLIST, offset = 7169, line number = 226, charPositionInLine = 0
-Reference: action = CREATE FULLTEXT STOPLIST, offset = 7209, line number = 228, charPositionInLine = 0
-Reference: action = CREATE FULLTEXT STOPLIST, offset = 7284, line number = 230, charPositionInLine = 0
-Reference: action = CREATE SYNONYM, offset = 7346, line number = 232, charPositionInLine = 0
-Reference: action = CREATE SYNONYM, offset = 7423, line number = 235, charPositionInLine = 0
-Reference: action = CREATE SYNONYM, offset = 7517, line number = 237, charPositionInLine = 0
+Reference: action = CREATE EXTERNAL LIBRARY, offset = 750, line number = 28, charPositionInLine = 0
+Reference: action = CREATE EXTERNAL LIBRARY, offset = 851, line number = 32, charPositionInLine = 0
+Reference: action = CREATE EXTERNAL LIBRARY, offset = 941, line number = 35, charPositionInLine = 0
+Reference: action = CREATE EXTERNAL LIBRARY, offset = 1039, line number = 40, charPositionInLine = 0
+Reference: action = ALTER EXTERNAL LIBRARY, offset = 1200, line number = 46, charPositionInLine = 0
+Reference: action = ALTER EXTERNAL LIBRARY, offset = 1300, line number = 51, charPositionInLine = 0
+Reference: action = ALTER EXTERNAL DATA SOURCE, offset = 1389, line number = 55, charPositionInLine = 0
+Reference: action = ALTER EXTERNAL DATA SOURCE, offset = 1540, line number = 59, charPositionInLine = 0
+Reference: action = ALTER EXTERNAL DATA SOURCE, offset = 1620, line number = 62, charPositionInLine = 0
+Reference: action = ALTER WORKLOAD GROUP, offset = 1814, line number = 71, charPositionInLine = 0
+Reference: action = ALTER RESOURCE GOVERNOR, offset = 1877, line number = 74, charPositionInLine = 0
+Reference: action = ALTER WORKLOAD GROUP, offset = 1917, line number = 76, charPositionInLine = 0
+Reference: action = ALTER RESOURCE GOVERNOR, offset = 1964, line number = 79, charPositionInLine = 0
+Reference: action = CREATE WORKLOAD GROUP, offset = 2004, line number = 81, charPositionInLine = 0
+Reference: action = CREATE XML SCHEMA COLLECTION, offset = 2063, line number = 85, charPositionInLine = 0
+Reference: action = TRUNCATE, offset = 2130, line number = 87, charPositionInLine = 0
+Reference: action = TRUNCATE, offset = 2179, line number = 89, charPositionInLine = 0
+Reference: action = TRUNCATE, offset = 2247, line number = 92, charPositionInLine = 0
+Reference: action = ALTER APPLICATION ROLE, offset = 2292, line number = 94, charPositionInLine = 0
+Reference: action = ALTER APPLICATION ROLE, offset = 2363, line number = 97, charPositionInLine = 0
+Reference: action = CREATE APPLICATION ROLE, offset = 2497, line number = 102, charPositionInLine = 0
+Reference: action = DBCC, offset = 2612, line number = 106, charPositionInLine = 0
+Reference: action = DBCC, offset = 2647, line number = 107, charPositionInLine = 0
+Reference: action = DBCC, offset = 2663, line number = 108, charPositionInLine = 0
+Reference: action = DBCC, offset = 2734, line number = 109, charPositionInLine = 0
+Reference: action = DBCC, offset = 2767, line number = 110, charPositionInLine = 0
+Reference: action = ALTER ENDPOINT, offset = 2798, line number = 111, charPositionInLine = 0
+Reference: action = LOCK, offset = 3025, line number = 119, charPositionInLine = 0
+Reference: action = PRINT, offset = 3066, line number = 120, charPositionInLine = 0
+Reference: action = PRINT, offset = 3081, line number = 121, charPositionInLine = 0
+Reference: action = PRINT, offset = 3109, line number = 122, charPositionInLine = 0
+Reference: action = RAISERROR, offset = 3147, line number = 123, charPositionInLine = 0
+Reference: action = RAISERROR, offset = 3184, line number = 124, charPositionInLine = 0
+Reference: action = RAISERROR, offset = 3225, line number = 125, charPositionInLine = 0
+Reference: action = USE, offset = 3250, line number = 126, charPositionInLine = 0
+Reference: action = ALTER FULLTEXT CATALOG, offset = 3281, line number = 128, charPositionInLine = 0
+Reference: action = CREATE FULLTEXT CATALOG, offset = 3361, line number = 131, charPositionInLine = 0
+Reference: action = ALTER MESSAGE TYPE, offset = 3407, line number = 132, charPositionInLine = 0
+Reference: action = ALTER REMOTE SERVICE BINDING, offset = 3569, line number = 136, charPositionInLine = 0
+Reference: action = CREATE REMOTE SERVICE BINDING, offset = 3643, line number = 138, charPositionInLine = 0
+Reference: action = CREATE REMOTE SERVICE BINDING, offset = 3772, line number = 141, charPositionInLine = 0
+Reference: action = ALTER RESOURCE GOVERNOR, offset = 3915, line number = 144, charPositionInLine = 0
+Reference: action = ALTER RESOURCE GOVERNOR, offset = 3952, line number = 145, charPositionInLine = 0
+Reference: action = ALTER RESOURCE GOVERNOR, offset = 4014, line number = 147, charPositionInLine = 0
+Reference: action = ALTER RESOURCE GOVERNOR, offset = 4051, line number = 148, charPositionInLine = 0
+Reference: action = ALTER RESOURCE GOVERNOR, offset = 4126, line number = 150, charPositionInLine = 0
+Reference: action = ALTER RESOURCE GOVERNOR, offset = 4166, line number = 152, charPositionInLine = 0
+Reference: action = ALTER RESOURCE GOVERNOR, offset = 4208, line number = 153, charPositionInLine = 0
+Reference: action = CREATE EXTERNAL RESOURCE POOL, offset = 4275, line number = 155, charPositionInLine = 0
+Reference: action = ALTER EXTERNAL RESOURCE POOL, offset = 4377, line number = 161, charPositionInLine = 0
+Reference: action = CREATE EXTERNAL RESOURCE POOL, offset = 4479, line number = 167, charPositionInLine = 0
+Reference: action = ALTER EXTERNAL RESOURCE POOL, offset = 4522, line number = 169, charPositionInLine = 0
+Reference: action = CREATE RESOURCE POOL, offset = 4564, line number = 171, charPositionInLine = 0
+Reference: action = ALTER RESOURCE GOVERNOR, offset = 4597, line number = 173, charPositionInLine = 0
+Reference: action = CREATE RESOURCE POOL, offset = 4637, line number = 175, charPositionInLine = 0
+Reference: action = CREATE RESOURCE POOL, offset = 4873, line number = 185, charPositionInLine = 0
+Reference: action = CREATE ROUTE, offset = 4980, line number = 190, charPositionInLine = 0
+Reference: action = CREATE ROUTE, offset = 5193, line number = 195, charPositionInLine = 0
+Reference: action = CREATE ROUTE, offset = 5381, line number = 200, charPositionInLine = 0
+Reference: action = CREATE ROUTE, offset = 5573, line number = 205, charPositionInLine = 0
+Reference: action = CREATE ROUTE, offset = 5661, line number = 208, charPositionInLine = 0
+Reference: action = CREATE ROUTE, offset = 5775, line number = 212, charPositionInLine = 0
+Reference: action = CREATE ROUTE, offset = 5944, line number = 217, charPositionInLine = 0
+Reference: action = CREATE ROUTE, offset = 6236, line number = 223, charPositionInLine = 0
+Reference: action = CREATE SEARCH PROPERTY LIST, offset = 6301, line number = 225, charPositionInLine = 0
+Reference: action = CREATE SEARCH PROPERTY LIST, offset = 6351, line number = 226, charPositionInLine = 0
+Reference: action = CREATE SECURITY POLICY, offset = 6448, line number = 228, charPositionInLine = 0
+Reference: action = CREATE SECURITY POLICY, offset = 6590, line number = 231, charPositionInLine = 0
+Reference: action = CREATE SECURITY POLICY, offset = 6919, line number = 239, charPositionInLine = 0
+Reference: action = CREATE SERVICE, offset = 7115, line number = 242, charPositionInLine = 0
+Reference: action = CREATE SERVICE, offset = 7259, line number = 245, charPositionInLine = 0
+Reference: action = CREATE SERVICE, offset = 7445, line number = 248, charPositionInLine = 0
+Reference: action = ALTER FULLTEXT STOPLIST, offset = 7517, line number = 249, charPositionInLine = 0
+Reference: action = ALTER FULLTEXT STOPLIST, offset = 7597, line number = 250, charPositionInLine = 0
+Reference: action = CREATE FULLTEXT STOPLIST, offset = 7676, line number = 251, charPositionInLine = 0
+Reference: action = CREATE FULLTEXT STOPLIST, offset = 7716, line number = 253, charPositionInLine = 0
+Reference: action = CREATE FULLTEXT STOPLIST, offset = 7791, line number = 255, charPositionInLine = 0
+Reference: action = CREATE SYNONYM, offset = 7853, line number = 257, charPositionInLine = 0
+Reference: action = CREATE SYNONYM, offset = 7930, line number = 260, charPositionInLine = 0
+Reference: action = CREATE SYNONYM, offset = 8024, line number = 262, charPositionInLine = 0

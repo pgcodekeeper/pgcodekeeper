@@ -24,7 +24,7 @@ GO
 
 -----------------------------------------------------------------------
 -- GOTO
-/*
+
 DECLARE @Counter int;
 SET @Counter = 1;
 WHILE @Counter < 10
@@ -41,7 +41,7 @@ Branch_Two:
     SELECT 'Jumping To Branch Two.'
 Branch_Three:
     SELECT 'Jumping To Branch Three.';
-*/
+    
 -----------------------------------------------------------------------
 -- IF ELSE https://msdn.microsoft.com/en-us/library/ms182587.aspx
 
@@ -428,4 +428,13 @@ CLOSE Employee_Cursor;
 DEALLOCATE Employee_Cursor;
 GO
 
-
+DECLARE @Counter int = 0;
+Loop:
+SET @Counter = @Counter + 1
+IF @Counter < 10
+  PRINT @Counter
+ELSE GOTO Finish_Line
+GOTO Loop
+Finish_Line:
+PRINT 'Finished!'
+GO

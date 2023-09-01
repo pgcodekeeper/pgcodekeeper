@@ -23,3 +23,4 @@ Reference: action = ALTER SYMMETRIC KEY, offset = 6551, line number = 90, charPo
 Reference: action = CREATE SYMMETRIC KEY, offset = 6637, line number = 92, charPositionInLine = 0
 Reference: action = CREATE SYMMETRIC KEY, offset = 6746, line number = 96, charPositionInLine = 0
 Reference: action = CREATE SYMMETRIC KEY, offset = 6977, line number = 103, charPositionInLine = 0
+Reference: action = CREATE MASTER KEY, offset = 7138, line number = 110, charPositionInLine = 0

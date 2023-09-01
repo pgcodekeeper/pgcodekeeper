@@ -19,7 +19,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Column_name_listContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Column_with_orderContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Index_includeContext;
@@ -28,6 +27,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Index_opt
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Index_restContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Index_sortContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Index_whereContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Name_list_in_bracketsContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Qualified_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_constraintContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_constraint_bodyContext;
@@ -66,7 +66,7 @@ public abstract class MsTableAbstract extends ParserAbstract {
             con.setForeignTable(ftableRef);
             con.addDep(ftableRef);
 
-            Column_name_listContext columns = body.pk;
+            Name_list_in_bracketsContext columns = body.pk;
             if (columns != null) {
                 for (IdContext column : columns.id()) {
                     String col = column.getText();
@@ -99,7 +99,7 @@ public abstract class MsTableAbstract extends ParserAbstract {
 
         Index_includeContext include = rest.index_include();
         if (include != null) {
-            for (IdContext col : include.column_name_list().id()) {
+            for (IdContext col : include.name_list_in_brackets().id()) {
                 ind.addInclude(col.getText());
                 ind.addDep(new GenericColumn(schema, table, col.getText(), DbObjType.COLUMN));
             }

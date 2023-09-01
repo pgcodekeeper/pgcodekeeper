@@ -31,10 +31,10 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Class_typeContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Columns_permissionsContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Name_list_in_bracketsContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Object_typeContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Rule_commonContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_column_privilegesContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_columnsContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
@@ -76,7 +76,7 @@ public class GrantMsPrivilege extends ParserAbstract {
             return;
         }
 
-        List<String> roles = ctx.role_names().id().stream()
+        List<String> roles = ctx.name_list().id().stream()
                 .map(ParserRuleContext::getText).map(MsDiffUtils::quoteName).collect(Collectors.toList());
 
         Columns_permissionsContext columnsCtx = ctx.columns_permissions();
@@ -103,7 +103,7 @@ public class GrantMsPrivilege extends ParserAbstract {
         }
 
         name.append(st.getQualifiedName());
-        Table_columnsContext columns = nameCtx.table_columns();
+        Name_list_in_bracketsContext columns = nameCtx.name_list_in_brackets();
 
         // 1 privilege for each role
         for (String role : roles) {
@@ -115,7 +115,7 @@ public class GrantMsPrivilege extends ParserAbstract {
                 }
 
                 // column privileges
-                for (IdContext column : columns.column) {
+                for (IdContext column : columns.id()) {
                     name.append('(').append(MsDiffUtils.quoteName(column.getText())).append(')');
                     PgPrivilege priv = new PgPrivilege(state, per, name.toString(), role, isGO);
                     // table column privileges to columns, other columns to statement
@@ -161,7 +161,7 @@ public class GrantMsPrivilege extends ParserAbstract {
         Map<String, Entry<IdContext, List<String>>> colPriv = new HashMap<>();
         for (Table_column_privilegesContext priv : columnsCtx.table_column_privileges()) {
             String privName = getFullCtxText(priv.permission());
-            for (IdContext col : priv.table_columns().column) {
+            for (IdContext col : priv.name_list_in_brackets().id()) {
                 colPriv.computeIfAbsent(col.getText(),
                         k -> new SimpleEntry<>(col, new ArrayList<>())).getValue().add(privName);
             }

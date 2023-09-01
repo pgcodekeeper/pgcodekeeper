@@ -49,19 +49,19 @@ public class AlterMsAuthorization extends ParserAbstract {
 
     @Override
     public void parseObject() {
-        IdContext ownerId = ctx.authorization_grantee().id();
+        IdContext ownerId = ctx.id();
         if (db.getArguments().isIgnorePrivileges() || ownerId == null) {
             return;
         }
         String owner = ownerId.getText();
 
         Class_typeContext type = ctx.class_type();
-        IdContext nameCtx = ctx.entity.name;
-        List<ParserRuleContext> ids = Arrays.asList(ctx.entity.schema, nameCtx);
+        IdContext nameCtx = ctx.qualified_name().name;
+        IdContext schemaCtx = ctx.qualified_name().schema;
+        List<ParserRuleContext> ids = Arrays.asList(schemaCtx, nameCtx);
 
         PgStatement st = null;
         if (type == null || type.OBJECT() != null || type.TYPE() != null) {
-            IdContext schemaCtx = ctx.entity.schema;
             AbstractSchema schema = getSchemaSafe(ids);
             st = getSafe((k, v) -> k.getChildren().filter(
                     e -> e.getBareName().equals(v))
