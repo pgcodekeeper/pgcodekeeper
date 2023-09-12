@@ -9,13 +9,19 @@
 
 ### Добавлено
 
+### Изменено
+
+### Исправлено
+
+## [8.7.0] - 2023-09-12
+
+### Добавлено
+
 -  Добавлена поддержка синтаксиса GOTO в MS SQL.
 
 ### Изменено
 
 - Улучшены правила парсера для MS SQL.
-
-### Исправлено
 
 ## [8.6.0] - 2023-08-29
 
@@ -1774,7 +1780,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.6.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.7.0...HEAD
+[8.7.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.6.0...v8.7.0
 [8.6.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.5.0...v8.6.0
 [8.5.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.4.0...v8.5.0
 [8.4.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.3.0...v8.4.0
