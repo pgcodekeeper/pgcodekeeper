@@ -30,7 +30,7 @@
     </modules>
 
     <properties>
-        <revision>8.6.0-SNAPSHOT</revision>
+        <revision>8.7.0-SNAPSHOT</revision>
         <ui.revision>4.5.0-SNAPSHOT</ui.revision>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
