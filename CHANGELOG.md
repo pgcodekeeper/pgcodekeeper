@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed an error when reading locale for COLLATION objects.
+
 ## [8.7.0] - 2023-09-12
 
 ### Added

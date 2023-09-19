@@ -22,3 +22,5 @@ ALTER COLLATION public.test_collation15 OWNER TO TavturinMA73;
 CREATE COLLATION public.test_collation16 (PROVIDER = 'icu', LC_COLLATE = 'ru_RU.utf8', LC_CTYPE = 'sv_SE.utf8', VERSION = '153.14.36.8', DETERMINISTIC = true);
 --LC_CTYPE--
 CREATE COLLATION public.test_collation17 (LC_COLLATE = 'ru_RU.utf8', LC_CTYPE = 'ru_RU.utf8');
+--LC_RULES--
+CREATE COLLATION public.test_collation20 (provider = icu, locale = 'und', rules = '&V << w <<< W');

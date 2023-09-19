@@ -30,3 +30,5 @@ CREATE COLLATION public.test_collation16 (PROVIDER = 'icu', LC_COLLATE = 'sv_SE.
 CREATE COLLATION public.test_collation17 (LC_COLLATE = 'ru_RU.utf8', LC_CTYPE = 'sv_SE.utf8');
 --alternative argument input via body.identifier --
 CREATE COLLATION public.test_collation19 (LOCALE = 'ru_RU.utf8',PROVIDER = icu);
+--LC_RULES--
+CREATE COLLATION public.test_collation20 (provider = icu, locale = 'und', rules = '&V<<w<<< W');

@@ -31,6 +31,7 @@ public class PgCollation extends PgStatementWithSearchPath {
     private String lcCtype;
     private String provider;
     private boolean deterministic = true;
+    private String rules;
 
     @Override
     public DbObjType getStatementType() {
@@ -42,18 +43,6 @@ public class PgCollation extends PgStatementWithSearchPath {
         return (AbstractSchema) getParent();
     }
 
-    public String getLcCollate() {
-        return lcCollate;
-    }
-
-    public String getLcCtype() {
-        return lcCtype;
-    }
-
-    public String getProvider() {
-        return provider;
-    }
-
     public boolean isDeterministic() {
         return deterministic;
     }
@@ -63,9 +52,17 @@ public class PgCollation extends PgStatementWithSearchPath {
         resetHash();
     }
 
+    public String getLcCollate() {
+        return lcCollate;
+    }
+
     public void setLcCollate(final String lcCollate) {
         this.lcCollate = lcCollate;
         resetHash();
+    }
+
+    public String getLcCtype() {
+        return lcCtype;
     }
 
     public void setLcCtype(final String lcCtype) {
@@ -73,8 +70,21 @@ public class PgCollation extends PgStatementWithSearchPath {
         resetHash();
     }
 
+    public String getProvider() {
+        return provider;
+    }
+
     public void setProvider(final String provider) {
         this.provider = provider;
+        resetHash();
+    }
+
+    public String getRules() {
+        return rules;
+    }
+
+    public void setRules(final String rules) {
+        this.rules = rules;
         resetHash();
     }
 
@@ -94,9 +104,13 @@ public class PgCollation extends PgStatementWithSearchPath {
         if (getProvider() != null) {
             sbSQL.append(", PROVIDER = ").append(getProvider());
         }
-        if(!isDeterministic()) {
+        if (!isDeterministic()) {
             sbSQL.append(", DETERMINISTIC = FALSE");
         }
+        if (getRules() != null) {
+            sbSQL.append(", RULES = ").append(getRules());
+        }
+
         sbSQL.append(");");
 
         appendOwnerSQL(sbSQL);
@@ -146,7 +160,8 @@ public class PgCollation extends PgStatementWithSearchPath {
         return deterministic == coll.isDeterministic()
                 && Objects.equals(lcCollate, coll.getLcCollate())
                 && Objects.equals(lcCtype, coll.getLcCtype())
-                && Objects.equals(provider, coll.getProvider());
+                && Objects.equals(provider, coll.getProvider())
+                && Objects.equals(rules, coll.getRules());
     }
 
     @Override
@@ -155,15 +170,17 @@ public class PgCollation extends PgStatementWithSearchPath {
         hasher.put(lcCollate);
         hasher.put(lcCtype);
         hasher.put(provider);
+        hasher.put(rules);
     }
 
     @Override
     public PgStatement shallowCopy() {
         PgCollation collationDst = new PgCollation(getName());
-        collationDst.lcCollate = getLcCollate();
-        collationDst.lcCtype = getLcCtype();
-        collationDst.provider = getProvider();
-        collationDst.deterministic = isDeterministic();
+        collationDst.setLcCollate(getLcCollate());
+        collationDst.setLcCtype(getLcCtype());
+        collationDst.setProvider(getProvider());
+        collationDst.setDeterministic(isDeterministic());
+        collationDst.setRules(getRules());
         return collationDst;
     }
 }

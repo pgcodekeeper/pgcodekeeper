@@ -54,15 +54,34 @@ public class CollationsReader extends JdbcReader {
         if (SupportedVersion.VERSION_10.isLE(loader.version)) {
             String provider = res.getString("collprovider");
             switch (provider) {
-            case "c": coll.setProvider("libc"); break;
-            case "i": coll.setProvider("icu"); break;
-            case "d": coll.setProvider("default"); break;
+            case "c":
+                coll.setProvider("libc");
+                break;
+            case "i":
+                coll.setProvider("icu");
+                if (SupportedVersion.VERSION_15.isLE(loader.version)) {
+                    String locale = res.getString("colliculocale");
+                    if (locale != null) {
+                        String quotedLocale = PgDiffUtils.quoteString(locale);
+                        coll.setLcCollate(quotedLocale);
+                        coll.setLcCtype(quotedLocale);
+                    }
+                }
+                break;
+            case "d":
+                coll.setProvider("default");
+                break;
             }
         }
         if (SupportedVersion.VERSION_12.isLE(loader.version)) {
             coll.setDeterministic(res.getBoolean("collisdeterministic"));
-        } else {
-            coll.setDeterministic(true);
+        }
+
+        if (SupportedVersion.VERSION_16.isLE(loader.version)) {
+            String rules = res.getString("collicurules");
+            if (rules != null) {
+                coll.setRules(PgDiffUtils.quoteString(rules));
+            }
         }
 
         loader.setOwner(coll, res.getLong("collowner"));
@@ -100,6 +119,14 @@ public class CollationsReader extends JdbcReader {
 
         if (SupportedVersion.VERSION_12.isLE(loader.version)) {
             builder.column("res.collisdeterministic");
+        }
+
+        if (SupportedVersion.VERSION_15.isLE(loader.version)) {
+            builder.column("res.colliculocale");
+        }
+
+        if (SupportedVersion.VERSION_16.isLE(loader.version)) {
+            builder.column("res.collicurules");
         }
     }
 }

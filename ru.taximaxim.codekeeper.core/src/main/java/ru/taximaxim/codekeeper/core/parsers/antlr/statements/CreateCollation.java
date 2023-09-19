@@ -50,6 +50,8 @@ public class CreateCollation extends ParserAbstract {
                 collation.setLcCtype(getValue(body));
             } else if (body.PROVIDER() != null) {
                 collation.setProvider(getValue(body));
+            } else if (body.RULES() != null) {
+                collation.setRules(getValue(body));
             } else if (body.DETERMINISTIC() != null) {
                 collation.setDeterministic(parseBoolean(body.boolean_value()));
             }
