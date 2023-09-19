@@ -32,6 +32,8 @@ DROP COLLATION public.test_collation16;
 
 DROP COLLATION public.test_collation17;
 
+DROP COLLATION public.test_collation20;
+
 CREATE COLLATION public.test_collation0 (LOCALE = 'ru_RU.utf8');
 
 CREATE COLLATION public.test_collation8 (LOCALE = 'ru_RU.utf8', PROVIDER = 'icu', DETERMINISTIC = FALSE);
@@ -49,3 +51,5 @@ CREATE COLLATION public.test_collation14 (LC_COLLATE = 'ru_RU.utf8', LC_CTYPE = 
 CREATE COLLATION public.test_collation16 (LOCALE = 'sv_SE.utf8', PROVIDER = 'icu');
 
 CREATE COLLATION public.test_collation17 (LC_COLLATE = 'ru_RU.utf8', LC_CTYPE = 'sv_SE.utf8');
+
+CREATE COLLATION public.test_collation20 (LOCALE = 'und', PROVIDER = icu, RULES = '&V<<w<<< W');
