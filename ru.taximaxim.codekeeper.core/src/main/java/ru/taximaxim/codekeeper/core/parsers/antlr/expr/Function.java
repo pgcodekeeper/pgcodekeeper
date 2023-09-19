@@ -57,6 +57,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Perform_st
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Plpgsql_functionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Plpgsql_queryContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Raise_usingContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Reindex_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Return_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qualified_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Select_stmt_no_parensContext;
@@ -393,13 +394,16 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
         Data_statementContext data;
         Table_cols_listContext col;
         Truncate_stmtContext truncate;
+        Reindex_stmtContext reindex;
 
-        if (table != null) {
-            if (additional.CLUSTER() != null || additional.TABLE() != null || additional.REFRESH() != null) {
-                addRelationDepcy(ParserAbstract.getIdentifiers(table));
-            } else if (additional.SCHEMA() != null) {
-                addSchemaDepcy(ParserAbstract.getIdentifiers(table), null);
+        if ((reindex = additional.reindex_stmt()) != null) {
+            if (reindex.TABLE() != null) {
+                addRelationDepcy(ParserAbstract.getIdentifiers(reindex.schema_qualified_name()));
+            } else if (reindex.SCHEMA() != null) {
+                addSchemaDepcy(ParserAbstract.getIdentifiers(reindex.schema_qualified_name()), null);
             }
+        } else if (table != null && (additional.CLUSTER() != null || additional.REFRESH() != null)) {
+            addRelationDepcy(ParserAbstract.getIdentifiers(table));
         } else if ((data = additional.data_statement()) != null) {
             new Sql(this).data(data);
 

@@ -34,6 +34,7 @@ public interface TypesSetManually {
     String TEXT = "text";
     String NAME = "name";
     String XML = "xml";
+    String JSON = "json";
     String ANY = "any";
     String ANYTYPE = "anyelement";
     String ANYARRAY = "anyarray";

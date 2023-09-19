@@ -1264,10 +1264,14 @@ merge_statement
     : with_expression? MERGE (TOP LR_BRACKET expression RR_BRACKET PERCENT?)?
     INTO? (qualified_name | LOCAL_ID) insert_with_table_hints? as_table_alias?
     USING from_item (COMMA from_item)* ON search_condition
-    (WHEN MATCHED (AND search_condition)? THEN merge_matched)*
-    (WHEN NOT MATCHED (BY TARGET)? (AND search_condition)? THEN merge_not_matched)?
-    (WHEN NOT MATCHED BY SOURCE (AND search_condition)? THEN merge_matched)*
-    output_clause? option_clause? SEMI
+    merge_when*
+    output_clause? option_clause?
+    ;
+
+merge_when
+    : WHEN MATCHED (AND search_condition)? THEN merge_matched
+    | WHEN NOT MATCHED (BY TARGET)? (AND search_condition)? THEN merge_not_matched
+    | WHEN NOT MATCHED BY SOURCE (AND search_condition)? THEN merge_matched
     ;
 
 merge_matched
@@ -2554,16 +2558,17 @@ order_by_clause
 // https://docs.microsoft.com/en-us/sql/t-sql/queries/select-for-clause-transact-sql
 for_clause
     : FOR BROWSE
-    | FOR XML (RAW (LR_BRACKET STRING RR_BRACKET)? | AUTO) xml_common_directives*
-      (COMMA (XMLDATA | XMLSCHEMA (LR_BRACKET STRING RR_BRACKET)?))?
-      (COMMA ELEMENTS (XSINIL | ABSENT))?
-    | FOR XML EXPLICIT xml_common_directives* (COMMA XMLDATA)?
-    | FOR XML PATH (LR_BRACKET STRING RR_BRACKET)? xml_common_directives* (COMMA ELEMENTS (XSINIL | ABSENT))?
-    | FOR JSON (AUTO | PATH) (COMMA ROOT (LR_BRACKET STRING RR_BRACKET)?)? (COMMA INCLUDE_NULL_VALUES | COMMA WITHOUT_ARRAY_WRAPPER)*
+    | FOR XML ((RAW | PATH) (LR_BRACKET STRING RR_BRACKET)? | EXPLICIT | AUTO) (COMMA xml_common_directives)*
+    | FOR JSON (AUTO | PATH) (COMMA (ROOT (LR_BRACKET STRING RR_BRACKET)? | INCLUDE_NULL_VALUES | WITHOUT_ARRAY_WRAPPER))*
     ;
 
 xml_common_directives
-    : COMMA (BINARY_BASE64 | TYPE | ROOT)
+    : BINARY_BASE64
+    | TYPE
+    | ROOT (LR_BRACKET STRING RR_BRACKET)?
+    | XMLSCHEMA (LR_BRACKET STRING RR_BRACKET)?
+    | XMLDATA
+    | ELEMENTS (XSINIL | ABSENT)?
     ;
 
 order_by_expression

@@ -133,3 +133,5 @@ Reference: action = EXPLAIN, offset = 5709, line number = 135, charPositionInLin
 Reference: action = EXPLAIN, offset = 5807, line number = 136, charPositionInLine = 0
 Reference: action = VACUUM, offset = 5877, line number = 137, charPositionInLine = 0
 Reference: action = VACUUM, offset = 5985, line number = 138, charPositionInLine = 0
+Reference: action = CREATE STATISTICS, offset = 6110, line number = 139, charPositionInLine = 0
+Reference: action = CREATE STATISTICS, offset = 6160, line number = 140, charPositionInLine = 0
