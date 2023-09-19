@@ -1401,3 +1401,8 @@ SELECT * FROM XMLTABLE(XMLNAMESPACES('http://x.y' AS zz),
                       PASSING '<rows xmlns="http://x.y"><row><a>10</a></row></rows>'
                       COLUMNS a int PATH 'zz:a');
 SELECT 1 INTO b;
+select json_object('{a, 1, b, "def", c, 3.5}');
+select json_object('{{a, 1}, {b, "def"}, {c, 3.5}}');
+select json_object('{a,b}', '{1,2}');
+select json_object('code' VALUE 'P123', 'title': 'Jaws');
+select json_objectagg(k:v) FROM (VALUES ('a'::text,current_date),('b',current_date + 1)) AS t(k,v);

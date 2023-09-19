@@ -56,6 +56,8 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Identifier
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.IndirectionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Indirection_listContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Indirection_varContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Json_functionContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Json_return_clauseContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.OpContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Orderby_clauseContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Partition_by_columnsContext;
@@ -582,6 +584,7 @@ public class ValueExpr extends AbstractExpr {
         Date_time_functionContext datetime;
         String_value_functionContext string;
         Xml_functionContext xml;
+        Json_functionContext json;
         Function_constructContext con;
 
         if ((extract = function.extract_function()) != null) {
@@ -670,6 +673,31 @@ public class ValueExpr extends AbstractExpr {
             } else {
                 // defaults work
             }
+            ret = new ModPair<>(colname, coltype);
+        } else if ((json = function.json_function()) != null) {
+            Json_return_clauseContext retClause = json.json_return_clause();
+            if (retClause == null && json.json_object_content() != null) {
+                retClause = json.json_object_content().json_return_clause();
+            }
+
+            String colname = json.getChild(0).getText().toLowerCase(Locale.ROOT);
+            String coltype = TypesSetManually.JSON;
+            if (retClause != null) {
+                Data_typeContext type = retClause.data_type();
+                coltype = ParserAbstract.getTypeName(type);
+                addTypeDepcy(type);
+            } else if (json.JSON_ARRAY() != null || json.JSON_ARRAYAGG() != null) {
+                coltype = TypesSetManually.JSON + "[]";
+            }
+
+            var array = json.json_array_element();
+            if (array != null) {
+                var select = array.select_stmt_no_parens();
+                if (select != null) {
+                    new Select(this).analyze(select);
+                }
+            }
+
             ret = new ModPair<>(colname, coltype);
         } else if ((con = function.function_construct()) != null) {
             args = con.vex();

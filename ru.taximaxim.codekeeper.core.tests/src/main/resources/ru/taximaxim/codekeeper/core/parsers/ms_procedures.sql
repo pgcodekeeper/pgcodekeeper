@@ -26,3 +26,15 @@ GO
 CREATE OR ALTER PROC What_DB_is_this
 AS
 SELECT DB_NAME() AS ThisDB;
+GO
+
+
+CREATE PROCEDURE [dbo].[p1] 
+WITH EXECUTE AS OWNER
+AS
+BEGIN
+    SELECT
+        ord.LoadId AS ID, 
+        (SELECT 1 FROM dbo.LoadRoutes FOR XML RAW ('v'), ELEMENTS, ROOT ('vs')) AS ExtraPoints;
+END;
+GO

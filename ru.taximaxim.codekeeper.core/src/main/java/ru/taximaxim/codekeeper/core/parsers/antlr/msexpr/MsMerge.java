@@ -22,11 +22,9 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Expressio
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Expression_listContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.From_itemContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Full_column_nameContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Merge_matchedContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Merge_not_matchedContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Merge_statementContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Merge_whenContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Qualified_nameContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Search_conditionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_value_constructorContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Update_elemContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.With_expressionContext;
@@ -62,11 +60,21 @@ public class MsMerge extends MsAbstractExprWithNmspc<Merge_statementContext> {
             vex.analyze(exp);
         }
 
-        for (Search_conditionContext search : merge.search_condition()) {
+        for (var when : merge.merge_when()) {
+            analyzeWhen(select, vex, when);
+        }
+
+        return Collections.emptyList();
+    }
+
+    private void analyzeWhen(MsSelect select, MsValueExpr vex, Merge_whenContext when) {
+        var search = when.search_condition();
+        if (search != null) {
             vex.search(search);
         }
 
-        Merge_not_matchedContext notMatched = merge.merge_not_matched();
+        var matched = when.merge_matched();
+        var notMatched = when.merge_not_matched();
         if (notMatched != null) {
             Table_value_constructorContext tvc = notMatched.table_value_constructor();
             if (tvc != null) {
@@ -74,10 +82,8 @@ public class MsMerge extends MsAbstractExprWithNmspc<Merge_statementContext> {
                     vex.expressionList(list);
                 }
             }
-        }
-
-        for (Merge_matchedContext match : merge.merge_matched()) {
-            for (Update_elemContext elem : match.update_elem()) {
+        } else {
+            for (Update_elemContext elem : matched.update_elem()) {
                 ExpressionContext updateExpr = elem.expression();
                 if (updateExpr != null) {
                     vex.analyze(updateExpr);
@@ -90,8 +96,5 @@ public class MsMerge extends MsAbstractExprWithNmspc<Merge_statementContext> {
                 }
             }
         }
-
-
-        return Collections.emptyList();
     }
 }

@@ -9,3 +9,5 @@ Reference: action = DECLARE, offset = 411, line number = 20, charPositionInLine 
 Reference: action = EXEC, offset = 440, line number = 21, charPositionInLine = 0
 Reference: action = SELECT, offset = 485, line number = 22, charPositionInLine = 0
 Reference: Object = What_DB_is_this (PROCEDURE), action = ALTER, offset = 526, line number = 26, charPositionInLine = 21
+Reference: Object = dbo (SCHEMA), action = null, offset = 595, line number = 32, charPositionInLine = 17
+Reference: Object = dbo.p1 (PROCEDURE), action = CREATE, offset = 601, line number = 32, charPositionInLine = 23

@@ -111,7 +111,6 @@ additional_statement
     | CHECKPOINT
     | LOAD Character_String_Literal
     | DEALLOCATE PREPARE? (identifier | ALL)
-    | REINDEX (LEFT_PAREN VERBOSE RIGHT_PAREN)? (INDEX | TABLE | SCHEMA | DATABASE | SYSTEM) CONCURRENTLY? schema_qualified_name
     | RESET ((identifier DOT)? identifier | TIME ZONE | SESSION AUTHORIZATION | ALL)
     | REFRESH MATERIALIZED VIEW CONCURRENTLY? schema_qualified_name (WITH NO? DATA)?
     | PREPARE identifier (LEFT_PAREN data_type (COMMA data_type)* RIGHT_PAREN)? AS data_statement
@@ -119,6 +118,7 @@ additional_statement
     | copy_statement
     | truncate_stmt
     | notify_stmt
+    | reindex_stmt
     ;
 
 explain_statement
@@ -144,7 +144,7 @@ show_statement
     ;
 
 explain_option
-    : (ANALYZE | VERBOSE | COSTS | SETTINGS | BUFFERS | WAL | TIMING | SUMMARY) boolean_value?
+    : (ANALYZE | VERBOSE | COSTS | SETTINGS | GENERIC_PLAN | BUFFERS | WAL | TIMING | SUMMARY) boolean_value?
     | FORMAT (TEXT | XML | JSON | YAML)
     ;
 
@@ -166,12 +166,15 @@ vacuum_mode
     ;
 
 vacuum_option
-    : (FULL | FREEZE | VERBOSE | ANALYZE | DISABLE_PAGE_SKIPPING | SKIP_LOCKED | INDEX_CLEANUP | TRUNCATE) boolean_value?
+    : (FULL | FREEZE | VERBOSE | ANALYZE | DISABLE_PAGE_SKIPPING | SKIP_LOCKED | INDEX_CLEANUP | PROCESS_MAIN | TRUNCATE
+      | SKIP_DATABASE_STATS | ONLY_DATABASE_STATS) boolean_value?
     | PARALLEL NUMBER_LITERAL
+    | BUFFER_USAGE_LIMIT (NUMBER_LITERAL identifier)?
     ;
 
 analyze_mode
     : (VERBOSE | SKIP_LOCKED) boolean_value?
+    | BUFFER_USAGE_LIMIT (NUMBER_LITERAL identifier)?
     ;
 
 boolean_value
@@ -481,6 +484,7 @@ storage_option
     | EXTERNAL
     | EXTENDED
     | MAIN
+    | DEFAULT
     ;
 
 validate_constraint
@@ -838,7 +842,7 @@ alter_collation_statement
     ;
 
 collation_option
-    : (LOCALE | LC_COLLATE | LC_CTYPE | PROVIDER | VERSION) EQUAL (character_string | identifier | DEFAULT)
+    : (LOCALE | LC_COLLATE | LC_CTYPE | PROVIDER | VERSION | RULES) EQUAL (character_string | identifier | DEFAULT)
     | DETERMINISTIC EQUAL boolean_value
     ;
 
@@ -1017,7 +1021,7 @@ create_tablespace_statement
     ;
 
 create_statistics_statement
-    : STATISTICS if_not_exists? name=schema_qualified_name
+    : STATISTICS (if_not_exists? name=schema_qualified_name)?
     (LEFT_PAREN identifier_list RIGHT_PAREN)? 
     ON identifier COMMA identifier_list
     FROM schema_qualified_name
@@ -1192,8 +1196,18 @@ permission
     ;
 
 other_rules
-    : GRANT names_references TO roles_names (WITH ADMIN OPTION)? granted_by?
-    | REVOKE (ADMIN OPTION FOR)? names_references FROM roles_names granted_by? cascade_restrict?
+    : GRANT names_references TO roles_names with_admin_option? granted_by?
+    | REVOKE (admin_option OPTION FOR)? names_references FROM roles_names granted_by? cascade_restrict?
+    ;
+
+with_admin_option
+    : WITH admin_option (OPTION | TRUE | FALSE)
+    ;
+
+admin_option
+    : ADMIN
+    | INHERIT
+    | SET
     ;
 
 grant_to_rule
@@ -1552,17 +1566,14 @@ copy_option
     : FORMAT? (TEXT | CSV | BINARY)
     | OIDS truth_value?
     | FREEZE truth_value?
-    | DELIMITER AS? Character_String_Literal
-    | NULL AS? Character_String_Literal
+    | (DELIMITER | NULL) AS? Character_String_Literal
+    | (DEFAULT | ENCODING | QUOTE | ESCAPE) Character_String_Literal
     | HEADER (truth_value | MATCH)?
-    | QUOTE Character_String_Literal
-    | ESCAPE Character_String_Literal
     | FORCE QUOTE (MULTIPLY | identifier_list)
     | FORCE_QUOTE (MULTIPLY | LEFT_PAREN identifier_list RIGHT_PAREN)
     | FORCE NOT NULL identifier_list
     | FORCE_NOT_NULL LEFT_PAREN identifier_list RIGHT_PAREN
     | FORCE_NULL LEFT_PAREN identifier_list RIGHT_PAREN
-    | ENCODING Character_String_Literal
     ;
 
 create_view_statement
@@ -1598,7 +1609,8 @@ create_database_statement
     ;
 
 create_database_option
-    : (OWNER | TEMPLATE | ENCODING | STRATEGY | LOCALE | LC_COLLATE | LC_CTYPE | ICU_LOCALE | LOCALE_PROVIDER | TABLESPACE) EQUAL? (character_string | identifier | DEFAULT)
+    : (OWNER | TEMPLATE | ENCODING | STRATEGY | LOCALE | LC_COLLATE | LC_CTYPE | ICU_LOCALE | ICU_RULES | LOCALE_PROVIDER | TABLESPACE)
+       EQUAL? (character_string | identifier | DEFAULT)
     | alter_database_option
     | COLLATION_VERSION EQUAL (character_string | identifier | signed_numerical_literal)
     | OID EQUAL? signed_numerical_literal
@@ -1851,8 +1863,13 @@ table_of_type_column_def
     ;
 
 table_column_definition
-    : identifier data_type define_foreign_options? compression_identifier? collate_identifier?
-    constraint_common* encoding_identifier?
+    : identifier data_type
+    define_foreign_options?
+    (STORAGE storage_option)?
+    compression_identifier?
+    collate_identifier?
+    constraint_common*
+    encoding_identifier?
     ;
 
 like_option
@@ -2125,6 +2142,7 @@ bare_col_label
  */
 bare_label_keyword
     : ABORT
+    | ABSENT
     | ABSOLUTE
     | ACCESS
     | ACTION
@@ -2136,6 +2154,7 @@ bare_label_keyword
     | ALSO
     | ALTER
     | ALWAYS
+    | ANALYSE
     | ANALYZE
     | AND
     | ANY
@@ -2263,6 +2282,7 @@ bare_label_keyword
     | FOLLOWING
     | FORCE
     | FOREIGN
+    | FORMAT
     | FORWARD
     | FREEZE
     | FULL
@@ -2288,6 +2308,7 @@ bare_label_keyword
     | INCLUDE
     | INCLUDING
     | INCREMENT
+    | INDENT
     | INDEX
     | INDEXES
     | INHERIT
@@ -2307,7 +2328,13 @@ bare_label_keyword
     | IS
     | ISOLATION
     | JOIN
+    | JSON
+    | JSON_ARRAY
+    | JSON_ARRAYAGG
+    | JSON_OBJECT
+    | JSON_OBJECTAGG
     | KEY
+    | KEYS
     | LABEL
     | LANGUAGE
     | LARGE
@@ -2436,6 +2463,7 @@ bare_label_keyword
     | ROWS
     | RULE
     | SAVEPOINT
+    | SCALAR
     | SCHEMA
     | SCHEMAS
     | SCROLL
@@ -2477,6 +2505,7 @@ bare_label_keyword
     | SYMMETRIC
     | SYSID
     | SYSTEM
+    | SYSTEM_USER
     | TABLE
     | TABLES
     | TABLESAMPLE
@@ -2548,6 +2577,7 @@ bare_label_keyword
 
 tokens_nonreserved
     : ABORT
+    | ABSENT
     | ABSOLUTE
     | ACCESS
     | ACTION
@@ -2628,7 +2658,6 @@ tokens_nonreserved
     | ENCODING
     | ENCRYPTED
     | ENUM
-    | ERRORS
     | ESCAPE
     | EVENT
     | EXCLUDE
@@ -2645,6 +2674,7 @@ tokens_nonreserved
     | FIRST
     | FOLLOWING
     | FORCE
+    | FORMAT
     | FORWARD
     | FUNCTION
     | FUNCTIONS
@@ -2655,7 +2685,6 @@ tokens_nonreserved
     | HANDLER
     | HEADER
     | HOLD
-    | HOST
     | HOUR
     | IDENTITY
     | IF
@@ -2666,6 +2695,7 @@ tokens_nonreserved
     | INCLUDE
     | INCLUDING
     | INCREMENT
+    | INDENT
     | INDEX
     | INDEXES
     | INHERIT
@@ -2677,7 +2707,9 @@ tokens_nonreserved
     | INSTEAD
     | INVOKER
     | ISOLATION
+    | JSON
     | KEY
+    | KEYS
     | LABEL
     | LANGUAGE
     | LARGE
@@ -2738,8 +2770,6 @@ tokens_nonreserved
     | PARTITION
     | PASSING
     | PASSWORD
-    | PERCENT
-    | PERSISTENTLY
     | PLANS
     | POLICY
     | PRECEDING
@@ -2756,8 +2786,6 @@ tokens_nonreserved
     | QUOTE
     | RANGE
     | READ
-    | READABLE
-    | READS
     | REASSIGN
     | RECHECK
     | RECURSIVE
@@ -2765,7 +2793,6 @@ tokens_nonreserved
     | REFERENCING
     | REFRESH
     | REINDEX
-    | REJECT
     | RELATIVE
     | RELEASE
     | RENAME
@@ -2786,13 +2813,13 @@ tokens_nonreserved
     | ROWS
     | RULE
     | SAVEPOINT
+    | SCALAR
     | SCHEMA
     | SCHEMAS
     | SCROLL
     | SEARCH
     | SECOND
     | SECURITY
-    | SEGMENT
     | SEQUENCE
     | SEQUENCES
     | SERIALIZABLE
@@ -2854,14 +2881,12 @@ tokens_nonreserved
     | VIEW
     | VIEWS
     | VOLATILE
-    | WEB
     | WHITESPACE
     | WITHIN
     | WITHOUT
     | WORK
     | WRAPPER
     | WRITE
-    | WRITABLE
     | XML
     | YEAR
     | YES
@@ -2887,6 +2912,10 @@ tokens_nonreserved_except_function_type
     | INT
     | INTEGER
     | INTERVAL
+    | JSON_ARRAY
+    | JSON_ARRAYAGG
+    | JSON_OBJECT
+    | JSON_OBJECTAGG
     | LEAST
     | NATIONAL
     | NCHAR
@@ -2950,6 +2979,7 @@ tokens_reserved_except_function_type
 
 tokens_reserved
     : ALL
+    | ANALYSE
     | ANALYZE
     | AND
     | ANY
@@ -3011,6 +3041,7 @@ tokens_reserved
     | SESSION_USER
     | SOME
     | SYMMETRIC
+    | SYSTEM_USER
     | TABLE
     | THEN
     | TO
@@ -3033,6 +3064,7 @@ tokens_nonkeyword
     | BASETYPE
     | BLOCKSIZE
     | BUFFERS
+    | BUFFER_USAGE_LIMIT
     | BYPASSRLS
     | CANONICAL
     | CATEGORY
@@ -3055,6 +3087,7 @@ tokens_nonkeyword
     | DISABLE_PAGE_SKIPPING
     | DISTRIBUTED
     | ELEMENT
+    | ERRORS
     | EVERY
     | EXCHANGE
     | EXTENDED
@@ -3066,14 +3099,16 @@ tokens_nonkeyword
     | FORCE_NOT_NULL
     | FORCE_NULL
     | FORCE_QUOTE
-    | FORMAT
     | FORMATTER
+    | GENERIC_PLAN
     | GETTOKEN
     | HASH
     | HASHES
     | HEADLINE
+    | HOST
     | HYPOTHETICAL
     | ICU_LOCALE
+    | ICU_RULES
     | INCLUSIVE
     | INDEX_CLEANUP
     | INIT
@@ -3081,7 +3116,6 @@ tokens_nonkeyword
     | INITPLAN
     | INTERNALLENGTH
     | IS_TEMPLATE
-    | JSON
     | LC_COLLATE
     | LC_CTYPE
     | LEFTARG
@@ -3119,18 +3153,24 @@ tokens_nonkeyword
     | NOSUPERUSER
     | OID
     | OUTPUT
+    | ONLY_DATABASE_STATS
     | PASSEDBYVALUE
     | PATH
+    | PERCENT
     | PERMISSIVE
+    | PERSISTENTLY
     | PLAIN
     | PREFERRED
+    | PROCESS_MAIN
     | PROTOCOL
     | PROVIDER
     | RANDOMLY
     | RANK
     | READ_ONLY
     | READ_WRITE
+    | READABLE
     | RECEIVE
+    | REJECT
     | REMAINDER
     | REORGANIZE
     | REPLICATED
@@ -3138,14 +3178,17 @@ tokens_nonkeyword
     | RESTRICTED
     | RESTRICTIVE
     | RIGHTARG
+    | RULES
     | SAFE
     | SEGMENTS
+    | SEGMENT
     | SEND
     | SERIALFUNC
     | SETTINGS
     | SFUNC
     | SHAREABLE
     | SKIP_LOCKED
+    | SKIP_DATABASE_STATS
     | SORTOP
     | SPLIT
     | SSPACE
@@ -3166,6 +3209,8 @@ tokens_nonkeyword
     | VALIDATION
     | VARIABLE
     | WAL
+    | WEB
+    | WRITABLE
     | YAML
 
     // plpgsql tokens
@@ -3193,6 +3238,7 @@ tokens_nonkeyword
     | PERFORM
     | QUERY
     | RAISE
+    | READS
     | RECORD
     | REVERSE
     | ROWTYPE
@@ -3397,6 +3443,7 @@ function_call
     | date_time_function
     | string_value_function
     | xml_function
+    | json_function
     ;
 
 vex_or_named_notation
@@ -3459,6 +3506,39 @@ xml_function
         vex PASSING (BY REF)? vex (BY REF)?
         COLUMNS xml_table_column (COMMA xml_table_column)*
         RIGHT_PAREN
+    ;
+
+json_function
+    : JSON_ARRAY LEFT_PAREN json_array_element json_on_null_clause? json_return_clause? RIGHT_PAREN
+    | JSON_ARRAYAGG LEFT_PAREN vex (FORMAT JSON)? orderby_clause? json_on_null_clause? json_return_clause? RIGHT_PAREN
+    | JSON_OBJECT LEFT_PAREN json_object_content RIGHT_PAREN
+    | JSON_OBJECTAGG LEFT_PAREN json_object_entry json_on_null_clause? json_unique_keys? json_return_clause? RIGHT_PAREN
+    ;
+
+json_array_element
+    : vex (FORMAT JSON)? (COMMA vex (FORMAT JSON)?)* json_on_null_clause?
+    | select_stmt_no_parens
+    ;
+
+json_object_content
+    : (json_object_entry (COMMA json_object_entry)*)? json_on_null_clause? json_unique_keys? json_return_clause?
+    | vex (COMMA vex)?
+    ;
+
+json_unique_keys
+    : (WITH | WITHOUT) UNIQUE KEYS?
+    ;
+
+json_object_entry
+    : vex (COLON | VALUE) vex (FORMAT JSON (ENCODING vex)?)?
+    ;
+
+json_on_null_clause
+    : (NULL | ABSENT) ON NULL
+    ;
+
+json_return_clause
+    : RETURNING data_type (FORMAT JSON (ENCODING vex)?)?
     ;
 
 xml_table_column
@@ -3735,6 +3815,20 @@ notify_stmt
 truncate_stmt
     : TRUNCATE TABLE? only_table_multiply (COMMA only_table_multiply)*
     ((RESTART | CONTINUE) IDENTITY)? cascade_restrict?
+    ;
+
+reindex_stmt
+    : REINDEX reindex_options? (INDEX | TABLE | SCHEMA) CONCURRENTLY? schema_qualified_name
+    | REINDEX reindex_options? (DATABASE | SYSTEM) CONCURRENTLY? schema_qualified_name?
+    ;
+
+reindex_options
+    : LEFT_PAREN reindex_option (COMMA reindex_option)* RIGHT_PAREN
+    ;
+
+reindex_option
+    : (CONCURRENTLY | VERBOSE) boolean_value?
+    | TABLESPACE identifier
     ;
 
 identifier_list
