@@ -1,7 +1,3 @@
--- no diff
-CREATE LOCAL TEMP TABLE public.t0 ();
-CREATE GLOBAL TEMPORARY TABLE IF NOT EXISTS public.t1 (c1 integer) ON COMMIT DELETE ROWS;
-
 -- unlogged
 CREATE UNLOGGED TABLE public.t2 (c1 integer);
 CREATE TABLE public.t3 (c1 integer);

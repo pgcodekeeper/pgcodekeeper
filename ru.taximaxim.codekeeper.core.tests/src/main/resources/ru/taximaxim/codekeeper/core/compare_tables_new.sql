@@ -1,7 +1,3 @@
--- no diff
-CREATE LOCAL TEMP TABLE public.t0 ();
-CREATE TABLE public.t1 (c1 integer);
-
 -- unlogged
 CREATE TABLE public.t2 (c1 integer);
 CREATE UNLOGGED TABLE public.t3 (c1 integer);

@@ -17,6 +17,7 @@ package ru.taximaxim.codekeeper.core.loader.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 
 import org.antlr.v4.runtime.CommonTokenStream;
 
@@ -224,7 +225,16 @@ public class TablesReader extends JdbcReader {
         String[] colDefaults = getColArray(res, "col_defaults");
         String[] colComments = getColArray(res, "col_comments");
         Boolean[] colNotNull = getColArray(res, "col_notnull");
-        Integer[] colStatictics = getColArray(res, "col_statictics");
+
+        Integer[] colStatictics;
+        if (SupportedVersion.VERSION_16.isLE(loader.version)) {
+            // in PG 16 type changed from int4 to int2
+            Short[] tmpStatictics = getColArray(res, "col_statictics");
+            colStatictics = Arrays.stream(tmpStatictics).map(e -> (int) e).toArray(Integer[]::new);
+        } else {
+            colStatictics = getColArray(res, "col_statictics");
+        }
+
         Boolean[] colIsLocal = getColArray(res, "col_local");
         Long[] colCollation = getColArray(res, "col_collation");
         Long[] colTypCollation = getColArray(res, "col_typcollation");

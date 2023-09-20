@@ -47,6 +47,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Nulls_dist
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qualified_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Sequence_bodyContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Storage_directiveContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Storage_optionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Storage_parameter_optionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Storage_parametersContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Table_column_defContext;
@@ -230,7 +231,7 @@ public abstract class TableAbstract extends ParserAbstract {
                 addTableConstraint(colCtx.tabl_constraint, table, schemaName, tablespace);
             } else if (colCtx.table_column_definition() != null) {
                 Table_column_definitionContext column = colCtx.table_column_definition();
-                addColumn(column.identifier().getText(), column.data_type(),
+                addColumn(column.identifier().getText(), column.data_type(), column.storage_option(),
                         column.collate_identifier(), column.compression_identifier(),
                         column.constraint_common(), column.encoding_identifier(),
                         column.define_foreign_options(), table, schemaName);
@@ -245,7 +246,7 @@ public abstract class TableAbstract extends ParserAbstract {
         }
     }
 
-    protected void addColumn(String columnName, Data_typeContext datatype,
+    protected void addColumn(String columnName, Data_typeContext datatype, Storage_optionContext storage,
             Collate_identifierContext collate, Compression_identifierContext compression,
             List<Constraint_commonContext> constraints, Encoding_identifierContext encOptions,
             Define_foreign_optionsContext options, AbstractTable table, String schemaName) {
@@ -253,6 +254,9 @@ public abstract class TableAbstract extends ParserAbstract {
         if (datatype != null) {
             col.setType(getTypeName(datatype));
             addPgTypeDepcy(datatype, col);
+        }
+        if (storage != null) {
+            col.setStorage(storage.getText());
         }
         if (compression != null && compression.compression_method != null) {
             col.setCompression(compression.compression_method.getText());
@@ -291,7 +295,7 @@ public abstract class TableAbstract extends ParserAbstract {
 
     protected void addColumn(String columnName, List<Constraint_commonContext> constraints,
             AbstractTable table, String schemaName) {
-        addColumn(columnName, null, null, null, constraints, null, null, table, schemaName);
+        addColumn(columnName, null, null, null, null, constraints, null, null, table, schemaName);
     }
 
     protected void addInherit(AbstractPgTable table, List<ParserRuleContext> idsInh) {
