@@ -129,7 +129,7 @@ public class AlterTable extends TableAbstract {
 
             Table_column_definitionContext def = tablAction.table_column_definition();
             if (def != null) {
-                addColumn(def.identifier().getText(), def.data_type(),
+                addColumn(def.identifier().getText(), def.data_type(), def.storage_option(),
                         def.collate_identifier(), def.compression_identifier(), def.constraint_common(),
                         def.encoding_identifier(), def.define_foreign_options(), tabl, getSchemaNameSafe(ids));
             }

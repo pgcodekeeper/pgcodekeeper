@@ -592,6 +592,7 @@ class PgDiffTest {
      */
     @ParameterizedTest(name = "[{0}]: {1}")
     @CsvSource(delimiter = ';', value = {
+            "compare_table;                 Comparing a table sugar",
             "compare_view;                  Comparing a query in a view",
             "compare_function;              Comparing a signature in a function",
     })
