@@ -259,7 +259,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      *
      * @return {@link #collations}
      */
-    public Collection<PgCollation> getColletions() {
+    public Collection<PgCollation> getCollations() {
         return Collections.unmodifiableCollection(collations.values());
     }
 
