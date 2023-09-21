@@ -176,6 +176,7 @@ public class PgCollation extends PgStatementWithSearchPath {
     @Override
     public PgStatement shallowCopy() {
         PgCollation collationDst = new PgCollation(getName());
+        copyBaseFields(collationDst);
         collationDst.setLcCollate(getLcCollate());
         collationDst.setLcCtype(getLcCtype());
         collationDst.setProvider(getProvider());

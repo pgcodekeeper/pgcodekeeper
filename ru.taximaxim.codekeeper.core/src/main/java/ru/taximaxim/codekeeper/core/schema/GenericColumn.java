@@ -141,7 +141,7 @@ public class GenericColumn implements Serializable {
         case OPERATOR: return resolveOperatorCall(s);
         case TABLE: return getRelation(s);
         case VIEW: return s.getView(table);
-
+        case COLLATION: return s.getCollation(table);
         case FTS_PARSER: return s.getFtsParser(table);
         case FTS_TEMPLATE: return s.getFtsTemplate(table);
         case FTS_DICTIONARY: return s.getFtsDictionary(table);
