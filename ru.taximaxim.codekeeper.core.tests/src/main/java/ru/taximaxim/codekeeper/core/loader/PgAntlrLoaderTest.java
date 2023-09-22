@@ -21,12 +21,9 @@ package ru.taximaxim.codekeeper.core.loader;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.api.Test;
 
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
@@ -68,80 +65,33 @@ class PgAntlrLoaderTest {
 
     private static final String ENCODING = Consts.UTF_8;
 
-    /**
-     * Array of implementations of {@link PgDatabaseObjectCreator}
-     * each returning a specific {@link PgDatabase} for a test-case.
-     */
-    private static final DatabaseObjectCreator[] DB_OBJS = {
-            new PgDB1(),
-            new PgDB2(),
-            new PgDB3(),
-            new PgDB4(),
-            new PgDB5(),
-            new PgDB6(),
-            new PgDB7(),
-            new PgDB8(),
-            new PgDB9(),
-            new PgDB10(),
-            new PgDB11(),
-            new PgDB12(),
-            new PgDB13(),
-            new PgDB14(),
-            new PgDB15(),
-            new PgDB16(),
-            new PgDB17()
-    };
-
-    static Stream<Integer> range() {
-        return IntStream.range(1, DB_OBJS.length + 1).boxed();
+    void testDatabase(String fileName, PgDatabase d) throws IOException, InterruptedException {
+        loadSchema(fileName, d);
+        exportFullDb(fileName, d);
     }
 
-    /**
-     * @param fileIndex
-     *            - index of the file that should be tested.
-     */
-    @ParameterizedTest(name = "PG DB [{0}]")
-    @MethodSource("range")
-    void loadSchema(int fileIndex) throws IOException, InterruptedException {
+    void loadSchema(String fileName, PgDatabase dbPredefined) throws IOException, InterruptedException {
         // first test the dump loader itself
-        String filename = "schema_" + fileIndex + ".sql";
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(ENCODING);
         args.setKeepNewlines(true);
-        PgDatabase d = TestUtils.loadTestDump(
-                filename, PgAntlrLoaderTest.class, args);
+        PgDatabase d = TestUtils.loadTestDump(fileName, PgAntlrLoaderTest.class, args);
 
-        // then check result's validity against handmade DB object
-        if(fileIndex > DB_OBJS.length) {
-            Assertions.fail("No predefined object for file: " + filename);
-        }
-
-        PgDatabase dbPredefined = DB_OBJS[fileIndex - 1].getDatabase();
-        Assertions.assertEquals(dbPredefined,d, "PgDumpLoader: predefined object is not equal to file "
-                + filename);
+        Assertions.assertEquals(dbPredefined, d, "PgDumpLoader: predefined object is not equal to file " + fileName);
 
         // test deepCopy mechanism
         Assertions.assertEquals(d, d.deepCopy(), "PgStatement deep copy altered");
         Assertions.assertEquals(dbPredefined, d, "PgStatement deep copy altered original");
     }
 
-    /**
-     * fileIndex - Index of the file that should be tested.
-     * Tests ModelExporter exportFull() method
-     * @throws InterruptedException
-     */
-    @ParameterizedTest(name = "PG DB [{0}]")
-    @MethodSource("range")
-    void exportFullDb(int fileIndex) throws IOException, InterruptedException {
+    void exportFullDb(String fileName, PgDatabase dbPredefined) throws IOException, InterruptedException {
         // prepare db object from sql file
-        String filename = "schema_" + fileIndex + ".sql";
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(ENCODING);
         args.setKeepNewlines(true);
         PgDatabase dbFromFile = TestUtils.loadTestDump(
-                filename, PgAntlrLoaderTest.class, args);
+                fileName, PgAntlrLoaderTest.class, args);
 
-        PgDatabase dbPredefined = DB_OBJS[fileIndex - 1].getDatabase();
         Path exportDir = null;
         try (TempDir dir = new TempDir("pgCodekeeper-test-files")) {
             exportDir = dir.get();
@@ -153,20 +103,16 @@ class PgAntlrLoaderTest {
             PgDatabase dbAfterExport = new ProjectLoader(exportDir.toString(), args).loadAndAnalyze();
 
             // check the same db similarity before and after export
-            Assertions.assertEquals(dbPredefined, dbAfterExport, "ModelExporter: predefined object PgDB" + fileIndex +
+            Assertions.assertEquals(dbPredefined, dbAfterExport, "Predefined object PgDB" + fileName +
                     " is not equal to exported'n'loaded.");
 
-            Assertions.assertEquals(dbAfterExport, dbFromFile, "ModelExporter: exported predefined object is not "
-                    + "equal to file " + filename);
+            Assertions.assertEquals(dbAfterExport, dbFromFile,
+                    "Exported predefined object is not equal to file " + fileName);
         }
     }
-}
 
-// SONAR-OFF
-
-class PgDB1 implements DatabaseObjectCreator {
-    @Override
-    public PgDatabase getDatabase() {
+    @Test
+    void testDB1() throws IOException, InterruptedException {
         PgDatabase d = TestUtils.createDumpDB(true);
         AbstractSchema schema = d.getDefaultSchema();
 
@@ -254,13 +200,11 @@ class PgDB1 implements DatabaseObjectCreator {
         constraint.setDefinition("FOREIGN KEY (id) REFERENCES public.fax_boxes\n(fax_box_id)    ON UPDATE RESTRICT ON DELETE RESTRICT");
         table.addConstraint(constraint);
 
-        return d;
+        testDatabase("schema_1.sql", d);
     }
-}
 
-class PgDB2 implements DatabaseObjectCreator {
-    @Override
-    public PgDatabase getDatabase() {
+    @Test
+    void testDB2() throws IOException, InterruptedException {
         PgDatabase d = TestUtils.createDumpDB(true);
 
         AbstractSchema schema = new PgSchema("postgis");
@@ -292,13 +236,11 @@ class PgDB2 implements DatabaseObjectCreator {
         table.addIndex(idx);
         idx.setDefinition("(number_pool_id)");
 
-        return d;
+        testDatabase("schema_2.sql", d);
     }
-}
 
-class PgDB3 implements DatabaseObjectCreator {
-    @Override
-    public PgDatabase getDatabase() {
+    @Test
+    void testDB3() throws IOException, InterruptedException {
         PgDatabase d = TestUtils.createDumpDB(true);
         AbstractSchema schema = d.getDefaultSchema();
 
@@ -387,13 +329,11 @@ class PgDB3 implements DatabaseObjectCreator {
         constraint.setDefinition("Primary Key (\"aid\")");
         table.addConstraint(constraint);
 
-        return d;
+        testDatabase("schema_3.sql", d);
     }
-}
 
-class PgDB4 implements DatabaseObjectCreator {
-    @Override
-    public PgDatabase getDatabase() {
+    @Test
+    void testDB4() throws IOException, InterruptedException {
         PgDatabase d = TestUtils.createDumpDB(true);
         AbstractSchema schema = d.getDefaultSchema();
 
@@ -406,13 +346,11 @@ class PgDB4 implements DatabaseObjectCreator {
         col.setDefaultValue("nextval('public.call_logs_id_seq'::regclass)");
         table.addColumn(col);
 
-        return d;
+        testDatabase("schema_4.sql", d);
     }
-}
 
-class PgDB5 implements DatabaseObjectCreator {
-    @Override
-    public PgDatabase getDatabase() {
+    @Test
+    void testDB5() throws IOException, InterruptedException {
         PgDatabase d = TestUtils.createDumpDB(true);
         AbstractSchema schema = d.getDefaultSchema();
 
@@ -480,16 +418,13 @@ class PgDB5 implements DatabaseObjectCreator {
 
         schema.addFunction(func);
 
-        return d;
+        testDatabase("schema_5.sql", d);
     }
-}
 
-class PgDB6 implements DatabaseObjectCreator {
-    @Override
-    public PgDatabase getDatabase() {
+    @Test
+    void testDB6() throws IOException, InterruptedException {
         PgDatabase d = TestUtils.createDumpDB(true);
         AbstractSchema schema = d.getDefaultSchema();
-        //    schema.setComment("'Standard public schema'");
 
         schema.addPrivilege(new PgPrivilege("REVOKE", "ALL", "SCHEMA public", "PUBLIC", false));
         schema.addPrivilege(new PgPrivilege("REVOKE", "ALL", "SCHEMA public", "postgres", false));
@@ -515,13 +450,11 @@ class PgDB6 implements DatabaseObjectCreator {
         idx.setWhere("(date_deleted IS NULL)");
         table.addIndex(idx);
 
-        return d;
+        testDatabase("schema_6.sql", d);
     }
-}
 
-class PgDB7 implements DatabaseObjectCreator {
-    @Override
-    public PgDatabase getDatabase() {
+    @Test
+    void testDB7() throws IOException, InterruptedException {
         PgDatabase d = TestUtils.createDumpDB(true);
 
         AbstractSchema schema = new PgSchema("common");
@@ -576,16 +509,13 @@ class PgDB7 implements DatabaseObjectCreator {
 
         schema.addFunction(func);
 
-        return d;
+        testDatabase("schema_7.sql", d);
     }
-}
 
-class PgDB8 implements DatabaseObjectCreator {
-    @Override
-    public PgDatabase getDatabase() {
+    @Test
+    void testDB8() throws IOException, InterruptedException {
         PgDatabase d = TestUtils.createDumpDB(true);
         AbstractSchema schema = d.getDefaultSchema();
-        //    schema.setComment("'Standard public schema'");
 
         PgCompositeType type = new PgCompositeType("testtt");
         AbstractColumn col = new PgColumn("a");
@@ -611,13 +541,11 @@ class PgDB8 implements DatabaseObjectCreator {
         schema.addFunction(func);
         func.setOwner("madej");
 
-        return d;
+        testDatabase("schema_8.sql", d);
     }
-}
 
-class PgDB9 implements DatabaseObjectCreator {
-    @Override
-    public PgDatabase getDatabase() {
+    @Test
+    void testDB9() throws IOException, InterruptedException {
         PgDatabase d = TestUtils.createDumpDB(true);
         AbstractSchema schema = d.getDefaultSchema();
 
@@ -692,13 +620,11 @@ class PgDB9 implements DatabaseObjectCreator {
                 "SELECT ud.id \"   i   d   \" FROM public.user_data ud");
         schema.addView(view);
 
-        return d;
+        testDatabase("schema_9.sql", d);
     }
-}
 
-class PgDB10 implements DatabaseObjectCreator {
-    @Override
-    public PgDatabase getDatabase() {
+    @Test
+    void testDB10() throws IOException, InterruptedException {
         PgDatabase d = TestUtils.createDumpDB(true);
         AbstractSchema schema = new PgSchema("admin");
         d.addSchema(schema);
@@ -783,13 +709,11 @@ class PgDB10 implements DatabaseObjectCreator {
 
         table.setOwner("postgres");
 
-        return d;
+        testDatabase("schema_10.sql", d);
     }
-}
 
-class PgDB11 implements DatabaseObjectCreator {
-    @Override
-    public PgDatabase getDatabase() {
+    @Test
+    void testDB11() throws IOException, InterruptedException {
         PgDatabase d = TestUtils.createDumpDB(true);
         AbstractSchema schema = d.getDefaultSchema();
 
@@ -799,24 +723,20 @@ class PgDB11 implements DatabaseObjectCreator {
         func.setReturns("date");
         schema.addFunction(func);
 
-        return d;
+        testDatabase("schema_11.sql", d);
     }
-}
 
-class PgDB12 implements DatabaseObjectCreator {
-    @Override
-    public PgDatabase getDatabase() {
+    @Test
+    void testDB12() throws IOException, InterruptedException {
         PgDatabase d = TestUtils.createDumpDB(true);
 
-        // d.setComment("'The status : ''E'' for enabled, ''D'' for disabled.'");
+        // d.setComment("'The status : ''E'' for enabled, ''D'' for disabled.'")
 
-        return d;
+        testDatabase("schema_12.sql", d);
     }
-}
 
-class PgDB13 implements DatabaseObjectCreator {
-    @Override
-    public PgDatabase getDatabase() {
+    @Test
+    void testDB13() throws IOException, InterruptedException {
         PgDatabase d = TestUtils.createDumpDB(true);
         AbstractSchema schema = d.getDefaultSchema();
 
@@ -830,13 +750,11 @@ class PgDB13 implements DatabaseObjectCreator {
 
         schema.addFunction(func);
 
-        return d;
+        testDatabase("schema_13.sql", d);
     }
-}
 
-class PgDB14 implements DatabaseObjectCreator {
-    @Override
-    public PgDatabase getDatabase() {
+    @Test
+    void testDB14() throws IOException, InterruptedException {
         PgDatabase d = TestUtils.createDumpDB(true);
         AbstractSchema schema = d.getDefaultSchema();
 
@@ -845,8 +763,8 @@ class PgDB14 implements DatabaseObjectCreator {
         schema.addPrivilege(new PgPrivilege("GRANT", "ALL", "SCHEMA public", "postgres", false));
         schema.addPrivilege(new PgPrivilege("GRANT", "ALL", "SCHEMA public", "PUBLIC", false));
 
-        // d.setComment("'comments database'");
-        //    schema.setComment("'public schema'");
+        // d.setComment("'comments database'")
+        // schema.setComment("'public schema'")
 
         PgFunction func = new PgFunction("test_fnc");
         func.setLanguageCost("plpgsql", null);
@@ -932,13 +850,11 @@ class PgDB14 implements DatabaseObjectCreator {
 
         trigger.setComment("'test trigger'");
 
-        return d;
+        testDatabase("schema_14.sql", d);
     }
-}
 
-class PgDB15 implements DatabaseObjectCreator {
-    @Override
-    public PgDatabase getDatabase() {
+    @Test
+    void testDB15() throws IOException, InterruptedException {
         PgDatabase d = TestUtils.createDumpDB(true);
         AbstractSchema schema = d.getDefaultSchema();
 
@@ -951,19 +867,11 @@ class PgDB15 implements DatabaseObjectCreator {
 
         table.setComment("'multiline\ncomment\n'");
 
-        return d;
+        testDatabase("schema_15.sql", d);
     }
-}
 
-/**
- * Tests subselect parser
- *
- * @author ryabinin_av
- *
- */
-class PgDB16 implements DatabaseObjectCreator {
-    @Override
-    public PgDatabase getDatabase() {
+    @Test
+    void testDB16() throws IOException, InterruptedException {
         PgDatabase d = TestUtils.createDumpDB(true);
         AbstractSchema schema = d.getDefaultSchema();
 
@@ -990,19 +898,11 @@ class PgDB16 implements DatabaseObjectCreator {
                         + "JOIN public.t_chart c ON t.id = c.id");
         schema.addView(view);
 
-        return d;
+        testDatabase("schema_16.sql", d);
     }
-}
 
-/**
- * Tests subselect parser with double subselect
- *
- * @author ryabinin_av
- *
- */
-class PgDB17 implements DatabaseObjectCreator {
-    @Override
-    public PgDatabase getDatabase() {
+    @Test
+    void testDB17() throws IOException, InterruptedException {
         PgDatabase d = TestUtils.createDumpDB(true);
         AbstractSchema schema = d.getDefaultSchema();
 
@@ -1041,8 +941,6 @@ class PgDB17 implements DatabaseObjectCreator {
                         + "JOIN public.t_chart c ON ((t.id = c.id)))");
         schema.addView(view);
 
-        return d;
+        testDatabase("schema_17.sql", d);
     }
 }
-
-// SONAR-ON

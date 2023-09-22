@@ -21,12 +21,9 @@ package ru.taximaxim.codekeeper.core.loader;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.api.Test;
 
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
@@ -60,83 +57,34 @@ class MsAntlrLoaderTest {
 
     private static final String ENCODING = Consts.UTF_8;
 
-    /**
-     * Array of implementations of {@link MsDatabaseObjectCreator}
-     * each returning a specific {@link PgDatabase} for a test-case.
-     */
-    private static final DatabaseObjectCreator[] DB_OBJS = {
-            new MsDB0(),
-            new MsDB1(),
-            new MsDB2(),
-            new MsDB3(),
-            new MsDB4(),
-            new MsDB5(),
-            new MsDB6(),
-            new MsDB7(),
-            new MsDB8(),
-            new MsDB9(),
-            new MsDB10(),
-            new MsDB11(),
-            new MsDB12(),
-            new MsDB13(),
-            new MsDB14(),
-            new MsDB15(),
-            new MsDB16()
-    };
-
-    static Stream<Integer> range() {
-        return IntStream.range(0, DB_OBJS.length).boxed();
+    void testDatabase(String fileName, PgDatabase d) throws IOException, InterruptedException {
+        loadSchema(fileName, d);
+        exportFullDb(fileName, d);
     }
 
-    /**
-     * @param fileIndex
-     *            - index of the file that should be tested.
-     */
-    @ParameterizedTest(name = "MS DB [{0}]")
-    @MethodSource("range")
-    void loadSchema(int fileIndex) throws InterruptedException, IOException {
-
+    void loadSchema(String fileName, PgDatabase dbPredefined) throws IOException, InterruptedException {
         // first test the dump loader itself
-        String filename = "ms_schema_" + fileIndex + ".sql";
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(ENCODING);
         args.setKeepNewlines(true);
         args.setMsSql(true);
-        PgDatabase d = TestUtils.loadTestDump(
-                filename, MsAntlrLoaderTest.class, args);
+        PgDatabase d = TestUtils.loadTestDump(fileName, MsAntlrLoaderTest.class, args);
 
-        // then check result's validity against handmade DB object
-        if(fileIndex > DB_OBJS.length) {
-            Assertions.fail("No predefined object for file: " + filename);
-        }
-
-        PgDatabase dbPredefined = DB_OBJS[fileIndex].getDatabase();
-
-        Assertions.assertEquals(dbPredefined, d, "PgDumpLoader: predefined object is not equal to file "
-                + filename);
+        Assertions.assertEquals(dbPredefined, d, "PgDumpLoader: predefined object is not equal to file " + fileName);
 
         // test deepCopy mechanism
         Assertions.assertEquals(d, d.deepCopy(), "PgStatement deep copy altered");
         Assertions.assertEquals(dbPredefined, d, "PgStatement deep copy altered original");
     }
 
-    /**
-     * Tests ModelExporter exportFull() method
-     * @throws InterruptedException
-     */
-    @ParameterizedTest(name = "MS DB [{0}]")
-    @MethodSource("range")
-    void exportFullDb(int fileIndex) throws IOException, InterruptedException {
+    void exportFullDb(String fileName, PgDatabase dbPredefined) throws IOException, InterruptedException {
         // prepare db object from sql file
-        String filename = "ms_schema_" + fileIndex + ".sql";
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(ENCODING);
         args.setKeepNewlines(true);
         args.setMsSql(true);
-        PgDatabase dbFromFile = TestUtils.loadTestDump(
-                filename, MsAntlrLoaderTest.class, args);
+        PgDatabase dbFromFile = TestUtils.loadTestDump(fileName, MsAntlrLoaderTest.class, args);
 
-        PgDatabase dbPredefined = DB_OBJS[fileIndex].getDatabase();
         Path exportDir = null;
         try (TempDir dir = new TempDir("pgCodekeeper-test-files")) {
             exportDir = dir.get();
@@ -149,20 +97,16 @@ class MsAntlrLoaderTest {
             PgDatabase dbAfterExport = new ProjectLoader(exportDir.toString(), args).loadAndAnalyze();
 
             // check the same db similarity before and after export
-            Assertions.assertEquals(dbPredefined, dbAfterExport, "ModelExporter: predefined object PgDB" + fileIndex +
+            Assertions.assertEquals(dbPredefined, dbAfterExport, "Predefined object PgDB" + fileName +
                     " is not equal to exported'n'loaded.");
 
-            Assertions.assertEquals(dbAfterExport, dbFromFile, "ModelExporter: exported predefined object is not "
-                    + "equal to file " + filename);
+            Assertions.assertEquals(dbAfterExport, dbFromFile,
+                    "Exported predefined object is not equal to file " + fileName);
         }
     }
-}
 
-// SONAR-OFF
-
-class MsDB0 implements DatabaseObjectCreator {
-    @Override
-    public PgDatabase getDatabase() {
+    @Test
+    void testDB0() throws IOException, InterruptedException {
         PgDatabase d = TestUtils.createDumpDB(false);
         AbstractSchema schema = d.getDefaultSchema();
 
@@ -275,13 +219,11 @@ class MsDB0 implements DatabaseObjectCreator {
                 "    REFERENCES [dbo].[fax_boxes](fax_box_id) ON DELETE SET NULL ON UPDATE CASCADE");
         table.addConstraint(constraint);
 
-        return d;
+        testDatabase("ms_schema_0.sql", d);
     }
-}
 
-class MsDB1 implements DatabaseObjectCreator {
-    @Override
-    public PgDatabase getDatabase() {
+    @Test
+    void testDB1() throws IOException, InterruptedException {
         PgDatabase d = TestUtils.createDumpDB(false);
 
         AbstractSchema schema = new MsSchema("msschema");
@@ -309,13 +251,11 @@ class MsDB1 implements DatabaseObjectCreator {
         table.addIndex(idx);
         idx.setDefinition("([number_pool_id])");
 
-        return d;
+        testDatabase("ms_schema_1.sql", d);
     }
-}
 
-class MsDB2 implements DatabaseObjectCreator {
-    @Override
-    public PgDatabase getDatabase() {
+    @Test
+    void testDB2() throws IOException, InterruptedException {
         PgDatabase d = TestUtils.createDumpDB(false);
         AbstractSchema schema = d.getDefaultSchema();
 
@@ -446,14 +386,11 @@ class MsDB2 implements DatabaseObjectCreator {
         constraint.setDefinition("DEFAULT 0 FOR expirienced");
         table.addConstraint(constraint);
 
-        return d;
+        testDatabase("ms_schema_2.sql", d);
     }
 
-}
-
-class MsDB3 implements DatabaseObjectCreator {
-    @Override
-    public PgDatabase getDatabase() {
+    @Test
+    void testDB3() throws IOException, InterruptedException {
         PgDatabase d = TestUtils.createDumpDB(false);
         AbstractSchema schema = d.getDefaultSchema();
 
@@ -484,13 +421,11 @@ class MsDB3 implements DatabaseObjectCreator {
         constraint.setDefinition("DEFAULT (NEXT VALUE FOR [dbo].[call_logs_id_seq]) FOR id");
         table.addConstraint(constraint);
 
-        return d;
+        testDatabase("ms_schema_3.sql", d);
     }
-}
 
-class MsDB4 implements DatabaseObjectCreator {
-    @Override
-    public PgDatabase getDatabase() {
+    @Test
+    void testDB4() throws IOException, InterruptedException {
         PgDatabase d = TestUtils.createDumpDB(false);
         AbstractSchema schema = d.getDefaultSchema();
 
@@ -563,13 +498,11 @@ class MsDB4 implements DatabaseObjectCreator {
                 "END");
         schema.addFunction(func);
 
-        return d;
+        testDatabase("ms_schema_4.sql", d);
     }
-}
 
-class MsDB5 implements DatabaseObjectCreator {
-    @Override
-    public PgDatabase getDatabase() {
+    @Test
+    void testDB5() throws IOException, InterruptedException {
         PgDatabase d = TestUtils.createDumpDB(false);
         AbstractSchema schema = d.getDefaultSchema();
 
@@ -602,13 +535,11 @@ class MsDB5 implements DatabaseObjectCreator {
         idx.setWhere("(date_deleted IS NULL)");
         table.addIndex(idx);
 
-        return d;
+        testDatabase("ms_schema_5.sql", d);
     }
-}
 
-class MsDB6 implements DatabaseObjectCreator {
-    @Override
-    public PgDatabase getDatabase() {
+    @Test
+    void testDB6() throws IOException, InterruptedException {
         PgDatabase d = TestUtils.createDumpDB(false);
 
         AbstractSchema schema = new MsSchema("common");
@@ -630,13 +561,11 @@ class MsDB6 implements DatabaseObjectCreator {
 
         schema.addFunction(func);
 
-        return d;
+        testDatabase("ms_schema_6.sql", d);
     }
-}
 
-class MsDB7 implements DatabaseObjectCreator {
-    @Override
-    public PgDatabase getDatabase() {
+    @Test
+    void testDB7() throws IOException, InterruptedException {
         PgDatabase d = TestUtils.createDumpDB(false);
         AbstractSchema schema = d.getDefaultSchema();
 
@@ -675,13 +604,11 @@ class MsDB7 implements DatabaseObjectCreator {
 
         schema.addFunction(func);
 
-        return d;
+        testDatabase("ms_schema_7.sql", d);
     }
-}
 
-class MsDB8 implements DatabaseObjectCreator {
-    @Override
-    public PgDatabase getDatabase() {
+    @Test
+    void testDB8() throws IOException, InterruptedException {
         PgDatabase d = TestUtils.createDumpDB(false);
         AbstractSchema schema = d.getDefaultSchema();
 
@@ -795,13 +722,11 @@ class MsDB8 implements DatabaseObjectCreator {
                 "FROM [dbo].[user_data] ud");
         schema.addView(view);
 
-        return d;
+        testDatabase("ms_schema_8.sql", d);
     }
-}
 
-class MsDB9 implements DatabaseObjectCreator {
-    @Override
-    public PgDatabase getDatabase() {
+    @Test
+    void testDB9() throws IOException, InterruptedException {
         PgDatabase d = TestUtils.createDumpDB(false);
         AbstractSchema schema = new MsSchema("admin");
         d.addSchema(schema);
@@ -908,13 +833,11 @@ class MsDB9 implements DatabaseObjectCreator {
 
         table.setOwner("ms_user");
 
-        return d;
+        testDatabase("ms_schema_9.sql", d);
     }
-}
 
-class MsDB10 implements DatabaseObjectCreator {
-    @Override
-    public PgDatabase getDatabase() {
+    @Test
+    void testDB10() throws IOException, InterruptedException {
         PgDatabase d = TestUtils.createDumpDB(false);
         AbstractSchema schema = d.getDefaultSchema();
 
@@ -933,13 +856,11 @@ class MsDB10 implements DatabaseObjectCreator {
 
         schema.addFunction(func);
 
-        return d;
+        testDatabase("ms_schema_10.sql", d);
     }
-}
 
-class MsDB11 implements DatabaseObjectCreator {
-    @Override
-    public PgDatabase getDatabase() {
+    @Test
+    void testDB11() throws IOException, InterruptedException {
         PgDatabase d = TestUtils.createDumpDB(false);
         // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
         // d.setComment("'This is my comment on this database.'");
@@ -978,13 +899,11 @@ class MsDB11 implements DatabaseObjectCreator {
         constraint.setDefinition("PRIMARY KEY CLUSTERED  ([ID]) ON [PRIMARY]");
         table.addConstraint(constraint);
 
-        return d;
+        testDatabase("ms_schema_11.sql", d);
     }
-}
 
-class MsDB12 implements DatabaseObjectCreator {
-    @Override
-    public PgDatabase getDatabase() {
+    @Test
+    void testDB12() throws IOException, InterruptedException {
         PgDatabase d = TestUtils.createDumpDB(false);
         AbstractSchema schema = d.getDefaultSchema();
 
@@ -1033,13 +952,11 @@ class MsDB12 implements DatabaseObjectCreator {
 
         schema.addFunction(func);
 
-        return d;
+        testDatabase("ms_schema_12.sql", d);
     }
-}
 
-class MsDB13 implements DatabaseObjectCreator {
-    @Override
-    public PgDatabase getDatabase() {
+    @Test
+    void testDB13() throws IOException, InterruptedException {
         PgDatabase d = TestUtils.createDumpDB(false);
         AbstractSchema schema = d.getDefaultSchema();
 
@@ -1199,13 +1116,11 @@ class MsDB13 implements DatabaseObjectCreator {
         // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
         // trigger.setComment("test trigger");
 
-        return d;
+        testDatabase("ms_schema_13.sql", d);
     }
-}
 
-class MsDB14 implements DatabaseObjectCreator {
-    @Override
-    public PgDatabase getDatabase() {
+    @Test
+    void testDB14() throws IOException, InterruptedException {
         PgDatabase d = TestUtils.createDumpDB(false);
         AbstractSchema schema = d.getDefaultSchema();
 
@@ -1220,19 +1135,11 @@ class MsDB14 implements DatabaseObjectCreator {
         // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
         // table.setComment("multiline\ncomment\n");
 
-        return d;
+        testDatabase("ms_schema_14.sql", d);
     }
-}
 
-/**
- * Tests subselect parser
- *
- * @author ryabinin_av
- *
- */
-class MsDB15 implements DatabaseObjectCreator {
-    @Override
-    public PgDatabase getDatabase() {
+    @Test
+    void testDB15() throws IOException, InterruptedException {
         PgDatabase d = TestUtils.createDumpDB(false);
         AbstractSchema schema = d.getDefaultSchema();
 
@@ -1268,19 +1175,11 @@ class MsDB15 implements DatabaseObjectCreator {
                 "JOIN [dbo].[\"t_chart\"] c ON t.[id] = c.[id]");
         schema.addView(view);
 
-        return d;
+        testDatabase("ms_schema_15.sql", d);
     }
-}
 
-/**
- * Tests subselect parser with double subselect
- *
- * @author ryabinin_av
- *
- */
-class MsDB16 implements DatabaseObjectCreator {
-    @Override
-    public PgDatabase getDatabase() {
+    @Test
+    void testDB16() throws IOException, InterruptedException {
         PgDatabase d = TestUtils.createDumpDB(false);
         AbstractSchema schema = d.getDefaultSchema();
 
@@ -1329,8 +1228,6 @@ class MsDB16 implements DatabaseObjectCreator {
                 "    JOIN [dbo].[\"t_chart\"] c ON t.[id] = c.[id]");
         schema.addView(view);
 
-        return d;
+        testDatabase("ms_schema_16.sql", d);
     }
 }
-
-// SONAR-ON
