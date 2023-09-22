@@ -14,8 +14,6 @@ import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 
 class LibDiffTest {
 
-    private static final String LIB_DEF = "_library.sql";
-
     @ParameterizedTest
     @ValueSource(strings = {
             "lib_test_with_ignore",
@@ -23,7 +21,7 @@ class LibDiffTest {
             "with_same_objects"
     })
     void runDiffWithIgnore(String fileNameTemplate) throws IOException, InterruptedException, URISyntaxException {
-        runDiff(fileNameTemplate, List.of(fileNameTemplate + LIB_DEF), true);
+        runDiff(fileNameTemplate, List.of(fileNameTemplate + FILES_POSTFIX.LIBRARY_SQL), true);
     }
 
     @ParameterizedTest
@@ -33,7 +31,7 @@ class LibDiffTest {
             "with_same_objects"
     })
     void runDiffNoIgnore(String fileNameTemplate) throws IOException, InterruptedException, URISyntaxException {
-        runDiff(fileNameTemplate, List.of(fileNameTemplate + LIB_DEF), false);
+        runDiff(fileNameTemplate, List.of(fileNameTemplate + FILES_POSTFIX.LIBRARY_SQL), false);
     }
 
     @Test

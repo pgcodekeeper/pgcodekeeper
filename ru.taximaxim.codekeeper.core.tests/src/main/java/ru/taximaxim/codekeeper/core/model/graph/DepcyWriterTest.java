@@ -25,14 +25,13 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import ru.taximaxim.codekeeper.core.FILES_POSTFIX;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 
 public class DepcyWriterTest {
 
-    private static final String DEPS_POSTFIX = "_deps.txt";
-    private static final String DEPS_REVERSE_POSTFIX = "_deps_reverse.txt";
 
     @ParameterizedTest
     @CsvSource({
@@ -43,11 +42,11 @@ public class DepcyWriterTest {
         "function_circle, public.f1\\(\\)",
     })
     void compareGraph(String fileName, String objectName) throws IOException, InterruptedException {
-        compareGraph(fileName, DEPS_POSTFIX, objectName, false);
-        compareGraph(fileName, DEPS_REVERSE_POSTFIX, objectName, true);
+        compareGraph(fileName, FILES_POSTFIX.DEPS_TXT, objectName, false);
+        compareGraph(fileName, FILES_POSTFIX.DEPS_REVERSE_TXT, objectName, true);
     }
 
-    void compareGraph(String fileName, String expectedPostfix, String objectName, boolean isReverse)
+    void compareGraph(String fileName, FILES_POSTFIX expectedPostfix, String objectName, boolean isReverse)
             throws IOException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();
         if (fileName.startsWith("ms_")) {
@@ -55,7 +54,7 @@ public class DepcyWriterTest {
         }
         args.setEnableFunctionBodiesDependencies(true);
 
-        PgDatabase db = TestUtils.loadTestDump(fileName + ".sql", getClass(), args);
+        PgDatabase db = TestUtils.loadTestDump(fileName + FILES_POSTFIX.SQL, getClass(), args);
 
         StringWriter out = new StringWriter();
         PrintWriter writer = new PrintWriter(out);
