@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import ru.taximaxim.codekeeper.core.FILES_POSTFIX;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.loader.ParserListenerMode;
@@ -32,8 +33,6 @@ import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 
 class ObjReferencesTest {
-
-    private static final String REFS_POSTFIX = "_refs.txt";
 
     @ParameterizedTest
     @ValueSource(strings = {
@@ -189,13 +188,13 @@ class ObjReferencesTest {
         PgDiffArguments args = new PgDiffArguments();
         args.setMsSql(isMsSql);
 
-        String resource = fileNameTemplate + ".sql";
+        String resource = fileNameTemplate + FILES_POSTFIX.SQL;
         PgDumpLoader loader = new PgDumpLoader(() -> getClass().getResourceAsStream(resource), resource, args);
         loader.setMode(ParserListenerMode.REF);
         PgDatabase db = loader.load();
 
         String expected = TestUtils
-                .readResource(fileNameTemplate + REFS_POSTFIX, getClass()).strip();
+                .readResource(fileNameTemplate + FILES_POSTFIX.REFS_TXT, getClass()).strip();
 
         String actual = getRefsAsString(db.getObjReferences()).strip();
 

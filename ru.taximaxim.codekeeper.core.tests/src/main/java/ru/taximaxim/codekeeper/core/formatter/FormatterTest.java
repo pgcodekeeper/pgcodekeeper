@@ -16,232 +16,116 @@
 package ru.taximaxim.codekeeper.core.formatter;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.api.Test;
 
+import ru.taximaxim.codekeeper.core.FILES_POSTFIX;
 import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.formatter.FormatConfiguration.IndentType;
 
 class FormatterTest {
 
-    private static Stream<Arguments> generator() {
-        return Stream.of(
-                Arguments.of(new DefaultConfigProvider()),
-                Arguments.of(new IndentTypeConfigProvider()),
-                Arguments.of(new RemoveTrailingWhitespaceConfigProvider()),
-                Arguments.of(new AddWhitespaceAfterOpConfigProvider()),
-                Arguments.of(new AddWhitespaceBeforeOpConfigProvider()),
-                Arguments.of(new AddSpacesForTabsConfigProvider()),
-                Arguments.of(new IndentSizeConfigProvider()),
-                Arguments.of(new IndentTypeTabConfigProvider()));
-    }
-
-    @ParameterizedTest
-    @MethodSource("generator")
-    void testFormatterParams(FormatConfigProvider args) throws IOException, URISyntaxException, FormatterException {
-        FileFormatter fileform = new FileFormatter(args.getOldFile(), 0,
-                args.getOldFile().length(), args.getConfig(), false);
-        Assertions.assertEquals(
-                args.getNewFile(), fileform.formatText(),
-                args.getClass().getSimpleName() + ": Formatted files are different. ");
-    }
-}
-
-interface FormatConfigProvider {
-    String getOldFile() throws IOException, URISyntaxException;
-
-    String getNewFile() throws IOException, URISyntaxException;
-
-    void fillConfig(FormatConfiguration config);
-
-    default FormatConfiguration getConfig() {
+    /**
+     * Testing default parameters
+     */
+    @Test
+    void testDefault() throws IOException, FormatterException {
         FormatConfiguration config = new FormatConfiguration();
-        fillConfig(config);
-        return config;
-    }
-
-    default String getFileContent(String fileName) throws IOException, URISyntaxException {
-        return FileUtils.readResource(FormatterTest.class, fileName);
-    }
-}
-
-/**
- * Testing default parameteres
- */
-class DefaultConfigProvider implements FormatConfigProvider {
-
-    @Override
-    public String getNewFile() throws IOException, URISyntaxException {
-        return getFileContent("new_Default_config.sql");
-    }
-
-    @Override
-    public String getOldFile() throws IOException, URISyntaxException {
-        return getFileContent("old_Default_config.sql");
-    }
-
-    @Override
-    public void fillConfig(FormatConfiguration config) {
         config.setAddWhitespaceAfterOp(true);
         config.setAddWhitespaceBeforeOp(true);
         config.setIndentSize(2);
         config.setIndentType(IndentType.WHITESPACE);
         config.setRemoveTrailingWhitespace(true);
-    }
-}
 
-/**
- * Testing setIndentType(IndentType.Tab)
- */
-class IndentTypeConfigProvider implements FormatConfigProvider {
-
-    @Override
-    public String getOldFile() throws IOException, URISyntaxException {
-        return getFileContent("old.sql");
+        String newFile = "new_Default_config";
+        String oldFile = "old_Default_config";
+        testFormatter(oldFile, newFile, config);
     }
 
-    @Override
-    public String getNewFile() throws IOException, URISyntaxException {
-        return getFileContent("new_indent_type.sql");
+    @Test
+    void testRemoveTrailingWhitespace() throws IOException, FormatterException {
+        FormatConfiguration config = new FormatConfiguration();
+        config.setRemoveTrailingWhitespace(true);
+
+        String newFile = "new_RemoveTrailingWhitespace";
+        String oldFile = "old_RemoveTrailingWhitespace";
+        testFormatter(oldFile, newFile, config);
     }
 
-    @Override
-    public void fillConfig(FormatConfiguration config) {
+    @Test
+    void testAddWhitespaceAfterOp() throws IOException, FormatterException {
+        FormatConfiguration config = new FormatConfiguration();
+        config.setAddWhitespaceAfterOp(true);
+
+        String newFile = "new_AddWhitespaceAfterOp";
+        String oldFile = "old_AddWhitespaceOp";
+        testFormatter(oldFile, newFile, config);
+    }
+
+    @Test
+    void testAddWhitespaceBeforeOp() throws IOException, FormatterException {
+        FormatConfiguration config = new FormatConfiguration();
+        config.setAddWhitespaceBeforeOp(true);
+
+        String newFile = "new_AddWhitespaceBeforeOp";
+        String oldFile = "old_AddWhitespaceOp";
+        testFormatter(oldFile, newFile, config);
+    }
+
+    @Test
+    void testAddSpacesForTabs() throws IOException, FormatterException {
+        FormatConfiguration config = new FormatConfiguration();
+        config.setIndentType(IndentType.WHITESPACE);
+        config.setIndentSize(8);
+
+        String newFile = "new_SpacesForTabs";
+        String oldFile = "old_SpacesForTabs";
+        testFormatter(oldFile, newFile, config);
+    }
+
+    @Test
+    void testIndentSize() throws IOException, FormatterException {
+        FormatConfiguration config = new FormatConfiguration();
+        config.setIndentType(IndentType.WHITESPACE);
+        config.setIndentSize(8);
+
+        String newFile = "new_IndentSize";
+        String oldFile = "old";
+        testFormatter(oldFile, newFile, config);
+    }
+
+    @Test
+    void testIndentType() throws IOException, FormatterException {
+        FormatConfiguration config = new FormatConfiguration();
         config.setIndentType(IndentType.TAB);
         config.setIndentSize(1);
-    }
-}
 
-/**
- * Testing RemoveTrailingWhitespace option
- */
-class RemoveTrailingWhitespaceConfigProvider implements FormatConfigProvider {
-
-    @Override
-    public String getOldFile() throws IOException, URISyntaxException {
-        return getFileContent("old_RemoveTrailingWhitespace.sql");
+        String newFile = "new_indent_type";
+        String oldFile = "old";
+        testFormatter(oldFile, newFile, config);
     }
 
-    @Override
-    public String getNewFile() throws IOException, URISyntaxException {
-        return getFileContent("new_RemoveTrailingWhitespace.sql");
-    }
-
-    @Override
-    public void fillConfig(FormatConfiguration config) {
-        config.setRemoveTrailingWhitespace(true);
-    }
-}
-
-/**
- * Testing AddWhitespaceAfterOp option
- */
-class AddWhitespaceAfterOpConfigProvider implements FormatConfigProvider {
-
-    @Override
-    public String getOldFile() throws IOException, URISyntaxException {
-        return getFileContent("old_AddWhitespaceOp.sql");
-    }
-
-    @Override
-    public String getNewFile() throws IOException, URISyntaxException {
-        return getFileContent("new_AddWhitespaceAfterOp.sql");
-    }
-
-    @Override
-    public void fillConfig(FormatConfiguration config) {
-        config.setAddWhitespaceAfterOp(true);
-    }
-}
-
-/**
- * Testing WhitespaceBeforeOp option
- */
-class AddWhitespaceBeforeOpConfigProvider implements FormatConfigProvider {
-
-    @Override
-    public String getOldFile() throws IOException, URISyntaxException {
-        return getFileContent("old_AddWhitespaceOp.sql");
-    }
-
-    @Override
-    public String getNewFile() throws IOException, URISyntaxException {
-        return getFileContent("new_AddWhitespaceBeforeOp.sql");
-    }
-
-    @Override
-    public void fillConfig(FormatConfiguration config) {
-        config.setAddWhitespaceBeforeOp(true);
-    }
-}
-
-/**
- * Testing SpacesForTabs option
- */
-class AddSpacesForTabsConfigProvider implements FormatConfigProvider {
-
-    @Override
-    public String getOldFile() throws IOException, URISyntaxException {
-        return getFileContent("old_SpacesForTabs.sql");
-    }
-
-    @Override
-    public String getNewFile() throws IOException, URISyntaxException {
-        return getFileContent("new_SpacesForTabs.sql");
-    }
-
-    @Override
-    public void fillConfig(FormatConfiguration config) {
-        config.setIndentType(IndentType.WHITESPACE);
-        config.setIndentSize(8);
-    }
-}
-
-/**
- * Testing IndentSize option
- */
-class IndentSizeConfigProvider implements FormatConfigProvider {
-
-    @Override
-    public String getOldFile() throws IOException, URISyntaxException {
-        return getFileContent("old.sql");
-    }
-
-    @Override
-    public String getNewFile() throws IOException, URISyntaxException {
-        return getFileContent("new_IndentSize.sql");
-    }
-
-    @Override
-    public void fillConfig(FormatConfiguration config) {
-        config.setIndentType(IndentType.WHITESPACE);
-        config.setIndentSize(8);
-    }
-}
-
-/**
- * Testing IndentTypeTab option
- */
-class IndentTypeTabConfigProvider implements FormatConfigProvider {
-
-    @Override
-    public String getOldFile() throws IOException, URISyntaxException {
-        return getFileContent("old.sql");
-    }
-
-    @Override
-    public String getNewFile() throws IOException, URISyntaxException {
-        return getFileContent("new_IndentTypeTab.sql");
-    }
-
-    @Override
-    public void fillConfig(FormatConfiguration config) {
+    @Test
+    void testIndentTypeTab() throws IOException, FormatterException {
+        FormatConfiguration config = new FormatConfiguration();
         config.setIndentType(IndentType.TAB);
         config.setIndentSize(2);
+
+        String newFile = "new_IndentTypeTab";
+        String oldFile = "old";
+        testFormatter(oldFile, newFile, config);
+    }
+
+    void testFormatter(String oldFileName, String newFileName, FormatConfiguration config)
+            throws FormatterException, IOException {
+        String newFile = getFileContent(newFileName + FILES_POSTFIX.SQL);
+        String oldFile = getFileContent(oldFileName + FILES_POSTFIX.SQL);
+        FileFormatter fileform = new FileFormatter(oldFile, 0, oldFile.length(), config, false);
+        Assertions.assertEquals(newFile, fileform.formatText(), "Formatted files are different");
+    }
+
+    private String getFileContent(String fileName) throws IOException {
+        return FileUtils.readResource(FormatterTest.class, fileName);
     }
 }

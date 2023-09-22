@@ -112,12 +112,10 @@ public class PartialExporterTest {
         String targetFilename = "TestPartialExportTarget.sql";
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(Consts.UTF_8);
-        dbSource = TestUtils.loadTestDump(
-                sourceFilename, PartialExporterTest.class, args, false);
+        dbSource = TestUtils.loadTestDump(sourceFilename, PartialExporterTest.class, args, false);
         args = new PgDiffArguments();
         args.setInCharsetName(Consts.UTF_8);
-        dbTarget = TestUtils.loadTestDump(
-                targetFilename, PartialExporterTest.class, args, false);
+        dbTarget = TestUtils.loadTestDump(targetFilename, PartialExporterTest.class, args, false);
 
         Assertions.assertNotNull(dbSource);
         Assertions.assertNotNull(dbTarget);
@@ -126,7 +124,7 @@ public class PartialExporterTest {
     @ParameterizedTest
     @MethodSource("generator")
     void testExportPartial(PartialExportInfo info) throws Exception {
-        info.setDiffTree(DiffTree.create(dbSource, dbTarget, null));
+        TreeElement tree = DiffTree.create(dbSource, dbTarget, null);
         Path exportDirFull = null;
         Path exportDirPartial = null;
         try  (TempDir dirFull = new TempDir("pgCodekeeper-test-files");
@@ -140,14 +138,13 @@ public class PartialExporterTest {
             new ModelExporter(exportDirPartial, dbSource, Consts.UTF_8).exportFull();
 
             // get new db with selected changes
-            info.setUserSelection();
+            info.setUserSelection(tree);
             Collection<TreeElement> list = new TreeFlattener()
                     .onlySelected()
                     .onlyEdits(dbSource, dbTarget)
-                    .flatten(info.getDiffTree());
-            // накатываем на полную базу частичные изменения
-            new ModelExporter(exportDirPartial, dbTarget, dbSource,
-                    list, Consts.UTF_8).exportPartial();
+                    .flatten(tree);
+            // apply partial changes to the full database
+            new ModelExporter(exportDirPartial, dbTarget, dbSource, list, Consts.UTF_8).exportPartial();
 
             walkAndComare(exportDirFull, exportDirPartial, info);
         }
@@ -214,17 +211,7 @@ public class PartialExporterTest {
  */
 abstract class PartialExportInfo {
 
-    TreeElement diffTree;
-
-    public TreeElement getDiffTree() {
-        return diffTree;
-    }
-
-    public void setDiffTree(TreeElement diffTree) {
-        this.diffTree = diffTree;
-    }
-
-    public abstract void setUserSelection();
+    public abstract void setUserSelection(TreeElement diffTree);
 
     public Map<String, String> modifiedFiles(){
         return new HashMap<>();
@@ -243,7 +230,7 @@ abstract class PartialExportInfo {
 class PartialExportInfoImpl1 extends PartialExportInfo {
 
     @Override
-    public void setUserSelection() {
+    public void setUserSelection(TreeElement diffTree) {
         diffTree.getChild("public").getChild("t4").getChild("t4_c2_key").setSelected(true);
     }
 
@@ -261,7 +248,7 @@ class PartialExportInfoImpl1 extends PartialExportInfo {
 class PartialExportInfoImpl2 extends PartialExportInfo {
 
     @Override
-    public void setUserSelection() {
+    public void setUserSelection(TreeElement diffTree) {
         TreeElement table = diffTree.getChild("public").getChild("t2");
         table.setSelected(true);
         table.getChild("constr_t2").setSelected(true);
@@ -280,7 +267,7 @@ class PartialExportInfoImpl2 extends PartialExportInfo {
 class PartialExportInfoImpl3 extends PartialExportInfo {
 
     @Override
-    public void setUserSelection() {
+    public void setUserSelection(TreeElement diffTree) {
         diffTree.getChild("public").getChild("t2").getChild("t2_trigger").setSelected(true);
     }
 
@@ -298,7 +285,7 @@ class PartialExportInfoImpl3 extends PartialExportInfo {
 class PartialExportInfoImpl4 extends PartialExportInfo {
 
     @Override
-    public void setUserSelection() {
+    public void setUserSelection(TreeElement diffTree) {
         diffTree.getChild("public").getChild("fun2()").setSelected(true);
     }
 
@@ -314,7 +301,7 @@ class PartialExportInfoImpl4 extends PartialExportInfo {
 class PartialExportInfoImpl5 extends PartialExportInfo {
 
     @Override
-    public void setUserSelection() {
+    public void setUserSelection(TreeElement diffTree) {
         diffTree.getChild("public").getChild("fun1()").setSelected(true);
     }
 
@@ -332,7 +319,7 @@ class PartialExportInfoImpl5 extends PartialExportInfo {
 class PartialExportInfoImpl6 extends PartialExportInfo {
 
     @Override
-    public void setUserSelection() {
+    public void setUserSelection(TreeElement diffTree) {
         diffTree.getChild("public").getChild("t5").setSelected(true);
     }
 
@@ -350,7 +337,7 @@ class PartialExportInfoImpl6 extends PartialExportInfo {
 class PartialExportInfoImpl7 extends PartialExportInfo {
 
     @Override
-    public void setUserSelection() {
+    public void setUserSelection(TreeElement diffTree) {
         diffTree.getChild("public").getChild("fun3()").setSelected(true);
     }
 
@@ -366,7 +353,7 @@ class PartialExportInfoImpl7 extends PartialExportInfo {
 class PartialExportInfoImpl8 extends PartialExportInfo {
 
     @Override
-    public void setUserSelection() {
+    public void setUserSelection(TreeElement diffTree) {
         TreeElement schema = diffTree.getChild("public");
         schema.getChild("fun3()").setSelected(true);
         schema.getChild("fun3(integer)").setSelected(true);
@@ -384,7 +371,7 @@ class PartialExportInfoImpl8 extends PartialExportInfo {
 class PartialExportInfoImpl9 extends PartialExportInfo {
 
     @Override
-    public void setUserSelection() {
+    public void setUserSelection(TreeElement diffTree) {
         diffTree.getChild("public").getChild("v1").setSelected(true);
     }
 
@@ -400,7 +387,7 @@ class PartialExportInfoImpl9 extends PartialExportInfo {
 class PartialExportInfoImpl10 extends PartialExportInfo {
 
     @Override
-    public void setUserSelection() {
+    public void setUserSelection(TreeElement diffTree) {
         diffTree.getChild("public").getChild("t3").getChild("constr_t3").setSelected(true);
     }
 
@@ -419,7 +406,7 @@ class PartialExportInfoImpl10 extends PartialExportInfo {
 class PartialExportInfoImpl11 extends PartialExportInfo {
 
     @Override
-    public void setUserSelection() {
+    public void setUserSelection(TreeElement diffTree) {
         diffTree.getChild("newschema").setSelected(true);
     }
 
@@ -435,7 +422,7 @@ class PartialExportInfoImpl11 extends PartialExportInfo {
 class PartialExportInfoImpl12 extends PartialExportInfo {
 
     @Override
-    public void setUserSelection() {
+    public void setUserSelection(TreeElement diffTree) {
         diffTree.getChild("test").getChild("test_table").setSelected(true);
     }
 
@@ -451,7 +438,7 @@ class PartialExportInfoImpl12 extends PartialExportInfo {
 class PartialExportInfoImpl13 extends PartialExportInfo {
 
     @Override
-    public void setUserSelection() {
+    public void setUserSelection(TreeElement diffTree) {
         TreeElement schema = diffTree.getChild("test");
         schema.getChild("test_table").setSelected(true);
         schema.getChild("test_table_2").setSelected(true);
@@ -469,7 +456,7 @@ class PartialExportInfoImpl13 extends PartialExportInfo {
 class PartialExportInfoImpl14 extends PartialExportInfo {
 
     @Override
-    public void setUserSelection() {
+    public void setUserSelection(TreeElement diffTree) {
         diffTree.getChild("test").setSelected(true);
     }
 
@@ -485,7 +472,7 @@ class PartialExportInfoImpl14 extends PartialExportInfo {
 class PartialExportInfoImpl15 extends PartialExportInfo {
 
     @Override
-    public void setUserSelection() {
+    public void setUserSelection(TreeElement diffTree) {
         TreeElement schema = diffTree.getChild("public");
         schema.getChild("proc(integer)").setSelected(true);
         schema.getChild("proc(integer, timestamp without time zone)").setSelected(true);
@@ -503,7 +490,7 @@ class PartialExportInfoImpl15 extends PartialExportInfo {
 class PartialExportInfoImpl16 extends PartialExportInfo {
 
     @Override
-    public void setUserSelection() {
+    public void setUserSelection(TreeElement diffTree) {
         diffTree.getChild("public").getChild("t2").getChild("t2_c5_idx").setSelected(true);
     }
 
@@ -521,7 +508,7 @@ class PartialExportInfoImpl16 extends PartialExportInfo {
 class PartialExportInfoImpl17 extends PartialExportInfo {
 
     @Override
-    public void setUserSelection() {
+    public void setUserSelection(TreeElement diffTree) {
         diffTree.getChild("public").getChild("t2").getChild("constr_t2").setSelected(true);
     }
 
@@ -539,7 +526,7 @@ class PartialExportInfoImpl17 extends PartialExportInfo {
 class PartialExportInfoImpl18 extends PartialExportInfo {
 
     @Override
-    public void setUserSelection() {
+    public void setUserSelection(TreeElement diffTree) {
         TreeElement table = diffTree.getChild("public").getChild("t2");
         table.getChild("constr_t2").setSelected(true);
         table.getChild("t2_trigger").setSelected(true);
@@ -559,7 +546,7 @@ class PartialExportInfoImpl18 extends PartialExportInfo {
 class PartialExportInfoImpl19 extends PartialExportInfo {
 
     @Override
-    public void setUserSelection() {
+    public void setUserSelection(TreeElement diffTree) {
         TreeElement table = diffTree.getChild("public").getChild("t2");
         table.getChild("constr_t2").setSelected(true);
         table.getChild("t2_trigger").setSelected(true);
@@ -581,7 +568,7 @@ class PartialExportInfoImpl19 extends PartialExportInfo {
 class PartialExportInfoImpl20 extends PartialExportInfo {
 
     @Override
-    public void setUserSelection() {
+    public void setUserSelection(TreeElement diffTree) {
         diffTree.getChild("public").getChild("t2").setSelected(true);
     }
 
@@ -597,7 +584,7 @@ class PartialExportInfoImpl20 extends PartialExportInfo {
 class PartialExportInfoImpl21 extends PartialExportInfo {
 
     @Override
-    public void setUserSelection() {
+    public void setUserSelection(TreeElement diffTree) {
         TreeElement schema = diffTree.getChild("public");
         schema.getChild("t?1").setSelected(true);
         schema.getChild("t/1").setSelected(true);

@@ -17,10 +17,17 @@ package ru.taximaxim.codekeeper.core;
 
 public enum FILES_POSTFIX {
     DIFF_SQL("_diff.sql"),
+    LIBRARY_SQL("_library.sql"),
     NEW_SQL("_new.sql"),
-    ORIGINAL_SQL("_original.sql");
+    ORIGINAL_SQL("_original.sql"),
+    SQL(".sql"),
+    DEPS_TXT("_deps.txt"),
+    DEPS_REVERSE_TXT("_deps_reverse.txt"),
+    ERRORS_TXT("_errors.txt"),
+    REFS_TXT("_refs.txt");
 
     private final String value;
+
     private FILES_POSTFIX(String value) {
         this.value = value;
     }

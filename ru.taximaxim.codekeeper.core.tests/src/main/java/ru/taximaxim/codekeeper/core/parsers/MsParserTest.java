@@ -31,6 +31,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import ru.taximaxim.codekeeper.core.FILES_POSTFIX;
 import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser;
@@ -96,7 +97,7 @@ class MsParserTest {
         List<Object> errors = new ArrayList<>();
         AtomicInteger ambiguity = new AtomicInteger();
 
-        String sql = TestUtils.readResource(fileNameTemplate + ".sql", getClass());
+        String sql = TestUtils.readResource(fileNameTemplate + FILES_POSTFIX.SQL, getClass());
 
         TSQLParser parser = AntlrParser
                 .makeBasicParser(TSQLParser.class, sql, fileNameTemplate, errors);
