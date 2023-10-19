@@ -1254,3 +1254,19 @@ SELECT IIF (exp, exp, exp)
 GO
 SELECT IIF (exp = 1 or exp = 2, exp, exp)
 GO
+
+-- predicate
+SELECT * FROM testtable WHERE id IS NOT DISTINCT FROM NULL
+GO
+SELECT * FROM testtable WHERE id IS NOT DISTINCT FROM 42
+GO
+SELECT * FROM testtable WHERE FREETEXT(D, @S)
+GO
+SELECT * FROM testtable WHERE FREETEXT(D, 'search', language 1053)
+GO
+SELECT * FROM testtable WHERE CONTAINS(D, N'search')
+GO
+SELECT * FROM testtable WHERE CONTAINS((N, C), 'R');
+GO
+SELECT * FROM testtable WHERE CONTAINS(PROPERTY(D,'T'), 'M OR R');
+GO
