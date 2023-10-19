@@ -742,7 +742,11 @@ create_fulltext_catalog
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-fulltext-stoplist-transact-sql
 alter_fulltext_stoplist
-    : FULLTEXT STOPLIST id (ADD STRING LANGUAGE (STRING|DECIMAL|BINARY) | DROP (STRING LANGUAGE (STRING|DECIMAL|BINARY) |ALL (STRING|DECIMAL|BINARY) | ALL))
+    : FULLTEXT STOPLIST id ((ADD | DROP) STRING language_term | DROP ALL language_term?)
+    ;
+
+language_term
+    : LANGUAGE (STRING | DECIMAL | BINARY)
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-fulltext-stoplist-transact-sql
@@ -1440,7 +1444,7 @@ fulltext_index_columns
     ;
 
 fulltext_index_column
-    : column_name=id (TYPE COLUMN type_column_name=data_type)? (LANGUAGE (STRING|DECIMAL|BINARY))? STATISTICAL_SEMANTICS?
+    : column_name=id (TYPE COLUMN type_column_name=data_type)? language_term? STATISTICAL_SEMANTICS?
     ;
 
 fulltext_index_options
@@ -2464,9 +2468,12 @@ predicate
     | expression NOT? IN LR_BRACKET (select_statement | expression_list) RR_BRACKET
     | expression NOT? LIKE expression (ESCAPE expression)?
     | expression IS null_notnull
+    | expression IS NOT? DISTINCT FROM expression
     | MATCH LR_BRACKET match_specification (AND match_specification)* RR_BRACKET
     | LR_BRACKET search_condition RR_BRACKET
     | UPDATE LR_BRACKET expression_list? RR_BRACKET
+    | (CONTAINS | FREETEXT) LR_BRACKET (expression | LR_BRACKET expression (COMMA expression)+ RR_BRACKET | STAR)
+       COMMA expression (COMMA language_term)? RR_BRACKET
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms176104.aspx
