@@ -15,6 +15,11 @@ DECLARE abc CURSOR GLOBAL SCROLL FOR
 OPEN abc;
 GO
 
+declare #C CURSOR FOR
+    select c from t
+    for update of t.c
+GO
+
 -- Reference the named cursor with a cursor variable.
 DECLARE @MyCrsrRef1 CURSOR;
 SET @MyCrsrRef1 = abc;

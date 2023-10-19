@@ -89,6 +89,9 @@ GO
 TRUNCATE TABLE PartitionTable1
 WITH (PARTITIONS (2, 4, 6 TO 8));
 GO
+TRUNCATE TABLE v1
+WITH (PARTITIONS (1, @PartFirst TO @PartLast));
+GO
 TRUNCATE TABLE DifferentDB..JobCandidate;
 GO
 ALTER APPLICATION ROLE weekly_receipts
