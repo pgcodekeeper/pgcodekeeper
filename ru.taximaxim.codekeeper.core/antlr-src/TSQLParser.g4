@@ -584,7 +584,7 @@ lock_table
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/truncate-table-transact-sql
 truncate_table
-    : TRUNCATE TABLE qualified_name (WITH LR_BRACKET PARTITIONS LR_BRACKET (COMMA? (DECIMAL|DECIMAL TO DECIMAL))+ RR_BRACKET RR_BRACKET)?
+    : TRUNCATE TABLE qualified_name (WITH LR_BRACKET PARTITIONS LR_BRACKET (COMMA? (expression | expression TO expression))+ RR_BRACKET RR_BRACKET)?
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-column-master-key-transact-sql
@@ -818,7 +818,7 @@ create_partition_function
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-partition-function-transact-sql
 alter_partition_function
-    : PARTITION FUNCTION id LR_BRACKET RR_BRACKET (SPLIT | MERGE) RANGE LR_BRACKET DECIMAL RR_BRACKET
+    : PARTITION FUNCTION id LR_BRACKET RR_BRACKET (SPLIT | MERGE) RANGE LR_BRACKET expression RR_BRACKET
     ;
 
 create_partition_scheme
@@ -2323,7 +2323,7 @@ index_option_value
 
 cursor_common
     : CURSOR declare_cursor_partial* FOR select_statement
-    (FOR (READ ONLY | UPDATE (OF name_list)?))?
+    (FOR (READ ONLY | UPDATE (OF names_references)?))?
     ;
 
 declare_cursor_partial
@@ -2346,7 +2346,7 @@ declare_cursor_partial
 set_special
     : SET name=id (id | constant_LOCAL_ID | ON | OFF)
     // https://msdn.microsoft.com/en-us/library/ms173763.aspx
-    | SET TRANSACTION ISOLATION LEVEL
+    | SET (TRAN | TRANSACTION) ISOLATION LEVEL
       (READ UNCOMMITTED | READ COMMITTED | REPEATABLE READ | SNAPSHOT | SERIALIZABLE | DECIMAL)
     // https://msdn.microsoft.com/en-us/library/ms188059.aspx
     | SET IDENTITY_INSERT qualified_name on_off

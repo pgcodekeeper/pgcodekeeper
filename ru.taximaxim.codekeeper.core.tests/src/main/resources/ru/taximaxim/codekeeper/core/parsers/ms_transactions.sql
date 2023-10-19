@@ -147,14 +147,11 @@ DECLARE @TransactionName varchar(20) = 'Transaction1';
 --The query returns the results of the previous statements.
 
 BEGIN TRAN @TransactionName
-       INSERT INTO ValueTable VALUES(1), (2);
+INSERT INTO ValueTable VALUES(1), (2);
 ROLLBACK TRAN @TransactionName;
 
-INSERT INTO ValueTable VALUES(3),(4);
-
-SELECT [value] FROM ValueTable;
-
-DROP TABLE ValueTable;
+SET TRAN ISOLATION LEVEL READ UNCOMMITTED
+GO
 
 -----------------------------------------------------------------------
 -- SAVE TRANSACTION https://msdn.microsoft.com/en-us/library/ms188378.aspx

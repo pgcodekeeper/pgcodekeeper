@@ -44,11 +44,9 @@ Reference: action = USE, offset = 3926, line number = 136, charPositionInLine = 
 Reference: Object = "ValueTable" (TABLE), action = CREATE, offset = 3954, line number = 138, charPositionInLine = 13
 Reference: action = DECLARE, offset = 3983, line number = 141, charPositionInLine = 0
 Reference: action = BEGIN TRANSACTION, offset = 4321, line number = 149, charPositionInLine = 0
-Reference: Object = "ValueTable" (TABLE), action = INSERT, offset = 4368, line number = 150, charPositionInLine = 19
-Reference: action = ROLLBACK, offset = 4395, line number = 151, charPositionInLine = 0
-Reference: Object = "ValueTable" (TABLE), action = INSERT, offset = 4440, line number = 153, charPositionInLine = 12
-Reference: action = SELECT, offset = 4467, line number = 155, charPositionInLine = 0
-Reference: Object = "ValueTable" (TABLE), action = DROP, offset = 4511, line number = 157, charPositionInLine = 11
-Reference: action = USE, offset = 4750, line number = 163, charPositionInLine = 0
-Reference: action = IF, offset = 4777, line number = 165, charPositionInLine = 0
-Reference: Object = SaveTranExample (PROCEDURE), action = CREATE, offset = 4917, line number = 169, charPositionInLine = 17
+Reference: Object = "ValueTable" (TABLE), action = INSERT, offset = 4361, line number = 150, charPositionInLine = 12
+Reference: action = ROLLBACK, offset = 4388, line number = 151, charPositionInLine = 0
+Reference: action = SET, offset = 4421, line number = 153, charPositionInLine = 0
+Reference: action = USE, offset = 4693, line number = 160, charPositionInLine = 0
+Reference: action = IF, offset = 4720, line number = 162, charPositionInLine = 0
+Reference: Object = SaveTranExample (PROCEDURE), action = CREATE, offset = 4860, line number = 166, charPositionInLine = 17
