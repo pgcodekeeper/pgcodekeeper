@@ -220,3 +220,6 @@ Reference: action = SELECT, offset = 35256, line number = 1265, charPositionInLi
 Reference: action = SELECT, offset = 35326, line number = 1267, charPositionInLine = 0
 Reference: action = SELECT, offset = 35382, line number = 1269, charPositionInLine = 0
 Reference: action = SELECT, offset = 35438, line number = 1271, charPositionInLine = 0
+Reference: action = SELECT, offset = 35508, line number = 1273, charPositionInLine = 0
+Reference: action = SELECT, offset = 35564, line number = 1275, charPositionInLine = 0
+Reference: action = SELECT, offset = 35628, line number = 1277, charPositionInLine = 0
