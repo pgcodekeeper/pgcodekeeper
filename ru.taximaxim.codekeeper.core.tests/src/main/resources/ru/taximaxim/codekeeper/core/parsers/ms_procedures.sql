@@ -38,3 +38,8 @@ BEGIN
         (SELECT 1 FROM dbo.LoadRoutes FOR XML RAW ('v'), ELEMENTS, ROOT ('vs')) AS ExtraPoints;
 END;
 GO
+
+CREATE PROCEDURE dbo.p
+WITH EXECUTE AS 'Domain\User1'
+AS SELECT user_name();
+GO 
