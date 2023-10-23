@@ -1604,7 +1604,7 @@ assembly_specifier
     ;
 
 procedure_param
-    : name=LOCAL_ID AS? data_type (EQUAL default_val=default_value)? arg_mode? READONLY?
+    : name=LOCAL_ID AS? data_type null_notnull? (EQUAL default_val=default_value)? arg_mode? READONLY?
     ;
 
 arg_mode
@@ -2053,7 +2053,7 @@ security_statement
     // https://msdn.microsoft.com/en-us/library/ms187965.aspx
     | rule_common
     // https://msdn.microsoft.com/en-us/library/ms178632.aspx
-    | REVERT (LR_BRACKET WITH COOKIE EQUAL LOCAL_ID RR_BRACKET)?
+    | REVERT (WITH COOKIE EQUAL LOCAL_ID)?
     | open_key
     | close_key
     | add_signature
@@ -2269,7 +2269,15 @@ dbcc_clause
     ;
 
 execute_clause
-    : EXECUTE AS clause=(CALLER | SELF | OWNER | STRING)
+    : EXECUTE AS execute_clause_user
+    ;
+
+execute_clause_user
+    : (LOGIN | USER) EQUAL STRING (WITH (NO REVERT | COOKIE INTO LOCAL_ID))?
+    | CALLER
+    | SELF
+    | OWNER
+    | STRING
     ;
 
 declare_local
