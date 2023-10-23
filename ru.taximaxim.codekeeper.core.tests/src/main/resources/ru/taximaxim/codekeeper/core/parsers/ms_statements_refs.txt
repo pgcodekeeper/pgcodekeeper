@@ -1,107 +1,151 @@
 Reference: action = GRANT, offset = 0, line number = 1, charPositionInLine = 0
 Reference: action = GRANT, offset = 25, line number = 2, charPositionInLine = 0
-Reference: action = EXEC, offset = 84, line number = 3, charPositionInLine = 0
-Reference: action = GRANT, offset = 125, line number = 4, charPositionInLine = 0
-Reference: action = GRANT, offset = 159, line number = 5, charPositionInLine = 0
-Reference: action = GRANT, offset = 207, line number = 6, charPositionInLine = 0
-Reference: action = GRANT, offset = 269, line number = 7, charPositionInLine = 0
+Reference: action = GRANT, offset = 84, line number = 3, charPositionInLine = 0
+Reference: action = GRANT, offset = 118, line number = 4, charPositionInLine = 0
+Reference: action = GRANT, offset = 166, line number = 5, charPositionInLine = 0
+Reference: action = GRANT, offset = 225, line number = 6, charPositionInLine = 0
+Reference: action = GRANT, offset = 301, line number = 7, charPositionInLine = 0
 Reference: action = GRANT, offset = 352, line number = 8, charPositionInLine = 0
-Reference: action = GRANT, offset = 410, line number = 9, charPositionInLine = 0
-Reference: action = GRANT, offset = 442, line number = 10, charPositionInLine = 0
-Reference: action = GRANT, offset = 474, line number = 11, charPositionInLine = 0
-Reference: action = GRANT, offset = 524, line number = 12, charPositionInLine = 0
-Reference: action = GRANT, offset = 566, line number = 13, charPositionInLine = 0
-Reference: action = GRANT, offset = 647, line number = 14, charPositionInLine = 0
-Reference: action = GRANT, offset = 705, line number = 15, charPositionInLine = 0
-Reference: action = GRANT, offset = 760, line number = 16, charPositionInLine = 0
-Reference: action = GRANT, offset = 839, line number = 17, charPositionInLine = 0
-Reference: action = GRANT, offset = 900, line number = 18, charPositionInLine = 0
-Reference: action = GRANT, offset = 972, line number = 19, charPositionInLine = 0
-Reference: action = GRANT, offset = 1023, line number = 20, charPositionInLine = 0
-Reference: action = GRANT, offset = 1207, line number = 22, charPositionInLine = 0
-Reference: action = GRANT, offset = 1250, line number = 23, charPositionInLine = 0
-Reference: action = GRANT, offset = 1314, line number = 24, charPositionInLine = 0
-Reference: action = GRANT, offset = 1370, line number = 25, charPositionInLine = 0
-Reference: action = GRANT, offset = 1421, line number = 26, charPositionInLine = 0
-Reference: action = GRANT, offset = 1482, line number = 27, charPositionInLine = 0
-Reference: action = GRANT, offset = 1567, line number = 28, charPositionInLine = 0
-Reference: action = GRANT, offset = 1607, line number = 29, charPositionInLine = 0
-Reference: action = GRANT, offset = 1666, line number = 30, charPositionInLine = 0
-Reference: action = GRANT, offset = 1867, line number = 33, charPositionInLine = 0
-Reference: action = GRANT, offset = 1924, line number = 34, charPositionInLine = 0
-Reference: action = GRANT, offset = 1980, line number = 35, charPositionInLine = 0
-Reference: action = GRANT, offset = 2067, line number = 37, charPositionInLine = 0
-Reference: action = GRANT, offset = 2111, line number = 38, charPositionInLine = 0
-Reference: action = GRANT, offset = 2198, line number = 39, charPositionInLine = 0
-Reference: action = DECLARE, offset = 2375, line number = 47, charPositionInLine = 0
-Reference: action = OPEN, offset = 2486, line number = 50, charPositionInLine = 0
-Reference: action = CLOSE, offset = 2596, line number = 55, charPositionInLine = 0
-Reference: action = CLOSE, offset = 2664, line number = 59, charPositionInLine = 0
-Reference: action = BEGIN, offset = 2716, line number = 63, charPositionInLine = 0
-Reference: action = DECLARE, offset = 2813, line number = 68, charPositionInLine = 0
-Reference: action = BEGIN, offset = 2854, line number = 69, charPositionInLine = 0
-Reference: action = DECLARE, offset = 3112, line number = 76, charPositionInLine = 0
-Reference: action = BEGIN, offset = 3153, line number = 77, charPositionInLine = 0
-Reference: action = DECLARE, offset = 3439, line number = 85, charPositionInLine = 0
-Reference: action = BEGIN, offset = 3480, line number = 86, charPositionInLine = 0
-Reference: action = DECLARE, offset = 3817, line number = 94, charPositionInLine = 0
-Reference: action = DECLARE, offset = 3858, line number = 95, charPositionInLine = 0
-Reference: action = BEGIN, offset = 3907, line number = 96, charPositionInLine = 0
-Reference: action = DECLARE, offset = 4278, line number = 104, charPositionInLine = 0
-Reference: action = DECLARE, offset = 4318, line number = 105, charPositionInLine = 0
-Reference: action = BEGIN, offset = 4373, line number = 106, charPositionInLine = 0
-Reference: action = DECLARE, offset = 4709, line number = 115, charPositionInLine = 0
-Reference: action = BEGIN, offset = 4749, line number = 116, charPositionInLine = 0
-Reference: action = END, offset = 5013, line number = 124, charPositionInLine = 0
-Reference: action = DECLARE, offset = 5090, line number = 128, charPositionInLine = 0
-Reference: action = BEGIN TRANSACTION, offset = 5190, line number = 131, charPositionInLine = 0
-Reference: action = SET, offset = 5210, line number = 132, charPositionInLine = 0
-Reference: action = IF, offset = 5238, line number = 134, charPositionInLine = 0
-Reference: action = END, offset = 5540, line number = 147, charPositionInLine = 0
-Reference: action = DECLARE, offset = 5645, line number = 151, charPositionInLine = 0
-Reference: action = WAITFOR, offset = 5695, line number = 152, charPositionInLine = 0
-Reference: action = DECLARE, offset = 5835, line number = 159, charPositionInLine = 0
-Reference: action = WAITFOR, offset = 5883, line number = 160, charPositionInLine = 0
-Reference: action = DECLARE, offset = 6044, line number = 167, charPositionInLine = 0
-Reference: action = GET, offset = 6093, line number = 168, charPositionInLine = 0
-Reference: action = DECLARE, offset = 6240, line number = 173, charPositionInLine = 0
-Reference: action = SET, offset = 6310, line number = 176, charPositionInLine = 0
-Reference: action = BEGIN, offset = 6347, line number = 178, charPositionInLine = 0
-Reference: action = SEND, offset = 6545, line number = 183, charPositionInLine = 0
-Reference: action = DECLARE, offset = 6769, line number = 189, charPositionInLine = 0
-Reference: action = SET, offset = 6839, line number = 192, charPositionInLine = 0
-Reference: action = BEGIN, offset = 6876, line number = 194, charPositionInLine = 0
-Reference: action = SEND, offset = 6978, line number = 199, charPositionInLine = 0
-Reference: action = CREATE MASTER KEY, offset = 7070, line number = 204, charPositionInLine = 0
-Reference: action = OPEN, offset = 7149, line number = 208, charPositionInLine = 0
-Reference: action = CLOSE, offset = 7227, line number = 212, charPositionInLine = 0
-Reference: action = USE, offset = 7288, line number = 216, charPositionInLine = 0
-Reference: action = CREATE CERTIFICATE, offset = 7312, line number = 217, charPositionInLine = 0
-Reference: action = USE, offset = 7516, line number = 224, charPositionInLine = 0
-Reference: action = CREATE CERTIFICATE, offset = 7540, line number = 225, charPositionInLine = 0
-Reference: action = USE, offset = 7802, line number = 232, charPositionInLine = 0
-Reference: action = CREATE CERTIFICATE, offset = 7826, line number = 233, charPositionInLine = 0
-Reference: action = CREATE SYMMETRIC KEY, offset = 7952, line number = 238, charPositionInLine = 0
-Reference: action = CREATE SYMMETRIC KEY, offset = 8092, line number = 244, charPositionInLine = 0
-Reference: action = CREATE SYMMETRIC KEY, offset = 8401, line number = 253, charPositionInLine = 0
-Reference: action = CREATE MESSAGE TYPE, offset = 8612, line number = 262, charPositionInLine = 0
-Reference: action = CREATE MESSAGE TYPE, offset = 8762, line number = 268, charPositionInLine = 0
-Reference: action = CREATE MESSAGE TYPE, offset = 8879, line number = 274, charPositionInLine = 0
-Reference: action = CREATE MESSAGE TYPE, offset = 8986, line number = 278, charPositionInLine = 0
-Reference: action = CREATE MESSAGE TYPE, offset = 9103, line number = 282, charPositionInLine = 0
-Reference: action = CREATE CONTRACT, offset = 9213, line number = 286, charPositionInLine = 0
-Reference: action = CREATE QUEUE, offset = 9589, line number = 298, charPositionInLine = 0
-Reference: action = CREATE QUEUE, offset = 9655, line number = 302, charPositionInLine = 0
-Reference: action = CREATE QUEUE, offset = 9768, line number = 306, charPositionInLine = 0
-Reference: action = CREATE QUEUE, offset = 9992, line number = 315, charPositionInLine = 0
-Reference: action = CREATE QUEUE, offset = 10098, line number = 320, charPositionInLine = 0
-Reference: action = ALTER QUEUE, offset = 10373, line number = 331, charPositionInLine = 0
-Reference: action = ALTER QUEUE, offset = 10467, line number = 335, charPositionInLine = 0
-Reference: action = ALTER QUEUE, offset = 10628, line number = 342, charPositionInLine = 0
-Reference: action = ALTER QUEUE, offset = 10771, line number = 346, charPositionInLine = 0
-Reference: action = ALTER QUEUE, offset = 10969, line number = 353, charPositionInLine = 0
-Reference: action = ALTER QUEUE, offset = 11057, line number = 357, charPositionInLine = 0
-Reference: action = ALTER QUEUE, offset = 11140, line number = 361, charPositionInLine = 0
-Reference: action = ALTER QUEUE, offset = 11226, line number = 365, charPositionInLine = 0
-Reference: action = ALTER QUEUE, offset = 11319, line number = 369, charPositionInLine = 0
-Reference: action = CREATE CONTRACT, offset = 11371, line number = 372, charPositionInLine = 0
+Reference: action = GRANT, offset = 380, line number = 9, charPositionInLine = 0
+Reference: action = GRANT, offset = 412, line number = 10, charPositionInLine = 0
+Reference: action = GRANT, offset = 462, line number = 11, charPositionInLine = 0
+Reference: action = GRANT, offset = 502, line number = 12, charPositionInLine = 0
+Reference: action = GRANT, offset = 583, line number = 13, charPositionInLine = 0
+Reference: action = GRANT, offset = 628, line number = 14, charPositionInLine = 0
+Reference: action = GRANT, offset = 677, line number = 15, charPositionInLine = 0
+Reference: action = GRANT, offset = 743, line number = 16, charPositionInLine = 0
+Reference: action = GRANT, offset = 804, line number = 17, charPositionInLine = 0
+Reference: action = GRANT, offset = 876, line number = 18, charPositionInLine = 0
+Reference: action = GRANT, offset = 924, line number = 19, charPositionInLine = 0
+Reference: action = GRANT, offset = 1098, line number = 21, charPositionInLine = 0
+Reference: action = GRANT, offset = 1138, line number = 22, charPositionInLine = 0
+Reference: action = GRANT, offset = 1199, line number = 23, charPositionInLine = 0
+Reference: action = GRANT, offset = 1255, line number = 24, charPositionInLine = 0
+Reference: action = GRANT, offset = 1306, line number = 25, charPositionInLine = 0
+Reference: action = GRANT, offset = 1367, line number = 26, charPositionInLine = 0
+Reference: action = GRANT, offset = 1452, line number = 27, charPositionInLine = 0
+Reference: action = GRANT, offset = 1492, line number = 28, charPositionInLine = 0
+Reference: action = GRANT, offset = 1563, line number = 29, charPositionInLine = 0
+Reference: action = GRANT, offset = 1622, line number = 30, charPositionInLine = 0
+Reference: action = GRANT, offset = 1679, line number = 31, charPositionInLine = 0
+Reference: action = GRANT, offset = 1741, line number = 32, charPositionInLine = 0
+Reference: action = GRANT, offset = 1805, line number = 33, charPositionInLine = 0
+Reference: action = GRANT, offset = 1858, line number = 34, charPositionInLine = 0
+Reference: action = GRANT, offset = 1902, line number = 35, charPositionInLine = 0
+Reference: action = GRANT, offset = 1948, line number = 36, charPositionInLine = 0
+Reference: action = GRANT, offset = 1987, line number = 37, charPositionInLine = 0
+Reference: action = GRANT, offset = 2031, line number = 38, charPositionInLine = 0
+Reference: action = GRANT, offset = 2118, line number = 39, charPositionInLine = 0
+Reference: action = GRANT, offset = 2240, line number = 41, charPositionInLine = 0
+Reference: action = REVOKE, offset = 2291, line number = 42, charPositionInLine = 0
+Reference: action = REVOKE, offset = 2353, line number = 43, charPositionInLine = 0
+Reference: action = REVOKE, offset = 2420, line number = 44, charPositionInLine = 0
+Reference: action = REVOKE, offset = 2497, line number = 45, charPositionInLine = 0
+Reference: action = REVOKE, offset = 2534, line number = 46, charPositionInLine = 0
+Reference: action = REVOKE, offset = 2571, line number = 47, charPositionInLine = 0
+Reference: action = REVOKE, offset = 2618, line number = 48, charPositionInLine = 0
+Reference: action = REVOKE, offset = 2661, line number = 49, charPositionInLine = 0
+Reference: action = REVOKE, offset = 2735, line number = 50, charPositionInLine = 0
+Reference: action = REVOKE, offset = 2783, line number = 51, charPositionInLine = 0
+Reference: action = REVOKE, offset = 2835, line number = 52, charPositionInLine = 0
+Reference: action = REVOKE, offset = 2894, line number = 53, charPositionInLine = 0
+Reference: action = REVOKE, offset = 2945, line number = 54, charPositionInLine = 0
+Reference: action = REVOKE, offset = 3115, line number = 56, charPositionInLine = 0
+Reference: action = REVOKE, offset = 3159, line number = 57, charPositionInLine = 0
+Reference: action = REVOKE, offset = 3215, line number = 58, charPositionInLine = 0
+Reference: action = REVOKE, offset = 3280, line number = 59, charPositionInLine = 0
+Reference: action = REVOKE, offset = 3337, line number = 60, charPositionInLine = 0
+Reference: action = REVOKE, offset = 3391, line number = 61, charPositionInLine = 0
+Reference: action = REVOKE, offset = 3500, line number = 63, charPositionInLine = 0
+Reference: action = DENY, offset = 3568, line number = 64, charPositionInLine = 0
+Reference: action = DENY, offset = 3626, line number = 65, charPositionInLine = 0
+Reference: action = DENY, offset = 3691, line number = 66, charPositionInLine = 0
+Reference: action = DENY, offset = 3724, line number = 67, charPositionInLine = 0
+Reference: action = DENY, offset = 3757, line number = 68, charPositionInLine = 0
+Reference: action = DENY, offset = 3800, line number = 69, charPositionInLine = 0
+Reference: action = DENY, offset = 3839, line number = 70, charPositionInLine = 0
+Reference: action = DENY, offset = 3909, line number = 71, charPositionInLine = 0
+Reference: action = DENY, offset = 3953, line number = 72, charPositionInLine = 0
+Reference: action = DENY, offset = 4001, line number = 73, charPositionInLine = 0
+Reference: action = DENY, offset = 4056, line number = 74, charPositionInLine = 0
+Reference: action = DENY, offset = 4103, line number = 75, charPositionInLine = 0
+Reference: action = DENY, offset = 4266, line number = 77, charPositionInLine = 0
+Reference: action = DENY, offset = 4302, line number = 78, charPositionInLine = 0
+Reference: action = DENY, offset = 4344, line number = 79, charPositionInLine = 0
+Reference: action = DENY, offset = 4405, line number = 80, charPositionInLine = 0
+Reference: action = DENY, offset = 4458, line number = 81, charPositionInLine = 0
+Reference: action = DENY, offset = 4511, line number = 82, charPositionInLine = 0
+Reference: action = DENY, offset = 4599, line number = 84, charPositionInLine = 0
+Reference: action = EXEC, offset = 4664, line number = 86, charPositionInLine = 0
+Reference: action = DECLARE, offset = 4757, line number = 92, charPositionInLine = 0
+Reference: action = OPEN, offset = 4868, line number = 95, charPositionInLine = 0
+Reference: action = CLOSE, offset = 4978, line number = 100, charPositionInLine = 0
+Reference: action = CLOSE, offset = 5046, line number = 104, charPositionInLine = 0
+Reference: action = BEGIN, offset = 5098, line number = 108, charPositionInLine = 0
+Reference: action = DECLARE, offset = 5195, line number = 113, charPositionInLine = 0
+Reference: action = BEGIN, offset = 5236, line number = 114, charPositionInLine = 0
+Reference: action = DECLARE, offset = 5494, line number = 121, charPositionInLine = 0
+Reference: action = BEGIN, offset = 5535, line number = 122, charPositionInLine = 0
+Reference: action = DECLARE, offset = 5821, line number = 130, charPositionInLine = 0
+Reference: action = BEGIN, offset = 5862, line number = 131, charPositionInLine = 0
+Reference: action = DECLARE, offset = 6199, line number = 139, charPositionInLine = 0
+Reference: action = DECLARE, offset = 6240, line number = 140, charPositionInLine = 0
+Reference: action = BEGIN, offset = 6289, line number = 141, charPositionInLine = 0
+Reference: action = DECLARE, offset = 6660, line number = 149, charPositionInLine = 0
+Reference: action = DECLARE, offset = 6700, line number = 150, charPositionInLine = 0
+Reference: action = BEGIN, offset = 6755, line number = 151, charPositionInLine = 0
+Reference: action = DECLARE, offset = 7091, line number = 160, charPositionInLine = 0
+Reference: action = BEGIN, offset = 7131, line number = 161, charPositionInLine = 0
+Reference: action = END, offset = 7395, line number = 169, charPositionInLine = 0
+Reference: action = DECLARE, offset = 7472, line number = 173, charPositionInLine = 0
+Reference: action = BEGIN TRANSACTION, offset = 7572, line number = 176, charPositionInLine = 0
+Reference: action = SET, offset = 7592, line number = 177, charPositionInLine = 0
+Reference: action = IF, offset = 7620, line number = 179, charPositionInLine = 0
+Reference: action = END, offset = 7922, line number = 192, charPositionInLine = 0
+Reference: action = DECLARE, offset = 8027, line number = 196, charPositionInLine = 0
+Reference: action = WAITFOR, offset = 8077, line number = 197, charPositionInLine = 0
+Reference: action = DECLARE, offset = 8217, line number = 204, charPositionInLine = 0
+Reference: action = WAITFOR, offset = 8265, line number = 205, charPositionInLine = 0
+Reference: action = DECLARE, offset = 8426, line number = 212, charPositionInLine = 0
+Reference: action = GET, offset = 8475, line number = 213, charPositionInLine = 0
+Reference: action = DECLARE, offset = 8622, line number = 218, charPositionInLine = 0
+Reference: action = SET, offset = 8692, line number = 221, charPositionInLine = 0
+Reference: action = BEGIN, offset = 8729, line number = 223, charPositionInLine = 0
+Reference: action = SEND, offset = 8927, line number = 228, charPositionInLine = 0
+Reference: action = DECLARE, offset = 9151, line number = 234, charPositionInLine = 0
+Reference: action = SET, offset = 9221, line number = 237, charPositionInLine = 0
+Reference: action = BEGIN, offset = 9258, line number = 239, charPositionInLine = 0
+Reference: action = SEND, offset = 9360, line number = 244, charPositionInLine = 0
+Reference: action = CREATE MASTER KEY, offset = 9452, line number = 249, charPositionInLine = 0
+Reference: action = OPEN, offset = 9531, line number = 253, charPositionInLine = 0
+Reference: action = CLOSE, offset = 9609, line number = 257, charPositionInLine = 0
+Reference: action = USE, offset = 9670, line number = 261, charPositionInLine = 0
+Reference: action = CREATE CERTIFICATE, offset = 9694, line number = 262, charPositionInLine = 0
+Reference: action = USE, offset = 9898, line number = 269, charPositionInLine = 0
+Reference: action = CREATE CERTIFICATE, offset = 9922, line number = 270, charPositionInLine = 0
+Reference: action = USE, offset = 10184, line number = 277, charPositionInLine = 0
+Reference: action = CREATE CERTIFICATE, offset = 10208, line number = 278, charPositionInLine = 0
+Reference: action = CREATE SYMMETRIC KEY, offset = 10334, line number = 283, charPositionInLine = 0
+Reference: action = CREATE SYMMETRIC KEY, offset = 10474, line number = 289, charPositionInLine = 0
+Reference: action = CREATE SYMMETRIC KEY, offset = 10783, line number = 298, charPositionInLine = 0
+Reference: action = CREATE MESSAGE TYPE, offset = 10994, line number = 307, charPositionInLine = 0
+Reference: action = CREATE MESSAGE TYPE, offset = 11144, line number = 313, charPositionInLine = 0
+Reference: action = CREATE MESSAGE TYPE, offset = 11261, line number = 319, charPositionInLine = 0
+Reference: action = CREATE MESSAGE TYPE, offset = 11368, line number = 323, charPositionInLine = 0
+Reference: action = CREATE MESSAGE TYPE, offset = 11485, line number = 327, charPositionInLine = 0
+Reference: action = CREATE CONTRACT, offset = 11595, line number = 331, charPositionInLine = 0
+Reference: action = CREATE QUEUE, offset = 11971, line number = 343, charPositionInLine = 0
+Reference: action = CREATE QUEUE, offset = 12037, line number = 347, charPositionInLine = 0
+Reference: action = CREATE QUEUE, offset = 12150, line number = 351, charPositionInLine = 0
+Reference: action = CREATE QUEUE, offset = 12374, line number = 360, charPositionInLine = 0
+Reference: action = CREATE QUEUE, offset = 12480, line number = 365, charPositionInLine = 0
+Reference: action = ALTER QUEUE, offset = 12755, line number = 376, charPositionInLine = 0
+Reference: action = ALTER QUEUE, offset = 12849, line number = 380, charPositionInLine = 0
+Reference: action = ALTER QUEUE, offset = 13010, line number = 387, charPositionInLine = 0
+Reference: action = ALTER QUEUE, offset = 13153, line number = 391, charPositionInLine = 0
+Reference: action = ALTER QUEUE, offset = 13351, line number = 398, charPositionInLine = 0
+Reference: action = ALTER QUEUE, offset = 13439, line number = 402, charPositionInLine = 0
+Reference: action = ALTER QUEUE, offset = 13522, line number = 406, charPositionInLine = 0
+Reference: action = ALTER QUEUE, offset = 13608, line number = 410, charPositionInLine = 0
+Reference: action = ALTER QUEUE, offset = 13701, line number = 414, charPositionInLine = 0
+Reference: action = CREATE CONTRACT, offset = 13753, line number = 417, charPositionInLine = 0
