@@ -1276,3 +1276,35 @@ SELECT id FROM dbo.t1 WITH (NOLOCK, INDEX = i1, INDEX = i2);
 GO
 SELECT id FROM dbo.t1 WITH (NOLOCK, NOEXPAND, SERIALIZABLE);
 GO
+
+-- GROUP BY options
+SELECT col1 FROM testTable GROUP BY GROUPING SETS (col1, ());
+GO
+SELECT col1 FROM testTable GROUP BY ROLLUP (col1, col2);
+GO
+SELECT col1 FROM testTable GROUP BY ALL col1, col2;
+GO
+SELECT col1 FROM testTable GROUP BY col1, col2 WITH ROLLUP;
+GO
+SELECT col1 FROM testTable GROUP BY col1, col2 WITH CUBE;
+GO
+SELECT col1 FROM testTable GROUP BY col1, col2 WITH (DISTRIBUTED_AGG);
+GO
+SELECT col1 FROM testTable GROUP BY CUBE (col1, col2);
+GO
+SELECT col1 FROM testTable GROUP BY GROUPING SETS ( ROLLUP (col1, col2), CUBE (col1, col2) );
+GO
+SELECT col1 FROM testTable GROUP BY ROLLUP (col1, col2);
+GO
+SELECT col1 FROM testTable GROUP BY CUBE (col1, col2);
+GO
+SELECT col1 FROM testTable GROUP BY (), CUBE (col1, col2);
+GO
+SELECT col1 FROM testTable GROUP BY GROUPING SETS ((), CUBE (col1, col2));
+GO
+SELECT col1 FROM testTable GROUP BY (), CUBE (col1, col2), (), col1;
+GO
+SELECT col1 FROM testTable GROUP BY (), CUBE (col1, col2), (), col1;
+GO
+SELECT col1 FROM testTable GROUP BY (), CUBE (col1, col2), (), col1;
+GO

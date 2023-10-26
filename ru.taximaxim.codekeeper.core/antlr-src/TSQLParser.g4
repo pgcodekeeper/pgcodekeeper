@@ -2536,10 +2536,22 @@ query_specification
     (FROM from_item (COMMA from_item)*)?
     (WHERE where=search_condition)?
     // https://msdn.microsoft.com/en-us/library/ms177673.aspx
-    (GROUP BY (ALL)? expression (COMMA expression)*)?
+    (GROUP BY group_by_clause)?
     (HAVING having=search_condition)?
     order_by_clause?
     | table_value_constructor
+    ;
+
+group_by_clause
+    : group_by_item (COMMA group_by_item)*
+    | ALL expression_list
+    | expression_list WITH (ROLLUP | CUBE | LR_BRACKET DISTRIBUTED_AGG RR_BRACKET)
+    ;
+
+group_by_item
+    : expression
+    | GROUPING SETS LR_BRACKET (expression | LR_BRACKET RR_BRACKET) (COMMA (expression | LR_BRACKET RR_BRACKET))* RR_BRACKET
+    | LR_BRACKET RR_BRACKET
     ;
 
 match_specification
@@ -3181,6 +3193,7 @@ simple_id
     | CREATION_DISPOSITION
     | CREDENTIAL
     | CRYPTOGRAPHIC
+    | CUBE
     | CURSOR_CLOSE_ON_COMMIT
     | CURSOR_DEFAULT
     | CYCLE
@@ -3214,6 +3227,7 @@ simple_id
     | DISABLE
     | DISABLE_BROKER
     | DISABLED
+    | DISTRIBUTED_AGG
     | DOCUMENT
     | DTC_SUPPORT
     | DYNAMIC
@@ -3274,6 +3288,7 @@ simple_id
     | GLOBAL
     | GOVERNOR
     | GROUP_MAX_REQUESTS
+    | GROUPING
     | HADR
     | HASH
     | HASHED
@@ -3536,6 +3551,7 @@ simple_id
     | REWIND
     | ROBUST
     | ROLE
+    | ROLLUP
     | ROOT
     | ROUTE
     | ROW

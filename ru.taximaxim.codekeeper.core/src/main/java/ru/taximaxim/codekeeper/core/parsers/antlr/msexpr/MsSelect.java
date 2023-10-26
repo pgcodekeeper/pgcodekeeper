@@ -163,8 +163,18 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
         }
 
         // GROUP part
-        for (ExpressionContext exp : query.expression()) {
-            vex.analyze(exp);
+        var group = query.group_by_clause();
+        if (group != null) {
+            var expList = group.expression_list();
+            if (expList != null) {
+                vex.expressionList(expList);
+            } else {
+                for (var groupItem : group.group_by_item()) {
+                    for (var exp : groupItem.expression()) {
+                        vex.analyze(exp);
+                    }
+                }
+            }
         }
 
         Top_clauseContext tc = query.top_clause();
