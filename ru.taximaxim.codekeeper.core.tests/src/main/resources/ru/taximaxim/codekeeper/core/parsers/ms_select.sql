@@ -1282,6 +1282,8 @@ SELECT col1 FROM testTable GROUP BY GROUPING SETS (col1, ());
 GO
 SELECT col1 FROM testTable GROUP BY ROLLUP (col1, col2);
 GO
+SELECT col1 FROM testTable GROUP BY ALL col1, col2;
+GO
 SELECT col1 FROM testTable GROUP BY col1, col2 WITH ROLLUP;
 GO
 SELECT col1 FROM testTable GROUP BY col1, col2 WITH CUBE;
