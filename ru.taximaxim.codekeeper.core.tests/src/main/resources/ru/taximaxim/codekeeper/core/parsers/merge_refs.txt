@@ -107,3 +107,6 @@ Reference: Object = pa_target (TABLE), action = MERGE, offset = 6925, line numbe
 Reference: action = SELECT, offset = 7163, line number = 315, charPositionInLine = 0
 Reference: action = ROLLBACK, offset = 7201, line number = 316, charPositionInLine = 0
 Reference: Object = measurement (TABLE), action = MERGE, offset = 7223, line number = 318, charPositionInLine = 11
+Reference: Object = measurement (TABLE), action = MERGE, offset = 7651, line number = 329, charPositionInLine = 11
+Reference: Object = request_app_names (TABLE), action = MERGE, offset = 8099, line number = 339, charPositionInLine = 11
+Reference: Object = request_app_names (TABLE), action = MERGE, offset = 8306, line number = 346, charPositionInLine = 11

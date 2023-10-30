@@ -3734,7 +3734,7 @@ null_ordering
 merge_stmt_for_psql
     : with_clause?
     MERGE INTO merge_table_name=schema_qualified_name (AS? alias=identifier)?
-    USING (source_table_name=schema_qualified_name (AS? source_alias=identifier)? | table_subquery AS? source_alias=identifier) ON vex
+    USING from_item ON vex
     when_condition+
     ;
 
