@@ -325,3 +325,27 @@ WHEN MATCHED THEN UPDATE
 WHEN NOT MATCHED THEN INSERT
      (city_id, logdate, peaktemp, unitsales)
    VALUES (city_id, logdate, peaktemp, unitsales);
+   
+MERGE INTO measurement AS mes
+USING json_to_recordset(measurement) AS x("Identifier" VARCHAR (100),
+                                             "Integrator" VARCHAR (100),
+                                             "DisplayName" VARCHAR (500))
+ON (mes.identifier = "Identifier"
+    AND mes.integrator = "Integrator")
+WHEN NOT MATCHED THEN
+    INSERT (dentifier, integrator, display_name)
+    VALUES ("Application", "Integrator", "isplayName");
+
+MERGE INTO request_app_names AS dest
+USING string_to_table(in_value, ',') AS source(val)
+ON (dest.request_app_name = source.val)
+WHEN NOT MATCHED THEN
+    INSERT (request_app_name)
+    VALUES (source.val);
+
+MERGE INTO request_app_names AS dest
+USING public.func1() AS source(val)
+ON (dest.request_app_name = source.val)
+WHEN NOT MATCHED THEN
+    INSERT (request_app_name)
+    VALUES (source.val);

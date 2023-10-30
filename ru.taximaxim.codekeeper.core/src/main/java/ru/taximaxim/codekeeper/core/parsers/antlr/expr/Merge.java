@@ -15,7 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.parsers.antlr.expr;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -23,8 +22,6 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Merge_matc
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Merge_not_matchedContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Merge_stmt_for_psqlContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Merge_updateContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qualified_nameContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Table_subqueryContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Values_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Values_valuesContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext;
@@ -55,18 +52,7 @@ public class Merge extends AbstractExprWithNmspc<Merge_stmt_for_psqlContext>  {
         }
 
         select.addNameReference(merge.merge_table_name, merge.alias, null);
-
-        Schema_qualified_nameContext sourceTable = merge.source_table_name;
-        if (sourceTable != null) {
-            select.addNameReference(sourceTable, merge.source_alias, null);
-        } else {
-            String tableSubQueryAlias = merge.source_alias.getText();
-            select.addReference(tableSubQueryAlias, null);
-
-            Table_subqueryContext subQuery = merge.table_subquery();
-            List<ModPair<String, String>> columnList = new Select(select).analyze(subQuery.select_stmt());
-            select.complexNamespace.put(tableSubQueryAlias, new ArrayList<>(columnList));
-        }
+        select.from(List.of(merge.from_item()));
 
         ValueExpr vexOn = new ValueExpr(select);
         vexOn.analyze(new Vex(merge.vex()));

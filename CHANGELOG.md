@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed a bug in the SQL parser for the MERGE statement.
+
 ## [8.8.0] - 2023-09-27
 
 ### Added

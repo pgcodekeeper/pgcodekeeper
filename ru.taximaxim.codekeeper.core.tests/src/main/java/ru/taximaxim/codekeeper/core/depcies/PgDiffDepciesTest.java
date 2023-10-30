@@ -263,6 +263,9 @@ class PgDiffDepciesTest {
         // добавление таблицы с цикличной зависимотью к функции
         // пользователь выбрал таблицу t1
         "add_table_with_cyclic_dep_usr_t1, true",
+        // добавление функции с merge statement и с зависимостями function & table
+        // пользователь выбрал функцию.
+        "add_function_with_merge_stat_usr, true",
     })
     void runDiff(String userSelTemplate, Boolean isEnableDepcies) throws IOException, InterruptedException {
         PgDatabase oldDatabase;
