@@ -801,8 +801,8 @@ public abstract class ParserAbstract {
         } else if (option.NULL() != null) {
             col.setNullValue(option.NOT() == null);
         } else if (option.DEFAULT() != null) {
-            if (option.id() != null) {
-                col.setDefaultName(option.id().getText());
+            if (option.constraint != null) {
+                col.setDefaultName(option.constraint.getText());
             }
             ExpressionContext exp = option.expression();
             col.setDefaultValue(getFullCtxText(exp));

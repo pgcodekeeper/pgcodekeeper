@@ -126,7 +126,7 @@ public class MsTypesReader extends JdbcReader {
                 definition.append(" WHERE ").append(filter);
             }
 
-            if (isIgnoreDupKey) {
+            if ((isPrimaryKey || isUniqueConstraint) && isIgnoreDupKey) {
                 // constraint only
                 definition.append(" WITH (IGNORE_DUP_KEY = ON)");
             } else if (bucketCount > 0) {

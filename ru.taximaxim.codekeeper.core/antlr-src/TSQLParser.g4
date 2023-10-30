@@ -2299,7 +2299,7 @@ column_def_table_constraint
     ;
 
 table_index
-    : INDEX id clustered? HASH? index_rest
+    : INDEX id UNIQUE? clustered? HASH? index_rest
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms187742.aspx
@@ -2317,6 +2317,7 @@ column_option
     | (CONSTRAINT constraint=id)? column_constraint_body
     | (CONSTRAINT constraint=id)? DEFAULT expression (WITH VALUES)?
     | MASKED WITH LR_BRACKET FUNCTION EQUAL STRING RR_BRACKET
+    | INDEX index=id clustered? index_options? (ON file_group_name=id)?
     ;
 
 alter_column_option
