@@ -26,6 +26,31 @@ return
 )
 GO
 
+--create function return table with indeces and constraints
+CREATE FUNCTION [dbo].[func_name]()
+RETURNS @Result TABLE
+(
+     [col1] INT INDEX index_name CLUSTERED with (fillfactor=10)
+    ,[col2] NCHAR(3)
+    ,[col3] INT
+    ,[col4] INT primary key NONCLUSTERED with (fillfactor=10)
+    ,[col5] INT
+    ,INDEX index_name2 UNIQUE NONCLUSTERED ([col1]) with (fillfactor=10)
+    ,UNIQUE NONCLUSTERED ([col1] ASC)
+)
+AS
+BEGIN
+    INSERT INTO @Result([col1], [col2])
+    SELECT t1.col1, t2.col2
+    FROM (VALUES
+      (N'v08'),
+      (N'v09')
+      ) AS t2 (col2)
+      INNER JOIN [dbo].[table_1_name]() AS t1 ON t1.col3 = t2.col2
+    RETURN;
+END
+GO
+
 --create function return date_type
 Create Function dbo.FooBar(
     @p1 nVarchar(4000)
