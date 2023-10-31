@@ -1398,7 +1398,6 @@ output_dml_list_elem
 
 output_column_name
     : expression (DOT STAR)?
-    | DOLLAR ACTION
     ;
 
 // DDL
@@ -2435,6 +2434,7 @@ expression
     | date_expression
     | LR_BRACKET select_stmt_no_parens RR_BRACKET
     | primitive_expression
+    | DOLLAR_ACTION
     ;
 
 object_expression
@@ -2526,8 +2526,6 @@ predicate
     | UPDATE LR_BRACKET expression_list? RR_BRACKET
     | (CONTAINS | FREETEXT) LR_BRACKET (expression | LR_BRACKET expression (COMMA expression)+ RR_BRACKET | STAR)
        COMMA expression (COMMA language_term)? RR_BRACKET
-    | DOLLAR ACTION EQUAL expression
-    | DOLLAR ACTION IN LR_BRACKET (select_statement | expression_list) RR_BRACKET
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms176104.aspx
