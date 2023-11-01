@@ -5,6 +5,10 @@ CREATE TABLE dbo.Employee (
 );
 GO;
 
+-- Create Table With primary key clustered
+CREATE TABLE #calls (date DATETIME PRIMARY KEY CLUSTERED (date));
+GO
+
 -- create table and with table constraint
 CREATE TABLE dbo.Employee (
   EmployeeID int PRIMARY KEY CLUSTERED,
@@ -236,4 +240,7 @@ GO
 CREATE TABLE [dbo].[t](
 	[ID] [int] NOT NULL IDENTITY (-99, - 1) NOT FOR REPLICATION
 ) ON [PRIMARY]
+GO
+
+CREATE TABLE t (c1 integer, c2 integer PRIMARY KEY CLUSTERED (c1, c2));
 GO
