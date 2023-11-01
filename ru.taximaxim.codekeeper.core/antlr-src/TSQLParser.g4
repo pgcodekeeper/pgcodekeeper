@@ -1543,7 +1543,7 @@ create_or_alter_procedure
       (FOR REPLICATION)? AS proc_body
     ;
 
- proc_body
+proc_body
     : sql_clauses
     | EXTERNAL NAME assembly_specifier
     ;
@@ -2326,7 +2326,7 @@ identity_value
     ;
 
 column_constraint_body
-    : (PRIMARY KEY | UNIQUE) clustered? HASH? index_options?
+    : (PRIMARY KEY | UNIQUE) clustered? HASH? (LR_BRACKET column_name_list_with_order RR_BRACKET)? index_options? (ON id)?
     | CHECK not_for_replication? LR_BRACKET search_condition RR_BRACKET
     | (FOREIGN KEY)? REFERENCES qualified_name (LR_BRACKET id RR_BRACKET)? on_delete? on_update? not_for_replication?
     ;
