@@ -832,6 +832,9 @@ XMLSCHEMA: X M L S C H E M A;
 XQUERY: X Q U E R Y;
 XSINIL: X S I N I L;  // last identifier rule, sync with CustomTSQLAntlrErrorStrategy
 
+// Combinations that cannot be used as IDs
+DOLLAR_ACTION:      DOLLAR ACTION;
+DOLLAR_PARTITION:   DOLLAR PARTITION;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/slash-star-comment-transact-sql
 COMMENT:            '/*' (COMMENT | .)*? '*/' -> channel(HIDDEN);

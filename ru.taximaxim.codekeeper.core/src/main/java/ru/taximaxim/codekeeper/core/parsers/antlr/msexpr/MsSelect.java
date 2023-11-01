@@ -288,7 +288,7 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
                 addReference(alias.id().getText(), null);
             }
         } else if ((der = item.derived_table()) != null) {
-            new MsSelect(this).analyze(der.select_statement());
+            new MsSqlClauses(this).dml(der.dml_clause());
             addReference(alias.id().getText(), null);
         } else if ((table = item.qualified_name()) != null) {
             addNameReference(table, alias);

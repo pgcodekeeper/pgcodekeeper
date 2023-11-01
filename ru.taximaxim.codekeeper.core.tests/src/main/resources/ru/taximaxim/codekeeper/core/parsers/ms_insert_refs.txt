@@ -74,29 +74,19 @@ Reference: action = USE, offset = 8420, line number = 271, charPositionInLine = 
 Reference: action = EXEC, offset = 8574, line number = 276, charPositionInLine = 0
 Reference: Object = "HumanResources" (SCHEMA), action = null, offset = 8925, line number = 286, charPositionInLine = 44
 Reference: Object = "HumanResources"."Department" (TABLE), action = INSERT, offset = 8940, line number = 286, charPositionInLine = 59
-Reference: Object = "Sales" (SCHEMA), action = null, offset = 9741, line number = 307, charPositionInLine = 13
-Reference: Object = "Sales"."SalesHistory" (TABLE), action = CREATE, offset = 9747, line number = 307, charPositionInLine = 19
-Reference: action = ALTER DATABASE, offset = 10215, line number = 321, charPositionInLine = 0
-Reference: Object = "Sales" (SCHEMA), action = null, offset = 10357, line number = 325, charPositionInLine = 12
-Reference: Object = "Sales"."SalesHistory" (TABLE), action = INSERT, offset = 10363, line number = 325, charPositionInLine = 18
-Reference: action = ALTER DATABASE, offset = 10682, line number = 340, charPositionInLine = 0
-Reference: Object = "HumanResources" (SCHEMA), action = null, offset = 11002, line number = 348, charPositionInLine = 12
-Reference: Object = "HumanResources"."Department" (TABLE), action = INSERT, offset = 11017, line number = 348, charPositionInLine = 27
-Reference: Object = "Production" (SCHEMA), action = null, offset = 11391, line number = 358, charPositionInLine = 12
-Reference: Object = "Production"."Location" (TABLE), action = INSERT, offset = 11402, line number = 358, charPositionInLine = 23
-Reference: action = DECLARE, offset = 11616, line number = 365, charPositionInLine = 0
-Reference: Object = "Production" (SCHEMA), action = null, offset = 11773, line number = 368, charPositionInLine = 7
-Reference: Object = "Production"."ScrapReason" (TABLE), action = INSERT, offset = 11784, line number = 368, charPositionInLine = 18
-Reference: action = SELECT, offset = 11981, line number = 374, charPositionInLine = 0
-Reference: action = SELECT, offset = 12082, line number = 376, charPositionInLine = 0
-Reference: action = IF, offset = 12278, line number = 382, charPositionInLine = 0
-Reference: Object = dbo (SCHEMA), action = null, offset = 12380, line number = 385, charPositionInLine = 13
-Reference: Object = dbo."EmployeeSales" (TABLE), action = CREATE, offset = 12384, line number = 385, charPositionInLine = 17
-Reference: action = DECLARE, offset = 12595, line number = 393, charPositionInLine = 0
-Reference: Object = dbo (SCHEMA), action = null, offset = 12746, line number = 399, charPositionInLine = 12
-Reference: Object = dbo."EmployeeSales" (TABLE), action = INSERT, offset = 12750, line number = 399, charPositionInLine = 16
-Reference: action = SELECT, offset = 13155, line number = 411, charPositionInLine = 0
-Reference: action = SELECT, offset = 13217, line number = 414, charPositionInLine = 0
-Reference: action = IF, offset = 13311, line number = 417, charPositionInLine = 0
-Reference: Object = "Production" (SCHEMA), action = null, offset = 13427, line number = 421, charPositionInLine = 13
-Reference: Object = "Production"."ZeroInventory" (TABLE), action = CREATE, offset = 13438, line number = 421, charPositionInLine = 24
+Reference: Object = "Sales" (SCHEMA), action = null, offset = 9728, line number = 305, charPositionInLine = 12
+Reference: Object = "Sales"."SalesHistory" (TABLE), action = INSERT, offset = 9734, line number = 305, charPositionInLine = 18
+Reference: action = ALTER DATABASE, offset = 10053, line number = 320, charPositionInLine = 0
+Reference: Object = "HumanResources" (SCHEMA), action = null, offset = 10373, line number = 328, charPositionInLine = 12
+Reference: Object = "HumanResources"."Department" (TABLE), action = INSERT, offset = 10388, line number = 328, charPositionInLine = 27
+Reference: Object = "Production" (SCHEMA), action = null, offset = 10762, line number = 338, charPositionInLine = 12
+Reference: Object = "Production"."Location" (TABLE), action = INSERT, offset = 10773, line number = 338, charPositionInLine = 23
+Reference: action = DECLARE, offset = 10987, line number = 345, charPositionInLine = 0
+Reference: Object = "Production" (SCHEMA), action = null, offset = 11144, line number = 348, charPositionInLine = 7
+Reference: Object = "Production"."ScrapReason" (TABLE), action = INSERT, offset = 11155, line number = 348, charPositionInLine = 18
+Reference: Object = dbo (SCHEMA), action = null, offset = 11440, line number = 356, charPositionInLine = 12
+Reference: Object = dbo."EmployeeSales" (TABLE), action = INSERT, offset = 11444, line number = 356, charPositionInLine = 16
+Reference: Object = "P" (SCHEMA), action = null, offset = 11864, line number = 369, charPositionInLine = 12
+Reference: Object = "P"."Z" (TABLE), action = INSERT, offset = 11866, line number = 369, charPositionInLine = 14
+Reference: Object = dbo (SCHEMA), action = null, offset = 12110, line number = 380, charPositionInLine = 12
+Reference: Object = dbo.t1 (TABLE), action = INSERT, offset = 12114, line number = 380, charPositionInLine = 16

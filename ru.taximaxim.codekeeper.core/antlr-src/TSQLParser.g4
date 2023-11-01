@@ -1393,12 +1393,7 @@ output_clause
     ;
 
 output_dml_list_elem
-    : output_column_name (AS? column_alias)?  // TODO: scalar_expression
-    ;
-
-output_column_name
-    : expression (DOT STAR)?
-    | DOLLAR ACTION
+    : expression (DOT STAR)? (AS? column_alias)?
     ;
 
 // DDL
@@ -2435,6 +2430,7 @@ expression
     | date_expression
     | LR_BRACKET select_stmt_no_parens RR_BRACKET
     | primitive_expression
+    | DOLLAR_ACTION
     ;
 
 object_expression
@@ -2730,7 +2726,7 @@ bulk_option
     ;
 
 derived_table
-    : LR_BRACKET select_statement RR_BRACKET
+    : LR_BRACKET dml_clause RR_BRACKET
     ;
 
 function_call
@@ -2789,7 +2785,7 @@ function_call
     // https://docs.microsoft.com/en-us/sql/t-sql/functions/trim-transact-sql
     | TRIM LR_BRACKET expression FROM expression RR_BRACKET
     // https://docs.microsoft.com/en-us/sql/t-sql/functions/partition-transact-sql
-    | (id DOT)? DOLLAR PARTITION DOT function_call
+    | (id DOT)? DOLLAR_PARTITION DOT function_call
     ;
 
 switch_section
