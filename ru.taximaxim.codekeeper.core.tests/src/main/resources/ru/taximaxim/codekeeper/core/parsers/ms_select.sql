@@ -1308,3 +1308,5 @@ SELECT col1 FROM testTable GROUP BY (), CUBE (col1, col2), (), col1;
 GO
 SELECT col1 FROM testTable GROUP BY (), CUBE (col1, col2), (), col1;
 GO
+SELECT $PARTITION.P (10);
+GO  

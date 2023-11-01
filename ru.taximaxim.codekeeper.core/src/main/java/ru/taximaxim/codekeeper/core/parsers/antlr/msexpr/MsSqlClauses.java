@@ -102,7 +102,7 @@ public class MsSqlClauses extends MsAbstractExpr {
 
     }
 
-    private void dml(Dml_clauseContext dml) {
+    void dml(Dml_clauseContext dml) {
         Merge_statementContext ms = dml.merge_statement();
         Delete_statementContext ds;
         Insert_statementContext is;

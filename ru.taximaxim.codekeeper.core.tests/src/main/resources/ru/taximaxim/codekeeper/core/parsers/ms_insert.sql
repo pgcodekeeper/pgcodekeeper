@@ -301,26 +301,6 @@ INSERT INTO OPENDATASOURCE('SQLNCLI',
 GO
 
 --+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
--- Inserting data into a heap with minimal logging
-
--- Create the target heap.
-CREATE TABLE Sales.SalesHistory(
-    SalesOrderID int NOT NULL,
-    SalesOrderDetailID int NOT NULL,
-    CarrierTrackingNumber nvarchar(25) NULL,
-    OrderQty smallint NOT NULL,
-    ProductID int NOT NULL,
-    SpecialOfferID int NOT NULL,
-    UnitPrice money NOT NULL,
-    UnitPriceDiscount money NOT NULL,
-    LineTotal money NOT NULL,
-    rowguid uniqueidentifier /*ROWGUIDCOL*/  NOT NULL,
-    ModifiedDate datetime NOT NULL );
-GO
--- Temporarily set the recovery model to BULK_LOGGED.
-ALTER DATABASE AdventureWorks2012
-SET RECOVERY BULK_LOGGED;
-GO
 -- Transfer data from Sales.SalesOrderDetail to Sales.SalesHistory
 INSERT INTO Sales.SalesHistory WITH (TABLOCK)
     (SalesOrderID, 
@@ -370,31 +350,8 @@ INSERT Production.ScrapReason
         INTO @MyTableVar
 VALUES (N'Operator error', GETDATE());
 
---Display the result set of the table variable.
-SELECT NewScrapReasonID, Name, ModifiedDate FROM @MyTableVar;
---Display the result set of the table.
-SELECT ScrapReasonID, Name, ModifiedDate 
-FROM Production.ScrapReason;
-
 --+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 -- Using OUTPUT with identity and computed columns
-
-IF OBJECT_ID ('dbo.EmployeeSales', 'U') IS NOT NULL
-    DROP TABLE dbo.EmployeeSales;
-GO
-CREATE TABLE dbo.EmployeeSales
-( EmployeeID   int IDENTITY (1,5)NOT NULL,
-  LastName     nvarchar(20) NOT NULL,
-  FirstName    nvarchar(20) NOT NULL,
-  CurrentSales money NOT NULL,
-  ProjectedSales AS CurrentSales * 1.10 
-);
-GO
-DECLARE @MyTableVar table(
-  LastName     nvarchar(20) NOT NULL,
-  FirstName    nvarchar(20) NOT NULL,
-  CurrentSales money NOT NULL
-  );
 
 INSERT INTO dbo.EmployeeSales (LastName, FirstName, CurrentSales)
   OUTPUT INSERTED.LastName, 
@@ -407,38 +364,19 @@ INSERT INTO dbo.EmployeeSales (LastName, FirstName, CurrentSales)
         ON sp.BusinessEntityID = c.BusinessEntityID
     WHERE sp.BusinessEntityID LIKE '2%'
     ORDER BY c.LastName, c.FirstName;
-
-SELECT LastName, FirstName, CurrentSales
-FROM @MyTableVar;
-GO
-SELECT EmployeeID, LastName, FirstName, CurrentSales, ProjectedSales
-FROM dbo.EmployeeSales;
-
-IF OBJECT_ID(N'Production.ZeroInventory', N'U') IS NOT NULL
-  DROP TABLE Production.ZeroInventory;
 GO
 
-CREATE TABLE Production.ZeroInventory (DeletedProductID int, RemovedOnDate DateTime);
+INSERT INTO P.Z (A, P)
+SELECT C.A, C.P
+FROM (
+    MERGE P.P AS p
+    USING (SELECT P, SUM(O) FROM s.t AS s) AS s(P, O) ON (p.P = s.P)
+    WHEN MATCHED THEN UPDATE SET p.Q = 1
+    OUTPUT $ACTION, DELETED.P
+    ) AS C(A, P)
+WHERE A = 'DELETE';
 GO
 
--- INSERT INTO Production.ZeroInventory (DeletedProductID, RemovedOnDate)
--- SELECT ProductID, GETDATE()
--- FROM
--- (   MERGE Production.ProductInventory AS pi
-    -- USING (SELECT ProductID, SUM(OrderQty) FROM Sales.SalesOrderDetail AS sod
-           -- JOIN Sales.SalesOrderHeader AS soh
-           -- ON sod.SalesOrderID = soh.SalesOrderID
-           -- AND soh.OrderDate = '20070401'
-           -- GROUP BY ProductID) AS src (ProductID, OrderQty)
-    -- ON (pi.ProductID = src.ProductID)
-    -- WHEN MATCHED AND pi.Quantity - src.OrderQty <= 0
-        -- THEN DELETE
-    -- WHEN MATCHED
-        -- THEN UPDATE SET pi.Quantity = pi.Quantity - src.OrderQty
-    -- OUTPUT $action, deleted.ProductID) AS Changes (Action, ProductID)
--- WHERE Action = 'DELETE';
--- IF @@ROWCOUNT = 0
--- PRINT 'Warning: No rows were inserted';
--- GO
--- SELECT DeletedProductID, RemovedOnDate FROM Production.ZeroInventory; 
-
+INSERT INTO dbo.t1 (id)
+SELECT x.id FROM (delete from dbo.tt1 OUTPUT DELETED.*) x;
+GO
