@@ -1388,11 +1388,15 @@ update_statement
 
 // https://msdn.microsoft.com/en-us/library/ms177564.aspx
 output_clause
-    : OUTPUT output_dml_list_elem (COMMA output_dml_list_elem)*
-    (INTO (LOCAL_ID | qualified_name) name_list_in_brackets?)?
+    : OUTPUT output_dml_list INTO (LOCAL_ID | qualified_name) name_list_in_brackets? (OUTPUT output_dml_list)?
+    | OUTPUT output_dml_list
     ;
 
-output_dml_list_elem
+output_dml_list
+    : output_dml_elem (COMMA output_dml_elem)*
+    ;
+
+output_dml_elem
     : expression (DOT STAR)? (AS? column_alias)?
     ;
 

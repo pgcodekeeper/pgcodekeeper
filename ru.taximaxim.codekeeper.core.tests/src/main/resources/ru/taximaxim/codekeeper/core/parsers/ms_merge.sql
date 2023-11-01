@@ -39,4 +39,5 @@ MERGE dbo.Table1 AS T
       END AS FirmId,
       CASE WHEN $action IN ('INSERT', 'UPDATE') THEN Inserted.ParticipationCount
       WHEN $action = 'DELETE' THEN DELETED.ParticipationCount
-      END AS ParticipationCount;
+      END AS ParticipationCount
+    OPTION (HASH GROUP);

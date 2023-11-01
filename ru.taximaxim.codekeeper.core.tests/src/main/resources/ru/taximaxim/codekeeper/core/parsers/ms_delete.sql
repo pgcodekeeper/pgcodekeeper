@@ -166,11 +166,14 @@ OUTPUT DELETED.ProductID,
        p.Name,
        p.ProductModelID,
        DELETED.ProductPhotoID
-    INTO @MyTableVar
+INTO @MyTableVar
+OUTPUT DELETED.ProductID,
+    DELETED.ProductPhotoID,
+    GETDATE() AS DeletedDate
 FROM Production.ProductProductPhoto AS ph
-JOIN Production.Product as p 
+JOIN Production.Product as p
     ON ph.ProductID = p.ProductID 
-    WHERE p.ProductModelID BETWEEN 120 and 130;
+WHERE p.ProductModelID BETWEEN 120 and 130;
 
 --Display the results of the table variable.
 SELECT ProductID, ProductName, ProductModelID, PhotoID 
