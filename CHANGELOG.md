@@ -11,11 +11,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-- Improved parser rules for MS SQL.
-
 ### Fixed
 
-- Fixed a bug in the SQL parser for the MERGE statement.
+## [8.9.0] - 2023-11-07
+
+### Changed
+
+- Improved parser rules.
 
 ## [8.8.0] - 2023-09-27
 
@@ -1798,7 +1800,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.8.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.9.0...HEAD
+[8.9.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.8.0...v8.9.0
 [8.8.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.7.0...v8.8.0
 [8.7.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.6.0...v8.7.0
 [8.6.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.5.0...v8.6.0
