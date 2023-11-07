@@ -2007,7 +2007,7 @@ execute_statement
 execute_string
     : LR_BRACKET
     execute_string_part (PLUS execute_string_part)*
-    (COMMA (default_value | id | (LOCAL_ID (OUTPUT | OUT)?)))*
+    (COMMA (default_value | LOCAL_ID arg_mode))*
     RR_BRACKET
     (AS (LOGIN | USER) EQUAL STRING)?
     (AT qualified_name)?
@@ -2025,7 +2025,7 @@ execute_module
     ;
 
 execute_statement_arg
-    : (parameter=LOCAL_ID EQUAL)? (default_value | id | (LOCAL_ID (OUTPUT | OUT)?))
+    : (parameter=LOCAL_ID EQUAL)? (default_value | LOCAL_ID arg_mode)
     ;
 
 execute_option
@@ -2734,7 +2734,11 @@ derived_table
     ;
 
 function_call
+    // https://learn.microsoft.com/en-us/sql/t-sql/functions/odbc-scalar-functions-transact-sql?view=sql-server-ver16
     : scalar_function_name LR_BRACKET (STAR | all_distinct_expression | expression_list?) RR_BRACKET over_clause?
+    | TRUNCATE LR_BRACKET expression COMMA expression RR_BRACKET
+    | CURRENT_DATE LR_BRACKET RR_BRACKET
+    | CURRENT_TIME (LR_BRACKET primitive_expression RR_BRACKET)?
     // https://msdn.microsoft.com/en-us/library/hh231076.aspx
     | CAST LR_BRACKET expression AS data_type RR_BRACKET
     // https://msdn.microsoft.com/en-us/library/ms187928.aspx
@@ -2764,32 +2768,28 @@ function_call
     | OPENJSON LR_BRACKET expression (COMMA expression)? RR_BRACKET
     WITH LR_BRACKET column_declaration (AS JSON)? (COMMA column_declaration (AS JSON)?)* RR_BRACKET
     | USER
-    // https://docs.microsoft.com/en-us/sql/t-sql/functions/cursor-rows-transact-sql
-    | FUNC_CURSOR_ROWS
-    // https://docs.microsoft.com/en-us/sql/t-sql/functions/fetch-status-transact-sql
-    | FUNC_FETCH_STATUS
-    // https://docs.microsoft.com/en-us/sql/t-sql/functions/datefirst-transact-sql
-    | FUNC_DATEFIRST
-    // https://docs.microsoft.com/en-us/sql/t-sql/functions/procid-transact-sql
-    | FUNC_PROCID
-    // https://docs.microsoft.com/en-us/sql/t-sql/functions/error-transact-sql
-    | FUNC_ERROR
-    // https://docs.microsoft.com/en-us/sql/t-sql/functions/identity-transact-sql
-    | FUNC_IDENTITY
-    // https://docs.microsoft.com/en-us/sql/t-sql/functions/pack-received-transact-sql
-    | FUNC_PACK_RECEIVED
-    // https://docs.microsoft.com/en-us/sql/t-sql/functions/rowcount-transact-sql
-    | FUNC_ROWCOUNT
-    // https://docs.microsoft.com/en-us/sql/t-sql/functions/trancount-transact-sql
-    | FUNC_TRANCOUNT
     // https://docs.microsoft.com/en-us/sql/t-sql/functions/next-value-for-transact-sql
     | NEXT VALUE FOR sequence_name = qualified_name over_clause?
+    // https://learn.microsoft.com/en-us/sql/t-sql/functions/approx-percentile-cont-transact-sql?view=sql-server-ver16
+    // https://learn.microsoft.com/en-us/sql/t-sql/functions/approx-percentile-disc-transact-sql?view=sql-server-ver16
+    | (APPROX_PERCENTILE_CONT | APPROX_PERCENTILE_DISC) LR_BRACKET expression RR_BRACKET WITHIN_GROUP LR_BRACKET order_by_clause RR_BRACKET
+    // https://learn.microsoft.com/en-us/sql/t-sql/functions/percentile-cont-transact-sql?view=sql-server-ver16
+    // https://learn.microsoft.com/en-us/sql/t-sql/functions/percentile-disc-transact-sql?view=sql-server-ver16
+    | (PERCENTILE_CONT | PERCENTILE_DISC) LR_BRACKET expression RR_BRACKET WITHIN_GROUP LR_BRACKET order_by_clause RR_BRACKET over_clause
     // https://docs.microsoft.com/en-us/sql/t-sql/functions/string-agg-transact-sql
     | STRING_AGG LR_BRACKET expression COMMA expression RR_BRACKET WITHIN_GROUP LR_BRACKET order_by_clause RR_BRACKET
     // https://docs.microsoft.com/en-us/sql/t-sql/functions/trim-transact-sql
     | TRIM LR_BRACKET expression FROM expression RR_BRACKET
     // https://docs.microsoft.com/en-us/sql/t-sql/functions/partition-transact-sql
     | (id DOT)? DOLLAR_PARTITION DOT function_call
+    // https://learn.microsoft.com/en-us/sql/t-sql/functions/json-array-transact-sql?view=sql-server-ver16
+    | JSON_ARRAY LR_BRACKET expression_list? json_null_clause RR_BRACKET
+    // https://learn.microsoft.com/ru-ru/sql/t-sql/functions/json-object-transact-sql?view=sql-server-ver16
+    | JSON_OBJECT LR_BRACKET expression COLON expression (COMMA expression COLON expression)* json_null_clause? RR_BRACKET
+    ;
+
+json_null_clause
+    : (NULL | ABSENT) ON NULL
     ;
 
 switch_section
@@ -3047,6 +3047,8 @@ data_type_size
 default_value
     : NULL
     | DEFAULT
+    | LOCAL_ID
+    | id
     | constant
     ;
 
@@ -3111,6 +3113,8 @@ simple_id
     | APPLICATION
     | APPLICATION_LOG
     | APPLY
+    | APPROX_PERCENTILE_CONT
+    | APPROX_PERCENTILE_DISC
     | ARITHABORT
     | ASSEMBLY
     | ASYMMETRIC
@@ -3318,6 +3322,8 @@ simple_id
     | IP
     | ISOLATION
     | JSON
+    | JSON_ARRAY
+    | JSON_OBJECT
     | KB
     | KEEP
     | KEEPFIXED
@@ -3467,6 +3473,8 @@ simple_id
     | PER_CPU
     | PER_DB
     | PER_NODE
+    | PERCENTILE_CONT
+    | PERCENTILE_DISC
     | PERMISSION_SET
     | PERSIST_SAMPLE_PERSENT
     | PERSISTED
