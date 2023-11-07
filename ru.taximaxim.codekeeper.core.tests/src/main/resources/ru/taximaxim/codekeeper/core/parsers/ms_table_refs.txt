@@ -72,3 +72,4 @@ Reference: Object = dbo.doc_exa (TABLE), action = ALTER, offset = 6618, line num
 Reference: Object = dbo (SCHEMA), action = null, offset = 6664, line number = 240, charPositionInLine = 13
 Reference: Object = dbo.t (TABLE), action = CREATE, offset = 6670, line number = 240, charPositionInLine = 19
 Reference: Object = t (TABLE), action = CREATE, offset = 6768, line number = 245, charPositionInLine = 13
+Reference: Object = t (TABLE), action = CREATE, offset = 6844, line number = 248, charPositionInLine = 13
