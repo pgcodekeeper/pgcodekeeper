@@ -244,3 +244,6 @@ GO
 
 CREATE TABLE t (c1 integer, c2 integer PRIMARY KEY CLUSTERED (c1, c2));
 GO
+
+create TABLE t (c1 int, firmID INT NULL INDEX ix_@filter_1 (c1, firmID) where (firmID > 0) with (fillfactor =70) );
+GO

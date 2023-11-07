@@ -2316,7 +2316,7 @@ column_option
     | (CONSTRAINT constraint=id)? column_constraint_body
     | (CONSTRAINT constraint=id)? DEFAULT expression (WITH VALUES)?
     | MASKED WITH LR_BRACKET FUNCTION EQUAL STRING RR_BRACKET
-    | INDEX index=id clustered? index_options? (ON file_group_name=id)?
+    | INDEX index=id clustered? (index_sort index_include?)? index_where? index_options? (ON file_group_name=id)?
     ;
 
 alter_column_option
