@@ -72,7 +72,6 @@ class MsParserTest {
             "ms_roles",
             "ms_rule",
             "ms_schema",
-            "ms_select",
             "ms_select_match",
             "ms_server",
             "ms_sequences",
@@ -90,6 +89,7 @@ class MsParserTest {
 
     @ParameterizedTest
     @CsvSource({
+        "ms_select, 1",
         "ms_statements, 1",
         "ms_xml_data_type, 1",
     })

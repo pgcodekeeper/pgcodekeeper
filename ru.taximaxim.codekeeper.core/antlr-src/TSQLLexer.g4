@@ -190,17 +190,6 @@ WITH: W I T H;
 WITHIN_GROUP: W I T H I N ' ' G R O U P;
 WRITETEXT: W R I T E T E X T;
 
-// Reserved system functions 
-FUNC_IDENTITY: '@' '@' I D E N T I T Y;
-FUNC_CURSOR_ROWS: '@' '@' C U R S O R '_' R O W S;
-FUNC_DATEFIRST: '@' '@' D A T E F I R S T;
-FUNC_ERROR: '@' '@' E R R O R;
-FUNC_FETCH_STATUS: '@' '@' F E T C H '_' S T A T U S;
-FUNC_PACK_RECEIVED: '@' '@' P A C K '_' R E C E I V E D;
-FUNC_PROCID: '@' '@' P R O C I D;
-FUNC_ROWCOUNT: '@' '@' R O W C O U N T;
-FUNC_TRANCOUNT: '@' '@' T R A N C O U N T;
-
 // Additional keywords. They can be id, please keep them in sync with the parser.
 ABORT_AFTER_WAIT: A B O R T '_' A F T E R '_' W A I T;
 ABSENT: A B S E N T;
@@ -235,6 +224,8 @@ APPEND: A P P E N D;
 APPLICATION: A P P L I C A T I O N;
 APPLICATION_LOG: A P P L I C A T I O N '_' L O G;
 APPLY: A P P L Y;
+APPROX_PERCENTILE_CONT: A P P R O X '_' P E R C E N T I L E '_' C O N T;
+APPROX_PERCENTILE_DISC: A P P R O X '_' P E R C E N T I L E '_' D I S C;
 ARITHABORT: A R I T H A B O R T;
 ASSEMBLY: A S S E M B L Y;
 ASYMMETRIC: A S Y M M E T R I C;
@@ -441,6 +432,8 @@ IO: I O;
 IP: I P;
 ISOLATION: I S O L A T I O N;
 JSON: J S O N;
+JSON_ARRAY: J S O N '_' A R  R A Y;
+JSON_OBJECT: J S O N '_' O B J E C T;
 KB: K B;
 KEEP: K E E P;
 KEEPFIXED: K E E P F I X E D;
@@ -590,6 +583,8 @@ PAUSE: P A U S E;
 PER_CPU: P E R '_' C P U;
 PER_DB: P E R '_' D B;
 PER_NODE: P E R '_' N O D E;
+PERCENTILE_CONT: P E R C E N T I L E '_' C O N T;
+PERCENTILE_DISC: P E R C E N T I L E '_' D I S C;
 PERMISSION_SET: P E R M I S S I O N '_' S E T;
 PERSIST_SAMPLE_PERSENT: P E R S I S T '_' S A M P L E '_' P E R S E N T;
 PERSISTED: P E R S I S T E D;
@@ -860,9 +855,10 @@ SQUARE_BRACKET_ID:  UnterminatedSquareQuotedIdentifier ']'
         }
     ;
 
-LOCAL_ID:           '@' ([a-zA-Z_$@#0-9] | FullWidthLetter)+;
+// https://learn.microsoft.com/en-us/sql/t-sql/language-elements/variables-transact-sql?view=sql-server-ver16
+LOCAL_ID:           '@' ([a-zA-Z_#$@0-9] | FullWidthLetter)+;
 DECIMAL:             DEC_DIGIT+;
-ID:                  ( [a-zA-Z_#] | FullWidthLetter) ( [a-zA-Z_#$@0-9] | FullWidthLetter )*;
+ID:                  ([a-zA-Z_#] | FullWidthLetter) ([a-zA-Z_#$@0-9] | FullWidthLetter)*;
 STRING:              N? '\'' (~'\'' | '\'\'')* '\'';
 BINARY:              '0' X (HEX_DIGIT | BACKSLASH [\r]? [\n])*;
 FLOAT:               DEC_DOT_DEC;
