@@ -11,6 +11,8 @@
 
 ### Изменено
 
+- Обновлены все библиотечные зависимости ядра программы. Для использования [Windows аутентификации](https://pgcodekeeper.readthedocs.io/ru/latest/windowsauth.html#id2) требуется обновить (DDL)[https://github.com/microsoft/mssql-jdbc/releases/tag/v12.4.2].
+
 ### Исправлено
 
 ## [8.9.0] - 2023-11-07

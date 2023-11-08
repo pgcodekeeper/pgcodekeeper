@@ -34,9 +34,9 @@ Import-Package: org.eclipse.core.runtime;version="[3.5.0,4.0.0)",
  org.osgi.util.tracker;version="[1.5.0,2.0.0)",
  org.slf4j;version="[1.7.0,2.0.0)"
 Require-Bundle: wrapped.com.github.technology16.PgPass;bundle-version="1.0.0",
- org.postgresql.jdbc;bundle-version="42.5.1",
- com.microsoft.sqlserver.mssql-jdbc;bundle-version="10.2.0",
- org.antlr.antlr4-runtime;bundle-version="4.9.3",
+ org.postgresql.jdbc;bundle-version="42.6.0",
+ com.microsoft.sqlserver.mssql-jdbc;bundle-version="12.4.2",
+ org.antlr.antlr4-runtime;bundle-version="4.13.1",
  org.jgrapht.core;bundle-version="1.5.1"
 Bundle-Vendor: %Bundle-Vendor
 Eclipse-ExtensibleAPI: true
