@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Updated all library dependencies of the core program. To use [Windows authentication](https://pgcodekeeper.readthedocs.io/en/latest/windowsauth.html#id2) you need to update (DDL)[https://github.com/microsoft/mssql-jdbc/releases/tag/v12.4.2].
+
 ### Fixed
 
 ## [8.9.0] - 2023-11-07
