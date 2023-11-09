@@ -149,12 +149,16 @@ public abstract class DbSource {
         args.setMsSql(msSql);
         if (prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.ADD_PRE_POST_SCRIPT)) {
             List<String> prePaths = new ArrayList<>();
+            if (proj != null) {
+                addPathIfExists(prePaths, Paths.get(proj.getLocationURI()).resolve(FILE.PRE_DIR));
+            }
             addPathIfExists(prePaths, PrePostScriptPrefPage.getScriptPath(FILE.PRE_SCRIPT));
-            addPathIfExists(prePaths, Paths.get(proj.getLocationURI()).resolve(FILE.PRE_DIR));
             args.setPreFilePath(prePaths);
 
             List<String> postPaths = new ArrayList<>();
-            addPathIfExists(postPaths, Paths.get(proj.getLocationURI()).resolve(FILE.POST_DIR));
+            if (proj != null) {
+                addPathIfExists(postPaths, Paths.get(proj.getLocationURI()).resolve(FILE.POST_DIR));
+            }
             addPathIfExists(postPaths, PrePostScriptPrefPage.getScriptPath(FILE.POST_SCRIPT));
             args.setPostFilePath(postPaths);
         }
