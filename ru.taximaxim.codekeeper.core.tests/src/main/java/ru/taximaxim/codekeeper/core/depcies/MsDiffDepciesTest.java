@@ -41,7 +41,10 @@ class MsDiffDepciesTest {
             // t1 <- v1 <- v2 <- v3 <- v4
             // changed: t1, v1, v2, v4
             // user: t1
-            "change_ms_table_usr_t1"
+            "change_ms_table_usr_t1",
+            // пользователь изменил constraintPk
+            // пользователь выбрал только таблицу с измененным constraintPk
+            "change_ms_constrPk_usr",
     })
     void runDiff(String userSelTemplate) throws IOException, InterruptedException {
         runDiff(userSelTemplate, false);

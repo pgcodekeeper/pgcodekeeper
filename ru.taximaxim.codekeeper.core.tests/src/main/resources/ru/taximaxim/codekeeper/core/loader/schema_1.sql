@@ -1,7 +1,7 @@
 CREATE TABLE public.fax_boxes (
   fax_box_id serial NOT NULL,
   name text,
-  CONSTRAINT fax_boxes_pkey PRIMARY KEY (fax_box_id)
+  CONSTRAINT fax_boxes_pkey PRIMARY KEY (fax_box_id) INCLUDE (name)
 );
 
 ALTER TABLE public.fax_boxes OWNER TO postgres;
@@ -24,6 +24,6 @@ ALTER TABLE public.extensions ADD CONSTRAINT extensions_fax_box_id_fkey FOREIGN 
   station_id text,
   CONSTRAINT faxes_pkey PRIMARY KEY (fax_id),
   CONSTRAINT faxes_fax_box_id_fkey FOREIGN KEY (fax_box_id)
-      REFERENCES public.fax_boxes (fax_box_id) MATCH SIMPLE
-      ON UPDATE RESTRICT ON DELETE CASCADE
+      REFERENCES public.fax_boxes MATCH SIMPLE
+      ON UPDATE RESTRICT ON DELETE SET NULL (fax_box_id)
 );

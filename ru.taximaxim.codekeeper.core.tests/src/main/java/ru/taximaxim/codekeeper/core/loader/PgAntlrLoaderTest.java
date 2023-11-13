@@ -32,7 +32,6 @@ import ru.taximaxim.codekeeper.core.fileutils.TempDir;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
-import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
 import ru.taximaxim.codekeeper.core.schema.AbstractIndex;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractSequence;
@@ -41,7 +40,9 @@ import ru.taximaxim.codekeeper.core.schema.Argument;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgColumn;
 import ru.taximaxim.codekeeper.core.schema.PgCompositeType;
-import ru.taximaxim.codekeeper.core.schema.PgConstraint;
+import ru.taximaxim.codekeeper.core.schema.PgConstraintCheck;
+import ru.taximaxim.codekeeper.core.schema.PgConstraintFk;
+import ru.taximaxim.codekeeper.core.schema.PgConstraintPk;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgEventType;
 import ru.taximaxim.codekeeper.core.schema.PgExtension;
@@ -128,9 +129,10 @@ class PgAntlrLoaderTest {
         col.setType("text");
         table.addColumn(col);
 
-        AbstractConstraint constraint = new PgConstraint("fax_boxes_pkey");
-        table.addConstraint(constraint);
-        constraint.setDefinition("PRIMARY KEY (fax_box_id)");
+        var constraintPK = new PgConstraintPk("fax_boxes_pkey", true);
+        constraintPK.addColumn("fax_box_id");
+        constraintPK.addInclude("name");
+        table.addConstraint(constraintPK);
 
         table.setOwner("postgres");
 
@@ -180,13 +182,19 @@ class PgAntlrLoaderTest {
         col.setType("text");
         table.addColumn(col);
 
-        constraint = new PgConstraint("faxes_pkey");
-        constraint.setDefinition("PRIMARY KEY (fax_id)");
-        table.addConstraint(constraint);
+        constraintPK = new PgConstraintPk("faxes_pkey", true);
+        constraintPK.addColumn("fax_id");
+        table.addConstraint(constraintPK);
 
-        constraint = new PgConstraint("faxes_fax_box_id_fkey");
-        constraint.setDefinition("FOREIGN KEY (fax_box_id)\n      REFERENCES public.fax_boxes (fax_box_id) MATCH SIMPLE\n      ON UPDATE RESTRICT ON DELETE CASCADE");
-        table.addConstraint(constraint);
+        var constraintFk = new PgConstraintFk("faxes_fax_box_id_fkey");
+        constraintFk.addColumn("fax_box_id");
+        constraintFk.setForeignSchema("public");
+        constraintFk.setForeignTable("fax_boxes");
+        constraintFk.setMatch("SIMPLE");
+        constraintFk.setUpdAction("RESTRICT");
+        constraintFk.setDelAction("SET NULL");
+        constraintFk.addDelActCol("fax_box_id");
+        table.addConstraint(constraintFk);
 
         table = new SimplePgTable("extensions");
         schema.addTable(table);
@@ -196,9 +204,14 @@ class PgAntlrLoaderTest {
         col.setNullValue(false);
         table.addColumn(col);
 
-        constraint = new PgConstraint("extensions_fax_box_id_fkey");
-        constraint.setDefinition("FOREIGN KEY (id) REFERENCES public.fax_boxes\n(fax_box_id)    ON UPDATE RESTRICT ON DELETE RESTRICT");
-        table.addConstraint(constraint);
+        constraintFk = new PgConstraintFk("extensions_fax_box_id_fkey");
+        constraintFk.addColumn("id");
+        constraintFk.setForeignSchema("public");
+        constraintFk.setForeignTable("fax_boxes");
+        constraintFk.addForeignColumn("fax_box_id");
+        constraintFk.setUpdAction("RESTRICT");
+        constraintFk.setDelAction("RESTRICT");
+        table.addConstraint(constraintFk);
 
         testDatabase("schema_1.sql", d);
     }
@@ -325,9 +338,9 @@ class PgAntlrLoaderTest {
         col.setDefaultValue("'f'::bool");
         table.addColumn(col);
 
-        AbstractConstraint constraint = new PgConstraint("admins_pkey");
-        constraint.setDefinition("Primary Key (\"aid\")");
-        table.addConstraint(constraint);
+        var constraintPK = new PgConstraintPk("admins_pkey", true);
+        constraintPK.addColumn("aid");
+        table.addConstraint(constraintPK);
 
         testDatabase("schema_3.sql", d);
     }
@@ -640,9 +653,9 @@ class PgAntlrLoaderTest {
         col.setNullValue(false);
         table.addColumn(col);
 
-        AbstractConstraint constraint = new PgConstraint("acl_role_pkey");
-        constraint.setDefinition("PRIMARY KEY (id)");
-        table.addConstraint(constraint);
+        var constraintPK = new PgConstraintPk("acl_role_pkey", true);
+        constraintPK.addColumn("id");
+        table.addConstraint(constraintPK);
 
         table.setOwner("postgres");
 
@@ -703,9 +716,12 @@ class PgAntlrLoaderTest {
         idx.setDefinition("(role_id)");
         table.addIndex(idx);
 
-        constraint = new PgConstraint("user_role_id_fkey");
-        constraint.setDefinition("FOREIGN KEY (role_id) REFERENCES admin.acl_role(id)");
-        table.addConstraint(constraint);
+        var constraintFk = new PgConstraintFk("user_role_id_fkey");
+        constraintFk.addColumn("role_id");
+        constraintFk.setForeignSchema("admin");
+        constraintFk.setForeignTable("acl_role");
+        constraintFk.addForeignColumn("id");
+        table.addConstraint(constraintFk);
 
         table.setOwner("postgres");
 
@@ -804,18 +820,18 @@ class PgAntlrLoaderTest {
         col.setComment("'text column'");
         table.addColumn(col);
 
-        AbstractConstraint constraint = new PgConstraint("text_check");
-        constraint.setDefinition("CHECK ((length((text)::text) > 0))");
-        constraint.setComment("'text check'");
-        table.addConstraint(constraint);
+        var constraintCheck = new PgConstraintCheck("text_check");
+        constraintCheck.setExpression("(length((text)::text) > 0)");
+        constraintCheck.setComment("'text check'");
+        table.addConstraint(constraintCheck);
 
         table.setComment("'test table'");
 
-        constraint = new PgConstraint("test_pkey");
-        constraint.setDefinition("PRIMARY KEY (id)");
-        table.addConstraint(constraint);
+        var constraintPk = new PgConstraintPk("test_pkey", true);
+        constraintPk.addColumn("id");
+        table.addConstraint(constraintPk);
 
-        constraint.setComment("'primary key'");
+        constraintPk.setComment("'primary key'");
 
         table.setOwner("fordfrog");
 

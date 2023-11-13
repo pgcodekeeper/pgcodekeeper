@@ -2,7 +2,8 @@ ALTER TABLE [dbo].[table1]
 	ADD [c4] [float]
 GO
 
-ALTER TABLE [dbo].[table1] ADD CONSTRAINT [qwer] DEFAULT ((14)) FOR [c4]
+ALTER TABLE [dbo].[table1]
+	ADD CONSTRAINT [qwer] DEFAULT ((14)) FOR [c4]
 GO
 
 UPDATE [dbo].[table1]

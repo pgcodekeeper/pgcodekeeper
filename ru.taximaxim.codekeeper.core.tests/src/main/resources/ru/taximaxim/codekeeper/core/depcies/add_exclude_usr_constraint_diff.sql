@@ -8,4 +8,4 @@ CREATE OR REPLACE FUNCTION public.test_function() RETURNS tsrange
 
 ALTER TABLE public.test_table
 	ADD CONSTRAINT test_constraint EXCLUDE USING gist (public.test_function() WITH &&)
-    USING INDEX TABLESPACE test_tablespace WHERE ((c1 <> 0)) DEFERRABLE INITIALLY DEFERRED;
+	USING INDEX TABLESPACE test_tablespace WHERE ((c1 <> 0)) DEFERRABLE INITIALLY DEFERRED;

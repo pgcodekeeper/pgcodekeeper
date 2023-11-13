@@ -239,6 +239,9 @@ class PgDiffDepciesTest {
             //добавление предсталение с перегруженной агрегатной функцией
             //пользователь выбрал только представление v2 (без finalFunc)
             "add_view_with_over_aggr_usr_v2",
+            // пользователь изменил ConstraintPk
+            // пользователь выбрал только таблицу с ConstraintPk
+            "change_constrPk_usr",
     })
 
     void runDiff(final String userSelTemplate) throws IOException, InterruptedException {

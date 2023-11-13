@@ -24,31 +24,54 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
+import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 
-public class PgConstraint extends AbstractConstraint {
+public abstract class PgConstraint extends AbstractConstraint {
+
+    private boolean deferrable;
+    private boolean initially;
 
     public PgConstraint(String name) {
         super(name);
+    }
+
+    public void setDeferrable(boolean deferrable) {
+        this.deferrable = deferrable;
+        resetHash();
+    }
+
+    public boolean isDeferrable() {
+        return deferrable;
+    }
+
+    public void setInitially(boolean initially) {
+        this.initially = initially;
+        resetHash();
+    }
+
+    public boolean isInitially() {
+        return initially;
     }
 
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
         appendAlterTable(sbSQL, false);
-        sbSQL.append("\n\tADD CONSTRAINT ");
-        sbSQL.append(PgDiffUtils.getQuotedName(getName()));
+        sbSQL.append("\n\tADD");
+        if (!getName().isEmpty()) {
+            sbSQL.append(" CONSTRAINT ").append(PgDiffUtils.getQuotedName(getName()));
+        }
         sbSQL.append(' ');
         sbSQL.append(getDefinition());
-
-        boolean generateNotValid = false;
-        PgDiffArguments args = getDatabase().getArguments();
-        if (args != null && args.isConstraintNotValid() && !isUnique() && !isPrimaryKey()) {
-            boolean isPartitionTable = getParent() instanceof PartitionPgTable
-                    || (getParent() instanceof AbstractRegularTable
-                            && ((AbstractRegularTable) getParent()).getPartitionBy() != null);
-            generateNotValid = !isPartitionTable;
+        if (isDeferrable()) {
+            sbSQL.append(" DEFERRABLE");
         }
+        if (isInitially()) {
+            sbSQL.append(" INITIALLY DEFERRED");
+        }
+
+        boolean generateNotValid = isGenerateNotValid();
 
         if (isNotValid() || generateNotValid) {
             sbSQL.append(" NOT VALID");
@@ -61,16 +84,30 @@ public class PgConstraint extends AbstractConstraint {
             .append(PgDiffUtils.getQuotedName(getName()))
             .append(';');
         }
-        if (isClustered()) {
-            appendAlterTable(sbSQL, true);
-            sbSQL.append(" CLUSTER ON ").append(getName()).append(";");
-        }
+
+        appendExtraOptions(sbSQL);
 
         if (comment != null && !comment.isEmpty()) {
             appendCommentSql(sbSQL);
         }
 
         return sbSQL.toString();
+    }
+
+    protected boolean isGenerateNotValid() {
+        PgDiffArguments args = getDatabase().getArguments();
+        if (args == null || !args.isConstraintNotValid()) {
+            return false;
+        }
+        var parent = getParent();
+        if (parent instanceof PartitionPgTable) {
+            return false;
+        }
+        return parent instanceof AbstractRegularTable && ((AbstractRegularTable) parent).getPartitionBy() == null;
+    }
+
+    protected void appendExtraOptions(StringBuilder sbSQL) {
+        // subclasses will override if needed
     }
 
     @Override
@@ -93,31 +130,31 @@ public class PgConstraint extends AbstractConstraint {
         final int startLength = sb.length();
         PgConstraint newConstr = (PgConstraint) newCondition;
 
-        if (!Objects.equals(getDefinition(), newConstr.getDefinition())) {
+        if (!compareUnalterable(newConstr)) {
             isNeedDepcies.set(true);
             return true;
         }
+
         if (isNotValid() && !newConstr.isNotValid()) {
             appendAlterTable(sb, true);
-            sb.append("\n\tVALIDATE CONSTRAINT ")
-            .append(PgDiffUtils.getQuotedName(getName())).append(';');
+            sb.append("\n\tVALIDATE CONSTRAINT ").append(PgDiffUtils.getQuotedName(getName())).append(';');
         }
 
-        if (newConstr.isClustered() != isClustered()) {
-            if (newConstr.isClustered()) {
-                appendAlterTable(sb, true);
-                sb.append(" CLUSTER ON ").append(getName()).append(";");
-            } else if (!((PgStatementContainer) newConstr.getParent()).isClustered()) {
-                appendAlterTable(sb, true);
-                sb.append(" SET WITHOUT CLUSTER;");
-            }
-        }
+        compareExtraOptions(sb, newConstr);
 
         if (!Objects.equals(getComment(), newConstr.getComment())) {
             newConstr.appendCommentSql(sb);
         }
 
         return sb.length() > startLength;
+    }
+
+    protected boolean compareUnalterable(PgConstraint newConstr) {
+        return compareCommonFields(newConstr);
+    }
+
+    protected void compareExtraOptions(StringBuilder sb, PgConstraint newConstr) {
+        // subclasses will override if needed
     }
 
     @Override
@@ -132,16 +169,31 @@ public class PgConstraint extends AbstractConstraint {
         .append(';');
     }
 
-    private void appendAlterTable(StringBuilder sb, boolean isNewLine) {
-        if (isNewLine) {
-            sb.append("\n\n");
-        }
-        sb.append("ALTER ").append(getParent().getStatementType().name()).append(' ');
-        sb.append(getParent().getQualifiedName());
+    @Override
+    public void computeHash(Hasher hasher) {
+        super.computeHash(hasher);
+        hasher.put(deferrable);
+        hasher.put(initially);
     }
 
     @Override
-    protected AbstractConstraint getConstraintCopy() {
-        return new PgConstraint(getName());
+    public AbstractConstraint shallowCopy() {
+        var con = (PgConstraint) super.shallowCopy();
+        con.setDeferrable(deferrable);
+        con.setInitially(initially);
+        return con;
+    }
+
+    @Override
+    public boolean compare(PgStatement obj) {
+        if (obj instanceof PgConstraint) {
+            var con = (PgConstraint) obj;
+            return super.compare(con);
+        }
+        return false;
+    }
+
+    protected boolean compareCommonFields(PgConstraint con) {
+        return isDeferrable() == con.isDeferrable() && isInitially() == con.isInitially();
     }
 }

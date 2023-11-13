@@ -2314,7 +2314,6 @@ column_option
     | NOT? NULL
     | IDENTITY identity_value? not_for_rep=not_for_replication?
     | (CONSTRAINT constraint=id)? column_constraint_body
-    | (CONSTRAINT constraint=id)? DEFAULT expression (WITH VALUES)?
     | MASKED WITH LR_BRACKET FUNCTION EQUAL STRING RR_BRACKET
     | INDEX index=id clustered? (index_sort index_include?)? index_where? index_options? (ON file_group_name=id)?
     ;
@@ -2333,6 +2332,7 @@ column_constraint_body
     : (PRIMARY KEY | UNIQUE) clustered? HASH? (LR_BRACKET column_name_list_with_order RR_BRACKET)? index_options? (ON id)?
     | CHECK not_for_replication? LR_BRACKET search_condition RR_BRACKET
     | (FOREIGN KEY)? REFERENCES qualified_name (LR_BRACKET id RR_BRACKET)? on_delete? on_update? not_for_replication?
+    | DEFAULT expression (WITH VALUES)?
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms188066.aspx

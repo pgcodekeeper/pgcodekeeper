@@ -35,8 +35,7 @@ ALTER TABLE public.table3
 ALTER TABLE public.table3 VALIDATE CONSTRAINT costr;
 
 ALTER TABLE public.table4
-	ADD CONSTRAINT costr PRIMARY KEY(id);
-
+	ADD CONSTRAINT costr PRIMARY KEY (id);
 
 ALTER TABLE public.table5
 	ADD CONSTRAINT costr CHECK (id > 0);

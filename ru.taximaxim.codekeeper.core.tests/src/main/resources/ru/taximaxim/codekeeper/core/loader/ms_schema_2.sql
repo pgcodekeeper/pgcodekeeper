@@ -31,10 +31,6 @@ ALTER TABLE [dbo].[admins]
     ADD CONSTRAINT [PK_admins] PRIMARY KEY CLUSTERED  ([aid]) ON [PRIMARY]
 GO
 
--- ALTER TABLE [schema_name].[table_name]
---     ADD DEFAULT default_value FOR table_column
--- GO
-
 ALTER TABLE [dbo].[admins]
     ADD CONSTRAINT [DF_admins_aid] DEFAULT (NEXT VALUE FOR [dbo].[admins_aid_seq]) FOR aid
 GO

@@ -11,7 +11,9 @@
 
 ### Изменено
 
-- Обновлены все библиотечные зависимости ядра программы. Для использования [Windows аутентификации](https://pgcodekeeper.readthedocs.io/ru/latest/windowsauth.html#id2) требуется обновить (DDL)[https://github.com/microsoft/mssql-jdbc/releases/tag/v12.4.2].
+- Изменен механизм работы с объектами CONSTRAINT: объекты теперь хранятся не в виде строки, а в виде отдельных полей, что позволяет избежать лишних различий в ключевых словах и пробелах.
+- Обновлены все библиотечные зависимости ядра программы. Для использования [Windows аутентификации](https://pgcodekeeper.readthedocs.io/ru/latest/windowsauth.html#id2) требуется обновить [DDL](https://github.com/microsoft/mssql-jdbc/releases/tag/v12.4.2).
+- Улучшены правила парсера для MS SQL.
 
 ### Исправлено
 

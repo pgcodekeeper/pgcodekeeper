@@ -30,13 +30,14 @@ import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.fileutils.TempDir;
 import ru.taximaxim.codekeeper.core.model.exporter.MsModelExporter;
-import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
 import ru.taximaxim.codekeeper.core.schema.AbstractIndex;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.Argument;
 import ru.taximaxim.codekeeper.core.schema.FuncTypes;
 import ru.taximaxim.codekeeper.core.schema.MsColumn;
-import ru.taximaxim.codekeeper.core.schema.MsConstraint;
+import ru.taximaxim.codekeeper.core.schema.MsConstraintCheck;
+import ru.taximaxim.codekeeper.core.schema.MsConstraintFk;
+import ru.taximaxim.codekeeper.core.schema.MsConstraintPk;
 import ru.taximaxim.codekeeper.core.schema.MsFunction;
 import ru.taximaxim.codekeeper.core.schema.MsIndex;
 import ru.taximaxim.codekeeper.core.schema.MsProcedure;
@@ -47,6 +48,7 @@ import ru.taximaxim.codekeeper.core.schema.MsTrigger;
 import ru.taximaxim.codekeeper.core.schema.MsView;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgPrivilege;
+import ru.taximaxim.codekeeper.core.schema.SimpleColumn;
 
 /**
  * Tests for PgDiffLoader class.
@@ -123,9 +125,11 @@ class MsAntlrLoaderTest {
         col.setType("[text]");
         table.addColumn(col);
 
-        AbstractConstraint constraint = new MsConstraint("PK_fax_boxes");
-        table.addConstraint(constraint);
-        constraint.setDefinition("PRIMARY KEY CLUSTERED  ([fax_box_id]) ON [PRIMARY]");
+        MsConstraintPk constriaintPk = new MsConstraintPk("PK_fax_boxes", true);
+        constriaintPk.setClustered(true);
+        constriaintPk.setDataSpace("PRIMARY");
+        constriaintPk.addColumn("fax_box_id", new SimpleColumn("fax_box_id"));
+        table.addConstraint(constriaintPk);
 
         table.setOwner("ms_user");
 
@@ -160,18 +164,9 @@ class MsAntlrLoaderTest {
 
         col = new MsColumn("time_received");
         col.setType("[datetime]");
-        // TODO replace constraint 'constraint = new MsConstraint("DF_faxes_time_received", "")' by this,
-        // when default value setting will be fixed
-        // TODO fix default value setting; at this moment trying to set default value gives us:
-        //    ALTER TABLE [dbo].[faxes] ALTER COLUMN [time_received] DROP CONSTRAINT null
-        //    ALTER TABLE [dbo].[faxes] ADD CONSTRAINT [DF_faxes_time_received] DEFAULT (getdate()) FOR time_received
-        // col.setDefaultValue("getdate()");
+        col.setDefaultName("DF_faxes_time_received");
+        col.setDefaultValue("(getdate())");
         table.addColumn(col);
-
-        // TODO replace constraint by 'col.setDefaultValue("getdate()")' when it will be fixed
-        constraint = new MsConstraint("DF_faxes_time_received");
-        constraint.setDefinition("DEFAULT (getdate()) FOR time_received");
-        table.addConstraint(constraint);
 
         col = new MsColumn("time_finished_received");
         col.setType("[datetime]");
@@ -179,31 +174,28 @@ class MsAntlrLoaderTest {
 
         col = new MsColumn("read");
         col.setType("[int]");
-        // TODO replace constraint 'constraint = new MsConstraint("DF_faxes_read", "")' by this,
-        // when default value setting will be fixed
-        // TODO fix default value setting; at this moment trying to set default value gives us:
-        //    ALTER TABLE [dbo].[faxes] ALTER COLUMN [read] DROP CONSTRAINT null
-        //    ALTER TABLE [dbo].[faxes] ADD CONSTRAINT [DF_faxes_read] DEFAULT 0 FOR [read]
-        // col.setDefaultValue("0");
+        col.setDefaultName("DF_faxes_read");
+        col.setDefaultValue("0");
         table.addColumn(col);
-
-        // TODO replace constraint by 'col.setDefaultValue("0")' when it will be fixed
-        constraint = new MsConstraint("DF_faxes_read");
-        constraint.setDefinition("DEFAULT 0 FOR [read]");
-        table.addConstraint(constraint);
 
         col = new MsColumn("station_id");
         col.setType("[text]");
         table.addColumn(col);
 
-        constraint = new MsConstraint("PK_faxes");
-        constraint.setDefinition("PRIMARY KEY CLUSTERED  ([fax_id]) ON [PRIMARY]");
-        table.addConstraint(constraint);
+        constriaintPk = new MsConstraintPk("PK_faxes", true);
+        constriaintPk.setClustered(true);
+        constriaintPk.setDataSpace("PRIMARY");
+        constriaintPk.addColumn("fax_id", new SimpleColumn("fax_id"));
+        table.addConstraint(constriaintPk);
 
-        constraint = new MsConstraint("FK_faxes_fax_box_id");
-        constraint.setDefinition("FOREIGN KEY (fax_box_id) \n" +
-                "    REFERENCES [dbo].[fax_boxes](fax_box_id) ON DELETE SET NULL ON UPDATE CASCADE");
-        table.addConstraint(constraint);
+        var constraintFk = new MsConstraintFk("FK_faxes_fax_box_id");
+        constraintFk.setForeignSchema("dbo");
+        constraintFk.setForeignTable("fax_boxes");
+        constraintFk.addColumn("fax_box_id");
+        constraintFk.addForeignColumn("fax_box_id");
+        constraintFk.setDelAction("SET NULL");
+        constraintFk.setUpdAction("CASCADE");
+        table.addConstraint(constraintFk);
 
         table = new MsTable("extensions");
         table.setAnsiNulls(true);
@@ -214,10 +206,31 @@ class MsAntlrLoaderTest {
         col.setNullValue(false);
         table.addColumn(col);
 
-        constraint = new MsConstraint("FK_extensions_fax_box_id");
-        constraint.setDefinition("FOREIGN KEY (fax_box_id) \n" +
-                "    REFERENCES [dbo].[fax_boxes](fax_box_id) ON DELETE SET NULL ON UPDATE CASCADE");
-        table.addConstraint(constraint);
+        constraintFk = new MsConstraintFk("FK_extensions_fax_box_id");
+        constraintFk.setForeignSchema("dbo");
+        constraintFk.setForeignTable("fax_boxes");
+        constraintFk.addColumn("fax_box_id");
+        constraintFk.setDelAction("SET DEFAULT");
+        constraintFk.setUpdAction("SET NULL");
+        constraintFk.setNotForRepl(true);
+        table.addConstraint(constraintFk);
+
+        table = new MsTable("table1");
+        table.setAnsiNulls(true);
+        schema.addTable(table);
+
+        col = new MsColumn("id");
+        col.setType("[int]");
+        col.setNullValue(false);
+        table.addColumn(col);
+
+        constraintFk = new MsConstraintFk("FK_table1_fax_box_id");
+        constraintFk.setForeignSchema("dbo");
+        constraintFk.setForeignTable("fax_boxes");
+        constraintFk.addColumn("fax_box_id");
+        constraintFk.setDelAction("CASCADE");
+        constraintFk.setUpdAction("SET DEFAULT");
+        table.addConstraint(constraintFk);
 
         testDatabase("ms_schema_0.sql", d);
     }
@@ -273,44 +286,29 @@ class MsAntlrLoaderTest {
         MsColumn col = new MsColumn("aid");
         col.setType("[int]");
         col.setNullValue(false);
-        // TODO replace constraint 'constraint = new MsConstraint("DF_admins_aid", "")' by this,
-        // when default value setting will be fixed
-        // TODO fix default value setting; at this moment trying to set default value gives us:
-        //    ALTER TABLE [dbo].[admins] ALTER COLUMN [aid] DROP CONSTRAINT null
-        //    ALTER TABLE [dbo].[admins] ADD CONSTRAINT [DF_admins_aid] DEFAULT (NEXT VALUE FOR [dbo].[admins_aid_seq]) FOR aid
-        // col.setDefaultValue("(NEXT VALUE FOR [dbo].[admins_aid_seq])");
+        col.setDefaultName("DF_admins_aid");
+        col.setDefaultValue("(NEXT VALUE FOR [dbo].[admins_aid_seq])");
         table.addColumn(col);
 
-        // TODO replace constraint by 'col.setDefaultValue("(NEXT VALUE FOR [dbo].[admins_aid_seq])")' when it will be fixed
-        AbstractConstraint constraint = new MsConstraint("DF_admins_aid");
-        constraint.setDefinition("DEFAULT (NEXT VALUE FOR [dbo].[admins_aid_seq]) FOR aid");
-        table.addConstraint(constraint);
-
-        constraint = new MsConstraint("PK_admins");
-        constraint.setDefinition("PRIMARY KEY CLUSTERED  ([aid]) ON [PRIMARY]");
-        table.addConstraint(constraint);
+        MsConstraintPk constriaintPk = new MsConstraintPk("PK_admins", true);
+        constriaintPk.setClustered(true);
+        constriaintPk.setDataSpace("PRIMARY");
+        constriaintPk.addColumn("aid", new SimpleColumn("aid"));
+        table.addConstraint(constriaintPk);
 
         col = new MsColumn("companyid");
         col.setType("[int]");
-        // col.setDefaultValue("0");
+        col.setDefaultName("DF_admins_companyid");
+        col.setDefaultValue("0");
         col.setNullValue(false);
         table.addColumn(col);
-
-        // TODO replace constraint by 'col.setDefaultValue("0")' when it will be fixed
-        constraint = new MsConstraint("DF_admins_companyid");
-        constraint.setDefinition("DEFAULT 0 FOR companyid");
-        table.addConstraint(constraint);
 
         col = new MsColumn("groupid");
         col.setType("[int]");
-        // col.setDefaultValue("0");
+        col.setDefaultName("DF_admins_groupid");
+        col.setDefaultValue("0");
         col.setNullValue(false);
         table.addColumn(col);
-
-        // TODO replace constraint by 'col.setDefaultValue("0")' when it will be fixed
-        constraint = new MsConstraint("DF_admins_groupid");
-        constraint.setDefinition("DEFAULT 0 FOR groupid");
-        table.addConstraint(constraint);
 
         col = new MsColumn("username");
         col.setType("[nvarchar](max)");
@@ -324,14 +322,10 @@ class MsAntlrLoaderTest {
 
         col = new MsColumn("superuser");
         col.setType("[bit]");
-        // col.setDefaultValue("0");
+        col.setDefaultName("DF_admins_superuser");
+        col.setDefaultValue("0");
         col.setNullValue(false);
         table.addColumn(col);
-
-        // TODO replace constraint by 'col.setDefaultValue("0")' when it will be fixed
-        constraint = new MsConstraint("DF_admins_superuser");
-        constraint.setDefinition("DEFAULT 0 FOR superuser");
-        table.addConstraint(constraint);
 
         col = new MsColumn("name");
         col.setType("[nvarchar](40)");
@@ -356,35 +350,23 @@ class MsAntlrLoaderTest {
 
         col = new MsColumn("enabled");
         col.setType("[bit]");
-        // col.setDefaultValue("1");
+        col.setDefaultName("DF_admins_enabled");
+        col.setDefaultValue("1");
         col.setNullValue(false);
         table.addColumn(col);
-
-        // TODO replace constraint by 'col.setDefaultValue("1")' when it will be fixed
-        constraint = new MsConstraint("DF_admins_enabled");
-        constraint.setDefinition("DEFAULT 1 FOR enabled");
-        table.addConstraint(constraint);
 
         col = new MsColumn("lastlogints");
         col.setType("[datetimeoffset]");
-        // col.setDefaultValue("getdate()");
+        col.setDefaultName("DF_admins_lastlogints");
+        col.setDefaultValue("(getdate())");
         col.setNullValue(false);
         table.addColumn(col);
 
-        // TODO replace constraint by 'col.setDefaultValue("getdate()")' when it will be fixed
-        constraint = new MsConstraint("DF_admins_lastlogints");
-        constraint.setDefinition("DEFAULT (getdate()) FOR lastlogints");
-        table.addConstraint(constraint);
-
         col = new MsColumn("expirienced");
         col.setType("[bit]");
-        // col.setDefaultValue("0");
+        col.setDefaultName("DF_admins_expirienced");
+        col.setDefaultValue("0");
         table.addColumn(col);
-
-        // TODO replace constraint by 'col.setDefaultValue("0")' when it will be fixed
-        constraint = new MsConstraint("DF_admins_expirienced");
-        constraint.setDefinition("DEFAULT 0 FOR expirienced");
-        table.addConstraint(constraint);
 
         testDatabase("ms_schema_2.sql", d);
     }
@@ -408,18 +390,9 @@ class MsAntlrLoaderTest {
         MsColumn col = new MsColumn("id");
         col.setType("[bigint]");
         col.setNullValue(false);
-        // TODO replace constraint 'constraint = new MsConstraint("DF_admins_aid", "")' by this,
-        // when default value setting will be fixed
-        // TODO fix default value setting; at this moment trying to set default value gives us:
-        //    ALTER TABLE [dbo].[call_logs] ALTER COLUMN [id] DROP CONSTRAINT null
-        //    ALTER TABLE [dbo].[call_logs] ADD CONSTRAINT [DF_call_logs_id] DEFAULT (NEXT VALUE FOR [dbo].[call_logs_id_seq]) FOR id
-        // col.setDefaultValue("(NEXT VALUE FOR [dbo].[call_logs_id_seq])");
+        col.setDefaultName("DF_call_logs_id");
+        col.setDefaultValue("(NEXT VALUE FOR [dbo].[call_logs_id_seq])");
         table.addColumn(col);
-
-        // TODO replace constraint by 'col.setDefaultValue("(NEXT VALUE FOR [dbo].[call_logs_id_seq])")' when it will be fixed
-        AbstractConstraint constraint = new MsConstraint("DF_call_logs_id");
-        constraint.setDefinition("DEFAULT (NEXT VALUE FOR [dbo].[call_logs_id_seq]) FOR id");
-        table.addConstraint(constraint);
 
         testDatabase("ms_schema_3.sql", d);
     }
@@ -627,13 +600,9 @@ class MsAntlrLoaderTest {
         MsColumn col = new MsColumn("id");
         col.setType("[bigint]");
         col.setNullValue(false);
-        // col.setDefaultValue("(NEXT VALUE FOR [dbo].[user_id_seq])");
+        col.setDefaultName("DF_user_data_id");
+        col.setDefaultValue("(NEXT VALUE FOR [dbo].[user_id_seq])");
         table.addColumn(col);
-
-        // TODO replace constraint by 'col.setDefaultValue("(NEXT VALUE FOR [dbo].[user_id_seq])")' when it will be fixed
-        AbstractConstraint constraint = new MsConstraint("DF_user_data_id");
-        constraint.setDefinition("DEFAULT (NEXT VALUE FOR [dbo].[user_id_seq]) FOR id");
-        table.addConstraint(constraint);
 
         col = new MsColumn("email");
         col.setType("[nvarchar](128)");
@@ -642,13 +611,9 @@ class MsAntlrLoaderTest {
 
         col = new MsColumn("created");
         col.setType("[datetimeoffset]");
-        // col.setDefaultValue("getdate()");
+        col.setDefaultName("DF_user_data_created");
+        col.setDefaultValue("getdate()");
         table.addColumn(col);
-
-        // TODO replace constraint by 'col.setDefaultValue("getdate()")' when it will be fixed
-        constraint = new MsConstraint("DF_user_data_created");
-        constraint.setDefinition("DEFAULT (getdate()) FOR created");
-        table.addConstraint(constraint);
 
         table = new MsTable("t1");
         table.setAnsiNulls(true);
@@ -743,9 +708,11 @@ class MsAntlrLoaderTest {
         col.setNullValue(false);
         table.addColumn(col);
 
-        AbstractConstraint constraint = new MsConstraint("PK_acl_role");
-        constraint.setDefinition("PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]");
-        table.addConstraint(constraint);
+        MsConstraintPk constriaintPk = new MsConstraintPk("PK_acl_role", true);
+        constriaintPk.setClustered(true);
+        constriaintPk.setDataSpace("PRIMARY");
+        constriaintPk.addColumn("id", new SimpleColumn("id"));
+        table.addConstraint(constriaintPk);
 
         table.setOwner("ms_user");
 
@@ -775,36 +742,24 @@ class MsAntlrLoaderTest {
 
         col = new MsColumn("is_active");
         col.setType("[bit]");
-        // col.setDefaultValue("0");
+        col.setDefaultName("DF_admin_is_active");
+        col.setDefaultValue("0");
         col.setNullValue(false);
         table.addColumn(col);
-
-        // TODO replace constraint by 'col.setDefaultValue("0")' when it will be fixed
-        constraint = new MsConstraint("DF_admin_is_active");
-        constraint.setDefinition("DEFAULT 0 FOR is_active");
-        table.addConstraint(constraint);
 
         col = new MsColumn("updated");
         col.setType("[datetime]");
-        // col.setDefaultValue("getdate()");
+        col.setDefaultName("DF_admin_updated");
+        col.setDefaultValue("(getdate())");
         col.setNullValue(false);
         table.addColumn(col);
-
-        // TODO replace constraint by 'col.setDefaultValue("getdate()")' when it will be fixed
-        constraint = new MsConstraint("DF_admin_updated");
-        constraint.setDefinition("DEFAULT (getdate()) FOR updated");
-        table.addConstraint(constraint);
 
         col = new MsColumn("created");
         col.setType("[datetime]");
-        // col.setDefaultValue("getdate()");
+        col.setDefaultName("DF_admin_created");
+        col.setDefaultValue("(getdate())");
         col.setNullValue(false);
         table.addColumn(col);
-
-        // TODO replace constraint by 'col.setDefaultValue("getdate()")' when it will be fixed
-        constraint = new MsConstraint("DF_admin_created");
-        constraint.setDefinition("DEFAULT (getdate()) FOR created");
-        table.addConstraint(constraint);
 
         col = new MsColumn("role_id");
         col.setType("[bigint]");
@@ -813,23 +768,21 @@ class MsAntlrLoaderTest {
 
         col = new MsColumn("last_visit");
         col.setType("[datetime]");
-        // col.setDefaultValue("getdate()");
+        col.setDefaultName("DF_admin_last_visit");
+        col.setDefaultValue("(getdate())");
         col.setNullValue(false);
         table.addColumn(col);
-
-        // TODO replace constraint by 'col.setDefaultValue("getdate()")' when it will be fixed
-        constraint = new MsConstraint("DF_admin_last_visit");
-        constraint.setDefinition("DEFAULT (getdate()) FOR last_visit");
-        table.addConstraint(constraint);
 
         AbstractIndex idx = new MsIndex("IX_user_role_id");
         idx.setDefinition("([role_id])");
         table.addIndex(idx);
 
-        constraint = new MsConstraint("FK_user_fax_box_id");
-        constraint.setDefinition("FOREIGN KEY (role_id) \n"
-                + "    REFERENCES [admin].[acl_role](id)");
-        table.addConstraint(constraint);
+        var constraintFk = new MsConstraintFk("FK_user_fax_box_id");
+        constraintFk.addColumn("role_id");
+        constraintFk.setForeignSchema("admin");
+        constraintFk.setForeignTable("acl_role");
+        constraintFk.addForeignColumn("id");
+        table.addConstraint(constraintFk);
 
         table.setOwner("ms_user");
 
@@ -895,9 +848,11 @@ class MsAntlrLoaderTest {
         // col.setComment("'This is column 2 comment'");
         table.addColumn(col);
 
-        AbstractConstraint constraint = new MsConstraint("PK_TABLE_1");
-        constraint.setDefinition("PRIMARY KEY CLUSTERED  ([ID]) ON [PRIMARY]");
-        table.addConstraint(constraint);
+        MsConstraintPk constriaintPk = new MsConstraintPk("PK_TABLE_1", true);
+        constriaintPk.setClustered(true);
+        constriaintPk.setDataSpace("PRIMARY");
+        constriaintPk.addColumn("ID", new SimpleColumn("ID"));
+        table.addConstraint(constriaintPk);
 
         testDatabase("ms_schema_11.sql", d);
     }
@@ -1043,13 +998,9 @@ class MsAntlrLoaderTest {
         // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
         // col.setComment("id column");
         col.setNullValue(false);
-        // col.setDefaultValue("(NEXT VALUE FOR [dbo].[test_id_seq])");
+        col.setDefaultName("DF_test_id");
+        col.setDefaultValue("(NEXT VALUE FOR [dbo].[test_id_seq])");
         table.addColumn(col);
-
-        // TODO replace constraint by 'col.setDefaultValue("(NEXT VALUE FOR [dbo].[admins_aid_seq])")' when it will be fixed
-        AbstractConstraint constraint = new MsConstraint("DF_test_id");
-        constraint.setDefinition("DEFAULT (NEXT VALUE FOR [dbo].[test_id_seq]) FOR id");
-        table.addConstraint(constraint);
 
         col = new MsColumn("text");
         col.setType("[nvarchar](20)");
@@ -1058,18 +1009,20 @@ class MsAntlrLoaderTest {
         // col.setComment("text column");
         table.addColumn(col);
 
-        constraint = new MsConstraint("text_check");
-        constraint.setDefinition("CHECK  ((LEN([text])>(0)))");
+        var constraintCheck = new MsConstraintCheck("text_check");
+        constraintCheck.setExpression("(LEN([text])>(0))");
         // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
         // constraint.setComment("text check");
-        table.addConstraint(constraint);
+        table.addConstraint(constraintCheck);
 
         // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
         // table.setComment("test table");
 
-        constraint = new MsConstraint("PK_test");
-        table.addConstraint(constraint);
-        constraint.setDefinition("PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]");
+        MsConstraintPk constriaintPk = new MsConstraintPk("PK_test", true);
+        constriaintPk.setClustered(true);
+        constriaintPk.setDataSpace("PRIMARY");
+        constriaintPk.addColumn("id", new SimpleColumn("id"));
+        table.addConstraint(constriaintPk);
 
         // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
         // constraint.setComment("primary key");

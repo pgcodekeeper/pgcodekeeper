@@ -15,13 +15,12 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema;
 
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 
-public class MsConstraint extends AbstractConstraint {
+public abstract class MsConstraint extends AbstractConstraint {
 
     private boolean isDisabled;
 
@@ -32,9 +31,7 @@ public class MsConstraint extends AbstractConstraint {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
-        sbSQL.append("ALTER ").append(getParent().getStatementType().name());
-        sbSQL.append(' ');
-        sbSQL.append(getParent().getQualifiedName());
+        appendAlterTable(sbSQL, false);
         if (isNotValid()) {
             sbSQL.append(" WITH NOCHECK");
         }
@@ -48,8 +45,8 @@ public class MsConstraint extends AbstractConstraint {
         // 1) if is not valid, after adding it is disabled by default
         // 2) can't be valid if disabled
         if (isNotValid()) {
-            sbSQL.append("\n\nALTER ").append(getParent().getStatementType().name())
-            .append(' ').append(getParent().getQualifiedName()).append(' ');
+            appendAlterTable(sbSQL, true);
+            sbSQL.append(' ');
             if (isDisabled()) {
                 sbSQL.append("NO");
             }
@@ -65,15 +62,14 @@ public class MsConstraint extends AbstractConstraint {
             AtomicBoolean isNeedDepcies) {
         MsConstraint newConstr = (MsConstraint) newCondition;
 
-        if (!Objects.equals(getDefinition(), newConstr.getDefinition())) {
+        if (!compareUnalterable(newConstr)) {
             isNeedDepcies.set(true);
             return true;
         }
 
         if (isNotValid() != newConstr.isNotValid() || isDisabled() != newConstr.isDisabled()) {
-            sb.append("\nALTER ").append(newConstr.getParent().getStatementType().name())
-            .append(' ').append(newConstr.getParent().getQualifiedName())
-            .append(" WITH ");
+            appendAlterTable(sb, true);
+            sb.append(" WITH ");
             if (newConstr.isNotValid()) {
                 sb.append("NO");
             }
@@ -89,11 +85,12 @@ public class MsConstraint extends AbstractConstraint {
         return false;
     }
 
+    protected abstract boolean compareUnalterable(MsConstraint newConstr);
+
     @Override
     public String getDropSQL(boolean optionExists) {
         final StringBuilder sbSQL = new StringBuilder();
-        sbSQL.append("ALTER ").append(getParent().getStatementType().name()).append(' ');
-        sbSQL.append(getParent().getQualifiedName());
+        appendAlterTable(sbSQL, false);
         sbSQL.append("\n\tDROP CONSTRAINT ");
         if (optionExists) {
             sbSQL.append("IF EXISTS ");
@@ -131,8 +128,8 @@ public class MsConstraint extends AbstractConstraint {
     }
 
     @Override
-    protected AbstractConstraint getConstraintCopy() {
-        MsConstraint con = new MsConstraint(getName());
+    public AbstractConstraint shallowCopy() {
+        MsConstraint con = (MsConstraint) super.shallowCopy();
         con.setDisabled(isDisabled());
         return con;
     }

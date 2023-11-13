@@ -24,9 +24,15 @@ import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
 import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.AlterTable;
+import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
+import ru.taximaxim.codekeeper.core.schema.PgIndexParamContainer;
 import ru.taximaxim.codekeeper.core.schema.PgConstraint;
+import ru.taximaxim.codekeeper.core.schema.PgConstraintCheck;
+import ru.taximaxim.codekeeper.core.schema.PgConstraintExclude;
+import ru.taximaxim.codekeeper.core.schema.PgConstraintFk;
+import ru.taximaxim.codekeeper.core.schema.PgConstraintPk;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
@@ -52,23 +58,47 @@ public class ConstraintsReader extends JdbcReader {
 
         String schemaName = schema.getName();
         String constraintName = res.getString("conname");
+        String[] params = getColArray(res, "reloptions");
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, constraintName, DbObjType.CONSTRAINT));
-        PgConstraint c = new PgConstraint(constraintName);
+        PgConstraint constr;
+
+        String type = res.getString("contype");
+        switch (type) {
+        case "p":
+        case "u":
+            constr = new PgConstraintPk(constraintName, "p".equals(type));
+            ((PgConstraintPk) constr).setClustered(res.getBoolean("isclustered"));
+            break;
+        case "f":
+            constr = new PgConstraintFk(constraintName);
+            break;
+        case "c":
+            constr = new PgConstraintCheck(constraintName);
+            break;
+        case "x":
+            constr = new PgConstraintExclude(constraintName);
+            break;
+        default:
+            throw new IllegalArgumentException("Unsupportes constraint's type " + type);
+        }
+
+        if (params != null) {
+            ParserAbstract.fillOptionParams(params, ((PgIndexParamContainer) constr)::addParam, false, false, false);
+        }
 
         String definition = res.getString("definition");
         checkObjectValidity(definition, DbObjType.CONSTRAINT, constraintName);
         String tablespace = res.getString("spcname");
-        c.setClustered(res.getBoolean("isclustered"));
         loader.submitAntlrTask(ADD_CONSTRAINT + definition + ';',
                 p -> new Pair<>(p.sql().statement(0).schema_statement().schema_alter()
                         .alter_table_statement().table_action(0), (CommonTokenStream) p.getTokenStream()),
                 pair -> new AlterTable(null, schema.getDatabase(), tablespace, pair.getSecond())
                 .parseAlterTableConstraint(
-                        pair.getFirst(), c, schemaName, tableName, loader.getCurrentLocation()));
-        loader.setAuthor(c, res);
-        loader.setComment(c, res);
+                        pair.getFirst(), constr, schemaName, tableName, loader.getCurrentLocation()));
+        loader.setAuthor(constr, res);
+        loader.setComment(constr, res);
 
-        cont.addConstraint(c);
+        cont.addConstraint(constr);
     }
 
     @Override
@@ -89,7 +119,9 @@ public class ConstraintsReader extends JdbcReader {
         builder
         .column("ccc.relname")
         .column("res.conname")
+        .column("res.contype")
         .column("ts.spcname")
+        .column("ci.reloptions")
         .column("pg_catalog.pg_get_constraintdef(res.oid) AS definition")
         .column("idx.indisclustered as isclustered")
         .from("pg_catalog.pg_constraint res")

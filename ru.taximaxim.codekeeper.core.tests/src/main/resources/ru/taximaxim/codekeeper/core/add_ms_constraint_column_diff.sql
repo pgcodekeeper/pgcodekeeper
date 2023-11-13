@@ -1,14 +1,18 @@
 ALTER TABLE [dbo].[table1]
+	ADD CONSTRAINT [constraint_default_c2] DEFAULT 50 FOR [c2]
+GO
+
+ALTER TABLE [dbo].[table1]
 	ADD CONSTRAINT [PK_table1] PRIMARY KEY CLUSTERED  ([c1]) WITH (DATA_COMPRESSION = PAGE) ON [PRIMARY]
 GO
 
 ALTER TABLE [dbo].[table1] WITH NOCHECK
-	ADD CONSTRAINT [constraint_check_c2] CHECK (c2 > 10)
+	ADD CONSTRAINT [constraint_check_c2] CHECK  (c2 > 10)
 GO
 
 ALTER TABLE [dbo].[table1] NOCHECK CONSTRAINT [constraint_check_c2]
 GO
 
 ALTER TABLE [dbo].[table1]
-	ADD CONSTRAINT [constraint_default_c2] DEFAULT 50 FOR c2
+	ADD UNIQUE NONCLUSTERED  ([c4])
 GO

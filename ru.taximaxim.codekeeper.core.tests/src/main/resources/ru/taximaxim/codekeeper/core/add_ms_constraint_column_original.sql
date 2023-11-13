@@ -5,5 +5,6 @@ GO
 CREATE TABLE [dbo].[table1](
     [c1] [int] NOT NULL,
     [c2] [int] NOT NULL,
-    [c3] [varchar](100) NOT NULL)
+    [c3] [varchar](100) NOT NULL,
+    [c4] [int] NOT NULL)
 GO

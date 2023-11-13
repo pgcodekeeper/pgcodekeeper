@@ -1,11 +1,13 @@
-ALTER TABLE [dbo].[testtable] DROP CONSTRAINT [cd]
+ALTER TABLE [dbo].[testtable]
+	DROP CONSTRAINT [cd]
 GO
 
 ALTER TABLE [dbo].[testtable]
 	ALTER COLUMN [field3] [int]
 GO
 
-ALTER TABLE [dbo].[testtable] ADD CONSTRAINT [cd] DEFAULT (7) FOR [field3]
+ALTER TABLE [dbo].[testtable]
+	ADD CONSTRAINT [cd] DEFAULT (7) FOR [field3]
 GO
 
 UPDATE [dbo].[testtable]

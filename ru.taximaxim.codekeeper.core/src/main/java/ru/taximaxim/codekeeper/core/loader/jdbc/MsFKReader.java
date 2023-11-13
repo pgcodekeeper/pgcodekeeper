@@ -17,15 +17,12 @@ package ru.taximaxim.codekeeper.core.loader.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
-import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
-import ru.taximaxim.codekeeper.core.schema.MsConstraint;
+import ru.taximaxim.codekeeper.core.schema.MsConstraintFk;
 
 public class MsFKReader extends JdbcReader {
 
@@ -39,71 +36,42 @@ public class MsFKReader extends JdbcReader {
         String name = res.getString("name");
         loader.setCurrentObject(new GenericColumn(schema.getName(), name, DbObjType.CONSTRAINT));
 
-        MsConstraint con = new MsConstraint(name);
+        var constrFk = new MsConstraintFk(name);
 
-        con.setNotValid(res.getBoolean("with_no_check"));
-        con.setDisabled(res.getBoolean("is_disabled"));
+        constrFk.setNotValid(res.getBoolean("with_no_check"));
+        constrFk.setDisabled(res.getBoolean("is_disabled"));
 
-        StringBuilder sb = new StringBuilder();
+        String fSchemaName = res.getString("referenced_schema_name");
+        String fTableName = res.getString("referenced_table_name");
 
-        String fschema = res.getString("referenced_schema_name");
-        String ftable = res.getString("referenced_table_name");
-
-        GenericColumn ftableRef = new GenericColumn(fschema, ftable, DbObjType.TABLE);
-        con.setForeignTable(ftableRef);
-        con.addDep(ftableRef);
-
-        List<String> fields = new ArrayList<>();
-        List<String> references = new ArrayList<>();
+        constrFk.setForeignSchema(fSchemaName);
+        constrFk.setForeignTable(fTableName);
+        constrFk.addDep(new GenericColumn(fSchemaName, fTableName, DbObjType.TABLE));
 
         for (XmlReader col : XmlReader.readXML(res.getString("cols"))) {
             String field = col.getString("f");
-            String reference = col.getString("r");
+            String fCol = col.getString("r");
 
-            con.addForeignColumn(reference);
-            con.addDep(new GenericColumn(fschema, ftable, reference, DbObjType.COLUMN));
-
-            fields.add(MsDiffUtils.quoteName(field));
-            references.add(MsDiffUtils.quoteName(reference));
+            constrFk.addForeignColumn(fCol);
+            constrFk.addDep(new GenericColumn(fSchemaName, fTableName, fCol, DbObjType.COLUMN));
+            constrFk.addColumn(field);
         }
 
-        sb.append("FOREIGN KEY (");
-        sb.append(String.join(", ", fields));
-        sb.append(") REFERENCES ");
-        sb.append(MsDiffUtils.quoteName(fschema));
-        sb.append('.');
-        sb.append(MsDiffUtils.quoteName(ftable));
-        sb.append(" (");
-        sb.append(String.join(", ", references));
-        sb.append(")");
+        constrFk.setDelAction(getAction(res.getInt("delete_referential_action")));
+        constrFk.setUpdAction(getAction(res.getInt("update_referential_action")));
+        constrFk.setNotForRepl(res.getBoolean("is_not_for_replication"));
 
-        int del = res.getInt("delete_referential_action");
-        if (del > 0) {
-            sb.append(" ON DELETE ");
-            if (del == 1) {
-                sb.append("CASCADE");
-            } else {
-                sb.append("SET ").append(del == 2 ? "NULL" : "DEFAULT");
-            }
+        schema.getTable(res.getString("table_name")).addConstraint(constrFk);
+    }
+
+    private String getAction(int value) {
+        if (value <= 0) {
+            return null;
         }
-
-        int upd = res.getInt("update_referential_action");
-        if (upd > 0) {
-            sb.append(" ON UPDATE ");
-            if (upd == 1) {
-                sb.append("CASCADE");
-            } else {
-                sb.append("SET ").append(upd == 2 ? "NULL" : "DEFAULT");
-            }
+        if (value == 1) {
+            return "CASCADE";
         }
-
-        if (res.getBoolean("is_not_for_replication")) {
-            sb.append(" NOT FOR REPLICATION");
-        }
-
-        con.setDefinition(sb.toString());
-
-        schema.getTable(res.getString("table_name")).addConstraint(con);
+        return value == 2 ? "SET NULL" : "SET DEFAULT";
     }
 
     @Override

@@ -29,8 +29,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_dom
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Domain_constraintContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.IdentifierContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext;
-import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
-import ru.taximaxim.codekeeper.core.schema.PgConstraint;
+import ru.taximaxim.codekeeper.core.schema.PgConstraintCheck;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgDomain;
 
@@ -61,9 +60,9 @@ public class CreateDomain extends ParserAbstract {
         for (Domain_constraintContext constrCtx : ctx.dom_constraint) {
             if (constrCtx.CHECK() != null) {
                 IdentifierContext name = constrCtx.name;
-                AbstractConstraint constr = new PgConstraint(name != null ? name.getText() : "");
-                parseDomainConstraint(domain, constr, constrCtx, db, fileName);
-                domain.addConstraint(constr);
+                var constrCheck = new PgConstraintCheck(name != null ? name.getText() : "");
+                parseDomainConstraint(domain, constrCheck, constrCtx, db, fileName);
+                domain.addConstraint(constrCheck);
             }
             // вынесено ограничение, т.к. мы привязываем ограничение на нул к
             // объекту а не создаем отдельный констрайнт
@@ -75,10 +74,10 @@ public class CreateDomain extends ParserAbstract {
         addSafe(getSchemaSafe(ids), domain, ids);
     }
 
-    public static void parseDomainConstraint(PgDomain domain, AbstractConstraint constr,
+    public static void parseDomainConstraint(PgDomain domain, PgConstraintCheck constr,
             Domain_constraintContext ctx, PgDatabase db, String location) {
         VexContext vexCtx = ctx.vex();
-        constr.setDefinition("CHECK (" + getFullCtxText(vexCtx) + ")");
+        constr.setExpression(getFullCtxText(vexCtx));
         db.addAnalysisLauncher(new DomainAnalysisLauncher(domain, vexCtx, location));
     }
 

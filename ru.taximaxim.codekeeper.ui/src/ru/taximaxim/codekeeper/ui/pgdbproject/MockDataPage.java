@@ -56,6 +56,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
+import ru.taximaxim.codekeeper.core.schema.IConstraintPk;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
@@ -724,7 +725,7 @@ public class MockDataPage extends WizardPage {
      * @param constraint Table constraint
      */
     private void parseConstraints(AbstractConstraint constraint) {
-        if (constraint.isUnique() || constraint.isPrimaryKey()) {
+        if (constraint instanceof IConstraintPk) {
             columns.stream()
             .filter(wrapper -> constraint.getColumns().contains(wrapper.getName()))
             .forEach(wrapper -> wrapper.setUnique(true));

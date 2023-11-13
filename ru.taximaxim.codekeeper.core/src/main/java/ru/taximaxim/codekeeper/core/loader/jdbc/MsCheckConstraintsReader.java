@@ -23,7 +23,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
-import ru.taximaxim.codekeeper.core.schema.MsConstraint;
+import ru.taximaxim.codekeeper.core.schema.MsConstraintCheck;
 
 public class MsCheckConstraintsReader extends JdbcReader {
 
@@ -41,22 +41,14 @@ public class MsCheckConstraintsReader extends JdbcReader {
             return;
         }
 
-        MsConstraint con = new MsConstraint(name);
+        var constrCheck = new MsConstraintCheck(name);
 
-        con.setNotValid(res.getBoolean("with_no_check"));
-        con.setDisabled(res.getBoolean("is_disabled"));
+        constrCheck.setNotValid(res.getBoolean("with_no_check"));
+        constrCheck.setDisabled(res.getBoolean("is_disabled"));
+        constrCheck.setNotForRepl(res.getBoolean("is_not_for_replication"));
+        constrCheck.setExpression(res.getString("definition"));
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("CHECK ");
-
-        if (res.getBoolean("is_not_for_replication")) {
-            sb.append("NOT FOR REPLICATION ");
-        }
-
-        sb.append(" (").append(res.getString("definition")).append(")");
-
-        con.setDefinition(sb.toString());
-        table.addConstraint(con);
+        table.addConstraint(constrCheck);
     }
 
     @Override

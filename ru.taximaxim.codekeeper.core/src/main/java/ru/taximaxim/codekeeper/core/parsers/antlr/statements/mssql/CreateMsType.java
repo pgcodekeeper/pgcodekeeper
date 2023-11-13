@@ -37,8 +37,11 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_ind
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Type_definitionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.MsColumn;
+import ru.taximaxim.codekeeper.core.schema.MsConstraintCheck;
+import ru.taximaxim.codekeeper.core.schema.MsConstraintPk;
 import ru.taximaxim.codekeeper.core.schema.MsType;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.SimpleColumn;
 
 public class CreateMsType extends ParserAbstract {
 
@@ -86,37 +89,14 @@ public class CreateMsType extends ParserAbstract {
 
     private void fillTableType(Column_def_table_constraintContext colCtx, MsType type) {
         if (colCtx.table_constraint() != null) {
-            StringBuilder constrSb = new StringBuilder();
             Table_constraint_bodyContext body = colCtx.table_constraint().table_constraint_body();
             if (body.column_name_list_with_order() != null) {
-                constrSb.append(body.PRIMARY() != null ? "PRIMARY KEY " : "UNIQUE ");
-
-                if (body.clustered() != null) {
-                    constrSb.append(body.clustered().CLUSTERED() != null ? "" : "NON");
-                    constrSb.append("CLUSTERED ");
-                }
-
-                if (body.HASH() != null) {
-                    constrSb.append("HASH");
-                }
-
-                constrSb.append('\n');
-
-                appendCols(constrSb, body.column_name_list_with_order().column_with_order());
-
-                if (body.index_options() != null) {
-                    constrSb.append(' ');
-                    constrSb.append(getFullCtxText(body.index_options()));
-                }
-
-                if (body.ON() != null) {
-                    constrSb.append(' ');
-                    constrSb.append(getFullCtxText(body.id()));
-                }
+                type.addConstraint(getPkConstraint(body).getDefinition());
             } else {
-                constrSb.append(getFullCtxText(body));
+                var constrCheck = new MsConstraintCheck(null);
+                constrCheck.setExpression(getFullCtxText(body.search_condition()));
+                type.addConstraint(constrCheck.getDefinition());
             }
-            type.addConstraint(constrSb.toString());
         } else if (colCtx.table_index() != null) {
             fillTableIndex(colCtx.table_index(), type);
         } else {
@@ -135,6 +115,26 @@ public class CreateMsType extends ParserAbstract {
 
             type.addColumn(col.getFullDefinition());
         }
+    }
+
+    private MsConstraintPk getPkConstraint(Table_constraint_bodyContext body) {
+        var constrPk = new MsConstraintPk(null, body.PRIMARY() != null);
+        constrPk.setClustered(body.clustered() != null && body.clustered().CLUSTERED() != null);
+        for (var columnWithOrder : body.column_name_list_with_order().column_with_order()) {
+            String colName = columnWithOrder.id().getText();
+            var order = columnWithOrder.asc_desc();
+            boolean isDesc = order != null && order.DESC() != null;
+            SimpleColumn col = new SimpleColumn(colName);
+            col.setDesc(isDesc);
+            constrPk.addColumn(colName, col);
+        }
+        if (body.index_options() != null) {
+            for (var option : body.index_options().index_option()) {
+                constrPk.addOption(option.key.getText(), getFullCtxText(option.index_option_value()));
+            }
+        }
+
+        return constrPk;
     }
 
     private void fillTableIndex(Table_indexContext indCtx, MsType type) {

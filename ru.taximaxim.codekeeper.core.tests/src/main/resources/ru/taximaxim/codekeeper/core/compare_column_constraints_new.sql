@@ -67,7 +67,7 @@ ALTER TABLE public.testtable2
     ADD CONSTRAINT testtable2_c1_key UNIQUE (c1);
 
 ALTER TABLE public.testtable2
-    ADD CONSTRAINT check_positive CHECK ((c4 > 0));
+    ADD CONSTRAINT check_positive CHECK ((c4 > 0)) NO INHERIT;
 
 --
 -- Name: public; Type: ACL; Schema: -; Owner: postgres
@@ -90,7 +90,7 @@ CREATE TABLE public.testtable3 (
 );
 
 ALTER TABLE public.testtable3 
-    ADD CONSTRAINT uq_nulls1 UNIQUE NULLS DISTINCT (value4);
+    ADD CONSTRAINT uq_nulls1 UNIQUE NULLS DISTINCT (value4) WITH (fillfactor=70);
 
 --
 -- PostgreSQL database dump complete

@@ -112,7 +112,7 @@ public class CreateMsTable extends MsTableAbstract {
             }
 
             for (Column_optionContext option : colCtx.column_option()) {
-                fillMsColumnOption(option, col, null);
+                fillMsColumnOption(option, col, table);
             }
 
             table.addColumn(col);

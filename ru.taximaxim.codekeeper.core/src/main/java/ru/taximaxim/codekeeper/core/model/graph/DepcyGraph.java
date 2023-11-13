@@ -36,6 +36,8 @@ import ru.taximaxim.codekeeper.core.schema.AbstractPgFunction;
 import ru.taximaxim.codekeeper.core.schema.AbstractPgTable;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
+import ru.taximaxim.codekeeper.core.schema.IConstraintFk;
+import ru.taximaxim.codekeeper.core.schema.IConstraintPk;
 import ru.taximaxim.codekeeper.core.schema.Inherits;
 import ru.taximaxim.codekeeper.core.schema.PartitionPgTable;
 import ru.taximaxim.codekeeper.core.schema.PgColumn;
@@ -110,8 +112,8 @@ public class DepcyGraph {
         // second pass: dependency graph
         db.getDescendants().flatMap(AbstractTable::columnAdder).forEach(st -> {
             processDeps(st);
-            if (st.getStatementType() == DbObjType.CONSTRAINT) {
-                createFkeyToUnique((AbstractConstraint)st);
+            if (st instanceof IConstraintFk) {
+                createFkeyToUnique((IConstraintFk) st);
             } else if (st.getStatementType() == DbObjType.COLUMN
                     && st.isPostgres()) {
                 PgColumn col = (PgColumn) st;
@@ -199,22 +201,24 @@ public class DepcyGraph {
      * Unfortunately they might not exist at the stage where {@link PgStatement#getDeps()}
      * are populated so we have to defer their lookup until here.
      */
-    private void createFkeyToUnique(AbstractConstraint con) {
+    private void createFkeyToUnique(IConstraintFk con) {
         Set<String> refs = con.getForeignColumns();
-        GenericColumn refTable = con.getForeignTable();
-        if (!refs.isEmpty() && refTable != null) {
-            PgStatement cont = refTable.getStatement(db);
-            if (cont instanceof PgStatementContainer) {
-                PgStatementContainer c = (PgStatementContainer) cont;
-                for (AbstractConstraint refCon : c.getConstraints()) {
-                    if ((refCon.isPrimaryKey() || refCon.isUnique()) && refs.equals(refCon.getColumns())) {
-                        graph.addEdge(con, refCon);
-                    }
+        if (refs.isEmpty()) {
+            return;
+        }
+
+        PgStatement cont = new GenericColumn(con.getForeignSchema(), con.getForeignTable(), DbObjType.TABLE).getStatement(db);
+        
+        if (cont instanceof PgStatementContainer) {
+            PgStatementContainer c = (PgStatementContainer) cont;
+            for (AbstractConstraint refCon : c.getConstraints()) {
+                if (refCon instanceof IConstraintPk && refs.equals(refCon.getColumns())) {
+                    graph.addEdge((PgStatement) con, refCon);
                 }
-                for (AbstractIndex refInd : c.getIndexes()) {
-                    if (refInd.isUnique() && refs.equals(refInd.getColumns())) {
-                        graph.addEdge(con, refInd);
-                    }
+            }
+            for (AbstractIndex refInd : c.getIndexes()) {
+                if (refInd.isUnique() && refs.equals(refInd.getColumns())) {
+                    graph.addEdge((PgStatement) con, refInd);
                 }
             }
         }

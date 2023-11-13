@@ -32,7 +32,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.zest.core.viewers.EntityConnectionData;
 import org.eclipse.zest.core.viewers.IEntityStyleProvider;
 
-import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
+import ru.taximaxim.codekeeper.core.schema.IConstraintFk;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvider{
@@ -78,7 +78,7 @@ class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvi
             case COLUMN:
                 return "COL " + st.getBareName(); //$NON-NLS-1$
             case CONSTRAINT:
-                if (!((AbstractConstraint)st).getForeignColumns().isEmpty()) {
+                if (st instanceof IConstraintFk) {
                     return "FK " + st.getBareName(); //$NON-NLS-1$
                 }
                 return "CONSTR " + st.getBareName(); //$NON-NLS-1$
@@ -138,11 +138,11 @@ class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvi
                 return "DICT "  + st.getBareName(); //$NON-NLS-1$
             }
             return st.getClass() + " " + st.getBareName(); //$NON-NLS-1$
-        } else if (element instanceof EntityConnectionData) {
-            return ""; //$NON-NLS-1$
-        } else {
-            return "error"; //$NON-NLS-1$
         }
+        if (element instanceof EntityConnectionData) {
+            return ""; //$NON-NLS-1$
+        }
+        return "error"; //$NON-NLS-1$
     }
 
     @Override

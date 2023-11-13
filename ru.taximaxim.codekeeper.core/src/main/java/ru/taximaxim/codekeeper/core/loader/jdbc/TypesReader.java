@@ -25,7 +25,6 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.VexAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.CreateDomain;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
-import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractType;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
@@ -33,7 +32,7 @@ import ru.taximaxim.codekeeper.core.schema.ICompressOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.PgBaseType;
 import ru.taximaxim.codekeeper.core.schema.PgColumn;
 import ru.taximaxim.codekeeper.core.schema.PgCompositeType;
-import ru.taximaxim.codekeeper.core.schema.PgConstraint;
+import ru.taximaxim.codekeeper.core.schema.PgConstraintCheck;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgDomain;
 import ru.taximaxim.codekeeper.core.schema.PgEnumType;
@@ -118,18 +117,18 @@ public final class TypesReader extends JdbcReader {
 
             for (int i = 0; i < connames.length; ++i) {
                 String conName = connames[i];
-                AbstractConstraint c = new PgConstraint(conName);
+                var constrCheck = new PgConstraintCheck(conName);
                 String definition = condefs[i];
                 checkObjectValidity(definition, DbObjType.CONSTRAINT, conName);
                 loader.submitAntlrTask(ADD_CONSTRAINT + definition + ';',
                         p -> p.sql().statement(0).schema_statement().schema_alter()
                         .alter_domain_statement().dom_constraint,
-                        ctx -> CreateDomain.parseDomainConstraint(d, c, ctx,
+                        ctx -> CreateDomain.parseDomainConstraint(d, constrCheck, ctx,
                                 dataBase, loader.getCurrentLocation()));
 
-                d.addConstraint(c);
+                d.addConstraint(constrCheck);
                 if (concomments[i] != null && !concomments[i].isEmpty()) {
-                    c.setComment(loader.args, PgDiffUtils.quoteString(concomments[i]));
+                    constrCheck.setComment(loader.args, PgDiffUtils.quoteString(concomments[i]));
                 }
             }
         }
