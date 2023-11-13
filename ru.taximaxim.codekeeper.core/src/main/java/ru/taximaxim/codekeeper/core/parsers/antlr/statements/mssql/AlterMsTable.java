@@ -22,16 +22,20 @@ import org.antlr.v4.runtime.ParserRuleContext;
 
 import ru.taximaxim.codekeeper.core.DangerStatement;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.MsExpressionAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Alter_tableContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Column_def_table_constraintContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Column_def_table_constraintsContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.ExpressionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Schema_alterContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_action_dropContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_constraintContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_constraint_bodyContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
+import ru.taximaxim.codekeeper.core.schema.MsColumn;
 import ru.taximaxim.codekeeper.core.schema.MsConstraint;
 import ru.taximaxim.codekeeper.core.schema.MsTable;
 import ru.taximaxim.codekeeper.core.schema.MsTrigger;
@@ -59,26 +63,14 @@ public class AlterMsTable extends MsTableAbstract {
 
         Column_def_table_constraintsContext constrs = ctx.column_def_table_constraints();
         if (constrs != null ) {
-            for (Column_def_table_constraintContext colCtx : constrs.column_def_table_constraint()) {
-                Table_constraintContext constrCtx;
-                if (colCtx != null && (constrCtx = colCtx.table_constraint()) != null) {
-                    AbstractConstraint con = getMsConstraint(constrCtx, schemaCtx.getText(), nameCtx.getText());
-                    con.setNotValid(ctx.nocheck_add != null);
-                    IdContext id = constrCtx.id();
-                    if (id != null) {
-                        addSafe(table, con, Arrays.asList(schemaCtx, nameCtx, id));
-                    } else {
-                        doSafe(AbstractTable::addConstraint, table, con);
-                    }
-                }
-            }
+            addConstraint(constrs, table, schemaCtx, nameCtx);
         } else if (ctx.CONSTRAINT() != null && ctx.ALL() == null) {
             for (IdContext id : ctx.name_list().id()) {
-                MsConstraint con = (MsConstraint) getSafe(AbstractTable::getConstraint, table, id);
+                MsConstraint constr = (MsConstraint) getSafe(AbstractTable::getConstraint, table, id);
                 if (ctx.WITH() != null) {
-                    doSafe(AbstractConstraint::setNotValid, con, ctx.nocheck_check != null);
+                    doSafe(AbstractConstraint::setNotValid, constr, ctx.nocheck_check != null);
                 }
-                doSafe(MsConstraint::setDisabled, con, ctx.nocheck != null);
+                doSafe(MsConstraint::setDisabled, constr, ctx.nocheck != null);
             }
         } else if (ctx.table_drop != null) {
             for (Table_action_dropContext drop : ctx.table_action_drop()) {
@@ -98,6 +90,36 @@ public class AlterMsTable extends MsTableAbstract {
             }
         } else if (ctx.CHANGE_TRACKING() != null && ctx.ENABLE() != null) {
             doSafe(MsTable::setTracked, ((MsTable) table), ctx.on_off().ON() != null);
+        }
+    }
+
+    private void addConstraint(Column_def_table_constraintsContext constrs, AbstractTable table, IdContext schemaCtx,
+            IdContext nameCtx) {
+        for (Column_def_table_constraintContext colCtx : constrs.column_def_table_constraint()) {
+            Table_constraintContext constrCtx = colCtx.table_constraint();
+            if (constrCtx == null) {
+                continue;
+            }
+
+            Table_constraint_bodyContext constrBodyCtx = constrCtx.table_constraint_body();
+            if (constrBodyCtx.DEFAULT() != null) {
+                MsColumn col = (MsColumn) getSafe(AbstractTable::getColumn, table, constrBodyCtx.id());
+                ExpressionContext expCtx = constrBodyCtx.expression();
+                doSafe(MsColumn::setDefaultValue, col, getFullCtxText(expCtx));
+                if (constrCtx.constraint != null) {
+                    doSafe(MsColumn::setDefaultName, col, constrCtx.constraint.getText());
+                }
+                db.addAnalysisLauncher(new MsExpressionAnalysisLauncher(col, expCtx, fileName));
+            } else {
+                AbstractConstraint con = getMsConstraint(constrCtx, schemaCtx.getText(), nameCtx.getText());
+                con.setNotValid(ctx.nocheck_add != null);
+                IdContext id = constrCtx.id();
+                if (id != null) {
+                    addSafe(table, con, Arrays.asList(schemaCtx, nameCtx, id));
+                } else {
+                    doSafe(AbstractTable::addConstraint, table, con);
+                }
+            }
         }
     }
 

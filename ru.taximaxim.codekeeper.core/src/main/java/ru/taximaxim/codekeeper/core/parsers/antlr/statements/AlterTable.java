@@ -22,6 +22,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import ru.taximaxim.codekeeper.core.DangerStatement;
+import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrUtils;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
@@ -55,6 +56,7 @@ import ru.taximaxim.codekeeper.core.schema.PartitionGpTable;
 import ru.taximaxim.codekeeper.core.schema.PartitionTemplateContainer;
 import ru.taximaxim.codekeeper.core.schema.PgColumn;
 import ru.taximaxim.codekeeper.core.schema.PgConstraint;
+import ru.taximaxim.codekeeper.core.schema.PgConstraintPk;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgRule;
@@ -105,15 +107,15 @@ public class AlterTable extends TableAbstract {
 
             if (tablAction.tabl_constraint != null) {
                 IdentifierContext conNameCtx = tablAction.tabl_constraint.identifier();
-                AbstractConstraint con = parseAlterTableConstraint(tablAction,
+                AbstractConstraint constr = parseAlterTableConstraint(tablAction,
                         createTableConstraintBlank(tablAction.tabl_constraint),
                         getSchemaNameSafe(ids), nameCtx.getText(), fileName);
 
-                if (!con.getName().isEmpty()) {
-                    addSafe(tabl, con, Arrays.asList(
+                if (!constr.getName().isEmpty()) {
+                    addSafe(tabl, constr, Arrays.asList(
                             QNameParser.getSchemaNameCtx(ids), nameCtx, conNameCtx));
                 } else {
-                    doSafe(AbstractPgTable::addConstraint, tabl, con);
+                    doSafe(AbstractPgTable::addConstraint, tabl, constr);
                 }
             }
 
@@ -195,9 +197,13 @@ public class AlterTable extends TableAbstract {
             PgStatementContainer cont = (PgStatementContainer) r;
 
             ParserRuleContext indexName = QNameParser.getFirstNameCtx(getIdentifiers(indexNameCtx));
-            AbstractConstraint c = cont.getConstraint(indexName.getText());
-            if (c != null) {
-                doSafe(AbstractConstraint::setClustered, c, true);
+            AbstractConstraint constr = cont.getConstraint(indexName.getText());
+            if (constr != null) {
+                if (constr instanceof PgConstraintPk) {
+                    doSafe(PgConstraintPk::setClustered, (PgConstraintPk) constr, true);
+                } else if (!isRefMode()) {
+                    throw new IllegalArgumentException(Messages.Constraint_WarningMismatchedConstraintTypeForClusterOn);
+                }
             } else {
                 AbstractIndex index = getSafe(PgStatementContainer::getIndex, cont, indexName);
                 doSafe(AbstractIndex::setClustered, index, true);

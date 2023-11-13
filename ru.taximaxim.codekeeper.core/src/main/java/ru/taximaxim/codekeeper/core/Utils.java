@@ -24,6 +24,8 @@ import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collection;
+import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -103,6 +105,44 @@ public final class Utils {
 
     public static boolean isMsSystemSchema(String schema) {
         return Consts.SYS.equalsIgnoreCase(schema);
+    }
+
+    public static void appendCols(StringBuilder sbSQL, Collection<String> cols, boolean isPostgres) {
+        sbSQL.append('(');
+        for (var col : cols) {
+            sbSQL.append(isPostgres ? PgDiffUtils.getQuotedName(col) : MsDiffUtils.quoteName(col)).append(", ");
+        }
+        sbSQL.setLength(sbSQL.length() - 2);
+        sbSQL.append(')');
+    }
+
+    /**
+     * Appends parameters/options at StringBuilder. This StringBuilder used in
+     * schema package Constraint's classes in the method getDifinition()
+     *
+     * @param sbSQL
+     *            - the StringBuilder from method getDifinition()
+     *
+     * @param options
+     *            - the Map<String, String> where key is parameter/option and
+     *            value is value of this parameter/option
+     *
+     * @param isPostgres
+     *            - the boolean variable in package schema what's need us for
+     *            correct delimiter, because in postgres and microsoft server is
+     *            different
+     */
+    public static void appendOptions(StringBuilder sbSQL, Map<String, String> options, boolean isPostgres) {
+        sbSQL.append('(');
+        for (var option : options.entrySet()) {
+            sbSQL.append(option.getKey());
+            if (option.getValue() != null) {
+                sbSQL.append(isPostgres ? '=' : " = ").append(option.getValue());
+            }
+            sbSQL.append(", ");
+        }
+        sbSQL.setLength(sbSQL.length() - 2);
+        sbSQL.append(')');
     }
 
     private Utils() {

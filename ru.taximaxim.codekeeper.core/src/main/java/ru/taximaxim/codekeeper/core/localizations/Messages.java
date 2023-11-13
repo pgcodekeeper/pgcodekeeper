@@ -28,6 +28,8 @@ public final class Messages extends NLS {
     // pgdiff.loader
     public static String Connection_DatabaseJdbcAccessError;
 
+    public static String Constraint_WarningMismatchedConstraintTypeForClusterOn;
+
     public static String ProjectUpdater_error_backup_restore;
 
     public static String ProjectUpdater_error_no_tempdir;

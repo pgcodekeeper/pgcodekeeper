@@ -213,13 +213,16 @@ public class MsColumn extends AbstractColumn {
                 || !Objects.equals(oldDefaultName, newDefaultName)) {
             if (oldDefault != null) {
                 sb.append(getAlterTable(true, false));
-                sb.append(" DROP CONSTRAINT ").append(MsDiffUtils.quoteName(oldDefaultName));
+                sb.append("\n\tDROP CONSTRAINT ").append(MsDiffUtils.quoteName(oldDefaultName));
                 sb.append(GO);
             }
 
             if (newDefault != null) {
                 sb.append(getAlterTable(true, false));
-                sb.append(" ADD CONSTRAINT ").append(MsDiffUtils.quoteName(newDefaultName));
+                sb.append("\n\tADD");
+                if (newDefaultName != null) {
+                    sb.append(" CONSTRAINT ").append(MsDiffUtils.quoteName(newDefaultName));
+                }
                 sb.append(" DEFAULT ").append(newDefault);
                 sb.append(" FOR ").append(MsDiffUtils.quoteName(name));
                 sb.append(GO);

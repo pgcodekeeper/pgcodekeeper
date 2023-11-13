@@ -93,7 +93,6 @@ public class MetaUtils {
         case CONSTRAINT:
             MetaConstraint con = new MetaConstraint(loc);
             con.setPrimaryKey(((IConstraint) st).isPrimaryKey());
-            con.setUnique(((IConstraint) st).isUnique());
             ((IConstraint) st).getColumns().forEach(con::addColumn);
             meta = con;
             break;

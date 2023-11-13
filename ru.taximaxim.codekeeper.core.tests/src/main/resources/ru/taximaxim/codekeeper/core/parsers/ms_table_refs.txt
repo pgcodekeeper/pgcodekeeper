@@ -1,5 +1,6 @@
 Reference: Object = dbo (SCHEMA), action = null, offset = 46, line number = 2, charPositionInLine = 13
 Reference: Object = dbo."Employee" (TABLE), action = CREATE, offset = 50, line number = 2, charPositionInLine = 17
+Reference: Object = "SalesPerson" (TABLE), action = null, offset = 137, line number = 4, charPositionInLine = 36
 Reference: Object = "#calls" (TABLE), action = CREATE, offset = 228, line number = 9, charPositionInLine = 13
 Reference: Object = dbo (SCHEMA), action = null, offset = 340, line number = 13, charPositionInLine = 13
 Reference: Object = dbo."Employee" (TABLE), action = CREATE, offset = 344, line number = 13, charPositionInLine = 17
@@ -17,7 +18,6 @@ Reference: action = IF, offset = 2240, line number = 79, charPositionInLine = 0
 Reference: action = IF, offset = 2626, line number = 92, charPositionInLine = 0
 Reference: Object = dbo (SCHEMA), action = null, offset = 3074, line number = 106, charPositionInLine = 12
 Reference: Object = dbo."TestTable" (TABLE), action = ALTER, offset = 3078, line number = 106, charPositionInLine = 16
-Reference: Object = dbo."TestTable"."DF_ModifiedDateUTC" (CONSTRAINT), action = CREATE, offset = 3103, line number = 106, charPositionInLine = 41
 Reference: Object = dbo (SCHEMA), action = null, offset = 3209, line number = 110, charPositionInLine = 12
 Reference: Object = dbo."TestTable" (TABLE), action = ALTER, offset = 3213, line number = 110, charPositionInLine = 16
 Reference: Object = dbo (SCHEMA), action = null, offset = 3276, line number = 112, charPositionInLine = 12
@@ -57,10 +57,8 @@ Reference: Object = "TestTable" (TABLE), action = ALTER, offset = 5597, line num
 Reference: Object = "TestTable" (TABLE), action = ALTER, offset = 5744, line number = 206, charPositionInLine = 12
 Reference: Object = dbo (SCHEMA), action = null, offset = 5878, line number = 212, charPositionInLine = 12
 Reference: Object = dbo."TestTable" (TABLE), action = ALTER, offset = 5882, line number = 212, charPositionInLine = 16
-Reference: Object = dbo."TestTable"."DF_TestTable_Value" (CONSTRAINT), action = CREATE, offset = 5910, line number = 213, charPositionInLine = 17
 Reference: Object = dbo (SCHEMA), action = null, offset = 6025, line number = 218, charPositionInLine = 12
 Reference: Object = dbo."TestTable" (TABLE), action = ALTER, offset = 6029, line number = 218, charPositionInLine = 16
-Reference: Object = dbo."TestTable"."DF_Name" (CONSTRAINT), action = CREATE, offset = 6056, line number = 219, charPositionInLine = 17
 Reference: Object = "Source" (TABLE), action = ALTER, offset = 6175, line number = 225, charPositionInLine = 12
 Reference: Object = "Source" (TABLE), action = ALTER, offset = 6238, line number = 227, charPositionInLine = 12
 Reference: Object = "Source" (TABLE), action = ALTER, offset = 6289, line number = 229, charPositionInLine = 12

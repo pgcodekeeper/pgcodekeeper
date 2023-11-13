@@ -581,6 +581,8 @@ class PgDiffTest {
             "alter_function_with_comment",
             // Tests scenario where generated COLUMN with function is altered.
             "alter_column_generated_function",
+            // Test scenario where FK alter common options for constraint.
+            "alter_foreign_constraint",
     })
     void runDiff(String fileNameTemplate) throws IOException, InterruptedException {
         String script = getScript(fileNameTemplate);

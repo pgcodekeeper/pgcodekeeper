@@ -24,9 +24,8 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Alter_domain_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Domain_constraintContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.IdentifierContext;
-import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
-import ru.taximaxim.codekeeper.core.schema.PgConstraint;
+import ru.taximaxim.codekeeper.core.schema.PgConstraintCheck;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgDomain;
 
@@ -48,12 +47,12 @@ public class AlterDomain extends ParserAbstract {
         Domain_constraintContext constrCtx = ctx.dom_constraint;
         if (constrCtx != null && constrCtx.CHECK() != null) {
             IdentifierContext name = constrCtx.name;
-            AbstractConstraint constr = new PgConstraint(name != null ? name.getText() : "");
-            CreateDomain.parseDomainConstraint(domain, constr, constrCtx, db, fileName);
+            var constrCheck = new PgConstraintCheck(name != null ? name.getText() : "");
+            CreateDomain.parseDomainConstraint(domain, constrCheck, constrCtx, db, fileName);
             if (ctx.not_valid != null) {
-                constr.setNotValid(true);
+                constrCheck.setNotValid(true);
             }
-            doSafe(PgDomain::addConstraint, domain, constr);
+            doSafe(PgDomain::addConstraint, domain, constrCheck);
         }
 
         addObjReference(ids, DbObjType.DOMAIN, ACTION_ALTER);

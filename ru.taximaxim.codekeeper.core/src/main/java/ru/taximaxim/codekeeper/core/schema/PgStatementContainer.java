@@ -92,11 +92,13 @@ implements IRelation {
                 return true;
             }
         }
-        for (AbstractConstraint c : getConstraints()) {
-            if (c.isClustered()) {
+
+        for (AbstractConstraint constr : getConstraints()) {
+            if (constr instanceof IConstraintPk && ((IConstraintPk) constr).isClustered()) {
                 return true;
             }
         }
+
         return false;
     }
 

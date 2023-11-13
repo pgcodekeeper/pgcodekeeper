@@ -68,7 +68,9 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.User_mappi
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Column_optionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.ExpressionContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Identity_valueContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Index_optionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Qualified_nameContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractPgFunction;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
@@ -78,6 +80,10 @@ import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.ICast;
 import ru.taximaxim.codekeeper.core.schema.IStatement;
 import ru.taximaxim.codekeeper.core.schema.MsColumn;
+import ru.taximaxim.codekeeper.core.schema.MsConstraintCheck;
+import ru.taximaxim.codekeeper.core.schema.MsConstraintFk;
+import ru.taximaxim.codekeeper.core.schema.MsConstraintPk;
+import ru.taximaxim.codekeeper.core.schema.MsTable;
 import ru.taximaxim.codekeeper.core.schema.MsType;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgFunction;
@@ -85,6 +91,7 @@ import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation.LocationType;
 import ru.taximaxim.codekeeper.core.schema.PgOperator;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SimpleColumn;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 /**
@@ -776,7 +783,7 @@ public abstract class ParserAbstract {
         return action + ' ' + objType + ' ' + id;
     }
 
-    protected void fillMsColumnOption(Column_optionContext option, MsColumn col, MsType type) {
+    protected void fillMsColumnOption(Column_optionContext option, MsColumn col, PgStatement stmt) {
         if (option.SPARSE() != null) {
             col.setSparse(true);
         } else if (option.COLLATE() != null) {
@@ -792,7 +799,6 @@ public abstract class ParserAbstract {
             } else {
                 col.setIdentity(identity.seed.getText(), identity.increment.getText());
             }
-
             if (option.not_for_rep != null) {
                 col.setNotForRep(true);
             }
@@ -800,14 +806,117 @@ public abstract class ParserAbstract {
             col.setMaskingFunction(option.STRING().getText());
         } else if (option.NULL() != null) {
             col.setNullValue(option.NOT() == null);
-        } else if (option.DEFAULT() != null) {
-            if (option.constraint != null) {
-                col.setDefaultName(option.constraint.getText());
-            }
-            ExpressionContext exp = option.expression();
-            col.setDefaultValue(getFullCtxText(exp));
-            db.addAnalysisLauncher(new MsExpressionAnalysisLauncher(type != null ? type : col, exp, fileName));
+        } else if (option.column_constraint_body() != null) {
+            fillColumnConstraint(option, col, stmt);
         }
+    }
+
+    private void fillColumnConstraint(Column_optionContext option, MsColumn col, PgStatement stmt) {
+        String constraintName = option.constraint != null ? option.constraint.getText() : null;
+        var constraintCtx = option.column_constraint_body();
+        var isTableConstr = stmt instanceof MsTable;
+        if (constraintCtx.DEFAULT() != null) {
+            col.setDefaultName(constraintName);
+            ExpressionContext exp = constraintCtx.expression();
+            col.setDefaultValue(getFullCtxText(exp));
+            db.addAnalysisLauncher(
+                    new MsExpressionAnalysisLauncher(!isTableConstr ? (MsType) stmt : col, exp, fileName));
+        } else if (constraintCtx.PRIMARY() != null || constraintCtx.UNIQUE() != null) {
+            if (constraintName == null && isTableConstr) {
+                if (constraintCtx.PRIMARY() != null) {
+                    constraintName = stmt.getName() + '_' + col.getName() + "_pkey";
+                } else {
+                    constraintName = stmt.getName() + '_' + col.getName() + "_key";
+                }
+            }
+
+            var constrPk = new MsConstraintPk(constraintName, constraintCtx.PRIMARY() != null);
+            if (constraintCtx.clustered() != null) {
+                constrPk.setClustered(constraintCtx.clustered().CLUSTERED() != null);
+            }
+            var dataSpaceCtx = constraintCtx.id();
+            if (dataSpaceCtx != null) {
+                constrPk.setDataSpace(dataSpaceCtx.getText());
+            }
+            var optionsCtx = constraintCtx.index_options();
+            if (optionsCtx != null) {
+                for (Index_optionContext optionPk : optionsCtx.index_option()) {
+                    String key = optionPk.key.getText();
+                    String value = optionPk.index_option_value().getText();
+                    constrPk.addOption(key, value);
+                }
+            }
+            constrPk.addColumn(col.getName(), new SimpleColumn(col.getName()));
+
+            if (isTableConstr) {
+                ((MsTable) stmt).addConstraint(constrPk);
+            } else {
+                ((MsType) stmt).addConstraint(constrPk.getDefinition());
+            }
+        } else if (constraintCtx.REFERENCES() != null) {
+            if (constraintName == null) {
+                constraintName = stmt.getName() + '_' + col.getName() + "_fkey";
+            }
+
+            var constrFk = new MsConstraintFk(constraintName);
+            constrFk.addColumn(col.getName());
+            Qualified_nameContext ref = constraintCtx.qualified_name();
+            List<IdContext> ids = Arrays.asList(ref.schema, ref.name);
+            String fSchemaName = getSchemaNameSafe(ids);
+            String fTableName = QNameParser.getFirstName(ids);
+            PgObjLocation loc = addObjReference(ids, DbObjType.TABLE, null);
+            GenericColumn fTable = loc.getObj();
+            constrFk.addDep(fTable);
+            constrFk.setForeignSchema(fSchemaName);
+            constrFk.setForeignTable(fTableName);
+
+            IdContext column = constraintCtx.id();
+            if (column != null) {
+                String colFk = column.getText();
+                constrFk.addForeignColumn(colFk);
+                constrFk.addDep(new GenericColumn(fSchemaName, fTableName, colFk, DbObjType.COLUMN));
+            }
+            var del = constraintCtx.on_delete();
+            if (del != null) {
+                if (del.CASCADE() != null) {
+                    constrFk.setDelAction("CASCADE");
+                } else if (del.NULL() != null) {
+                    constrFk.setDelAction("SET NULL");
+                } else if (del.DEFAULT() != null) {
+                    constrFk.setDelAction("SET DEFAULT");
+                }
+            }
+            var upd = constraintCtx.on_update();
+            if (upd != null) {
+                if (upd.CASCADE() != null) {
+                    constrFk.setUpdAction("CASCADE");
+                } else if (upd.NULL() != null) {
+                    constrFk.setUpdAction("SET NULL");
+                } else if (upd.DEFAULT() != null) {
+                    constrFk.setUpdAction("SET DEFAULT");
+                }
+            }
+            if (constraintCtx.not_for_replication() != null) {
+                constrFk.setNotForRepl(true);
+            }
+
+            ((MsTable) stmt).addConstraint(constrFk);
+        } else if (constraintCtx.CHECK() != null) {
+            if (constraintName == null && isTableConstr) {
+                constraintName = stmt.getName() + '_' + col.getName() + "_check";
+            }
+
+            var constrCheck = new MsConstraintCheck(constraintName);
+            constrCheck.setNotForRepl(constraintCtx.not_for_replication() != null);
+            constrCheck.setExpression(getFullCtxText(constraintCtx.search_condition()));
+
+            if (isTableConstr) {
+                ((MsTable) stmt).addConstraint(constrCheck);
+            } else {
+                ((MsType) stmt).addConstraint(constrCheck.getDefinition());
+            }
+        }
+
     }
 
     // for greenplum

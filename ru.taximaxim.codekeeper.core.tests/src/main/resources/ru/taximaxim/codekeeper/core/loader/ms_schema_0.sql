@@ -40,9 +40,18 @@ ALTER TABLE [dbo].[faxes]
     REFERENCES [dbo].[fax_boxes](fax_box_id) ON DELETE SET NULL ON UPDATE CASCADE
 GO
 
--- ALTER TABLE [schema_name].[table_name]
---     ADD DEFAULT default_value FOR table_column
--- GO
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+CREATE TABLE [dbo].[extensions] (
+    [id] [int] NOT NULL)
+GO
+
+ALTER TABLE [dbo].[extensions] 
+    ADD CONSTRAINT [FK_extensions_fax_box_id] FOREIGN KEY (fax_box_id) 
+    REFERENCES [dbo].[fax_boxes] ON DELETE SET DEFAULT ON UPDATE SET NULL NOT FOR REPLICATION
+GO  
 
 ALTER TABLE [dbo].[faxes] 
     ADD CONSTRAINT [DF_faxes_time_received] DEFAULT (getdate()) FOR time_received
@@ -56,11 +65,11 @@ SET QUOTED_IDENTIFIER ON
 GO
 SET ANSI_NULLS ON
 GO
-CREATE TABLE [dbo].[extensions] (
+CREATE TABLE [dbo].[table1] (
     [id] [int] NOT NULL)
 GO
 
-ALTER TABLE [dbo].[extensions] 
-    ADD CONSTRAINT [FK_extensions_fax_box_id] FOREIGN KEY (fax_box_id) 
-    REFERENCES [dbo].[fax_boxes](fax_box_id) ON DELETE SET NULL ON UPDATE CASCADE
-GO  
+ALTER TABLE [dbo].[table1] 
+    ADD CONSTRAINT [FK_table1_fax_box_id] FOREIGN KEY (fax_box_id) 
+    REFERENCES [dbo].[fax_boxes] ON DELETE CASCADE ON UPDATE SET DEFAULT
+GO

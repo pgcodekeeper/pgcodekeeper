@@ -14,10 +14,6 @@ CREATE TABLE [dbo].[call_logs] (
     [id] [bigint] NOT NULL)
 GO
 
--- ALTER TABLE [schema_name].[table_name]
---     ADD DEFAULT default_value FOR table_column
--- GO
-
 ALTER TABLE [dbo].[call_logs]
     ADD CONSTRAINT [DF_call_logs_id] DEFAULT (NEXT VALUE FOR [dbo].[call_logs_id_seq]) FOR id
 GO

@@ -9,7 +9,7 @@ CREATE TABLE [dbo].[user_data] (
 GO
 
 ALTER TABLE [dbo].[user_data] 
-    ADD CONSTRAINT [DF_user_data_created] DEFAULT (getdate()) FOR created
+    ADD CONSTRAINT [DF_user_data_created] DEFAULT getdate() FOR created
 GO
 
 ALTER AUTHORIZATION ON OBJECT::[dbo].[user_data] TO [ms_user];    

@@ -1,4 +1,5 @@
-ALTER TABLE [dbo].[testtable2] DROP CONSTRAINT [cd3]
+ALTER TABLE [dbo].[testtable2]
+	DROP CONSTRAINT [cd3]
 GO
 
 ALTER TABLE [dbo].[testtable2]

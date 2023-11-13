@@ -26,7 +26,10 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
+import ru.taximaxim.codekeeper.core.schema.MsConstraintCheck;
+import ru.taximaxim.codekeeper.core.schema.MsConstraintPk;
 import ru.taximaxim.codekeeper.core.schema.MsType;
+import ru.taximaxim.codekeeper.core.schema.SimpleColumn;
 
 public class MsTypesReader extends JdbcReader {
 
@@ -87,60 +90,57 @@ public class MsTypesReader extends JdbcReader {
             String filter = index.getString("def");
 
             StringBuilder definition = new StringBuilder();
-
-            if (isPrimaryKey) {
-                definition.append("PRIMARY KEY ");
-            } else if (isUniqueConstraint) {
-                definition.append("UNIQUE ");
-            } else {
-                definition.append("INDEX ").append(
-                        MsDiffUtils.quoteName(index.getString("name"))).append(' ');
-            }
-
-            if (!isClustered) {
-                definition.append("NON");
-            }
-
-            definition.append("CLUSTERED ");
-
-            if (bucketCount > 0) {
-                definition.append("HASH");
-            }
-
-            definition.append('\n');
-
-            List<String> columns = new ArrayList<>();
-
-            for (XmlReader col : XmlReader.readXML(index.getString("cols"))) {
-                boolean isDesc = col.getBoolean("is_desc");
-                String colName = col.getString("name");
-                columns.add(MsDiffUtils.quoteName(colName) + (isDesc ? " DESC" : " ASC"));
-            }
-
-            definition.append("(\n\t");
-            definition.append(String.join(",\n\t", columns));
-            definition.append("\n)");
-
-            if (filter != null) {
-                // index only, broken in dump
-                definition.append(" WHERE ").append(filter);
-            }
-
-            if ((isPrimaryKey || isUniqueConstraint) && isIgnoreDupKey) {
-                // constraint only
-                definition.append(" WITH (IGNORE_DUP_KEY = ON)");
-            } else if (bucketCount > 0) {
-                if (filter != null) {
-                    definition.append('\n');
-                } else {
-                    definition.append(" ");
-                }
-                definition.append("WITH ( BUCKET_COUNT = ").append(bucketCount).append(')');
-            }
-
+            MsConstraintPk constrPk = null;
             if (isPrimaryKey || isUniqueConstraint) {
-                type.addConstraint(definition.toString());
+                constrPk = new MsConstraintPk(null, isPrimaryKey);
+                constrPk.setClustered(isClustered);
+                for (XmlReader col : XmlReader.readXML(index.getString("cols"))) {
+                    String colName = col.getString("name");
+                    var simpCol = new SimpleColumn(colName);
+                    simpCol.setDesc(col.getBoolean("is_desc"));
+                    constrPk.addColumn(colName, simpCol);
+                }
+                if (isIgnoreDupKey) {
+                    constrPk.addOption("IGNORE_DUP_KEY", "ON");
+                } else if (bucketCount > 0) {
+                    constrPk.addOption("BUCKET_COUNT", Integer.toString(bucketCount));
+                }
+                type.addConstraint(constrPk.getDefinition());
             } else {
+                definition.append("INDEX ").append(MsDiffUtils.quoteName(index.getString("name"))).append(' ');
+                if (!isClustered) {
+                    definition.append("NON");
+                }
+
+                definition.append("CLUSTERED ");
+
+                if (bucketCount > 0) {
+                    definition.append("HASH");
+                }
+
+                definition.append('\n');
+
+                List<String> columns = new ArrayList<>();
+                for (XmlReader col : XmlReader.readXML(index.getString("cols"))) {
+                    boolean isDesc = col.getBoolean("is_desc");
+                    String colName = col.getString("name");
+                    columns.add(MsDiffUtils.quoteName(colName) + (isDesc ? " DESC" : " ASC"));
+                }
+                definition.append("(\n\t");
+                definition.append(String.join(",\n\t", columns));
+                definition.append("\n)");
+                if (filter != null) {
+                    // index only, broken in dump
+                    definition.append(" WHERE ").append(filter);
+                }
+                if (bucketCount > 0) {
+                    if (filter != null) {
+                        definition.append('\n');
+                    } else {
+                        definition.append(" ");
+                    }
+                    definition.append("WITH ( BUCKET_COUNT = ").append(bucketCount).append(')');
+                }
                 type.addIndex(definition.toString());
             }
         }
@@ -148,7 +148,9 @@ public class MsTypesReader extends JdbcReader {
 
     private void addChecks(MsType type, List<XmlReader> checks) {
         for (XmlReader check : checks) {
-            type.addConstraint("CHECK (" + check.getString("def") + ')');
+            var constrCh = new MsConstraintCheck(null);
+            constrCh.setExpression(check.getString("def"));
+            type.addConstraint(constrCh.getDefinition());
         }
     }
 
