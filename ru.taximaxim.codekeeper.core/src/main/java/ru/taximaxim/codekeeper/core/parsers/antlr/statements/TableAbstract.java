@@ -466,7 +466,8 @@ public abstract class TableAbstract extends ParserAbstract {
             var stParams = parameters.with_storage_parameter();
             if (stParams != null && !stParams.isEmpty()) {
                 for (var stParam : stParams.storage_parameters().storage_parameter_option()) {
-                    constr.addParam(stParam.storage_parameter_name().getText(), stParam.vex().getText());
+                    var value = stParam.vex();
+                    constr.addParam(stParam.storage_parameter_name().getText(), value != null ? value.getText() : null);
                 }
             }
         } else if (parameters.USING() != null) {
