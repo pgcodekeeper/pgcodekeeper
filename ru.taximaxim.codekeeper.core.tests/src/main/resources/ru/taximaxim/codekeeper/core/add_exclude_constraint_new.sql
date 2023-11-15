@@ -21,3 +21,6 @@ ALTER TABLE public.testtable
 ALTER TABLE public.testtable
     ADD CONSTRAINT test2 EXCLUDE USING gist (id WITH =, daterange(d_date_begin, d_date_end, '[)'::TEXT) WITH &&)
     USING INDEX TABLESPACE ts_indexes DEFERRABLE INITIALLY DEFERRED;
+    
+ALTER TABLE public.testtable
+    ADD CONSTRAINT test3 EXCLUDE ((id > 10) DESC NULLS LAST WITH =) WITH (deduplicate_items) INITIALLY DEFERRED;
