@@ -727,7 +727,7 @@ implements IResourceChangeListener, ITextErrorReporter {
                         dbInfo.isReadOnly(), Consts.UTC);
             }
 
-            IProgressReporter reporter = new UiProgressReporter(monitor, SQLEditor.this, offset);
+            IProgressReporter reporter = new UiProgressReporter(monitor, SQLEditor.this, offset, dbInfo.getName());
             try (IProgressReporter toClose = reporter) {
                 new JdbcRunner(monitor).runBatches(connector, parser.batch(), reporter);
                 ProjectEditorDiffer.notifyDbChanged(dbInfo);

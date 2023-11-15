@@ -58,7 +58,7 @@ class CodekeeperConsole extends IOConsole implements IPropertyChangeListener {
 
     private volatile boolean isTerminated;
 
-    public static CodekeeperConsole createInstance(IProgressMonitor monitor) {
+    public static CodekeeperConsole createInstance(IProgressMonitor monitor, String dbName) {
         IConsoleManager manager = ConsolePlugin.getDefault().getConsoleManager();
         IConsole[] consoles = manager.getConsoles();
         int c = 0;
@@ -74,11 +74,15 @@ class CodekeeperConsole extends IOConsole implements IPropertyChangeListener {
             manager.removeConsoles(toRemove.toArray(new IConsole[toRemove.size()]));
         }
 
-        return new CodekeeperConsole(monitor);
+        return new CodekeeperConsole(monitor, dbName);
     }
 
-    private CodekeeperConsole(IProgressMonitor monitor) {
-        super(FileUtils.getFileDate() + ' ' + CodekeeperConsole.NAME,
+    private CodekeeperConsole(IProgressMonitor monitor, String dbName) {
+        /*
+         * '\t' is needed to prevent method LegacyActionTools.extractAcceleratorText(String) from truncating the
+         * database name.
+         */
+        super(FileUtils.getFileDate() + ' ' + CodekeeperConsole.NAME + " - " + dbName + '\t', //$NON-NLS-1$
                 Activator.getRegisteredDescriptor(FILE.ICONAPPSMALL));
         this.monitor = monitor;
         baseOuter = this.newOutputStream();
@@ -96,27 +100,27 @@ class CodekeeperConsole extends IOConsole implements IPropertyChangeListener {
         Activator.getDefault().getPreferenceStore().addPropertyChangeListener(this);
 
         Display display = PlatformUI.getWorkbench().getDisplay();
-        Color colorWarn = null;
-        Color colorErr = null;
+        Color tmpColorWarn = null;
+        Color tmpColorErr = null;
         // guard against resource leaks
         try {
-            colorWarn = new Color(display, 255, 127, 0);
-            warningOuter.setColor(colorWarn);
-            colorErr = new Color(display, 255, 0, 0);
-            errorOuter.setColor(colorErr);
+            tmpColorWarn = new Color(display, 255, 127, 0);
+            warningOuter.setColor(tmpColorWarn);
+            tmpColorErr = new Color(display, 255, 0, 0);
+            errorOuter.setColor(tmpColorErr);
         } catch (Exception ex) {
-            if (colorWarn != null) {
+            if (tmpColorWarn != null) {
                 warningOuter.setColor(null);
-                colorWarn.dispose();
+                tmpColorWarn.dispose();
             }
-            if (colorErr != null) {
+            if (tmpColorErr != null) {
                 errorOuter.setColor(null);
-                colorErr.dispose();
+                tmpColorErr.dispose();
             }
             throw ex;
         }
-        this.colorWarn = colorWarn;
-        this.colorErr = colorErr;
+        this.colorWarn = tmpColorWarn;
+        this.colorErr = tmpColorErr;
     }
 
     @Override

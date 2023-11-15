@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added database name to console when executing migrations.
+
 ### Changed
 
 - The mechanism for working with CONSTRAINT objects has been changed: objects are now stored not as a string, but as separate fields, which avoids unnecessary differences in keywords and spaces.

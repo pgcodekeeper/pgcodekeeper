@@ -39,18 +39,20 @@ public class UiProgressReporter implements IProgressReporter {
     private final CodekeeperConsole console;
     private final ITextErrorReporter errorReporter;
     private final int offset;
+    private final String dbName;
 
     public UiProgressReporter(IProgressMonitor monitor, ITextErrorReporter errorReporter) {
-        this(monitor, errorReporter, 0);
+        this(monitor, errorReporter, 0, null);
     }
 
     public UiProgressReporter(IProgressMonitor monitor, ITextErrorReporter errorReporter,
-            int offset) {
+            int offset, String dbName) {
         IConsoleManager manager = ConsolePlugin.getDefault().getConsoleManager();
-        console = CodekeeperConsole.createInstance(monitor);
+        console = CodekeeperConsole.createInstance(monitor, dbName);
         manager.addConsoles(new IConsole[] { console });
         this.errorReporter = errorReporter;
         this.offset = offset;
+        this.dbName = dbName;
     }
 
     /**
@@ -75,6 +77,11 @@ public class UiProgressReporter implements IProgressReporter {
     @Override
     public void writeError(String message) {
         console.writeError(message);
+    }
+
+    @Override
+    public void writeDbName() {
+        console.write("Execute script on " + dbName); //$NON-NLS-1$
     }
 
     @Override
