@@ -18,6 +18,7 @@ package ru.taximaxim.codekeeper.core;
 import java.util.List;
 
 public interface IProgressReporter extends AutoCloseable {
+    void writeDbName();
     void writeMessage(String message);
     void writeWarning(String message);
     void writeError(String message);

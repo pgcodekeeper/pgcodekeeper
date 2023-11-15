@@ -66,6 +66,10 @@ public class QueriesBatchCallable extends StatementCallable<String> {
         String[] finalModifiedQuery = new String[1];
 
         try {
+            if (reporter != null) {
+                reporter.writeDbName();
+            }
+
             if (!isMsSql) {
                 subMonitor.setWorkRemaining(batches.size());
                 for (PgObjLocation query : batches) {
