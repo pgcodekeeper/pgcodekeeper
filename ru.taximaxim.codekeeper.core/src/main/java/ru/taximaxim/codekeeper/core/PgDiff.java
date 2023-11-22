@@ -209,14 +209,20 @@ public class PgDiff {
             loader = new ProjectLoader(srcPath, arguments, null, errors, ignoreSchemaList);
         } else if ("db".equals(format)) {
             String timezone = arguments.getTimeZone() == null ? Consts.UTC : arguments.getTimeZone();
-            if (arguments.isMsSql()) {
-                loader = new JdbcMsLoader(JdbcConnector.fromUrl(srcPath, timezone), arguments, SubMonitor.convert(null), ignoreSchemaList);
-            } else {
-                loader = new JdbcLoader(JdbcConnector.fromUrl(srcPath, timezone), arguments, SubMonitor.convert(null), ignoreSchemaList);
+            switch (arguments.getDbType()) {
+            case MS:
+                loader = new JdbcMsLoader(JdbcConnector.fromUrl(srcPath, timezone),
+                        arguments, SubMonitor.convert(null), ignoreSchemaList);
+                break;
+            case PG:
+                loader = new JdbcLoader(JdbcConnector.fromUrl(srcPath, timezone),
+                        arguments, SubMonitor.convert(null), ignoreSchemaList);
+                break;
+            default:
+                throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
             }
         } else {
-            throw new UnsupportedOperationException(
-                    MessageFormat.format(Messages.UnknownDBFormat, format));
+            throw new UnsupportedOperationException(MessageFormat.format(Messages.UnknownDBFormat, format));
         }
 
         try {
@@ -230,8 +236,15 @@ public class PgDiff {
             IgnoreList ignoreList) throws InterruptedException, IOException {
         TreeElement root = DiffTree.create(oldDbFull, newDbFull);
         root.setAllChecked();
-        return arguments.isMsSql() ? diffMsDatabaseSchemas(root, oldDbFull, newDbFull, null, null, ignoreList) :
-            diffDatabaseSchemasAdditionalDepcies(root, oldDbFull, newDbFull, null, null, ignoreList);
+
+        switch (arguments.getDbType()) {
+        case MS:
+            return diffMsDatabaseSchemas(root, oldDbFull, newDbFull, null, null, ignoreList);
+        case PG:
+            return diffDatabaseSchemasAdditionalDepcies(root, oldDbFull, newDbFull, null, null, ignoreList);
+        default:
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
+        }
     }
 
     /**
@@ -242,12 +255,16 @@ public class PgDiff {
             PgDatabase oldDbFull, PgDatabase newDbFull,
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget) throws IOException {
-        if (arguments.isMsSql()) {
+        switch (arguments.getDbType()) {
+        case MS:
             return diffMsDatabaseSchemas(root, oldDbFull, newDbFull,
                     additionalDepciesSource, additionalDepciesTarget, null);
+        case PG:
+            return diffDatabaseSchemasAdditionalDepcies(root, oldDbFull, newDbFull,
+                    additionalDepciesSource, additionalDepciesTarget, null);
+        default:
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
         }
-        return diffDatabaseSchemasAdditionalDepcies(root, oldDbFull, newDbFull,
-                additionalDepciesSource, additionalDepciesTarget, null);
     }
 
     private String diffDatabaseSchemasAdditionalDepcies(

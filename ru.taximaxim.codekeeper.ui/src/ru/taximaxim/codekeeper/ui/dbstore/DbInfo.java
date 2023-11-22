@@ -22,6 +22,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
 import ru.taximaxim.codekeeper.ui.xmlstore.DbXmlStore;
@@ -42,7 +43,7 @@ public final class DbInfo {
     private final boolean pgDumpSwitch;
     private final boolean readOnly;
     private final boolean winAuth;
-    private final boolean msSql;
+    private final DatabaseType dbType;
     private final String domain;
     private final String dbGroup;
     private final boolean generateName;
@@ -86,8 +87,8 @@ public final class DbInfo {
         return winAuth;
     }
 
-    public boolean isMsSql() {
-        return msSql;
+    public DatabaseType getDbType() {
+        return dbType;
     }
 
     public String getDomain() {
@@ -125,13 +126,13 @@ public final class DbInfo {
     public DbInfo(String name, String dbname, String dbuser, String dbpass,
             String dbhost, int dbport) {
         this(name, dbname, dbuser, dbpass, dbhost, dbport, false, false, Collections.emptyList(),
-                Collections.emptyMap(), false, false, "", //$NON-NLS-1$
+                Collections.emptyMap(), DatabaseType.PG, false, "", //$NON-NLS-1$
                 DEFAULT_EXECUTE_PATH, DEFAULT_CUSTOM_PARAMS, false, "", ""); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     public DbInfo(String name, String dbname, String dbuser, String dbpass,
             String dbhost, int dbport, boolean readOnly, boolean generateName,
-            List<String> ignoreFiles, Map<String, String> properties, boolean msSql, boolean winAuth,
+            List<String> ignoreFiles, Map<String, String> properties, DatabaseType dbType, boolean winAuth,
             String domain, String pgdumpExePath, String pgdumpCustomParams, boolean pgDumpSwitch,
             String dbGroup, String conType) {
         this.name = name;
@@ -144,7 +145,7 @@ public final class DbInfo {
         this.generateName = generateName;
         this.ignoreFiles = ignoreFiles;
         this.properties = properties;
-        this.msSql = msSql;
+        this.dbType = dbType;
         this.winAuth = winAuth;
         this.domain = domain;
         this.pgdumpExePath = pgdumpExePath == null ? DEFAULT_EXECUTE_PATH : pgdumpExePath;
@@ -198,9 +199,9 @@ public final class DbInfo {
         return map;
     }
 
-    public static DbInfo getLastDb(String preference, boolean isMsSql) {
+    public static DbInfo getLastDb(String preference, DatabaseType dbType) {
         return DbXmlStore.getStore().stream()
-                .filter(e -> e.isMsSql() == isMsSql && preference.equals(e.getName()))
+                .filter(e -> e.getDbType() == dbType && preference.equals(e.getName()))
                 .findAny().orElse(null);
     }
 

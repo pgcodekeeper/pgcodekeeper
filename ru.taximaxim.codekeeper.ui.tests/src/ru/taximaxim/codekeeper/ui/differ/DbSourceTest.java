@@ -39,6 +39,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.fileutils.TempDir;
@@ -73,14 +74,14 @@ public class DbSourceTest {
             new ModelExporter(dir, dbPredefined, Consts.UTF_8).exportFull();
 
             performTest(DbSource.fromDirTree(true, dir.toAbsolutePath().toString(),
-                    Consts.UTF_8, false, null));
+                    Consts.UTF_8, DatabaseType.PG, null));
         }
     }
 
     @Test
     void testFile() throws IOException, URISyntaxException, InterruptedException, CoreException {
         Path path = TestUtils.getPathToResource(TestUtils.RESOURCE_DUMP, TestUtils.class);
-        performTest(DbSource.fromFile(true, path, Consts.UTF_8, false, null));
+        performTest(DbSource.fromFile(true, path, Consts.UTF_8, DatabaseType.PG, null));
     }
 
     @Test
@@ -88,7 +89,7 @@ public class DbSourceTest {
         try (TempDir tempDir = new TempDir(workspacePath.toPath(), "dbSourceProjectTest")) {
             Path dir = tempDir.get();
             // create empty project in temp dir
-            IProject project = createProjectInWorkspace(dir.getFileName().toString(), false);
+            IProject project = createProjectInWorkspace(dir.getFileName().toString(), DatabaseType.PG);
 
             // populate project with data
             new ModelExporter(dir, dbPredefined, Consts.UTF_8).exportFull();
@@ -111,7 +112,7 @@ public class DbSourceTest {
             Path dir = tempDir.get();
 
             // create empty project in temp dir
-            IProject project = createProjectInWorkspace(dir.getFileName().toString(), false);
+            IProject project = createProjectInWorkspace(dir.getFileName().toString(), DatabaseType.PG);
 
             // populate project with data
             new ModelExporter(dir, dbPredefined, Consts.UTF_8).exportFull();
@@ -140,10 +141,10 @@ public class DbSourceTest {
         try (TempDir tempDir = new TempDir(workspacePath.toPath(), "dbSourceProjectTest")) {
             Path dir = tempDir.get();
             PgDiffArguments args = new PgDiffArguments();
-            args.setMsSql(true);
+            args.setDbType(DatabaseType.MS);
 
             // create empty project in temp dir
-            IProject project = createProjectInWorkspace(dir.getFileName().toString(), true);
+            IProject project = createProjectInWorkspace(dir.getFileName().toString(), DatabaseType.MS);
 
             // populate project with data
             PgDatabase msDb = TestUtils.loadTestDump(TestUtils.RESOURCE_MS_DUMP, TestUtils.class, args);
@@ -184,11 +185,11 @@ public class DbSourceTest {
         assertEquals(dbPredefined, dbSource, "Db loaded not equal to predefined db");
     }
 
-    private IProject createProjectInWorkspace(String projectName, boolean isMsSql) throws CoreException {
+    private IProject createProjectInWorkspace(String projectName, DatabaseType dbType) throws CoreException {
         IProject project = workspaceRoot.getProject(projectName);
-        PgDbProject.createPgDbProject(project, null, isMsSql);
+        PgDbProject.createPgDbProject(project, null, dbType);
         project.getNature(NATURE.ID).deconfigure();
-        if (isMsSql) {
+        if (dbType == DatabaseType.MS) {
             project.getNature(NATURE.MS).deconfigure();
         }
 

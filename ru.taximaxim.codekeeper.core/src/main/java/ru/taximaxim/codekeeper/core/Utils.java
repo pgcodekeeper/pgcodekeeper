@@ -36,6 +36,8 @@ import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import ru.taximaxim.codekeeper.core.localizations.Messages;
+
 public final class Utils {
 
     private static final Logger LOG = LoggerFactory.getLogger(Utils.class);
@@ -94,8 +96,15 @@ public final class Utils {
         return doc;
     }
 
-    public static boolean isSystemSchema(String schema, boolean isPostgres) {
-        return isPostgres ? isPgSystemSchema(schema) : isMsSystemSchema(schema);
+    public static boolean isSystemSchema(String schema, DatabaseType dbType) {
+        switch (dbType) {
+        case PG:
+            return isPgSystemSchema(schema);
+        case MS:
+            return isMsSystemSchema(schema);
+        default:
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
+        }
     }
 
     public static boolean isPgSystemSchema(String schema) {
@@ -107,11 +116,25 @@ public final class Utils {
         return Consts.SYS.equalsIgnoreCase(schema);
     }
 
-    public static void appendCols(StringBuilder sbSQL, Collection<String> cols, boolean isPostgres) {
+    public static void appendCols(StringBuilder sbSQL, Collection<String> cols, DatabaseType dbType) {
         sbSQL.append('(');
-        for (var col : cols) {
-            sbSQL.append(isPostgres ? PgDiffUtils.getQuotedName(col) : MsDiffUtils.quoteName(col)).append(", ");
+        switch (dbType) {
+        case PG:
+            for (var col : cols) {
+                sbSQL.append(PgDiffUtils.getQuotedName(col));
+                sbSQL.append(", ");
+            }
+            break;
+        case MS:
+            for (var col : cols) {
+                sbSQL.append(MsDiffUtils.quoteName(col));
+                sbSQL.append(", ");
+            }
+            break;
+        default:
+            throw new IllegalStateException("Unsupported database type: " + dbType);
         }
+
         sbSQL.setLength(sbSQL.length() - 2);
         sbSQL.append(')');
     }
@@ -127,17 +150,17 @@ public final class Utils {
      *            - the Map<String, String> where key is parameter/option and
      *            value is value of this parameter/option
      *
-     * @param isPostgres
-     *            - the boolean variable in package schema what's need us for
+     * @param dbType
+     *            - the DatabaseType variable in package schema what's need us for
      *            correct delimiter, because in postgres and microsoft server is
      *            different
      */
-    public static void appendOptions(StringBuilder sbSQL, Map<String, String> options, boolean isPostgres) {
+    public static void appendOptions(StringBuilder sbSQL, Map<String, String> options, DatabaseType dbType) {
         sbSQL.append('(');
         for (var option : options.entrySet()) {
             sbSQL.append(option.getKey());
             if (option.getValue() != null) {
-                sbSQL.append(isPostgres ? '=' : " = ").append(option.getValue());
+                sbSQL.append(dbType == DatabaseType.MS ? " = " : '=').append(option.getValue());
             }
             sbSQL.append(", ");
         }

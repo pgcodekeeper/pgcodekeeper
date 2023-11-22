@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import ru.taximaxim.codekeeper.core.Activator;
 import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.pgpass.PgPass;
 import ru.taximaxim.pgpass.PgPassException;
 
@@ -197,6 +198,10 @@ public class JdbcConnector {
         } catch (SQLException | ClassNotFoundException e) {
             throw new IOException(e.getLocalizedMessage(), e);
         }
+    }
+
+    protected DatabaseType getType() {
+        return DatabaseType.PG;
     }
 
     protected Connection establishConnection() throws SQLException, IOException, ClassNotFoundException {

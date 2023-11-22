@@ -41,7 +41,7 @@ public final class GpExternalTable extends AbstractPgTable implements PgForeignO
     }
 
     @Override
-    public void compareOptions(PgOptionContainer newContainer, StringBuilder sb) {
+    public void compareOptions(OptionContainer newContainer, StringBuilder sb) {
         // no impl
     }
 

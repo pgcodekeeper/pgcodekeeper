@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.ClusteredContext;
@@ -66,7 +67,7 @@ public class CreateMsType extends ParserAbstract {
             String assemblyName = def.assembly_name.getText();
             type.setAssemblyName(assemblyName);
             addDepSafe(type, Arrays.asList(def.assembly_name),
-                    DbObjType.ASSEMBLY, false);
+                    DbObjType.ASSEMBLY, DatabaseType.MS);
             String assemblyClass;
             if (def.class_name != null) {
                 assemblyClass = def.class_name.getText();

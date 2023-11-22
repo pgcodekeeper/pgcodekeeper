@@ -17,15 +17,16 @@ package ru.taximaxim.codekeeper.core.parsers.antlr.statements;
 
 import java.util.Arrays;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Cast_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_cast_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Data_typeContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qualified_nameContext;
-import ru.taximaxim.codekeeper.core.schema.ICast.CastContext;
 import ru.taximaxim.codekeeper.core.schema.PgCast;
-import ru.taximaxim.codekeeper.core.schema.PgCast.CastMethod;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.ICast.CastContext;
+import ru.taximaxim.codekeeper.core.schema.PgCast.CastMethod;
 
 public class CreateCast extends ParserAbstract {
 
@@ -50,7 +51,7 @@ public class CreateCast extends ParserAbstract {
         if (funcNameCtx != null) {
             cast.setMethod(CastMethod.FUNCTION);
             String args = getFullCtxText(ctx.function_args());
-            addDepSafe(cast, getIdentifiers(funcNameCtx), DbObjType.FUNCTION, true, args);
+            addDepSafe(cast, getIdentifiers(funcNameCtx), DbObjType.FUNCTION, DatabaseType.PG, args);
             cast.setFunction(getFullCtxText(funcNameCtx) + args);
         } else if (ctx.INOUT() != null) {
             cast.setMethod(CastMethod.INOUT);

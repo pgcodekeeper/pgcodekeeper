@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_fts_dictionary_statementContext;
@@ -46,7 +47,7 @@ public class CreateFtsDictionary extends ParserAbstract {
 
         List<ParserRuleContext> templateIds = getIdentifiers(ctx.template);
         dictionary.setTemplate(ParserAbstract.getFullCtxText(ctx.template));
-        addDepSafe(dictionary, templateIds, DbObjType.FTS_TEMPLATE, true);
+        addDepSafe(dictionary, templateIds, DbObjType.FTS_TEMPLATE, DatabaseType.PG);
         addSafe(getSchemaSafe(ids), dictionary, ids);
     }
 

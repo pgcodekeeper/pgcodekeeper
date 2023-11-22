@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.FILES_POSTFIX;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.TestUtils;
@@ -50,7 +51,7 @@ public class DepcyWriterTest {
             throws IOException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();
         if (fileName.startsWith("ms_")) {
-            args.setMsSql(true);
+            args.setDbType(DatabaseType.MS);
         }
         args.setEnableFunctionBodiesDependencies(true);
 

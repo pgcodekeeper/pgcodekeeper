@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
 import ru.taximaxim.codekeeper.core.DangerStatement;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.loader.ParserListenerMode;
 import ru.taximaxim.codekeeper.core.loader.PgDumpLoader;
@@ -41,11 +42,11 @@ public class ScriptParser {
     private final List<Object> errors;
     private final Set<DangerStatement> dangerStatements;
 
-    public ScriptParser(String name, String script, boolean isMsSql)
+    public ScriptParser(String name, String script, DatabaseType dbType)
             throws IOException, InterruptedException {
         this.script = script;
         PgDiffArguments args = new PgDiffArguments();
-        args.setMsSql(isMsSql);
+        args.setDbType(dbType);
         PgDumpLoader loader = new PgDumpLoader(
                 () -> new ByteArrayInputStream(script.getBytes(StandardCharsets.UTF_8)),
                 name, args, new NullProgressMonitor(), 0);

@@ -21,6 +21,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.FILES_POSTFIX;
 import ru.taximaxim.codekeeper.core.PgDiff;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
@@ -73,7 +74,7 @@ class MsDiffDepciesTest {
         String dbTemplate = userSelTemplate.replaceAll("_usr.*", "");
         PgDiffArguments args = new PgDiffArguments();
 
-        args.setMsSql(true);
+        args.setDbType(DatabaseType.MS);
         args.setEnableFunctionBodiesDependencies(isEnableDepcies);
 
         PgDatabase oldDatabase = TestUtils.loadTestDump(

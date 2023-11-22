@@ -45,6 +45,7 @@ import org.eclipse.ui.ide.ResourceUtil;
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.Consts.MS_WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.core.Consts.WORK_DIR_NAMES;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.loader.DatabaseLoader;
@@ -221,7 +222,7 @@ public class UIProjectLoader extends ProjectLoader {
         PgDatabase db = new PgDatabase();
         PgDiffArguments args = new PgDiffArguments();
         Set<String> schemaFiles = new HashSet<>();
-        args.setMsSql(true);
+        args.setDbType(DatabaseType.MS);
         db.setArguments(args);
 
         IPath schemasPath = new Path(MS_WORK_DIR_NAMES.SECURITY.getDirName()).append(MS_SCHEMAS_FOLDER);
@@ -329,13 +330,7 @@ public class UIProjectLoader extends ProjectLoader {
     private PgDatabase loadDatabaseWithLibraries()
             throws InterruptedException, IOException, CoreException {
         PgDatabase db = new PgDatabase(arguments);
-
-        if (arguments.isMsSql()) {
-            loadMsStructure(iProject, db);
-        } else {
-            loadPgStructure(iProject, db);
-        }
-        AntlrParser.finishAntlr(antlrTasks);
+        loadDbStructure(iProject,  db);
 
         if (!projectOnly) {
             loadLibraries(db, arguments);
@@ -346,12 +341,7 @@ public class UIProjectLoader extends ProjectLoader {
             // read overrides from special folder
             IFolder privs = iProject.getFolder(Consts.OVERRIDES_DIR);
             try {
-                if (arguments.isMsSql()) {
-                    loadMsStructure(privs, db);
-                } else {
-                    loadPgStructure(privs, db);
-                }
-                AntlrParser.finishAntlr(antlrTasks);
+                loadDbStructure(privs, db);
                 replaceOverrides();
             } finally {
                 isOverrideMode = false;
@@ -360,6 +350,20 @@ public class UIProjectLoader extends ProjectLoader {
         finishLoaders();
 
         return db;
+    }
+
+    private void loadDbStructure(IContainer dir, PgDatabase db) throws InterruptedException, IOException, CoreException {
+        switch (arguments.getDbType()) {
+        case PG:
+            loadPgStructure(dir, db);
+            break;
+        case MS:
+            loadMsStructure(dir, db);
+            break;
+        default:
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
+        }
+        AntlrParser.finishAntlr(antlrTasks);
     }
 
     private void loadLibraries(PgDatabase db, PgDiffArguments arguments) throws InterruptedException, IOException {
@@ -377,18 +381,28 @@ public class UIProjectLoader extends ProjectLoader {
         loader.updateMarkers();
     }
 
-    public static PgDatabase buildFiles(Collection<IFile> files,  boolean isMsSql, IProgressMonitor monitor)
+    public static PgDatabase buildFiles(Collection<IFile> files,  DatabaseType dbType, IProgressMonitor monitor)
             throws InterruptedException, IOException, CoreException {
         UIProjectLoader loader = new UIProjectLoader(null, null, monitor);
         SubMonitor mon = SubMonitor.convert(monitor, files.size());
-        PgDatabase d = isMsSql ? loader.buildMsFiles(files, mon) : loader.buildPgFiles(files, mon);
+        PgDatabase db;
+        switch (dbType) {
+        case PG:
+            db = loader.buildPgFiles(files, mon);
+            break;
+        case MS:
+            db = loader.buildMsFiles(files, mon);
+            break;
+        default:
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
+        }
         loader.finishLoaders();
-        return d;
+        return db;
     }
 
     public static PgStatement parseStatement(IFile file, Collection<DbObjType> types)
             throws InterruptedException, IOException, CoreException {
-        return buildFiles(Arrays.asList(file), false, new NullProgressMonitor())
+        return buildFiles(Arrays.asList(file), DatabaseType.PG, new NullProgressMonitor())
                 .getDescendants()
                 .filter(e -> types.contains(e.getStatementType()))
                 .findAny().orElse(null);
@@ -439,11 +453,15 @@ public class UIProjectLoader extends ProjectLoader {
         }
     }
 
-    public static boolean isInProject(IResourceDelta delta, boolean isMsSql) {
-        if (isMsSql) {
+    public static boolean isInProject(IResourceDelta delta, DatabaseType dbType) {
+        switch (dbType) {
+        case PG:
+            return isInProject(delta.getProjectRelativePath());
+        case MS:
             return isInMsProject(delta.getProjectRelativePath());
+        default:
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
         }
-        return isInProject(delta.getProjectRelativePath());
     }
 
     public static boolean isPrivilegeFolder(IResourceDelta delta) {
@@ -460,8 +478,15 @@ public class UIProjectLoader extends ProjectLoader {
      * @param isMsSql is MS project
      * @return whether the path corresponds to a schema sql file
      */
-    public static boolean isSchemaFile(IPath path, boolean isMsSql) {
-        return isMsSql ? isMsSchemaFile(path) : isPgSchemaFile(path);
+    public static boolean isSchemaFile(IPath path, DatabaseType dbType) {
+        switch (dbType) {
+        case PG:
+            return isPgSchemaFile(path);
+        case MS:
+            return isMsSchemaFile(path);
+        default:
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
+        }
     }
 
     /**

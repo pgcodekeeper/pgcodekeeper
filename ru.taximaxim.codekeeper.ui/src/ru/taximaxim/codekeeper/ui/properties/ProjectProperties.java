@@ -41,6 +41,7 @@ import org.eclipse.ui.dialogs.PropertyPage;
 import org.osgi.service.prefs.BackingStoreException;
 
 import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_BIND_PREF;
@@ -75,7 +76,7 @@ public class ProjectProperties extends PropertyPage {
     private IEclipsePreferences prefs;
     private IEclipsePreferences dbBindPrefs;
 
-    private boolean isMsSql;
+    private DatabaseType dbType;
 
     private boolean inApply;
 
@@ -85,7 +86,7 @@ public class ProjectProperties extends PropertyPage {
         IProject project = element.getAdapter(IProject.class);
         prefs = new ProjectScope(project).getNode(UIConsts.PLUGIN_ID.THIS);
         dbBindPrefs = new ProjectScope(project).getNode(DB_BIND_PREF.DB_BINDING);
-        isMsSql = OpenProjectUtils.checkMsSql(project);
+        dbType = OpenProjectUtils.getDatabaseType(project);
     }
 
     @Override
@@ -122,15 +123,15 @@ public class ProjectProperties extends PropertyPage {
             }
         });
 
-        dbForBind = DbInfo.getLastDb(nameOfBoundDb, isMsSql);
+        dbForBind = DbInfo.getLastDb(nameOfBoundDb, dbType);
         storePicker = new DbMenuStorePicker(panel, false, false);
-        storePicker.filter(isMsSql);
+        storePicker.filter(dbType);
         storePicker.setSelection(dbForBind);
 
         storePicker.setEnabled(btnBindProjToDb.getSelection());
         storePicker.addSelectionListener(() -> dbForBind = storePicker.getDbInfo());
 
-        if (!isMsSql) {
+        if (dbType == DatabaseType.PG) {
             new Label(panel, SWT.NONE).setText(Messages.projectProperties_timezone_for_all_db_connections);
 
             cmbTimezone = new Combo(panel, SWT.BORDER | SWT.DROP_DOWN);
@@ -175,7 +176,7 @@ public class ProjectProperties extends PropertyPage {
                 btnIgnoreColumnOrder.setEnabled(enable);
                 btnEnableFuncDep.setEnabled(enable);
                 btnUseGlobalIgnoreList.setEnabled(enable);
-                if (!isMsSql) {
+                if (dbType == DatabaseType.PG) {
                     btnSimplifyView.setEnabled(enable);
                 }
             }
@@ -191,7 +192,7 @@ public class ProjectProperties extends PropertyPage {
         btnNoPrivileges = createButton(panel, Messages.dbUpdatePrefPage_ignore_privileges,
                 prefs.getBoolean(PREF.NO_PRIVILEGES, false), overridePref);
 
-        if (!isMsSql) {
+        if (dbType == DatabaseType.PG) {
             btnSimplifyView = createButton(panel, Messages.GeneralPrefPage_simplify_view,
                     prefs.getBoolean(PREF.SIMPLIFY_VIEW, false), overridePref);
         }
@@ -259,7 +260,7 @@ public class ProjectProperties extends PropertyPage {
         btnForceUnixNewlines.setSelection(true);
         btnBindProjToDb.setSelection(false);
         storePicker.setSelection(null);
-        if (!isMsSql) {
+        if (dbType == DatabaseType.PG) {
             cmbTimezone.setText(Consts.UTC);
             btnSimplifyView.setEnabled(enable);
             btnSimplifyView.setSelection(mainPS.getBoolean(PREF.SIMPLIFY_VIEW));
@@ -320,7 +321,7 @@ public class ProjectProperties extends PropertyPage {
         prefs.putBoolean(PROJ_PREF.DISABLE_PARSER_IN_EXTERNAL_FILES, btnDisableParser.getSelection());
         prefs.putBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, btnForceUnixNewlines.getSelection());
         dbBindPrefs.put(DB_BIND_PREF.NAME_OF_BOUND_DB, dbForBind != null ? dbForBind.getName() : ""); //$NON-NLS-1$
-        if (!isMsSql) {
+        if (dbType == DatabaseType.PG) {
             prefs.put(PROJ_PREF.TIMEZONE, cmbTimezone.getText());
             prefs.putBoolean(PREF.SIMPLIFY_VIEW, btnSimplifyView.getSelection());
         }
@@ -332,7 +333,7 @@ public class ProjectProperties extends PropertyPage {
 
     private void activateEditor() {
         IWorkbenchPage activePage = PlatformUI.getWorkbench()
-            .getActiveWorkbenchWindow().getActivePage();
+                .getActiveWorkbenchWindow().getActivePage();
         IEditorPart activeEditor = activePage.getActiveEditor();
         // it's need to do for refresh state and content DbCombo
         // of opened and active sql/project editor, after setting of the binding

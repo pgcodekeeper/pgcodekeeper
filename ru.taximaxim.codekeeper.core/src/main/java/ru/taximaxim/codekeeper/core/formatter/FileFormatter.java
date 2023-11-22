@@ -30,6 +30,7 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.text.edits.TextEdit;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLLexer;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_function_statementContext;
@@ -49,17 +50,17 @@ public class FileFormatter {
     private final int start;
     private final int length;
     private final int stop;
-    private final boolean isMsSql;
+    private final DatabaseType dbType;
 
     private final FormatConfiguration config;
 
-    public FileFormatter(String source, int offset, int length, FormatConfiguration config, boolean isMsSql) {
+    public FileFormatter(String source, int offset, int length, FormatConfiguration config, DatabaseType dbType) {
         this.source = source;
         this.start = offset;
         this.stop = offset + length;
         this.length = length;
         this.config = config;
-        this.isMsSql = isMsSql;
+        this.dbType = dbType;
     }
 
     public String formatText() throws FormatterException {
@@ -97,10 +98,9 @@ public class FileFormatter {
     }
 
     public List<FormatItem> getFormatItems() {
-        if (isMsSql) {
+        if (dbType != DatabaseType.PG) {
             return Collections.emptyList();
         }
-
         List<FormatItem> changes = new ArrayList<>();
 
         Lexer lexer = new SQLLexer(new ANTLRInputStream(source));

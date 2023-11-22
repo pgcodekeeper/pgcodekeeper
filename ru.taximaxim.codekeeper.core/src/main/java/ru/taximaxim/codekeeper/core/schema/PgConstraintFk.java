@@ -121,10 +121,10 @@ public final class PgConstraintFk extends PgConstraint implements IConstraintFk 
     public String getDefinition() {
         var sbSQL = new StringBuilder();
         sbSQL.append("FOREIGN KEY ");
-        appendCols(sbSQL, columns, isPostgres());
+        appendCols(sbSQL, columns, getDbType());
         sbSQL.append(" REFERENCES ").append(getForeignSchema()).append('.').append(getForeignTable());
         if (!refs.isEmpty()) {
-            appendCols(sbSQL, getForeignColumns(), isPostgres());
+            appendCols(sbSQL, getForeignColumns(), getDbType());
         }
         if (getMatch() != null) {
             sbSQL.append(" MATCH ").append(getMatch());
@@ -135,7 +135,7 @@ public final class PgConstraintFk extends PgConstraint implements IConstraintFk 
         if (getDelAction() != null) {
             sbSQL.append(" ON DELETE ").append(getDelAction());
             if (!delActCols.isEmpty()) {
-                appendCols(sbSQL, getDelActCols(), isPostgres());
+                appendCols(sbSQL, getDelActCols(), getDbType());
             }
         }
         return sbSQL.toString();

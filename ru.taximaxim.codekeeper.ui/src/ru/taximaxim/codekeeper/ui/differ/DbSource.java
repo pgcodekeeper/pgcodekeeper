@@ -34,6 +34,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 
 import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.IProgressReporter;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.fileutils.InputStreamProvider;
@@ -121,13 +122,13 @@ public abstract class DbSource {
             throws IOException, InterruptedException, CoreException;
 
     static PgDiffArguments getPgDiffArgs(String charset, boolean forceUnixNewlines,
-            boolean msSql, IProject proj, Map<String, Boolean> oneTimePrefs) {
-        return getPgDiffArgs(charset, Consts.UTC, forceUnixNewlines, msSql,
+            DatabaseType dbType, IProject proj, Map<String, Boolean> oneTimePrefs) {
+        return getPgDiffArgs(charset, Consts.UTC, forceUnixNewlines, dbType,
                 proj, oneTimePrefs);
     }
 
     static PgDiffArguments getPgDiffArgs(String charset, String timeZone,
-            boolean forceUnixNewlines, boolean msSql, IProject proj,
+            boolean forceUnixNewlines, DatabaseType dbType, IProject proj,
             Map<String, Boolean> oneTimePrefs) {
         PgDiffArguments args = new PgDiffArguments();
         OverridablePrefs prefs = new OverridablePrefs(proj, oneTimePrefs);
@@ -146,7 +147,7 @@ public abstract class DbSource {
         args.setFormatConfiguration(Formatter.getFormatterConfig());
         args.setTimeZone(timeZone);
         args.setKeepNewlines(!forceUnixNewlines);
-        args.setMsSql(msSql);
+        args.setDbType(dbType);
         if (prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.ADD_PRE_POST_SCRIPT)) {
             List<String> prePaths = new ArrayList<>();
             if (proj != null) {
@@ -172,9 +173,9 @@ public abstract class DbSource {
     }
 
     public static DbSource fromDirTree(boolean forceUnixNewlines, String dirTreePath,
-            String encoding, boolean isMsSql, Map<String, Boolean> oneTimePrefs) {
+            String encoding, DatabaseType dbType, Map<String, Boolean> oneTimePrefs) {
         return new DbSourceDirTree(forceUnixNewlines, dirTreePath, encoding,
-                isMsSql, oneTimePrefs);
+                dbType, oneTimePrefs);
     }
 
     public static DbSource fromProject(PgDbProject proj, Map<String, Boolean> oneTimePrefs) {
@@ -186,24 +187,24 @@ public abstract class DbSource {
     }
 
     public static DbSource fromFile(boolean forceUnixNewlines, File filename,
-            String encoding, boolean isMsSql, IProject proj, Map<String, Boolean> oneTimePrefs) {
-        return fromFile(forceUnixNewlines, filename.toPath(), encoding, isMsSql, proj, oneTimePrefs);
+            String encoding, DatabaseType dbType, IProject proj, Map<String, Boolean> oneTimePrefs) {
+        return fromFile(forceUnixNewlines, filename.toPath(), encoding, dbType, proj, oneTimePrefs);
     }
 
     public static DbSource fromFile(boolean forceUnixNewlines, Path filename,
-            String encoding, boolean isMsSql, IProject proj, Map<String, Boolean> oneTimePrefs) {
-        return new DbSourceFile(forceUnixNewlines, filename, encoding, isMsSql,
+            String encoding, DatabaseType dbType, IProject proj, Map<String, Boolean> oneTimePrefs) {
+        return new DbSourceFile(forceUnixNewlines, filename, encoding, dbType,
                 proj, oneTimePrefs);
     }
 
     public static DbSource fromFile(boolean forceUnixNewlines, File filename,
-            String encoding, boolean isMsSql, IProject proj) {
-        return fromFile(forceUnixNewlines, filename.toPath(), encoding, isMsSql, proj);
+            String encoding, DatabaseType dbType, IProject proj) {
+        return fromFile(forceUnixNewlines, filename.toPath(), encoding, dbType, proj);
     }
 
     public static DbSource fromFile(boolean forceUnixNewlines, Path filename,
-            String encoding, boolean isMsSql, IProject proj) {
-        return fromFile(forceUnixNewlines, filename, encoding, isMsSql, proj, null);
+            String encoding, DatabaseType dbType, IProject proj) {
+        return fromFile(forceUnixNewlines, filename, encoding, dbType, proj, null);
     }
 
     public static DbSource fromDbInfo(DbInfo dbinfo, boolean forceUnixNewlines,
@@ -237,17 +238,17 @@ class DbSourceDirTree extends DbSource {
     private final boolean forceUnixNewlines;
     private final String dirTreePath;
     private final String encoding;
-    private final boolean isMsSql;
+    private final DatabaseType dbType;
     private final Map<String, Boolean> oneTimePrefs;
 
     DbSourceDirTree(boolean forceUnixNewlines, String dirTreePath, String encoding,
-            boolean isMsSql, Map<String, Boolean> oneTimePrefs) {
+            DatabaseType dbType, Map<String, Boolean> oneTimePrefs) {
         super(dirTreePath);
 
         this.forceUnixNewlines = forceUnixNewlines;
         this.dirTreePath = dirTreePath;
         this.encoding = encoding;
-        this.isMsSql = isMsSql;
+        this.dbType = dbType;
         this.oneTimePrefs = oneTimePrefs;
     }
 
@@ -257,7 +258,7 @@ class DbSourceDirTree extends DbSource {
         monitor.subTask(Messages.dbSource_loading_tree);
 
         return load(new ProjectLoader(dirTreePath,
-                getPgDiffArgs(encoding, forceUnixNewlines, isMsSql, null, oneTimePrefs),
+                getPgDiffArgs(encoding, forceUnixNewlines, dbType, null, oneTimePrefs),
                 new ArrayList<>()));
     }
 }
@@ -286,7 +287,7 @@ class DbSourceProject extends DbSource {
 
         PgDiffArguments arguments = getPgDiffArgs(charset,
                 pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
-                OpenProjectUtils.checkMsSql(project), project, oneTimePrefs);
+                OpenProjectUtils.getDatabaseType(project), project, oneTimePrefs);
 
         Path listFile = Paths.get(project.getLocationURI()).resolve(FILE.IGNORED_SCHEMA);
         boolean projectOnly = oneTimePrefs != null && Boolean.TRUE == oneTimePrefs.get(Consts.PROJECT_ONLY);
@@ -308,18 +309,18 @@ class DbSourceFile extends DbSource {
     private final boolean forceUnixNewlines;
     private final Path filename;
     private final String encoding;
-    private final boolean isMsSql;
+    private final DatabaseType dbType;
     private final IProject proj;
     private final Map<String, Boolean> oneTimePrefs;
 
     DbSourceFile(boolean forceUnixNewlines, Path filename, String encoding,
-            boolean isMsSql, IProject proj, Map<String, Boolean> oneTimePrefs) {
+            DatabaseType dbType, IProject proj, Map<String, Boolean> oneTimePrefs) {
         super(filename.toAbsolutePath().toString());
 
         this.forceUnixNewlines = forceUnixNewlines;
         this.filename = filename;
         this.encoding = encoding;
-        this.isMsSql = isMsSql;
+        this.dbType = dbType;
         this.proj = proj;
         this.oneTimePrefs = oneTimePrefs;
     }
@@ -337,7 +338,7 @@ class DbSourceFile extends DbSource {
             Log.log(Log.LOG_INFO, "Error counting file lines. Setting 1000"); //$NON-NLS-1$
             monitor.setWorkRemaining(1000);
         }
-        PgDiffArguments args = getPgDiffArgs(encoding, forceUnixNewlines, isMsSql, proj, oneTimePrefs);
+        PgDiffArguments args = getPgDiffArgs(encoding, forceUnixNewlines, dbType, proj, oneTimePrefs);
         return load(new PgDumpLoader(filename, args, monitor, 2));
     }
 
@@ -418,7 +419,7 @@ class DbSourceDb extends DbSource {
 
         pm.newChild(1).subTask(Messages.dbSource_loading_dump);
 
-        PgDiffArguments args = getPgDiffArgs(encoding, forceUnixNewlines, false, proj, oneTimePrefs);
+        PgDiffArguments args = getPgDiffArgs(encoding, forceUnixNewlines, DatabaseType.PG, proj, oneTimePrefs);
         return load(new PgDumpLoader(streamProvider, "pg_dump", args, monitor)); //$NON-NLS-1$
     }
 }
@@ -428,7 +429,7 @@ class DbSourceJdbc extends DbSource {
     private final JdbcConnector jdbcConnector;
     private final String dbName;
     private final boolean forceUnixNewlines;
-    private final boolean isMsSql;
+    private final DatabaseType dbType;
     private final IProject proj;
     private final Map<String, Boolean> oneTimePrefs;
 
@@ -451,13 +452,19 @@ class DbSourceJdbc extends DbSource {
 
         this.dbName = dbinfo.getDbName();
         this.forceUnixNewlines = forceUnixNewlines;
-        this.isMsSql =  dbinfo.isMsSql();
-        if (isMsSql) {
-            jdbcConnector = new JdbcMsConnector(host, port, user, pass, dbName, properties,
-                    readOnly, winAuth, dbinfo.getDomain());
-        } else {
+        this.dbType = dbinfo.getDbType();
+
+        switch (dbType) {
+        case PG:
             jdbcConnector = new JdbcConnector(host, port, user, pass, dbName, properties,
                     readOnly, timezone);
+            break;
+        case MS:
+            jdbcConnector = new JdbcMsConnector(host, port, user, pass, dbName, properties,
+                    readOnly, winAuth, dbinfo.getDomain());
+            break;
+        default:
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
         }
         this.proj = proj;
         this.oneTimePrefs = oneTimePrefs;
@@ -468,20 +475,23 @@ class DbSourceJdbc extends DbSource {
             throws IOException, InterruptedException {
         monitor.subTask(Messages.reading_db_from_jdbc);
         PgDiffArguments args = getPgDiffArgs(Consts.UTF_8, forceUnixNewlines,
-                isMsSql, proj, oneTimePrefs);
+                dbType, proj, oneTimePrefs);
 
         IgnoreSchemaList ignoreShemaList = null;
         if (proj != null) {
             Path listFile = Paths.get(proj.getLocationURI()).resolve(FILE.IGNORED_SCHEMA);
             ignoreShemaList = InternalIgnoreList.getIgnoreSchemaList(listFile);
         }
-        if (isMsSql) {
+        switch (dbType) {
+        case PG:
+            return load(new JdbcLoader(jdbcConnector, args, monitor, ignoreShemaList));
+        case MS:
             return load(new JdbcMsLoader(jdbcConnector, args, monitor, ignoreShemaList));
+        default:
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
         }
-        return load(new JdbcLoader(jdbcConnector, args, monitor, ignoreShemaList));
     }
 }
-
 class DbSourceFromDbObject extends DbSource {
 
     PgDatabase db;
@@ -496,3 +506,4 @@ class DbSourceFromDbObject extends DbSource {
         return db;
     }
 }
+

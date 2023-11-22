@@ -31,6 +31,7 @@ import org.eclipse.core.runtime.URIUtil;
 import org.junit.jupiter.api.Assertions;
 
 import ru.taximaxim.codekeeper.core.loader.PgDumpLoader;
+import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
@@ -64,13 +65,18 @@ public final class TestUtils {
         return db;
     }
 
-    public static PgDatabase createDumpDB(boolean isPostgres) {
+    public static PgDatabase createDumpDB(DatabaseType dbType) {
         PgDatabase db = new PgDatabase();
         AbstractSchema schema;
-        if (isPostgres) {
+        switch (dbType) {
+        case PG:
             schema = new PgSchema(Consts.PUBLIC);
-        } else {
+            break;
+        case MS:
             schema = new MsSchema(Consts.DBO);
+            break;
+        default:
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
         }
         db.addSchema(schema);
         db.setDefaultSchema(schema.getName());

@@ -19,6 +19,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 
 public class MsSequence extends AbstractSequence {
@@ -219,8 +220,8 @@ public class MsSequence extends AbstractSequence {
     }
 
     @Override
-    public boolean isPostgres() {
-        return false;
+    public DatabaseType getDbType() {
+        return DatabaseType.MS;
     }
 
     @Override

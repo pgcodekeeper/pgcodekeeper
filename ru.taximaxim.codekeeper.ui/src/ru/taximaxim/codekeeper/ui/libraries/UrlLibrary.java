@@ -19,15 +19,16 @@ import java.net.URI;
 
 import org.eclipse.swt.graphics.Image;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 
 public class UrlLibrary extends CacheableLibrary {
 
-    UrlLibrary(AbstractLibrary parent, URI uri, String project, boolean isMsSql) {
+    UrlLibrary(AbstractLibrary parent, URI uri, String project, DatabaseType dbType) {
         super(parent, FileUtils.getLoadedFilePath(LibraryUtils.META_PATH, uri),
-                FileUtils.getNameFromUri(uri), uri.toString(), project, isMsSql);
+                FileUtils.getNameFromUri(uri), uri.toString(), project, dbType);
     }
 
     @Override

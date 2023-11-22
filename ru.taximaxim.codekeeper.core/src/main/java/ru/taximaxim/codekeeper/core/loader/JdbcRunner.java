@@ -101,8 +101,7 @@ public class JdbcRunner {
             IProgressReporter reporter) throws SQLException, IOException, InterruptedException {
         try (Connection connection = connector.getConnection();
                 Statement st = connection.createStatement()) {
-            boolean isMsSql = connector instanceof JdbcMsConnector;
-            runScript(new QueriesBatchCallable(st, batches, monitor, reporter, connection, isMsSql));
+            runScript(new QueriesBatchCallable(st, batches, monitor, reporter, connection, connector.getType()));
         }
     }
 

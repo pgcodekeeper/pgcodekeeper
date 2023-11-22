@@ -35,6 +35,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
@@ -73,7 +74,7 @@ public class AddComment extends AbstractHandler {
             return;
         }
 
-        PgDatabase oldDb = UIProjectLoader.buildFiles(List.of(file), false, null);
+        PgDatabase oldDb = UIProjectLoader.buildFiles(List.of(file), DatabaseType.PG, null);
         PgDatabase newDb = (PgDatabase) oldDb.deepCopy();
 
         PgStatement statement = location.getObj().getStatement(newDb);
@@ -135,7 +136,7 @@ public class AddComment extends AbstractHandler {
             }
 
             IFile file = FileUtilsUi.getFileForLocation(location);
-            return !OpenProjectUtils.checkMsSql(file.getProject());
+            return OpenProjectUtils.getDatabaseType(file.getProject()) == DatabaseType.PG;
         }
 
         return false;

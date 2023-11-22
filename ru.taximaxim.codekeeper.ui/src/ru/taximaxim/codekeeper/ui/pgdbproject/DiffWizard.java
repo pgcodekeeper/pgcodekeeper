@@ -28,6 +28,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.jface.wizard.WizardPage;
@@ -46,6 +47,7 @@ import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PartInitException;
 
 import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -137,11 +139,11 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
 
             Differ differ = new Differ(source, treediffer.getDbTarget().getDbObject(),
                     treediffer.getDiffTree(), false, pageDiff.getTimezone(),
-                    source.getArguments().isMsSql(), null, pageDiff.getOneTimePrefs());
+                    source.getArguments().getDbType(), null, pageDiff.getOneTimePrefs());
             getContainer().run(true, true, differ);
 
             FileUtilsUi.saveOpenTmpSqlEditor(differ.getDiffDirect(),
-                    "diff_wizard_result", source.getArguments().isMsSql()); //$NON-NLS-1$
+                    "diff_wizard_result", source.getArguments().getDbType()); //$NON-NLS-1$
             return true;
         } catch (InvocationTargetException ex) {
             ExceptionNotifier.notifyDefault(Messages.error_in_differ_thread, ex);
@@ -163,7 +165,7 @@ class PageDiff extends WizardPage implements Listener {
 
     private DbSourcePicker dbSource;
     private DbSourcePicker dbTarget;
-    private Button btnMsSql;
+    private ComboViewer cmbDbType;
     private ComboViewer cmbTimezone;
     private CLabel lblWarnPosix;
 
@@ -192,11 +194,11 @@ class PageDiff extends WizardPage implements Listener {
     }
 
     public DbSource getDbSource() {
-        return dbSource.getDbSource(btnMsSql.getSelection(), getOneTimePrefs());
+        return dbSource.getDbSource(getSelectedDbType(), getOneTimePrefs());
     }
 
     public DbSource getDbTarget() {
-        return dbTarget.getDbSource(btnMsSql.getSelection(), getOneTimePrefs());
+        return dbTarget.getDbSource(getSelectedDbType(), getOneTimePrefs());
     }
 
     public IgnoreList getIgnoreList() {
@@ -215,8 +217,8 @@ class PageDiff extends WizardPage implements Listener {
         cmbTimezone.getCombo().setText(timezone);
     }
 
-    public boolean isMsSql() {
-        return btnMsSql.getSelection();
+    public DatabaseType getSelectedDbType() {
+        return (DatabaseType) cmbDbType.getStructuredSelection().getFirstElement();
     }
 
     @Override
@@ -234,6 +236,13 @@ class PageDiff extends WizardPage implements Listener {
         dbTarget = new DbSourcePicker(dbContainer, Messages.DiffWizard_target, this);
         dbTarget.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
+        lblWarnPosix = new CLabel(container, SWT.NONE);
+        lblWarnPosix.setImage(Activator.getEclipseImage(ISharedImages.IMG_OBJS_WARN_TSK));
+        lblWarnPosix.setText(Messages.ProjectProperties_posix_is_used_warn);
+        GridData gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+        gd.exclude = true;
+        lblWarnPosix.setLayoutData(gd);
+
         Composite compTz = new Composite(container, SWT.NONE);
         compTz.setLayout(new GridLayout(2, false));
 
@@ -246,24 +255,18 @@ class PageDiff extends WizardPage implements Listener {
         cmbTimezone.getCombo().setText(Consts.UTC);
         cmbTimezone.getCombo().addModifyListener(e -> timeZoneWarn());
 
-        lblWarnPosix = new CLabel(container, SWT.NONE);
-        lblWarnPosix.setImage(Activator.getEclipseImage(ISharedImages.IMG_OBJS_WARN_TSK));
-        lblWarnPosix.setText(Messages.ProjectProperties_posix_is_used_warn);
-        GridData gd = new GridData(SWT.FILL, SWT.FILL, true, false);
-        gd.exclude = true;
-        lblWarnPosix.setLayoutData(gd);
-
-        btnMsSql = new Button(container, SWT.CHECK);
-        btnMsSql.setText(Messages.DiffWizard_ms_sql_dump);
-        btnMsSql.addSelectionListener(new SelectionAdapter() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                dbSource.filter(isMsSql());
-                dbTarget.filter(isMsSql());
-                getWizard().getContainer().updateButtons();
-                getWizard().getContainer().updateMessage();
-            }
+        new Label(compTz, SWT.NONE).setText(Messages.database_type);
+        cmbDbType = new ComboViewer(compTz, SWT.READ_ONLY);
+        cmbDbType.setContentProvider(ArrayContentProvider.getInstance());
+        cmbDbType.setInput(DatabaseType.values());
+        cmbDbType.getCombo().select(0);
+        cmbDbType.addSelectionChangedListener(e -> {
+            StructuredSelection sel = (StructuredSelection) e.getSelection();
+            DatabaseType selDbType = (DatabaseType) sel.getFirstElement();
+            dbSource.filter(selDbType);
+            dbTarget.filter(selDbType);
+            getWizard().getContainer().updateButtons();
+            getWizard().getContainer().updateMessage();
         });
 
         Button btnShowPrefs = new Button(container, SWT.CHECK);
@@ -381,13 +384,12 @@ class PageDiff extends WizardPage implements Listener {
         }
     }
 
-    private boolean isMsSqlDb(DbSourcePicker sourcePicer) {
+    private DatabaseType getDbType(DbSourcePicker sourcePicer) {
         DbInfo dbInfo = sourcePicer.getSelectedDbInfo();
         if (dbInfo != null) {
-            return dbInfo.isMsSql();
+            return dbInfo.getDbType();
         }
-
-        return isMsSql();
+        return getSelectedDbType();
     }
 
     @Override
@@ -400,11 +402,11 @@ class PageDiff extends WizardPage implements Listener {
             err = Messages.diffwizard_diffpage_target_warning;
         } else if (getTimezone().isEmpty()) {
             err = Messages.DiffWizard_select_db_tz;
-        } else if (isMsSqlDb(dbSource) != isMsSqlDb(dbTarget)) {
+        } else if (getDbType(dbSource) != getDbType(dbTarget)) {
             err = Messages.DiffWizard_different_types;
         }
 
-        boolean isPg = !isMsSqlDb(dbSource);
+        boolean isPg = getDbType(dbSource) == DatabaseType.PG;
         btnSimplifyView.setEnabled(isPg);
         btnCheckFuncBodies.setEnabled(isPg);
         btnAlterColUsingExpr.setEnabled(isPg);

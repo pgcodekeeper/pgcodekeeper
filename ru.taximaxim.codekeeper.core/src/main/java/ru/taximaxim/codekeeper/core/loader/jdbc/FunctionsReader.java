@@ -40,12 +40,12 @@ import ru.taximaxim.codekeeper.core.schema.ArgMode;
 import ru.taximaxim.codekeeper.core.schema.Argument;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgAggregate;
-import ru.taximaxim.codekeeper.core.schema.PgAggregate.AggFuncs;
-import ru.taximaxim.codekeeper.core.schema.PgAggregate.AggKinds;
-import ru.taximaxim.codekeeper.core.schema.PgAggregate.ModifyType;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgFunction;
 import ru.taximaxim.codekeeper.core.schema.PgProcedure;
+import ru.taximaxim.codekeeper.core.schema.PgAggregate.AggFuncs;
+import ru.taximaxim.codekeeper.core.schema.PgAggregate.AggKinds;
+import ru.taximaxim.codekeeper.core.schema.PgAggregate.ModifyType;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 /**

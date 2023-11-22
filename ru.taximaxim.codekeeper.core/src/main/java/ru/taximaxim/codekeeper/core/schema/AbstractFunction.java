@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 
 public abstract class AbstractFunction extends PgStatementWithSearchPath implements IFunction {
@@ -85,7 +86,7 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
                 return true;
             }
 
-            if (!isPostgres()) {
+            if (getDbType() == DatabaseType.MS) {
                 isNeedDepcies.set(true);
             }
 

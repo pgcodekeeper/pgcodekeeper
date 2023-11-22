@@ -17,6 +17,7 @@ package ru.taximaxim.codekeeper.core.schema;
 
 import java.util.Objects;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 
 public abstract class AbstractMsFunction extends AbstractFunction
@@ -104,7 +105,7 @@ implements SourceStatement {
     }
 
     @Override
-    public boolean isPostgres() {
-        return false;
+    public DatabaseType getDbType() {
+        return DatabaseType.MS;
     }
 }

@@ -101,7 +101,7 @@ public class NavigationLibrariesActionProvider extends CommonActionProvider {
                 try {
                     FileLibrary lib = (FileLibrary) sel;
                     FileUtilsUi.openFileInSqlEditor(
-                            lib.getPath(), lib.getProject(), lib.isMsSql(), true);
+                            lib.getPath(), lib.getProject(), lib.getDbType(), true);
                 } catch (PartInitException e) {
                     ExceptionNotifier.notifyDefault(
                             Messages.NavigationLibrariesActionProvider_failed_to_open_library, e);

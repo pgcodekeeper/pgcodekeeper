@@ -33,6 +33,7 @@ import org.jgrapht.event.VertexTraversalEvent;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.DepthFirstIterator;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractFunction;
@@ -563,7 +564,7 @@ public class DepcyResolver {
             PgStatement newSt = oldSt.getTwin(newDb);
             DbObjType type = oldSt.getStatementType();
             if (newSt == null) {
-                if (type == DbObjType.FUNCTION && oldSt.isPostgres()
+                if (type == DbObjType.FUNCTION && oldSt.getDbType() == DatabaseType.PG
                         && isDefaultsOnlyChange((AbstractFunction) oldSt)) {
                     // when function's signature changes it has no twin
                     // but the dependent object might be unchanged

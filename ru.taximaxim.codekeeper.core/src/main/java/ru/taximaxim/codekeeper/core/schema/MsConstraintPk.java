@@ -102,7 +102,7 @@ public final class MsConstraintPk extends MsConstraint implements IConstraintPk 
 
         if (!options.isEmpty()) {
             sbSQL.append(" WITH ");
-            Utils.appendOptions(sbSQL, options, isPostgres());
+            Utils.appendOptions(sbSQL, options, getDbType());
         }
 
         if (dataSpace != null) {

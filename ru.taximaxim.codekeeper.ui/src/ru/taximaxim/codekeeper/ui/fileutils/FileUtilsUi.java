@@ -38,6 +38,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.ContextLocation;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
@@ -49,12 +50,12 @@ public final class FileUtilsUi {
      * Saves the content as a temp-file, opens it using SQL-editor
      * and ensures that UTF-8 is used for everything.
      */
-    public static void saveOpenTmpSqlEditor(String content, String filenamePrefix, boolean isMsSql)
+    public static void saveOpenTmpSqlEditor(String content, String filenamePrefix, DatabaseType dbType)
             throws IOException, CoreException {
         Log.log(Log.LOG_INFO, "Creating file " + filenamePrefix); //$NON-NLS-1$
         Path path = Files.createTempFile(filenamePrefix + '_', ".sql"); //$NON-NLS-1$
         Files.write(path, content.getBytes(StandardCharsets.UTF_8));
-        IEditorInput input = new SQLEditorInput(path, isMsSql, false);
+        IEditorInput input = new SQLEditorInput(path, dbType, false);
 
         IEditorPart part = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
                 .openEditor(input, EDITOR.SQL);
@@ -68,10 +69,10 @@ public final class FileUtilsUi {
     }
 
     public static void openFileInSqlEditor(PgObjLocation loc, String project,
-            boolean isMsSql, boolean isReadOnly) throws PartInitException {
+            DatabaseType dbType, boolean isReadOnly) throws PartInitException {
         if (loc != null && loc.getFilePath() != null) {
             IEditorPart part = openFileInSqlEditor(
-                    Paths.get(loc.getFilePath()), project, isMsSql, isReadOnly);
+                    Paths.get(loc.getFilePath()), project, dbType, isReadOnly);
             if (part instanceof ITextEditor) {
                 ((ITextEditor) part).selectAndReveal(loc.getOffset(), loc.getObjLength());
             }
@@ -79,7 +80,7 @@ public final class FileUtilsUi {
     }
 
     public static IEditorPart openFileInSqlEditor(Path path, String project,
-            boolean isMsSql, boolean isReadOnly) throws PartInitException {
+            DatabaseType dbType, boolean isReadOnly) throws PartInitException {
         IWorkspace workspace = ResourcesPlugin.getWorkspace();
         IFile[] files = workspace.getRoot().findFilesForLocationURI(path.toUri());
         IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
@@ -89,7 +90,7 @@ public final class FileUtilsUi {
                 return IDE.openEditor(page, f, EDITOR.SQL);
             }
         }
-        IEditorInput input = new SQLEditorInput(path, project, isMsSql, isReadOnly);
+        IEditorInput input = new SQLEditorInput(path, project, dbType, isReadOnly);
         return IDE.openEditor(page, input, EDITOR.SQL);
     }
 

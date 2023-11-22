@@ -30,10 +30,10 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
-import ru.taximaxim.codekeeper.core.schema.ICast.CastContext;
 import ru.taximaxim.codekeeper.core.schema.PgCast;
-import ru.taximaxim.codekeeper.core.schema.PgCast.CastMethod;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.ICast.CastContext;
+import ru.taximaxim.codekeeper.core.schema.PgCast.CastMethod;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public class CastsReader extends AbstractStatementReader {

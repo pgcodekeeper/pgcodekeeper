@@ -40,6 +40,7 @@ import ru.taximaxim.codekeeper.core.PgCodekeeperException;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.UnixPrintWriter;
 import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
+import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
@@ -255,9 +256,17 @@ public abstract class AbstractModelExporter {
     }
 
     public static Path getRelativeFilePath(PgStatement st) {
-        AbstractModelExporter exporter = st.isPostgres() ? new ModelExporter(null, null, null)
-                : new MsModelExporter(null, null, null);
-
+        AbstractModelExporter exporter;
+        switch (st.getDbType()) {
+        case PG:
+            exporter = new ModelExporter(null, null, null);
+            break;
+        case MS:
+            exporter = new MsModelExporter(null, null, null);
+            break;
+        default:
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + st.getDbType());
+        }
         return exporter.getRelativeFilePath(st, true);
     }
 }

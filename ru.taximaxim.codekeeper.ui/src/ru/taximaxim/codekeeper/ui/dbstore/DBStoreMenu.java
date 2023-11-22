@@ -35,6 +35,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
@@ -53,17 +54,17 @@ public class DBStoreMenu {
     private final List<File> projects = new ArrayList<>();
 
     private final MenuManager menuMgr;
-    private final Boolean isMssql;
+    private final DatabaseType dbType;
     private final Shell shell;
     private final Object selection;
     private final ListenerList<Consumer<Object>> listeners = new ListenerList<>();
 
     public DBStoreMenu(MenuManager menuMgr, boolean useFileSources,
-            boolean useDirSources, Boolean isMssql, Shell shell, Object selection) {
+            boolean useDirSources, DatabaseType dbType, Shell shell, Object selection) {
         this.useFileSources = useFileSources;
         this.useDirSources = useDirSources;
         this.menuMgr = menuMgr;
-        this.isMssql = isMssql;
+        this.dbType = dbType;
         this.shell = shell;
         this.selection = selection;
 
@@ -109,7 +110,7 @@ public class DBStoreMenu {
             }
 
             for (DbInfo dbInfo : v) {
-                if (isMssql == null || dbInfo.isMsSql() == isMssql) {
+                if (dbType == null || dbInfo.getDbType() == dbType) {
                     addAction(dbInfo, submenu);
                 }
             }
@@ -200,7 +201,18 @@ public class DBStoreMenu {
             }
         };
         submenu.add(dbAction);
-        dbAction.setImageDescriptor(Activator.getRegisteredDescriptor(dbInfo.isMsSql() ? FILE.MS_ICON : FILE.PG_ICON));
+        String fileName;
+        switch (dbInfo.getDbType()) {
+        case MS:
+            fileName = FILE.MS_ICON;
+            break;
+        case PG:
+            fileName = FILE.PG_ICON;
+            break;
+        default:
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbInfo.getDbType());
+        }
+        dbAction.setImageDescriptor(Activator.getRegisteredDescriptor(fileName));
         if (dbInfo.equals(selection)) {
             dbAction.setChecked(true);
             String group = dbInfo.getDbGroup();

@@ -33,7 +33,7 @@ import ru.taximaxim.codekeeper.core.utils.Pair;
 /**
  * Stores table information.
  */
-public abstract class AbstractTable extends PgStatementContainer implements PgOptionContainer {
+public abstract class AbstractTable extends PgStatementContainer implements OptionContainer {
 
     protected static final String ALTER_COLUMN = " ALTER COLUMN ";
 

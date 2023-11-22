@@ -56,7 +56,7 @@ public class PgDiffArguments {
     private final List<String> targetLibs = new ArrayList<>();
     private final List<String> targetLibsWithoutPriv = new ArrayList<>();
     private boolean libSafeMode;
-    private boolean msSql;
+    private DatabaseType dbType = DatabaseType.PG;
     private boolean ignoreConcurrentModification;
     private boolean simplifyView;
     private boolean ignoreErrors;
@@ -189,12 +189,12 @@ public class PgDiffArguments {
         this.libSafeMode = libSafeMode;
     }
 
-    public boolean isMsSql() {
-        return msSql;
+    public DatabaseType getDbType() {
+        return dbType;
     }
 
-    public void setMsSql(boolean msSql) {
-        this.msSql = msSql;
+    public void setDbType(DatabaseType dbType) {
+        this.dbType = dbType;
     }
 
     public boolean isIgnoreConcurrentModification() {
@@ -374,7 +374,7 @@ public class PgDiffArguments {
         arg.targetLibs.addAll(getTargetLibs());
         arg.targetLibsWithoutPriv.addAll(getTargetLibsWithoutPriv());
         arg.libSafeMode = isLibSafeMode();
-        arg.msSql = isMsSql();
+        arg.dbType = getDbType();
         arg.ignoreConcurrentModification = isIgnoreConcurrentModification();
         arg.simplifyView = isSimplifyView();
         arg.ignoreErrors = isIgnoreErrors();

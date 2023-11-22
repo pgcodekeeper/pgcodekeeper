@@ -17,6 +17,8 @@ package ru.taximaxim.codekeeper.ui.dbstore;
 
 import java.io.File;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
+
 public interface IStorePicker {
 
     void setUseFileSources(boolean useFileSources);
@@ -49,7 +51,7 @@ public interface IStorePicker {
 
     void addSelectionListener(Runnable runnable);
 
-    void filter(Boolean isMsSql);
+    void filter(DatabaseType dbType);
 
     void dispose();
 }

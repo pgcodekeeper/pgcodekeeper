@@ -39,9 +39,11 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.Consts.MS_WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.core.Consts.WORK_DIR_NAMES;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.loader.ParserListenerMode;
+import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.exporter.AbstractModelExporter;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
@@ -444,21 +446,26 @@ public abstract class ParserAbstract {
 
         String filePath = AbstractModelExporter.getRelativeFilePath(statement).toString();
         if (!PgDiffUtils.endsWithIgnoreCase(fileName, filePath)
-                && isInProject(statement.isPostgres())) {
+                && isInProject(statement.getDbType())) {
             throw new MisplacedObjectException(MessageFormat.format(LOCATION_ERROR,
                     statement.getBareName(), filePath), errToken);
         }
     }
 
-    private boolean isInProject(boolean isPostgres) {
+    private boolean isInProject(DatabaseType dbType) {
         // collect working directories
         List<String> dirs;
-        if (isPostgres) {
+        switch (dbType) {
+        case PG:
             dirs = Arrays.stream(Consts.WORK_DIR_NAMES.values())
-                    .map(WORK_DIR_NAMES::name).collect(Collectors.toList());
-        } else {
+            .map(WORK_DIR_NAMES::name).collect(Collectors.toList());
+            break;
+        case MS:
             dirs = Arrays.stream(Consts.MS_WORK_DIR_NAMES.values())
-                    .map(MS_WORK_DIR_NAMES::getDirName).collect(Collectors.toList());
+            .map(MS_WORK_DIR_NAMES::getDirName).collect(Collectors.toList());
+            break;
+        default:
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
         }
 
         Path parent = Paths.get(fileName).getParent();
@@ -581,14 +588,14 @@ public abstract class ParserAbstract {
     }
 
     protected void addDepSafe(PgStatement st, List<? extends ParserRuleContext> ids,
-            DbObjType type, boolean isPostgres) {
-        addDepSafe(st, ids, type, isPostgres, null);
+            DbObjType type, DatabaseType dbType) {
+        addDepSafe(st, ids, type, dbType, null);
     }
 
     protected void addDepSafe(PgStatement st, List<? extends ParserRuleContext> ids,
-            DbObjType type, boolean isPostgres, String signature) {
+            DbObjType type, DatabaseType dbType, String signature) {
         PgObjLocation loc = getLocation(ids, type, null, true, signature, LocationType.REFERENCE);
-        if (loc != null && !Utils.isSystemSchema(loc.getSchema(), isPostgres)) {
+        if (loc != null && !Utils.isSystemSchema(loc.getSchema(), dbType)) {
             if (!refMode) {
                 st.addDep(loc.getObj());
             }
@@ -649,7 +656,7 @@ public abstract class ParserAbstract {
     protected void addPgTypeDepcy(Data_typeContext ctx, PgStatement st) {
         Schema_qualified_name_nontypeContext qname = ctx.predefined_type().schema_qualified_name_nontype();
         if (qname != null && qname.identifier() != null) {
-            addDepSafe(st, getIdentifiers(qname), DbObjType.TYPE, true);
+            addDepSafe(st, getIdentifiers(qname), DbObjType.TYPE, DatabaseType.PG);
         }
     }
 
@@ -657,7 +664,7 @@ public abstract class ParserAbstract {
             PgStatement st) {
         Qualified_nameContext qname = ctx.qualified_name();
         if (qname != null && qname.schema != null) {
-            addDepSafe(st, Arrays.asList(qname.schema, qname.name), DbObjType.TYPE, false);
+            addDepSafe(st, Arrays.asList(qname.schema, qname.name), DbObjType.TYPE, DatabaseType.MS);
         }
     }
 

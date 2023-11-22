@@ -34,6 +34,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 
 import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
@@ -90,8 +91,8 @@ class DbSourcePicker extends Composite {
         });
     }
 
-    public void filter(boolean isMsql) {
-        storePicker.filter(isMsql);
+    public void filter(DatabaseType dbType) {
+        storePicker.filter(dbType);
     }
 
     public void setDbStore(Object selection) {
@@ -106,7 +107,7 @@ class DbSourcePicker extends Composite {
         return cmbEncoding.getCombo().getText();
     }
 
-    public DbSource getDbSource(boolean isMsSql, Map<String, Boolean> oneTimePrefs) {
+    public DbSource getDbSource(DatabaseType dbType, Map<String, Boolean> oneTimePrefs) {
         final boolean forceUnixNewlines = true; // true by default, check project if path is given
         DbInfo dbInfo;
         File file;
@@ -116,14 +117,14 @@ class DbSourcePicker extends Composite {
                     pageDiff.getTimezone(), null, oneTimePrefs);
         } else if ((file = storePicker.getPathOfFile()) != null) {
             return DbSource.fromFile(forceUnixNewlines, file, getEncoding(),
-                    isMsSql, null, oneTimePrefs);
+                    dbType, null, oneTimePrefs);
         } else if ((dir = storePicker.getPathOfDir()) != null) {
             PgDbProject project = getProjectFromDir(dir);
             if (project != null) {
                 return DbSource.fromProject(project, oneTimePrefs);
             } else {
                 return DbSource.fromDirTree(forceUnixNewlines, dir.getAbsolutePath(),
-                        getEncoding(), isMsSql, oneTimePrefs);
+                        getEncoding(), dbType, oneTimePrefs);
             }
         }
         return null;

@@ -38,6 +38,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.Consts.MS_WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.core.Consts.WORK_DIR_NAMES;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.model.exporter.AbstractModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
@@ -65,16 +66,21 @@ public class ConvertProject extends AbstractHandler {
             return null;
         }
 
-        boolean isMsSql = code == Window.OK;
-
+        DatabaseType dbType = code == Window.OK ? DatabaseType.MS : DatabaseType.PG;
         try {
-            if (createMarker(shell, Paths.get(project.getLocationURI()), isMsSql)) {
+            if (createMarker(shell, Paths.get(project.getLocationURI()), dbType)) {
                 String[] natures;
-                if (isMsSql) {
-                    natures = new String[] {NATURE.ID, NATURE.MS};
-                } else {
+                switch (dbType) {
+                case PG:
                     natures = new String[] {NATURE.ID};
+                    break;
+                case MS:
+                    natures = new String[] {NATURE.ID, NATURE.MS};
+                    break;
+                default:
+                    throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
                 }
+
                 IProjectDescription description = project.getDescription();
                 description.setNatureIds(natures);
                 project.setDescription(description, null);
@@ -86,18 +92,24 @@ public class ConvertProject extends AbstractHandler {
         return null;
     }
 
-    public static boolean createMarker(Shell shell, Path path, boolean isMsSql) throws IOException {
+    public static boolean createMarker(Shell shell, Path path, DatabaseType dbType) throws IOException {
         boolean weirdProject;
-        if (isMsSql) {
+        switch (dbType) {
+        case PG:
+            weirdProject = Arrays.stream(WORK_DIR_NAMES.values())
+            .map(e -> path.resolve(e.name()))
+            .allMatch(Files::notExists);
+            break;
+        case MS:
             // MS doesn't require all dirs to exist, warn if none found
             weirdProject = Arrays.stream(MS_WORK_DIR_NAMES.values())
-                    .map(e -> path.resolve(e.getDirName()))
-                    .allMatch(Files::notExists);
-        } else {
-            weirdProject = Arrays.stream(WORK_DIR_NAMES.values())
-                    .map(e -> path.resolve(e.name()))
-                    .allMatch(Files::notExists);
+            .map(e -> path.resolve(e.getDirName()))
+            .allMatch(Files::notExists);
+            break;
+        default:
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
         }
+
         if (weirdProject) {
             MessageBox message = new MessageBox(shell, SWT.ICON_WARNING | SWT.YES | SWT.NO);
             message.setMessage(Messages.ConvertProject_convert_dialog_message);

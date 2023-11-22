@@ -122,7 +122,10 @@ Usage
                                           objects loaded first have priority
  --ignore-concurrent-modification       : ignore concurrent modification errors
                                           of database objects
- --ms-sql                               : work with MS SQL
+ --ms-sql                               : work with MS SQL. Deprecated option.
+                                          Use --db-type instead of this
+ --db-type [PG | MS]                    : specify database type for work: PG or
+                                          MS (default: PG)
  --update-project                       : update an existing project in parse
                                           mode
  --graph-depth <n>                      : depth of displayed dependencies in

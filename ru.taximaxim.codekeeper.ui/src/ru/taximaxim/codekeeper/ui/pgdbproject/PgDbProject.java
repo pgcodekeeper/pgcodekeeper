@@ -26,10 +26,12 @@ import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_BIND_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class PgDbProject {
 
@@ -85,17 +87,23 @@ public class PgDbProject {
     }
 
     public static PgDbProject createPgDbProject(IProject newProject, URI location,
-            boolean isMsSql) throws CoreException {
+            DatabaseType dbType) throws CoreException {
         if (!newProject.exists()) {
             IProjectDescription desc = newProject.getWorkspace()
                     .newProjectDescription(newProject.getName());
 
             String [] natures;
-            if (isMsSql) {
-                natures = new String[] {NATURE.ID, NATURE.MS};
-            } else {
+            switch (dbType) {
+            case PG:
                 natures = new String[] {NATURE.ID};
+                break;
+            case MS:
+                natures = new String[] {NATURE.ID, NATURE.MS};
+                break;
+            default:
+                throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
             }
+
 
             desc.setLocationURI(location);
             desc.setNatureIds(natures);
@@ -103,7 +111,7 @@ public class PgDbProject {
             newProject.open(IResource.BACKGROUND_REFRESH, null);
             newProject.refreshLocal(IResource.BACKGROUND_REFRESH, null);
             newProject.getNature(NATURE.ID).configure();
-            if (isMsSql) {
+            if (dbType == DatabaseType.MS) {
                 newProject.getNature(NATURE.MS).configure();
             }
         }

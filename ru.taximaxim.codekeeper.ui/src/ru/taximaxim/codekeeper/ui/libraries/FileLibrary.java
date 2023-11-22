@@ -30,26 +30,27 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.ISharedImages;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 
 public class FileLibrary extends AbstractLibrary implements IStorage {
 
     private final String project;
-    private final boolean isMsSql;
+    private final DatabaseType dbType;
 
-    public FileLibrary(Path path, String project, boolean isMsSql) {
-        this(null, path, project, isMsSql);
+    public FileLibrary(Path path, String project, DatabaseType dbType) {
+        this(null, path, project, dbType);
     }
 
-    FileLibrary(AbstractLibrary parent, Path path, String project, boolean isMsSql) {
+    FileLibrary(AbstractLibrary parent, Path path, String project, DatabaseType dbType) {
         super(parent, path);
         this.project = project;
-        this.isMsSql = isMsSql;
+        this.dbType = dbType;
     }
 
-    public boolean isMsSql() {
-        return isMsSql;
+    public DatabaseType getDbType() {
+        return dbType;
     }
 
     public String getProject() {
@@ -103,7 +104,7 @@ public class FileLibrary extends AbstractLibrary implements IStorage {
 
         if (obj instanceof FileLibrary && super.equals(obj)) {
             FileLibrary lib = (FileLibrary) obj;
-            return isMsSql == lib.isMsSql
+            return dbType == lib.getDbType()
                     && Objects.equals(project, lib.project);
         }
         return false;
@@ -112,10 +113,8 @@ public class FileLibrary extends AbstractLibrary implements IStorage {
     @Override
     public int hashCode() {
         final int prime = 31;
-        final int itrue = 1231;
-        final int ifalse = 1237;
         int result = super.hashCode();
-        result = prime * result + (isMsSql ? itrue : ifalse);
+        result = prime * result + (dbType.hashCode());
         result = prime * result + ((project == null) ? 0 : project.hashCode());
         return result;
     }

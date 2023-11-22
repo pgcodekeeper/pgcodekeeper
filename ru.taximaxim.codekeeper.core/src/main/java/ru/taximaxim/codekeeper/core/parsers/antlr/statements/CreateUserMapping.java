@@ -17,6 +17,7 @@ package ru.taximaxim.codekeeper.core.parsers.antlr.statements;
 
 import java.util.Arrays;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_user_mapping_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Define_foreign_optionsContext;
@@ -46,7 +47,7 @@ public class CreateUserMapping extends ParserAbstract {
         String server = userMapping.identifier().getText();
 
         PgUserMapping usm = new PgUserMapping(userName.getText(), server);
-        addDepSafe(usm, Arrays.asList(userMapping.identifier()), DbObjType.SERVER, true);
+        addDepSafe(usm, Arrays.asList(userMapping.identifier()), DbObjType.SERVER, DatabaseType.PG);
 
         Define_foreign_optionsContext options = ctx.define_foreign_options();
         if (options != null) {

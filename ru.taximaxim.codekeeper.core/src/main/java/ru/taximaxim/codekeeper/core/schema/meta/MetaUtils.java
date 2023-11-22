@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
@@ -45,18 +46,18 @@ public class MetaUtils {
         .map(MetaUtils::createMetaFromStatement)
         .forEach(tree::addStatement);
 
-        if (!db.getArguments().isMsSql()) {
+        if (db.getArguments().getDbType() == DatabaseType.PG) {
             MetaStorage.getSystemObjects(db.getPostgresVersion()).forEach(tree::addStatement);
         }
         return tree;
     }
 
     public static MetaContainer createTreeFromDefs(Stream<MetaStatement> defs,
-            boolean addSystem, SupportedVersion version) {
+            DatabaseType dbType, SupportedVersion version) {
         MetaContainer tree = new MetaContainer();
         defs.forEach(tree::addStatement);
 
-        if (addSystem) {
+        if (dbType == DatabaseType.PG) {
             MetaStorage.getSystemObjects(version).forEach(tree::addStatement);
         }
         return tree;

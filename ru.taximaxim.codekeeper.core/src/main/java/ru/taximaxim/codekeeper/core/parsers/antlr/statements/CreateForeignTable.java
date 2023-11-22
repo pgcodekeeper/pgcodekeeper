@@ -21,6 +21,7 @@ import java.util.List;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Character_stringContext;
@@ -87,7 +88,7 @@ public class CreateForeignTable extends TableAbstract {
             fillTypeColumns(partCtx.list_of_type_column_def(), table, schemaName, null);
             addInherit(table, getIdentifiers(partCtx.parent_table));
         }
-        addDepSafe(table, Arrays.asList(srvName), DbObjType.SERVER, true);
+        addDepSafe(table, Arrays.asList(srvName), DbObjType.SERVER, DatabaseType.PG);
 
         return table;
     }

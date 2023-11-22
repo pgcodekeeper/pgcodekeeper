@@ -110,12 +110,12 @@ public final class MsConstraintFk extends MsConstraint implements IConstraintFk 
     public String getDefinition() {
         var sbSQL = new StringBuilder();
         sbSQL.append("FOREIGN KEY ");
-        appendCols(sbSQL, columns, isPostgres());
+        appendCols(sbSQL, columns, getDbType());
         sbSQL.append(" REFERENCES ").append(MsDiffUtils.quoteName(getForeignSchema())).append('.')
         .append(MsDiffUtils.quoteName(getForeignTable()));
         if (!refs.isEmpty()) {
             sbSQL.append(' ');
-            appendCols(sbSQL, refs, isPostgres());
+            appendCols(sbSQL, refs, getDbType());
         }
         if (delAction != null) {
             sbSQL.append(" ON DELETE ").append(delAction);

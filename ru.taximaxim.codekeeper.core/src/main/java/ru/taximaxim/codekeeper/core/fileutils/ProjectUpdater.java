@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.Consts.MS_WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.core.Consts.WORK_DIR_NAMES;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.exporter.AbstractModelExporter;
@@ -49,15 +50,15 @@ public class ProjectUpdater {
     private final Collection<TreeElement> changedObjects;
     private final String encoding;
     private final Path dirExport;
-    private final boolean isMsSql;
+    private final DatabaseType dbType;
     private final boolean overridesOnly;
 
-    public ProjectUpdater(PgDatabase dbNew, boolean isMsSql, String encoding, Path dirExport) {
-        this(dbNew, null, null, isMsSql, encoding, dirExport, false);
+    public ProjectUpdater(PgDatabase dbNew, DatabaseType dbType, String encoding, Path dirExport) {
+        this(dbNew, null, null, dbType, encoding, dirExport, false);
     }
 
     public ProjectUpdater(PgDatabase dbNew, PgDatabase dbOld, Collection<TreeElement> changedObjects,
-            boolean isMsSql, String encoding, Path dirExport, boolean overridesOnly) {
+            DatabaseType dbType, String encoding, Path dirExport, boolean overridesOnly) {
         this.dbNew = dbNew;
         this.dbOld = dbOld;
 
@@ -66,7 +67,7 @@ public class ProjectUpdater {
         this.encoding = encoding;
         this.dirExport = dirExport;
 
-        this.isMsSql = isMsSql;
+        this.dbType = dbType;
         this.overridesOnly = overridesOnly;
     }
 
@@ -87,21 +88,26 @@ public class ProjectUpdater {
                     updateFolder(dirTmp, Consts.OVERRIDES_DIR);
 
                     exporter = new OverridesModelExporter(dirExport, dbNew, dbOld,
-                            changedObjects, encoding, isMsSql);
-                } else if (isMsSql) {
-                    for (MS_WORK_DIR_NAMES subdir : MS_WORK_DIR_NAMES.values()) {
-                        updateFolder(dirTmp, subdir.getDirName());
-                    }
-
-                    exporter = new MsModelExporter(dirExport, dbNew, dbOld,
-                            changedObjects, encoding);
+                            changedObjects, encoding, dbType);
                 } else {
-                    for (WORK_DIR_NAMES subdir : WORK_DIR_NAMES.values()) {
-                        updateFolder(dirTmp, subdir.toString());
+                    switch (dbType) {
+                    case MS:
+                        for (MS_WORK_DIR_NAMES subdir : MS_WORK_DIR_NAMES.values()) {
+                            updateFolder(dirTmp, subdir.getDirName());
+                        }
+                        exporter = new MsModelExporter(dirExport, dbNew, dbOld,
+                                changedObjects, encoding);
+                        break;
+                    case PG:
+                        for (WORK_DIR_NAMES subdir : WORK_DIR_NAMES.values()) {
+                            updateFolder(dirTmp, subdir.toString());
+                        }
+                        exporter = new ModelExporter(dirExport, dbNew, dbOld,
+                                changedObjects, encoding);
+                        break;
+                    default:
+                        throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
                     }
-
-                    exporter = new ModelExporter(dirExport, dbNew, dbOld,
-                            changedObjects, encoding);
                 }
                 exporter.exportPartial();
             } catch (Exception ex) {
@@ -162,10 +168,15 @@ public class ProjectUpdater {
 
             try {
                 safeCleanProjectDir(dirTmp);
-                if (isMsSql) {
-                    new MsModelExporter(dirExport, dbNew, encoding).exportFull();
-                } else {
+                switch (dbType) {
+                case PG:
                     new ModelExporter(dirExport, dbNew, encoding).exportFull();
+                    break;
+                case MS:
+                    new MsModelExporter(dirExport, dbNew, encoding).exportFull();
+                    break;
+                default:
+                    throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
                 }
                 if (projectOnly) {
                     restoreFolder(dirTmp, Consts.OVERRIDES_DIR);
@@ -200,14 +211,19 @@ public class ProjectUpdater {
     }
 
     private void safeCleanProjectDir(Path dirTmp) throws IOException {
-        if (isMsSql) {
-            for (MS_WORK_DIR_NAMES subdirName : MS_WORK_DIR_NAMES.values()) {
-                moveFolder(dirTmp, subdirName.getDirName());
-            }
-        } else {
+        switch (dbType) {
+        case PG:
             for (WORK_DIR_NAMES subdirName : WORK_DIR_NAMES.values()) {
                 moveFolder(dirTmp, subdirName.toString());
             }
+            break;
+        case MS:
+            for (MS_WORK_DIR_NAMES subdirName : MS_WORK_DIR_NAMES.values()) {
+                moveFolder(dirTmp, subdirName.getDirName());
+            }
+            break;
+        default:
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
         }
 
         moveFolder(dirTmp, Consts.OVERRIDES_DIR);
@@ -221,14 +237,19 @@ public class ProjectUpdater {
     }
 
     private void restoreProjectDir(Path dirTmp) throws IOException {
-        if (isMsSql) {
-            for (MS_WORK_DIR_NAMES subdirName : MS_WORK_DIR_NAMES.values()) {
-                restoreFolder(dirTmp, subdirName.getDirName());
-            }
-        } else {
+        switch (dbType) {
+        case PG:
             for (WORK_DIR_NAMES subdirName : WORK_DIR_NAMES.values()) {
                 restoreFolder(dirTmp, subdirName.toString());
             }
+            break;
+        case MS:
+            for (MS_WORK_DIR_NAMES subdirName : MS_WORK_DIR_NAMES.values()) {
+                restoreFolder(dirTmp, subdirName.getDirName());
+            }
+            break;
+        default:
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
         }
 
         restoreFolder(dirTmp, Consts.OVERRIDES_DIR);

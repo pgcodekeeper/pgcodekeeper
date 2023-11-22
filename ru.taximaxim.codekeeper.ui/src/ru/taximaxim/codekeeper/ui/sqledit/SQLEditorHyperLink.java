@@ -23,6 +23,7 @@ import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -35,17 +36,17 @@ public class SQLEditorHyperLink implements IHyperlink {
     private final IRegion regionHightLight;
     private final int lineNumber;
     private final String relativePath;
-    private final boolean isMsSql;
+    private final DatabaseType dbType;
     private final String project;
 
     public SQLEditorHyperLink(IRegion region, IRegion regionHightLight, String label,
-            String location, int lineNumber, boolean isMsSql, String project) {
+            String location, int lineNumber, DatabaseType dbType, String project) {
         this.region = region;
         this.regionHightLight = regionHightLight;
         this.location = location;
         this.label = label;
         this.lineNumber = lineNumber;
-        this.isMsSql = isMsSql;
+        this.dbType = dbType;
         this.project = project;
         IFile file = FileUtilsUi.getFileForLocation(location);
         relativePath = file == null ? location : file.getProjectRelativePath().toString();
@@ -70,7 +71,7 @@ public class SQLEditorHyperLink implements IHyperlink {
     public void open() {
         try {
             ITextEditor editor = (ITextEditor) FileUtilsUi.openFileInSqlEditor(
-                    Paths.get(location), project, isMsSql, false);
+                    Paths.get(location), project, dbType, false);
             editor.selectAndReveal(region.getOffset(), region.getLength());
         } catch (PartInitException ex) {
             ExceptionNotifier.notifyDefault(

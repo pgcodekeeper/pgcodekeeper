@@ -49,6 +49,7 @@ import org.eclipse.ui.progress.IProgressConstants2;
 
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DangerStatement;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
 import ru.taximaxim.codekeeper.core.loader.JdbcMsConnector;
@@ -164,18 +165,18 @@ class QuickUpdateJob extends SingletonEditorJob {
 
     private void doRun() throws IOException, InterruptedException,
     CoreException, PgCodekeeperUIException, InvocationTargetException {
-        boolean isMsSql = OpenProjectUtils.checkMsSql(proj.getProject());
+        DatabaseType dbType = OpenProjectUtils.getDatabaseType(proj.getProject());
 
-        if (dbinfo.isMsSql() != isMsSql) {
+        if (dbinfo.getDbType() != dbType) {
             throw new PgCodekeeperUIException(Messages.QuickUpdate_different_types);
         }
 
-        boolean isSchemaFile = UIProjectLoader.isSchemaFile(file.getProjectRelativePath(), isMsSql);
+        boolean isSchemaFile = UIProjectLoader.isSchemaFile(file.getProjectRelativePath(), dbType);
         IEclipsePreferences projPrefs = proj.getPrefs();
         String timezone = projPrefs.get(PROJ_PREF.TIMEZONE, Consts.UTC);
 
         PgDatabase dbProjectFragment = UIProjectLoader
-                .buildFiles(Arrays.asList(file), isMsSql, monitor.newChild(1));
+                .buildFiles(Arrays.asList(file), dbType, monitor.newChild(1));
         Collection<PgStatement> listPgObjectsFragment = dbProjectFragment.getDescendants().collect(Collectors.toList());
 
         long schemaCount = dbProjectFragment.getSchemas().size();
@@ -207,7 +208,7 @@ class QuickUpdateJob extends SingletonEditorJob {
         }
 
         Differ differ = new Differ(dbRemote.getDbObject(), dbProject.getDbObject(),
-                treeFull, false, timezone, isMsSql, proj.getProject());
+                treeFull, false, timezone, dbType, proj.getProject());
         differ.run(monitor.newChild(1));
 
         checkFileModified();
@@ -215,19 +216,25 @@ class QuickUpdateJob extends SingletonEditorJob {
         monitor.newChild(1).subTask(Messages.QuickUpdate_updating_db);
 
         JdbcConnector connector;
-        if (isMsSql) {
+
+        switch (dbType) {
+        case PG:
+            connector = new JdbcConnector(dbinfo.getDbHost(), dbinfo.getDbPort(),
+                    dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(),
+                    dbinfo.getProperties(), dbinfo.isReadOnly(), Consts.UTC);
+            break;
+        case MS:
             connector = new JdbcMsConnector(dbinfo.getDbHost(), dbinfo.getDbPort(),
                     dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(),
                     dbinfo.getProperties(), dbinfo.isReadOnly(), dbinfo.isWinAuth(),
                     dbinfo.getDomain());
-        } else {
-            connector = new JdbcConnector(dbinfo.getDbHost(), dbinfo.getDbPort(),
-                    dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(),
-                    dbinfo.getProperties(), dbinfo.isReadOnly(), Consts.UTC);
+            break;
+        default:
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
         }
 
         try {
-            ScriptParser parser = new ScriptParser(file.getName(), differ.getDiffDirect(), isMsSql);
+            ScriptParser parser = new ScriptParser(file.getName(), differ.getDiffDirect(), dbType);
             String error = parser.getErrorMessage();
             if (error != null) {
                 throw new PgCodekeeperUIException(error);
@@ -282,8 +289,8 @@ class QuickUpdateJob extends SingletonEditorJob {
                 .map(PgStatement::getStatementType)
                 .allMatch(ty -> ty == DbObjType.SCHEMA
                 || ty == DbObjType.EXTENSION
-                    || ty == DbObjType.CAST
-                    || ty == DbObjType.EVENT_TRIGGER);
+                || ty == DbObjType.CAST
+                || ty == DbObjType.EVENT_TRIGGER);
 
         Set<TreeElement> checked = new HashSet<>();
         for (PgStatement st : listPgObjectsFragment){

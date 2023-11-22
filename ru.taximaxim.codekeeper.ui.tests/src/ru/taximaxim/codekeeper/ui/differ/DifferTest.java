@@ -31,6 +31,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
@@ -62,8 +63,8 @@ public class DifferTest {
 
         Map<String, Boolean> oneTimePrefs = Map.of(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES, true);
 
-        DbSource dbSource = DbSource.fromFile(true, sourceFile, Consts.UTF_8, false, null, oneTimePrefs);
-        DbSource dbTarget = DbSource.fromFile(true, targetFile, Consts.UTF_8, false, null, oneTimePrefs);
+        DbSource dbSource = DbSource.fromFile(true, sourceFile, Consts.UTF_8, DatabaseType.PG, null, oneTimePrefs);
+        DbSource dbTarget = DbSource.fromFile(true, targetFile, Consts.UTF_8, DatabaseType.PG, null, oneTimePrefs);
 
         final TreeDiffer newDiffer = new TreeDiffer(dbSource, dbTarget);
 
@@ -75,7 +76,7 @@ public class DifferTest {
         differData.setUserSelection(root);
 
         Differ differ = new Differ(dbSource.getDbObject(), dbTarget.getDbObject(),
-                root, true, Consts.UTC, false, null, oneTimePrefs);
+                root, true, Consts.UTC, DatabaseType.PG, null, oneTimePrefs);
         differ.setAdditionalDepciesSource(differData.getAdditionalDepciesSource(dbSource.getDbObject()));
         differ.setAdditionalDepciesTarget(differData.getAdditionalDepciesTarget(dbTarget.getDbObject()));
 

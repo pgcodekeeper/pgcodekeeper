@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
 import ru.taximaxim.codekeeper.ui.UIConsts.LANGUAGE;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 
@@ -106,7 +107,19 @@ public class ChangeLanguageItem extends ContributionItem {
         sep.setLayoutData(data);
 
         if (editor != null) {
-            updateLabel(editor.isMsSql() ? LANGUAGE.MS_SQL : LANGUAGE.POSTGRESQL);
+            String lang;
+
+            switch (editor.getDbType()) {
+            case PG:
+                lang = LANGUAGE.POSTGRESQL;
+                break;
+            case MS:
+                lang = LANGUAGE.MS_SQL;
+                break;
+            default:
+                throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + editor.getDbType());
+            }
+            updateLabel(lang);
         }
     }
 

@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
@@ -40,6 +41,7 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.hashers.IHashable;
 import ru.taximaxim.codekeeper.core.hashers.JavaHasher;
 import ru.taximaxim.codekeeper.core.hashers.ShaHasher;
+import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.ObjectCreationException;
 
@@ -78,9 +80,8 @@ public abstract class PgStatement implements IStatement, IHashable {
         return name;
     }
 
-    //TODO enum later
-    public boolean isPostgres() {
-        return true;
+    public DatabaseType getDbType() {
+        return DatabaseType.PG;
     }
 
     public boolean canDrop() {
@@ -234,7 +235,8 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     public void addPrivilege(PgPrivilege privilege) {
-        if (isPostgres()) {
+        switch (getDbType()) {
+        case PG:
             String locOwner;
             if (owner == null && getStatementType() == DbObjType.SCHEMA
                     && Consts.PUBLIC.equals(getName())) {
@@ -253,9 +255,12 @@ public abstract class PgStatement implements IStatement, IHashable {
             } else {
                 privileges.add(privilege);
             }
-
-        } else {
+            break;
+        case MS:
             privileges.add(privilege);
+            break;
+        default:
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + getDbType());
         }
         resetHash();
     }
@@ -302,8 +307,19 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     protected StringBuilder appendPrivileges(StringBuilder sb) {
-        PgPrivilege.appendPrivileges(privileges, isPostgres(), sb);
+        PgPrivilege.appendPrivileges(privileges, getDbType(), sb);
         return sb;
+    }
+
+    public String getSeparator() {
+        switch (getDbType()) {
+        case PG:
+            return ";";
+        case MS:
+            return GO;
+        default:
+            throw new RuntimeException(Messages.DatabaseType_unsupported_type + getDbType());
+        }
     }
 
     protected void alterPrivileges(PgStatement newObj, StringBuilder sb) {
@@ -311,13 +327,13 @@ public abstract class PgStatement implements IStatement, IHashable {
         Set<PgPrivilege> newPrivileges = newObj.getPrivileges();
         for (PgPrivilege privilege : privileges) {
             if (!privilege.isRevoke() && !newPrivileges.contains(privilege)) {
-                sb.append('\n').append(privilege.getDropSQL()).append(isPostgres() ? ';' : "\nGO");
+                sb.append('\n').append(privilege.getDropSQL()).append(getSeparator());
             }
         }
 
         // now set all privileges if there are any changes
         if (!privileges.equals(newPrivileges)) {
-            if (newObj.isPostgres()) {
+            if (newObj.getDbType() == DatabaseType.PG) {
                 // first, reset all default privileges
                 // this generates noisier bit more correct scripts
                 // we may have revoked implicit owner GRANT in the previous step, it needs to be restored
@@ -343,7 +359,7 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     public StringBuilder alterOwnerSQL(StringBuilder sb) {
-        if (!isPostgres() && owner == null) {
+        if (getDbType() == DatabaseType.MS && owner == null) {
             sb.append("\n\nALTER AUTHORIZATION ON ");
             DbObjType type = getStatementType();
             if (DbObjType.TYPE == type || DbObjType.SCHEMA == type
@@ -375,13 +391,16 @@ public abstract class PgStatement implements IStatement, IHashable {
             sb.append("\n\n");
         }
         sb.append("ALTER ");
-        if (st.isPostgres()) {
+
+        switch (st.getDbType()) {
+        case PG:
             sb.append(st.getTypeName()).append(' ');
             st.appendFullName(sb);
             sb.append(" OWNER TO ")
             .append(PgDiffUtils.getQuotedName(owner))
             .append(';');
-        } else {
+            break;
+        case MS:
             sb.append("AUTHORIZATION ON ");
             DbObjType type = st.getStatementType();
             if (DbObjType.TYPE == type || DbObjType.SCHEMA == type
@@ -391,8 +410,10 @@ public abstract class PgStatement implements IStatement, IHashable {
 
             sb.append(st.getQualifiedName()).append(" TO ")
             .append(MsDiffUtils.quoteName(owner)).append(GO);
+            break;
+        default:
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + st.getDbType());
         }
-
         return sb;
     }
 
@@ -415,7 +436,7 @@ public abstract class PgStatement implements IStatement, IHashable {
         if (args == null || !args.isAutoFormatObjectCode()) {
             return sql;
         }
-        FileFormatter fileForm = new FileFormatter(sql, 0, sql.length(), args.getFormatConfiguration(), !isPostgres());
+        FileFormatter fileForm = new FileFormatter(sql, 0, sql.length(), args.getFormatConfiguration(), getDbType());
         try {
             return fileForm.formatText();
         } catch (FormatterException e) {
@@ -448,7 +469,7 @@ public abstract class PgStatement implements IStatement, IHashable {
             sbString.append("IF EXISTS ");
         }
         appendFullName(sbString);
-        sbString.append(isPostgres() ? ';' : GO);
+        sbString.append(getSeparator());
         return sbString.toString();
     }
 
@@ -706,7 +727,17 @@ public abstract class PgStatement implements IStatement, IHashable {
      */
     @Override
     public String getQualifiedName() {
-        UnaryOperator<String> quoter = isPostgres() ? PgDiffUtils::getQuotedName : MsDiffUtils::quoteName;
+        UnaryOperator<String> quoter;
+        switch (getDbType()) {
+        case PG:
+            quoter = PgDiffUtils::getQuotedName;
+            break;
+        case MS:
+            quoter = MsDiffUtils::quoteName;
+            break;
+        default:
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + getDbType());
+        }
         StringBuilder sb = new StringBuilder(quoter.apply(getName()));
 
         PgStatement par = this.parent;

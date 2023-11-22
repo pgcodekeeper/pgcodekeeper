@@ -35,6 +35,7 @@ import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 import org.eclipse.ui.part.FileEditorInput;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.ui.IPartAdapter2;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_BIND_PREF;
@@ -42,6 +43,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.dbstore.AbstractStorePicker;
 import ru.taximaxim.codekeeper.ui.dbstore.DbMenuStorePicker;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
+import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
@@ -134,8 +136,13 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
         }
 
         try {
-            storePicker.filter(proj != null && proj.hasNature(NATURE.ID) ?
-                    proj.hasNature(NATURE.MS) : null);
+            DatabaseType dbType;
+            if (proj != null && proj.hasNature(NATURE.ID)) {
+                dbType = OpenProjectUtils.getDatabaseType(proj);
+            } else {
+                dbType = null;
+            }
+            storePicker.filter(dbType);
         } catch (CoreException ex) {
             Log.log(ex);
         }

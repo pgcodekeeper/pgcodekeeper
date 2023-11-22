@@ -20,6 +20,7 @@ import java.util.List;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Character_stringContext;
@@ -98,11 +99,11 @@ public final class CreateType extends ParserAbstract {
         }
         if (ctx.canonical_function != null) {
             type.setCanonical(getFullCtxText(ctx.canonical_function));
-            addDepSafe(type, getIdentifiers(ctx.canonical_function), DbObjType.FUNCTION, true);
+            addDepSafe(type, getIdentifiers(ctx.canonical_function), DbObjType.FUNCTION, DatabaseType.PG);
         }
         if (ctx.subtype_diff_function != null) {
             type.setSubtypeDiff(getFullCtxText(ctx.subtype_diff_function));
-            addDepSafe(type, getIdentifiers(ctx.subtype_diff_function), DbObjType.FUNCTION, true);
+            addDepSafe(type, getIdentifiers(ctx.subtype_diff_function), DbObjType.FUNCTION, DatabaseType.PG);
         }
         if (ctx.multirange_name != null) {
             type.setMultirange(ctx.multirange_name.getText());
@@ -116,35 +117,35 @@ public final class CreateType extends ParserAbstract {
         PgBaseType type = new PgBaseType(name);
         if (ctx.input_function != null) {
             type.setInputFunction(getFullCtxText(ctx.input_function));
-            addDepSafe(type, getIdentifiers(ctx.input_function), DbObjType.FUNCTION, true);
+            addDepSafe(type, getIdentifiers(ctx.input_function), DbObjType.FUNCTION, DatabaseType.PG);
         }
         if (ctx.output_function != null) {
             type.setOutputFunction(getFullCtxText(ctx.output_function));
-            addDepSafe(type, getIdentifiers(ctx.output_function), DbObjType.FUNCTION, true);
+            addDepSafe(type, getIdentifiers(ctx.output_function), DbObjType.FUNCTION, DatabaseType.PG);
         }
         if (ctx.receive_function != null) {
             type.setReceiveFunction(getFullCtxText(ctx.receive_function));
-            addDepSafe(type, getIdentifiers(ctx.receive_function), DbObjType.FUNCTION, true);
+            addDepSafe(type, getIdentifiers(ctx.receive_function), DbObjType.FUNCTION, DatabaseType.PG);
         }
         if (ctx.send_function != null) {
             type.setSendFunction(getFullCtxText(ctx.send_function));
-            addDepSafe(type, getIdentifiers(ctx.send_function), DbObjType.FUNCTION, true);
+            addDepSafe(type, getIdentifiers(ctx.send_function), DbObjType.FUNCTION, DatabaseType.PG);
         }
         if (ctx.type_modifier_input_function != null) {
             type.setTypmodInputFunction(getFullCtxText(ctx.type_modifier_input_function));
-            addDepSafe(type, getIdentifiers(ctx.type_modifier_input_function), DbObjType.FUNCTION, true);
+            addDepSafe(type, getIdentifiers(ctx.type_modifier_input_function), DbObjType.FUNCTION, DatabaseType.PG);
         }
         if (ctx.type_modifier_output_function != null) {
             type.setTypmodOutputFunction(getFullCtxText(ctx.type_modifier_output_function));
-            addDepSafe(type, getIdentifiers(ctx.type_modifier_output_function), DbObjType.FUNCTION, true);
+            addDepSafe(type, getIdentifiers(ctx.type_modifier_output_function), DbObjType.FUNCTION, DatabaseType.PG);
         }
         if (ctx.analyze_function != null) {
             type.setAnalyzeFunction(getFullCtxText(ctx.analyze_function));
-            addDepSafe(type, getIdentifiers(ctx.analyze_function), DbObjType.FUNCTION, true);
+            addDepSafe(type, getIdentifiers(ctx.analyze_function), DbObjType.FUNCTION, DatabaseType.PG);
         }
         if (ctx.subscript_function != null) {
             type.setSubscriptFunction(getFullCtxText(ctx.subscript_function));
-            addDepSafe(type, getIdentifiers(ctx.subscript_function), DbObjType.FUNCTION, true);
+            addDepSafe(type, getIdentifiers(ctx.subscript_function), DbObjType.FUNCTION, DatabaseType.PG);
         }
         if (ctx.internallength != null) {
             type.setInternalLength(getFullCtxText(ctx.internallength));

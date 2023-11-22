@@ -18,7 +18,6 @@ package ru.taximaxim.codekeeper.ui.views.navigator;
 import java.io.IOException;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 
 import ru.taximaxim.codekeeper.ui.Log;
@@ -40,7 +39,7 @@ public class NavigationLibrariesContentProvider implements ITreeContentProvider 
             try {
                 IProject proj = (IProject) parent;
                 return new Object[] {LibraryUtils.create(proj)};
-            } catch (IOException | CoreException e) {
+            } catch (IOException e) {
                 Log.log(e);
             }
         } else if (parent instanceof AbstractLibrary) {

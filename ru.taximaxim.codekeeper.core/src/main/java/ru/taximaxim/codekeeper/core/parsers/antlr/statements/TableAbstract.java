@@ -249,7 +249,7 @@ public abstract class TableAbstract extends ParserAbstract {
         String inhSchemaName = getSchemaNameSafe(idsInh);
         String inhTableName = QNameParser.getFirstName(idsInh);
         table.addInherits(inhSchemaName, inhTableName);
-        addDepSafe(table, idsInh, DbObjType.TABLE, table.isPostgres());
+        addDepSafe(table, idsInh, DbObjType.TABLE, table.getDbType());
     }
 
     protected static PgConstraint createTableConstraintBlank(Constraint_commonContext ctx) {

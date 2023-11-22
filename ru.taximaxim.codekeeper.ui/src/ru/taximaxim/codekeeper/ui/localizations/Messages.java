@@ -220,6 +220,8 @@ public final class Messages extends NLS {
     // ui.handlers
     public static String database;
 
+    public static String database_type;
+
     // ui.parts
     public static String commitPartDescr_show_commit_window;
     public static String commitPartDescr_commit_confirmation;
@@ -229,6 +231,8 @@ public final class Messages extends NLS {
     public static String commitPartDescr_the_following_changes_be_included_in_commit;
 
     public static String copy;
+    public static String DatabaseType_unsupported_type;
+
     public static String CodeFilter_search_by_code;
 
     public static String CommitDialog_privileges_must_be_saved;

@@ -29,6 +29,7 @@ import java.util.stream.Stream;
 
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.Consts.WORK_DIR_NAMES;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.libraries.PgLibrary;
@@ -47,15 +48,15 @@ public class UiLibraryLoader {
     };
 
     private final String project;
-    private final boolean isMsSql;
+    private final DatabaseType dbType;
     private final Path xmlPath;
     private boolean loadNested;
 
     private final Set<String> loadedLibs = new HashSet<>();
 
-    public UiLibraryLoader(String project, boolean isMsSql, boolean loadNested, Path xmlPath) {
+    public UiLibraryLoader(String project, DatabaseType dbType, boolean loadNested, Path xmlPath) {
         this.project = project;
-        this.isMsSql = isMsSql;
+        this.dbType = dbType;
         this.loadNested = loadNested;
         this.xmlPath = xmlPath;
     }
@@ -85,7 +86,7 @@ public class UiLibraryLoader {
             break;
         case URL:
             try {
-                UrlLibrary url = new UrlLibrary(root, new URI(path), project, isMsSql);
+                UrlLibrary url = new UrlLibrary(root, new URI(path), project, dbType);
                 readPath(url, url.getPath());
             } catch (URISyntaxException e) {
                 // shouldn't happen, already checked by getSource
@@ -106,10 +107,10 @@ public class UiLibraryLoader {
         if (Files.isDirectory(path)) {
             readDir(new DirectoryLibrary(parent, path), path);
         } else if (FileUtils.isZipFile(path)) {
-            ZipLibrary zip = new ZipLibrary(parent, path, project, isMsSql);
+            ZipLibrary zip = new ZipLibrary(parent, path, project, dbType);
             readPath(zip, zip.getPath());
         } else {
-            new FileLibrary(parent, path, project, isMsSql);
+            new FileLibrary(parent, path, project, dbType);
         }
     }
 

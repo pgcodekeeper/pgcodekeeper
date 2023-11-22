@@ -19,6 +19,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
@@ -95,18 +96,18 @@ public class MsUser extends PgStatement {
         }
         if (!Objects.equals(getLanguage(), newUser.getLanguage())) {
             sbSql.append("DEFAULT_LANGUAGE = ")
-                .append(newUser.getLanguage() == null ? "NONE" : newUser.getLanguage())
-                .append(", ");
+            .append(newUser.getLanguage() == null ? "NONE" : newUser.getLanguage())
+            .append(", ");
         }
         if (!isAllowEncrypted() == newUser.allowEncrypted) {
             sbSql.append("ALLOW_ENCRYPTED_VALUE_MODIFICATIONS = ").append(newUser.allowEncrypted ? "ON" : "OFF")
-                .append(", ");
+            .append(", ");
         }
 
         if (sbSql.length() > 0) {
             sbSql.setLength(sbSql.length() - 2);
             sb.append("ALTER USER ").append(MsDiffUtils.quoteName(name))
-                .append(" WITH ").append(sbSql).append(GO);
+            .append(" WITH ").append(sbSql).append(GO);
         }
 
         alterPrivileges(newUser, sb);
@@ -189,7 +190,7 @@ public class MsUser extends PgStatement {
     }
 
     @Override
-    public boolean isPostgres() {
-        return false;
+    public DatabaseType getDbType() {
+        return DatabaseType.MS;
     }
 }

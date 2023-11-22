@@ -121,7 +121,7 @@ class SourceTargerArgumentsProvider extends ArgumentsProvider {
         Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
         Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
 
-        return new String[]{"-S", "--ms-sql", "-D", "DROP_TABLE", "-o", getDiffResultFile().toString(),
+        return new String[]{"-S", "--db-type", "MS", "-D", "DROP_TABLE", "-o", getDiffResultFile().toString(),
                 "-t", fOriginal.toString(), "-s", fNew.toString()};
     }
 }
@@ -178,7 +178,7 @@ class DangerTableArgumentsProvider extends ArgumentsProvider {
         Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
         Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
 
-        return new String[]{"--safe-mode", "--ms-sql", "--allow-danger-ddl", "DROP_TABLE",
+        return new String[]{"--safe-mode", "--db-type", "MS", "--allow-danger-ddl", "DROP_TABLE",
                 "-o", getDiffResultFile().toString(),
                 fNew.toString(), fOriginal.toString()};
     }

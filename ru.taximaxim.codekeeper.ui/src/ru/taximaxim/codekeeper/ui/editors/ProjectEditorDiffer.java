@@ -112,6 +112,7 @@ import org.eclipse.ui.statushandlers.StatusManager;
 import org.osgi.service.prefs.BackingStoreException;
 
 import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreList;
@@ -129,7 +130,6 @@ import ru.taximaxim.codekeeper.ui.UIConsts.DB_BIND_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
-import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PERSPECTIVE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PG_EDIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
@@ -196,7 +196,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private List<Entry<PgStatement, PgStatement>> manualDepciesSource = new ArrayList<>();
     private List<Entry<PgStatement, PgStatement>> manualDepciesTarget = new ArrayList<>();
 
-    private boolean isMsSql;
+    private DatabaseType dbType;
     private final Map<String, Boolean> oneTimePrefs = new HashMap<>();
 
     public IProject getProject() {
@@ -225,7 +225,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
         proj = new PgDbProject(in.getProject());
         sp = new ProjectEditorSelectionProvider(getProject());
-        isMsSql = OpenProjectUtils.checkMsSql(getProject());
+        dbType = OpenProjectUtils.getDatabaseType(getProject());
 
         // message box
         if(!site.getPage().getPerspective().getId().equals(PERSPECTIVE.MAIN)){
@@ -435,7 +435,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 // something other than just markers has changed
                 // check that it's our resource
                 if (delta.getFlags() != IResourceDelta.MARKERS &&
-                        (UIProjectLoader.isInProject(delta, OpenProjectUtils.checkMsSql(getProject()))
+                        (UIProjectLoader.isInProject(delta, OpenProjectUtils.getDatabaseType(getProject()))
                                 || UIProjectLoader.isPrivilegeFolder(delta)) &&
                         delta.getResource().getType() == IResource.FILE &&
                         delta.getResource().getProject().equals(getProject())) {
@@ -464,8 +464,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         }
 
         boolean isDbInfo = currentRemote instanceof DbInfo;
-        boolean isMsProj = OpenProjectUtils.checkMsSql(getProject());
-        if (isDbInfo && ((DbInfo) currentRemote).isMsSql() != isMsProj) {
+        DatabaseType dbType = OpenProjectUtils.getDatabaseType(getProject());
+        if (isDbInfo && ((DbInfo) currentRemote).getDbType() != dbType) {
             MessageBox mb = new MessageBox(parent.getShell(), SWT.ICON_INFORMATION);
             mb.setText(Messages.ProjectEditorDiffer_different_types);
             mb.setMessage(Messages.ProjectEditorDiffer_different_types_msg);
@@ -498,7 +498,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         } else {
             File file = (File) currentRemote;
             DbSource dbRemote = DbSource.fromFile(forceUnixNewlines, file, charset,
-                    isMsProj, getProject(), oneTimePrefs);
+                    dbType, getProject(), oneTimePrefs);
             newDiffer = new TreeDiffer(dbProject, dbRemote);
         }
 
@@ -644,7 +644,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             PgStatement st = el.getPgStatement(dbProject.getDbObject());
             IProject project = getProject();
             FileUtilsUi.openFileInSqlEditor(
-                    st.getLocation(), project.getName(), project.hasNature(NATURE.MS), st.isLib());
+                    st.getLocation(), project.getName(), OpenProjectUtils.getDatabaseType(project), st.isLib());
         } catch (CoreException e) {
             ExceptionNotifier.notifyCoreException(e);
         }
@@ -669,7 +669,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
      */
     public Object getCurrentDb() {
         IEclipsePreferences prefs = proj.getDbBindPrefs();
-        DbInfo boundDb = DbInfo.getLastDb(prefs.get(DB_BIND_PREF.NAME_OF_BOUND_DB, ""), isMsSql); //$NON-NLS-1$
+        DbInfo boundDb = DbInfo.getLastDb(prefs.get(DB_BIND_PREF.NAME_OF_BOUND_DB, ""), dbType); //$NON-NLS-1$
         if (boundDb != null) {
             dbStorePicker.setEnabled(false);
             return boundDb;
@@ -679,7 +679,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             return currentRemote;
         }
 
-        return DbInfo.getLastDb(prefs.get(DB_BIND_PREF.LAST_DB_STORE, ""), isMsSql); //$NON-NLS-1$
+        return DbInfo.getLastDb(prefs.get(DB_BIND_PREF.LAST_DB_STORE, ""), dbType); //$NON-NLS-1$
     }
 
     public void saveLastDb(DbInfo lastDb) {
@@ -714,7 +714,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         final Differ differ = new Differ(dbRemote.getDbObject(),
                 dbProject.getDbObject(), diffTree.getRevertedCopy(), false,
                 pref.get(PROJ_PREF.TIMEZONE, Consts.UTC),
-                OpenProjectUtils.checkMsSql(getProject()), getProject(), oneTimePrefs);
+                OpenProjectUtils.getDatabaseType(getProject()), getProject(), oneTimePrefs);
         differ.setAdditionalDepciesSource(manualDepciesSource);
         differ.setAdditionalDepciesTarget(manualDepciesTarget);
 
@@ -823,7 +823,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 }
                 getSite().getPage().openEditor(file, EDITOR.SQL);
             } else {
-                FileUtilsUi.saveOpenTmpSqlEditor(content, filename, getProject().hasNature(NATURE.MS));
+                FileUtilsUi.saveOpenTmpSqlEditor(content, filename,
+                        OpenProjectUtils.getDatabaseType(getProject()));
             }
         } catch (CoreException | IOException ex) {
             ExceptionNotifier.notifyDefault(
@@ -1064,7 +1065,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             //current remote
 
             dbStorePicker = new DbMenuStorePicker(labelCont, true, false);
-            dbStorePicker.filter(isMsSql);
+            dbStorePicker.filter(dbType);
             labelCont.addMouseListener(new MouseAdapter() {
 
                 @Override
@@ -1194,7 +1195,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                         @Override
                         public void run() {
                             ApplyCustomDialog dialog = new ApplyCustomDialog(container.getShell(),
-                                    new OverridablePrefs(proj.getProject(), null), isMsSql, oneTimePrefs);
+                                    new OverridablePrefs(proj.getProject(), null), dbType, oneTimePrefs);
                             if (dialog.open() == Window.OK) {
                                 // 'oneTimePrefs' filled by one-time preferences
                                 // will be used in 'diff()'
@@ -1260,7 +1261,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                         @Override
                         public void run() {
                             GetChangesCustomDialog dialog = new GetChangesCustomDialog(container.getShell(),
-                                    new OverridablePrefs(proj.getProject(), null), isMsSql, oneTimePrefs);
+                                    new OverridablePrefs(proj.getProject(), null), dbType, oneTimePrefs);
                             if (dialog.open() == Window.OK) {
                                 // 'oneTimePrefs' filled by one-time preferences
                                 // will be used in 'getChanges()'
@@ -1269,7 +1270,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                         }
                     });
                     menuMgrGetChangesCustom.add(new Separator());
-                    DBStoreMenu dbMenu = new DBStoreMenu(menuMgrGetChangesCustom, true, false, isMsSql, parent.getShell(), getCurrentDb());
+                    DBStoreMenu dbMenu = new DBStoreMenu(menuMgrGetChangesCustom, true, false, dbType, parent.getShell(), getCurrentDb());
                     dbMenu.fillDbMenu(DbXmlStore.getStore());
                     dbMenu.addSelectionListener(ProjectEditorDiffer.this::setCurrentDb);
                     return menuMgrGetChangesCustom.createContextMenu(parent);

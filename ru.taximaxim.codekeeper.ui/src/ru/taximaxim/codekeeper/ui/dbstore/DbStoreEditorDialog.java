@@ -58,6 +58,7 @@ import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Text;
 
 import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
 import ru.taximaxim.codekeeper.core.loader.JdbcMsConnector;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -88,7 +89,7 @@ public final class DbStoreEditorDialog extends TrayDialog {
     private Text txtDomain;
     private Button btnReadOnly;
     private Button btnGenerateName;
-    private Button btnMsSql;
+    private ComboViewer cmbDbType;
     private Button btnMsCert;
     private Button btnUseDump;
     private Button btnWinAuth;
@@ -103,7 +104,7 @@ public final class DbStoreEditorDialog extends TrayDialog {
 
         @Override
         public void widgetSelected(SelectionEvent e) {
-            boolean ms = btnMsSql.getSelection();
+            boolean ms = DatabaseType.MS == getSelectedDbType();
             boolean win = ms && isWinAuth();
             if (btnWinAuth != null) {
                 btnWinAuth.setEnabled(ms);
@@ -153,6 +154,7 @@ public final class DbStoreEditorDialog extends TrayDialog {
                 String dbConType = ""; //$NON-NLS-1$
                 String entryName = ""; //$NON-NLS-1$
                 String domain = ""; //$NON-NLS-1$
+                DatabaseType dbType = DatabaseType.PG;
                 List<String> ignoreList = null;
                 List<Entry<String, String>> properties = null;
 
@@ -167,6 +169,7 @@ public final class DbStoreEditorDialog extends TrayDialog {
                     generateEntryName = dbInitial.isGeneratedName();
                     entryName = dbInitial.getName();
                     domain = dbInitial.getDomain();
+                    dbType = dbInitial.getDbType();
                     ignoreList = dbInitial.getIgnoreFiles();
 
                     properties = dbInitial.getProperties().entrySet().stream()
@@ -174,7 +177,6 @@ public final class DbStoreEditorDialog extends TrayDialog {
                             .collect(Collectors.toCollection(ArrayList::new));
 
                     btnReadOnly.setSelection(dbInitial.isReadOnly());
-                    btnMsSql.setSelection(dbInitial.isMsSql());
                     if (btnWinAuth != null) {
                         btnWinAuth.setSelection(dbInitial.isWinAuth());
                     }
@@ -183,10 +185,11 @@ public final class DbStoreEditorDialog extends TrayDialog {
                     btnUseDump.setSelection(dbInitial.isPgDumpSwitch());
                     txtDumpFile.setText(dbInitial.getPgdumpExePath());
                     txtDumpParameters.setText(dbInitial.getPgdumpCustomParams());
-                    if (dbInitial.isMsSql()) {
+                    if (dbType == DatabaseType.MS) {
                         String msTrustCert = dbInitial.getProperties().get(Consts.TRUST_CERT);
                         btnMsCert.setSelection(msTrustCert == null || Boolean.parseBoolean(msTrustCert));
                     }
+                    cmbDbType.setSelection(new StructuredSelection(dbType));
                 }
 
                 txtDbHost.setText(dbHost);
@@ -317,13 +320,20 @@ public final class DbStoreEditorDialog extends TrayDialog {
         btnReadOnly.setLayoutData(gd);
         btnReadOnly.setText(Messages.DbStoreEditorDialog_read_only_description);
 
-        new Label(tabAreaDb, SWT.NONE).setText(Messages.DbStoreEditorDialog_ms_sql_database);
+        new Label(tabAreaDb, SWT.NONE).setText(Messages.database_type);
 
-        btnMsSql = new Button(tabAreaDb, SWT.CHECK);
-        btnMsSql.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, false, false, 3, 1));
-        btnMsSql.setText(Messages.DbStoreEditorDialog_connect_to_ms);
-        btnMsSql.addSelectionListener(msStateUpdater);
+        cmbDbType = new ComboViewer(tabAreaDb, SWT.READ_ONLY);
+        cmbDbType.getCombo().setLayoutData(new GridData(SWT.DEFAULT, SWT.DEFAULT, false, false, 3, 1));
+        cmbDbType.setContentProvider(ArrayContentProvider.getInstance());
+        cmbDbType.setInput(DatabaseType.values());
+        cmbDbType.getCombo().select(0);
 
+        cmbDbType.addSelectionChangedListener(e -> {
+            StructuredSelection sel = (StructuredSelection) e.getSelection();
+            DatabaseType selDbType = (DatabaseType) sel.getFirstElement();
+            btnMsCert.setEnabled(selDbType == DatabaseType.MS);
+            btnMsCert.setSelection(selDbType == DatabaseType.MS);
+        });
         new Label(tabAreaDb, SWT.NONE).setText(Messages.DbStoreEditorDialog_ms_cert);
 
         btnMsCert = new Button(tabAreaDb, SWT.CHECK);
@@ -537,18 +547,25 @@ public final class DbStoreEditorDialog extends TrayDialog {
                 try {
                     int dbport = port.isEmpty() ? 0 : Integer.parseInt(port);
                     JdbcConnector connector;
-                    if (btnMsSql.getSelection()) {
+                    switch (getSelectedDbType()) {
+                    case MS:
                         connector = new JdbcMsConnector(txtDbHost.getText(), dbport,
                                 txtDbUser.getText(), txtDbPass.getText(),
                                 txtDbName.getText(), propertyListEditor.getList().stream()
                                 .collect(Collectors.toMap(Entry::getKey, Entry::getValue)),
                                 btnReadOnly.getSelection(), isWinAuth(), txtDomain.getText());
-                    } else {
+                        break;
+                    case PG:
                         connector = new JdbcConnector(txtDbHost.getText(), dbport,
                                 txtDbUser.getText(), txtDbPass.getText(),
                                 txtDbName.getText(), propertyListEditor.getList().stream()
                                 .collect(Collectors.toMap(Entry::getKey, Entry::getValue)),
                                 btnReadOnly.getSelection(), Consts.UTC);
+                        break;
+                    default:
+                        // for sonar fix
+                        throw new IllegalArgumentException(
+                                Messages.DatabaseType_unsupported_type + cmbDbType.getCombo().getText());
                     }
 
                     try (Connection connection = connector.getConnection()) {
@@ -610,10 +627,10 @@ public final class DbStoreEditorDialog extends TrayDialog {
             mb.setMessage(Messages.dbStoreEditorDialog_empty_name);
             mb.open();
         } else {
-            boolean isMsSql = btnMsSql.getSelection();
+            DatabaseType dbType = getSelectedDbType();
             Map<String, String> properties = propertyListEditor.getList().stream()
                     .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
-            if (isMsSql) {
+            if (dbType == DatabaseType.MS) {
                 properties.put(Consts.TRUST_CERT, String.valueOf(btnMsCert.getSelection()));
             }
 
@@ -621,11 +638,15 @@ public final class DbStoreEditorDialog extends TrayDialog {
                     txtDbUser.getText(), txtDbPass.getText(),
                     txtDbHost.getText(), dbport, btnReadOnly.getSelection(),
                     btnGenerateName.getSelection(), ignoreListEditor.getList(),
-                    properties, isMsSql, isWinAuth(), txtDomain.getText(),
+                    properties, dbType, isWinAuth(), txtDomain.getText(),
                     exePath, txtDumpParameters.getText(), btnUseDump.getSelection(),
                     cmbGroups.getCombo().getText(), cmbConTypes.getCombo().getText());
             super.okPressed();
         }
+    }
+
+    public DatabaseType getSelectedDbType() {
+        return (DatabaseType) cmbDbType.getStructuredSelection().getFirstElement();
     }
 
     @Override

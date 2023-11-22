@@ -17,6 +17,7 @@ package ru.taximaxim.codekeeper.core.parsers.antlr.statements;
 
 import java.util.Arrays;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_extension_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.IdentifierContext;
@@ -39,7 +40,7 @@ public class CreateExtension extends ParserAbstract {
         IdentifierContext id = ctx.schema;
         if (id != null) {
             ext.setSchema(id.getText());
-            addDepSafe(ext, Arrays.asList(id), DbObjType.SCHEMA, true);
+            addDepSafe(ext, Arrays.asList(id), DbObjType.SCHEMA, DatabaseType.PG);
         }
 
         addSafe(db, ext, Arrays.asList(nameCtx));

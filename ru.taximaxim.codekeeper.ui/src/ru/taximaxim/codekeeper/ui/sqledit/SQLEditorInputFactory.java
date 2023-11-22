@@ -21,11 +21,15 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.ui.IElementFactory;
 import org.eclipse.ui.IMemento;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
+
 public class SQLEditorInputFactory implements IElementFactory {
 
     private static final String TAG_PATH = "path"; //$NON-NLS-1$
     private static final String TAG_PROJECT = "project"; //$NON-NLS-1$
     private static final String TAG_IS_MS_SQL = "isMsSql"; //$NON-NLS-1$
+    private static final String TAG_DB_TYPE = "dbType"; //$NON-NLS-1$
     private static final String TAG_IS_READ_ONLY = "isReadOnly"; //$NON-NLS-1$
     private static final String TAG_IS_TEMP = "isTemp"; //$NON-NLS-1$
 
@@ -47,7 +51,8 @@ public class SQLEditorInputFactory implements IElementFactory {
     static void saveState(IMemento memento, SQLEditorInput input) {
         memento.putString(TAG_PATH, input.getPath().toString());
         memento.putString(TAG_PROJECT, input.getProject());
-        memento.putBoolean(TAG_IS_MS_SQL, input.isMsSql());
+        memento.putBoolean(TAG_IS_MS_SQL, input.getDbType() == DatabaseType.MS);
+        memento.putString(TAG_DB_TYPE, input.getDbType().name());
         memento.putBoolean(TAG_IS_READ_ONLY, input.isReadOnly());
         memento.putBoolean(TAG_IS_TEMP, input.isTemp());
     }
@@ -56,14 +61,38 @@ public class SQLEditorInputFactory implements IElementFactory {
     public IAdaptable createElement(IMemento memento) {
         String path = memento.getString(TAG_PATH);
         String project = memento.getString(TAG_PROJECT);
-        Boolean isMsSql = memento.getBoolean(TAG_IS_MS_SQL);
+
+
+        DatabaseType dbType;
+        String dbTypeText = memento.getString(TAG_DB_TYPE);
+        if (dbTypeText != null) {
+            switch (dbTypeText) {
+            case "MS":
+                dbType = DatabaseType.MS;
+                break;
+            case "PG":
+                dbType = DatabaseType.PG;
+                break;
+            default:
+                throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbTypeText);
+            }
+        } else {
+            //backwards compatibility
+            Boolean tmp = memento.getBoolean(TAG_IS_MS_SQL);
+            if (tmp == null) {
+                dbType = null;
+            } else {
+                dbType = tmp ? DatabaseType.MS : DatabaseType.PG;
+            }
+        }
+
         Boolean isReadOnly = memento.getBoolean(TAG_IS_READ_ONLY);
         Boolean isTemp = memento.getBoolean(TAG_IS_TEMP);
-        if (path == null || isMsSql == null || isReadOnly == null || isTemp == null) {
+        if (path == null || dbType == null || isReadOnly == null || isTemp == null) {
             return null;
         }
 
 
-        return new SQLEditorInput(Paths.get(path), project, isMsSql, isReadOnly, isTemp);
+        return new SQLEditorInput(Paths.get(path), project, dbType, isReadOnly, isTemp);
     }
 }

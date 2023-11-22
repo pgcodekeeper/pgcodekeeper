@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_fts_configuration_statementContext;
@@ -42,7 +43,7 @@ public class CreateFtsConfiguration extends ParserAbstract {
         if (ctx.parser_name != null) {
             List<ParserRuleContext> parserIds = getIdentifiers(ctx.parser_name);
             config.setParser(ParserAbstract.getFullCtxText(ctx.parser_name));
-            addDepSafe(config, parserIds, DbObjType.FTS_PARSER, true);
+            addDepSafe(config, parserIds, DbObjType.FTS_PARSER, DatabaseType.PG);
         }
         addSafe(getSchemaSafe(ids), config, ids);
     }

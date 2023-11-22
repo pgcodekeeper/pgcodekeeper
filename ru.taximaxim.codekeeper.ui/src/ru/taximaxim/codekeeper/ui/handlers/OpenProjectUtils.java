@@ -48,6 +48,7 @@ import org.osgi.framework.Version;
 
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.Consts.WORK_DIR_NAMES;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
@@ -57,7 +58,7 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public final class OpenProjectUtils {
 
-    static PgDbProject getProject(ExecutionEvent event){
+    static PgDbProject getProject(ExecutionEvent event) {
         try{
             ISelection sel = HandlerUtil.getActiveMenuSelection(event);
             IStructuredSelection selection = (IStructuredSelection) sel;
@@ -77,13 +78,16 @@ public final class OpenProjectUtils {
         return null;
     }
 
-    public static boolean checkMsSql(IProject proj) {
+    public static DatabaseType getDatabaseType(IProject proj) {
         try {
-            return proj.exists() && proj.hasNature(UIConsts.NATURE.MS);
+            if (proj.exists() && proj.hasNature(UIConsts.NATURE.MS)) {
+                return DatabaseType.MS;
+            }
         } catch (CoreException e) {
             Log.log(e);
-            return false;
         }
+
+        return DatabaseType.PG;
     }
 
     public static boolean checkVersionAndWarn(IProject proj, Shell parent,
