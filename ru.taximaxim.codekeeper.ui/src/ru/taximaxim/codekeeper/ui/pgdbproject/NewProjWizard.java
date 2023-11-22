@@ -61,6 +61,7 @@ import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 import org.osgi.service.prefs.BackingStoreException;
 
 import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
 import ru.taximaxim.codekeeper.core.loader.JdbcRunner;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
@@ -87,7 +88,7 @@ implements IExecutableExtension, INewWizard {
     private PageRepo pageRepo;
     private PageDb pageDb;
 
-    private boolean isPostgres;
+    private DatabaseType dbType;
     private IConfigurationElement config;
     private IWorkbench workbench;
     private IStructuredSelection selection;
@@ -104,7 +105,7 @@ implements IExecutableExtension, INewWizard {
         // page names shouldn't be localized, use page titles instead
         pageRepo = new PageRepo("main", selection); //$NON-NLS-1$
         addPage(pageRepo);
-        pageDb = new PageDb(isPostgres, "schema"); //$NON-NLS-1$
+        pageDb = new PageDb(dbType, "schema"); //$NON-NLS-1$
         addPage(pageDb);
     }
 
@@ -114,7 +115,7 @@ implements IExecutableExtension, INewWizard {
         boolean initSuccess = false;
         try {
             props = PgDbProject.createPgDbProject(pageRepo.getProjectHandle(),
-                    pageRepo.useDefaults() ? null : pageRepo.getLocationURI(), !isPostgres);
+                    pageRepo.useDefaults() ? null : pageRepo.getLocationURI(), dbType);
             props.getProject().open(null);
             props.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
 
@@ -125,7 +126,7 @@ implements IExecutableExtension, INewWizard {
             }
 
             boolean applyProps = false;
-            if (isPostgres) {
+            if (dbType == DatabaseType.PG) {
                 String timezone = pageDb.getTimeZone();
                 if (!timezone.isEmpty() && !Consts.UTC.equals(timezone)) {
                     props.getPrefs().put(PROJ_PREF.TIMEZONE, timezone);
@@ -197,7 +198,7 @@ implements IExecutableExtension, INewWizard {
         } else if (dbinfo != null) {
             src = DbSource.fromDbInfo(dbinfo, forceUnixNewlines, charset, timezone, props.getProject());
         } else if ((dump = pageDb.getDumpPath()) != null) {
-            src = DbSource.fromFile(forceUnixNewlines, dump, charset, !isPostgres, props.getProject());
+            src = DbSource.fromFile(forceUnixNewlines, dump, charset, dbType, props.getProject());
         } else {
             // should be prevented by page completion state
             throw new IllegalStateException(Messages.initProjectFromSource_init_request_but_no_schema_source);
@@ -210,8 +211,8 @@ implements IExecutableExtension, INewWizard {
     public void setInitializationData(IConfigurationElement config,
             String propertyName, Object data) throws CoreException {
         this.config = config;
-        this.isPostgres = WIZARD.NEW_PROJECT_WIZARD.equals(config.getAttribute("id")); //$NON-NLS-1$
-        if (!isPostgres) {
+        this.dbType = WIZARD.NEW_PROJECT_WIZARD.equals(config.getAttribute("id")) ? DatabaseType.PG : DatabaseType.MS; //$NON-NLS-1$
+        if (dbType == DatabaseType.MS) {
             setWindowTitle(Messages.NewProjWizard_new_ms_project);
         }
     }
@@ -264,7 +265,7 @@ class PageDb extends WizardPage {
     private static final String QUERY_TZ = "SELECT name, setting FROM pg_catalog.pg_file_settings" //$NON-NLS-1$
             + " WHERE pg_catalog.lower(name) = 'timezone' AND applied AND error IS NULL"; //$NON-NLS-1$
 
-    private final boolean isPostgres;
+    private final DatabaseType dbType;
 
     private Button btnInit;
     private Button btnBind;
@@ -299,9 +300,9 @@ class PageDb extends WizardPage {
         return timezoneCombo.getCombo().getText();
     }
 
-    PageDb(boolean isPostgres, String pageName) {
+    PageDb(DatabaseType dbType, String pageName) {
         super(pageName, pageName, null);
-        this.isPostgres = isPostgres;
+        this.dbType = dbType;
 
         setTitle(Messages.NewProjWizard_proj_init);
         setDescription(Messages.NewProjWizard_proj_init_src);
@@ -342,7 +343,7 @@ class PageDb extends WizardPage {
         new Label(source, SWT.NONE).setText(Messages.DbStorePicker_db_connection);
 
         storePicker = new DbMenuStorePicker(source, true, false);
-        storePicker.filter(!isPostgres);
+        storePicker.filter(dbType);
         storePicker.addSelectionListener(this::modifyButtons);
 
         Button btnEditStore = new Button(source, SWT.PUSH);
@@ -366,7 +367,7 @@ class PageDb extends WizardPage {
         charsetCombo.setSelection(new StructuredSelection(Consts.UTF_8));
 
         //time zones
-        if (isPostgres) {
+        if (dbType == DatabaseType.PG) {
             new Label(container, SWT.NONE).setText(Messages.NewProjWizard_select_time_zone);
 
             timezoneCombo = new ComboViewer(container, SWT.DROP_DOWN);
@@ -413,7 +414,7 @@ class PageDb extends WizardPage {
 
     private void modifyButtons() {
         boolean init = btnInit.getSelection();
-        if (isPostgres) {
+        if (dbType == DatabaseType.PG) {
             btnGetTz.setEnabled(init && storePicker.getDbInfo() != null);
         }
         storePicker.setEnabled(init);

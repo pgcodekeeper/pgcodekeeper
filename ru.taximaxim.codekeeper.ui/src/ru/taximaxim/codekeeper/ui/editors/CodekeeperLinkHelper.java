@@ -40,7 +40,7 @@ public class CodekeeperLinkHelper implements ILinkHelper {
             SQLEditorInput input = (SQLEditorInput) anInput;
             if (input.isReadOnly()) {
                 return new StructuredSelection(new FileLibrary(
-                        input.getPath(), input.getProject(), input.isMsSql()));
+                        input.getPath(), input.getProject(), input.getDbType()));
             }
         }
 
@@ -59,7 +59,7 @@ public class CodekeeperLinkHelper implements ILinkHelper {
             input = new ProjectEditorInput(proj.getName());
         } else if (element instanceof FileLibrary) {
             FileLibrary lib = (FileLibrary) element;
-            input = new SQLEditorInput(lib.getPath(), lib.getProject(), lib.isMsSql(), true);
+            input = new SQLEditorInput(lib.getPath(), lib.getProject(), lib.getDbType(), true);
         }
         if (input == null) {
             return;

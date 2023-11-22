@@ -37,12 +37,14 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.xmlstore.XmlStore;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public final class DbXmlStore extends XmlStore<DbInfo> {
 
@@ -79,6 +81,7 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
         PROPERTY_NAME("name"), //$NON-NLS-1$
         PROPERTY_VALUE("value"), //$NON-NLS-1$
         MSSQL("mssql"), //$NON-NLS-1$
+        DB_TYPE("db_type"), //$NON-NLS-1$
         WIN_AUTH("win_auth"), //$NON-NLS-1$
         DOMAIN("domain"), //$NON-N:S-1$
         CON_TYPE("con_type"); //$NON-NLS-1$
@@ -183,7 +186,8 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
             createSubElement(xml, keyElement, Tags.DBPORT.toString(), String.valueOf(dbInfo.getDbPort()));
             createSubElement(xml, keyElement, Tags.READ_ONLY.toString(), String.valueOf(dbInfo.isReadOnly()));
             createSubElement(xml, keyElement, Tags.GENERATE_NAME.toString(), String.valueOf(dbInfo.isGeneratedName()));
-            createSubElement(xml, keyElement, Tags.MSSQL.toString(), String.valueOf(dbInfo.isMsSql()));
+            createSubElement(xml, keyElement, Tags.MSSQL.toString(), String.valueOf(dbInfo.getDbType() == DatabaseType.MS));
+            createSubElement(xml, keyElement, Tags.DB_TYPE.toString(), String.valueOf(dbInfo.getDbType()));
             createSubElement(xml, keyElement, Tags.WIN_AUTH.toString(), String.valueOf(dbInfo.isWinAuth()));
             createSubElement(xml, keyElement, Tags.DOMAIN.toString(), dbInfo.getDomain());
             createSubElement(xml, keyElement, Tags.PG_DUMP_SWITCH.toString(), String.valueOf(dbInfo.isPgDumpSwitch()));
@@ -235,6 +239,7 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
                 case READ_ONLY:
                 case GENERATE_NAME:
                 case MSSQL:
+                case DB_TYPE:
                 case WIN_AUTH:
                 case DOMAIN:
                 case PG_DUMP_SWITCH:
@@ -263,19 +268,34 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
         } catch (StorageException e) {
             Log.log(Log.LOG_ERROR, "Error reading from secure storage: " + e); //$NON-NLS-1$
         }
+        String dbTypeText = object.get(Tags.DB_TYPE);
+        DatabaseType dbType;
+        if (dbTypeText != null) {
+            switch (dbTypeText) {
+            case "PG": //$NON-NLS-1$
+                dbType = DatabaseType.PG;
+                break;
+            case "MS": //$NON-NLS-1$
+                dbType = DatabaseType.MS;
+                break;
+            default:
+                throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbTypeText);
+            }
+        } else {
+            dbType = (Boolean.parseBoolean(object.get(Tags.MSSQL)) ? DatabaseType.MS : DatabaseType.PG);
+        }
         return new DbInfo(object.get(Tags.NAME), object.get(Tags.DBNAME),
                 object.get(Tags.DBUSER), dbPass, object.get(Tags.DBHOST),
                 Integer.parseInt(object.get(Tags.DBPORT)),
                 Boolean.parseBoolean(object.get(Tags.READ_ONLY)),
                 Boolean.parseBoolean(object.get(Tags.GENERATE_NAME)),
-                ignoreFiles, properties,
-                Boolean.parseBoolean(object.get(Tags.MSSQL)),
+                ignoreFiles, properties, dbType,
                 Boolean.parseBoolean(object.get(Tags.WIN_AUTH)),
                 object.get(Tags.DOMAIN), object.get(Tags.PGDUMP_EXE_PATH),
                 object.get(Tags.PGDUMP_CUSTOM_PARAMS),
                 Boolean.parseBoolean(object.get(Tags.PG_DUMP_SWITCH)),
                 !object.containsKey(Tags.DBGROUP) ? "" : object.get(Tags.DBGROUP), //$NON-NLS-1$
-                !object.containsKey(Tags.CON_TYPE) ? "" : object.get(Tags.CON_TYPE)); //$NON-NLS-1$
+                        !object.containsKey(Tags.CON_TYPE) ? "" : object.get(Tags.CON_TYPE)); //$NON-NLS-1$
     }
 
     private void fillIgnoreFileList(NodeList xml, List<String> list) {

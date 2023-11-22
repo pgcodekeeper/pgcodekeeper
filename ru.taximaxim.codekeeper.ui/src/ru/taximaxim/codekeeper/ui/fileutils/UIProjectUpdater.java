@@ -35,7 +35,7 @@ public class UIProjectUpdater extends ProjectUpdater{
             Collection<TreeElement> changedObjects, PgDbProject proj,
             boolean overridesOnly) throws CoreException {
         super(dbNew, dbOld, changedObjects,
-                OpenProjectUtils.checkMsSql(proj.getProject()), proj.getProjectCharset(),
+                OpenProjectUtils.getDatabaseType(proj.getProject()), proj.getProjectCharset(),
                 proj.getPathToProject(), overridesOnly);
     }
 }

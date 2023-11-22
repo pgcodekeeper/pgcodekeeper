@@ -18,6 +18,7 @@ package ru.taximaxim.codekeeper.core.schema;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 
 public class MsView extends AbstractView implements SourceStatement {
@@ -83,8 +84,8 @@ public class MsView extends AbstractView implements SourceStatement {
     }
 
     @Override
-    public boolean isPostgres() {
-        return false;
+    public DatabaseType getDbType() {
+        return DatabaseType.MS;
     }
 
     @Override

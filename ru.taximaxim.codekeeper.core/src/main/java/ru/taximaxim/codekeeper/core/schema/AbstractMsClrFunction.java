@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 
 public abstract class AbstractMsClrFunction extends AbstractFunction {
@@ -62,8 +63,8 @@ public abstract class AbstractMsClrFunction extends AbstractFunction {
     }
 
     @Override
-    public boolean isPostgres() {
-        return false;
+    public DatabaseType getDbType() {
+        return DatabaseType.MS;
     }
 
     @Override

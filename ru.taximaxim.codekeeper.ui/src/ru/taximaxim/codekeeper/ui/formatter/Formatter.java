@@ -18,6 +18,7 @@ package ru.taximaxim.codekeeper.ui.formatter;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.text.edits.TextEdit;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.formatter.FileFormatter;
 import ru.taximaxim.codekeeper.core.formatter.FormatConfiguration;
 import ru.taximaxim.codekeeper.core.formatter.FormatConfiguration.IndentType;
@@ -47,8 +48,8 @@ public class Formatter {
         return config;
     }
 
-    public static TextEdit formatDoc(int offset, int length, String source, boolean isMsSql) {
-        FileFormatter formatter = new FileFormatter(source, offset, length, getFormatterConfig(), isMsSql);
+    public static TextEdit formatDoc(int offset, int length, String source, DatabaseType dbType) {
+        FileFormatter formatter = new FileFormatter(source, offset, length, getFormatterConfig(), dbType);
         return formatter.getFormatEdit();
     }
 

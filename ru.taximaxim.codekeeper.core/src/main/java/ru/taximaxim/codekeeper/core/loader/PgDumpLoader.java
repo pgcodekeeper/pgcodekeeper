@@ -32,6 +32,7 @@ import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.fileutils.InputStreamProvider;
+import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrContextProcessor.SqlContextProcessor;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrContextProcessor.TSqlContextProcessor;
@@ -132,8 +133,17 @@ public class PgDumpLoader extends DatabaseLoader {
 
     public PgDatabase loadAsync(PgDatabase d, Queue<AntlrTask<?>> antlrTasks)
             throws InterruptedException {
-        AbstractSchema schema = args.isMsSql() ? new MsSchema(Consts.DBO) :
-            new PgSchema(Consts.PUBLIC);
+        AbstractSchema schema;
+        switch (args.getDbType()) {
+        case MS:
+            schema = new MsSchema(Consts.DBO);
+            break;
+        case PG:
+            schema = new PgSchema(Consts.PUBLIC);
+            break;
+        default:
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + args.getDbType());
+        }
         d.addSchema(schema);
         PgObjLocation loc = new PgObjLocation.Builder()
                 .setObject(new GenericColumn(schema.getName(), DbObjType.SCHEMA))
@@ -148,30 +158,34 @@ public class PgDumpLoader extends DatabaseLoader {
     public PgDatabase loadDatabase(PgDatabase intoDb, Queue<AntlrTask<?>> antlrTasks)
             throws InterruptedException {
         PgDiffUtils.checkCancelled(monitor);
-
-        if (args.isMsSql()) {
-            TSqlContextProcessor listener;
+        switch (args.getDbType()) {
+        case PG:
+            SqlContextProcessor sqlListener;
             if (overrides != null) {
-                listener = new TSQLOverridesListener(
+                sqlListener = new SQLOverridesListener(
                         intoDb, inputObjectName, mode, errors, monitor, overrides);
             } else {
-                listener = new CustomTSQLParserListener(
-                        intoDb, inputObjectName, mode, errors, monitor);
-            }
-            AntlrParser.parseTSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
-                    monitor, monitoringLevel, listener, antlrTasks);
-        } else {
-            SqlContextProcessor listener;
-            if (overrides != null) {
-                listener = new SQLOverridesListener(
-                        intoDb, inputObjectName, mode, errors, monitor, overrides);
-            } else {
-                listener = new CustomSQLParserListener(intoDb,
+                sqlListener = new CustomSQLParserListener(intoDb,
                         inputObjectName, mode, errors, antlrTasks, monitor);
             }
 
             AntlrParser.parseSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
-                    monitor, monitoringLevel, listener, antlrTasks);
+                    monitor, monitoringLevel, sqlListener, antlrTasks);
+            break;
+        case MS:
+            TSqlContextProcessor tsqlListener;
+            if (overrides != null) {
+                tsqlListener = new TSQLOverridesListener(
+                        intoDb, inputObjectName, mode, errors, monitor, overrides);
+            } else {
+                tsqlListener = new CustomTSQLParserListener(
+                        intoDb, inputObjectName, mode, errors, monitor);
+            }
+            AntlrParser.parseTSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
+                    monitor, monitoringLevel, tsqlListener, antlrTasks);
+            break;
+        default:
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + args.getDbType());
         }
 
         return intoDb;

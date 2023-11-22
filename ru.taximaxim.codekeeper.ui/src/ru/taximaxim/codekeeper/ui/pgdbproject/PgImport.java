@@ -44,6 +44,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.WorkingSetGroup;
 
 import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.WORKING_SET;
@@ -59,7 +60,7 @@ class PgImport extends WizardPage {
     private final IStructuredSelection selection;
     private Text txtPath;
     private Text txtName;
-    private Button btnMsSql;
+    private ComboViewer cmbDbType;
     private ComboViewer charsetCombo;
     private WorkingSetGroup workingSetGroup;
 
@@ -116,8 +117,12 @@ class PgImport extends WizardPage {
         charsetCombo.setInput(UIConsts.ENCODINGS);
         charsetCombo.setSelection(new StructuredSelection(Consts.UTF_8));
 
-        btnMsSql = new Button(area, SWT.CHECK);
-        btnMsSql.setText(Messages.PgImport_import_as_mssql);
+        new Label(area, SWT.NONE).setText(Messages.database_type);
+
+        cmbDbType = new ComboViewer(area, SWT.READ_ONLY);
+        cmbDbType.setContentProvider(ArrayContentProvider.getInstance());
+        cmbDbType.setInput(DatabaseType.values());
+        cmbDbType.getCombo().select(0);
 
         Composite workingSet = new Composite(area, SWT.NONE);
         GridLayout layout = new GridLayout();
@@ -128,6 +133,10 @@ class PgImport extends WizardPage {
                 new String[] { WORKING_SET.RESOURCE_WORKING_SET });
 
         setControl(area);
+    }
+
+    public DatabaseType getSelectedDbType() {
+        return (DatabaseType) cmbDbType.getStructuredSelection().getFirstElement();
     }
 
     private void find() {
@@ -145,9 +154,9 @@ class PgImport extends WizardPage {
         Path p = Paths.get(txtPath.getText());
 
         try {
-            if (ConvertProject.createMarker(getShell(), p, btnMsSql.getSelection())) {
+            if (ConvertProject.createMarker(getShell(), p, getSelectedDbType())) {
                 PgDbProject props = PgDbProject.createPgDbProject(project,
-                        isInWorkspaceRoot(p) ? null : p.toUri(), btnMsSql.getSelection());
+                        isInWorkspaceRoot(p) ? null : p.toUri(), getSelectedDbType());
                 String charset = charsetCombo.getCombo().getText();
                 if (!charset.isEmpty() && !ResourcesPlugin.getWorkspace().getRoot()
                         .getDefaultCharset().equals(charset)) {

@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
@@ -472,7 +473,7 @@ public class PgDatabase extends PgStatement implements IDatabase {
     }
 
     public void sortColumns() {
-        if (isPostgres()) {
+        if (getDbType() == DatabaseType.PG) {
             for (AbstractSchema schema : schemas.values()) {
                 schema.getTables().forEach(t -> ((AbstractPgTable) t).sortColumns());
             }

@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
@@ -37,10 +38,10 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qua
 import ru.taximaxim.codekeeper.core.schema.Argument;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgAggregate;
+import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgAggregate.AggFuncs;
 import ru.taximaxim.codekeeper.core.schema.PgAggregate.AggKinds;
 import ru.taximaxim.codekeeper.core.schema.PgAggregate.ModifyType;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 
 public class CreateAggregate extends ParserAbstract {
     private final Create_aggregate_statementContext ctx;
@@ -186,7 +187,7 @@ public class CreateAggregate extends ParserAbstract {
 
                     if (schemaNameCxt != null) {
                         addDepSafe(aggregate, Arrays.asList(schemaNameCxt, op),
-                                DbObjType.OPERATOR, true, getSortOperSign(aggregate));
+                                DbObjType.OPERATOR, DatabaseType.PG, getSortOperSign(aggregate));
                     }
                 } else if (paramOpt.PARALLEL() != null) {
                     String parallel = null;
@@ -234,7 +235,7 @@ public class CreateAggregate extends ParserAbstract {
         ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
         if (schemaCtx != null) {
             addDepSafe(aggr, Arrays.asList(schemaCtx, QNameParser.getFirstNameCtx(ids)),
-                    DbObjType.FUNCTION, true, getParamFuncSignature(aggr, paramName));
+                    DbObjType.FUNCTION, DatabaseType.PG, getParamFuncSignature(aggr, paramName));
         }
     }
 

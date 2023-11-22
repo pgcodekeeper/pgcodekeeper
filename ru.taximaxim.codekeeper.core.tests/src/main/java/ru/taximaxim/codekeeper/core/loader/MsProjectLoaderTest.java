@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.fileutils.TempDir;
@@ -39,7 +40,7 @@ class MsProjectLoaderTest {
         try (TempDir tempDir = new TempDir("ignore-schemas test project")) {
             Path dir = tempDir.get();
             PgDiffArguments args = new PgDiffArguments();
-            args.setMsSql(true);
+            args.setDbType(DatabaseType.MS);
 
             PgDatabase msDbDump = TestUtils.loadTestDump(
                     TestUtils.RESOURCE_MS_DUMP, TestUtils.class, args);

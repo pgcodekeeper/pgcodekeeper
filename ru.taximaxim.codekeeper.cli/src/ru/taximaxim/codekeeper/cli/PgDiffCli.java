@@ -52,7 +52,7 @@ public class PgDiffCli extends PgDiff {
 
         List<TreeElement> selected = getSelectedElements(root, ignoreList);
 
-        new ProjectUpdater(newDatabase, oldDatabase, selected, arguments.isMsSql(),
+        new ProjectUpdater(newDatabase, oldDatabase, selected, arguments.getDbType(),
                 arguments.getOutCharsetName(), Paths.get(arguments.getOutputTarget()),
                 false).updatePartial();
     }

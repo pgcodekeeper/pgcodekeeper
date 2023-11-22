@@ -57,7 +57,7 @@ class MoveDataDiffTest {
     })
 
     void runPgDiff(String fileNameTemplate) throws IOException, InterruptedException {
-        runDiff(fileNameTemplate, false);
+        runDiff(fileNameTemplate, DatabaseType.PG);
     }
 
     @ParameterizedTest
@@ -69,14 +69,14 @@ class MoveDataDiffTest {
     })
 
     void runMsDiff(String fileNameTemplate) throws IOException, InterruptedException {
-        runDiff(fileNameTemplate, true);
+        runDiff(fileNameTemplate, DatabaseType.MS);
     }
 
     @Test
-    void runDiff(String fileNameTemplate, boolean isMsSql) throws IOException, InterruptedException {
+    void runDiff(String fileNameTemplate, DatabaseType dbType) throws IOException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();
         args.setDataMovementMode(true);
-        args.setMsSql(isMsSql);
+        args.setDbType(dbType);
         PgDatabase dbOld = TestUtils.loadTestDump(
                 fileNameTemplate + FILES_POSTFIX.ORIGINAL_SQL, MoveDataDiffTest.class, args);
         PgDatabase dbNew = TestUtils.loadTestDump(

@@ -309,7 +309,7 @@ class MsDiffTest {
     })
     void runDiff(String fileNameTemplate) throws IOException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();
-        args.setMsSql(true);
+        args.setDbType(DatabaseType.MS);
 
         PgDatabase dbOld = TestUtils.loadTestDump(
                 fileNameTemplate + FILES_POSTFIX.ORIGINAL_SQL, MsDiffTest.class, args);

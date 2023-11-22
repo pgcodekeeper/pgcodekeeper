@@ -35,11 +35,13 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.NotAllowedObjectException;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffScript;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
+import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
@@ -422,7 +424,22 @@ public class ActionsToScriptConverter {
         tblTmpNames.put(qname, tmpTblName);
 
         for (AbstractColumn col : oldTbl.getColumns()) {
-            if (arguments.isMsSql()) {
+
+            switch (arguments.getDbType()) {
+            case PG:
+                PgColumn oldPgCol = (PgColumn) col;
+                PgColumn newPgCol = (PgColumn) oldPgCol.getTwin(newDbFull);
+                if (newPgCol != null && newPgCol.getSequence() != null) {
+                    AbstractSequence seq = oldPgCol.getSequence();
+                    if (seq != null) {
+                        script.addStatement(getRenameCommand(seq,
+                                getTempName(seq.getName(), tmpSuffix)));
+                    }
+                    tblIdentityCols.computeIfAbsent(qname, k -> new ArrayList<>())
+                    .add(oldPgCol.getName());
+                }
+                break;
+            case MS:
                 MsColumn msCol = (MsColumn) col;
                 if (msCol.isIdentity()) {
                     tblIdentityCols.computeIfAbsent(qname, k -> new ArrayList<>())
@@ -435,18 +452,9 @@ public class ActionsToScriptConverter {
                             + MsDiffUtils.quoteName(msCol.getDefaultName())
                             + PgStatement.GO);
                 }
-            } else {
-                PgColumn oldPgCol = (PgColumn) col;
-                PgColumn newPgCol = (PgColumn) oldPgCol.getTwin(newDbFull);
-                if (newPgCol != null && newPgCol.getSequence() != null) {
-                    AbstractSequence seq = oldPgCol.getSequence();
-                    if (seq != null) {
-                        script.addStatement(getRenameCommand(seq,
-                                getTempName(seq.getName(), tmpSuffix)));
-                    }
-                    tblIdentityCols.computeIfAbsent(qname, k -> new ArrayList<>())
-                    .add(oldPgCol.getName());
-                }
+                break;
+            default:
+                throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
             }
         }
     }
@@ -467,12 +475,17 @@ public class ActionsToScriptConverter {
      * @return sql command to rename the given object
      */
     private String getRenameCommand(PgStatement st, String newName) {
-        return arguments.isMsSql() ?
-                MessageFormat.format(RENAME_MS_OBJECT,
-                        PgDiffUtils.quoteString(st.getQualifiedName()),
-                        PgDiffUtils.quoteString(newName))
-                : MessageFormat.format(RENAME_PG_OBJECT, st.getStatementType(),
-                        st.getQualifiedName(), PgDiffUtils.getQuotedName(newName));
+        switch (arguments.getDbType()) {
+        case PG:
+            return MessageFormat.format(RENAME_PG_OBJECT, st.getStatementType(),
+                    st.getQualifiedName(), PgDiffUtils.getQuotedName(newName));
+        case MS:
+            return MessageFormat.format(RENAME_MS_OBJECT,
+                    PgDiffUtils.quoteString(st.getQualifiedName()),
+                    PgDiffUtils.quoteString(newName));
+        default:
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
+        }
     }
 
     /**
@@ -488,9 +501,17 @@ public class ActionsToScriptConverter {
         if (tblTmpBareName == null) {
             return;
         }
-
-        UnaryOperator<String> quoter = arguments.isMsSql() ?
-                MsDiffUtils::quoteName : PgDiffUtils::getQuotedName;
+        UnaryOperator<String> quoter;
+        switch (arguments.getDbType()) {
+        case PG:
+            quoter = PgDiffUtils::getQuotedName;
+            break;
+        case MS:
+            quoter = MsDiffUtils::quoteName;
+            break;
+        default:
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
+        }
         String tblTmpQName = quoter.apply(oldTbl.getSchemaName()) + '.'
                 + quoter.apply(tblTmpBareName);
 
@@ -502,7 +523,7 @@ public class ActionsToScriptConverter {
 
         StringBuilder sb = new StringBuilder();
 
-        if (arguments.isMsSql() && !identityColsForMovingData.isEmpty()) {
+        if (arguments.getDbType() == DatabaseType.MS && !identityColsForMovingData.isEmpty()) {
             // There can only be one IDENTITY column per table in MSSQL.
             sb.append("SET IDENTITY_INSERT ").append(tblQName)
             .append(" ON").append(PgStatement.GO).append("\n\n");
@@ -513,31 +534,21 @@ public class ActionsToScriptConverter {
                 .collect(Collectors.joining(", "));
         sb.append("INSERT INTO ").append(tblQName).append('(')
         .append(cols).append(")");
-        if (!arguments.isMsSql() && identityCols != null) {
+        if (arguments.getDbType() == DatabaseType.PG && identityCols != null) {
             sb.append("\nOVERRIDING SYSTEM VALUE");
         }
         sb.append("\nSELECT ").append(cols).append(" FROM ")
-        .append(tblTmpQName).append(arguments.isMsSql() ? PgStatement.GO : ";");
+        .append(tblTmpQName).append(newTbl.getSeparator());
 
-        if (arguments.isMsSql() && !identityColsForMovingData.isEmpty()) {
+        if (arguments.getDbType() == DatabaseType.MS && !identityColsForMovingData.isEmpty()) {
             // There can only be one IDENTITY column per table in MSSQL.
             sb.append("\n\nSET IDENTITY_INSERT ").append(tblQName)
             .append(" OFF").append(PgStatement.GO);
         }
 
         if (!identityColsForMovingData.isEmpty()) {
-            if (arguments.isMsSql()) {
-                // There can only be one IDENTITY column per table in MSSQL.
-                // DECLARE'd var is only visible within its batch
-                // so we shouldn't need unique names for them here
-                // use the largest numeric type to fit any possible identity value
-                sb.append("\n\nDECLARE @restart_var numeric(38,0) = (SELECT IDENT_CURRENT (")
-                .append(PgDiffUtils.quoteString(tblTmpQName))
-                .append("));\nDBCC CHECKIDENT (")
-                .append(PgDiffUtils.quoteString(tblQName))
-                .append(", RESEED, @restart_var);")
-                .append(PgStatement.GO);
-            } else {
+            switch (arguments.getDbType()) {
+            case PG:
                 for (String colName : identityColsForMovingData) {
                     String restartWith = " ALTER TABLE " + tblQName + " ALTER COLUMN "
                             + PgDiffUtils.getQuotedName(colName)
@@ -552,10 +563,26 @@ public class ActionsToScriptConverter {
                     .append(PgDiffUtils.quoteStringDollar(doBody))
                     .append(';');
                 }
+                break;
+            case MS:
+                // There can only be one IDENTITY column per table in MSSQL.
+                // DECLARE'd var is only visible within its batch
+                // so we shouldn't need unique names for them here
+                // use the largest numeric type to fit any possible identity value
+                sb.append("\n\nDECLARE @restart_var numeric(38,0) = (SELECT IDENT_CURRENT (")
+                .append(PgDiffUtils.quoteString(tblTmpQName))
+                .append("));\nDBCC CHECKIDENT (")
+                .append(PgDiffUtils.quoteString(tblQName))
+                .append(", RESEED, @restart_var);")
+                .append(PgStatement.GO);
+                break;
+            default:
+                throw new IllegalArgumentException(
+                        Messages.DatabaseType_unsupported_type + arguments.getDbType());
             }
         }
         if (!isPartitionTable(newTbl)) {
-            sb.append("\n\nDROP TABLE ").append(tblTmpQName).append(arguments.isMsSql() ? PgStatement.GO : ';');
+            sb.append("\n\nDROP TABLE ").append(tblTmpQName).append(newTbl.getSeparator());
         }
         script.addStatement(sb.toString());
     }
@@ -568,12 +595,18 @@ public class ActionsToScriptConverter {
         AbstractTable oldTable = (AbstractTable) newTbl.getTwin(oldDbFull);
         Stream<? extends AbstractColumn> cols = newTbl.getColumns().stream()
                 .filter(c -> oldTable.containsColumn(c.getName()));
-        if (arguments.isMsSql()) {
+
+        switch (arguments.getDbType()) {
+        case MS:
             cols = cols.map(MsColumn.class::cast)
-                    .filter(msCol -> msCol.getExpression() == null);
-        } else {
+            .filter(msCol -> msCol.getExpression() == null);
+            break;
+        case PG:
             cols = cols.map(PgColumn.class::cast)
-                    .filter(pgCol -> !pgCol.isGenerated());
+            .filter(pgCol -> !pgCol.isGenerated());
+            break;
+        default:
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
         }
         return cols.map(AbstractColumn::getName).collect(Collectors.toList());
     }

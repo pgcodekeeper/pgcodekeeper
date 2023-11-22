@@ -36,6 +36,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.ide.IDE;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
@@ -104,7 +105,7 @@ public class PrePostScriptPrefPage extends FieldEditorPreferencePage implements 
             } catch (FileAlreadyExistsException ex) {
                 // no op
             }
-            SQLEditorInput input = new SQLEditorInput(path, false, false);
+            SQLEditorInput input = new SQLEditorInput(path, DatabaseType.PG, false);
             IDE.openEditor(page, input, EDITOR.SQL);
         } catch (PartInitException | IOException ex) {
             ExceptionNotifier.notifyDefault(ex.getLocalizedMessage(), ex);

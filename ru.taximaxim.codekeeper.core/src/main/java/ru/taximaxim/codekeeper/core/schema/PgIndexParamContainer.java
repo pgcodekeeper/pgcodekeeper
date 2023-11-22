@@ -18,6 +18,7 @@ package ru.taximaxim.codekeeper.core.schema;
 import java.util.Map;
 import java.util.Set;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.Utils;
 
 public interface PgIndexParamContainer {
@@ -32,11 +33,11 @@ public interface PgIndexParamContainer {
     default void appendIndexParam(StringBuilder sb) {
         if (!getIncludes().isEmpty()) {
             sb.append(" INCLUDE ");
-            Utils.appendCols(sb, getIncludes(), true);
+            Utils.appendCols(sb, getIncludes(), DatabaseType.PG);
         }
         if (!getParams().isEmpty()) {
             sb.append(" WITH ");
-            Utils.appendOptions(sb, getParams(), true);
+            Utils.appendOptions(sb, getParams(), DatabaseType.PG);
         }
         if (getTablespace() != null) {
             sb.append("\n\tUSING INDEX TABLESPACE ").append(getTablespace());

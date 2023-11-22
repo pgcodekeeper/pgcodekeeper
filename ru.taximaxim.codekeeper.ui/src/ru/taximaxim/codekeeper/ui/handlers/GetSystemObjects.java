@@ -31,6 +31,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
 import ru.taximaxim.codekeeper.core.loader.JdbcSystemLoader;
@@ -48,7 +49,7 @@ public class GetSystemObjects extends AbstractHandler {
         if (part instanceof ProjectEditorDiffer){
             ProjectEditorDiffer differ = (ProjectEditorDiffer) part;
             Object db = differ.getCurrentDb();
-            if (db instanceof DbInfo && !((DbInfo) db).isMsSql()) {
+            if (db instanceof DbInfo && ((DbInfo) db).getDbType() == DatabaseType.PG) {
                 DbInfo info = ((DbInfo) db);
                 FileDialog fd = new FileDialog(HandlerUtil.getActiveShell(event), SWT.SAVE);
                 fd.setText(Messages.GetSystemObjects_save_dialog_title);

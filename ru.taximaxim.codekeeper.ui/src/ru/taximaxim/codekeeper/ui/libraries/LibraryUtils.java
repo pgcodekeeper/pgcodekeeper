@@ -21,24 +21,24 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Platform;
 
 import ru.taximaxim.codekeeper.core.libraries.PgLibrary;
 import ru.taximaxim.codekeeper.core.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
+import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 
 public class LibraryUtils {
 
     public static final Path META_PATH = Paths.get(Platform.getStateLocation(
             Activator.getContext().getBundle()).append("dependencies").toString()); //$NON-NLS-1$
 
-    public static RootLibrary create(IProject proj) throws IOException, CoreException {
+    public static RootLibrary create(IProject proj) throws IOException {
         Path xmlPath = Paths.get(proj.getLocation().toString()).resolve(DependenciesXmlStore.FILE_NAME);
         DependenciesXmlStore xml = new DependenciesXmlStore(xmlPath);
         List<PgLibrary> libs = xml.readObjects();
-        return new UiLibraryLoader(proj.getName(), proj.hasNature(NATURE.MS), xml.readLoadNestedFlag(), xmlPath)
+        return new UiLibraryLoader(proj.getName(), OpenProjectUtils.getDatabaseType(proj), xml.readLoadNestedFlag(),
+                xmlPath)
                 .load(libs);
     }
 

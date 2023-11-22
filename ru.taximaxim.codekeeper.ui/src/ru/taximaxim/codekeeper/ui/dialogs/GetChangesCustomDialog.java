@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -47,16 +48,16 @@ public class GetChangesCustomDialog extends Dialog {
     private Button btnUseGlobalIgnoreList;
 
     private final OverridablePrefs prefs;
-    private final boolean isMsSql;
+    private final DatabaseType dbType;
 
     private final Map<String, Boolean> customSettings;
 
     public GetChangesCustomDialog(Shell parentShell, OverridablePrefs prefs,
-            boolean isMsSql, Map<String, Boolean> customSettings) {
+            DatabaseType dbType, Map<String, Boolean> customSettings) {
         super(parentShell);
         this.customSettings = customSettings;
         this.prefs = prefs;
-        this.isMsSql = isMsSql;
+        this.dbType = dbType;
     }
 
     @Override
@@ -71,8 +72,8 @@ public class GetChangesCustomDialog extends Dialog {
         panel.setLayout(new GridLayout());
 
         new Label(panel, SWT.NONE).setText(MessageFormat
-            .format(Messages.getChangesCustomDialog_custom_prefs_description,
-                    Messages.DiffTableViewer_get_changes));
+                .format(Messages.getChangesCustomDialog_custom_prefs_description,
+                        Messages.DiffTableViewer_get_changes));
 
         btnIgnoreColumnOrder = new Button(panel, SWT.CHECK);
         btnIgnoreColumnOrder.setText(Messages.GeneralPrefPage_ignore_column_order);
@@ -96,7 +97,7 @@ public class GetChangesCustomDialog extends Dialog {
         btnNoPrivileges.setLayoutData(gd);
         btnNoPrivileges.setSelection(prefs.getBooleanOfRootPref(PREF.NO_PRIVILEGES));
 
-        if (!isMsSql) {
+        if (dbType == DatabaseType.PG) {
             btnSimplifyView = new Button(panel, SWT.CHECK);
             btnSimplifyView.setText(Messages.GeneralPrefPage_simplify_view);
             gd = new GridData();
@@ -137,7 +138,7 @@ public class GetChangesCustomDialog extends Dialog {
         customSettings.put(PREF.FORMAT_OBJECT_CODE_AUTOMATICALLY, btnAutoFormatCode.getSelection());
         customSettings.put(PREF.IGNORE_COLUMN_ORDER, btnIgnoreColumnOrder.getSelection());
         customSettings.put(PREF.ENABLE_BODY_DEPENDENCIES, btnEnableFuncDep.getSelection());
-        if (!isMsSql) {
+        if (dbType == DatabaseType.PG) {
             customSettings.put(PREF.SIMPLIFY_VIEW, btnSimplifyView.getSelection());
         }
         customSettings.put(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, btnUseGlobalIgnoreList.getSelection());

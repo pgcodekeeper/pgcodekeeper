@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
@@ -97,7 +98,7 @@ public class CreateTrigger extends ParserAbstract {
                 }
                 sb.append(PgDiffUtils.getQuotedName(refRelName));
 
-                addDepSafe(trigger, refName, DbObjType.TABLE, true);
+                addDepSafe(trigger, refName, DbObjType.TABLE, DatabaseType.PG);
                 trigger.setRefTableName(sb.toString());
             }
         }
@@ -114,7 +115,7 @@ public class CreateTrigger extends ParserAbstract {
         Schema_qualified_name_nontypeContext funcNameCtx = ctx.func_name
                 .schema_qualified_name_nontype();
         if (funcNameCtx.schema != null) {
-            addDepSafe(trigger, getIdentifiers(funcNameCtx), DbObjType.FUNCTION, true, "()");
+            addDepSafe(trigger, getIdentifiers(funcNameCtx), DbObjType.FUNCTION, DatabaseType.PG, "()");
         }
 
         ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
@@ -124,7 +125,7 @@ public class CreateTrigger extends ParserAbstract {
             for (IdentifierContext nameCol : column.identifier()) {
                 trigger.addUpdateColumn(nameCol.getText());
                 addDepSafe(trigger, Arrays.asList(schemaCtx, parentCtx, nameCol),
-                        DbObjType.COLUMN, true);
+                        DbObjType.COLUMN, DatabaseType.PG);
             }
         }
         parseWhen(ctx.when_trigger(), trigger, db, fileName);

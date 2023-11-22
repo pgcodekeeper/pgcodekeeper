@@ -58,7 +58,7 @@ public class SQLFormattingStrategy extends ContextBasedFormattingStrategy {
             int length = partition.getLength();
 
             try {
-                TextEdit edit = Formatter.formatDoc(offset, length, document.get(), editor.isMsSql());
+                TextEdit edit = Formatter.formatDoc(offset, length, document.get(), editor.getDbType());
 
                 if (edit != null) {
                     if (edit.getChildrenSize() > 20) {

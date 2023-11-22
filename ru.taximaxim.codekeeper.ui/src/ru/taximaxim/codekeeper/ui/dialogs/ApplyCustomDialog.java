@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -52,16 +53,16 @@ public class ApplyCustomDialog extends Dialog {
     private Button btnDataMovementMode;
 
     private final OverridablePrefs prefs;
-    private final boolean isMsSql;
+    private final DatabaseType dbType;
 
     private final Map<String, Boolean> customSettings;
 
     public ApplyCustomDialog(Shell parentShell, OverridablePrefs prefs,
-            boolean isMsSql, Map<String, Boolean> customSettings) {
+            DatabaseType dbType, Map<String, Boolean> customSettings) {
         super(parentShell);
         this.customSettings = customSettings;
         this.prefs = prefs;
-        this.isMsSql = isMsSql;
+        this.dbType = dbType;
     }
 
     @Override
@@ -97,7 +98,7 @@ public class ApplyCustomDialog extends Dialog {
         btnAddPrePostScript = createCustomButton(panel, DB_UPDATE_PREF.DROP_BEFORE_CREATE,
                 Messages.DbUpdatePrefPage_add_pre_post_script);
 
-        if (!isMsSql) {
+        if (dbType == DatabaseType.PG) {
             btnCheckFuncBodies = createCustomButton(panel, DB_UPDATE_PREF.CHECK_FUNCTION_BODIES,
                     Messages.dbUpdatePrefPage_check_function_bodies);
 
@@ -147,7 +148,7 @@ public class ApplyCustomDialog extends Dialog {
                 btndropBeforeCreate.getSelection());
         customSettings.put(DB_UPDATE_PREF.ADD_PRE_POST_SCRIPT,
                 btnAddPrePostScript.getSelection());
-        if (!isMsSql) {
+        if (dbType == DatabaseType.PG) {
             customSettings.put(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES,
                     btnCheckFuncBodies.getSelection());
             customSettings.put(DB_UPDATE_PREF.USING_ON_OFF,

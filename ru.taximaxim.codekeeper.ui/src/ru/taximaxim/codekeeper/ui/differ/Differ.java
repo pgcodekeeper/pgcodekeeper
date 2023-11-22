@@ -31,6 +31,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 
 import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiff;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
@@ -50,7 +51,7 @@ public class Differ implements IRunnableWithProgress {
     private final TreeElement root;
     private final boolean needTwoWay;
     private final String timezone;
-    private final boolean msSql;
+    private final DatabaseType dbType;
     private final IProject proj;
     private final Map<String, Boolean> oneTimePrefs;
 
@@ -85,21 +86,21 @@ public class Differ implements IRunnableWithProgress {
     }
 
     public Differ(PgDatabase sourceDbFull, PgDatabase targetDbFull, TreeElement root,
-            boolean needTwoWay, String timezone, boolean msSql, IProject proj,
+            boolean needTwoWay, String timezone, DatabaseType dbType, IProject proj,
             Map<String, Boolean> oneTimePrefs) {
         this.sourceDbFull = sourceDbFull;
         this.targetDbFull = targetDbFull;
         this.root = root;
         this.needTwoWay = needTwoWay;
         this.timezone = timezone;
-        this.msSql = msSql;
+        this.dbType = dbType;
         this.proj = proj;
         this.oneTimePrefs = oneTimePrefs;
     }
 
     public Differ(PgDatabase sourceDbFull, PgDatabase targetDbFull, TreeElement root,
-            boolean needTwoWay, String timezone, boolean msSql, IProject proj) {
-        this(sourceDbFull, targetDbFull, root, needTwoWay, timezone, msSql, proj, null);
+            boolean needTwoWay, String timezone, DatabaseType dbType, IProject proj) {
+        this(sourceDbFull, targetDbFull, root, needTwoWay, timezone, dbType, proj, null);
     }
 
     public Job getDifferJob() {
@@ -151,7 +152,7 @@ public class Differ implements IRunnableWithProgress {
                 Getter target = new Getter(targetDbFull, proj, oneTimePrefs)) {
             // forceUnixNewLines has no effect on diff operaiton, just pass true
             PgDiffArguments args =
-                    DbSource.getPgDiffArgs(Consts.UTF_8, timezone, true, msSql, proj, oneTimePrefs);
+                    DbSource.getPgDiffArgs(Consts.UTF_8, timezone, true, dbType, proj, oneTimePrefs);
             diffDirect = new PgDiff(args).diffDatabaseSchemasAdditionalDepcies(
                     root,
                     sourceDbFull, targetDbFull,

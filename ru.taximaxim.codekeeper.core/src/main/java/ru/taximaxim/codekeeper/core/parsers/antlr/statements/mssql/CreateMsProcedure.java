@@ -21,6 +21,7 @@ import java.util.List;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.MsFuncProcTrigAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Assembly_specifierContext;
@@ -75,7 +76,7 @@ public class CreateMsProcedure extends BatchContextProcessor {
                     assembly, assemblyClass, assemblyMethod);
 
             addDepSafe(procedure, Arrays.asList(assemblyCtx.assembly_name),
-                    DbObjType.ASSEMBLY, false);
+                    DbObjType.ASSEMBLY, DatabaseType.MS);
             fillArguments(procedure);
 
             for (Procedure_optionContext option : ctx.procedure_option()) {

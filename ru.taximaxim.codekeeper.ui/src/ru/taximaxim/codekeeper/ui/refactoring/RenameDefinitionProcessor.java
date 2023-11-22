@@ -34,6 +34,7 @@ import org.eclipse.ltk.core.refactoring.participants.SharableParticipants;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
@@ -53,13 +54,13 @@ public class RenameDefinitionProcessor extends RenameProcessor {
     private String newName;
 
     private final PgObjLocation selection;
-    private final boolean isMsSql;
+    private final DatabaseType dbType;
     private final IFile file;
 
     public RenameDefinitionProcessor(PgObjLocation selection) {
         this.selection = selection;
         this.file = FileUtilsUi.getFileForLocation(selection);
-        this.isMsSql = file != null && OpenProjectUtils.checkMsSql(file.getProject());
+        this.dbType = file != null ? OpenProjectUtils.getDatabaseType(file.getProject()) : DatabaseType.PG;
     }
 
     public void setNewName(String newName) {
@@ -127,12 +128,14 @@ public class RenameDefinitionProcessor extends RenameProcessor {
         if (!selection.isGlobal()) {
             // do not quote alias
             quotedName = newName;
-        } else if (isMsSql) {
+        } else if (dbType == DatabaseType.MS) {
             quotedName = MsDiffUtils.quoteName(newName);
         } else if (selection.getType() == DbObjType.USER_MAPPING || selection.getType() == DbObjType.CAST ) {
             quotedName = newName;
-        } else {
+        } else if (dbType == DatabaseType.PG){
             quotedName = PgDiffUtils.getQuotedName(newName);
+        } else {
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
         }
 
         IFile file = null;
@@ -180,7 +183,17 @@ public class RenameDefinitionProcessor extends RenameProcessor {
             break;
         }
 
-        if (isMsSql) {
+        switch (dbType) {
+        case PG:
+            fileRenames.add(new RenameDefinitionChange(file.getFullPath(),
+                    AbstractModelExporter.getExportedFilenameSql(newName)));
+            if (ref.getType() == DbObjType.SCHEMA) {
+                // rename schema folder for PG
+                fileRenames.add(new RenameDefinitionChange(file.getParent().getFullPath(),
+                        FileUtils.getValidFilename(newName)));
+            }
+            break;
+        case MS:
             String name;
             if (ref.getTable() != null) {
                 name = ref.getSchema() + '.' + newName;
@@ -190,14 +203,9 @@ public class RenameDefinitionProcessor extends RenameProcessor {
 
             fileRenames.add(new RenameDefinitionChange(file.getFullPath(),
                     AbstractModelExporter.getExportedFilenameSql(name)));
-        } else {
-            fileRenames.add(new RenameDefinitionChange(file.getFullPath(),
-                    AbstractModelExporter.getExportedFilenameSql(newName)));
-            if (ref.getType() == DbObjType.SCHEMA) {
-                // rename schema folder for PG
-                fileRenames.add(new RenameDefinitionChange(file.getParent().getFullPath(),
-                        FileUtils.getValidFilename(newName)));
-            }
+            break;
+        default:
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
         }
     }
 

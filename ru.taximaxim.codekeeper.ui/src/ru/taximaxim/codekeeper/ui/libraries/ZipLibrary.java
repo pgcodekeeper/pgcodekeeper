@@ -19,15 +19,16 @@ import java.nio.file.Path;
 
 import org.eclipse.swt.graphics.Image;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 
 public class ZipLibrary extends CacheableLibrary {
 
-    ZipLibrary(AbstractLibrary parent, Path path, String project, boolean isMsSql) {
+    ZipLibrary(AbstractLibrary parent, Path path, String project, DatabaseType dbType) {
         super(parent, FileUtils.getUnzippedFilePath(LibraryUtils.META_PATH, path),
-                path.getFileName().toString(), path.toString(), project, isMsSql);
+                path.getFileName().toString(), path.toString(), project, dbType);
     }
 
     @Override

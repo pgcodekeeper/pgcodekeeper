@@ -76,7 +76,7 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
                                 new Region(def.getOffset(), def.getObjLength()),
                                 new Region(obj.getOffset(), obj.getObjLength()),
                                 obj.getObjName(), def.getFilePath(),
-                                def.getLineNumber(), editor.isMsSql(), project));
+                                def.getLineNumber(), editor.getDbType(), project));
                 links = Stream.concat(links, stream);
             }
         }

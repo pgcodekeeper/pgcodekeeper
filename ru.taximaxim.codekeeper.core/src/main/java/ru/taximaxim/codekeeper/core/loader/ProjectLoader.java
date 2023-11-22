@@ -37,6 +37,7 @@ import ru.taximaxim.codekeeper.core.Consts.MS_WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.core.Consts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
+import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
@@ -97,14 +98,7 @@ public class ProjectLoader extends DatabaseLoader {
         PgDatabase db = new PgDatabase(arguments);
 
         Path dir = Paths.get(dirPath);
-        if (arguments.isMsSql()) {
-            loadMsStructure(dir, db);
-        } else {
-            loadPgStructure(dir, db);
-        }
-
-        finishLoaders();
-
+        loadDbStructure(dir, db);
         return db;
     }
 
@@ -115,16 +109,25 @@ public class ProjectLoader extends DatabaseLoader {
         }
         isOverrideMode = true;
         try {
-            if (arguments.isMsSql()) {
-                loadMsStructure(dir, db);
-            } else {
-                loadPgStructure(dir, db);
-            }
-            finishLoaders();
+            loadDbStructure(dir, db);
             replaceOverrides();
         } finally {
             isOverrideMode = false;
         }
+    }
+
+    private void loadDbStructure(Path dir, PgDatabase db) throws InterruptedException, IOException {
+        switch (arguments.getDbType()) {
+        case MS:
+            loadMsStructure(dir, db);
+            break;
+        case PG:
+            loadPgStructure(dir, db);
+            break;
+        default:
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
+        }
+        finishLoaders();
     }
 
     private void loadPgStructure(Path dir, PgDatabase db) throws InterruptedException, IOException {

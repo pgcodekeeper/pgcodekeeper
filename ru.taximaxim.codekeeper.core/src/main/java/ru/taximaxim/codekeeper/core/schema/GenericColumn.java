@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
@@ -203,7 +204,7 @@ public class GenericColumn implements Serializable {
     }
 
     private AbstractFunction resolveFunctionCall(AbstractSchema schema) {
-        if (schema.isPostgres()) {
+        if (schema.getDbType() == DatabaseType.PG) {
             return schema.getFunction(table);
         }
 

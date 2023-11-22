@@ -21,20 +21,21 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 
 public abstract class CacheableLibrary extends AbstractLibrary {
 
     private final String libPath;
     private final String project;
-    private final boolean isMsSql;
+    private final DatabaseType dbType;
 
     CacheableLibrary(AbstractLibrary parent, Path path, String name, String fullName,
-            String project, boolean isMsSql) {
+            String project, DatabaseType dbType) {
         super(parent, path, name);
         this.libPath = fullName;
         this.project = project;
-        this.isMsSql = isMsSql;
+        this.dbType = dbType;
     }
 
     public void clear() throws IOException {
@@ -48,7 +49,7 @@ public abstract class CacheableLibrary extends AbstractLibrary {
     public void refresh() throws IOException {
         children.clear();
         // do not refresh nested libs, they're not nested in UI tree
-        new UiLibraryLoader(project, isMsSql, false, null).readLib(this, path.toString());
+        new UiLibraryLoader(project, dbType, false, null).readLib(this, path.toString());
     }
 
     private void clearAllChildren(List<AbstractLibrary> children) throws IOException {

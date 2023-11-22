@@ -89,7 +89,7 @@ implements PgSimpleOptionContainer {
     }
 
     @Override
-    public void appendOptions(PgOptionContainer newContainer, StringBuilder setOptions,
+    public void appendOptions(OptionContainer newContainer, StringBuilder setOptions,
             StringBuilder resetOptions, StringBuilder sb) {
         sb.append("\n\nALTER TEXT SEARCH DICTIONARY ");
         sb.append(getQualifiedName());

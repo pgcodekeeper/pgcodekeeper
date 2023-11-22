@@ -41,6 +41,7 @@ import ru.taximaxim.codekeeper.cli.opthandlers.DangerStatementOptionHandler;
 import ru.taximaxim.codekeeper.cli.opthandlers.DbObjTypeOptionHandler;
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DangerStatement;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 
@@ -71,6 +72,7 @@ public class CliArgs extends PgDiffArguments {
         this.inCharsetName = Consts.UTF_8;
         this.outCharsetName = Consts.UTF_8;
         this.graphDepth = DEFAULT_DEPTH;
+        this.dbType = DatabaseType.PG;
     }
     // SONAR-ON
 
@@ -144,7 +146,7 @@ public class CliArgs extends PgDiffArguments {
             usage="keep newline characters as is (don't convert to Unix newlines)")
     private boolean keepNewlines;
 
-    @Option(name="--simplify-views", forbids="--ms-sql",
+    @Option(name="--simplify-views", forbids="--db-type mssql",
             usage="simple formatting for VIEWs when reading via JDBC (not recomended by PostgreSQL)")
     private boolean simplifyView;
 
@@ -275,9 +277,13 @@ public class CliArgs extends PgDiffArguments {
             usage="ignore concurrent modification errors of database objects")
     private boolean ignoreConcurrentModification;
 
-    @Option(name="--ms-sql",
-            usage="work with MS SQL")
+    @Deprecated
+    @Option(name="--ms-sql", usage="work with MS SQL. Deprecated option. Use --db-type instead of this")
     private boolean msSql;
+
+    @Option(name="--db-type",
+            usage="specify database type for work: PG or MS")
+    private DatabaseType dbType;
 
     @Option(name="--update-project", depends={"--parse"}, forbids={"--graph"},
             usage="update an existing project in parse mode")
@@ -455,14 +461,13 @@ public class CliArgs extends PgDiffArguments {
         this.libSafeMode = libSafeMode;
     }
 
-    @Override
     public boolean isMsSql() {
         return msSql;
     }
 
     @Override
-    public void setMsSql(boolean msSql) {
-        this.msSql = msSql;
+    public DatabaseType getDbType() {
+        return dbType;
     }
 
     @Override
@@ -747,6 +752,10 @@ public class CliArgs extends PgDiffArguments {
             listCharsets(writer);
             return false;
         }
+        if (isMsSql()) {
+            //backwards compatibility
+            dbType = DatabaseType.MS;
+        }
 
         String msJdbcStart = "jdbc:sqlserver:";
         String pgJdbcStart = "jdbc:postgresql:";
@@ -763,10 +772,10 @@ public class CliArgs extends PgDiffArguments {
             if (getOldSrc() != null && !isProjUpdate()) {
                 badArgs("DEST argument isn't required.");
             }
-            if (isMsSql() && getNewSrc().startsWith(pgJdbcStart)) {
+            if (getDbType() == DatabaseType.MS && getNewSrc().startsWith(pgJdbcStart)) {
                 badArgs("Cannot work with PostgerSQL database as MS SQL project.");
             }
-            if (!isMsSql() && getNewSrc().startsWith(msJdbcStart)) {
+            if (getDbType() == DatabaseType.PG && getNewSrc().startsWith(msJdbcStart)) {
                 badArgs("Cannot work with MS SQL database as PostgerSQL project.");
             }
         } else {
@@ -776,18 +785,18 @@ public class CliArgs extends PgDiffArguments {
                 }
                 badArgs("Please specify both SOURCE and DEST.");
             }
-            if (isAddTransaction() && isConcurrentlyMode() && !isMsSql()) {
+            if (isAddTransaction() && isConcurrentlyMode() && getDbType() == DatabaseType.PG) {
                 badArgs("-C (--concurrently-mode) cannot be used with the option(s) -X (--add-transaction) for PostgreSQL.");
             }
             if (getOldSrc().startsWith(msJdbcStart) && getNewSrc().startsWith(pgJdbcStart)
                     || getOldSrc().startsWith(pgJdbcStart) && getNewSrc().startsWith(msJdbcStart)) {
                 badArgs("Cannot compare MS SQL and PostgerSQL databases.");
             }
-            if ((getOldSrc().startsWith(msJdbcStart) || getNewSrc().startsWith(msJdbcStart)) && !isMsSql()) {
-                badArgs("Cannot work with MS SQL database without --ms-sql parameter.");
+            if ((getOldSrc().startsWith(msJdbcStart) || getNewSrc().startsWith(msJdbcStart)) && getDbType() == DatabaseType.PG) {
+                badArgs("Cannot work with MS SQL database without --db-type MS parameter.");
             }
-            if ((getOldSrc().startsWith(pgJdbcStart) || getNewSrc().startsWith(pgJdbcStart)) && isMsSql()) {
-                badArgs("Cannot work with PostgreSQL database with --ms-sql parameter.");
+            if ((getOldSrc().startsWith(pgJdbcStart) || getNewSrc().startsWith(pgJdbcStart)) && getDbType() == DatabaseType.MS) {
+                badArgs("Cannot work with PostgreSQL database with --db-type MS parameter.");
             }
             if (isRunOnTarget() && !getOldSrc().startsWith("jdbc:")) {
                 badArgs("Cannot run script on non-database target.");

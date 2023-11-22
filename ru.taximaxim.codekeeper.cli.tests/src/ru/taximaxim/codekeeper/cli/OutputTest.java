@@ -61,7 +61,8 @@ class OutputTest {
                 Arguments.of(new FailGraphDepthArgumentsProvider()),
                 Arguments.of(new FailGraphNameArgumentsProvider()),
                 Arguments.of(new FailGraphArgumentsProvider()),
-                Arguments.of(new IgnoreColumnOrderArgumentsProvider()));
+                Arguments.of(new IgnoreColumnOrderArgumentsProvider()),
+                Arguments.of(new MsDeprecatedOption()));
     }
 
     @ParameterizedTest
@@ -177,7 +178,7 @@ class FailSourceArgumentsProvider extends ArgumentsProvider {
         Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
         Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
 
-        return new String[] { "--safe-mode", "--ms-sql", "--allow-danger-ddl", "DROP_TABLE",
+        return new String[] { "--safe-mode", "--db-type", "MS", "--allow-danger-ddl", "DROP_TABLE",
                 "--output", getDiffResultFile().toString(),
                 "-s", fNew.toString(), fOriginal.toString() };
     }
@@ -218,7 +219,7 @@ class FailDangerTableArgumentsProvider extends ArgumentsProvider {
         Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
         Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
 
-        return new String[] { "-S", "--ms-sql", "-o", getDiffResultFile().toString(),
+        return new String[] { "-S", "--db-type", "MS", "-o", getDiffResultFile().toString(),
                 fNew.toString(), fOriginal.toString() };
     }
 
@@ -421,7 +422,7 @@ class MsConcurrentlyArgumentsProvider extends ArgumentsProvider {
         Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
         Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
 
-        return new String[] { "-C", "-X", "--ms-sql", fNew.toString(), fOriginal.toString() };
+        return new String[] { "-C", "-X", "--db-type", "MS", fNew.toString(), fOriginal.toString() };
     }
 
     @Override
@@ -443,7 +444,7 @@ class FailMsArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String output() {
-        return "Cannot work with MS SQL database without --ms-sql parameter.\n";
+        return "Cannot work with MS SQL database without --db-type MS parameter.\n";
     }
 }
 
@@ -454,12 +455,12 @@ class FailPgArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String[] args() throws URISyntaxException, IOException {
-        return new String[] { "--ms-sql", "-s", "dumb", "--target", "jdbc:postgresql://xxx" };
+        return new String[] { "--db-type", "MS", "-s", "dumb", "--target", "jdbc:postgresql://xxx" };
     }
 
     @Override
     public String output() {
-        return "Cannot work with PostgreSQL database with --ms-sql parameter.\n";
+        return "Cannot work with PostgreSQL database with --db-type MS parameter.\n";
     }
 }
 
@@ -486,7 +487,7 @@ class FailMsParseArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String[] args() throws URISyntaxException, IOException {
-        return new String[] { "--ms-sql", "--parse", "-o", "dir", "jdbc:postgresql://xxx" };
+        return new String[] { "--db-type", "MS", "--parse", "-o", "dir", "jdbc:postgresql://xxx" };
     }
 
     @Override
@@ -616,5 +617,30 @@ class IgnoreColumnOrderArgumentsProvider extends ArgumentsProvider {
     @Override
     public String output() {
         return "\n";
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing  with deprecated --ms-sql option
+ */
+class MsDeprecatedOption extends ArgumentsProvider {
+
+    public MsDeprecatedOption() {
+        super("drop_ms_table");
+    }
+
+    @Override
+    public String[] args() throws URISyntaxException, IOException {
+        Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
+        Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
+
+        return new String[] { "--safe-mode", "--ms-sql", "--allow-danger-ddl", "DROP_TABLE",
+                "--output", getDiffResultFile().toString(),
+                "-s", fNew.toString(), fOriginal.toString() };
+    }
+
+    @Override
+    public String output() {
+        return "option \"-s (--source)\" requires the option(s) [-t]\n";
     }
 }

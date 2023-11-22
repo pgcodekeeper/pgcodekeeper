@@ -53,6 +53,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.BuildAction;
 import org.eclipse.ui.ide.ResourceUtil;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.loader.DatabaseLoader;
@@ -168,10 +169,10 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         build.runInBackground(null);
     }
 
-    public void getObjFromProjFile(IFile file, IProgressMonitor monitor, boolean isMsSql)
+    public void getObjFromProjFile(IFile file, IProgressMonitor monitor, DatabaseType dbType)
             throws InterruptedException, IOException, CoreException {
         PgDiffArguments args = new PgDiffArguments();
-        args.setMsSql(isMsSql);
+        args.setDbType(dbType);
         args.setInCharsetName(file.getCharset());
         PgUIDumpLoader loader = new PgUIDumpLoader(file, args, monitor);
         loader.setMode(ParserListenerMode.REF);
@@ -182,15 +183,15 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         notifyListeners();
     }
 
-    public void getObjFromProjFiles(Collection<IFile> files, IProgressMonitor monitor, boolean isMsSql)
+    public void getObjFromProjFiles(Collection<IFile> files, IProgressMonitor monitor, DatabaseType dbType)
             throws InterruptedException, IOException, CoreException {
-        PgDatabase db = UIProjectLoader.buildFiles(files, isMsSql, monitor);
+        PgDatabase db = UIProjectLoader.buildFiles(files, dbType, monitor);
         files.forEach(this::removeResFromRefs);
         // fill definitions, view columns will be filled in the analysis
         objDefinitions.putAll(MetaUtils.getObjDefinitions(db));
         List<Object> errors = new ArrayList<>();
         FullAnalyze.fullAnalyze(db, MetaUtils.createTreeFromDefs(
-                getAllObjDefinitions(), !isMsSql, db.getPostgresVersion()), errors);
+                getAllObjDefinitions(), dbType, db.getPostgresVersion()), errors);
         UIProjectLoader.markErrors(errors);
         objReferences.putAll(db.getObjReferences());
         notifyListeners();
@@ -201,7 +202,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         SubMonitor mon = SubMonitor.convert(monitor, UIProjectLoader.countFiles(proj));
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(proj.getDefaultCharset(true));
-        args.setMsSql(OpenProjectUtils.checkMsSql(proj));
+        args.setDbType(OpenProjectUtils.getDatabaseType(proj));
         DatabaseLoader loader = new UIProjectLoader(proj, args, mon);
         PgDatabase db = loader.load();
         clear();
@@ -209,7 +210,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         objDefinitions.putAll(MetaUtils.getObjDefinitions(db));
         FullAnalyze.fullAnalyze(db,
                 MetaUtils.createTreeFromDefs(getAllObjDefinitions(),
-                        !args.isMsSql(), db.getPostgresVersion()),
+                        args.getDbType(), db.getPostgresVersion()),
                 loader.getErrors());
         objReferences.putAll(db.getObjReferences());
         notifyListeners();
@@ -222,9 +223,9 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
     }
 
     public void fillRefsFromInputStream(InputStream input, String fileName,
-            boolean isMsSql, IProgressMonitor monitor) throws InterruptedException, IOException {
+            DatabaseType dbType, IProgressMonitor monitor) throws InterruptedException, IOException {
         PgDiffArguments args = new PgDiffArguments();
-        args.setMsSql(isMsSql);
+        args.setDbType(dbType);
         PgDumpLoader loader = new PgDumpLoader(() -> input, fileName, args, monitor);
         loader.setMode(ParserListenerMode.REF);
         PgDatabase db = loader.load();

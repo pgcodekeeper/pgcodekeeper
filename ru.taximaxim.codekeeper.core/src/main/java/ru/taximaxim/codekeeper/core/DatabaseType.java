@@ -13,24 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package ru.taximaxim.codekeeper.core.schema;
+package ru.taximaxim.codekeeper.core;
 
-import java.util.List;
-import java.util.Map;
-
-public interface PgOptionContainer extends IStatement {
-
-    List<String> GP_OPTION_LIST = List.of(
-            "appendonly",
-            "appendoptimized",
-            "blocksize",
-            "orientation",
-            "checksum",
-            "compresstype",
-            "compresslevel",
-            "analyze_hll_non_part_table");
-
-    void addOption(String key, String value);
-    Map<String, String> getOptions();
-    void compareOptions(PgOptionContainer newContainer, StringBuilder sb);
+public enum DatabaseType {
+    PG,
+    MS
 }

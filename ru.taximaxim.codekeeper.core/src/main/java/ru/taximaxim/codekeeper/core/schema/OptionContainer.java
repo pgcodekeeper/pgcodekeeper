@@ -13,28 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package ru.taximaxim.codekeeper.cli.localizations;
+package ru.taximaxim.codekeeper.core.schema;
 
-import org.eclipse.osgi.util.NLS;
+import java.util.List;
+import java.util.Map;
 
-public class Messages extends NLS {
-    private static final String BUNDLE_NAME = "ru.taximaxim.codekeeper.cli.localizations.messages"; //$NON-NLS-1$
+public interface OptionContainer extends IStatement {
 
-    // SONAR-OFF
+    List<String> GP_OPTION_LIST = List.of(
+            "appendonly",
+            "appendoptimized",
+            "blocksize",
+            "orientation",
+            "checksum",
+            "compresstype",
+            "compresslevel",
+            "analyze_hll_non_part_table");
 
-    public static String DatabaseType_unsupported_type;
-
-    public static String Main_danger_statements;
-    public static String UsageHelp;
-    public static String Version;
-
-    // SONAR-ON
-
-    static {
-        // initialize resource bundle
-        NLS.initializeMessages(BUNDLE_NAME, Messages.class);
-    }
-
-    private Messages() {
-    }
+    void addOption(String key, String value);
+    Map<String, String> getOptions();
+    void compareOptions(OptionContainer newContainer, StringBuilder sb);
 }

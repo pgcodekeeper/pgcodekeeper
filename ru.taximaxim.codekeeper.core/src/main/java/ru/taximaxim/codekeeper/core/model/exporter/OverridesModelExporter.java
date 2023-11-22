@@ -30,7 +30,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgCodekeeperException;
+import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
@@ -42,12 +44,12 @@ import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public class OverridesModelExporter extends AbstractModelExporter {
 
-    private final boolean isMsSql;
+    private final DatabaseType dbType;
 
     public OverridesModelExporter(Path outDir, PgDatabase newDb, PgDatabase oldDb,
-            Collection<TreeElement> changedObjects, String sqlEncoding, boolean isMsSql) {
+            Collection<TreeElement> changedObjects, String sqlEncoding, DatabaseType dbType) {
         super(outDir, newDb, oldDb, changedObjects, sqlEncoding);
-        this.isMsSql = isMsSql;
+        this.dbType = dbType;
     }
 
     @Override
@@ -108,14 +110,14 @@ public class OverridesModelExporter extends AbstractModelExporter {
         StringBuilder sb = new StringBuilder();
         Set<PgPrivilege> privs = st.getPrivileges();
         PgStatement.appendOwnerSQL(st, st.getOwner(), false, sb);
-        PgPrivilege.appendPrivileges(privs, st.isPostgres(), sb);
-        if (privs.isEmpty() && st.isPostgres()) {
+        PgPrivilege.appendPrivileges(privs, st.getDbType(), sb);
+        if (privs.isEmpty() && st.getDbType() == DatabaseType.PG) {
             PgPrivilege.appendDefaultPostgresPrivileges(st, sb);
         }
 
         if (DbObjType.TABLE == st.getStatementType()) {
             for (AbstractColumn col : ((AbstractTable)st).getColumns()) {
-                PgPrivilege.appendPrivileges(col.getPrivileges(), col.isPostgres(), sb);
+                PgPrivilege.appendPrivileges(col.getPrivileges(), col.getDbType(), sb);
             }
         }
 
@@ -124,13 +126,15 @@ public class OverridesModelExporter extends AbstractModelExporter {
 
     @Override
     protected Path getRelativeFilePath(PgStatement st, boolean addExtension) {
-        if (isMsSql) {
+        switch (dbType) {
+        case MS:
             return MsModelExporter.getRelativeFilePath(
                     st, Paths.get(Consts.OVERRIDES_DIR), addExtension);
+        case PG:
+            return ModelExporter.getRelativeFilePath(
+                    st, Paths.get(Consts.OVERRIDES_DIR), addExtension);
+        default:
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + st.getDbType());
         }
-
-        return ModelExporter.getRelativeFilePath(
-                st, Paths.get(Consts.OVERRIDES_DIR), addExtension);
     }
-
 }

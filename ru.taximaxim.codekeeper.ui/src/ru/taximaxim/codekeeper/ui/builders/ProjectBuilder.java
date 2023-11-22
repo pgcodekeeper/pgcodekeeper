@@ -30,6 +30,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.SubMonitor;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
@@ -54,7 +55,7 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
             case IncrementalProjectBuilder.AUTO_BUILD:
             case IncrementalProjectBuilder.INCREMENTAL_BUILD:
                 IResourceDelta delta = getDelta(proj);
-                buildIncrement(delta, parser, monitor, OpenProjectUtils.checkMsSql(proj));
+                buildIncrement(delta, parser, monitor, OpenProjectUtils.getDatabaseType(proj));
                 break;
 
             case IncrementalProjectBuilder.FULL_BUILD:
@@ -84,11 +85,11 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
     }
 
     private void buildIncrement(IResourceDelta delta, PgDbParser parser,
-            IProgressMonitor monitor, boolean isMsSql)
+            IProgressMonitor monitor, DatabaseType dbType)
                     throws CoreException, InterruptedException, IOException {
         List<IFile> files = new ArrayList<>();
         delta.accept(d -> {
-            if (UIProjectLoader.isInProject(d, isMsSql)) {
+            if (UIProjectLoader.isInProject(d, dbType)) {
                 IResource res = d.getResource();
                 if (res.getType() == IResource.FILE) {
                     switch (d.getKind()) {
@@ -104,6 +105,6 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
             }
             return true;
         });
-        parser.getObjFromProjFiles(files, monitor, isMsSql);
+        parser.getObjFromProjFiles(files, monitor, dbType);
     }
 }

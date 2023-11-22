@@ -112,7 +112,7 @@ public final class Main {
                 return false;
             }
 
-            ScriptParser parser = new ScriptParser("CLI", text, arguments.isMsSql());
+            ScriptParser parser = new ScriptParser("CLI", text, arguments.getDbType());
 
             if (arguments.isSafeMode()) {
                 Set<DangerStatement> dangerTypes =
@@ -164,12 +164,17 @@ public final class Main {
                 diff.updateProject();
             } else {
                 PgDatabase d = diff.loadNewDatabase();
-                if (arguments.isMsSql()) {
-                    new MsModelExporter(Paths.get(arguments.getOutputTarget()), d,
-                            arguments.getOutCharsetName()).exportFull();
-                } else {
+                switch (arguments.getDbType()) {
+                case PG:
                     new ModelExporter(Paths.get(arguments.getOutputTarget()), d,
                             arguments.getOutCharsetName()).exportFull();
+                    break;
+                case MS:
+                    new MsModelExporter(Paths.get(arguments.getOutputTarget()), d,
+                            arguments.getOutCharsetName()).exportFull();
+                    break;
+                default:
+                    throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
                 }
             }
         } catch (PgCodekeeperException ex) {

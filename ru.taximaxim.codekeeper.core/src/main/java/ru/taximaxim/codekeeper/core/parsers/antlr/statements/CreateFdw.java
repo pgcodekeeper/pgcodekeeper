@@ -17,6 +17,7 @@ package ru.taximaxim.codekeeper.core.parsers.antlr.statements;
 
 import java.util.Arrays;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_foreign_data_wrapper_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Define_foreign_optionsContext;
@@ -43,11 +44,11 @@ public class CreateFdw extends ParserAbstract {
         PgForeignDataWrapper fDW = new PgForeignDataWrapper(nameCtx.getText());
         if (ctx.handler_func != null) {
             fDW.setHandler(getFullCtxText(ctx.handler_func));
-            addDepSafe(fDW, getIdentifiers(ctx.handler_func), DbObjType.FUNCTION, true, HANDLER_SIGNATURE);
+            addDepSafe(fDW, getIdentifiers(ctx.handler_func), DbObjType.FUNCTION, DatabaseType.PG, HANDLER_SIGNATURE);
         }
         if (ctx.validator_func != null) {
             fDW.setValidator(getFullCtxText(ctx.validator_func));
-            addDepSafe(fDW, getIdentifiers(ctx.validator_func), DbObjType.FUNCTION, true, VALIDATOR_SIGNATURE);
+            addDepSafe(fDW, getIdentifiers(ctx.validator_func), DbObjType.FUNCTION, DatabaseType.PG, VALIDATOR_SIGNATURE);
         }
         Define_foreign_optionsContext options = ctx.define_foreign_options();
         if (options!= null) {

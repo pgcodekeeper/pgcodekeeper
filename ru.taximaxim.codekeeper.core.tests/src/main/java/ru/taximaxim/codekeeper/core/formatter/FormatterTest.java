@@ -20,6 +20,7 @@ import java.io.IOException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.FILES_POSTFIX;
 import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.formatter.FormatConfiguration.IndentType;
@@ -121,7 +122,7 @@ class FormatterTest {
             throws FormatterException, IOException {
         String newFile = getFileContent(newFileName + FILES_POSTFIX.SQL);
         String oldFile = getFileContent(oldFileName + FILES_POSTFIX.SQL);
-        FileFormatter fileform = new FileFormatter(oldFile, 0, oldFile.length(), config, false);
+        FileFormatter fileform = new FileFormatter(oldFile, 0, oldFile.length(), config, DatabaseType.PG);
         Assertions.assertEquals(newFile, fileform.formatText(), "Formatted files are different");
     }
 

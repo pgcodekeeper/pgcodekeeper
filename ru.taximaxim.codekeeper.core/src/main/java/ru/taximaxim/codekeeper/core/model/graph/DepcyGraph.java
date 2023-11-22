@@ -28,6 +28,7 @@ import org.jgrapht.graph.SimpleDirectedGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
@@ -115,7 +116,7 @@ public class DepcyGraph {
             if (st instanceof IConstraintFk) {
                 createFkeyToUnique((IConstraintFk) st);
             } else if (st.getStatementType() == DbObjType.COLUMN
-                    && st.isPostgres()) {
+                    && st.getDbType() == DatabaseType.PG) {
                 PgColumn col = (PgColumn) st;
                 PgStatement tbl = col.getParent();
                 if (st.getParent() instanceof PartitionPgTable) {

@@ -36,7 +36,9 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class SQLEditorTemplateAssistProcessor extends TemplateCompletionProcessor {
 
@@ -55,8 +57,16 @@ public class SQLEditorTemplateAssistProcessor extends TemplateCompletionProcesso
     private String getCtxTypeId() {
         IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
                 .getActivePage().getActiveEditor();
-        if (editor instanceof SQLEditor && ((SQLEditor) editor).isMsSql()) {
-            return SQLEditorTemplateContextType.CONTEXT_TYPE_MS;
+        if (editor instanceof SQLEditor) {
+            DatabaseType dbType = ((SQLEditor) editor).getDbType();
+            switch (dbType) {
+            case PG:
+                return SQLEditorTemplateContextType.CONTEXT_TYPE_PG;
+            case MS:
+                return SQLEditorTemplateContextType.CONTEXT_TYPE_MS;
+            default:
+                throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
+            }
         }
 
         return SQLEditorTemplateContextType.CONTEXT_TYPE_PG;

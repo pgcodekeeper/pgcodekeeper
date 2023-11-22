@@ -210,7 +210,7 @@ public class ProjectOverrideView extends ViewPart implements ISelectionListener 
                     PgStatement st = openOldFile ? ov.getOldStatement() : ov.getNewStatement();
                     PgObjLocation loc = st.getLocation();
                     String proj = project == null ? null : project.getName();
-                    FileUtilsUi.openFileInSqlEditor(loc, proj, !st.isPostgres(), st.isLib());
+                    FileUtilsUi.openFileInSqlEditor(loc, proj, st.getDbType(), st.isLib());
                 } catch (PartInitException ex) {
                     ExceptionNotifier.notifyDefault(ex.getLocalizedMessage(), ex);
                 }

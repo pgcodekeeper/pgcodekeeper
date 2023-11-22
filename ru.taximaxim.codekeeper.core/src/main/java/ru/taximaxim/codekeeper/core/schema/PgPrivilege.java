@@ -18,6 +18,7 @@ package ru.taximaxim.codekeeper.core.schema;
 import java.util.Collection;
 import java.util.Objects;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.hashers.IHashable;
@@ -71,7 +72,7 @@ public class PgPrivilege implements IHashable {
     }
 
     public static StringBuilder appendPrivileges(Collection<PgPrivilege> privileges,
-            boolean isPostgres, StringBuilder sb) {
+            DatabaseType dbType, StringBuilder sb) {
         if (privileges.isEmpty()) {
             return sb;
         }
@@ -81,7 +82,7 @@ public class PgPrivilege implements IHashable {
         }
 
         for (PgPrivilege priv : privileges) {
-            sb.append(priv.getCreationSQL()).append(isPostgres ? ';' : PgStatement.GO).append('\n');
+            sb.append(priv.getCreationSQL()).append(dbType == DatabaseType.PG ? ';' : PgStatement.GO).append('\n');
         }
 
         sb.setLength(sb.length() - 1);

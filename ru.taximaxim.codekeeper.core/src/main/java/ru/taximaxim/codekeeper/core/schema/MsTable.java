@@ -22,6 +22,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
@@ -111,7 +112,7 @@ public class MsTable extends AbstractTable implements PgSimpleOptionContainer{
         for (AbstractConstraint con : getPkeys()) {
             if (con.isPrimaryKey()) {
                 sbSQL.append("\t");
-                String name = con.name;
+                String name = con.getName();
                 if (!name.isEmpty()) {
                     sbSQL.append("CONSTRAINT ").append(MsDiffUtils.quoteName(name)).append(' ');
                 }
@@ -282,8 +283,8 @@ public class MsTable extends AbstractTable implements PgSimpleOptionContainer{
     }
 
     @Override
-    public boolean isPostgres() {
-        return false;
+    public DatabaseType getDbType() {
+        return DatabaseType.MS;
     }
 
     @Override

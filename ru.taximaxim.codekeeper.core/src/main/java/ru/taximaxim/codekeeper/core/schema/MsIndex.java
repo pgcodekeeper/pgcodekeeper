@@ -18,6 +18,7 @@ package ru.taximaxim.codekeeper.core.schema;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 
@@ -129,8 +130,8 @@ public class MsIndex extends AbstractIndex {
     }
 
     @Override
-    public boolean isPostgres() {
-        return false;
+    public DatabaseType getDbType() {
+        return DatabaseType.MS;
     }
 
     @Override

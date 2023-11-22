@@ -33,7 +33,7 @@ class CliArgsTest {
             "--parse -s filename -t filename -o filename;" +
                     "option \"-t (--target)\" cannot be used with the option(s) [--graph, --parse]",
 
-            "--graph --ms-sql jdbc:postgresql:q;" +
+            "--graph --db-type MS jdbc:postgresql:q;" +
                     "Cannot work with PostgerSQL database as MS SQL project.",
 
             "--graph jdbc:sqlserver:f;"
@@ -58,16 +58,16 @@ class CliArgsTest {
                     + "Cannot compare MS SQL and PostgerSQL databases.",
 
             "jdbc:sqlserver:f filename;"
-                    + "Cannot work with MS SQL database without --ms-sql parameter.",
+                    + "Cannot work with MS SQL database without --db-type MS parameter.",
 
             "filename jdbc:sqlserver:f;"
-                    + "Cannot work with MS SQL database without --ms-sql parameter.",
+                    + "Cannot work with MS SQL database without --db-type MS parameter.",
 
-            "jdbc:postgresql:q2 filename --ms-sql;"
-                    + "Cannot work with PostgreSQL database with --ms-sql parameter.",
+            "jdbc:postgresql:q2 filename --db-type MS;"
+                    + "Cannot work with PostgreSQL database with --db-type MS parameter.",
 
-            "filename jdbc:postgresql:q2 --ms-sql;"
-                    + "Cannot work with PostgreSQL database with --ms-sql parameter.",
+            "filename jdbc:postgresql:q2 --db-type MS;"
+                    + "Cannot work with PostgreSQL database with --db-type MS parameter.",
 
             "-r filename filename;"
                     + "Cannot run script on non-database target.",
@@ -75,8 +75,8 @@ class CliArgsTest {
             "-R filename filename filename;"
                     + "Option -R (--run-on) must specify JDBC connection string.",
 
-            "filename filename --simplify-views --ms-sql;"
-                    + "option \"--simplify-views\" cannot be used with the option(s) [--ms-sql]",
+            "filename filename --simplify-views --db-type MS;"
+                    + "option \"--simplify-views\" cannot be used with the option(s) [--db-type mssql]",
     })
     void badArgsTest(String arguments, String message) {
         String[] args = arguments.split(" ");

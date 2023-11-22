@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.FILES_POSTFIX;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.TestUtils;
@@ -135,7 +136,7 @@ class ObjReferencesTest {
             "with",
     })
     void comparePgReferences(final String fileNameTemplate) throws IOException, InterruptedException {
-        compareReferences(fileNameTemplate, false);
+        compareReferences(fileNameTemplate, DatabaseType.PG);
     }
 
     @ParameterizedTest
@@ -181,12 +182,12 @@ class ObjReferencesTest {
             "ms_xml_data_type",
     })
     void compareMsReferences(final String fileNameTemplate) throws IOException, InterruptedException {
-        compareReferences(fileNameTemplate, true);
+        compareReferences(fileNameTemplate, DatabaseType.MS);
     }
 
-    void compareReferences(String fileNameTemplate, boolean isMsSql) throws IOException, InterruptedException {
+    void compareReferences(String fileNameTemplate, DatabaseType dbType) throws IOException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();
-        args.setMsSql(isMsSql);
+        args.setDbType(dbType);
 
         String resource = fileNameTemplate + FILES_POSTFIX.SQL;
         PgDumpLoader loader = new PgDumpLoader(() -> getClass().getResourceAsStream(resource), resource, args);

@@ -33,6 +33,8 @@ import org.eclipse.ui.IURIEditorInput;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
+
 public class SQLEditorInput extends PlatformObject implements IURIEditorInput, IPersistableElement {
 
     private static final AtomicInteger TMP_INPUT_COUNTER = new AtomicInteger(1);
@@ -40,27 +42,27 @@ public class SQLEditorInput extends PlatformObject implements IURIEditorInput, I
     public static SQLEditorInput newTmpInput() {
         int number = TMP_INPUT_COUNTER.getAndIncrement();
         return new SQLEditorInput(Paths.get("/pgCodeKeeper/new query " + number), //$NON-NLS-1$
-                null, false, false, true);
+                null, DatabaseType.PG, false, true);
     }
 
     private final Path path;
-    private final boolean isMsSql;
+    private final DatabaseType dbType;
     private final boolean isTemp;
     private final boolean isReadOnly;
     private final String project;
 
-    public SQLEditorInput(Path path, boolean isMsSql, boolean isReadOnly) {
-        this(path, null, isMsSql, isReadOnly);
+    public SQLEditorInput(Path path, DatabaseType dbType, boolean isReadOnly) {
+        this(path, null, dbType, isReadOnly);
     }
 
-    public SQLEditorInput(Path path, String project, boolean isMsSql, boolean isReadOnly) {
-        this(path, project, isMsSql, isReadOnly, false);
+    public SQLEditorInput(Path path, String project, DatabaseType dbType, boolean isReadOnly) {
+        this(path, project, dbType, isReadOnly, false);
     }
 
-    SQLEditorInput(Path path, String project, boolean isMsSql, boolean isReadOnly, boolean isTemp) {
+    SQLEditorInput(Path path, String project, DatabaseType dbType, boolean isReadOnly, boolean isTemp) {
         this.path = path;
         this.project = project;
-        this.isMsSql = isMsSql;
+        this.dbType = dbType;
         this.isReadOnly = isReadOnly;
         this.isTemp = isTemp;
     }
@@ -130,7 +132,7 @@ public class SQLEditorInput extends PlatformObject implements IURIEditorInput, I
             SQLEditorInput input = (SQLEditorInput) o;
             return Objects.equals(path, input.path)
                     && Objects.equals(project, input.project)
-                    && isMsSql == input.isMsSql
+                    && dbType == input.getDbType()
                     && isTemp == input.isTemp
                     && isReadOnly == input.isReadOnly;
         }
@@ -146,7 +148,7 @@ public class SQLEditorInput extends PlatformObject implements IURIEditorInput, I
         int result = 1;
         result = prime * result + ((path == null) ? 0 : path.hashCode());
         result = prime * result + ((project == null) ? 0 : project.hashCode());
-        result = prime * result + (isMsSql ? itrue : ifalse);
+        result = prime * result + (dbType.hashCode());
         result = prime * result + (isTemp ? itrue : ifalse);
         result = prime * result + (isReadOnly ? itrue : ifalse);
         return result;
@@ -188,8 +190,8 @@ public class SQLEditorInput extends PlatformObject implements IURIEditorInput, I
         return path;
     }
 
-    public boolean isMsSql() {
-        return isMsSql;
+    public DatabaseType getDbType() {
+        return dbType;
     }
 
     public boolean isTemp() {

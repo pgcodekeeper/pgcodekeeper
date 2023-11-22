@@ -51,6 +51,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
@@ -131,7 +132,7 @@ public class MockDataPage extends WizardPage {
      * @return true if file successfully created and opened, false otherwise
      * @see #generateInsert()
      */
-    boolean createFile(boolean isMsSql) {
+    boolean createFile(DatabaseType dbType) {
         if (!isValid()) {
             return false;
         }
@@ -140,7 +141,7 @@ public class MockDataPage extends WizardPage {
             mainPrefs.setValue(PREF.EXPLICIT_TYPE_CAST, btnCast.getSelection());
             String name = FileUtils.getFileDate() + " data for " + txtTableName.getText() ; //$NON-NLS-1$
             name = FileUtils.sanitizeFilename(name);
-            FileUtilsUi.saveOpenTmpSqlEditor(generateInsert(), name, isMsSql);
+            FileUtilsUi.saveOpenTmpSqlEditor(generateInsert(), name, dbType);
             return true;
         } catch (CoreException | IOException ex) {
             ExceptionNotifier.notifyDefault(

@@ -33,6 +33,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Menu;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.CONN_TYPE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_STORE_PREF;
@@ -46,7 +47,7 @@ public final class DbMenuStorePicker extends AbstractStorePicker implements ISto
 
     private final Link lnkDb;
 
-    private Boolean isMsSql;
+    private DatabaseType dbType;
     private Object selection;
     private final ListenerList<Runnable> runnableListeners = new ListenerList<>();
 
@@ -66,7 +67,7 @@ public final class DbMenuStorePicker extends AbstractStorePicker implements ISto
             List<DbInfo> store = DbXmlStore.getStore();
             MenuManager menuMgr = new MenuManager();
             DBStoreMenu dbMenu = new DBStoreMenu(menuMgr,
-                    this.useFileSources, this.useDirSources, isMsSql, parent.getShell(), selection);
+                    this.useFileSources, this.useDirSources, dbType, parent.getShell(), selection);
             dbMenu.fillDbMenu(store);
             dbMenu.addSelectionListener(this::setSelection);
             lnkDb.setMenu(menuMgr.createContextMenu(lnkDb));
@@ -89,7 +90,7 @@ public final class DbMenuStorePicker extends AbstractStorePicker implements ISto
             List<DbInfo> store = DbXmlStore.getStore();
             if (store.contains(selection)) {
                 var newSelection = store.get(store.indexOf(selection));
-                if (isMsSql == null || newSelection.isMsSql() == isMsSql.booleanValue()) {
+                if (dbType == null || newSelection.getDbType() == dbType) {
                     setSelection(newSelection);
                     return;
                 }
@@ -160,10 +161,10 @@ public final class DbMenuStorePicker extends AbstractStorePicker implements ISto
     }
 
     @Override
-    public void filter(Boolean isMsSql) {
-        this.isMsSql = isMsSql;
+    public void filter(DatabaseType dbType) {
+        this.dbType = dbType;
         DbInfo dbInfo = getDbInfo();
-        if (isMsSql != null && dbInfo != null && dbInfo.isMsSql() != isMsSql.booleanValue()) {
+        if (dbType != null && dbInfo != null && dbInfo.getDbType() != dbType) {
             clearSelection();
         }
     }

@@ -54,6 +54,7 @@ import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.CONN_TYPE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_STORE_PREF;
@@ -226,7 +227,20 @@ final class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
 
             @Override
             public Image getImage(Object element) {
-                return Activator.getRegisteredImage(((DbInfo) element).isMsSql() ? FILE.MS_ICON : FILE.PG_ICON);
+                DatabaseType dbType = ((DbInfo) element).getDbType();
+                String image;
+                switch (dbType) {
+                case PG:
+                    image = FILE.PG_ICON;
+                    break;
+                case MS:
+                    image = FILE.MS_ICON;
+                    break;
+                default:
+                    throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
+                }
+
+                return Activator.getRegisteredImage(image);
             }
 
             @Override

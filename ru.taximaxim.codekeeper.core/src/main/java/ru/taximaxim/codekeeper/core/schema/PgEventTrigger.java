@@ -27,7 +27,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 public class PgEventTrigger extends PgStatement {
 
     private String executable;
-    private List<String> tags = new ArrayList<>();
+    private final List<String> tags = new ArrayList<>();
     private String event;
     private String mode;
 

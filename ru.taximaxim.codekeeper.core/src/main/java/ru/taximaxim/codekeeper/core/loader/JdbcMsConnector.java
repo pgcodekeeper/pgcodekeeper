@@ -28,6 +28,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 
 public class JdbcMsConnector extends JdbcConnector {
 
@@ -160,6 +161,11 @@ public class JdbcMsConnector extends JdbcConnector {
     @Override
     protected String getDriverName() {
         return DRIVER_NAME;
+    }
+
+    @Override
+    protected DatabaseType getType() {
+        return DatabaseType.MS;
     }
 
     @Override

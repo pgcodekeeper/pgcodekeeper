@@ -161,7 +161,7 @@ public abstract class AbstractPgTable extends AbstractTable {
         if (sequence != null) {
             sbOption.append(getAlterTable(true, false))
             .append(ALTER_COLUMN)
-            .append(PgDiffUtils.getQuotedName(column.name))
+            .append(PgDiffUtils.getQuotedName(column.getName()))
             .append(" ADD GENERATED ")
             .append(column.getIdentityType())
             .append(" AS IDENTITY (");
@@ -199,11 +199,11 @@ public abstract class AbstractPgTable extends AbstractTable {
             return true;
         }
 
-        // check greenplum options
-        if (options.equals(newTable.options)) {
+        if (options.equals(newTable.getOptions())) {
             return false;
         }
 
+        // check greenplum options
         for (String gpOption : GP_OPTION_LIST) {
             if (!Objects.equals(options.get(gpOption), newTable.options.get(gpOption))) {
                 return true;
@@ -347,7 +347,7 @@ public abstract class AbstractPgTable extends AbstractTable {
     protected void writeColumn(PgColumn column, StringBuilder sbSQL,
             StringBuilder sbOption) {
 
-        boolean isInherit = isPostgres() && column.isInherit();
+        boolean isInherit = column.isInherit();
         if (isInherit) {
             fillInheritOptions(column, sbOption);
         } else {
@@ -359,7 +359,7 @@ public abstract class AbstractPgTable extends AbstractTable {
         if (column.getStorage() != null) {
             sbOption.append(getAlterTable(true, isInherit))
             .append(ALTER_COLUMN)
-            .append(PgDiffUtils.getQuotedName(column.name))
+            .append(PgDiffUtils.getQuotedName(column.getName()))
             .append(" SET STORAGE ")
             .append(column.getStorage())
             .append(';');
@@ -373,13 +373,13 @@ public abstract class AbstractPgTable extends AbstractTable {
         if (!column.getNullValue()) {
             sb.append(getAlterTable(true, true))
             .append(ALTER_COLUMN)
-            .append(PgDiffUtils.getQuotedName(column.name))
+            .append(PgDiffUtils.getQuotedName(column.getName()))
             .append(" SET NOT NULL;");
         }
         if (column.getDefaultValue() != null) {
             sb.append(getAlterTable(true, true))
             .append(ALTER_COLUMN)
-            .append(PgDiffUtils.getQuotedName(column.name))
+            .append(PgDiffUtils.getQuotedName(column.getName()))
             .append(" SET DEFAULT ")
             .append(column.getDefaultValue())
             .append(';');
@@ -393,7 +393,7 @@ public abstract class AbstractPgTable extends AbstractTable {
         if (!opts.isEmpty()) {
             sbOption.append(getAlterTable(true, isInherit))
             .append(ALTER_COLUMN)
-            .append(PgDiffUtils.getQuotedName(column.name))
+            .append(PgDiffUtils.getQuotedName(column.getName()))
             .append(" SET (");
 
             for (Entry<String, String> option : opts.entrySet()) {
@@ -410,7 +410,7 @@ public abstract class AbstractPgTable extends AbstractTable {
         if (!fOpts.isEmpty()) {
             sbOption.append(getAlterTable(true, isInherit))
             .append(ALTER_COLUMN)
-            .append(PgDiffUtils.getQuotedName(column.name))
+            .append(PgDiffUtils.getQuotedName(column.getName()))
             .append(" OPTIONS (");
 
             for (Entry<String, String> option : fOpts.entrySet()) {
