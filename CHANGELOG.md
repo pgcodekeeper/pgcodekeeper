@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
-- Fixed a bug in the diff wizard
+- Fixed a bug in the diff wizard.
 
 ## [8.9.0] - 2023-11-07
 

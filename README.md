@@ -66,6 +66,7 @@ The project consists of several modules that implement Eclipse RCP plugins (and,
 #### Misc Modules
 
 - `ru.taximaxim.codekeeper.mainapp` - "branding plugin", provides Eclipse with feature information, images, etc. Also contains development Target platform files.
+- `ru.taximaxim.codekeeper.mainapp/report` - tests coverage report module.
 - `ru.taximaxim.codekeeper.mainapp/feature` - Eclipse feature module.
 - `ru.taximaxim.codekeeper.mainapp/updatesite` - Eclipse p2 repository/update site module.
 - `ru.taximaxim.codekeeper.mainapp/product/rcp` - Eclipse product description, used to build pgCodeKeeper packages.
