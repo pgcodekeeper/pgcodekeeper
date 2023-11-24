@@ -67,6 +67,7 @@ public interface PgSimpleOptionContainer extends OptionContainer {
     default void appendOptions(OptionContainer newContainer, StringBuilder setOptions,
             StringBuilder resetOptions, StringBuilder sb) {
         DbObjType type = getStatementType();
+        String typeName = type == DbObjType.VIEW ? ((PgStatement) newContainer).getTypeName() : type.name();
 
         if (setOptions.length() > 0) {
             setOptions.setLength(setOptions.length() - 2);
@@ -76,11 +77,8 @@ public interface PgSimpleOptionContainer extends OptionContainer {
                 .append(PgDiffUtils.getQuotedName(getParent().getParent().getName()))
                 .append('.').append(PgDiffUtils.getQuotedName(getParent().getName()))
                 .append(" ALTER ");
-            } else if (type == DbObjType.VIEW && ((PgView)newContainer).isMatView()) {
-                sb.append("MATERIALIZED ");
             }
-            sb.append(type)
-            .append(' ');
+            sb.append(typeName).append(' ');
             if (type != DbObjType.COLUMN) {
                 IStatement parent = getParent();
                 if (type == DbObjType.INDEX) {
@@ -100,11 +98,8 @@ public interface PgSimpleOptionContainer extends OptionContainer {
                 .append(PgDiffUtils.getQuotedName(getParent().getParent().getName()))
                 .append('.').append(PgDiffUtils.getQuotedName(getParent().getName()))
                 .append(" ALTER ");
-            } else if (type == DbObjType.VIEW && ((PgView)newContainer).isMatView()) {
-                sb.append("MATERIALIZED ");
             }
-            sb.append(type)
-            .append(' ');
+            sb.append(typeName).append(' ');
             if (type != DbObjType.COLUMN) {
                 IStatement parent = getParent();
                 if (type == DbObjType.INDEX) {

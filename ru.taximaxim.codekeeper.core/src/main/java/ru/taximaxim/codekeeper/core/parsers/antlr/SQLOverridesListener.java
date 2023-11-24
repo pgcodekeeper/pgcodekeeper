@@ -40,9 +40,9 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.SqlContext
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.StatementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Table_actionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.User_nameContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.AlterOwner;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.GrantPrivilege;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
+import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.AlterOwner;
+import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.GrantPrivilege;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.IRelation;
 import ru.taximaxim.codekeeper.core.schema.IStatement;

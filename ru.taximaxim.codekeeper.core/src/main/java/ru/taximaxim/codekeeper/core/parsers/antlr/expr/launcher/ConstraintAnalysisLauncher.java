@@ -20,9 +20,9 @@ import java.util.Set;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext;
-import ru.taximaxim.codekeeper.core.schema.PgConstraint;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
+import ru.taximaxim.codekeeper.core.schema.pg.PgConstraint;
 
 public class ConstraintAnalysisLauncher extends AbstractAnalysisLauncher {
 

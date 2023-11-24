@@ -78,12 +78,12 @@ public abstract class AbstractStatementReader {
         }
         String query = builder.build();
 
-        try (PreparedStatement statement = loader.connection.prepareStatement(query)) {
+        try (PreparedStatement statement = loader.getConnection().prepareStatement(query)) {
             setParams(statement);
-            ResultSet result = loader.runner.runScript(statement);
+            ResultSet result = loader.getRunner().runScript(statement);
             while (result.next()) {
-                PgDiffUtils.checkCancelled(loader.monitor);
-                loader.monitor.worked(1);
+                PgDiffUtils.checkCancelled(loader.getMonitor());
+                loader.getMonitor().worked(1);
                 processResult(result);
             }
         }

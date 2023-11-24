@@ -74,7 +74,7 @@ public abstract class AbstractTable extends PgStatementContainer implements Opti
      *
      * @return alter table statement beginning in String format
      */
-    protected abstract String getAlterTable(boolean nextLine, boolean only);
+    public abstract String getAlterTable(boolean nextLine, boolean only);
 
     /**
      * Finds column according to specified column {@code name}.
@@ -128,74 +128,7 @@ public abstract class AbstractTable extends PgStatementContainer implements Opti
             return false;
         }
 
-        return isColumnsOrderChanged(newTable.getColumns(), columns);
-    }
-
-    /** Checks if the order of the table columns has changed.<br><br>
-     *
-     * <b>Example:</b><br><br>
-     *
-     * original columns : c1, c2, c3<br>
-     * new columns      : c2, c3, c1<br><br>
-     *
-     * Column c1 was moved to last index and method will return true<br><br>
-     *
-     * <b>Example:</b><br><br>
-     *
-     * original columns : c1, c2, c3<br>
-     * new columns      : c2, c3, c4<br><br>
-     *
-     * Column c1 was deleted and column c4 was added. Method will return false.<br><br>
-     *
-     * <b>Example:</b><br><br>
-     *
-     * original columns : c1, c2, c3<br>
-     * new columns      : c1, c4, c2, c3<br><br>
-     *
-     * Column c4 was added between old columns: c1 and c2. Method will return true.<br><br>
-     *
-     * <b>Example:</b><br><br>
-     *
-     * original columns : c2, c3, inherit(some table)<br>
-     * new columns      : c1, c2, c3<br><br>
-     *
-     * Some table is no longer inherited. If table did not have a column c1,
-     * we must return true, but we cannot track this right now. Method will return false. <br><br>
-     *
-     * @param newTable - new table
-     * @return true if order was changed or order is ignored
-     * @since 5.1.7
-     */
-    protected static boolean isColumnsOrderChanged(List<AbstractColumn> newColumns, List<AbstractColumn> oldColumns) {
-        // last founded column
-        int i = -1;
-        for (AbstractColumn col : newColumns) {
-            // old column index
-            int index = 0;
-            // search old column index by new column name
-            for ( ; index < oldColumns.size(); index++) {
-                if (col.getName().equals(oldColumns.get(index).getName())) {
-                    break;
-                }
-            }
-
-            if (index == oldColumns.size()) {
-                // New column was not found in original table.
-                // After this column can be only new columns.
-                i = Integer.MAX_VALUE;
-            } else if (index < i) {
-                // New column was found in original table
-                // but one of previous columns was not found
-                // or was located on more later index
-                return true;
-            } else {
-                // New column was found in original table.
-                // Safe index of column in original table.
-                i = index;
-            }
-        }
-
-        return false;
+        return StatementUtils.isColumnsOrderChanged(newTable.getColumns(), columns);
     }
 
     protected void compareComment(AbstractTable newTable, StringBuilder sb) {
@@ -225,6 +158,10 @@ public abstract class AbstractTable extends PgStatementContainer implements Opti
     @Override
     public Map <String, String> getOptions() {
         return Collections.unmodifiableMap(options);
+    }
+
+    public String getOption(String option) {
+        return options.get(option);
     }
 
     @Override

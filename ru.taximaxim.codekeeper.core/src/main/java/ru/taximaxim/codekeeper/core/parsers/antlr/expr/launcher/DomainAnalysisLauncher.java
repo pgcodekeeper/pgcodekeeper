@@ -22,9 +22,9 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.TypesSetManually;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.ValueExprWithNmspc;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext;
-import ru.taximaxim.codekeeper.core.schema.PgDomain;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
+import ru.taximaxim.codekeeper.core.schema.pg.PgDomain;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 public class DomainAnalysisLauncher extends AbstractAnalysisLauncher {

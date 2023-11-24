@@ -38,6 +38,16 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.AbstractAnalysisLauncher;
+import ru.taximaxim.codekeeper.core.schema.ms.MsAssembly;
+import ru.taximaxim.codekeeper.core.schema.ms.MsRole;
+import ru.taximaxim.codekeeper.core.schema.ms.MsUser;
+import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgTable;
+import ru.taximaxim.codekeeper.core.schema.pg.PgCast;
+import ru.taximaxim.codekeeper.core.schema.pg.PgEventTrigger;
+import ru.taximaxim.codekeeper.core.schema.pg.PgExtension;
+import ru.taximaxim.codekeeper.core.schema.pg.PgForeignDataWrapper;
+import ru.taximaxim.codekeeper.core.schema.pg.PgServer;
+import ru.taximaxim.codekeeper.core.schema.pg.PgUserMapping;
 
 /**
  * Stores database information.

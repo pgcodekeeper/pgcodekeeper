@@ -192,7 +192,7 @@ public abstract class PgStatement implements IStatement, IHashable {
         resetHash();
     }
 
-    protected String getTypeName() {
+    public String getTypeName() {
         return getStatementType().toString();
     }
 
@@ -223,7 +223,7 @@ public abstract class PgStatement implements IStatement, IHashable {
         }
     }
 
-    protected void appendCommentSql(StringBuilder sb) {
+    public void appendCommentSql(StringBuilder sb) {
         sb.append("\n\n").append("COMMENT ON ").append(getTypeName()).append(' ');
         appendFullName(sb);
         sb.append(" IS ")

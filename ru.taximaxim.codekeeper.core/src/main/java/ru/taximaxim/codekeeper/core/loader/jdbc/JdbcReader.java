@@ -48,12 +48,12 @@ public abstract class JdbcReader extends AbstractStatementReader {
     protected void processResult(ResultSet result) throws SQLException, XmlReaderException {
         String schemaColumn = getSchemaColumn();
         long schemaId = result.getLong(schemaColumn.substring(schemaColumn.indexOf('.') + 1));
-        AbstractSchema schema = loader.schemaIds.get(schemaId);
+        AbstractSchema schema = loader.getSchema(schemaId);
         if (schema != null) {
             try {
                 processResult(result, schema);
             } catch (ConcurrentModificationException ex) {
-                if (!loader.args.isIgnoreConcurrentModification()) {
+                if (!loader.getArgs().isIgnoreConcurrentModification()) {
                     throw ex;
                 }
                 LOG.error(ex.getLocalizedMessage(), ex);
@@ -65,7 +65,8 @@ public abstract class JdbcReader extends AbstractStatementReader {
 
     @Override
     protected QueryBuilder makeQuery() {
-        if (loader.getSchemas().isEmpty()) {
+        var schemas = loader.getSchemas();
+        if (schemas.isEmpty()) {
             return null;
         }
 
@@ -74,7 +75,7 @@ public abstract class JdbcReader extends AbstractStatementReader {
 
         StringBuilder sb = new StringBuilder();
         sb.append(getSchemaColumn()).append(" IN (");
-        for (Long id : loader.getSchemas().keySet()) {
+        for (Long id : schemas.keySet()) {
             sb.append(id).append(',');
         }
         sb.setLength(sb.length() - 1);
@@ -127,7 +128,7 @@ public abstract class JdbcReader extends AbstractStatementReader {
         setFunctionWithDep(setter, statement, function, null);
     }
 
-    protected static <T extends PgStatement> void setFunctionWithDep(
+    public static <T extends PgStatement> void setFunctionWithDep(
             BiConsumer<T, String> setter, T statement, String function, String signature) {
         if (function.indexOf('.') != -1) {
             QNameParser<ParserRuleContext> parser = QNameParser.parsePg(function);

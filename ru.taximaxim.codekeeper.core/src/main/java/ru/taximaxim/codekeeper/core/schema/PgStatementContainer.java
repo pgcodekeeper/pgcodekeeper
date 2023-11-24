@@ -23,6 +23,8 @@ import java.util.Map;
 
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.schema.pg.PgPolicy;
+import ru.taximaxim.codekeeper.core.schema.pg.PgRule;
 
 public abstract class PgStatementContainer extends PgStatementWithSearchPath
 implements IRelation {

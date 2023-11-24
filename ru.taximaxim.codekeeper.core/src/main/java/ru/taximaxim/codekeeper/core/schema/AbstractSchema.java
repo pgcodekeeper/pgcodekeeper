@@ -24,6 +24,14 @@ import java.util.stream.Stream;
 
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.schema.pg.PgCollation;
+import ru.taximaxim.codekeeper.core.schema.pg.PgDomain;
+import ru.taximaxim.codekeeper.core.schema.pg.PgFtsConfiguration;
+import ru.taximaxim.codekeeper.core.schema.pg.PgFtsDictionary;
+import ru.taximaxim.codekeeper.core.schema.pg.PgFtsParser;
+import ru.taximaxim.codekeeper.core.schema.pg.PgFtsTemplate;
+import ru.taximaxim.codekeeper.core.schema.pg.PgOperator;
+import ru.taximaxim.codekeeper.core.schema.pg.PgShellType;
 
 /**
  * Stores base schema information.

@@ -52,13 +52,13 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.exception.MonitorCancelledRunt
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
-import ru.taximaxim.codekeeper.core.schema.AbstractPgFunction;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgPrivilege;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.PgStatementWithSearchPath;
+import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgFunction;
 
 /**
  * Container for shared JdbcLoader state.
@@ -78,22 +78,24 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
      */
     private static final int FIRST_NORMAL_OBJECT_ID = 16384;
 
+    private final SubMonitor monitor;
+    private final PgDiffArguments args;
+    private final IgnoreSchemaList ignorelistSchema;
+    private final Map<Long, AbstractSchema> schemaIds = new HashMap<>();
     protected final JdbcConnector connector;
-    protected final SubMonitor monitor;
-    protected final PgDiffArguments args;
-    protected final IgnoreSchemaList ignorelistSchema;
-    private GenericColumn currentObject;
+
+    private boolean isGreenplumDb;
+    private int version;
+    private long lastSysOid;
+    private String extensionSchema;
     private String currentOperation;
+    private GenericColumn currentObject;
+    private JdbcRunner runner;
+    private Map<Long, JdbcType> cachedTypesByOid;
+    private Map<Long, String> cachedRolesNamesByOid;
+
     protected Connection connection;
     protected Statement statement;
-    private Map<Long, String> cachedRolesNamesByOid;
-    protected Map<Long, JdbcType> cachedTypesByOid;
-    protected final Map<Long, AbstractSchema> schemaIds = new HashMap<>();
-    protected int version;
-    protected long lastSysOid;
-    protected JdbcRunner runner;
-    private String extensionSchema;
-    protected boolean isGreenplumDb;
 
     protected JdbcLoaderBase(JdbcConnector connector, SubMonitor monitor, PgDiffArguments args,
             IgnoreSchemaList ignoreListSchema) {
@@ -108,24 +110,64 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
         return version;
     }
 
+    public PgDiffArguments getArgs() {
+        return args;
+    }
+
+    public long getLastSysOid() {
+        return lastSysOid;
+    }
+
+    public Connection getConnection() {
+        return connection;
+    }
+
+    public JdbcRunner getRunner() {
+        return runner;
+    }
+
+    public Statement getStatement() {
+        return statement;
+    }
+
+    public SubMonitor getMonitor() {
+        return monitor;
+    }
+
     public String getExtensionSchema() {
         return extensionSchema;
+    }
+
+    public void putSchema(long schemaId, AbstractSchema schema) {
+        schemaIds.put(schemaId, schema);
+    }
+
+    public AbstractSchema getSchema(long schemaId) {
+        return schemaIds.get(schemaId);
     }
 
     public Map<Long, AbstractSchema> getSchemas() {
         return Collections.unmodifiableMap(schemaIds);
     }
 
-    protected void setCurrentObject(GenericColumn currentObject) {
+    public void setCurrentObject(GenericColumn currentObject) {
         this.currentObject = currentObject;
     }
 
-    protected void setCurrentOperation(String operation) {
+    public void setCurrentOperation(String operation) {
         currentObject = null;
         currentOperation = operation;
     }
 
-    protected String getCurrentLocation() {
+    public boolean checkIgnoreSchemaList(String schemaName) {
+        return ignorelistSchema == null || ignorelistSchema.getNameStatus(schemaName);
+    }
+
+    public JdbcType getCachedTypeByOid(Long oid) {
+        return cachedTypesByOid.get(oid);
+    }
+
+    public String getCurrentLocation() {
         StringBuilder sb = new StringBuilder("jdbc:");
         if (currentObject == null) {
             return sb.append(currentOperation).toString();
@@ -159,37 +201,37 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
         }
     }
 
-    protected void addError(final String message) {
+    public void addError(final String message) {
         errors.add(getCurrentLocation() + ' ' + message);
     }
 
-    protected String getRoleByOid(long oid) {
+    public String getRoleByOid(long oid) {
         if (args.isIgnorePrivileges()) {
             return null;
         }
         return oid == 0 ? "PUBLIC" : cachedRolesNamesByOid.get(oid);
     }
 
-    protected final void setComment(PgStatement f, ResultSet res) throws SQLException {
+    public final void setComment(PgStatement f, ResultSet res) throws SQLException {
         String comment = res.getString("description");
         if (comment != null && !comment.isEmpty()) {
             f.setComment(args, PgDiffUtils.quoteString(comment));
         }
     }
 
-    protected void setOwner(PgStatement statement, long ownerOid) {
+    public void setOwner(PgStatement statement, long ownerOid) {
         if (!args.isIgnorePrivileges()) {
             statement.setOwner(getRoleByOid(ownerOid));
         }
     }
 
-    protected void setOwner(PgStatement st, String owner) {
+    public void setOwner(PgStatement st, String owner) {
         if (!args.isIgnorePrivileges()) {
             st.setOwner(owner);
         }
     }
 
-    protected void setAuthor(PgStatement st, ResultSet res) throws SQLException {
+    public void setAuthor(PgStatement st, ResultSet res) throws SQLException {
         if (getExtensionSchema() != null) {
             st.setAuthor(res.getString("ses_user"));
         }
@@ -414,12 +456,12 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
         }
     }
 
-    protected static String getMsType(PgStatement statement, String schema, String dataType,
+    public static String getMsType(PgStatement statement, String schema, String dataType,
             boolean isUserDefined, int size, int precision, int scale) {
         return getMsType(statement, schema, dataType, isUserDefined, size, precision, scale, true);
     }
 
-    protected static String getMsType(PgStatement statement, String schema, String dataType,
+    public static String getMsType(PgStatement statement, String schema, String dataType,
             boolean isUserDefined, int size, int precision, int scale, boolean quoteSysTypes) {
         StringBuilder sb = new StringBuilder();
 
@@ -502,17 +544,17 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
         }
     }
 
-    protected <T> void submitAntlrTask(String sql,
+    public <T> void submitAntlrTask(String sql,
             Function<SQLParser, T> parserCtxReader, Consumer<T> finalizer) {
         submitAntlrTask(sql, parserCtxReader, finalizer, false, SQLParser.class);
     }
 
-    protected <T> void submitPlpgsqlTask(String sql,
+    public <T> void submitPlpgsqlTask(String sql,
             Function<SQLParser, T> parserCtxReader, Consumer<T> finalizer) {
         submitAntlrTask(sql, parserCtxReader, finalizer, true, SQLParser.class);
     }
 
-    protected <T> void submitMsAntlrTask(String sql,
+    public <T> void submitMsAntlrTask(String sql,
             Function<TSQLParser, T> parserCtxReader, Consumer<T> finalizer) {
         submitAntlrTask(sql, parserCtxReader, finalizer, false, TSQLParser.class);
     }

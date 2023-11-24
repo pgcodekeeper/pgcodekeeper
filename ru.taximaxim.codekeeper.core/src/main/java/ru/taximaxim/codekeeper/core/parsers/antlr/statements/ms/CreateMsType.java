@@ -1,0 +1,198 @@
+/*******************************************************************************
+ * Copyright 2017-2023 TAXTELECOM, LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *******************************************************************************/
+package ru.taximaxim.codekeeper.core.parsers.antlr.statements.ms;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.antlr.v4.runtime.ParserRuleContext;
+
+import ru.taximaxim.codekeeper.core.DatabaseType;
+import ru.taximaxim.codekeeper.core.MsDiffUtils;
+import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.ClusteredContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Column_def_table_constraintContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Column_optionContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Create_typeContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Index_optionContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Index_optionsContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Index_restContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Index_whereContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_constraint_bodyContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_indexContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Type_definitionContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
+import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.SimpleColumn;
+import ru.taximaxim.codekeeper.core.schema.ms.MsColumn;
+import ru.taximaxim.codekeeper.core.schema.ms.MsConstraintCheck;
+import ru.taximaxim.codekeeper.core.schema.ms.MsConstraintPk;
+import ru.taximaxim.codekeeper.core.schema.ms.MsType;
+
+public class CreateMsType extends ParserAbstract {
+
+    private final Create_typeContext ctx;
+
+    public CreateMsType(Create_typeContext ctx, PgDatabase db) {
+        super(db);
+        this.ctx = ctx;
+    }
+
+    @Override
+    public void parseObject() {
+        IdContext nameCtx = ctx.qualified_name().name;
+        MsType type = new MsType(nameCtx.getText());
+
+        Type_definitionContext def = ctx.type_definition();
+
+        if (def.FROM() != null) {
+            type.setBaseType(getFullCtxText(def.data_type()));
+            type.setNotNull(def.null_notnull() != null && def.null_notnull().NOT() != null);
+        } else if (def.EXTERNAL() != null) {
+            String assemblyName = def.assembly_name.getText();
+            type.setAssemblyName(assemblyName);
+            addDepSafe(type, Arrays.asList(def.assembly_name),
+                    DbObjType.ASSEMBLY, DatabaseType.MS);
+            String assemblyClass;
+            if (def.class_name != null) {
+                assemblyClass = def.class_name.getText();
+            } else {
+                assemblyClass = type.getName();
+            }
+
+            type.setAssemblyClass(assemblyClass);
+        } else {
+            for (Column_def_table_constraintContext con :
+                def.column_def_table_constraints().column_def_table_constraint()) {
+                fillTableType(con, type);
+            }
+            type.setMemoryOptimized(def.WITH() != null && def.on_off().ON() != null);
+        }
+
+        List<ParserRuleContext> ids = Arrays.asList(ctx.qualified_name().schema, nameCtx);
+        addSafe(getSchemaSafe(ids), type, ids);
+    }
+
+    private void fillTableType(Column_def_table_constraintContext colCtx, MsType type) {
+        if (colCtx.table_constraint() != null) {
+            Table_constraint_bodyContext body = colCtx.table_constraint().table_constraint_body();
+            if (body.column_name_list_with_order() != null) {
+                type.addConstraint(getPkConstraint(body).getDefinition());
+            } else {
+                var constrCheck = new MsConstraintCheck(null);
+                constrCheck.setExpression(getFullCtxText(body.search_condition()));
+                type.addConstraint(constrCheck.getDefinition());
+            }
+        } else if (colCtx.table_index() != null) {
+            fillTableIndex(colCtx.table_index(), type);
+        } else {
+            MsColumn col = new MsColumn(colCtx.id().getText());
+
+            if (colCtx.data_type() != null) {
+                col.setType(getFullCtxText(colCtx.data_type()));
+                addMsTypeDepcy(colCtx.data_type(), type);
+            } else {
+                col.setExpression(getFullCtxText(colCtx.expression()));
+            }
+
+            for (Column_optionContext option : colCtx.column_option()) {
+                fillMsColumnOption(option, col, type);
+            }
+
+            type.addColumn(col.getFullDefinition());
+        }
+    }
+
+    private MsConstraintPk getPkConstraint(Table_constraint_bodyContext body) {
+        var constrPk = new MsConstraintPk(null, body.PRIMARY() != null);
+        constrPk.setClustered(body.clustered() != null && body.clustered().CLUSTERED() != null);
+        for (var columnWithOrder : body.column_name_list_with_order().column_with_order()) {
+            String colName = columnWithOrder.id().getText();
+            var order = columnWithOrder.asc_desc();
+            boolean isDesc = order != null && order.DESC() != null;
+            SimpleColumn col = new SimpleColumn(colName);
+            col.setDesc(isDesc);
+            constrPk.addColumn(colName, col);
+        }
+        if (body.index_options() != null) {
+            for (var option : body.index_options().index_option()) {
+                constrPk.addOption(option.key.getText(), getFullCtxText(option.index_option_value()));
+            }
+        }
+
+        return constrPk;
+    }
+
+    private void fillTableIndex(Table_indexContext indCtx, MsType type) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("INDEX ");
+        sb.append(MsDiffUtils.quoteName(indCtx.id().getText()));
+        sb.append(" ");
+
+        ClusteredContext cluster = indCtx.clustered();
+        if (cluster != null && cluster.NONCLUSTERED() != null) {
+            sb.append("NON");
+        }
+        sb.append("CLUSTERED ");
+
+        if (indCtx.HASH() != null) {
+            sb.append("HASH");
+        }
+        sb.append('\n');
+
+        Index_restContext rest = indCtx.index_rest();
+
+        appendCols(sb, rest.index_sort().column_name_list_with_order().column_with_order());
+
+        Index_whereContext wherePart = rest.index_where();
+        if (wherePart != null) {
+            sb.append(" WHERE ").append(getFullCtxText(wherePart.where));
+        }
+
+        Index_optionsContext options = rest.index_options();
+        if (options != null) {
+            for (Index_optionContext option : options.index_option()) {
+                String key = option.key.getText();
+                String value = option.index_option_value().getText();
+                if ("BUCKET_COUNT".equals(key)) {
+                    if (wherePart != null) {
+                        sb.append('\n');
+                    } else {
+                        sb.append(" ");
+                    }
+                    sb.append("WITH ( BUCKET_COUNT = ").append(value).append(')');
+                    break;
+                }
+            }
+        }
+
+        type.addIndex(sb.toString());
+    }
+
+    private void appendCols(StringBuilder sb, List<? extends ParserRuleContext> colsCtx) {
+        sb.append("(\n\t");
+        sb.append(colsCtx.stream().map(ParserAbstract::getFullCtxText)
+                .collect(Collectors.joining(",\n\t")));
+        sb.append("\n)");
+    }
+
+    @Override
+    protected String getStmtAction() {
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.TYPE, ctx.qualified_name());
+    }
+}

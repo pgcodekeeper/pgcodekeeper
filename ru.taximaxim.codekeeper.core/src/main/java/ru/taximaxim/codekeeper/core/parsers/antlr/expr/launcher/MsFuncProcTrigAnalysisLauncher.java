@@ -28,10 +28,10 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Sql_claus
 import ru.taximaxim.codekeeper.core.parsers.antlr.msexpr.MsSelect;
 import ru.taximaxim.codekeeper.core.parsers.antlr.msexpr.MsSqlClauses;
 import ru.taximaxim.codekeeper.core.parsers.antlr.msexpr.MsValueExpr;
-import ru.taximaxim.codekeeper.core.schema.AbstractMsFunction;
-import ru.taximaxim.codekeeper.core.schema.MsTrigger;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
+import ru.taximaxim.codekeeper.core.schema.ms.AbstractMsFunction;
+import ru.taximaxim.codekeeper.core.schema.ms.MsTrigger;
 
 public class MsFuncProcTrigAnalysisLauncher extends AbstractAnalysisLauncher {
 

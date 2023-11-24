@@ -33,18 +33,18 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
 import ru.taximaxim.codekeeper.core.schema.AbstractIndex;
-import ru.taximaxim.codekeeper.core.schema.AbstractPgFunction;
-import ru.taximaxim.codekeeper.core.schema.AbstractPgTable;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.IConstraintFk;
 import ru.taximaxim.codekeeper.core.schema.IConstraintPk;
 import ru.taximaxim.codekeeper.core.schema.Inherits;
-import ru.taximaxim.codekeeper.core.schema.PartitionPgTable;
-import ru.taximaxim.codekeeper.core.schema.PgColumn;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
+import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgFunction;
+import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgTable;
+import ru.taximaxim.codekeeper.core.schema.pg.PartitionPgTable;
+import ru.taximaxim.codekeeper.core.schema.pg.PgColumn;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 public class DepcyGraph {

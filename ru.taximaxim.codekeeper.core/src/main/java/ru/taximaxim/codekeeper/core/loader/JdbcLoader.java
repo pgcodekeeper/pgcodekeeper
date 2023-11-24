@@ -27,30 +27,30 @@ import org.slf4j.LoggerFactory;
 
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.loader.jdbc.CastsReader;
-import ru.taximaxim.codekeeper.core.loader.jdbc.CollationsReader;
-import ru.taximaxim.codekeeper.core.loader.jdbc.ConstraintsReader;
-import ru.taximaxim.codekeeper.core.loader.jdbc.EventTriggersReader;
-import ru.taximaxim.codekeeper.core.loader.jdbc.ExtensionsReader;
-import ru.taximaxim.codekeeper.core.loader.jdbc.ForeignDataWrappersReader;
-import ru.taximaxim.codekeeper.core.loader.jdbc.FtsConfigurationsReader;
-import ru.taximaxim.codekeeper.core.loader.jdbc.FtsDictionariesReader;
-import ru.taximaxim.codekeeper.core.loader.jdbc.FtsParsersReader;
-import ru.taximaxim.codekeeper.core.loader.jdbc.FtsTemplatesReader;
-import ru.taximaxim.codekeeper.core.loader.jdbc.FunctionsReader;
-import ru.taximaxim.codekeeper.core.loader.jdbc.IndicesReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
-import ru.taximaxim.codekeeper.core.loader.jdbc.OperatorsReader;
-import ru.taximaxim.codekeeper.core.loader.jdbc.PoliciesReader;
-import ru.taximaxim.codekeeper.core.loader.jdbc.RulesReader;
-import ru.taximaxim.codekeeper.core.loader.jdbc.SchemasReader;
-import ru.taximaxim.codekeeper.core.loader.jdbc.SequencesReader;
-import ru.taximaxim.codekeeper.core.loader.jdbc.ServersReader;
-import ru.taximaxim.codekeeper.core.loader.jdbc.TablesReader;
-import ru.taximaxim.codekeeper.core.loader.jdbc.TriggersReader;
-import ru.taximaxim.codekeeper.core.loader.jdbc.TypesReader;
-import ru.taximaxim.codekeeper.core.loader.jdbc.UserMappingReader;
-import ru.taximaxim.codekeeper.core.loader.jdbc.ViewsReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.pg.CastsReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.pg.CollationsReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.pg.ConstraintsReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.pg.EventTriggersReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.pg.ExtensionsReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.pg.ForeignDataWrappersReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.pg.FtsConfigurationsReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.pg.FtsDictionariesReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.pg.FtsParsersReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.pg.FtsTemplatesReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.pg.FunctionsReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.pg.IndicesReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.pg.OperatorsReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.pg.PoliciesReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.pg.RulesReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.pg.SchemasReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.pg.SequencesReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.pg.ServersReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.pg.TablesReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.pg.TriggersReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.pg.TypesReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.pg.UserMappingReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.pg.ViewsReader;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
@@ -70,7 +70,7 @@ public class JdbcLoader extends JdbcLoaderBase {
 
     @Override
     public PgDatabase load() throws IOException, InterruptedException {
-        PgDatabase d = new PgDatabase(args);
+        PgDatabase d = new PgDatabase(getArgs());
 
         LOG.info("Reading db using JDBC.");
         setCurrentOperation("connection setup");
@@ -79,9 +79,9 @@ public class JdbcLoader extends JdbcLoaderBase {
             this.connection = connection;
             this.statement = statement;
             connection.setAutoCommit(false);
-            runner.run(statement, "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY");
-            runner.run(statement, "SET search_path TO pg_catalog;");
-            runner.run(statement, "SET timezone = " + PgDiffUtils.quoteString(connector.getTimezone()));
+            getRunner().run(statement, "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY");
+            getRunner().run(statement, "SET search_path TO pg_catalog;");
+            getRunner().run(statement, "SET timezone = " + PgDiffUtils.quoteString(connector.getTimezone()));
 
             queryCheckVersion();
             queryCheckGreenplumDb();
@@ -98,7 +98,7 @@ public class JdbcLoader extends JdbcLoaderBase {
             new ViewsReader(this).read();
             new TablesReader(this).read();
             new RulesReader(this).read();
-            if (SupportedVersion.VERSION_9_5.isLE(version)) {
+            if (SupportedVersion.VERSION_9_5.isLE(getVersion())) {
                 new PoliciesReader(this).read();
             }
             new TriggersReader(this).read();
@@ -118,14 +118,14 @@ public class JdbcLoader extends JdbcLoaderBase {
             new CastsReader(this, d).read();
             new ForeignDataWrappersReader(this, d).read();
             new ServersReader(this, d).read();
-            try (ResultSet res = runner.runScript(statement, JdbcQueries.QUERY_CHECK_USER_PRIVILEGES)) {
+            try (ResultSet res = getRunner().runScript(statement, JdbcQueries.QUERY_CHECK_USER_PRIVILEGES)) {
                 if (res.next() && res.getBoolean("result")) {
                     new UserMappingReader(this, d).read();
                 }
             }
             new CollationsReader(this).read();
 
-            if (!SupportedVersion.VERSION_10.isLE(version)) {
+            if (!SupportedVersion.VERSION_10.isLE(getVersion())) {
                 SequencesReader.querySequencesData(d, this);
             }
             connection.commit();
@@ -133,7 +133,7 @@ public class JdbcLoader extends JdbcLoaderBase {
 
             d.sortColumns();
 
-            d.setPostgresVersion(SupportedVersion.valueOf(version));
+            d.setPostgresVersion(SupportedVersion.valueOf(getVersion()));
             LOG.info("Database object has been successfully queried from JDBC");
         } catch (InterruptedException ex) {
             throw ex;
