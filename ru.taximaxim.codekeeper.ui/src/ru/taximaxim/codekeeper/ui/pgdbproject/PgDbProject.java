@@ -104,7 +104,6 @@ public class PgDbProject {
                 throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
             }
 
-
             desc.setLocationURI(location);
             desc.setNatureIds(natures);
             newProject.create(desc, null);

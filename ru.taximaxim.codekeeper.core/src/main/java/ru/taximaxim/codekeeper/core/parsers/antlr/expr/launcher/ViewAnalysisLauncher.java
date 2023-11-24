@@ -23,9 +23,9 @@ import ru.taximaxim.codekeeper.core.loader.FullAnalyze;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.Select;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Select_stmtContext;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
-import ru.taximaxim.codekeeper.core.schema.PgView;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaUtils;
+import ru.taximaxim.codekeeper.core.schema.pg.PgView;
 
 public class ViewAnalysisLauncher extends AbstractAnalysisLauncher {
 

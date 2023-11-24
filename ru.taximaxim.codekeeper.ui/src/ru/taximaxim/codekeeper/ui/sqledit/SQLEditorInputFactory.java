@@ -62,7 +62,6 @@ public class SQLEditorInputFactory implements IElementFactory {
         String path = memento.getString(TAG_PATH);
         String project = memento.getString(TAG_PROJECT);
 
-
         DatabaseType dbType;
         String dbTypeText = memento.getString(TAG_DB_TYPE);
         if (dbTypeText != null) {

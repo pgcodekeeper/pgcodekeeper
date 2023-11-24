@@ -44,12 +44,12 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.SQLOverridesListener;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLOverridesListener;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
-import ru.taximaxim.codekeeper.core.schema.MsSchema;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
-import ru.taximaxim.codekeeper.core.schema.PgSchema;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.StatementOverride;
+import ru.taximaxim.codekeeper.core.schema.ms.MsSchema;
+import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
 
 /**
  * Loads PostgreSQL dump into classes.

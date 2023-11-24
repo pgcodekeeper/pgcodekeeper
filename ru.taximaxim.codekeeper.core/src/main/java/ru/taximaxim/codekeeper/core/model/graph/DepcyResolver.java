@@ -41,14 +41,14 @@ import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.Argument;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
-import ru.taximaxim.codekeeper.core.schema.MsTable;
-import ru.taximaxim.codekeeper.core.schema.MsView;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
-import ru.taximaxim.codekeeper.core.schema.PgIndex;
-import ru.taximaxim.codekeeper.core.schema.PgSequence;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.SourceStatement;
-import ru.taximaxim.codekeeper.core.schema.TypedPgTable;
+import ru.taximaxim.codekeeper.core.schema.ms.MsTable;
+import ru.taximaxim.codekeeper.core.schema.ms.MsView;
+import ru.taximaxim.codekeeper.core.schema.pg.PgIndex;
+import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
+import ru.taximaxim.codekeeper.core.schema.pg.TypedPgTable;
 
 /*
  * implementation notes:

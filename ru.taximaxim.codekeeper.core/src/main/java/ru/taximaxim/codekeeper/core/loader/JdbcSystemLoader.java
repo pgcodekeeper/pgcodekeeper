@@ -106,9 +106,9 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
 
     private void readFunctions(MetaStorage storage)
             throws InterruptedException, SQLException {
-        try (ResultSet result = statement.executeQuery(JdbcQueries.QUERY_SYSTEM_FUNCTIONS)) {
+        try (ResultSet result = getStatement().executeQuery(JdbcQueries.QUERY_SYSTEM_FUNCTIONS)) {
             while (result.next()) {
-                PgDiffUtils.checkCancelled(monitor);
+                PgDiffUtils.checkCancelled(getMonitor());
                 String functionName = result.getString(NAME);
                 String schemaName = result.getString(NAMESPACE_NAME);
 
@@ -128,7 +128,7 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                         IntStream.range(0, argModes.size())
                         .filter(i -> "t".equals(argModes.get(i)))
                         .forEach(e -> {
-                            JdbcType returnType = cachedTypesByOid.get(argTypeOids[e]);
+                            JdbcType returnType = getCachedTypeByOid(argTypeOids[e]);
                             function.addReturnsColumn(argNames[e], returnType.getFullName(schemaName));
                         });
                     }
@@ -183,9 +183,9 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
 
     private void readRelations(MetaStorage storage)
             throws InterruptedException, SQLException {
-        try (ResultSet result = statement.executeQuery(JdbcQueries.QUERY_SYSTEM_RELATIONS)) {
+        try (ResultSet result = getStatement().executeQuery(JdbcQueries.QUERY_SYSTEM_RELATIONS)) {
             while (result.next()) {
-                PgDiffUtils.checkCancelled(monitor);
+                PgDiffUtils.checkCancelled(getMonitor());
                 String schemaName = result.getString(NAMESPACE_NAME);
                 String relationName = result.getString(NAME);
 
@@ -222,9 +222,9 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
     }
 
     private void readOperators(MetaStorage storage) throws InterruptedException, SQLException {
-        try (ResultSet result = statement.executeQuery(JdbcQueries.QUERY_SYSTEM_OPERATORS)) {
+        try (ResultSet result = getStatement().executeQuery(JdbcQueries.QUERY_SYSTEM_OPERATORS)) {
             while (result.next()) {
-                PgDiffUtils.checkCancelled(monitor);
+                PgDiffUtils.checkCancelled(getMonitor());
                 String name = result.getString(NAME);
                 String schemaName = result.getString(NAMESPACE_NAME);
                 long leftType = result.getLong("left");
@@ -232,16 +232,16 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                 String left = null;
                 String right = null;
                 if (leftType > 0) {
-                    left = cachedTypesByOid.get(leftType).getFullName(schemaName);
+                    left = getCachedTypeByOid(leftType).getFullName(schemaName);
                 }
                 if (rightType > 0) {
-                    right = cachedTypesByOid.get(rightType).getFullName(schemaName);
+                    right = getCachedTypeByOid(rightType).getFullName(schemaName);
                 }
 
                 MetaOperator operator = new MetaOperator(schemaName, name);
                 operator.setLeftArg(left);
                 operator.setRightArg(right);
-                operator.setReturns(cachedTypesByOid.get(result.getLong("result")).getFullName(schemaName));
+                operator.setReturns(getCachedTypeByOid(result.getLong("result")).getFullName(schemaName));
 
                 storage.addMetaChild(operator);
             }
@@ -249,11 +249,11 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
     }
 
     private void readCasts(MetaStorage storage) throws InterruptedException, SQLException {
-        try (PreparedStatement statement = connection.prepareStatement(JdbcQueries.QUERY_SYSTEM_CASTS)) {
-            statement.setLong(1, lastSysOid);
-            ResultSet result = runner.runScript(statement);
+        try (PreparedStatement statement = getConnection().prepareStatement(JdbcQueries.QUERY_SYSTEM_CASTS)) {
+            statement.setLong(1, getLastSysOid());
+            ResultSet result = getRunner().runScript(statement);
             while (result.next()) {
-                PgDiffUtils.checkCancelled(monitor);
+                PgDiffUtils.checkCancelled(getMonitor());
                 String source = result.getString("source");
                 JdbcReader.checkTypeValidity(source);
                 String target = result.getString("target");

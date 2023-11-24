@@ -45,19 +45,19 @@ import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
-import ru.taximaxim.codekeeper.core.schema.AbstractForeignTable;
-import ru.taximaxim.codekeeper.core.schema.AbstractPgTable;
 import ru.taximaxim.codekeeper.core.schema.AbstractSequence;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
-import ru.taximaxim.codekeeper.core.schema.GpExternalTable;
-import ru.taximaxim.codekeeper.core.schema.MsColumn;
-import ru.taximaxim.codekeeper.core.schema.MsView;
-import ru.taximaxim.codekeeper.core.schema.PartitionPgTable;
-import ru.taximaxim.codekeeper.core.schema.PgColumn;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
-import ru.taximaxim.codekeeper.core.schema.PgSequence;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.schema.SimplePgTable;
+import ru.taximaxim.codekeeper.core.schema.ms.MsColumn;
+import ru.taximaxim.codekeeper.core.schema.ms.MsView;
+import ru.taximaxim.codekeeper.core.schema.pg.AbstractForeignTable;
+import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgTable;
+import ru.taximaxim.codekeeper.core.schema.pg.GpExternalTable;
+import ru.taximaxim.codekeeper.core.schema.pg.PartitionPgTable;
+import ru.taximaxim.codekeeper.core.schema.pg.PgColumn;
+import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
+import ru.taximaxim.codekeeper.core.schema.pg.SimplePgTable;
 
 public class ActionsToScriptConverter {
 

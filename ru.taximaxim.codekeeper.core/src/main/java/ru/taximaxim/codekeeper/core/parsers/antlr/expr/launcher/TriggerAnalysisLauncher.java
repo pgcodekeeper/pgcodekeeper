@@ -22,8 +22,8 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.ValueExprWithNmspc;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
-import ru.taximaxim.codekeeper.core.schema.PgTrigger;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
+import ru.taximaxim.codekeeper.core.schema.pg.PgTrigger;
 
 public class TriggerAnalysisLauncher extends AbstractAnalysisLauncher {
 

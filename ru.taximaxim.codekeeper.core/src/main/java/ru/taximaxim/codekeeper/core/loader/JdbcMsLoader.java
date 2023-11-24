@@ -26,18 +26,18 @@ import org.slf4j.LoggerFactory;
 
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
-import ru.taximaxim.codekeeper.core.loader.jdbc.MsAssembliesReader;
-import ru.taximaxim.codekeeper.core.loader.jdbc.MsCheckConstraintsReader;
-import ru.taximaxim.codekeeper.core.loader.jdbc.MsExtendedObjectsReader;
-import ru.taximaxim.codekeeper.core.loader.jdbc.MsFKReader;
-import ru.taximaxim.codekeeper.core.loader.jdbc.MsFPVTReader;
-import ru.taximaxim.codekeeper.core.loader.jdbc.MsIndicesAndPKReader;
-import ru.taximaxim.codekeeper.core.loader.jdbc.MsRolesReader;
-import ru.taximaxim.codekeeper.core.loader.jdbc.MsSchemasReader;
-import ru.taximaxim.codekeeper.core.loader.jdbc.MsSequencesReader;
-import ru.taximaxim.codekeeper.core.loader.jdbc.MsTablesReader;
-import ru.taximaxim.codekeeper.core.loader.jdbc.MsTypesReader;
-import ru.taximaxim.codekeeper.core.loader.jdbc.MsUsersReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.ms.MsAssembliesReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.ms.MsCheckConstraintsReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.ms.MsExtendedObjectsReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.ms.MsFKReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.ms.MsFPVTReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.ms.MsIndicesAndPKReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.ms.MsRolesReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.ms.MsSchemasReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.ms.MsSequencesReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.ms.MsTablesReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.ms.MsTypesReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.ms.MsUsersReader;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
@@ -57,7 +57,7 @@ public class JdbcMsLoader extends JdbcLoaderBase {
 
     @Override
     public PgDatabase load() throws IOException, InterruptedException {
-        PgDatabase d = new PgDatabase(args);
+        PgDatabase d = new PgDatabase(getArgs());
 
         LOG.info("Reading db using JDBC.");
         setCurrentOperation("connection setup");
@@ -69,7 +69,7 @@ public class JdbcMsLoader extends JdbcLoaderBase {
             connection.setAutoCommit(false);
             // TODO maybe not needed and/or may cause extra locking (compared to PG)
             // may need to be removed, Source Control seems to work in default READ COMMITTED state
-            runner.run(statement, "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ");
+            getRunner().run(statement, "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ");
 
             // TODO add role cache if needed to process permissions, or remove this
             //queryRoles();

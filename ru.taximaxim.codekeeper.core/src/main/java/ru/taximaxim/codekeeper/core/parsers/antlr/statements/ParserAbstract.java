@@ -74,24 +74,24 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Identity_valueContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Index_optionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Qualified_nameContext;
-import ru.taximaxim.codekeeper.core.schema.AbstractPgFunction;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.ArgMode;
 import ru.taximaxim.codekeeper.core.schema.Argument;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.ICast;
 import ru.taximaxim.codekeeper.core.schema.IStatement;
-import ru.taximaxim.codekeeper.core.schema.MsColumn;
-import ru.taximaxim.codekeeper.core.schema.MsConstraintCheck;
-import ru.taximaxim.codekeeper.core.schema.MsConstraintFk;
-import ru.taximaxim.codekeeper.core.schema.MsConstraintPk;
-import ru.taximaxim.codekeeper.core.schema.MsTable;
-import ru.taximaxim.codekeeper.core.schema.MsType;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
-import ru.taximaxim.codekeeper.core.schema.PgFunction;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation.LocationType;
-import ru.taximaxim.codekeeper.core.schema.PgOperator;
+import ru.taximaxim.codekeeper.core.schema.ms.MsColumn;
+import ru.taximaxim.codekeeper.core.schema.ms.MsConstraintCheck;
+import ru.taximaxim.codekeeper.core.schema.ms.MsConstraintFk;
+import ru.taximaxim.codekeeper.core.schema.ms.MsConstraintPk;
+import ru.taximaxim.codekeeper.core.schema.ms.MsTable;
+import ru.taximaxim.codekeeper.core.schema.ms.MsType;
+import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgFunction;
+import ru.taximaxim.codekeeper.core.schema.pg.PgFunction;
+import ru.taximaxim.codekeeper.core.schema.pg.PgOperator;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.SimpleColumn;
 import ru.taximaxim.codekeeper.core.utils.Pair;
@@ -699,7 +699,7 @@ public abstract class ParserAbstract {
         c.accept(quotedOption, value);
     }
 
-    static void fillIncludingDepcy(Including_indexContext incl, PgStatement st,
+    protected static void fillIncludingDepcy(Including_indexContext incl, PgStatement st,
             String schema, String table) {
         for (IdentifierContext inclCol : incl.identifier()) {
             st.addDep(new GenericColumn(schema, table, inclCol.getText(), DbObjType.COLUMN));

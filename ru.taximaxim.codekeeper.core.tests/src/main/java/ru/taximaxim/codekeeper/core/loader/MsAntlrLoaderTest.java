@@ -35,21 +35,21 @@ import ru.taximaxim.codekeeper.core.schema.AbstractIndex;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.Argument;
 import ru.taximaxim.codekeeper.core.schema.FuncTypes;
-import ru.taximaxim.codekeeper.core.schema.MsColumn;
-import ru.taximaxim.codekeeper.core.schema.MsConstraintCheck;
-import ru.taximaxim.codekeeper.core.schema.MsConstraintFk;
-import ru.taximaxim.codekeeper.core.schema.MsConstraintPk;
-import ru.taximaxim.codekeeper.core.schema.MsFunction;
-import ru.taximaxim.codekeeper.core.schema.MsIndex;
-import ru.taximaxim.codekeeper.core.schema.MsProcedure;
-import ru.taximaxim.codekeeper.core.schema.MsSchema;
-import ru.taximaxim.codekeeper.core.schema.MsSequence;
-import ru.taximaxim.codekeeper.core.schema.MsTable;
-import ru.taximaxim.codekeeper.core.schema.MsTrigger;
-import ru.taximaxim.codekeeper.core.schema.MsView;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgPrivilege;
 import ru.taximaxim.codekeeper.core.schema.SimpleColumn;
+import ru.taximaxim.codekeeper.core.schema.ms.MsColumn;
+import ru.taximaxim.codekeeper.core.schema.ms.MsConstraintCheck;
+import ru.taximaxim.codekeeper.core.schema.ms.MsConstraintFk;
+import ru.taximaxim.codekeeper.core.schema.ms.MsConstraintPk;
+import ru.taximaxim.codekeeper.core.schema.ms.MsFunction;
+import ru.taximaxim.codekeeper.core.schema.ms.MsIndex;
+import ru.taximaxim.codekeeper.core.schema.ms.MsProcedure;
+import ru.taximaxim.codekeeper.core.schema.ms.MsSchema;
+import ru.taximaxim.codekeeper.core.schema.ms.MsSequence;
+import ru.taximaxim.codekeeper.core.schema.ms.MsTable;
+import ru.taximaxim.codekeeper.core.schema.ms.MsTrigger;
+import ru.taximaxim.codekeeper.core.schema.ms.MsView;
 
 /**
  * Tests for PgDiffLoader class.

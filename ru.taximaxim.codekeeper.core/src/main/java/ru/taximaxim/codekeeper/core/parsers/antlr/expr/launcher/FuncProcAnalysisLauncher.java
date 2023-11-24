@@ -30,10 +30,10 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.expr.SqlFunctionBody;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Function_bodyContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Plpgsql_functionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.SqlContext;
-import ru.taximaxim.codekeeper.core.schema.AbstractPgFunction;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
+import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgFunction;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {

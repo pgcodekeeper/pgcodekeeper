@@ -33,8 +33,8 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Rewrite_co
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Select_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Update_stmt_for_psqlContext;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
-import ru.taximaxim.codekeeper.core.schema.PgRule;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
+import ru.taximaxim.codekeeper.core.schema.pg.PgRule;
 
 public class RuleAnalysisLauncher extends AbstractAnalysisLauncher {
 

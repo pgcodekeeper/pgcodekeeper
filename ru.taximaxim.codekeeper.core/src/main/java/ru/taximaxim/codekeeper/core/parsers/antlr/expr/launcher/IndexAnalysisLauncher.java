@@ -24,9 +24,9 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Index_colu
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Index_restContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Storage_parameter_optionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Storage_parametersContext;
-import ru.taximaxim.codekeeper.core.schema.PgIndex;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
+import ru.taximaxim.codekeeper.core.schema.pg.PgIndex;
 
 public class IndexAnalysisLauncher extends AbstractAnalysisLauncher {
 

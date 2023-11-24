@@ -38,8 +38,8 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Security_
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Sql_clausesContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.St_clauseContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Tsql_fileContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.mssql.AlterMsAuthorization;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.mssql.GrantMsPrivilege;
+import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ms.AlterMsAuthorization;
+import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ms.GrantMsPrivilege;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.StatementOverride;
