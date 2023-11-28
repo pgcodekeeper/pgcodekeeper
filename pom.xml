@@ -36,9 +36,6 @@
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <tycho.version>2.7.5</tycho.version>
-        <jacoco.version>0.8.10</jacoco.version>
-        <maven.surefire.version>2.22.2</maven.surefire.version>
         <target.definition.file>app</target.definition.file>
 
         <sonar.language>java</sonar.language>
@@ -47,6 +44,13 @@
         <sonar.java.target>11</sonar.java.target>
         <sonar.core.coveragePlugin>jacoco</sonar.core.coveragePlugin>
         <sonar.junit.reportPath>${project.build.directory}/surefire-reports/</sonar.junit.reportPath>
+
+        <tycho.version>2.7.5</tycho.version>
+        <jacoco.version>0.8.11</jacoco.version>
+        <antlr.version>4.13.1</antlr.version>
+        <maven.surefire.version>3.2.2</maven.surefire.version>
+        <maven.enforcer.version>3.4.1</maven.enforcer.version>
+        <maven.jarsigner.version>3.0.0</maven.jarsigner.version>
 
         <keystore>/tmp/keystore.jks</keystore>
     </properties>
@@ -62,7 +66,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-jarsigner-plugin</artifactId>
-                        <version>3.0.0</version>
+                        <version>${maven.jarsigner.version}</version>
                         <configuration>
                             <keystore>${keystore}</keystore>
                             <alias>pgCodeKeeper</alias>
@@ -130,7 +134,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>3.0.0-M3</version>
+                <version>${maven.enforcer.version}</version>
                 <executions>
                     <execution>
                         <goals>
