@@ -43,6 +43,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PartInitException;
 
@@ -110,6 +111,10 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
             try {
                 getContainer().run(true, true, treediffer);
             } catch (InvocationTargetException ex) {
+                MessageBox mb = new MessageBox(getContainer().getShell(), SWT.ERROR);
+                mb.setText(Messages.error_in_differ_thread);
+                mb.setMessage(ex.getLocalizedMessage());
+                mb.open();
                 e.doit = false;
                 ExceptionNotifier.notifyDefault(Messages.error_in_differ_thread, ex);
                 return;
@@ -142,8 +147,8 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                     source.getArguments().getDbType(), null, pageDiff.getOneTimePrefs());
             getContainer().run(true, true, differ);
 
-            FileUtilsUi.saveOpenTmpSqlEditor(differ.getDiffDirect(),
-                    "diff_wizard_result", source.getArguments().getDbType()); //$NON-NLS-1$
+            FileUtilsUi.saveOpenTmpSqlEditor(differ.getDiffDirect(), "diff_wizard_result", //$NON-NLS-1$
+                    source.getArguments().getDbType());
             return true;
         } catch (InvocationTargetException ex) {
             ExceptionNotifier.notifyDefault(Messages.error_in_differ_thread, ex);
@@ -259,7 +264,6 @@ class PageDiff extends WizardPage implements Listener {
         cmbDbType = new ComboViewer(compTz, SWT.READ_ONLY);
         cmbDbType.setContentProvider(ArrayContentProvider.getInstance());
         cmbDbType.setInput(DatabaseType.values());
-        cmbDbType.getCombo().select(0);
         cmbDbType.addSelectionChangedListener(e -> {
             StructuredSelection sel = (StructuredSelection) e.getSelection();
             DatabaseType selDbType = (DatabaseType) sel.getFirstElement();
@@ -268,6 +272,7 @@ class PageDiff extends WizardPage implements Listener {
             getWizard().getContainer().updateButtons();
             getWizard().getContainer().updateMessage();
         });
+        cmbDbType.setSelection(new StructuredSelection(DatabaseType.PG));
 
         Button btnShowPrefs = new Button(container, SWT.CHECK);
         btnShowPrefs.setText(Messages.DiffWizard_show_advanced_options);
@@ -295,75 +300,50 @@ class PageDiff extends WizardPage implements Listener {
             }
         });
 
-        btnNoPrivileges = new Button(container, SWT.CHECK);
-        btnNoPrivileges.setText(Messages.dbUpdatePrefPage_ignore_privileges);
-        btnNoPrivileges.setSelection(mainPrefs.getBoolean(PREF.NO_PRIVILEGES));
-        btnNoPrivileges.setVisible(false);
+        btnNoPrivileges = createBoooleanButton(container, PREF.NO_PRIVILEGES,
+                Messages.dbUpdatePrefPage_ignore_privileges);
 
-        btnIgnoreColumnOrder = new Button(container, SWT.CHECK);
-        btnIgnoreColumnOrder.setText(Messages.GeneralPrefPage_ignore_column_order);
-        btnIgnoreColumnOrder.setSelection(mainPrefs.getBoolean(PREF.IGNORE_COLUMN_ORDER));
-        btnIgnoreColumnOrder.setVisible(false);
+        btnIgnoreColumnOrder = createBoooleanButton(container, PREF.IGNORE_COLUMN_ORDER,
+                Messages.GeneralPrefPage_ignore_column_order);
 
-        btnEnableFuncDep = new Button(container, SWT.CHECK);
-        btnEnableFuncDep.setText(Messages.GeneralPrefPage_enable_body_dependencies);
+        btnEnableFuncDep = createBoooleanButton(container, PREF.ENABLE_BODY_DEPENDENCIES,
+                Messages.GeneralPrefPage_enable_body_dependencies);
         btnEnableFuncDep.setToolTipText(Messages.GeneralPrefPage_body_depcy_tooltip);
-        btnEnableFuncDep.setSelection(mainPrefs.getBoolean(PREF.ENABLE_BODY_DEPENDENCIES));
-        btnEnableFuncDep.setVisible(false);
 
-        btnSimplifyView = new Button(container, SWT.CHECK);
-        btnSimplifyView.setText(Messages.GeneralPrefPage_simplify_view);
-        btnSimplifyView.setSelection(mainPrefs.getBoolean(PREF.SIMPLIFY_VIEW));
-        btnSimplifyView.setVisible(false);
+        btnSimplifyView = createBoooleanButton(container, PREF.SIMPLIFY_VIEW,
+                Messages.GeneralPrefPage_simplify_view);
 
         btnUseGlobalIgnoreList = new Button(container, SWT.CHECK);
         btnUseGlobalIgnoreList.setText(Messages.ProjectProperties_use_global_ignore_list);
         btnUseGlobalIgnoreList.setSelection(true);
         btnUseGlobalIgnoreList.setVisible(false);
 
-        btnScriptAddTransact = new Button(container, SWT.CHECK);
-        btnScriptAddTransact.setText(Messages.dbUpdatePrefPage_script_add_transaction);
-        btnScriptAddTransact.setSelection(mainPrefs.getBoolean(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION));
-        btnScriptAddTransact.setVisible(false);
+        btnScriptAddTransact = createBoooleanButton(container, DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION,
+                Messages.dbUpdatePrefPage_script_add_transaction);
 
-        btnCheckFuncBodies = new Button(container, SWT.CHECK);
-        btnCheckFuncBodies.setText(Messages.dbUpdatePrefPage_check_function_bodies);
-        btnCheckFuncBodies.setSelection(mainPrefs.getBoolean(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES));
-        btnCheckFuncBodies.setVisible(false);
+        btnCheckFuncBodies = createBoooleanButton(container, DB_UPDATE_PREF.CHECK_FUNCTION_BODIES,
+                Messages.dbUpdatePrefPage_check_function_bodies);
 
-        btnAlterColUsingExpr = new Button(container, SWT.CHECK);
-        btnAlterColUsingExpr.setText(Messages.dbUpdatePrefPage_switch_on_off_using);
-        btnAlterColUsingExpr.setSelection(mainPrefs.getBoolean(DB_UPDATE_PREF.USING_ON_OFF));
-        btnAlterColUsingExpr.setVisible(false);
+        btnAlterColUsingExpr = createBoooleanButton(container, DB_UPDATE_PREF.USING_ON_OFF,
+                Messages.dbUpdatePrefPage_switch_on_off_using);
 
-        btnCreateIdxConcurrent = new Button(container, SWT.CHECK);
-        btnCreateIdxConcurrent.setText(Messages.DbUpdatePrefPage_print_index_with_concurrently);
-        btnCreateIdxConcurrent.setSelection(mainPrefs.getBoolean(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY));
-        btnCreateIdxConcurrent.setVisible(false);
+        btnCreateIdxConcurrent = createBoooleanButton(container, DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY,
+                Messages.DbUpdatePrefPage_print_index_with_concurrently);
 
-        btnConstraintNotValid = new Button(container, SWT.CHECK);
-        btnConstraintNotValid.setText(Messages.ApplyCustomDialog_constraint_not_valid);
-        btnConstraintNotValid.setSelection(mainPrefs.getBoolean(DB_UPDATE_PREF.PRINT_CONSTRAINT_NOT_VALID));
-        btnConstraintNotValid.setVisible(false);
+        btnConstraintNotValid = createBoooleanButton(container, DB_UPDATE_PREF.PRINT_CONSTRAINT_NOT_VALID,
+                Messages.ApplyCustomDialog_constraint_not_valid);
 
-        btnScriptFromSelObjs = new Button(container, SWT.CHECK);
-        btnScriptFromSelObjs.setText(Messages.DbUpdatePrefPage_script_from_selected_objs);
-        btnScriptFromSelObjs.setSelection(mainPrefs.getBoolean(DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS));
-        btnScriptFromSelObjs.setVisible(false);
-        btnGenerateExists = new Button(container, SWT.CHECK);
-        btnGenerateExists.setText(Messages.DbUpdatePrefPage_option_if_exists);
-        btnGenerateExists.setSelection(mainPrefs.getBoolean(DB_UPDATE_PREF.GENERATE_EXISTS));
-        btnGenerateExists.setVisible(false);
+        btnScriptFromSelObjs = createBoooleanButton(container, DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS,
+                Messages.DbUpdatePrefPage_script_from_selected_objs);
 
-        btnDropBeforeCreate = new Button(container, SWT.CHECK);
-        btnDropBeforeCreate.setText(Messages.DbUpdatePrefPage_option_drop_object);
-        btnDropBeforeCreate.setSelection(mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_BEFORE_CREATE));
-        btnDropBeforeCreate.setVisible(false);
+        btnGenerateExists = createBoooleanButton(container, DB_UPDATE_PREF.GENERATE_EXISTS,
+                Messages.DbUpdatePrefPage_option_if_exists);
 
-        btnDataMovementMode = new Button(container, SWT.CHECK);
-        btnDataMovementMode.setText(Messages.DbUpdatePrefPage_allow_data_movement);
-        btnDataMovementMode.setSelection(mainPrefs.getBoolean(DB_UPDATE_PREF.DATA_MOVEMENT_MODE));
-        btnDataMovementMode.setVisible(false);
+        btnDropBeforeCreate = createBoooleanButton(container, DB_UPDATE_PREF.DROP_BEFORE_CREATE,
+                Messages.DbUpdatePrefPage_option_drop_object);
+
+        btnDataMovementMode = createBoooleanButton(container, DB_UPDATE_PREF.DATA_MOVEMENT_MODE,
+                Messages.DbUpdatePrefPage_allow_data_movement);
 
         if (proj != null) {
             dbTarget.setDbStore(proj.getProject().getLocation().toFile());
@@ -372,11 +352,18 @@ class PageDiff extends WizardPage implements Listener {
         setControl(container);
     }
 
-    private void timeZoneWarn() {
+    private Button createBoooleanButton(Composite container, String pref, String btnText) {
+        Button btn = new Button(container, SWT.CHECK);
+        btn.setText(btnText);
+        btn.setSelection(mainPrefs.getBoolean(pref));
+        btn.setVisible(false);
+        return btn;
+	}
+
+	private void timeZoneWarn() {
         String tz = cmbTimezone.getCombo().getText();
         GridData data = (GridData) lblWarnPosix.getLayoutData();
-        if ((!Consts.UTC.equals(tz)
-                && tz.startsWith(Consts.UTC)) == data.exclude) {
+        if ((!Consts.UTC.equals(tz) && tz.startsWith(Consts.UTC)) == data.exclude) {
             lblWarnPosix.setVisible(data.exclude);
             data.exclude = !data.exclude;
             lblWarnPosix.getParent().layout();
@@ -424,18 +411,18 @@ class PageDiff extends WizardPage implements Listener {
     public Map<String, Boolean> getOneTimePrefs() {
         Map<String, Boolean> oneTimePrefs = new HashMap<>();
 
-        oneTimePrefs.put(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION, btnScriptAddTransact.getSelection());
+        oneTimePrefs.put(PREF.SIMPLIFY_VIEW, btnSimplifyView.getSelection());
         oneTimePrefs.put(PREF.NO_PRIVILEGES, btnNoPrivileges.getSelection());
         oneTimePrefs.put(PREF.IGNORE_COLUMN_ORDER, btnIgnoreColumnOrder.getSelection());
         oneTimePrefs.put(PREF.ENABLE_BODY_DEPENDENCIES, btnEnableFuncDep.getSelection());
         oneTimePrefs.put(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, btnUseGlobalIgnoreList.getSelection());
+        oneTimePrefs.put(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION, btnScriptAddTransact.getSelection());
         oneTimePrefs.put(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES, btnCheckFuncBodies.getSelection());
         oneTimePrefs.put(DB_UPDATE_PREF.USING_ON_OFF, btnAlterColUsingExpr.getSelection());
         oneTimePrefs.put(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY, btnCreateIdxConcurrent.getSelection());
         oneTimePrefs.put(DB_UPDATE_PREF.PRINT_CONSTRAINT_NOT_VALID, btnConstraintNotValid.getSelection());
         oneTimePrefs.put(DB_UPDATE_PREF.GENERATE_EXISTS, btnGenerateExists.getSelection());
         oneTimePrefs.put(DB_UPDATE_PREF.DROP_BEFORE_CREATE, btnDropBeforeCreate.getSelection());
-        oneTimePrefs.put(PREF.SIMPLIFY_VIEW, btnSimplifyView.getSelection());
         oneTimePrefs.put(DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS, btnScriptFromSelObjs.getSelection());
         oneTimePrefs.put(DB_UPDATE_PREF.DATA_MOVEMENT_MODE, btnDataMovementMode.getSelection());
 
