@@ -60,7 +60,7 @@ public abstract class AbstractModelExporter {
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractModelExporter.class);
 
-    protected static final String GROUP_DELIMITER =
+    private static final String GROUP_DELIMITER =
             "\n\n--------------------------------------------------------------------------------\n\n";
 
     /**
@@ -81,7 +81,7 @@ public abstract class AbstractModelExporter {
     /**
      * SQL files encoding.
      */
-    protected final String sqlEncoding;
+    private final String sqlEncoding;
 
     /**
      * Objects that we need to operate on.

@@ -28,7 +28,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgFunction;
 
 public class PgPrivilege implements IHashable {
 
-    public static final String WITH_GRANT_OPTION = " WITH GRANT OPTION";
+    private static final String WITH_GRANT_OPTION = " WITH GRANT OPTION";
 
     private final String state;
     private final String permission;

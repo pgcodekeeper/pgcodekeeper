@@ -48,7 +48,7 @@ import ru.taximaxim.codekeeper.core.localizations.Messages;
 public abstract class XmlStore<T> {
 
     protected final String fileName;
-    protected final String rootTag;
+    private final String rootTag;
 
     private volatile Document cachedDocument;
 

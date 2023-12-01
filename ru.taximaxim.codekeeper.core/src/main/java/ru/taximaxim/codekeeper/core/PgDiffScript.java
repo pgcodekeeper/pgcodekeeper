@@ -81,7 +81,7 @@ public class PgDiffScript {
 
     public String getText() {
         return statements.stream()
-                .map(st -> st.statement.trim())
+                .map(st -> st.getStatement().trim())
                 .filter(st -> !st.isBlank()) // sequence change may be empty
                 .collect(Collectors.joining("\n\n"));
     }

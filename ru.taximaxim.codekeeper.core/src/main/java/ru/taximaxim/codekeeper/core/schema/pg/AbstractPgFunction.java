@@ -34,9 +34,9 @@ public abstract class AbstractPgFunction extends AbstractFunction {
 
     public static final String FROM_CURRENT = "FROM CURRENT";
 
-    protected static final float DEFAULT_INTERNAL_PROCOST = 1.0f;
-    protected static final float DEFAULT_PROCOST = 100.0f;
-    protected static final float DEFAULT_PROROWS = 1000.0f;
+    private static final float DEFAULT_INTERNAL_PROCOST = 1.0f;
+    private static final float DEFAULT_PROCOST = 100.0f;
+    private static final float DEFAULT_PROROWS = 1000.0f;
 
     private float rows = DEFAULT_PROROWS;
     private boolean isWindow;
@@ -51,9 +51,9 @@ public abstract class AbstractPgFunction extends AbstractFunction {
     private String supportFunc;
     private String executeOn;
 
-    protected final List<String> transforms = new ArrayList<>();
-    protected final Map<String, String> configurations = new LinkedHashMap<>();
-    protected final Map<String, String> returnsColumns = new LinkedHashMap<>();
+    private final List<String> transforms = new ArrayList<>();
+    private final Map<String, String> configurations = new LinkedHashMap<>();
+    private final Map<String, String> returnsColumns = new LinkedHashMap<>();
 
     private String signatureCache;
     private boolean inStatementBody;

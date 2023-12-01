@@ -104,7 +104,7 @@ public final class DiffTree {
 
     private final IProgressMonitor monitor;
 
-    public DiffTree(IProgressMonitor monitor) {
+    private DiffTree(IProgressMonitor monitor) {
         this.monitor = monitor;
     }
 

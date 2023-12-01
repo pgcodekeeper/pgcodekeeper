@@ -86,7 +86,7 @@ public class AlterOther extends ParserAbstract {
         addObjReference(Arrays.asList(ctx.identifier()), DbObjType.DATABASE, ACTION_ALTER);
     }
 
-    public void alterFunction(Alter_function_statementContext ctx) {
+    private void alterFunction(Alter_function_statementContext ctx) {
         DbObjType type;
         if (ctx.FUNCTION() != null) {
             type = DbObjType.FUNCTION;
@@ -100,11 +100,11 @@ public class AlterOther extends ParserAbstract {
                 type, ACTION_ALTER);
     }
 
-    public void alterSchema(Alter_schema_statementContext ctx) {
+    private void alterSchema(Alter_schema_statementContext ctx) {
         addObjReference(Arrays.asList(ctx.identifier()), DbObjType.SCHEMA, ACTION_ALTER);
     }
 
-    public void alterType(Alter_type_statementContext ctx) {
+    private void alterType(Alter_type_statementContext ctx) {
         List<ParserRuleContext> ids = getIdentifiers(ctx.name);
         addObjReference(ids, DbObjType.TYPE, ACTION_ALTER);
 

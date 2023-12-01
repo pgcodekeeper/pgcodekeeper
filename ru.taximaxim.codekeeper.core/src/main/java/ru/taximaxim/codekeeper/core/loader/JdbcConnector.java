@@ -53,7 +53,7 @@ public class JdbcConnector {
     protected String url;
 
     protected Map<String, String> properties;
-    protected String timezone;
+    private String timezone;
     protected boolean readOnly;
 
     /**

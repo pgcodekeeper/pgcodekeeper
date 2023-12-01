@@ -61,10 +61,10 @@ public abstract class PgStatement implements IStatement, IHashable {
     protected final String name;
     protected String owner;
     protected String comment;
-    protected final Set<PgPrivilege> privileges = new LinkedHashSet<>();
+    private final Set<PgPrivilege> privileges = new LinkedHashSet<>();
 
     private PgStatement parent;
-    protected final Set<GenericColumn> deps = new LinkedHashSet<>();
+    private final Set<GenericColumn> deps = new LinkedHashSet<>();
 
     private final PgStatementMeta meta = new PgStatementMeta();
 
