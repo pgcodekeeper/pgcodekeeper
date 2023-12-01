@@ -83,6 +83,8 @@ import ru.taximaxim.codekeeper.core.schema.IStatement;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation.LocationType;
+import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SimpleColumn;
 import ru.taximaxim.codekeeper.core.schema.ms.MsColumn;
 import ru.taximaxim.codekeeper.core.schema.ms.MsConstraintCheck;
 import ru.taximaxim.codekeeper.core.schema.ms.MsConstraintFk;
@@ -92,8 +94,6 @@ import ru.taximaxim.codekeeper.core.schema.ms.MsType;
 import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgFunction;
 import ru.taximaxim.codekeeper.core.schema.pg.PgFunction;
 import ru.taximaxim.codekeeper.core.schema.pg.PgOperator;
-import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.schema.SimpleColumn;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 /**
@@ -468,7 +468,7 @@ public abstract class ParserAbstract {
             throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
         }
 
-        Path parent = Paths.get(fileName).getParent();
+        Path parent = Paths.get(fileName).toAbsolutePath().getParent();
         while (true) {
             Path folder = parent.getFileName();
             parent = parent.getParent();

@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Fixed a bug in the diff wizard.
+- Fixed a bug in the cli version when using a relative path.
 - Fixed a bug with adding a template.
 
 ## [8.9.0] - 2023-11-07
