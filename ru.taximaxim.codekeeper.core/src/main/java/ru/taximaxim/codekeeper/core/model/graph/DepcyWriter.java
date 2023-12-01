@@ -44,7 +44,7 @@ public class DepcyWriter {
     private final PrintWriter writer;
     private final EnumSet<DbObjType> filterObjTypes;
     private final boolean isInvertFilter;
-    protected final List<PrintObj> printObjects = new ArrayList<>();
+    private final List<PrintObj> printObjects = new ArrayList<>();
 
     public DepcyWriter(PgDatabase db, int depth, PrintWriter writer, boolean isReverse, Collection<DbObjType> filterObjTypes, boolean isInvertFilter) {
         this.db = db;

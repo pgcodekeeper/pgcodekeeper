@@ -101,8 +101,8 @@ import ru.taximaxim.codekeeper.core.utils.Pair;
  */
 public abstract class ParserAbstract {
 
-    protected static final String SCHEMA_ERROR = "Object must be schema qualified: ";
-    protected static final String LOCATION_ERROR  = "The object {0} must be defined in the file: {1}";
+    private static final String SCHEMA_ERROR = "Object must be schema qualified: ";
+    private static final String LOCATION_ERROR  = "The object {0} must be defined in the file: {1}";
 
     protected static final String ACTION_CREATE = "CREATE";
     protected static final String ACTION_ALTER = "ALTER";

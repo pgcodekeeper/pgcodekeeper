@@ -89,7 +89,7 @@ public class DropStatement extends ParserAbstract {
         addObjReference(getIdentifiers(ctx.name), type, ACTION_DROP);
     }
 
-    public void dropOperator(Drop_operator_statementContext ctx) {
+    private void dropOperator(Drop_operator_statementContext ctx) {
         for (Target_operatorContext targetOperCtx : ctx.target_operator()) {
             addObjReference(getIdentifiers(targetOperCtx.name), DbObjType.OPERATOR, ACTION_DROP);
         }
@@ -99,11 +99,11 @@ public class DropStatement extends ParserAbstract {
         addObjReference(Arrays.asList(ctx.cast_name()), DbObjType.CAST, ACTION_DROP);
     }
 
-    public void dropTrigger(Drop_trigger_statementContext ctx) {
+    private void dropTrigger(Drop_trigger_statementContext ctx) {
         dropChild(getIdentifiers(ctx.table_name), ctx.name, DbObjType.TRIGGER);
     }
 
-    public void dropRule(Drop_rule_statementContext ctx) {
+    private void dropRule(Drop_rule_statementContext ctx) {
         dropChild(getIdentifiers(ctx.schema_qualified_name()), ctx.name, DbObjType.RULE);
     }
 
@@ -117,12 +117,12 @@ public class DropStatement extends ParserAbstract {
         addObjReference(Arrays.asList(ctx.user_mapping_name()), DbObjType.USER_MAPPING, ACTION_DROP);
     }
 
-    public void dropChild(List<ParserRuleContext> tableIds, IdentifierContext nameCtx, DbObjType type) {
+    private void dropChild(List<ParserRuleContext> tableIds, IdentifierContext nameCtx, DbObjType type) {
         tableIds.add(nameCtx);
         addObjReference(tableIds, type, ACTION_DROP);
     }
 
-    public void drop(Drop_statementsContext ctx) {
+    private void drop(Drop_statementsContext ctx) {
         DbObjType type = getTypeOfDropStmt(ctx);
 
         if (type == null) {

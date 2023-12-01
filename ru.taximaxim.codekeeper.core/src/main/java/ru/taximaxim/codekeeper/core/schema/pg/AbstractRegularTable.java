@@ -34,12 +34,12 @@ import ru.taximaxim.codekeeper.core.schema.PgStatement;
  */
 public abstract class AbstractRegularTable extends AbstractPgTable implements PgSimpleOptionContainer {
 
-    protected boolean isLogged = true;
-    protected String tablespace;
-    protected boolean isRowSecurity;
-    protected boolean isForceSecurity;
-    protected String partitionBy;
-    protected String distribution;
+    private boolean isLogged = true;
+    private String tablespace;
+    private boolean isRowSecurity;
+    private boolean isForceSecurity;
+    private String partitionBy;
+    private String distribution;
 
     protected AbstractRegularTable(String name) {
         super(name);

@@ -27,10 +27,10 @@ import ru.taximaxim.codekeeper.core.schema.PgStatement;
  */
 class PgDiffStatement {
 
-    final DiffStatementType type;
-    final String objname;
-    final String statement;
-    final DbObjType statementType;
+    private final DiffStatementType type;
+    private final String objname;
+    private final String statement;
+    private final DbObjType statementType;
 
     public enum DiffStatementType {
         DROP, CREATE, OTHER
@@ -44,6 +44,10 @@ class PgDiffStatement {
         this.objname = (obj == null) ? null : obj.getQualifiedName();
         this.statement = statement;
         this.statementType = (obj == null) ? null : obj.getStatementType();
+    }
+
+    public String getStatement() {
+        return statement;
     }
 
     @Override

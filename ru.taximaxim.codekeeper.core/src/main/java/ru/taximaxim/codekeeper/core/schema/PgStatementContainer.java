@@ -29,10 +29,10 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgRule;
 public abstract class PgStatementContainer extends PgStatementWithSearchPath
 implements IRelation {
 
-    protected final Map<String, AbstractIndex> indexes = new LinkedHashMap<>();
-    protected final Map<String, AbstractTrigger> triggers = new LinkedHashMap<>();
-    protected final Map<String, PgRule> rules = new LinkedHashMap<>();
-    protected final Map<String, PgPolicy> policies = new LinkedHashMap<>();
+    private final Map<String, AbstractIndex> indexes = new LinkedHashMap<>();
+    private final Map<String, AbstractTrigger> triggers = new LinkedHashMap<>();
+    private final Map<String, PgRule> rules = new LinkedHashMap<>();
+    private final Map<String, PgPolicy> policies = new LinkedHashMap<>();
 
     protected PgStatementContainer(String name) {
         super(name);

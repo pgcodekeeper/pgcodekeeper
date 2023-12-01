@@ -52,12 +52,12 @@ public class PgColumn extends AbstractColumn implements PgSimpleOptionContainer,
     private static final Logger LOG = LoggerFactory.getLogger(PgColumn.class);
 
     private static final String ALTER_FOREIGN_OPTION =  "{0} OPTIONS ({1} {2} {3});";
-    protected static final String COMPRESSION = " COMPRESSION ";
+    private static final String COMPRESSION = " COMPRESSION ";
 
     private Integer statistics;
     private String storage;
-    protected final Map<String, String> options = new LinkedHashMap<>(0);
-    protected final Map<String, String> fOptions = new LinkedHashMap<>(0);
+    private final Map<String, String> options = new LinkedHashMap<>(0);
+    private final Map<String, String> fOptions = new LinkedHashMap<>(0);
     private AbstractSequence sequence;
     private String identityType;
     private String compression;

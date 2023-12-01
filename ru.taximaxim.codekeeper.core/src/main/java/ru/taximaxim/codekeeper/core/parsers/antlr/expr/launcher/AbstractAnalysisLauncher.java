@@ -56,7 +56,7 @@ public abstract class AbstractAnalysisLauncher {
     private final List<PgObjLocation> references = new ArrayList<>();
 
     protected PgStatementWithSearchPath stmt;
-    protected final ParserRuleContext ctx;
+    private final ParserRuleContext ctx;
     private final String location;
 
     private int offset;

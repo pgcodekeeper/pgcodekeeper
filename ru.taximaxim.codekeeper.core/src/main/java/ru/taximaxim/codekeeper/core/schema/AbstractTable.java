@@ -40,7 +40,7 @@ public abstract class AbstractTable extends PgStatementContainer implements Opti
     protected final List<AbstractColumn> columns = new ArrayList<>();
     protected final Map<String, String> options = new LinkedHashMap<>();
 
-    protected final Map<String, AbstractConstraint> constraints = new LinkedHashMap<>();
+    private final Map<String, AbstractConstraint> constraints = new LinkedHashMap<>();
 
     @Override
     public DbObjType getStatementType() {
