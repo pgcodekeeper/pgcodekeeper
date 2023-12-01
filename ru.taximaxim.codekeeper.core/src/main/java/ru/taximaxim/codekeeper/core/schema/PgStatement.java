@@ -318,7 +318,7 @@ public abstract class PgStatement implements IStatement, IHashable {
         case MS:
             return GO;
         default:
-            throw new RuntimeException(Messages.DatabaseType_unsupported_type + getDbType());
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + getDbType());
         }
     }
 

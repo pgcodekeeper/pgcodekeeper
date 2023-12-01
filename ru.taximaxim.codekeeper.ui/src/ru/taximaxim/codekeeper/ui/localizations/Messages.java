@@ -39,7 +39,6 @@ public final class Messages extends NLS {
     public static String error_in_differ_thread;
     public static String error_in_the_project_modifier_thread;
     public static String please_check_at_least_one_row;
-
     public static String projectEditorDiffer_save_project;
     public static String projectProperties_timezone_for_all_db_connections;
     public static String projectProperties_error_occurs_while_saving_properties;
@@ -318,8 +317,6 @@ public final class Messages extends NLS {
 
     public static String DbStoreEditorDialog_choice_db_group;
 
-    public static String DbStoreEditorDialog_connect_to_ms;
-
     public static String DbStoreEditorDialog_connection_properties;
 
     public static String DbStoreEditorDialog_connection_type;
@@ -351,8 +348,6 @@ public final class Messages extends NLS {
     public static String DbStoreEditorDialog_learn_more;
 
     public static String DbStoreEditorDialog_ms_cert;
-
-    public static String DbStoreEditorDialog_ms_sql_database;
 
     public static String DbStoreEditorDialog_select_ignore_file;
 
@@ -559,8 +554,6 @@ public final class Messages extends NLS {
     public static String DiffTableViewer_uri;
 
     public static String DiffWizard_db_tz;
-
-    public static String DiffWizard_ms_sql_dump;
 
     public static String DiffWizard_select_db_tz;
 
@@ -789,8 +782,6 @@ public final class Messages extends NLS {
     public static String PgImport_error_metadata;
 
     public static String PgImport_error_no_name;
-
-    public static String PgImport_import_as_mssql;
 
     public static String PgImport_import_error;
 

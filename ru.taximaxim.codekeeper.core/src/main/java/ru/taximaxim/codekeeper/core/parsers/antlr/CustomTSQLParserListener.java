@@ -200,6 +200,7 @@ implements TSqlContextProcessor {
         safeParseStatement(p, ctx);
     }
 
+
     private void create(Schema_createContext ctx) {
         ParserAbstract p;
         if (ctx.create_sequence() != null) {
