@@ -61,10 +61,11 @@ public class SQLEditorTemplatePrefPage extends TemplatePreferencePage {
         @Override
         public Object[] getElements(Object input) {
             // to users are shown only unprotected templates, because protected
-            // templates used in wizard of creating new object
+            // templates used in wizard of creating new object.
+            // id == null - custom template
             return Arrays.stream(fStore.getTemplateData(false))
-                    .filter(tmplPersData -> !tmplPersData.getId()
-                            .endsWith(SQLEditorTemplateManager.TEMPLATE_ID_PROTECTION_MARKER))
+                    .filter(tmplPersData -> tmplPersData.getId() == null
+                    || !tmplPersData.getId().endsWith(SQLEditorTemplateManager.TEMPLATE_ID_PROTECTION_MARKER))
                     .toArray();
         }
 
