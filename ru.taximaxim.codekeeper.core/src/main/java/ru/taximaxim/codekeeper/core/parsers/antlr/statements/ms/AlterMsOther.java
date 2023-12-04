@@ -43,8 +43,7 @@ public class AlterMsOther extends ParserAbstract {
             addObjReference(Arrays.asList(ctx.alter_schema_sql().schema_name),
                     DbObjType.SCHEMA, ACTION_ALTER);
         } else if (ctx.alter_user() != null) {
-            addObjReference(Arrays.asList(ctx.alter_user().username),
-                    DbObjType.USER, ACTION_ALTER);
+            addObjReference(Arrays.asList(ctx.alter_user().username), DbObjType.USER, ACTION_ALTER);
         } else if (ctx.alter_sequence() != null) {
             alterSequence(ctx.alter_sequence());
         }

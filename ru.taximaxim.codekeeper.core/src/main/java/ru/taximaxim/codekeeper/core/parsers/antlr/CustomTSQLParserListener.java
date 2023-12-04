@@ -325,8 +325,7 @@ implements TSqlContextProcessor {
                     || createCtx.create_server_audit() != null
                     || createCtx.create_server_role() != null
                     || createCtx.create_workload_group() != null
-                    || ((xmlIdxCtx = createCtx.create_xml_index()) != null
-                    && xmlIdxCtx.PRIMARY() == null)) {
+                    || ((xmlIdxCtx = createCtx.create_xml_index()) != null && xmlIdxCtx.PRIMARY() == null)) {
                 descrWordsCount = 3;
             } else if (createCtx.create_column_encryption_key() != null
                     || createCtx.create_column_master_key() != null
@@ -338,8 +337,7 @@ implements TSqlContextProcessor {
                     || createCtx.create_selective_index() != null
                     || createCtx.create_server_audit_specification() != null
                     || createCtx.create_xml_schema_collection() != null
-                    || ((xmlIdxCtx = createCtx.create_xml_index()) != null
-                    && xmlIdxCtx.PRIMARY() != null)) {
+                    || ((xmlIdxCtx = createCtx.create_xml_index()) != null && xmlIdxCtx.PRIMARY() != null)) {
                 descrWordsCount = 4;
             }
             return getActionDescription(ctx, descrWordsCount);
@@ -367,7 +365,8 @@ implements TSqlContextProcessor {
                     || alterCtx.alter_workload_group() != null
                     || alterCtx.create_or_alter_broker_priority() != null
                     || alterCtx.create_or_alter_event_session() != null
-                    || alterCtx.create_or_alter_resource_pool() != null) {
+                    || alterCtx.create_or_alter_resource_pool() != null
+                    || (alterCtx.alter_index() != null && alterCtx.alter_index().ALL() != null)) {
                 descrWordsCount = 3;
             } else if (alterCtx.alter_column_encryption_key() != null
                     || alterCtx.alter_database_encryption_key() != null

@@ -191,6 +191,7 @@ WITHIN_GROUP: W I T H I N ' ' G R O U P;
 WRITETEXT: W R I T E T E X T;
 
 // Additional keywords. They can be id, please keep them in sync with the parser.
+ABORT: A B O R T;
 ABORT_AFTER_WAIT: A B O R T '_' A F T E R '_' W A I T;
 ABSENT: A B S E N T;
 ABSOLUTE: A B S O L U T E;
