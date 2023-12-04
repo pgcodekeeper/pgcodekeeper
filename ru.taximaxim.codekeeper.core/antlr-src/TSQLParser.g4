@@ -86,6 +86,7 @@ schema_alter
     | alter_fulltext_catalog
     | alter_fulltext_index
     | alter_fulltext_stoplist
+    | alter_index
     | alter_login_sql_server
     | alter_master_key_sql_server
     | alter_message_type
@@ -1517,7 +1518,8 @@ xml_index_using
 
 // https://msdn.microsoft.com/en-us/library/ms188783.aspx
 create_index
-    : UNIQUE? clustered? INDEX index_name index_rest;
+    : UNIQUE? clustered? INDEX index_name index_rest
+    ;
 
 index_name
     : name=id ON table_name=qualified_name
@@ -1537,6 +1539,25 @@ index_include
 
 index_where
     : WHERE where=search_condition
+    ;
+
+alter_index
+    : INDEX (name=id | ALL) ON qualified_name alter_index_action
+    ;
+
+alter_index_action
+    : DISABLE
+    | PAUSE
+    | ABORT
+    | RESUME (WITH LR_BRACKET resume_option (COMMA resume_option)* RR_BRACKET)?
+    | REORGANIZE partition_number? index_options?
+    | SET LR_BRACKET index_option (COMMA index_option)* RR_BRACKET
+    | rebuild
+    ;
+
+resume_option
+    : simple_id EQUAL DECIMAL MINUTES?
+    | low_priority_lock_wait
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms187926(v=sql.120).aspx
@@ -1639,7 +1660,7 @@ update_statistics
 update_statistics_with_option
     : FULLSCAN (COMMA PERSIST_SAMPLE_PERSENT EQUAL on_off)?
     | SAMPLE DECIMAL (PERCENT | ROWS) (COMMA PERSIST_SAMPLE_PERSENT EQUAL on_off)?
-    | RESAMPLE (ON PARTITIONS LR_BRACKET (COMMA? (DECIMAL | DECIMAL TO DECIMAL))+ RR_BRACKET)
+    | RESAMPLE on_partition_clause
     | NORECOMPUTE
     | INCREMENTAL EQUAL on_off
     | MAXDOP EQUAL DECIMAL
@@ -1690,23 +1711,23 @@ alter_table
         | (ENABLE | DISABLE) TRIGGER (ALL | name_list)
         | (ENABLE | DISABLE) CHANGE_TRACKING (WITH LR_BRACKET TRACK_COLUMNS_UPDATED EQUAL on_off RR_BRACKET)?
         | SWITCH (PARTITION expression)? TO qualified_name (PARTITION expression)? (WITH LR_BRACKET low_priority_lock_wait RR_BRACKET)?
-        | REBUILD rebuild_options?)
+        | rebuild)
+    ;
+
+rebuild
+    : REBUILD partition_number? index_options?
     ;
 
 table_action_drop
     : (COLUMN | CONSTRAINT?) (IF EXISTS)? name_list
     ;
 
-rebuild_options
-    : (PARTITION EQUAL (ALL|DECIMAL))? WITH
-    LR_BRACKET simple_id EQUAL rebuild_option_value (COMMA simple_id EQUAL rebuild_option_value)* RR_BRACKET
+partition_number
+    : PARTITION EQUAL (ALL | DECIMAL)
     ;
 
-rebuild_option_value
-    : simple_id (ON (PARTITIONS LR_BRACKET DECIMAL RR_BRACKET)?| OFF)?
-    | ON (LR_BRACKET low_priority_lock_wait RR_BRACKET)?
-    | OFF
-    | DECIMAL
+on_partition_clause
+    : ON PARTITIONS LR_BRACKET DECIMAL (TO DECIMAL)? (COMMA DECIMAL (TO DECIMAL)?)* RR_BRACKET
     ;
 
 low_priority_lock_wait
@@ -2368,8 +2389,10 @@ index_option
 
 index_option_value
     : simple_id
-    | on_off
-    | DECIMAL
+    | ON (LR_BRACKET low_priority_lock_wait RR_BRACKET)?
+    | OFF
+    | DECIMAL MINUTES?
+    | (simple_id | ON | OFF) on_partition_clause
     ;
 
 cursor_common
@@ -3080,6 +3103,7 @@ id
 
 simple_id
     : ID
+    | ABORT
     | ABORT_AFTER_WAIT
     | ABSENT
     | ABSOLUTE

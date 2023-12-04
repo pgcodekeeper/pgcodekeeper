@@ -1,21 +1,52 @@
-Reference: Object = i1 (INDEX), action = CREATE, offset = 65, line number = 2, charPositionInLine = 13
-Reference: Object = t1 (TABLE), action = null, offset = 71, line number = 2, charPositionInLine = 19
-Reference: Object = s1.i1 (INDEX), action = CREATE, offset = 184, line number = 5, charPositionInLine = 23
-Reference: Object = s1 (SCHEMA), action = null, offset = 193, line number = 5, charPositionInLine = 32
-Reference: Object = s1.t1 (TABLE), action = null, offset = 196, line number = 5, charPositionInLine = 35
-Reference: Object = i1 (INDEX), action = CREATE, offset = 344, line number = 8, charPositionInLine = 20
-Reference: Object = t1 (TABLE), action = null, offset = 350, line number = 8, charPositionInLine = 26
-Reference: Object = i1 (INDEX), action = CREATE, offset = 524, line number = 11, charPositionInLine = 20
-Reference: Object = t1 (TABLE), action = null, offset = 530, line number = 11, charPositionInLine = 26
-Reference: Object = "Person"."IX_Address_PostalCode" (INDEX), action = CREATE, offset = 596, line number = 13, charPositionInLine = 26
-Reference: Object = "Person" (SCHEMA), action = null, offset = 627, line number = 14, charPositionInLine = 7
-Reference: Object = "Person"."Address" (TABLE), action = null, offset = 634, line number = 14, charPositionInLine = 14
-Reference: Object = "Production"."IX_BillOfMaterials_ComponentID" (INDEX), action = CREATE, offset = 769, line number = 18, charPositionInLine = 26
-Reference: Object = "Production" (SCHEMA), action = null, offset = 807, line number = 19, charPositionInLine = 7
-Reference: Object = "Production"."BillOfMaterials" (TABLE), action = null, offset = 818, line number = 19, charPositionInLine = 18
-Reference: Object = dbo.index_table1 (INDEX), action = CREATE, offset = 921, line number = 23, charPositionInLine = 26
-Reference: Object = dbo (SCHEMA), action = null, offset = 939, line number = 23, charPositionInLine = 44
-Reference: Object = dbo.table1 (TABLE), action = null, offset = 945, line number = 23, charPositionInLine = 50
-Reference: Object = "Purchasing"."IX_ProductVendor_BusinessEntityID" (INDEX), action = DROP, offset = 1533, line number = 48, charPositionInLine = 11
-Reference: Object = "Purchasing" (SCHEMA), action = null, offset = 1574, line number = 49, charPositionInLine = 7
-Reference: Object = "Purchasing"."ProductVendor" (TABLE), action = null, offset = 1585, line number = 49, charPositionInLine = 18
+Reference: Object = i1 (INDEX), action = CREATE, offset = 29, line number = 2, charPositionInLine = 13
+Reference: Object = t1 (TABLE), action = null, offset = 35, line number = 2, charPositionInLine = 19
+Reference: Object = s1.i1 (INDEX), action = CREATE, offset = 69, line number = 3, charPositionInLine = 23
+Reference: Object = s1 (SCHEMA), action = null, offset = 78, line number = 3, charPositionInLine = 32
+Reference: Object = s1.t1 (TABLE), action = null, offset = 81, line number = 3, charPositionInLine = 35
+Reference: Object = i1 (INDEX), action = CREATE, offset = 112, line number = 4, charPositionInLine = 20
+Reference: Object = t1 (TABLE), action = null, offset = 118, line number = 4, charPositionInLine = 26
+Reference: Object = i1 (INDEX), action = CREATE, offset = 175, line number = 5, charPositionInLine = 20
+Reference: Object = t1 (TABLE), action = null, offset = 181, line number = 5, charPositionInLine = 26
+Reference: Object = i (INDEX), action = CREATE, offset = 244, line number = 6, charPositionInLine = 26
+Reference: Object = t (TABLE), action = null, offset = 249, line number = 6, charPositionInLine = 31
+Reference: Object = i (INDEX), action = CREATE, offset = 343, line number = 7, charPositionInLine = 26
+Reference: Object = t (TABLE), action = null, offset = 348, line number = 7, charPositionInLine = 31
+Reference: Object = i (INDEX), action = CREATE, offset = 404, line number = 8, charPositionInLine = 23
+Reference: Object = t (TABLE), action = null, offset = 409, line number = 8, charPositionInLine = 28
+Reference: Object = i (INDEX), action = CREATE, offset = 578, line number = 9, charPositionInLine = 23
+Reference: Object = t (TABLE), action = null, offset = 583, line number = 9, charPositionInLine = 28
+Reference: Object = i (INDEX), action = CREATE, offset = 718, line number = 10, charPositionInLine = 23
+Reference: Object = t (TABLE), action = null, offset = 723, line number = 10, charPositionInLine = 28
+Reference: Object = dbo.index_table1 (INDEX), action = CREATE, offset = 900, line number = 12, charPositionInLine = 26
+Reference: Object = dbo (SCHEMA), action = null, offset = 918, line number = 12, charPositionInLine = 44
+Reference: Object = dbo.table1 (TABLE), action = null, offset = 924, line number = 12, charPositionInLine = 50
+Reference: Object = "Purchasing"."IX_ProductVendor_BusinessEntityID" (INDEX), action = DROP, offset = 1383, line number = 35, charPositionInLine = 11
+Reference: Object = "Purchasing" (SCHEMA), action = null, offset = 1420, line number = 35, charPositionInLine = 48
+Reference: Object = "Purchasing"."ProductVendor" (TABLE), action = null, offset = 1431, line number = 35, charPositionInLine = 59
+Reference: action = ALTER INDEX ALL, offset = 1462, line number = 38, charPositionInLine = 0
+Reference: action = ALTER INDEX ALL, offset = 1495, line number = 39, charPositionInLine = 0
+Reference: action = ALTER INDEX ALL, offset = 1534, line number = 40, charPositionInLine = 0
+Reference: action = ALTER INDEX ALL, offset = 1646, line number = 41, charPositionInLine = 0
+Reference: action = ALTER INDEX, offset = 1874, line number = 42, charPositionInLine = 0
+Reference: action = ALTER INDEX, offset = 1910, line number = 43, charPositionInLine = 0
+Reference: action = ALTER INDEX, offset = 1952, line number = 44, charPositionInLine = 0
+Reference: action = ALTER INDEX, offset = 2003, line number = 45, charPositionInLine = 0
+Reference: action = ALTER INDEX, offset = 2077, line number = 46, charPositionInLine = 0
+Reference: action = ALTER INDEX, offset = 2144, line number = 47, charPositionInLine = 0
+Reference: action = ALTER INDEX, offset = 2208, line number = 48, charPositionInLine = 0
+Reference: action = ALTER INDEX, offset = 2291, line number = 49, charPositionInLine = 0
+Reference: action = ALTER INDEX, offset = 2382, line number = 50, charPositionInLine = 0
+Reference: action = ALTER INDEX, offset = 2498, line number = 51, charPositionInLine = 0
+Reference: action = ALTER INDEX, offset = 2599, line number = 52, charPositionInLine = 0
+Reference: action = ALTER INDEX, offset = 2750, line number = 53, charPositionInLine = 0
+Reference: action = ALTER INDEX, offset = 2789, line number = 54, charPositionInLine = 0
+Reference: action = ALTER INDEX, offset = 2864, line number = 55, charPositionInLine = 0
+Reference: action = ALTER INDEX, offset = 2917, line number = 56, charPositionInLine = 0
+Reference: action = ALTER INDEX, offset = 3006, line number = 57, charPositionInLine = 0
+Reference: action = ALTER INDEX, offset = 3078, line number = 58, charPositionInLine = 0
+Reference: action = ALTER INDEX, offset = 3190, line number = 59, charPositionInLine = 0
+Reference: action = ALTER INDEX, offset = 3232, line number = 60, charPositionInLine = 0
+Reference: action = ALTER INDEX, offset = 3266, line number = 61, charPositionInLine = 0
+Reference: action = ALTER INDEX, offset = 3319, line number = 62, charPositionInLine = 0
+Reference: action = ALTER INDEX, offset = 3353, line number = 63, charPositionInLine = 0
+Reference: action = ALTER INDEX, offset = 3505, line number = 64, charPositionInLine = 0

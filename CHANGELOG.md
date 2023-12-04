@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Added database name to console when executing migrations.
 - Added a field for selecting a database type from the list of supported databases.
+- Added support for ALTER INDEX syntax in MS SQL.
 
 ### Changed
 
