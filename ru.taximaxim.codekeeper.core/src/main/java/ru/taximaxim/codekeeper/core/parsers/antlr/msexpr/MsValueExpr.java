@@ -21,7 +21,6 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.All_distinct_expressionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Arbitrary_length_patternContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Case_expressionContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Column_declarationContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Data_typeContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Date_expressionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Edge_patternContext;
@@ -123,10 +122,6 @@ public class MsValueExpr extends MsAbstractExpr {
             orderBy(obc);
         } else if ((dt = functionCall.data_type()) != null) {
             addTypeDepcy(dt);
-        } else if (functionCall.OPENJSON() != null) {
-            for (Column_declarationContext col : functionCall.column_declaration()) {
-                addTypeDepcy(col.data_type());
-            }
         } else if (functionCall.IIF() != null) {
             search(functionCall.search_condition());
         } else {

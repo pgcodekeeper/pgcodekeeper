@@ -31,6 +31,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.From_item
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.From_primaryContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Full_column_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Function_callContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Open_jsonContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Open_xmlContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Order_by_clauseContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Order_by_expressionContext;
@@ -201,7 +202,6 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
 
     void from(From_itemContext item) {
         From_primaryContext primary;
-
         if (item.sub_item != null) {
             from(item.sub_item);
         } else if (item.PIVOT() != null) {
@@ -260,6 +260,7 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
         As_table_aliasContext alias = item.as_table_alias();
         Derived_tableContext der;
         Open_xmlContext xml;
+        Open_jsonContext json;
         Change_tableContext ct;
         Qualified_nameContext table;
 
@@ -277,12 +278,25 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
                 lateralAllowed = oldLateral;
             }
         } else if ((xml = item.open_xml()) != null) {
-            new MsValueExpr(this).expressionList(xml.expression_list());
+            MsValueExpr exp = new MsValueExpr(this);
+            exp.analyze(xml.expression());
+            exp.expressionList(xml.expression_list());
             Schema_declarationContext dec = xml.schema_declaration();
             if (dec != null) {
                 for (Column_declarationContext col : dec.column_declaration()) {
                     addTypeDepcy(col.data_type());
                 }
+            }
+            if (alias != null) {
+                addReference(alias.id().getText(), null);
+            }
+        } else if ((json = item.open_json()) != null) {
+            MsValueExpr exp = new MsValueExpr(this);
+            for (ExpressionContext expCtx : json.expression()) {
+                exp.analyze(expCtx);
+            }
+            for (Column_declarationContext col : json.column_declaration()) {
+                addTypeDepcy(col.data_type());
             }
             if (alias != null) {
                 addReference(alias.id().getText(), null);

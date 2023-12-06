@@ -89,7 +89,7 @@ class MsParserTest {
 
     @ParameterizedTest
     @CsvSource({
-        "ms_select, 1",
+        "ms_select, 3",
         "ms_statements, 1",
         "ms_xml_data_type, 1",
     })
