@@ -19,6 +19,17 @@ MERGE l
 WHEN NOT MATCHED THEN INSERT DEFAULT VALUES
 WHEN MATCHED THEN UPDATE SET S = @S;
 
+MERGE livesIn
+    USING ((SELECT @PersonId, @CityId, @StreetAddress) AS T (PersonId, CityId, StreetAddress)
+            JOIN Person ON T.PersonId = Person.ID
+            JOIN City ON T.CityId = City.ID)
+    ON MATCH (Person-(livesIn)->City)
+WHEN MATCHED THEN
+    UPDATE SET StreetAddress = @StreetAddress
+WHEN NOT MATCHED THEN
+    INSERT (from_id, to_id, StreetAddress)
+    VALUES (Person.node_id, City.node_id, treetAddress) ;
+
 MERGE dbo.Table1 AS T
     USING @Participation AS S
     ON (T.Id = S.Id)
@@ -41,3 +52,16 @@ MERGE dbo.Table1 AS T
       WHEN $action = 'DELETE' THEN DELETED.ParticipationCount
       END AS ParticipationCount
     OPTION (HASH GROUP);
+
+MERGE dbo.Sen WITH (HOLDLOCK) AS Target
+    USING Source
+    ON Source.SId = Target.SId
+    WHEN NOT MATCHED BY SOURCE AND Target.TrId = @TrId THEN DELETE
+    WHEN MATCHED THEN UPDATE SET Target.SName = Source.SName,
+                                 Target.UnactivateDate = Source.UnactivateDate,
+                         Target.SHostId = Source.SHostId
+    WHEN NOT MATCHED THEN
+        INSERT (SName,
+                PId,
+                FId)
+        VALUES (Source.SName, Source.PId, Source.UnactivateDate, Source.FId);

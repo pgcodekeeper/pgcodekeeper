@@ -2620,15 +2620,16 @@ from_item
     ;
 
 from_primary
-    : qualified_name              as_table_alias? insert_with_table_hints?
-    | rowset_function             as_table_alias?
-    | derived_table               as_table_alias
-    | change_table                as_table_alias
-    | function_call               as_table_alias?
-    | LOCAL_ID                    as_table_alias?
-    | LOCAL_ID DOT function_call  as_table_alias?
-    | open_xml                    as_table_alias?
-    | COLON COLON function_call   as_table_alias? // Build-in function (old syntax)
+    : qualified_name (with_table_hints? as_table_alias | as_table_alias? with_table_hints)?
+    | rowset_function                  (as_table_alias column_alias_list?)?
+    | derived_table                     as_table_alias column_alias_list?
+    | change_table                      as_table_alias column_alias_list?
+    | function_call                    (as_table_alias column_alias_list?)?
+    | LOCAL_ID                          as_table_alias?
+    | LOCAL_ID DOT function_call       (as_table_alias column_alias_list?)?
+    | open_xml                          as_table_alias?
+    | open_json                         as_table_alias?
+    | COLON COLON function_call         as_table_alias? // Build-in function (old syntax)
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms189463.aspx
@@ -2715,6 +2716,12 @@ open_xml
     (WITH LR_BRACKET schema_declaration RR_BRACKET)?
     ;
 
+ // https://docs.microsoft.com/en-us/sql/t-sql/functions/openjson-transact-sql
+open_json
+    : OPENJSON LR_BRACKET expression (COMMA expression)? RR_BRACKET
+    WITH LR_BRACKET column_declaration (AS JSON)? (COMMA column_declaration (AS JSON)?)* RR_BRACKET
+    ;
+
 schema_declaration
     : column_declaration (COMMA column_declaration)*
     ;
@@ -2726,6 +2733,7 @@ column_declaration
 change_table
     : CHANGETABLE LR_BRACKET
     (CHANGES qualified_name COMMA (NULL | DECIMAL | LOCAL_ID) | VERSION qualified_name COMMA primary_key_values)
+    (COMMA FORCESEEK)?
     RR_BRACKET
     ;
 
@@ -2780,16 +2788,13 @@ function_call
     // https://msdn.microsoft.com/en-us/library/bb839514.aspx
     | MIN_ACTIVE_ROWVERSION
     // https://docs.microsoft.com/en-us/sql/t-sql/xml/nodes-method-xml-data-type
-    | NODES LR_BRACKET xquery=STRING RR_BRACKET as_table_alias
+    | NODES LR_BRACKET xquery=STRING RR_BRACKET (as_table_alias column_alias_list?)?
     // https://msdn.microsoft.com/en-us/library/ms177562.aspx
     | NULLIF LR_BRACKET expression COMMA expression RR_BRACKET
     // https://msdn.microsoft.com/en-us/library/ms177587.aspx
     | SESSION_USER
     // https://msdn.microsoft.com/en-us/library/ms179930.aspx
     | SYSTEM_USER
-    // https://docs.microsoft.com/en-us/sql/t-sql/functions/openjson-transact-sql
-    | OPENJSON LR_BRACKET expression (COMMA expression)? RR_BRACKET
-    WITH LR_BRACKET column_declaration (AS JSON)? (COMMA column_declaration (AS JSON)?)* RR_BRACKET
     | USER
     // https://docs.microsoft.com/en-us/sql/t-sql/functions/next-value-for-transact-sql
     | NEXT VALUE FOR sequence_name = qualified_name over_clause?
@@ -2824,7 +2829,7 @@ switch_search_condition_section
     ;
 
 as_table_alias
-    : AS? id column_alias_list?
+    : AS? id
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms187373.aspx
@@ -2837,9 +2842,6 @@ insert_with_table_hints
     : WITH LR_BRACKET table_hint (COMMA? table_hint)* RR_BRACKET
     ;
 
-// Id runtime check. Id can be (FORCESCAN, HOLDLOCK, NOLOCK, NOWAIT, PAGLOCK, READCOMMITTED,
-// READCOMMITTEDLOCK, READPAST, READUNCOMMITTED, REPEATABLEREAD, ROWLOCK, TABLOCK, TABLOCKX
-// UPDLOCK, XLOCK)
 table_hint
     : NOEXPAND
     | INDEX LR_BRACKET index_value (COMMA index_value)* RR_BRACKET
@@ -2848,7 +2850,23 @@ table_hint
     | SERIALIZABLE
     | SNAPSHOT
     | SPATIAL_WINDOW_MAX_CELLS EQUAL DECIMAL
-    | ID
+    | HOLDLOCK
+    | FORCESCAN
+    | IGNORE_CONSTRAINTS
+    | IGNORE_TRIGGERS
+    | NOLOCK
+    | NOWAIT
+    | PAGLOCK
+    | READCOMMITTED
+    | READCOMMITTEDLOCK
+    | READPAST
+    | READUNCOMMITTED
+    | REPEATABLEREAD
+    | ROWLOCK
+    | TABLOCK
+    | TABLOCKX
+    | UPDLOCK
+    | XLOCK
     ;
 
 index_value
@@ -3299,7 +3317,7 @@ simple_id
     | FILEPATH
     | FILESTREAM
     | FILESTREAM_ON
-    | FILLFACTOR
+    | FILLFACTOR // technically, keyword
     | FILTER
     | FIRST
     | FOLLOWING
@@ -3308,6 +3326,7 @@ simple_id
     | FORCE_SERVICE_ALLOW_DATA_LOSS
     | FORCED
     | FORCESEEK
+    | FORCESCAN
     | FORMAT
     | FORWARD_ONLY
     | FULLSCAN
@@ -3327,7 +3346,9 @@ simple_id
     | HONOR_BROKER_PRIORITY
     | HOURS
     | IDENTITY_VALUE
+    | IGNORE_CONSTRAINTS
     | IGNORE_NONCLUSTERED_COLUMNSTORE_INDEX
+    | IGNORE_TRIGGERS
     | IIF
     | IMMEDIATE
     | IMPERSONATE
@@ -3456,6 +3477,7 @@ simple_id
     | NOINIT
     | NON_TRANSACTED_ACCESS
     | NONE
+    | NOLOCK
     | NORECOMPUTE
     | NORECOVERY
     | NOREWIND
@@ -3485,6 +3507,7 @@ simple_id
     | OWNER
     | OWNERSHIP
     | PAGE_VERIFY
+    | PAGLOCK
     | PARAMETERIZATION
     | PARSE
     | PARTIAL
@@ -3510,7 +3533,7 @@ simple_id
     | POPULATION
     | PORT
     | PRECEDING
-    | PRECISION
+    | PRECISION // keyword, but possible to use as ID
     | PREDICATE
     | PRIMARY_ROLE
     | PRIOR
@@ -3528,6 +3551,12 @@ simple_id
     | PROPERTY_SET_GUID
     | PROVIDER
     | PROVIDER_KEY_NAME
+    | READCOMMITTED
+    | READCOMMITTEDLOCK
+    | READPAST
+    | READUNCOMMITTED
+    | REPEATABLEREAD
+    | ROWLOCK
     | QUERY
     | QUERYTRACEON
     | QUEUE
@@ -3677,6 +3706,8 @@ simple_id
     | SYNCHRONOUS_COMMIT
     | SYNONYM
     | SYSTEM
+    | TABLOCK
+    | TABLOCKX
     | TAKE
     | TAPE
     | TARGET
@@ -3715,6 +3746,7 @@ simple_id
     | UNLOCK
     | UNMASK
     | UNSAFE
+    | UPDLOCK
     | URL
     | USED
     | USING
@@ -3735,6 +3767,7 @@ simple_id
     | WITNESS
     | WORK
     | WORKLOAD
+    | XLOCK
     | XML
     | XMLDATA
     | XMLNAMESPACES

@@ -1535,5 +1535,36 @@ SELECT TEXTVALID('pub_info.logo', TEXTPTR(logo)) FROM pub_info;
 SELECT COLUMNS_UPDATED();
 SELECT EVENTDATA();
 SELECT TRIGGER_NESTLEVEL( OBJECT_ID('xyz') , 'AFTER' , 'DML' );
+SELECT * FROM dbo.t1 WITH (UPDLOCK) p;
+SELECT * FROM dbo.t1 WITH (UPDLOCK) as p;
+SELECT * FROM dbo.t1 p WITH (UPDLOCK);
+SELECT * FROM dbo.t1 as p WITH (UPDLOCK);
+SELECT * FROM dbo.t1 p WITH (UPDLOCK);
+SELECT * FROM dbo.t1 as p WITH (UPDLOCK);
+
+SELECT ord.Lo AS ID, ord.FId, ISNULL (ord.TrueId, 0) AS TrueID, ord.SizeD
+FROM dbo.LAll AS ord (HOLDLOCK)
+    LEFT JOIN Rinfo.dbo.fms AS f (NOLOCK) ON f.FID = ord.FId
+    LEFT JOIN Rinfo.dbo.lo AS cser (NOLOCK) ON f.FID = cser.FID AND ord.LocalUserId = curuser.UserID
+    LEFT JOIN Rinfo.dbo.lo AS basicuser (NOLOCK) ON f.FID = basicuser.FID AND basicuser.UserID = 0
+    LEFT JOIN Rinfo.dbo.Pay AS pa (NOLOCK) ON f.FID = pa.FID
+    LEFT JOIN Rinfo.dbo.Pt AS ps (NOLOCK) ON ps.FID = f.FID AND ps.PID = 0
+    LEFT JOIN dbo.v_LResponses_Count AS lc WITH (NOLOCK) ON lc.LID = ord.LId
+    LEFT JOIN dbo.v_Loa_Ct AS bc WITH (NOLOCK) ON bc.LID = ord.LId
+WHERE ord.LoadId = ISNULL (@LID, ord.LId)
+  AND ord.FID = ISNULL (@FID, ord.FID)
+  AND ord.IsPublished = 1
+OPTION (RECOMPILE);
+        
+SELECT h.SalesOrderID, h.TotalDue, d.OrderQty
+FROM Sales.SalesOrderHeader AS h
+    INNER JOIN Sales.SalesOrderDetail t WITH (TABLOCK, INDEX(myindex)) ON h.SalesOrderID = d.SalesOrderID
+WHERE h.TotalDue > 100 AND (d.OrderQty > 5 OR d.LineTotal < 1000.00);
+
+SELECT * FROM Employees AS e CROSS APPLY CHANGETABLE (VERSION Employees, ([Emp ID], SSN), (e.[Emp ID], e.SSN)) AS c;
+SELECT * FROM CHANGETABLE (CHANGES Employees, @last_sync_version) AS C;
+
 -- ambiquities
 SELECT f((SELECT 1));
+SELECT * FROM dbo.t1 (UPDLOCK) p; -- function call
+SELECT * FROM dbo.t1 (UPDLOCK) as p; -- function call
