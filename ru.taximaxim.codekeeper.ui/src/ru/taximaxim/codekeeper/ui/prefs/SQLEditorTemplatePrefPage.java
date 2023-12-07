@@ -15,8 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.prefs;
 
-import java.util.Arrays;
-
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.widgets.Composite;
@@ -60,13 +58,7 @@ public class SQLEditorTemplatePrefPage extends TemplatePreferencePage {
 
         @Override
         public Object[] getElements(Object input) {
-            // to users are shown only unprotected templates, because protected
-            // templates used in wizard of creating new object.
-            // id == null - custom template
-            return Arrays.stream(fStore.getTemplateData(false))
-                    .filter(tmplPersData -> tmplPersData.getId() == null
-                    || !tmplPersData.getId().endsWith(SQLEditorTemplateManager.TEMPLATE_ID_PROTECTION_MARKER))
-                    .toArray();
+            return fStore.getTemplateData(false);
         }
 
         @Override
