@@ -21,11 +21,10 @@ import java.util.List;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Alter_assemblyContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Assembly_optionContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsAssembly;
 
-public class AlterMsAssembly extends ParserAbstract {
+public class AlterMsAssembly extends MsParserAbstract {
 
     private final Alter_assemblyContext ctx;
 

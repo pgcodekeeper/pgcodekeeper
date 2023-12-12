@@ -22,7 +22,7 @@ import java.util.Objects;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
-import ru.taximaxim.codekeeper.core.schema.OptionContainer;
+import ru.taximaxim.codekeeper.core.schema.IOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public final class GpExternalTable extends AbstractPgTable implements PgForeignOptionContainer {
@@ -45,7 +45,7 @@ public final class GpExternalTable extends AbstractPgTable implements PgForeignO
     }
 
     @Override
-    public void compareOptions(OptionContainer newContainer, StringBuilder sb) {
+    public void compareOptions(IOptionContainer newContainer, StringBuilder sb) {
         // no impl
     }
 

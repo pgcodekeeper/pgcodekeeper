@@ -256,7 +256,7 @@ public class PgDatabase extends PgStatement implements IDatabase {
     }
 
     @Override
-    public void addChild(PgStatement st) {
+    public void addChild(IStatement st) {
         DbObjType type = st.getStatementType();
         switch (type) {
         case SCHEMA:

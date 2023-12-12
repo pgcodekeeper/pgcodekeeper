@@ -1,9 +1,9 @@
 CREATE TYPE [dbo].[type1] AS TABLE(
-	[ct1] [int] NOT NULL,
-	[ct2] [int] NOT NULL,
+	[c1] [int] NOT NULL,
+	[c2] [int] NOT NULL,
 	INDEX [q] NONCLUSTERED HASH
 (
-	[ID] ASC
+	[c1]
 ) WITH ( BUCKET_COUNT = 2),
 	PRIMARY KEY NONCLUSTERED  HASH ([c2]) WITH (BUCKET_COUNT = 2),
 	CHECK  ((c1 > 0))

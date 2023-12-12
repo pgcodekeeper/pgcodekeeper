@@ -23,13 +23,12 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Cast_nameC
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_cast_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Data_typeContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qualified_nameContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.ICast.CastContext;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgCast;
 import ru.taximaxim.codekeeper.core.schema.pg.PgCast.CastMethod;
 
-public class CreateCast extends ParserAbstract {
+public class CreateCast extends PgParserAbstract {
 
     private final Create_cast_statementContext ctx;
 
@@ -45,8 +44,8 @@ public class CreateCast extends ParserAbstract {
         Data_typeContext target = nameCtx.target;
         PgCast cast = new PgCast(getFullCtxText(source), getFullCtxText(target));
 
-        addPgTypeDepcy(source, cast);
-        addPgTypeDepcy(target, cast);
+        addTypeDepcy(source, cast);
+        addTypeDepcy(target, cast);
 
         Schema_qualified_nameContext funcNameCtx = ctx.func_name;
         if (funcNameCtx != null) {

@@ -1,7 +1,4 @@
-SET QUOTED_IDENTIFIER ON
-GO
-SET ANSI_NULLS ON
-GO
+
 CREATE TABLE [dbo].[tt1](
 	[id] [int] NOT NULL,
 	[c2] [int] NULL,
@@ -18,10 +15,7 @@ ALTER TABLE [dbo].[tt1]
 	ON [PRIMARY]
 GO
 
-SET QUOTED_IDENTIFIER ON
-GO
-SET ANSI_NULLS ON
-GO
+
 CREATE TYPE [dbo].[test_type] AS TABLE(
 	[col4] [int] NULL,
 	[col1] [int] NOT NULL,
@@ -31,10 +25,14 @@ CREATE TYPE [dbo].[test_type] AS TABLE(
 )
 GO
 
-SET QUOTED_IDENTIFIER ON
+CREATE TYPE [dbo].[test_type2] AS TABLE(
+    [col4] [int] NULL,
+    [col1] [int] NOT NULL,
+    [col3] [bigint] NULL DEFAULT ((15)),
+    UNIQUE NONCLUSTERED ([col1], [col4]) WITH (IGNORE_DUP_KEY =  ON)
+)
 GO
-SET ANSI_NULLS ON
-GO
+
 CREATE TABLE [dbo].[tt2](
 	[id] [int] NOT NULL,
 	[age] [int],

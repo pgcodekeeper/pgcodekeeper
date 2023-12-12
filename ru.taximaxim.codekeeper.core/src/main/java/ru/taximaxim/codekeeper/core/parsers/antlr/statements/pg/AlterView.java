@@ -26,12 +26,11 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.VexAnalysisLaunc
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Alter_view_actionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Alter_view_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgView;
 
-public class AlterView extends ParserAbstract {
+public class AlterView extends PgParserAbstract {
 
     private final Alter_view_statementContext ctx;
     private final CommonTokenStream stream;

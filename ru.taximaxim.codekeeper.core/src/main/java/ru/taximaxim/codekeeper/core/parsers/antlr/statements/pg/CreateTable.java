@@ -36,7 +36,6 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Storage_pa
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Storage_parameter_optionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.With_storage_parameterContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractSequence;
@@ -105,7 +104,7 @@ public class CreateTable extends TableAbstract {
             table = fillRegularTable(abstractRegTable);
             fillColumns(colCtx, table, schemaName, tablespace);
         } else {
-            String partBound = ParserAbstract.getFullCtxText(partCtx.for_values_bound());
+            String partBound = getFullCtxText(partCtx.for_values_bound());
             table = fillRegularTable(new PartitionPgTable(tableName, partBound));
             fillTypeColumns(partCtx.list_of_type_column_def(), table, schemaName, tablespace);
             addInherit(table, getIdentifiers(partCtx.parent_table));
@@ -120,7 +119,7 @@ public class CreateTable extends TableAbstract {
         String ofType = getTypeName(typeName);
         TypedPgTable table = new TypedPgTable(tableName, ofType);
         fillTypeColumns(typeCtx.list_of_type_column_def(), table, schemaName, tablespace);
-        addPgTypeDepcy(typeName, table);
+        addTypeDepcy(typeName, table);
         fillRegularTable(table);
         return table;
     }
@@ -166,7 +165,7 @@ public class CreateTable extends TableAbstract {
 
         Partition_byContext part = ctx.partition_by();
         if (part != null) {
-            table.setPartitionBy(ParserAbstract.getFullCtxText(part.partition_method()));
+            table.setPartitionBy(getFullCtxText(part.partition_method()));
 
             // table access method for partitioned tables is not supported
         } else if (ctx.USING() != null) {

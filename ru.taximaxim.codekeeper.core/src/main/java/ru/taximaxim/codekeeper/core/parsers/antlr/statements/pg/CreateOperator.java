@@ -30,12 +30,11 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Data_typeC
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.IdentifierContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Operator_optionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qualified_nameContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgOperator;
 
-public class CreateOperator extends ParserAbstract {
+public class CreateOperator extends PgParserAbstract {
 
     private final Create_operator_statementContext ctx;
 
@@ -57,11 +56,11 @@ public class CreateOperator extends ParserAbstract {
             } else if (option.LEFTARG() != null) {
                 Data_typeContext leftArgTypeCtx = option.type;
                 oper.setLeftArg(getTypeName(leftArgTypeCtx));
-                addPgTypeDepcy(leftArgTypeCtx, oper);
+                addTypeDepcy(leftArgTypeCtx, oper);
             } else if (option.RIGHTARG() != null) {
                 Data_typeContext rightArgTypeCtx = option.type;
                 oper.setRightArg(getTypeName(rightArgTypeCtx));
-                addPgTypeDepcy(rightArgTypeCtx, oper);
+                addTypeDepcy(rightArgTypeCtx, oper);
             } else if (option.COMMUTATOR() != null || option.NEGATOR() != null) {
                 All_op_refContext comutNameCtx = option.addition_oper_name;
                 IdentifierContext schemaNameCxt = comutNameCtx.identifier();

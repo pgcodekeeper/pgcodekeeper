@@ -24,14 +24,13 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Enable_di
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Names_referencesContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Qualified_nameContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.core.schema.ms.MsTrigger;
 
-public class DisableMsTrigger extends ParserAbstract {
+public class DisableMsTrigger extends MsParserAbstract {
 
     private final Enable_disable_triggerContext ctx;
 

@@ -28,7 +28,6 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Column_op
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Create_tableContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Data_typeContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Index_optionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_indexContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_optionsContext;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
@@ -75,7 +74,7 @@ public class CreateMsTable extends MsTableAbstract {
         }
 
         for (Table_optionsContext options : ctx.table_options()) {
-            parseOptions(options.index_option(), table);
+            fillOptions(table, options.index_option());
         }
 
         for (Column_def_table_constraintContext colCtx : ctx.column_def_table_constraints().column_def_table_constraint()) {
@@ -91,39 +90,38 @@ public class CreateMsTable extends MsTableAbstract {
         IdContext tableCtx = ctx.qualified_name().name;
 
         if (colCtx.table_constraint() != null) {
-            table.addConstraint(getMsConstraint(colCtx.table_constraint(),
+            table.addChild(getMsConstraint(colCtx.table_constraint(),
                     schemaCtx == null ? null : schemaCtx.getText(), tableCtx.getText()));
         } else if (colCtx.table_index() != null) {
             Table_indexContext indCtx = colCtx.table_index();
             MsIndex index = new MsIndex(indCtx.id().getText());
+
             ClusteredContext cluster = indCtx.clustered();
             index.setClustered(cluster != null && cluster.CLUSTERED() != null);
+            index.setUnique(indCtx.UNIQUE() != null);
+            parseIndex(indCtx.index_rest(), index, schemaCtx == null ? null : schemaCtx.getText(),
+                    tableCtx.getText());
 
-            parseIndex(indCtx.index_rest(), index, schemaCtx.getText(), tableCtx.getText());
-            addSafe(table, index, Arrays.asList(schemaCtx, tableCtx, indCtx.id()));
+            if (index.getTablespace() == null) {
+                index.setTablespace(table.getTablespace());
+            }
+
+            table.addChild(index);
         } else {
             MsColumn col = new MsColumn(colCtx.id().getText());
             if (colCtx.data_type() != null) {
                 Data_typeContext dt = colCtx.data_type();
-                addMsTypeDepcy(dt, col);
+                addTypeDepcy(dt, col);
                 col.setType(getFullCtxText(dt));
             } else {
                 col.setExpression(getFullCtxText(colCtx.expression()));
             }
 
             for (Column_optionContext option : colCtx.column_option()) {
-                fillMsColumnOption(option, col, table);
+                fillColumnOption(option, col, table);
             }
 
             table.addColumn(col);
-        }
-    }
-
-    private void parseOptions(List<Index_optionContext> options, MsTable table) {
-        for (Index_optionContext option : options) {
-            String key = option.key.getText();
-            String value = option.index_option_value().getText();
-            table.addOption(key, value);
         }
     }
 

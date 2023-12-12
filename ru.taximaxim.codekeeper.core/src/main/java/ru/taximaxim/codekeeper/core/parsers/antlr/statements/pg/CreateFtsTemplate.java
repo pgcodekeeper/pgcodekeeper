@@ -23,11 +23,10 @@ import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_fts_template_statementContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgFtsTemplate;
 
-public class CreateFtsTemplate extends ParserAbstract {
+public class CreateFtsTemplate extends PgParserAbstract {
 
     private final Create_fts_template_statementContext ctx;
 
@@ -47,12 +46,12 @@ public class CreateFtsTemplate extends ParserAbstract {
          */
 
         if (ctx.init_name != null) {
-            template.setInitFunction(ParserAbstract.getFullCtxText(ctx.init_name));
+            template.setInitFunction(getFullCtxText(ctx.init_name));
             addDepSafe(template, getIdentifiers(ctx.init_name), DbObjType.FUNCTION, DatabaseType.PG,
                     "(internal)");
         }
 
-        template.setLexizeFunction(ParserAbstract.getFullCtxText(ctx.lexize_name));
+        template.setLexizeFunction(getFullCtxText(ctx.lexize_name));
         addDepSafe(template, getIdentifiers(ctx.lexize_name), DbObjType.FUNCTION, DatabaseType.PG,
                 "(internal, internal, internal, internal)");
 

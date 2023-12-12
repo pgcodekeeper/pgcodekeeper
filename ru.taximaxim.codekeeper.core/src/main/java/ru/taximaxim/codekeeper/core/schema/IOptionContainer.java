@@ -18,7 +18,7 @@ package ru.taximaxim.codekeeper.core.schema;
 import java.util.List;
 import java.util.Map;
 
-public interface OptionContainer extends IStatement {
+public interface IOptionContainer extends IStatement {
 
     List<String> GP_OPTION_LIST = List.of(
             "appendonly",
@@ -32,5 +32,5 @@ public interface OptionContainer extends IStatement {
 
     void addOption(String key, String value);
     Map<String, String> getOptions();
-    void compareOptions(OptionContainer newContainer, StringBuilder sb);
+    void compareOptions(IOptionContainer newContainer, StringBuilder sb);
 }

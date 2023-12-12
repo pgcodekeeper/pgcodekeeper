@@ -41,7 +41,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_cre
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.SqlContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.StatementContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
+import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.PgParserAbstract;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 public class FileFormatter {
@@ -82,7 +82,7 @@ public class FileFormatter {
      * @return edit operation or null if no formatting required
      */
     public TextEdit getFormatEdit() {
-        List<FormatItem> list = this.getFormatItems();
+        List<FormatItem> list = getFormatItems();
 
         if (list.isEmpty()) {
             return null;
@@ -154,7 +154,7 @@ public class FileFormatter {
                 return;
             }
 
-            Pair<String, Token> pair = ParserAbstract.unquoteQuotedString(funcDef.definition);
+            Pair<String, Token> pair = PgParserAbstract.unquoteQuotedString(funcDef.definition);
             String definition = pair.getFirst();
             Token codeStart = pair.getSecond();
 

@@ -113,7 +113,7 @@ public class CreateMsProcedure extends BatchContextProcessor {
             Argument arg = new Argument(parseArgMode(argument.arg_mode()),
                     argument.name.getText(), getFullCtxText(argument.data_type()));
             arg.setReadOnly(argument.READONLY() != null);
-            addMsTypeDepcy(argument.data_type(), function);
+            addTypeDepcy(argument.data_type(), function);
             if (argument.default_val != null) {
                 arg.setDefaultExpression(getFullCtxText(argument.default_val));
             }

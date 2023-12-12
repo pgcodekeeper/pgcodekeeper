@@ -51,7 +51,6 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Storage_pa
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Transform_for_typeContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.With_storage_parameterContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.Argument;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
@@ -60,7 +59,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgFunction;
 import ru.taximaxim.codekeeper.core.schema.pg.PgProcedure;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
-public final class CreateFunction extends ParserAbstract {
+public final class CreateFunction extends PgParserAbstract {
 
     private static final String DEFAULT = "DEFAULT";
 
@@ -91,7 +90,7 @@ public final class CreateFunction extends ParserAbstract {
             for (Function_column_name_typeContext ret_col : ctx.ret_table.function_column_name_type()) {
                 String columnName = ret_col.identifier().getText();
                 String type = getTypeName(ret_col.data_type());
-                addPgTypeDepcy(ret_col.data_type(), function);
+                addTypeDepcy(ret_col.data_type(), function);
                 function.addReturnsColumn(ret_col.identifier().getText(), type);
                 sb.append(PgDiffUtils.getQuotedName(columnName)).append(" ").append(type).append(", ");
             }
@@ -99,7 +98,7 @@ public final class CreateFunction extends ParserAbstract {
             function.setReturns("TABLE(" + sb + ")");
         } else if (ctx.rettype_data != null) {
             function.setReturns(getTypeName(ctx.rettype_data));
-            addPgTypeDepcy(ctx.rettype_data, function);
+            addTypeDepcy(ctx.rettype_data, function);
         }
         addSafe(getSchemaSafe(ids), function, ids, parseArguments(ctx.function_parameters().function_args()));
     }
@@ -160,7 +159,7 @@ public final class CreateFunction extends ParserAbstract {
                 function.setBody(db.getArguments(), sb.toString());
             } else if (action.TRANSFORM() != null) {
                 for (Transform_for_typeContext transform : action.transform_for_type()) {
-                    function.addTransform(ParserAbstract.getFullCtxText(transform.data_type()));
+                    function.addTransform(getFullCtxText(transform.data_type()));
                 }
             } else if (action.SAFE() != null) {
                 function.setParallel("SAFE");
@@ -351,7 +350,7 @@ public final class CreateFunction extends ParserAbstract {
 
             Argument arg = new Argument(parseArgMode(argument.argmode()),
                     argName, getTypeName(dataType));
-            addPgTypeDepcy(dataType, function);
+            addTypeDepcy(dataType, function);
 
             VexContext def = argument.vex();
             if (def != null) {

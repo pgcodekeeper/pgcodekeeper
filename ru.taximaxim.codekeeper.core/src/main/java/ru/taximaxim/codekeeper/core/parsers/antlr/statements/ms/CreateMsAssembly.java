@@ -24,11 +24,10 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Assembly_
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Create_assemblyContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.ExpressionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsAssembly;
 
-public class CreateMsAssembly extends ParserAbstract {
+public class CreateMsAssembly extends MsParserAbstract {
 
     private static final Pattern BINARY_NEWLINE = Pattern.compile("\\\\\\r?\\n");
     private static final int BINARY_LINE_LENGTH = 256;

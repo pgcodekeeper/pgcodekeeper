@@ -19,22 +19,18 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
-import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.TerminalNode;
 
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.Consts.MS_WORK_DIR_NAMES;
@@ -49,52 +45,15 @@ import ru.taximaxim.codekeeper.core.model.exporter.AbstractModelExporter;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.MisplacedObjectException;
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.UnresolvedReferenceException;
-import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.MsExpressionAnalysisLauncher;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Boolean_valueContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Cast_nameContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Character_stringContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Column_operator_classContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Data_typeContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Distributed_clauseContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Function_argsContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Function_argumentsContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.IdentifierContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Identifier_nontypeContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Including_indexContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Operator_nameContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Predefined_typeContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qualified_nameContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qualified_name_nontypeContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Target_operatorContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.User_mapping_nameContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Column_optionContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.ExpressionContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Identity_valueContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Index_optionContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Qualified_nameContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.ArgMode;
-import ru.taximaxim.codekeeper.core.schema.Argument;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
-import ru.taximaxim.codekeeper.core.schema.ICast;
 import ru.taximaxim.codekeeper.core.schema.IStatement;
+import ru.taximaxim.codekeeper.core.schema.IStatementContainer;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation.LocationType;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.schema.SimpleColumn;
-import ru.taximaxim.codekeeper.core.schema.ms.MsColumn;
-import ru.taximaxim.codekeeper.core.schema.ms.MsConstraintCheck;
-import ru.taximaxim.codekeeper.core.schema.ms.MsConstraintFk;
-import ru.taximaxim.codekeeper.core.schema.ms.MsConstraintPk;
-import ru.taximaxim.codekeeper.core.schema.ms.MsTable;
-import ru.taximaxim.codekeeper.core.schema.ms.MsType;
-import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgFunction;
-import ru.taximaxim.codekeeper.core.schema.pg.PgFunction;
-import ru.taximaxim.codekeeper.core.schema.pg.PgOperator;
-import ru.taximaxim.codekeeper.core.utils.Pair;
 
 /**
  * Abstract Class contents common operations for parsing
@@ -195,104 +154,11 @@ public abstract class ParserAbstract {
         return getFullCtxText(start, stop);
     }
 
-    public static String getTypeName(Data_typeContext datatype) {
-        String full = getFullCtxText(datatype);
-        Predefined_typeContext typeCtx = datatype.predefined_type();
-
-        String type = getFullCtxText(typeCtx);
-        if (type.startsWith("\"")) {
-            return full;
-        }
-
-        String newType = convertAlias(type);
-        if (!Objects.equals(type, newType)) {
-            return full.replace(type, newType);
-        }
-
-        return full;
-    }
-
-    public static String getExpressionText(VexContext def, CommonTokenStream stream) {
+    public static String getExpressionText(ParserRuleContext def, CommonTokenStream stream) {
         String expression = getFullCtxText(def);
         String whitespace = getHiddenLeftCtxText(def, stream);
         int newline = whitespace.indexOf('\n');
         return newline != -1 ? (whitespace.substring(newline) + expression) : expression;
-    }
-
-    private static String convertAlias(String type) {
-        String alias = type.toLowerCase(Locale.ROOT);
-
-        switch (alias) {
-        case "int8": return "bigint";
-        case "bool": return "boolean";
-        case "float8": return "double precision";
-        case "int":
-        case "int4": return "integer";
-        case "float4": return "real";
-        case "int2": return "smallint";
-        default: break;
-        }
-
-        if (PgDiffUtils.startsWithId(alias, "varbit", 0)) {
-            return "bit varying" + type.substring("varbit".length());
-        }
-
-        if (PgDiffUtils.startsWithId(alias, "varchar", 0)) {
-            return "character varying" + type.substring("varchar".length());
-        }
-
-        if (PgDiffUtils.startsWithId(alias, "char", 0)) {
-            return "character" + type.substring("char".length());
-        }
-
-        if (PgDiffUtils.startsWithId(alias, "decimal", 0)) {
-            return "numeric" + type.substring("decimal".length());
-        }
-
-        if (PgDiffUtils.startsWithId(alias, "timetz", 0)) {
-            return "time" + type.substring("timetz".length()) + " with time zone";
-        }
-
-        if (PgDiffUtils.startsWithId(alias, "timestamptz", 0)) {
-            return "timestamp" + type.substring("timestamptz".length()) + " with time zone";
-        }
-
-        return type;
-    }
-
-    public static String parseArguments(Function_argsContext argsContext) {
-        return parseSignature(null, argsContext);
-    }
-
-    public static String parseSignature(String name, Function_argsContext argsContext) {
-        AbstractPgFunction function = new PgFunction(name == null ? "noname" : name);
-        fillFuncArgs(argsContext.function_arguments(), function);
-        if (argsContext.agg_order() != null) {
-            fillFuncArgs(argsContext.agg_order().function_arguments(), function);
-        }
-        String signature = function.getSignature();
-        if (name == null) {
-            signature = signature.substring("noname".length());
-        }
-        return signature;
-    }
-
-    private static void fillFuncArgs(List<Function_argumentsContext> argsCtx, AbstractPgFunction function) {
-        for (Function_argumentsContext argument : argsCtx) {
-            String type = getTypeName(argument.data_type());
-            Identifier_nontypeContext name = argument.identifier_nontype();
-            function.addArgument(new Argument(parseArgMode(argument.argmode()),
-                    name != null ? name.getText() : null, type));
-        }
-    }
-
-    public static String parseSignature(String name, Target_operatorContext targerOperCtx) {
-        PgOperator oper = new PgOperator(name);
-        oper.setLeftArg(targerOperCtx.left_type == null ? null
-                : getTypeName(targerOperCtx.left_type));
-        oper.setRightArg(targerOperCtx.right_type == null ? null
-                : getTypeName(targerOperCtx.right_type));
-        return oper.getSignature();
     }
 
     public static ArgMode parseArgMode(ParserRuleContext mode) {
@@ -301,87 +167,6 @@ public abstract class ParserAbstract {
         }
 
         return ArgMode.of(mode.getText());
-    }
-
-    public static Pair<String, Token> unquoteQuotedString(Character_stringContext ctx) {
-        TerminalNode string = ctx.Character_String_Literal();
-        if (string != null) {
-            String text = string.getText();
-            int start = text.indexOf('\'') + 1;
-
-            Token t = string.getSymbol();
-            CommonToken copy = new CommonToken(t);
-
-            copy.setStartIndex(t.getStartIndex() + start);
-            copy.setCharPositionInLine(t.getCharPositionInLine() + start);
-            copy.setStopIndex(t.getStopIndex() - 1);
-
-            return new Pair<>(PgDiffUtils.unquoteQuotedString(string.getText(), start), copy);
-        }
-
-        List<TerminalNode> dollarText = ctx.Text_between_Dollar();
-        String s = dollarText.stream().map(TerminalNode::getText).collect(Collectors.joining());
-
-        return new Pair<>(s, dollarText.get(0).getSymbol());
-    }
-
-    public static boolean parseBoolean(Boolean_valueContext boolCtx) {
-        String bool = boolCtx.character_string() != null
-                ? unquoteQuotedString(boolCtx.character_string()).getFirst() : boolCtx.getText();
-        bool = bool.toLowerCase(Locale.ROOT);
-        switch (bool) {
-        case "1":
-        case "true":
-        case "on":
-        case "yes":
-            return true;
-        case "0":
-        case "false":
-        case "off":
-        case "no":
-            return false;
-        default:
-            // TODO throw instead?
-            return false;
-        }
-    }
-
-    public static List<ParserRuleContext> getIdentifiers(Schema_qualified_nameContext qNameCtx) {
-        List<ParserRuleContext> ids = new ArrayList<>(3);
-        ids.add(qNameCtx.identifier());
-        ids.addAll(qNameCtx.identifier_reserved());
-        return ids;
-    }
-
-    public static List<ParserRuleContext> getIdentifiers(Schema_qualified_name_nontypeContext qNameNonTypeCtx) {
-        List<ParserRuleContext> ids;
-        Identifier_nontypeContext singleId = qNameNonTypeCtx.identifier_nontype();
-        if (singleId != null) {
-            ids = new ArrayList<>(1);
-            ids.add(singleId);
-        } else {
-            ids = new ArrayList<>(2);
-            ids.add(qNameNonTypeCtx.schema);
-            ids.add(qNameNonTypeCtx.identifier_reserved_nontype());
-        }
-        return ids;
-    }
-
-    public static List<ParserRuleContext> getIdentifiers(Operator_nameContext operQNameCtx) {
-        List<ParserRuleContext> ids = new ArrayList<>(2);
-        ids.add(operQNameCtx.schema_name);
-        ids.add(operQNameCtx.operator);
-        return ids;
-    }
-
-    public static List<ParserRuleContext> getIdentifiers(Qualified_nameContext qNameCtx) {
-        List<ParserRuleContext> ids = new ArrayList<>(2);
-        ParserRuleContext schemaRule = qNameCtx.schema;
-        if (schemaRule != null) {
-            ids.add(schemaRule);
-        }
-        ids.add(qNameCtx.name);
-        return ids;
     }
 
     protected PgObjLocation addObjReference(List<? extends ParserRuleContext> ids,
@@ -420,14 +205,14 @@ public abstract class ParserAbstract {
         return statement;
     }
 
-    protected void addSafe(PgStatement parent, PgStatement child,
+    protected void addSafe(IStatementContainer parent, PgStatement child,
             List<? extends ParserRuleContext> ids) {
         addSafe(parent, child, ids, null);
     }
 
-    protected void addSafe(PgStatement parent, PgStatement child,
+    protected void addSafe(IStatementContainer parent, PgStatement child,
             List<? extends ParserRuleContext> ids, String signature){
-        doSafe(PgStatement::addChild, parent, child);
+        doSafe(IStatementContainer::addChild, parent, child);
         PgObjLocation loc = getLocation(ids, child.getStatementType(),
                 ACTION_CREATE, false, signature, LocationType.DEFINITION);
         if (loc != null) {
@@ -486,17 +271,14 @@ public abstract class ParserAbstract {
         }
     }
 
-    private PgObjLocation getLocation(List<? extends ParserRuleContext> ids,
+    protected PgObjLocation getLocation(List<? extends ParserRuleContext> ids,
             DbObjType type, String action, boolean isDep, String signature,
             LocationType locationType) {
         ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
         switch (type) {
         case CAST:
-            return buildLocation(nameCtx, action, locationType,
-                    new GenericColumn(getCastName((Cast_nameContext) nameCtx), DbObjType.CAST));
         case USER_MAPPING:
-            return buildLocation(nameCtx, action, locationType,
-                    new GenericColumn(getUserMappingName((User_mapping_nameContext) nameCtx), DbObjType.USER_MAPPING));
+            throw new IllegalStateException();
         case ASSEMBLY:
         case EXTENSION:
         case EVENT_TRIGGER:
@@ -560,7 +342,7 @@ public abstract class ParserAbstract {
         }
     }
 
-    private PgObjLocation buildLocation(ParserRuleContext nameCtx, String action, LocationType locationType,
+    protected PgObjLocation buildLocation(ParserRuleContext nameCtx, String action, LocationType locationType,
             GenericColumn object) {
         return new PgObjLocation.Builder()
                 .setFilePath(fileName)
@@ -569,15 +351,6 @@ public abstract class ParserAbstract {
                 .setAction(action)
                 .setLocationType(locationType)
                 .build();
-    }
-
-    protected String getCastName(Cast_nameContext nameCtx) {
-        return ICast.getSimpleName(getFullCtxText(nameCtx.source), getFullCtxText(nameCtx.target));
-    }
-
-    protected String getUserMappingName(User_mapping_nameContext nameCtx) {
-        return (nameCtx.user_name() != null ? nameCtx.user_name().getText() : nameCtx.USER().getText())
-                + " SERVER " + nameCtx.identifier().getText();
     }
 
     protected <T extends IStatement, U extends Object> void doSafe(BiConsumer<T, U> adder,
@@ -638,36 +411,6 @@ public abstract class ParserAbstract {
                 QNameParser.getFirstNameCtx(ids).start);
     }
 
-    /**
-     * Fill owner
-     *
-     * @param owner
-     *            parser context with owner
-     * @param st
-     *            object
-     */
-    protected void fillOwnerTo(IdentifierContext owner, PgStatement st) {
-        if (owner == null || db.getArguments().isIgnorePrivileges() || refMode) {
-            return;
-        }
-        st.setOwner(owner.getText());
-    }
-
-    protected void addPgTypeDepcy(Data_typeContext ctx, PgStatement st) {
-        Schema_qualified_name_nontypeContext qname = ctx.predefined_type().schema_qualified_name_nontype();
-        if (qname != null && qname.identifier() != null) {
-            addDepSafe(st, getIdentifiers(qname), DbObjType.TYPE, DatabaseType.PG);
-        }
-    }
-
-    protected void addMsTypeDepcy(ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Data_typeContext ctx,
-            PgStatement st) {
-        Qualified_nameContext qname = ctx.qualified_name();
-        if (qname != null && qname.schema != null) {
-            addDepSafe(st, Arrays.asList(qname.schema, qname.name), DbObjType.TYPE, DatabaseType.MS);
-        }
-    }
-
     public static void fillOptionParams(String[] options, BiConsumer <String, String> c,
             boolean isToast, boolean forceQuote, boolean isQuoted) {
         for (String pair : options) {
@@ -697,13 +440,6 @@ public abstract class ParserAbstract {
             quotedOption = "toast." + quotedOption;
         }
         c.accept(quotedOption, value);
-    }
-
-    protected static void fillIncludingDepcy(Including_indexContext incl, PgStatement st,
-            String schema, String table) {
-        for (IdentifierContext inclCol : incl.identifier()) {
-            st.addDep(new GenericColumn(schema, table, inclCol.getText(), DbObjType.COLUMN));
-        }
     }
 
     /**
@@ -736,221 +472,23 @@ public abstract class ParserAbstract {
         db.addReference(fileName, loc);
     }
 
+    protected static String getStrForStmtAction(String action, DbObjType type, ParseTree id) {
+        return getStrForStmtAction(action, type, List.of(id));
+    }
+
+    /**
+     * Used in general cases in {@link #getStmtAction()} for get action information.
+     */
+    protected static String getStrForStmtAction(String action, DbObjType type, List<? extends ParseTree> ids) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(action).append(' ').append(type.getTypeName()).append(' ');
+        sb.append(ids.stream().map(ParseTree::getText).collect(Collectors.joining(".")));
+        return sb.toString();
+    }
+
     /**
      * Returns action information which will later be used for showing in console,
      * in 'Outline' and in 'outline of Project explorer files'.
      */
     protected abstract String getStmtAction();
-
-    /**
-     * Used in general cases in {@link #getStmtAction()} for get action information.
-     */
-    protected static String getStrForStmtAction(String action, DbObjType type, List<? extends ParserRuleContext> ids) {
-        StringBuilder sb = new StringBuilder();
-        for (ParserRuleContext id : ids) {
-            if (id != null) {
-                sb.append(id.getText()).append('.');
-            }
-        }
-        if (sb.length() > 0) {
-            sb.setLength(sb.length() - 1);
-        }
-        return getStrForStmtAction(action, type, sb.toString());
-    }
-
-    protected static String getStrForStmtAction(String action, DbObjType type, ParseTree id) {
-        return getStrForStmtAction(action, type, id.getText());
-    }
-
-    protected static String getStrForStmtAction(String action, DbObjType type, String id) {
-        String objType;
-        switch (type) {
-        case FTS_CONFIGURATION:
-            objType = "TEXT SEARCH CONFIGURATION";
-            break;
-        case FTS_DICTIONARY:
-            objType = "TEXT SEARCH DICTIONARY";
-            break;
-        case FTS_TEMPLATE:
-            objType = "TEXT SEARCH TEMPLATE";
-            break;
-        case FTS_PARSER:
-            objType = "TEXT SEARCH PARSER";
-            break;
-        case FOREIGN_DATA_WRAPPER:
-            objType = "FOREIGN DATA WRAPPER";
-            break;
-        case USER_MAPPING:
-            objType = "USER MAPPING";
-            break;
-        default:
-            objType = type.name();
-            break;
-        }
-        return action + ' ' + objType + ' ' + id;
-    }
-
-    protected void fillMsColumnOption(Column_optionContext option, MsColumn col, PgStatement stmt) {
-        if (option.SPARSE() != null) {
-            col.setSparse(true);
-        } else if (option.COLLATE() != null) {
-            col.setCollation(getFullCtxText(option.collate));
-        } else if (option.PERSISTED() != null) {
-            col.setPersisted(true);
-        } else if (option.ROWGUIDCOL() != null) {
-            col.setRowGuidCol(true);
-        } else if (option.IDENTITY() != null) {
-            Identity_valueContext identity = option.identity_value();
-            if (identity == null) {
-                col.setIdentity("1", "1");
-            } else {
-                col.setIdentity(identity.seed.getText(), identity.increment.getText());
-            }
-            if (option.not_for_rep != null) {
-                col.setNotForRep(true);
-            }
-        } else if (option.MASKED() != null) {
-            col.setMaskingFunction(option.STRING().getText());
-        } else if (option.NULL() != null) {
-            col.setNullValue(option.NOT() == null);
-        } else if (option.column_constraint_body() != null) {
-            fillColumnConstraint(option, col, stmt);
-        }
-    }
-
-    private void fillColumnConstraint(Column_optionContext option, MsColumn col, PgStatement stmt) {
-        String constraintName = option.constraint != null ? option.constraint.getText() : null;
-        var constraintCtx = option.column_constraint_body();
-        var isTableConstr = stmt instanceof MsTable;
-        if (constraintCtx.DEFAULT() != null) {
-            col.setDefaultName(constraintName);
-            ExpressionContext exp = constraintCtx.expression();
-            col.setDefaultValue(getFullCtxText(exp));
-            db.addAnalysisLauncher(
-                    new MsExpressionAnalysisLauncher(!isTableConstr ? (MsType) stmt : col, exp, fileName));
-        } else if (constraintCtx.PRIMARY() != null || constraintCtx.UNIQUE() != null) {
-            if (constraintName == null && isTableConstr) {
-                if (constraintCtx.PRIMARY() != null) {
-                    constraintName = stmt.getName() + '_' + col.getName() + "_pkey";
-                } else {
-                    constraintName = stmt.getName() + '_' + col.getName() + "_key";
-                }
-            }
-
-            var constrPk = new MsConstraintPk(constraintName, constraintCtx.PRIMARY() != null);
-            if (constraintCtx.clustered() != null) {
-                constrPk.setClustered(constraintCtx.clustered().CLUSTERED() != null);
-            }
-            var dataSpaceCtx = constraintCtx.id();
-            if (dataSpaceCtx != null) {
-                constrPk.setDataSpace(dataSpaceCtx.getText());
-            }
-            var optionsCtx = constraintCtx.index_options();
-            if (optionsCtx != null) {
-                for (Index_optionContext optionPk : optionsCtx.index_option()) {
-                    String key = optionPk.key.getText();
-                    String value = optionPk.index_option_value().getText();
-                    constrPk.addOption(key, value);
-                }
-            }
-            constrPk.addColumn(col.getName(), new SimpleColumn(col.getName()));
-
-            if (isTableConstr) {
-                ((MsTable) stmt).addConstraint(constrPk);
-            } else {
-                ((MsType) stmt).addConstraint(constrPk.getDefinition());
-            }
-        } else if (constraintCtx.REFERENCES() != null) {
-            if (constraintName == null) {
-                constraintName = stmt.getName() + '_' + col.getName() + "_fkey";
-            }
-
-            var constrFk = new MsConstraintFk(constraintName);
-            constrFk.addColumn(col.getName());
-            Qualified_nameContext ref = constraintCtx.qualified_name();
-            List<IdContext> ids = Arrays.asList(ref.schema, ref.name);
-            String fSchemaName = getSchemaNameSafe(ids);
-            String fTableName = QNameParser.getFirstName(ids);
-            PgObjLocation loc = addObjReference(ids, DbObjType.TABLE, null);
-            GenericColumn fTable = loc.getObj();
-            constrFk.addDep(fTable);
-            constrFk.setForeignSchema(fSchemaName);
-            constrFk.setForeignTable(fTableName);
-
-            IdContext column = constraintCtx.id();
-            if (column != null) {
-                String colFk = column.getText();
-                constrFk.addForeignColumn(colFk);
-                constrFk.addDep(new GenericColumn(fSchemaName, fTableName, colFk, DbObjType.COLUMN));
-            }
-            var del = constraintCtx.on_delete();
-            if (del != null) {
-                if (del.CASCADE() != null) {
-                    constrFk.setDelAction("CASCADE");
-                } else if (del.NULL() != null) {
-                    constrFk.setDelAction("SET NULL");
-                } else if (del.DEFAULT() != null) {
-                    constrFk.setDelAction("SET DEFAULT");
-                }
-            }
-            var upd = constraintCtx.on_update();
-            if (upd != null) {
-                if (upd.CASCADE() != null) {
-                    constrFk.setUpdAction("CASCADE");
-                } else if (upd.NULL() != null) {
-                    constrFk.setUpdAction("SET NULL");
-                } else if (upd.DEFAULT() != null) {
-                    constrFk.setUpdAction("SET DEFAULT");
-                }
-            }
-            if (constraintCtx.not_for_replication() != null) {
-                constrFk.setNotForRepl(true);
-            }
-
-            ((MsTable) stmt).addConstraint(constrFk);
-        } else if (constraintCtx.CHECK() != null) {
-            if (constraintName == null && isTableConstr) {
-                constraintName = stmt.getName() + '_' + col.getName() + "_check";
-            }
-
-            var constrCheck = new MsConstraintCheck(constraintName);
-            constrCheck.setNotForRepl(constraintCtx.not_for_replication() != null);
-            constrCheck.setExpression(getFullCtxText(constraintCtx.search_condition()));
-
-            if (isTableConstr) {
-                ((MsTable) stmt).addConstraint(constrCheck);
-            } else {
-                ((MsType) stmt).addConstraint(constrCheck.getDefinition());
-            }
-        }
-
-    }
-
-    // for greenplum
-    protected String parseDistribution(Distributed_clauseContext dist) {
-        if (dist == null) {
-            return null;
-        }
-
-        StringBuilder distribution = new StringBuilder();
-        distribution.append("DISTRIBUTED ");
-        if (dist.BY() != null) {
-            distribution.append("BY (");
-            for (Column_operator_classContext column_op_class : dist.column_operator_class()) {
-                distribution.append(column_op_class.identifier().getText());
-                Schema_qualified_nameContext opClassCtx = column_op_class.schema_qualified_name();
-                if (opClassCtx != null) {
-                    distribution.append(" ").append(opClassCtx.getText());
-                }
-                distribution.append(", ");
-            }
-            distribution.setLength(distribution.length() - 2);
-            distribution.append(")");
-        } else if (dist.RANDOMLY() != null) {
-            distribution.append("RANDOMLY");
-        } else {
-            distribution.append("REPLICATED");
-        }
-        return distribution.toString();
-    }
 }

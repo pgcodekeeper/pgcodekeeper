@@ -28,7 +28,7 @@ import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.SourceStatement;
 
-public abstract class BatchContextProcessor extends ParserAbstract {
+public abstract class BatchContextProcessor extends MsParserAbstract {
 
     private final ParserRuleContext batchCtx;
     private final CommonTokenStream stream;

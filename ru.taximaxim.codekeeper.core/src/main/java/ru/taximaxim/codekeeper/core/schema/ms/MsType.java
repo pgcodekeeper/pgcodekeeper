@@ -24,10 +24,15 @@ import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
+import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractType;
+import ru.taximaxim.codekeeper.core.schema.IConstraint;
+import ru.taximaxim.codekeeper.core.schema.IStatement;
+import ru.taximaxim.codekeeper.core.schema.IStatementContainer;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
-public final class MsType extends AbstractType {
+public final class MsType extends AbstractType implements IStatementContainer {
 
     // base type
     private String baseType;
@@ -192,31 +197,41 @@ public final class MsType extends AbstractType {
         return Collections.unmodifiableList(columns);
     }
 
-    public void addColumn(String column) {
-        columns.add(column);
-        resetHash();
-    }
-
     public List<String> getConstraints() {
         return Collections.unmodifiableList(constraints);
-    }
-
-    public void addConstraint(String constraint) {
-        constraints.add(constraint);
-        resetHash();
     }
 
     public List<String> getIndices() {
         return Collections.unmodifiableList(indices);
     }
 
-    public void addIndex(String index) {
-        indices.add(index);
+    @Override
+    public DatabaseType getDbType() {
+        return DatabaseType.MS;
+    }
+
+    @Override
+    public void addChild(IStatement stmt) {
+        var type = stmt.getStatementType();
+        switch (type) {
+        case INDEX:
+            indices.add(((MsIndex) stmt).getDefinition(true, false));
+            break;
+        case CONSTRAINT:
+            constraints.add(((IConstraint) stmt).getDefinition());
+            break;
+        case COLUMN:
+            columns.add(((AbstractColumn) stmt).getFullDefinition());
+            break;
+        default:
+            throw new IllegalArgumentException("Unsupported child type: " + type);
+        }
         resetHash();
     }
 
     @Override
-    public DatabaseType getDbType() {
-        return DatabaseType.MS;
+    public PgStatement getChild(String name, DbObjType type) {
+        // no impl
+        return null;
     }
 }

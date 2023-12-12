@@ -37,14 +37,13 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Alter_user
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Encoding_identifierContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_alterContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Storage_directiveContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractType;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgBaseType;
 import ru.taximaxim.codekeeper.core.schema.pg.PgEventTrigger;
 
-public class AlterOther extends ParserAbstract {
+public class AlterOther extends PgParserAbstract {
 
     private final Schema_alterContext ctx;
 

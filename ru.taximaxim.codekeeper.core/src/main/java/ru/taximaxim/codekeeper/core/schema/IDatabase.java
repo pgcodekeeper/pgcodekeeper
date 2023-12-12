@@ -17,7 +17,7 @@ package ru.taximaxim.codekeeper.core.schema;
 
 import java.util.Collection;
 
-public interface IDatabase extends IStatement {
+public interface IDatabase extends IStatementContainer {
     Collection<? extends ISchema> getSchemas();
     ISchema getSchema(String name);
 

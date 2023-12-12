@@ -41,13 +41,13 @@ import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.ICompressOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.Inherits;
-import ru.taximaxim.codekeeper.core.schema.PgSimpleOptionContainer;
+import ru.taximaxim.codekeeper.core.schema.ISimpleOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 /**
  * Stores column information.
  */
-public class PgColumn extends AbstractColumn implements PgSimpleOptionContainer, ICompressOptionContainer  {
+public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, ICompressOptionContainer  {
 
     private static final Logger LOG = LoggerFactory.getLogger(PgColumn.class);
 

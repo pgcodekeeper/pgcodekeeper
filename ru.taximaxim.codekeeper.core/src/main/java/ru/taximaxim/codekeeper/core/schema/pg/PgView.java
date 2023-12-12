@@ -37,7 +37,7 @@ import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrUtils;
 import ru.taximaxim.codekeeper.core.schema.AbstractView;
-import ru.taximaxim.codekeeper.core.schema.PgSimpleOptionContainer;
+import ru.taximaxim.codekeeper.core.schema.ISimpleOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
@@ -46,7 +46,7 @@ import ru.taximaxim.codekeeper.core.utils.Pair;
  *
  * @author fordfrog
  */
-public class PgView extends AbstractView implements PgSimpleOptionContainer {
+public class PgView extends AbstractView implements ISimpleOptionContainer {
 
     private static final String COLUMN_COMMENT = "\n\nCOMMENT ON COLUMN {0}.{1} IS {2};";
     public static final String CHECK_OPTION = "check_option";

@@ -27,7 +27,6 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Character_
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_type_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Storage_directiveContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Table_column_definitionContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractType;
@@ -39,7 +38,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgEnumType;
 import ru.taximaxim.codekeeper.core.schema.pg.PgRangeType;
 import ru.taximaxim.codekeeper.core.schema.pg.PgShellType;
 
-public final class CreateType extends ParserAbstract {
+public final class CreateType extends PgParserAbstract {
 
     private final Create_type_statementContext ctx;
     public CreateType(Create_type_statementContext ctx, PgDatabase db) {
@@ -90,7 +89,7 @@ public final class CreateType extends ParserAbstract {
         PgRangeType type = new PgRangeType(name);
         if (ctx.subtype_name != null) {
             type.setSubtype(getTypeName(ctx.subtype_name));
-            addPgTypeDepcy(ctx.subtype_name, type);
+            addTypeDepcy(ctx.subtype_name, type);
         }
         if (ctx.subtype_operator_class != null) {
             type.setSubtypeOpClass(getFullCtxText(ctx.subtype_operator_class));
@@ -108,7 +107,7 @@ public final class CreateType extends ParserAbstract {
         }
         if (ctx.multirange_name != null) {
             type.setMultirange(ctx.multirange_name.getText());
-            addPgTypeDepcy(ctx.multirange_name, type);
+            addTypeDepcy(ctx.multirange_name, type);
         }
 
         return type;
@@ -176,7 +175,7 @@ public final class CreateType extends ParserAbstract {
         }
         if (ctx.element != null) {
             type.setElement(getTypeName(ctx.element));
-            addPgTypeDepcy(ctx.element, type);
+            addTypeDepcy(ctx.element, type);
         }
         if (ctx.delimiter != null) {
             type.setDelimiter(ctx.delimiter.getText());
@@ -201,7 +200,7 @@ public final class CreateType extends ParserAbstract {
     private void addAttr(Table_column_definitionContext colCtx, PgCompositeType type) {
         AbstractColumn col = new PgColumn(colCtx.identifier().getText());
         col.setType(getTypeName(colCtx.data_type()));
-        addPgTypeDepcy(colCtx.data_type(), type);
+        addTypeDepcy(colCtx.data_type(), type);
         if (colCtx.collate_identifier() != null) {
             col.setCollation(getFullCtxText(colCtx.collate_identifier().collation));
         }

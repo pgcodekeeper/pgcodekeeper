@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
 import ru.taximaxim.codekeeper.core.schema.IConstraintPk;
@@ -59,7 +60,6 @@ public final class PgConstraintPk extends PgConstraint implements IConstraintPk,
         resetHash();
     }
 
-    @Override
     public Set<String> getIncludes() {
         return Collections.unmodifiableSet(includes);
     }
@@ -70,7 +70,6 @@ public final class PgConstraintPk extends PgConstraint implements IConstraintPk,
         resetHash();
     }
 
-    @Override
     public Map<String, String> getParams() {
         return Collections.unmodifiableMap(params);
     }
@@ -81,7 +80,6 @@ public final class PgConstraintPk extends PgConstraint implements IConstraintPk,
         resetHash();
     }
 
-    @Override
     public String getTablespace() {
         return tablespace;
     }
@@ -125,6 +123,20 @@ public final class PgConstraintPk extends PgConstraint implements IConstraintPk,
         StatementUtils.appendCols(sbSQL, getColumns(), getDbType());
         appendIndexParam(sbSQL);
         return sbSQL.toString();
+    }
+
+    public void appendIndexParam(StringBuilder sb) {
+        if (!includes.isEmpty()) {
+            sb.append(" INCLUDE ");
+            StatementUtils.appendCols(sb, includes, DatabaseType.PG);
+        }
+        if (!params.isEmpty()) {
+            sb.append(" WITH");
+            StatementUtils.appendOptionsWithParen(sb, params, getDbType());
+        }
+        if (tablespace != null) {
+            sb.append("\n\tUSING INDEX TABLESPACE ").append(tablespace);
+        }
     }
 
     @Override

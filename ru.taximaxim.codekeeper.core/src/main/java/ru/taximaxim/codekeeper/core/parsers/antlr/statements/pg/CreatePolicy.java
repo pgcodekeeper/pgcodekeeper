@@ -28,14 +28,13 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.VexAnalysisLaunc
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_policy_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.User_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.core.schema.pg.PgEventType;
 import ru.taximaxim.codekeeper.core.schema.pg.PgPolicy;
 
-public class CreatePolicy extends ParserAbstract {
+public class CreatePolicy extends PgParserAbstract {
 
     private final Create_policy_statementContext ctx;
 

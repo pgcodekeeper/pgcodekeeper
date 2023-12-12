@@ -24,13 +24,15 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractIndex;
 import ru.taximaxim.codekeeper.core.schema.Inherits;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
+import ru.taximaxim.codekeeper.core.schema.SimpleColumn;
+import ru.taximaxim.codekeeper.core.schema.StatementUtils;
 
 public class PgIndex extends AbstractIndex {
 
@@ -61,71 +63,32 @@ public class PgIndex extends AbstractIndex {
         }
 
         sbSQL.append("INDEX ");
-        PgDiffArguments args = getDatabase().getArguments();
-        if (args != null && args.isConcurrentlyMode()) {
+        if (isConcurrentlyMode()) {
             sbSQL.append("CONCURRENTLY ");
         }
-        if (inherit != null || (args != null && args.isGenerateExists())) {
+        if (inherit != null || isGenerateExists()) {
             sbSQL.append("IF NOT EXISTS ");
         }
-        sbSQL.append(PgDiffUtils.getQuotedName(name));
-        sbSQL.append(" ON ");
-
+        sbSQL.append(PgDiffUtils.getQuotedName(name))
+        .append(" ON ");
         PgStatement par = getParent();
-        if (par instanceof AbstractRegularTable
-                && ((AbstractRegularTable) par).getPartitionBy() != null) {
+        if (par instanceof AbstractRegularTable && ((AbstractRegularTable) par).getPartitionBy() != null) {
             sbSQL.append("ONLY ");
         }
-
         sbSQL.append(par.getQualifiedName());
         if (getMethod() != null) {
             sbSQL.append(" USING ").append(PgDiffUtils.getQuotedName(getMethod()));
         }
-        sbSQL.append(' ');
-        sbSQL.append(getDefinition());
-
-        if (!includes.isEmpty()) {
-            sbSQL.append(" INCLUDE (");
-            for (String col : includes) {
-                sbSQL.append(PgDiffUtils.getQuotedName(col)).append(", ");
-            }
-            sbSQL.setLength(sbSQL.length() - 2);
-            sbSQL.append(')');
-        }
-
-        if (!isNullsDistinction()) {
-            sbSQL.append(" NULLS NOT DISTINCT");
-        }
-
-        StringBuilder sb = new StringBuilder();
-        for (Map.Entry<String, String> entry : options.entrySet()) {
-            sb.append(entry.getKey());
-            if (!entry.getValue().isEmpty()){
-                sb.append("=").append(entry.getValue());
-            }
-            sb.append(", ");
-        }
-
-        if (sb.length() > 0){
-            sb.setLength(sb.length() - 2);
-            sbSQL.append("\nWITH (").append(sb).append(")");
-        }
-
-        if (getTablespace() != null) {
-            sbSQL.append("\nTABLESPACE ").append(getTablespace());
-        }
-        if (getWhere() != null) {
-            sbSQL.append("\nWHERE ").append(getWhere());
-        }
+        appendSimpleColumns(sbSQL, columns);
+        appendIndexParam(sbSQL);
+        appendWhere(sbSQL);
         sbSQL.append(';');
 
         if (isClustered()) {
             appendClusterSql(sbSQL);
         }
 
-        if (comment != null && !comment.isEmpty()) {
-            appendCommentSql(sbSQL);
-        }
+        appendComments(sbSQL);
 
         if (inherit != null) {
             sbSQL.append("\n\nALTER INDEX ").append(inherit.getQualifiedName())
@@ -133,6 +96,50 @@ public class PgIndex extends AbstractIndex {
         }
 
         return sbSQL.toString();
+    }
+
+    private void appendSimpleColumns(StringBuilder sbSQL, Map<String, SimpleColumn> columns) {
+        sbSQL.append(" (");
+        for (var col : columns.values()) {
+            // column name already quoted
+            sbSQL.append(col.getName());
+            if (col.getCollation() != null) {
+                sbSQL.append(" COLLATE ").append(col.getCollation());
+            }
+            if (col.getOpClass() != null) {
+                sbSQL.append(' ').append(col.getOpClass());
+                var opClassParams = col.getOpClassParams();
+                if (!opClassParams.isEmpty()) {
+                    StatementUtils.appendOptionsWithParen(sbSQL, opClassParams, getDbType());
+                }
+            }
+            if (col.isDesc()) {
+                sbSQL.append(" DESC");
+            }
+            if (col.getNullsOrdering() != null) {
+                sbSQL.append(col.getNullsOrdering());
+            }
+            sbSQL.append(", ");
+        }
+        sbSQL.setLength(sbSQL.length() - 2);
+        sbSQL.append(')');
+    }
+
+    private void appendIndexParam(StringBuilder sb) {
+        if (!includes.isEmpty()) {
+            sb.append(" INCLUDE ");
+            StatementUtils.appendCols(sb, includes, DatabaseType.PG);
+        }
+        if (!nullsDistinction) {
+            sb.append(" NULLS NOT DISTINCT");
+        }
+        if (!options.isEmpty()) {
+            sb.append("\nWITH");
+            StatementUtils.appendOptionsWithParen(sb, options, DatabaseType.PG);
+        }
+        if (getTablespace() != null) {
+            sb.append("\nTABLESPACE ").append(getTablespace());
+        }
     }
 
     @Override
@@ -149,9 +156,7 @@ public class PgIndex extends AbstractIndex {
         if (!compareUnalterable(newIndex)) {
             isNeedDepcies.set(true);
 
-            PgDiffArguments args = getDatabase().getArguments();
-            boolean concurrently = args != null && args.isConcurrentlyMode();
-            if (concurrently) {
+            if (isConcurrentlyMode()) {
                 // generate optimized command sequence for concurrent index creation
                 String tmpName = "tmp" + PgDiffUtils.RANDOM.nextInt(Integer.MAX_VALUE) + "_" + getName();
 
@@ -236,11 +241,14 @@ public class PgIndex extends AbstractIndex {
 
     @Override
     protected boolean compareUnalterable(AbstractIndex index) {
-        return index instanceof PgIndex
-                && super.compareUnalterable(index)
-                && Objects.equals(inherit, ((PgIndex) index).inherit)
-                && Objects.equals(method, ((PgIndex) index).method)
-                && nullsDistinction == ((PgIndex) index).nullsDistinction;
+        if (!(index instanceof PgIndex)) {
+            return false;
+        }
+        var pgIndex = (PgIndex) index;
+        return super.compareUnalterable(pgIndex)
+                && Objects.equals(inherit, pgIndex.inherit)
+                && Objects.equals(method, pgIndex.method)
+                && nullsDistinction == pgIndex.nullsDistinction;
     }
 
     @Override

@@ -24,13 +24,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
-import ru.taximaxim.codekeeper.core.schema.OptionContainer;
-import ru.taximaxim.codekeeper.core.schema.PgSimpleOptionContainer;
+import ru.taximaxim.codekeeper.core.schema.IOptionContainer;
+import ru.taximaxim.codekeeper.core.schema.ISimpleOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.PgStatementWithSearchPath;
 
 public class PgFtsDictionary extends PgStatementWithSearchPath
-implements PgSimpleOptionContainer {
+implements ISimpleOptionContainer {
 
     private String template;
     private final Map<String, String> options = new LinkedHashMap<>();
@@ -69,11 +69,6 @@ implements PgSimpleOptionContainer {
     }
 
     @Override
-    public String getTypeName() {
-        return "TEXT SEARCH DICTIONARY";
-    }
-
-    @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
@@ -94,7 +89,7 @@ implements PgSimpleOptionContainer {
     }
 
     @Override
-    public void appendOptions(OptionContainer newContainer, StringBuilder setOptions,
+    public void appendOptions(IOptionContainer newContainer, StringBuilder setOptions,
             StringBuilder resetOptions, StringBuilder sb) {
         sb.append("\n\nALTER TEXT SEARCH DICTIONARY ");
         sb.append(getQualifiedName());

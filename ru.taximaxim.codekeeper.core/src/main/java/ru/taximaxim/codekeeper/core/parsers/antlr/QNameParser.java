@@ -24,7 +24,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
+import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.PgParserAbstract;
 
 public final class QNameParser<T extends ParserRuleContext> {
 
@@ -99,7 +99,7 @@ public final class QNameParser<T extends ParserRuleContext> {
 
     public static QNameParser<ParserRuleContext> parsePg(String schemaQualifiedName) {
         List<Object> errors = new ArrayList<>();
-        List<ParserRuleContext> parts = ParserAbstract.getIdentifiers(AntlrParser
+        List<ParserRuleContext> parts = PgParserAbstract.getIdentifiers(AntlrParser
                 .makeBasicParser(SQLParser.class, schemaQualifiedName, "qname: " + schemaQualifiedName, errors)
                 .qname_parser()
                 .schema_qualified_name());

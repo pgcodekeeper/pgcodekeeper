@@ -22,7 +22,7 @@ import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
-import ru.taximaxim.codekeeper.core.schema.PgSimpleOptionContainer;
+import ru.taximaxim.codekeeper.core.schema.ISimpleOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 /**
@@ -32,7 +32,7 @@ import ru.taximaxim.codekeeper.core.schema.PgStatement;
  * @author galiev_mr
  *
  */
-public abstract class AbstractRegularTable extends AbstractPgTable implements PgSimpleOptionContainer {
+public abstract class AbstractRegularTable extends AbstractPgTable implements ISimpleOptionContainer {
 
     private boolean isLogged = true;
     private String tablespace;

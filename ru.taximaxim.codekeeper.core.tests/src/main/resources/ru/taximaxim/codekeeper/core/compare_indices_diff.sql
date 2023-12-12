@@ -19,7 +19,9 @@ DROP INDEX public.i5;
 
 DROP INDEX public.i6;
 
-DROP INDEX public.i7;
+DROP INDEX public.i7_1;
+
+DROP INDEX public.i7_2;
 
 DROP INDEX public.i8;
 
@@ -63,7 +65,9 @@ CREATE INDEX i5 ON public.test USING btree (id, text);
 
 CREATE INDEX i6 ON public.test (id, text);
 
-CREATE INDEX i7 ON public.test (text COLLATE public.french varchar_pattern_ops DESC NULLS LAST);
+CREATE INDEX i7_1 ON public.test (text COLLATE public.french varchar_pattern_ops DESC NULLS LAST);
+
+CREATE INDEX i7_2 ON public.test (col4 numeric_minmax_multi_ops (values_per_range='32'), text COLLATE public.french varchar_pattern_ops);
 
 CREATE INDEX i8 ON public.test (id) INCLUDE (vector, text);
 

@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Objects;
 
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
+import ru.taximaxim.codekeeper.core.schema.IStatementContainer;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
@@ -140,8 +141,14 @@ public class TreeElement {
         if (stParent == null) {
             throw new IllegalArgumentException("No statement found for " + parent);
         }
-        return type == DbObjType.COLUMN ? ((AbstractTable) stParent).getColumn(name)
-                : stParent.getChild(name, type);
+        if (type == DbObjType.COLUMN) {
+            return ((AbstractTable) stParent).getColumn(name);
+        }
+        if (stParent instanceof IStatementContainer) {
+            return ((IStatementContainer) stParent).getChild(name, type);
+        }
+
+        return null;
     }
 
     /**

@@ -24,11 +24,10 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Character_stringContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Collation_optionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_collation_statementContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgCollation;
 
-public class CreateCollation extends ParserAbstract {
+public class CreateCollation extends PgParserAbstract {
     private final Create_collation_statementContext ctx;
 
     public CreateCollation(Create_collation_statementContext ctx, PgDatabase db) {

@@ -37,11 +37,10 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Operator_n
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_dropContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qualified_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Target_operatorContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 
-public class DropStatement extends ParserAbstract {
+public class DropStatement extends PgParserAbstract {
 
     private final Schema_dropContext ctx;
 

@@ -81,6 +81,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Xml_functi
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Xml_table_columnContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.rulectx.Vex;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
+import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.PgParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.Argument;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.IFunction;
@@ -370,7 +371,7 @@ public class ValueExpr extends AbstractExpr {
             } else {
                 Data_typeContext coercionDataType = typeCoercion.data_type();
                 addTypeDepcy(coercionDataType);
-                type = ParserAbstract.getTypeName(coercionDataType);
+                type = PgParserAbstract.getTypeName(coercionDataType);
             }
             // since this cast can only convert string literals into a type
             // column name here will always be derived from type name
@@ -392,9 +393,8 @@ public class ValueExpr extends AbstractExpr {
         if (list.isEmpty()) {
             LOG.warn("Subselect return 0 element");
             return new ModPair<>(NONAME, TypesSetManually.UNKNOWN);
-        } else {
-            return list.get(0);
         }
+        return list.get(0);
     }
 
     private ModPair<String, String> indirectionVar(Indirection_varContext indirection) {
@@ -431,11 +431,10 @@ public class ValueExpr extends AbstractExpr {
 
         for (IndirectionContext ind : indir) {
             Col_labelContext label = ind.col_label();
-            if (label != null) {
-                ids.add(label);
-            } else {
+            if (label == null) {
                 break;
             }
+            ids.add(label);
         }
 
         ModPair<String, String> ret;
@@ -511,7 +510,7 @@ public class ValueExpr extends AbstractExpr {
         }
 
         String schemaName = null;
-        List<ParserRuleContext> ids = ParserAbstract.getIdentifiers(funcNameCtx);
+        List<ParserRuleContext> ids = PgParserAbstract.getIdentifiers(funcNameCtx);
         String functionName = QNameParser.getFirstName(ids);
 
         ParserRuleContext id = QNameParser.getSchemaNameCtx(ids);
@@ -596,7 +595,7 @@ public class ValueExpr extends AbstractExpr {
             if (cast != null) {
                 ret = analyze(new Vex(cast.vex()));
                 Data_typeContext dataTypeCtx = cast.data_type();
-                ret.setSecond(ParserAbstract.getTypeName(dataTypeCtx));
+                ret.setSecond(PgParserAbstract.getTypeName(dataTypeCtx));
                 addTypeDepcy(dataTypeCtx);
             } else {
                 ret = new ModPair<>(system.USER() != null ? "current_user"
@@ -659,7 +658,7 @@ public class ValueExpr extends AbstractExpr {
                 coltype = TypesSetManually.BOOLEAN;
             } else if (xml.XMLSERIALIZE() != null) {
                 Data_typeContext type = xml.data_type();
-                coltype = ParserAbstract.getTypeName(type);
+                coltype = PgParserAbstract.getTypeName(type);
                 addTypeDepcy(type);
             } else if (xml.XMLTABLE() != null) {
                 for (Xml_table_columnContext col : xml.xml_table_column()) {
@@ -684,7 +683,7 @@ public class ValueExpr extends AbstractExpr {
             String coltype = TypesSetManually.JSON;
             if (retClause != null) {
                 Data_typeContext type = retClause.data_type();
-                coltype = ParserAbstract.getTypeName(type);
+                coltype = PgParserAbstract.getTypeName(type);
                 addTypeDepcy(type);
             } else if (json.JSON_ARRAY() != null || json.JSON_ARRAYAGG() != null) {
                 coltype = TypesSetManually.JSON + "[]";
@@ -779,10 +778,9 @@ public class ValueExpr extends AbstractExpr {
                     signatureApplicable = arg.getDefaultExpression() != null;
                     if (!signatureApplicable || !hasNamedArg) {
                         break;
-                    } else {
-                        // continue checking if more named (out-of-order) args are available
-                        continue;
                     }
+                    // continue checking if more named (out-of-order) args are available
+                    continue;
                 }
 
                 if (sourceType.equals(arg.getDataType())) {
@@ -927,7 +925,7 @@ public class ValueExpr extends AbstractExpr {
             return;
         }
 
-        Pair<String, Token> pair = ParserAbstract.unquoteQuotedString(strCtx);
+        Pair<String, Token> pair = PgParserAbstract.unquoteQuotedString(strCtx);
         String s = pair.getFirst();
         Token start = pair.getSecond();
 

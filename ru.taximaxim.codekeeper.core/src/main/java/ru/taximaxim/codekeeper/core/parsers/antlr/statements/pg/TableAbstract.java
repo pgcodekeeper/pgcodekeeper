@@ -55,13 +55,11 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Table_defe
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Table_initialy_immedContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Table_of_type_column_defContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.schema.SimpleColumn;
 import ru.taximaxim.codekeeper.core.schema.pg.AbstractForeignTable;
 import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgTable;
 import ru.taximaxim.codekeeper.core.schema.pg.PgColumn;
@@ -73,7 +71,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgConstraintPk;
 import ru.taximaxim.codekeeper.core.schema.pg.PgIndexParamContainer;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
 
-public abstract class TableAbstract extends ParserAbstract {
+public abstract class TableAbstract extends PgParserAbstract {
 
     private final CommonTokenStream stream;
 
@@ -201,7 +199,7 @@ public abstract class TableAbstract extends ParserAbstract {
         PgColumn col = new PgColumn(columnName);
         if (datatype != null) {
             col.setType(getTypeName(datatype));
-            addPgTypeDepcy(datatype, col);
+            addTypeDepcy(datatype, col);
         }
         if (storage != null) {
             col.setStorage(storage.getText());
@@ -419,40 +417,10 @@ public abstract class TableAbstract extends ParserAbstract {
         if (body.index_method != null) {
             constrExcl.setIndexMethod(body.index_method.getText());
         }
-        for (var col : body.index_column()) {
-            var colName = getFullCtxText(col.column);
-            var sCol = new SimpleColumn(colName);
-
-            addNullOrdering(sCol, col);
-            if (col.operator_class != null) {
-                sCol.setOpClass(col.operator_class.getText());
-            }
-            sCol.setOperator(body.all_op(constrExcl.getColumns().size()).getText());
-            constrExcl.addColumn(colName, sCol);
-        }
+        fillSimpleColumns(constrExcl, body.index_column(), body.all_op());
         fillParam(constrExcl, body.index_parameters(), schemaName, tableName);
         if (body.where != null) {
             constrExcl.setPredicate(getFullCtxText(body.exp));
-        }
-    }
-
-    private void addNullOrdering(SimpleColumn sCol, Index_columnContext col) {
-        var ordSpec = col.order_specification();
-        if (ordSpec != null) {
-            sCol.setDesc(ordSpec.DESC() != null);
-        }
-
-        var nullOrd = col.null_ordering();
-        if (nullOrd == null) {
-            return;
-        }
-
-        if (sCol.isDesc()) {
-            if (nullOrd.LAST() != null) {
-                sCol.setNullsOrdering(" NULLS LAST");
-            }
-        } else if (nullOrd.FIRST() != null) {
-            sCol.setNullsOrdering(" NULLS FIRST");
         }
     }
 

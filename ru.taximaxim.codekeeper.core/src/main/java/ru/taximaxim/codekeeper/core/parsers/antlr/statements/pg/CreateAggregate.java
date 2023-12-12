@@ -35,7 +35,6 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Function_a
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.IdentifierContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Identifier_nontypeContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qualified_nameContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.Argument;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
@@ -44,7 +43,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgAggregate.AggFuncs;
 import ru.taximaxim.codekeeper.core.schema.pg.PgAggregate.AggKinds;
 import ru.taximaxim.codekeeper.core.schema.pg.PgAggregate.ModifyType;
 
-public class CreateAggregate extends ParserAbstract {
+public class CreateAggregate extends PgParserAbstract {
     private final Create_aggregate_statementContext ctx;
     public CreateAggregate(Create_aggregate_statementContext ctx, PgDatabase db) {
         super(db);
@@ -62,7 +61,7 @@ public class CreateAggregate extends ParserAbstract {
 
         Data_typeContext sTypeCtx = ctx.type;
         aggregate.setSType(getFullCtxText(sTypeCtx));
-        addPgTypeDepcy(sTypeCtx, aggregate);
+        addTypeDepcy(sTypeCtx, aggregate);
 
         fillAllArguments(aggregate);
 
@@ -90,7 +89,7 @@ public class CreateAggregate extends ParserAbstract {
         } else if (ctx.ANY() == null && ctx.BASETYPE() != null) {
             Data_typeContext baseTypeCtx = ctx.base_type;
             aggregate.addArgument(new Argument(null, getFullCtxText(baseTypeCtx)));
-            addPgTypeDepcy(baseTypeCtx, aggregate);
+            addTypeDepcy(baseTypeCtx, aggregate);
             aggregate.setDirectCount(1);
         }
     }
@@ -101,7 +100,7 @@ public class CreateAggregate extends ParserAbstract {
             Argument arg = new Argument(parseArgMode(argument.argmode()),
                     (name != null ? name.getText() : null),
                     getTypeName(argument.data_type()));
-            addPgTypeDepcy(argument.data_type(), aggr);
+            addTypeDepcy(argument.data_type(), aggr);
             aggr.addArgument(arg);
         }
     }
@@ -119,7 +118,7 @@ public class CreateAggregate extends ParserAbstract {
             if (mSTypeParamCtx != null) {
                 Data_typeContext mSTypeCtx = mSTypeParamCtx.ms_type;
                 aggregate.setMSType(getFullCtxText(mSTypeCtx));
-                addPgTypeDepcy(mSTypeCtx, aggregate);
+                addTypeDepcy(mSTypeCtx, aggregate);
             }
 
             for (Aggregate_paramContext paramOpt : params) {
@@ -223,7 +222,8 @@ public class CreateAggregate extends ParserAbstract {
     private ModifyType getModifyParam(Aggregate_paramContext param) {
         if (param.READ_WRITE() != null) {
             return ModifyType.READ_WRITE;
-        } else if (param.SHAREABLE() != null) {
+        }
+        if (param.SHAREABLE() != null) {
             return ModifyType.SHAREABLE;
         } else {
             return ModifyType.READ_ONLY;

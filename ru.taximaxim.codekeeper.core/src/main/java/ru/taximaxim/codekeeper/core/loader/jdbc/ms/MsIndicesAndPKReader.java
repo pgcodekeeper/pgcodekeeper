@@ -17,7 +17,6 @@ package ru.taximaxim.codekeeper.core.loader.jdbc.ms;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,10 +28,11 @@ import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.XmlReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.XmlReaderException;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.schema.AbstractIndex;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
+import ru.taximaxim.codekeeper.core.schema.ISimpleColumnContainer;
+import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.SimpleColumn;
 import ru.taximaxim.codekeeper.core.schema.ms.MsConstraintPk;
 import ru.taximaxim.codekeeper.core.schema.ms.MsIndex;
@@ -63,56 +63,35 @@ public class MsIndicesAndPKReader extends JdbcReader {
 
         if (type == DbObjType.CONSTRAINT) {
             var constrPk = new MsConstraintPk(name, isPrimaryKey);
-
+            fillColumns(constrPk, XmlReader.readXML(res.getString("cols")), schema.getName(), parent);
             constrPk.setClustered(isClustered);
-            options.forEach(constrPk::addOption);
             constrPk.setDataSpace(dataSpace);
-
-            for (XmlReader col : XmlReader.readXML(res.getString("cols"))) {
-                String colName = col.getString("name");
-                SimpleColumn column = new SimpleColumn(colName);
-                column.setDesc(col.getBoolean("is_desc"));
-                constrPk.addColumn(colName, column);
-                constrPk.addDep(new GenericColumn(schema.getName(), parent, colName, DbObjType.COLUMN));
-            }
-
-            t.addConstraint(constrPk);
+            options.forEach(constrPk::addOption);
+            t.addChild(constrPk);
         } else {
-            AbstractIndex index = new MsIndex(name);
-
-            List<String> columns = new ArrayList<>();
-            List<String> includes = new ArrayList<>();
-
-            for (XmlReader col : XmlReader.readXML(res.getString("cols"))) {
-                boolean isDesc = col.getBoolean("is_desc");
-                String colName = col.getString("name");
-
-                if (col.getBoolean("is_inc")) {
-                    includes.add(colName);
-                } else {
-                    columns.add(MsDiffUtils.quoteName(colName) + (isDesc ? " DESC" : ""));
-                    index.addDep(new GenericColumn(schema.getName(), parent, colName, DbObjType.COLUMN));
-                }
-            }
-
-            StringBuilder sb = new StringBuilder();
-            sb.append("(");
-            sb.append(String.join(", ", columns));
-            sb.append(")");
-            index.setDefinition(sb.toString());
-
+            var index = new MsIndex(name);
+            fillColumns(index, XmlReader.readXML(res.getString("cols")), schema.getName(), parent);
             index.setClustered(isClustered);
             index.setUnique(res.getBoolean("is_unique"));
             index.setWhere(filter);
-            index.setTablespace(dataSpace);
-
-            for (String include : includes) {
-                index.addInclude(include);
-                index.addDep(new GenericColumn(schema.getName(), parent, include, DbObjType.COLUMN));
-            }
+            index.setTablespace(MsDiffUtils.quoteName(dataSpace));
             options.forEach(index::addOption);
+            t.addChild(index);
+        }
+    }
 
-            t.addIndex(index);
+    private void fillColumns(ISimpleColumnContainer stmt, List<XmlReader> cols, String schema, String parent) {
+        for (XmlReader col : cols) {
+            boolean isDesc = col.getBoolean("is_desc");
+            String colName = col.getString("name");
+            if (col.getBoolean("is_inc")) {
+                ((MsIndex) stmt).addInclude(colName);
+            } else {
+                var simpleCol = new SimpleColumn(colName);
+                simpleCol.setDesc(isDesc);
+                stmt.addColumn(simpleCol);
+            }
+            ((PgStatement) stmt).addDep(new GenericColumn(schema, parent, colName, DbObjType.COLUMN));
         }
     }
 

@@ -31,7 +31,6 @@ import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.fileutils.TempDir;
 import ru.taximaxim.codekeeper.core.model.exporter.MsModelExporter;
-import ru.taximaxim.codekeeper.core.schema.AbstractIndex;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.Argument;
 import ru.taximaxim.codekeeper.core.schema.FuncTypes;
@@ -129,7 +128,7 @@ class MsAntlrLoaderTest {
         MsConstraintPk constriaintPk = new MsConstraintPk("PK_fax_boxes", true);
         constriaintPk.setClustered(true);
         constriaintPk.setDataSpace("PRIMARY");
-        constriaintPk.addColumn("fax_box_id", new SimpleColumn("fax_box_id"));
+        constriaintPk.addColumn(new SimpleColumn("fax_box_id"));
         table.addConstraint(constriaintPk);
 
         table.setOwner("ms_user");
@@ -186,7 +185,7 @@ class MsAntlrLoaderTest {
         constriaintPk = new MsConstraintPk("PK_faxes", true);
         constriaintPk.setClustered(true);
         constriaintPk.setDataSpace("PRIMARY");
-        constriaintPk.addColumn("fax_id", new SimpleColumn("fax_id"));
+        constriaintPk.addColumn(new SimpleColumn("fax_id"));
         table.addConstraint(constriaintPk);
 
         var constraintFk = new MsConstraintFk("FK_faxes_fax_box_id");
@@ -261,9 +260,9 @@ class MsAntlrLoaderTest {
         col.setType("[varchar](50)");
         table.addColumn(col);
 
-        AbstractIndex idx = new MsIndex("IX_contacts_number_pool_id");
+        MsIndex idx = new MsIndex("IX_contacts_number_pool_id");
+        idx.addColumn(new SimpleColumn("number_pool_id"));
         table.addIndex(idx);
-        idx.setDefinition("([number_pool_id])");
 
         testDatabase("ms_schema_1.sql", d);
     }
@@ -294,7 +293,7 @@ class MsAntlrLoaderTest {
         MsConstraintPk constriaintPk = new MsConstraintPk("PK_admins", true);
         constriaintPk.setClustered(true);
         constriaintPk.setDataSpace("PRIMARY");
-        constriaintPk.addColumn("aid", new SimpleColumn("aid"));
+        constriaintPk.addColumn(new SimpleColumn("aid"));
         table.addConstraint(constriaintPk);
 
         col = new MsColumn("companyid");
@@ -504,8 +503,8 @@ class MsAntlrLoaderTest {
 
         table.setOwner("ms_user");
 
-        AbstractIndex idx = new MsIndex("IX_test_table_date_deleted");
-        idx.setDefinition("([date_deleted])");
+        MsIndex idx = new MsIndex("IX_test_table_date_deleted");
+        idx.addColumn(new SimpleColumn("date_deleted"));
         idx.setWhere("(date_deleted IS NULL)");
         table.addIndex(idx);
 
@@ -712,7 +711,7 @@ class MsAntlrLoaderTest {
         MsConstraintPk constriaintPk = new MsConstraintPk("PK_acl_role", true);
         constriaintPk.setClustered(true);
         constriaintPk.setDataSpace("PRIMARY");
-        constriaintPk.addColumn("id", new SimpleColumn("id"));
+        constriaintPk.addColumn(new SimpleColumn("id"));
         table.addConstraint(constriaintPk);
 
         table.setOwner("ms_user");
@@ -774,8 +773,8 @@ class MsAntlrLoaderTest {
         col.setNullValue(false);
         table.addColumn(col);
 
-        AbstractIndex idx = new MsIndex("IX_user_role_id");
-        idx.setDefinition("([role_id])");
+        MsIndex idx = new MsIndex("IX_user_role_id");
+        idx.addColumn(new SimpleColumn("role_id"));
         table.addIndex(idx);
 
         var constraintFk = new MsConstraintFk("FK_user_fax_box_id");
@@ -852,7 +851,7 @@ class MsAntlrLoaderTest {
         MsConstraintPk constriaintPk = new MsConstraintPk("PK_TABLE_1", true);
         constriaintPk.setClustered(true);
         constriaintPk.setDataSpace("PRIMARY");
-        constriaintPk.addColumn("ID", new SimpleColumn("ID"));
+        constriaintPk.addColumn(new SimpleColumn("ID"));
         table.addConstraint(constriaintPk);
 
         testDatabase("ms_schema_11.sql", d);
@@ -1022,7 +1021,7 @@ class MsAntlrLoaderTest {
         MsConstraintPk constriaintPk = new MsConstraintPk("PK_test", true);
         constriaintPk.setClustered(true);
         constriaintPk.setDataSpace("PRIMARY");
-        constriaintPk.addColumn("id", new SimpleColumn("id"));
+        constriaintPk.addColumn(new SimpleColumn("id"));
         table.addConstraint(constriaintPk);
 
         // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
@@ -1047,9 +1046,9 @@ class MsAntlrLoaderTest {
 
         view.setOwner("ms_user");
 
-        AbstractIndex idx = new MsIndex("IX_test_id");
+        MsIndex idx = new MsIndex("IX_test_id");
         table.addIndex(idx);
-        idx.setDefinition("([id])");
+        idx.addColumn(new SimpleColumn("id"));
 
         // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
         // idx.setComment("view id col");

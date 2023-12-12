@@ -17,10 +17,9 @@ package ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Delete_stmt_for_psqlContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 
-public class DeleteStatement extends ParserAbstract {
+public class DeleteStatement extends PgParserAbstract {
 
     private final Delete_stmt_for_psqlContext ctx;
 

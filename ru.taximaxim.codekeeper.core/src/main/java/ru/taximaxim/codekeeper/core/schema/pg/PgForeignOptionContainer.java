@@ -19,9 +19,9 @@ import java.text.MessageFormat;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import ru.taximaxim.codekeeper.core.schema.OptionContainer;
+import ru.taximaxim.codekeeper.core.schema.IOptionContainer;
 
-public interface PgForeignOptionContainer extends OptionContainer {
+public interface PgForeignOptionContainer extends IOptionContainer {
 
     static final String ALTER_FOREIGN_OPTION = "{0} OPTIONS ({1} {2} {3});";
     static final String DELIM = ",\n    ";
@@ -44,7 +44,7 @@ public interface PgForeignOptionContainer extends OptionContainer {
     }
 
     @Override
-    default void compareOptions(OptionContainer newContainer, StringBuilder sb) {
+    default void compareOptions(IOptionContainer newContainer, StringBuilder sb) {
         Map <String, String> oldForeignOptions = getOptions();
         Map <String, String> newForeignOptions = newContainer.getOptions();
         if (!oldForeignOptions.isEmpty() || !newForeignOptions.isEmpty()) {

@@ -1,7 +1,8 @@
 CREATE TABLE public.test(
   id integer NOT NULL, 
   text character varying(20) NOT NULL, 
-  vector tsvector NOT NULL
+  vector tsvector NOT NULL,
+  col4 numeric
 );
 
 -- no diff
@@ -16,8 +17,9 @@ CREATE INDEX i4 ON public.test USING gist (vector);
 CREATE INDEX i5 ON public.test USING btree (id, text);
 CREATE INDEX i6 ON public.test (id, text);
 
--- definition
-CREATE INDEX i7 ON public.test (text COLLATE public.french varchar_pattern_ops DESC NULLS LAST);
+-- SimpleColumn
+CREATE INDEX i7_1 ON public.test (text COLLATE public.french varchar_pattern_ops DESC NULLS LAST);
+CREATE INDEX i7_2 ON public.test (col4 numeric_minmax_multi_ops (values_per_range='32'), text COLLATE public.french varchar_pattern_ops);
 
 -- include
 CREATE INDEX i8 ON public.test (id) INCLUDE (vector, text);

@@ -71,11 +71,6 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
     }
 
     @Override
-    public String getTypeName() {
-        return "FOREIGN DATA WRAPPER";
-    }
-
-    @Override
     public DbObjType getStatementType() {
         return DbObjType.FOREIGN_DATA_WRAPPER;
     }
