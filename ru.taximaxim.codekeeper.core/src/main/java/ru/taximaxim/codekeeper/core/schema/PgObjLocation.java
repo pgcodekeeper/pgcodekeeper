@@ -27,7 +27,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
+import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.PgParserAbstract;
 
 public class PgObjLocation extends ContextLocation {
 
@@ -165,7 +165,7 @@ public class PgObjLocation extends ContextLocation {
             return objName;
         }
         SQLParser p = AntlrParser.makeBasicParser(SQLParser.class, objName, "function signature");
-        List<ParserRuleContext> ids = ParserAbstract.getIdentifiers(p.function_args_parser().schema_qualified_name());
+        List<ParserRuleContext> ids = PgParserAbstract.getIdentifiers(p.function_args_parser().schema_qualified_name());
         return QNameParser.getFirstName(ids);
     }
 

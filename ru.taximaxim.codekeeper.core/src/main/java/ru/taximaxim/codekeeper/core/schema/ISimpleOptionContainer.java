@@ -20,10 +20,10 @@ import java.util.Map;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 
-public interface PgSimpleOptionContainer extends OptionContainer {
+public interface ISimpleOptionContainer extends IOptionContainer {
 
     @Override
-    default void compareOptions(OptionContainer newContainer, StringBuilder sb) {
+    default void compareOptions(IOptionContainer newContainer, StringBuilder sb) {
         Map <String, String> oldOptions = getOptions();
         Map <String, String> newOptions = newContainer.getOptions();
 
@@ -64,7 +64,7 @@ public interface PgSimpleOptionContainer extends OptionContainer {
         }
     }
 
-    default void appendOptions(OptionContainer newContainer, StringBuilder setOptions,
+    default void appendOptions(IOptionContainer newContainer, StringBuilder setOptions,
             StringBuilder resetOptions, StringBuilder sb) {
         DbObjType type = getStatementType();
         String typeName = type == DbObjType.VIEW ? ((PgStatement) newContainer).getTypeName() : type.name();

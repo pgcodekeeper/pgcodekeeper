@@ -46,7 +46,7 @@ import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.StatementOverride;
 import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgFunction;
 
-public class GrantPrivilege extends ParserAbstract {
+public class GrantPrivilege extends PgParserAbstract {
     private final Rule_commonContext ctx;
     private final String state;
     private final boolean isGO;
@@ -139,7 +139,7 @@ public class GrantPrivilege extends ParserAbstract {
             if (user == null) {
                 continue;
             }
-            String role = ParserAbstract.getFullCtxText(user);
+            String role = getFullCtxText(user);
             if (roleCtx.GROUP() != null) {
                 role = "GROUP " + role;
             }

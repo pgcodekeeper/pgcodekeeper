@@ -26,11 +26,14 @@ import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
 import ru.taximaxim.codekeeper.core.schema.IConstraintPk;
+import ru.taximaxim.codekeeper.core.schema.IOptionContainer;
+import ru.taximaxim.codekeeper.core.schema.ISimpleColumnContainer;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.SimpleColumn;
 import ru.taximaxim.codekeeper.core.schema.StatementUtils;
 
-public final class MsConstraintPk extends MsConstraint implements IConstraintPk {
+public final class MsConstraintPk extends MsConstraint
+implements IConstraintPk, IOptionContainer, ISimpleColumnContainer {
 
     private final boolean isPrimaryKey;
     private boolean isClustered;
@@ -72,11 +75,18 @@ public final class MsConstraintPk extends MsConstraint implements IConstraintPk 
         return Collections.unmodifiableSet(columns.keySet());
     }
 
-    public void addColumn(String key, SimpleColumn value) {
-        columns.put(key, value);
+    @Override
+    public void addColumn(SimpleColumn column) {
+        columns.put(column.getName(), column);
         resetHash();
     }
 
+    @Override
+    public Map<String, String> getOptions() {
+        return Collections.unmodifiableMap(options);
+    }
+
+    @Override
     public void addOption(String key, String value) {
         options.put(key, value);
         resetHash();
@@ -89,11 +99,23 @@ public final class MsConstraintPk extends MsConstraint implements IConstraintPk 
         if (!isClustered) {
             sbSQL.append("NON");
         }
-        sbSQL.append("CLUSTERED  ");
+        sbSQL.append("CLUSTERED ");
         if (options.keySet().stream().anyMatch("BUCKET_COUNT"::equalsIgnoreCase)) {
-            sbSQL.append("HASH ");
+            sbSQL.append(" HASH");
         }
-        sbSQL.append('(');
+        appendSimpleColumns(sbSQL, columns);
+        if (!options.isEmpty()) {
+            sbSQL.append(" WITH");
+            StatementUtils.appendOptionsWithParen(sbSQL, options, getDbType());
+        }
+        if (dataSpace != null) {
+            sbSQL.append(" ON ").append(MsDiffUtils.quoteName(dataSpace));
+        }
+        return sbSQL.toString();
+    }
+
+    private void appendSimpleColumns(StringBuilder sbSQL, Map<String, SimpleColumn> columns) {
+        sbSQL.append(" (");
         for (var col : columns.values()) {
             sbSQL.append(MsDiffUtils.quoteName(col.getName()));
             if (col.isDesc()) {
@@ -102,17 +124,7 @@ public final class MsConstraintPk extends MsConstraint implements IConstraintPk 
             sbSQL.append(", ");
         }
         sbSQL.setLength(sbSQL.length() - 2);
-        sbSQL.append(")");
-
-        if (!options.isEmpty()) {
-            sbSQL.append(" WITH ");
-            StatementUtils.appendOptions(sbSQL, options, getDbType());
-        }
-
-        if (dataSpace != null) {
-            sbSQL.append(" ON ").append(MsDiffUtils.quoteName(dataSpace));
-        }
-        return sbSQL.toString();
+        sbSQL.append(')');
     }
 
     @Override
@@ -149,7 +161,7 @@ public final class MsConstraintPk extends MsConstraint implements IConstraintPk 
         hasher.put(isPrimaryKey);
         hasher.put(isClustered);
         hasher.put(dataSpace);
-        hasher.putUnordered(columns);
+        hasher.putOrdered(columns.values());
         hasher.put(options);
     }
 
@@ -161,5 +173,10 @@ public final class MsConstraintPk extends MsConstraint implements IConstraintPk 
         con.columns.putAll(columns);
         con.options.putAll(options);
         return con;
+    }
+
+    @Override
+    public void compareOptions(IOptionContainer newContainer, StringBuilder sb) {
+        // no imple
     }
 }

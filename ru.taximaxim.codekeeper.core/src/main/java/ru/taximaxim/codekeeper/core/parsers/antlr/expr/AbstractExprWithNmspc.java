@@ -50,7 +50,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Update_stm
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.With_clauseContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.With_queryContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.rulectx.SelectStmt;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
+import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.PgParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.IRelation;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
@@ -323,7 +323,7 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
 
     protected void addNameReference(Schema_qualified_nameContext name, IdentifierContext alias,
             List<IdentifierContext> columnAliases) {
-        List<ParserRuleContext> ids = ParserAbstract.getIdentifiers(name);
+        List<ParserRuleContext> ids = PgParserAbstract.getIdentifiers(name);
         String firstName = QNameParser.getFirstName(ids);
 
         List<Pair<String, String>> cteList = null;

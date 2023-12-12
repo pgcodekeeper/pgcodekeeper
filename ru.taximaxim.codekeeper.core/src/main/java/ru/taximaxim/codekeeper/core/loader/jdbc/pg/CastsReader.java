@@ -31,7 +31,7 @@ import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcReader;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
+import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.PgParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.ICast.CastContext;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
@@ -84,10 +84,10 @@ public class CastsReader extends AbstractStatementReader {
             JdbcReader.checkObjectValidity(function, DbObjType.CAST, cast.getName());
             cast.setFunction(function);
             loader.submitAntlrTask(function, SQLParser::function_args_parser, ctx -> {
-                List<ParserRuleContext> ids = ParserAbstract.getIdentifiers(ctx.schema_qualified_name());
+                List<ParserRuleContext> ids = PgParserAbstract.getIdentifiers(ctx.schema_qualified_name());
                 String schemaName = QNameParser.getSchemaName(ids);
                 if (schemaName != null && !Utils.isPgSystemSchema(schemaName)) {
-                    String funcName = ParserAbstract.parseSignature(
+                    String funcName = PgParserAbstract.parseSignature(
                             QNameParser.getFirstName(ids), ctx.function_args());
                     cast.addDep(new GenericColumn(schemaName, funcName, DbObjType.FUNCTION));
                 }

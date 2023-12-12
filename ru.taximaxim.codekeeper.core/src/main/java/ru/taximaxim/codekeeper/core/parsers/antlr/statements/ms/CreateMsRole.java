@@ -20,11 +20,10 @@ import java.util.Arrays;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Create_db_roleContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsRole;
 
-public class CreateMsRole extends ParserAbstract {
+public class CreateMsRole extends MsParserAbstract {
 
     private final Create_db_roleContext ctx;
 

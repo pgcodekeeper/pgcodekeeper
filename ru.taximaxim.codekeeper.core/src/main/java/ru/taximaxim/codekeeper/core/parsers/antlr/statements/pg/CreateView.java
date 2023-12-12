@@ -35,11 +35,10 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Storage_pa
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Storage_parametersContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Table_spaceContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgView;
 
-public class CreateView extends ParserAbstract {
+public class CreateView extends PgParserAbstract {
 
     private static final String RECURSIVE_PATTERN = "CREATE VIEW {0} "
             + "\nAS WITH RECURSIVE {0}({1}) AS ("
@@ -82,9 +81,7 @@ public class CreateView extends ParserAbstract {
             }
         } else if (ctx.RECURSIVE() != null) {
             String sql = MessageFormat.format(RECURSIVE_PATTERN,
-                    ParserAbstract.getFullCtxText(name),
-                    ParserAbstract.getFullCtxText(ctx.column_names.identifier()),
-                    ParserAbstract.getFullCtxText(ctx.v_query));
+                    getFullCtxText(name), getFullCtxText(ctx.column_names.identifier()), getFullCtxText(ctx.v_query));
 
             ctx = AntlrParser.parseSqlString(SQLParser.class, SQLParser::sql, sql, "recursive view", null)
                     .statement(0).schema_statement().schema_create().create_view_statement();
@@ -108,7 +105,7 @@ public class CreateView extends ParserAbstract {
             for (Storage_parameter_optionContext option: options){
                 String key = option.storage_parameter_name().getText();
                 VexContext value = option.vex();
-                ParserAbstract.fillOptionParams(value != null ? value.getText() : "", key , false, view::addOption);
+                fillOptionParams(value != null ? value.getText() : "", key, false, view::addOption);
             }
         }
         if (ctx.with_check_option() != null){

@@ -24,11 +24,10 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Define_for
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Foreign_optionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.User_mapping_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.User_nameContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgUserMapping;
 
-public class CreateUserMapping extends ParserAbstract {
+public class CreateUserMapping extends PgParserAbstract {
 
     private final Create_user_mapping_statementContext ctx;
 

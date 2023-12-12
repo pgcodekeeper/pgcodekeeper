@@ -1,3 +1,3 @@
-CREATE UNIQUE NONCLUSTERED INDEX [index_table1] ON [dbo].[table1] ([c1] ASC, [c2] DESC)
+CREATE UNIQUE NONCLUSTERED INDEX [index_table1] ON [dbo].[table1] ([c1], [c2] DESC)
 WITH (DROP_EXISTING = ON)
 GO

@@ -18,7 +18,7 @@ package ru.taximaxim.codekeeper.core.schema;
 import java.util.Collection;
 import java.util.stream.Stream;
 
-public interface ISchema extends IStatement {
+public interface ISchema extends IStatementContainer {
     Stream<? extends IRelation> getRelations();
     IRelation getRelation(String name);
 

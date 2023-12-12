@@ -27,12 +27,11 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Data_type
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Data_type_sizeContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Sequence_bodyContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsSequence;
 
-public class CreateMsSequence extends ParserAbstract {
+public class CreateMsSequence extends MsParserAbstract {
 
     private final Create_sequenceContext ctx;
 
@@ -61,7 +60,7 @@ public class CreateMsSequence extends ParserAbstract {
         for (Sequence_bodyContext body : list) {
             if (body.data_type() != null) {
                 Data_typeContext data = body.data_type();
-                addMsTypeDepcy(data, sequence);
+                addTypeDepcy(data, sequence);
                 // try to catch tinyint, smallint, int, bigint, numeric, decimal
                 dataType = data.qualified_name().getText().toLowerCase(Locale.ROOT);
                 sequence.setDataType(getFullCtxText(data));

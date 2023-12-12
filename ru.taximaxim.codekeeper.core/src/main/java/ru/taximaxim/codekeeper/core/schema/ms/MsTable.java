@@ -29,7 +29,7 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
-import ru.taximaxim.codekeeper.core.schema.PgSimpleOptionContainer;
+import ru.taximaxim.codekeeper.core.schema.ISimpleOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 /**
@@ -38,7 +38,7 @@ import ru.taximaxim.codekeeper.core.schema.PgStatement;
  * @since 5.3.1.
  * @author galiev_mr
  */
-public class MsTable extends AbstractTable implements PgSimpleOptionContainer{
+public class MsTable extends AbstractTable implements ISimpleOptionContainer {
 
     private static final String MEMORY_OPTIMIZED = "MEMORY_OPTIMIZED";
 

@@ -185,7 +185,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
     }
 
     @Override
-    public void addChild(PgStatement st) {
+    public void addChild(IStatement st) {
         DbObjType type = st.getStatementType();
         switch (type) {
         case DOMAIN:

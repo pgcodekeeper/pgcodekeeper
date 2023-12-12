@@ -16,6 +16,9 @@
 package ru.taximaxim.codekeeper.core.schema;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
@@ -26,6 +29,9 @@ public class SimpleColumn implements Serializable, IHashable {
 
     private static final long serialVersionUID = 2305486126854181859L;
 
+    private final Map<String, String> opClassParams = new HashMap<>();
+    private String collation;
+
     private final String name;
     private String operator;
     private String opClass;
@@ -34,6 +40,22 @@ public class SimpleColumn implements Serializable, IHashable {
 
     public SimpleColumn(String name) {
         this.name = name;
+    }
+
+    public void addOpClassParam(String key, String value) {
+        opClassParams.put(key, value);
+    }
+
+    public Map<String, String> getOpClassParams() {
+        return Collections.unmodifiableMap(opClassParams);
+    }
+
+    public void setCollation(String collation) {
+        this.collation = collation;
+    }
+
+    public String getCollation() {
+        return collation;
     }
 
     public void setOperator(String operator) {
@@ -82,6 +104,8 @@ public class SimpleColumn implements Serializable, IHashable {
     @Override
     public void computeHash(Hasher hasher) {
         hasher.put(name);
+        hasher.put(opClassParams);
+        hasher.put(collation);
         hasher.put(operator);
         hasher.put(opClass);
         hasher.put(nullsOrdering);
@@ -97,10 +121,12 @@ public class SimpleColumn implements Serializable, IHashable {
             return false;
         }
         SimpleColumn other = (SimpleColumn) obj;
-        return isDesc == other.isDesc
-                && Objects.equals(nullsOrdering, other.nullsOrdering)
-                && Objects.equals(name, other.name)
+        return Objects.equals(name, other.name)
+                && Objects.equals(opClassParams, other.opClassParams)
+                && Objects.equals(collation, other.collation)
                 && Objects.equals(operator, other.operator)
-                && Objects.equals(opClass, other.opClass);
+                && Objects.equals(opClass, other.opClass)
+                && Objects.equals(nullsOrdering, other.nullsOrdering)
+                && isDesc == other.isDesc;
     }
 }

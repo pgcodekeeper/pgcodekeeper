@@ -19,11 +19,10 @@ import java.util.Arrays;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Alter_db_roleContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsRole;
 
-public class AlterMsRole extends ParserAbstract {
+public class AlterMsRole extends MsParserAbstract {
 
     private final Alter_db_roleContext ctx;
 

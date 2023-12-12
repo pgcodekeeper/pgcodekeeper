@@ -17,10 +17,8 @@ package ru.taximaxim.codekeeper.core.loader.jdbc.ms;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
-import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcReader;
@@ -30,9 +28,12 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
+import ru.taximaxim.codekeeper.core.schema.ISimpleColumnContainer;
+import ru.taximaxim.codekeeper.core.schema.IStatementContainer;
 import ru.taximaxim.codekeeper.core.schema.SimpleColumn;
 import ru.taximaxim.codekeeper.core.schema.ms.MsConstraintCheck;
 import ru.taximaxim.codekeeper.core.schema.ms.MsConstraintPk;
+import ru.taximaxim.codekeeper.core.schema.ms.MsIndex;
 import ru.taximaxim.codekeeper.core.schema.ms.MsType;
 
 public class MsTypesReader extends JdbcReader {
@@ -62,7 +63,6 @@ public class MsTypesReader extends JdbcReader {
             addColumns(res, schema, type);
             addIndices(type, XmlReader.readXML(res.getString("indices")));
             addChecks(type, XmlReader.readXML(res.getString("checks")));
-
             type.setMemoryOptimized(res.getBoolean("is_memory_optimized"));
         }
 
@@ -77,84 +77,62 @@ public class MsTypesReader extends JdbcReader {
             // pass the 'type' to the method for extract type depcy from column
             // object since it is temporary
             AbstractColumn column = MsTablesReader.getColumn(col, schema, loader, type);
-            type.addColumn(column.getFullDefinition());
+            type.addChild(column);
             // extract type depcy from column object since it is temporary
             // (column also has depcy that is not related to the analysis)
             type.addAllDeps(column.getDeps());
         }
     }
 
-    private void addIndices(MsType type, List<XmlReader> indices) throws XmlReaderException {
+    private void addIndices(IStatementContainer type, List<XmlReader> indices) throws XmlReaderException {
         for (XmlReader index : indices) {
             boolean isPrimaryKey = index.getBoolean("pk");
             boolean isUniqueConstraint = index.getBoolean("uc");
             boolean isClustered = index.getBoolean("cl");
-            boolean isIgnoreDupKey = index.getBoolean("dk");
             int bucketCount = index.getInt("bc");
             String filter = index.getString("def");
+            var cols = XmlReader.readXML(index.getString("cols"));
 
-            StringBuilder definition = new StringBuilder();
-            MsConstraintPk constrPk = null;
             if (isPrimaryKey || isUniqueConstraint) {
-                constrPk = new MsConstraintPk(null, isPrimaryKey);
+                var constrPk = new MsConstraintPk(null, isPrimaryKey);
                 constrPk.setClustered(isClustered);
-                for (XmlReader col : XmlReader.readXML(index.getString("cols"))) {
-                    String colName = col.getString("name");
-                    var simpCol = new SimpleColumn(colName);
-                    simpCol.setDesc(col.getBoolean("is_desc"));
-                    constrPk.addColumn(colName, simpCol);
-                }
-                if (isIgnoreDupKey) {
+                fillColumns(constrPk, cols);
+                if (index.getBoolean("dk")) {
                     constrPk.addOption("IGNORE_DUP_KEY", "ON");
                 } else if (bucketCount > 0) {
                     constrPk.addOption("BUCKET_COUNT", Integer.toString(bucketCount));
                 }
-                type.addConstraint(constrPk.getDefinition());
+                type.addChild(constrPk);
             } else {
-                definition.append("INDEX ").append(MsDiffUtils.quoteName(index.getString("name"))).append(' ');
-                if (!isClustered) {
-                    definition.append("NON");
-                }
-
-                definition.append("CLUSTERED ");
-
-                if (bucketCount > 0) {
-                    definition.append("HASH");
-                }
-
-                definition.append('\n');
-
-                List<String> columns = new ArrayList<>();
-                for (XmlReader col : XmlReader.readXML(index.getString("cols"))) {
-                    boolean isDesc = col.getBoolean("is_desc");
-                    String colName = col.getString("name");
-                    columns.add(MsDiffUtils.quoteName(colName) + (isDesc ? " DESC" : " ASC"));
-                }
-                definition.append("(\n\t");
-                definition.append(String.join(",\n\t", columns));
-                definition.append("\n)");
+                var idx = new MsIndex(index.getString("name"));
+                idx.setClustered(isClustered);
+                fillColumns(idx, cols);
                 if (filter != null) {
-                    // index only, broken in dump
-                    definition.append(" WHERE ").append(filter);
+                    // broken in dump
+                    idx.setWhere(filter);
                 }
                 if (bucketCount > 0) {
-                    if (filter != null) {
-                        definition.append('\n');
-                    } else {
-                        definition.append(" ");
-                    }
-                    definition.append("WITH ( BUCKET_COUNT = ").append(bucketCount).append(')');
+                    idx.addOption("BUCKET_COUNT", Integer.toString(bucketCount));
                 }
-                type.addIndex(definition.toString());
+                type.addChild(idx);
             }
         }
     }
 
-    private void addChecks(MsType type, List<XmlReader> checks) {
+    private void fillColumns(ISimpleColumnContainer stmt, List<XmlReader> cols) {
+        for (XmlReader col : cols) {
+            String colName = col.getString("name");
+            var simpCol = new SimpleColumn(colName);
+            simpCol.setDesc(col.getBoolean("is_desc"));
+            stmt.addColumn(simpCol);
+        }
+    }
+
+    private void addChecks(IStatementContainer type, List<XmlReader> checks) {
         for (XmlReader check : checks) {
             var constrCh = new MsConstraintCheck(null);
             constrCh.setExpression(check.getString("def"));
-            type.addConstraint(constrCh.getDefinition());
+            type.addChild(constrCh);
         }
     }
 

@@ -61,7 +61,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.With_query
 import ru.taximaxim.codekeeper.core.parsers.antlr.rulectx.SelectOps;
 import ru.taximaxim.codekeeper.core.parsers.antlr.rulectx.SelectStmt;
 import ru.taximaxim.codekeeper.core.parsers.antlr.rulectx.Vex;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
+import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.PgParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.IConstraint;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
@@ -182,7 +182,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
             }
 
             for (Schema_qualified_nameContext tableLock : after.schema_qualified_name()) {
-                addRelationDepcy(ParserAbstract.getIdentifiers(tableLock));
+                addRelationDepcy(PgParserAbstract.getIdentifiers(tableLock));
             }
         }
     }
@@ -283,7 +283,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
             Schema_qualified_nameContext table = primary.schema_qualified_name();
             addNameReference(table, null);
             ret = new ArrayList<>();
-            qualAster(ParserAbstract.getIdentifiers(table), ret);
+            qualAster(PgParserAbstract.getIdentifiers(table), ret);
         } else if ((values = primary.values_stmt()) != null) {
             ret = new ArrayList<>();
             ValueExpr vex = new ValueExpr(this);
@@ -467,18 +467,16 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
             .map(Pair::copyMod)
             .forEach(cols::add);
             return true;
-        } else {
-            List<Pair<String, String>> complexNsp = findReferenceComplex(relation);
-            if (complexNsp != null) {
-                complexNsp.stream()
-                .map(Pair::copyMod)
-                .forEach(cols::add);
-                return true;
-            } else {
-                LOG.warn("Complex not found: {}", relation);
-                return false;
-            }
         }
+        List<Pair<String, String>> complexNsp = findReferenceComplex(relation);
+        if (complexNsp != null) {
+            complexNsp.stream()
+            .map(Pair::copyMod)
+            .forEach(cols::add);
+            return true;
+        }
+        LOG.warn("Complex not found: {}", relation);
+        return false;
     }
 
     void from(List<From_itemContext> items) {

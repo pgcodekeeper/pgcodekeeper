@@ -29,12 +29,11 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_dom
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Domain_constraintContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.IdentifierContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgConstraintCheck;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDomain;
 
-public class CreateDomain extends ParserAbstract {
+public class CreateDomain extends PgParserAbstract {
 
     private final Create_domain_statementContext ctx;
     private final CommonTokenStream stream;
@@ -49,7 +48,7 @@ public class CreateDomain extends ParserAbstract {
         List<ParserRuleContext> ids = getIdentifiers(ctx.name);
         PgDomain domain = new PgDomain(QNameParser.getFirstName(ids));
         domain.setDataType(getTypeName(ctx.dat_type));
-        addPgTypeDepcy(ctx.dat_type, domain);
+        addTypeDepcy(ctx.dat_type, domain);
         for (Collate_identifierContext coll : ctx.collate_identifier()) {
             domain.setCollation(getFullCtxText(coll.collation));
         }

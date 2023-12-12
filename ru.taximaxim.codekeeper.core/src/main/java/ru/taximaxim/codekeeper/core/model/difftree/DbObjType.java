@@ -22,35 +22,45 @@ package ru.taximaxim.codekeeper.core.model.difftree;
  * {@link CompareTree}
  */
 public enum DbObjType {
-    DATABASE,
-    CAST,
-    USER,
-    ROLE,
-    ASSEMBLY,
-    SCHEMA,
-    EXTENSION,
-    EVENT_TRIGGER,
-    FOREIGN_DATA_WRAPPER,
-    SERVER,
-    USER_MAPPING,
-    COLLATION,
-    TYPE,
-    DOMAIN,
-    SEQUENCE,
-    OPERATOR,
-    FTS_PARSER,
-    FTS_TEMPLATE,
-    FTS_DICTIONARY,
-    FTS_CONFIGURATION,
-    TABLE,
-    COLUMN,
-    FUNCTION,
-    PROCEDURE,
-    AGGREGATE,
-    INDEX,
-    CONSTRAINT,
-    VIEW,
-    TRIGGER,
-    RULE,
-    POLICY
+    DATABASE("DATABASE"),
+    CAST("CAST"),
+    USER("USER"),
+    ROLE("ROLE"),
+    ASSEMBLY("ASSEMBLY"),
+    SCHEMA("SCHEMA"),
+    EXTENSION("EXTENSION"),
+    EVENT_TRIGGER("EVENT TRIGGER"),
+    FOREIGN_DATA_WRAPPER("FOREIGN DATA WRAPPER"),
+    SERVER("SERVER"),
+    USER_MAPPING("USER MAPPING"),
+    COLLATION("COLLATION"),
+    TYPE("TYPE"),
+    DOMAIN("DOMAIN"),
+    SEQUENCE("SEQUENCE"),
+    OPERATOR("OPERATOR"),
+    FTS_PARSER("TEXT SEARCH PARSER"),
+    FTS_TEMPLATE("TEXT SEARCH TEMPLATE"),
+    FTS_DICTIONARY("TEXT SEARCH DICTIONARY"),
+    FTS_CONFIGURATION("TEXT SEARCH CONFIGURATION"),
+    TABLE("TABLE"),
+    COLUMN("COLUMN"),
+    FUNCTION("FUNCTION"),
+    PROCEDURE("PROCEDURE"),
+    AGGREGATE("AGGREGATE"),
+    INDEX("INDEX"),
+    CONSTRAINT("CONSTRAINT"),
+    VIEW("VIEW"),
+    TRIGGER("TRIGGER"),
+    RULE("RULE"),
+    POLICY("POLICY");
+
+    private final String typeName;
+
+    DbObjType(String typeName) {
+        this.typeName = typeName;
+    }
+
+    public String getTypeName() {
+        return typeName;
+    }
 }

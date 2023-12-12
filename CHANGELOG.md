@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-- The mechanism for working with CONSTRAINT objects has been changed: objects are now stored not as a string, but as separate fields, which avoids unnecessary differences in keywords and spaces.
+- The mechanism for working with CONSTRAINT and INDEX objects has been changed: objects are now stored not as a string, but as separate fields, which avoids unnecessary differences in keywords and spaces.
 - Updated all library dependencies of the core program. To use [Windows authentication](https://pgcodekeeper.readthedocs.io/en/latest/windowsauth.html#id2) you need to update [DDL](https://github.com/microsoft/mssql-jdbc/releases/tag/v12.4.2).
 - Improved parser rules for MS SQL.
 

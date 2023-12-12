@@ -33,7 +33,6 @@ import ru.taximaxim.codekeeper.core.fileutils.TempDir;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
-import ru.taximaxim.codekeeper.core.schema.AbstractIndex;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractSequence;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
@@ -41,6 +40,7 @@ import ru.taximaxim.codekeeper.core.schema.Argument;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgPrivilege;
+import ru.taximaxim.codekeeper.core.schema.SimpleColumn;
 import ru.taximaxim.codekeeper.core.schema.pg.PgColumn;
 import ru.taximaxim.codekeeper.core.schema.pg.PgCompositeType;
 import ru.taximaxim.codekeeper.core.schema.pg.PgConstraintCheck;
@@ -54,9 +54,9 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgRule;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
 import ru.taximaxim.codekeeper.core.schema.pg.PgTrigger;
+import ru.taximaxim.codekeeper.core.schema.pg.PgTrigger.TgTypes;
 import ru.taximaxim.codekeeper.core.schema.pg.PgView;
 import ru.taximaxim.codekeeper.core.schema.pg.SimplePgTable;
-import ru.taximaxim.codekeeper.core.schema.pg.PgTrigger.TgTypes;
 
 /**
  * Tests for PgDiffLoader class.
@@ -246,10 +246,9 @@ class PgAntlrLoaderTest {
         col.setType("character varying(50)");
         table.addColumn(col);
 
-        AbstractIndex idx = new PgIndex("contacts_number_pool_id_idx");
+        PgIndex idx = new PgIndex("contacts_number_pool_id_idx");
         table.addIndex(idx);
-        idx.setDefinition("(number_pool_id)");
-
+        idx.addColumn(new SimpleColumn("number_pool_id"));
         testDatabase("schema_2.sql", d);
     }
 
@@ -460,7 +459,7 @@ class PgAntlrLoaderTest {
 
         PgIndex idx = new PgIndex("test_table_deleted");
         idx.setMethod("btree");
-        idx.setDefinition("(date_deleted)");
+        idx.addColumn(new SimpleColumn("date_deleted"));
         idx.setWhere("(date_deleted IS NULL)");
         table.addIndex(idx);
 
@@ -714,7 +713,7 @@ class PgAntlrLoaderTest {
 
         PgIndex idx = new PgIndex("fki_user_role_id_fkey");
         idx.setMethod("btree");
-        idx.setDefinition("(role_id)");
+        idx.addColumn(new SimpleColumn("role_id"));
         table.addIndex(idx);
 
         var constraintFk = new PgConstraintFk("user_role_id_fkey");

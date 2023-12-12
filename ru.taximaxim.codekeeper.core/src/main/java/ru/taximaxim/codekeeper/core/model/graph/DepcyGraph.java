@@ -209,7 +209,7 @@ public class DepcyGraph {
         }
 
         PgStatement cont = new GenericColumn(con.getForeignSchema(), con.getForeignTable(), DbObjType.TABLE).getStatement(db);
-        
+
         if (cont instanceof PgStatementContainer) {
             PgStatementContainer c = (PgStatementContainer) cont;
             for (AbstractConstraint refCon : c.getConstraints()) {

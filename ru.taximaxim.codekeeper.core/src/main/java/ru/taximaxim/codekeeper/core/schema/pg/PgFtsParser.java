@@ -69,11 +69,6 @@ public class PgFtsParser extends PgStatementWithSearchPath {
     }
 
     @Override
-    public String getTypeName() {
-        return "TEXT SEARCH PARSER";
-    }
-
-    @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();

@@ -158,15 +158,19 @@ class MsDiffTest {
             "modify_ms_type_owner",
             // Tests scenario where MS TYPE with function dep is modified.
             "modify_ms_type_with_dep",
+            // Tests scenario where MS TYPE compared with no diff
+            "compare_ms_table_type",
 
             // Tests scenario where MS INDEX is added.
             "add_ms_index",
             // Tests scenario where MS INDEX is dropped.
             "drop_ms_index",
-            // Tests scenario where MS INDEX definition is modified.
+            // Tests scenario where MS INDEX field columns modified.
             "modify_ms_index",
-            // Tests scenario where MS INDEX definition is modified.
+            // Tests scenario where MS INDEX field options modified.
             "modify_ms_index_option",
+            // Tests scenario where MS INDEX compared with no diff
+            "compare_ms_index",
 
             // Tests scenario where MS FUNCTION without args is added.
             "add_ms_function_noargs",

@@ -15,14 +15,16 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.ms;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.schema.AbstractIndex;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SimpleColumn;
+import ru.taximaxim.codekeeper.core.schema.StatementUtils;
 
 public class MsIndex extends AbstractIndex {
 
@@ -38,66 +40,81 @@ public class MsIndex extends AbstractIndex {
     private String getCreationSQL(boolean dropExisting) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE ");
-
         if (isUnique()) {
             sbSQL.append("UNIQUE ");
         }
-
-        if (!isClustered()) {
-            sbSQL.append("NON");
-        }
-        sbSQL.append("CLUSTERED ");
-
-        sbSQL.append("INDEX ");
-        sbSQL.append(MsDiffUtils.quoteName(getName()));
-        sbSQL.append(" ON ");
-        sbSQL.append(getParent().getQualifiedName());
-        sbSQL.append(' ');
-        sbSQL.append(getDefinition());
-
-        if (!includes.isEmpty()) {
-            sbSQL.append(" INCLUDE (");
-            for (String col : includes) {
-                sbSQL.append(MsDiffUtils.quoteName(col)).append(", ");
-            }
-            sbSQL.setLength(sbSQL.length() - 2);
-            sbSQL.append(')');
-        }
-
-        if (getWhere() != null) {
-            sbSQL.append("\nWHERE ").append(getWhere());
-        }
-
-        StringBuilder sb = new StringBuilder();
-        for (Map.Entry<String, String> entry : options.entrySet()) {
-            sb.append(entry.getKey());
-            if (!entry.getValue().isEmpty()){
-                sb.append(" = ").append(entry.getValue());
-            }
-            sb.append(", ");
-        }
-
-        PgDiffArguments args = getDatabase().getArguments();
-        if (args != null && args.isConcurrentlyMode() && !options.containsKey("ONLINE")) {
-            sb.append("ONLINE = ON, ");
-        }
-
-        if (dropExisting) {
-            sb.append("DROP_EXISTING = ON, ");
-        }
-
-        if (sb.length() > 0) {
-            sb.setLength(sb.length() - 2);
-            sbSQL.append("\nWITH (").append(sb).append(')');
-        }
-
+        appendClustered(sbSQL);
+        sbSQL.append(getDefinition(false, dropExisting));
         if (getTablespace() != null) {
-            sbSQL.append("\nON ").append(MsDiffUtils.quoteName(getTablespace()));
+            sbSQL.append("\nON ").append(getTablespace());
         }
-
         sbSQL.append(GO);
 
         return sbSQL.toString();
+    }
+
+    public String getDefinition(boolean isTypeIndex, boolean dropExisting) {
+        var sb = new StringBuilder();
+        sb.append("INDEX ");
+
+        if (!isTypeIndex) {
+            appendFullName(sb);
+            sb.append(" (");
+            appendSimpleColumns(sb, columns);
+            sb.append(')');
+        } else {
+            sb.append(MsDiffUtils.quoteName(getName()));
+            sb.append(' ');
+            appendClustered(sb);
+            if (options.keySet().stream().anyMatch("BUCKET_COUNT"::equalsIgnoreCase)) {
+                sb.append("HASH");
+            }
+            sb.append("\n(\n\t");
+            appendSimpleColumns(sb, columns);
+            sb.append("\n)");
+        }
+
+        if (!includes.isEmpty()) {
+            sb.append(" INCLUDE ");
+            StatementUtils.appendCols(sb, includes, getDbType());
+        }
+        appendWhere(sb);
+
+        var tmpOptions = new LinkedHashMap<String, String>();
+        tmpOptions.putAll(options);
+        if (!isTypeIndex) {
+            if (isConcurrentlyMode() && !options.containsKey("ONLINE")) {
+                tmpOptions.put("ONLINE", "ON");
+            }
+            if (dropExisting) {
+                tmpOptions.put("DROP_EXISTING", "ON");
+            }
+        }
+        if (!tmpOptions.isEmpty()) {
+            sb.append(isTypeIndex ? ' ' : '\n').append("WITH (").append(isTypeIndex ? ' ' : "");
+            StatementUtils.appendOptions(sb, tmpOptions, getDbType());
+            sb.append(')');
+        }
+
+        return sb.toString();
+    }
+
+    private void appendSimpleColumns(StringBuilder sbSQL, Map<String, SimpleColumn> columns) {
+        for (var col : columns.values()) {
+            sbSQL.append(MsDiffUtils.quoteName(col.getName()));
+            if (col.isDesc()) {
+                sbSQL.append(" DESC");
+            }
+            sbSQL.append(", ");
+        }
+        sbSQL.setLength(sbSQL.length() - 2);
+    }
+
+    private void appendClustered(StringBuilder sb) {
+        if (!isClustered()) {
+            sb.append("NON");
+        }
+        sb.append("CLUSTERED ");
     }
 
     @Override
@@ -116,7 +133,7 @@ public class MsIndex extends AbstractIndex {
         }
 
         // options can be changed by syntax :
-        // ALTER SEQUENCE index_name ON schema_name.table REBUILD WITH (options (, option)*)
+        // ALTER INDEX index_name ON schema_name.table REBUILD WITH (options (, option)*)
         // but how to reset option? all indices has all option with default value
         // and we don't know what is it and how to change current value to default value.
 

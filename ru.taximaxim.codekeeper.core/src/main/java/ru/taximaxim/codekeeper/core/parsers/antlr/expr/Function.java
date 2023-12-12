@@ -70,7 +70,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Using_vexC
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.rulectx.SelectStmt;
 import ru.taximaxim.codekeeper.core.parsers.antlr.rulectx.Vex;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
+import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.PgParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
 import ru.taximaxim.codekeeper.core.utils.ModPair;
@@ -152,7 +152,7 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
         } else if (ctx.ROWTYPE() != null) {
             declareNamespaceVar(alias, null, addTypeDepcy(ctx.schema_qualified_name_nontype()));
         } else {
-            String varType = processColumn(ParserAbstract.getIdentifiers(ctx.schema_qualified_name())).getSecond();
+            String varType = processColumn(PgParserAbstract.getIdentifiers(ctx.schema_qualified_name())).getSecond();
             addNamespaceVariable(new Pair<>(alias, varType));
         }
     }
@@ -384,7 +384,7 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
         Lock_tableContext lock = transaction.lock_table();
         if (lock != null) {
             for (Only_table_multiplyContext name : lock.only_table_multiply()) {
-                addRelationDepcy(ParserAbstract.getIdentifiers(name.schema_qualified_name()));
+                addRelationDepcy(PgParserAbstract.getIdentifiers(name.schema_qualified_name()));
             }
         }
     }
@@ -398,12 +398,12 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
 
         if ((reindex = additional.reindex_stmt()) != null) {
             if (reindex.TABLE() != null) {
-                addRelationDepcy(ParserAbstract.getIdentifiers(reindex.schema_qualified_name()));
+                addRelationDepcy(PgParserAbstract.getIdentifiers(reindex.schema_qualified_name()));
             } else if (reindex.SCHEMA() != null) {
-                addSchemaDepcy(ParserAbstract.getIdentifiers(reindex.schema_qualified_name()), null);
+                addSchemaDepcy(PgParserAbstract.getIdentifiers(reindex.schema_qualified_name()), null);
             }
         } else if (table != null && (additional.CLUSTER() != null || additional.REFRESH() != null)) {
-            addRelationDepcy(ParserAbstract.getIdentifiers(table));
+            addRelationDepcy(PgParserAbstract.getIdentifiers(table));
         } else if ((data = additional.data_statement()) != null) {
             new Sql(this).data(data);
 
@@ -412,7 +412,7 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
             }
         } else if ((col = additional.table_cols_list()) != null) {
             for (Table_colsContext tabl : col.table_cols()) {
-                List<ParserRuleContext> ids = ParserAbstract.getIdentifiers(tabl.schema_qualified_name());
+                List<ParserRuleContext> ids = PgParserAbstract.getIdentifiers(tabl.schema_qualified_name());
                 GenericColumn rel = addRelationDepcy(ids);
                 for (IdentifierContext id : tabl.identifier()) {
                     addFilteredColumnDepcy(rel.schema, rel.table, id.getText());
@@ -420,7 +420,7 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
             }
         } else if ((truncate = additional.truncate_stmt()) != null) {
             for (Only_table_multiplyContext name : truncate.only_table_multiply()) {
-                addRelationDepcy(ParserAbstract.getIdentifiers(name.schema_qualified_name()));
+                addRelationDepcy(PgParserAbstract.getIdentifiers(name.schema_qualified_name()));
             }
         }
     }

@@ -24,11 +24,10 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_fts_dictionary_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Storage_parameter_optionContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgFtsDictionary;
 
-public class CreateFtsDictionary extends ParserAbstract {
+public class CreateFtsDictionary extends PgParserAbstract {
 
     private final Create_fts_dictionary_statementContext ctx;
 
@@ -47,7 +46,7 @@ public class CreateFtsDictionary extends ParserAbstract {
         }
 
         List<ParserRuleContext> templateIds = getIdentifiers(ctx.template);
-        dictionary.setTemplate(ParserAbstract.getFullCtxText(ctx.template));
+        dictionary.setTemplate(getFullCtxText(ctx.template));
         addDepSafe(dictionary, templateIds, DbObjType.FTS_TEMPLATE, DatabaseType.PG);
         addSafe(getSchemaSafe(ids), dictionary, ids);
     }

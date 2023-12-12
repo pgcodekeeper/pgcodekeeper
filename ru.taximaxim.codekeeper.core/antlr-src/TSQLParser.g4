@@ -2336,7 +2336,7 @@ column_option
     | IDENTITY identity_value? not_for_rep=not_for_replication?
     | (CONSTRAINT constraint=id)? column_constraint_body
     | MASKED WITH LR_BRACKET FUNCTION EQUAL STRING RR_BRACKET
-    | INDEX index=id clustered? (index_sort index_include?)? index_where? index_options? (ON file_group_name=id)?
+    | INDEX index=id clustered? HASH? (index_sort index_include?)? index_where? index_options? (ON file_group_name=id)?
     ;
 
 alter_column_option

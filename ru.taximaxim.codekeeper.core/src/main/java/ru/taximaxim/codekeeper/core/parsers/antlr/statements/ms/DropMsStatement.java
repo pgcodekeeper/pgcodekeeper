@@ -30,12 +30,11 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Index_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Qualified_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Schema_dropContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
-public class DropMsStatement extends ParserAbstract {
+public class DropMsStatement extends MsParserAbstract {
 
     private final Schema_dropContext ctx;
 

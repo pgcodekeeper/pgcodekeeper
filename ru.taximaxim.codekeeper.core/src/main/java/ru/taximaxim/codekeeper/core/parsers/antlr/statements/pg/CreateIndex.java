@@ -27,24 +27,18 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.IndexAnalysisLau
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_index_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.IdentifierContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Including_indexContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Index_columnContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Index_columnsContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Index_restContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Index_whereContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Indirection_varContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Nulls_distinctionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Storage_parameter_optionContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Value_expression_primaryContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.With_storage_parameterContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
-import ru.taximaxim.codekeeper.core.schema.AbstractIndex;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.core.schema.pg.PgIndex;
 
-public class CreateIndex extends ParserAbstract {
+public class CreateIndex extends PgParserAbstract {
     private final Create_index_statementContext ctx;
     private final String tablespace;
     private final CommonTokenStream stream;
@@ -81,8 +75,7 @@ public class CreateIndex extends ParserAbstract {
             String schemaName, String tableName, PgIndex ind, PgDatabase db, String location, CommonTokenStream stream) {
         db.addAnalysisLauncher(new IndexAnalysisLauncher(ind, rest, location));
 
-        Index_columnsContext sort = rest.index_columns();
-        parseColumns(sort, ind);
+        fillSimpleColumns(ind, rest.index_columns().index_column(), null);
 
         if (rest.method != null) {
             ind.setMethod(rest.method.getText());
@@ -95,8 +88,6 @@ public class CreateIndex extends ParserAbstract {
                 ind.addInclude(col.getText());
             }
         }
-
-        ind.setDefinition(getFullCtxText(sort));
 
         Nulls_distinctionContext dist = rest.nulls_distinction();
         ind.setNullsDistinction(dist == null || dist.NOT() == null);
@@ -120,18 +111,6 @@ public class CreateIndex extends ParserAbstract {
         Index_whereContext wherePart = rest.index_where();
         if (wherePart != null){
             ind.setWhere(getExpressionText(wherePart.vex(), stream));
-        }
-    }
-
-    private static void parseColumns(Index_columnsContext sort, AbstractIndex ind) {
-        for (Index_columnContext sort_ctx : sort.index_column()) {
-            Value_expression_primaryContext vexPrimary = sort_ctx.column.value_expression_primary();
-            if (vexPrimary != null) {
-                Indirection_varContext colName = vexPrimary.indirection_var();
-                if (colName != null) {
-                    ind.addColumn(colName.getText());
-                }
-            }
         }
     }
 

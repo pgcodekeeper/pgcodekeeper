@@ -20,13 +20,13 @@
 package ru.taximaxim.codekeeper.core.schema;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 
@@ -34,19 +34,14 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
  * Stores table index information.
  */
 public abstract class AbstractIndex extends PgStatementWithSearchPath
-implements PgSimpleOptionContainer {
+implements ISimpleOptionContainer, ISimpleColumnContainer {
 
-    /**
-     * Contains columns with sort order
-     */
-    private String definition;
     private String where;
     private String tablespace;
     private boolean unique;
     private boolean isClustered;
 
-    private final Set<String> columns = new HashSet<>();
-
+    protected final Map<String, SimpleColumn> columns = new LinkedHashMap<>();
     protected final Set<String> includes = new LinkedHashSet<>();
     protected final Map<String, String> options = new LinkedHashMap<>();
 
@@ -59,15 +54,6 @@ implements PgSimpleOptionContainer {
         super(name);
     }
 
-    public void setDefinition(final String definition) {
-        this.definition = definition;
-        resetHash();
-    }
-
-    public String getDefinition() {
-        return definition;
-    }
-
     public boolean isClustered() {
         return isClustered;
     }
@@ -77,16 +63,19 @@ implements PgSimpleOptionContainer {
         resetHash();
     }
 
-    public void addColumn(String column) {
-        columns.add(column);
+    @Override
+    public void addColumn(SimpleColumn column) {
+        columns.put(column.getName(), column);
+        resetHash();
     }
 
     public Set<String> getColumns(){
-        return Collections.unmodifiableSet(columns);
+        return Collections.unmodifiableSet(columns.keySet());
     }
 
     public void addInclude(String column) {
         includes.add(column);
+        resetHash();
     }
 
     public Set<String> getIncludes(){
@@ -128,6 +117,17 @@ implements PgSimpleOptionContainer {
     @Override
     public void addOption(String key, String value) {
         options.put(key, value);
+        resetHash();
+    }
+
+    protected boolean isConcurrentlyMode() {
+        PgDiffArguments args = getDatabase().getArguments();
+        return args != null && args.isConcurrentlyMode();
+    }
+
+    protected boolean isGenerateExists() {
+        PgDiffArguments args = getDatabase().getArguments();
+        return args != null && args.isGenerateExists();
     }
 
     @Override
@@ -148,15 +148,15 @@ implements PgSimpleOptionContainer {
     }
 
     protected boolean compareUnalterable(AbstractIndex index) {
-        return Objects.equals(definition, index.getDefinition())
-                && Objects.equals(where, index.getWhere())
+        return Objects.equals(columns, index.columns)
+                && Objects.equals(where, index.where)
                 && Objects.equals(includes, index.includes)
                 && unique == index.isUnique();
     }
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.put(definition);
+        hasher.putOrdered(columns.values());
         hasher.put(unique);
         hasher.put(isClustered);
         hasher.put(where);
@@ -169,15 +169,20 @@ implements PgSimpleOptionContainer {
     public AbstractIndex shallowCopy() {
         AbstractIndex indexDst = getIndexCopy();
         copyBaseFields(indexDst);
-        indexDst.setDefinition(getDefinition());
         indexDst.setUnique(isUnique());
         indexDst.setClustered(isClustered());
         indexDst.setWhere(getWhere());
         indexDst.setTablespace(getTablespace());
-        indexDst.columns.addAll(columns);
+        indexDst.columns.putAll(columns);
         indexDst.options.putAll(options);
         indexDst.includes.addAll(includes);
         return indexDst;
+    }
+
+    protected void appendWhere(StringBuilder sbSQL) {
+        if (where != null) {
+            sbSQL.append("\nWHERE ").append(getWhere());
+        }
     }
 
     protected abstract AbstractIndex getIndexCopy();

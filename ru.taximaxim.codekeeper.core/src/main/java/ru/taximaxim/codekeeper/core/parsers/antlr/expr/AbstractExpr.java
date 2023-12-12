@@ -43,6 +43,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Indirectio
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qualified_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qualified_name_nontypeContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
+import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.PgParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.IFunction;
 import ru.taximaxim.codekeeper.core.schema.IOperator;
@@ -156,14 +157,14 @@ public abstract class AbstractExpr {
     protected GenericColumn addTypeDepcy(Data_typeContext type) {
         Schema_qualified_name_nontypeContext typeName = type.predefined_type().schema_qualified_name_nontype();
         if (typeName == null) {
-            return new GenericColumn(Consts.PG_CATALOG, ParserAbstract.getTypeName(type),
+            return new GenericColumn(Consts.PG_CATALOG, PgParserAbstract.getTypeName(type),
                     DbObjType.TYPE);
         }
         return addTypeDepcy(typeName);
     }
 
     protected GenericColumn addTypeDepcy(Schema_qualified_name_nontypeContext typeName) {
-        return addDepcy(ParserAbstract.getIdentifiers(typeName), DbObjType.TYPE, null);
+        return addDepcy(PgParserAbstract.getIdentifiers(typeName), DbObjType.TYPE, null);
     }
 
     protected void addDepcy(GenericColumn depcy, ParserRuleContext ctx) {
@@ -372,7 +373,7 @@ public abstract class AbstractExpr {
 
     protected void addColumnsDepcies(Schema_qualified_nameContext table,
             List<Indirection_identifierContext> columns) {
-        List<ParserRuleContext> ids = ParserAbstract.getIdentifiers(table);
+        List<ParserRuleContext> ids = PgParserAbstract.getIdentifiers(table);
         String schemaName = QNameParser.getSchemaName(ids);
         String tableName = QNameParser.getFirstName(ids);
         for (Indirection_identifierContext col : columns) {
@@ -416,7 +417,7 @@ public abstract class AbstractExpr {
         SQLParser p = AntlrParser.makeBasicParser(SQLParser.class, signature,
                 "function signature", null, start);
         Function_args_parserContext sig = p.function_args_parser();
-        List<ParserRuleContext> ids = ParserAbstract.getIdentifiers(sig.schema_qualified_name());
+        List<ParserRuleContext> ids = PgParserAbstract.getIdentifiers(sig.schema_qualified_name());
 
         ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
         if (schemaCtx != null) {

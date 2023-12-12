@@ -44,7 +44,7 @@ import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.PgStatementWithSearchPath;
 import ru.taximaxim.codekeeper.core.schema.StatementOverride;
 
-public class GrantMsPrivilege extends ParserAbstract {
+public class GrantMsPrivilege extends MsParserAbstract {
     private final Rule_commonContext ctx;
     private final String state;
     private final boolean isGO;

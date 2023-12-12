@@ -193,7 +193,7 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     public String getTypeName() {
-        return getStatementType().toString();
+        return getStatementType().getTypeName();
     }
 
     protected StringBuilder appendFullName(StringBuilder sb) {
@@ -520,7 +520,9 @@ public abstract class PgStatement implements IStatement, IHashable {
      */
     public final PgStatement deepCopy() {
         PgStatement copy = shallowCopy();
-        getChildren().forEach(st -> copy.addChild(st.deepCopy()));
+        if (copy instanceof IStatementContainer) {
+            getChildren().forEach(st -> ((IStatementContainer) copy).addChild(st.deepCopy()));
+        }
         return copy;
     }
 
@@ -562,8 +564,14 @@ public abstract class PgStatement implements IStatement, IHashable {
         if (twinParent == null) {
             return null;
         }
-        return DbObjType.COLUMN == type ? ((AbstractTable) twinParent).getColumn(getName())
-                : twinParent.getChild(getName(), type);
+        if (DbObjType.COLUMN == type) {
+            return ((AbstractTable) twinParent).getColumn(getName());
+        }
+        if (twinParent instanceof IStatementContainer) {
+            return ((IStatementContainer) twinParent).getChild(getName(), type);
+        }
+
+        return null;
     }
 
     /**
@@ -584,10 +592,6 @@ public abstract class PgStatement implements IStatement, IHashable {
         return l.stream().flatMap(Collection::stream);
     }
 
-    public PgStatement getChild(String name, DbObjType type) {
-        return null;
-    }
-
     public boolean hasChildren() {
         return getChildren().anyMatch(e -> true);
     }
@@ -598,11 +602,6 @@ public abstract class PgStatement implements IStatement, IHashable {
 
     protected void fillChildrenList(List<Collection<? extends PgStatement>> l) {
         // default no op
-    }
-
-    public void addChild(PgStatement st) {
-        //  subclasses with children must override
-        throw new IllegalStateException("Statement can't have child");
     }
 
     /**

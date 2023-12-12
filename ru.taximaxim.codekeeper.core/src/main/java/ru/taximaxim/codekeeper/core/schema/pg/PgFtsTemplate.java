@@ -63,11 +63,6 @@ public class PgFtsTemplate extends PgStatementWithSearchPath {
     }
 
     @Override
-    public String getTypeName() {
-        return "TEXT SEARCH TEMPLATE";
-    }
-
-    @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();

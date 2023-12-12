@@ -23,12 +23,15 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
+import ru.taximaxim.codekeeper.core.schema.ISimpleColumnContainer;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.SimpleColumn;
+import ru.taximaxim.codekeeper.core.schema.StatementUtils;
 
-public final class PgConstraintExclude extends PgConstraint implements PgIndexParamContainer {
+public final class PgConstraintExclude extends PgConstraint implements PgIndexParamContainer, ISimpleColumnContainer {
 
     private final Map<String, String> params = new HashMap<>();
     private final Set<String> includes = new LinkedHashSet<>();
@@ -47,7 +50,6 @@ public final class PgConstraintExclude extends PgConstraint implements PgIndexPa
         resetHash();
     }
 
-    @Override
     public Set<String> getIncludes() {
         return Collections.unmodifiableSet(includes);
     }
@@ -57,8 +59,9 @@ public final class PgConstraintExclude extends PgConstraint implements PgIndexPa
         return Collections.unmodifiableSet(columns.keySet());
     }
 
-    public void addColumn(String key, SimpleColumn value) {
-        columns.put(key, value);
+    @Override
+    public void addColumn(SimpleColumn column) {
+        columns.put(column.getName(), column);
         resetHash();
     }
 
@@ -68,7 +71,6 @@ public final class PgConstraintExclude extends PgConstraint implements PgIndexPa
         resetHash();
     }
 
-    @Override
     public Map<String, String> getParams() {
         return Collections.unmodifiableMap(params);
     }
@@ -97,7 +99,6 @@ public final class PgConstraintExclude extends PgConstraint implements PgIndexPa
         resetHash();
     }
 
-    @Override
     public String getTablespace() {
         return tablespace;
     }
@@ -105,15 +106,29 @@ public final class PgConstraintExclude extends PgConstraint implements PgIndexPa
     @Override
     public String getDefinition() {
         var sbSQL = new StringBuilder();
-        sbSQL.append("EXCLUDE ");
+        sbSQL.append("EXCLUDE");
         if (getIndexMethod() != null) {
-            sbSQL.append("USING ").append(getIndexMethod()).append(' ');
+            sbSQL.append(" USING ").append(getIndexMethod());
         }
-        sbSQL.append('(');
+        appendSimpleColumns(sbSQL, columns);
+        appendIndexParam(sbSQL);
+        if (getPredicate() != null) {
+            sbSQL.append(" WHERE ").append(getPredicate());
+        }
+        return sbSQL.toString();
+    }
+
+    private void appendSimpleColumns(StringBuilder sbSQL, Map<String, SimpleColumn> columns) {
+        sbSQL.append(" (");
         for (var col : columns.values()) {
+            // column name already quoted
             sbSQL.append(col.getName());
             if (col.getOpClass() != null) {
                 sbSQL.append(' ').append(col.getOpClass());
+                var opClassParams = col.getOpClassParams();
+                if (!opClassParams.isEmpty()) {
+                    StatementUtils.appendOptionsWithParen(sbSQL, opClassParams, getDbType());
+                }
             }
             if (col.isDesc()) {
                 sbSQL.append(" DESC");
@@ -121,16 +136,27 @@ public final class PgConstraintExclude extends PgConstraint implements PgIndexPa
             if (col.getNullsOrdering() != null) {
                 sbSQL.append(col.getNullsOrdering());
             }
-            sbSQL.append(" WITH ").append(col.getOperator());
+            if (col.getOperator() != null) {
+                sbSQL.append(" WITH ").append(col.getOperator());
+            }
             sbSQL.append(", ");
         }
         sbSQL.setLength(sbSQL.length() - 2);
-        sbSQL.append(")");
-        appendIndexParam(sbSQL);
-        if (getPredicate() != null) {
-            sbSQL.append(" WHERE ").append(getPredicate());
+        sbSQL.append(')');
+    }
+
+    public void appendIndexParam(StringBuilder sb) {
+        if (!includes.isEmpty()) {
+            sb.append(" INCLUDE ");
+            StatementUtils.appendCols(sb, includes, DatabaseType.PG);
         }
-        return sbSQL.toString();
+        if (!params.isEmpty()) {
+            sb.append(" WITH");
+            StatementUtils.appendOptionsWithParen(sb, params, getDbType());
+        }
+        if (tablespace != null) {
+            sb.append("\n\tUSING INDEX TABLESPACE ").append(tablespace);
+        }
     }
 
     @Override
@@ -158,7 +184,7 @@ public final class PgConstraintExclude extends PgConstraint implements PgIndexPa
         super.computeHash(hasher);
         hasher.put(params);
         hasher.put(includes);
-        hasher.putUnordered(columns);
+        hasher.putOrdered(columns.values());
         hasher.put(indexMethod);
         hasher.put(predicate);
         hasher.put(tablespace);

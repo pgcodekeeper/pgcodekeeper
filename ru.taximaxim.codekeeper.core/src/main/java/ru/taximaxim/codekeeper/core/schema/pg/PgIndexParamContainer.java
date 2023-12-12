@@ -15,32 +15,8 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.pg;
 
-import java.util.Map;
-import java.util.Set;
-
-import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.schema.StatementUtils;
-
 public interface PgIndexParamContainer {
     void addParam(String key, String value);
     void addInclude(String include);
     void setTablespace(String tablespace);
-
-    Set<String> getIncludes();
-    Map<String, String> getParams();
-    String getTablespace();
-
-    default void appendIndexParam(StringBuilder sb) {
-        if (!getIncludes().isEmpty()) {
-            sb.append(" INCLUDE ");
-            StatementUtils.appendCols(sb, getIncludes(), DatabaseType.PG);
-        }
-        if (!getParams().isEmpty()) {
-            sb.append(" WITH ");
-            StatementUtils.appendOptions(sb, getParams(), DatabaseType.PG);
-        }
-        if (getTablespace() != null) {
-            sb.append("\n\tUSING INDEX TABLESPACE ").append(getTablespace());
-        }
-    }
 }

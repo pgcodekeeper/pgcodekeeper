@@ -27,7 +27,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgPolicy;
 import ru.taximaxim.codekeeper.core.schema.pg.PgRule;
 
 public abstract class PgStatementContainer extends PgStatementWithSearchPath
-implements IRelation {
+implements IRelation, IStatementContainer {
 
     private final Map<String, AbstractIndex> indexes = new LinkedHashMap<>();
     private final Map<String, AbstractTrigger> triggers = new LinkedHashMap<>();
@@ -65,7 +65,7 @@ implements IRelation {
     }
 
     @Override
-    public void addChild(PgStatement st) {
+    public void addChild(IStatement st) {
         DbObjType type = st.getStatementType();
         switch (type) {
         case INDEX:

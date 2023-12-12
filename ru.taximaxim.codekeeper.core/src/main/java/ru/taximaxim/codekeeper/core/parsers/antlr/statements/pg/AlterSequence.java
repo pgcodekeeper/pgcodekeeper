@@ -26,14 +26,13 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Alter_sequ
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_alterContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Sequence_bodyContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Tokens_nonreserved_except_function_typeContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
 
-public class AlterSequence extends ParserAbstract {
+public class AlterSequence extends PgParserAbstract {
     private final Alter_sequence_statementContext ctx;
     public AlterSequence(Alter_sequence_statementContext ctx, PgDatabase db) {
         super(db);

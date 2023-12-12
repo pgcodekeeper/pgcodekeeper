@@ -163,17 +163,17 @@ public class CreateMsFunction extends BatchContextProcessor {
             for (Column_def_table_constraintContext con : cons.column_def_table_constraint()) {
                 Data_typeContext dt = con.data_type();
                 if (dt != null) {
-                    addMsTypeDepcy(dt, function);
+                    addTypeDepcy(dt, function);
                 }
             }
         } else if (ret.data_type() != null) {
-            addMsTypeDepcy(ret.data_type(), function);
+            addTypeDepcy(ret.data_type(), function);
         }
     }
 
     private void fillArguments(AbstractFunction function) {
         for (Procedure_paramContext argument : ctx.procedure_param()) {
-            addMsTypeDepcy(argument.data_type(), function);
+            addTypeDepcy(argument.data_type(), function);
 
             Argument arg = new Argument(parseArgMode(argument.arg_mode()),
                     argument.name.getText(), getFullCtxText(argument.data_type()));

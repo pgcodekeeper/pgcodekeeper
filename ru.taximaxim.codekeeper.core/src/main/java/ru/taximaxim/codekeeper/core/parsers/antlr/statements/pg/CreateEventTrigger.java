@@ -24,11 +24,10 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Character_
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_event_trigger_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Event_trigger_filter_variablesContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qualified_name_nontypeContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgEventTrigger;
 
-public class CreateEventTrigger extends ParserAbstract {
+public class CreateEventTrigger extends PgParserAbstract {
 
     private static final String TAG = "tag";
     private final Create_event_trigger_statementContext ctx;
