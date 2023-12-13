@@ -31,8 +31,8 @@
     </modules>
 
     <properties>
-        <revision>8.9.0-SNAPSHOT</revision>
-        <ui.revision>4.5.0-SNAPSHOT</ui.revision>
+        <revision>9.0.0-SNAPSHOT</revision>
+        <ui.revision>4.6.0-SNAPSHOT</ui.revision>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -40,11 +40,12 @@
 
         <sonar.language>java</sonar.language>
         <sonar.java.binaries>${project.build.directory}/classes</sonar.java.binaries>
-        <sonar.java.source>11</sonar.java.source>
-        <sonar.java.target>11</sonar.java.target>
+        <sonar.java.source>${java.version}</sonar.java.source>
+        <sonar.java.target>${java.version}</sonar.java.target>
         <sonar.core.coveragePlugin>jacoco</sonar.core.coveragePlugin>
         <sonar.junit.reportPath>${project.build.directory}/surefire-reports/</sonar.junit.reportPath>
 
+        <java.version>11</java.version>
         <tycho.version>2.7.5</tycho.version>
         <jacoco.version>0.8.11</jacoco.version>
         <antlr.version>4.13.1</antlr.version>
@@ -155,7 +156,7 @@
                 <artifactId>tycho-compiler-plugin</artifactId>
                 <version>${tycho.version}</version>
                 <configuration>
-                    <release>11</release>
+                    <release>${java.version}</release>
                 </configuration>
             </plugin>
 
