@@ -9,20 +9,27 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [9.0.0] - 2023-12-13
+
+### Added
+
 - Added database name to console when executing migrations.
-- Added a field for selecting a database type from the list of supported databases.
-- Added support for ALTER INDEX syntax in MS SQL.
 
 ### Changed
 
-- The mechanism for working with CONSTRAINT and INDEX objects has been changed: objects are now stored not as a string, but as separate fields, which avoids unnecessary differences in keywords and spaces.
+- `--ms-sql` parameter has been replaced by `--db-type` parameter with name of database type. Currently, 2 values are supported: PG (default value) and MS. The `--ms-sql` option is marked as deprecated and will be removed in future versions. All checkboxes for selecting an MSSQL database are replaced with a combobox for selecting DB type.
+- The mechanism for working with CONSTRAINT and INDEX objects has been changed: objects are now stored not as a string, but as separate fields, which avoids unnecessary differences in keywords and spaces. To maintain compatibility, the old code generation template is used.
 - Updated all library dependencies of the core program. To use [Windows authentication](https://pgcodekeeper.readthedocs.io/en/latest/windowsauth.html#id2) you need to update [DDL](https://github.com/microsoft/mssql-jdbc/releases/tag/v12.4.2).
 - Improved parser rules for MS SQL.
 
 ### Fixed
 
 - Fixed a bug in the diff wizard.
-- Fixed a bug in the cli version when using a relative path.
+- Fixed a bug in the CLI version when using a relative path.
 - Fixed a bug with adding a template.
 
 ## [8.9.0] - 2023-11-07
@@ -1812,7 +1819,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.9.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.0.0...HEAD
+[9.0.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.9.0...v9.0.0
 [8.9.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.8.0...v8.9.0
 [8.8.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.7.0...v8.8.0
 [8.7.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.6.0...v8.7.0
