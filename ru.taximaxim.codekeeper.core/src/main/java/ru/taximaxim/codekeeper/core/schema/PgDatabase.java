@@ -89,11 +89,11 @@ public class PgDatabase extends PgStatement implements IDatabase {
     }
 
     public PgDatabase() {
-        super("DB_name_placeholder");
+        this(new PgDiffArguments());
     }
 
     public PgDatabase(PgDiffArguments arguments) {
-        this();
+        super("DB_name_placeholder");
         this.arguments = arguments;
     }
 

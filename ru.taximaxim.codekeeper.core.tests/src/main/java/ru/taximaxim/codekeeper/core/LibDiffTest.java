@@ -48,7 +48,7 @@ class LibDiffTest {
         for (String lib : libList) {
             libs.add(TestUtils.getPathToResource(lib, getClass()).toString());
         }
-        PgDatabase dbOld = new PgDatabase();
+        PgDatabase dbOld = new PgDatabase(args);
         PgDatabase dbNew = TestUtils.loadTestDump(fileNameTemplate + FILES_POSTFIX.NEW_SQL, getClass(), args);
         LibraryLoader loader = new LibraryLoader(dbNew, null, null);
 

@@ -161,6 +161,10 @@ public abstract class PgStatement implements IStatement, IHashable {
 
     public abstract PgDatabase getDatabase();
 
+    public PgDiffArguments getDatabaseArguments() {
+        return getDatabase().getArguments();
+    }
+
     public void setParent(PgStatement parent) {
         if(parent != null && this.parent != null) {
             throw new IllegalStateException("Statement already has a parent: "
@@ -432,8 +436,8 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     private String formatSQL(String sql) {
-        PgDiffArguments args = getDatabase().getArguments();
-        if (args == null || !args.isAutoFormatObjectCode()) {
+        PgDiffArguments args = getDatabaseArguments();
+        if (!args.isAutoFormatObjectCode()) {
             return sql;
         }
         FileFormatter fileForm = new FileFormatter(sql, 0, sql.length(), args.getFormatConfiguration(), getDbType());
@@ -446,16 +450,11 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     public final String getDropSQL() {
-        PgDiffArguments args = getDatabase().getArguments();
-        return getDropSQL(args != null && args.isGenerateExists());
+        return getDropSQL(getDatabaseArguments().isGenerateExists());
     }
 
-    public boolean isDropBeforeCreate() {
-        if (!canDropBeforeCreate()) {
-            return false;
-        }
-        PgDiffArguments args = getDatabase().getArguments();
-        return args != null && args.isDropBeforeCreate();
+    public final boolean isDropBeforeCreate() {
+        return canDropBeforeCreate() && getDatabaseArguments().isDropBeforeCreate();
     }
 
     public boolean canDropBeforeCreate() {
@@ -474,8 +473,7 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     protected void appendIfNotExists(StringBuilder sb) {
-        PgDiffArguments args = getDatabase().getArguments();
-        if (args != null && args.isGenerateExists()) {
+        if (getDatabaseArguments().isGenerateExists()) {
             sb.append("IF NOT EXISTS ");
         }
     }

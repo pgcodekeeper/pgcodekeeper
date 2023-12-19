@@ -30,7 +30,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
@@ -40,8 +39,8 @@ import ru.taximaxim.codekeeper.core.schema.AbstractSequence;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.ICompressOptionContainer;
-import ru.taximaxim.codekeeper.core.schema.Inherits;
 import ru.taximaxim.codekeeper.core.schema.ISimpleOptionContainer;
+import ru.taximaxim.codekeeper.core.schema.Inherits;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 /**
@@ -394,9 +393,7 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
                 .append(newCollation);
             }
 
-            PgDiffArguments arg = getDatabase().getArguments();
-
-            if ((arg == null || !arg.isUsingTypeCastOff())
+            if (!getDatabaseArguments().isUsingTypeCastOff()
                     && !(getParent() instanceof AbstractForeignTable)
                     && !(getParent() instanceof GpExternalTable)) {
                 sb.append(" USING ").append(PgDiffUtils.getQuotedName(newColumn.getName()))

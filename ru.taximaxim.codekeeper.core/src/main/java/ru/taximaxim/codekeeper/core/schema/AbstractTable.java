@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
@@ -123,8 +122,7 @@ public abstract class AbstractTable extends PgStatementContainer implements IOpt
     }
 
     protected boolean isColumnsOrderChanged(AbstractTable newTable) {
-        PgDiffArguments args = getDatabase().getArguments();
-        if (args != null && args.isIgnoreColumnOrder()) {
+        if (getDatabaseArguments().isIgnoreColumnOrder()) {
             return false;
         }
 
@@ -195,8 +193,7 @@ public abstract class AbstractTable extends PgStatementContainer implements IOpt
         if (obj instanceof AbstractTable && super.compare(obj)) {
             AbstractTable table = (AbstractTable) obj;
             boolean isColumnsEqual;
-            PgDiffArguments args = getDatabase().getArguments();
-            if (args != null && args.isIgnoreColumnOrder()) {
+            if (getDatabaseArguments().isIgnoreColumnOrder()) {
                 isColumnsEqual = PgDiffUtils.setlikeEquals(columns, table.columns);
             } else {
                 isColumnsEqual = columns.equals(table.columns);
@@ -227,8 +224,7 @@ public abstract class AbstractTable extends PgStatementContainer implements IOpt
 
     @Override
     public void computeHash(Hasher hasher) {
-        PgDiffArguments args = getDatabase().getArguments();
-        if (args != null && args.isIgnoreColumnOrder()) {
+        if (getDatabaseArguments().isIgnoreColumnOrder()) {
             hasher.putUnordered(columns);
         } else {
             hasher.putOrdered(columns);

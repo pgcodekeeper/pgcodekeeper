@@ -83,7 +83,7 @@ public class MsIndex extends AbstractIndex {
         var tmpOptions = new LinkedHashMap<String, String>();
         tmpOptions.putAll(options);
         if (!isTypeIndex) {
-            if (isConcurrentlyMode() && !options.containsKey("ONLINE")) {
+            if (getDatabaseArguments().isConcurrentlyMode() && !options.containsKey("ONLINE")) {
                 tmpOptions.put("ONLINE", "ON");
             }
             if (dropExisting) {
