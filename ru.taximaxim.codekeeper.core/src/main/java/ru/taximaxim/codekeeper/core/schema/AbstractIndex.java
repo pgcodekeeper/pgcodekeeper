@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 
@@ -118,16 +117,6 @@ implements ISimpleOptionContainer, ISimpleColumnContainer {
     public void addOption(String key, String value) {
         options.put(key, value);
         resetHash();
-    }
-
-    protected boolean isConcurrentlyMode() {
-        PgDiffArguments args = getDatabase().getArguments();
-        return args != null && args.isConcurrentlyMode();
-    }
-
-    protected boolean isGenerateExists() {
-        PgDiffArguments args = getDatabase().getArguments();
-        return args != null && args.isGenerateExists();
     }
 
     @Override

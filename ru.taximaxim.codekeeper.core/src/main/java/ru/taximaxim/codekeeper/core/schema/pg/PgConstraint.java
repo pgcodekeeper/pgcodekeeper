@@ -22,7 +22,6 @@ package ru.taximaxim.codekeeper.core.schema.pg;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
@@ -34,7 +33,7 @@ public abstract class PgConstraint extends AbstractConstraint {
     private boolean deferrable;
     private boolean initially;
 
-    public PgConstraint(String name) {
+    protected PgConstraint(String name) {
         super(name);
     }
 
@@ -97,8 +96,7 @@ public abstract class PgConstraint extends AbstractConstraint {
     }
 
     protected boolean isGenerateNotValid() {
-        PgDiffArguments args = getDatabase().getArguments();
-        if (args == null || !args.isConstraintNotValid()) {
+        if (!getDatabaseArguments().isConstraintNotValid()) {
             return false;
         }
         var parent = getParent();

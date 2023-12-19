@@ -91,7 +91,7 @@ public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
 
     @Override
     protected EnumSet<DbObjType> getDisabledDepcies() {
-        PgDiffArguments args = stmt.getDatabase().getArguments();
+        PgDiffArguments args = stmt.getDatabaseArguments();
         if (!args.isEnableFunctionBodiesDependencies()) {
             return EnumSet.of(DbObjType.FUNCTION, DbObjType.PROCEDURE);
         }

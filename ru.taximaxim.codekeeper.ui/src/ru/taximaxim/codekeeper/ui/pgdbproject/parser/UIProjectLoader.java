@@ -219,13 +219,12 @@ public class UIProjectLoader extends ProjectLoader {
 
     private PgDatabase buildMsFiles(Collection<IFile> files, SubMonitor mon)
             throws InterruptedException, IOException, CoreException {
-        PgDatabase db = new PgDatabase();
         PgDiffArguments args = new PgDiffArguments();
-        Set<String> schemaFiles = new HashSet<>();
         args.setDbType(DatabaseType.MS);
-        db.setArguments(args);
+        PgDatabase db = new PgDatabase(args);
 
         IPath schemasPath = new Path(MS_WORK_DIR_NAMES.SECURITY.getDirName()).append(MS_SCHEMAS_FOLDER);
+        Set<String> schemaFiles = new HashSet<>();
         boolean isLoaded = false;
         for (IFile file : files) {
             IPath filePath = file.getProjectRelativePath();
@@ -254,8 +253,7 @@ public class UIProjectLoader extends ProjectLoader {
         }
         AntlrParser.finishAntlr(antlrTasks);
 
-        PgDatabase newDb = new PgDatabase();
-        newDb.setArguments(args);
+        PgDatabase newDb = new PgDatabase(args);
 
         // exclude empty schemas (except loaded from schema files) that have been loaded early
         db.getSchemas().stream()

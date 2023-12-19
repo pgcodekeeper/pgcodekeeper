@@ -63,10 +63,10 @@ public class PgIndex extends AbstractIndex {
         }
 
         sbSQL.append("INDEX ");
-        if (isConcurrentlyMode()) {
+        if (getDatabaseArguments().isConcurrentlyMode()) {
             sbSQL.append("CONCURRENTLY ");
         }
-        if (inherit != null || isGenerateExists()) {
+        if (inherit != null || getDatabaseArguments().isGenerateExists()) {
             sbSQL.append("IF NOT EXISTS ");
         }
         sbSQL.append(PgDiffUtils.getQuotedName(name))
@@ -156,7 +156,7 @@ public class PgIndex extends AbstractIndex {
         if (!compareUnalterable(newIndex)) {
             isNeedDepcies.set(true);
 
-            if (isConcurrentlyMode()) {
+            if (getDatabaseArguments().isConcurrentlyMode()) {
                 // generate optimized command sequence for concurrent index creation
                 String tmpName = "tmp" + PgDiffUtils.RANDOM.nextInt(Integer.MAX_VALUE) + "_" + getName();
 
