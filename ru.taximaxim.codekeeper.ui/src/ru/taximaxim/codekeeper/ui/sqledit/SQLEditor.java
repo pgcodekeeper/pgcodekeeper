@@ -159,7 +159,7 @@ implements IResourceChangeListener, ITextErrorReporter {
     private SQLEditorContentOutlinePage fOutlinePage;
     private Image errorTitleImage;
     private PgDbParser parser;
-    private DatabaseType dbType;
+    private DatabaseType dbType = DatabaseType.PG;
     private boolean isLargeFile;
 
     private Annotation[] occurrenceAnnotations = null;
@@ -902,34 +902,34 @@ implements IResourceChangeListener, ITextErrorReporter {
 
             PgObjLocation selected = getCurrentReference();
             IDocumentProvider provider = getDocumentProvider();
+            if (selected == null || provider == null) {
+                return;
+            }
 
-            if (selected != null && provider != null) {
-                Map<Annotation, Position> annotations = new HashMap<>();
+            Map<Annotation, Position> annotations = new HashMap<>();
+            for (PgObjLocation loc : getReferences()) {
+                if (loc.compare(selected)) {
+                    annotations.put(new Annotation(MARKER.OBJECT_OCCURRENCE, false, loc.toString()),
+                            new Position(loc.getOffset(), loc.getObjLength()));
+                }
+            }
 
-                for (PgObjLocation loc : getReferences()) {
-                    if (loc.compare(selected)) {
-                        annotations.put(new Annotation(MARKER.OBJECT_OCCURRENCE, false, loc.toString()),
-                                new Position(loc.getOffset(), loc.getObjLength()));
+            IAnnotationModel model = provider.getAnnotationModel(getEditorInput());
+            if (model == null) {
+                return;
+            }
+
+            synchronized (getLock(model)) {
+                if (model instanceof IAnnotationModelExtension) {
+                    ((IAnnotationModelExtension) model).replaceAnnotations(occurrenceAnnotations, annotations);
+                } else {
+                    removeOccurrenceAnnotations();
+                    for (Entry<Annotation, Position> entry : annotations.entrySet()) {
+                        model.addAnnotation(entry.getKey(), entry.getValue());
                     }
                 }
 
-                IAnnotationModel model = provider.getAnnotationModel(getEditorInput());
-                if (model == null) {
-                    return;
-                }
-
-                synchronized (getLock(model)) {
-                    if (model instanceof IAnnotationModelExtension) {
-                        ((IAnnotationModelExtension) model).replaceAnnotations(occurrenceAnnotations, annotations);
-                    } else {
-                        removeOccurrenceAnnotations();
-                        for (Entry<Annotation, Position> entry : annotations.entrySet()) {
-                            model.addAnnotation(entry.getKey(), entry.getValue());
-                        }
-                    }
-
-                    occurrenceAnnotations = annotations.keySet().toArray(new Annotation[annotations.size()]);
-                }
+                occurrenceAnnotations = annotations.keySet().toArray(new Annotation[annotations.size()]);
             }
         }
     }

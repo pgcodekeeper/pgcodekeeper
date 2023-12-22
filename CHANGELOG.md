@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed an error when opening non-pgCodeKeeper project files in SQL editor.
+
 ## [9.0.0] - 2023-12-13
 
 ### Added
