@@ -106,21 +106,22 @@ public class ChangeLanguageItem extends ContributionItem {
         data.heightHint = getHeightHint(parent);
         sep.setLayoutData(data);
 
-        if (editor != null) {
-            String lang;
-
-            switch (editor.getDbType()) {
-            case PG:
-                lang = LANGUAGE.POSTGRESQL;
-                break;
-            case MS:
-                lang = LANGUAGE.MS_SQL;
-                break;
-            default:
-                throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + editor.getDbType());
-            }
-            updateLabel(lang);
+        if (editor == null) {
+            return;
         }
+
+        String lang;
+        switch (editor.getDbType()) {
+        case PG:
+            lang = LANGUAGE.POSTGRESQL;
+            break;
+        case MS:
+            lang = LANGUAGE.MS_SQL;
+            break;
+        default:
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + editor.getDbType());
+        }
+        updateLabel(lang);
     }
 
     /**
@@ -153,11 +154,13 @@ public class ChangeLanguageItem extends ContributionItem {
     }
 
     private void updateLabel(String text) {
-        if (fLabel != null && !fLabel.isDisposed()) {
-            fLabel.setForeground(fLabel.getParent().getForeground());
-            fLabel.setText(text);
-            pgAction.setChecked(!LANGUAGE.MS_SQL.equals(text));
-            msAction.setChecked(LANGUAGE.MS_SQL.equals(text));
+        if (fLabel == null || fLabel.isDisposed()) {
+            return;
         }
+
+        fLabel.setForeground(fLabel.getParent().getForeground());
+        fLabel.setText(text);
+        pgAction.setChecked(LANGUAGE.POSTGRESQL.equals(text));
+        msAction.setChecked(LANGUAGE.MS_SQL.equals(text));
     }
 }
