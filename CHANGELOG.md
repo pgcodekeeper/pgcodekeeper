@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Fixed an error when opening non-pgCodeKeeper project files in SQL editor.
+- Fixed a bug with defining a dependency in the body of a function in PG.
 
 ## [9.0.0] - 2023-12-13
 
