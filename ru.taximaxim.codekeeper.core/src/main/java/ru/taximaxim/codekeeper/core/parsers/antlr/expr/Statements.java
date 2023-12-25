@@ -54,22 +54,27 @@ public abstract class Statements<T extends ParserRuleContext> extends AbstractEx
         return Collections.emptyList();
     }
 
-    public void data(Data_statementContext data) {
+    public List<ModPair<String, String>> data(Data_statementContext data) {
         Select_stmtContext selCtx = data.select_stmt();
         Insert_stmt_for_psqlContext insCtx;
         Update_stmt_for_psqlContext updCtx;
         Merge_stmt_for_psqlContext merCtx;
         Delete_stmt_for_psqlContext delCtx;
         if (selCtx != null) {
-            new Select(this).analyze(selCtx);
-        } else if ((insCtx = data.insert_stmt_for_psql()) != null) {
-            new Insert(this).analyze(insCtx);
-        } else if ((updCtx = data.update_stmt_for_psql()) != null) {
-            new Update(this).analyze(updCtx);
-        } else if ((merCtx = data.merge_stmt_for_psql()) != null) {
-            new Merge(this).analyze(merCtx);
-        } else if ((delCtx = data.delete_stmt_for_psql()) != null) {
-            new Delete(this).analyze(delCtx);
+            return new Select(this).analyze(selCtx);
         }
+        if ((insCtx = data.insert_stmt_for_psql()) != null) {
+            return new Insert(this).analyze(insCtx);
+        }
+        if ((updCtx = data.update_stmt_for_psql()) != null) {
+            return new Update(this).analyze(updCtx);
+        }
+        if ((merCtx = data.merge_stmt_for_psql()) != null) {
+            return new Merge(this).analyze(merCtx);
+        }
+        if ((delCtx = data.delete_stmt_for_psql()) != null) {
+            return new Delete(this).analyze(delCtx);
+        }
+        return Collections.emptyList();
     }
 }

@@ -269,6 +269,11 @@ class PgDiffDepciesTest {
         // добавление функции с merge statement и с зависимостями function & table
         // пользователь выбрал функцию.
         "add_function_with_merge_stat_usr, true",
+        // добавленны пять функций func_1, func_2 и func_3 перегруженные, где func_1 зависит от func_2(int, text) и
+        // func_3(int, int) в рамках контекста правила loop_statement, а также в func_1 прописанн не валидный кейс
+        // вызыва func_2(int, int) вне рамок контекста loop_statement.
+        // пользователь выбирает func_1.
+        "add_func_with_dep_usr_func_1, true",
     })
     void runDiff(String userSelTemplate, Boolean isEnableDepcies) throws IOException, InterruptedException {
         PgDatabase oldDatabase;

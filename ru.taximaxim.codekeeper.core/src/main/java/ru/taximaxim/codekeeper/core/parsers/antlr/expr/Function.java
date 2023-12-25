@@ -15,6 +15,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.parsers.antlr.expr;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
@@ -305,7 +306,17 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
 
         Plpgsql_queryContext query = start.plpgsql_query();
         if (query != null) {
-            query(query);
+            var columns = query(query);
+            if (columns.isEmpty()) {
+                return;
+            }
+            var record = start.identifier_list().identifier();
+            if (record.size() != 1) {
+                return;
+            }
+            var key = record.get(0).getText();
+            addReference(key, null);
+            complexNamespace.put(key, new ArrayList<>(columns));
         }
     }
 
@@ -352,14 +363,15 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
         }
     }
 
-    private void query(Plpgsql_queryContext query) {
+    private List<ModPair<String, String>> query(Plpgsql_queryContext query) {
         Data_statementContext ds = query.data_statement();
         Explain_statementContext statement;
         Execute_stmtContext exec;
 
         if (ds != null) {
-            new Sql(this).data(ds);
-        } else if ((exec = query.execute_stmt()) != null) {
+            return new Sql(this).data(ds);
+        }
+        if ((exec = query.execute_stmt()) != null) {
             execute(exec);
         } else if ((statement = query.explain_statement()) != null) {
             Explain_queryContext explain = statement.explain_query();
@@ -378,6 +390,7 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
                 new Select(this).analyze(dec.select_stmt());
             }
         }
+        return Collections.emptyList();
     }
 
     private void transaction(Transaction_statementContext transaction) {
