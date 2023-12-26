@@ -170,10 +170,6 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
         compareStats(null, getStatistics(), sb);
         compareIdentity(null, getIdentityType(), null, getSequence(), sb);
 
-        if (comment != null && !comment.isEmpty()) {
-            appendCommentSql(sb);
-        }
-
         return sb.toString();
     }
 
@@ -237,9 +233,7 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
         compareStats(getStatistics(), null, sb);
         compareIdentity(getIdentityType(), null, getSequence(), null, sb);
 
-        if (comment != null && !comment.isEmpty()) {
-            appendCommentSql(sb);
-        }
+        appendComments(sb);
 
         return sb.toString();
     }
@@ -279,10 +273,7 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
         compareStats(getStatistics(), newColumn.getStatistics(), sb);
         compareIdentity(getIdentityType(), newColumn.getIdentityType(),
                 getSequence(), newColumn.getSequence(), sb);
-
-        if (!Objects.equals(getComment(), newColumn.getComment())) {
-            newColumn.appendCommentSql(sb);
-        }
+        compareComments(sb, newColumn);
 
         return sb.length() > startLength;
     }

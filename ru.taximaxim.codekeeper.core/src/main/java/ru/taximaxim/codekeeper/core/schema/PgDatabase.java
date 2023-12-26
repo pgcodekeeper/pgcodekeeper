@@ -27,7 +27,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -496,6 +495,11 @@ public class PgDatabase extends PgStatement implements IDatabase {
     }
 
     @Override
+    public String getFullSQL() {
+        return null;
+    }
+
+    @Override
     public String getDropSQL(boolean optionExists) {
         return null;
     }
@@ -504,10 +508,7 @@ public class PgDatabase extends PgStatement implements IDatabase {
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
-
-        if (!Objects.equals(getComment(), newCondition.getComment())) {
-            newCondition.appendCommentSql(sb);
-        }
+        compareComments(sb, newCondition);
         return sb.length() > startLength;
     }
 

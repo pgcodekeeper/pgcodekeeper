@@ -51,6 +51,7 @@ public class DbUpdateProperties extends PropertyPage {
     private Button btnScriptFromSelObjs;
     private Button btnGenerateExists;
     private Button btnDropBeforeCreate;
+    private Button btnCommentsToEnd;
     private Button btnAddPrePostScript;
     private Button btnDataMovementMode;
 
@@ -89,6 +90,7 @@ public class DbUpdateProperties extends PropertyPage {
                 btnScriptFromSelObjs.setEnabled(btnEnableProjPref.getSelection());
                 btnGenerateExists.setEnabled(btnEnableProjPref.getSelection());
                 btnDropBeforeCreate.setEnabled(btnEnableProjPref.getSelection());
+                btnCommentsToEnd.setEnabled(btnEnableProjPref.getSelection());
                 btnAddPrePostScript.setEnabled(btnEnableProjPref.getSelection());
                 btnDataMovementMode.setEnabled(btnEnableProjPref.getSelection());
             }
@@ -110,6 +112,8 @@ public class DbUpdateProperties extends PropertyPage {
                 Messages.DbUpdatePrefPage_option_if_exists, overridePref);
         btnDropBeforeCreate = createPropertyButton(panel, DB_UPDATE_PREF.DROP_BEFORE_CREATE,
                 Messages.DbUpdatePrefPage_option_drop_object, overridePref);
+        btnCommentsToEnd = createPropertyButton(panel, DB_UPDATE_PREF.COMMENTS_TO_END,
+                Messages.DbUpdatePrefPage_comments_to_end, overridePref);
         btnAddPrePostScript = createPropertyButton(panel, DB_UPDATE_PREF.ADD_PRE_POST_SCRIPT,
                 Messages.DbUpdatePrefPage_add_pre_post_script, overridePref);
         btnDataMovementMode = createPropertyButton(panel, DB_UPDATE_PREF.DATA_MOVEMENT_MODE,
@@ -141,6 +145,7 @@ public class DbUpdateProperties extends PropertyPage {
         setDefault(mainPS, btnScriptFromSelObjs, DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS);
         setDefault(mainPS, btnGenerateExists, DB_UPDATE_PREF.GENERATE_EXISTS);
         setDefault(mainPS, btnDropBeforeCreate, DB_UPDATE_PREF.DROP_BEFORE_CREATE);
+        setDefault(mainPS, btnCommentsToEnd, DB_UPDATE_PREF.COMMENTS_TO_END);
         setDefault(mainPS, btnAddPrePostScript, DB_UPDATE_PREF.ADD_PRE_POST_SCRIPT);
         setDefault(mainPS, btnDataMovementMode, DB_UPDATE_PREF.DATA_MOVEMENT_MODE);
 
@@ -183,6 +188,7 @@ public class DbUpdateProperties extends PropertyPage {
         prefs.putBoolean(DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS, btnScriptFromSelObjs.getSelection());
         prefs.putBoolean(DB_UPDATE_PREF.GENERATE_EXISTS, btnGenerateExists.getSelection());
         prefs.putBoolean(DB_UPDATE_PREF.DROP_BEFORE_CREATE, btnDropBeforeCreate.getSelection());
+        prefs.putBoolean(DB_UPDATE_PREF.COMMENTS_TO_END, btnCommentsToEnd.getSelection());
         prefs.putBoolean(DB_UPDATE_PREF.ADD_PRE_POST_SCRIPT, btnAddPrePostScript.getSelection());
         prefs.putBoolean(DB_UPDATE_PREF.DATA_MOVEMENT_MODE, btnDataMovementMode.getSelection());
         prefs.flush();

@@ -14,15 +14,15 @@ COMMENT ON SERVER test_server_0 IS NULL;
 
 COMMENT ON COLLATION public.test_collation IS NULL;
 
+COMMENT ON TYPE public.typ_composite IS NULL;
+
 COMMENT ON COLUMN public.typ_composite.key IS NULL;
 
 COMMENT ON COLUMN public.typ_composite.val IS NULL;
 
-COMMENT ON TYPE public.typ_composite IS NULL;
+COMMENT ON DOMAIN public.dom IS NULL;
 
 COMMENT ON CONSTRAINT dom_check ON DOMAIN public.dom IS NULL;
-
-COMMENT ON DOMAIN public.dom IS NULL;
 
 COMMENT ON SEQUENCE public.test_id_seq IS NULL;
 

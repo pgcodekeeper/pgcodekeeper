@@ -63,10 +63,6 @@ public class PgSequence extends AbstractSequence {
         appendOwnerSQL(sbSQL);
         appendPrivileges(sbSQL);
 
-        if (comment != null && !comment.isEmpty()) {
-            appendCommentSql(sbSQL);
-        }
-
         return sbSQL.toString();
     }
 
@@ -156,10 +152,7 @@ public class PgSequence extends AbstractSequence {
         }
 
         alterPrivileges(newSequence, sb);
-
-        if (!Objects.equals(getComment(), newSequence.getComment())) {
-            newSequence.appendCommentSql(sb);
-        }
+        compareComments(sb, newSequence);
 
         // OWNED BY will be changed separately
         final GenericColumn newOwnedBy = newSequence.getOwnedBy();

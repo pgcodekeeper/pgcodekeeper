@@ -56,15 +56,13 @@ public class PgEventTrigger extends PgStatement {
             sb.append("\n\nALTER EVENT TRIGGER ").append(getQualifiedName()).append(" ").append(mode).append(";");
         }
         appendOwnerSQL(sb);
-        if (comment != null && !comment.isBlank()) {
-            appendCommentSql(sb);
-        }
 
         return sb.toString();
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+            AtomicBoolean isNeedDepcies) {
         PgEventTrigger newEventTrigger = (PgEventTrigger) newCondition;
         if (!Objects.equals(getExecutable(), newEventTrigger.getExecutable())
                 || !Objects.equals(getTags(), newEventTrigger.getTags())
@@ -81,9 +79,7 @@ public class PgEventTrigger extends PgStatement {
         if (!Objects.equals(getOwner(), newEventTrigger.getOwner())) {
             newEventTrigger.appendOwnerSQL(sb);
         }
-        if (!Objects.equals(getComment(), newEventTrigger.getComment())) {
-            newEventTrigger.appendCommentSql(sb);
-        }
+        compareComments(sb, newEventTrigger);
 
         return sb.length() > startLength;
     }

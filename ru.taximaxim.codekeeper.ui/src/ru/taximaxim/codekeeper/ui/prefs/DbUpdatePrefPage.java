@@ -65,24 +65,18 @@ public class DbUpdatePrefPage extends FieldEditorPreferencePage implements IWork
         pref.put(DB_UPDATE_PREF.DROP_COLUMN_STATEMENT, Messages.dBUpdatePrefPage_drop_column_statement);
         pref.put(DB_UPDATE_PREF.RESTART_WITH_STATEMENT, Messages.DbUpdatePrefPage_alter_seq_restart_statement);
         pref.put(DB_UPDATE_PREF.UPDATE_STATEMENT, Messages.DbUpdatePrefPage_update_statement);
-        GroupFieldsEditor gfe = new GroupFieldsEditor(pref,
-                Messages.dBUpdatePrefPage_set_warning_when_next_statements_present,
-                getFieldEditorParent());
-        addField(gfe);
+
+        addField(new GroupFieldsEditor(pref,
+                Messages.dBUpdatePrefPage_set_warning_when_next_statements_present, getFieldEditorParent()));
 
         addField(new BooleanFieldEditor(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION,
-                Messages.dbUpdatePrefPage_script_add_transaction,
-                getFieldEditorParent()));
+                Messages.dbUpdatePrefPage_script_add_transaction, getFieldEditorParent()));
 
-        BooleanFieldEditor functionBodies = new BooleanFieldEditor(
-                DB_UPDATE_PREF.CHECK_FUNCTION_BODIES,
-                Messages.dbUpdatePrefPage_check_function_bodies,
-                getFieldEditorParent());
-        addField(functionBodies);
+        addField(new BooleanFieldEditor(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES,
+                Messages.dbUpdatePrefPage_check_function_bodies, getFieldEditorParent()));
 
-        BooleanFieldEditor usingOnOff = new BooleanFieldEditor(DB_UPDATE_PREF.USING_ON_OFF,
-                Messages.dbUpdatePrefPage_switch_on_off_using, getFieldEditorParent());
-        addField(usingOnOff);
+        addField(new BooleanFieldEditor(DB_UPDATE_PREF.USING_ON_OFF,
+                Messages.dbUpdatePrefPage_switch_on_off_using, getFieldEditorParent()));
 
         addField(new BooleanFieldEditor(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY,
                 Messages.DbUpdatePrefPage_print_index_with_concurrently, getFieldEditorParent()));
@@ -92,25 +86,21 @@ public class DbUpdatePrefPage extends FieldEditorPreferencePage implements IWork
 
         addField(new BooleanFieldEditor(DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS,
                 Messages.DbUpdatePrefPage_script_from_selected_objs, getFieldEditorParent()));
-        BooleanFieldEditor generateExists = new BooleanFieldEditor(
-                DB_UPDATE_PREF.GENERATE_EXISTS,
-                Messages.DbUpdatePrefPage_option_if_exists,
-                getFieldEditorParent());
-        addField(generateExists);
 
-        BooleanFieldEditor dropBeforeCreate = new BooleanFieldEditor(
-                DB_UPDATE_PREF.DROP_BEFORE_CREATE,
-                Messages.DbUpdatePrefPage_option_drop_object,
-                getFieldEditorParent());
-        addField(dropBeforeCreate);
+        addField(new BooleanFieldEditor(DB_UPDATE_PREF.GENERATE_EXISTS,
+                Messages.DbUpdatePrefPage_option_if_exists, getFieldEditorParent()));
+
+        addField(new BooleanFieldEditor(DB_UPDATE_PREF.DROP_BEFORE_CREATE,
+                Messages.DbUpdatePrefPage_option_drop_object, getFieldEditorParent()));
+
+        addField(new BooleanFieldEditor(DB_UPDATE_PREF.COMMENTS_TO_END,
+                Messages.DbUpdatePrefPage_comments_to_end, getFieldEditorParent()));
 
         addField(new BooleanFieldEditor(DB_UPDATE_PREF.DATA_MOVEMENT_MODE,
-                Messages.DbUpdatePrefPage_allow_data_movement,
-                getFieldEditorParent()));
+                Messages.DbUpdatePrefPage_allow_data_movement, getFieldEditorParent()));
 
-        BooleanFieldEditor commandLineDdlUpdate = new BooleanFieldEditor(DB_UPDATE_PREF.COMMAND_LINE_DDL_UPDATE,
-                Messages.dbUpdatePrefPage_use_command_for_ddl_update, getFieldEditorParent());
-        addField(commandLineDdlUpdate);
+        addField(new BooleanFieldEditor(DB_UPDATE_PREF.COMMAND_LINE_DDL_UPDATE,
+                Messages.dbUpdatePrefPage_use_command_for_ddl_update, getFieldEditorParent()));
 
         StringFieldEditor cmdUpdate = new StringFieldEditor(DB_UPDATE_PREF.MIGRATION_COMMAND,
                 Messages.dbUpdatePrefPage_Enter_cmd_to_update_ddl_with_sql_script

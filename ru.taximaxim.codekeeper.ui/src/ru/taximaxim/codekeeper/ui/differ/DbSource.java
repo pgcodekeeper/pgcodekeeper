@@ -145,6 +145,7 @@ public abstract class DbSource {
         args.setSimplifyView(prefs.getBooleanOfRootPref(PREF.SIMPLIFY_VIEW));
         args.setAutoFormatObjectCode(prefs.getBooleanOfRootPref(PREF.FORMAT_OBJECT_CODE_AUTOMATICALLY));
         args.setFormatConfiguration(Formatter.getFormatterConfig());
+        args.setCommentsToEnd(prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.COMMENTS_TO_END));
         args.setTimeZone(timeZone);
         args.setKeepNewlines(!forceUnixNewlines);
         args.setDbType(dbType);

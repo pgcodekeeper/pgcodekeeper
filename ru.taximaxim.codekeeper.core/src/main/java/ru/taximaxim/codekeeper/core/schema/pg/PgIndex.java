@@ -88,8 +88,6 @@ public class PgIndex extends AbstractIndex {
             appendClusterSql(sbSQL);
         }
 
-        appendComments(sbSQL);
-
         if (inherit != null) {
             sbSQL.append("\n\nALTER INDEX ").append(inherit.getQualifiedName())
             .append(" ATTACH PARTITION ").append(getQualifiedName()).append(';');
@@ -171,7 +169,7 @@ public class PgIndex extends AbstractIndex {
                 .append(" RENAME TO ")
                 .append(PgDiffUtils.getQuotedName(getName()))
                 .append(";");
-                newIndex.appendCommentSql(sb);
+                newIndex.appendComments(sb);
                 sb.append("\nCOMMIT TRANSACTION;");
             }
             return true;
@@ -196,10 +194,8 @@ public class PgIndex extends AbstractIndex {
         }
 
         compareOptions(newIndex, sb);
+        compareComments(sb, newIndex);
 
-        if (!Objects.equals(getComment(), newIndex.getComment())) {
-            newIndex.appendCommentSql(sb);
-        }
         return sb.length() > startLength;
     }
 

@@ -33,7 +33,7 @@ public abstract class AbstractType extends PgStatementWithSearchPath{
         appendDef(sb);
         appendOwnerSQL(sb);
         appendPrivileges(sb);
-        appendComments(sb);
+
         return sb.toString();
     }
 
@@ -56,9 +56,8 @@ public abstract class AbstractType extends PgStatementWithSearchPath{
             newType.alterOwnerSQL(sb);
         }
         alterPrivileges(newType, sb);
-        if (!Objects.equals(getComment(), newType.getComment())) {
-            newType.appendCommentSql(sb);
-        }
+        compareComments(sb, newType);
+
         return sb.length() > startLength;
     }
 

@@ -584,8 +584,9 @@ class PgDiffTest {
             // Test scenario where FK alter common options for constraint.
             "alter_foreign_constraint",
     })
+
     void runDiff(String fileNameTemplate) throws IOException, InterruptedException {
-        String script = getScript(fileNameTemplate);
+        String script = getScript(fileNameTemplate, new PgDiffArguments());
         TestUtils.compareResult(script, fileNameTemplate, PgDiffTest.class);
     }
 
@@ -599,13 +600,27 @@ class PgDiffTest {
             "compare_function;              Comparing a signature in a function",
     })
     void runCompare(String fileNameTemplate, String description) throws IOException, InterruptedException {
-        String script = getScript(fileNameTemplate);
+        String script = getScript(fileNameTemplate, new PgDiffArguments());
         assertEquals(script.trim(), "");
     }
 
-    private String getScript(String fileNameTemplate) throws IOException, InterruptedException {
+    /**
+     * test adding comments in the end of the script
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "add_comments_in_end",
+            "alter_comments_in_end",
+            "alter_children_comments_in_end"
+    })
+    void testCommentsInScriptEnd(String fileNameTemplate) throws IOException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();
+        args.setCommentsToEnd(true);
+        String script = getScript(fileNameTemplate, args);
+        TestUtils.compareResult(script, fileNameTemplate, PgDiffTest.class);
+    }
 
+    private String getScript(String fileNameTemplate, PgDiffArguments args) throws IOException, InterruptedException {
         PgDatabase dbOld = TestUtils.loadTestDump(
                 fileNameTemplate + FILES_POSTFIX.ORIGINAL_SQL, PgDiffTest.class, args);
         TestUtils.runDiffSame(dbOld, fileNameTemplate, args);

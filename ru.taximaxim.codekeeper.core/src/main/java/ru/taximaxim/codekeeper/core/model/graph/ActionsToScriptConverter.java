@@ -78,6 +78,7 @@ public class ActionsToScriptConverter {
     private final PgDatabase newDbFull;
 
     private final Set<PgSequence> sequencesOwnedBy = new LinkedHashSet<>();
+    private final List<String> postComments = new ArrayList<>();
     /**
      * renamed table qualified names and their temporary (simple) names
      */
@@ -148,6 +149,7 @@ public class ActionsToScriptConverter {
             if (!hideAction(action, selected)) {
                 processSequence(action);
                 printAction(action, obj);
+                proccessComment(action, obj);
             }
         }
 
@@ -157,7 +159,7 @@ public class ActionsToScriptConverter {
                 script.addStatement(ownedBy);
             }
         }
-
+        postComments.forEach(script::addStatement);
         // As a result of discussion with the SQL database developers, it was
         // decided that, in pgCodeKeeper, refresh operations are required only
         // for MsView objects. This is why a filter is used here that only
@@ -171,6 +173,26 @@ public class ActionsToScriptConverter {
         for (int i = orphanRefreshes.length - 1; i >= 0; --i) {
             script.addStatement(MessageFormat.format(REFRESH_MODULE,
                     PgDiffUtils.quoteString(orphanRefreshes[i].getQualifiedName())));
+        }
+    }
+
+    private void proccessComment(ActionContainer action, PgStatement obj) {
+        StringBuilder sb = new StringBuilder();
+        if (action.getAction() == StatementActions.CREATE) {
+            obj.appendComments(sb);
+        } else if (action.getAction() == StatementActions.ALTER) {
+            obj.appendAlterComments(sb, action.getNewObj());
+        }
+
+        if (sb.length() == 0) {
+            return;
+        }
+
+        String comment = sb.toString();
+        if (arguments.isCommentsToEnd()) {
+            postComments.add(comment);
+        } else {
+            script.addStatement(comment);
         }
     }
 
@@ -223,8 +245,7 @@ public class ActionsToScriptConverter {
             break;
         case ALTER:
             StringBuilder sb = new StringBuilder();
-            obj.appendAlterSQL(action.getNewObj(), sb,
-                    new AtomicBoolean());
+            obj.appendAlterSQL(action.getNewObj(), sb, new AtomicBoolean());
             if (sb.length() > 0) {
                 if (depcy != null) {
                     script.addStatement(depcy);

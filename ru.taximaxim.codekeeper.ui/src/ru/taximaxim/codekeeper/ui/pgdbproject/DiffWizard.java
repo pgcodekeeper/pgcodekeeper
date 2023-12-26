@@ -188,6 +188,8 @@ class PageDiff extends WizardPage implements Listener {
     private Button btnScriptFromSelObjs;
     private Button btnGenerateExists;
     private Button btnDropBeforeCreate;
+    private Button btnCommentsToEnd;
+
     private Button btnDataMovementMode;
 
     public PageDiff(String pageName, IPreferenceStore mainPrefs, PgDbProject proj) {
@@ -294,6 +296,7 @@ class PageDiff extends WizardPage implements Listener {
                 btnScriptFromSelObjs.setVisible(selected);
                 btnGenerateExists.setVisible(selected);
                 btnDropBeforeCreate.setVisible(selected);
+                btnCommentsToEnd.setVisible(selected);
                 btnDataMovementMode.setVisible(selected);
 
                 UiSync.exec(getShell(), () -> getShell().pack());
@@ -342,6 +345,9 @@ class PageDiff extends WizardPage implements Listener {
         btnDropBeforeCreate = createBoooleanButton(container, DB_UPDATE_PREF.DROP_BEFORE_CREATE,
                 Messages.DbUpdatePrefPage_option_drop_object);
 
+        btnCommentsToEnd = createBoooleanButton(container, DB_UPDATE_PREF.COMMENTS_TO_END,
+                Messages.DbUpdatePrefPage_comments_to_end);
+
         btnDataMovementMode = createBoooleanButton(container, DB_UPDATE_PREF.DATA_MOVEMENT_MODE,
                 Messages.DbUpdatePrefPage_allow_data_movement);
 
@@ -358,9 +364,9 @@ class PageDiff extends WizardPage implements Listener {
         btn.setSelection(mainPrefs.getBoolean(pref));
         btn.setVisible(false);
         return btn;
-	}
+    }
 
-	private void timeZoneWarn() {
+    private void timeZoneWarn() {
         String tz = cmbTimezone.getCombo().getText();
         GridData data = (GridData) lblWarnPosix.getLayoutData();
         if ((!Consts.UTC.equals(tz) && tz.startsWith(Consts.UTC)) == data.exclude) {
@@ -423,6 +429,7 @@ class PageDiff extends WizardPage implements Listener {
         oneTimePrefs.put(DB_UPDATE_PREF.PRINT_CONSTRAINT_NOT_VALID, btnConstraintNotValid.getSelection());
         oneTimePrefs.put(DB_UPDATE_PREF.GENERATE_EXISTS, btnGenerateExists.getSelection());
         oneTimePrefs.put(DB_UPDATE_PREF.DROP_BEFORE_CREATE, btnDropBeforeCreate.getSelection());
+        oneTimePrefs.put(DB_UPDATE_PREF.COMMENTS_TO_END, btnCommentsToEnd.getSelection());
         oneTimePrefs.put(DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS, btnScriptFromSelObjs.getSelection());
         oneTimePrefs.put(DB_UPDATE_PREF.DATA_MOVEMENT_MODE, btnDataMovementMode.getSelection());
 

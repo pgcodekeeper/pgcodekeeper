@@ -46,10 +46,6 @@ public class PgSchema extends AbstractSchema {
         appendOwnerSQL(sbSQL);
         appendPrivileges(sbSQL);
 
-        if (comment != null && !comment.isEmpty()) {
-            appendCommentSql(sbSQL);
-        }
-
         return sbSQL.toString();
     }
 
@@ -62,10 +58,7 @@ public class PgSchema extends AbstractSchema {
         }
 
         alterPrivileges(newCondition, sb);
-
-        if (!Objects.equals(getComment(), newCondition.getComment())) {
-            newCondition.appendCommentSql(sb);
-        }
+        compareComments(sb, newCondition);
 
         return sb.length() > startLength;
     }

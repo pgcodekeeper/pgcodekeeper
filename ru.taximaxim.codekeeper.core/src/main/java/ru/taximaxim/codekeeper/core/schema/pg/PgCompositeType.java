@@ -57,8 +57,12 @@ public final class PgCompositeType extends AbstractType{
     }
 
     @Override
-    protected void appendComments(StringBuilder sb) {
-        appendComments(sb, attrs);
+    public void appendComments(StringBuilder sb) {
+        super.appendComments(sb);
+
+        for (final AbstractColumn column : attrs) {
+            column.appendComments(sb);
+        }
     }
 
     @Override
@@ -94,8 +98,36 @@ public final class PgCompositeType extends AbstractType{
             .append(attrSb).append(';');
             isNeedDepcies.set(true);
         }
+    }
 
-        compareColumnsComments(newCompositeType, sb);
+    @Override
+    public void compareComments(StringBuilder sb, PgStatement newObj) {
+        super.compareComments(sb, newObj);
+
+        PgCompositeType newType = (PgCompositeType) newObj;
+        for (AbstractColumn newAttr : newType.getAttrs()) {
+            AbstractColumn oldAttr = getAttr(newAttr.getName());
+            if (oldAttr != null) {
+                oldAttr.compareComments(sb, newAttr);
+            } else if (newAttr.checkComments()) {
+                sb.setLength(sb.length() + 1);
+            }
+        }
+    }
+
+    @Override
+    public void appendAlterComments(StringBuilder sb, PgStatement newObj) {
+        super.appendAlterComments(sb, newObj);
+
+        PgCompositeType newType = (PgCompositeType) newObj;
+        for (AbstractColumn newAttr : newType.getAttrs()) {
+            AbstractColumn oldAttr = getAttr(newAttr.getName());
+            if (oldAttr != null) {
+                oldAttr.appendAlterComments(sb, newAttr);
+            } else {
+                newAttr.appendComments(sb);
+            }
+        }
     }
 
     private void appendAlterAttribute(StringBuilder attrSb, String action, String delimiter,
@@ -110,19 +142,6 @@ public final class PgCompositeType extends AbstractType{
                 .append(attr.getCollation());
             }
             attrSb.append(",");
-        }
-    }
-
-    private void compareColumnsComments(PgCompositeType newType, StringBuilder sb) {
-        for (AbstractColumn newAttr : newType.getAttrs()) {
-            AbstractColumn oldAttr = getAttr(newAttr.getName());
-            if (oldAttr != null) {
-                if (!Objects.equals(oldAttr.getComment(), newAttr.getComment())) {
-                    newAttr.appendCommentSql(sb);
-                }
-            } else if (newAttr.getComment() != null && !newAttr.getComment().isEmpty()) {
-                newAttr.appendCommentSql(sb);
-            }
         }
     }
 

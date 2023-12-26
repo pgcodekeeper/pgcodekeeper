@@ -14,15 +14,15 @@ COMMENT ON SERVER srv111 IS 'test_comment';
 
 COMMENT ON COLLATION public.test_collation IS 'ru Ru';
 
+COMMENT ON TYPE public.typ_composite IS 'test type';
+
 COMMENT ON COLUMN public.typ_composite.key IS 'Type composite key comment';
 
 COMMENT ON COLUMN public.typ_composite.val IS 'Type composite val comment';
 
-COMMENT ON TYPE public.typ_composite IS 'test type';
+COMMENT ON DOMAIN public.dom IS 'test domain';
 
 COMMENT ON CONSTRAINT dom_check ON DOMAIN public.dom IS 'test domain constraint';
-
-COMMENT ON DOMAIN public.dom IS 'test domain';
 
 COMMENT ON SEQUENCE public.test_id_seq IS 'test table sequence';
 

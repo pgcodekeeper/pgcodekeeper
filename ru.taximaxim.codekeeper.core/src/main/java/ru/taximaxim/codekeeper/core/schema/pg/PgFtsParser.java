@@ -61,10 +61,6 @@ public class PgFtsParser extends PgStatementWithSearchPath {
 
         sbSql.append(" );");
 
-        if (comment != null && !comment.isEmpty()) {
-            appendComments(sbSql);
-        }
-
         return sbSql.toString();
     }
 
@@ -77,10 +73,7 @@ public class PgFtsParser extends PgStatementWithSearchPath {
             isNeedDepcies.set(true);
             return true;
         }
-
-        if (!Objects.equals(getComment(), newCondition.getComment())) {
-            newCondition.appendCommentSql(sb);
-        }
+        compareComments(sb, newCondition);
 
         return sb.length() > startLength;
     }

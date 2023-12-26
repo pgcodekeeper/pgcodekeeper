@@ -61,10 +61,6 @@ implements ISimpleOptionContainer {
 
         appendOwnerSQL(sbSql);
 
-        if (comment != null && !comment.isEmpty()) {
-            appendCommentSql(sbSql);
-        }
-
         return sbSql.toString();
     }
 
@@ -80,10 +76,7 @@ implements ISimpleOptionContainer {
         }
 
         compareOptions(newDictionary, sb);
-
-        if (!Objects.equals(getComment(), newCondition.getComment())) {
-            newCondition.appendCommentSql(sb);
-        }
+        compareComments(sb, newDictionary);
 
         return sb.length() > startLength;
     }

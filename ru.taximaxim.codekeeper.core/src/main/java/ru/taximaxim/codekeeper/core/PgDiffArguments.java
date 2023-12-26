@@ -66,6 +66,7 @@ public class PgDiffArguments {
     private FormatConfiguration formatConfiguration = new FormatConfiguration();
     private boolean generateExists;
     private boolean dropBeforeCreate;
+    private boolean commentsToEnd;
     private List<String> preFilePath = new ArrayList<>();
     private List<String> postFilePath = new ArrayList<>();
 
@@ -91,6 +92,14 @@ public class PgDiffArguments {
 
     public void setDropBeforeCreate(boolean dropBeforeCreate) {
         this.dropBeforeCreate = dropBeforeCreate;
+    }
+
+    public boolean isCommentsToEnd() {
+        return commentsToEnd;
+    }
+
+    public void setCommentsToEnd(boolean commentsToEnd) {
+        this.commentsToEnd = commentsToEnd;
     }
 
     public boolean isGenerateExists() {
@@ -384,6 +393,7 @@ public class PgDiffArguments {
         arg.formatConfiguration = formatConfiguration.copy();
         arg.generateExists = isGenerateExists();
         arg.dropBeforeCreate = isDropBeforeCreate();
+        arg.commentsToEnd = isCommentsToEnd();
         arg.preFilePath.addAll(getPreFilePath());
         arg.postFilePath.addAll(getPostFilePath());
         return arg;

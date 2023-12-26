@@ -70,6 +70,8 @@ Usage
  --generate-exist                       : print CREATE IF NOT EXISTS / DROP IF
                                           EXISTS
  --drop-before-create                   : print DROP before CREATE statement
+ --comments-to-end                      : print comments at the end of the
+                                          script
  -S (--safe-mode)                       : do not generate scripts containing
                                           dangerous statements
                                           see: --allow-danger-ddl
