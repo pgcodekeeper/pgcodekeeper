@@ -111,10 +111,6 @@ public class PgOperator extends PgStatementWithSearchPath implements IOperator {
         appendOwnerSQL(sbSQL);
         appendPrivileges(sbSQL);
 
-        if (comment != null && !comment.isEmpty()) {
-            appendCommentSql(sbSQL);
-        }
-
         return sbSQL.toString();
     }
 
@@ -182,10 +178,8 @@ public class PgOperator extends PgStatementWithSearchPath implements IOperator {
         if (!Objects.equals(getOwner(), newOperator.getOwner())) {
             newOperator.alterOwnerSQL(sb);
         }
+        compareComments(sb, newOperator);
 
-        if (!Objects.equals(getComment(), newOperator.getComment())) {
-            newOperator.appendCommentSql(sb);
-        }
         return sb.length() > startLength;
     }
 

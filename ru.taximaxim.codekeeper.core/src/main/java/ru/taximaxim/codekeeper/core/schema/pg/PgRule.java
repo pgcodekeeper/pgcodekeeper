@@ -153,14 +153,12 @@ public class PgRule extends PgStatementWithSearchPath{
             .append(';');
         }
 
-        if (comment != null && !comment.isEmpty()) {
-            appendCommentSql(sbSQL);
-        }
         return sbSQL.toString();
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+            AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         PgRule newRule = (PgRule) newCondition;
 
@@ -181,9 +179,8 @@ public class PgRule extends PgStatementWithSearchPath{
             .append(PgDiffUtils.getQuotedName(newRule.getName()))
             .append(';');
         }
-        if (!Objects.equals(getComment(), newRule.getComment())) {
-            newRule.appendCommentSql(sb);
-        }
+        compareComments(sb, newRule);
+
         return sb.length() > startLength;
     }
 

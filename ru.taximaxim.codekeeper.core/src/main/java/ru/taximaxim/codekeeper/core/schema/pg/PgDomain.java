@@ -135,15 +135,6 @@ public class PgDomain extends PgStatementWithSearchPath {
         appendOwnerSQL(sb);
         appendPrivileges(sb);
 
-        if (comment != null && !comment.isEmpty()) {
-            appendCommentSql(sb);
-        }
-        for (AbstractConstraint c : constraints) {
-            if (c.getComment() != null && !c.getComment().isEmpty()) {
-                c.appendCommentSql(sb);
-            }
-        }
-
         return sb.toString();
     }
 
@@ -198,10 +189,48 @@ public class PgDomain extends PgStatementWithSearchPath {
             newDomain.appendOwnerSQL(sb);
         }
         alterPrivileges(newDomain, sb);
-        if (!Objects.equals(getComment(), newDomain.getComment())) {
-            newDomain.appendCommentSql(sb);
-        }
+        compareComments(sb, newDomain);
+
         return sb.length() > startLength;
+    }
+
+    @Override
+    public void appendComments(StringBuilder sb) {
+        super.appendComments(sb);
+
+        for (AbstractConstraint c : constraints) {
+            c.appendComments(sb);
+        }
+    }
+
+    @Override
+    public void compareComments(StringBuilder sb, PgStatement newObj) {
+        super.compareComments(sb, newObj);
+
+        PgDomain newDomain = (PgDomain) newObj;
+        for (AbstractConstraint newConstr : newDomain.getConstraints()) {
+            AbstractConstraint oldConstr = getConstraint(newConstr.getName());
+            if (oldConstr != null) {
+                oldConstr.compareComments(sb, newConstr);
+            } else if (newConstr.checkComments()) {
+                sb.setLength(sb.length() + 1);
+            }
+        }
+    }
+
+    @Override
+    public void appendAlterComments(StringBuilder sb, PgStatement newObj) {
+        PgDomain newDomain = (PgDomain) newObj;
+        super.appendAlterComments(sb, newDomain);
+
+        for (AbstractConstraint newConstr : newDomain.getConstraints()) {
+            AbstractConstraint oldConstr = getConstraint(newConstr.getName());
+            if (oldConstr != null) {
+                oldConstr.appendAlterComments(sb, newConstr);
+            } else {
+                newConstr.appendComments(sb);
+            }
+        }
     }
 
     @Override

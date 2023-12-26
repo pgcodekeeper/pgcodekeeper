@@ -66,10 +66,6 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
 
         appendOwnerSQL(sbSql);
 
-        if (comment != null && !comment.isEmpty()) {
-            appendCommentSql(sbSql);
-        }
-
         return sbSql.toString();
     }
 
@@ -89,10 +85,7 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
         if (!Objects.equals(getOwner(), newConf.getOwner())) {
             newConf.alterOwnerSQL(sb);
         }
-
-        if (!Objects.equals(getComment(), newCondition.getComment())) {
-            newCondition.appendCommentSql(sb);
-        }
+        compareComments(sb, newConf);
 
         return sb.length() > startLength;
     }

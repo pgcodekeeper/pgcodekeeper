@@ -127,10 +127,6 @@ public class PgCast extends PgStatement implements ICast {
 
         sbSQL.append(';');
 
-        if (getComment() != null && !getComment().isEmpty()) {
-            appendCommentSql(sbSQL);
-        }
-
         return sbSQL.toString();
     }
 
@@ -144,10 +140,7 @@ public class PgCast extends PgStatement implements ICast {
             isNeedDepcies.set(true);
             return true;
         }
-
-        if (!Objects.equals(getComment(), newCast.getComment())) {
-            newCast.appendCommentSql(sb);
-        }
+        compareComments(sb, newCast);
 
         return sb.length() > startLength;
     }

@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added a preference to move comments to the end of the migration script (`Window -> Preferences -> pgCodeKeeper -> Update DB -> Print comments at the end of the script`, CLI option `--comments-to-end`).
+
 ### Changed
 
 ### Fixed

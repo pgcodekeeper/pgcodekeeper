@@ -17,6 +17,7 @@ package ru.taximaxim.codekeeper.ui.comparetools;
 
 import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
+import java.util.Objects;
 
 import org.eclipse.compare.CompareConfiguration;
 import org.eclipse.compare.CompareEditorInput;
@@ -64,10 +65,10 @@ public class CompareInput extends CompareEditorInput {
     }
 
     private DiffNode getFormattedContents(String oldPath, String newPath, PgStatement project, PgStatement remote) {
-        String contentsLeft = project == null ? "" : project.getFormattedCreationSQL(); //$NON-NLS-1$
-        String contentsRight = remote == null ? "" : remote.getFormattedCreationSQL(); //$NON-NLS-1$
+        String contentsLeft = project == null ? "" : project.getFullFormattedSQL(); //$NON-NLS-1$
+        String contentsRight = remote == null ? "" : remote.getFullFormattedSQL(); //$NON-NLS-1$
 
-        if (contentsLeft.equals(contentsRight)) {
+        if (Objects.equals(contentsLeft, contentsRight)) {
             left = new CompareItem(oldPath, project == null ? "" : project.getFullSQL()); //$NON-NLS-1$
             right =  new CompareItem(newPath, remote == null ? "" : remote.getFullSQL()); //$NON-NLS-1$
         } else {

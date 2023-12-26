@@ -206,6 +206,10 @@ public class CliArgs extends PgDiffArguments {
             usage="print DROP before CREATE statement")
     private boolean dropBeforeCreate;
 
+    @Option(name="--comments-to-end", forbids={"--graph", "--parse"},
+            usage = "print comments at the end of the script")
+    private boolean commentsToEnd;
+
     @Option(name="-S", aliases="--safe-mode", forbids={"--graph", "--parse"},
             usage="do not generate scripts containing dangerous statements\nsee: --allow-danger-ddl")
     private boolean safeMode;
@@ -609,6 +613,16 @@ public class CliArgs extends PgDiffArguments {
     @Override
     public void setDropBeforeCreate(boolean dropBeforeCreate) {
         this.dropBeforeCreate = dropBeforeCreate;
+    }
+
+    @Override
+    public boolean isCommentsToEnd() {
+        return commentsToEnd;
+    }
+
+    @Override
+    public void setCommentsToEnd(boolean commentsToEnd) {
+        this.commentsToEnd = commentsToEnd;
     }
 
     public Collection<DbObjType> getGraphFilterTypes() {

@@ -79,10 +79,6 @@ public class PgExtension extends PgStatement {
 
         sbSQL.append(';');
 
-        if(getComment() != null && !getComment().isEmpty()) {
-            appendCommentSql(sbSQL);
-        }
-
         return sbSQL.toString();
     }
 
@@ -104,9 +100,8 @@ public class PgExtension extends PgStatement {
             isNeedDepcies.set(true);
         }
         // TODO ALTER EXTENSION UPDATE TO ?
-        if (!Objects.equals(getComment(), newExt.getComment())) {
-            newExt.appendCommentSql(sb);
-        }
+        compareComments(sb, newExt);
+
         return sb.length() > startLength;
     }
 

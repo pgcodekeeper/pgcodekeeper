@@ -19,7 +19,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.pg;
 
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
@@ -88,10 +87,6 @@ public abstract class PgConstraint extends AbstractConstraint {
 
         appendExtraOptions(sbSQL);
 
-        if (comment != null && !comment.isEmpty()) {
-            appendCommentSql(sbSQL);
-        }
-
         return sbSQL.toString();
     }
 
@@ -141,10 +136,7 @@ public abstract class PgConstraint extends AbstractConstraint {
         }
 
         compareExtraOptions(sb, newConstr);
-
-        if (!Objects.equals(getComment(), newConstr.getComment())) {
-            newConstr.appendCommentSql(sb);
-        }
+        compareComments(sb, newConstr);
 
         return sb.length() > startLength;
     }
@@ -158,14 +150,14 @@ public abstract class PgConstraint extends AbstractConstraint {
     }
 
     @Override
-    public void appendCommentSql(StringBuilder sb) {
+    protected void appendCommentSql(StringBuilder sb) {
         sb.append("\n\n").append("COMMENT ON CONSTRAINT ");
         sb.append(PgDiffUtils.getQuotedName(getName())).append(" ON ");
         if (getParent().getStatementType() == DbObjType.DOMAIN) {
             sb.append("DOMAIN ");
         }
         sb.append(getParent().getQualifiedName()).append(" IS ")
-        .append(comment == null || comment.isEmpty() ? "NULL" : comment)
+        .append(checkComments() ? getComment() : "NULL")
         .append(';');
     }
 

@@ -181,10 +181,6 @@ public class PgTrigger extends AbstractTrigger {
             .append(';');
         }
 
-        if (comment != null && !comment.isEmpty()) {
-            appendCommentSql(sbSQL);
-        }
-
         return sbSQL.toString();
     }
 
@@ -210,10 +206,8 @@ public class PgTrigger extends AbstractTrigger {
             .append(PgDiffUtils.getQuotedName(newTrg.getName()))
             .append(';');
         }
+        compareComments(sb, newTrg);
 
-        if (!Objects.equals(getComment(), newTrg.getComment())) {
-            newTrg.appendCommentSql(sb);
-        }
         return sb.length() > startLength;
     }
 

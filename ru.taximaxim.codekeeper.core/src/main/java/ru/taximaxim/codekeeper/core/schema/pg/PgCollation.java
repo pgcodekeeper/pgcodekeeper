@@ -118,15 +118,12 @@ public class PgCollation extends PgStatementWithSearchPath {
 
         appendOwnerSQL(sbSQL);
 
-        if (comment != null && !comment.isEmpty()) {
-            appendCommentSql(sbSQL);
-        }
-
         return sbSQL.toString();
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+            AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         PgCollation newCollation = (PgCollation) newCondition;
 
@@ -138,10 +135,7 @@ public class PgCollation extends PgStatementWithSearchPath {
         if (!Objects.equals(getOwner(), newCollation.getOwner())) {
             newCollation.alterOwnerSQL(sb);
         }
-
-        if (!Objects.equals(getComment(), newCollation.getComment())) {
-            newCollation.appendCommentSql(sb);
-        }
+        compareComments(sb, newCollation);
 
         return sb.length() > startLength;
     }

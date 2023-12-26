@@ -129,12 +129,6 @@ public abstract class AbstractTable extends PgStatementContainer implements IOpt
         return StatementUtils.isColumnsOrderChanged(newTable.getColumns(), columns);
     }
 
-    protected void compareComment(AbstractTable newTable, StringBuilder sb) {
-        if (!Objects.equals(getComment(), newTable.getComment())) {
-            newTable.appendCommentSql(sb);
-        }
-    }
-
     protected void compareOwners(AbstractTable newTable, StringBuilder sb) {
         if (!Objects.equals(owner, newTable.getOwner())) {
             newTable.alterOwnerSQL(sb);

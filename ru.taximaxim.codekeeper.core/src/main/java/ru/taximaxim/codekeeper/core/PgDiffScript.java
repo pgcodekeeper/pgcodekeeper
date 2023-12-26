@@ -41,8 +41,13 @@ public class PgDiffScript {
 
     public void addStatement(String statement) {
         PgDiffStatement st = new PgDiffStatement(DiffStatementType.OTHER, null, statement.trim());
-        PgDiffStatement last = statements.isEmpty() ? null : statements.get(statements.size() - 1);
-        if (statements.isEmpty() || !st.equals(last)){
+        if (statements.isEmpty()) {
+            statements.add(st);
+            return;
+        }
+
+        PgDiffStatement last = statements.get(statements.size() - 1);
+        if (!st.equals(last)) {
             statements.add(st);
         }
     }
@@ -82,7 +87,7 @@ public class PgDiffScript {
     public String getText() {
         return statements.stream()
                 .map(st -> st.getStatement().trim())
-                .filter(st -> !st.isBlank()) // sequence change may be empty
+                .filter(st -> !st.isBlank()) // sequence and comments change may be empty
                 .collect(Collectors.joining("\n\n"));
     }
 }

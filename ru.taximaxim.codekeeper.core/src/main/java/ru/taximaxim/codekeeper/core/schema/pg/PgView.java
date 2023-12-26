@@ -137,16 +137,17 @@ public class PgView extends AbstractView implements ISimpleOptionContainer {
             sbSQL.append(';');
         }
 
-        if (comment != null && !comment.isEmpty()) {
-            appendCommentSql(sbSQL);
-        }
+        return sbSQL.toString();
+    }
+
+    @Override
+    public void appendComments(StringBuilder sb) {
+        super.appendComments(sb);
 
         for (final Entry<String, String> columnComment : columnComments.entrySet()) {
-            sbSQL.append(MessageFormat.format(COLUMN_COMMENT, getQualifiedName(),
+            sb.append(MessageFormat.format(COLUMN_COMMENT, getQualifiedName(),
                     PgDiffUtils.getQuotedName(columnComment.getKey()), columnComment.getValue()));
         }
-
-        return sbSQL.toString();
     }
 
     private void appendColumnNames(final StringBuilder sbSQL) {
@@ -204,16 +205,17 @@ public class PgView extends AbstractView implements ISimpleOptionContainer {
         }
 
         alterPrivileges(newView, sb);
-
-        if (!Objects.equals(getComment(), newView.getComment())) {
-            newView.appendCommentSql(sb);
-        }
-
-        alterColumnComments(sb, newView);
-
         compareOptions(newView, sb);
+        compareComments(sb, newView);
 
         return sb.length() > startLength;
+    }
+
+    @Override
+    public void appendAlterComments(StringBuilder sb, PgStatement newObj) {
+        PgView newView = (PgView) newObj;
+        super.appendAlterComments(sb, newView);
+        alterColumnComments(sb, newView);
     }
 
     @Override
@@ -221,10 +223,20 @@ public class PgView extends AbstractView implements ISimpleOptionContainer {
         return true;
     }
 
+    @Override
+    public void compareComments(StringBuilder sb, PgStatement newObj) {
+        super.compareComments(sb, newObj);
+
+        PgView newView = (PgView) newObj;
+        if (!Objects.equals(columnComments, newView.columnComments)) {
+            sb.setLength(sb.length() + 1);
+        }
+    }
+
     private void alterColumnComments(final StringBuilder sb, final PgView newView) {
-        for (final Entry<String, String> columnComment : newView.columnComments.entrySet()) {
-            String newColumn = columnComment.getKey();
-            String newValue = columnComment.getValue();
+        for (final Entry<String, String> newColumnComment : newView.columnComments.entrySet()) {
+            String newColumn = newColumnComment.getKey();
+            String newValue = newColumnComment.getValue();
 
             String oldValue = columnComments.get(newColumn);
             if (!Objects.equals(oldValue, newValue)) {

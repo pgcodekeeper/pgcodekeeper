@@ -49,6 +49,7 @@ public class ApplyCustomDialog extends Dialog {
     private Button btnScriptFromSelObjs;
     private Button btnGenerateExists;
     private Button btndropBeforeCreate;
+    private Button btnCommInScriptEnd;
     private Button btnAddPrePostScript;
     private Button btnDataMovementMode;
 
@@ -95,7 +96,10 @@ public class ApplyCustomDialog extends Dialog {
         btndropBeforeCreate = createCustomButton(panel, DB_UPDATE_PREF.DROP_BEFORE_CREATE,
                 Messages.DbUpdatePrefPage_option_drop_object);
 
-        btnAddPrePostScript = createCustomButton(panel, DB_UPDATE_PREF.DROP_BEFORE_CREATE,
+        btnCommInScriptEnd = createCustomButton(panel, DB_UPDATE_PREF.COMMENTS_TO_END,
+                Messages.DbUpdatePrefPage_comments_to_end);
+
+        btnAddPrePostScript = createCustomButton(panel, DB_UPDATE_PREF.ADD_PRE_POST_SCRIPT,
                 Messages.DbUpdatePrefPage_add_pre_post_script);
 
         if (dbType == DatabaseType.PG) {
@@ -146,6 +150,8 @@ public class ApplyCustomDialog extends Dialog {
                 btnGenerateExists.getSelection());
         customSettings.put(DB_UPDATE_PREF.DROP_BEFORE_CREATE,
                 btndropBeforeCreate.getSelection());
+        customSettings.put(DB_UPDATE_PREF.COMMENTS_TO_END,
+                btnCommInScriptEnd.getSelection());
         customSettings.put(DB_UPDATE_PREF.ADD_PRE_POST_SCRIPT,
                 btnAddPrePostScript.getSelection());
         if (dbType == DatabaseType.PG) {

@@ -49,6 +49,4 @@ public final class PgShellType extends AbstractType{
     public boolean compare(PgStatement obj) {
         return obj instanceof PgShellType && super.compare(obj);
     }
-
-
 }

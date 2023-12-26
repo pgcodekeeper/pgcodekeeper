@@ -234,6 +234,8 @@ public final class Messages extends NLS {
 
     public static String CodeFilter_search_by_code;
 
+    public static String DbUpdatePrefPage_comments_to_end;
+
     public static String CommitDialog_privileges_must_be_saved;
 
     public static String CommitDialog_save_privileges;

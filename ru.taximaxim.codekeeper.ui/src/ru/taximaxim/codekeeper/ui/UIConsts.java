@@ -114,6 +114,7 @@ public interface UIConsts {
         String DATA_MOVEMENT_MODE = "prefDataMovementMode"; //$NON-NLS-1$
         String GENERATE_EXISTS = "prefGenerateExist"; //$NON-NLS-1$
         String DROP_BEFORE_CREATE = "prefDropBeforeCreate"; //$NON-NLS-1$
+        String COMMENTS_TO_END = "prefCommmentsToEnd"; //$NON-NLS-1$
     }
 
     interface PG_EDIT_PREF {

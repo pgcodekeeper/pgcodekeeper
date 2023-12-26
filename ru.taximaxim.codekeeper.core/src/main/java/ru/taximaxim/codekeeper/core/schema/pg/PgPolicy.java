@@ -116,15 +116,12 @@ public class PgPolicy extends PgStatementWithSearchPath {
         }
         sbSQL.append(';');
 
-        if (comment != null && !comment.isEmpty()) {
-            appendCommentSql(sbSQL);
-        }
-
         return sbSQL.toString();
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+            AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         PgPolicy newPolice = (PgPolicy) newCondition;
 
@@ -161,10 +158,7 @@ public class PgPolicy extends PgStatementWithSearchPath {
             }
             sb.append(';');
         }
-
-        if (!Objects.equals(getComment(), newPolice.getComment())) {
-            newPolice.appendCommentSql(sb);
-        }
+        compareComments(sb, newPolice);
 
         return sb.length() > startLength;
     }

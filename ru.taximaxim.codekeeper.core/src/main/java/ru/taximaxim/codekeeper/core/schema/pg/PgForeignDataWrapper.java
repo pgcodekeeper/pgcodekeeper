@@ -122,9 +122,6 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
         appendOwnerSQL(sb);
         appendPrivileges(sb);
 
-        if (comment != null && !comment.isEmpty()) {
-            appendCommentSql(sb);
-        }
         return sb.toString();
     }
 
@@ -164,10 +161,8 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
             newForeign.appendOwnerSQL(sb);
         }
         alterPrivileges(newCondition, sb);
+        compareComments(sb, newForeign);
 
-        if (!Objects.equals(newForeign.getComment(), getComment())) {
-            newForeign.appendCommentSql(sb);
-        }
         return sb.length() > startLength;
     }
 

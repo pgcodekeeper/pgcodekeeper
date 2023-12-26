@@ -60,7 +60,7 @@ public abstract class PgStatement implements IStatement, IHashable {
     public static final String GO = "\nGO";
     protected final String name;
     protected String owner;
-    protected String comment;
+    private String comment;
     private final Set<PgPrivilege> privileges = new LinkedHashSet<>();
 
     private PgStatement parent;
@@ -211,27 +211,33 @@ public abstract class PgStatement implements IStatement, IHashable {
         setComment(args.isKeepNewlines() ? comment : comment.replace("\r", ""));
     }
 
-    protected void appendComments(StringBuilder sb) {
-        appendComments(sb, Collections.emptyList());
-    }
-
-    protected void appendComments(StringBuilder sb, List<AbstractColumn> columns) {
-        if (comment != null && !comment.isEmpty()) {
+    public void appendComments(StringBuilder sb) {
+        if (checkComments()) {
             appendCommentSql(sb);
         }
+    }
 
-        for (final AbstractColumn column : columns) {
-            if (column.getComment() != null && !column.getComment().isEmpty()) {
-                column.appendCommentSql(sb);
-            }
+    public boolean checkComments() {
+        return comment != null && !comment.isEmpty();
+    }
+
+    public void appendAlterComments(StringBuilder sb, PgStatement newObj) {
+        if (!Objects.equals(getComment(), newObj.getComment())) {
+            newObj.appendCommentSql(sb);
         }
     }
 
-    public void appendCommentSql(StringBuilder sb) {
+    public void compareComments(StringBuilder sb, PgStatement newObj) {
+        if (!Objects.equals(getComment(), newObj.getComment())) {
+            sb.setLength(sb.length() + 1);
+        }
+    }
+
+    protected void appendCommentSql(StringBuilder sb) {
         sb.append("\n\n").append("COMMENT ON ").append(getTypeName()).append(' ');
         appendFullName(sb);
         sb.append(" IS ")
-        .append(comment == null || comment.isEmpty() ? "NULL" : comment).append(';');
+        .append(checkComments() ? comment : "NULL").append(';');
     }
 
     public Set<PgPrivilege> getPrivileges() {
@@ -424,15 +430,13 @@ public abstract class PgStatement implements IStatement, IHashable {
     public abstract String getCreationSQL();
 
     public String getFullSQL() {
-        return getCreationSQL();
+        StringBuilder sb = new StringBuilder(getCreationSQL());
+        appendComments(sb);
+        return sb.toString();
     }
 
     public String getFullFormattedSQL() {
         return formatSQL(getFullSQL());
-    }
-
-    public String getFormattedCreationSQL() {
-        return formatSQL(getCreationSQL());
     }
 
     private String formatSQL(String sql) {

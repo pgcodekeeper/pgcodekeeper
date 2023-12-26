@@ -71,8 +71,17 @@ public abstract class AbstractPgTable extends AbstractTable {
         appendPrivileges(sbSQL);
         appendColumnsPriliges(sbSQL);
         appendColumnsStatistics(sbSQL);
-        appendComments(sbSQL, getColumns());
+
         return sbSQL.toString();
+    }
+
+    @Override
+    public void appendComments(StringBuilder sb) {
+        super.appendComments(sb);
+
+        for (final AbstractColumn column : getColumns()) {
+            column.appendComments(sb);
+        }
     }
 
     /**
@@ -194,7 +203,7 @@ public abstract class AbstractPgTable extends AbstractTable {
         compareOwners(newTable, sb);
         compareTableOptions(newTable, sb);
         alterPrivileges(newTable, sb);
-        compareComment(newTable, sb);
+        compareComments(sb, newTable);
 
         return sb.length() > startLength;
     }

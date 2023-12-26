@@ -62,10 +62,6 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
         appendOwnerSQL(sbSQL);
         appendPrivileges(sbSQL);
 
-        if (comment != null && !comment.isEmpty()) {
-            appendCommentSql(sbSQL);
-        }
-
         return sbSQL.toString();
     }
 
@@ -98,10 +94,7 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
         }
 
         alterPrivileges(newFunction, sb);
-
-        if (!Objects.equals(getComment(), newFunction.getComment())) {
-            newFunction.appendCommentSql(sb);
-        }
+        compareComments(sb, newFunction);
 
         return sb.length() > startLength;
     }
