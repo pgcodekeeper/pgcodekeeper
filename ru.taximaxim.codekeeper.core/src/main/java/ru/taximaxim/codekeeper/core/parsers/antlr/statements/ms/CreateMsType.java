@@ -20,7 +20,6 @@ import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Column_def_table_constraintContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Column_optionContext;
@@ -57,7 +56,7 @@ public class CreateMsType extends MsParserAbstract {
         } else if (def.EXTERNAL() != null) {
             String assemblyName = def.assembly_name.getText();
             type.setAssemblyName(assemblyName);
-            addDepSafe(type, Arrays.asList(def.assembly_name), DbObjType.ASSEMBLY, DatabaseType.MS);
+            addDepSafe(type, Arrays.asList(def.assembly_name), DbObjType.ASSEMBLY);
             String assemblyClass;
             if (def.class_name != null) {
                 assemblyClass = def.class_name.getText();

@@ -17,7 +17,6 @@ package ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg;
 
 import java.util.Arrays;
 
-import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Cast_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_cast_statementContext;
@@ -51,7 +50,7 @@ public class CreateCast extends PgParserAbstract {
         if (funcNameCtx != null) {
             cast.setMethod(CastMethod.FUNCTION);
             String args = getFullCtxText(ctx.function_args());
-            addDepSafe(cast, getIdentifiers(funcNameCtx), DbObjType.FUNCTION, DatabaseType.PG, args);
+            addDepSafe(cast, getIdentifiers(funcNameCtx), DbObjType.FUNCTION, args);
             cast.setFunction(getFullCtxText(funcNameCtx) + args);
         } else if (ctx.INOUT() != null) {
             cast.setMethod(CastMethod.INOUT);

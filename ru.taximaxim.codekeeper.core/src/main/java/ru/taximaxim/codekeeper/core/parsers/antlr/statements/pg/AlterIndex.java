@@ -19,7 +19,6 @@ import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Alter_index_statementContext;
@@ -66,7 +65,7 @@ public class AlterIndex extends PgParserAbstract {
             String inhSchemaName = getSchemaNameSafe(ids);
             String inhTableName = QNameParser.getFirstName(ids);
             doSafe((i,o) -> i.addInherit(inhSchemaName, inhTableName), index, null);
-            addDepSafe(index, ids, DbObjType.INDEX, DatabaseType.PG);
+            addDepSafe(index, ids, DbObjType.INDEX);
 
             addObjReference(idsInh, DbObjType.INDEX, ACTION_ALTER);
         } else {

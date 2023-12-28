@@ -73,7 +73,12 @@ public abstract class PgParserAbstract extends ParserAbstract {
         super(db);
     }
 
-    protected static void fillSimpleColumns(ISimpleColumnContainer cont,
+    @Override
+    protected DatabaseType getDbType() {
+        return DatabaseType.PG;
+    }
+
+    protected void fillSimpleColumns(ISimpleColumnContainer cont,
             List<Index_columnContext> cols, List<All_opContext> operators) {
         // we need this variable for take correct context from List
         int counter = 0;
@@ -86,6 +91,7 @@ public abstract class PgParserAbstract extends ParserAbstract {
             } else {
                 simpCol = new SimpleColumn(getFullCtxText(col.column.vex()));
                 simpCol.setCollation(getFullCtxText(collate.collation));
+                addDepSafe((PgStatement) cont, getIdentifiers(collate.collation), DbObjType.COLLATION);
             }
 
             var opClass = col.operator_class;
@@ -141,7 +147,7 @@ public abstract class PgParserAbstract extends ParserAbstract {
     protected void addTypeDepcy(Data_typeContext ctx, PgStatement st) {
         Schema_qualified_name_nontypeContext qname = ctx.predefined_type().schema_qualified_name_nontype();
         if (qname != null && qname.identifier() != null) {
-            addDepSafe(st, getIdentifiers(qname), DbObjType.TYPE, DatabaseType.PG);
+            addDepSafe(st, getIdentifiers(qname), DbObjType.TYPE);
         }
     }
 

@@ -51,6 +51,7 @@ public class CreateDomain extends PgParserAbstract {
         addTypeDepcy(ctx.dat_type, domain);
         for (Collate_identifierContext coll : ctx.collate_identifier()) {
             domain.setCollation(getFullCtxText(coll.collation));
+            addDepSafe(domain, getIdentifiers(coll.collation), DbObjType.COLLATION);
         }
         VexContext exp = ctx.def_value;
         if (exp != null) {

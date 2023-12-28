@@ -24,7 +24,6 @@ import java.util.Map;
 
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcReader;
@@ -47,9 +46,7 @@ public class FtsConfigurationsReader extends JdbcReader {
         String parserSchema = res.getString("prsnspname");
         String parserName = res.getString("prsname");
         config.setParser(PgDiffUtils.getQuotedName(parserSchema) + '.' + PgDiffUtils.getQuotedName(parserName));
-        if (!Utils.isPgSystemSchema(parserSchema)) {
-            config.addDep(new GenericColumn(parserSchema, parserName, DbObjType.FTS_PARSER));
-        }
+        addDep(config, parserSchema, parserName, DbObjType.FTS_PARSER);
 
         String[] fragments = getColArray(res, "tokennames");
         String[] dictSchemas = getColArray(res, "dictschemas");

@@ -360,21 +360,21 @@ public abstract class ParserAbstract {
         }
     }
 
-    protected void addDepSafe(PgStatement st, List<? extends ParserRuleContext> ids,
-            DbObjType type, DatabaseType dbType) {
-        addDepSafe(st, ids, type, dbType, null);
+    protected void addDepSafe(PgStatement st, List<? extends ParserRuleContext> ids, DbObjType type) {
+        addDepSafe(st, ids, type, null);
     }
 
-    protected void addDepSafe(PgStatement st, List<? extends ParserRuleContext> ids,
-            DbObjType type, DatabaseType dbType, String signature) {
+    protected void addDepSafe(PgStatement st, List<? extends ParserRuleContext> ids, DbObjType type, String signature) {
         PgObjLocation loc = getLocation(ids, type, null, true, signature, LocationType.REFERENCE);
-        if (loc != null && !Utils.isSystemSchema(loc.getSchema(), dbType)) {
+        if (loc != null && !Utils.isSystemSchema(loc.getSchema(), getDbType())) {
             if (!refMode) {
                 st.addDep(loc.getObj());
             }
             db.addReference(fileName, loc);
         }
     }
+
+    protected abstract DatabaseType getDbType();
 
     protected AbstractSchema getSchemaSafe(List<? extends ParserRuleContext> ids) {
         ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);

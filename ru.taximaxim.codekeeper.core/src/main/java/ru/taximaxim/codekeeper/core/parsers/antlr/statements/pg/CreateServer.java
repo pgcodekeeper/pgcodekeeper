@@ -18,7 +18,6 @@ package ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg;
 import java.util.Arrays;
 import java.util.List;
 
-import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_server_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Define_foreign_optionsContext;
@@ -47,7 +46,7 @@ public class CreateServer extends PgParserAbstract {
             server.setVersion(getFullCtxText(ctx.version));
         }
         server.setFdw(ids.get(1).getText());
-        addDepSafe(server, Arrays.asList(ids.get(1)), DbObjType.FOREIGN_DATA_WRAPPER, DatabaseType.PG);
+        addDepSafe(server, Arrays.asList(ids.get(1)), DbObjType.FOREIGN_DATA_WRAPPER);
 
         Define_foreign_optionsContext options = ctx.define_foreign_options();
         if (options!= null) {

@@ -242,6 +242,8 @@ class PgDiffDepciesTest {
             // пользователь изменил ConstraintPk
             // пользователь выбрал только таблицу с ConstraintPk
             "change_constrPk_usr",
+            // CREATE objects with collation dependency, USER SELECTION: all except collations
+            "add_objects_with_collation_usr_all",
     })
 
     void runDiff(final String userSelTemplate) throws IOException, InterruptedException {

@@ -133,7 +133,7 @@ public class TriggersReader extends JdbcReader {
         functionCall.append(')');
         t.setFunction(functionCall.toString());
 
-        t.addDep(new GenericColumn(funcSchema, funcName + "()", DbObjType.FUNCTION));
+        addDep(t, funcSchema, funcName + "()", DbObjType.FUNCTION);
 
         if (res.getLong("tgconstraint") != 0) {
             t.setConstraint(true);
@@ -146,7 +146,7 @@ public class TriggersReader extends JdbcReader {
                 sb.append(PgDiffUtils.getQuotedName(refRelName));
 
                 t.setRefTableName(sb.toString());
-                t.addDep(new GenericColumn(refSchemaName, refRelName, DbObjType.TABLE));
+                addDep(t, refSchemaName, refRelName, DbObjType.TABLE);
             }
 
             // before PostgreSQL 9.5
@@ -155,7 +155,7 @@ public class TriggersReader extends JdbcReader {
             }
         }
 
-        //after Postgresql 10
+        // after Postgresql 10
         if (SupportedVersion.VERSION_10.isLE(loader.getVersion())) {
             t.setOldTable(res.getString("tgoldtable"));
             t.setNewTable(res.getString("tgnewtable"));
@@ -163,9 +163,9 @@ public class TriggersReader extends JdbcReader {
 
         String[] arrCols = getColArray(res, "cols");
         if (arrCols != null) {
-            for (String col_name : arrCols) {
-                t.addUpdateColumn(col_name);
-                t.addDep(new GenericColumn(schemaName, tableName, col_name, DbObjType.COLUMN));
+            for (String colName : arrCols) {
+                t.addUpdateColumn(colName);
+                t.addDep(new GenericColumn(schemaName, tableName, colName, DbObjType.COLUMN));
             }
         }
 

@@ -209,6 +209,7 @@ public abstract class TableAbstract extends PgParserAbstract {
         }
         if (collate != null) {
             col.setCollation(getFullCtxText(collate.collation));
+            addDepSafe(col, getIdentifiers(collate.collation), DbObjType.COLLATION);
         }
         for (Constraint_commonContext column_constraint : constraints) {
             addTableConstraint(column_constraint, col, table, schemaName);
@@ -248,7 +249,7 @@ public abstract class TableAbstract extends PgParserAbstract {
         String inhSchemaName = getSchemaNameSafe(idsInh);
         String inhTableName = QNameParser.getFirstName(idsInh);
         table.addInherits(inhSchemaName, inhTableName);
-        addDepSafe(table, idsInh, DbObjType.TABLE, table.getDbType());
+        addDepSafe(table, idsInh, DbObjType.TABLE);
     }
 
     protected static PgConstraint createTableConstraintBlank(Constraint_commonContext ctx) {

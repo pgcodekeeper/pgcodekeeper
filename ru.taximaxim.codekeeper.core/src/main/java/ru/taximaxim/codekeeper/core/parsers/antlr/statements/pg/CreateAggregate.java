@@ -20,7 +20,6 @@ import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
@@ -187,7 +186,7 @@ public class CreateAggregate extends PgParserAbstract {
 
                     if (schemaNameCxt != null) {
                         addDepSafe(aggregate, Arrays.asList(schemaNameCxt, op),
-                                DbObjType.OPERATOR, DatabaseType.PG, getSortOperSign(aggregate));
+                                DbObjType.OPERATOR, getSortOperSign(aggregate));
                     }
                 } else if (paramOpt.PARALLEL() != null) {
                     String parallel = null;
@@ -236,7 +235,7 @@ public class CreateAggregate extends PgParserAbstract {
         ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
         if (schemaCtx != null) {
             addDepSafe(aggr, Arrays.asList(schemaCtx, QNameParser.getFirstNameCtx(ids)),
-                    DbObjType.FUNCTION, DatabaseType.PG, getParamFuncSignature(aggr, paramName));
+                    DbObjType.FUNCTION, getParamFuncSignature(aggr, paramName));
         }
     }
 

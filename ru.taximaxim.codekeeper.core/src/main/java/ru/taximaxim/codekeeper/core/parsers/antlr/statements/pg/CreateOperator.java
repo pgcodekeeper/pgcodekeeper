@@ -19,7 +19,6 @@ import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
@@ -96,7 +95,7 @@ public class CreateOperator extends PgParserAbstract {
         if (funcCtx != null) {
             oper.setProcedure(getFullCtxText(funcCtx));
             List<ParserRuleContext> funcIds = getIdentifiers(funcCtx);
-            addDepSafe(oper, funcIds, DbObjType.FUNCTION, DatabaseType.PG, arguments);
+            addDepSafe(oper, funcIds, DbObjType.FUNCTION, arguments);
             db.addAnalysisLauncher(new OperatorAnalysisLauncher(
                     oper, getOperatorFunction(oper, funcIds), fileName));
         }
@@ -104,13 +103,13 @@ public class CreateOperator extends PgParserAbstract {
         if (restCtx != null) {
             oper.setRestrict(getFullCtxText(restCtx));
             List<ParserRuleContext> funcIds = getIdentifiers(restCtx);
-            addDepSafe(oper, funcIds, DbObjType.FUNCTION, DatabaseType.PG, arguments);
+            addDepSafe(oper, funcIds, DbObjType.FUNCTION, arguments);
         }
 
         if (joinCtx != null) {
             oper.setJoin(getFullCtxText(joinCtx));
             List<ParserRuleContext> funcIds = getIdentifiers(joinCtx);
-            addDepSafe(oper, funcIds, DbObjType.FUNCTION, DatabaseType.PG, arguments);
+            addDepSafe(oper, funcIds, DbObjType.FUNCTION, arguments);
         }
 
 

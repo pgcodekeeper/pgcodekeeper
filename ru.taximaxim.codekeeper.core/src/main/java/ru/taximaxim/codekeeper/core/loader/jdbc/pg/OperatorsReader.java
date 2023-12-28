@@ -20,7 +20,6 @@ import java.sql.SQLException;
 
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcReader;
@@ -109,10 +108,7 @@ public class OperatorsReader extends JdbcReader {
         StringBuilder sb = new StringBuilder();
         if (!Consts.PG_CATALOG.equalsIgnoreCase(schemaName)) {
             sb.append(PgDiffUtils.getQuotedName(schemaName)).append('.');
-            if (!Utils.isPgSystemSchema(schemaName)) {
-                String name = funcName + oper.getArguments();
-                oper.addDep(new GenericColumn(schemaName, name, DbObjType.FUNCTION));
-            }
+            addDep(oper, schemaName, funcName + oper.getArguments(), DbObjType.FUNCTION);
         }
         sb.append(PgDiffUtils.getQuotedName(funcName));
         return sb.toString();

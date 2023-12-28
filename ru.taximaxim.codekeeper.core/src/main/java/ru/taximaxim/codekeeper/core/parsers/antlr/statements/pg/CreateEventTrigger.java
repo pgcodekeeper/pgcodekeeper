@@ -18,7 +18,6 @@ package ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg;
 import java.util.Arrays;
 import java.util.Locale;
 
-import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Character_stringContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_event_trigger_statementContext;
@@ -56,7 +55,7 @@ public class CreateEventTrigger extends PgParserAbstract {
 
         Schema_qualified_name_nontypeContext funcNameCtx = ctx.func_name.schema_qualified_name_nontype();
         if (funcNameCtx.schema != null) {
-            addDepSafe(eventTrigger, getIdentifiers(funcNameCtx), DbObjType.FUNCTION, DatabaseType.PG, "()");
+            addDepSafe(eventTrigger, getIdentifiers(funcNameCtx), DbObjType.FUNCTION, "()");
         }
         addSafe(db, eventTrigger, Arrays.asList(ctx.name));
     }

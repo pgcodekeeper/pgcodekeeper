@@ -127,7 +127,7 @@ public class TablesReader extends JdbcReader {
 
             for (int i = 0; i < inhrelnames.length; ++i) {
                 t.addInherits(inhnspnames[i], inhrelnames[i]);
-                t.addDep(new GenericColumn(inhnspnames[i], inhrelnames[i], DbObjType.TABLE));
+                addDep(t, inhnspnames[i], inhrelnames[i], DbObjType.TABLE);
             }
         }
 
@@ -306,8 +306,11 @@ public class TablesReader extends JdbcReader {
             // unbox
             long collation = colCollation[i];
             if (collation != 0 && collation != colTypCollation[i] && column.getType() != null) {
-                column.setCollation(PgDiffUtils.getQuotedName(colCollationSchema[i])
-                        + '.' + PgDiffUtils.getQuotedName(colCollationName[i]));
+                String collationSchema = colCollationSchema[i];
+                String collationName = colCollationName[i];
+                column.setCollation(PgDiffUtils.getQuotedName(collationSchema) + '.' +
+                        PgDiffUtils.getQuotedName(collationName));
+                addDep(column, collationSchema, collationName, DbObjType.COLLATION);
             }
 
             if (colHasDefault[i]) {

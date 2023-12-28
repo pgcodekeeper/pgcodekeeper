@@ -50,6 +50,11 @@ public class CreateIndex extends PgParserAbstract {
         this.stream = stream;
     }
 
+    public static void parseIndex(Index_restContext rest, String tablespace, String schemaName, String tableName,
+            PgIndex ind, PgDatabase db, String location, CommonTokenStream stream) {
+        new CreateIndex(null, db, tablespace, stream).parseIndex(rest, schemaName, tableName, ind, location);
+    }
+
     @Override
     public void parseObject() {
         List<ParserRuleContext> ids = getIdentifiers(ctx.table_name);
@@ -60,7 +65,7 @@ public class CreateIndex extends PgParserAbstract {
         IdentifierContext nameCtx = ctx.name;
         String name = nameCtx != null ? nameCtx.getText() : "";
         PgIndex ind = new PgIndex(name);
-        parseIndex(ctx.index_rest(), tablespace, schemaName, tableName, ind, db, fileName, stream);
+        parseIndex(ctx.index_rest(), schemaName, tableName, ind, fileName);
         ind.setUnique(ctx.UNIQUE() != null);
 
         if (nameCtx != null) {
@@ -71,8 +76,7 @@ public class CreateIndex extends PgParserAbstract {
         }
     }
 
-    public static void parseIndex(Index_restContext rest, String tablespace,
-            String schemaName, String tableName, PgIndex ind, PgDatabase db, String location, CommonTokenStream stream) {
+    private void parseIndex(Index_restContext rest, String schemaName, String tableName, PgIndex ind, String location) {
         db.addAnalysisLauncher(new IndexAnalysisLauncher(ind, rest, location));
 
         fillSimpleColumns(ind, rest.index_columns().index_column(), null);
