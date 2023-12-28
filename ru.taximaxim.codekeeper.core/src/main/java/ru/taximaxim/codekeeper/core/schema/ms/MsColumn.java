@@ -158,14 +158,29 @@ public class MsColumn extends AbstractColumn {
         return sb.toString();
     }
 
-    private void compareOption(boolean oldOption, boolean newOption,
-            String optionName, StringBuilder sb) {
-        if (oldOption != newOption) {
-            sb.append(getAlterColumn(true, false, name));
-            sb.append(newOption ? " ADD " : " DROP ");
-            sb.append(optionName);
-            sb.append(GO);
+    private void compareOption(boolean oldOption, boolean newOption, String optionName, StringBuilder sb) {
+        compareOption(oldOption, newOption, optionName, sb, null);
+    }
+    
+    private void compareOption(boolean oldOption, boolean newOption, String optionName, StringBuilder sb,
+            AtomicBoolean isNeedDepcies) {
+
+        if (oldOption == newOption) {
+            return;
         }
+        
+        /* 
+         * we can set PERSISTED without drop dependencies, but can't simple drop this option
+         * for first we have to drop dependencies
+         */
+        if (isNeedDepcies != null && (!"PERSISTED".equalsIgnoreCase(optionName) || oldOption)) {
+                isNeedDepcies.set(true);
+        }
+        
+        sb.append(getAlterColumn(true, false, name));
+        sb.append(newOption ? " ADD " : " DROP ");
+        sb.append(optionName);
+        sb.append(GO);
     }
 
     @Override
@@ -182,7 +197,6 @@ public class MsColumn extends AbstractColumn {
             return true;
         }
 
-
         boolean isNeedDropDefault = !Objects.equals(getType(), newColumn.getType())
                 && (!Objects.equals(getDefaultValue(), newColumn.getDefaultValue())
                         || !Objects.equals(getDefaultName(), newColumn.getDefaultName()));
@@ -198,13 +212,13 @@ public class MsColumn extends AbstractColumn {
         compareDefaults(oldDefaultName, oldDefault, newColumn.getDefaultName(),
                 newColumn.getDefaultValue(), sb);
 
-        compareNullValues(newColumn, sb);
+        compareNullValues(newColumn, sb, isNeedDepcies);
         compareMaskingFunctions(newColumn, sb);
 
         compareOption(isNotForRep(), newColumn.isNotForRep(), "NOT FOR REPLICATION", sb);
-        compareOption(isSparse(), newColumn.isSparse(), "SPARSE", sb);
+        compareOption(isSparse(), newColumn.isSparse(), "SPARSE", sb, isNeedDepcies);
         compareOption(isRowGuidCol(), newColumn.isRowGuidCol(), "ROWGUIDCOL", sb);
-        compareOption(isPersisted(), newColumn.isPersisted(), "PERSISTED", sb);
+        compareOption(isPersisted(), newColumn.isPersisted(), "PERSISTED", sb, isNeedDepcies);
 
         alterPrivileges(newColumn, sb);
 
@@ -253,7 +267,7 @@ public class MsColumn extends AbstractColumn {
         }
     }
 
-    private void compareNullValues(MsColumn newColumn, StringBuilder sb) {
+    private void compareNullValues(MsColumn newColumn, StringBuilder sb, AtomicBoolean isNeedDepcies) {
         if (newColumn.getNullValue() != getNullValue()) {
             if (newColumn.getDefaultValue() != null && getNullValue() && !newColumn.getNullValue()) {
                 appendUpdate(sb);
@@ -268,6 +282,7 @@ public class MsColumn extends AbstractColumn {
 
             sb.append(newColumn.getNullValue() ? NULL : NOT_NULL);
             sb.append(GO);
+            isNeedDepcies.set(true);
         }
     }
 
