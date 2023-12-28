@@ -145,6 +145,13 @@ public abstract class JdbcReader extends AbstractStatementReader {
         setter.accept(statement, function);
     }
 
+    protected void addDep(PgStatement statement, String schemaName, String name, DbObjType type) {
+        if (schemaName != null && !Utils.isPgSystemSchema(schemaName)) {
+            statement.addDep(new GenericColumn(schemaName, DbObjType.SCHEMA));
+            statement.addDep(new GenericColumn(schemaName, name, type));
+        }
+    }
+
     protected abstract void processResult(ResultSet result, AbstractSchema schema)
             throws SQLException, XmlReaderException;
 

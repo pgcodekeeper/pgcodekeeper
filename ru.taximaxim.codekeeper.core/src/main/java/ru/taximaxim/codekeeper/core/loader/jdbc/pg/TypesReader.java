@@ -92,8 +92,10 @@ public final class TypesReader extends JdbcReader {
 
         long collation = res.getLong("typcollation");
         if (collation != 0 && collation != res.getLong("dom_basecollation")) {
-            d.setCollation(PgDiffUtils.getQuotedName(res.getString("dom_collationnspname"))
-                    + '.' + PgDiffUtils.getQuotedName(res.getString("dom_collationname")));
+            String collationSchema = res.getString("dom_collationnspname");
+            String collationName = res.getString("dom_collationname");
+            d.setCollation(PgDiffUtils.getQuotedName(collationSchema) + '.' + PgDiffUtils.getQuotedName(collationName));
+            addDep(d, schemaName, collationName, DbObjType.COLLATION);
         }
 
         PgDatabase dataBase = schema.getDatabase();
@@ -281,8 +283,11 @@ public final class TypesReader extends JdbcReader {
             // unbox
             long attcollation = attcollations[i];
             if (attcollation != 0 && attcollation != atttypcollations[i]) {
-                a.setCollation(PgDiffUtils.getQuotedName(attcollationnspnames[i])
-                        + '.' + PgDiffUtils.getQuotedName(attcollationnames[i]));
+                String collationSchema = attcollationnspnames[i];
+                String collationName = attcollationnames[i];
+                a.setCollation(PgDiffUtils.getQuotedName(collationSchema) + '.' +
+                        PgDiffUtils.getQuotedName(collationName));
+                addDep(t, collationSchema, collationName, DbObjType.COLLATION);
             }
             t.addAttr(a);
             if (attcomments[i] != null && !attcomments[i].isEmpty()) {
@@ -318,8 +323,10 @@ public final class TypesReader extends JdbcReader {
 
         long collation = res.getLong("rngcollation");
         if (collation != 0 && collation != res.getLong("rngsubtypcollation")) {
-            t.setCollation(PgDiffUtils.getQuotedName(res.getString("rngcollationnspname"))
-                    + '.' + PgDiffUtils.getQuotedName(res.getString("rngcollationname")));
+            String collationSchema = res.getString("rngcollationnspname");
+            String collationName = res.getString("rngcollationname");
+            t.setCollation(PgDiffUtils.getQuotedName(collationSchema) + '.' + PgDiffUtils.getQuotedName(collationName));
+            addDep(t, collationSchema, collationName, DbObjType.COLLATION);
         }
 
         if (res.getBoolean("rngcanonicalset")) {

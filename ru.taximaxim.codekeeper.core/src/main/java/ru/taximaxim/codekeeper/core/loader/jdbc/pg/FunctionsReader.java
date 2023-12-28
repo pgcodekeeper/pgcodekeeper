@@ -419,9 +419,8 @@ public class FunctionsReader extends JdbcReader {
                     .append('.').append(sortOpName).append(')');
             aggregate.setSortOp(sb.toString());
 
-            aggregate.addDep(new GenericColumn(operSchemaName,
-                    sortOpName + CreateAggregate.getSortOperSign(aggregate),
-                    DbObjType.OPERATOR));
+            String operName = sortOpName + CreateAggregate.getSortOperSign(aggregate);
+            addDep(aggregate, operSchemaName, operName, DbObjType.OPERATOR);
         }
     }
 
@@ -431,8 +430,8 @@ public class FunctionsReader extends JdbcReader {
         }
         StringBuilder sb = new StringBuilder();
         if (!Consts.PG_CATALOG.equalsIgnoreCase(schemaName)) {
-            agg.addDep(new GenericColumn(schemaName,
-                    funcName + CreateAggregate.getParamFuncSignature(agg, funcType), DbObjType.FUNCTION));
+            addDep(agg, schemaName, funcName + CreateAggregate.getParamFuncSignature(agg, funcType),
+                    DbObjType.FUNCTION);
             sb.append(PgDiffUtils.getQuotedName(schemaName)).append('.');
         }
         sb.append(PgDiffUtils.getQuotedName(funcName));

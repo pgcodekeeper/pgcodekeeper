@@ -19,7 +19,6 @@ import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_fts_parser_statementContext;
@@ -46,25 +45,20 @@ public class CreateFtsParser extends PgParserAbstract {
          */
 
         parser.setStartFunction(getFullCtxText(ctx.start_func));
-        addDepSafe(parser, getIdentifiers(ctx.start_func), DbObjType.FUNCTION, DatabaseType.PG,
-                "(internal, integer)");
+        addDepSafe(parser, getIdentifiers(ctx.start_func), DbObjType.FUNCTION, "(internal, integer)");
 
         parser.setGetTokenFunction(getFullCtxText(ctx.gettoken_func));
-        addDepSafe(parser, getIdentifiers(ctx.gettoken_func), DbObjType.FUNCTION, DatabaseType.PG,
-                "(internal, internal, internal)");
+        addDepSafe(parser, getIdentifiers(ctx.gettoken_func), DbObjType.FUNCTION, "(internal, internal, internal)");
 
         parser.setEndFunction(getFullCtxText(ctx.end_func));
-        addDepSafe(parser, getIdentifiers(ctx.end_func), DbObjType.FUNCTION, DatabaseType.PG,
-                "(internal)");
+        addDepSafe(parser, getIdentifiers(ctx.end_func), DbObjType.FUNCTION, "(internal)");
 
         parser.setLexTypesFunction(getFullCtxText(ctx.lextypes_func));
-        addDepSafe(parser, getIdentifiers(ctx.lextypes_func), DbObjType.FUNCTION, DatabaseType.PG,
-                "(internal)");
+        addDepSafe(parser, getIdentifiers(ctx.lextypes_func), DbObjType.FUNCTION, "(internal)");
 
         if (ctx.headline_func != null) {
             parser.setHeadLineFunction(getFullCtxText(ctx.headline_func));
-            addDepSafe(parser, getIdentifiers(ctx.headline_func), DbObjType.FUNCTION, DatabaseType.PG,
-                    "(internal, internal, tsquery)");
+            addDepSafe(parser, getIdentifiers(ctx.headline_func), DbObjType.FUNCTION, "(internal, internal, tsquery)");
         }
 
         addSafe(getSchemaSafe(ids), parser, ids);

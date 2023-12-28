@@ -19,14 +19,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcReader;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
-import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.pg.PgFtsDictionary;
 
 public class FtsDictionariesReader extends JdbcReader {
@@ -50,9 +48,7 @@ public class FtsDictionariesReader extends JdbcReader {
         String tmplname = res.getString("tmplname");
         String templateSchema = res.getString("tmplnspname");
 
-        if (!Utils.isPgSystemSchema(templateSchema)) {
-            dic.addDep(new GenericColumn(templateSchema, tmplname, DbObjType.FTS_TEMPLATE));
-        }
+        addDep(dic, templateSchema, tmplname, DbObjType.FTS_TEMPLATE);
 
         dic.setTemplate(PgDiffUtils.getQuotedName(templateSchema) + '.'
                 + PgDiffUtils.getQuotedName(tmplname));

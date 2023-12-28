@@ -64,6 +64,11 @@ public abstract class MsParserAbstract extends ParserAbstract {
         super(db);
     }
 
+    @Override
+    protected DatabaseType getDbType() {
+        return DatabaseType.MS;
+    }
+
     protected AbstractConstraint getMsPKConstraint(String schema, String table, String conName,
             Table_constraint_bodyContext body) {
         var constrPk = new MsConstraintPk(conName, body.PRIMARY() != null);
@@ -286,7 +291,7 @@ public abstract class MsParserAbstract extends ParserAbstract {
     protected void addTypeDepcy(Data_typeContext ctx, PgStatement st) {
         Qualified_nameContext qname = ctx.qualified_name();
         if (qname != null && qname.schema != null) {
-            addDepSafe(st, Arrays.asList(qname.schema, qname.name), DbObjType.TYPE, DatabaseType.MS);
+            addDepSafe(st, Arrays.asList(qname.schema, qname.name), DbObjType.TYPE);
         }
     }
 

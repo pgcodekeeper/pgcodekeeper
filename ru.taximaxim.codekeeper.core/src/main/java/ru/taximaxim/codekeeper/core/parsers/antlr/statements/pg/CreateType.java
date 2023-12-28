@@ -20,7 +20,6 @@ import java.util.List;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Character_stringContext;
@@ -96,14 +95,15 @@ public final class CreateType extends PgParserAbstract {
         }
         if (ctx.collation != null) {
             type.setCollation(getFullCtxText(ctx.collation));
+            addDepSafe(type, getIdentifiers(ctx.collation), DbObjType.COLLATION);
         }
         if (ctx.canonical_function != null) {
             type.setCanonical(getFullCtxText(ctx.canonical_function));
-            addDepSafe(type, getIdentifiers(ctx.canonical_function), DbObjType.FUNCTION, DatabaseType.PG);
+            addDepSafe(type, getIdentifiers(ctx.canonical_function), DbObjType.FUNCTION);
         }
         if (ctx.subtype_diff_function != null) {
             type.setSubtypeDiff(getFullCtxText(ctx.subtype_diff_function));
-            addDepSafe(type, getIdentifiers(ctx.subtype_diff_function), DbObjType.FUNCTION, DatabaseType.PG);
+            addDepSafe(type, getIdentifiers(ctx.subtype_diff_function), DbObjType.FUNCTION);
         }
         if (ctx.multirange_name != null) {
             type.setMultirange(ctx.multirange_name.getText());
@@ -117,35 +117,35 @@ public final class CreateType extends PgParserAbstract {
         PgBaseType type = new PgBaseType(name);
         if (ctx.input_function != null) {
             type.setInputFunction(getFullCtxText(ctx.input_function));
-            addDepSafe(type, getIdentifiers(ctx.input_function), DbObjType.FUNCTION, DatabaseType.PG);
+            addDepSafe(type, getIdentifiers(ctx.input_function), DbObjType.FUNCTION);
         }
         if (ctx.output_function != null) {
             type.setOutputFunction(getFullCtxText(ctx.output_function));
-            addDepSafe(type, getIdentifiers(ctx.output_function), DbObjType.FUNCTION, DatabaseType.PG);
+            addDepSafe(type, getIdentifiers(ctx.output_function), DbObjType.FUNCTION);
         }
         if (ctx.receive_function != null) {
             type.setReceiveFunction(getFullCtxText(ctx.receive_function));
-            addDepSafe(type, getIdentifiers(ctx.receive_function), DbObjType.FUNCTION, DatabaseType.PG);
+            addDepSafe(type, getIdentifiers(ctx.receive_function), DbObjType.FUNCTION);
         }
         if (ctx.send_function != null) {
             type.setSendFunction(getFullCtxText(ctx.send_function));
-            addDepSafe(type, getIdentifiers(ctx.send_function), DbObjType.FUNCTION, DatabaseType.PG);
+            addDepSafe(type, getIdentifiers(ctx.send_function), DbObjType.FUNCTION);
         }
         if (ctx.type_modifier_input_function != null) {
             type.setTypmodInputFunction(getFullCtxText(ctx.type_modifier_input_function));
-            addDepSafe(type, getIdentifiers(ctx.type_modifier_input_function), DbObjType.FUNCTION, DatabaseType.PG);
+            addDepSafe(type, getIdentifiers(ctx.type_modifier_input_function), DbObjType.FUNCTION);
         }
         if (ctx.type_modifier_output_function != null) {
             type.setTypmodOutputFunction(getFullCtxText(ctx.type_modifier_output_function));
-            addDepSafe(type, getIdentifiers(ctx.type_modifier_output_function), DbObjType.FUNCTION, DatabaseType.PG);
+            addDepSafe(type, getIdentifiers(ctx.type_modifier_output_function), DbObjType.FUNCTION);
         }
         if (ctx.analyze_function != null) {
             type.setAnalyzeFunction(getFullCtxText(ctx.analyze_function));
-            addDepSafe(type, getIdentifiers(ctx.analyze_function), DbObjType.FUNCTION, DatabaseType.PG);
+            addDepSafe(type, getIdentifiers(ctx.analyze_function), DbObjType.FUNCTION);
         }
         if (ctx.subscript_function != null) {
             type.setSubscriptFunction(getFullCtxText(ctx.subscript_function));
-            addDepSafe(type, getIdentifiers(ctx.subscript_function), DbObjType.FUNCTION, DatabaseType.PG);
+            addDepSafe(type, getIdentifiers(ctx.subscript_function), DbObjType.FUNCTION);
         }
         if (ctx.internallength != null) {
             type.setInternalLength(getFullCtxText(ctx.internallength));
@@ -202,7 +202,9 @@ public final class CreateType extends PgParserAbstract {
         col.setType(getTypeName(colCtx.data_type()));
         addTypeDepcy(colCtx.data_type(), type);
         if (colCtx.collate_identifier() != null) {
-            col.setCollation(getFullCtxText(colCtx.collate_identifier().collation));
+            var columnCollationCtx = colCtx.collate_identifier().collation;
+            col.setCollation(getFullCtxText(columnCollationCtx));
+            addDepSafe(type, getIdentifiers(columnCollationCtx), DbObjType.COLLATION);
         }
         type.addAttr(col);
     }

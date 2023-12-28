@@ -72,7 +72,7 @@ public class IndicesReader extends JdbcReader {
         if (inhnspname != null) {
             String inhrelname = res.getString("inhrelname");
             i.addInherit(inhnspname, inhrelname);
-            i.addDep(new GenericColumn(inhnspname, inhrelname, DbObjType.INDEX));
+            addDep(i, inhnspname, inhrelname, DbObjType.INDEX);
         }
         cont.addIndex(i);
     }

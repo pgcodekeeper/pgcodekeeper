@@ -20,7 +20,6 @@ import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Alter_fts_configurationContext;
@@ -71,7 +70,7 @@ public class AlterFtsStatement extends PgParserAbstract {
                 for (Schema_qualified_nameContext dictionary : afc.schema_qualified_name()) {
                     List<ParserRuleContext> dIds = getIdentifiers(dictionary);
                     dics.add(getFullCtxText(dictionary));
-                    addDepSafe(config, dIds, DbObjType.FTS_DICTIONARY, DatabaseType.PG);
+                    addDepSafe(config, dIds, DbObjType.FTS_DICTIONARY);
                 }
 
                 doSafe((s,o) -> s.addDictionary(getFullCtxText(type), dics),

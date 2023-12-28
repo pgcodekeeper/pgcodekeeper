@@ -144,41 +144,50 @@ public class ValueExpr extends AbstractExpr {
                 return primary(primary);
             }
         }
+
         List<ModPair<String, String>> operandsList = new ArrayList<>(operandVexs.size());
         for (Vex operand : operandVexs) {
             operandsList.add(analyze(operand));
         }
 
-        ModPair<String, String> ret;
         Data_typeContext dataType = vex.dataType();
-        String operator = null;
-        OpContext op;
-
         if (dataType != null) {
             cast(operandVexs.get(0), dataType);
-            ret = operandsList.get(0);
+            ModPair<String, String> ret = operandsList.get(0);
             ret.setSecond(ParserAbstract.getFullCtxText(dataType));
-        } else if (vex.equal() != null
-                || vex.and() != null) {
+            return ret;
+        }
+
+        if (vex.equal() != null || vex.and() != null) {
             // BETWEEN is handled as AND, no separate processing required
-            ret = new ModPair<>(NONAME, TypesSetManually.BOOLEAN);
-        } else if ((op = vex.op()) != null || (operator = getOperatorToken(vex)) != null) {
-            ret = op(vex, operandsList, operator, op);
-        } else if (vex.leftParen() != null) {
-            Type_listContext typeList;
+            return new ModPair<>(NONAME, TypesSetManually.BOOLEAN);
+        }
+
+        OpContext op = vex.op();
+        String operator = null;
+        if (op != null || (operator = getOperatorToken(vex)) != null) {
+            return op(vex, operandsList, operator, op);
+        }
+
+        if (vex.leftParen() != null) {
             if (vex.in() != null) {
                 Select_stmt_no_parensContext selectStmt = vex.selectStmt();
                 if (selectStmt != null) {
                     new Select(this).analyze(selectStmt);
                 }
-                ret = new ModPair<>(NONAME, TypesSetManually.BOOLEAN);
-            } else if ((typeList = vex.typeList()) != null) {
+                return new ModPair<>(NONAME, TypesSetManually.BOOLEAN);
+            }
+
+            Type_listContext typeList = vex.typeList();
+            if (typeList != null) {
                 for (Data_typeContext type : typeList.data_type()) {
                     addTypeDepcy(type);
                 }
-                ret = new ModPair<>(NONAME, TypesSetManually.BOOLEAN);
-            } else if (operandsList.size() == 1) {
-                ret = operandsList.get(0);
+                return new ModPair<>(NONAME, TypesSetManually.BOOLEAN);
+            }
+
+            if (operandsList.size() == 1) {
+                ModPair<String, String> ret = operandsList.get(0);
                 Indirection_listContext indir = vex.indirectionList();
                 if (indir != null) {
                     indirection(indir.indirection(), ret);
@@ -186,11 +195,13 @@ public class ValueExpr extends AbstractExpr {
                         ret = new ModPair<>(NONAME, TypesSetManually.QUALIFIED_ASTERISK);
                     }
                 }
-            } else {
-                // TODO add record type placeholder?
-                ret = new ModPair<>("row", TypesSetManually.UNKNOWN);
+                return ret;
             }
-        } else if (vex.is() != null
+            // TODO add record type placeholder?
+            return new ModPair<>("row", TypesSetManually.UNKNOWN);
+        }
+
+        if (vex.is() != null
                 || vex.or() != null
                 || vex.notEqual() != null
                 || vex.gth() != null
@@ -205,17 +216,22 @@ public class ValueExpr extends AbstractExpr {
                 || vex.notNull() != null) {
             // check IS after "OF ( type_list )"
             // check unary NOT after all NOT-containing alternatives
-            ret = new ModPair<>(NONAME, TypesSetManually.BOOLEAN);
-        } else if (vex.collateIdentifier() != null
-                || vex.timeZone() != null) {
-            // TODO pending DbObjType.COLLATION
-            ret = operandsList.get(0);
-        } else {
-            LOG.warn("No alternative in Vex!");
-            ret = new ModPair<>(NONAME, TypesSetManually.UNKNOWN);
+            return new ModPair<>(NONAME, TypesSetManually.BOOLEAN);
         }
 
-        return ret;
+        if (vex.collateIdentifier() != null) {
+            var collationCtx = vex.collateIdentifier().collation;
+            var ids = PgParserAbstract.getIdentifiers(collationCtx);
+            addDepcy(ids, DbObjType.COLLATION, collationCtx.getStart());
+            return operandsList.get(0);
+        }
+
+        if (vex.timeZone() != null) {
+            return operandsList.get(0);
+        }
+
+        LOG.warn("No alternative in Vex!");
+        return new ModPair<>(NONAME, TypesSetManually.UNKNOWN);
     }
 
     private void cast(Vex operand, Data_typeContext dataType) {
