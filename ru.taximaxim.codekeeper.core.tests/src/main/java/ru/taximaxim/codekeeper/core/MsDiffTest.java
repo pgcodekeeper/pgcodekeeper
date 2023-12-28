@@ -310,6 +310,8 @@ class MsDiffTest {
             "alter_ms_function_with_grant",
             // Tests scenario where MS CONSTRAINTS is compared.
             "compare_ms_constraints",
+            // Test scenario where MsColumn options is altered
+            "alter_ms_column",
     })
     void runDiff(String fileNameTemplate) throws IOException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();

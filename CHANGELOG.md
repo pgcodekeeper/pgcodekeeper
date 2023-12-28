@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fixed an error when opening non-pgCodeKeeper project files in SQL editor.
 - Fixed a bug with defining a dependency in the body of a function in PG.
 - Added missing references to COLLATION objects in PostgreSQL.
+- Fixed some bug with column dependencies in MS.
 
 ## [9.0.0] - 2023-12-13
 
