@@ -314,6 +314,8 @@ class MsDiffTest {
             "alter_ms_column",
             // Test scenario where MS COLUMN with expression as type and dependent column is changed
             "alter_ms_column_expr",
+            // Tests scenario where MS View with xmlnamespace is compared.
+            "modify_ms_view_xmlnamespace",
     })
     void runDiff(String fileNameTemplate) throws IOException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();
