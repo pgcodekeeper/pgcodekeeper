@@ -156,7 +156,7 @@ public abstract class MsAbstractExprWithNmspc<T> extends MsAbstractExpr {
         return !exists;
     }
 
-    protected boolean addRawTableReference(GenericColumn qualifiedTable) {
+    public boolean addRawTableReference(GenericColumn qualifiedTable) {
         boolean exists = !unaliasedNamespace.add(qualifiedTable);
         if (exists) {
             log("Duplicate unaliased table: {} {}", qualifiedTable.schema, qualifiedTable.table);

@@ -22,6 +22,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.MsExpressionAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.ClusteredContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Column_def_table_constraintContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Column_optionContext;
@@ -115,6 +116,7 @@ public class CreateMsTable extends MsTableAbstract {
                 col.setType(getFullCtxText(dt));
             } else {
                 col.setExpression(getFullCtxText(colCtx.expression()));
+                db.addAnalysisLauncher(new MsExpressionAnalysisLauncher(col, colCtx.expression(), fileName));
             }
 
             for (Column_optionContext option : colCtx.column_option()) {
