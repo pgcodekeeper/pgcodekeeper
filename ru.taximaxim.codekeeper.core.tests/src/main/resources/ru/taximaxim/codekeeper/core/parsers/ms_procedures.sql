@@ -57,3 +57,65 @@ BEGIN
     select @f6;
 END;
 GO
+
+ -- reconfigure option
+ CREATE PROCEDURE [dbo].[p]
+@IDBase int,
+@IDClfis int,
+@Url nvarchar(1000)
+as
+BEGIN
+    if 1 <> @show_advanced 
+    begin 
+      exec sys.sp_configure @configname = N'show advanced options', @configvalue = 1 
+      reconfigure with override 
+    end 
+    
+    exec sys.sp_configure @configname = N'Agent yyy', @configvalue = @new_value 
+    reconfigure with override 
+    if 1 <> @show_advanced 
+    begin 
+      exec sys.sp_configure @configname = N'show advanced options', @configvalue = 0 
+      reconfigure with override
+      end
+END;
+GO
+
+ --RAISERROR null value
+ CREATE PROCEDURE [dbo].[proc1]
+@IDBase int,
+@IDClfis int,
+@Url nvarchar(1000)
+as
+begin
+    IF @action_type = @create AND @dac_object_type = @database --database create
+    BEGIN
+        RAISERROR(N'%d, %d, %s', -1, 1, @sequence_id, @rollback_pending, NULL) WITH NOWAIT
+
+        EXEC dbo.sp_sysdac_drop_database @database_name = @dac_object_name_pretran
+        
+        RAISERROR(N'%d, %d, %s', -1, 1, @sequence_id, @rollback_success, NULL) WITH NOWAIT
+    END
+    ELSE IF @action_type = @rename AND @dac_object_type = @database --database rename
+    BEGIN
+        RAISERROR(N'%d, %d, %s', -1, 1, @sequence_id, @rollback_pending, NULL) WITH NOWAIT
+
+        EXEC dbo.sp_sysdac_rename_database @dac_object_name_posttran, @dac_object_name_pretran
+
+        RAISERROR(N'%d, %d, %s', -1, 1, @sequence_id, @rollback_success, NULL) WITH NOWAIT
+    END
+end;
+GO
+
+ --LOGIN value
+CREATE PROCEDURE [dbo].[sp_sqlagent_is_srvrolemember]
+   @role_name sysname, @login_name sysname
+AS
+BEGIN
+  DECLARE @is_member        INT
+  SET NOCOUNT ON
+     EXECUTE AS LOGIN = @login_name -- impersonate 
+        SELECT @is_member = IS_SRVROLEMEMBER(@role_name)  -- check role membership 
+  RETURN ISNULL(@is_member,0)
+END
+GO

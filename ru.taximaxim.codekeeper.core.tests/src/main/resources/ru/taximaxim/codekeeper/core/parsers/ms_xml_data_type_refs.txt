@@ -30,8 +30,7 @@ Reference: action = DECLARE, offset = 2955, line number = 99, charPositionInLine
 Reference: action = SET, offset = 2971, line number = 100, charPositionInLine = 0
 Reference: action = SELECT, offset = 3158, line number = 103, charPositionInLine = 0
 Reference: action = SELECT, offset = 3233, line number = 107, charPositionInLine = 0
-Reference: action = WITH, offset = 3815, line number = 121, charPositionInLine = 0
-Reference: action = SELECT, offset = 3931, line number = 122, charPositionInLine = 0
+Reference: action = SELECT, offset = 3815, line number = 121, charPositionInLine = 0
 Reference: action = DECLARE, offset = 4260, line number = 134, charPositionInLine = 0
 Reference: action = SET, offset = 4280, line number = 135, charPositionInLine = 0
 Reference: action = SET, offset = 4558, line number = 144, charPositionInLine = 0

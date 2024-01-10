@@ -275,8 +275,9 @@ print_statement
 
 // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/raiserror-transact-sql
 raiseerror_statement
-    : RAISERROR LR_BRACKET (DECIMAL | STRING | LOCAL_ID) COMMA constant_LOCAL_ID (COMMA constant_LOCAL_ID)+ RR_BRACKET (WITH (LOG | SETERROR | NOWAIT))?
-    | RAISERROR DECIMAL (STRING | LOCAL_ID | DOUBLE_QUOTE_ID) (COMMA (DECIMAL | STRING | LOCAL_ID))*
+    : RAISERROR LR_BRACKET msg = (DECIMAL | STRING | LOCAL_ID) COMMA severity = constant_LOCAL_ID COMMA state = constant_LOCAL_ID
+    (COMMA (constant_LOCAL_ID | NULL))* RR_BRACKET (WITH (LOG | SETERROR | NOWAIT))?
+    | RAISERROR DECIMAL formatstring = (STRING | LOCAL_ID | DOUBLE_QUOTE_ID) (COMMA argument = (DECIMAL | STRING | LOCAL_ID))*
     ;
 
 another_statement
@@ -290,6 +291,8 @@ another_statement
     | transaction_statement
     | use_statement
     | setuser_statement
+    | reconfigure_statement
+    | shutdown_statement
     ;
 
 create_aggregate
@@ -1929,8 +1932,8 @@ opendatasource
 declare_statement
     : DECLARE LOCAL_ID AS? TABLE LR_BRACKET column_def_table_constraints RR_BRACKET
     | DECLARE declare_local (COMMA declare_local)*
-    | DECLARE LOCAL_ID AS? XML LR_BRACKET (CONTENT | DOCUMENT)? xml_schema_collection RR_BRACKET
-    | WITH XMLNAMESPACES LR_BRACKET xml_namespace_uri=STRING COMMA? AS id RR_BRACKET
+    | DECLARE LOCAL_ID AS? xml_type_definition
+    //| WITH XMLNAMESPACES LR_BRACKET xml_dec += xml_declaration (COMMA xml_dec += xml_declaration)* RR_BRACKET
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms181441(v=sql.120).aspx
@@ -1943,6 +1946,7 @@ cursor_statement
     | FETCH ((NEXT | PRIOR | FIRST | LAST | (ABSOLUTE | RELATIVE) expression)? FROM)?
     GLOBAL? cursor_name (INTO LOCAL_ID (COMMA LOCAL_ID)*)?
     ;
+
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/backup-transact-sql
 backup_database
     : BACKUP DATABASE id
@@ -2284,6 +2288,16 @@ setuser_statement
     : SETUSER user=STRING?
     ;
 
+// https://docs.microsoft.com/en-us/sql/t-sql/language-elements/reconfigure-transact-sql
+reconfigure_statement
+    : RECONFIGURE (WITH OVERRIDE)?
+    ;
+
+// https://docs.microsoft.com/en-us/sql/t-sql/language-elements/shutdown-transact-sql
+shutdown_statement
+    : SHUTDOWN (WITH NOWAIT)?
+    ;
+
 dbcc_clause
     : DBCC name=simple_id (LR_BRACKET expression_list RR_BRACKET)? (WITH names_references)?
     ;
@@ -2293,7 +2307,7 @@ execute_clause
     ;
 
 execute_clause_user
-    : (LOGIN | USER) EQUAL STRING (WITH (NO REVERT | COOKIE INTO LOCAL_ID))?
+    : (LOGIN | USER) EQUAL (STRING | LOCAL_ID) (WITH (NO REVERT | COOKIE INTO LOCAL_ID))?
     | CALLER
     | SELF
     | OWNER
@@ -2302,6 +2316,10 @@ execute_clause_user
 
 declare_local
     : LOCAL_ID AS? data_type (EQUAL expression)?
+    ;
+
+xml_type_definition
+    : XML LR_BRACKET (CONTENT | DOCUMENT)? xml_schema_collection RR_BRACKET
     ;
 
 xml_schema_collection
@@ -2508,8 +2526,18 @@ constant_expression
 
 // https://msdn.microsoft.com/en-us/library/ms175972.aspx
 with_expression
-    : WITH (XMLNAMESPACES COMMA)? common_table_expression (COMMA common_table_expression)*
+    : WITH (xml_namespace_expression COMMA)? common_table_expression (COMMA common_table_expression)*
+    | WITH xml_namespace_expression
     //| WITH BLOCKING_HIERARCHY (LR_BRACKET full_column_name_list RR_BRACKET)? AS LR_BRACKET select_statement RR_BRACKET
+    ;
+
+xml_namespace_expression
+    : XMLNAMESPACES LR_BRACKET xml_dec += xml_declaration (COMMA xml_dec += xml_declaration)* RR_BRACKET
+    ;
+
+xml_declaration
+    : xml_namespace_uri=STRING AS id
+    | DEFAULT STRING
     ;
 
 common_table_expression
@@ -3504,6 +3532,7 @@ simple_id
     | OPTIMIZE
     | OUT
     | OUTPUT
+    | OVERRIDE
     | OWNER
     | OWNERSHIP
     | PAGE_VERIFY
