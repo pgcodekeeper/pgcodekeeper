@@ -9,9 +9,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- Added a preference to move comments to the end of the migration script (`Window -> Preferences -> pgCodeKeeper -> Update DB -> Print comments at the end of the script`, CLI option `--comments-to-end`).
-
 ### Changed
+
+### Fixed
+
+## [9.1.0] - 2024-01-10
+
+### Added
+
+- Added a preference to move comments to the end of the migration script (`Window -> Preferences -> pgCodeKeeper -> Update DB -> Print comments at the end of the script`, CLI option `--comments-to-end`).
 
 ### Fixed
 
@@ -19,7 +25,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fixed an error when opening non-pgCodeKeeper project files in SQL editor.
 - Fixed a bug with defining a dependency in the body of a function in PG.
 - Added missing references to COLLATION objects in PostgreSQL.
-- Fixed some bug with column dependencies in MS.
+- Fixed errors with column dependencies in MS SQL.
 
 ## [9.0.0] - 2023-12-13
 
@@ -1827,7 +1833,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.0.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.1.0...HEAD
+[9.1.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.0.0...v9.1.0
 [9.0.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.9.0...v9.0.0
 [8.9.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.8.0...v8.9.0
 [8.8.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.7.0...v8.8.0
