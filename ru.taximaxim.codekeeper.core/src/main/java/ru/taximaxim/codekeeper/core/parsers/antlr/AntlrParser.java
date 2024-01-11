@@ -52,6 +52,8 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrContextProcessor.SqlConte
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrContextProcessor.TSqlContextProcessor;
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.MonitorCancelledRuntimeException;
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.UnresolvedReferenceException;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHLexer;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.IgnoreListLexer;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.IgnoreListParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.PrivilegesLexer;
@@ -144,6 +146,9 @@ public class AntlrParser {
         } else if (parserClass.isAssignableFrom(PrivilegesParser.class)) {
             lexer = new PrivilegesLexer(stream);
             parser = new PrivilegesParser(new CommonTokenStream(lexer));
+        } else if (parserClass.isAssignableFrom(CHParser.class)) {
+            lexer = new CHLexer(stream);
+            parser = new CHParser(new CommonTokenStream(lexer));
         } else {
             throw new IllegalArgumentException("Unknown parser class: " + parserClass);
         }
