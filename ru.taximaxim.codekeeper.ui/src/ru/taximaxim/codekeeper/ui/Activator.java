@@ -120,6 +120,9 @@ public class Activator extends AbstractUIPlugin {
 
         reg.put(FILE.MS_ICON, ImageDescriptor.createFromURL(
                 context.getBundle().getResource(FILE.MS_ICON)));
+        
+        reg.put(FILE.CH_ICON, ImageDescriptor.createFromURL(
+                context.getBundle().getResource(FILE.CH_ICON)));
 
         reg.put(FILE.ICONSEARCHLINE, ImageDescriptor.createFromURL(
                 context.getBundle().getResource(FILE.ICONSEARCHLINE)));

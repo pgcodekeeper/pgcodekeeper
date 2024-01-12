@@ -278,6 +278,9 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
             case "MS": //$NON-NLS-1$
                 dbType = DatabaseType.MS;
                 break;
+            case "CH": //$NON-NLS-1$
+                dbType = DatabaseType.CH;
+                break;
             default:
                 throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbTypeText);
             }

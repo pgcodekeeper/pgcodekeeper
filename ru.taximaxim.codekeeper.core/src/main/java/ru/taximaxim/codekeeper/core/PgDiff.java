@@ -37,6 +37,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import ru.taximaxim.codekeeper.core.ignoreparser.IgnoreParser;
 import ru.taximaxim.codekeeper.core.loader.DatabaseLoader;
 import ru.taximaxim.codekeeper.core.loader.FullAnalyze;
+import ru.taximaxim.codekeeper.core.loader.JdbcChLoader;
 import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
 import ru.taximaxim.codekeeper.core.loader.JdbcLoader;
 import ru.taximaxim.codekeeper.core.loader.JdbcMsLoader;
@@ -216,6 +217,10 @@ public class PgDiff {
                 break;
             case PG:
                 loader = new JdbcLoader(JdbcConnector.fromUrl(srcPath, timezone),
+                        arguments, SubMonitor.convert(null), ignoreSchemaList);
+                break;
+            case CH:
+                loader = new JdbcChLoader(JdbcConnector.fromUrl(srcPath, timezone),
                         arguments, SubMonitor.convert(null), ignoreSchemaList);
                 break;
             default:

@@ -56,10 +56,9 @@ public class GetSystemObjects extends AbstractHandler {
                 fd.setFileName(MetaStorage.FILE_NAME + info.getDbName() + ".ser"); //$NON-NLS-1$
                 String select = fd.open();
                 if (select != null) {
-                    JdbcConnector jdbcConnector = new JdbcConnector(info.getDbHost(),
-                            info.getDbPort(), info.getDbUser(), info.getDbPass(),
-                            info.getDbName(), info.getProperties(), info.isReadOnly(),
-                            Consts.UTC);
+                    JdbcConnector jdbcConnector = JdbcConnector.getJdbcConnector(DatabaseType.PG, info.getDbHost(),
+                            info.getDbPort(), info.getDbUser(), info.getDbPass(), info.getDbName(),
+                            info.getProperties(), info.isReadOnly(), Consts.UTC, false, null);
                     try {
                         Serializable storage = new JdbcSystemLoader(jdbcConnector,
                                 SubMonitor.convert(new NullProgressMonitor())).getStorageFromJdbc();

@@ -209,6 +209,9 @@ public class DBStoreMenu {
         case PG:
             fileName = FILE.PG_ICON;
             break;
+        case CH:
+            fileName = FILE.CH_ICON;
+            break;
         default:
             throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbInfo.getDbType());
         }

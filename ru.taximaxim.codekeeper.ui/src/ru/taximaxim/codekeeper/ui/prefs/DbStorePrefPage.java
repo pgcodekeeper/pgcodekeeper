@@ -70,8 +70,7 @@ import ru.taximaxim.codekeeper.ui.xmlstore.ConnectioTypeXMLStore;
 import ru.taximaxim.codekeeper.ui.xmlstore.DbXmlStore;
 import ru.taximaxim.pgpass.PgPass;
 
-public final class DbStorePrefPage extends FieldEditorPreferencePage
-implements IWorkbenchPreferencePage {
+public final class DbStorePrefPage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 
     private DbStorePrefListEditor dbList;
     private BooleanFieldEditor useSecureStorage;
@@ -192,7 +191,7 @@ final class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
     }
 
     @Override
-    public void setInputList(List<DbInfo> list){
+    public void setInputList(List<DbInfo> list) {
         DbInfo.sortDbGroups(list);
         super.setInputList(list);
     }
@@ -235,6 +234,9 @@ final class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
                     break;
                 case MS:
                     image = FILE.MS_ICON;
+                    break;
+                case CH:
+                    image = FILE.CH_ICON;
                     break;
                 default:
                     throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);

@@ -43,6 +43,7 @@ import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DangerStatement;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
+import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 
 /**
@@ -52,6 +53,10 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
  */
 public class CliArgs extends PgDiffArguments {
 
+    private static final String URL_START_JDBC = "jdbc:";
+    
+    private static final String MESSAGE_CANNOT_DATABASE_WITH_PROJECT = "Cannot work with %s database as %s project.";
+    private static final String MESSAGE_DIFFERENT_TYPES = "Source (%s) and target (%s) are of different types, possibly missing --db-type parameter.";
     private static final int DEFAULT_DEPTH = 10;
 
     // SONAR-OFF
@@ -286,7 +291,7 @@ public class CliArgs extends PgDiffArguments {
     private boolean msSql;
 
     @Option(name="--db-type",
-            usage="specify database type for work: PG or MS")
+            usage="specify database type for work: PG, MS, CH")
     private DatabaseType dbType;
 
     @Option(name="--update-project", depends={"--parse"}, forbids={"--graph"},
@@ -771,9 +776,6 @@ public class CliArgs extends PgDiffArguments {
             dbType = DatabaseType.MS;
         }
 
-        String msJdbcStart = "jdbc:sqlserver:";
-        String pgJdbcStart = "jdbc:postgresql:";
-
         if (isModeParse() && isProjUpdate()) {
             setOldSrc(getOutputTarget());
             setOldSrcFormat(parsePath(getOldSrc()));
@@ -786,11 +788,9 @@ public class CliArgs extends PgDiffArguments {
             if (getOldSrc() != null && !isProjUpdate()) {
                 badArgs("DEST argument isn't required.");
             }
-            if (getDbType() == DatabaseType.MS && getNewSrc().startsWith(pgJdbcStart)) {
-                badArgs("Cannot work with PostgerSQL database as MS SQL project.");
-            }
-            if (getDbType() == DatabaseType.PG && getNewSrc().startsWith(msJdbcStart)) {
-                badArgs("Cannot work with MS SQL database as PostgerSQL project.");
+            DatabaseType typeNewSrc = getDatabaseTypeFromSource(getNewSrc());
+            if (getDbType() != typeNewSrc) {
+                badArgs(String.format(MESSAGE_CANNOT_DATABASE_WITH_PROJECT, typeNewSrc.toString(), getDbType().toString()));
             }
         } else {
             if ((getOldSrc() == null || getNewSrc() == null)) {
@@ -802,33 +802,33 @@ public class CliArgs extends PgDiffArguments {
             if (isAddTransaction() && isConcurrentlyMode() && getDbType() == DatabaseType.PG) {
                 badArgs("-C (--concurrently-mode) cannot be used with the option(s) -X (--add-transaction) for PostgreSQL.");
             }
-            if (getOldSrc().startsWith(msJdbcStart) && getNewSrc().startsWith(pgJdbcStart)
-                    || getOldSrc().startsWith(pgJdbcStart) && getNewSrc().startsWith(msJdbcStart)) {
-                badArgs("Cannot compare MS SQL and PostgerSQL databases.");
+            DatabaseType typeNewSrc = getDatabaseTypeFromSource(getNewSrc());
+            DatabaseType typeOldSrc = getDatabaseTypeFromSource(getOldSrc());
+            if (typeOldSrc != typeNewSrc) {
+                badArgs(String.format(MESSAGE_DIFFERENT_TYPES, typeNewSrc.toString(), typeOldSrc.toString()));
             }
-            if ((getOldSrc().startsWith(msJdbcStart) || getNewSrc().startsWith(msJdbcStart)) && getDbType() == DatabaseType.PG) {
-                badArgs("Cannot work with MS SQL database without --db-type MS parameter.");
-            }
-            if ((getOldSrc().startsWith(pgJdbcStart) || getNewSrc().startsWith(pgJdbcStart)) && getDbType() == DatabaseType.MS) {
-                badArgs("Cannot work with PostgreSQL database with --db-type MS parameter.");
-            }
-            if (isRunOnTarget() && !getOldSrc().startsWith("jdbc:")) {
+            if (isRunOnTarget() && !getOldSrc().startsWith(URL_START_JDBC)) {
                 badArgs("Cannot run script on non-database target.");
             }
-            if (getRunOnDb() != null && !getRunOnDb().startsWith("jdbc:")) {
+            if (getRunOnDb() != null && !getRunOnDb().startsWith(URL_START_JDBC)) {
                 badArgs("Option -R (--run-on) must specify JDBC connection string.");
             }
-            // TODO Do we need to check DB types for dump and directories?
-
             setOldSrcFormat(parsePath(getOldSrc()));
         }
         setNewSrcFormat(parsePath(getNewSrc()));
 
         return true;
     }
+    
+    private DatabaseType getDatabaseTypeFromSource(String src) {
+        if (src != null && src.startsWith(URL_START_JDBC)) {
+           return JdbcConnector.getDatabaseTypeFromUrl(src);
+        }
+        return getDbType();
+    }
 
     private String parsePath(String source) {
-        if (source.startsWith("jdbc:")) {
+        if (source.startsWith(URL_START_JDBC)) {
             return "db";
         }
         if (Files.isDirectory(Paths.get(source))) {
