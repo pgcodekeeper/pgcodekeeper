@@ -17,5 +17,6 @@ package ru.taximaxim.codekeeper.core;
 
 public enum DatabaseType {
     PG,
-    MS
+    MS,
+    CH
 }

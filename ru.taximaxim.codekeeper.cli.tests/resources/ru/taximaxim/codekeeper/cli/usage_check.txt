@@ -126,8 +126,8 @@ Usage
                                           of database objects
  --ms-sql                               : work with MS SQL. Deprecated option.
                                           Use --db-type instead of this
- --db-type [PG | MS]                    : specify database type for work: PG or
-                                          MS (default: PG)
+ --db-type [PG | MS | CH]               : specify database type for work: PG,
+                                          MS, CH (default: PG)
  --update-project                       : update an existing project in parse
                                           mode
  --graph-depth <n>                      : depth of displayed dependencies in

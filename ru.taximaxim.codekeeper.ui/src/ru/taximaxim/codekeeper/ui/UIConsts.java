@@ -226,6 +226,7 @@ public interface UIConsts {
         String ZIP = "/icons/zip.png"; //$NON-NLS-1$
         String PG_ICON = "/icons/postgresql_icon.png"; //$NON-NLS-1$
         String MS_ICON = "/icons/mssql_icon.png"; //$NON-NLS-1$
+        String CH_ICON = "/icons/ch_icon16.png"; //$NON-NLS-1$
         String DECORDATABASE = "/icons/db_decorator.png"; //$NON-NLS-1$
         String DECORPGCODEKEEPER = "/icons/nature_decorator.png"; //$NON-NLS-1$
 

@@ -21,7 +21,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.ExpressionContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Sql_clausesContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.msexpr.MsExprWithNmspc;
 import ru.taximaxim.codekeeper.core.parsers.antlr.msexpr.MsValueExpr;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
