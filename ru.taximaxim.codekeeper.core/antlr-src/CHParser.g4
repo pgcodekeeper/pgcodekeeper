@@ -1,4 +1,5 @@
 parser grammar CHParser;
+@header {package ru.taximaxim.codekeeper.core.parsers.antlr.generated;}
 
 options {
     tokenVocab = CHLexer;
@@ -22,14 +23,24 @@ query
     | killStmt      // DDL
     | optimizeStmt  // DDL
     | renameStmt    // DDL
-    | selectUnionStmt
+    //| selectUnionStmt
     | setStmt
     | showStmt
     | systemStmt
     | truncateStmt  // DDL
     | useStmt
     | watchStmt
-    | ctes? selectStmt
+    | ctes? select_Stmt
+    ;
+
+select_Stmt
+    : withClause? select_ops
+    ;
+
+ select_ops
+    : LPAREN select_Stmt RPAREN // parens can be used to apply "global" clauses (WITH etc) to a particular select in UNION expr
+    | select_ops UNION ALL select_ops
+    | select_primary
     ;
 
 // CTE statement
@@ -215,7 +226,7 @@ destinationClause
     ;
 
 subqueryClause
-    : AS selectUnionStmt
+    : AS /*selectUnionStmt*/ select_ops
     ;
 
 tableSchemaClause
@@ -342,7 +353,7 @@ columnsClause
 dataClause
     : FORMAT identifier              # DataClauseFormat
     | VALUES                         # DataClauseValues
-    | selectUnionStmt SEMICOLON? EOF # DataClauseSelect
+    | /*selectUnionStmt*/  select_ops  SEMICOLON? EOF # DataClauseSelect
     ;
 
 // KILL statement
@@ -376,16 +387,17 @@ projectionSelectStmt:
 
 // SELECT statement
 
-selectUnionStmt
+/*selectUnionStmt
     : selectStmtWithParens (UNION ALL selectStmtWithParens)*
     ;
 
 selectStmtWithParens
-    : selectStmt | LPAREN selectUnionStmt RPAREN
+    : selectStmt| LPAREN selectUnionStmt RPAREN
     ;
-
-selectStmt:
-    withClause?
+*/
+select_primary:
+//selectStmt:
+   // withClause?
     SELECT DISTINCT? topClause? columnExprList
     fromClause?
     arrayJoinClause?
@@ -599,8 +611,8 @@ columnExprList
     ;
 
 columnsExpr
-    : (tableIdentifier DOT)? ASTERISK  # ColumnsExprAsterisk
-    | LPAREN selectUnionStmt RPAREN    # ColumnsExprSubquery
+    : //(tableIdentifier DOT)? ASTERISK  # ColumnsExprAsterisk
+     LPAREN /*selectUnionStmt*/ select_ops RPAREN    # ColumnsExprSubquery
     // NOTE: asterisk and subquery goes before |columnExpr| so that we can mark them as multi-column expressions.
     | columnExpr                       # ColumnsExprColumn
     ;
@@ -651,7 +663,7 @@ columnExpr
     | columnExpr (alias | AS identifier)                                                  # ColumnExprAlias
 
     | (tableIdentifier DOT)? ASTERISK                                                     # ColumnExprAsterisk  // single-column only
-    | LPAREN selectUnionStmt RPAREN                                                       # ColumnExprSubquery  // single-column only
+    | LPAREN /*selectUnionStmt*/ select_ops RPAREN                                                       # ColumnExprSubquery  // single-column only
     | LPAREN columnExpr RPAREN                                                            # ColumnExprParens    // single-column only
     | LPAREN columnExprList RPAREN                                                        # ColumnExprTuple
     | LBRACKET columnExprList? RBRACKET                                                   # ColumnExprArray
@@ -686,7 +698,7 @@ nestedIdentifier
 tableExpr
     : tableIdentifier                    # TableExprIdentifier
     | tableFunctionExpr                  # TableExprFunction
-    | LPAREN selectUnionStmt RPAREN      # TableExprSubquery
+    | LPAREN /*selectUnionStmt*/ select_ops RPAREN      # TableExprSubquery
     | tableExpr (alias | AS identifier)  # TableExprAlias
     ;
 

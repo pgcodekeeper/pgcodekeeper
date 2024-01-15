@@ -1,4 +1,5 @@
 lexer grammar CHLexer;
+@header {package ru.taximaxim.codekeeper.core.parsers.antlr.generated;}
 
 // NOTE: don't forget to add new keywords to the parser rule "keyword"!
 
