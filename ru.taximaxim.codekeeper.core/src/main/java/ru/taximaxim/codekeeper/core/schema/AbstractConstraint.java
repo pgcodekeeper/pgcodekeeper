@@ -46,6 +46,10 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath imple
         return Collections.emptySet();
     }
 
+    public boolean containsColumn(String name) {
+        return getColumns().contains(name);
+    }
+
     public boolean isNotValid() {
         return notValid;
     }

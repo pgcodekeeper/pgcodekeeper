@@ -15,10 +15,11 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.pg;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -34,8 +35,9 @@ import ru.taximaxim.codekeeper.core.schema.StatementUtils;
 public final class PgConstraintExclude extends PgConstraint implements PgIndexParamContainer, ISimpleColumnContainer {
 
     private final Map<String, String> params = new HashMap<>();
-    private final Set<String> includes = new LinkedHashSet<>();
-    private final Map<String, SimpleColumn> columns = new LinkedHashMap<>();
+    private final Set<String> columnNames = new HashSet<>();
+    private final List<SimpleColumn> columns = new ArrayList<>();
+    private final List<String> includes = new ArrayList<>();
     private String indexMethod;
     private String predicate;
     private String tablespace;
@@ -50,18 +52,24 @@ public final class PgConstraintExclude extends PgConstraint implements PgIndexPa
         resetHash();
     }
 
-    public Set<String> getIncludes() {
-        return Collections.unmodifiableSet(includes);
+    public List<String> getIncludes() {
+        return Collections.unmodifiableList(includes);
     }
 
     @Override
     public Set<String> getColumns() {
-        return Collections.unmodifiableSet(columns.keySet());
+        return Collections.unmodifiableSet(columnNames);
+    }
+
+    @Override
+    public boolean containsColumn(String name) {
+        return columnNames.contains(name);
     }
 
     @Override
     public void addColumn(SimpleColumn column) {
-        columns.put(column.getName(), column);
+        columnNames.add(column.getName());
+        columns.add(column);
         resetHash();
     }
 
@@ -118,9 +126,9 @@ public final class PgConstraintExclude extends PgConstraint implements PgIndexPa
         return sbSQL.toString();
     }
 
-    private void appendSimpleColumns(StringBuilder sbSQL, Map<String, SimpleColumn> columns) {
+    private void appendSimpleColumns(StringBuilder sbSQL, List<SimpleColumn> columns) {
         sbSQL.append(" (");
-        for (var col : columns.values()) {
+        for (var col : columns) {
             // column name already quoted
             sbSQL.append(col.getName());
             if (col.getOpClass() != null) {
@@ -184,7 +192,7 @@ public final class PgConstraintExclude extends PgConstraint implements PgIndexPa
         super.computeHash(hasher);
         hasher.put(params);
         hasher.put(includes);
-        hasher.putOrdered(columns.values());
+        hasher.putOrdered(columns);
         hasher.put(indexMethod);
         hasher.put(predicate);
         hasher.put(tablespace);
@@ -195,7 +203,8 @@ public final class PgConstraintExclude extends PgConstraint implements PgIndexPa
         var con = new PgConstraintExclude(name);
         con.params.putAll(params);
         con.includes.addAll(includes);
-        con.columns.putAll(columns);
+        con.columnNames.addAll(columnNames);
+        con.columns.addAll(columns);
         con.setIndexMethod(getIndexMethod());
         con.setPredicate(getPredicate());
         con.setTablespace(getTablespace());

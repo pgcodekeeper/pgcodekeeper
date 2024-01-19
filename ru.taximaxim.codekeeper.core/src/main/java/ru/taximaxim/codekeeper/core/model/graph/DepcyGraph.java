@@ -218,7 +218,7 @@ public class DepcyGraph {
                 }
             }
             for (AbstractIndex refInd : c.getIndexes()) {
-                if (refInd.isUnique() && refs.equals(refInd.getColumns())) {
+                if (refInd.isUnique() && refInd.compareColumns(refs)) {
                     graph.addEdge((PgStatement) con, refInd);
                 }
             }

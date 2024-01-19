@@ -728,7 +728,7 @@ public class MockDataPage extends WizardPage {
     private void parseConstraints(AbstractConstraint constraint) {
         if (constraint instanceof IConstraintPk) {
             columns.stream()
-            .filter(wrapper -> constraint.getColumns().contains(wrapper.getName()))
+            .filter(wrapper -> constraint.containsColumn(wrapper.getName()))
             .forEach(wrapper -> wrapper.setUnique(true));
         }
     }

@@ -120,7 +120,7 @@ public final class PgConstraintPk extends PgConstraint implements IConstraintPk,
                 sbSQL.append("NULLS NOT DISTINCT ");
             }
         }
-        StatementUtils.appendCols(sbSQL, getColumns(), getDbType());
+        StatementUtils.appendCols(sbSQL, columns, getDbType());
         appendIndexParam(sbSQL);
         return sbSQL.toString();
     }
