@@ -23,5 +23,6 @@ public interface IConstraint extends ISearchPath {
     }
     String getDefinition();
     Set<String> getColumns();
+    boolean containsColumn(String name);
     String getTableName();
 }

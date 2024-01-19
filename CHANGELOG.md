@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed code generation when changing the order of columns in INDEX and CONSTRAINT objects.
+- Fixed missing quotes in FOREIGN KEY.
+
 ## [9.1.0] - 2024-01-10
 
 ### Added

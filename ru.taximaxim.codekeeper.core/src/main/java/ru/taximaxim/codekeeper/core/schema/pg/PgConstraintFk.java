@@ -124,7 +124,8 @@ public final class PgConstraintFk extends PgConstraint implements IConstraintFk 
         var sbSQL = new StringBuilder();
         sbSQL.append("FOREIGN KEY ");
         StatementUtils.appendCols(sbSQL, columns, getDbType());
-        sbSQL.append(" REFERENCES ").append(getForeignSchema()).append('.').append(getForeignTable());
+        sbSQL.append(" REFERENCES ").append(PgDiffUtils.getQuotedName(getForeignSchema())).append('.')
+            .append(PgDiffUtils.getQuotedName(getForeignTable()));
         if (!refs.isEmpty()) {
             StatementUtils.appendCols(sbSQL, getForeignColumns(), getDbType());
         }

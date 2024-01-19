@@ -44,6 +44,11 @@ public class MetaConstraint extends MetaStatement implements IConstraint {
         return Collections.unmodifiableSet(columns);
     }
 
+    @Override
+    public boolean containsColumn(String name) {
+        return columns.contains(name);
+    }
+
     public void setPrimaryKey(boolean isPrimaryKey) {
         this.isPrimaryKey = isPrimaryKey;
     }

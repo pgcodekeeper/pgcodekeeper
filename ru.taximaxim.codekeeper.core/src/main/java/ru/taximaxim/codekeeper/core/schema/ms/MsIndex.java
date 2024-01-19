@@ -16,7 +16,7 @@
 package ru.taximaxim.codekeeper.core.schema.ms;
 
 import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
@@ -99,8 +99,8 @@ public class MsIndex extends AbstractIndex {
         return sb.toString();
     }
 
-    private void appendSimpleColumns(StringBuilder sbSQL, Map<String, SimpleColumn> columns) {
-        for (var col : columns.values()) {
+    private void appendSimpleColumns(StringBuilder sbSQL, List<SimpleColumn> columns) {
+        for (var col : columns) {
             sbSQL.append(MsDiffUtils.quoteName(col.getName()));
             if (col.isDesc()) {
                 sbSQL.append(" DESC");

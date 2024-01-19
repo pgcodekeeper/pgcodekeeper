@@ -397,7 +397,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
         }
 
         for (IConstraint con : meta.getConstraints(dep.getSchema(), dep.getTable())) {
-            if (con.isPrimaryKey() && con.getColumns().contains(dep.getObjName())) {
+            if (con.isPrimaryKey() && con.containsColumn(dep.getObjName())) {
                 // implicit reference
                 vex.addDepcy(new GenericColumn(con.getSchemaName(),
                         con.getTableName(), con.getName(), DbObjType.CONSTRAINT), null);

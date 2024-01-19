@@ -19,9 +19,10 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -40,8 +41,8 @@ implements ISimpleOptionContainer, ISimpleColumnContainer {
     private boolean unique;
     private boolean isClustered;
 
-    protected final Map<String, SimpleColumn> columns = new LinkedHashMap<>();
-    protected final Set<String> includes = new LinkedHashSet<>();
+    protected final List<SimpleColumn> columns = new ArrayList<>();
+    protected final List<String> includes = new ArrayList<>();
     protected final Map<String, String> options = new LinkedHashMap<>();
 
     @Override
@@ -64,12 +65,21 @@ implements ISimpleOptionContainer, ISimpleColumnContainer {
 
     @Override
     public void addColumn(SimpleColumn column) {
-        columns.put(column.getName(), column);
+        columns.add(column);
         resetHash();
     }
 
-    public Set<String> getColumns(){
-        return Collections.unmodifiableSet(columns.keySet());
+    public boolean compareColumns(Set<String> refs) {
+        if (refs.size() != columns.size()) {
+            return false;
+        }
+        int i = 0;
+        for (String ref : refs) {
+            if (!ref.equals(columns.get(i++).getName())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public void addInclude(String column) {
@@ -77,8 +87,8 @@ implements ISimpleOptionContainer, ISimpleColumnContainer {
         resetHash();
     }
 
-    public Set<String> getIncludes(){
-        return Collections.unmodifiableSet(includes);
+    public List<String> getIncludes() {
+        return Collections.unmodifiableList(includes);
     }
 
     public boolean isUnique() {
@@ -145,7 +155,7 @@ implements ISimpleOptionContainer, ISimpleColumnContainer {
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.putOrdered(columns.values());
+        hasher.putOrdered(columns);
         hasher.put(unique);
         hasher.put(isClustered);
         hasher.put(where);
@@ -162,7 +172,7 @@ implements ISimpleOptionContainer, ISimpleColumnContainer {
         indexDst.setClustered(isClustered());
         indexDst.setWhere(getWhere());
         indexDst.setTablespace(getTablespace());
-        indexDst.columns.putAll(columns);
+        indexDst.columns.addAll(columns);
         indexDst.options.putAll(options);
         indexDst.includes.addAll(includes);
         return indexDst;
