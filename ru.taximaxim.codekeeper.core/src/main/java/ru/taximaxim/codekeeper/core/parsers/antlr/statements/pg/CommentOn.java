@@ -175,9 +175,6 @@ public class CommentOn extends PgParserAbstract {
             Cast_nameContext castNameCtx = obj.cast_name();
             st = getSafe(PgDatabase::getCast, db, getCastName(castNameCtx), castNameCtx.getStart());
             type = DbObjType.CAST;
-        } else if (obj.DATABASE() != null) {
-            st = db;
-            type = DbObjType.DATABASE;
         } else if (obj.INDEX() != null) {
             type = DbObjType.INDEX;
             st = getSafe((sc, n) -> sc.getStatementContainers()

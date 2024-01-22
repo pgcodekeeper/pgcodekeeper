@@ -507,14 +507,7 @@ public class PgDatabase extends PgStatement implements IDatabase {
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
-        compareComments(sb, newCondition);
-        return sb.length() > startLength;
-    }
-
-    @Override
-    protected StringBuilder appendFullName(StringBuilder sb) {
-        return sb.append("current_database()");
+        return false;
     }
 
     @Override

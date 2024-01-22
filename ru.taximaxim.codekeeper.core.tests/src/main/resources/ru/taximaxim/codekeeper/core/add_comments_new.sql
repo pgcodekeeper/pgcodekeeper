@@ -1,4 +1,5 @@
 COMMENT ON DATABASE comments IS 'comments database';
+
 COMMENT ON SCHEMA public IS 'public schema';
 
 CREATE EXTENSION test_ext WITH SCHEMA pg_catalog;
