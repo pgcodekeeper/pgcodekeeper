@@ -1,7 +1,5 @@
 SET search_path = pg_catalog;
 
-COMMENT ON DATABASE current_database() IS NULL;
-
 COMMENT ON CAST (integer AS bigint) IS NULL;
 
 COMMENT ON EXTENSION test_ext IS NULL;

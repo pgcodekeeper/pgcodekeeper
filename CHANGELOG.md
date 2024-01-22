@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Removed generation of comments for the DATABASE object in the migration script.
+
 ### Fixed
 
 - Fixed code generation when changing the order of columns in INDEX and CONSTRAINT objects.
