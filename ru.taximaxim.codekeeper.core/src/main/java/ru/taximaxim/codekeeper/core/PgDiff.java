@@ -410,6 +410,7 @@ public class PgDiff {
             }
         }
         depRes.recreateDrops();
+        depRes.removeExtraActions();
     }
 
 

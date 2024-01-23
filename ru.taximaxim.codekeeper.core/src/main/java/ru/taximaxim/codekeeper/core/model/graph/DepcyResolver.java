@@ -262,6 +262,24 @@ public class DepcyResolver {
     }
 
     /**
+     * Removes actions that for some reason should not be included in the script
+     */
+    public void removeExtraActions() {
+        Set<ActionContainer> toRemove = new HashSet<>();
+        for (ActionContainer action : actions) {
+            if (action.getAction() != StatementActions.ALTER) {
+                continue;
+            }
+            // case where the selected modified object was recreated due to a dependency
+            PgStatement newObj = action.getNewObj();
+            if (actions.contains(new ActionContainer(newObj, newObj, StatementActions.CREATE, null))) {
+                toRemove.add(action);
+            }
+        }
+        actions.removeAll(toRemove);
+    }
+
+    /**
      * Проходит по итератору и заполняет список объектами из итератора
      *
      * @param dfi

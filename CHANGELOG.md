@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed a bug in duplicating an object in the migration script.
 - Fixed code generation when changing the order of columns in INDEX and CONSTRAINT objects.
 - Fixed missing quotes in FOREIGN KEY.
 
