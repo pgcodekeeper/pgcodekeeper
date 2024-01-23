@@ -250,6 +250,7 @@ public class ActionsToScriptConverter {
                 if (depcy != null) {
                     script.addStatement(depcy);
                 }
+
                 script.addStatement(sb.toString());
             }
             break;
