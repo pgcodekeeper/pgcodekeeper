@@ -11,7 +11,12 @@
 
 ### Изменено
 
-- Удалена генерация комментариев для объекта DATABASE в скрипте миграции.
+### Исправлено
+
+## [9.2.0] - 2024-01-23
+
+### Изменено
+
 - Обновлен год лицензии.
 
 ### Исправлено
@@ -19,6 +24,10 @@
 - Исправлена ошибка дублирования объекта в скрипте миграции.
 - Исправлена генерация кода при изменении порядка столбцов в объектах INDEX и CONSTRAINT.
 - Исправлено пропущенное квотирование в FOREIGN KEY.
+
+### Исправлено
+
+- Удалена генерация комментариев для объекта DATABASE.
 
 ## [9.1.0] - 2024-01-10
 
@@ -1841,7 +1850,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.1.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.2.0...HEAD
+[9.2.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.1.0...v9.2.0
 [9.1.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.0.0...v9.1.0
 [9.0.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.9.0...v9.0.0
 [8.9.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.8.0...v8.9.0
