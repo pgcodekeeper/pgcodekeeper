@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2023 TAXTELECOM, LLC
+ * Copyright 2017-2024 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -397,7 +397,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
         }
 
         for (IConstraint con : meta.getConstraints(dep.getSchema(), dep.getTable())) {
-            if (con.isPrimaryKey() && con.getColumns().contains(dep.getObjName())) {
+            if (con.isPrimaryKey() && con.containsColumn(dep.getObjName())) {
                 // implicit reference
                 vex.addDepcy(new GenericColumn(con.getSchemaName(),
                         con.getTableName(), con.getName(), DbObjType.CONSTRAINT), null);

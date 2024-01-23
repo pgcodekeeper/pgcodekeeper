@@ -122,8 +122,6 @@ CREATE POLICY test_policy ON public.test;
 ALTER SEQUENCE public.test_id_seq
 	OWNED BY public.test.id;
 
-COMMENT ON DATABASE current_database() IS 'comments database';
-
 COMMENT ON CAST (integer AS bigint) IS 'test cast';
 
 COMMENT ON EXTENSION test_ext IS 'test extension';

@@ -118,8 +118,6 @@ CREATE MATERIALIZED VIEW public.test_mat_view AS
 	SELECT 1 AS c2
 WITH DATA;
 
-COMMENT ON DATABASE current_database() IS 'comments database 2';
-
 COMMENT ON CAST (integer AS bigint) IS 'test cast 2';
 
 COMMENT ON EXTENSION test_ext IS 'test extension 2';

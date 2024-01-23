@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2023 TAXTELECOM, LLC
+ * Copyright 2017-2024 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,9 +31,9 @@ import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 
 public final class JdbcChLoader extends JdbcLoaderBase {
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(JdbcLoader.class);
-    
+
     public JdbcChLoader(JdbcConnector connector, PgDiffArguments pgDiffArguments) {
         this(connector, pgDiffArguments, SubMonitor.convert(null), null);
     }

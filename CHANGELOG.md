@@ -13,6 +13,22 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+## [9.2.0] - 2024-01-23
+
+### Changed
+
+- Updated license year.
+
+### Fixed
+
+- Fixed a bug in duplicating an object in the migration script.
+- Fixed code generation when changing the order of columns in INDEX and CONSTRAINT objects.
+- Fixed missing quotes in FOREIGN KEY.
+
+### Removed
+
+- Removed generation of comments for DATABASE object.
+
 ## [9.1.0] - 2024-01-10
 
 ### Added
@@ -1833,7 +1849,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.1.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.2.0...HEAD
+[9.2.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.1.0...v9.2.0
 [9.1.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.0.0...v9.1.0
 [9.0.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.9.0...v9.0.0
 [8.9.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.8.0...v8.9.0

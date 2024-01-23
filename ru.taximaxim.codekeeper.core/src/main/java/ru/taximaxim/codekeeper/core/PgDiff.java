@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2023 TAXTELECOM, LLC
+ * Copyright 2017-2024 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -415,6 +415,7 @@ public class PgDiff {
             }
         }
         depRes.recreateDrops();
+        depRes.removeExtraActions();
     }
 
 

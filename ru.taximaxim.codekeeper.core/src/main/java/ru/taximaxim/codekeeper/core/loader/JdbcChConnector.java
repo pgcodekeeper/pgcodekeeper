@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2023 TAXTELECOM, LLC
+ * Copyright 2017-2024 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import java.util.Map;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 
 public final class JdbcChConnector extends JdbcConnector {
-    
+
     private static final String DRIVER_NAME = "com.clickhouse.jdbc.ClickHouseDriver";
     private static final int DEFAULT_PORT = 8123;
 

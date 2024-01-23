@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2023 TAXTELECOM, LLC
+ * Copyright 2017-2024 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -120,7 +120,7 @@ public final class PgConstraintPk extends PgConstraint implements IConstraintPk,
                 sbSQL.append("NULLS NOT DISTINCT ");
             }
         }
-        StatementUtils.appendCols(sbSQL, getColumns(), getDbType());
+        StatementUtils.appendCols(sbSQL, columns, getDbType());
         appendIndexParam(sbSQL);
         return sbSQL.toString();
     }

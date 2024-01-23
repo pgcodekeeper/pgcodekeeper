@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2023 TAXTELECOM, LLC
+ * Copyright 2017-2024 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.pg;
 
-import java.util.Map;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -96,9 +96,9 @@ public class PgIndex extends AbstractIndex {
         return sbSQL.toString();
     }
 
-    private void appendSimpleColumns(StringBuilder sbSQL, Map<String, SimpleColumn> columns) {
+    private void appendSimpleColumns(StringBuilder sbSQL, List<SimpleColumn> columns) {
         sbSQL.append(" (");
-        for (var col : columns.values()) {
+        for (var col : columns) {
             // column name already quoted
             sbSQL.append(col.getName());
             if (col.getCollation() != null) {
