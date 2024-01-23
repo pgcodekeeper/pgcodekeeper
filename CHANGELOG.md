@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 - Removed generation of comments for the DATABASE object in the migration script.
+- Updated license year.
 
 ### Fixed
 
