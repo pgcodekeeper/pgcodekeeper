@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2023 TAXTELECOM, LLC
+ * Copyright 2017-2024 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,6 +100,9 @@ public class PgDbProject {
             case MS:
                 natures = new String[] {NATURE.ID, NATURE.MS};
                 break;
+            case CH:
+                natures = new String[] {NATURE.ID, NATURE.CH};
+                break;
             default:
                 throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
             }
@@ -112,6 +115,8 @@ public class PgDbProject {
             newProject.getNature(NATURE.ID).configure();
             if (dbType == DatabaseType.MS) {
                 newProject.getNature(NATURE.MS).configure();
+            } else if (dbType == DatabaseType.CH) {
+                newProject.getNature(NATURE.CH).configure();
             }
         }
         return new PgDbProject(newProject);

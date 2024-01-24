@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2023 TAXTELECOM, LLC
+ * Copyright 2017-2024 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,15 +28,12 @@ import java.util.Collection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.Consts.MS_WORK_DIR_NAMES;
-import ru.taximaxim.codekeeper.core.Consts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.core.DatabaseType;
+import ru.taximaxim.codekeeper.core.PgCodekeeperException;
+import ru.taximaxim.codekeeper.core.WorkDirs;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.exporter.AbstractModelExporter;
-import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
-import ru.taximaxim.codekeeper.core.model.exporter.MsModelExporter;
 import ru.taximaxim.codekeeper.core.model.exporter.OverridesModelExporter;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 
@@ -72,7 +69,6 @@ public class ProjectUpdater {
     }
 
     public void updatePartial() throws IOException {
-
         LOG.info("Project updater: started partial"); //$NON-NLS-1$
         if (dbOld == null){
             throw new IOException(Messages.ProjectUpdater_old_db_null);
@@ -83,33 +79,7 @@ public class ProjectUpdater {
             Path dirTmp = tmp.get();
 
             try {
-                AbstractModelExporter exporter;
-                if (overridesOnly) {
-                    updateFolder(dirTmp, Consts.OVERRIDES_DIR);
-
-                    exporter = new OverridesModelExporter(dirExport, dbNew, dbOld,
-                            changedObjects, encoding, dbType);
-                } else {
-                    switch (dbType) {
-                    case MS:
-                        for (MS_WORK_DIR_NAMES subdir : MS_WORK_DIR_NAMES.values()) {
-                            updateFolder(dirTmp, subdir.getDirName());
-                        }
-                        exporter = new MsModelExporter(dirExport, dbNew, dbOld,
-                                changedObjects, encoding);
-                        break;
-                    case PG:
-                        for (WORK_DIR_NAMES subdir : WORK_DIR_NAMES.values()) {
-                            updateFolder(dirTmp, subdir.toString());
-                        }
-                        exporter = new ModelExporter(dirExport, dbNew, dbOld,
-                                changedObjects, encoding);
-                        break;
-                    default:
-                        throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
-                    }
-                }
-                exporter.exportPartial();
+                updatePartial(dirTmp);
             } catch (Exception ex) {
                 caughtProcessingEx = true;
 
@@ -119,24 +89,35 @@ public class ProjectUpdater {
                     restoreProjectDir(dirTmp);
                 } catch (Exception exRestore) {
                     LOG.error("Error while restoring backups after update error!", exRestore); //$NON-NLS-1$
-                    IOException exNew = new IOException(
-                            Messages.ProjectUpdater_error_backup_restore, exRestore);
+                    IOException exNew = new IOException(Messages.ProjectUpdater_error_backup_restore, exRestore);
                     exNew.addSuppressed(ex);
                     throw exNew;
                 }
-                throw new IOException(MessageFormat.format(
-                        Messages.ProjectUpdater_error_update,
-                        ex.getLocalizedMessage()), ex);
+                throw new IOException(
+                        MessageFormat.format(Messages.ProjectUpdater_error_update, ex.getLocalizedMessage()), ex);
             }
         } catch (IOException ex) {
             if (caughtProcessingEx) {
                 // exception & err msg are already formed in the inner catch
                 throw ex;
             }
-            throw new IOException(MessageFormat.format(
-                    Messages.ProjectUpdater_error_no_tempdir,
-                    ex.getLocalizedMessage()), ex);
+            throw new IOException(
+                    MessageFormat.format(Messages.ProjectUpdater_error_no_tempdir, ex.getLocalizedMessage()), ex);
         }
+    }
+
+    private void updatePartial(Path dirTmp) throws IOException, PgCodekeeperException {
+        if (overridesOnly) {
+            updateFolder(dirTmp, WorkDirs.OVERRIDES);
+            new OverridesModelExporter(dirExport, dbNew, dbOld, changedObjects, encoding, dbType).exportPartial();
+            return;
+        }
+
+        for (String subdirName : WorkDirs.getDirectoryNames(dbType)) {
+            updateFolder(dirTmp, subdirName);
+        }
+
+        AbstractModelExporter.exportPartial(dbType, dirExport, dbNew, dbOld, changedObjects, encoding);
     }
 
     private void updateFolder(Path dirTmp, String folder) throws IOException {
@@ -168,18 +149,9 @@ public class ProjectUpdater {
 
             try {
                 safeCleanProjectDir(dirTmp);
-                switch (dbType) {
-                case PG:
-                    new ModelExporter(dirExport, dbNew, encoding).exportFull();
-                    break;
-                case MS:
-                    new MsModelExporter(dirExport, dbNew, encoding).exportFull();
-                    break;
-                default:
-                    throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
-                }
+                AbstractModelExporter.exportFull(dbType, dirExport, dbNew, encoding);
                 if (projectOnly) {
-                    restoreFolder(dirTmp, Consts.OVERRIDES_DIR);
+                    restoreFolder(dirTmp, WorkDirs.OVERRIDES);
                 }
             } catch (Exception ex) {
                 caughtProcessingEx = true;
@@ -190,43 +162,29 @@ public class ProjectUpdater {
                     restoreProjectDir(dirTmp);
                 } catch (Exception exRestore) {
                     LOG.error("Error while restoring backups after update error!", exRestore); //$NON-NLS-1$
-                    IOException exNew = new IOException(
-                            Messages.ProjectUpdater_error_backup_restore, exRestore);
+                    IOException exNew = new IOException(Messages.ProjectUpdater_error_backup_restore, exRestore);
                     exNew.addSuppressed(ex);
                     throw exNew;
                 }
-                throw new IOException(MessageFormat.format(
-                        Messages.ProjectUpdater_error_update,
-                        ex.getLocalizedMessage()), ex);
+                throw new IOException(
+                        MessageFormat.format(Messages.ProjectUpdater_error_update, ex.getLocalizedMessage()), ex);
             }
         } catch (IOException ex) {
             if (caughtProcessingEx) {
                 // exception & err msg are already formed in the inner catch
                 throw ex;
             }
-            throw new IOException(MessageFormat.format(
-                    Messages.ProjectUpdater_error_no_tempdir,
-                    ex.getLocalizedMessage()), ex);
+            throw new IOException(
+                    MessageFormat.format(Messages.ProjectUpdater_error_no_tempdir, ex.getLocalizedMessage()), ex);
         }
     }
 
     private void safeCleanProjectDir(Path dirTmp) throws IOException {
-        switch (dbType) {
-        case PG:
-            for (WORK_DIR_NAMES subdirName : WORK_DIR_NAMES.values()) {
-                moveFolder(dirTmp, subdirName.toString());
-            }
-            break;
-        case MS:
-            for (MS_WORK_DIR_NAMES subdirName : MS_WORK_DIR_NAMES.values()) {
-                moveFolder(dirTmp, subdirName.getDirName());
-            }
-            break;
-        default:
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
+        for (String subdirName : WorkDirs.getDirectoryNames(dbType)) {
+            moveFolder(dirTmp, subdirName);
         }
 
-        moveFolder(dirTmp, Consts.OVERRIDES_DIR);
+        moveFolder(dirTmp, WorkDirs.OVERRIDES);
     }
 
     private void moveFolder(Path dirTmp, String folder) throws IOException {
@@ -237,22 +195,11 @@ public class ProjectUpdater {
     }
 
     private void restoreProjectDir(Path dirTmp) throws IOException {
-        switch (dbType) {
-        case PG:
-            for (WORK_DIR_NAMES subdirName : WORK_DIR_NAMES.values()) {
-                restoreFolder(dirTmp, subdirName.toString());
-            }
-            break;
-        case MS:
-            for (MS_WORK_DIR_NAMES subdirName : MS_WORK_DIR_NAMES.values()) {
-                restoreFolder(dirTmp, subdirName.getDirName());
-            }
-            break;
-        default:
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
+        for (String subdirName : WorkDirs.getDirectoryNames(dbType)) {
+            restoreFolder(dirTmp, subdirName);
         }
 
-        restoreFolder(dirTmp, Consts.OVERRIDES_DIR);
+        restoreFolder(dirTmp, WorkDirs.OVERRIDES);
     }
 
     private void restoreFolder(Path dirTmp, String folder) throws IOException {

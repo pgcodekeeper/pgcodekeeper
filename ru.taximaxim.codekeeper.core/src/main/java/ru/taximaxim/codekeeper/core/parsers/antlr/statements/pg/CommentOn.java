@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2023 TAXTELECOM, LLC
+ * Copyright 2017-2024 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -175,9 +175,6 @@ public class CommentOn extends PgParserAbstract {
             Cast_nameContext castNameCtx = obj.cast_name();
             st = getSafe(PgDatabase::getCast, db, getCastName(castNameCtx), castNameCtx.getStart());
             type = DbObjType.CAST;
-        } else if (obj.DATABASE() != null) {
-            st = db;
-            type = DbObjType.DATABASE;
         } else if (obj.INDEX() != null) {
             type = DbObjType.INDEX;
             st = getSafe((sc, n) -> sc.getStatementContainers()

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2023 TAXTELECOM, LLC
+ * Copyright 2017-2024 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -208,6 +208,9 @@ public class DBStoreMenu {
             break;
         case PG:
             fileName = FILE.PG_ICON;
+            break;
+        case CH:
+            fileName = FILE.CH_ICON;
             break;
         default:
             throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbInfo.getDbType());

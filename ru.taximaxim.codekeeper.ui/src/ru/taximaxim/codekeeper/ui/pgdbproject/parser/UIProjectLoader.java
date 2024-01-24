@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2023 TAXTELECOM, LLC
+ * Copyright 2017-2024 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,12 +42,10 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.ide.ResourceUtil;
 
-import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.Consts.MS_WORK_DIR_NAMES;
-import ru.taximaxim.codekeeper.core.Consts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
+import ru.taximaxim.codekeeper.core.WorkDirs;
 import ru.taximaxim.codekeeper.core.loader.DatabaseLoader;
 import ru.taximaxim.codekeeper.core.loader.FullAnalyze;
 import ru.taximaxim.codekeeper.core.loader.LibraryLoader;
@@ -115,18 +113,29 @@ public class UIProjectLoader extends ProjectLoader {
         }
     }
 
+    private void loadChStructure(IContainer baseDir, PgDatabase db) throws InterruptedException, CoreException {
+        if (!baseDir.exists()) {
+            return;
+        }
+
+        // TODO check when parser will be added
+        for (String workDirName : WorkDirs.getDirectoryNames(DatabaseType.CH)) {
+            loadSubdir(baseDir.getFolder(new Path(workDirName)), db, this::checkIgnoreSchemaList);
+        }
+    }
+
     private void loadPgStructure(IContainer baseDir, PgDatabase db)
             throws InterruptedException, CoreException {
         if (!baseDir.exists()) {
             return;
         }
 
-        for (WORK_DIR_NAMES workDirName : WORK_DIR_NAMES.values()) {
+        for (String workDirName : WorkDirs.getDirectoryNames(DatabaseType.PG)) {
             // legacy schemas
-            loadSubdir(baseDir.getFolder(new Path(workDirName.name())), db, this::checkIgnoreSchemaList) ;
+            loadSubdir(baseDir.getFolder(new Path(workDirName)), db, this::checkIgnoreSchemaList);
         }
 
-        IFolder schemasCommonDir = baseDir.getFolder(new Path(WORK_DIR_NAMES.SCHEMA.name()));
+        IFolder schemasCommonDir = baseDir.getFolder(new Path(WorkDirs.PG_SCHEMA));
         // skip walking SCHEMA folder if it does not exist
         if (schemasCommonDir.exists()) {
             // new schemas + content
@@ -152,23 +161,23 @@ public class UIProjectLoader extends ProjectLoader {
             return;
         }
 
-        IFolder securityFolder = baseDir.getFolder(new Path(MS_WORK_DIR_NAMES.SECURITY.getDirName()));
+        IFolder securityFolder = baseDir.getFolder(new Path(WorkDirs.MS_SECURITY));
 
-        loadSubdir(securityFolder.getFolder(MS_SCHEMAS_FOLDER), db, this::checkIgnoreSchemaList);
+        loadSubdir(securityFolder.getFolder(WorkDirs.MS_SCHEMAS), db, this::checkIgnoreSchemaList);
         // DBO schema check requires schema loads to finish first
         AntlrParser.finishAntlr(antlrTasks);
         addDboSchema(db);
 
-        loadSubdir(securityFolder.getFolder(MS_ROLES_FOLDER), db);
-        loadSubdir(securityFolder.getFolder(MS_USERS_FOLDER), db);
+        loadSubdir(securityFolder.getFolder(WorkDirs.MS_ROLES), db);
+        loadSubdir(securityFolder.getFolder(WorkDirs.MS_USERS), db);
 
-        for (MS_WORK_DIR_NAMES dirSub : MS_WORK_DIR_NAMES.values()) {
-            if (dirSub.isInSchema()) {
-                loadSubdir(baseDir.getFolder(new Path(dirSub.getDirName())), db,
+        for (String dirSub : WorkDirs.getDirectoryNames(DatabaseType.MS)) {
+            if (WorkDirs.isInMsSchema(dirSub)) {
+                loadSubdir(baseDir.getFolder(new Path(dirSub)), db,
                         msFileName -> checkIgnoreSchemaList(msFileName.substring(0, msFileName.indexOf('.'))));
-            } else {
-                loadSubdir(baseDir.getFolder(new Path(dirSub.getDirName())), db);
+                continue;
             }
+            loadSubdir(baseDir.getFolder(new Path(dirSub)), db);
         }
     }
 
@@ -223,12 +232,12 @@ public class UIProjectLoader extends ProjectLoader {
         args.setDbType(DatabaseType.MS);
         PgDatabase db = new PgDatabase(args);
 
-        IPath schemasPath = new Path(MS_WORK_DIR_NAMES.SECURITY.getDirName()).append(MS_SCHEMAS_FOLDER);
+        IPath schemasPath = new Path(WorkDirs.MS_SECURITY).append(WorkDirs.MS_SCHEMAS);
         Set<String> schemaFiles = new HashSet<>();
         boolean isLoaded = false;
         for (IFile file : files) {
             IPath filePath = file.getProjectRelativePath();
-            if (!SQL_EXTENSION.equals(file.getFileExtension()) || !isInMsProject(filePath)) {
+            if (!SQL_EXTENSION.equals(file.getFileExtension()) || !isInProject(filePath, DatabaseType.MS)) {
                 // skip non-sql or non-project files
                 // still report work
                 mon.worked(1);
@@ -271,12 +280,12 @@ public class UIProjectLoader extends ProjectLoader {
     private PgDatabase buildPgFiles(Collection<IFile> files, SubMonitor mon)
             throws InterruptedException, CoreException {
         Set<String> schemaDirnamesLoaded = new HashSet<>();
-        IPath schemasPath = new Path(WORK_DIR_NAMES.SCHEMA.name());
+        IPath schemasPath = new Path(WorkDirs.PG_SCHEMA);
         PgDatabase db = new PgDatabase(new PgDiffArguments());
 
         for (IFile file : files) {
             IPath filePath = file.getProjectRelativePath();
-            if (!SQL_EXTENSION.equals(file.getFileExtension()) || !isInProject(filePath)) {
+            if (!SQL_EXTENSION.equals(file.getFileExtension()) || !isInProject(filePath, DatabaseType.PG)) {
                 // skip non-sql or non-project files
                 // still report work
                 mon.worked(1);
@@ -325,6 +334,24 @@ public class UIProjectLoader extends ProjectLoader {
         return db;
     }
 
+    private PgDatabase buildChFiles(Collection<IFile> files, SubMonitor mon)
+            throws InterruptedException, CoreException {
+        var args = new PgDiffArguments();
+        args.setDbType(DatabaseType.CH);
+        var db = new PgDatabase(args);
+        for (IFile file : files) {
+            IPath filePath = file.getProjectRelativePath();
+            if (!SQL_EXTENSION.equals(file.getFileExtension()) || !isInProject(filePath, DatabaseType.CH)) {
+                // skip non-sql or non-project files
+                // still report work
+                mon.worked(1);
+                continue;
+            }
+            loadFile(file, mon, db);
+        }
+        return db;
+    }
+
     private PgDatabase loadDatabaseWithLibraries()
             throws InterruptedException, IOException, CoreException {
         PgDatabase db = new PgDatabase(arguments);
@@ -337,7 +364,7 @@ public class UIProjectLoader extends ProjectLoader {
         if (!arguments.isIgnorePrivileges() && !projectOnly) {
             isOverrideMode = true;
             // read overrides from special folder
-            IFolder privs = iProject.getFolder(Consts.OVERRIDES_DIR);
+            IFolder privs = iProject.getFolder(WorkDirs.OVERRIDES);
             try {
                 loadDbStructure(privs, db);
                 replaceOverrides();
@@ -357,6 +384,9 @@ public class UIProjectLoader extends ProjectLoader {
             break;
         case MS:
             loadMsStructure(dir, db);
+            break;
+        case CH:
+            loadChStructure(dir, db);
             break;
         default:
             throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
@@ -391,6 +421,9 @@ public class UIProjectLoader extends ProjectLoader {
         case MS:
             db = loader.buildMsFiles(files, mon);
             break;
+        case CH:
+            db = loader.buildChFiles(files, mon);
+            break;
         default:
             throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
         }
@@ -421,16 +454,9 @@ public class UIProjectLoader extends ProjectLoader {
      * @param path project relative path of checked resource
      * @return whether this resource is within the main database schema hierarchy
      */
-    private static boolean isInProject(IPath path) {
+    private static boolean isInProject(IPath path, DatabaseType dbType) {
         String dir = path.segment(0);
-        return dir != null && Arrays.stream(Consts.WORK_DIR_NAMES.values())
-                .map(Enum::name).anyMatch(dir::equals);
-    }
-
-    private static boolean isInMsProject(IPath path) {
-        String dir = path.segment(0);
-        return dir != null && Arrays.stream(Consts.MS_WORK_DIR_NAMES.values())
-                .map(MS_WORK_DIR_NAMES::getDirName).anyMatch(dir::equals);
+        return dir != null && WorkDirs.getDirectoryNames(dbType).stream().anyMatch(dir::equals);
     }
 
     public static boolean isInProject(IResource resource) {
@@ -440,11 +466,16 @@ public class UIProjectLoader extends ProjectLoader {
                 return false;
             }
 
+            DatabaseType dbType;
             if (project.hasNature(NATURE.MS)) {
-                return isInMsProject(resource.getProjectRelativePath());
+                dbType = DatabaseType.MS;
+            } else if (project.hasNature(NATURE.CH)) {
+                dbType = DatabaseType.CH;
+            } else {
+                dbType = DatabaseType.PG;
             }
 
-            return isInProject(resource.getProjectRelativePath());
+            return isInProject(resource.getProjectRelativePath(), dbType);
         } catch (CoreException ex) {
             Log.log(ex);
             return false;
@@ -452,18 +483,11 @@ public class UIProjectLoader extends ProjectLoader {
     }
 
     public static boolean isInProject(IResourceDelta delta, DatabaseType dbType) {
-        switch (dbType) {
-        case PG:
-            return isInProject(delta.getProjectRelativePath());
-        case MS:
-            return isInMsProject(delta.getProjectRelativePath());
-        default:
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
-        }
+        return isInProject(delta.getProjectRelativePath(), dbType);
     }
 
-    public static boolean isPrivilegeFolder(IResourceDelta delta) {
-        return Consts.OVERRIDES_DIR.equals(delta.getProjectRelativePath().segment(0));
+    public static boolean isOverridesFolder(IResourceDelta delta) {
+        return WorkDirs.OVERRIDES.equals(delta.getProjectRelativePath().segment(0));
     }
 
     public static boolean isInProject(IEditorInput editorInput) {
@@ -473,7 +497,7 @@ public class UIProjectLoader extends ProjectLoader {
 
     /**
      * @param path project relative path
-     * @param isMsSql is MS project
+     * @param dbType type of project
      * @return whether the path corresponds to a schema sql file
      */
     public static boolean isSchemaFile(IPath path, DatabaseType dbType) {
@@ -482,6 +506,8 @@ public class UIProjectLoader extends ProjectLoader {
             return isPgSchemaFile(path);
         case MS:
             return isMsSchemaFile(path);
+        case CH:
+            return false;
         default:
             throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
         }
@@ -495,7 +521,7 @@ public class UIProjectLoader extends ProjectLoader {
     private static boolean isPgSchemaFile(IPath path) {
         int c = path.segmentCount();
         return (c == 2 || c == 3) // legacy or new schemas
-                && path.segment(0).equals(WORK_DIR_NAMES.SCHEMA.name())
+                && path.segment(0).equals(WorkDirs.PG_SCHEMA)
                 && path.segment(c - 1).endsWith(".sql"); //$NON-NLS-1$
     }
 
@@ -506,8 +532,8 @@ public class UIProjectLoader extends ProjectLoader {
      */
     private static boolean isMsSchemaFile(IPath path) {
         return path.segmentCount() == 3
-                && path.segment(0).equals(MS_WORK_DIR_NAMES.SECURITY.getDirName())
-                && MS_SCHEMAS_FOLDER.equals(path.segment(1))
+                && path.segment(0).equals(WorkDirs.MS_SECURITY)
+                && path.segment(1).equals(WorkDirs.MS_SCHEMAS)
                 && path.segment(2).endsWith(".sql"); //$NON-NLS-1$
     }
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2023 TAXTELECOM, LLC
+ * Copyright 2017-2024 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,9 +28,9 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.Consts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
+import ru.taximaxim.codekeeper.core.WorkDirs;
 import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.libraries.PgLibrary;
 import ru.taximaxim.codekeeper.core.libraries.PgLibrarySource;
@@ -132,8 +132,8 @@ public class UiLibraryLoader {
     }
 
     private void readProject(AbstractLibrary parent, Path path) throws IOException {
-        for (WORK_DIR_NAMES name : Consts.WORK_DIR_NAMES.values()) {
-            Path dirPath = path.resolve(name.name());
+        for (String name : WorkDirs.getDirectoryNames(DatabaseType.PG)) {
+            Path dirPath = path.resolve(name);
             if (Files.exists(dirPath)) {
                 readPath(parent, dirPath);
             }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2023 TAXTELECOM, LLC
+ * Copyright 2017-2024 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,11 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.ms;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -38,7 +40,8 @@ implements IConstraintPk, IOptionContainer, ISimpleColumnContainer {
     private final boolean isPrimaryKey;
     private boolean isClustered;
     private String dataSpace;
-    private final Map<String, SimpleColumn> columns = new LinkedHashMap<>();
+    private final Set<String> columnNames = new HashSet<>();
+    private final List<SimpleColumn> columns = new ArrayList<>();
     private final Map<String, String> options = new HashMap<>();
 
     public MsConstraintPk(String name, boolean isPrimaryKey) {
@@ -72,12 +75,18 @@ implements IConstraintPk, IOptionContainer, ISimpleColumnContainer {
 
     @Override
     public Set<String> getColumns() {
-        return Collections.unmodifiableSet(columns.keySet());
+        return Collections.unmodifiableSet(columnNames);
+    }
+
+    @Override
+    public boolean containsColumn(String name) {
+        return columnNames.contains(name);
     }
 
     @Override
     public void addColumn(SimpleColumn column) {
-        columns.put(column.getName(), column);
+        columnNames.add(column.getName());
+        columns.add(column);
         resetHash();
     }
 
@@ -114,9 +123,9 @@ implements IConstraintPk, IOptionContainer, ISimpleColumnContainer {
         return sbSQL.toString();
     }
 
-    private void appendSimpleColumns(StringBuilder sbSQL, Map<String, SimpleColumn> columns) {
+    private void appendSimpleColumns(StringBuilder sbSQL, List<SimpleColumn> columns) {
         sbSQL.append(" (");
-        for (var col : columns.values()) {
+        for (var col : columns) {
             sbSQL.append(MsDiffUtils.quoteName(col.getName()));
             if (col.isDesc()) {
                 sbSQL.append(" DESC");
@@ -161,7 +170,7 @@ implements IConstraintPk, IOptionContainer, ISimpleColumnContainer {
         hasher.put(isPrimaryKey);
         hasher.put(isClustered);
         hasher.put(dataSpace);
-        hasher.putOrdered(columns.values());
+        hasher.putOrdered(columns);
         hasher.put(options);
     }
 
@@ -170,7 +179,8 @@ implements IConstraintPk, IOptionContainer, ISimpleColumnContainer {
         var con = new MsConstraintPk(name, isPrimaryKey);
         con.setClustered(isClustered());
         con.setDataSpace(getDataSpace());
-        con.columns.putAll(columns);
+        con.columnNames.addAll(columnNames);
+        con.columns.addAll(columns);
         con.options.putAll(options);
         return con;
     }

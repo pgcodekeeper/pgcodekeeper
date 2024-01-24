@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2023 TAXTELECOM, LLC
+ * Copyright 2017-2024 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,8 +44,6 @@ public interface Consts {
 
     String PLUGIN_ID = "ru.taximaxim.codekeeper.core";
 
-    String OVERRIDES_DIR = "OVERRIDES";
-
     String FILENAME_WORKING_DIR_MARKER = ".pgcodekeeper";
     String VERSION_PROP_NAME = "version";
     String EXPORT_CURRENT_VERSION = "0.6.0";
@@ -78,41 +76,6 @@ public interface Consts {
 
         public String getName() {
             return name;
-        }
-    }
-
-    enum WORK_DIR_NAMES {
-        SCHEMA,
-        EXTENSION,
-        EVENT_TRIGGER,
-        USER_MAPPING,
-        CAST,
-        SERVER,
-        FDW
-    }
-
-    enum MS_WORK_DIR_NAMES {
-        ASSEMBLIES("Assemblies"),
-        TYPES("Types"),
-        TABLES("Tables"),
-        VIEWS("Views"),
-        SEQUENCES("Sequences"),
-        FUNCTIONS("Functions"),
-        PROCEDURES("Stored Procedures"),
-        SECURITY("Security");
-
-        private final String name;
-
-        MS_WORK_DIR_NAMES(String name) {
-            this.name = name;
-        }
-
-        public String getDirName() {
-            return name;
-        }
-
-        public boolean isInSchema() {
-            return this != ASSEMBLIES && this != SECURITY;
         }
     }
 

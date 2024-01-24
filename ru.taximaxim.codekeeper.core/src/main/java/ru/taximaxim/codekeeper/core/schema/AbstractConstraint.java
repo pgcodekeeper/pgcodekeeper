@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2023 TAXTELECOM, LLC
+ * Copyright 2017-2024 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,10 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath imple
     @Override
     public Set<String> getColumns() {
         return Collections.emptySet();
+    }
+
+    public boolean containsColumn(String name) {
+        return getColumns().contains(name);
     }
 
     public boolean isNotValid() {

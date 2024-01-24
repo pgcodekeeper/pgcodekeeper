@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2023 TAXTELECOM, LLC
+ * Copyright 2017-2024 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -265,6 +265,7 @@ class PageDiff extends WizardPage implements Listener {
         new Label(compTz, SWT.NONE).setText(Messages.database_type);
         cmbDbType = new ComboViewer(compTz, SWT.READ_ONLY);
         cmbDbType.setContentProvider(ArrayContentProvider.getInstance());
+        cmbDbType.setLabelProvider(UIConsts.DATABASE_TYPE_PROVIDER);
         cmbDbType.setInput(DatabaseType.values());
         cmbDbType.addSelectionChangedListener(e -> {
             StructuredSelection sel = (StructuredSelection) e.getSelection();

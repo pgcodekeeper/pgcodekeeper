@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2023 TAXTELECOM, LLC
+ * Copyright 2017-2024 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,6 @@ import ru.taximaxim.codekeeper.core.DangerStatement;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
-import ru.taximaxim.codekeeper.core.loader.JdbcMsConnector;
 import ru.taximaxim.codekeeper.core.loader.JdbcRunner;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
@@ -215,23 +214,9 @@ class QuickUpdateJob extends SingletonEditorJob {
 
         monitor.newChild(1).subTask(Messages.QuickUpdate_updating_db);
 
-        JdbcConnector connector;
-
-        switch (dbType) {
-        case PG:
-            connector = new JdbcConnector(dbinfo.getDbHost(), dbinfo.getDbPort(),
-                    dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(),
-                    dbinfo.getProperties(), dbinfo.isReadOnly(), Consts.UTC);
-            break;
-        case MS:
-            connector = new JdbcMsConnector(dbinfo.getDbHost(), dbinfo.getDbPort(),
-                    dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(),
-                    dbinfo.getProperties(), dbinfo.isReadOnly(), dbinfo.isWinAuth(),
-                    dbinfo.getDomain());
-            break;
-        default:
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
-        }
+        JdbcConnector connector = JdbcConnector.getJdbcConnector(dbType, dbinfo.getDbHost(), dbinfo.getDbPort(),
+                dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(), dbinfo.getProperties(),
+                dbinfo.isReadOnly(), Consts.UTC, dbinfo.isWinAuth(), dbinfo.getDomain());
 
         try {
             ScriptParser parser = new ScriptParser(file.getName(), differ.getDiffDirect(), dbType);

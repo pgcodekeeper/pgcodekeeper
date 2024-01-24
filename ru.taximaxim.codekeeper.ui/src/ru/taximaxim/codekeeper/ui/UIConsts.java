@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2023 TAXTELECOM, LLC
+ * Copyright 2017-2024 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,20 @@ package ru.taximaxim.codekeeper.ui;
 
 import java.util.List;
 
+import org.eclipse.jface.viewers.LabelProvider;
+
+import ru.taximaxim.codekeeper.core.DatabaseType;
+
 public interface UIConsts {
+    
+    LabelProvider DATABASE_TYPE_PROVIDER = new LabelProvider() {
+
+        @Override
+        public String getText(Object element) {
+            var dbType = (DatabaseType) element;
+            return dbType.getDbTypeName();
+        }
+    };
 
     String _NL = System.lineSeparator();
 
@@ -197,6 +210,7 @@ public interface UIConsts {
     interface NATURE {
         String ID = PLUGIN_ID.THIS + ".nature"; //$NON-NLS-1$
         String MS = PLUGIN_ID.THIS + ".msnature"; //$NON-NLS-1$
+        String CH = PLUGIN_ID.THIS + ".chnature"; //$NON-NLS-1$
     }
 
     interface BUILDER {
@@ -226,6 +240,7 @@ public interface UIConsts {
         String ZIP = "/icons/zip.png"; //$NON-NLS-1$
         String PG_ICON = "/icons/postgresql_icon.png"; //$NON-NLS-1$
         String MS_ICON = "/icons/mssql_icon.png"; //$NON-NLS-1$
+        String CH_ICON = "/icons/ch_icon16.png"; //$NON-NLS-1$
         String DECORDATABASE = "/icons/db_decorator.png"; //$NON-NLS-1$
         String DECORPGCODEKEEPER = "/icons/nature_decorator.png"; //$NON-NLS-1$
 

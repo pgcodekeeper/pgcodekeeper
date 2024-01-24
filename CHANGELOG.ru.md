@@ -9,16 +9,39 @@
 
 ### Добавлено
 
-- Добавлена настройка для переноса комментариев в конец скрипта миграции (`Window -> Preferences -> pgCodeKeeper -> Обновление БД -> Печатать комментарии в конце скрипта`, CLI-опция `--comments-to-end`).
-
 ### Изменено
 
 ### Исправлено
 
+## [9.2.0] - 2024-01-23
+
+### Изменено
+
+- Обновлен год лицензии.
+
+### Исправлено
+
+- Исправлена ошибка дублирования объекта в скрипте миграции.
+- Исправлена генерация кода при изменении порядка столбцов в объектах INDEX и CONSTRAINT.
+- Исправлено пропущенное квотирование в FOREIGN KEY.
+
+### Исправлено
+
+- Удалена генерация комментариев для объекта DATABASE.
+
+## [9.1.0] - 2024-01-10
+
+### Добавлено
+
+- Добавлена настройка для переноса комментариев в конец скрипта миграции (`Window -> Preferences -> pgCodeKeeper -> Обновление БД -> Печатать комментарии в конце скрипта`, CLI-опция `--comments-to-end`).
+
+### Исправлено
+
+- Исправлены ошибки парсера для MS SQL.
 - Исправлена ошибка при открытии файлов вне pgCodeKeeper проекта в редакторе SQL.
 - Исправлена ошибка с определением зависимости в теле функции в PG.
 - Добавлены пропущенные ссылки на объекты COLLATION в PostgreSQL.
-- Исправлена ошибка с зависимостями столбцов в MS.
+- Исправлены ошибки с зависимостями столбцов в MS SQL.
 
 ## [9.0.0] - 2023-12-13
 
@@ -1827,7 +1850,9 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.0.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.2.0...HEAD
+[9.2.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.1.0...v9.2.0
+[9.1.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.0.0...v9.1.0
 [9.0.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.9.0...v9.0.0
 [8.9.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.8.0...v8.9.0
 [8.8.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.7.0...v8.8.0

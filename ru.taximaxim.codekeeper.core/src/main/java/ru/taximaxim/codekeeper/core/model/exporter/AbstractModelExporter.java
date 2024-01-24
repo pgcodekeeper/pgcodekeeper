@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2023 TAXTELECOM, LLC
+ * Copyright 2017-2024 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgCodekeeperException;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.UnixPrintWriter;
@@ -264,10 +265,51 @@ public abstract class AbstractModelExporter {
         case MS:
             exporter = new MsModelExporter(null, null, null);
             break;
+        case CH:
+            exporter = new ChModelExporter(null, null, null);
+            break;
         default:
             throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + st.getDbType());
         }
         return exporter.getRelativeFilePath(st, true);
+    }
+
+    public static void exportPartial(DatabaseType dbType, Path dirExport, PgDatabase dbNew, PgDatabase dbOld,
+            Collection<TreeElement> changedObjects, String encoding) throws IOException, PgCodekeeperException {
+        AbstractModelExporter exporter;
+        switch (dbType) {
+        case MS:
+            exporter = new MsModelExporter(dirExport, dbNew, dbOld, changedObjects, encoding);
+            break;
+        case PG:
+            exporter = new ModelExporter(dirExport, dbNew, dbOld, changedObjects, encoding);
+            break;
+        case CH:
+            exporter = new ChModelExporter(dirExport, dbNew, dbOld, changedObjects, encoding);
+            break;
+        default:
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
+        }
+        exporter.exportPartial();
+    }
+
+    public static void exportFull(DatabaseType dbType, Path dirExport, PgDatabase dbNew, String encoding)
+            throws IOException {
+        AbstractModelExporter exporter;
+        switch (dbType) {
+        case PG:
+            exporter = new ModelExporter(dirExport, dbNew, encoding);
+            break;
+        case MS:
+            exporter = new MsModelExporter(dirExport, dbNew, encoding);
+            break;
+        case CH:
+            exporter = new ChModelExporter(dirExport, dbNew, encoding);
+            break;
+        default:
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
+        }
+        exporter.exportFull();
     }
 }
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2023 TAXTELECOM, LLC
+ * Copyright 2017-2024 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -277,6 +277,9 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
                 break;
             case "MS": //$NON-NLS-1$
                 dbType = DatabaseType.MS;
+                break;
+            case "CH": //$NON-NLS-1$
+                dbType = DatabaseType.CH;
                 break;
             default:
                 throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbTypeText);

@@ -1568,3 +1568,16 @@ SELECT * FROM CHANGETABLE (CHANGES Employees, @last_sync_version) AS C;
 SELECT f((SELECT 1));
 SELECT * FROM dbo.t1 (UPDLOCK) p; -- function call
 SELECT * FROM dbo.t1 (UPDLOCK) as p; -- function call
+
+--WITH XMLNAMESPACES
+WITH XMLNAMESPACES ('uri' as ns1)
+SELECT ProductID as 'ns1:ProductID',
+       Name      as 'ns1:Name',
+       Color     as 'ns1:Color'
+FROM  Production.Product
+WHERE ProductID IN (316, 317)
+FOR XML RAW ('ns1:Prod'), ELEMENTS;
+
+WITH XMLNAMESPACES ('urn:schemas-microsoft-com:xml-sql' as sql)
+SELECT 'SELECT * FROM Customers FOR XML AUTO, ROOT("a")' AS "sql:query"
+FOR XML PATH('sql:root');

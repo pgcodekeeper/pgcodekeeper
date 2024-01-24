@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2023 TAXTELECOM, LLC
+ * Copyright 2017-2024 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -436,7 +436,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 // check that it's our resource
                 if (delta.getFlags() != IResourceDelta.MARKERS &&
                         (UIProjectLoader.isInProject(delta, OpenProjectUtils.getDatabaseType(getProject()))
-                                || UIProjectLoader.isPrivilegeFolder(delta)) &&
+                                || UIProjectLoader.isOverridesFolder(delta)) &&
                         delta.getResource().getType() == IResource.FILE &&
                         delta.getResource().getProject().equals(getProject())) {
                     schemaChanged[0] = true;

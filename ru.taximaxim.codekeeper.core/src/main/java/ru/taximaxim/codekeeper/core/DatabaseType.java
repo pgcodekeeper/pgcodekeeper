@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2023 TAXTELECOM, LLC
+ * Copyright 2017-2024 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,17 @@
 package ru.taximaxim.codekeeper.core;
 
 public enum DatabaseType {
-    PG,
-    MS
+    PG("PostgreSQL"),
+    MS("MS SQL"),
+    CH("ClickHouse");
+    
+    private final String dbTypeName;
+    
+    DatabaseType(String dbTypeName) {
+        this.dbTypeName = dbTypeName;
+    }
+    
+    public final String getDbTypeName() {
+        return dbTypeName;
+    }
 }

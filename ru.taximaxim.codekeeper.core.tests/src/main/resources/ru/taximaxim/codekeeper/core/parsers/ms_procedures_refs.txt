@@ -15,3 +15,9 @@ Reference: Object = dbo (SCHEMA), action = null, offset = 798, line number = 42,
 Reference: Object = dbo.p (PROCEDURE), action = CREATE, offset = 802, line number = 42, charPositionInLine = 21
 Reference: Object = dbo (SCHEMA), action = null, offset = 879, line number = 47, charPositionInLine = 17
 Reference: Object = dbo.p (PROCEDURE), action = CREATE, offset = 885, line number = 47, charPositionInLine = 23
+Reference: Object = dbo (SCHEMA), action = null, offset = 1207, line number = 62, charPositionInLine = 18
+Reference: Object = dbo.p (PROCEDURE), action = CREATE, offset = 1213, line number = 62, charPositionInLine = 24
+Reference: Object = dbo (SCHEMA), action = null, offset = 1775, line number = 85, charPositionInLine = 18
+Reference: Object = dbo.proc1 (PROCEDURE), action = CREATE, offset = 1781, line number = 85, charPositionInLine = 24
+Reference: Object = dbo (SCHEMA), action = null, offset = 2643, line number = 111, charPositionInLine = 17
+Reference: Object = dbo.sp_sqlagent_is_srvrolemember (PROCEDURE), action = CREATE, offset = 2649, line number = 111, charPositionInLine = 23

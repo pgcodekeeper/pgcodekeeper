@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2023 TAXTELECOM, LLC
+ * Copyright 2017-2024 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -120,6 +120,9 @@ public class Activator extends AbstractUIPlugin {
 
         reg.put(FILE.MS_ICON, ImageDescriptor.createFromURL(
                 context.getBundle().getResource(FILE.MS_ICON)));
+        
+        reg.put(FILE.CH_ICON, ImageDescriptor.createFromURL(
+                context.getBundle().getResource(FILE.CH_ICON)));
 
         reg.put(FILE.ICONSEARCHLINE, ImageDescriptor.createFromURL(
                 context.getBundle().getResource(FILE.ICONSEARCHLINE)));

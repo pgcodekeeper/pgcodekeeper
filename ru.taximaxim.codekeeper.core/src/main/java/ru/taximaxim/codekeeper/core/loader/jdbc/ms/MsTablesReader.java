@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2023 TAXTELECOM, LLC
+ * Copyright 2017-2024 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -98,7 +98,6 @@ public class MsTablesReader extends JdbcReader {
             JdbcLoaderBase loader, MsType type) {
         MsColumn column = new MsColumn(col.getString("name"));
         String exp = col.getString("def");
-        column.setExpression(exp);
         if (exp == null) {
             boolean isUserDefined = col.getBoolean("ud");
             if (!isUserDefined) {
@@ -108,6 +107,11 @@ public class MsTablesReader extends JdbcReader {
             column.setType(JdbcLoaderBase.getMsType(column, col.getString("st"), col.getString("type"),
                     isUserDefined, col.getInt("size"), col.getInt("pr"), col.getInt("sc")));
             column.setNullValue(col.getBoolean("nl"));
+        } else {
+            column.setExpression(exp);
+            loader.submitMsAntlrTask(exp, p -> p.expression_eof().expression().get(0),
+                    ctx -> schema.getDatabase().addAnalysisLauncher(
+                            new MsExpressionAnalysisLauncher(column, ctx, loader.getCurrentLocation())));
         }
 
         column.setSparse(col.getBoolean("sp"));

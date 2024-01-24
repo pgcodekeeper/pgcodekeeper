@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2023 TAXTELECOM, LLC
+ * Copyright 2017-2024 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,11 @@ public class MetaConstraint extends MetaStatement implements IConstraint {
     @Override
     public Set<String> getColumns() {
         return Collections.unmodifiableSet(columns);
+    }
+
+    @Override
+    public boolean containsColumn(String name) {
+        return columns.contains(name);
     }
 
     public void setPrimaryKey(boolean isPrimaryKey) {

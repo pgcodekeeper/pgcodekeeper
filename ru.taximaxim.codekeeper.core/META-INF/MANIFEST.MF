@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: ru.taximaxim.codekeeper.core;singleton:=true
-Bundle-Version: 9.0.0.qualifier
+Bundle-Version: 9.2.0.qualifier
 Export-Package: ru.taximaxim.codekeeper.core,
  ru.taximaxim.codekeeper.core.fileutils,
  ru.taximaxim.codekeeper.core.formatter,
@@ -39,7 +39,8 @@ Require-Bundle: wrapped.com.github.technology16.PgPass;bundle-version="1.0.0",
  org.postgresql.jdbc;bundle-version="42.6.0",
  com.microsoft.sqlserver.mssql-jdbc;bundle-version="12.4.2",
  org.antlr.antlr4-runtime;bundle-version="4.13.1",
- org.jgrapht.core;bundle-version="1.5.1"
+ org.jgrapht.core;bundle-version="1.5.1",
+ wrapped.com.clickhouse.clickhouse-jdbc;bundle-version="[0.5.0,1.0.0)"
 Bundle-Vendor: %Bundle-Vendor
 Eclipse-ExtensibleAPI: true
 Automatic-Module-Name: ru.taximaxim.codekeeper.core

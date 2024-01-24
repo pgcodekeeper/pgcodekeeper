@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2023 TAXTELECOM, LLC
+ * Copyright 2017-2024 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -728,7 +728,7 @@ public class MockDataPage extends WizardPage {
     private void parseConstraints(AbstractConstraint constraint) {
         if (constraint instanceof IConstraintPk) {
             columns.stream()
-            .filter(wrapper -> constraint.getColumns().contains(wrapper.getName()))
+            .filter(wrapper -> constraint.containsColumn(wrapper.getName()))
             .forEach(wrapper -> wrapper.setUnique(true));
         }
     }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2023 TAXTELECOM, LLC
+ * Copyright 2017-2024 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -276,6 +276,7 @@ class PgDiffDepciesTest {
         // вызыва func_2(int, int) вне рамок контекста loop_statement.
         // пользователь выбирает func_1.
         "add_func_with_dep_usr_func_1, true",
+        "change_view_and_function, true",
     })
     void runDiff(String userSelTemplate, Boolean isEnableDepcies) throws IOException, InterruptedException {
         PgDatabase oldDatabase;

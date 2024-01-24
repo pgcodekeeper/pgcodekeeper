@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2023 TAXTELECOM, LLC
+ * Copyright 2017-2024 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,8 +45,7 @@ import ru.taximaxim.codekeeper.core.UnixPrintWriter;
 import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
 import ru.taximaxim.codekeeper.core.loader.JdbcRunner;
-import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
-import ru.taximaxim.codekeeper.core.model.exporter.MsModelExporter;
+import ru.taximaxim.codekeeper.core.model.exporter.AbstractModelExporter;
 import ru.taximaxim.codekeeper.core.model.graph.DepcyWriter;
 import ru.taximaxim.codekeeper.core.parsers.antlr.ScriptParser;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
@@ -156,26 +155,14 @@ public final class Main {
                 outFile, arguments.getOutCharsetName());
     }
 
-    private static boolean parse(CliArgs arguments)
-            throws IOException, InterruptedException, PgCodekeeperException {
+    private static boolean parse(CliArgs arguments) throws IOException, InterruptedException, PgCodekeeperException {
         PgDiffCli diff = new PgDiffCli(arguments);
         try {
             if (arguments.isProjUpdate()) {
                 diff.updateProject();
             } else {
-                PgDatabase d = diff.loadNewDatabase();
-                switch (arguments.getDbType()) {
-                case PG:
-                    new ModelExporter(Paths.get(arguments.getOutputTarget()), d,
-                            arguments.getOutCharsetName()).exportFull();
-                    break;
-                case MS:
-                    new MsModelExporter(Paths.get(arguments.getOutputTarget()), d,
-                            arguments.getOutCharsetName()).exportFull();
-                    break;
-                default:
-                    throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
-                }
+                AbstractModelExporter.exportFull(arguments.getDbType(), Paths.get(arguments.getOutputTarget()),
+                        diff.loadNewDatabase(), arguments.getOutCharsetName());
             }
         } catch (PgCodekeeperException ex) {
             diff.getErrors().forEach(System.err::println);

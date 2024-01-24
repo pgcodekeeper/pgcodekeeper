@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2023 TAXTELECOM, LLC
+ * Copyright 2017-2024 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -312,6 +312,10 @@ class MsDiffTest {
             "compare_ms_constraints",
             // Test scenario where MsColumn options is altered
             "alter_ms_column",
+            // Test scenario where MS COLUMN with expression as type and dependent column is changed
+            "alter_ms_column_expr",
+            // Tests scenario where MS View with xmlnamespace is compared.
+            "modify_ms_view_xmlnamespace",
     })
     void runDiff(String fileNameTemplate) throws IOException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();

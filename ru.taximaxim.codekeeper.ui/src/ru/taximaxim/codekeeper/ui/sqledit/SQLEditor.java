@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2023 TAXTELECOM, LLC
+ * Copyright 2017-2024 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -108,6 +108,7 @@ import ru.taximaxim.codekeeper.core.DangerStatement;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.IProgressReporter;
 import ru.taximaxim.codekeeper.core.fileutils.TempFile;
+import ru.taximaxim.codekeeper.core.loader.JdbcChConnector;
 import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
 import ru.taximaxim.codekeeper.core.loader.JdbcMsConnector;
 import ru.taximaxim.codekeeper.core.loader.JdbcRunner;
@@ -723,23 +724,9 @@ implements IResourceChangeListener, ITextErrorReporter {
         private IStatus runInternal(IProgressMonitor monitor) {
             Log.log(Log.LOG_INFO, "Running DDL update using JDBC"); //$NON-NLS-1$
 
-            JdbcConnector connector;
-            switch (dbInfo.getDbType()) {
-            case PG:
-                connector = new JdbcConnector(
-                        dbInfo.getDbHost(), dbInfo.getDbPort(), dbInfo.getDbUser(),
-                        dbInfo.getDbPass(), dbInfo.getDbName(), dbInfo.getProperties(),
-                        dbInfo.isReadOnly(), Consts.UTC);
-                break;
-            case MS:
-                connector = new JdbcMsConnector(
-                        dbInfo.getDbHost(), dbInfo.getDbPort(), dbInfo.getDbUser(),
-                        dbInfo.getDbPass(), dbInfo.getDbName(), dbInfo.getProperties(),
-                        dbInfo.isReadOnly(), dbInfo.isWinAuth(), dbInfo.getDomain());
-                break;
-            default:
-                throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
-            }
+            JdbcConnector connector = JdbcConnector.getJdbcConnector( dbInfo.getDbType(), dbInfo.getDbHost(),
+                    dbInfo.getDbPort(), dbInfo.getDbUser(),dbInfo.getDbPass(), dbInfo.getDbName(),
+                    dbInfo.getProperties(), dbInfo.isReadOnly(), Consts.UTC, dbInfo.isWinAuth(), dbInfo.getDomain());
 
             IProgressReporter reporter = new UiProgressReporter(monitor, SQLEditor.this, offset, dbInfo.getName());
             try (IProgressReporter toClose = reporter) {

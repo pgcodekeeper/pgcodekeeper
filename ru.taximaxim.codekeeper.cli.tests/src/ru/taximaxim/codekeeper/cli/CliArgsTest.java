@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2023 TAXTELECOM, LLC
+ * Copyright 2017-2024 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,10 +34,10 @@ class CliArgsTest {
                     "option \"-t (--target)\" cannot be used with the option(s) [--graph, --parse]",
 
             "--graph --db-type MS jdbc:postgresql:q;" +
-                    "Cannot work with PostgerSQL database as MS SQL project.",
+                    "Cannot work with PG database as MS project.",
 
             "--graph jdbc:sqlserver:f;"
-                    + "Cannot work with MS SQL database as PostgerSQL project.",
+                    + "Cannot work with MS database as PG project.",
 
             "--graph jdbc:postgresql:q jdbc:postgresql:q2;"
                     + "DEST argument isn't required.",
@@ -52,22 +52,82 @@ class CliArgsTest {
                     + "-C (--concurrently-mode) cannot be used with the option(s) -X (--add-transaction) for PostgreSQL.",
 
             "jdbc:sqlserver:f jdbc:postgresql:q2;"
-                    + "Cannot compare MS SQL and PostgerSQL databases.",
+                    + "Source (MS) and target (PG) are of different types, possibly missing --db-type parameter.",
 
             "jdbc:postgresql:q2 jdbc:sqlserver:f;"
-                    + "Cannot compare MS SQL and PostgerSQL databases.",
+                    + "Source (PG) and target (MS) are of different types, possibly missing --db-type parameter.",
+                    
+            "jdbc:sqlserver:f jdbc:ch:c;"
+                    + "Source (MS) and target (CH) are of different types, possibly missing --db-type parameter.",
+               
+            "jdbc:ch:c jdbc:sqlserver:f;"
+                    + "Source (CH) and target (MS) are of different types, possibly missing --db-type parameter.",
+                    
+            "jdbc:sqlserver:f jdbc:clickhouse:c;"
+                    + "Source (MS) and target (CH) are of different types, possibly missing --db-type parameter.",
 
+            "jdbc:clickhouse:c jdbc:sqlserver:f;"
+                    + "Source (CH) and target (MS) are of different types, possibly missing --db-type parameter.",
+
+            "jdbc:postgresql:q2 jdbc:ch:c;"
+                    + "Source (PG) and target (CH) are of different types, possibly missing --db-type parameter.",
+
+            "jdbc:ch:c jdbc:postgresql:q2;"
+                    + "Source (CH) and target (PG) are of different types, possibly missing --db-type parameter.",
+
+            "jdbc:postgresql:q2 jdbc:clickhouse:c;"
+                    + "Source (PG) and target (CH) are of different types, possibly missing --db-type parameter.",
+
+            "jdbc:clickhouse:c jdbc:postgresql:q2;"
+                    + "Source (CH) and target (PG) are of different types, possibly missing --db-type parameter.",
+                    
             "jdbc:sqlserver:f filename;"
-                    + "Cannot work with MS SQL database without --db-type MS parameter.",
+                    + "Source (MS) and target (PG) are of different types, possibly missing --db-type parameter.",
 
             "filename jdbc:sqlserver:f;"
-                    + "Cannot work with MS SQL database without --db-type MS parameter.",
+                    + "Source (PG) and target (MS) are of different types, possibly missing --db-type parameter.",
+                    
+            "jdbc:sqlserver:f filename --db-type CH;"
+                    + "Source (MS) and target (CH) are of different types, possibly missing --db-type parameter.",
+                    
+            "filename jdbc:sqlserver:f --db-type CH;"
+                    + "Source (CH) and target (MS) are of different types, possibly missing --db-type parameter.",
 
             "jdbc:postgresql:q2 filename --db-type MS;"
-                    + "Cannot work with PostgreSQL database with --db-type MS parameter.",
+                    + "Source (PG) and target (MS) are of different types, possibly missing --db-type parameter.",
 
             "filename jdbc:postgresql:q2 --db-type MS;"
-                    + "Cannot work with PostgreSQL database with --db-type MS parameter.",
+                    + "Source (MS) and target (PG) are of different types, possibly missing --db-type parameter.",
+                    
+            "jdbc:postgresql:q2 filename --db-type CH;"
+                    + "Source (PG) and target (CH) are of different types, possibly missing --db-type parameter.",
+                    
+            "filename jdbc:postgresql:q2 --db-type CH;"
+                    + "Source (CH) and target (PG) are of different types, possibly missing --db-type parameter.",
+                    
+            "filename jdbc:ch:c;"
+                    + "Source (PG) and target (CH) are of different types, possibly missing --db-type parameter.",
+
+            "jdbc:ch:c filename;"
+                    + "Source (CH) and target (PG) are of different types, possibly missing --db-type parameter.",
+                    
+            "filename jdbc:ch:c --db-type MS;"
+                    + "Source (MS) and target (CH) are of different types, possibly missing --db-type parameter.",
+
+            "jdbc:ch:c filename --db-type MS;"
+                    + "Source (CH) and target (MS) are of different types, possibly missing --db-type parameter.",
+
+            "filename jdbc:clickhouse:c;"
+                    + "Source (PG) and target (CH) are of different types, possibly missing --db-type parameter.",
+
+            "jdbc:clickhouse:c filename;"
+                    + "Source (CH) and target (PG) are of different types, possibly missing --db-type parameter.",
+                    
+            "filename jdbc:clickhouse:c --db-type MS;"
+                    + "Source (MS) and target (CH) are of different types, possibly missing --db-type parameter.",
+
+            "jdbc:clickhouse:c filename --db-type MS;"
+                    + "Source (CH) and target (MS) are of different types, possibly missing --db-type parameter.",
 
             "-r filename filename;"
                     + "Cannot run script on non-database target.",

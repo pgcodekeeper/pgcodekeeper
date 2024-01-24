@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2023 TAXTELECOM, LLC
+ * Copyright 2017-2024 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -507,14 +507,7 @@ public class PgDatabase extends PgStatement implements IDatabase {
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
-        compareComments(sb, newCondition);
-        return sb.length() > startLength;
-    }
-
-    @Override
-    protected StringBuilder appendFullName(StringBuilder sb) {
-        return sb.append("current_database()");
+        return false;
     }
 
     @Override

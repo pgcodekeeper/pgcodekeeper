@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2023 TAXTELECOM, LLC
+ * Copyright 2017-2024 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -581,10 +581,15 @@ class PgDiffTest {
             "alter_function_with_comment",
             // Tests scenario where generated COLUMN with function is altered.
             "alter_column_generated_function",
-            // Test scenario where FK alter common options for constraint.
+            // Test scenario where FK common options for constraint is altered.
             "alter_foreign_constraint",
+            // Test scenario where INDEX columns order is altered.
+            "alter_index_columns_order",
+            // Test scenario where CONSTRAINT columns order is altered.
+            "alter_constraint_columns_order",
+            // Test scenario where objects with quoted names is added.
+            "add_objects_with_quoted_name"
     })
-
     void runDiff(String fileNameTemplate) throws IOException, InterruptedException {
         String script = getScript(fileNameTemplate, new PgDiffArguments());
         TestUtils.compareResult(script, fileNameTemplate, PgDiffTest.class);

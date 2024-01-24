@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2023 TAXTELECOM, LLC
+ * Copyright 2017-2024 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,10 +56,9 @@ public class GetSystemObjects extends AbstractHandler {
                 fd.setFileName(MetaStorage.FILE_NAME + info.getDbName() + ".ser"); //$NON-NLS-1$
                 String select = fd.open();
                 if (select != null) {
-                    JdbcConnector jdbcConnector = new JdbcConnector(info.getDbHost(),
-                            info.getDbPort(), info.getDbUser(), info.getDbPass(),
-                            info.getDbName(), info.getProperties(), info.isReadOnly(),
-                            Consts.UTC);
+                    JdbcConnector jdbcConnector = JdbcConnector.getJdbcConnector(DatabaseType.PG, info.getDbHost(),
+                            info.getDbPort(), info.getDbUser(), info.getDbPass(), info.getDbName(),
+                            info.getProperties(), info.isReadOnly(), Consts.UTC, false, null);
                     try {
                         Serializable storage = new JdbcSystemLoader(jdbcConnector,
                                 SubMonitor.convert(new NullProgressMonitor())).getStorageFromJdbc();
