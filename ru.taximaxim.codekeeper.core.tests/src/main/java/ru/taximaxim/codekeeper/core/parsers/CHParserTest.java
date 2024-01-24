@@ -77,7 +77,7 @@ class CHParserTest {
             }
         });
 
-        parser.queryStmt();
+        parser.sql();
 
         int count = ambiguity.intValue();
         Assertions.assertTrue(errors.isEmpty(), "File: " + fileNameTemplate + " - ANTLR Error");

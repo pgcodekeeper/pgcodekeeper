@@ -1,110 +1,103 @@
 parser grammar CHParser;
-@header {package ru.taximaxim.codekeeper.core.parsers.antlr.generated;}
 
 options {
+    language=Java;
     tokenVocab = CHLexer;
 }
 
+@header {package ru.taximaxim.codekeeper.core.parsers.antlr.generated;}
+
 // Top-level statements
 
-queryStmt
-    : query (INTO OUTFILE STRING_LITERAL)? (FORMAT identifierOrNull)? (SEMICOLON)? | insertStmt
+sql
+    : stmt (INTO OUTFILE STRING_LITERAL)? (FORMAT (identifier | NULL))? (SEMICOLON)? | insert_stmt EOF
     ;
 
-query
-    : alterStmt     // DDL
-    | attachStmt    // DDL
-    | checkStmt
-    | createStmt    // DDL
-    | describeStmt
-    | dropStmt      // DDL
-    | existsStmt
-    | explainStmt
-    | killStmt      // DDL
-    | optimizeStmt  // DDL
-    | renameStmt    // DDL
-    //| selectUnionStmt
-    | setStmt
-    | showStmt
-    | systemStmt
-    | truncateStmt  // DDL
-    | useStmt
-    | watchStmt
-    | ctes? select_Stmt
+stmt
+    : ddl_stmt
+    | dml_stmt
     ;
 
-select_Stmt
-    : withClause? select_ops
+ddl_stmt
+    : alter_stmt
+    | attach_stmt
+    | create_stmt
+    | drop_stmt
+    | kill_stmt
+    | optimize_stmt
+    | rename_stmt
+    | truncate_stmt
+    ;
+
+dml_stmt
+    : check_stmt
+    | describe_stmt
+    | exists_stmt
+    | explain_stmt
+    | set_stmt
+    | show_stmt
+    | system_stmt
+    | use_stmt
+    | watch_stmt
+    | select_stmt
+    ;
+
+select_stmt
+    : with_clause? select_ops
     ;
 
  select_ops
-    : LPAREN select_Stmt RPAREN // parens can be used to apply "global" clauses (WITH etc) to a particular select in UNION expr
+    : LPAREN select_stmt RPAREN // parens can be used to apply "global" clauses (WITH etc) to a particular select in UNION expr
     | select_ops UNION ALL select_ops
     | select_primary
     ;
 
-// CTE statement
-ctes
-    : WITH namedQuery (COMMA namedQuery)*
+with_clause
+    : name=identifier (column_aliases)? AS LPAREN stmt RPAREN
     ;
 
-namedQuery
-    : name=identifier (columnAliases)? AS LPAREN query RPAREN
-    ;
-
-columnAliases
+column_aliases
     : LPAREN identifier (COMMA identifier)* RPAREN
     ;
 
 // ALTER statement
 
-alterStmt
-    : ALTER TABLE tableIdentifier clusterClause? alterTableClause (COMMA alterTableClause)*  # AlterTableStmt
+alter_stmt
+    : ALTER TABLE table_identifier cluster_clause? alter_table_action (COMMA alter_table_action)*
     ;
 
-alterTableClause
-    : ADD COLUMN (IF NOT EXISTS)? tableColumnDfnt (AFTER nestedIdentifier)?           # AlterTableClauseAddColumn
-    | ADD INDEX (IF NOT EXISTS)? tableIndexDfnt (AFTER nestedIdentifier)?             # AlterTableClauseAddIndex
-    | ADD PROJECTION (IF NOT EXISTS)? tableProjectionDfnt (AFTER nestedIdentifier)?   # AlterTableClauseAddProjection
-    | ATTACH partitionClause (FROM tableIdentifier)?                                  # AlterTableClauseAttach
-    | CLEAR COLUMN (IF EXISTS)? nestedIdentifier (IN partitionClause)?                # AlterTableClauseClearColumn
-    | CLEAR INDEX (IF EXISTS)? nestedIdentifier (IN partitionClause)?                 # AlterTableClauseClearIndex
-    | CLEAR PROJECTION (IF EXISTS)? nestedIdentifier (IN partitionClause)?            # AlterTableClauseClearProjection
-    | COMMENT COLUMN (IF EXISTS)? nestedIdentifier STRING_LITERAL                     # AlterTableClauseComment
-    | DELETE WHERE columnExpr                                                         # AlterTableClauseDelete
-    | DETACH partitionClause                                                          # AlterTableClauseDetach
-    | DROP COLUMN (IF EXISTS)? nestedIdentifier                                       # AlterTableClauseDropColumn
-    | DROP INDEX (IF EXISTS)? nestedIdentifier                                        # AlterTableClauseDropIndex
-    | DROP PROJECTION (IF EXISTS)? nestedIdentifier                                   # AlterTableClauseDropProjection
-    | DROP partitionClause                                                            # AlterTableClauseDropPartition
-    | FREEZE partitionClause?                                                         # AlterTableClauseFreezePartition
-    | MATERIALIZE INDEX (IF EXISTS)? nestedIdentifier (IN partitionClause)?           # AlterTableClauseMaterializeIndex
-    | MATERIALIZE PROJECTION (IF EXISTS)? nestedIdentifier (IN partitionClause)?      # AlterTableClauseMaterializeProjection
-    | MODIFY COLUMN (IF EXISTS)? nestedIdentifier codecExpr                           # AlterTableClauseModifyCodec
-    | MODIFY COLUMN (IF EXISTS)? nestedIdentifier COMMENT STRING_LITERAL              # AlterTableClauseModifyComment
-    | MODIFY COLUMN (IF EXISTS)? nestedIdentifier REMOVE tableColumnPropertyType      # AlterTableClauseModifyRemove
-    | MODIFY COLUMN (IF EXISTS)? tableColumnDfnt                                      # AlterTableClauseModify
-    | MODIFY ORDER BY columnExpr                                                      # AlterTableClauseModifyOrderBy
-    | MODIFY ttlClause                                                                # AlterTableClauseModifyTTL
-    | MOVE partitionClause ( TO DISK STRING_LITERAL
-                           | TO VOLUME STRING_LITERAL
-                           | TO TABLE tableIdentifier
-                           )                                                          # AlterTableClauseMovePartition
-    | REMOVE TTL                                                                      # AlterTableClauseRemoveTTL
-    | RENAME COLUMN (IF EXISTS)? nestedIdentifier TO nestedIdentifier                 # AlterTableClauseRename
-    | REPLACE partitionClause FROM tableIdentifier                                    # AlterTableClauseReplace
-    | UPDATE assignmentExprList whereClause                                           # AlterTableClauseUpdate
+alter_table_action
+    : ADD COLUMN (IF NOT EXISTS)? table_column_def (AFTER nested_identifier)?
+    | ADD INDEX (IF NOT EXISTS)? table_index_def (AFTER nested_identifier)?
+    | ADD PROJECTION (IF NOT EXISTS)? table_projection_def (AFTER nested_identifier)?
+    | ATTACH partition_clause (FROM table_identifier)?
+    | CLEAR COLUMN (IF EXISTS)? nested_identifier (IN partition_clause)?
+    | CLEAR INDEX (IF EXISTS)? nested_identifier (IN partition_clause)?
+    | CLEAR PROJECTION (IF EXISTS)? nested_identifier (IN partition_clause)?
+    | COMMENT COLUMN (IF EXISTS)? nested_identifier STRING_LITERAL
+    | DELETE WHERE column_expr
+    | DETACH partition_clause
+    | DROP COLUMN (IF EXISTS)? nested_identifier
+    | DROP INDEX (IF EXISTS)? nested_identifier
+    | DROP PROJECTION (IF EXISTS)? nested_identifier
+    | DROP partition_clause
+    | FREEZE partition_clause?
+    | MATERIALIZE INDEX (IF EXISTS)? nested_identifier (IN partition_clause)?
+    | MATERIALIZE PROJECTION (IF EXISTS)? nested_identifier (IN partition_clause)?
+    | MODIFY COLUMN (IF EXISTS)? nested_identifier codec_expr
+    | MODIFY COLUMN (IF EXISTS)? nested_identifier COMMENT STRING_LITERAL
+    | MODIFY COLUMN (IF EXISTS)? nested_identifier REMOVE table_column_property_type
+    | MODIFY COLUMN (IF EXISTS)? table_column_def
+    | MODIFY ORDER BY column_expr
+    | MODIFY ttl_clause
+    | MOVE partition_clause TO (DISK STRING_LITERAL | VOLUME STRING_LITERAL | TABLE table_identifier)
+    | REMOVE TTL
+    | RENAME COLUMN (IF EXISTS)? nested_identifier TO nested_identifier
+    | REPLACE partition_clause FROM table_identifier
+    | UPDATE nested_identifier EQ_SINGLE column_expr (COMMA nested_identifier EQ_SINGLE column_expr)* where_clause
     ;
 
-assignmentExprList
-    : assignmentExpr (COMMA assignmentExpr)*
-    ;
-
-assignmentExpr
-    : nestedIdentifier EQ_SINGLE columnExpr
-    ;
-
-tableColumnPropertyType
+table_column_property_type
     : ALIAS
     | CODEC
     | COMMENT
@@ -113,633 +106,487 @@ tableColumnPropertyType
     | TTL
     ;
 
-partitionClause
-    : PARTITION columnExpr         // actually we expect here any form of tuple of literals
+partition_clause
+    : PARTITION column_expr         // actually we expect here any form of tuple of literals
     | PARTITION ID STRING_LITERAL
     ;
 
-// ATTACH statement
-attachStmt
-    : ATTACH DICTIONARY tableIdentifier clusterClause?  # AttachDictionaryStmt
+attach_stmt
+    : ATTACH DICTIONARY table_identifier cluster_clause?
     ;
 
-// CHECK statement
-
-checkStmt
-    : CHECK TABLE tableIdentifier partitionClause?
+check_stmt
+    : CHECK TABLE table_identifier partition_clause?
     ;
 
-// CREATE statement
-
-createStmt
-    : (ATTACH | CREATE) DATABASE (IF NOT EXISTS)? databaseIdentifier clusterClause? engineExpr?                                                                                       # CreateDatabaseStmt
-    | (ATTACH | CREATE (OR REPLACE)? | REPLACE) DICTIONARY (IF NOT EXISTS)? tableIdentifier uuidClause? clusterClause? dictionarySchemaClause dictionaryEngineClause                                          # CreateDictionaryStmt
-    | (ATTACH | CREATE) LIVE VIEW (IF NOT EXISTS)? tableIdentifier uuidClause? clusterClause? (WITH TIMEOUT DECIMAL_LITERAL?)? destinationClause? tableSchemaClause? subqueryClause   # CreateLiveViewStmt
-    | (ATTACH | CREATE) MATERIALIZED VIEW (IF NOT EXISTS)? tableIdentifier uuidClause? clusterClause? tableSchemaClause? (destinationClause | engineClause POPULATE?) subqueryClause  # CreateMaterializedViewStmt
-    | (ATTACH | CREATE (OR REPLACE)? | REPLACE) TEMPORARY? TABLE (IF NOT EXISTS)? tableIdentifier uuidClause? clusterClause? tableSchemaClause? engineClause? subqueryClause?                                 # CreateTableStmt
-    | (ATTACH | CREATE) (OR REPLACE)? VIEW (IF NOT EXISTS)? tableIdentifier uuidClause? clusterClause? tableSchemaClause? subqueryClause                                              # CreateViewStmt
+create_stmt
+    : (ATTACH | CREATE) DATABASE (IF NOT EXISTS)? identifier cluster_clause? engine_expr?
+    | create_dictinary_stmt
+    | (ATTACH | CREATE) LIVE VIEW (IF NOT EXISTS)? table_identifier uuid_clause? cluster_clause? (WITH TIMEOUT DECIMAL_LITERAL?)? destination_clause? table_schema_clause? subquery_clause
+    | (ATTACH | CREATE) MATERIALIZED VIEW (IF NOT EXISTS)? table_identifier uuid_clause? cluster_clause? table_schema_clause? (destination_clause | engine_clause POPULATE?) subquery_clause
+    | (ATTACH | CREATE (OR REPLACE)? | REPLACE) TEMPORARY? TABLE (IF NOT EXISTS)? table_identifier uuid_clause? cluster_clause? table_schema_clause? engine_clause? subquery_clause?
+    | (ATTACH | CREATE) (OR REPLACE)? VIEW (IF NOT EXISTS)? table_identifier uuid_clause? cluster_clause? table_schema_clause? subquery_clause
     ;
 
-dictionarySchemaClause
-    : LPAREN dictionaryAttrDfnt (COMMA dictionaryAttrDfnt)* RPAREN
+create_dictinary_stmt
+    : (ATTACH | CREATE (OR REPLACE)? | REPLACE) DICTIONARY (IF NOT EXISTS)?
+    table_identifier uuid_clause? cluster_clause?
+    LPAREN dictionary_attr_def (COMMA dictionary_attr_def)* RPAREN
+    (PRIMARY KEY column_expr_list)?
+    dictionary_option*
     ;
 
-dictionaryAttrDfnt
-    : identifier columnTypeExpr (
-        DEFAULT literal
-        | EXPRESSION columnExpr
-        | HIERARCHICAL
-        | INJECTIVE
-        | IS_OBJECT_ID
-    )*
+dictionary_attr_def
+    : identifier column_type_expr (DEFAULT literal | EXPRESSION column_expr | HIERARCHICAL | INJECTIVE | IS_OBJECT_ID)*
     ;
 
-/*dictionaryAttrDfnt
-locals [std::set<std::string> attrs]:
-    identifier columnTypeExpr
-    ( {!$attrs.count("default")}?      DEFAULT literal       {$attrs.insert("default");}
-    | {!$attrs.count("expression")}?   EXPRESSION columnExpr {$attrs.insert("expression");}
-    | {!$attrs.count("hierarchical")}? HIERARCHICAL          {$attrs.insert("hierarchical");}
-    | {!$attrs.count("injective")}?    INJECTIVE             {$attrs.insert("injective");}
-    | {!$attrs.count("is_object_id")}? IS_OBJECT_ID          {$attrs.insert("is_object_id");}
-    )*
-    ;*/
-
-dictionaryEngineClause
-    : dictionaryPrimaryKeyClause? (
-        sourceClause
-        | lifetimeClause
-        | layoutClause
-        | rangeClause
-        | dictionarySettingsClause
-    )*
+dictionary_option
+    : SOURCE LPAREN identifier LPAREN dictionary_arg_expr* RPAREN RPAREN
+    | LIFETIME LPAREN (DECIMAL_LITERAL | MIN DECIMAL_LITERAL MAX DECIMAL_LITERAL | MAX DECIMAL_LITERAL MIN DECIMAL_LITERAL) RPAREN
+    | LAYOUT LPAREN identifier LPAREN dictionary_arg_expr* RPAREN RPAREN
+    | RANGE LPAREN (MIN identifier MAX identifier | MAX identifier MIN identifier) RPAREN
+    | SETTINGS LPAREN setting_expr_list RPAREN
     ;
 
-/*dictionaryEngineClause
-locals [std::set<std::string> clauses]:
-    dictionaryPrimaryKeyClause?
-    ( {!$clauses.count("source")}? sourceClause {$clauses.insert("source");}
-    | {!$clauses.count("lifetime")}? lifetimeClause {$clauses.insert("lifetime");}
-    | {!$clauses.count("layout")}? layoutClause {$clauses.insert("layout");}
-    | {!$clauses.count("range")}? rangeClause {$clauses.insert("range");}
-    | {!$clauses.count("settings")}? dictionarySettingsClause {$clauses.insert("settings");}
-    )*
-    ;*/
-
-dictionaryPrimaryKeyClause
-    : PRIMARY KEY columnExprList
-    ;
-
-dictionaryArgExpr
+dictionary_arg_expr
     : identifier (identifier (LPAREN RPAREN)? | literal)
     ;
 
-sourceClause
-    : SOURCE LPAREN identifier LPAREN dictionaryArgExpr* RPAREN RPAREN
-    ;
-
-lifetimeClause
-    : LIFETIME LPAREN ( DECIMAL_LITERAL | MIN DECIMAL_LITERAL MAX DECIMAL_LITERAL | MAX DECIMAL_LITERAL MIN DECIMAL_LITERAL) RPAREN;
-
-layoutClause
-    : LAYOUT LPAREN identifier LPAREN dictionaryArgExpr* RPAREN RPAREN
-    ;
-
-rangeClause
-    : RANGE LPAREN (MIN identifier MAX identifier | MAX identifier MIN identifier) RPAREN
-    ;
-
-dictionarySettingsClause
-    : SETTINGS LPAREN settingExprList RPAREN
-    ;
-
-clusterClause
+cluster_clause
     : ON CLUSTER (identifier | STRING_LITERAL)
     ;
 
-uuidClause
+uuid_clause
     : UUID STRING_LITERAL
     ;
 
-destinationClause
-    : TO tableIdentifier
+destination_clause
+    : TO table_identifier
     ;
 
-subqueryClause
-    : AS /*selectUnionStmt*/ select_ops
+subquery_clause
+    : AS /*selectUnion_stmt*/ select_ops
     ;
 
-tableSchemaClause
-    : LPAREN tableElementExpr (COMMA tableElementExpr)* RPAREN  # SchemaDescriptionClause
-    | AS tableIdentifier                                        # SchemaAsTableClause
-    | AS tableFunctionExpr                                      # SchemaAsFunctionClause
+table_schema_clause
+    : LPAREN table_element_expr (COMMA table_element_expr)* RPAREN
+    | AS table_identifier
+    | AS table_function_expr
     ;
 
-engineClause
-    : engineExpr (
-    orderByClause
-    | partitionByClause
-    | primaryKeyClause
-    | sampleByClause
-    | ttlClause
-    | settingsClause)*
+engine_clause
+    : engine_expr (order_by_clause | partition_by_clause | primary_key_clause | sample_by_clause | ttl_clause | settings_clause)*
     ;
 
-/*engineClause
-locals [std::set<std::string> clauses]:
-    engineExpr
-    ( {!$clauses.count("orderByClause")}?     orderByClause     {$clauses.insert("orderByClause");}
-    | {!$clauses.count("partitionByClause")}? partitionByClause {$clauses.insert("partitionByClause");}
-    | {!$clauses.count("primaryKeyClause")}?  primaryKeyClause  {$clauses.insert("primaryKeyClause");}
-    | {!$clauses.count("sampleByClause")}?    sampleByClause    {$clauses.insert("sampleByClause");}
-    | {!$clauses.count("ttlClause")}?         ttlClause         {$clauses.insert("ttlClause");}
-    | {!$clauses.count("settingsClause")}?    settingsClause    {$clauses.insert("settingsClause");}
-    )*
-    ;*/
-
-partitionByClause
-    : PARTITION BY columnExpr
+partition_by_clause
+    : PARTITION BY column_expr
     ;
 
-primaryKeyClause
-    : PRIMARY KEY columnExpr
+primary_key_clause
+    : PRIMARY KEY column_expr
     ;
 
-sampleByClause
-    : SAMPLE BY columnExpr
+sample_by_clause
+    : SAMPLE BY column_expr
     ;
 
-ttlClause
-    : TTL ttlExpr (COMMA ttlExpr)*
+ttl_clause
+    : TTL ttl_expr (COMMA ttl_expr)*
     ;
 
-engineExpr
-    : ENGINE EQ_SINGLE? identifierOrNull (LPAREN columnExprList? RPAREN)?
+engine_expr
+    : ENGINE EQ_SINGLE? (identifier | NULL) (LPAREN column_expr_list? RPAREN)?
     ;
 
-tableElementExpr
-    : tableColumnDfnt                                                              # TableElementExprColumn
-    | CONSTRAINT identifier CHECK columnExpr                                       # TableElementExprConstraint
-    | INDEX tableIndexDfnt                                                         # TableElementExprIndex
-    | PROJECTION tableProjectionDfnt                                               # TableElementExprProjection
+table_element_expr
+    : table_column_def
+    | CONSTRAINT identifier CHECK column_expr
+    | INDEX table_index_def
+    | PROJECTION table_projection_def
     ;
 
-tableColumnDfnt
-    : nestedIdentifier columnTypeExpr tableColumnPropertyExpr? (COMMENT STRING_LITERAL)? codecExpr? (TTL columnExpr)?
-    | nestedIdentifier columnTypeExpr? tableColumnPropertyExpr (COMMENT STRING_LITERAL)? codecExpr? (TTL columnExpr)?
+table_column_def
+    : nested_identifier (column_type_expr table_column_property_expr? | column_type_expr? table_column_property_expr)
+    (COMMENT STRING_LITERAL)? codec_expr? (TTL column_expr)?
     ;
 
-tableColumnPropertyExpr
-    : (DEFAULT | MATERIALIZED | ALIAS) columnExpr
+table_column_property_expr
+    : (DEFAULT | MATERIALIZED | ALIAS) column_expr
     ;
 
-tableIndexDfnt
-    : nestedIdentifier columnExpr TYPE columnTypeExpr GRANULARITY DECIMAL_LITERAL
+table_index_def
+    : nested_identifier column_expr TYPE column_type_expr GRANULARITY DECIMAL_LITERAL
     ;
 
-tableProjectionDfnt
-    : nestedIdentifier projectionSelectStmt
+table_projection_def
+    : nested_identifier projection_select_stmt
     ;
 
-codecExpr
-    : CODEC LPAREN codecArgExpr (COMMA codecArgExpr)* RPAREN
+codec_expr
+    : CODEC LPAREN codec_arg_expr (COMMA codec_arg_expr)* RPAREN
     ;
 
-codecArgExpr
-    : identifier (LPAREN columnExprList? RPAREN)?
+codec_arg_expr
+    : identifier (LPAREN column_expr_list? RPAREN)?
     ;
 
-ttlExpr
-    : columnExpr (DELETE | TO DISK STRING_LITERAL | TO VOLUME STRING_LITERAL)?
+ttl_expr
+    : column_expr (DELETE | TO DISK STRING_LITERAL | TO VOLUME STRING_LITERAL)?
     ;
 
-// DESCRIBE statement
-
-describeStmt
-    : (DESCRIBE | DESC) TABLE? tableExpr
+describe_stmt
+    : (DESCRIBE | DESC) TABLE? table_expr
     ;
 
-// DROP statement
-
-dropStmt
-    : (DETACH | DROP) DATABASE (IF EXISTS)? databaseIdentifier clusterClause?                                  # DropDatabaseStmt
-    | (DETACH | DROP) (DICTIONARY | TEMPORARY? TABLE | VIEW) (IF EXISTS)? tableIdentifier clusterClause? (NO DELAY)?  # DropTableStmt
+drop_stmt
+    : (DETACH | DROP) DATABASE (IF EXISTS)? identifier cluster_clause?
+    | (DETACH | DROP) (DICTIONARY | TEMPORARY? TABLE | VIEW) (IF EXISTS)? table_identifier cluster_clause? (NO DELAY)?
     ;
 
-// EXISTS statement
-
-existsStmt
-    : EXISTS DATABASE databaseIdentifier                             # ExistsDatabaseStmt
-    | EXISTS (DICTIONARY | TEMPORARY? TABLE | VIEW)? tableIdentifier # ExistsTableStmt
+exists_stmt
+    : EXISTS DATABASE identifier
+    | EXISTS (DICTIONARY | TEMPORARY? TABLE | VIEW)? table_identifier
     ;
 
-// EXPLAIN statement
-
-explainStmt
-    : EXPLAIN AST query     # ExplainASTStmt
-    | EXPLAIN SYNTAX query  # ExplainSyntaxStmt
+explain_stmt
+    : EXPLAIN (AST | SYNTAX) stmt
     ;
 
-// INSERT statement
-
-insertStmt
-    : INSERT INTO TABLE? (tableIdentifier | FUNCTION tableFunctionExpr) columnsClause? dataClause
+insert_stmt
+    : INSERT INTO TABLE? (table_identifier | FUNCTION table_function_expr) columns_clause? data_clause
     ;
 
-columnsClause
-    : LPAREN nestedIdentifier (COMMA nestedIdentifier)* RPAREN
+columns_clause
+    : LPAREN nested_identifier (COMMA nested_identifier)* RPAREN
     ;
 
-dataClause
-    : FORMAT identifier              # DataClauseFormat
-    | VALUES                         # DataClauseValues
-    | /*selectUnionStmt*/  select_ops  SEMICOLON? EOF # DataClauseSelect
+data_clause
+    : FORMAT identifier
+    | VALUES
+    | /*selectUnion_stmt*/  select_ops  SEMICOLON? EOF // FIXME EOF?
     ;
 
-// KILL statement
-
-killStmt
-    : KILL MUTATION clusterClause? whereClause (SYNC | ASYNC | TEST)?  # KillMutationStmt
+kill_stmt
+    : KILL MUTATION cluster_clause? where_clause (SYNC | ASYNC | TEST)?
     ;
 
-// OPTIMIZE statement
-
-optimizeStmt
-    : OPTIMIZE TABLE tableIdentifier clusterClause? partitionClause? FINAL? DEDUPLICATE?
+optimize_stmt
+    : OPTIMIZE TABLE table_identifier cluster_clause? partition_clause? FINAL? DEDUPLICATE?
     ;
 
-// RENAME statement
-
-renameStmt
-    : RENAME TABLE tableIdentifier TO tableIdentifier (COMMA tableIdentifier TO tableIdentifier)* clusterClause?
+rename_stmt
+    : RENAME TABLE table_identifier TO table_identifier (COMMA table_identifier TO table_identifier)* cluster_clause?
     ;
 
-// PROJECTION SELECT statement
-
-projectionSelectStmt:
+projection_select_stmt:
     LPAREN
-    withClause?
-    SELECT columnExprList
-    groupByClause?
-    projectionOrderByClause?
+    with_clause?
+    SELECT column_expr_list
+    group_by_clause?
+    ORDER BY column_expr_list?
     RPAREN
     ;
 
-// SELECT statement
-
-/*selectUnionStmt
-    : selectStmtWithParens (UNION ALL selectStmtWithParens)*
+/*selectUnion_stmt
+    : select_stmtWithParens (UNION ALL select_stmtWithParens)*
     ;
 
-selectStmtWithParens
-    : selectStmt| LPAREN selectUnionStmt RPAREN
+select_stmtWithParens
+    : select_stmt| LPAREN selectUnion_stmt RPAREN
     ;
 */
+
 select_primary:
-//selectStmt:
-   // withClause?
-    SELECT DISTINCT? topClause? columnExprList
-    fromClause?
-    arrayJoinClause?
-    windowClause?
-    prewhereClause?
-    whereClause?
-    groupByClause? (WITH (CUBE | ROLLUP))? (WITH TOTALS)?
-    havingClause?
-    orderByClause?
-    limitByClause?
-    limitClause?
-    settingsClause?
+    SELECT DISTINCT? top_clause? column_expr_list
+    from_clause?
+    array_join_clause?
+    window_clause?
+    prewhere_clause?
+    where_clause?
+    group_by_clause? (WITH (CUBE | ROLLUP))? (WITH TOTALS)?
+    having_clause?
+    order_by_clause?
+    limit_by_clause?
+    limit_clause?
+    settings_clause?
     ;
 
-withClause
-    : WITH columnExprList
-    ;
-
-topClause
+top_clause
     : TOP DECIMAL_LITERAL (WITH TIES)?
     ;
 
-fromClause
-    : FROM joinExpr
+from_clause
+    : FROM join_expr
     ;
 
-arrayJoinClause
-    : (LEFT | INNER)? ARRAY JOIN columnExprList
+array_join_clause
+    : (LEFT | INNER)? ARRAY JOIN column_expr_list
     ;
 
-windowClause
-    : WINDOW identifier AS LPAREN windowExpr RPAREN
+window_clause
+    : WINDOW identifier AS window_expr
     ;
 
-prewhereClause
-    : PREWHERE columnExpr
+prewhere_clause
+    : PREWHERE column_expr
     ;
 
-whereClause
-    : WHERE columnExpr
+where_clause
+    : WHERE column_expr
     ;
 
-groupByClause
-    : GROUP BY ((CUBE | ROLLUP) LPAREN columnExprList RPAREN | columnExprList)
+group_by_clause
+    : GROUP BY ((CUBE | ROLLUP) LPAREN column_expr_list RPAREN | column_expr_list)
     ;
 
-havingClause
-    : HAVING columnExpr
+having_clause
+    : HAVING column_expr
     ;
 
-orderByClause
-    : ORDER BY orderExprList
+order_by_clause
+    : ORDER BY order_expr_list
     ;
 
-projectionOrderByClause
-    : ORDER BY columnExprList
+limit_by_clause
+    : LIMIT limit_expr BY column_expr_list
     ;
 
-limitByClause
-    : LIMIT limitExpr BY columnExprList
+limit_clause
+    : LIMIT limit_expr (WITH TIES)?
     ;
 
-limitClause
-    : LIMIT limitExpr (WITH TIES)?
+settings_clause
+    : SETTINGS setting_expr_list
     ;
 
-settingsClause
-    : SETTINGS settingExprList
+join_expr
+    : join_expr (GLOBAL | LOCAL)? join_op? JOIN join_expr join_constraint_clause
+    | join_expr join_op_cross join_expr
+    | table_expr FINAL? sample_clause?
+    | LPAREN join_expr RPAREN
     ;
 
-joinExpr
-    : joinExpr (GLOBAL | LOCAL)? joinOp? JOIN joinExpr joinConstraintClause  # JoinExprOp
-    | joinExpr joinOpCross joinExpr                                          # JoinExprCrossOp
-    | tableExpr FINAL? sampleClause?                                         # JoinExprTable
-    | LPAREN joinExpr RPAREN                                                 # JoinExprParens
+join_op
+    : (ALL | ANY | ASOF)? INNER
+    | INNER (ALL | ANY | ASOF)?
+    | ALL
+    | ANY
+    | ASOF
+    | (SEMI | ALL | ANTI | ANY | ASOF)? (LEFT | RIGHT) OUTER?
+    | (LEFT | RIGHT) OUTER? (SEMI | ALL | ANTI | ANY | ASOF)?
+    | (ALL | ANY)? FULL OUTER?
+    | FULL OUTER? (ALL | ANY)?
     ;
 
-joinOp
-    : ((ALL | ANY | ASOF)? INNER | INNER (ALL | ANY | ASOF)? | (ALL | ANY | ASOF))  # JoinOpInner
-    | ( (SEMI | ALL | ANTI | ANY | ASOF)? (LEFT | RIGHT) OUTER?
-      | (LEFT | RIGHT) OUTER? (SEMI | ALL | ANTI | ANY | ASOF)?
-      )                                                                             # JoinOpLeftRight
-    | ((ALL | ANY)? FULL OUTER? | FULL OUTER? (ALL | ANY)?)                         # JoinOpFull
-    ;
-
-joinOpCross
+join_op_cross
     : (GLOBAL|LOCAL)? CROSS JOIN
     | COMMA
     ;
 
-joinConstraintClause
-    : ON columnExprList
-    | USING LPAREN columnExprList RPAREN
-    | USING columnExprList
+join_constraint_clause
+    : ON column_expr_list
+    | USING LPAREN column_expr_list RPAREN
+    | USING column_expr_list
     ;
 
-sampleClause
-    : SAMPLE ratioExpr (OFFSET ratioExpr)?
+sample_clause
+    : SAMPLE ratio_expr (OFFSET ratio_expr)?
     ;
 
-limitExpr
-    : columnExpr ((COMMA | OFFSET) columnExpr)?
+limit_expr
+    : column_expr ((COMMA | OFFSET) column_expr)?
     ;
 
-orderExprList
-    : orderExpr (COMMA orderExpr)*
+order_expr_list
+    : order_expr (COMMA order_expr)*
     ;
 
-orderExpr
-    : columnExpr (ASCENDING | DESCENDING | DESC)? (NULLS (FIRST | LAST))? (COLLATE STRING_LITERAL)?
+order_expr
+    : column_expr (ASCENDING | DESCENDING | DESC)? (NULLS (FIRST | LAST))? (COLLATE STRING_LITERAL)?
     ;
 
-ratioExpr
-    : numberLiteral (SLASH numberLiteral)?
+ratio_expr
+    : number_literal (SLASH number_literal)?
     ;
 
-settingExprList
-    : settingExpr (COMMA settingExpr)*
+setting_expr_list
+    : setting_expr (COMMA setting_expr)*
     ;
 
-settingExpr
+setting_expr
     : identifier EQ_SINGLE literal
     ;
 
-windowExpr
-    : winPartitionByClause? winOrderByClause? winFrameClause?
+window_expr
+    : LPAREN (PARTITION BY column_expr_list)? (ORDER BY order_expr_list)? ((ROWS | RANGE) win_frame_extend)? RPAREN
     ;
 
-winPartitionByClause
-    : PARTITION BY columnExprList
+win_frame_extend
+    : win_frame_bound
+    | BETWEEN win_frame_bound AND win_frame_bound
     ;
 
-winOrderByClause
-    : ORDER BY orderExprList
+win_frame_bound
+    : (CURRENT ROW | UNBOUNDED PRECEDING | UNBOUNDED FOLLOWING | number_literal PRECEDING | number_literal FOLLOWING)
     ;
 
-winFrameClause
-    : (ROWS | RANGE) winFrameExtend
+//range_clause
+//    : RANGE LPAREN (MIN identifier MAX identifier | MAX identifier MIN identifier) RPAREN
+//    ;
+
+set_stmt
+    : SET setting_expr_list
     ;
 
-winFrameExtend
-    : winFrameBound                             # frameStart
-    | BETWEEN winFrameBound AND winFrameBound   # frameBetween
+show_stmt
+    : SHOW CREATE DATABASE identifier
+    | SHOW CREATE DICTIONARY table_identifier
+    | SHOW CREATE TEMPORARY? TABLE? table_identifier
+    | SHOW DATABASES
+    | SHOW DICTIONARIES (FROM identifier)?
+    | SHOW TEMPORARY? TABLES ((FROM | IN) identifier)? (LIKE STRING_LITERAL | where_clause)? limit_clause?
     ;
 
-winFrameBound
-    : (CURRENT ROW | UNBOUNDED PRECEDING | UNBOUNDED FOLLOWING | numberLiteral PRECEDING | numberLiteral FOLLOWING)
-    ;
-//rangeClause: RANGE LPAREN (MIN identifier MAX identifier | MAX identifier MIN identifier) RPAREN;
-
-
-// SET statement
-
-setStmt: SET settingExprList;
-
-// SHOW statements
-
-showStmt
-    : SHOW CREATE DATABASE databaseIdentifier                                                                     # showCreateDatabaseStmt
-    | SHOW CREATE DICTIONARY tableIdentifier                                                                      # showCreateDictionaryStmt
-    | SHOW CREATE TEMPORARY? TABLE? tableIdentifier                                                               # showCreateTableStmt
-    | SHOW DATABASES                                                                                              # showDatabasesStmt
-    | SHOW DICTIONARIES (FROM databaseIdentifier)?                                                                # showDictionariesStmt
-    | SHOW TEMPORARY? TABLES ((FROM | IN) databaseIdentifier)? (LIKE STRING_LITERAL | whereClause)? limitClause?  # showTablesStmt
-    ;
-
-// SYSTEM statements
-
-systemStmt
-    : SYSTEM FLUSH DISTRIBUTED tableIdentifier
+system_stmt
+    : SYSTEM FLUSH DISTRIBUTED table_identifier
     | SYSTEM FLUSH LOGS
     | SYSTEM RELOAD DICTIONARIES
-    | SYSTEM RELOAD DICTIONARY tableIdentifier
-    | SYSTEM (START | STOP) (DISTRIBUTED SENDS | FETCHES | TTL? MERGES) tableIdentifier
+    | SYSTEM RELOAD DICTIONARY table_identifier
+    | SYSTEM (START | STOP) (DISTRIBUTED SENDS | FETCHES | TTL? MERGES) table_identifier
     | SYSTEM (START | STOP) REPLICATED SENDS
-    | SYSTEM SYNC REPLICA tableIdentifier
+    | SYSTEM SYNC REPLICA table_identifier
     ;
 
-// TRUNCATE statements
-
-truncateStmt
-    : TRUNCATE TEMPORARY? TABLE? (IF EXISTS)? tableIdentifier clusterClause?
+truncate_stmt
+    : TRUNCATE TEMPORARY? TABLE? (IF EXISTS)? table_identifier cluster_clause?
     ;
 
-// USE statement
-
-useStmt
-    : USE databaseIdentifier
+use_stmt
+    : USE identifier
     ;
 
-// WATCH statement
-
-watchStmt
-    : WATCH tableIdentifier EVENTS? (LIMIT DECIMAL_LITERAL)?
+watch_stmt
+    : WATCH table_identifier EVENTS? (LIMIT DECIMAL_LITERAL)?
     ;
 
-
-
-// Columns
-
-columnTypeExpr
-    : identifier                                                                             # ColumnTypeExprSimple   // UInt64
-    | identifier LPAREN identifier columnTypeExpr (COMMA identifier columnTypeExpr)* RPAREN  # ColumnTypeExprNested   // Nested
-    | identifier LPAREN enumValue (COMMA enumValue)* RPAREN                                  # ColumnTypeExprEnum     // Enum
-    | identifier LPAREN columnTypeExpr (COMMA columnTypeExpr)* RPAREN                        # ColumnTypeExprComplex  // Array, Tuple
-    | identifier LPAREN columnExprList? RPAREN                                               # ColumnTypeExprParam    // FixedString(N)
+column_type_expr
+    : identifier
+    | identifier LPAREN identifier column_type_expr (COMMA identifier column_type_expr)* RPAREN
+    | identifier LPAREN enum_value (COMMA enum_value)* RPAREN
+    | identifier LPAREN column_type_expr (COMMA column_type_expr)* RPAREN
+    | identifier LPAREN column_expr_list? RPAREN
     ;
 
-columnExprList
-    : columnsExpr (COMMA columnsExpr)*
+column_expr_list
+    : columns_expr (COMMA columns_expr)*
     ;
 
-columnsExpr
-    : //(tableIdentifier DOT)? ASTERISK  # ColumnsExprAsterisk
-     LPAREN /*selectUnionStmt*/ select_ops RPAREN    # ColumnsExprSubquery
-    // NOTE: asterisk and subquery goes before |columnExpr| so that we can mark them as multi-column expressions.
-    | columnExpr                       # ColumnsExprColumn
+columns_expr
+    : // (table_identifier DOT)? ASTERISK
+     LPAREN /*selectUnion_stmt*/ select_ops RPAREN
+    // NOTE: asterisk and subquery goes before |column_expr| so that we can mark them as multi-column expressions.
+    | column_expr
     ;
 
-columnExpr
-    : CASE columnExpr? (WHEN columnExpr THEN columnExpr)+ (ELSE columnExpr)? END          # ColumnExprCase
-    | CAST LPAREN columnExpr AS columnTypeExpr RPAREN                                     # ColumnExprCast
-    | DATE STRING_LITERAL                                                                 # ColumnExprDate
-    | EXTRACT LPAREN interval FROM columnExpr RPAREN                                      # ColumnExprExtract
-    | INTERVAL columnExpr interval                                                        # ColumnExprInterval
-    | SUBSTRING LPAREN columnExpr FROM columnExpr (FOR columnExpr)? RPAREN                # ColumnExprSubstring
-    | TIMESTAMP STRING_LITERAL                                                            # ColumnExprTimestamp
-    | TRIM LPAREN (BOTH | LEADING | TRAILING) STRING_LITERAL FROM columnExpr RPAREN       # ColumnExprTrim
-    | identifier (LPAREN columnExprList? RPAREN) OVER LPAREN windowExpr RPAREN            # ColumnExprWinFunction
-    | identifier (LPAREN columnExprList? RPAREN) OVER identifier                          # ColumnExprWinFunctionTarget
-    | identifier (LPAREN columnExprList? RPAREN)? LPAREN DISTINCT? columnArgList? RPAREN  # ColumnExprFunction
-    | literal                                                                             # ColumnExprLiteral
-
+column_expr
+    : CASE column_expr? (WHEN column_expr THEN column_expr)+ (ELSE column_expr)? END
+    | CAST LPAREN column_expr AS column_type_expr RPAREN
+    | DATE STRING_LITERAL
+    | EXTRACT LPAREN interval FROM column_expr RPAREN
+    | INTERVAL column_expr interval
+    | SUBSTRING LPAREN column_expr FROM column_expr (FOR column_expr)? RPAREN
+    | TIMESTAMP STRING_LITERAL
+    | TRIM LPAREN (BOTH | LEADING | TRAILING) STRING_LITERAL FROM column_expr RPAREN
+    | identifier (LPAREN column_expr_list? RPAREN) OVER window_expr
+    | identifier (LPAREN column_expr_list? RPAREN) OVER identifier
+    | identifier (LPAREN column_expr_list? RPAREN)? LPAREN DISTINCT? column_arg_list? RPAREN
+    | literal
     // FIXME(ilezhankin): this part looks very ugly, maybe there is another way to express it
-    | columnExpr LBRACKET columnExpr RBRACKET                                             # ColumnExprArrayAccess
-    | columnExpr DOT DECIMAL_LITERAL                                                      # ColumnExprTupleAccess
-    | DASH columnExpr                                                                     # ColumnExprNegate
-    | columnExpr ( ASTERISK                                                               // multiply
-                 | SLASH                                                                  // divide
-                 | PERCENT                                                                // modulo
-                 ) columnExpr                                                             # ColumnExprPrecedence1
-    | columnExpr ( PLUS                                                                   // plus
-                 | DASH                                                                   // minus
-                 | CONCAT                                                                 // concat
-                 ) columnExpr                                                             # ColumnExprPrecedence2
-    | columnExpr ( EQ_DOUBLE                                                              // equals
-                 | EQ_SINGLE                                                              // equals
-                 | NOT_EQ                                                                 // notEquals
-                 | LE                                                                     // lessOrEquals
-                 | GE                                                                     // greaterOrEquals
-                 | LT                                                                     // less
-                 | GT                                                                     // greater
-                 | GLOBAL? NOT? IN                                                        // in, notIn, globalIn, globalNotIn
-                 | NOT? (LIKE | ILIKE)                                                    // like, notLike, ilike, notILike
-                 ) columnExpr                                                             # ColumnExprPrecedence3
-    | columnExpr IS NOT? NULL_SQL                                                         # ColumnExprIsNull
-    | NOT columnExpr                                                                      # ColumnExprNot
-    | columnExpr AND columnExpr                                                           # ColumnExprAnd
-    | columnExpr OR columnExpr                                                            # ColumnExprOr
+    | column_expr LBRACKET column_expr RBRACKET
+    | column_expr DOT DECIMAL_LITERAL
+    | DASH column_expr
+    | column_expr (ASTERISK | SLASH | PERCENT) column_expr
+    | column_expr (PLUS | DASH | CONCAT) column_expr
+    | column_expr (EQ_DOUBLE | EQ_SINGLE | NOT_EQ | LE | GE | LT | GT | GLOBAL? NOT? IN | NOT? (LIKE | ILIKE)) column_expr
+    | column_expr IS NOT? NULL
+    | NOT column_expr
+    | column_expr AND column_expr
+    | column_expr OR column_expr
     // TODO(ilezhankin): `BETWEEN a AND b AND c` is parsed in a wrong way: `BETWEEN (a AND b) AND c`
-    | columnExpr NOT? BETWEEN columnExpr AND columnExpr                                   # ColumnExprBetween
-    | <assoc=right> columnExpr QUERY columnExpr COLON columnExpr                          # ColumnExprTernaryOp
-    | columnExpr (alias | AS identifier)                                                  # ColumnExprAlias
-
-    | (tableIdentifier DOT)? ASTERISK                                                     # ColumnExprAsterisk  // single-column only
-    | LPAREN /*selectUnionStmt*/ select_ops RPAREN                                                       # ColumnExprSubquery  // single-column only
-    | LPAREN columnExpr RPAREN                                                            # ColumnExprParens    // single-column only
-    | LPAREN columnExprList RPAREN                                                        # ColumnExprTuple
-    | LBRACKET columnExprList? RBRACKET                                                   # ColumnExprArray
-    | columnIdentifier                                                                    # ColumnExprIdentifier
+    | column_expr NOT? BETWEEN column_expr AND column_expr
+    | <assoc=right> column_expr QUERY column_expr COLON column_expr
+    | column_expr (alias | AS identifier)
+    | (table_identifier DOT)? ASTERISK
+    | LPAREN /*selectUnion_stmt*/ select_ops RPAREN
+    | LPAREN column_expr RPAREN
+    | LPAREN column_expr_list RPAREN
+    | LBRACKET column_expr_list? RBRACKET
+    | column_identifier
     ;
 
-columnArgList
-    : columnArgExpr (COMMA columnArgExpr)*
+column_arg_list
+    : column_arg_expr (COMMA column_arg_expr)*
     ;
 
-columnArgExpr
-    : columnLambdaExpr | columnExpr
+column_arg_expr
+    : column_lambda_expr | column_expr
     ;
 
-columnLambdaExpr:
-    ( LPAREN identifier (COMMA identifier)* RPAREN
-    |        identifier (COMMA identifier)*
-    )
-    ARROW columnExpr
+column_lambda_expr
+    : (LPAREN identifier (COMMA identifier)* RPAREN | identifier (COMMA identifier)*) ARROW column_expr
     ;
 
-columnIdentifier
-    : (tableIdentifier DOT)? nestedIdentifier
+column_identifier
+    : (table_identifier DOT)? nested_identifier
     ;
 
-nestedIdentifier
+nested_identifier
     : identifier (DOT identifier)?
     ;
 
 // Tables
 
-tableExpr
-    : tableIdentifier                    # TableExprIdentifier
-    | tableFunctionExpr                  # TableExprFunction
-    | LPAREN /*selectUnionStmt*/ select_ops RPAREN      # TableExprSubquery
-    | tableExpr (alias | AS identifier)  # TableExprAlias
+table_expr
+    : table_identifier
+    | table_function_expr
+    | LPAREN /*selectUnion_stmt*/ select_ops RPAREN
+    | table_expr (alias | AS identifier)
     ;
 
-tableFunctionExpr
-    : identifier LPAREN tableArgList? RPAREN
+table_function_expr
+    : identifier LPAREN table_arg_list? RPAREN
     ;
 
-tableIdentifier
-    : (databaseIdentifier DOT)? identifier
+table_identifier
+    : (identifier DOT)? table_name=identifier
     ;
 
-tableArgList
-    : tableArgExpr (COMMA tableArgExpr)*
+table_arg_list
+    : table_arg_expr (COMMA table_arg_expr)*
     ;
 
-tableArgExpr
-    : nestedIdentifier
-    | tableFunctionExpr
+table_arg_expr
+    : nested_identifier
+    | table_function_expr
     | literal
     ;
 
-// Databases
-
-databaseIdentifier: identifier;
-
 // Basics
 
-floatingLiteral
+floating_literal
     : FLOATING_LITERAL
     | DOT (DECIMAL_LITERAL | OCTAL_LITERAL)
     | DECIMAL_LITERAL DOT (DECIMAL_LITERAL | OCTAL_LITERAL)?  // can't move this to the lexer or it will break nested tuple access: t.1.2
     ;
 
-numberLiteral
-    : (PLUS | DASH)? (floatingLiteral | OCTAL_LITERAL | DECIMAL_LITERAL | HEXADECIMAL_LITERAL | INF | NAN_SQL)
+number_literal
+    : (PLUS | DASH)? (floating_literal | OCTAL_LITERAL | DECIMAL_LITERAL | HEXADECIMAL_LITERAL | INF | NAN)
     ;
 
 literal
-    : numberLiteral
+    : number_literal
     | STRING_LITERAL
-    | NULL_SQL
+    | NULL
     ;
 
 interval
@@ -747,7 +594,7 @@ interval
     ;
 
 keyword
-    // except NULL_SQL, INF, NAN_SQL
+    // except NULL, INF, NAN
     : AFTER | ALIAS | ALL | ALTER | AND | ANTI | ANY | ARRAY | AS | ASCENDING | ASOF | AST | ASYNC | ATTACH | BETWEEN | BOTH | BY | CASE
     | CAST | CHECK | CLEAR | CLUSTER | CODEC | COLLATE | COLUMN | COMMENT | CONSTRAINT | CREATE | CROSS | CUBE | CURRENT | DATABASE
     | DATABASES | DATE | DEDUPLICATE | DEFAULT | DELAY | DELETE | DESCRIBE | DESC | DESCENDING | DETACH | DICTIONARIES | DICTIONARY | DISK
@@ -762,11 +609,25 @@ keyword
     | UNBOUNDED | UNION | UPDATE | USE | USING | UUID | VALUES | VIEW | VOLUME | WATCH | WHEN | WHERE | WINDOW | WITH
     ;
 
-keywordForAlias
-    : DATE | FIRST | ID | KEY
+keyword_for_alias
+    : DATE
+    | FIRST
+    | ID
+    | KEY
     ;
 
-alias: IDENTIFIER | keywordForAlias;  // |interval| can't be an alias, otherwise 'INTERVAL 1 SOMETHING' becomes ambiguous.
-identifier: IDENTIFIER | interval | keyword;
-identifierOrNull: identifier | NULL_SQL;  // NULL_SQL can be only 'Null' here.
-enumValue: STRING_LITERAL EQ_SINGLE numberLiteral;
+alias
+    : IDENTIFIER
+    | keyword_for_alias
+    // |interval| can't be an alias, otherwise 'INTERVAL 1 SOMETHING' becomes ambiguous.
+    ;
+
+identifier
+    : IDENTIFIER
+    | interval
+    | keyword
+    ;
+
+enum_value
+    : STRING_LITERAL EQ_SINGLE number_literal
+    ;
