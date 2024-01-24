@@ -33,10 +33,10 @@ import java.util.stream.Stream;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.Consts.MS_WORK_DIR_NAMES;
-import ru.taximaxim.codekeeper.core.Consts.WORK_DIR_NAMES;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
+import ru.taximaxim.codekeeper.core.WorkDirs;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
@@ -52,10 +52,6 @@ import ru.taximaxim.codekeeper.core.schema.StatementOverride;
 import ru.taximaxim.codekeeper.core.schema.ms.MsSchema;
 
 public class ProjectLoader extends DatabaseLoader {
-
-    protected static final String MS_SCHEMAS_FOLDER = "Schemas";
-    protected static final String MS_ROLES_FOLDER = "Roles";
-    protected static final String MS_USERS_FOLDER = "Users";
 
     /**
      * Loading order and directory names of the objects in exported DB schemas.
@@ -103,7 +99,7 @@ public class ProjectLoader extends DatabaseLoader {
     }
 
     public void loadOverrides(PgDatabase db) throws InterruptedException, IOException {
-        Path dir = Paths.get(dirPath, Consts.OVERRIDES_DIR);
+        Path dir = Paths.get(dirPath, WorkDirs.OVERRIDES);
         if (arguments.isIgnorePrivileges() || !Files.isDirectory(dir)) {
             return;
         }
@@ -124,21 +120,30 @@ public class ProjectLoader extends DatabaseLoader {
         case PG:
             loadPgStructure(dir, db);
             break;
+        case CH:
+            loadChStructure(dir, db);
+            break;
         default:
             throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
         }
         finishLoaders();
     }
 
+    private void loadChStructure(Path dir, PgDatabase db) throws InterruptedException, IOException {
+        for (String dirSub : WorkDirs.getDirectoryNames(DatabaseType.CH)) {
+            loadSubdir(dir, dirSub, db);
+        }
+    }
+
     private void loadPgStructure(Path dir, PgDatabase db) throws InterruptedException, IOException {
         // step 1
         // read files in schema folder, add schemas to db
-        for (WORK_DIR_NAMES dirEnum : WORK_DIR_NAMES.values()) {
+        for (String dirName : WorkDirs.getDirectoryNames(DatabaseType.PG)) {
             // legacy schemas
-            loadSubdir(dir, dirEnum.name(), db, this::checkIgnoreSchemaList);
+            loadSubdir(dir, dirName, db, this::checkIgnoreSchemaList);
         }
 
-        Path schemasCommonDir = dir.resolve(WORK_DIR_NAMES.SCHEMA.name());
+        Path schemasCommonDir = dir.resolve(WorkDirs.PG_SCHEMA);
         // skip walking SCHEMA folder if it does not exist
         if (!Files.isDirectory(schemasCommonDir)) {
             return;
@@ -161,24 +166,24 @@ public class ProjectLoader extends DatabaseLoader {
     }
 
     private void loadMsStructure(Path dir, PgDatabase db) throws InterruptedException, IOException {
-        Path securityFolder = dir.resolve(MS_WORK_DIR_NAMES.SECURITY.getDirName());
+        Path securityFolder = dir.resolve(WorkDirs.MS_SECURITY);
 
-        loadSubdir(securityFolder, MS_SCHEMAS_FOLDER, db, this::checkIgnoreSchemaList);
+        loadSubdir(securityFolder, WorkDirs.MS_SCHEMAS, db, this::checkIgnoreSchemaList);
         // DBO schema check requires schema loads to finish first
         AntlrParser.finishAntlr(antlrTasks);
         addDboSchema(db);
 
-        loadSubdir(securityFolder, MS_ROLES_FOLDER, db);
-        loadSubdir(securityFolder, MS_USERS_FOLDER, db);
+        loadSubdir(securityFolder, WorkDirs.MS_ROLES, db);
+        loadSubdir(securityFolder, WorkDirs.MS_USERS, db);
 
-        for (MS_WORK_DIR_NAMES dirSub : MS_WORK_DIR_NAMES.values()) {
-            if (dirSub.isInSchema()) {
+        for (String dirSub : WorkDirs.getDirectoryNames(DatabaseType.MS)) {
+            if (WorkDirs.isInMsSchema(dirSub)) {
                 // get schema name from file names and filter
-                loadSubdir(dir, dirSub.getDirName(), db,
+                loadSubdir(dir, dirSub, db,
                         msFileName -> checkIgnoreSchemaList(msFileName.substring(0, msFileName.indexOf('.'))));
-            } else {
-                loadSubdir(dir, dirSub.getDirName(), db);
+                continue;
             }
+            loadSubdir(dir, dirSub, db);
         }
     }
 

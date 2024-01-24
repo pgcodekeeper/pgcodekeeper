@@ -33,13 +33,11 @@ import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTree;
 
 import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.Consts.MS_WORK_DIR_NAMES;
-import ru.taximaxim.codekeeper.core.Consts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.Utils;
+import ru.taximaxim.codekeeper.core.WorkDirs;
 import ru.taximaxim.codekeeper.core.loader.ParserListenerMode;
-import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.exporter.AbstractModelExporter;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
@@ -238,21 +236,7 @@ public abstract class ParserAbstract {
     }
 
     private boolean isInProject(DatabaseType dbType) {
-        // collect working directories
-        List<String> dirs;
-        switch (dbType) {
-        case PG:
-            dirs = Arrays.stream(Consts.WORK_DIR_NAMES.values())
-            .map(WORK_DIR_NAMES::name).collect(Collectors.toList());
-            break;
-        case MS:
-            dirs = Arrays.stream(Consts.MS_WORK_DIR_NAMES.values())
-            .map(MS_WORK_DIR_NAMES::getDirName).collect(Collectors.toList());
-            break;
-        default:
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
-        }
-
+        List<String> dirs = WorkDirs.getDirectoryNames(dbType);
         Path parent = Paths.get(fileName).toAbsolutePath().getParent();
         while (true) {
             Path folder = parent.getFileName();

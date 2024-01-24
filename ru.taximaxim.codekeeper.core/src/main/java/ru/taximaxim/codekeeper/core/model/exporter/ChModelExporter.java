@@ -25,22 +25,20 @@ import java.util.Collection;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.WorkDirs;
-import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.schema.PgStatementWithSearchPath;
 
-public class MsModelExporter extends AbstractModelExporter {
+public class ChModelExporter extends AbstractModelExporter {
 
-    public MsModelExporter(Path outDir, PgDatabase db, String sqlEncoding) {
+    public ChModelExporter(Path outDir, PgDatabase db, String sqlEncoding) {
         super(outDir, db, sqlEncoding);
     }
 
-    public MsModelExporter(Path outDir, PgDatabase newDb, PgDatabase oldDb,
-            Collection<TreeElement> changedObjects, String sqlEncoding) {
+    public ChModelExporter(Path outDir, PgDatabase newDb, PgDatabase oldDb, Collection<TreeElement> changedObjects,
+            String sqlEncoding) {
         super(outDir, newDb, oldDb, changedObjects, sqlEncoding);
     }
 
@@ -51,10 +49,10 @@ public class MsModelExporter extends AbstractModelExporter {
                 throw new NotDirectoryException(outDir.toString());
             }
 
-            for (String subdir : WorkDirs.getDirectoryNames(DatabaseType.MS)) {
-                if (Files.exists(outDir.resolve(subdir))) {
-                    throw new DirectoryException(MessageFormat.format(
-                            "Output directory already contains {0} directory.", subdir));
+            for (String subdirName : WorkDirs.getDirectoryNames(DatabaseType.CH)) {
+                if (Files.exists(outDir.resolve(subdirName))) {
+                    throw new DirectoryException(
+                            MessageFormat.format("Output directory already contains {0} directory.", subdirName));
                 }
             }
         } else {
@@ -67,7 +65,7 @@ public class MsModelExporter extends AbstractModelExporter {
         return getRelativeFilePath(st, Paths.get(""), addExtension);
     }
 
-    static Path getRelativeFilePath(PgStatement st, Path baseDir, boolean addExtension){
+    static Path getRelativeFilePath(PgStatement st, Path baseDir, boolean addExtension) {
         PgStatement parentSt = st.getParent();
 
         Path path = baseDir;
@@ -75,27 +73,16 @@ public class MsModelExporter extends AbstractModelExporter {
         var dbType = st.getDbType();
         String dirName = WorkDirs.getDirectoryNameForType(dbType, type);
         switch (type) {
-
-        case SCHEMA:
-        case ROLE:
-        case USER:
-            path = path.resolve(WorkDirs.MS_SECURITY).resolve(dirName);
-            if (!addExtension) {
-                return path;
-            }
-            break;
-        case ASSEMBLY:
-        case SEQUENCE:
-        case VIEW:
         case TABLE:
         case FUNCTION:
-        case PROCEDURE:
-        case TYPE:
+        case VIEW:
+        case USER:
+        case ROLE:
+        case DICTIONARY:
             path = path.resolve(dirName);
             break;
         case CONSTRAINT:
         case INDEX:
-        case TRIGGER:
         case COLUMN:
             st = parentSt;
             dirName = WorkDirs.getDirectoryNameForType(dbType, parentSt.getStatementType());
@@ -104,13 +91,6 @@ public class MsModelExporter extends AbstractModelExporter {
         default:
             throw new IllegalStateException(Messages.DbObjType_unsupported_type + type);
         }
-
-        String fileName = addExtension ? getExportedFilenameSql(st) : getExportedFilename(st);
-        if (st instanceof PgStatementWithSearchPath) {
-            fileName = FileUtils.getValidFilename(
-                    ((PgStatementWithSearchPath)st).getSchemaName()) + '.' + fileName;
-        }
-
-        return path.resolve(fileName);
+        return path.resolve(addExtension ? getExportedFilenameSql(st) : getExportedFilename(st));
     }
 }

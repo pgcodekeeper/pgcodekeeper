@@ -23,7 +23,8 @@ import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.Collection;
 
-import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.DatabaseType;
+import ru.taximaxim.codekeeper.core.WorkDirs;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
@@ -47,11 +48,10 @@ public class ModelExporter extends AbstractModelExporter {
                 throw new NotDirectoryException(outDir.toString());
             }
 
-            for (Consts.WORK_DIR_NAMES subdirName : Consts.WORK_DIR_NAMES.values()) {
-                if (Files.exists(outDir.resolve(subdirName.name()))) {
-                    throw new DirectoryException(MessageFormat.format(
-                            "Output directory already contains {0} directory.",
-                            subdirName));
+            for (String subdirName : WorkDirs.getDirectoryNames(DatabaseType.PG)) {
+                if (Files.exists(outDir.resolve(subdirName))) {
+                    throw new DirectoryException(
+                            MessageFormat.format("Output directory already contains {0} directory.", subdirName));
                 }
             }
         } else {
@@ -66,8 +66,7 @@ public class ModelExporter extends AbstractModelExporter {
 
     static Path getRelativeFilePath(PgStatement st, Path baseDir, boolean addExtension) {
         PgStatement parentSt = st.getParent();
-        String parentExportedFileName = parentSt == null ?
-                null : getExportedFilename(parentSt);
+        String parentExportedFileName = parentSt == null ? null : getExportedFilename(parentSt);
 
         Path path = baseDir.resolve("SCHEMA");
         DbObjType type = st.getStatementType();
@@ -78,11 +77,8 @@ public class ModelExporter extends AbstractModelExporter {
         case USER_MAPPING:
         case CAST:
         case EVENT_TRIGGER:
-            path = baseDir.resolve(type.name());
-            break;
-
         case FOREIGN_DATA_WRAPPER:
-            path = baseDir.resolve("FDW");
+            path = baseDir.resolve(WorkDirs.getDirectoryNameForType(st.getDbType(), type));
             break;
 
         case SCHEMA:
@@ -117,14 +113,13 @@ public class ModelExporter extends AbstractModelExporter {
         case POLICY:
         case COLUMN:
             st = parentSt;
-            schemaName = AbstractModelExporter.getExportedFilename(parentSt.getParent());
+            schemaName = getExportedFilename(parentSt.getParent());
             path = path.resolve(schemaName).resolve(parentSt.getStatementType().name());
             break;
         default:
             break;
         }
 
-        return path.resolve(addExtension ?
-                getExportedFilenameSql(st) : getExportedFilename(st));
+        return path.resolve(addExtension ? getExportedFilenameSql(st) : getExportedFilename(st));
     }
 }
