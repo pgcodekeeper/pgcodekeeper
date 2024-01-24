@@ -17,7 +17,20 @@ package ru.taximaxim.codekeeper.ui;
 
 import java.util.List;
 
+import org.eclipse.jface.viewers.LabelProvider;
+
+import ru.taximaxim.codekeeper.core.DatabaseType;
+
 public interface UIConsts {
+    
+    LabelProvider DATABASE_TYPE_PROVIDER = new LabelProvider() {
+
+        @Override
+        public String getText(Object element) {
+            var dbType = (DatabaseType) element;
+            return dbType.getDbTypeName();
+        }
+    };
 
     String _NL = System.lineSeparator();
 
@@ -197,6 +210,7 @@ public interface UIConsts {
     interface NATURE {
         String ID = PLUGIN_ID.THIS + ".nature"; //$NON-NLS-1$
         String MS = PLUGIN_ID.THIS + ".msnature"; //$NON-NLS-1$
+        String CH = PLUGIN_ID.THIS + ".chnature"; //$NON-NLS-1$
     }
 
     interface BUILDER {

@@ -16,7 +16,17 @@
 package ru.taximaxim.codekeeper.core;
 
 public enum DatabaseType {
-    PG,
-    MS,
-    CH
+    PG("PostgreSQL"),
+    MS("MS SQL"),
+    CH("ClickHouse");
+    
+    private final String dbTypeName;
+    
+    DatabaseType(String dbTypeName) {
+        this.dbTypeName = dbTypeName;
+    }
+    
+    public final String getDbTypeName() {
+        return dbTypeName;
+    }
 }

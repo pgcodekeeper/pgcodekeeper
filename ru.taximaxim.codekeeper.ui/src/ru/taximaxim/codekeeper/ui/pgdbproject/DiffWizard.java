@@ -265,6 +265,7 @@ class PageDiff extends WizardPage implements Listener {
         new Label(compTz, SWT.NONE).setText(Messages.database_type);
         cmbDbType = new ComboViewer(compTz, SWT.READ_ONLY);
         cmbDbType.setContentProvider(ArrayContentProvider.getInstance());
+        cmbDbType.setLabelProvider(UIConsts.DATABASE_TYPE_PROVIDER);
         cmbDbType.setInput(DatabaseType.values());
         cmbDbType.addSelectionChangedListener(e -> {
             StructuredSelection sel = (StructuredSelection) e.getSelection();

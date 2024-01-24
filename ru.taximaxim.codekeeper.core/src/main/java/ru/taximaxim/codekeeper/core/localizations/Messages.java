@@ -41,6 +41,8 @@ public final class Messages extends NLS {
 
     public static String DatabaseType_unsupported_type;
 
+    public static String DbObjType_unsupported_type;
+
     public static String Table_TypeParameterChange;
     public static String Storage_WarningUnableToDetermineStorageType;
 

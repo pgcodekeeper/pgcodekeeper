@@ -61,6 +61,7 @@ import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.CMD_VARS;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.properties.IgnoreListProperties.IgnoreListEditor;
@@ -324,6 +325,7 @@ public final class DbStoreEditorDialog extends TrayDialog {
         cmbDbType = new ComboViewer(tabAreaDb, SWT.READ_ONLY);
         cmbDbType.getCombo().setLayoutData(new GridData(SWT.DEFAULT, SWT.DEFAULT, false, false, 3, 1));
         cmbDbType.setContentProvider(ArrayContentProvider.getInstance());
+        cmbDbType.setLabelProvider(UIConsts.DATABASE_TYPE_PROVIDER);
         cmbDbType.setInput(DatabaseType.values());
         cmbDbType.getCombo().select(0);
 

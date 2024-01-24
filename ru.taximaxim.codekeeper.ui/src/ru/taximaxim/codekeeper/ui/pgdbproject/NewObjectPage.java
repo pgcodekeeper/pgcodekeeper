@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
@@ -66,8 +67,9 @@ import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
-import ru.taximaxim.codekeeper.core.Consts.WORK_DIR_NAMES;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
+import ru.taximaxim.codekeeper.core.WorkDirs;
 import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.exporter.AbstractModelExporter;
@@ -77,8 +79,8 @@ import ru.taximaxim.codekeeper.core.schema.PgStatementWithSearchPath;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
-import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
+import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateAssistProcessor;
@@ -150,11 +152,12 @@ public final class NewObjectPage extends WizardPage {
         allowedTypes.addAll(firstLevelTypes);
         allowedTypes.addAll(secondLevelTypes);
         allowedTypes.addAll(thirdLevelTypes);
-        allowedTypes.sort((e1, e2) -> e1.name().compareTo(e2.name()));
+        allowedTypes.sort(Comparator.comparing(DbObjType::name));
     }
 
     private void parseFolder(IResource resource) {
-        type = allowedTypes.stream().filter(e -> getDirName(e).equals(resource.getName()))
+        type = allowedTypes.stream()
+                .filter(e -> WorkDirs.getDirectoryNameForType(DatabaseType.PG, type).equals(resource.getName()))
                 .findAny().orElse(null);
         IContainer cont = resource.getParent();
         if (cont != null) {
@@ -240,7 +243,7 @@ public final class NewObjectPage extends WizardPage {
 
         for (IProject project : projects) {
             try {
-                if (project.isOpen() && project.hasNature(NATURE.ID) && !project.hasNature(NATURE.MS)) {
+                if (project.isOpen() && OpenProjectUtils.isPgProject(project)) {
                     projectList.add(project);
                 }
             } catch (CoreException ex) {
@@ -473,7 +476,7 @@ public final class NewObjectPage extends WizardPage {
     }
 
     private IFolder createSchema(String name, boolean open, IProject project) throws CoreException {
-        IFolder projectFolder = project.getFolder(WORK_DIR_NAMES.SCHEMA.name());
+        IFolder projectFolder = project.getFolder(WorkDirs.getDirectoryNameForType(DatabaseType.PG, DbObjType.SCHEMA));
         if (!projectFolder.exists()) {
             projectFolder.create(false, true, null);
         }
@@ -494,18 +497,11 @@ public final class NewObjectPage extends WizardPage {
         return schemaFolder;
     }
 
-    private String getDirName(DbObjType objType) {
-        if (objType.equals(DbObjType.FOREIGN_DATA_WRAPPER)) {
-            return "FDW"; //$NON-NLS-1$
-        }
-        return objType.name();
-    }
-
     private IFile createObject(String schema, String name, DbObjType type,
             boolean open, IProject project) throws CoreException {
         IFile file;
         if (schema == null) {
-            IFolder folder = project.getFolder(getDirName(type));
+            IFolder folder = project.getFolder(WorkDirs.getDirectoryNameForType(DatabaseType.PG, type));
             if (!folder.exists()) {
                 folder.create(false, true, null);
             }
