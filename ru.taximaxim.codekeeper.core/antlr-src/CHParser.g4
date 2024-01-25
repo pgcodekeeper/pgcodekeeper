@@ -10,7 +10,7 @@ options {
 // Top-level statements
 
 sql
-    : stmt (INTO OUTFILE STRING_LITERAL)? (FORMAT (identifier | NULL))? (SEMICOLON)? | insert_stmt EOF
+    : stmt (INTO OUTFILE STRING_LITERAL)? (FORMAT (identifier | NULL))? SEMICOLON? EOF
     ;
 
 stmt
@@ -39,62 +39,78 @@ dml_stmt
     | system_stmt
     | use_stmt
     | watch_stmt
-    | select_stmt
+    | ctes? insert_stmt
+    | ctes? select_stmt
+    ;
+
+ctes
+    : WITH named_query (COMMA named_query)*
+    ;
+
+named_query
+    : name=identifier (column_aliases)? AS LPAREN dml_stmt RPAREN
     ;
 
 select_stmt
-    : with_clause? select_ops
+    : select_ops
     ;
 
- select_ops
-    : LPAREN select_stmt RPAREN // parens can be used to apply "global" clauses (WITH etc) to a particular select in UNION expr
+select_stmt_no_parens
+    : select_ops_no_parens
+    ;
+
+with_clause
+    : WITH expr_list
+    ;
+
+select_ops
+    : LPAREN select_stmt RPAREN
     | select_ops UNION ALL select_ops
     | select_primary
     ;
 
-with_clause
-    : name=identifier (column_aliases)? AS LPAREN stmt RPAREN
+select_ops_no_parens
+    : select_ops UNION ALL select_ops
+    | select_primary
     ;
 
 column_aliases
     : LPAREN identifier (COMMA identifier)* RPAREN
     ;
 
-// ALTER statement
-
 alter_stmt
     : ALTER TABLE table_identifier cluster_clause? alter_table_action (COMMA alter_table_action)*
     ;
 
 alter_table_action
-    : ADD COLUMN (IF NOT EXISTS)? table_column_def (AFTER nested_identifier)?
-    | ADD INDEX (IF NOT EXISTS)? table_index_def (AFTER nested_identifier)?
-    | ADD PROJECTION (IF NOT EXISTS)? table_projection_def (AFTER nested_identifier)?
+    : ADD COLUMN (IF NOT EXISTS)? table_column_def (AFTER qualified_identifier)?
+    | ADD INDEX (IF NOT EXISTS)? table_index_def (AFTER qualified_identifier)?
+    | ADD PROJECTION (IF NOT EXISTS)? table_projection_def (AFTER qualified_identifier)?
     | ATTACH partition_clause (FROM table_identifier)?
-    | CLEAR COLUMN (IF EXISTS)? nested_identifier (IN partition_clause)?
-    | CLEAR INDEX (IF EXISTS)? nested_identifier (IN partition_clause)?
-    | CLEAR PROJECTION (IF EXISTS)? nested_identifier (IN partition_clause)?
-    | COMMENT COLUMN (IF EXISTS)? nested_identifier STRING_LITERAL
-    | DELETE WHERE column_expr
+    | CLEAR COLUMN (IF EXISTS)? qualified_identifier (IN partition_clause)?
+    | CLEAR INDEX (IF EXISTS)? qualified_identifier (IN partition_clause)?
+    | CLEAR PROJECTION (IF EXISTS)? qualified_identifier (IN partition_clause)?
+    | COMMENT COLUMN (IF EXISTS)? qualified_identifier STRING_LITERAL
+    | DELETE WHERE expr
     | DETACH partition_clause
-    | DROP COLUMN (IF EXISTS)? nested_identifier
-    | DROP INDEX (IF EXISTS)? nested_identifier
-    | DROP PROJECTION (IF EXISTS)? nested_identifier
+    | DROP COLUMN (IF EXISTS)? qualified_identifier
+    | DROP INDEX (IF EXISTS)? qualified_identifier
+    | DROP PROJECTION (IF EXISTS)? qualified_identifier
     | DROP partition_clause
     | FREEZE partition_clause?
-    | MATERIALIZE INDEX (IF EXISTS)? nested_identifier (IN partition_clause)?
-    | MATERIALIZE PROJECTION (IF EXISTS)? nested_identifier (IN partition_clause)?
-    | MODIFY COLUMN (IF EXISTS)? nested_identifier codec_expr
-    | MODIFY COLUMN (IF EXISTS)? nested_identifier COMMENT STRING_LITERAL
-    | MODIFY COLUMN (IF EXISTS)? nested_identifier REMOVE table_column_property_type
+    | MATERIALIZE INDEX (IF EXISTS)? qualified_identifier (IN partition_clause)?
+    | MATERIALIZE PROJECTION (IF EXISTS)? qualified_identifier (IN partition_clause)?
+    | MODIFY COLUMN (IF EXISTS)? qualified_identifier codec_expr
+    | MODIFY COLUMN (IF EXISTS)? qualified_identifier COMMENT STRING_LITERAL
+    | MODIFY COLUMN (IF EXISTS)? qualified_identifier REMOVE table_column_property_type
     | MODIFY COLUMN (IF EXISTS)? table_column_def
-    | MODIFY ORDER BY column_expr
+    | MODIFY ORDER BY expr
     | MODIFY ttl_clause
     | MOVE partition_clause TO (DISK STRING_LITERAL | VOLUME STRING_LITERAL | TABLE table_identifier)
     | REMOVE TTL
-    | RENAME COLUMN (IF EXISTS)? nested_identifier TO nested_identifier
+    | RENAME COLUMN (IF EXISTS)? qualified_identifier TO qualified_identifier
     | REPLACE partition_clause FROM table_identifier
-    | UPDATE nested_identifier EQ_SINGLE column_expr (COMMA nested_identifier EQ_SINGLE column_expr)* where_clause
+    | UPDATE qualified_identifier EQ_SINGLE expr (COMMA qualified_identifier EQ_SINGLE expr)* where_clause
     ;
 
 table_column_property_type
@@ -107,7 +123,7 @@ table_column_property_type
     ;
 
 partition_clause
-    : PARTITION column_expr         // actually we expect here any form of tuple of literals
+    : PARTITION expr
     | PARTITION ID STRING_LITERAL
     ;
 
@@ -132,12 +148,12 @@ create_dictinary_stmt
     : (ATTACH | CREATE (OR REPLACE)? | REPLACE) DICTIONARY (IF NOT EXISTS)?
     table_identifier uuid_clause? cluster_clause?
     LPAREN dictionary_attr_def (COMMA dictionary_attr_def)* RPAREN
-    (PRIMARY KEY column_expr_list)?
+    (PRIMARY KEY expr_list)?
     dictionary_option*
     ;
 
 dictionary_attr_def
-    : identifier column_type_expr (DEFAULT literal | EXPRESSION column_expr | HIERARCHICAL | INJECTIVE | IS_OBJECT_ID)*
+    : identifier column_type_expr (DEFAULT literal | EXPRESSION expr | HIERARCHICAL | INJECTIVE | IS_OBJECT_ID)*
     ;
 
 dictionary_option
@@ -165,7 +181,7 @@ destination_clause
     ;
 
 subquery_clause
-    : AS /*selectUnion_stmt*/ select_ops
+    : AS select_ops
     ;
 
 table_schema_clause
@@ -179,15 +195,15 @@ engine_clause
     ;
 
 partition_by_clause
-    : PARTITION BY column_expr
+    : PARTITION BY expr
     ;
 
 primary_key_clause
-    : PRIMARY KEY column_expr
+    : PRIMARY KEY expr
     ;
 
 sample_by_clause
-    : SAMPLE BY column_expr
+    : SAMPLE BY expr
     ;
 
 ttl_clause
@@ -195,31 +211,31 @@ ttl_clause
     ;
 
 engine_expr
-    : ENGINE EQ_SINGLE? (identifier | NULL) (LPAREN column_expr_list? RPAREN)?
+    : ENGINE EQ_SINGLE? (identifier | NULL) (LPAREN expr_list? RPAREN)?
     ;
 
 table_element_expr
     : table_column_def
-    | CONSTRAINT identifier CHECK column_expr
+    | CONSTRAINT identifier CHECK expr
     | INDEX table_index_def
     | PROJECTION table_projection_def
     ;
 
 table_column_def
-    : nested_identifier (column_type_expr table_column_property_expr? | column_type_expr? table_column_property_expr)
-    (COMMENT STRING_LITERAL)? codec_expr? (TTL column_expr)?
+    : qualified_identifier (column_type_expr table_column_property_expr? | column_type_expr? table_column_property_expr)
+    (COMMENT STRING_LITERAL)? codec_expr? (TTL expr)?
     ;
 
 table_column_property_expr
-    : (DEFAULT | MATERIALIZED | ALIAS) column_expr
+    : (DEFAULT | MATERIALIZED | ALIAS) expr
     ;
 
 table_index_def
-    : nested_identifier column_expr TYPE column_type_expr GRANULARITY DECIMAL_LITERAL
+    : qualified_identifier expr TYPE column_type_expr GRANULARITY DECIMAL_LITERAL
     ;
 
 table_projection_def
-    : nested_identifier projection_select_stmt
+    : qualified_identifier projection_select_stmt
     ;
 
 codec_expr
@@ -227,11 +243,11 @@ codec_expr
     ;
 
 codec_arg_expr
-    : identifier (LPAREN column_expr_list? RPAREN)?
+    : identifier (LPAREN expr_list? RPAREN)?
     ;
 
 ttl_expr
-    : column_expr (DELETE | TO DISK STRING_LITERAL | TO VOLUME STRING_LITERAL)?
+    : expr (DELETE | TO DISK STRING_LITERAL | TO VOLUME STRING_LITERAL)?
     ;
 
 describe_stmt
@@ -257,7 +273,7 @@ insert_stmt
     ;
 
 columns_clause
-    : LPAREN nested_identifier (COMMA nested_identifier)* RPAREN
+    : LPAREN qualified_identifier (COMMA qualified_identifier)* RPAREN
     ;
 
 data_clause
@@ -281,9 +297,9 @@ rename_stmt
 projection_select_stmt:
     LPAREN
     with_clause?
-    SELECT column_expr_list
+    SELECT expr_list
     group_by_clause?
-    ORDER BY column_expr_list?
+    ORDER BY expr_list?
     RPAREN
     ;
 
@@ -297,7 +313,8 @@ select_stmtWithParens
 */
 
 select_primary:
-    SELECT DISTINCT? top_clause? column_expr_list
+    with_clause?
+    SELECT DISTINCT? top_clause? expr_list
     from_clause?
     array_join_clause?
     window_clause?
@@ -320,7 +337,7 @@ from_clause
     ;
 
 array_join_clause
-    : (LEFT | INNER)? ARRAY JOIN column_expr_list
+    : (LEFT | INNER)? ARRAY JOIN expr_list
     ;
 
 window_clause
@@ -328,19 +345,19 @@ window_clause
     ;
 
 prewhere_clause
-    : PREWHERE column_expr
+    : PREWHERE expr
     ;
 
 where_clause
-    : WHERE column_expr
+    : WHERE expr
     ;
 
 group_by_clause
-    : GROUP BY ((CUBE | ROLLUP) LPAREN column_expr_list RPAREN | column_expr_list)
+    : GROUP BY ((CUBE | ROLLUP) LPAREN expr_list RPAREN | expr_list)
     ;
 
 having_clause
-    : HAVING column_expr
+    : HAVING expr
     ;
 
 order_by_clause
@@ -348,7 +365,7 @@ order_by_clause
     ;
 
 limit_by_clause
-    : LIMIT limit_expr BY column_expr_list
+    : LIMIT limit_expr BY expr_list
     ;
 
 limit_clause
@@ -360,7 +377,7 @@ settings_clause
     ;
 
 join_expr
-    : join_expr (GLOBAL | LOCAL)? join_op? JOIN join_expr join_constraint_clause
+    : join_expr (GLOBAL | LOCAL)? join_op? JOIN join_expr (ON | USING) expr_list
     | join_expr join_op_cross join_expr
     | table_expr FINAL? sample_clause?
     | LPAREN join_expr RPAREN
@@ -368,25 +385,16 @@ join_expr
 
 join_op
     : (ALL | ANY | ASOF)? INNER
-    | INNER (ALL | ANY | ASOF)?
-    | ALL
-    | ANY
-    | ASOF
+    | INNER? (ALL | ANY | ASOF)
     | (SEMI | ALL | ANTI | ANY | ASOF)? (LEFT | RIGHT) OUTER?
-    | (LEFT | RIGHT) OUTER? (SEMI | ALL | ANTI | ANY | ASOF)?
+    | (LEFT | RIGHT) OUTER? (SEMI | ALL | ANTI | ANY | ASOF)
     | (ALL | ANY)? FULL OUTER?
-    | FULL OUTER? (ALL | ANY)?
+    | FULL OUTER? (ALL | ANY)
     ;
 
 join_op_cross
-    : (GLOBAL|LOCAL)? CROSS JOIN
+    : (GLOBAL | LOCAL)? CROSS JOIN
     | COMMA
-    ;
-
-join_constraint_clause
-    : ON column_expr_list
-    | USING LPAREN column_expr_list RPAREN
-    | USING column_expr_list
     ;
 
 sample_clause
@@ -394,7 +402,7 @@ sample_clause
     ;
 
 limit_expr
-    : column_expr ((COMMA | OFFSET) column_expr)?
+    : expr ((COMMA | OFFSET) expr)?
     ;
 
 order_expr_list
@@ -402,7 +410,7 @@ order_expr_list
     ;
 
 order_expr
-    : column_expr (ASCENDING | DESCENDING | DESC)? (NULLS (FIRST | LAST))? (COLLATE STRING_LITERAL)?
+    : expr (ASCENDING | DESCENDING | DESC)? (NULLS (FIRST | LAST))? (COLLATE STRING_LITERAL)?
     ;
 
 ratio_expr
@@ -418,7 +426,7 @@ setting_expr
     ;
 
 window_expr
-    : LPAREN (PARTITION BY column_expr_list)? (ORDER BY order_expr_list)? ((ROWS | RANGE) win_frame_extend)? RPAREN
+    : LPAREN (PARTITION BY expr_list)? (ORDER BY order_expr_list)? ((ROWS | RANGE) win_frame_extend)? RPAREN
     ;
 
 win_frame_extend
@@ -474,54 +482,62 @@ column_type_expr
     | identifier LPAREN identifier column_type_expr (COMMA identifier column_type_expr)* RPAREN
     | identifier LPAREN enum_value (COMMA enum_value)* RPAREN
     | identifier LPAREN column_type_expr (COMMA column_type_expr)* RPAREN
-    | identifier LPAREN column_expr_list? RPAREN
+    | identifier LPAREN expr_list? RPAREN
     ;
 
-column_expr_list
-    : columns_expr (COMMA columns_expr)*
+expr_list
+    : expr (COMMA expr)*
     ;
 
-columns_expr
-    : // (table_identifier DOT)? ASTERISK
-     LPAREN /*selectUnion_stmt*/ select_ops RPAREN
-    // NOTE: asterisk and subquery goes before |column_expr| so that we can mark them as multi-column expressions.
-    | column_expr
+expr
+    : expr CAST_EXPRESSION column_type_expr
+    | expr LBRACKET expr RBRACKET
+    | LPAREN expr (COMMA expr)* RPAREN
+    | expr IS NOT? NULL
+    | expr (ASTERISK | SLASH | PERCENT) expr
+    | expr (PLUS | MINUS) expr
+    | expr op expr
+    | op expr
+    | expr (GLOBAL? NOT? IN | NOT? (LIKE | ILIKE)) expr
+    | NOT expr
+    | expr NOT? BETWEEN expr AND expr
+    | expr (alias | AS identifier)
+    | expr AND expr
+    | expr OR expr
+    | expr_primary
     ;
 
-column_expr
-    : CASE column_expr? (WHEN column_expr THEN column_expr)+ (ELSE column_expr)? END
-    | CAST LPAREN column_expr AS column_type_expr RPAREN
-    | DATE STRING_LITERAL
-    | EXTRACT LPAREN interval FROM column_expr RPAREN
-    | INTERVAL column_expr interval
-    | SUBSTRING LPAREN column_expr FROM column_expr (FOR column_expr)? RPAREN
-    | TIMESTAMP STRING_LITERAL
-    | TRIM LPAREN (BOTH | LEADING | TRAILING) STRING_LITERAL FROM column_expr RPAREN
-    | identifier (LPAREN column_expr_list? RPAREN) OVER window_expr
-    | identifier (LPAREN column_expr_list? RPAREN) OVER identifier
-    | identifier (LPAREN column_expr_list? RPAREN)? LPAREN DISTINCT? column_arg_list? RPAREN
-    | literal
-    // FIXME(ilezhankin): this part looks very ugly, maybe there is another way to express it
-    | column_expr LBRACKET column_expr RBRACKET
-    | column_expr DOT DECIMAL_LITERAL
-    | DASH column_expr
-    | column_expr (ASTERISK | SLASH | PERCENT) column_expr
-    | column_expr (PLUS | DASH | CONCAT) column_expr
-    | column_expr (EQ_DOUBLE | EQ_SINGLE | NOT_EQ | LE | GE | LT | GT | GLOBAL? NOT? IN | NOT? (LIKE | ILIKE)) column_expr
-    | column_expr IS NOT? NULL
-    | NOT column_expr
-    | column_expr AND column_expr
-    | column_expr OR column_expr
-    // TODO(ilezhankin): `BETWEEN a AND b AND c` is parsed in a wrong way: `BETWEEN (a AND b) AND c`
-    | column_expr NOT? BETWEEN column_expr AND column_expr
-    | <assoc=right> column_expr QUERY column_expr COLON column_expr
-    | column_expr (alias | AS identifier)
+expr_primary
+    : literal
     | (table_identifier DOT)? ASTERISK
-    | LPAREN /*selectUnion_stmt*/ select_ops RPAREN
-    | LPAREN column_expr RPAREN
-    | LPAREN column_expr_list RPAREN
-    | LBRACKET column_expr_list? RBRACKET
-    | column_identifier
+    | qualified_identifier
+    | DATE STRING_LITERAL
+    | LPAREN select_stmt_no_parens RPAREN
+    | function_call
+    | LBRACKET expr_list? RBRACKET
+    ;
+
+op
+    : EQ_DOUBLE
+    | EQ_SINGLE
+    | NOT_EQ
+    | LE
+    | GE
+    | LT
+    | GT
+    ;
+
+function_call
+    : CASE expr? (WHEN expr THEN expr)+ (ELSE expr)? END
+    // | CAST LPAREN expr AS expr RPAREN
+    | INTERVAL (expr interval | literal)
+    | EXTRACT LPAREN interval FROM expr RPAREN
+    | SUBSTRING LPAREN expr FROM expr (FOR expr)? RPAREN
+    | TIMESTAMP STRING_LITERAL
+    | TRIM LPAREN (BOTH | LEADING | TRAILING) STRING_LITERAL FROM expr RPAREN
+    | identifier (LPAREN expr_list? RPAREN) OVER window_expr
+    | identifier (LPAREN expr_list? RPAREN) OVER identifier
+    | identifier (LPAREN expr_list? RPAREN)? LPAREN DISTINCT? column_arg_list? RPAREN
     ;
 
 column_arg_list
@@ -529,19 +545,15 @@ column_arg_list
     ;
 
 column_arg_expr
-    : column_lambda_expr | column_expr
+    : column_lambda_expr | expr
     ;
 
 column_lambda_expr
-    : (LPAREN identifier (COMMA identifier)* RPAREN | identifier (COMMA identifier)*) ARROW column_expr
+    : (LPAREN identifier (COMMA identifier)* RPAREN | identifier (COMMA identifier)*) ARROW expr
     ;
 
-column_identifier
-    : (table_identifier DOT)? nested_identifier
-    ;
-
-nested_identifier
-    : identifier (DOT identifier)?
+qualified_identifier
+    : identifier ( DOT identifier ( DOT identifier )? )?
     ;
 
 // Tables
@@ -549,7 +561,7 @@ nested_identifier
 table_expr
     : table_identifier
     | table_function_expr
-    | LPAREN /*selectUnion_stmt*/ select_ops RPAREN
+    | LPAREN select_ops RPAREN
     | table_expr (alias | AS identifier)
     ;
 
@@ -566,7 +578,7 @@ table_arg_list
     ;
 
 table_arg_expr
-    : nested_identifier
+    : qualified_identifier
     | table_function_expr
     | literal
     ;
@@ -580,7 +592,7 @@ floating_literal
     ;
 
 number_literal
-    : (PLUS | DASH)? (floating_literal | OCTAL_LITERAL | DECIMAL_LITERAL | HEXADECIMAL_LITERAL | INF | NAN)
+    : (PLUS | MINUS)? (floating_literal | OCTAL_LITERAL | DECIMAL_LITERAL | HEXADECIMAL_LITERAL | INF | NAN)
     ;
 
 literal
