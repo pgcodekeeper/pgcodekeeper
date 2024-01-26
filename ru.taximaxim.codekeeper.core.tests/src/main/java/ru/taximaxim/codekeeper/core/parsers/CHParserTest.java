@@ -39,7 +39,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser;
  * Tests for ClickHouse parser rules.
  *
  * @author khazieva_gr
- * @since 9.0.0
+ * @since 9.2.0
  */
 class CHParserTest {
 
@@ -80,7 +80,7 @@ class CHParserTest {
         parser.sql();
 
         int count = ambiguity.intValue();
-        Assertions.assertTrue(errors.isEmpty(), "File: " + fileNameTemplate + " - ANTLR Error");
+        Assertions.assertEquals("[]", errors.toString(), "File: " + fileNameTemplate + " - ANTLR Error");
         Assertions.assertEquals(allowedAmbiguity, count,
                 "File: " + fileNameTemplate + " - ANTLR Ambiguity " + count + " expected " + allowedAmbiguity);
     }
