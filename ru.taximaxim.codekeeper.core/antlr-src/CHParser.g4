@@ -10,7 +10,11 @@ options {
 // Top-level statements
 
 sql
-    : stmt (INTO OUTFILE STRING_LITERAL)? (FORMAT (identifier | NULL))? SEMICOLON? EOF
+    : BOM? SEMICOLON* (query (SEMICOLON+ | EOF))* EOF
+    ;
+
+query
+    : stmt (INTO OUTFILE STRING_LITERAL)? (FORMAT (identifier | NULL))?
     ;
 
 stmt
@@ -153,7 +157,7 @@ create_dictinary_stmt
     ;
 
 dictionary_attr_def
-    : identifier column_type_expr (DEFAULT literal | EXPRESSION expr | HIERARCHICAL | INJECTIVE | IS_OBJECT_ID)*
+    : identifier data_type (DEFAULT literal | EXPRESSION expr | HIERARCHICAL | INJECTIVE | IS_OBJECT_ID)*
     ;
 
 dictionary_option
@@ -222,7 +226,7 @@ table_element_expr
     ;
 
 table_column_def
-    : qualified_identifier (column_type_expr table_column_property_expr? | column_type_expr? table_column_property_expr)
+    : qualified_identifier (data_type table_column_property_expr? | data_type? table_column_property_expr)
     (COMMENT STRING_LITERAL)? codec_expr? (TTL expr)?
     ;
 
@@ -231,7 +235,7 @@ table_column_property_expr
     ;
 
 table_index_def
-    : qualified_identifier expr TYPE column_type_expr GRANULARITY DECIMAL_LITERAL
+    : qualified_identifier expr TYPE data_type (GRANULARITY DECIMAL_LITERAL)?
     ;
 
 table_projection_def
@@ -278,8 +282,12 @@ columns_clause
 
 data_clause
     : FORMAT identifier
-    | VALUES
+    | VALUES values_values (COMMA values_values)*
     | /*selectUnion_stmt*/  select_ops  SEMICOLON? EOF // FIXME EOF?
+    ;
+
+values_values
+    : LPAREN (expr | DEFAULT) (COMMA (expr | DEFAULT))* RPAREN
     ;
 
 kill_stmt
@@ -303,18 +311,10 @@ projection_select_stmt:
     RPAREN
     ;
 
-/*selectUnion_stmt
-    : select_stmtWithParens (UNION ALL select_stmtWithParens)*
-    ;
-
-select_stmtWithParens
-    : select_stmt| LPAREN selectUnion_stmt RPAREN
-    ;
-*/
-
 select_primary:
     with_clause?
-    SELECT DISTINCT? top_clause? expr_list
+    SELECT DISTINCT? top_clause?
+    select_list COMMA? // strange but valid syntax: select 1, from t
     from_clause?
     array_join_clause?
     window_clause?
@@ -328,12 +328,35 @@ select_primary:
     settings_clause?
     ;
 
+select_list
+    : expr select_mode* (COMMA expr select_mode*)*
+    ;
+
+select_mode
+    : APPLY (LPAREN identifier RPAREN | identifier)
+    | EXCEPT (LPAREN expr_list RPAREN | expr)
+    | REPLACE LPAREN expr RPAREN
+    ;
+
 top_clause
     : TOP DECIMAL_LITERAL (WITH TIES)?
     ;
 
 from_clause
-    : FROM join_expr
+    : FROM from_item (COMMA from_item)*?
+    ;
+
+from_item
+    : from_item (GLOBAL | LOCAL)? join_op? JOIN from_item (ON | USING) expr_list
+    | from_item (GLOBAL | LOCAL)? CROSS JOIN from_item
+    | LPAREN from_item RPAREN
+    | from_primary FINAL? sample_clause?
+    ;
+
+from_primary
+    : table_identifier (alias | AS identifier)?
+    | function_call
+    | LPAREN select_ops RPAREN (alias | AS identifier)?
     ;
 
 array_join_clause
@@ -353,7 +376,17 @@ where_clause
     ;
 
 group_by_clause
-    : GROUP BY ((CUBE | ROLLUP) LPAREN expr_list RPAREN | expr_list)
+    : GROUP BY grouping_element_list
+    ;
+
+grouping_element_list
+    : grouping_element (COMMA grouping_element)*
+    ;
+
+grouping_element
+    : expr
+    | LPAREN RPAREN
+    | (ROLLUP | CUBE | GROUPING SETS) LPAREN grouping_element_list RPAREN
     ;
 
 having_clause
@@ -376,13 +409,6 @@ settings_clause
     : SETTINGS setting_expr_list
     ;
 
-join_expr
-    : join_expr (GLOBAL | LOCAL)? join_op? JOIN join_expr (ON | USING) expr_list
-    | join_expr join_op_cross join_expr
-    | table_expr FINAL? sample_clause?
-    | LPAREN join_expr RPAREN
-    ;
-
 join_op
     : (ALL | ANY | ASOF)? INNER
     | INNER? (ALL | ANY | ASOF)
@@ -390,11 +416,6 @@ join_op
     | (LEFT | RIGHT) OUTER? (SEMI | ALL | ANTI | ANY | ASOF)
     | (ALL | ANY)? FULL OUTER?
     | FULL OUTER? (ALL | ANY)
-    ;
-
-join_op_cross
-    : (GLOBAL | LOCAL)? CROSS JOIN
-    | COMMA
     ;
 
 sample_clause
@@ -410,7 +431,11 @@ order_expr_list
     ;
 
 order_expr
-    : expr (ASCENDING | DESCENDING | DESC)? (NULLS (FIRST | LAST))? (COLLATE STRING_LITERAL)?
+    : expr (ASCENDING | DESCENDING | DESC)? (NULLS (FIRST | LAST))? (COLLATE STRING_LITERAL)? with_fill?
+    ;
+
+with_fill
+    : WITH FILL (FROM expr)? (TO expr)? (STEP expr)? (INTERPOLATE expr_list)?
     ;
 
 ratio_expr
@@ -426,7 +451,8 @@ setting_expr
     ;
 
 window_expr
-    : LPAREN (PARTITION BY expr_list)? (ORDER BY order_expr_list)? ((ROWS | RANGE) win_frame_extend)? RPAREN
+    : identifier
+    | LPAREN (PARTITION BY expr_list)? (ORDER BY order_expr_list)? ((ROWS | RANGE) win_frame_extend)? RPAREN
     ;
 
 win_frame_extend
@@ -477,12 +503,15 @@ watch_stmt
     : WATCH table_identifier EVENTS? (LIMIT DECIMAL_LITERAL)?
     ;
 
-column_type_expr
+data_type
     : identifier
-    | identifier LPAREN identifier column_type_expr (COMMA identifier column_type_expr)* RPAREN
+    | identifier LPAREN identifier data_type (COMMA identifier data_type)* RPAREN
     | identifier LPAREN enum_value (COMMA enum_value)* RPAREN
-    | identifier LPAREN column_type_expr (COMMA column_type_expr)* RPAREN
-    | identifier LPAREN expr_list? RPAREN
+    | complex_data_type
+    ;
+
+complex_data_type
+    : identifier LPAREN expr_list? RPAREN
     ;
 
 expr_list
@@ -490,17 +519,18 @@ expr_list
     ;
 
 expr
-    : expr CAST_EXPRESSION column_type_expr
+    : expr CAST_EXPRESSION data_type
     | expr LBRACKET expr RBRACKET
     | LPAREN expr (COMMA expr)* RPAREN
     | expr IS NOT? NULL
     | expr (ASTERISK | SLASH | PERCENT) expr
     | expr (PLUS | MINUS) expr
     | expr op expr
-    | op expr
+    | MINUS expr
     | expr (GLOBAL? NOT? IN | NOT? (LIKE | ILIKE)) expr
     | NOT expr
     | expr NOT? BETWEEN expr AND expr
+    | expr QUERY expr COLON expr
     | expr (alias | AS identifier)
     | expr AND expr
     | expr OR expr
@@ -515,6 +545,7 @@ expr_primary
     | LPAREN select_stmt_no_parens RPAREN
     | function_call
     | LBRACKET expr_list? RBRACKET
+    | identifier (DOT DECIMAL_LITERAL)+
     ;
 
 op
@@ -525,17 +556,18 @@ op
     | GE
     | LT
     | GT
+    | CONCAT
     ;
 
 function_call
     : CASE expr? (WHEN expr THEN expr)+ (ELSE expr)? END
-    // | CAST LPAREN expr AS expr RPAREN
-    | INTERVAL (expr interval | literal)
+    | CAST LPAREN expr AS complex_data_type RPAREN // when using the data_type rule there are ambiguities with the simple function
+    | INTERVAL (expr interval | STRING_LITERAL)
     | EXTRACT LPAREN interval FROM expr RPAREN
     | SUBSTRING LPAREN expr FROM expr (FOR expr)? RPAREN
     | TIMESTAMP STRING_LITERAL
     | TRIM LPAREN (BOTH | LEADING | TRAILING) STRING_LITERAL FROM expr RPAREN
-    | identifier (LPAREN expr_list? RPAREN) OVER window_expr
+    | identifier ((LPAREN expr RPAREN)? LPAREN expr_list? RPAREN) OVER window_expr
     | identifier (LPAREN expr_list? RPAREN) OVER identifier
     | identifier (LPAREN expr_list? RPAREN)? LPAREN DISTINCT? column_arg_list? RPAREN
     ;
@@ -545,11 +577,13 @@ column_arg_list
     ;
 
 column_arg_expr
-    : column_lambda_expr | expr
+    : column_lambda_expr
+    | select_stmt_no_parens
+    | expr
     ;
 
 column_lambda_expr
-    : (LPAREN identifier (COMMA identifier)* RPAREN | identifier (COMMA identifier)*) ARROW expr
+    : (LPAREN identifier (COMMA identifier)* RPAREN | identifier) ARROW expr
     ;
 
 qualified_identifier
@@ -580,6 +614,7 @@ table_arg_list
 table_arg_expr
     : qualified_identifier
     | table_function_expr
+    | function_call
     | literal
     ;
 
@@ -598,6 +633,7 @@ number_literal
 literal
     : number_literal
     | STRING_LITERAL
+    | BeginDollarStringConstant Text_between_Dollar* EndDollarStringConstant
     | NULL
     ;
 
@@ -607,18 +643,192 @@ interval
 
 keyword
     // except NULL, INF, NAN
-    : AFTER | ALIAS | ALL | ALTER | AND | ANTI | ANY | ARRAY | AS | ASCENDING | ASOF | AST | ASYNC | ATTACH | BETWEEN | BOTH | BY | CASE
-    | CAST | CHECK | CLEAR | CLUSTER | CODEC | COLLATE | COLUMN | COMMENT | CONSTRAINT | CREATE | CROSS | CUBE | CURRENT | DATABASE
-    | DATABASES | DATE | DEDUPLICATE | DEFAULT | DELAY | DELETE | DESCRIBE | DESC | DESCENDING | DETACH | DICTIONARIES | DICTIONARY | DISK
-    | DISTINCT | DISTRIBUTED | DROP | ELSE | END | ENGINE | EVENTS | EXISTS | EXPLAIN | EXPRESSION | EXTRACT | FETCHES | FINAL | FIRST
-    | FLUSH | FOR | FOLLOWING | FOR | FORMAT | FREEZE | FROM | FULL | FUNCTION | GLOBAL | GRANULARITY | GROUP | HAVING | HIERARCHICAL | ID
-    | IF | ILIKE | IN | INDEX | INJECTIVE | INNER | INSERT | INTERVAL | INTO | IS | IS_OBJECT_ID | JOIN | JSON_FALSE | JSON_TRUE | KEY
-    | KILL | LAST | LAYOUT | LEADING | LEFT | LIFETIME | LIKE | LIMIT | LIVE | LOCAL | LOGS | MATERIALIZE | MATERIALIZED | MAX | MERGES
-    | MIN | MODIFY | MOVE | MUTATION | NO | NOT | NULLS | OFFSET | ON | OPTIMIZE | OR | ORDER | OUTER | OUTFILE | OVER | PARTITION
-    | POPULATE | PRECEDING | PREWHERE | PRIMARY | RANGE | RELOAD | REMOVE | RENAME | REPLACE | REPLICA | REPLICATED | RIGHT | ROLLUP | ROW
-    | ROWS | SAMPLE | SELECT | SEMI | SENDS | SET | SETTINGS | SHOW | SOURCE | START | STOP | SUBSTRING | SYNC | SYNTAX | SYSTEM | TABLE
-    | TABLES | TEMPORARY | TEST | THEN | TIES | TIMEOUT | TIMESTAMP | TOTALS | TRAILING | TRIM | TRUNCATE | TO | TOP | TTL | TYPE
-    | UNBOUNDED | UNION | UPDATE | USE | USING | UUID | VALUES | VIEW | VOLUME | WATCH | WHEN | WHERE | WINDOW | WITH
+    : AFTER
+    | ALIAS
+    | ALL
+    | ALTER
+    | AND
+    | ANTI
+    | ANY
+    | APPLY
+    | ARRAY
+    | AS
+    | ASCENDING
+    | ASOF
+    | AST
+    | ASYNC
+    | ATTACH
+    | BETWEEN
+    | BOTH
+    | BY
+    | CASE
+    | CAST
+    | CHECK
+    | CLEAR
+    | CLUSTER
+    | CODEC
+    | COLLATE
+    | COLUMN
+    | COMMENT
+    | CONSTRAINT
+    | CREATE
+    | CROSS
+    | CUBE
+    | CURRENT
+    | DATABASE
+    | DATABASES
+    | DATE
+    | DEDUPLICATE
+    | DEFAULT
+    | DELAY
+    | DELETE
+    | DESC
+    | DESCENDING
+    | DESCRIBE
+    | DETACH
+    | DICTIONARIES
+    | DICTIONARY
+    | DISK
+    | DISTINCT
+    | DISTRIBUTED
+    | DROP
+    | ELSE
+    | END
+    | ENGINE
+    | EVENTS
+    | EXCEPT
+    | EXISTS
+    | EXPLAIN
+    | EXPRESSION
+    | EXTRACT
+    | FETCHES
+    | FILL
+    | FINAL
+    | FIRST
+    | FLUSH
+    | FOLLOWING
+    | FOR
+    | FOR
+    | FORMAT
+    | FREEZE
+    | FROM
+    | FULL
+    | FUNCTION
+    | GLOBAL
+    | GRANULARITY
+    | GROUP
+    | GROUPING
+    | HAVING
+    | HIERARCHICAL
+    | ID
+    | IF
+    | ILIKE
+    | IN
+    | INDEX
+    | INJECTIVE
+    | INNER
+    | INSERT
+    | INTERPOLATE
+    | INTERVAL
+    | INTO
+    | IS
+    | IS_OBJECT_ID
+    | JOIN
+    | JSON_FALSE
+    | JSON_TRUE
+    | KEY
+    | KILL
+    | LAST
+    | LAYOUT
+    | LEADING
+    | LEFT
+    | LIFETIME
+    | LIKE
+    | LIMIT
+    | LIVE
+    | LOCAL
+    | LOGS
+    | MATERIALIZE
+    | MATERIALIZED
+    | MAX
+    | MERGES
+    | MIN
+    | MODIFY
+    | MOVE
+    | MUTATION
+    | NO
+    | NOT
+    | NULLS
+    | OFFSET
+    | ON
+    | OPTIMIZE
+    | OR
+    | ORDER
+    | OUTER
+    | OUTFILE
+    | OVER
+    | PARTITION
+    | POPULATE
+    | PRECEDING
+    | PREWHERE
+    | PRIMARY
+    | RANGE
+    | RELOAD
+    | REMOVE
+    | RENAME
+    | REPLACE
+    | REPLICA
+    | REPLICATED
+    | RIGHT
+    | ROLLUP
+    | ROW
+    | ROWS
+    | SAMPLE
+    | SELECT
+    | SEMI
+    | SENDS
+    | SET
+    | SETS
+    | SETTINGS
+    | SHOW
+    | SOURCE
+    | START
+    | STEP
+    | STOP
+    | SUBSTRING
+    | SYNC
+    | SYNTAX
+    | SYSTEM
+    | TABLE
+    | TABLES
+    | TEMPORARY
+    | TEST
+    | THEN
+    | TIES
+    | TIMEOUT
+    | TIMESTAMP
+    | TO
+    | TOP
+    | TOTALS
+    | TRAILING
+    | TRIM
+    | TRUNCATE
+    | TTL
+    | TYPE
+    | UNBOUNDED
+    | UNION
+    | UPDATE
+    | USE
+    | USING
+    | UUID
+    | VALUES
+    | VIEW
+    | VOLUME
+    | WATCH
+    | WHEN
+    | WHERE
+    | WINDOW
+    | WITH
     ;
 
 keyword_for_alias
@@ -626,12 +836,12 @@ keyword_for_alias
     | FIRST
     | ID
     | KEY
+    | TEST
     ;
 
 alias
     : IDENTIFIER
     | keyword_for_alias
-    // |interval| can't be an alias, otherwise 'INTERVAL 1 SOMETHING' becomes ambiguous.
     ;
 
 identifier
