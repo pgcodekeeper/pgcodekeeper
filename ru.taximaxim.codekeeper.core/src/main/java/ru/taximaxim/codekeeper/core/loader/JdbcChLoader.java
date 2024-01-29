@@ -32,7 +32,7 @@ import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 
 public final class JdbcChLoader extends JdbcLoaderBase {
 
-    private static final Logger LOG = LoggerFactory.getLogger(JdbcLoader.class);
+    private static final Logger LOG = LoggerFactory.getLogger(JdbcChLoader.class);
 
     public JdbcChLoader(JdbcConnector connector, PgDiffArguments pgDiffArguments) {
         this(connector, pgDiffArguments, SubMonitor.convert(null), null);

@@ -77,7 +77,7 @@ class CHParserTest {
             }
         });
 
-        parser.sql();
+        parser.ch_file();
 
         int count = ambiguity.intValue();
         Assertions.assertEquals("[]", errors.toString(), "File: " + fileNameTemplate + " - ANTLR Error");

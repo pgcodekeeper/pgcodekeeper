@@ -9,7 +9,7 @@ options {
 
 // Top-level statements
 
-sql
+ch_file
     : BOM? SEMICOLON* (query (SEMICOLON+ | EOF))* EOF
     ;
 
@@ -633,7 +633,7 @@ number_literal
 literal
     : number_literal
     | STRING_LITERAL
-    | BeginDollarStringConstant Text_between_Dollar* EndDollarStringConstant
+    // | BeginDollarStringConstant Text_between_Dollar* EndDollarStringConstant
     | NULL
     ;
 

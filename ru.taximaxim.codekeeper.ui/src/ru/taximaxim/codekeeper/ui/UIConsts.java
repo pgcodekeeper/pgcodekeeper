@@ -22,7 +22,7 @@ import org.eclipse.jface.viewers.LabelProvider;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 
 public interface UIConsts {
-    
+
     LabelProvider DATABASE_TYPE_PROVIDER = new LabelProvider() {
 
         @Override
@@ -168,11 +168,6 @@ public interface UIConsts {
         String FIRST_VISIT = "first_visit"; //$NON-NLS-1$
         String LAST_VISIT = "last_visit"; //$NON-NLS-1$
         String VISIT_COUNT = "visit_count"; //$NON-NLS-1$
-    }
-
-    interface LANGUAGE {
-        String POSTGRESQL = "PostgreSQL"; //$NON-NLS-1$
-        String MS_SQL = "MS SQL"; //$NON-NLS-1$
     }
 
     interface PROJ_PREF {

@@ -15,22 +15,33 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.parsers.antlr;
 
+import java.util.List;
+
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.ParserRuleContext;
+import org.eclipse.core.runtime.IProgressMonitor;
 
+import ru.taximaxim.codekeeper.core.loader.ParserListenerMode;
+import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrContextProcessor.ChSqlContextProcessor;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Ch_fileContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.SqlContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Tsql_fileContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.QueryContext;
+import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 
-public interface AntlrContextProcessor<R extends ParserRuleContext> {
-    void process(R rootCtx, CommonTokenStream stream);
+public class CustomChSQLParserListener extends CustomParserListener implements ChSqlContextProcessor {
 
-    public static interface SqlContextProcessor extends AntlrContextProcessor<SqlContext> {
+    public CustomChSQLParserListener(PgDatabase database, String filename, ParserListenerMode mode,
+            List<Object> errors, IProgressMonitor monitor) {
+        super(database, filename, mode, errors, monitor);
     }
 
-    public static interface TSqlContextProcessor extends AntlrContextProcessor<Tsql_fileContext> {
+    @Override
+    public void process(Ch_fileContext rootCtx, CommonTokenStream stream) {
+        for (QueryContext query : rootCtx.query()) {
+            query(query);
+        }
     }
 
-    public static interface ChSqlContextProcessor extends AntlrContextProcessor<Ch_fileContext> {
+    private void query(QueryContext query) {
+
     }
+
 }
