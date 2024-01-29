@@ -34,10 +34,13 @@ import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.fileutils.InputStreamProvider;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrContextProcessor.ChSqlContextProcessor;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrContextProcessor.SqlContextProcessor;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrContextProcessor.TSqlContextProcessor;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrTask;
+import ru.taximaxim.codekeeper.core.parsers.antlr.ChSQLOverridesListener;
+import ru.taximaxim.codekeeper.core.parsers.antlr.CustomChSQLParserListener;
 import ru.taximaxim.codekeeper.core.parsers.antlr.CustomSQLParserListener;
 import ru.taximaxim.codekeeper.core.parsers.antlr.CustomTSQLParserListener;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLOverridesListener;
@@ -162,11 +165,9 @@ public class PgDumpLoader extends DatabaseLoader {
         case PG:
             SqlContextProcessor sqlListener;
             if (overrides != null) {
-                sqlListener = new SQLOverridesListener(
-                        intoDb, inputObjectName, mode, errors, monitor, overrides);
+                sqlListener = new SQLOverridesListener(intoDb, inputObjectName, mode, errors, monitor, overrides);
             } else {
-                sqlListener = new CustomSQLParserListener(intoDb,
-                        inputObjectName, mode, errors, antlrTasks, monitor);
+                sqlListener = new CustomSQLParserListener(intoDb, inputObjectName, mode, errors, antlrTasks, monitor);
             }
 
             AntlrParser.parseSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
@@ -175,14 +176,22 @@ public class PgDumpLoader extends DatabaseLoader {
         case MS:
             TSqlContextProcessor tsqlListener;
             if (overrides != null) {
-                tsqlListener = new TSQLOverridesListener(
-                        intoDb, inputObjectName, mode, errors, monitor, overrides);
+                tsqlListener = new TSQLOverridesListener(intoDb, inputObjectName, mode, errors, monitor, overrides);
             } else {
-                tsqlListener = new CustomTSQLParserListener(
-                        intoDb, inputObjectName, mode, errors, monitor);
+                tsqlListener = new CustomTSQLParserListener(intoDb, inputObjectName, mode, errors, monitor);
             }
             AntlrParser.parseTSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
                     monitor, monitoringLevel, tsqlListener, antlrTasks);
+            break;
+        case CH:
+            ChSqlContextProcessor chSqlListener;
+            if (overrides != null) {
+                chSqlListener = new ChSQLOverridesListener(intoDb, inputObjectName, mode, errors, monitor, overrides);
+            } else {
+                chSqlListener = new CustomChSQLParserListener(intoDb, inputObjectName, mode, errors, monitor);
+            }
+            AntlrParser.parseChSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
+                    monitor, monitoringLevel, chSqlListener, antlrTasks);
             break;
         default:
             throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + args.getDbType());

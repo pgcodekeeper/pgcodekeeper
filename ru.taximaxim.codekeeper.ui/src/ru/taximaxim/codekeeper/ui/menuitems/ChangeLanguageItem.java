@@ -28,8 +28,7 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
-import ru.taximaxim.codekeeper.ui.UIConsts.LANGUAGE;
-import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 
@@ -52,22 +51,9 @@ public class ChangeLanguageItem extends ContributionItem {
     private int width = -1;
     private int height = -1;
 
-    private final Action msAction = new Action(LANGUAGE.MS_SQL, IAction.AS_RADIO_BUTTON) {
-
-        @Override
-        public void run() {
-            editor.changeLanguage(LANGUAGE.MS_SQL);
-            updateLabel(LANGUAGE.MS_SQL);
-        }
-    };
-    private final Action pgAction = new Action(LANGUAGE.POSTGRESQL, IAction.AS_RADIO_BUTTON) {
-
-        @Override
-        public void run() {
-            editor.changeLanguage(LANGUAGE.POSTGRESQL);
-            updateLabel(LANGUAGE.POSTGRESQL);
-        }
-    };
+    private final LanguageAction msAction = new LanguageAction(DatabaseType.MS, IAction.AS_RADIO_BUTTON);
+    private final LanguageAction pgAction = new LanguageAction(DatabaseType.PG, IAction.AS_RADIO_BUTTON);
+    private final LanguageAction chAction = new LanguageAction(DatabaseType.CH, IAction.AS_RADIO_BUTTON);
 
     private SQLEditor editor;
 
@@ -110,18 +96,7 @@ public class ChangeLanguageItem extends ContributionItem {
             return;
         }
 
-        String lang;
-        switch (editor.getDbType()) {
-        case PG:
-            lang = LANGUAGE.POSTGRESQL;
-            break;
-        case MS:
-            lang = LANGUAGE.MS_SQL;
-            break;
-        default:
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + editor.getDbType());
-        }
-        updateLabel(lang);
+        updateLabel(editor.getDbType());
     }
 
     /**
@@ -150,17 +125,39 @@ public class ChangeLanguageItem extends ContributionItem {
         MenuManager contextMenu = new MenuManager();
         contextMenu.add(pgAction);
         contextMenu.add(msAction);
+        contextMenu.add(chAction);
         control.setMenu(contextMenu.createContextMenu(control));
     }
 
-    private void updateLabel(String text) {
+    private void updateLabel(DatabaseType type) {
         if (fLabel == null || fLabel.isDisposed()) {
             return;
         }
 
         fLabel.setForeground(fLabel.getParent().getForeground());
-        fLabel.setText(text);
-        pgAction.setChecked(LANGUAGE.POSTGRESQL.equals(text));
-        msAction.setChecked(LANGUAGE.MS_SQL.equals(text));
+        fLabel.setText(type.getDbTypeName());
+        pgAction.setChecked(type);
+        msAction.setChecked(type);
+        chAction.setChecked(type);
+    }
+
+    private final class LanguageAction extends Action {
+
+        private DatabaseType type;
+
+        private LanguageAction(DatabaseType type, int style) {
+            super(type.getDbTypeName(), style);
+            this.type = type;
+        }
+
+        @Override
+        public void run() {
+            editor.changeLanguage(type);
+            updateLabel(type);
+        }
+
+        private void setChecked(DatabaseType type) {
+            super.setChecked(this.type == type);
+        }
     }
 }

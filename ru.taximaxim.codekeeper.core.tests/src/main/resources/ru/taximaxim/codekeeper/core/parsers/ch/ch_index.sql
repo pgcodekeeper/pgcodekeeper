@@ -1,0 +1,28 @@
+create index i_a on t_index(a) TYPE minmax GRANULARITY 4;
+create index i_b on t_index(b) TYPE bloom_filter GRANULARITY 2;
+create index idx2 on rmt date(ts) TYPE MinMax GRANULARITY 1;
+CREATE INDEX idx_tab1_0 on tab1 (col0);
+CREATE INDEX idx_tab1_1 on tab1 (col1);
+CREATE INDEX idx_tab1_3 on tab1 (col3);
+CREATE INDEX idx_tab1_4 on tab1 (col4);
+CREATE INDEX idx_tab2_0 ON tab2 (col0 DESC);
+CREATE INDEX idx_tab2_0 ON tab2 (col0 DESC,col1 DESC);
+CREATE INDEX idx_tab2_0 ON tab2 (col0 DESC,col1 DESC,col4 DESC);
+CREATE INDEX idx_tab2_0 ON tab2 (col0 DESC,col1);
+CREATE INDEX idx_tab2_0 ON tab2 (col0 DESC,col3);
+CREATE INDEX idx_tab2_0 ON tab2 (col0 DESC,col4 DESC);
+CREATE INDEX idx_tab2_0 ON tab2 (col0 DESC,col4);
+CREATE INDEX idx_tab2_0 ON tab2 (col0);
+CREATE INDEX idx_tab3_1 ON tab3 (col3,col0 DESC);
+CREATE INDEX idx_tab3_1 ON tab3 (col3,col0 DESC,col4);
+CREATE INDEX idx_tab3_1 ON tab3 (col3,col0,col4 DESC);
+CREATE INDEX idx_tab3_1 ON tab3 (col3,col1 DESC);
+CREATE INDEX idx_tab4_5 ON tab4 (col4,col0 DESC);
+CREATE INDEX idx_tab4_5 ON tab4 (col4,col1 DESC);
+CREATE INDEX idx_tab4_5 ON tab4 (col4,col1 DESC,col3);
+CREATE INDEX idx_tab4_5 ON tab4 (col4,col3 DESC,col1 DESC);
+CREATE INDEX idx_tab4_5 ON tab4 (col4,col3);
+create index if not exists i_a on t_index(a) TYPE minmax GRANULARITY 2;
+
+drop index i_a on t_index;
+drop index if exists i_a on t_index;

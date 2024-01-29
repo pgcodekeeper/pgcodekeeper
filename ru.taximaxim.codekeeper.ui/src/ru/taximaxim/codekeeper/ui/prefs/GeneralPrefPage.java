@@ -104,7 +104,7 @@ public class GeneralPrefPage extends FieldEditorPreferencePage
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                AntlrParser.cleanCacheOfBothParsers();
+                AntlrParser.cleanCacheOfAllParsers();
                 System.gc();
             }
         });

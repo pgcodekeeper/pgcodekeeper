@@ -46,12 +46,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ru.taximaxim.codekeeper.core.DaemonThreadFactory;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.fileutils.InputStreamProvider;
+import ru.taximaxim.codekeeper.core.localizations.Messages;
+import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrContextProcessor.ChSqlContextProcessor;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrContextProcessor.SqlContextProcessor;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrContextProcessor.TSqlContextProcessor;
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.MonitorCancelledRuntimeException;
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.UnresolvedReferenceException;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHLexer;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.IgnoreListLexer;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.IgnoreListParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.PrivilegesLexer;
@@ -70,6 +75,7 @@ public class AntlrParser {
 
     private static volatile long pgParserLastStart;
     private static volatile long msParserLastStart;
+    private static volatile long chParserLastStart;
 
     static {
         int count = Integer.getInteger(
@@ -144,6 +150,9 @@ public class AntlrParser {
         } else if (parserClass.isAssignableFrom(PrivilegesParser.class)) {
             lexer = new PrivilegesLexer(stream);
             parser = new PrivilegesParser(new CommonTokenStream(lexer));
+        } else if (parserClass.isAssignableFrom(CHParser.class)) {
+            lexer = new CHLexer(stream);
+            parser = new CHParser(new CommonTokenStream(lexer));
         } else {
             throw new IllegalArgumentException("Unknown parser class: " + parserClass);
         }
@@ -168,7 +177,7 @@ public class AntlrParser {
                         charsetName, parsedObjectName, errors);
                 parser.addParseListener(new CustomParseTreeListener(
                         monitoringLevel, mon == null ? new NullProgressMonitor() : mon));
-                saveTimeOfLastParserStart(false);
+                saveTimeOfLastParserStart(SQLParser.class);
                 return new Pair<>(parser.sql(), (CommonTokenStream) parser.getTokenStream());
             } catch (MonitorCancelledRuntimeException mcre){
                 throw new InterruptedException();
@@ -192,10 +201,32 @@ public class AntlrParser {
                         stream, charsetName, parsedObjectName, errors);
                 parser.addParseListener(new CustomParseTreeListener(
                         monitoringLevel, mon == null ? new NullProgressMonitor() : mon));
-                saveTimeOfLastParserStart(true);
-                return new Pair<>((CommonTokenStream) parser.getInputStream(),
-                        parser.tsql_file());
+                saveTimeOfLastParserStart(TSQLParser.class);
+                return new Pair<>((CommonTokenStream) parser.getInputStream(), parser.tsql_file());
             } catch (MonitorCancelledRuntimeException mcre){
+                throw new InterruptedException();
+            }
+        }, pair -> {
+            try {
+                listener.process(pair.getSecond(), pair.getFirst());
+            } catch (UnresolvedReferenceException ex) {
+                errors.add(CustomParserListener.handleUnresolvedReference(ex, parsedObjectName));
+            }
+        });
+    }
+
+    public static void parseChSqlStream(InputStreamProvider inputStream, String charsetName, String parsedObjectName,
+            List<Object> errors, IProgressMonitor mon, int monitoringLevel, ChSqlContextProcessor listener,
+            Queue<AntlrTask<?>> antlrTasks) {
+        submitAntlrTask(antlrTasks, () -> {
+            PgDiffUtils.checkCancelled(mon);
+            try (InputStream stream = inputStream.getStream()) {
+                CHParser parser = makeBasicParser(CHParser.class, stream, charsetName, parsedObjectName, errors);
+                parser.addParseListener(new CustomParseTreeListener(
+                        monitoringLevel, mon == null ? new NullProgressMonitor() : mon));
+                saveTimeOfLastParserStart(CHParser.class);
+                return new Pair<>((CommonTokenStream) parser.getInputStream(), parser.ch_file());
+            } catch (MonitorCancelledRuntimeException mcre) {
                 throw new InterruptedException();
             }
         }, pair -> {
@@ -213,7 +244,7 @@ public class AntlrParser {
         Future<T> f = submitAntlrTask(() -> parserEntry.apply(
                 makeBasicParser(parserClass, sql, parsedObjectName, errors)));
         try {
-            saveTimeOfLastParserStart(parserClass.isAssignableFrom(TSQLParser.class));
+            saveTimeOfLastParserStart(parserClass);
             return f.get();
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
@@ -269,42 +300,70 @@ public class AntlrParser {
         }
     }
 
-    public static void checkToClean(boolean isMsParser, long cleaningInterval) {
-        long lastParserStart = isMsParser ? msParserLastStart : pgParserLastStart;
-        if (lastParserStart != 0
-                && (cleaningInterval < System.currentTimeMillis() - lastParserStart)) {
-            cleanParserCache(isMsParser);
+    public static void checkToClean(DatabaseType databaseType, long cleaningInterval) {
+        long lastParserStart;
+        switch (databaseType) {
+        case CH:
+            lastParserStart = chParserLastStart;
+            break;
+        case MS:
+            lastParserStart = msParserLastStart;
+            break;
+        case PG:
+            lastParserStart = pgParserLastStart;
+            break;
+        default:
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + databaseType);
+        }
+        if (lastParserStart != 0 && (cleaningInterval < System.currentTimeMillis() - lastParserStart)) {
+            cleanParserCache(databaseType);
         }
     }
 
-    private static void cleanParserCache(boolean isMsParser) {
-        Class<? extends Parser> parserClazz = null;
-        if (isMsParser) {
+    private static void cleanParserCache(DatabaseType databaseType) {
+        Class<? extends Parser> parserClazz;
+        switch (databaseType) {
+        case CH:
+            chParserLastStart = 0;
+            parserClazz = CHParser.class;
+            break;
+        case MS:
             msParserLastStart = 0;
             parserClazz = TSQLParser.class;
-        } else {
+            break;
+        case PG:
             pgParserLastStart = 0;
             parserClazz = SQLParser.class;
+            break;
+        default:
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + databaseType);
         }
-        makeBasicParser(parserClazz, ";", "fake string to clean parser cache")
-        .getInterpreter().clearDFA();
+
+        makeBasicParser(parserClazz, ";", "fake string to clean parser cache").getInterpreter().clearDFA();
     }
 
-    public static void cleanCacheOfBothParsers() {
+    public static void cleanCacheOfAllParsers() {
         if (pgParserLastStart != 0) {
-            cleanParserCache(false);
+            cleanParserCache(DatabaseType.PG);
         }
         if (msParserLastStart != 0) {
-            cleanParserCache(true);
+            cleanParserCache(DatabaseType.MS);
+        }
+        if (chParserLastStart != 0) {
+            cleanParserCache(DatabaseType.CH);
         }
     }
 
-    private static void saveTimeOfLastParserStart(boolean isMsParser) {
-        if (isMsParser) {
+    private static void saveTimeOfLastParserStart(Class<?> parserClass) {
+        if (parserClass.isAssignableFrom(SQLParser.class)) {
+            chParserLastStart = System.currentTimeMillis();
+        } else if (parserClass.isAssignableFrom(TSQLParser.class)) {
             msParserLastStart = System.currentTimeMillis();
-            return;
+        } else if (parserClass.isAssignableFrom(CHParser.class)) {
+            pgParserLastStart = System.currentTimeMillis();
+        } else {
+            throw new IllegalArgumentException("Unknown parser class: " + parserClass);
         }
-        pgParserLastStart = System.currentTimeMillis();
     }
 
     private AntlrParser() {
@@ -312,7 +371,7 @@ public class AntlrParser {
     }
 }
 
-class CustomParseTreeListener implements ParseTreeListener{
+class CustomParseTreeListener implements ParseTreeListener {
     private final int monitoringLevel;
     private final IProgressMonitor monitor;
 
