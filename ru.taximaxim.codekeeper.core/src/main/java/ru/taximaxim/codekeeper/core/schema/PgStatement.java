@@ -324,6 +324,7 @@ public abstract class PgStatement implements IStatement, IHashable {
     public String getSeparator() {
         switch (getDbType()) {
         case PG:
+        case CH:
             return ";";
         case MS:
             return GO;

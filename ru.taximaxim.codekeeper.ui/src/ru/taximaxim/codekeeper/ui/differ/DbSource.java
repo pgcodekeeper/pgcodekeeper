@@ -39,6 +39,7 @@ import ru.taximaxim.codekeeper.core.IProgressReporter;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.fileutils.InputStreamProvider;
 import ru.taximaxim.codekeeper.core.loader.DatabaseLoader;
+import ru.taximaxim.codekeeper.core.loader.JdbcChLoader;
 import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
 import ru.taximaxim.codekeeper.core.loader.JdbcLoader;
 import ru.taximaxim.codekeeper.core.loader.JdbcMsLoader;
@@ -454,10 +455,9 @@ class DbSourceJdbc extends DbSource {
         this.forceUnixNewlines = forceUnixNewlines;
         this.dbType = dbinfo.getDbType();
 
-        
         jdbcConnector = JdbcConnector.getJdbcConnector(dbType, host, port, user, pass, dbName, properties, readOnly,
                 timezone, winAuth, dbinfo.getDomain());
-        
+
         this.proj = proj;
         this.oneTimePrefs = oneTimePrefs;
     }
@@ -479,6 +479,8 @@ class DbSourceJdbc extends DbSource {
             return load(new JdbcLoader(jdbcConnector, args, monitor, ignoreShemaList));
         case MS:
             return load(new JdbcMsLoader(jdbcConnector, args, monitor, ignoreShemaList));
+        case CH:
+            return load(new JdbcChLoader(jdbcConnector, args, monitor, ignoreShemaList));
         default:
             throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
         }

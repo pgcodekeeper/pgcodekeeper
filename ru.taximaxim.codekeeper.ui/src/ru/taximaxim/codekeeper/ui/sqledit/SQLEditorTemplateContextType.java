@@ -28,6 +28,9 @@ public class SQLEditorTemplateContextType extends TemplateContextType {
     public static final String CONTEXT_TYPE_MS
     = UIConsts.PLUGIN_ID.THIS + ".sqlEditorContextTypeMs"; //$NON-NLS-1$
 
+    public static final String CONTEXT_TYPE_CH
+    = UIConsts.PLUGIN_ID.THIS + ".sqlEditorContextTypeCh"; //$NON-NLS-1$
+
     public static final String CONTEXT_TYPE_COMMON
     = UIConsts.PLUGIN_ID.THIS + ".sqlEditorContextTypeCommon"; //$NON-NLS-1$
 

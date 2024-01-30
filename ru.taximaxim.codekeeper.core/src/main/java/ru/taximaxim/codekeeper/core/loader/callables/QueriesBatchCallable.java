@@ -73,6 +73,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
             }
             switch (dbType) {
             case PG:
+            case CH:
                 subMonitor.setWorkRemaining(batches.size());
                 for (PgObjLocation query : batches) {
                     PgDiffUtils.checkCancelled(monitor);

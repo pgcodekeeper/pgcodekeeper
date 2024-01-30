@@ -100,9 +100,16 @@ public final class Utils {
             return isPgSystemSchema(schema);
         case MS:
             return isMsSystemSchema(schema);
+        case CH:
+            return isChSystemSchema(schema);
         default:
             throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
         }
+    }
+
+    public static boolean isChSystemSchema(String schema) {
+        return Consts.SYSTEM.equalsIgnoreCase(schema)
+                || Consts.INFORMATION_SCHEMA.equalsIgnoreCase(schema);
     }
 
     public static boolean isPgSystemSchema(String schema) {

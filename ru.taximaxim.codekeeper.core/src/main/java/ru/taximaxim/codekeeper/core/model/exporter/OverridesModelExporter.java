@@ -140,4 +140,9 @@ public class OverridesModelExporter extends AbstractModelExporter {
             throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + st.getDbType());
         }
     }
+
+    @Override
+    protected DatabaseType getDatabaseType() {
+        return dbType;
+    }
 }

@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.text.MessageFormat;
@@ -40,6 +41,7 @@ import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgCodekeeperException;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.UnixPrintWriter;
+import ru.taximaxim.codekeeper.core.WorkDirs;
 import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
@@ -128,7 +130,24 @@ public abstract class AbstractModelExporter {
         writeProjVersion(outDir.resolve(Consts.FILENAME_WORKING_DIR_MARKER));
     }
 
-    protected abstract void createOutDir() throws IOException;
+    protected void createOutDir() throws IOException {
+        if (Files.exists(outDir)) {
+            if (!Files.isDirectory(outDir)) {
+                throw new NotDirectoryException(outDir.toString());
+            }
+
+            for (String subdirName : WorkDirs.getDirectoryNames(getDatabaseType())) {
+                if (Files.exists(outDir.resolve(subdirName))) {
+                    throw new DirectoryException(
+                            MessageFormat.format("Output directory already contains {0} directory.", subdirName));
+                }
+            }
+        } else {
+            Files.createDirectories(outDir);
+        }
+    }
+
+    protected abstract DatabaseType getDatabaseType();
 
     public void exportPartial() throws IOException, PgCodekeeperException {
         if (oldDb == null) {
