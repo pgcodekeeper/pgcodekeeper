@@ -1116,6 +1116,11 @@
         </contextType>
         <contextType
             class="ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateContextType"
+            id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCh"
+            name="SQLEditor Context Type ClickHouse">
+        </contextType>
+        <contextType
+            class="ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateContextType"
             id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon"
             name="SQLEditor Context Type Common">
         </contextType>

@@ -15,12 +15,8 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.model.exporter;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.MessageFormat;
 import java.util.Collection;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
@@ -39,24 +35,6 @@ public class ModelExporter extends AbstractModelExporter {
     public ModelExporter(Path outDir, PgDatabase newDb, PgDatabase oldDb,
             Collection<TreeElement> changedObjects, String sqlEncoding) {
         super(outDir, newDb, oldDb, changedObjects, sqlEncoding);
-    }
-
-    @Override
-    protected void createOutDir() throws IOException {
-        if (Files.exists(outDir)) {
-            if (!Files.isDirectory(outDir)) {
-                throw new NotDirectoryException(outDir.toString());
-            }
-
-            for (String subdirName : WorkDirs.getDirectoryNames(DatabaseType.PG)) {
-                if (Files.exists(outDir.resolve(subdirName))) {
-                    throw new DirectoryException(
-                            MessageFormat.format("Output directory already contains {0} directory.", subdirName));
-                }
-            }
-        } else {
-            Files.createDirectories(outDir);
-        }
     }
 
     @Override
@@ -121,5 +99,10 @@ public class ModelExporter extends AbstractModelExporter {
         }
 
         return path.resolve(addExtension ? getExportedFilenameSql(st) : getExportedFilename(st));
+    }
+
+    @Override
+    protected DatabaseType getDatabaseType() {
+        return DatabaseType.PG;
     }
 }

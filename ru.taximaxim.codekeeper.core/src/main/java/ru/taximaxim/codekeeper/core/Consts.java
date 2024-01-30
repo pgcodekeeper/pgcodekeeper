@@ -38,6 +38,7 @@ public interface Consts {
 
     String PG_CATALOG = "pg_catalog";
     String INFORMATION_SCHEMA = "information_schema";
+    String SYSTEM = "system";
     String SYS = "sys";
 
     String GO = "GO";
