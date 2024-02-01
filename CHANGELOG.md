@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed code generation for VIEW objects with SCHEMABINDING option in MS SQL.
+
 ## [9.2.0] - 2024-01-23
 
 ### Changed

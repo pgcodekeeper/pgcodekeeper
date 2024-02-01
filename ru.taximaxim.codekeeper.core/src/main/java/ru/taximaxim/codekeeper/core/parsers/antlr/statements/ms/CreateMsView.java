@@ -72,6 +72,14 @@ public class CreateMsView extends BatchContextProcessor {
         MsView view = new MsView(nameCtx.getText());
         view.setAnsiNulls(ansiNulls);
         view.setQuotedIdentified(quotedIdentifier);
+
+        for (var attribute : ctx.view_attribute()) {
+            if (attribute.SCHEMABINDING() != null) {
+                view.setSchemaBinding(true);
+                break;
+            }
+        }
+
         setSourceParts(view);
 
         Select_statementContext vQuery = ctx.select_statement();
