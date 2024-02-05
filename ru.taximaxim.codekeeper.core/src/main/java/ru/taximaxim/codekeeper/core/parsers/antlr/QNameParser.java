@@ -106,6 +106,15 @@ public final class QNameParser<T extends ParserRuleContext> {
         return new QNameParser<>(parts, errors);
     }
 
+    public static QNameParser<ParserRuleContext> parsePgOperator(String schemaQualifiedName) {
+        List<Object> errors = new ArrayList<>();
+        List<ParserRuleContext> parts = PgParserAbstract.getIdentifiers(AntlrParser
+                .makeBasicParser(SQLParser.class, schemaQualifiedName, "qname: " + schemaQualifiedName, errors)
+                .operator_args_parser()
+                .operator_name());
+        return new QNameParser<>(parts, errors);
+    }
+
     private QNameParser(List<T> parts, List<Object> errors) {
         this.errors = errors;
         this.parts = parts;

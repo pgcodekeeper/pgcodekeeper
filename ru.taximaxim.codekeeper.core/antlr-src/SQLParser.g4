@@ -23,6 +23,10 @@ function_args_parser
     : schema_qualified_name? function_args EOF
     ;
 
+operator_args_parser
+    : operator_name operator_args? EOF
+    ;
+
 vex_eof
     : vex (COMMA vex)* EOF
     ;
@@ -944,7 +948,11 @@ drop_operator_statement
     ;
 
 target_operator
-    : name=operator_name LEFT_PAREN (left_type=data_type | NONE) COMMA (right_type=data_type | NONE) RIGHT_PAREN
+    : name=operator_name operator_args
+    ;
+
+operator_args
+    : LEFT_PAREN (left_type=data_type | NONE) COMMA (right_type=data_type | NONE) RIGHT_PAREN
     ;
 
 domain_constraint

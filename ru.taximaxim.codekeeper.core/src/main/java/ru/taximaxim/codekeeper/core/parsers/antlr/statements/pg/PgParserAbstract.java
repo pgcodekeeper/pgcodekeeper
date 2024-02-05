@@ -43,11 +43,11 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Identifier
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Identifier_nontypeContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Including_indexContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Index_columnContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Operator_argsContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Operator_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Predefined_typeContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qualified_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qualified_name_nontypeContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Target_operatorContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.User_mapping_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.Argument;
@@ -293,10 +293,17 @@ public abstract class PgParserAbstract extends ParserAbstract {
         return type;
     }
 
-    public String parseSignature(String name, Target_operatorContext targerOperCtx) {
+    public static String parseOperatorSignature(String name, Operator_argsContext operatorArgsCtx) {
         PgOperator oper = new PgOperator(name);
-        oper.setLeftArg(targerOperCtx.left_type == null ? null : getTypeName(targerOperCtx.left_type));
-        oper.setRightArg(targerOperCtx.right_type == null ? null : getTypeName(targerOperCtx.right_type));
+        Data_typeContext leftType = null;
+        Data_typeContext rightType = null;
+        if (operatorArgsCtx != null) {
+            leftType = operatorArgsCtx.left_type;
+            rightType = operatorArgsCtx.right_type;
+        }
+
+        oper.setLeftArg(leftType == null ? null : getTypeName(leftType));
+        oper.setRightArg(rightType == null ? null : getTypeName(rightType));
         return oper.getSignature();
     }
 

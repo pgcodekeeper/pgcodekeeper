@@ -143,7 +143,7 @@ public class CommentOn extends PgParserAbstract {
             type = DbObjType.OPERATOR;
             Target_operatorContext targetOperCtx = obj.target_operator();
             st = getSafe(AbstractSchema::getOperator, schema,
-                    parseSignature(nameCtx.getText(), targetOperCtx),
+                    parseOperatorSignature(nameCtx.getText(), targetOperCtx.operator_args()),
                     nameCtx.getStart());
         } else if (obj.EXTENSION() != null) {
             type = DbObjType.EXTENSION;
@@ -178,10 +178,10 @@ public class CommentOn extends PgParserAbstract {
         } else if (obj.INDEX() != null) {
             type = DbObjType.INDEX;
             st = getSafe((sc, n) -> sc.getStatementContainers()
-                .flatMap(c -> Stream.concat(c.getIndexes().stream(), c.getConstraints().stream()))
-                .filter(s -> s.getName().equals(n))
-                .collect(Collectors.reducing((a, b) -> b.getStatementType() == DbObjType.INDEX ? b : a))
-                .orElse(null),
+                    .flatMap(c -> Stream.concat(c.getIndexes().stream(), c.getConstraints().stream()))
+                    .filter(s -> s.getName().equals(n))
+                    .collect(Collectors.reducing((a, b) -> b.getStatementType() == DbObjType.INDEX ? b : a))
+                    .orElse(null),
                     schema, nameCtx);
         } else if (obj.SCHEMA() != null && !Consts.PUBLIC.equals(name)) {
             type = DbObjType.SCHEMA;
@@ -240,8 +240,7 @@ public class CommentOn extends PgParserAbstract {
 
         doSafe((s, c) -> s.setComment(db.getArguments(), c), st, comment);
         if (type == DbObjType.FUNCTION || type == DbObjType.PROCEDURE || type == DbObjType.AGGREGATE) {
-            addObjReference(ids, type, ACTION_ALTER,
-                    parseArguments(obj.function_args()));
+            addObjReference(ids, type, ACTION_ALTER, parseArguments(obj.function_args()));
         } else {
             addObjReference(ids, type, ACTION_COMMENT);
         }

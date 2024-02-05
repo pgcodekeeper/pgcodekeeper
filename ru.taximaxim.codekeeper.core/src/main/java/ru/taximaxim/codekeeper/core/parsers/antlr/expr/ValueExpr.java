@@ -948,7 +948,7 @@ public class ValueExpr extends AbstractExpr {
         switch (regcast) {
         case "regproc":
             // In this case, the function is not overloaded.
-            addFunctionDepcyNotOverloaded(QNameParser.parsePg(s).getIds(), start);
+            addFunctionDepcyNotOverloaded(QNameParser.parsePg(s).getIds(), start, DbObjType.FUNCTION);
             break;
         case "regclass":
             addDepcy(QNameParser.parsePg(s).getIds(), DbObjType.TABLE, start);
@@ -960,12 +960,14 @@ public class ValueExpr extends AbstractExpr {
             addSchemaDepcy(QNameParser.parsePg(s).getIds(), start);
             break;
         case "regprocedure":
-            addFunctionSigDepcy(s, start);
+            addFunctionSigDepcy(s, start, DbObjType.FUNCTION);
             break;
         case "regoper":
-            // TODO operator without argumnets
+            // In this case, the operator is not overloaded.
+            addFunctionDepcyNotOverloaded(QNameParser.parsePgOperator(s).getIds(), start, DbObjType.OPERATOR);
+            break;
         case "regoperator":
-            // TODO operator with argumnets
+            addFunctionSigDepcy(s, start, DbObjType.OPERATOR);
             break;
         case "regconfig":
             addDepcy(QNameParser.parsePg(s).getIds(), DbObjType.FTS_CONFIGURATION, start);
