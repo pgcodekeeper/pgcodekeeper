@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -30,7 +31,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.loader.FullAnalyze;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
@@ -40,14 +40,15 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Data_typeContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Function_args_parserContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Indirection_identifierContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Operator_args_parserContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qualified_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qualified_name_nontypeContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.PgParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.IFunction;
 import ru.taximaxim.codekeeper.core.schema.IOperator;
 import ru.taximaxim.codekeeper.core.schema.IRelation;
+import ru.taximaxim.codekeeper.core.schema.IStatement;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation.LocationType;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
@@ -147,7 +148,6 @@ public abstract class AbstractExpr {
             return new GenericColumn(Consts.PG_CATALOG, name, type);
         }
         String schemaName = schemaCtx.getText();
-
         GenericColumn depcy = new GenericColumn(schemaName, name, type);
         addDepcy(new GenericColumn(schemaName, DbObjType.SCHEMA), schemaCtx, start);
         addDepcy(depcy, nameCtx, start);
@@ -391,7 +391,8 @@ public abstract class AbstractExpr {
      * Use only in contexts where function can be pinpointed only by its name.
      * Such as ::regproc casts.
      */
-    protected void addFunctionDepcyNotOverloaded(List<ParserRuleContext> ids, Token start) {
+
+    protected void addFunctionDepcyNotOverloaded(List<ParserRuleContext> ids, Token start, DbObjType type) {
         ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
         if (schemaCtx == null) {
             return;
@@ -404,32 +405,49 @@ public abstract class AbstractExpr {
         addDepcy(new GenericColumn(schemaName, DbObjType.SCHEMA), schemaCtx, start);
 
         ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
-        String functionName = nameCtx.getText();
-        for (IFunction f : availableFunctions(schemaName)) {
-            if (f.getBareName().equals(functionName)) {
-                addDepcy(new GenericColumn(schemaName, f.getName(), DbObjType.FUNCTION), nameCtx, start);
+        String name = nameCtx.getText();
+
+        Collection<? extends IStatement> availableStatements =
+                type == DbObjType.OPERATOR ? availableOperators(schemaName) : availableFunctions(schemaName);
+
+        for (IStatement statement : availableStatements) {
+            if (statement.getBareName().equals(name)) {
+                addDepcy(new GenericColumn(schemaName, statement.getName(), type), nameCtx, start);
                 break;
             }
         }
     }
 
-    protected void addFunctionSigDepcy(String signature, Token start) {
-        SQLParser p = AntlrParser.makeBasicParser(SQLParser.class, signature,
-                "function signature", null, start);
-        Function_args_parserContext sig = p.function_args_parser();
-        List<ParserRuleContext> ids = PgParserAbstract.getIdentifiers(sig.schema_qualified_name());
+    protected void addFunctionSigDepcy(String signature, Token start, DbObjType type) {
+        SQLParser p = AntlrParser.makeBasicParser(SQLParser.class, signature, "signature parser", null, start);
+
+        List<ParserRuleContext> ids;
+        UnaryOperator<String> fullNameOperator;
+        if (type == DbObjType.OPERATOR) {
+            Operator_args_parserContext sig = p.operator_args_parser();
+            ids = PgParserAbstract.getIdentifiers(sig.operator_name());
+            fullNameOperator = name -> PgParserAbstract.parseOperatorSignature(name, sig.operator_args());
+        } else {
+            Function_args_parserContext sig = p.function_args_parser();
+            ids = PgParserAbstract.getIdentifiers(sig.schema_qualified_name());
+            fullNameOperator = name -> PgParserAbstract.parseSignature(name, sig.function_args());
+        }
 
         ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
-        if (schemaCtx != null) {
-            String schemaName = schemaCtx.getText();
-            addDepcy(new GenericColumn(schemaName, DbObjType.SCHEMA), schemaCtx, start);
-
-            ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
-            String name = PgDiffUtils.getQuotedName(nameCtx.getText()) +
-                    ParserAbstract.getFullCtxText(sig.function_args());
-            addDepcy(new GenericColumn(schemaName, name, DbObjType.FUNCTION),
-                    nameCtx, start);
+        if (schemaCtx == null) {
+            return;
         }
+
+        String schemaName = schemaCtx.getText();
+        if (Utils.isPgSystemSchema(schemaName)) {
+            return;
+        }
+        addDepcy(new GenericColumn(schemaName, DbObjType.SCHEMA), schemaCtx, start);
+
+        ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
+        String name = nameCtx.getText();
+        String fullName = fullNameOperator.apply(name);
+        addDepcy(new GenericColumn(schemaName, fullName, type), nameCtx, start);
     }
 
     protected void addSchemaDepcy(List<ParserRuleContext> ids, Token start) {

@@ -106,7 +106,7 @@ public class AlterOwner extends PgParserAbstract {
                 type = DbObjType.COLLATION;
             } else if (ctx.OPERATOR() != null) {
                 st = getSafe(AbstractSchema::getOperator, schema,
-                        parseSignature(nameCtx.getText(), ctx.target_operator()),
+                        parseOperatorSignature(nameCtx.getText(), ctx.target_operator().operator_args()),
                         nameCtx.getStart());
                 type = DbObjType.OPERATOR;
             } else if (ctx.PROCEDURE() != null || ctx.FUNCTION() != null || ctx.AGGREGATE() != null) {
@@ -124,8 +124,7 @@ public class AlterOwner extends PgParserAbstract {
 
         if (type != null) {
             if (type == DbObjType.FUNCTION || type == DbObjType.PROCEDURE || type == DbObjType.AGGREGATE) {
-                addObjReference(ids, type, ACTION_ALTER,
-                        parseArguments(ctx.function_args()));
+                addObjReference(ids, type, ACTION_ALTER, parseArguments(ctx.function_args()));
             } else {
                 addObjReference(ids, type, ACTION_ALTER);
             }
@@ -144,9 +143,7 @@ public class AlterOwner extends PgParserAbstract {
         if (overrides == null) {
             fillOwnerTo(owner, st);
         } else {
-            overrides.computeIfAbsent(st,
-                    k -> new StatementOverride())
-                .setOwner(owner.getText());
+            overrides.computeIfAbsent(st, k -> new StatementOverride()).setOwner(owner.getText());
         }
     }
 
