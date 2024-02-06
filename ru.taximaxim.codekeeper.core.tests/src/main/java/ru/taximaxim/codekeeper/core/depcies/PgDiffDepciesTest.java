@@ -18,7 +18,6 @@ package ru.taximaxim.codekeeper.core.depcies;
 import java.io.IOException;
 
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import ru.taximaxim.codekeeper.core.FILES_POSTFIX;
@@ -35,11 +34,6 @@ import ru.taximaxim.codekeeper.core.schema.PgDatabase;
  */
 class PgDiffDepciesTest {
 
-    /**
-     * @param userSelTemplate
-     *            - Шаблон для выбора пользователя, содержит часть БД, выбранную пользователем _original.sql, _new.sql
-     *            and _diff.sql to the file name
-     */
     @ParameterizedTest
     @ValueSource(strings = {
             "empty_usr",
@@ -245,48 +239,70 @@ class PgDiffDepciesTest {
             // CREATE objects with collation dependency, USER SELECTION: all except collations
             "add_objects_with_collation_usr_all",
     })
-
     void runDiff(final String userSelTemplate) throws IOException, InterruptedException {
-        runDiff(userSelTemplate, false);
+        testDepcy(userSelTemplate, false);
     }
 
     @ParameterizedTest
-    @CsvSource({
-        // в функции 'f1' изменяется имя аргумента функции,
-        // в функции 'f2' изменяется определение функции,
-        // пользователь выбирает 'f1'
-        // (опеределение обеих функций написано на языке SQL)
-        // ('f2' зависит от 'f1')
-        "change_func_arg_name_usr_f1, true",
-        // в функции 'f1' изменяется имя аргумента функции,
-        // в функции 'f2' изменяется определение функции,
-        // пользователь выбирает 'f1'
-        // (опеределение обеих функций написано на языке SQL)
-        // ('f2' зависит от 'f1')
-        // (обе функции находятся в разных схемах)
-        "change_func_arg_name_sch_usr_f1, true",
-        // добавление таблицы с цикличной зависимотью к функции
-        // пользователь выбрал таблицу t1
-        "add_table_with_cyclic_dep_usr_t1, true",
-        // добавление функции с merge statement и с зависимостями function & table
-        // пользователь выбрал функцию.
-        "add_function_with_merge_stat_usr, true",
-        // добавленны пять функций func_1, func_2 и func_3 перегруженные, где func_1 зависит от func_2(int, text) и
-        // func_3(int, int) в рамках контекста правила loop_statement, а также в func_1 прописанн не валидный кейс
-        // вызыва func_2(int, int) вне рамок контекста loop_statement.
-        // пользователь выбирает func_1.
-        "add_func_with_dep_usr_func_1, true",
-        "change_view_and_function, true",
+    @ValueSource(strings = {
+            // в функции 'f1' изменяется имя аргумента функции,
+            // в функции 'f2' изменяется определение функции,
+            // пользователь выбирает 'f1'
+            // (опеределение обеих функций написано на языке SQL)
+            // ('f2' зависит от 'f1')
+            "change_func_arg_name_usr_f1",
+            // в функции 'f1' изменяется имя аргумента функции,
+            // в функции 'f2' изменяется определение функции,
+            // пользователь выбирает 'f1'
+            // (опеределение обеих функций написано на языке SQL)
+            // ('f2' зависит от 'f1')
+            // (обе функции находятся в разных схемах)
+            "change_func_arg_name_sch_usr_f1",
+            // добавление таблицы с цикличной зависимотью к функции
+            // пользователь выбрал таблицу t1
+            "add_table_with_cyclic_dep_usr_t1",
+            // добавление функции с merge statement и с зависимостями function & table
+            // пользователь выбрал функцию.
+            "add_function_with_merge_stat_usr",
+            // добавленны пять функций func_1, func_2 и func_3 перегруженные, где func_1 зависит от func_2(int, text) и
+            // func_3(int, int) в рамках контекста правила loop_statement, а также в func_1 прописанн не валидный кейс
+            // вызыва func_2(int, int) вне рамок контекста loop_statement.
+            // пользователь выбирает func_1.
+            "add_func_with_dep_usr_func_1",
+            //
+            "change_view_and_function",
+            // create functions with regcast dependencies
+            // user selected function with regoper dependency
+            "add_func_with_regcast_usr_func_regoper",
+            // user selected function with regoperator dependency
+            "add_func_with_regcast_usr_func_regoperator",
+            // user selected function with regproc dependency
+            "add_func_with_regcast_usr_func_regproc",
+            // user selected function with regprocedure dependency
+            "add_func_with_regcast_usr_func_regprocedure",
     })
-    void runDiff(String userSelTemplate, Boolean isEnableDepcies) throws IOException, InterruptedException {
+    void runDiffWithFunctionDependencies(final String userSelTemplate) throws IOException, InterruptedException {
+        testDepcy(userSelTemplate, true);
+    }
+
+    /**
+     * Diff test with partial selection, required 5 file: <br>
+     *  - file_name_original.sql - old database state <br>
+     *  - file_name_new.sql - new database state<br>
+     *  - file_name_usr_sel_original.sql - old selected objects state<br>
+     *  - file_name_usr_sel_new.sql - new selected objects state<br>
+     *  - file_name_usr_sel_diff.sql - expected diff script<br>
+     * <br>
+     * file_name_usr_sel = userSelTemplate
+     */
+    void testDepcy(String userSelTemplate, boolean isEnableFunctionBodiesDependencies)
+            throws IOException, InterruptedException {
         PgDatabase oldDatabase;
         PgDatabase newDatabase;
         PgDatabase oldDbFull;
         PgDatabase newDbFull;
         PgDiffArguments args = new PgDiffArguments();
-        if (isEnableDepcies != null) {
-            args.setEnableFunctionBodiesDependencies(isEnableDepcies);
-        }
+        args.setEnableFunctionBodiesDependencies(isEnableFunctionBodiesDependencies);
 
         String dbTemplate = userSelTemplate.replaceAll("_usr.*", "");
         if (userSelTemplate.equals(dbTemplate)) {

@@ -310,12 +310,14 @@ class MsDiffTest {
             "alter_ms_function_with_grant",
             // Tests scenario where MS CONSTRAINTS is compared.
             "compare_ms_constraints",
-            // Test scenario where MsColumn options is altered
+            // Test scenario where MS COLUMN options is altered
             "alter_ms_column",
             // Test scenario where MS COLUMN with expression as type and dependent column is changed
             "alter_ms_column_expr",
-            // Tests scenario where MS View with xmlnamespace is compared.
+            // Tests scenario where MS VIEW with xmlnamespace is compared.
             "modify_ms_view_xmlnamespace",
+            // Tests scenario where MS TABLE on which MS VIEW depends with SCHEMABINDING is changed..
+            "modify_ms_table_schemabinding",
     })
     void runDiff(String fileNameTemplate) throws IOException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();

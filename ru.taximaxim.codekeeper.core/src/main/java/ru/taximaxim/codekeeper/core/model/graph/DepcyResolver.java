@@ -250,8 +250,7 @@ public class DepcyResolver {
                 if (newSt != null) {
                     // add views to emit refreshes
                     // others are to block drop+create pairs for unchanged statements
-                    if (newSt instanceof SourceStatement && newSt.equals(drop)
-                            && !inDropsList(newSt.getParent())) {
+                    if (needRefresh(drop, newSt)) {
                         toRefresh.add(newSt);
                     }
 
@@ -259,6 +258,18 @@ public class DepcyResolver {
                 }
             }
         }
+    }
+
+    private boolean needRefresh(PgStatement drop, PgStatement newSt) {
+        if (!(newSt instanceof SourceStatement)) {
+            return false;
+        }
+
+        if (newSt instanceof MsView && ((MsView) newSt).isSchemaBinding()) {
+            return false;
+        }
+
+        return newSt.equals(drop) && !inDropsList(newSt.getParent());
     }
 
     /**

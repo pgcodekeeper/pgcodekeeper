@@ -28,6 +28,12 @@ public class MsView extends AbstractView implements SourceStatement {
 
     private boolean ansiNulls;
     private boolean quotedIdentified;
+    /**
+     * Оption that blocks changes to objects on which the view depends without recreating it. <br>
+     * <br>
+     * Does not participate in comparison, since it is part of {@link #secondPart}
+     */
+    private boolean schemaBinding;
 
     private String firstPart;
     private String secondPart;
@@ -119,6 +125,7 @@ public class MsView extends AbstractView implements SourceStatement {
         view.setSecondPart(getSecondPart());
         view.setAnsiNulls(isAnsiNulls());
         view.setQuotedIdentified(isQuotedIdentified());
+        view.setSchemaBinding(isSchemaBinding());
         return view;
     }
 
@@ -160,5 +167,14 @@ public class MsView extends AbstractView implements SourceStatement {
     public void setSecondPart(String secondPart) {
         this.secondPart = secondPart;
         resetHash();
+    }
+
+    public void setSchemaBinding(boolean schemaBinding) {
+        this.schemaBinding = schemaBinding;
+        resetHash();
+    }
+
+    public boolean isSchemaBinding() {
+        return schemaBinding;
     }
 }
