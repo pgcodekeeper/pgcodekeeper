@@ -9,9 +9,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- Added dependency search when using ::regoper and ::regoperator.
-
 ### Changed
+
+### Fixed
+
+## [9.3.0] - 2024-02-06
+
+### Added
+
+- Added dependency search when using ::regoper and ::regoperator.
 
 ### Fixed
 
@@ -1853,7 +1859,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.2.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.3.0...HEAD
+[9.3.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.2.0...v9.3.0
 [9.2.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.1.0...v9.2.0
 [9.1.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.0.0...v9.1.0
 [9.0.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v8.9.0...v9.0.0
