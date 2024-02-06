@@ -46,7 +46,7 @@ create VIEW test_view AS WITH cte AS (SELECT date, __sign, "from", "to" FROM tes
 CREATE VIEW test_view_00597 AS SELECT * FROM test_00597;
 CREATE VIEW test_view_00599 AS SELECT * FROM test_00599 WHERE id = (SELECT 1);
 CREATE VIEW test_view_00740 AS SELECT * FROM test_00740;
-CREATE VIEW test_view_different_db AS SELECT id, value, dictGet('2025_test_db.test_dictionary', 'value', id) FROM 2025_test_db.view_table;
+CREATE VIEW test_view_different_db AS SELECT id, value, dictGet('2025_test_db.test_dictionary', 'value', id) FROM `2025_test_db`.view_table;
 CREATE VIEW TestTbl_view AS SELECT * FROM TestTbl WHERE dt = ( SELECT max(dt) FROM TestTbl );
 create view testv(a String) as select number a from numbers(10);
 create view testv(a UInt32) as select number a from numbers(10);
@@ -69,8 +69,8 @@ CREATE VIEW view2_00270 AS SELECT number FROM system.numbers LIMIT 10;
 CREATE VIEW view_00843 AS SELECT * FROM test1_00843;
 CREATE VIEW view_bug_const AS SELECT 'World' AS hello FROM (SELECT number FROM system.numbers LIMIT 1) AS n1 JOIN (SELECT number FROM system.numbers LIMIT 1) AS n2 USING (number);
 CREATE VIEW view_without_sample AS SELECT 1 AS x;
-CREATE VIEW X TO Y AS SELECT 1;
 create view {CLICKHOUSE_DATABASE:Identifier}.test_view_01051_d (key UInt64, value String) as select k2 + 1 as key, v2 || '_x' as value from (select key + 2 as k2, value || '_y' as v2 from test_01051_d);
+CREATE MATERIALIZED VIEW X TO Y AS SELECT 1;
 create materialized view db_01517_ordinary.mv engine=Null as select * from db_01517_ordinary.source;
 create materialized view db_hang.test_mv(A Int64) Engine=MergeTree order by A as select * from db_hang.test;
 CREATE MATERIALIZED VIEW dest_table_mv TO dest_table as select * FROM (SELECT * FROM left_table) AS t1 INNER JOIN (WITH (SELECT DISTINCT Date FROM left_table LIMIT 1) AS dt SELECT * FROM right_table WHERE Date = dt) AS t2 USING (Date, Id);
@@ -97,7 +97,7 @@ CREATE MATERIALIZED VIEW matview_join_d_e TO table_f AS SELECT table_d.a as a, t
 CREATE MATERIALIZED VIEW mv (n Int32, n2 Int64) ENGINE = MergeTree PARTITION BY n % 10 ORDER BY n AS SELECT n, n * n AS n2 FROM src;
 CREATE MATERIALIZED VIEW mv ENGINE = Null AS SELECT * FROM system.one;
 CREATE MATERIALIZED VIEW mv ENGINE = ReplicatedSummingMergeTree('/clickhouse/' || currentDatabase() || '/mv/{shard}/', '{replica}') PARTITION BY toYYYYMMDD(hour) ORDER BY hour AS SELECT   toStartOfHour(time) AS hour,   sum(number) AS sum_amount FROM landing GROUP BY hour;
-create materialized view mv engine=Memory empty as select 1;
+-- create materialized view mv engine=Memory empty as select 1; -- Experimental
 CREATE MATERIALIZED VIEW mv TO ds AS SELECT   pk1,   pk2,   pk4,   pk3,   countState() AS occurences FROM landing GROUP BY pk1, pk2, pk4, pk3;
 CREATE MATERIALIZED VIEW mv TO dst (n String) AS SELECT * FROM src;
 CREATE MATERIALIZED VIEW mv TO dst AS SELECT x FROM src;
@@ -105,12 +105,12 @@ CREATE MATERIALIZED VIEW mv TO mv_target AS SELECT * FROM mv_source;
 CREATE MATERIALIZED VIEW mv TO output AS SELECT key, dictGetUInt64('dict_in_01023.dict', 'val', key) val FROM dist_out;
 CREATE MATERIALIZED VIEW mv TO test1 (b String, a UInt8) AS SELECT d AS b, c AS a FROM test2;
 create materialized view mv to to_table as select * from from_table;
-CREATE MATERIALIZED VIEW mv1 (s String, x String DEFAULT 'b') ENGINE=MergeTree() PARTITION BY tuple() ORDER BY s AS SELECT (*,).1 || 'mv1' as s FROM src;
+CREATE MATERIALIZED VIEW mv1 (`s` String,`x` String DEFAULT 'b') ENGINE = MergeTree PARTITION BY tuple() ORDER BY s AS SELECT concat(tuple(*).1, 'mv1') AS s FROM src;
 create materialized view mv1 to dst as select * from src;
 CREATE MATERIALIZED VIEW mv1 TO test1 AS SELECT a FROM test2;
 CREATE MATERIALIZED VIEW mv1_00726 ENGINE = Memory AS SELECT x FROM src_00726 WHERE x % 2 = 0;
 CREATE MATERIALIZED VIEW mv1_01361 TO t2_01361 AS SELECT * FROM (SELECT * FROM t1_01361);
-CREATE MATERIALIZED VIEW mv2 TO dst (s String, x String DEFAULT 'd') AS SELECT (*,).1 || 'mv2' as s FROM src;
+CREATE MATERIALIZED VIEW mv2 TO dst (s String, x String DEFAULT 'd') AS SELECT concat(tuple(*).1, 'mv2') AS s FROM src;
 create materialized view mv2 to dst as select * from src;
 CREATE MATERIALIZED VIEW mv2 TO test2 AS SELECT a FROM test1;
 CREATE MATERIALIZED VIEW mv2_00726 ENGINE = Memory AS SELECT x FROM src_00726 WHERE x % 2 = 1;
@@ -166,7 +166,6 @@ CREATE MATERIALIZED VIEW test_mv_b Engine=ReplicatedMergeTree ('/clickhouse/tabl
 CREATE MATERIALIZED VIEW test_mv_c Engine=ReplicatedMergeTree ('/clickhouse/tables/{database}/test_02124/{table}', '1') order by tuple() AS SELECT test, A, count() c FROM test group by test, A;
 CREATE MATERIALIZED VIEW test_view (Rows UInt64, MaxHitTime DateTime('America/Los_Angeles')) AS SELECT count() AS Rows, max(UTCEventTime) AS MaxHitTime FROM test_table;
 CREATE MATERIALIZED VIEW test_view (Rows UInt64, MaxHitTime DateTime('America/Los_Angeles')) ENGINE = Memory AS SELECT count() AS Rows, max(UTCEventTime) AS MaxHitTime FROM test_table;
-CREATE MATERIALIZED VIEW test_view ORDER BY Rows AS SELECT count() AS Rows, max(UTCEventTime) AS MaxHitTime FROM test_table;
 CREATE MATERIALIZED VIEW test_view_filtered (EventDate Date, CounterID UInt32) ENGINE = Memory POPULATE AS SELECT CounterID, EventDate FROM test_table WHERE EventDate < '2013-01-01';
 CREATE MATERIALIZED VIEW test_view_filtered (EventDate Date, CounterID UInt32) POPULATE AS SELECT CounterID, EventDate FROM test_table WHERE EventDate < '2013-01-01';
 CREATE MATERIALIZED VIEW test_view_tb ENGINE = MergeTree() ORDER BY a AS SELECT * FROM test_tb;
@@ -187,7 +186,7 @@ CREATE MATERIALIZED VIEW {CLICKHOUSE_DATABASE:Identifier}.test_materialized ENGI
 
 DROP VIEW db_01048.v_01048;
 drop view dst_mv;
-DROP VIEW IF EXISTS 02501_view;
+DROP VIEW IF EXISTS `02501_view`;
 drop view if exists agg_view01747;
 DROP VIEW IF EXISTS dst_mv;
 DROP VIEW IF EXISTS v_01210;

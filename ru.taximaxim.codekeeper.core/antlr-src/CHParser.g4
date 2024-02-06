@@ -2,7 +2,7 @@ parser grammar CHParser;
 
 options {
     language=Java;
-    tokenVocab = CHLexer;
+    tokenVocab=CHLexer;
 }
 
 @header {package ru.taximaxim.codekeeper.core.parsers.antlr.generated;}
@@ -44,7 +44,7 @@ dml_stmt
     | use_stmt
     | watch_stmt
     | ctes? insert_stmt
-    | ctes? select_stmt
+    | select_stmt
     ;
 
 ctes
@@ -56,11 +56,11 @@ named_query
     ;
 
 select_stmt
-    : select_ops
+    : ctes? select_ops
     ;
 
 select_stmt_no_parens
-    : select_ops_no_parens
+    : ctes? select_ops_no_parens
     ;
 
 with_clause
@@ -143,7 +143,7 @@ create_stmt
     : (ATTACH | CREATE) DATABASE (IF NOT EXISTS)? identifier cluster_clause? engine_expr?
     | create_dictinary_stmt
     | (ATTACH | CREATE) LIVE VIEW (IF NOT EXISTS)? table_identifier uuid_clause? cluster_clause? (WITH TIMEOUT DECIMAL_LITERAL?)? destination_clause? table_schema_clause? subquery_clause
-    | (ATTACH | CREATE) MATERIALIZED VIEW (IF NOT EXISTS)? table_identifier uuid_clause? cluster_clause? table_schema_clause? (destination_clause | engine_clause POPULATE?) subquery_clause
+    | create_mat_view_stmt
     | (ATTACH | CREATE (OR REPLACE)? | REPLACE) TEMPORARY? TABLE (IF NOT EXISTS)? table_identifier uuid_clause? cluster_clause? table_schema_clause? engine_clause? subquery_clause?
     | (ATTACH | CREATE) (OR REPLACE)? VIEW (IF NOT EXISTS)? table_identifier uuid_clause? cluster_clause? table_schema_clause? subquery_clause
     ;
@@ -180,12 +180,18 @@ uuid_clause
     : UUID STRING_LITERAL
     ;
 
+create_mat_view_stmt
+    : (ATTACH | CREATE) MATERIALIZED VIEW (IF NOT EXISTS)? table_identifier uuid_clause? cluster_clause?
+    destination_clause? table_schema_clause? engine_clause? POPULATE?
+    subquery_clause
+    ;
+
 destination_clause
     : TO table_identifier
     ;
 
 subquery_clause
-    : AS select_ops
+    : AS select_stmt
     ;
 
 table_schema_clause
@@ -226,7 +232,7 @@ table_element_expr
     ;
 
 table_column_def
-    : qualified_identifier (data_type table_column_property_expr? | data_type? table_column_property_expr)
+    : qualified_identifier (data_type? table_column_property_expr | data_type)
     (COMMENT STRING_LITERAL)? codec_expr? (TTL expr)?
     ;
 
@@ -335,7 +341,7 @@ select_list
 select_mode
     : APPLY (LPAREN identifier RPAREN | identifier)
     | EXCEPT (LPAREN expr_list RPAREN | expr)
-    | REPLACE LPAREN expr RPAREN
+    | REPLACE (LPAREN expr RPAREN | expr)
     ;
 
 top_clause
@@ -350,13 +356,13 @@ from_item
     : from_item (GLOBAL | LOCAL)? join_op? JOIN from_item (ON | USING) expr_list
     | from_item (GLOBAL | LOCAL)? CROSS JOIN from_item
     | LPAREN from_item RPAREN
-    | from_primary FINAL? sample_clause?
+    | from_primary (alias | AS identifier)? FINAL? sample_clause?
     ;
 
 from_primary
-    : table_identifier (alias | AS identifier)?
+    : table_identifier
     | function_call
-    | LPAREN select_ops RPAREN (alias | AS identifier)?
+    | LPAREN select_ops RPAREN
     ;
 
 array_join_clause
@@ -447,7 +453,7 @@ setting_expr_list
     ;
 
 setting_expr
-    : identifier EQ_SINGLE literal
+    : identifier EQ_SINGLE expr
     ;
 
 window_expr
@@ -526,7 +532,6 @@ expr
     | expr (ASTERISK | SLASH | PERCENT) expr
     | expr (PLUS | MINUS) expr
     | expr op expr
-    | MINUS expr
     | expr (GLOBAL? NOT? IN | NOT? (LIKE | ILIKE)) expr
     | NOT expr
     | expr NOT? BETWEEN expr AND expr
@@ -543,9 +548,10 @@ expr_primary
     | qualified_identifier
     | DATE STRING_LITERAL
     | LPAREN select_stmt_no_parens RPAREN
-    | function_call
+    | function_call (DOT DECIMAL_LITERAL)?
     | LBRACKET expr_list? RBRACKET
     | identifier (DOT DECIMAL_LITERAL)+
+    | LBRACE literal COLON literal RBRACE
     ;
 
 op
@@ -689,7 +695,6 @@ keyword
     | DICTIONARIES
     | DICTIONARY
     | DISK
-    | DISTINCT
     | DISTRIBUTED
     | DROP
     | ELSE
@@ -784,7 +789,6 @@ keyword
     | ROW
     | ROWS
     | SAMPLE
-    | SELECT
     | SEMI
     | SENDS
     | SET
@@ -837,6 +841,8 @@ keyword_for_alias
     | ID
     | KEY
     | TEST
+    | DISTINCT
+    | SELECT
     ;
 
 alias
@@ -848,6 +854,7 @@ identifier
     : IDENTIFIER
     | interval
     | keyword
+    | LBRACE IDENTIFIER COLON IDENTIFIER RBRACE
     ;
 
 enum_value
