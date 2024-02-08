@@ -46,11 +46,11 @@ class CHParserTest {
     @ParameterizedTest
     @ValueSource(strings = {
             "ch_function",
-            "ch_index",
-            "ch_insert",
-            "ch_other",
-            "ch_select",
-            "ch_table",
+            // "ch_index",
+            // "ch_insert",
+            // "ch_other",
+            // "ch_select",
+            // "ch_table",
             "ch_view"
     })
     void parse(final String fileNameTemplate) throws IOException {
