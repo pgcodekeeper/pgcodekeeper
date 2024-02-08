@@ -210,7 +210,27 @@ JSON_TRUE: 'true';
 IDENTIFIER
     : (LETTER | UNDERSCORE) (LETTER | UNDERSCORE | DEC_DIGIT)*
     | BACKQUOTE ( ~([\\`]) | (BACKSLASH .) | (BACKQUOTE BACKQUOTE) )* BACKQUOTE
-    | QUOTE_DOUBLE ( ~([\\"]) | (BACKSLASH .) | (QUOTE_DOUBLE QUOTE_DOUBLE) )* QUOTE_DOUBLE
+    | QOUTED_IDENTIFIER
+    ;
+
+
+/* Quoted Identifiers
+*
+* These are divided into four separate tokens, allowing distinction of valid quoted identifiers from invalid quoted
+* identifiers without sacrificing the ability of the lexer to reliably recover from lexical errors in the input.
+*/
+QOUTED_IDENTIFIER
+    : UNTERMINATED_QOUTED_IDENTIFIER '"'
+    // unquote so that we may always call getText() and not worry about quotes
+        {
+            String __tx = getText();
+            setText(__tx.substring(1, __tx.length() - 1).replace("\"\"", "\""));
+        }
+    ;
+// This is a quoted identifier which only contains valid characters but is not terminated
+fragment UNTERMINATED_QOUTED_IDENTIFIER
+    : '"'
+    ( '""' | ~[\u0000"] )*
     ;
 
 FLOATING_LITERAL

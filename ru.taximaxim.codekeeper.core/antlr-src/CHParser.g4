@@ -146,6 +146,11 @@ create_stmt
     | create_mat_view_stmt
     | (ATTACH | CREATE (OR REPLACE)? | REPLACE) TEMPORARY? TABLE (IF NOT EXISTS)? table_identifier uuid_clause? cluster_clause? table_schema_clause? engine_clause? subquery_clause?
     | (ATTACH | CREATE) (OR REPLACE)? VIEW (IF NOT EXISTS)? table_identifier uuid_clause? cluster_clause? table_schema_clause? subquery_clause
+    | create_function_stmt
+    ;
+
+create_function_stmt
+    : CREATE FUNCTION table_identifier AS column_lambda_expr
     ;
 
 create_dictinary_stmt
@@ -267,6 +272,11 @@ describe_stmt
 drop_stmt
     : (DETACH | DROP) DATABASE (IF EXISTS)? identifier cluster_clause?
     | (DETACH | DROP) (DICTIONARY | TEMPORARY? TABLE | VIEW) (IF EXISTS)? table_identifier cluster_clause? (NO DELAY)?
+    | drop_function_stmt
+    ;
+
+drop_function_stmt
+    : DROP FUNCTION (IF EXISTS)? table_identifier
     ;
 
 exists_stmt
@@ -589,7 +599,13 @@ column_arg_expr
     ;
 
 column_lambda_expr
-    : (LPAREN identifier (COMMA identifier)* RPAREN | identifier) ARROW expr
+    : function_arguments ARROW expr
+    ;
+
+function_arguments
+    : LPAREN RPAREN
+    | identifier
+    | LPAREN identifier (COMMA identifier)* RPAREN
     ;
 
 qualified_identifier
