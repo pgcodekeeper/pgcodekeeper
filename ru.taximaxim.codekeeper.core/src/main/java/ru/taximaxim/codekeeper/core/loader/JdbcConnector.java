@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import ru.taximaxim.codekeeper.core.Activator;
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
+import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.pgpass.PgPass;
 import ru.taximaxim.pgpass.PgPassException;
 
@@ -44,6 +45,11 @@ public class JdbcConnector {
     private static final String DRIVER_NAME = "org.postgresql.Driver";
 
     private static final int DEFAULT_PORT = 5432;
+
+    private static final String URL_START_MS = "jdbc:sqlserver:";
+    private static final String URL_START_PG = "jdbc:postgresql:";
+
+    private static final String MESSAGE_UNKNOWN_URL_SCHEMA = "Unknown url schema, supported schemas are 'postgresql', 'sqlserver'";
 
     protected String host;
     protected int port;
@@ -66,29 +72,58 @@ public class JdbcConnector {
     public static JdbcConnector fromUrl(String url) {
         return fromUrl(url, Consts.UTC);
     }
+
     /**
      * @throws IllegalArgumentException url isn't valid
      */
     public static JdbcConnector fromUrl(String url, String timezone) {
         try {
-            if (url.startsWith("jdbc:postgresql:")) {
+            switch (getDatabaseTypeFromUrl(url)) {
+            case PG:
                 return new JdbcConnector(url, timezone);
-            } else if (url.startsWith("jdbc:sqlserver:")) {
+            case MS:
                 return new JdbcMsConnector(url);
+            default:
+                break;
             }
         } catch (URISyntaxException ex) {
             throw new IllegalArgumentException(ex.getLocalizedMessage(), ex);
         }
-        throw new IllegalArgumentException(
-                "Unknown url schema, supported schemas are 'postgresql' and 'sqlserver'");
+        throw new IllegalArgumentException(MESSAGE_UNKNOWN_URL_SCHEMA);
     }
 
-    private static String urlDecode(String encoded) {
+    /**
+     * @throws IllegalArgumentException url isn't valid
+     */
+    public static DatabaseType getDatabaseTypeFromUrl(String url) {
+        if (url.startsWith(URL_START_MS)) {
+            return DatabaseType.MS;
+        }
+        if (url.startsWith(URL_START_PG)) {
+            return DatabaseType.PG;
+        }
+        throw new IllegalArgumentException(MESSAGE_UNKNOWN_URL_SCHEMA);
+    }
+
+    protected static String urlDecode(String encoded) {
         try {
             return URLDecoder.decode(encoded, Consts.UTF_8);
         } catch (UnsupportedEncodingException ex) {
             LOG.error(ex.getLocalizedMessage(), ex);
             return encoded;
+        }
+    }
+
+    public static JdbcConnector getJdbcConnector(DatabaseType type, String host, int port, String user, String pass,
+            String dbName, Map<String, String> properties, boolean isReadOnly, String timezone, boolean winAuth,
+            String domain) {
+        switch (type) {
+        case PG:
+            return new JdbcConnector(host, port, user, pass, dbName, properties, isReadOnly, timezone);
+        case MS:
+            return new JdbcMsConnector(host, port, user, pass, dbName, properties, isReadOnly, winAuth, domain);
+        default:
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + type);
         }
     }
 

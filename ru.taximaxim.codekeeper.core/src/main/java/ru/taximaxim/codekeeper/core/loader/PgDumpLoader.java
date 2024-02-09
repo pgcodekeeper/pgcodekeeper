@@ -162,11 +162,9 @@ public class PgDumpLoader extends DatabaseLoader {
         case PG:
             SqlContextProcessor sqlListener;
             if (overrides != null) {
-                sqlListener = new SQLOverridesListener(
-                        intoDb, inputObjectName, mode, errors, monitor, overrides);
+                sqlListener = new SQLOverridesListener(intoDb, inputObjectName, mode, errors, monitor, overrides);
             } else {
-                sqlListener = new CustomSQLParserListener(intoDb,
-                        inputObjectName, mode, errors, antlrTasks, monitor);
+                sqlListener = new CustomSQLParserListener(intoDb, inputObjectName, mode, errors, antlrTasks, monitor);
             }
 
             AntlrParser.parseSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
@@ -175,11 +173,9 @@ public class PgDumpLoader extends DatabaseLoader {
         case MS:
             TSqlContextProcessor tsqlListener;
             if (overrides != null) {
-                tsqlListener = new TSQLOverridesListener(
-                        intoDb, inputObjectName, mode, errors, monitor, overrides);
+                tsqlListener = new TSQLOverridesListener(intoDb, inputObjectName, mode, errors, monitor, overrides);
             } else {
-                tsqlListener = new CustomTSQLParserListener(
-                        intoDb, inputObjectName, mode, errors, monitor);
+                tsqlListener = new CustomTSQLParserListener(intoDb, inputObjectName, mode, errors, monitor);
             }
             AntlrParser.parseTSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
                     monitor, monitoringLevel, tsqlListener, antlrTasks);

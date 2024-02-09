@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- The separate project creation wizard for MS SQL has been replaced by database type selection.
+
 ### Fixed
 
 ## [9.3.0] - 2024-02-06

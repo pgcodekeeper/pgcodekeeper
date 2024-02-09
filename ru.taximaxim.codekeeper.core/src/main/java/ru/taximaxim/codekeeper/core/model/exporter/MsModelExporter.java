@@ -15,16 +15,14 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.model.exporter;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.MessageFormat;
 import java.util.Collection;
 
-import ru.taximaxim.codekeeper.core.Consts.MS_WORK_DIR_NAMES;
+import ru.taximaxim.codekeeper.core.DatabaseType;
+import ru.taximaxim.codekeeper.core.WorkDirs;
 import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
+import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
@@ -33,10 +31,6 @@ import ru.taximaxim.codekeeper.core.schema.PgStatementWithSearchPath;
 
 public class MsModelExporter extends AbstractModelExporter {
 
-    private static final String SCHEMAS_FOLDER = "Schemas";
-    private static final String USERS_FOLDER = "Users";
-    private static final String ROLES_FOLDER = "Roles";
-
     public MsModelExporter(Path outDir, PgDatabase db, String sqlEncoding) {
         super(outDir, db, sqlEncoding);
     }
@@ -44,25 +38,6 @@ public class MsModelExporter extends AbstractModelExporter {
     public MsModelExporter(Path outDir, PgDatabase newDb, PgDatabase oldDb,
             Collection<TreeElement> changedObjects, String sqlEncoding) {
         super(outDir, newDb, oldDb, changedObjects, sqlEncoding);
-    }
-
-    @Override
-    protected void createOutDir() throws IOException {
-        if (Files.exists(outDir)) {
-            if (!Files.isDirectory(outDir)) {
-                throw new NotDirectoryException(outDir.toString());
-            }
-
-            for (MS_WORK_DIR_NAMES sub : MS_WORK_DIR_NAMES.values()) {
-                String subdir = sub.getDirName();
-                if (Files.exists(outDir.resolve(subdir))) {
-                    throw new DirectoryException(MessageFormat.format(
-                            "Output directory already contains {0} directory.", subdir));
-                }
-            }
-        } else {
-            Files.createDirectories(outDir);
-        }
     }
 
     @Override
@@ -75,57 +50,37 @@ public class MsModelExporter extends AbstractModelExporter {
 
         Path path = baseDir;
         DbObjType type = st.getStatementType();
+        var dbType = st.getDbType();
+        String dirName = WorkDirs.getDirectoryNameForType(dbType, type);
         switch (type) {
 
         case SCHEMA:
-            path = path.resolve(MS_WORK_DIR_NAMES.SECURITY.getDirName()).resolve(SCHEMAS_FOLDER);
-            if (!addExtension) {
-                return path;
-            }
-            break;
         case ROLE:
-            path = path.resolve(MS_WORK_DIR_NAMES.SECURITY.getDirName()).resolve(ROLES_FOLDER);
-            if (!addExtension) {
-                return path;
-            }
-            break;
         case USER:
-            path = path.resolve(MS_WORK_DIR_NAMES.SECURITY.getDirName()).resolve(USERS_FOLDER);
+            path = path.resolve(WorkDirs.MS_SECURITY).resolve(dirName);
             if (!addExtension) {
                 return path;
             }
             break;
         case ASSEMBLY:
-            path = path.resolve(MS_WORK_DIR_NAMES.ASSEMBLIES.getDirName());
-            break;
         case SEQUENCE:
-            path = path.resolve(MS_WORK_DIR_NAMES.SEQUENCES.getDirName());
-            break;
         case VIEW:
-            path = path.resolve(MS_WORK_DIR_NAMES.VIEWS.getDirName());
-            break;
         case TABLE:
-            path = path.resolve(MS_WORK_DIR_NAMES.TABLES.getDirName());
-            break;
         case FUNCTION:
-            path = path.resolve(MS_WORK_DIR_NAMES.FUNCTIONS.getDirName());
-            break;
         case PROCEDURE:
-            path = path.resolve(MS_WORK_DIR_NAMES.PROCEDURES.getDirName());
-            break;
         case TYPE:
-            path = path.resolve(MS_WORK_DIR_NAMES.TYPES.getDirName());
+            path = path.resolve(dirName);
             break;
         case CONSTRAINT:
         case INDEX:
         case TRIGGER:
         case COLUMN:
             st = parentSt;
-            path = path.resolve(parentSt.getStatementType() == DbObjType.TABLE ?
-                    MS_WORK_DIR_NAMES.TABLES.getDirName() : MS_WORK_DIR_NAMES.VIEWS.getDirName());
+            dirName = WorkDirs.getDirectoryNameForType(dbType, parentSt.getStatementType());
+            path = path.resolve(dirName);
             break;
         default:
-            throw new IllegalStateException("Unsupported export type: " + type);
+            throw new IllegalStateException(Messages.DbObjType_unsupported_type + type);
         }
 
         String fileName = addExtension ? getExportedFilenameSql(st) : getExportedFilename(st);
@@ -135,5 +90,10 @@ public class MsModelExporter extends AbstractModelExporter {
         }
 
         return path.resolve(fileName);
+    }
+
+    @Override
+    protected DatabaseType getDatabaseType() {
+        return DatabaseType.MS;
     }
 }

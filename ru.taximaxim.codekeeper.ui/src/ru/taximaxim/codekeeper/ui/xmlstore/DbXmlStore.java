@@ -44,7 +44,6 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
-import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public final class DbXmlStore extends XmlStore<DbInfo> {
 
@@ -271,17 +270,9 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
         String dbTypeText = object.get(Tags.DB_TYPE);
         DatabaseType dbType;
         if (dbTypeText != null) {
-            switch (dbTypeText) {
-            case "PG": //$NON-NLS-1$
-                dbType = DatabaseType.PG;
-                break;
-            case "MS": //$NON-NLS-1$
-                dbType = DatabaseType.MS;
-                break;
-            default:
-                throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbTypeText);
-            }
+            dbType = DatabaseType.getValue(dbTypeText);
         } else {
+            // backwards compatibility
             dbType = (Boolean.parseBoolean(object.get(Tags.MSSQL)) ? DatabaseType.MS : DatabaseType.PG);
         }
         return new DbInfo(object.get(Tags.NAME), object.get(Tags.DBNAME),

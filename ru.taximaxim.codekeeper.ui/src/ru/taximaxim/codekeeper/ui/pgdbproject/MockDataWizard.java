@@ -16,7 +16,6 @@
 package ru.taximaxim.codekeeper.ui.pgdbproject;
 
 import org.eclipse.core.resources.IResource;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
@@ -24,7 +23,7 @@ import org.eclipse.ui.IWorkbench;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
+import ru.taximaxim.codekeeper.ui.ProjectIcon;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
@@ -37,8 +36,7 @@ public class MockDataWizard extends Wizard implements INewWizard {
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         this.selection = selection;
-        setDefaultPageImageDescriptor(ImageDescriptor.createFromURL(
-                Activator.getContext().getBundle().getResource(FILE.ICONAPPWIZ)));
+        setDefaultPageImageDescriptor(Activator.getRegisteredDescriptor(ProjectIcon.APP_WIZ));
         Object element = selection.getFirstElement();
         if (element instanceof IResource) {
             dbType = OpenProjectUtils.getDatabaseType(((IResource)element).getProject());

@@ -109,7 +109,6 @@ import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.IProgressReporter;
 import ru.taximaxim.codekeeper.core.fileutils.TempFile;
 import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
-import ru.taximaxim.codekeeper.core.loader.JdbcMsConnector;
 import ru.taximaxim.codekeeper.core.loader.JdbcRunner;
 import ru.taximaxim.codekeeper.core.parsers.antlr.ScriptParser;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
@@ -121,7 +120,6 @@ import ru.taximaxim.codekeeper.ui.UIConsts.CMD_VARS;
 import ru.taximaxim.codekeeper.ui.UIConsts.CONTEXT;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_BIND_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
-import ru.taximaxim.codekeeper.ui.UIConsts.LANGUAGE;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
@@ -233,8 +231,7 @@ implements IResourceChangeListener, ITextErrorReporter {
 
     private DbInfo getDbFromPref(String prefName) {
         IEclipsePreferences auxPrefs = getProjDbBindPrefs();
-        return auxPrefs == null ? null :
-            DbInfo.getLastDb(auxPrefs.get(prefName, ""), dbType); //$NON-NLS-1$
+        return auxPrefs == null ? null : DbInfo.getLastDb(auxPrefs.get(prefName, ""), dbType); //$NON-NLS-1$
     }
 
     public IEclipsePreferences getProjDbBindPrefs() {
@@ -343,20 +340,11 @@ implements IResourceChangeListener, ITextErrorReporter {
         return null;
     }
 
-    public void changeLanguage(String language) {
+    public void changeLanguage(DatabaseType dbType) {
         IResource res = ResourceUtil.getResource(getEditorInput());
         try {
             if (res == null || !UIProjectLoader.isInProject(res)) {
-                switch (language) {
-                case LANGUAGE.MS_SQL:
-                    dbType = DatabaseType.MS;
-                    break;
-                case LANGUAGE.POSTGRESQL:
-                    dbType = DatabaseType.PG;
-                    break;
-                default:
-                    throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
-                }
+                this.dbType = dbType;
                 refreshParser(getParser(), res, null);
             }
         } catch (InterruptedException | IOException | CoreException ex) {
@@ -555,7 +543,7 @@ implements IResourceChangeListener, ITextErrorReporter {
             errorTitleImage.dispose();
         }
 
-        if (changedListener != null)  {
+        if (changedListener != null) {
             changedListener.uninstall(getSelectionProvider());
             changedListener = null;
         }
@@ -618,7 +606,7 @@ implements IResourceChangeListener, ITextErrorReporter {
 
     public void updateDdl() {
         DbInfo dbInfo = currentDB;
-        if (dbInfo == null){
+        if (dbInfo == null) {
             ExceptionNotifier.notifyDefault(Messages.sqlScriptDialog_script_select_storage, null);
             return;
         }
@@ -631,14 +619,14 @@ implements IResourceChangeListener, ITextErrorReporter {
         } else {
             try {
                 textRetrieved = document.get(point.x, point.y);
-            } catch (BadLocationException ble){
+            } catch (BadLocationException ble) {
                 Log.log(Log.LOG_WARNING, ble.getMessage());
                 ExceptionNotifier.notifyDefault(Messages.SqlEditor_selected_text_error, ble);
                 return;
             }
         }
 
-        ScriptParser [] parsers = new ScriptParser[1];
+        ScriptParser[] parsers = new ScriptParser[1];
         IRunnableWithProgress runnable = monitor -> {
             try {
                 ScriptParser scriptParser = new ScriptParser(
@@ -723,23 +711,9 @@ implements IResourceChangeListener, ITextErrorReporter {
         private IStatus runInternal(IProgressMonitor monitor) {
             Log.log(Log.LOG_INFO, "Running DDL update using JDBC"); //$NON-NLS-1$
 
-            JdbcConnector connector;
-            switch (dbInfo.getDbType()) {
-            case PG:
-                connector = new JdbcConnector(
-                        dbInfo.getDbHost(), dbInfo.getDbPort(), dbInfo.getDbUser(),
-                        dbInfo.getDbPass(), dbInfo.getDbName(), dbInfo.getProperties(),
-                        dbInfo.isReadOnly(), Consts.UTC);
-                break;
-            case MS:
-                connector = new JdbcMsConnector(
-                        dbInfo.getDbHost(), dbInfo.getDbPort(), dbInfo.getDbUser(),
-                        dbInfo.getDbPass(), dbInfo.getDbName(), dbInfo.getProperties(),
-                        dbInfo.isReadOnly(), dbInfo.isWinAuth(), dbInfo.getDomain());
-                break;
-            default:
-                throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
-            }
+            JdbcConnector connector = JdbcConnector.getJdbcConnector( dbInfo.getDbType(), dbInfo.getDbHost(),
+                    dbInfo.getDbPort(), dbInfo.getDbUser(),dbInfo.getDbPass(), dbInfo.getDbName(),
+                    dbInfo.getProperties(), dbInfo.isReadOnly(), Consts.UTC, dbInfo.isWinAuth(), dbInfo.getDomain());
 
             IProgressReporter reporter = new UiProgressReporter(monitor, SQLEditor.this, offset, dbInfo.getName());
             try (IProgressReporter toClose = reporter) {

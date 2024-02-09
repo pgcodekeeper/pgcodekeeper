@@ -26,7 +26,6 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.reports.EclipseEnvironment;
 
 public class Activator extends AbstractUIPlugin {
@@ -67,11 +66,19 @@ public class Activator extends AbstractUIPlugin {
         return a == null ? null : a.getImageRegistry().get(name);
     }
     /**
-     * @return Shared {@link ImageDescriptor}, registered with this plugin with the <code>name</code> key.
+     * @return Shared {@link Image}, registered with this plugin with the <code>projectIcon</code> key.
+     * Do not dispose!
      */
-    public static ImageDescriptor getRegisteredDescriptor(String name) {
+    public static Image getRegisteredImage(ProjectIcon projectIcon) {
+        return getRegisteredImage(projectIcon.getPath());
+    }
+
+    /**
+     * @return Shared {@link ImageDescriptor}, registered with this plugin with the <code>projectIcon</code> key.
+     */
+    public static ImageDescriptor getRegisteredDescriptor(ProjectIcon projectIcon) {
         Activator a = plugin;
-        return a == null ? null : a.getImageRegistry().getDescriptor(name);
+        return a == null ? null : a.getImageRegistry().getDescriptor(projectIcon.getPath());
     }
 
     @Override
@@ -97,36 +104,14 @@ public class Activator extends AbstractUIPlugin {
 
     @Override
     protected void initializeImageRegistry(ImageRegistry reg) {
-        reg.put(FILE.ICONAPPSMALL, ImageDescriptor.createFromURL(
-                context.getBundle().getResource(FILE.ICONAPPSMALL)));
-
-        reg.put(FILE.ICONEDIT, ImageDescriptor.createFromURL(
-                context.getBundle().getResource(FILE.ICONEDIT)));
-
-        reg.put(FILE.ICONLIB, ImageDescriptor.createFromURL(
-                context.getBundle().getResource(FILE.ICONLIB)));
-
-        reg.put(FILE.ICONDATABASE, ImageDescriptor.createFromURL(
-                context.getBundle().getResource(FILE.ICONDATABASE)));
-
-        reg.put(FILE.ICONCLOUD, ImageDescriptor.createFromURL(
-                context.getBundle().getResource(FILE.ICONCLOUD)));
-
-        reg.put(FILE.ZIP, ImageDescriptor.createFromURL(
-                context.getBundle().getResource(FILE.ZIP)));
-
-        reg.put(FILE.PG_ICON, ImageDescriptor.createFromURL(
-                context.getBundle().getResource(FILE.PG_ICON)));
-
-        reg.put(FILE.MS_ICON, ImageDescriptor.createFromURL(
-                context.getBundle().getResource(FILE.MS_ICON)));
-
-        reg.put(FILE.ICONSEARCHLINE, ImageDescriptor.createFromURL(
-                context.getBundle().getResource(FILE.ICONSEARCHLINE)));
+        for (ProjectIcon projectIcon : ProjectIcon.values()) {
+            String path = projectIcon.getPath();
+            reg.put(path, ImageDescriptor.createFromURL(context.getBundle().getResource(path)));
+        }
 
         for (DbObjType dbObjType : DbObjType.values()) {
             reg.put(dbObjType.name(), ImageDescriptor.createFromURL(context.getBundle()
-                    .getResource(FILE.ICONPGADMIN + dbObjType.name().toLowerCase(Locale.ROOT) + ".png"))); //$NON-NLS-1$
+                    .getResource(ProjectIcon.PG_ADMIN_ICON_FOLDER + dbObjType.name().toLowerCase(Locale.ROOT) + ".png"))); //$NON-NLS-1$
         }
     }
 }

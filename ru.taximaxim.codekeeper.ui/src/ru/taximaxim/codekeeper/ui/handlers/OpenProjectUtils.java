@@ -47,8 +47,9 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.osgi.framework.Version;
 
 import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.Consts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.core.DatabaseType;
+import ru.taximaxim.codekeeper.core.WorkDirs;
+import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
@@ -80,14 +81,30 @@ public final class OpenProjectUtils {
 
     public static DatabaseType getDatabaseType(IProject proj) {
         try {
-            if (proj.exists() && proj.hasNature(UIConsts.NATURE.MS)) {
-                return DatabaseType.MS;
+            if (proj.exists()) {
+                if (proj.hasNature(UIConsts.NATURE.MS)) {
+                    return DatabaseType.MS;
+                }
             }
         } catch (CoreException e) {
             Log.log(e);
         }
-
         return DatabaseType.PG;
+    }
+
+    public static String[] getProjectNatures(DatabaseType dbType) {
+        String[] natures;
+        switch (dbType) {
+        case PG:
+            natures = new String[] { NATURE.ID };
+            break;
+        case MS:
+            natures = new String[] { NATURE.ID, NATURE.MS };
+            break;
+        default:
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
+        }
+        return natures;
     }
 
     public static boolean checkVersionAndWarn(IProject proj, Shell parent,
@@ -149,6 +166,10 @@ public final class OpenProjectUtils {
         return true;
     }
 
+    public static boolean isPgProject(IProject proj) throws CoreException {
+        return proj.hasNature(NATURE.ID) && !proj.hasNature(NATURE.MS);
+    }
+
     /**
      * Shows a message box with version warning.
      * @param isError does the error block the project from opening
@@ -177,7 +198,7 @@ public final class OpenProjectUtils {
      * @throws CoreException only when user chose to convert project and the following process failed
      */
     private static void doCheckLegacySchemas(IProject proj, Shell shell) throws CoreException {
-        IFolder schemasDir = proj.getFolder(WORK_DIR_NAMES.SCHEMA.name());
+        IFolder schemasDir = proj.getFolder(WorkDirs.getDirectoryNameForType(DatabaseType.PG, DbObjType.SCHEMA));
         if (!schemasDir.exists()) {
             return;
         }
