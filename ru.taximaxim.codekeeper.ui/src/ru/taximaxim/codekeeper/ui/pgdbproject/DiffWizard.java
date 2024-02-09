@@ -24,7 +24,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.IPageChangingListener;
 import org.eclipse.jface.dialogs.PageChangingEvent;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -52,9 +51,9 @@ import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.ProjectIcon;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
-import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.UiSync;
@@ -81,8 +80,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
         this.mainPrefs = mainPrefs;
 
         setWindowTitle(Messages.diffWizard_Diff);
-        setDefaultPageImageDescriptor(ImageDescriptor.createFromURL(
-                Activator.getContext().getBundle().getResource(FILE.ICONAPPWIZ)));
+        setDefaultPageImageDescriptor(Activator.getRegisteredDescriptor(ProjectIcon.APP_WIZ));
         setNeedsProgressMonitor(true);
     }
 
@@ -265,6 +263,7 @@ class PageDiff extends WizardPage implements Listener {
         new Label(compTz, SWT.NONE).setText(Messages.database_type);
         cmbDbType = new ComboViewer(compTz, SWT.READ_ONLY);
         cmbDbType.setContentProvider(ArrayContentProvider.getInstance());
+        cmbDbType.setLabelProvider(UIConsts.DATABASE_TYPE_PROVIDER);
         cmbDbType.setInput(DatabaseType.values());
         cmbDbType.addSelectionChangedListener(e -> {
             StructuredSelection sel = (StructuredSelection) e.getSelection();

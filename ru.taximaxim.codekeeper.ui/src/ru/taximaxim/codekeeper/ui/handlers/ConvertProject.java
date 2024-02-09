@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -27,21 +26,26 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.dialogs.TrayDialog;
+import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.Consts.MS_WORK_DIR_NAMES;
-import ru.taximaxim.codekeeper.core.Consts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.core.DatabaseType;
+import ru.taximaxim.codekeeper.core.WorkDirs;
 import ru.taximaxim.codekeeper.core.model.exporter.AbstractModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
+import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class ConvertProject extends AbstractHandler {
@@ -58,59 +62,31 @@ public class ConvertProject extends AbstractHandler {
         IProject project = (IProject) obj;
         Shell shell = HandlerUtil.getActiveShell(event);
 
-        int code = new MessageDialog(shell, Messages.ConvertProject_select_type_title,
-                null, Messages.ConvertProject_select_type_desc, MessageDialog.CONFIRM,
-                new String[] {"MS SQL", "PostgreSQL"}, 0).open(); //$NON-NLS-1$ //$NON-NLS-2$
-
-        if (code == SWT.DEFAULT) {
-            return null;
-        }
-
-        DatabaseType dbType = code == Window.OK ? DatabaseType.MS : DatabaseType.PG;
-        try {
-            if (createMarker(shell, Paths.get(project.getLocationURI()), dbType)) {
-                String[] natures;
-                switch (dbType) {
-                case PG:
-                    natures = new String[] {NATURE.ID};
-                    break;
-                case MS:
-                    natures = new String[] {NATURE.ID, NATURE.MS};
-                    break;
-                default:
-                    throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
-                }
-
-                IProjectDescription description = project.getDescription();
-                description.setNatureIds(natures);
-                project.setDescription(description, null);
-            }
-        } catch (CoreException | IOException e) {
-            Log.log(e);
+        var dialog = new ConvertProjectDialog(shell);
+        if (dialog.open() == Window.OK) {
+            convertProject(project, shell, dialog.getDbType());
         }
 
         return null;
     }
 
-    public static boolean createMarker(Shell shell, Path path, DatabaseType dbType) throws IOException {
-        boolean weirdProject;
-        switch (dbType) {
-        case PG:
-            weirdProject = Arrays.stream(WORK_DIR_NAMES.values())
-            .map(e -> path.resolve(e.name()))
-            .allMatch(Files::notExists);
-            break;
-        case MS:
-            // MS doesn't require all dirs to exist, warn if none found
-            weirdProject = Arrays.stream(MS_WORK_DIR_NAMES.values())
-            .map(e -> path.resolve(e.getDirName()))
-            .allMatch(Files::notExists);
-            break;
-        default:
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
+    private void convertProject(IProject project, Shell shell, DatabaseType dbType) {
+        try {
+            if (createMarker(shell, Paths.get(project.getLocationURI()), dbType)) {
+                IProjectDescription description = project.getDescription();
+                description.setNatureIds(OpenProjectUtils.getProjectNatures(dbType));
+                project.setDescription(description, null);
+            }
+        } catch (CoreException | IOException e) {
+            Log.log(e);
         }
+    }
 
-        if (weirdProject) {
+    public static boolean createMarker(Shell shell, Path path, DatabaseType dbType) throws IOException {
+        boolean unknownProject = WorkDirs.getDirectoryNames(dbType).stream().map(path::resolve)
+                .allMatch(Files::notExists);
+
+        if (unknownProject) {
             MessageBox message = new MessageBox(shell, SWT.ICON_WARNING | SWT.YES | SWT.NO);
             message.setMessage(Messages.ConvertProject_convert_dialog_message);
             message.setText(Messages.ConvertProject_convert_dialog_title);
@@ -124,5 +100,37 @@ public class ConvertProject extends AbstractHandler {
             AbstractModelExporter.writeProjVersion(markerFile);
         }
         return true;
+    }
+
+    private final class ConvertProjectDialog extends TrayDialog {
+
+        private DatabaseType dbType;
+
+        private ConvertProjectDialog(Shell shell) {
+            super(shell);
+        }
+
+        @Override
+        protected Control createDialogArea(Composite parent) {
+            Composite area = (Composite) super.createDialogArea(parent);
+
+            parent.getShell().setText(Messages.ConvertProject_select_type_title);
+
+            new Label(area, SWT.NONE).setText(Messages.ConvertProject_select_type_desc);
+            var cmbDbType = new ComboViewer(area);
+            cmbDbType.setContentProvider(ArrayContentProvider.getInstance());
+            cmbDbType.setLabelProvider(UIConsts.DATABASE_TYPE_PROVIDER);
+            cmbDbType.setInput(DatabaseType.values());
+            cmbDbType.addSelectionChangedListener(e -> {
+                var sel = (StructuredSelection) cmbDbType.getSelection();
+                dbType = (DatabaseType) sel.getFirstElement();
+            });
+            cmbDbType.setSelection(new StructuredSelection(DatabaseType.PG));
+            return area;
+        }
+
+        DatabaseType getDbType() {
+            return dbType;
+        }
     }
 }

@@ -20,9 +20,6 @@ import java.util.List;
 import java.util.ListIterator;
 
 import org.eclipse.jface.layout.TableColumnLayout;
-import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnWeightData;
@@ -47,6 +44,7 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.ISharedImages;
 
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.ProjectIcon;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 /**
@@ -64,8 +62,6 @@ public abstract class PrefListEditor<T> extends Composite {
     private static final int HEIGHT_HINT_PX = 400;
 
     private List<T> objsList = new LinkedList<>();
-
-    private final LocalResourceManager lrm = new LocalResourceManager(JFaceResources.getResources(), this);
 
     private final TableViewer viewerObjs;
 
@@ -121,9 +117,8 @@ public abstract class PrefListEditor<T> extends Composite {
         createButton(parent, DELETE_ID, Messages.delete, Activator.getEclipseImage(ISharedImages.IMG_ETOOL_DELETE));
     }
 
-    protected Button createButton(Composite parent, int id, String tooltip, String image) {
-        return createButton(parent, id, tooltip, lrm.createImage(ImageDescriptor.createFromURL(
-                Activator.getContext().getBundle().getResource(image))));
+    protected Button createButton(Composite parent, int id, String tooltip, ProjectIcon projectIcon) {
+        return createButton(parent, id, tooltip, Activator.getRegisteredImage(projectIcon));
     }
 
     protected Button createButton(Composite parent, int id, String tooltip, Image image) {

@@ -26,7 +26,7 @@ import org.eclipse.ui.model.WorkbenchLabelProvider;
 
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
+import ru.taximaxim.codekeeper.ui.ProjectIcon;
 
 public class ReferenceLabelProvider extends LabelProvider implements IStyledLabelProvider {
 
@@ -46,7 +46,7 @@ public class ReferenceLabelProvider extends LabelProvider implements IStyledLabe
     @Override
     public Image getImage(Object element) {
         if (element instanceof PgObjLocation) {
-            return Activator.getRegisteredImage(FILE.ICONSEARCHLINE);
+            return Activator.getRegisteredImage(ProjectIcon.SEARCH_LINE);
         }
 
         return workbenchProvider.getImage(element);

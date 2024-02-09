@@ -60,8 +60,8 @@ import org.eclipse.swt.widgets.Text;
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
-import ru.taximaxim.codekeeper.core.loader.JdbcMsConnector;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.CMD_VARS;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.properties.IgnoreListProperties.IgnoreListEditor;
@@ -325,6 +325,7 @@ public final class DbStoreEditorDialog extends TrayDialog {
         cmbDbType = new ComboViewer(tabAreaDb, SWT.READ_ONLY);
         cmbDbType.getCombo().setLayoutData(new GridData(SWT.DEFAULT, SWT.DEFAULT, false, false, 3, 1));
         cmbDbType.setContentProvider(ArrayContentProvider.getInstance());
+        cmbDbType.setLabelProvider(UIConsts.DATABASE_TYPE_PROVIDER);
         cmbDbType.setInput(DatabaseType.values());
         cmbDbType.getCombo().select(0);
 
@@ -546,27 +547,10 @@ public final class DbStoreEditorDialog extends TrayDialog {
 
                 try {
                     int dbport = port.isEmpty() ? 0 : Integer.parseInt(port);
-                    JdbcConnector connector;
-                    switch (getSelectedDbType()) {
-                    case MS:
-                        connector = new JdbcMsConnector(txtDbHost.getText(), dbport,
-                                txtDbUser.getText(), txtDbPass.getText(),
-                                txtDbName.getText(), propertyListEditor.getList().stream()
-                                .collect(Collectors.toMap(Entry::getKey, Entry::getValue)),
-                                btnReadOnly.getSelection(), isWinAuth(), txtDomain.getText());
-                        break;
-                    case PG:
-                        connector = new JdbcConnector(txtDbHost.getText(), dbport,
-                                txtDbUser.getText(), txtDbPass.getText(),
-                                txtDbName.getText(), propertyListEditor.getList().stream()
-                                .collect(Collectors.toMap(Entry::getKey, Entry::getValue)),
-                                btnReadOnly.getSelection(), Consts.UTC);
-                        break;
-                    default:
-                        // for sonar fix
-                        throw new IllegalArgumentException(
-                                Messages.DatabaseType_unsupported_type + cmbDbType.getCombo().getText());
-                    }
+                    JdbcConnector connector = JdbcConnector.getJdbcConnector(getSelectedDbType(), txtDbHost.getText(),
+                            dbport, txtDbUser.getText(), txtDbPass.getText(), txtDbName.getText(),
+                            propertyListEditor.getList().stream().collect(Collectors.toMap(Entry::getKey, Entry::getValue)),
+                            btnReadOnly.getSelection(), Consts.UTC, isWinAuth(), txtDomain.getText());
 
                     try (Connection connection = connector.getConnection()) {
                         style = SWT.OK;

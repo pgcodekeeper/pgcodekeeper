@@ -22,7 +22,6 @@ import org.eclipse.ui.IElementFactory;
 import org.eclipse.ui.IMemento;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class SQLEditorInputFactory implements IElementFactory {
 
@@ -65,18 +64,9 @@ public class SQLEditorInputFactory implements IElementFactory {
         DatabaseType dbType;
         String dbTypeText = memento.getString(TAG_DB_TYPE);
         if (dbTypeText != null) {
-            switch (dbTypeText) {
-            case "MS":
-                dbType = DatabaseType.MS;
-                break;
-            case "PG":
-                dbType = DatabaseType.PG;
-                break;
-            default:
-                throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbTypeText);
-            }
+            dbType = DatabaseType.getValue(dbTypeText);
         } else {
-            //backwards compatibility
+            // backwards compatibility
             Boolean tmp = memento.getBoolean(TAG_IS_MS_SQL);
             if (tmp == null) {
                 dbType = null;
@@ -90,7 +80,6 @@ public class SQLEditorInputFactory implements IElementFactory {
         if (path == null || dbType == null || isReadOnly == null || isTemp == null) {
             return null;
         }
-
 
         return new SQLEditorInput(Paths.get(path), project, dbType, isReadOnly, isTemp);
     }

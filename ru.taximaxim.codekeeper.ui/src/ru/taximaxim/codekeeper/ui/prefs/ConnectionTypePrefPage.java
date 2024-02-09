@@ -48,8 +48,8 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.ProjectIcon;
 import ru.taximaxim.codekeeper.ui.UIConsts.CONN_TYPE_PREF;
-import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.dbstore.ConnectionTypeInfo;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -132,10 +132,11 @@ final class ConnectionTypePrefListEditor extends PrefListEditor<ConnectionTypeIn
     protected void createButtonsForSideBar(Composite parent) {
         createButton(parent, ADD_ID, Messages.add, Activator.getEclipseImage(ISharedImages.IMG_OBJ_ADD));
         createButton(parent, COPY_ID, Messages.copy, Activator.getEclipseImage(ISharedImages.IMG_TOOL_COPY));
-        createButton(parent, EDIT_ID, Messages.edit, Activator.getRegisteredImage(FILE.ICONEDIT));
+        createButton(parent, EDIT_ID, Messages.edit, Activator.getRegisteredImage(ProjectIcon.EDIT));
         createButton(parent, DELETE_ID, Messages.delete, Activator.getEclipseImage(ISharedImages.IMG_ETOOL_DELETE));
 
-        Button exportConTypes = createButton(parent, CLIENT_ID, Messages.connectionTypePrefPage_export, FILE.ICONEXPORT);
+        Button exportConTypes = createButton(parent, CLIENT_ID, Messages.connectionTypePrefPage_export,
+                ProjectIcon.EXPORT);
         exportConTypes.setLayoutData(new GridData(SWT.DEFAULT, SWT.END, false, true));
         exportConTypes.addSelectionListener(new SelectionAdapter() {
 
@@ -158,7 +159,8 @@ final class ConnectionTypePrefListEditor extends PrefListEditor<ConnectionTypeIn
             }
         });
 
-        Button importConTypes = createButton(parent, CLIENT_ID, Messages.connectionTypePrefPage_import, FILE.ICONIMPORT);
+        Button importConTypes = createButton(parent, CLIENT_ID, Messages.connectionTypePrefPage_import,
+                ProjectIcon.IMPORT);
         importConTypes.addSelectionListener(new SelectionAdapter() {
 
             @Override

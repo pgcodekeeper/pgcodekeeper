@@ -29,9 +29,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgCodekeeperException;
+import ru.taximaxim.codekeeper.core.WorkDirs;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
@@ -129,12 +129,17 @@ public class OverridesModelExporter extends AbstractModelExporter {
         switch (dbType) {
         case MS:
             return MsModelExporter.getRelativeFilePath(
-                    st, Paths.get(Consts.OVERRIDES_DIR), addExtension);
+                    st, Paths.get(WorkDirs.OVERRIDES), addExtension);
         case PG:
             return ModelExporter.getRelativeFilePath(
-                    st, Paths.get(Consts.OVERRIDES_DIR), addExtension);
+                    st, Paths.get(WorkDirs.OVERRIDES), addExtension);
         default:
             throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + st.getDbType());
         }
+    }
+
+    @Override
+    protected DatabaseType getDatabaseType() {
+        return dbType;
     }
 }

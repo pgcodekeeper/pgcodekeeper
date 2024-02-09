@@ -51,11 +51,11 @@ class OutputTest {
                 Arguments.of(new FailConcurrentlyArgumentsProvider()),
                 Arguments.of(new ConcurrentlyArgumentsProvider()),
                 Arguments.of(new MsConcurrentlyArgumentsProvider()),
-                Arguments.of(new FailMsArgumentsProvider()),
-                Arguments.of(new FailPgArgumentsProvider()),
+                Arguments.of(new FailMsArgumentsWithPgProvider()),
+                Arguments.of(new FailPgArgumentsWithMsProvider()),
                 Arguments.of(new FailCompareArgumentsProvider()),
-                Arguments.of(new FailMsParseArgumentsProvider()),
-                Arguments.of(new FailPgParseArgumentsProvider()),
+                Arguments.of(new FailParseMsArgumentsWithPgProvider()),
+                Arguments.of(new FailParsePgArgumentsWithMsProvider()),
                 Arguments.of(new OverrideArgumentsProvider()),
                 Arguments.of(new FailGraphReverseArgumentsProvider()),
                 Arguments.of(new FailGraphDepthArgumentsProvider()),
@@ -433,9 +433,9 @@ class MsConcurrentlyArgumentsProvider extends ArgumentsProvider {
 }
 
 /**
- * {@link ArgumentsProvider} implementation testing MS SQL database without --ms-sql mode
+ * {@link ArgumentsProvider} implementation testing MS SQL database without --db-type MS
  */
-class FailMsArgumentsProvider extends ArgumentsProvider {
+class FailMsArgumentsWithPgProvider extends ArgumentsProvider {
 
     @Override
     public String[] args() throws URISyntaxException, IOException {
@@ -444,14 +444,14 @@ class FailMsArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String output() {
-        return "Cannot work with MS SQL database without --db-type MS parameter.\n";
+        return "Source (PG) and target (MS) are of different types, possibly missing --db-type parameter.\n";
     }
 }
 
 /**
- * {@link ArgumentsProvider} implementation testing PostgreSQL database with --ms-sql mode
+ * {@link ArgumentsProvider} implementation testing PostgreSQL database with --db-type MS
  */
-class FailPgArgumentsProvider extends ArgumentsProvider {
+class FailPgArgumentsWithMsProvider extends ArgumentsProvider {
 
     @Override
     public String[] args() throws URISyntaxException, IOException {
@@ -460,7 +460,7 @@ class FailPgArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String output() {
-        return "Cannot work with PostgreSQL database with --db-type MS parameter.\n";
+        return "Source (MS) and target (PG) are of different types, possibly missing --db-type parameter.\n";
     }
 }
 
@@ -476,14 +476,14 @@ class FailCompareArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String output() {
-        return "Cannot compare MS SQL and PostgerSQL databases.\n";
+        return "Source (MS) and target (PG) are of different types, possibly missing --db-type parameter.\n";
     }
 }
 
 /**
  * {@link ArgumentsProvider} implementation testing parse PostgreSQL database as MS SQL project
  */
-class FailMsParseArgumentsProvider extends ArgumentsProvider {
+class FailParseMsArgumentsWithPgProvider extends ArgumentsProvider {
 
     @Override
     public String[] args() throws URISyntaxException, IOException {
@@ -492,14 +492,14 @@ class FailMsParseArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String output() {
-        return "Cannot work with PostgerSQL database as MS SQL project.\n";
+        return "Cannot work with PG database as MS project.\n";
     }
 }
 
 /**
  * {@link ArgumentsProvider} implementation testing parse MS SQL database as PostgreSQL project
  */
-class FailPgParseArgumentsProvider extends ArgumentsProvider {
+class FailParsePgArgumentsWithMsProvider extends ArgumentsProvider {
 
     @Override
     public String[] args() throws URISyntaxException, IOException {
@@ -508,7 +508,7 @@ class FailPgParseArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String output() {
-        return "Cannot work with MS SQL database as PostgerSQL project.\n";
+        return "Cannot work with MS database as PG project.\n";
     }
 }
 

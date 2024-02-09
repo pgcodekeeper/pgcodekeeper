@@ -34,10 +34,10 @@ class CliArgsTest {
                     "option \"-t (--target)\" cannot be used with the option(s) [--graph, --parse]",
 
             "--graph --db-type MS jdbc:postgresql:q;" +
-                    "Cannot work with PostgerSQL database as MS SQL project.",
+                    "Cannot work with PG database as MS project.",
 
             "--graph jdbc:sqlserver:f;"
-                    + "Cannot work with MS SQL database as PostgerSQL project.",
+                    + "Cannot work with MS database as PG project.",
 
             "--graph jdbc:postgresql:q jdbc:postgresql:q2;"
                     + "DEST argument isn't required.",
@@ -52,22 +52,22 @@ class CliArgsTest {
                     + "-C (--concurrently-mode) cannot be used with the option(s) -X (--add-transaction) for PostgreSQL.",
 
             "jdbc:sqlserver:f jdbc:postgresql:q2;"
-                    + "Cannot compare MS SQL and PostgerSQL databases.",
+                    + "Source (MS) and target (PG) are of different types, possibly missing --db-type parameter.",
 
             "jdbc:postgresql:q2 jdbc:sqlserver:f;"
-                    + "Cannot compare MS SQL and PostgerSQL databases.",
+                    + "Source (PG) and target (MS) are of different types, possibly missing --db-type parameter.",
 
             "jdbc:sqlserver:f filename;"
-                    + "Cannot work with MS SQL database without --db-type MS parameter.",
+                    + "Source (MS) and target (PG) are of different types, possibly missing --db-type parameter.",
 
             "filename jdbc:sqlserver:f;"
-                    + "Cannot work with MS SQL database without --db-type MS parameter.",
+                    + "Source (PG) and target (MS) are of different types, possibly missing --db-type parameter.",
 
             "jdbc:postgresql:q2 filename --db-type MS;"
-                    + "Cannot work with PostgreSQL database with --db-type MS parameter.",
+                    + "Source (PG) and target (MS) are of different types, possibly missing --db-type parameter.",
 
             "filename jdbc:postgresql:q2 --db-type MS;"
-                    + "Cannot work with PostgreSQL database with --db-type MS parameter.",
+                    + "Source (MS) and target (PG) are of different types, possibly missing --db-type parameter.",
 
             "-r filename filename;"
                     + "Cannot run script on non-database target.",

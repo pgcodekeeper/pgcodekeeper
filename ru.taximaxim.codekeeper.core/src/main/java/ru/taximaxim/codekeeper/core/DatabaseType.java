@@ -15,7 +15,36 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core;
 
+import ru.taximaxim.codekeeper.core.localizations.Messages;
+
 public enum DatabaseType {
-    PG,
-    MS
+    PG("PostgreSQL"),
+    MS("MS SQL");
+
+    private final String dbTypeName;
+
+    private DatabaseType(String dbTypeName) {
+        this.dbTypeName = dbTypeName;
+    }
+
+    public final String getDbTypeName() {
+        return dbTypeName;
+    }
+
+    /**
+     * Enums valuesOf method version with custom exception.
+     *
+     * @param dbTypeText
+     *            - database name
+     * @return DatabaseType for given name or {@link IllegalArgumentException}
+     */
+    public static final DatabaseType getValue(String dbTypeText) {
+        for (DatabaseType t : values()) {
+            if (t.name().equalsIgnoreCase(dbTypeText)) {
+                return t;
+            }
+        }
+
+        throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbTypeText);
+    }
 }

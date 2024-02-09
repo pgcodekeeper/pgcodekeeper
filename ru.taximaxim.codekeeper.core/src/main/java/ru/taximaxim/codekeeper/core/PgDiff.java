@@ -241,7 +241,7 @@ public class PgDiff {
         case MS:
             return diffMsDatabaseSchemas(root, oldDbFull, newDbFull, null, null, ignoreList);
         case PG:
-            return diffDatabaseSchemasAdditionalDepcies(root, oldDbFull, newDbFull, null, null, ignoreList);
+            return diffPgDatabaseSchemas(root, oldDbFull, newDbFull, null, null, ignoreList);
         default:
             throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
         }
@@ -260,14 +260,14 @@ public class PgDiff {
             return diffMsDatabaseSchemas(root, oldDbFull, newDbFull,
                     additionalDepciesSource, additionalDepciesTarget, null);
         case PG:
-            return diffDatabaseSchemasAdditionalDepcies(root, oldDbFull, newDbFull,
+            return diffPgDatabaseSchemas(root, oldDbFull, newDbFull,
                     additionalDepciesSource, additionalDepciesTarget, null);
         default:
             throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
         }
     }
 
-    private String diffDatabaseSchemasAdditionalDepcies(
+    private String diffPgDatabaseSchemas(
             TreeElement root, PgDatabase oldDbFull, PgDatabase newDbFull,
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget,
@@ -350,11 +350,10 @@ public class PgDiff {
 
         DepcyResolver depRes = new DepcyResolver(oldDbFull, newDbFull);
         List<TreeElement> selected = getSelectedElements(root, ignoreList);
-        createScript(depRes, selected, oldDbFull, newDbFull,
-                additionalDepciesSource, additionalDepciesTarget);
+        createScript(depRes, selected, oldDbFull, newDbFull, additionalDepciesSource, additionalDepciesTarget);
 
-        new ActionsToScriptConverter(script, depRes.getActions(),
-                depRes.getToRefresh(), arguments, oldDbFull, newDbFull).fillScript(selected);
+        new ActionsToScriptConverter(script, depRes.getActions(), depRes.getToRefresh(),
+                arguments, oldDbFull, newDbFull).fillScript(selected);
 
         if (arguments.isAddTransaction()) {
             script.addStatement("COMMIT\nGO");

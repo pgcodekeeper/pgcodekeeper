@@ -36,8 +36,8 @@ import org.eclipse.ui.console.IOConsoleOutputStream;
 import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.ProjectIcon;
 import ru.taximaxim.codekeeper.ui.UIConsts;
-import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UiSync;
 
@@ -83,7 +83,7 @@ class CodekeeperConsole extends IOConsole implements IPropertyChangeListener {
          * database name.
          */
         super(FileUtils.getFileDate() + ' ' + CodekeeperConsole.NAME + " - " + dbName + '\t', //$NON-NLS-1$
-                Activator.getRegisteredDescriptor(FILE.ICONAPPSMALL));
+                Activator.getRegisteredDescriptor(ProjectIcon.APP_SMALL));
         this.monitor = monitor;
         baseOuter = this.newOutputStream();
         baseOuter.setActivateOnWrite(Activator.getDefault()
