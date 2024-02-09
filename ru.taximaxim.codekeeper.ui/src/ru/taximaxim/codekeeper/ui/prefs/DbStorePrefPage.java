@@ -56,9 +56,9 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.ProjectIcon;
 import ru.taximaxim.codekeeper.ui.UIConsts.CONN_TYPE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_STORE_PREF;
-import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.ConnectionTypeInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
@@ -227,22 +227,22 @@ final class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
             @Override
             public Image getImage(Object element) {
                 DatabaseType dbType = ((DbInfo) element).getDbType();
-                String image;
+                ProjectIcon projectIcon;
                 switch (dbType) {
                 case PG:
-                    image = FILE.PG_ICON;
+                    projectIcon = ProjectIcon.PG_ICON;
                     break;
                 case MS:
-                    image = FILE.MS_ICON;
+                    projectIcon = ProjectIcon.MS_ICON;
                     break;
                 case CH:
-                    image = FILE.CH_ICON;
+                    projectIcon = ProjectIcon.CH_ICON;
                     break;
                 default:
                     throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
                 }
 
-                return Activator.getRegisteredImage(image);
+                return Activator.getRegisteredImage(projectIcon);
             }
 
             @Override
@@ -267,10 +267,10 @@ final class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
     protected void createButtonsForSideBar(Composite parent) {
         createButton(parent, ADD_ID, Messages.add, Activator.getEclipseImage(ISharedImages.IMG_OBJ_ADD));
         createButton(parent, COPY_ID, Messages.copy, Activator.getEclipseImage(ISharedImages.IMG_TOOL_COPY));
-        createButton(parent, EDIT_ID, Messages.edit, Activator.getRegisteredImage(FILE.ICONEDIT));
+        createButton(parent, EDIT_ID, Messages.edit, Activator.getRegisteredImage(ProjectIcon.EDIT));
         createButton(parent, DELETE_ID, Messages.delete, Activator.getEclipseImage(ISharedImages.IMG_ETOOL_DELETE));
 
-        Button exportDB = createButton(parent, CLIENT_ID, Messages.DbStorePrefPage_export_db, FILE.ICONEXPORT);
+        Button exportDB = createButton(parent, CLIENT_ID, Messages.DbStorePrefPage_export_db, ProjectIcon.EXPORT);
         exportDB.setLayoutData(new GridData(SWT.DEFAULT, SWT.END, false, true));
 
         exportDB.addSelectionListener(new SelectionAdapter() {
@@ -294,7 +294,8 @@ final class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
             }
         });
 
-        Button importDB = createButton(parent, CLIENT_ID, Messages.DbStorePrefPage_import_db_list, FILE.ICONIMPORT);
+        Button importDB = createButton(parent, CLIENT_ID, Messages.DbStorePrefPage_import_db_list,
+                ProjectIcon.IMPORT);
 
         importDB.addSelectionListener(new SelectionAdapter() {
 
@@ -318,7 +319,7 @@ final class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
         });
 
         Button btnPgPass = createButton(parent, CLIENT_ID,
-                Messages.DbStorePrefPage_pg_pass_import_tooltip, FILE.PGPASS);
+                Messages.DbStorePrefPage_pg_pass_import_tooltip, ProjectIcon.PGPASS);
 
         btnPgPass.addSelectionListener(new SelectionAdapter() {
 

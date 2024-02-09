@@ -21,7 +21,7 @@ import org.eclipse.swt.graphics.Image;
 
 import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
+import ru.taximaxim.codekeeper.ui.ProjectIcon;
 
 public class JdbcLibrary extends AbstractLibrary {
 
@@ -39,7 +39,7 @@ public class JdbcLibrary extends AbstractLibrary {
 
     @Override
     public Image getImage() {
-        return Activator.getRegisteredImage(FILE.ICONDATABASE);
+        return Activator.getRegisteredImage(ProjectIcon.DATABASE);
     }
 
     @Override

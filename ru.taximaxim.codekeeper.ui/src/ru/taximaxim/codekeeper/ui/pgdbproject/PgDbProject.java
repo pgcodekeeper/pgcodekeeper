@@ -31,7 +31,7 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_BIND_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
-import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 
 public class PgDbProject {
 
@@ -92,23 +92,8 @@ public class PgDbProject {
             IProjectDescription desc = newProject.getWorkspace()
                     .newProjectDescription(newProject.getName());
 
-            String [] natures;
-            switch (dbType) {
-            case PG:
-                natures = new String[] {NATURE.ID};
-                break;
-            case MS:
-                natures = new String[] {NATURE.ID, NATURE.MS};
-                break;
-            case CH:
-                natures = new String[] {NATURE.ID, NATURE.CH};
-                break;
-            default:
-                throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
-            }
-
             desc.setLocationURI(location);
-            desc.setNatureIds(natures);
+            desc.setNatureIds(OpenProjectUtils.getProjectNatures(dbType));
             newProject.create(desc, null);
             newProject.open(IResource.BACKGROUND_REFRESH, null);
             newProject.refreshLocal(IResource.BACKGROUND_REFRESH, null);

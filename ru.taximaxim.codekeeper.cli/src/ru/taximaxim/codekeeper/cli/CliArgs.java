@@ -54,7 +54,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 public class CliArgs extends PgDiffArguments {
 
     private static final String URL_START_JDBC = "jdbc:";
-    
+
     private static final String MESSAGE_CANNOT_DATABASE_WITH_PROJECT = "Cannot work with %s database as %s project.";
     private static final String MESSAGE_DIFFERENT_TYPES = "Source (%s) and target (%s) are of different types, possibly missing --db-type parameter.";
     private static final int DEFAULT_DEPTH = 10;
@@ -819,10 +819,10 @@ public class CliArgs extends PgDiffArguments {
 
         return true;
     }
-    
+
     private DatabaseType getDatabaseTypeFromSource(String src) {
         if (src != null && src.startsWith(URL_START_JDBC)) {
-           return JdbcConnector.getDatabaseTypeFromUrl(src);
+            return JdbcConnector.getDatabaseTypeFromUrl(src);
         }
         return getDbType();
     }

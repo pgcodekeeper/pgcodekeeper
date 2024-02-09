@@ -106,7 +106,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.ISharedImages;
-import org.osgi.framework.Bundle;
 
 import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.libraries.PgLibrarySource;
@@ -123,8 +122,8 @@ import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.AggregatingListener;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.ProjectIcon;
 import ru.taximaxim.codekeeper.ui.UIConsts;
-import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PG_EDIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UiSync;
@@ -220,9 +219,8 @@ public class DiffTableViewer extends Composite {
                 && GitUserReader.checkRepo(location);
 
         PixelConverter pc = new PixelConverter(this);
-        Bundle bundle = Activator.getContext().getBundle();
 
-        iSideBoth = Activator.getRegisteredImage(FILE.ICONEDIT);
+        iSideBoth = Activator.getRegisteredImage(ProjectIcon.EDIT);
         iSideRight = Activator.getEclipseImage(ISharedImages.IMG_OBJ_ADD);
         iSideLeft = Activator.getEclipseImage(ISharedImages.IMG_ETOOL_DELETE);
 
@@ -241,8 +239,7 @@ public class DiffTableViewer extends Composite {
         if (!viewOnly) {
             ToolBarManager mgrTblBtn = new ToolBarManager(SWT.FLAT | SWT.RIGHT);
 
-            mgrTblBtn.add(new Action(Messages.select_all, ImageDescriptor
-                    .createFromURL(bundle.getResource(FILE.ICONSELECTALL))) {
+            mgrTblBtn.add(new Action(Messages.select_all, Activator.getRegisteredDescriptor(ProjectIcon.SELECT_ALL)) {
 
                 @Override
                 public void run() {
@@ -250,8 +247,7 @@ public class DiffTableViewer extends Composite {
                 }
             });
 
-            mgrTblBtn.add(new Action(Messages.select_none, ImageDescriptor
-                    .createFromURL(bundle.getResource(FILE.ICONSELECTNONE))) {
+            mgrTblBtn.add(new Action(Messages.select_none, Activator.getRegisteredDescriptor(ProjectIcon.SELECT_NONE)) {
 
                 @Override
                 public void run() {
@@ -259,8 +255,8 @@ public class DiffTableViewer extends Composite {
                 }
             });
 
-            mgrTblBtn.add(new Action(Messages.diffTableViewer_invert_selection, ImageDescriptor
-                    .createFromURL(bundle.getResource(FILE.ICONINVERTSELECTION))) {
+            mgrTblBtn.add(new Action(Messages.diffTableViewer_invert_selection,
+                    Activator.getRegisteredDescriptor(ProjectIcon.INVERT_SELECTION)) {
 
                 @Override
                 public void run() {
@@ -277,8 +273,8 @@ public class DiffTableViewer extends Composite {
                 }
             });
 
-            mgrTblBtn.add(new Action(Messages.DiffTableViewer_show_filters, ImageDescriptor
-                    .createFromURL(bundle.getResource(FILE.ICONEMPTYFILTER))) {
+            mgrTblBtn.add(new Action(Messages.DiffTableViewer_show_filters,
+                    Activator.getRegisteredDescriptor(ProjectIcon.EMPTY_FILTER)) {
 
                 @Override
                 public void run() {
@@ -289,8 +285,8 @@ public class DiffTableViewer extends Composite {
                             viewerFilter.isLocalChange, viewerFilter.isHideLibs,
                             isApplyToProj);
                     if (dialog.open() == Window.OK) {
-                        setImageDescriptor(ImageDescriptor.createFromURL(bundle.getResource(
-                                viewerFilter.isAdvancedEmpty() ? FILE.ICONEMPTYFILTER : FILE.ICONFILTER)));
+                        setImageDescriptor(Activator.getRegisteredDescriptor(
+                                viewerFilter.isAdvancedEmpty() ? ProjectIcon.EMPTY_FILTER : ProjectIcon.FILTER));
                         viewer.refresh();
                     }
                 }
@@ -559,7 +555,7 @@ public class DiffTableViewer extends Composite {
             public Image getImage(Object element) {
                 ElementMetaInfo meta = elementInfoMap.get(element);
                 return meta != null && meta.getLibLocation() != null ?
-                        Activator.getRegisteredImage(FILE.ICONLIB) : null;
+                        Activator.getRegisteredImage(ProjectIcon.LIB) : null;
             }
 
             @Override
@@ -1048,7 +1044,7 @@ public class DiffTableViewer extends Composite {
     public void updateObjectsLabels() {
         int count = elementInfoMap.size();
         int checked = getCheckedElementsCount();
-        Image image = Activator.getRegisteredImage(FILE.ICONAPPSMALL);
+        Image image = Activator.getRegisteredImage(ProjectIcon.APP_SMALL);
         String text = Messages.DiffTableViewer_selected_count;
 
         if (lineManager != null) {

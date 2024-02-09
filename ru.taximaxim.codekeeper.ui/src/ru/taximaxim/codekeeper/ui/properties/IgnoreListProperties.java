@@ -44,6 +44,7 @@ import org.eclipse.ui.dialogs.PropertyPage;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.ProjectIcon;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.dialogs.IgnoreListEditorDialog;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -151,7 +152,7 @@ public class IgnoreListProperties extends PropertyPage {
             super.createButtonsForSideBar(parent);
 
             Button btnEdit = createButton(parent, CLIENT_ID, Messages.edit,
-                    Activator.getRegisteredImage(FILE.ICONEDIT));
+                    Activator.getRegisteredImage(ProjectIcon.EDIT));
             btnEdit.addSelectionListener(new SelectionAdapter() {
 
                 @Override

@@ -222,44 +222,6 @@ public interface UIConsts {
         String PRE_SCRIPT = "pre_script.sql"; //$NON-NLS-1$
         String POST_DIR = "POST"; //$NON-NLS-1$
         String POST_SCRIPT = "post_script.sql"; //$NON-NLS-1$
-
-        // external icons
-        String ICONAPPSMALL = "/icons/app_icon16.png"; //$NON-NLS-1$
-        String ICONAPPWIZ = "/icons/app_icon_wiz.png"; //$NON-NLS-1$
-        String ICONAPPBIG = "/icons/app_icon128.png"; //$NON-NLS-1$
-        String ICONBALLBLUE = "/icons/ball_blue.png"; //$NON-NLS-1$
-        String ICONBALLGREEN = "/icons/ball_green.png"; //$NON-NLS-1$
-        String ICONADDDEP = "/icons/add_dep.png"; //$NON-NLS-1$
-        String ICONCOLUMN = "/icons/columns.png"; //$NON-NLS-1$
-        String PGPASS = "/icons/pg_pass.png"; //$NON-NLS-1$
-        String ZIP = "/icons/zip.png"; //$NON-NLS-1$
-        String PG_ICON = "/icons/postgresql_icon.png"; //$NON-NLS-1$
-        String MS_ICON = "/icons/mssql_icon.png"; //$NON-NLS-1$
-        String CH_ICON = "/icons/ch_icon16.png"; //$NON-NLS-1$
-        String DECORDATABASE = "/icons/db_decorator.png"; //$NON-NLS-1$
-        String DECORPGCODEKEEPER = "/icons/nature_decorator.png"; //$NON-NLS-1$
-
-        // pgadmin icons
-        String ICONPGADMIN = "/icons/pgadmin/"; //$NON-NLS-1$
-        String ICONDATABASE = ICONPGADMIN + "database.png"; //$NON-NLS-1$
-
-        // copies of inaccessible Eclipse icons
-        String ICONSEARCHLINE = "/icons/search_line.gif"; //$NON-NLS-1$
-        String ICONEDIT = "/icons/editor_area.png"; //$NON-NLS-1$
-        String ICONSELECTALL = "/icons/check_all.gif"; //$NON-NLS-1$
-        String ICONSELECTNONE = "/icons/uncheck_all.gif"; //$NON-NLS-1$
-        String ICONINVERTSELECTION = "/icons/loop_obj.png"; //$NON-NLS-1$
-        String ICONAPPLYTO = "/icons/save_edit.png"; //$NON-NLS-1$
-        String ICONREFRESH = "/icons/refresh_16x18.png"; //$NON-NLS-1$
-        String ICONWRITEOUTCONSOLE = "/icons/writeout_co.png"; //$NON-NLS-1$
-        String ICONEMPTYFILTER = "/icons/empty_filter.png"; //$NON-NLS-1$
-        String ICONFILTER = "/icons/filter_tsk.png"; //$NON-NLS-1$
-        String ICONALERT = "/icons/alert_obj.gif"; //$NON-NLS-1$
-        String ICONSORT = "/icons/alpha_mode.gif"; //$NON-NLS-1$
-        String ICONLIB = "/icons/lib.gif"; //$NON-NLS-1$
-        String ICONCLOUD = "/icons/cloud.png"; //$NON-NLS-1$
-        String ICONIMPORT = "/icons/import_wiz.png"; //$NON-NLS-1$
-        String ICONEXPORT = "/icons/export_wiz.png"; //$NON-NLS-1$
     }
 
     interface WORKING_SET {

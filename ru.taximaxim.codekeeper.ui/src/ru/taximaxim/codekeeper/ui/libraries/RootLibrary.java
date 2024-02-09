@@ -18,7 +18,7 @@ package ru.taximaxim.codekeeper.ui.libraries;
 import org.eclipse.swt.graphics.Image;
 
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
+import ru.taximaxim.codekeeper.ui.ProjectIcon;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class RootLibrary extends AbstractLibrary {
@@ -29,7 +29,7 @@ public class RootLibrary extends AbstractLibrary {
 
     @Override
     public Image getImage() {
-        return Activator.getRegisteredImage(FILE.ICONLIB);
+        return Activator.getRegisteredImage(ProjectIcon.LIB);
     }
 
     @Override

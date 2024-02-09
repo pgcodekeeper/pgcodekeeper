@@ -53,8 +53,8 @@ import ru.taximaxim.codekeeper.core.model.graph.SimpleDepcyResolver;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.ProjectIcon;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
-import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -74,12 +74,12 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
     private boolean isShowColumns;
 
     public DepcyGraphView() {
-        projectAction = new ProjectAction(Messages.DepcyGraphView_project, ImageDescriptor.createFromURL(
-                Activator.getContext().getBundle().getResource(FILE.ICONBALLBLUE)));
-        remoteAction = new ToggleAction(Messages.DepcyGraphView_remote, ImageDescriptor.createFromURL(
-                Activator.getContext().getBundle().getResource(FILE.ICONBALLGREEN)));
-        addColumnAction = new ShowColumnAction(Messages.DepcyGraphView_show_columns, ImageDescriptor.createFromURL(
-                Activator.getContext().getBundle().getResource(FILE.ICONCOLUMN)));
+        projectAction = new ProjectAction(Messages.DepcyGraphView_project,
+                Activator.getRegisteredDescriptor(ProjectIcon.BALL_BLUE));
+        remoteAction = new ToggleAction(Messages.DepcyGraphView_remote,
+                Activator.getRegisteredDescriptor(ProjectIcon.BALL_GREEN));
+        addColumnAction = new ShowColumnAction(Messages.DepcyGraphView_show_columns,
+                Activator.getRegisteredDescriptor(ProjectIcon.COLUMN));
     }
 
     @Override
@@ -90,8 +90,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
 
         CommandContributionItemParameter param = new CommandContributionItemParameter(
                 getViewSite(), null, COMMAND.ADD_DEPCY, CommandContributionItem.STYLE_PUSH);
-        param.icon = ImageDescriptor.createFromURL(
-                Activator.getContext().getBundle().getResource(FILE.ICONADDDEP));
+        param.icon = Activator.getRegisteredDescriptor(ProjectIcon.ADD_DEP);
 
         toolman.add(new CommandContributionItem(param));
 

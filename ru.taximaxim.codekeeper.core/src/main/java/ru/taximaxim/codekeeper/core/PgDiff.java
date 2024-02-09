@@ -362,7 +362,8 @@ public class PgDiff {
         List<TreeElement> selected = getSelectedElements(root, ignoreList);
         createScript(depRes, selected, oldDbFull, newDbFull, additionalDepciesSource, additionalDepciesTarget);
 
-        new ActionsToScriptConverter(script, depRes.getActions(), arguments, oldDbFull, newDbFull).fillScript(selected);
+        new ActionsToScriptConverter(script, depRes.getActions(), depRes.getToRefresh(),
+                arguments, oldDbFull, newDbFull).fillScript(selected);
 
         if (arguments.isAddTransaction()) {
             script.addStatement("COMMIT\nGO");
@@ -387,8 +388,7 @@ public class PgDiff {
         createScript(depRes, selected, oldDbFull, newDbFull,
                 additionalDepciesSource, additionalDepciesTarget);
 
-        new ActionsToScriptConverter(script, depRes.getActions(),
-                depRes.getToRefresh(), arguments, oldDbFull, newDbFull).fillScript(selected);
+        new ActionsToScriptConverter(script, depRes.getActions(), arguments, oldDbFull, newDbFull).fillScript(selected);
 
         if (arguments.isAddTransaction()) {
             script.addStatement("COMMIT;");

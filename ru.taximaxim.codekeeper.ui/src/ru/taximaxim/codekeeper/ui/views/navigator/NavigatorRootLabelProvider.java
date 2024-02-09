@@ -20,7 +20,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.navigator.IDescriptionProvider;
 
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
+import ru.taximaxim.codekeeper.ui.ProjectIcon;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class NavigatorRootLabelProvider extends LabelProvider implements IDescriptionProvider {
@@ -28,7 +28,7 @@ public class NavigatorRootLabelProvider extends LabelProvider implements IDescri
     @Override
     public Image getImage(Object element) {
         if (element instanceof OpenProjectFromNavigator) {
-            return Activator.getRegisteredImage(FILE.ICONAPPSMALL);
+            return Activator.getRegisteredImage(ProjectIcon.APP_SMALL);
         }
         return null;
     }

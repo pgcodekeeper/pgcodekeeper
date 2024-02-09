@@ -95,6 +95,24 @@ public final class OpenProjectUtils {
         return DatabaseType.PG;
     }
 
+    public static String[] getProjectNatures(DatabaseType dbType) {
+        String[] natures;
+        switch (dbType) {
+        case PG:
+            natures = new String[] { NATURE.ID };
+            break;
+        case MS:
+            natures = new String[] { NATURE.ID, NATURE.MS };
+            break;
+        case CH:
+            natures = new String[] {NATURE.ID, NATURE.CH};
+            break;
+        default:
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
+        }
+        return natures;
+    }
+
     public static boolean checkVersionAndWarn(IProject proj, Shell parent,
             boolean warnNonBlockers) {
         StringBuilder err = new StringBuilder();

@@ -33,7 +33,6 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExecutableExtension;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -67,9 +66,9 @@ import ru.taximaxim.codekeeper.core.loader.JdbcRunner;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.ProjectIcon;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_BIND_PREF;
-import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF_PAGE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.WORKING_SET;
@@ -93,8 +92,7 @@ implements IExecutableExtension, INewWizard {
 
     public NewProjWizard() {
         setWindowTitle(Messages.newProjWizard_new_pg_db_project);
-        setDefaultPageImageDescriptor(ImageDescriptor.createFromURL(
-                Activator.getDefault().getBundle().getResource(FILE.ICONAPPWIZ)));
+        setDefaultPageImageDescriptor(Activator.getRegisteredDescriptor(ProjectIcon.APP_WIZ));
         setNeedsProgressMonitor(true);
     }
 
@@ -295,8 +293,8 @@ class PageDb extends WizardPage {
     public String getTimeZone(){
         return timezoneCombo.getCombo().getText();
     }
-    
-    public DatabaseType getDbType( ) {
+
+    public DatabaseType getDbType() {
         return dbType;
     }
 
@@ -311,7 +309,7 @@ class PageDb extends WizardPage {
     public void createControl(final Composite parent) {
         Composite container = new Composite(parent, SWT.NONE);
         container.setLayout(new GridLayout(3, false));
-        
+
         new Label(container, SWT.NONE).setText(Messages.NewProjWizard_select_project_type);
         var cmbDbType = new ComboViewer(container);
         cmbDbType.getCombo().setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false, 2, 1));
@@ -349,7 +347,7 @@ class PageDb extends WizardPage {
         storePicker.addSelectionListener(this::modifyButtons);
 
         Button btnEditStore = new Button(source, SWT.PUSH);
-        btnEditStore.setImage(Activator.getRegisteredImage(FILE.ICONEDIT));
+        btnEditStore.setImage(Activator.getRegisteredImage(ProjectIcon.EDIT));
         btnEditStore.addSelectionListener(new SelectionAdapter() {
 
             @Override
@@ -412,17 +410,17 @@ class PageDb extends WizardPage {
             updateVisibleTimeZone();
         });
         cmbDbType.setSelection(new StructuredSelection(DatabaseType.PG));
-        
+
         lblWarnPosix = new CLabel(container, SWT.NONE);
         lblWarnPosix.setImage(Activator.getEclipseImage(ISharedImages.IMG_OBJS_WARN_TSK));
         lblWarnPosix.setText(Messages.ProjectProperties_posix_is_used_warn);
         GridData gd = new GridData(SWT.FILL, SWT.DEFAULT, false, false, 3, 1);
         gd.exclude = true;
         lblWarnPosix.setLayoutData(gd);
-        
+
         setControl(container);
     }
-    
+
     private void updateVisibleTimeZone() {
         timezoneCombo.getCombo().setVisible(dbType == DatabaseType.PG);
         timeZoneLabel.setVisible(dbType == DatabaseType.PG);

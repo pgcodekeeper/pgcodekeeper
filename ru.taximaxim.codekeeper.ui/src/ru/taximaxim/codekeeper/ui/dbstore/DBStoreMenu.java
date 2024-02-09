@@ -38,7 +38,7 @@ import org.eclipse.ui.dialogs.PreferencesUtil;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
+import ru.taximaxim.codekeeper.ui.ProjectIcon;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF_PAGE;
@@ -201,21 +201,21 @@ public class DBStoreMenu {
             }
         };
         submenu.add(dbAction);
-        String fileName;
+        ProjectIcon projectIcon;
         switch (dbInfo.getDbType()) {
         case MS:
-            fileName = FILE.MS_ICON;
+            projectIcon = ProjectIcon.MS_ICON;
             break;
         case PG:
-            fileName = FILE.PG_ICON;
+            projectIcon = ProjectIcon.PG_ICON;
             break;
         case CH:
-            fileName = FILE.CH_ICON;
+            projectIcon = ProjectIcon.CH_ICON;
             break;
         default:
             throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbInfo.getDbType());
         }
-        dbAction.setImageDescriptor(Activator.getRegisteredDescriptor(fileName));
+        dbAction.setImageDescriptor(Activator.getRegisteredDescriptor(projectIcon));
         if (dbInfo.equals(selection)) {
             dbAction.setChecked(true);
             String group = dbInfo.getDbGroup();

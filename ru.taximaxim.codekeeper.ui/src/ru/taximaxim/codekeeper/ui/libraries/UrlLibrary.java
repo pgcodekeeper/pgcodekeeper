@@ -22,7 +22,7 @@ import org.eclipse.swt.graphics.Image;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
+import ru.taximaxim.codekeeper.ui.ProjectIcon;
 
 public class UrlLibrary extends CacheableLibrary {
 
@@ -47,6 +47,6 @@ public class UrlLibrary extends CacheableLibrary {
 
     @Override
     public Image getImage() {
-        return Activator.getRegisteredImage(FILE.ICONCLOUD);
+        return Activator.getRegisteredImage(ProjectIcon.CLOUD);
     }
 }

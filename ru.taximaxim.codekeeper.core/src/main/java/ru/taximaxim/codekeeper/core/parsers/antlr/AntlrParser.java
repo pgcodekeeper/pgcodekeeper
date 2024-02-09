@@ -356,11 +356,11 @@ public class AntlrParser {
 
     private static void saveTimeOfLastParserStart(Class<?> parserClass) {
         if (parserClass.isAssignableFrom(SQLParser.class)) {
-            chParserLastStart = System.currentTimeMillis();
+            pgParserLastStart = System.currentTimeMillis();
         } else if (parserClass.isAssignableFrom(TSQLParser.class)) {
             msParserLastStart = System.currentTimeMillis();
         } else if (parserClass.isAssignableFrom(CHParser.class)) {
-            pgParserLastStart = System.currentTimeMillis();
+            chParserLastStart = System.currentTimeMillis();
         } else {
             throw new IllegalArgumentException("Unknown parser class: " + parserClass);
         }

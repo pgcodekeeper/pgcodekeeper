@@ -46,7 +46,6 @@ import ru.taximaxim.codekeeper.core.WorkDirs;
 import ru.taximaxim.codekeeper.core.model.exporter.AbstractModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
-import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class ConvertProject extends AbstractHandler {
@@ -74,23 +73,8 @@ public class ConvertProject extends AbstractHandler {
     private void convertProject(IProject project, Shell shell, DatabaseType dbType) {
         try {
             if (createMarker(shell, Paths.get(project.getLocationURI()), dbType)) {
-                String[] natures;
-                switch (dbType) {
-                case PG:
-                    natures = new String[] {NATURE.ID};
-                    break;
-                case MS:
-                    natures = new String[] {NATURE.ID, NATURE.MS};
-                    break;
-                case CH:
-                    natures = new String[] {NATURE.ID, NATURE.CH};
-                    break;
-                default:
-                    throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
-                }
-
                 IProjectDescription description = project.getDescription();
-                description.setNatureIds(natures);
+                description.setNatureIds(OpenProjectUtils.getProjectNatures(dbType));
                 project.setDescription(description, null);
             }
         } catch (CoreException | IOException e) {

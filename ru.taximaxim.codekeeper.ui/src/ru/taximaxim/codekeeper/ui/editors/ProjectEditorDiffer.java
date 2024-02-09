@@ -124,6 +124,7 @@ import ru.taximaxim.codekeeper.core.schema.PgOverride;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.ProjectIcon;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
 import ru.taximaxim.codekeeper.ui.UIConsts.CONTEXT;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_BIND_PREF;
@@ -1131,7 +1132,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 }
             };
 
-            actionToProj.setImageDescriptor(Activator.getRegisteredDescriptor(FILE.ICONAPPSMALL));
+            actionToProj.setImageDescriptor(Activator.getRegisteredDescriptor(ProjectIcon.APP_SMALL));
             actionToDb = new Action(Messages.DiffTableViewer_to_database, IAction.AS_RADIO_BUTTON) {
 
                 @Override
@@ -1139,8 +1140,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                     changeMigrationDireciton(false, false);
                 }
             };
-            actionToDb.setImageDescriptor(ImageDescriptor.createFromURL(Activator
-                    .getContext().getBundle().getResource(FILE.ICONDATABASE)));
+            actionToDb.setImageDescriptor(Activator.getRegisteredDescriptor(ProjectIcon.DATABASE));
         }
 
         /**
@@ -1149,13 +1149,10 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
          * with custom settings.
          */
         private void addBtnApplyWithMenu(Composite container, ToolBarManager mgrTblBtn) {
-            imgDescrApplyIcon = ImageDescriptor.createFromURL(
-                    Activator.getContext().getBundle().getResource(FILE.ICONAPPLYTO));
+            imgDescrApplyIcon = Activator.getRegisteredDescriptor(ProjectIcon.APPLY_TO);
 
-            imgDescrProj = ImageDescriptor.createFromURL(
-                    Activator.getContext().getBundle().getResource(FILE.DECORPGCODEKEEPER));
-            imgDescrDb = ImageDescriptor.createFromURL(
-                    Activator.getContext().getBundle().getResource(FILE.DECORDATABASE));
+            imgDescrProj = Activator.getRegisteredDescriptor(ProjectIcon.DECOR_PGCODEKEEPER);
+            imgDescrDb = Activator.getRegisteredDescriptor(ProjectIcon.DECOR_DATABASE);
 
             applyAction = new Action("", IAction.AS_DROP_DOWN_MENU) { //$NON-NLS-1$
                 @Override
@@ -1234,8 +1231,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                     getChanges();
                 }
             };
-            getChangesAction.setImageDescriptor(ImageDescriptor.createFromURL(Activator.getContext()
-                    .getBundle().getResource(FILE.ICONREFRESH)));
+            getChangesAction.setImageDescriptor(Activator.getRegisteredDescriptor(ProjectIcon.REFRESH));
             getChangesAction.setToolTipText(Messages.DiffTableViewer_get_changes);
             getChangesAction.setMenuCreator(new IMenuCreator() {
 

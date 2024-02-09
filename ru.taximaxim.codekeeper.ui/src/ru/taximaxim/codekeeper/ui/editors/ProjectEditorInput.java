@@ -29,7 +29,7 @@ import org.eclipse.ui.model.IWorkbenchAdapter;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
-import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
+import ru.taximaxim.codekeeper.ui.ProjectIcon;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class ProjectEditorInput extends PlatformObject implements IEditorInput, IPersistableElement {
@@ -87,7 +87,7 @@ public class ProjectEditorInput extends PlatformObject implements IEditorInput, 
 
                 @Override
                 public ImageDescriptor getImageDescriptor(Object object) {
-                    return Activator.getRegisteredDescriptor(FILE.ICONAPPSMALL);
+                    return Activator.getRegisteredDescriptor(ProjectIcon.APP_SMALL);
                 }
             };
         } else if (adapter.isAssignableFrom(IPersistableElement.class)){
@@ -105,7 +105,7 @@ public class ProjectEditorInput extends PlatformObject implements IEditorInput, 
 
     @Override
     public ImageDescriptor getImageDescriptor() {
-        return Activator.getRegisteredDescriptor(FILE.ICONAPPSMALL);
+        return Activator.getRegisteredDescriptor(ProjectIcon.APP_SMALL);
     }
 
     @Override

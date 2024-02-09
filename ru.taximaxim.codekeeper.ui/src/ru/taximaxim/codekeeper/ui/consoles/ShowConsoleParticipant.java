@@ -22,7 +22,6 @@ import java.util.Objects;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.widgets.Control;
@@ -36,7 +35,7 @@ import org.eclipse.ui.console.IConsolePageParticipant;
 import org.eclipse.ui.part.IPageBookViewPage;
 
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
+import ru.taximaxim.codekeeper.ui.ProjectIcon;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -89,8 +88,7 @@ public class ShowConsoleParticipant implements IConsolePageParticipant {
         public ShowConsoleAction() {
             super(Messages.generalPrefPage_show_console_when_program_write_to_console);
 
-            setImageDescriptor(ImageDescriptor.createFromURL(
-                    Activator.getContext().getBundle().getResource(FILE.ICONWRITEOUTCONSOLE)));
+            setImageDescriptor(Activator.getRegisteredDescriptor(ProjectIcon.WRITEOUT_CONSOLE));
             setChecked(prefs.getBoolean(PREF.FORCE_SHOW_CONSOLE));
         }
 

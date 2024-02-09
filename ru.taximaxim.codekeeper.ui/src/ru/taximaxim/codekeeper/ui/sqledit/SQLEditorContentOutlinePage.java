@@ -21,7 +21,6 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.PreferenceDialog;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -45,7 +44,7 @@ import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
+import ru.taximaxim.codekeeper.ui.ProjectIcon;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF_PAGE;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
@@ -182,8 +181,7 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
             }
         };
 
-        sortAction.setImageDescriptor(ImageDescriptor.createFromURL(
-                Activator.getContext().getBundle().getResource(FILE.ICONSORT)));
+        sortAction.setImageDescriptor(Activator.getRegisteredDescriptor(ProjectIcon.SORT));
 
         Action hideAction = new Action(Messages.SQLEditorContentOutlinePage_hide_non_dangerous,
                 IAction.AS_CHECK_BOX) {
@@ -200,8 +198,7 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
             }
         };
 
-        hideAction.setImageDescriptor(ImageDescriptor.createFromURL(
-                Activator.getContext().getBundle().getResource(FILE.ICONALERT)));
+        hideAction.setImageDescriptor(Activator.getRegisteredDescriptor(ProjectIcon.ALERT));
 
         actionBars.getToolBarManager().add(sortAction);
         actionBars.getToolBarManager().add(hideAction);
