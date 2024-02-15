@@ -3,7 +3,7 @@ lexer grammar TSQLLexer;
 @header {package ru.taximaxim.codekeeper.core.parsers.antlr.generated;}
 
 // Basic keywords (from https://msdn.microsoft.com/en-us/library/ms189822.aspx)
-ADD: A D D;  // first identifier rule, sync with CustomTSQLAntlrErrorStrategy
+ADD: A D D;
 ALL: A L L;
 ALTER: A L T E R;
 AND: A N D;
@@ -191,7 +191,7 @@ WITHIN_GROUP: W I T H I N ' ' G R O U P;
 WRITETEXT: W R I T E T E X T;
 
 // Additional keywords. They can be id, please keep them in sync with the parser.
-ABORT: A B O R T;
+ABORT: A B O R T;  // first identifier rule, sync with CustomTSQLAntlrErrorStrategy
 ABORT_AFTER_WAIT: A B O R T '_' A F T E R '_' W A I T;
 ABSENT: A B S E N T;
 ABSOLUTE: A B S O L U T E;
@@ -991,6 +991,8 @@ fragment FullWidthLetter
 
 BOM: '\ufeff';
 SPACE:              [ \t\r\n]+    -> skip;
+ZERO_LENGHT_SPACE: '\u200B'..'\u200F' -> skip;
+
 BAD
   : .
   ;

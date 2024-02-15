@@ -21,3 +21,5 @@ Reference: Object = dbo (SCHEMA), action = null, offset = 1775, line number = 85
 Reference: Object = dbo.proc1 (PROCEDURE), action = CREATE, offset = 1781, line number = 85, charPositionInLine = 24
 Reference: Object = dbo (SCHEMA), action = null, offset = 2643, line number = 111, charPositionInLine = 17
 Reference: Object = dbo.sp_sqlagent_is_srvrolemember (PROCEDURE), action = CREATE, offset = 2649, line number = 111, charPositionInLine = 23
+Reference: Object = dbo (SCHEMA), action = null, offset = 2974, line number = 123, charPositionInLine = 19
+Reference: Object = dbo.p_CheckDetails_Get (PROCEDURE), action = CREATE, offset = 2980, line number = 123, charPositionInLine = 25
