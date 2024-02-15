@@ -12,8 +12,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 - The separate project creation wizard for MS SQL has been replaced by database type selection.
+- Improved error text when parsing expressions.
 
 ### Fixed
+
+- Fixed an error when parsing some special characters in MS SQL.
 
 ## [9.3.0] - 2024-02-06
 

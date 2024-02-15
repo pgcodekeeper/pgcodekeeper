@@ -29,7 +29,8 @@ class CustomTSQLAntlrErrorStrategy extends CustomAntlrErrorStrategy {
         Stream<Integer> stream = tokens.toList().stream();
 
         if (tokens.contains(TSQLLexer.ID)) {
-            stream = stream.filter(e -> e < TSQLLexer.ADD || TSQLLexer.XSINIL < e);
+            stream = stream.filter(e -> e < TSQLLexer.ABORT || TSQLLexer.XSINIL < e);
+            stream = stream.filter(e -> e != TSQLLexer.PRECISION && e != TSQLLexer.FILLFACTOR);
         }
         return stream;
     }
