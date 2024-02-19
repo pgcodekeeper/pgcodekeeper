@@ -1,5353 +1,1145 @@
-create table  test_table_sharded(   date Date,   text String,   hash UInt64  ) engine=MergeTree(date, (hash, date), 8192);
-CREATE TABLE 02845_prewhere ( e String, c String, q String ) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE numbers500k (number UInt32) ENGINE = TinyLog;
-CREATE TABLE order_by_nulls_first (diff Nullable(Int16), traf UInt64) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE without_nullable ( timestamp UInt32,  country LowCardinality(String)) ENGINE = Memory;
-CREATE TABLE ".inner_id.e15f3ab5-6cae-4df3-b879-f40deafd82c2" (n Int32, n2 Int64) ENGINE = MergeTree PARTITION BY n % 10 ORDER BY n;
-CREATE TABLE ".inner_id.e15f3ab5-6cae-4df3-b879-f40deafd82c2" UUID '3bd68e3c-2693-4352-ad66-a66eba9e345e' (n Int32, n2 Int64) ENGINE = MergeTree PARTITION BY n % 10 ORDER BY n;
-create table "/t0" (a Int64, b Int64) engine = MergeTree() partition by a order by a;
-create table "/t1" (a Int64, b Int64) engine = MergeTree() partition by a order by a;
-CREATE TABLE 01154_test (x Int128, INDEX ix_x x TYPE bloom_filter(0.01) GRANULARITY 1) ENGINE = MergeTree() ORDER BY x SETTINGS index_granularity=8192;
-CREATE TABLE 01154_test (x Int256, INDEX ix_x x TYPE bloom_filter(0.01) GRANULARITY 1) ENGINE = MergeTree() ORDER BY x SETTINGS index_granularity=8192;
-CREATE TABLE 01154_test (x UInt256, INDEX ix_x x TYPE bloom_filter(0.01) GRANULARITY 1) ENGINE = MergeTree() ORDER BY x SETTINGS index_granularity=8192;
-CREATE TABLE 01154_test (x UUID, INDEX ix_x x TYPE bloom_filter(0.01) GRANULARITY 1) ENGINE = MergeTree() ORDER BY x SETTINGS index_granularity=8192;
-CREATE TABLE 01504_test (k UInt32, value UInt64, dummy Tuple(UInt32, Float64), bm AggregateFunction(groupBitmap, UInt64)) Engine=EmbeddedRocksDB PRIMARY KEY(k);
-CREATE TABLE 01504_test (key String, value UInt32) Engine=EmbeddedRocksDB PRIMARY KEY(key);
-CREATE TABLE 01504_test (key String, value UInt32) Engine=EmbeddedRocksDB;
-CREATE TABLE 01504_test_memory AS 01504_test Engine = Memory;
-CREATE TABLE 01681_database_for_cache_dictionary.simple_key_complex_attributes_source_table (  id UInt64,  value_first String,  value_second Nullable(String) ) ENGINE = TinyLog;
-CREATE TABLE 01681_database_for_cache_dictionary.simple_key_hierarchy_table (   id UInt64,   parent_id UInt64 ) ENGINE = TinyLog();
-CREATE TABLE 01681_database_for_cache_dictionary.simple_key_simple_attributes_source_table (  id UInt64,  value_first String,  value_second String ) ENGINE = TinyLog;
-CREATE TABLE 01681_database_for_flat_dictionary.simple_key_complex_attributes_source_table (  id UInt64,  value_first String,  value_second Nullable(String) ) ENGINE = TinyLog;
-CREATE TABLE 01681_database_for_flat_dictionary.simple_key_hierarchy_table (   id UInt64,   parent_id UInt64 ) ENGINE = TinyLog();
-CREATE TABLE 01681_database_for_flat_dictionary.simple_key_simple_attributes_source_table (  id UInt64,  value_first String,  value_second String ) ENGINE = TinyLog;
-CREATE TABLE 01682_database_for_cache_dictionary.complex_key_complex_attributes_source_table (  id UInt64,  id_key String,  value_first String,  value_second Nullable(String) ) ENGINE = TinyLog;
-CREATE TABLE 01682_database_for_cache_dictionary.complex_key_simple_attributes_source_table (  id UInt64,  id_key String,  value_first String,  value_second String ) ENGINE = TinyLog;
-CREATE TABLE 01686_test (key UInt64, value String) Engine=EmbeddedRocksDB PRIMARY KEY(key);
-CREATE TABLE 01720_dictionary_db.dictionary_source_table ( key UInt8,   value String ) ENGINE = TinyLog;
-CREATE TABLE 01753_dictionary_db.simple_key_complex_attributes_source_table (  id UInt64,  value_first String,  value_second Nullable(String) ) ENGINE = TinyLog;
-CREATE TABLE 01753_dictionary_db.simple_key_hierarchy_table (   id UInt64,   parent_id UInt64 ) ENGINE = TinyLog();
-CREATE TABLE 01753_dictionary_db.simple_key_simple_attributes_source_table (  id UInt64,  value_first String,  value_second String ) ENGINE = TinyLog;
-CREATE TABLE 01754_dictionary_db.complex_key_complex_attributes_source_table (  id UInt64,  id_key String,  value_first String,  value_second Nullable(String) ) ENGINE = TinyLog;
-CREATE TABLE 01754_dictionary_db.complex_key_simple_attributes_source_table (  id UInt64,  id_key String,  value_first String,  value_second String ) ENGINE = TinyLog;
-CREATE TABLE 01759_db.dictionary_source_table (  key UInt64,  value1 UInt64,  value2 UInt64 ) ENGINE = TinyLog;
-CREATE TABLE 01760_db.example_complex_key_source (id UInt64, id_key String, value UInt64) ENGINE=TinyLog;
-CREATE TABLE 01760_db.example_simple_key_source (id UInt64, value UInt64) ENGINE=TinyLog;
-CREATE TABLE 01760_db.points (x Float64, y Float64, def_i UInt64, def_s String) ENGINE = Memory;
-CREATE TABLE 01760_db.polygons (key Array(Array(Array(Tuple(Float64, Float64)))), name String, value UInt64, value_nullable Nullable(UInt64)) ENGINE = Memory;
-CREATE TABLE 01765_db.simple_key_complex_attributes_source_table (  id UInt64,  value_first String,  value_second Nullable(String) ) ENGINE = TinyLog;
-CREATE TABLE 01765_db.simple_key_hierarchy_table (   id UInt64,   parent_id UInt64 ) ENGINE = TinyLog();
-CREATE TABLE 01765_db.simple_key_simple_attributes_source_table (  id UInt64,  value_first String,  value_second String ) ENGINE = TinyLog;
-CREATE TABLE 01766_db.complex_key_complex_attributes_source_table (  id UInt64,  id_key String,  value_first String,  value_second Nullable(String) ) ENGINE = TinyLog;
-CREATE TABLE 01766_db.complex_key_simple_attributes_source_table (  id UInt64,  id_key String,  value_first String,  value_second String ) ENGINE = TinyLog;
-CREATE TABLE 01778_db.hierarchy_source_table (id UInt64, parent_id UInt64) ENGINE = TinyLog;
-CREATE TABLE 01780_db.dict3_source (   id UInt64,   value String ) ENGINE = TinyLog;
-CREATE TABLE 01785_db.complex_key_source_table (   id UInt64,   id_key String,   value String ) ENGINE = TinyLog();
-CREATE TABLE 01785_db.simple_key_source_table (   id UInt64,   value String ) ENGINE = TinyLog();
-CREATE TABLE 01802_empsalary (   `depname` LowCardinality(String),   `empno` UInt64,   `salary` Int32,   `enroll_date` Date ) ENGINE = MergeTree ORDER BY enroll_date SETTINGS index_granularity = 8192;
-CREATE TABLE 01837_db.simple_key_dictionary_source (   id UInt64,   value String ) ENGINE = TinyLog;
-CREATE TABLE 01889_sql_json (id UInt8, json String) ENGINE = MergeTree ORDER BY id;
-CREATE TABLE 01902_db.t  (n Int8) ENGINE=MergeTree ORDER BY n;
-CREATE TABLE 01902_db.t_merge as 01902_db.t ENGINE=Merge(REGEXP('^01902_db'), '^t');
-CREATE TABLE 01902_db.t_merge1 as 01902_db.t ENGINE=Merge('01902_db', '^t$');
-CREATE TABLE 01902_db.t_merge_1 as 01902_db.t ENGINE=Merge(currentDatabase(), '^t');
-CREATE TABLE 01902_db1.t1 (n Int8) ENGINE=MergeTree ORDER BY n;
-CREATE TABLE 01902_db2.t2 (n Int8) ENGINE=MergeTree ORDER BY n;
-CREATE TABLE 01902_db3.t3 (n Int8) ENGINE=MergeTree ORDER BY n;
-CREATE TABLE 01913_db.test_source_table_1 (   id UInt64,   value String ) ENGINE=TinyLog;
-CREATE TABLE 01913_db.test_source_table_2 (   id UInt64,   value_1 String ) ENGINE=TinyLog;
-CREATE TABLE 01914_db.table_1 (id UInt64, value String) ENGINE=TinyLog;
-CREATE TABLE 01914_db.table_2 (id UInt64, value String) ENGINE=TinyLog;
-CREATE TABLE 02005_test_table (   key Array(Int64),   value Array(Int64) ) ENGINE = TinyLog;
-CREATE TABLE 02005_test_table (   value Map(Int64, Int64) ) ENGINE = TinyLog;
-CREATE TABLE 02015_db.test_table (   key_column UInt64,   data_column_1 UInt64,   data_column_2 UInt8 ) ENGINE = MergeTree ORDER BY key_column;
-CREATE TABLE 02015_db.test_table_default (   data_1 DEFAULT dictGetUInt64('02015_db.test_dictionary', 'data_column_1', toUInt64(0)),   data_2 DEFAULT dictGet(02015_db.test_dictionary, 'data_column_2', toUInt64(0)) ) ENGINE=TinyLog;
-CREATE TABLE 02125_test_table (   id UInt64,   value Nullable(String) ) ENGINE=TinyLog;
-CREATE TABLE 02127_join_settings_with_persistency_0 (k UInt64, s String) ENGINE = Join(ANY, LEFT, k) SETTINGS persistent=0, join_any_take_last_row=0;
-CREATE TABLE 02127_join_settings_with_persistency_1 (k UInt64, s String) ENGINE = Join(ANY, LEFT, k) SETTINGS persistent=1, join_any_take_last_row=0;
-CREATE TABLE 02131_rptable (x UInt8) ENGINE = MergeTree ORDER BY x;
-CREATE TABLE 02131_rqtable (x UInt8) ENGINE = MergeTree ORDER BY x;
-CREATE TABLE 02148_test_table (id UInt64, value String) ENGINE=TinyLog;
-CREATE TABLE 02155_test_dictionary_view (   id UInt64,   value String ) ENGINE=Dictionary(concat(currentDatabase(), '.02155_test_dictionary'));
-CREATE TABLE 02155_test_table (   id UInt64,   value String ) ENGINE=TinyLog;
-CREATE TABLE 02162_test_table (   id UInt64,   value String,   range_value UInt64 ) ENGINE=TinyLog;
-CREATE TABLE 02176_test_complex_key_table (   id UInt64,   id_key String,   value String ) ENGINE=TinyLog;
-CREATE TABLE 02176_test_simple_key_table (   id UInt64,   value String ) ENGINE=TinyLog;
-CREATE TABLE 02179_test_table (   id UInt64,   value String,   start Int64,   end Int64 ) Engine = TinyLog;
-CREATE TABLE 02181_test_table (   id UInt64,   value String ) ENGINE = TinyLog;
-CREATE TABLE 02183_dictionary_source_table (   id UInt64,   value_date Date,   value_date_32 Date32,   value_date_time DateTime,   value_date_time_64 DateTime64 ) ENGINE=TinyLog;
-CREATE TABLE 02183_dictionary_test_table (id UInt64) ENGINE=TinyLog;
-CREATE TABLE 02183_ip_trie_dictionary_source_table (   prefix String,   value_date Date,   value_date_32 Date32,   value_date_time DateTime,   value_date_time_64 DateTime64 ) ENGINE=TinyLog;
-CREATE TABLE 02183_polygon_dictionary_source_table (   key Array(Array(Array(Tuple(Float64, Float64)))) ) ENGINE = TinyLog;
-CREATE TABLE 02183_polygon_dictionary_source_table (   key Array(Array(Array(Tuple(Float64, Float64)))),   value_date Date,   value_date_32 Date32,   value_date_time DateTime,   value_date_time_64 DateTime64 ) ENGINE = TinyLog;
-CREATE TABLE 02183_range_dictionary_source_table (   key UInt64,   start UInt64,   end UInt64,   value_date Date,   value_date_32 Date32,   value_date_time DateTime,   value_date_time_64 DateTime64 ) ENGINE = TinyLog;
-CREATE TABLE 02183_range_dictionary_source_table (  key UInt64,  start UInt64,  end UInt64 ) ENGINE = TinyLog;
-CREATE TABLE 02184_range_dictionary_source_table (   id UInt64,   start UInt64,   end UInt64,   value_0 String,   value_1 String,   value_2 String ) ENGINE = TinyLog;
-CREATE TABLE 02185_range_dictionary_source_table (   id UInt64,   start Nullable(UInt64),   end Nullable(UInt64),   value String ) ENGINE = TinyLog;
-CREATE TABLE 02186_range_dictionary_source_table (   id UInt64,   start Date,   end Date,   value String ) Engine = TinyLog;
-CREATE TABLE 02188_test_dictionary_source (   id UInt64,   value String ) ENGINE=TinyLog;
-CREATE TABLE 02265_ordinary_db.join_table ( `a` Int64 ) ENGINE = Join(`ALL`, LEFT, a);
-CREATE TABLE 02266_auto_add_nullable (   val0 Int8 DEFAULT NULL,   val1 Nullable(Int8) DEFAULT NULL,   val2 UInt8 DEFAULT NUll,   val3 String DEFAULT null,   val4 LowCardinality(Int8) DEFAULT NULL,   val5 LowCardinality(Nullable(Int8)) DEFAULT NULL ) ENGINE = MergeTree order by tuple();
-CREATE TABLE 02267_t (n1 UInt32, n2 UInt32) ENGINE = Memory;
-CREATE TABLE 02337_db.test_table (   id UInt64,   value String ) ENGINE=TinyLog;
-CREATE TABLE 02339_db.test_table (   id UInt64,   value String ) ENGINE=TinyLog;
-CREATE TABLE 02356_destination (a Int64, b String) ENGINE = Memory;
-CREATE TABLE 02416_rocksdb (key UInt64, value String, value2 UInt64) Engine=EmbeddedRocksDB PRIMARY KEY(key);
-CREATE TABLE 02416_test (k UInt32, value UInt64, dummy Tuple(UInt32, Float64), bm AggregateFunction(groupBitmap, UInt64)) Engine=KeeperMap('/' || currentDatabase() || '/test2416') PRIMARY KEY(k);
-CREATE TABLE 02416_test (key String, value UInt32) Engine=KeeperMap('/' || currentDatabase() || '/test2416') PRIMARY KEY(key);
-CREATE TABLE 02416_test (key String, value UInt32) Engine=KeeperMap('/' || currentDatabase() || '/test2416');
-CREATE TABLE 02416_test_memory AS 02416_test Engine = Memory;
-CREATE TABLE 02417_test (key UInt64, value UInt64) Engine=KeeperMap('/' || currentDatabase() || '/test2417') PRIMARY KEY(key);
-CREATE TABLE 02417_test_another (key UInt64, value UInt64) Engine=KeeperMap('/' || currentDatabase() || '/test2417') PRIMARY KEY(key);
-CREATE TABLE 02418_test (key UInt64, value Float64) Engine=KeeperMap('/' || currentDatabase() || '/test2418', 3) PRIMARY KEY(key);
-CREATE TABLE 02418_test_another (key UInt64, value Float64) Engine=KeeperMap('/' || currentDatabase() || '/test2418', 4) PRIMARY KEY(key);
-CREATE TABLE 02476_query_parameters_insert (x Int32) ENGINE=MergeTree() ORDER BY tuple();
-CREATE TABLE 02481_merge(x UInt64, y UInt64, arr Array(String)) ENGINE = Merge(currentDatabase(), '^(02481_mergetree)$');
-CREATE TABLE 02481_mergetree(x UInt64, y UInt64, arr Array(String)) ENGINE = MergeTree ORDER BY x SAMPLE BY x SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE 02483_substitute_udf (id UInt32, number UInt32 DEFAULT 02483_plusone(id)) ENGINE=MergeTree() ORDER BY id;
-CREATE TABLE 02500_nested(nes Array(Tuple(a Int32, b Int32)), z Int32) Engine=MergeTree ORDER BY tuple();
-CREATE TABLE 02500_nested(nes Nested(a Int32, b Int32)) Engine=MergeTree ORDER BY tuple();
-CREATE TABLE 02500_nested(nes Nested(a Int32, b Int32), z Int32) Engine=MergeTree ORDER BY tuple();
-CREATE TABLE 02526_keeper_map (`key` String, `value` UInt32) ENGINE = KeeperMap('/' || currentDatabase() || '/02526_kv_filter_types') PRIMARY KEY key;
-CREATE TABLE 02526_rocksdb (`key` String, `value` UInt32) ENGINE = EmbeddedRocksDB PRIMARY KEY key;
-CREATE TABLE 02538_bf_ngrambf_map_values_test (`row_id` Int128, `map` Map(String, String), `map_fixed` Map(FixedString(2), String), INDEX map_values_ngrambf mapKeys(map) TYPE ngrambf_v1(4, 256, 2, 0) GRANULARITY 1, INDEX map_fixed_values_ngrambf mapKeys(map_fixed) TYPE ngrambf_v1(4, 256, 2, 0) GRANULARITY 1) ENGINE = MergeTree ORDER BY row_id SETTINGS index_granularity = 1;
-CREATE TABLE 02540_date (txt String, x Date) engine=Memory;
-CREATE TABLE 02563_db.test_merge_table (   id UInt64,   value String ) ENGINE=Merge(02563_db, '^test_merge_table');
-CREATE TABLE 02563_db.test_merge_table_1 (   id UInt64,   value String ) ENGINE=MergeTree ORDER BY id;
-CREATE TABLE 02563_db.test_merge_table_2 (   id UInt64,   value String ) ENGINE=MergeTree ORDER BY id;
-CREATE TABLE 02577_keepermap_delete_update (key UInt64, value String, value2 UInt64) ENGINE=KeeperMap('/' || currentDatabase() || '/test02577_keepermap_delete_update') PRIMARY KEY(key);
-CREATE TABLE 02581_set (id UInt32) ENGINE = Set;
-CREATE TABLE 02581_trips(id UInt32, description String, id2 UInt32, PRIMARY KEY id) ENGINE=MergeTree ORDER BY id;
-CREATE TABLE 02581_trips(id UInt32, id2 UInt32, description String) ENGINE=MergeTree ORDER BY id SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE 02668_logical_optimizer (a Int32, b LowCardinality(String)) ENGINE=Memory;
-CREATE TABLE 02680_datetime64_monotonic_check (`t` DateTime64(3), `x` Nullable(Decimal(18, 14))) ENGINE = MergeTree PARTITION BY toYYYYMMDD(t) ORDER BY x SETTINGS allow_nullable_key = 1;
-CREATE TABLE 02680_datetime_monotonic_check_lc (`timestamp` LowCardinality(UInt32)) ENGINE = MergeTree ORDER BY timestamp SETTINGS index_granularity = 1;
-create table 02681_undrop_detach (id Int32, num Int32) Engine=MergeTree() order by id;
-create table 02681_undrop_distributed (id Int32) Engine = Distributed(test_shard_localhost, currentDatabase(), 02681_undrop, rand());
-create table 02681_undrop_log (id Int32) Engine=Log();
-create table 02681_undrop_mergetree (id Int32) Engine=MergeTree() order by id;
-create table 02681_undrop_multiple (id Int32) Engine=MergeTree() order by id;
-create table 02681_undrop_no_uuid_on_cluster on cluster test_shard_localhost (id Int32) Engine=MergeTree() order by id format Null;
-create table 02681_undrop_replicatedmergetree (id Int32) Engine=ReplicatedMergeTree('/clickhouse/tables/{database}/02681_undrop_replicatedmergetree', 'test_undrop') order by id;
-create table 02681_undrop_uuid_on_cluster on cluster test_shard_localhost (id Int32) Engine=MergeTree() order by id format Null;
-CREATE TABLE 02691_drop_column_replicated (col1 Int64, col2 Int64, PROJECTION 02691_drop_column_replicated (SELECT * ORDER BY col1 )) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test/02691_drop_column', 'r1') ORDER BY col1;
-CREATE TABLE 02702_logical_optimizer (a Int32, b LowCardinality(String)) ENGINE=Memory;
-CREATE TABLE 02702_logical_optimizer_with_null_column (a Nullable(Int32), b LowCardinality(String)) ENGINE=Memory;
-CREATE TABLE 02703_db.02703_after_rp ENGINE = MergeTree ORDER BY x AS SELECT * FROM 02703_db.02703_rptable;
-CREATE TABLE 02703_db.02703_rptable (x UInt8, y UInt8) ENGINE = MergeTree ORDER BY x;
-CREATE TABLE 02703_db.02703_rptable_another ENGINE = MergeTree ORDER BY x AS SELECT * FROM 02703_db.02703_rptable;
-CREATE TABLE 02703_db.02703_unexpected_columns (xx UInt8, yy UInt8) ENGINE = MergeTree ORDER BY xx;
-CREATE TABLE 02703_db_asterisk.`*` (x UInt8, y UInt8) ENGINE = MergeTree ORDER BY x AS SELECT 100, 20;
-CREATE TABLE 02703_db_asterisk.`other` (x UInt8, y UInt8) ENGINE = MergeTree ORDER BY x AS SELECT 100, 20;
-CREATE TABLE 02706_keeper_map_insert_strict (key UInt64, value Float64) Engine=KeeperMap('/' || currentDatabase() || '/test_02706_keeper_map_insert_strict') PRIMARY KEY(key);
-CREATE TABLE 02707_keepermap_delete_update (key UInt64, value String, value2 UInt64) ENGINE=KeeperMap('/' || currentDatabase() || '/test02707_keepermap_delete_update') PRIMARY KEY(key);
-CREATE TABLE 02713_seqt ENGINE = MergeTree ORDER BY n AS SELECT   sequenceMatchState('(?1)(?2)')(time, number_ = 1, number_ = 0) AS seq,   1 AS n FROM (   SELECT     number AS time,     number % 2 AS number_   FROM numbers_mt(100) );
-CREATE TABLE 02713_seqt_distr ( seq AggregateFunction(sequenceMatch('(?1)(?2)'), UInt64, UInt8, UInt8) , n UInt8) ENGINE = Distributed(test_shard_localhost, currentDatabase(), '02713_seqt');
-CREATE TABLE 02725_cnf (c0 UInt8, c1 UInt8, c2 UInt8, c3 UInt8, c4 UInt8, c5 UInt8, c6 UInt8, c7 UInt8, c8 UInt8, c9 UInt8) ENGINE = Memory;
-CREATE TABLE 02725_memory_for_merges (  n UInt64,   s String ) ENGINE = MergeTree ORDER BY n SETTINGS merge_max_block_size_bytes=1024, index_granularity_bytes=1024;
-CREATE TABLE 02751_query_log_test_partitions (a Int64, b Int64) ENGINE = MergeTree PARTITION BY a ORDER BY b;
-create table 02815_first_line_vector (n Int32, text String) engine = MergeTree order by n;
-CREATE TABLE 02834_t (id UInt64, arr Array(UInt64)) ENGINE = MergeTree ORDER BY id;
-CREATE TABLE 02843_join (id UInt8, value String) ENGINE Join(ANY, LEFT, id);
-CREATE TABLE 02843_source (  id UInt64,  value String ) ENGINE=Memory;
-CREATE TABLE 02861_interpolate (date Date, id String, f Int16) ENGINE=MergeTree() ORDER BY (date);
-CREATE TABLE 02863_delayed_source(a Int64) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/02863_delayed_source/{replica}', 'r1') ORDER BY a;
-CREATE TABLE 02898_parallel_replicas_final (x String, y Int32) ENGINE = ReplacingMergeTree ORDER BY cityHash64(x);
-CREATE TABLE 02918_parallel_replicas (x String, y Int32) ENGINE = MergeTree ORDER BY cityHash64(x);
-CREATE TABLE 02918_table_obj1 (json_obj Object('json')) Engine=Memory;
-CREATE TABLE 02918_table_obj2 (json_obj Object('json')) Engine=Memory;
-CREATE TABLE 02918_table_str (json_str String) Engine=Memory;
-CREATE TABLE 02919_test_multi_col (   str1 String,   str2 String ) ENGINE = FuzzJSON('{"pet":"rat"}', 999);
-CREATE TABLE 02919_test_table_invalid_col_type (  str Nullable(Int64) ) ENGINE = FuzzJSON('{"pet":"rat"}', NULL);
-CREATE TABLE 02919_test_table_noarg(str String) ENGINE = FuzzJSON('{}');
-CREATE TABLE 02919_test_table_reuse_args(str String) ENGINE = FuzzJSON(   '{    "name": "Jane Doe",    "age": 30,    "city": "New York",    "contacts": {     "email": "jane@example.com",     "phone": "+1234567890"    },    "skills": [     "JavaScript",     "Python",     {      "frameworks": ["React", "Django"]     }    ],    "projects": [     {"name": "Project A", "status": "completed"},     {"name": "Project B", "status": "in-progress"}    ]   }',   12345);
-CREATE TABLE 02919_test_table_valid_args(str String) ENGINE = FuzzJSON(   '{"pet":"rat"}', NULL);
-CREATE TABLE 02947_table_1 (id Int32) Engine=MergeTree() ORDER BY id;
-CREATE TABLE 02947_table_2 (id Int32) Engine=MergeTree() ORDER BY id;
-CREATE TABLE 02952_disjunction_optimization (a Int32, b String) ENGINE=Memory;
-CREATE TABLE 2025_test_db.test_table (   id UInt64,   value String ) ENGINE=TinyLog;
-CREATE TABLE 2025_test_db.view_table (   id UInt64,   value String ) ENGINE=TinyLog;
-CREATE TABLE 25400_dropped_tables (id Int32) Engine=MergeTree() ORDER BY id;
+-- CREATE with MergeTree ENGINE
+create table t (n int) engine MergeTree order by n;
+CREATE TABLE t (x UInt8) ENGINE = MergeTree ORDER BY ();
+create table x (i int) engine MergeTree order by tuple();
+-- парсер ломается в правиле keyword есть коментарий. обойти это ограничение или игнорировать комент
+--CREATE TABLE NULL (c String) ENGINE = MergeTree ORDER BY c;
+create table t (c Decimal32(9)) engine MergeTree order by c;
+create table t (n int, s String) engine MergeTree order by n;
+CREATE TABLE 01902_db.t (n Int8) ENGINE=MergeTree ORDER BY n;
 CREATE TABLE `$4@^7` (c String) ENGINE = MergeTree ORDER BY c;
 CREATE TABLE `'`.`'` (c String) ENGINE = MergeTree ORDER BY c;
-CREATE TABLE `01746_buffer_t` (   `n1` Int8,   `n2` Int8,   `n3` Int8 ) ENGINE = Memory;
-CREATE TABLE `01746_buffer` AS `01746_buffer_t` ENGINE = Buffer(currentDatabase(), `01746_buffer_t`, 16, 10, 100, 10000, 1000000, 10000000, 100000000);
-CREATE TABLE `01746_dist` AS `01746_local` ENGINE = Distributed('test_shard_localhost', currentDatabase(), `01746_local`, rand());
-CREATE TABLE `01746_local` (   `n1` Int8,   `n2` Int8,   `n3` Int8 ) ENGINE = Memory;
-CREATE TABLE `01746_merge_t` (   `n1` Int8,   `n2` Int8,   `n3` Int8 ) ENGINE = Memory;
-CREATE TABLE `01746_merge_tree` (   `n1` Int8,   `n2` Int8,   `n3` Int8,   `n4` Int8 ) ENGINE = MergeTree ORDER BY n1;
-CREATE TABLE `01746_merge` AS `01746_merge_t` ENGINE = Merge(currentDatabase(), '01746_merge_t');
-CREATE TABLE `01746_null` (   `n1` Int8,   `n2` Int8,   `n3` Int8 ) ENGINE = Null;
-CREATE TABLE `01851_merge_tree` (   `n1` Int8,   `n2` Int8,   `n3` Int8,   `n4` Int8 ) ENGINE = MergeTree ORDER BY n1;
-CREATE TABLE `01945.db`.test_dictionary_values (  id UInt64, value String ) ENGINE=TinyLog;
-CREATE TABLE `foo 1234`.dict_data (key UInt64, val UInt64) Engine=Memory();
-create table `table_00483` (date Date, `Struct.Key1` Array(UInt64), `Struct.Key2` Array(UInt64), padding FixedString(16)) engine = MergeTree(date, (date), 16);
-create table `table_00483` (date Date, `Struct.Key1` Array(UInt64), `Struct.Key2` Array(UInt64), padding FixedString(16), x UInt64) engine = MergeTree(date, (date), 8);
-create table `table_00609` (key UInt64, val UInt64) engine = MergeTree order by key settings index_granularity=8192;
-create table `table_00653` (val Int32) engine = MergeTree order by val;
-CREATE TABLE `test.txt` (   `key1` UInt32,   `key2` UInt32,   `value` String ) ENGINE = Memory();
-CREATE TABLE a (   `number` UInt64,   `x` MATERIALIZED x ) ENGINE = MergeTree ORDER BY number;
-CREATE TABLE a (a UInt8, b UInt8) ENGINE MergeTree ORDER BY a;
-create table a (i int) engine MergeTree order by i settings index_granularity = 2;
-create table a (i int, j int) engine Log;
-create table a (i int, j int, projection p (select * order by j)) engine MergeTree partition by i order by tuple() settings index_granularity = 1;
-CREATE TABLE a (k UInt64, a1 UInt64, a2 String) ENGINE = Memory;
-CREATE TABLE a (key UInt32) ENGINE = MergeTree ORDER BY key;
-CREATE TABLE a (number UInt64) ENGINE = MergeTree ORDER BY if(now() > toDateTime('2020-06-01 13:31:40'), toInt64(number), -number);
-CREATE TABLE A (ts DateTime, id String, id_b String) ENGINE = MergeTree PARTITION BY toStartOfHour(ts) ORDER BY (ts,id);
-CREATE TABLE a (x UInt64) ENGINE = Memory;
-CREATE TABLE a(`id1` UInt32, `id2` UInt32, `valA` UInt32) ENGINE = TinyLog;
-CREATE TABLE a(`id` UInt32, `val` UInt32) ENGINE = Memory;
-CREATE TABLE A(a UInt32, t UInt32) ENGINE = Memory;
-CREATE TABLE A(k UInt32, t DateTime, a Float64) ENGINE = MergeTree() ORDER BY (k, t);
-CREATE TABLE A(k UInt32, t UInt32, a UInt64) ENGINE = MergeTree() ORDER BY (k, t);
-CREATE TABLE A1( a DateTime ) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE a1(a UInt8, b UInt8) ENGINE=Memory;
-CREATE TABLE a2(a UInt8, b UInt8) ENGINE=Memory;
-create table a8x ENGINE = MergeTree ORDER BY tuple() settings min_bytes_for_wide_part=0 as SELECT number FROM system.numbers limit 100;
-CREATE TABLE A_M as A1 ENGINE = Merge(currentDatabase(), '^A1$');
-CREATE TABLE aaa (   id UInt16,   data String ) ENGINE = MergeTree() PARTITION BY tuple() ORDER BY id;
-CREATE TABLE abc (   `f1` String,   `f2` String ) ENGINE = MergeTree() ORDER BY f1;
-CREATE TABLE adaptive_granularity_alter (  p Date,  k UInt64,  v1 UInt64,  v2 Int64 ) ENGINE MergeTree() PARTITION BY toYYYYMM(p) ORDER BY k  SETTINGS index_granularity_bytes=110,      min_index_granularity_bytes = 100,      write_final_mark = 0,      enable_vertical_merge_algorithm=1,      vertical_merge_algorithm_min_rows_to_activate=0,      vertical_merge_algorithm_min_columns_to_activate=0,      min_bytes_for_wide_part = 0,      min_rows_for_wide_part = 0;
-CREATE TABLE adaptive_granularity_alter (  p Date,  k UInt64,  v1 UInt64,  v2 Int64 ) ENGINE MergeTree() PARTITION BY toYYYYMM(p) ORDER BY k SETTINGS index_granularity_bytes = 110, min_index_granularity_bytes = 100, write_final_mark = 0, min_bytes_for_wide_part = 0, min_rows_for_wide_part = 0;
-CREATE TABLE adaptive_granularity_alter (  p Date,  k UInt64,  v1 UInt64,  v2 Int64 ) ENGINE ReplacingMergeTree() PARTITION BY toYYYYMM(p) ORDER BY k  SETTINGS index_granularity_bytes=110,      min_index_granularity_bytes=40,      write_final_mark = 0,      enable_vertical_merge_algorithm=1,      vertical_merge_algorithm_min_rows_to_activate=0,      vertical_merge_algorithm_min_columns_to_activate=0,      min_bytes_for_wide_part = 0,      min_rows_for_wide_part = 0;
-CREATE TABLE adaptive_granularity_alter1 (  p Date,  k UInt64,  v1 UInt64,  v2 Int64 ) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_00926/adaptive_granularity_alter', '1') PARTITION BY toYYYYMM(p) ORDER BY k SETTINGS index_granularity_bytes = 110, min_index_granularity_bytes = 100, write_final_mark = 0;
-CREATE TABLE adaptive_granularity_alter2 (  p Date,  k UInt64,  v1 UInt64,  v2 Int64 ) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_00926/adaptive_granularity_alter', '2') PARTITION BY toYYYYMM(p) ORDER BY k SETTINGS index_granularity_bytes = 110, min_index_granularity_bytes = 100, write_final_mark = 0;
-CREATE TABLE adaptive_table(   key UInt64,   value String ) ENGINE MergeTree() ORDER BY key SETTINGS   index_granularity_bytes=1048576,   min_bytes_for_wide_part=0,   old_parts_lifetime=0,   index_granularity=8192 ;
-CREATE TABLE add_aggregate(a UInt32, b UInt32) ENGINE = Memory;
-CREATE TABLE add_materialized_column_after (x UInt32, z UInt64) ENGINE MergeTree ORDER BY x;
-CREATE TABLE add_table (   key UInt64,   value1 String ) ENGINE = MergeTree() ORDER BY key;
-CREATE TABLE addresses(addr String) ENGINE = Memory;
-CREATE TABLE addresses(addr UInt32) ENGINE = Memory;
-CREATE TABLE agg (   `key` UInt32,   `ts` DateTime,   `value` UInt32,   PROJECTION aaaa   (     SELECT       ts,       key,       sum(value)     GROUP BY ts, key   ) ) ENGINE = MergeTree ORDER BY (key, ts);
-CREATE TABLE agg (   `key` UInt32,   `ts` DateTime,   `value` UInt32,   PROJECTION aaaa   (     SELECT       ts,       key,       sum(value)     GROUP BY ts, key   ) ) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE agg ENGINE = AggregatingMergeTree ORDER BY tuple() AS SELECT   t,   sumIF(n, 0) FROM data GROUP BY t;
-CREATE TABLE agg_func_col (p Date, k UInt8, d AggregateFunction(sum, UInt64) DEFAULT arrayReduce('sumState', [toUInt64(200)])) ENGINE = AggregatingMergeTree(p, k, 1);
-CREATE TABLE agg_over_nullable (  partition Date,   timestamp DateTime,   user_id Nullable(UInt32),  description Nullable(String) ) ENGINE = MergeTree(partition, timestamp, 8192);
-create table aggr (n int, s AggregateFunction(max, String)) engine=MergeTree order by n;
-CREATE TABLE aggregate_functions_null_for_empty (`x` UInt32, `y` UInt64, PROJECTION p (SELECT sum(y))) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE aggregates (d Date, s AggregateFunction(uniq, UInt64)) ENGINE = MergeTree(d, d, 8192);
-CREATE TABLE aggregating_00191 (d Date DEFAULT '2000-01-01', k UInt64, u AggregateFunction(uniq, UInt64)) ENGINE = AggregatingMergeTree(d, k, 8192);
-CREATE TABLE aggregating_merge_tree   (d Date, a String, b UInt8, x String, y Int8, z UInt32) ENGINE = AggregatingMergeTree(d, (a, b), 111);
-CREATE TABLE aggregating_merge_tree (key UInt32, val SimpleAggregateFunction(max, UInt32), date Datetime) ENGINE=AggregatingMergeTree() PARTITION BY date ORDER BY key;
-CREATE TABLE aggregating_merge_tree_with_sampling  (d Date, a String, b UInt8, x String, y Int8, z UInt32) ENGINE = AggregatingMergeTree(d, sipHash64(a) + b, (a, sipHash64(a) + b), 111);
-CREATE TABLE aine (a Int) ENGINE = Log;
-CREATE TABLE alias10 (  Id Int8,  EventDate Date,  field1 Int8,  field2 String,  field3 String ) ENGINE = Distributed(test_shard_localhost, currentDatabase(), alias_local10);
-CREATE TABLE alias10 AS alias_local10 ENGINE = Distributed(test_shard_localhost, currentDatabase(), alias_local10, cityHash64(Id));
-create table alias_1 (   dt Date,   col Int32,   colAlias0 UInt32 alias col,   colAlias1 UInt32 alias col3 + colAlias0,   col2 Int32,   colAlias2 Int32 alias colAlias1 + col2 + 10,   col3 Int32,   colAlias3 Int32 alias colAlias2 + colAlias1 + col3 ) engine = MergeTree() order by (dt);
-create table alias_2 (   dt Date,   col Int32,   col2 Int32,   colAlias0 UInt32 alias col,   colAlias3 Int32 alias col3 + colAlias0,   colAlias1 UInt32 alias colAlias0 + col2,   colAlias2 Int32 alias colAlias0 + colAlias1,   col3 Int32 ) engine = MergeTree() order by (dt);
-CREATE TABLE alias_2__fuzz_25 (`dt` LowCardinality(Date), `col` DateTime, `col2` Nullable(Int256), `colAlias0` Nullable(DateTime64(3)) ALIAS col, `colAlias3` Nullable(Int32) ALIAS col3 + colAlias0, `colAlias1` LowCardinality(UInt16) ALIAS colAlias0 + col2, `colAlias2` LowCardinality(Int32) ALIAS colAlias0 + colAlias1, `col3` Nullable(UInt8)) ENGINE = MergeTree ORDER BY dt;
-create table alias_key_condition ( i int, j int ) engine MergeTree order by i;
-CREATE TABLE alias_local10 (  Id Int8,  EventDate Date DEFAULT '2000-01-01',  field1 Int8,  field2 String,  field3 ALIAS CASE WHEN field1 = 1 THEN field2 ELSE '0' END ) ENGINE = MergeTree(EventDate, (Id, EventDate), 8192);
-create table aliases_test ( date Date, id UInt64, array default ['zero','one','two'], d1 default array, a1 alias array, a2 alias a1, a3 alias a2, a4 alias arrayMap(x -> toString(x), range(3)), a5 alias a4, a6 alias a5, `struct.d1` default array, `struct.a1` alias array, `struct.a2` alias struct.a1, `struct.a3` alias struct.a2, `struct.a4` alias arrayMap(x -> toString(x), range(3)), `struct.a5` alias struct.a4, `struct.a6` alias struct.a5 ) engine=MergeTree(date, id, 1);
-create table aliases_test (date default today(), id default rand(), array default [0, 1, 2]) engine=MergeTree(date, id, 1);
-CREATE TABLE all_valid (id UInt64, query String) ENGINE=MergeTree ORDER BY id;
-CREATE TABLE Alpha (foo String, bar UInt64) ENGINE = Memory;
-CREATE TABLE alter_00061 (d Date, k UInt64, i32 Int32) ENGINE=MergeTree(d, k, 8192);
-CREATE TABLE alter_00121 (d Date) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test/alter_00121/t2', 'r1', d, (d), 8192);
-CREATE TABLE alter_00121 (d Date, x UInt8) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test/alter_00121/t1', 'r1', d, (d), 8192);
-CREATE TABLE alter_00147 (d Date DEFAULT toDate('2015-01-01'), n Nested(x String)) ENGINE = MergeTree(d, d, 8192);
-CREATE TABLE alter_00394 (d Date, k UInt64, i32 Int32, n Nested(ui8 UInt8, s String)) ENGINE=MergeTree(d, k, 8192);
-CREATE TABLE alter_00665 (`boolean_false` Nullable(String)) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE alter_02834 (a UInt64) ENGINE=MergeTree() ORDER BY a;
-CREATE TABLE alter_attach (x UInt64, p UInt8) ENGINE = MergeTree ORDER BY tuple() PARTITION BY p SETTINGS index_granularity_bytes=10000, write_final_mark=1;
-CREATE TABLE alter_attach (x UInt64, p UInt8) ENGINE = MergeTree ORDER BY tuple() PARTITION BY p;
-CREATE TABLE alter_bad_codec (   somedate Date CODEC(LZ4),   id UInt64 CODEC(NONE) ) ENGINE = MergeTree() ORDER BY tuple();
-create table alter_bug (  epoch UInt64 CODEC(Delta,LZ4),  _time_dec Float64 ) Engine = MergeTree ORDER BY (epoch);
-CREATE TABLE alter_column(x UInt32, y Int32) ENGINE MergeTree PARTITION BY x ORDER BY x;
-CREATE TABLE alter_column_02126 (a Int, x Int, y Int) ENGINE = MergeTree ORDER BY a;
-CREATE TABLE alter_compression_codec (   somedate Date CODEC(LZ4),   id UInt64 CODEC(NONE) ) ENGINE = MergeTree() PARTITION BY somedate ORDER BY id;
-CREATE TABLE alter_compression_codec1 (   somedate Date CODEC(LZ4),   id UInt64 CODEC(NONE) ) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_00910/'||currentDatabase()||'alter_compression_codecs/{shard}', '1_{replica}') PARTITION BY somedate ORDER BY id;
-CREATE TABLE alter_compression_codec2 (  somedate Date CODEC(LZ4),  id UInt64 CODEC(NONE) ) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_00910/'||currentDatabase()||'alter_compression_codecs/{shard}', '2_{replica}') PARTITION BY somedate ORDER BY id;
-CREATE TABLE alter_default (  date Date,  key UInt64 ) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_01079/alter_default', '1') ORDER BY key;
-CREATE TABLE alter_drop_version (   `key` UInt64,   `value` String,   `ver` Int8 ) ENGINE = ReplacingMergeTree(ver) ORDER BY key;
-CREATE TABLE alter_enum_array(   Key UInt64,   Value Array(Enum8('Option1'=1, 'Option2'=2)) ) ENGINE=MergeTree() ORDER BY tuple();
-CREATE TABLE alter_index_test (   a UInt32,   b Date,   c UInt32,   d UInt32,   INDEX index_a a TYPE set(0) GRANULARITY 1 ) ENGINE = MergeTree() ORDER BY tuple();
-CREATE TABLE alter_table (a UInt8, b Int16) ENGINE = MergeTree ORDER BY a;
-CREATE TABLE alter_test (a Int32, b DateTime) ENGINE = ReplacingMergeTree(b) ORDER BY a;
-CREATE TABLE alter_test (CounterID UInt32, StartDate Date, UserID UInt32, VisitID UInt32, NestedColumn Nested(A UInt8, S String), ToDrop UInt32) ENGINE = MergeTree(StartDate, intHash32(UserID), (CounterID, StartDate, intHash32(UserID), VisitID), 8192);
-create table alter_ttl(d Date, s String) engine = MergeTree order by d ttl d + interval 1 month;
-create table alter_ttl(i Int) engine = MergeTree order by i ttl toDate('2020-05-05');
-CREATE TABLE alter_update_00806 (d Date, e Enum8('foo'=1, 'bar'=2)) Engine = MergeTree PARTITION BY d ORDER BY (d) SETTINGS index_granularity_bytes=10000, write_final_mark=1;
-CREATE TABLE alter_update_00806 (d Date, e Enum8('foo'=1, 'bar'=2)) Engine = MergeTree(d, (d), 8192);
-CREATE TABLE ANIMAL ( ANIMAL Nullable(String) ) engine = TinyLog;
-CREATE TABLE another_indexed_table (  `tm` DateTime,  `log_message` String,  INDEX log_message log_message TYPE tokenbf_v1(4096, 2, 0) GRANULARITY 1 ) ENGINE = MergeTree ORDER BY (tm) SETTINGS index_granularity_bytes = 50,     min_index_granularity_bytes = 40,     vertical_merge_algorithm_min_rows_to_activate=0,     vertical_merge_algorithm_min_columns_to_activate=0;
-CREATE TABLE anti_left_join (x UInt32, s String) engine = Join(ANTI, LEFT, x);
-CREATE TABLE anti_right_join (x UInt32, s String) engine = Join(ANTI, RIGHT, x);
-CREATE TABLE any_inner_join (x UInt32, s String) engine = Join(ANY, INNER, x);
-CREATE TABLE any_left_join (x UInt32, s String) engine = Join(ANY, LEFT, x);
-CREATE TABLE any_right_join (x UInt32, s String) engine = Join(ANY, RIGHT, x);
-CREATE TABLE APPLICATION (  `Name` LowCardinality(String),  `Base` LowCardinality(String) ) ENGINE = Memory();
-CREATE TABLE appointment_events (   _appointment_id UInt32,   _id String,   _status String,   _set_by_id String,   _company_id String,   _client_id String,   _type String,   _at String,   _vacancy_id String,   _set_at UInt32,   _job_requisition_id String ) ENGINE = Memory;
-CREATE TABLE arena (k UInt8, d String) ENGINE = Memory;
-CREATE TABLE arr (x Array(String), y Nullable(String), z Array(Array(Nullable(String)))) ENGINE = TinyLog;
-CREATE TABLE arr_tests_visits (   CounterID    UInt32,   StartDate    Date,   Sign       Int8,   VisitID     UInt64,   UserID      UInt64,   VisitVersion   UInt16,   `Test.BannerID` Array(UInt64),   `Test.Load`   Array(UInt8),   `Test.PuidKey` Array(Array(UInt8)),   `Test.PuidVal` Array(Array(UInt32)) ) ENGINE = MergeTree() PARTITION BY toMonday(StartDate) ORDER BY (CounterID, StartDate, intHash32(UserID), VisitID) SAMPLE BY intHash32(UserID) SETTINGS index_granularity = 8192;
-CREATE TABLE array (arr Array(Nullable(Float64))) ENGINE = Memory;
-CREATE TABLE array_element_test (arr Array(Int32), id Int32) ENGINE = Memory;
-CREATE TABLE array_element_test (arr Array(Int32), id UInt32) ENGINE = Memory;
-CREATE TABLE array_element_test (arr Array(String), id Int32) ENGINE = Memory;
-CREATE TABLE array_element_test (arr Array(String), id UInt32) ENGINE = Memory;
-CREATE TABLE array_element_test (id Int32) ENGINE = Memory;
-CREATE TABLE array_element_test (id UInt32) ENGINE = Memory;
-create table array_functions (arr1 Array(Int8), arr2 Array(Int8), o Int8, no Nullable(Int8), l Int8, nl Nullable(Int8)) engine = TinyLog;
-create table array_functions (arr1 Array(Nullable(Int8)), arr2 Array(Nullable(Float32)), o Int8, no Nullable(Int8), l Int8, nl Nullable(Int8)) engine = TinyLog;
-create table array_functions (arr1 Array(Nullable(Int8)), arr2 Array(UInt8), o Int8, no Nullable(Int8), l Int8, nl Nullable(Int8)) engine = TinyLog;
-create table array_functions (arr1 Array(Nullable(String)), arr2 Array(String), val String, val2 Nullable(String), o Int8, no Nullable(Int8), l Int8, nl Nullable(Int8)) engine = TinyLog;
-create table array_intersect (date Date, arr Array(UInt8)) engine=MergeTree partition by date order by date;
-CREATE TABLE array_jaccard_index (arr Array(UInt8)) engine = MergeTree ORDER BY arr;
-CREATE TABLE array_of_tuples (   f Array(Tuple(Float64, Float64)),   s Array(Tuple(UInt8, UInt16, UInt32)) ) ENGINE = Memory;
-CREATE TABLE array_pk (key Array(UInt8), s String, n UInt64, d Date MATERIALIZED '2000-01-01') ENGINE = MergeTree(d, (key, s, n), 1);
-CREATE TABLE array_test (floats Array(Float64),             strings Array(String),             nullable_strings Array(Nullable(String))             ) ENGINE=Memory;
-CREATE TABLE arrayDistinct_test(arr_int Array(UInt8), arr_string Array(String)) ENGINE=Memory;
-create table arrays_02735 engine = Memory as select * from generateRandom('   u32 Array(UInt32),   i8 Array(Int8),   datetime Array(DateTime),   enum16 Array(Enum16(''xx'' = 1000, ''yy'' = 2000, ''zz'' = 3000)),   float32 Array(Float32),   str Array(String),   fstr Array(FixedString(12)),   u128 Array(UInt128),   decimal64 Array(Decimal64(10)),   ipv4 Array(IPv4),   msi Map(String, Int16),   tup Tuple(FixedString(3), Array(String), Map(Int8, Date))') limit 10000;
-CREATE TABLE arrays_test (   s String,   arr1 Array(UInt8),   map1 Map(UInt8, String),   map2 Map(UInt8, String) ) ENGINE = Memory;
-CREATE TABLE arrays_test (a1 Array(UInt16), a2 Array(UInt16), a3 Array(Array(UInt16)), a4 Array(Array(UInt16)) ) ENGINE = Memory;
-CREATE TABLE arrays_test (a1 Array(UInt8), a2 Array(UInt32) ) ENGINE = Memory;
-CREATE TABLE arrays_test (a3 Array(Array(UInt8)), a4 Array(Array(UInt32)) ) ENGINE = Memory;
-CREATE TABLE arrays_test (s String, arr Array(UInt8)) ENGINE = Memory;
-CREATE TABLE arraytest ( created_date Date DEFAULT toDate(created_at), created_at DateTime DEFAULT now(), strings Array(String) DEFAULT emptyArrayString()) ENGINE = MergeTree(created_date, cityHash64(created_at), (created_date, cityHash64(created_at)), 8192);
-CREATE TABLE ary_lc_null (i int, v Array(LowCardinality(Nullable(String)))) ENGINE = MergeTree() ORDER BY i ;
-CREATE TABLE as_foo AS foo;
-create table atf_p (x UInt64) engine = MergeTree order by tuple();
-CREATE TABLE attach_partition_t2 ( a UInt32,  b String,  INDEX bf b TYPE bloom_filter GRANULARITY 1 ) ENGINE = MergeTree ORDER BY a;
-CREATE TABLE attach_partition_t4 ( a UInt32,  b String,  PROJECTION differently_named_proj  (    SELECT      b,      sum(a)    GROUP BY b  ) ) ENGINE = MergeTree ORDER BY a;
-CREATE TABLE attach_partition_t6 ( a UInt32,  b String,  PROJECTION proj  (    SELECT      b,      sum(a)    GROUP BY b  ) ) ENGINE = MergeTree ORDER BY a;
-CREATE TABLE attach_r1 (d Date) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_00236/01/attach', 'r1', d, d, 8192);
-CREATE TABLE attach_r2 (d Date) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_00236/01/attach', 'r2', d, d, 8192);
-create table audience_local ( Date Date, AudienceType Enum8('other' = 0, 'client' = 1, 'group' = 2), UMA UInt64, APIKey String, TrialNameID UInt32, TrialGroupID UInt32, AppVersion String, Arch Enum8('other' = 0, 'x32' = 1, 'x64' = 2), UserID UInt32, GroupID UInt8, OSName Enum8('other' = 0, 'Android' = 1, 'iOS' = 2, 'macOS' = 3, 'Windows' = 4, 'Linux' = 5), Channel Enum8('other' = 0, 'Canary' = 1, 'Dev' = 2, 'Beta' = 3, 'Stable' = 4), Hits UInt64, Sum Int64, Release String alias splitByChar('-', AppVersion)[1] ) engine = SummingMergeTree PARTITION BY (toISOYear(Date), toISOWeek(Date)) ORDER BY (AudienceType, UMA, APIKey, Date, TrialNameID, TrialGroupID, AppVersion, Arch, UserID, GroupID, OSName, Channel) SETTINGS index_granularity = 8192;
-CREATE TABLE auto_assign_enum (x enum('a', 'b')) ENGINE=MergeTree() order by x;
-CREATE TABLE auto_assign_enum1 (x enum('a' = -1000, 'b')) ENGINE=MergeTree() order by x;
-CREATE TABLE auto_assign_enum2 (x enum('a' = -1000, 'b', 'c' = -99)) ENGINE=MergeTree() order by x;
-CREATE TABLE auto_assign_enum3 (x enum('a', 'b', NULL)) ENGINE=MergeTree() order by x;
-create table ax (A Int64, B Int64) Engine = Memory;
-create table ay engine AggregatingMergeTree order by i as select 1 i, sumSimpleState(10) group by i;
-create table b (i int) engine MergeTree order by tuple() settings index_granularity = 2;
-CREATE TABLE b (k UInt64, b1 UInt64, b2 String) ENGINE = Memory;
-CREATE TABLE b (key UInt32, ID UInt32) ENGINE = MergeTree ORDER BY key;
-CREATE TABLE B (ts DateTime, id String, id_c String) ENGINE = MergeTree PARTITION BY toStartOfHour(ts) ORDER BY (ts,id);
-CREATE TABLE b (x UInt64) ENGINE = Memory;
-CREATE TABLE B(b UInt32, t UInt32) ENGINE = Memory;
-CREATE TABLE B(k UInt32, b UInt64, t UInt32) ENGINE = MergeTree() ORDER BY (k, t);
-CREATE TABLE B(k UInt32, t UInt32, b UInt64) ENGINE = MergeTree() ORDER BY (k, t);
-CREATE TABLE B(t UInt32, k UInt32, b UInt64) ENGINE = MergeTree() ORDER BY (k, t);
-CREATE TABLE b1_01361 AS t1_01361 ENGINE = Buffer(currentDatabase(), t1_01361, 1, 0, 0, 1, 1, 1, 1);
-CREATE TABLE bad_arrays (a Array(String), b Array(String)) ENGINE = Memory;
-CREATE TABLE bad_arrays (a Array(String), b Array(UInt8)) ENGINE = Memory;
-CREATE TABLE bad_codec(id UInt64 CODEC(adssadads)) ENGINE = MergeTree() order by tuple();
-CREATE TABLE bad_conversions (a UInt32) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE bad_conversions_2 (e Enum('foo' = 1, 'bar' = 2)) ENGINE = MergeTree ORDER BY tuple();
-create table bad_date_time (time Datetime('Asia/Istanbul'), count UInt16) Engine = MergeTree() ORDER BY (time);
-CREATE TABLE bad_skip_idx (  id UInt64,  value String ) ENGINE MergeTree() ORDER BY id SETTINGS index_granularity_bytes = 64, min_index_granularity_bytes = 10, vertical_merge_algorithm_min_rows_to_activate = 0, vertical_merge_algorithm_min_columns_to_activate = 0;
-create table bar (ddate Date, id Int64, n String, foo_id Int64) ENGINE = ReplacingMergeTree(ddate, (id), 8192);
-CREATE TABLE bar (server_date Date, dimension_1 String) ENGINE = MergeTree() PARTITION BY toYYYYMM(server_date) ORDER BY (server_date);
-CREATE TABLE bar (server_date Date, dimension_1 String, metric_2 UInt32) ENGINE = MergeTree() PARTITION BY toYYYYMM(server_date) ORDER BY (server_date);
-CREATE TABLE bar (ts DateTime, x UInt64) ENGINE = Memory;
-CREATE TABLE bbb (   id UInt16,   data String ) ENGINE = MergeTree() PARTITION BY tuple() ORDER BY id;
-CREATE TABLE Beta (foo LowCardinality(String), baz UInt64) ENGINE = Memory;
-CREATE TABLE bf_ngram_array_test (   row_id UInt32,   array Array(String),   array_fixed Array(FixedString(2)),   INDEX array_ngram array TYPE ngrambf_v1(4,256,2,0) GRANULARITY 1,   INDEX array_fixed_ngram array_fixed TYPE ngrambf_v1(4,256,2,0) GRANULARITY 1 ) Engine=MergeTree() ORDER BY row_id SETTINGS index_granularity = 1;
-CREATE TABLE bf_ngram_lowcard_test (   row_id UInt32,   lc LowCardinality(String),   lc_fixed LowCardinality(FixedString(8)),   INDEX lc_ngram lc TYPE ngrambf_v1(4,256,2,0) GRANULARITY 1,   INDEX lc_fixed_ngram lc_fixed TYPE ngrambf_v1(4,256,2,0) GRANULARITY 1 ) Engine=MergeTree() ORDER BY row_id SETTINGS index_granularity = 1;
-CREATE TABLE bf_ngrambf_map_keys_test (   row_id UInt32,   map Map(String, String),   map_fixed Map(FixedString(2), String),   INDEX map_keys_ngrambf mapKeys(map) TYPE ngrambf_v1(4,256,2,0) GRANULARITY 1,   INDEX map_fixed_keys_ngrambf mapKeys(map_fixed) TYPE ngrambf_v1(4,256,2,0) GRANULARITY 1 ) Engine=MergeTree() ORDER BY row_id SETTINGS index_granularity = 1;
-CREATE TABLE bf_ngrambf_map_values_test (   row_id UInt32,   map Map(String, String),   map_fixed Map(FixedString(2), String),   INDEX map_values_ngrambf mapKeys(map) TYPE ngrambf_v1(4,256,2,0) GRANULARITY 1,   INDEX map_fixed_values_ngrambf mapKeys(map_fixed) TYPE ngrambf_v1(4,256,2,0) GRANULARITY 1 ) Engine=MergeTree() ORDER BY row_id SETTINGS index_granularity = 1;
-CREATE TABLE bf_tokenbf_array_test (   row_id UInt32,   array Array(String),   array_fixed Array(FixedString(2)),   INDEX array_bf_tokenbf array TYPE tokenbf_v1(256,2,0) GRANULARITY 1,   INDEX array_fixed_bf_tokenbf array_fixed TYPE tokenbf_v1(256,2,0) GRANULARITY 1 ) Engine=MergeTree() ORDER BY row_id SETTINGS index_granularity = 1;
-CREATE TABLE bf_tokenbf_lowcard_test (   row_id UInt32,   lc LowCardinality(String),   lc_fixed LowCardinality(FixedString(8)),   INDEX lc_bf_tokenbf lc TYPE tokenbf_v1(256,2,0) GRANULARITY 1,   INDEX lc_fixed_bf_tokenbf lc_fixed TYPE tokenbf_v1(256,2,0) GRANULARITY 1 ) Engine=MergeTree() ORDER BY row_id SETTINGS index_granularity = 1;
-CREATE TABLE bf_tokenbf_map_keys_test (   row_id UInt32,   map Map(String, String),   map_fixed Map(FixedString(2), String),   INDEX map_keys_tokenbf mapKeys(map) TYPE tokenbf_v1(256,2,0) GRANULARITY 1,   INDEX map_fixed_keys_tokenbf mapKeys(map_fixed) TYPE ngrambf_v1(4,256,2,0) GRANULARITY 1 ) Engine=MergeTree() ORDER BY row_id SETTINGS index_granularity = 1;
-CREATE TABLE bf_tokenbf_map_values_test (   row_id UInt32,   map Map(String, String),   map_fixed Map(FixedString(2), String),   INDEX map_values_tokenbf mapValues(map) TYPE tokenbf_v1(256,2,0) GRANULARITY 1,   INDEX map_fixed_values_tokenbf mapValues(map_fixed) TYPE ngrambf_v1(4,256,2,0) GRANULARITY 1 ) Engine=MergeTree() ORDER BY row_id SETTINGS index_granularity = 1;
-CREATE TABLE bftest (   k Int64,   y Array(Int64) DEFAULT x,   x Array(Int64),   index ix1(x) TYPE bloom_filter GRANULARITY 3 ) Engine=MergeTree ORDER BY k;
-CREATE TABLE big_array (x Array(UInt8)) ENGINE=TinyLog;
-CREATE TABLE Bin_at_test (     `Date` DateTime('UTC'),   Num Nullable(UInt8) ) ENGINE = Memory;
-CREATE TABLE binary_op_mono1(i int, j int) ENGINE MergeTree PARTITION BY toDate(i / 1000) ORDER BY j;
-CREATE TABLE binary_op_mono2(i int, j int) ENGINE MergeTree PARTITION BY 1000 / i ORDER BY j settings allow_floating_point_partition_key=true;
-CREATE TABLE binary_op_mono3(i int, j int) ENGINE MergeTree PARTITION BY i + 1000 ORDER BY j;
-CREATE TABLE binary_op_mono4(i int, j int) ENGINE MergeTree PARTITION BY 1000 + i ORDER BY j;
-CREATE TABLE binary_op_mono5(i int, j int) ENGINE MergeTree PARTITION BY i - 1000 ORDER BY j;
-CREATE TABLE binary_op_mono6(i int, j int) ENGINE MergeTree PARTITION BY 1000 - i ORDER BY j;
-CREATE TABLE binary_op_mono7(i int, j int) ENGINE MergeTree PARTITION BY i / 1000.0 ORDER BY j settings allow_floating_point_partition_key=true;
-CREATE TABLE binary_op_mono8(i int, j int) ENGINE MergeTree PARTITION BY 1000.0 / i ORDER BY j settings allow_floating_point_partition_key=true;
-CREATE TABLE bitmap_column_expr_test (   t DateTime,   z AggregateFunction(groupBitmap, UInt32) ) ENGINE = MergeTree PARTITION BY toYYYYMMDD(t) ORDER BY t;
-CREATE TABLE bitmap_column_expr_test2 (   tag_id String,   z AggregateFunction(groupBitmap, UInt32) ) ENGINE = MergeTree ORDER BY tag_id;
-CREATE TABLE bitmap_column_expr_test3 (   tag_id String,   z AggregateFunction(groupBitmap, UInt64),   replace Nested (     from UInt16,     to UInt64   ) ) ENGINE = MergeTree ORDER BY tag_id;
-CREATE TABLE bitmap_state_test (  pickup_date Date,  city_id UInt32,   uv AggregateFunction( groupBitmap, UInt32 ) ) ENGINE = AggregatingMergeTree( pickup_date, ( pickup_date, city_id ), 8192);
-CREATE TABLE bitmap_state_test (  pickup_date Date,  city_id UInt32,   uv AggregateFunction( groupBitmap, UInt64 ) ) ENGINE = AggregatingMergeTree() PARTITION BY toYYYYMM(pickup_date) ORDER BY (pickup_date, city_id);
-CREATE TABLE bitmap_test(pickup_date Date, city_id UInt32, uid UInt32)ENGINE = Memory;
-CREATE TABLE bitmap_test(pickup_date Date, city_id UInt32, uid UInt64)ENGINE = Memory;
-CREATE TABLE bloom_filter (   id UInt64,   s String,   INDEX tok_bf (s, lower(s)) TYPE tokenbf_v1(512, 3, 0) GRANULARITY 1 ) ENGINE = MergeTree() ORDER BY id SETTINGS index_granularity = 8, index_granularity_bytes = '10Mi';
-CREATE TABLE bloom_filter (`id` UInt64, `s` String, INDEX tok_bf (s, lower(s)) TYPE tokenbf_v1(512, 3, 0) GRANULARITY 1) ENGINE = MergeTree ORDER BY id SETTINGS index_granularity = 8, index_granularity_bytes = '10Mi';
-create table bloom_filter2 (   id UInt64,   s String,   index tok_bf3 (s, lower(s)) type tokenbf_v1(512, 3, 0) GRANULARITY 1 ) engine = MergeTree() order by id settings index_granularity = 8;
-CREATE TABLE bloom_filter_array_offsets_i (order_key int, i Array(int), INDEX idx i TYPE bloom_filter(1.) GRANULARITY 1024) ENGINE = MergeTree() ORDER BY order_key SETTINGS index_granularity = 1024, index_granularity_bytes = '10Mi';
-CREATE TABLE bloom_filter_array_offsets_lc_str (order_key int, str Array(LowCardinality(String)), INDEX idx str TYPE bloom_filter(1.) GRANULARITY 1024) ENGINE = MergeTree() ORDER BY order_key SETTINGS index_granularity = 1024, index_granularity_bytes = '10Mi';
-CREATE TABLE bloom_filter_array_offsets_str (order_key int, str Array(String), INDEX idx str TYPE bloom_filter(1.) GRANULARITY 1024) ENGINE = MergeTree() ORDER BY order_key SETTINGS index_granularity = 1024, index_granularity_bytes = '10Mi';
-CREATE TABLE bloom_filter_array_types_test (order_key  Array(UInt64), i8 Array(Int8), i16 Array(Int16), i32 Array(Int32), i64 Array(Int64), u8 Array(UInt8), u16 Array(UInt16), u32 Array(UInt32), u64 Array(UInt64), f32 Array(Float32), f64 Array(Float64), date Array(Date), date_time Array(DateTime('Asia/Istanbul')), str Array(String), fixed_string Array(FixedString(5)), INDEX idx (i8, i16, i32, i64, u8, u16, u32, u64, f32, f64, date, date_time, str, fixed_string) TYPE bloom_filter GRANULARITY 1) ENGINE = MergeTree() ORDER BY order_key SETTINGS index_granularity = 6, index_granularity_bytes = '10Mi';
-CREATE TABLE bloom_filter_idx_good(`u64` UInt64, `i32` Int32, `f64` Float64, `d` Decimal(10, 2), `s` String, `e` Enum8('a' = 1, 'b' = 2, 'c' = 3), `dt` Date, INDEX bloom_filter_a i32 TYPE bloom_filter(0, 1) GRANULARITY 1) ENGINE = MergeTree() ORDER BY u64 SETTINGS index_granularity = 8192;
-CREATE TABLE bloom_filter_lc_null_types_test (order_key UInt64, str LowCardinality(Nullable(String)), fixed_string LowCardinality(Nullable(FixedString(5))), INDEX idx (str, fixed_string) TYPE bloom_filter GRANULARITY 1) ENGINE = MergeTree() ORDER BY order_key SETTINGS index_granularity = 6, index_granularity_bytes = '10Mi';
-CREATE TABLE bloom_filter_not_has (ary Array(LowCardinality(Nullable(String))), d Date, INDEX idx_ary ary TYPE bloom_filter(0.01) GRANULARITY 1024) ENGINE = MergeTree() PARTITION BY d ORDER BY d;
-CREATE TABLE bloom_filter_null_array (v Array(Int32), INDEX idx v TYPE bloom_filter GRANULARITY 3) ENGINE = MergeTree() ORDER BY v SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE bloom_filter_null_array (v Array(LowCardinality(Nullable(String))), INDEX idx v TYPE bloom_filter(0.1) GRANULARITY 1) ENGINE = MergeTree() ORDER BY v SETTINGS allow_nullable_key = 1;
-CREATE TABLE bloom_filter_null_types_test (order_key UInt64, i8 Nullable(Int8), i16 Nullable(Int16), i32 Nullable(Int32), i64 Nullable(Int64), u8 Nullable(UInt8), u16 Nullable(UInt16), u32 Nullable(UInt32), u64 Nullable(UInt64), f32 Nullable(Float32), f64 Nullable(Float64), date Nullable(Date), date_time Nullable(DateTime('Asia/Istanbul')), str Nullable(String), fixed_string Nullable(FixedString(5)), INDEX idx (i8, i16, i32, i64, u8, u16, u32, u64, f32, f64, date, date_time, str, fixed_string) TYPE bloom_filter GRANULARITY 1) ENGINE = MergeTree() ORDER BY order_key SETTINGS index_granularity = 6, index_granularity_bytes = '10Mi';
-CREATE TABLE bloom_filter_nullable_index   (     order_key UInt64,     str Nullable(String),     INDEX idx (str) TYPE bloom_filter GRANULARITY 1   )   ENGINE = MergeTree()   ORDER BY order_key SETTINGS index_granularity = 6, index_granularity_bytes = '10Mi';
-CREATE TABLE bloom_filter_nullable_index__fuzz_0 (   `order_key` UInt64,   `str` Nullable(String),   INDEX idx str TYPE bloom_filter GRANULARITY 1 ) ENGINE = MergeTree ORDER BY order_key SETTINGS index_granularity = 6, index_granularity_bytes = '10Mi';
-CREATE TABLE bloom_filter_nullable_index__fuzz_1 (   `order_key` UInt64,   `str` String,   INDEX idx str TYPE bloom_filter GRANULARITY 1 ) ENGINE = MergeTree ORDER BY order_key SETTINGS index_granularity = 6, index_granularity_bytes = '10Mi';
-CREATE TABLE bloom_filter_types_test (order_key  UInt64, i8 Int8, i16 Int16, i32 Int32, i64 Int64, u8 UInt8, u16 UInt16, u32 UInt32, u64 UInt64, f32 Float32, f64 Float64, date Date, date_time DateTime('Asia/Istanbul'), str String, fixed_string FixedString(5), INDEX idx (i8, i16, i32, i64, u8, u16, u32, u64, f32, f64, date, date_time, str, fixed_string) TYPE bloom_filter GRANULARITY 1) ENGINE = MergeTree() ORDER BY order_key SETTINGS index_granularity = 6, index_granularity_bytes = '10Mi';
-CREATE TABLE bm (amount float, business_dttm DateTime) engine Log;
-CREATE TABLE bool_test (value Bool,f String) ENGINE = Memory;
-CREATE TABLE broken (time UInt64) ENGINE = MergeTree PARTITION BY toYYYYMMDD(toDate(time / 1000)) ORDER BY time;
-CREATE TABLE broken_partition (   date Date,   key UInt64 ) ENGINE = ReplicatedMergeTree('/clickhouse/test_01925_{database}/rmt', 'r1') ORDER BY tuple() PARTITION BY date;
-create table buf (n int) engine=Buffer(currentDatabase(), dist, 1, 10, 100, 10, 100, 1000, 1000);
-CREATE TABLE buf (timestamp DateTime) Engine = Buffer(currentDatabase(), buf_dest, 16, 3, 20, 2000000, 20000000, 100000000, 300000000);
-CREATE TABLE buf (timestamp DateTime) Engine = Buffer(currentDatabase(), buf_dest, 16, 86400, 86400, 2000000, 20000000, 100000000, 300000000);
-CREATE TABLE buf_dest (timestamp DateTime) ENGINE = MergeTree PARTITION BY toYYYYMMDD(timestamp) ORDER BY (timestamp);
-CREATE TABLE buffer (n Int8) ENGINE = Buffer(currentDatabase(), file, 16, 10, 200, 10000, 1000000, 10000000, 1000000000);
-CREATE TABLE buffer_ (key UInt64) Engine=Buffer(currentDatabase(), dist_out, 1, 0, 0, 0, 0, 0, 0);
-CREATE TABLE buffer_ (key UInt64) Engine=Buffer(currentDatabase(), null_,   1,  /* num_layers */   10e6, /* min_time, placeholder */   10e6, /* max_time, placeholder */   0,  /* min_rows  */   10e6, /* max_rows  */   0,  /* min_bytes */   80e6 /* max_bytes */ );
-CREATE TABLE buffer_00126 (a UInt8, b String, c Array(UInt32)) ENGINE = Buffer(currentDatabase(), null_sink_00126, 1, 1000, 1000, 1000, 1000, 1000000, 1000000);
-CREATE TABLE buffer_00753 (x UInt64, y UInt64) ENGINE = Buffer(currentDatabase(), dst_00753, 1, 99999, 99999, 1, 1, 99999, 99999);
-create table buffer_01256 as system.numbers Engine=Buffer(currentDatabase(), data_01256, 1,   100, 100, /* time */   0,  9,  /* rows */   0,  1e6 /* bytes */ );
-create table buffer_01256 as system.numbers Engine=Buffer(currentDatabase(), data_01256, 1,   100, 2,  /* time */   0,  100, /* rows */   0,  1e6 /* bytes */ );
-create table buffer_01256 as system.numbers Engine=Buffer(currentDatabase(), data_01256, 1,   2, 100, /* time */   4, 100, /* rows */   1, 1e6 /* bytes */ );
-create table buffer_01277 as out_01277 Engine=Buffer(currentDatabase(), out_01277, 1,   86400, 86400,   1e5, 1e6,   10e6, 100e6);
-CREATE TABLE buffer_02184 (id UInt64, name String, dt Date) ENGINE = Buffer(default, mergeTree_02184, 16, 10, 100, 10000, 1000000, 10000000, 100000000);
-create table buffer_02572 (key Int) engine=Buffer(currentDatabase(), data_02572, 1,   /* never direct flush for flush from background thread */   /* min_time= */ 3, 3,   1, 1e9,   1, 1e9);
-CREATE TABLE buffer_table1 ( `s` String , x UInt32) ENGINE = Buffer(currentDatabase(), 'merge_tree_table1', 16, 10, 60, 10, 1000, 1048576, 2097152);
-CREATE TABLE bug_13492 (`d` DateTime) ENGINE = MergeTree PARTITION BY toYYYYMMDD(d) ORDER BY tuple();
-CREATE TABLE bug_14144 ( meta_source_req_uuid Nullable(UUID),  a Int64,  meta_source_type String ) ENGINE = MergeTree ORDER BY a;
-CREATE TABLE bug_36995(   `time` DateTime,   `product` String) ENGINE = MergeTree ORDER BY time AS SELECT '2022-01-01 00:00:00','1';
-create table bug_delta_gorilla (val UInt64 codec (Delta, Gorilla)) engine = MergeTree order by val SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-create table bug_delta_gorilla (value_bug UInt64 codec (Delta, Gorilla)) engine = MergeTree order by tuple() SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi' as (select 0 from numbers(30000000));
-create table bx (A Int64) Engine = Memory;
-CREATE TABLE byte_identical_r1(x UInt32) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_00721/byte_identical', 'r1') ORDER BY x;
-CREATE TABLE byte_identical_r2(x UInt32) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_00721/byte_identical', 'r2') ORDER BY x;
-CREATE TABLE c (k UInt64, c1 UInt64, c2 String) ENGINE = Memory;
-CREATE TABLE c (x UInt64) ENGINE = Memory;
-CREATE TABLE calendar ( `year` Int64, `month` Int64 ) ENGINE = TinyLog;
-CREATE TABLE cannot_be_nullable (n Int8, a Array(UInt8)) ENGINE=Memory;
-create table cardinality (x String) engine = MergeTree order by tuple();
-CREATE TABLE cast (   x UInt8,   e Enum8   (     'hello' = 1,     'world' = 2   )   DEFAULT   CAST   (     x     AS     Enum8     (       'hello' = 1,       'world' = 2     )   ) ) ENGINE = MergeTree ORDER BY e;
-CREATE TABLE cast1 (   x UInt8,   e Enum8   (     'hello' = 1,     'world' = 2   )   DEFAULT   CAST   (     x     AS     Enum8     (       'hello' = 1,       'world' = 2     )   ) ) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_00643/cast', 'r1') ORDER BY e;
-CREATE TABLE cast2 AS cast1 ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_00643/cast', 'r2') ORDER BY e;
-CREATE TABLE cast_enums (   type Enum8('session' = 1, 'pageview' = 2, 'click' = 3),   date Date,   id UInt64 ) ENGINE = MergeTree(date, (type, date, id), 8192);
-CREATE TABLE cat_hist (categoryId UUID, categoryName String) ENGINE Memory;
-create table cc (a UInt64, b String) ENGINE = MergeTree order by (a, b) SETTINGS compress_marks = true;
-create table cdp_customers (mid String, mid_seq UInt32) engine=ReplacingMergeTree() order by (mid_seq);
-CREATE TABLE cdp_orders (   `order_id` String,   `order_status` String,   `order_time` DateTime ) ENGINE = ReplacingMergeTree() PARTITION BY toYYYYMMDD(order_time) ORDER BY (order_time, order_id) SETTINGS index_granularity = 8192;
-create table cdp_segments (seg_id String, mid_seqs AggregateFunction(groupBitmap, UInt32)) engine=ReplacingMergeTree() order by (seg_id);
-CREATE TABLE check_codec(a Int, b Int CODEC(Delta, ZSTD)) ENGINE = MergeTree ORDER BY a SETTINGS min_bytes_for_wide_part = '10M';
-CREATE TABLE check_codec(a Int, b Int CODEC(Delta, ZSTD)) ENGINE = MergeTree ORDER BY a SETTINGS min_bytes_for_wide_part = 0;
-CREATE TABLE check_comments  (   column_name1 UInt8 DEFAULT 1 COMMENT 'comment',   column_name2 UInt8 COMMENT 'non default comment'  ) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_00753/comments', 'r1')   ORDER BY column_name1;
-CREATE TABLE check_query_log (N UInt32,S String) Engine = Log;
-CREATE TABLE check_query_test (SomeKey UInt64, SomeValue String) ENGINE = MergeTree() ORDER BY SomeKey SETTINGS min_bytes_for_wide_part = 0, min_rows_for_wide_part = 0;
-CREATE TABLE check_query_test_non_adaptive (SomeKey UInt64, SomeValue String) ENGINE = MergeTree() ORDER BY SomeKey SETTINGS index_granularity_bytes = 0, min_bytes_for_wide_part = 0, min_rows_for_wide_part = 0;
-CREATE TABLE check_query_tiny_log (N UInt32, S String) Engine = TinyLog;
-CREATE TABLE check_system_tables  (   Event Date,   UserId UInt32,   Counter UInt32  ) ENGINE = MergeTree(Event, intHash32(UserId), (Counter, Event, intHash32(UserId)), 8192);
-CREATE TABLE check_system_tables (key UInt16) ENGINE = Buffer(   currentDatabase(),   check_system_tables_null,   2,   0,  100, /* min_time /max_time */   100, 100, /* min_rows /max_rows */   0,  1e6 /* min_bytes/max_bytes */ );
-CREATE TABLE check_system_tables (key UInt16) ENGINE = Memory();
-CREATE TABLE check_system_tables (key UInt8) ENGINE = Log();
-CREATE TABLE check_system_tables (key UInt8) ENGINE = StripeLog();
-CREATE TABLE check_system_tables (key UInt8) ENGINE = TinyLog();
-CREATE TABLE check_system_tables AS check_system_tables_null Engine=Distributed(test_shard_localhost, currentDatabase(), check_system_tables_null);
-CREATE TABLE check_system_tables Engine=Join(ANY, LEFT, number) AS SELECT * FROM numbers(50);
-CREATE TABLE check_system_tables Engine=Set() AS SELECT * FROM numbers(50);
-CREATE TABLE check_system_tables_null (key Int) Engine=Null();
-CREATE TABLE check_system_tables_null (key UInt16) ENGINE = Null();
-CREATE TABLE check_table_test(value1 UInt64, value2 UInt64) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE check_table_with_indices (  id UInt64,  data String,  INDEX a (id) type minmax GRANULARITY 3 ) ENGINE = MergeTree() ORDER BY id;
-CREATE TABLE checksums_r1 (column1 UInt32, column2 String) Engine = ReplicatedMergeTree('/tables/{database}/checksums_table', 'r1') ORDER BY tuple();
-CREATE TABLE checksums_r2 (column1 UInt32, column2 String) Engine = ReplicatedMergeTree('/tables/{database}/checksums_table', 'r2') ORDER BY tuple();
-CREATE TABLE checksums_r3 (column1 UInt32, column2 String) Engine = ReplicatedMergeTree('/tables/{database}/checksums_table', 'r3') ORDER BY tuple();
-create table child (id int, pid int, primary key(id), foreign key(pid)) engine MergeTree;
-create table child2 (id int, pid int, primary key(id),            foreign key(pid) references parent(pid) on delete) engine MergeTree;
-create table child3 (id int, pid int, primary key(id),            foreign key(pid) references parent(pid) on delete cascade on update restrict) engine MergeTree;
-create table children (id String, childName String) engine MergeTree order by id;
-CREATE TABLE circles(a Float64, b Float64) Engine=Memory();
-CREATE TABLE clear_column (d Date, num Int64, str String) ENGINE = MergeTree ORDER BY d PARTITION by toYYYYMM(d) SETTINGS min_bytes_for_wide_part = 0;
-CREATE TABLE clear_column(x UInt32, y UInt32) ENGINE MergeTree ORDER BY x PARTITION by x;
-CREATE TABLE clear_column1 (d Date, i Int64) ENGINE = ReplicatedMergeTree('/clickhouse/{database}/test_00446/tables/clear_column', '1') ORDER BY d PARTITION by toYYYYMM(d) SETTINGS min_bytes_for_wide_part = 0;
-CREATE TABLE clear_column2 (d Date, i Int64) ENGINE = ReplicatedMergeTree('/clickhouse/{database}/test_00446/tables/clear_column', '2') ORDER BY d PARTITION by toYYYYMM(d) SETTINGS min_bytes_for_wide_part = 0;
-CREATE TABLE click_storage ( `PhraseID` UInt64, `PhraseProcessedID` UInt64 ALIAS if(PhraseID > 5, PhraseID, 0) ) ENGINE = MergeTree() ORDER BY tuple();
-CREATE TABLE click_storage_dst ( `PhraseID` UInt64, `PhraseProcessedID` UInt64 ) ENGINE = Distributed(test_shard_localhost, currentDatabase(), 'click_storage');
-CREATE TABLE clicks (domain String) ENGINE = Memory;
-CREATE TABLE cnf_test (i Int64) ENGINE = MergeTree() ORDER BY i;
-CREATE TABLE codecs (id UInt32 CODEC(NONE), val UInt32 CODEC(NONE), s String CODEC(NONE))   ENGINE = MergeTree ORDER BY id   SETTINGS min_rows_for_wide_part = 10000, ratio_of_defaults_for_sparse_serialization = 1;
-CREATE TABLE codecs (id UInt32, val UInt32 CODEC(Delta, ZSTD), s String CODEC(ZSTD))   ENGINE = MergeTree ORDER BY id   SETTINGS min_rows_for_wide_part = 10000, ratio_of_defaults_for_sparse_serialization = 1;
-CREATE TABLE codecs (id UInt32, val UInt32, s String)   ENGINE = MergeTree ORDER BY id   SETTINGS min_rows_for_wide_part = 10000, ratio_of_defaults_for_sparse_serialization = 1;
-CREATE TABLE codecs1 (a UInt8 CODEC(NONE, NONE)) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE codecs10 (a FixedString(2) CODEC(Gorilla)) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE codecs11 (a Decimal(15,5) CODEC(Gorilla)) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE codecs2 (a UInt8 CODEC(NONE, LZ4)) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE codecs3 (a UInt8 CODEC(LZ4, NONE)) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE codecs4 (a UInt8 CODEC(LZ4, LZ4)) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE codecs5 (a UInt8 CODEC(LZ4, ZSTD)) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE codecs6 (a UInt8 CODEC(Delta)) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE codecs7 (a UInt8 CODEC(Delta, Delta)) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE codecs8 (a UInt8 CODEC(LZ4, Delta)) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE codecs9 (a UInt8 CODEC(Gorilla)) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE codecTest (   key   UInt64,   name   String,   ref_valueF64 Float64,   ref_valueF32 Float32,   valueF64 Float64 CODEC(FPC(4)),   valueF32 Float32 CODEC(FPC(4)) ) Engine = MergeTree ORDER BY key;
-CREATE TABLE codecTest (   key   UInt64,   name   String,   ref_valueF64 Float64,   ref_valueF32 Float32,   valueF64 Float64 CODEC(FPC),   valueF32 Float32 CODEC(FPC) ) Engine = MergeTree ORDER BY key;
-CREATE TABLE codecTest (   key   UInt64,   name   String,   ref_valueF64 Float64,   ref_valueF32 Float32,   valueF64 Float64 CODEC(Gorilla),   valueF32 Float32 CODEC(Gorilla) ) Engine = MergeTree ORDER BY key;
-CREATE TABLE codecTest (   key   UInt64,   ref_valueU64 UInt64,   ref_valueU32 UInt32,   ref_valueU16 UInt16,   ref_valueU8 UInt8,   ref_valueI64 Int64,   ref_valueI32 Int32,   ref_valueI16 Int16,   ref_valueI8 Int8,   ref_valueDT DateTime,   ref_valueD  Date,   valueU64 UInt64  CODEC(DoubleDelta),   valueU32 UInt32  CODEC(DoubleDelta),   valueU16 UInt16  CODEC(DoubleDelta),   valueU8 UInt8  CODEC(DoubleDelta),   valueI64 Int64  CODEC(DoubleDelta),   valueI32 Int32  CODEC(DoubleDelta),   valueI16 Int16  CODEC(DoubleDelta),   valueI8 Int8   CODEC(DoubleDelta),   valueDT DateTime CODEC(DoubleDelta),   valueD  Date   CODEC(DoubleDelta) ) Engine = MergeTree ORDER BY key SETTINGS min_bytes_for_wide_part = 0, ratio_of_defaults_for_sparse_serialization = 1;
-CREATE TABLE codecTest (   key   UInt64,   ref_valueU64 UInt64,   ref_valueU32 UInt32,   ref_valueU16 UInt16,   ref_valueU8 UInt8,   ref_valueI64 Int64,   ref_valueI32 Int32,   ref_valueI16 Int16,   ref_valueI8 Int8,   ref_valueDT DateTime,   ref_valueD  Date,   valueU64 UInt64  CODEC(DoubleDelta),   valueU32 UInt32  CODEC(DoubleDelta),   valueU16 UInt16  CODEC(DoubleDelta),   valueU8 UInt8  CODEC(DoubleDelta),   valueI64 Int64  CODEC(DoubleDelta),   valueI32 Int32  CODEC(DoubleDelta),   valueI16 Int16  CODEC(DoubleDelta),   valueI8 Int8   CODEC(DoubleDelta),   valueDT DateTime CODEC(DoubleDelta),   valueD  Date   CODEC(DoubleDelta) ) Engine = MergeTree ORDER BY key SETTINGS min_bytes_for_wide_part = 0;
-CREATE TABLE collapsing(key String, value String, sign Int8) ENGINE CollapsingMergeTree(sign)   ORDER BY key   SETTINGS enable_vertical_merge_algorithm=1,       vertical_merge_algorithm_min_rows_to_activate=0,       vertical_merge_algorithm_min_columns_to_activate=0;
-CREATE TABLE collapsing_merge_tree (d Date, a String, b UInt8, x String, y Int8, z UInt32) ENGINE = CollapsingMergeTree(d, (a, b), 111, y);
-CREATE TABLE collapsing_merge_tree (key UInt32, sign Int8, date Datetime) ENGINE=CollapsingMergeTree(sign) PARTITION BY date ORDER BY key;
-CREATE TABLE collapsing_merge_tree_with_sampling  (d Date, a String, b UInt8, x String, y Int8, z UInt32) ENGINE = CollapsingMergeTree(d, sipHash64(a) + b, (a, sipHash64(a) + b), 111, y);
-CREATE TABLE collapsing_suspicious_granularity (   key UInt64,   value UInt64,   Sign Int8 ) ENGINE = CollapsingMergeTree(Sign) ORDER BY key SETTINGS   vertical_merge_algorithm_min_rows_to_activate=0,   vertical_merge_algorithm_min_columns_to_activate=0,   min_bytes_for_wide_part = 0,   index_granularity = 1;
-CREATE TABLE collapsing_table (   key UInt64,   value UInt64,   Sign Int8 ) ENGINE = CollapsingMergeTree(Sign) ORDER BY key SETTINGS   vertical_merge_algorithm_min_rows_to_activate=0,   vertical_merge_algorithm_min_columns_to_activate=0,   min_bytes_for_wide_part = 0;
-CREATE TABLE collate_test1 (x UInt32, s Array(String)) ENGINE=Memory();
-CREATE TABLE collate_test1 (x UInt32, s Tuple(UInt32, String)) ENGINE=Memory();
-CREATE TABLE collate_test2 (x UInt32, s Array(LowCardinality(Nullable(String)))) ENGINE=Memory();
-CREATE TABLE collate_test2 (x UInt32, s Tuple(UInt32, LowCardinality(Nullable(String)))) ENGINE=Memory();
-CREATE TABLE collate_test3 (x UInt32, s Array(Array(String))) ENGINE=Memory();
-CREATE TABLE collate_test3 (x UInt32, s Tuple(UInt32, Tuple(UInt32, Array(String)))) ENGINE=Memory();
-CREATE TABLE column_modify_test (id UInt64, val String, other_col UInt64) engine=MergeTree ORDER BY id SETTINGS min_bytes_for_wide_part=0;
-CREATE TABLE column_size_bug (date_time DateTime, value SimpleAggregateFunction(sum,UInt64)) ENGINE = AggregatingMergeTree PARTITION BY toStartOfInterval(date_time, INTERVAL 1 DAY) ORDER BY (date_time) SETTINGS remove_empty_parts = 0;
-CREATE TABLE column_swap_test_test (i Int64, a String, b String, CONSTRAINT c1 ASSUME a = substring(reverse(b), 1, 1)) ENGINE = MergeTree() ORDER BY i;
-CREATE TABLE column_swap_test_test (i Int64, a String, b UInt64, CONSTRAINT c1 ASSUME b = cityHash64(a)) ENGINE = MergeTree() ORDER BY i;
-CREATE TABLE columns (a UInt8, b UInt8, c UInt8) ENGINE = Memory;
-CREATE TABLE columns_transformers (i int, j int, k int, a_bytes int, b_bytes int, c_bytes int) Engine=TinyLog;
-CREATE TABLE columns_transformers (i Int64, j Int16, k Int64) Engine=TinyLog;
-CREATE TABLE columns_with_multiple_streams (  field0 Nullable(Int64) CODEC(Delta(2), LZ4),  field1 Nullable(Int64) CODEC(Delta, LZ4),  field2 Array(Array(Int64)) CODEC(Delta, LZ4),  field3 Tuple(UInt32, Array(UInt64)) CODEC(T64, Default) ) ENGINE = MergeTree ORDER BY tuple() SETTINGS min_rows_for_wide_part = 0, min_bytes_for_wide_part = 0;
-CREATE TABLE columns_with_multiple_streams_bad_case (  field0 Nullable(UInt64) CODEC(Delta) ) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE columns_with_multiple_streams_compact (  field0 Nullable(Int64) CODEC(Delta(2), LZ4),  field1 Nullable(Int64) CODEC(Delta, LZ4),  field2 Array(Array(Int64)) CODEC(Delta, LZ4),  field3 Tuple(UInt32, Array(UInt64)) CODEC(Delta, Default) ) ENGINE = MergeTree ORDER BY tuple() SETTINGS min_rows_for_wide_part = 100000, min_bytes_for_wide_part = 100000;
-CREATE TABLE ColumnsClauseTest (product_price Int64, product_weight Int16, amount Int64) Engine=TinyLog;
-CREATE TABLE complex_key_dictionary_source_table (   id UInt64,   id_key String,   value String,   value_nullable Nullable(String) ) ENGINE = TinyLog;
-CREATE TABLE complex_key_source_table_01862 (   id UInt64,   id_key String,   value String ) ENGINE = Memory();
-CREATE TABLE compress_table (  key UInt64,  value1 String CODEC(Default),  value2 UInt64 CODEC(Delta, Default),  value3 String CODEC(ZSTD(10)) ) ENGINE = MergeTree() ORDER BY key;
-CREATE TABLE compression_codec(   id UInt64 CODEC(DEFLATE_QPL),   data String CODEC(DEFLATE_QPL),   ddd Date CODEC(DEFLATE_QPL),   ddd32 Date32 CODEC(DEFLATE_QPL),   somenum Float64 CODEC(DEFLATE_QPL),   somestr FixedString(3) CODEC(DEFLATE_QPL),   othernum Int64 CODEC(DEFLATE_QPL),   somearray Array(UInt8) CODEC(DEFLATE_QPL),   somemap Map(String, UInt32) CODEC(DEFLATE_QPL),   sometuple Tuple(UInt16, UInt64) CODEC(DEFLATE_QPL), ) ENGINE = MergeTree() ORDER BY tuple();
-CREATE TABLE compression_codec(   id UInt64 CODEC(LZ4),   data String CODEC(ZSTD),   ddd Date CODEC(NONE),   somenum Float64 CODEC(ZSTD(2)),   somestr FixedString(3) CODEC(LZ4HC(7)),   othernum Int64 CODEC(Delta) ) ENGINE = MergeTree() ORDER BY tuple();
-CREATE TABLE compression_codec_log(   id UInt64 CODEC(LZ4),   data String CODEC(ZSTD),   ddd Date CODEC(NONE),   somenum Float64 CODEC(ZSTD(2)),   somestr FixedString(3) CODEC(LZ4HC(7)),   othernum Int64 CODEC(Delta) ) ENGINE = Log();
-CREATE TABLE compression_codec_multiple (   id UInt64 CODEC(LZ4, ZSTD, NONE, LZ4HC, Delta(4)),   data String CODEC(ZSTD(2), NONE, Delta(2), LZ4HC, LZ4, LZ4, Delta(8)),   ddd Date CODEC(NONE, NONE, NONE, Delta(1), LZ4, ZSTD, LZ4HC, LZ4HC),   somenum Float64 CODEC(Delta(4), LZ4, LZ4, ZSTD(2), LZ4HC(5), ZSTD(3), ZSTD) ) ENGINE = MergeTree() ORDER BY tuple();
-CREATE TABLE compression_codec_multiple_log (   id UInt64 CODEC(LZ4, ZSTD, NONE, LZ4HC, Delta(4)),   data String CODEC(ZSTD(2), NONE, Delta(2), LZ4HC, LZ4, LZ4, Delta(8)),   ddd Date CODEC(NONE, NONE, NONE, Delta(1), LZ4, ZSTD, LZ4HC, LZ4HC),   somenum Float64 CODEC(Delta(4), LZ4, LZ4, ZSTD(2), LZ4HC(5), ZSTD(3), ZSTD) ) ENGINE = Log();
-CREATE TABLE compression_codec_multiple_more_types (   id Decimal128(13) CODEC(ZSTD, LZ4, ZSTD, ZSTD, Delta(2), Delta(4), Delta(1), LZ4HC),   data FixedString(12) CODEC(ZSTD, ZSTD, Delta, Delta, Delta, NONE, NONE, NONE, LZ4HC),   ddd Nested (age UInt8, Name String) CODEC(LZ4, LZ4HC, NONE, NONE, NONE, ZSTD, Delta(8)) ) ENGINE = MergeTree() ORDER BY tuple();
-CREATE TABLE compression_codec_multiple_more_types_replicated (   id Decimal128(13) CODEC(ZSTD, LZ4, ZSTD, ZSTD, Delta(2), Delta(4), Delta(1), LZ4HC),   data FixedString(12) CODEC(ZSTD, ZSTD, Delta(1), Delta(1), Delta(1), NONE, NONE, NONE, LZ4HC),   ddd Nested (age UInt8, Name String) CODEC(LZ4, LZ4HC, NONE, NONE, NONE, ZSTD, Delta(8)) ) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_00910/compression_codec_multiple_more_types_replicated', '1') ORDER BY tuple();
-CREATE TABLE compression_codec_multiple_replicated1 (   id UInt64 CODEC(LZ4, ZSTD, NONE, LZ4HC, Delta(4)),   data String CODEC(ZSTD(2), NONE, Delta(2), LZ4HC, LZ4, LZ4, Delta(8)),   ddd Date CODEC(NONE, NONE, NONE, Delta(1), LZ4, ZSTD, LZ4HC, LZ4HC),   somenum Float64 CODEC(Delta(4), LZ4, LZ4, ZSTD(2), LZ4HC(5), ZSTD(3), ZSTD) ) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_00910/compression_codec_multiple', '1') ORDER BY tuple();
-CREATE TABLE compression_codec_multiple_replicated2 (   id UInt64 CODEC(LZ4, ZSTD, NONE, LZ4HC, Delta(4)),   data String CODEC(ZSTD(2), NONE, Delta(2), LZ4HC, LZ4, LZ4, Delta(8)),   ddd Date CODEC(NONE, NONE, NONE, Delta(1), LZ4, ZSTD, LZ4HC, LZ4HC),   somenum Float64 CODEC(Delta(4), LZ4, LZ4, ZSTD(2), LZ4HC(5), ZSTD(3), ZSTD) ) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_00910/compression_codec_multiple', '2') ORDER BY tuple();
-CREATE TABLE compression_codec_multiple_tiny_log (   id UInt64 CODEC(LZ4, ZSTD, NONE, LZ4HC, Delta(4)),   data String CODEC(ZSTD(2), NONE, Delta(2), LZ4HC, LZ4, LZ4, Delta(8)),   ddd Date CODEC(NONE, NONE, NONE, Delta(1), LZ4, ZSTD, LZ4HC, LZ4HC),   somenum Float64 CODEC(Delta(4), LZ4, LZ4, ZSTD(2), LZ4HC(5), ZSTD(3), ZSTD) ) ENGINE = TinyLog();
-CREATE TABLE compression_codec_multiple_with_key (   somedate Date CODEC(ZSTD, ZSTD, ZSTD(12), LZ4HC(12), Delta, Delta),   id UInt64 CODEC(LZ4, ZSTD, Delta, NONE, LZ4HC, Delta),   data String CODEC(ZSTD(2), Delta(1), LZ4HC, NONE, LZ4, LZ4) ) ENGINE = MergeTree() PARTITION BY somedate ORDER BY id SETTINGS index_granularity = 2, index_granularity_bytes = '10Mi';
-CREATE TABLE compression_codec_multiple_with_key_replicated (   somedate Date CODEC(ZSTD, ZSTD, ZSTD(12), LZ4HC(12), Delta, Delta),   id UInt64 CODEC(LZ4, ZSTD, Delta, NONE, LZ4HC, Delta),   data String CODEC(ZSTD(2), Delta(1), LZ4HC, NONE, LZ4, LZ4) ) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_00910/compression_codec_multiple_with_key_replicated', '1') PARTITION BY somedate ORDER BY id SETTINGS index_granularity = 2, index_granularity_bytes = '10Mi';
-CREATE TABLE compression_codec_on_alias (   `c0` ALIAS c1 CODEC(ZSTD),   c1 UInt64 ) ENGINE = MergeTree() PARTITION BY c0 ORDER BY c1;
-CREATE TABLE compression_codec_on_alias (   c0 UInt64 CODEC(ZSTD),   c1 UInt64 ) ENGINE = MergeTree() PARTITION BY c0 ORDER BY c1;
-CREATE TABLE compression_codec_replicated1(   id UInt64 CODEC(LZ4),   data String CODEC(ZSTD),   ddd Date CODEC(NONE),   somenum Float64 CODEC(ZSTD(2)),   somestr FixedString(3) CODEC(LZ4HC(7)),   othernum Int64 CODEC(Delta) ) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_00910/compression_codec_replicated', '1') ORDER BY tuple();
-CREATE TABLE compression_codec_replicated2(  id UInt64 CODEC(LZ4),  data String CODEC(ZSTD),  ddd Date CODEC(NONE),  somenum Float64 CODEC(ZSTD(2)),  somestr FixedString(3) CODEC(LZ4HC(7)),  othernum Int64 CODEC(Delta) ) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_00910/compression_codec_replicated', '2') ORDER BY tuple();
-CREATE TABLE compression_codec_tiny_log(   id UInt64 CODEC(LZ4),   data String CODEC(ZSTD),   ddd Date CODEC(NONE),   somenum Float64 CODEC(ZSTD(2)),   somestr FixedString(3) CODEC(LZ4HC(7)),   othernum Int64 CODEC(Delta) ) ENGINE = TinyLog();
-CREATE TABLE concat_nested_test(attrs Nested(k String, v String)) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE concat_saf_test(x SimpleAggregateFunction(max, Int32)) ENGINE=MergeTree ORDER BY tuple();
-CREATE TABLE const_in_const (id UInt64, date Date, uid UInt32, name String, Sign Int8) ENGINE = CollapsingMergeTree(date, intHash32(uid), (id, date, intHash32(uid)), 8192, Sign);
-CREATE TABLE constCondOptimization (   d Date DEFAULT today(),   time DateTime DEFAULT now(),   n Int64 ) ENGINE = MergeTree ORDER BY (time, n) SETTINGS index_granularity = 1;
-CREATE TABLE constrained (URL String, CONSTRAINT is_censor CHECK domainWithoutWWW(URL) = 'censor.net', CONSTRAINT is_utf8 CHECK isValidUTF8(URL)) ENGINE = Log;
-CREATE TABLE constrained (URL String, CONSTRAINT is_censor CHECK domainWithoutWWW(URL) = 'censor.net', CONSTRAINT is_utf8 CHECK isValidUTF8(URL)) ENGINE = Memory;
-CREATE TABLE constrained (URL String, CONSTRAINT is_censor CHECK domainWithoutWWW(URL) = 'censor.net', CONSTRAINT is_utf8 CHECK isValidUTF8(URL)) ENGINE = Null;
-CREATE TABLE constrained (URL String, CONSTRAINT is_censor CHECK domainWithoutWWW(URL) = 'censor.net', CONSTRAINT is_utf8 CHECK isValidUTF8(URL)) ENGINE = StripeLog;
-CREATE TABLE constrained (URL String, CONSTRAINT is_censor CHECK domainWithoutWWW(URL) = 'censor.net', CONSTRAINT is_utf8 CHECK isValidUTF8(URL)) ENGINE = TinyLog;
-CREATE TABLE constrained2 AS constrained;
-CREATE TABLE constraint_constant_nullable_expression_that_contains_null (   id UInt64,   CONSTRAINT `c0` CHECK nullIf(1 % 2, 1) ) ENGINE = TinyLog();
-CREATE TABLE constraint_constant_number_expression (   id UInt64,   CONSTRAINT `c0` CHECK 1,   CONSTRAINT `c1` CHECK 1 < 2,   CONSTRAINT `c2` CHECK isNull(cast(NULL, 'Nullable(UInt8)')) ) ENGINE = TinyLog();
-CREATE TABLE constraint_constant_number_expression_non_uint8 (   id UInt64,   CONSTRAINT `c0` CHECK toUInt64(1) ) ENGINE = TinyLog();
-CREATE TABLE constraint_on_low_cardinality_nullable_type (   `id` LowCardinality(Nullable(UInt64)),   CONSTRAINT `c0` CHECK `id` = 3 ) ENGINE = TinyLog;
-CREATE TABLE constraint_on_low_cardinality_type (   `id` LowCardinality(UInt64),   CONSTRAINT `c0` CHECK `id` = 2 ) ENGINE = TinyLog;
-CREATE TABLE constraint_on_nullable_type (   `id` Nullable(UInt64),   CONSTRAINT `c0` CHECK `id` = 1 ) ENGINE = TinyLog();
-CREATE TABLE constraint_test_assumption (URL String, a Int32, CONSTRAINT c1 ASSUME domainWithoutWWW(URL) = 'bigmir.net', CONSTRAINT c2 ASSUME URL > 'zzz' AND startsWith(URL, 'test') = True) ENGINE = TinyLog;
-CREATE TABLE constraint_test_constants (a Int64, b Int64, c Int64, CONSTRAINT c1 ASSUME b > 10 AND a >= 10) ENGINE = TinyLog;
-CREATE TABLE constraint_test_constants_repl (a Int64, b Int64, c Int64, d Int64, CONSTRAINT c1 ASSUME a - b = 10 AND c + d = 20) ENGINE = TinyLog;
-CREATE TABLE constraint_test_strong_connectivity (a String, b String, c String, d String, CONSTRAINT c1 ASSUME a <= b AND b <= c AND c <= d AND d <= a) ENGINE = TinyLog;
-CREATE TABLE constraint_test_transitivity (a Int64, b Int64, c Int64, d Int32, CONSTRAINT c1 ASSUME a = b AND c = d, CONSTRAINT c2 ASSUME b = c) ENGINE = TinyLog;
-CREATE TABLE constraint_test_transitivity2 (a String, b String, c String, d String, CONSTRAINT c1 ASSUME a > b AND b >= c AND c > d AND a >= d) ENGINE = TinyLog;
-CREATE TABLE constraint_test_transitivity3 (a Int64, b Int64, c Int64, CONSTRAINT c1 ASSUME b > 10 AND 1 > a) ENGINE = TinyLog;
-CREATE TABLE consumer_02366 (   `id` UInt16,   `dec` AggregateFunction(argMin, Decimal(24, 10), UInt16) ) ENGINE = AggregatingMergeTree PRIMARY KEY id ORDER BY id;
-create table coords (x Float32, y Float32) engine = Memory;
-create table copy_02572 (key Int) engine=Memory();
-CREATE TABLE count (x UInt64) ENGINE = MergeTree ORDER BY tuple() SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE count (x UInt64) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE count_lc_test (   `s` LowCardinality(String),   `arr` Array(LowCardinality(String)),   `num` UInt64 ) ENGINE = MergeTree ORDER BY (s, arr);
-CREATE TABLE count_lc_test (   `s` LowCardinality(String),   `arr` Array(String),   `num` UInt64 ) ENGINE = MergeTree ORDER BY (s, arr);
-CREATE TABLE counter (id UInt64, createdAt DateTime) ENGINE = MergeTree() ORDER BY id;
-CREATE TABLE crash_02919 (   b Int64,   c Nullable(Int64) MATERIALIZED b,   d Nullable(Bool) MATERIALIZED b ) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE create_as_select_01021 engine=Memory AS (SELECT (1, 1));
-CREATE TABLE cte1(a Int64) ENGINE=Memory;
-CREATE TABLE cte2(a Int64) ENGINE=Memory;
-CREATE TABLE cube(a String, b Int32, s Int32) ENGINE = Memory;
-CREATE TABLE current_failed_query_metrics (event LowCardinality(String), value UInt64) ENGINE = Memory();
-CREATE TABLE customer (   `c_customer_sk` Int64,   `c_customer_id` String,   `c_current_cdemo_sk` Nullable(Int64),   `c_current_hdemo_sk` Nullable(Int64),   `c_current_addr_sk` Nullable(Int64),   `c_first_shipto_date_sk` Nullable(Int64),   `c_first_sales_date_sk` Nullable(Int64),   `c_salutation` Nullable(String),   `c_first_name` Nullable(String),   `c_last_name` Nullable(String),   `c_preferred_cust_flag` Nullable(String),   `c_birth_day` Nullable(Int64),   `c_birth_month` Nullable(Int64),   `c_birth_year` Nullable(Int64),   `c_birth_country` Nullable(String),   `c_login` Nullable(String),   `c_email_address` Nullable(String),   `c_last_review_date` Nullable(String) ) ENGINE = MergeTree ORDER BY c_customer_sk;
-CREATE TABLE customer_address (   `ca_address_sk` Int64,   `ca_address_id` String,   `ca_street_number` Nullable(String),   `ca_street_name` Nullable(String),   `ca_street_type` Nullable(String),   `ca_suite_number` Nullable(String),   `ca_city` Nullable(String),   `ca_county` Nullable(String),   `ca_state` Nullable(String),   `ca_zip` Nullable(String),   `ca_country` Nullable(String),   `ca_gmt_offset` Nullable(Float32),   `ca_location_type` Nullable(String) ) ENGINE = MergeTree ORDER BY ca_address_sk;
-CREATE TABLE customer_demographics (   `cd_demo_sk` Int64,   `cd_gender` Nullable(String),   `cd_marital_status` Nullable(String),   `cd_education_status` Nullable(String),   `cd_purchase_estimate` Nullable(Int64),   `cd_credit_rating` Nullable(String),   `cd_dep_count` Nullable(Int64),   `cd_dep_employed_count` Nullable(Int64),   `cd_dep_college_count` Nullable(Int64) ) ENGINE = MergeTree ORDER BY cd_demo_sk;
-CREATE TABLE Customers (     FirstName Nullable(String),   LastName String,   Occupation String,   Education String,   Age Nullable(UInt8) ) ENGINE = Memory;
-CREATE TABLE Customers (   FirstName Nullable(String),   LastName String,   Occupation String,   Education String,   Age Nullable(UInt8) ) ENGINE = Memory;
-CREATE TABLE d (   `v` Enum8('a' = 1) ) ENGINE = Distributed('test_cluster_two_shards', currentDatabase(), m, rand());
-CREATE TABLE d (   `v` UInt16 ) ENGINE = Distributed('test_cluster_two_shards', currentDatabase(), m, rand());
-CREATE TABLE d (`id` Int64, `name` String ) ENGINE = TinyLog;
-CREATE TABLE d (a String, b Int) ENGINE = Distributed(test_cluster_two_shards_localhost, currentDatabase(), t);
-CREATE TABLE d (a String, b Int) ENGINE = Distributed(test_shard_localhost, currentDatabase(), t);
-create table d (dt DateTime, j int) engine MergeTree partition by (toDate(dt), ceiling(j), toDate(dt), CEILING(j)) order by tuple();
-create table d (i int, j int) engine MergeTree partition by i % 2 order by tuple() settings index_granularity = 1;
-create table d (i UInt8) Engine=Memory;
-CREATE TABLE d (k UInt64, d1 UInt64, d2 String) ENGINE = Memory;
-CREATE TABLE d (x Enum8('abc' = 0, 'def' = 1, 'xyz' = 2)) ENGINE = Distributed(test_cluster_two_shards, currentDatabase(), t);
-CREATE TABLE d (x Enum8('abc' = 0, 'def' = 1, 'xyz' = 2)) ENGINE = Distributed(test_cluster_two_shards_localhost, currentDatabase(), t);
-CREATE TABLE d (x Enum8('abc' = 0, 'def' = 1, 'xyz' = 2)) ENGINE = Distributed(test_shard_localhost, currentDatabase(), t);
-CREATE TABLE d AS t ENGINE = Distributed(test_cluster_two_shards_different_databases, currentDatabase(), t);
-CREATE TABLE d_numbers (number UInt32) ENGINE = Distributed(test_cluster_two_shards, system, numbers, rand());
-CREATE TABLE d_one (dummy UInt8) ENGINE = Distributed(test_cluster_two_shards, system, one, rand());
-CREATE TABLE d_src (id UInt64, country_id UInt8, name String) Engine = Memory;
-create table da_memory_efficient_shard(A Int64, B Int64) Engine=MergeTree order by A partition by B % 2;
-create table dat (blockNum Decimal(10,0), eventTimestamp DateTime64(9)) Engine=MergeTree() primary key eventTimestamp;
-CREATE TABLE data (   `n` UInt32,   `t` DateTime ) ENGINE = Null;
-CREATE TABLE data (   key Int,   v1  DateTime,   INDEX v1_index v1 TYPE minmax GRANULARITY 1 ) ENGINE=AggregatingMergeTree() ORDER BY key SETTINGS index_granularity=8192, min_bytes_for_wide_part=0, min_rows_for_wide_part=0;
-CREATE TABLE data (   key Int,   v1  DateTime,   INDEX v1_index v1 TYPE minmax GRANULARITY 1 ) ENGINE=AggregatingMergeTree() ORDER BY key SETTINGS index_granularity=8192;
-create table data (   key Int,   `legacy_features_Map.id` Array(UInt8),   `legacy_features_Map.count` Array(UInt32), ) engine=MergeTree() order by key settings   min_bytes_for_wide_part=0,   min_rows_for_wide_part=0,   vertical_merge_algorithm_min_rows_to_activate=0,   vertical_merge_algorithm_min_columns_to_activate=0;
-CREATE TABLE data (   p Int,   t DateTime,   INDEX idx t TYPE minmax GRANULARITY 1 ) ENGINE = MergeTree PARTITION BY p ORDER BY t SETTINGS number_of_free_entries_in_pool_to_execute_mutation=0;
-CREATE TABLE data ( `id` UInt64, `timestamp` DateTime) ENGINE = Memory;
-CREATE TABLE data (a Int64, b Int64) ENGINE = TinyLog();
-create table data (key Int) engine=Memory();
-create table data (key Int) engine=MergeTree() order by key;
-create table data (key Int, val1 SimpleAggregateFunction(max, Nullable(Int)), val2 SimpleAggregateFunction(min, Int)) engine=AggregatingMergeTree() order by key;
-create table data (key String) Engine=Memory();
-create table data (part Int) engine=MergeTree() order by tuple() partition by part;
-CREATE TABLE data (s String, x Int8, y Int8) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE data (str String) ENGINE=MergeTree ORDER BY str;
-CREATE TABLE data (ts DateTime, field String, num_field Nullable(Float64)) ENGINE = MergeTree() PARTITION BY ts ORDER BY ts;
-CREATE TABLE data (value Int8) ENGINE = TinyLog;
-CREATE TABLE data2013 (name String, value UInt32) ENGINE = Memory;
-CREATE TABLE data2014 (name String, value UInt32) ENGINE = Memory;
-CREATE TABLE data2015 (data_name String, data_value UInt32) ENGINE = Memory;
-create table data2_01071 (key Int, sub_key Int) Engine=Null();
-CREATE TABLE data_00184 Engine=Memory() AS SELECT * FROM numbers(2);
-CREATE TABLE data_00612 (key UInt64, val UInt64) ENGINE = MergeTree ORDER BY key;
-create table data_01071 (key Int) Engine=Null();
-create table data_01072 (key Int) Engine=MergeTree() ORDER BY key;
-create table data_01072 (key Int, value Int, str String) Engine=Null();
-create table data_01223 (key Int) Engine=Memory();
-create table data_01227 (key Int) Engine=MergeTree() order by key;
-create table data_01247 as system.numbers engine=Memory();
-create table data_01247 engine=Memory() as select number key, 0 value from numbers(2);
-create table data_01256 as system.numbers Engine=Memory();
-CREATE TABLE data_01269 (   key   Int32,   value  Nullable(Int32),   alias  UInt8 ALIAS value>0 ) ENGINE = MergeTree() ORDER BY key;
-create table data_01270 (key LowCardinality(Int)) Engine=Null();
-create table data_01279 (key String) Engine=TinyLog();
-CREATE TABLE data_01283 engine=MergeTree() ORDER BY key PARTITION BY key AS SELECT number key FROM numbers(10);
-CREATE TABLE data_01285 (   key  Int,   value SimpleAggregateFunction(max, Nullable(Int)),   INDEX value_idx assumeNotNull(value) TYPE minmax GRANULARITY 1 ) ENGINE=AggregatingMergeTree() ORDER BY key;
-create table data_01292 (   key Int,   index key_idx (key) type minmax granularity 1 ) Engine=MergeTree() ORDER BY (key+0);
-create table data_01295 (key Int) Engine=AggregatingMergeTree() order by key;
-create table data_01319 (key Int, sub_key Int) Engine=Null();
-create table data_01320 (key Int) Engine=Null();
-create table data_01409 engine=Memory as select * from numbers(20);
-create table data_01513 (key String) engine=MergeTree() order by key;
-CREATE TABLE data_01515 (   key Int,   d1 Int,   d1_null Nullable(Int),   INDEX d1_idx d1 TYPE minmax GRANULARITY 1,   INDEX d1_null_idx assumeNotNull(d1_null) TYPE minmax GRANULARITY 1 ) Engine=MergeTree() ORDER BY key;
-create table data_01527 engine=Memory() as select toUInt64(number) key from numbers(2);
-CREATE TABLE data_01551 (   key    UInt32 ) engine=AggregatingMergeTree() PARTITION BY key%2 ORDER BY (key, key/2) SETTINGS index_granularity=10, index_granularity_bytes='10Mi';
-create table data_01555 (key Int) Engine=Null();
-create table data_01593 (key Int) engine=MergeTree() order by key partition by key;
-create table data_01641 (key Int, value String) engine=MergeTree order by (key, repeat(value, 40)) settings old_parts_lifetime=0, min_bytes_for_wide_part=0;
-create table data_01643 (key Int) engine=Memory();
-create table data_01643 (key Int) engine=MergeTree() order by key settings min_bytes_for_wide_part=0, fsync_after_insert=1, fsync_part_directory=1;
-create table data_01643 (key Int) engine=MergeTree() order by key settings min_bytes_for_wide_part=0, fsync_after_insert=1;
-create table data_01643 (key Int) engine=MergeTree() order by key settings min_bytes_for_wide_part=0, fsync_part_directory=1, enable_vertical_merge_algorithm=1, vertical_merge_algorithm_min_rows_to_activate=0, vertical_merge_algorithm_min_columns_to_activate=0;
-create table data_01643 (key Int) engine=MergeTree() order by key settings min_rows_for_wide_part=2, fsync_after_insert=1, fsync_part_directory=1;
-create table data_01643 (key Int) engine=MergeTree() order by key settings min_rows_for_wide_part=2, fsync_after_insert=1;
-create table data_01643 (key Int) engine=MergeTree() order by key;
-CREATE TABLE data_01646 (x Date, s String) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_01646/data_01646', 'r') ORDER BY s PARTITION BY x;
-CREATE TABLE data_01655 (key Int) Engine=MergeTree() ORDER BY key;
-CREATE TABLE data_01660 (key Int) Engine=MergeTree() ORDER BY key;
-create table data_01670 (key Int) engine=Null();
-create table data_01709 (i int) engine MergeTree order by i settings old_parts_lifetime = 10000000000, min_bytes_for_wide_part = 0, inactive_parts_to_throw_insert = 1;
-create table data_01755 (i Int) Engine=Memory;
-create table data_01756_signed (key Int) engine=Null;
-create table data_01756_str (key String) engine=Memory();
-create table data_01801 (key Int) engine=MergeTree() order by key settings index_granularity=10 as select number/10 from numbers(100);
-create table data_01809 (i int) engine MergeTree order by i settings old_parts_lifetime = 10000000000, min_bytes_for_wide_part = 0, inactive_parts_to_throw_insert = 0, inactive_parts_to_delay_insert = 1;
-create table data_01811 (key Int) Engine=Memory();
-create table data_01817 (key Int) Engine=Null();
-CREATE TABLE data_01875_2 Engine=MergeTree ORDER BY number PARTITION BY bitShiftRight(number, 8) + 1 AS SELECT * FROM numbers(16384);
-CREATE TABLE data_01875_3 Engine=MergeTree ORDER BY number PARTITION BY bitShiftRight(number, 8) + 1 AS SELECT * FROM numbers(16384);
-CREATE TABLE data_01917 (   key Int,   d1 Int,   d1_null Nullable(Int),   INDEX d1_idx d1 TYPE minmax GRANULARITY 1,   INDEX d1_null_idx assumeNotNull(d1_null) TYPE minmax GRANULARITY 1 ) Engine=MergeTree() ORDER BY key;
-CREATE TABLE data_01917_2 (   name String,   frequency UInt64,   INDEX memory (frequency * length(name)) TYPE set(1000) GRANULARITY 5,   INDEX sample_index1 (length(name), name) TYPE minmax GRANULARITY 4,   INDEX sample_index2 (lower(name), name) TYPE ngrambf_v1(3, 256, 2, 0) GRANULARITY 4 ) Engine=MergeTree() ORDER BY name;
-create table data_02000 (key Int) Engine=Null();
-create table data_02021 (key Int) engine=MergeTree() order by key;
-create table data_02176 (key Int) Engine=MergeTree() order by key;
-create table data_02177 (key Int) Engine=MergeTree() order by key;
-CREATE TABLE data_02200 (   key Int,   value Int,   INDEX idx value TYPE minmax GRANULARITY 1 ) Engine=MergeTree() ORDER BY key PARTITION BY key;
-CREATE TABLE data_02201 (   key Int,   value Int,   INDEX idx value TYPE minmax GRANULARITY 1 ) Engine=AggregatingMergeTree() ORDER BY key PARTITION BY key;
-CREATE TABLE data_02222 engine=MergeTree() ORDER BY dummy AS SELECT * FROM system.one;
-create table data_02228 (key1 UInt32, sign Int8, s UInt64) engine = CollapsingMergeTree(sign) order by (key1) partition by key1 % 1024;
-create table data_02230_column_ttl (date Date, value Int TTL date + 7, key Int) Engine=MergeTree() order by key TTL date + 14;
-create table data_02230_ttl (date Date, key Int) Engine=MergeTree() order by key TTL date + 14;
-create table data_02233 (parent_key Int, child_key Int, value Int) engine=MergeTree() order by parent_key;
-create table data_02233 (partition Int, parent_key Int, child_key Int, value Int) engine=MergeTree() partition by partition order by parent_key;
-create table data_02293 (a Int64, grp_aggreg AggregateFunction(groupArrayArray, Array(UInt64)), grp_simple SimpleAggregateFunction(groupArrayArray, Array(UInt64))) engine = MergeTree() order by a;
-create table data_02294 (a Int64, b Int64, grp_aggreg AggregateFunction(groupArrayArray, Array(UInt64)), grp_simple SimpleAggregateFunction(groupArrayArray, Array(UInt64))) engine = MergeTree() order by a;
-CREATE TABLE data_02342 (a UInt8, s String) ENGINE=MergeTree ORDER BY a;
-CREATE TABLE data_02411 (   key Int32 ) ENGINE = MergeTree ORDER BY key SETTINGS min_bytes_for_wide_part = 0, index_granularity = 8192;
-create table data_02572 (key Int) engine=Memory();
-CREATE TABLE data_02716_1 (v UInt64) ENGINE = MergeTree ORDER BY v;
-CREATE TABLE data_02716_2 (v UInt64) ENGINE = MergeTree ORDER BY v;
-CREATE TABLE data_02771 (   key Int,   x Int,   y Int,   INDEX x_idx x TYPE minmax GRANULARITY 1,   INDEX y_idx y TYPE minmax GRANULARITY 1,   INDEX xy_idx (x,y) TYPE minmax GRANULARITY 1 ) Engine=MergeTree() ORDER BY key;
-CREATE TABLE data_a_02187 (   `a` Nullable(Int64) ) ENGINE = Memory;
-CREATE TABLE data_compact (   `root.array` Array(UInt8), ) ENGINE = MergeTree() ORDER BY tuple() SETTINGS min_rows_for_wide_part=100, min_bytes_for_wide_part=1e9;
-CREATE TABLE data_distributed (a Int64, b Int64) ENGINE = Distributed(test_shard_localhost, currentDatabase(), 'data');
-CREATE TABLE data_horizontal (   key Int ) Engine=MergeTree() ORDER BY key;
-CREATE TABLE data_null (   a INT NULL,   b INT NOT NULL,   c Nullable(INT),   d INT ) engine=Memory();
-CREATE TABLE data_null_error (   a Nullable(INT) NULL,   b INT NOT NULL,   c Nullable(INT) ) engine=Memory();
-create table data_order_by_proj_comp (t UInt64, projection tSort (select * order by t)) ENGINE MergeTree() order by t;
-create table data_order_by_proj_incomp (t UInt64) ENGINE MergeTree() order by t;
-create table data_proj_order_by_comp (t UInt64, projection tSort (select * order by t)) ENGINE MergeTree() order by tuple();
-create table data_proj_order_by_incomp (t UInt64) ENGINE MergeTree() order by tuple();
-create table data_rep_02228 (key1 UInt32, sign Int8, s UInt64) engine = ReplicatedCollapsingMergeTree('/clickhouse/{database}', 'r1', sign) order by (key1) partition by key1 % 1024;
-CREATE TABLE data_sparse_column (`key` Int64, `value` Int32) ENGINE = MergeTree ORDER BY key;
-create table data_table (   `float64Field1` Float64,   `float64Field2` Float64,   `strField1` String,   `strField2` String ) Engine Log();
-CREATE TABLE data_table (id UInt64, longitude Float64, latitude Float64) ENGINE=MergeTree ORDER BY id;
-CREATE TABLE data_vertical (   key UInt64,   value String ) ENGINE = MergeTree() ORDER BY key SETTINGS index_granularity_bytes = 0, enable_mixed_granularity_parts = 0, min_bytes_for_wide_part = 0, vertical_merge_algorithm_min_rows_to_activate = 1, vertical_merge_algorithm_min_columns_to_activate = 1;
-CREATE TABLE data_wide (   `root.array` Array(UInt8), ) ENGINE = MergeTree() ORDER BY tuple() SETTINGS min_rows_for_wide_part=0, min_bytes_for_wide_part=0;
-CREATE TABLE database_123456789abcde.tab (   `uint64` UInt64,   `int32` Int32,   `str` String ) ENGINE = MergeTree ORDER BY uint64;
-CREATE TABLE database_123456789abcde.tbl (   a UInt64,   b UInt64,   INDEX mmi_idx b TYPE minmax ) ENGINE = MergeTree PRIMARY KEY a;
-CREATE TABLE database_dictionary_test_key_expression.test_for_dictionary (value String) ENGINE=TinyLog;
-CREATE TABLE database_for_dict.dict_source (id UInt64, parent_id UInt64, value String) ENGINE = Memory;
-CREATE TABLE database_for_dict.table_for_dict (  CompanyID String,  OSType Enum('UNKNOWN' = 0, 'WINDOWS' = 1, 'LINUX' = 2, 'ANDROID' = 3, 'MAC' = 4),  SomeID Int32 ) ENGINE = Memory();
-CREATE TABLE database_for_dict.table_for_dict (  key_column UInt64,  second_column UInt64,  third_column String ) ENGINE = MergeTree() ORDER BY key_column;
-CREATE TABLE database_for_dict.table_for_dict (  key_column UInt64,  second_column UInt8,  third_column String,  fourth_column Float64 ) ENGINE = MergeTree() ORDER BY key_column;
-CREATE TABLE database_for_dict.table_for_dict (k UInt64, v UInt8) ENGINE = MergeTree ORDER BY k;
-CREATE TABLE database_for_dict_01018.table_for_dict (  key_column UInt64,  second_column UInt8,  third_column String ) ENGINE = MergeTree() ORDER BY key_column;
-CREATE TABLE database_for_dict_01268.table_for_dict1 (  key_column UInt64,  second_column UInt64,  third_column String ) ENGINE = MergeTree() ORDER BY key_column;
-CREATE TABLE database_for_dict_01268.table_for_dict2 (  region_id UInt64,  parent_region UInt64,  region_name String ) ENGINE = MergeTree() ORDER BY region_id;
-CREATE TABLE database_for_dict_01268.table_for_dict3 (  region_id UInt64,  parent_region Float32,  region_name String ) ENGINE = MergeTree() ORDER BY region_id;
-CREATE TABLE database_for_range_dict.date_table (  CountryID UInt64,  StartDate Date,  EndDate Date,  Tax Float64 ) ENGINE = MergeTree() ORDER BY CountryID;
-CREATE TABLE database_for_range_dict.date_table (  CountryID UInt64,  StartDate Date,  EndDate Date,  Tax Nullable(Float64) ) ENGINE = MergeTree() ORDER BY CountryID;
-CREATE TABLE DATABASE_IO (  `Application` LowCardinality(String),  `Base` LowCardinality(String),  `Date` DateTime,  `Ios` UInt32 ) ENGINE = MergeTree() ORDER BY Date;
-CREATE TABLE date (d Date) ENGINE = Memory;
-CREATE TABLE date32_t (id UInt32, value1 String, date1 Date32) ENGINE ReplacingMergeTree() ORDER BY id;
-CREATE TABLE date_datetime_key_condition (dt DateTime) ENGINE = MergeTree() ORDER BY dt;
-CREATE TABLE DATE_INFO_DICT (   `TV` Date,   `SHAMSI` String,   `HIJRI` String,   `MILADI` String,   `S_DAY` UInt8,   `H_DAY` UInt8,   `S_MONTH` UInt8,   `H_MONTH` UInt8,   `WEEK_DAY_NAME` String,   `DAY_NUMBER` UInt8,   `HOLIDAY` UInt8,   `WEEK_NAME` String ) ENGINE = Join(ANY, LEFT, TV);
-CREATE TABLE date_interval ( `id` String, `start` Date, `end` Date ) ENGINE = MergeTree ORDER BY start;
-CREATE TABLE date_t (id UInt32, value1 String, date1 Date) ENGINE ReplacingMergeTree() ORDER BY id;
-CREATE TABLE date_table (  CountryID UInt64,  CountryKey String,  StartDate Date,  EndDate Date,  Tax Float64 ) ENGINE = MergeTree() ORDER BY CountryID;
-CREATE TABLE date_table (  CountryID UInt64,  CountryKey String,  StartDate Date,  EndDate Date,  Tax Nullable(Float64) ) ENGINE = MergeTree() ORDER BY CountryID;
-CREATE TABLE date_table (  id UInt32,  val String,  start Date,  end Date ) Engine = Memory();
-create table Dates (   EventTime DateTime, ) ENGINE = Memory;
-CREATE TABLE Dates (date DateTime('UTC')) ENGINE = MergeTree() ORDER BY date;
-CREATE TABLE datetime (d DateTime('UTC')) ENGINE = Memory;
-CREATE TABLE datetime64_cmp (  dt6 DateTime64(6, 'UTC'),  dt3 DateTime64(3, 'UTC') ) ENGINE = Memory;
-CREATE TABLE datetime64_index_tbl(ts DateTime64(3, 'UTC')) ENGINE=MergeTree ORDER BY ts;
-CREATE TABLE datetime64_t (id UInt32, value1 String, date1 Datetime64) ENGINE ReplacingMergeTree() ORDER BY id;
-CREATE TABLE datetime_date_table (   col_date Date,   col_datetime DateTime,   col_datetime64 DateTime64(3),   col_date_string String,   col_datetime_string String,   col_datetime64_string DateTime64,   col_date_lc LowCardinality(String),   col_datetime_lc LowCardinality(String),   col_datetime64_lc LowCardinality(String),   PRIMARY KEY col_date ) ENGINE = MergeTree;
-CREATE TABLE datetime_t (id UInt32, value1 String, date1 Datetime) ENGINE ReplacingMergeTree() ORDER BY id;
-CREATE TABLE db1_02703.02703_rqtable (x UInt8) ENGINE = MergeTree ORDER BY x;
-CREATE TABLE db_01048.t_01048 (x UInt8) ENGINE = Memory;
-CREATE TABLE db_01048.t_01048_2 (x UInt8) ENGINE = Memory;
-create table db_01294.dist_01294 as system.one engine=Distributed(test_shard_localhost, system, one);
-CREATE TABLE db_01501.table_cache_dict( KeyField UInt64, UInt8_ UInt8, UInt16_ UInt16, UInt32_ UInt32, UInt64_ UInt64, Int8_ Int8, Int16_ Int16, Int32_ Int32, Int64_ Int64, UUID_ UUID, Date_ Date, DateTime_ DateTime, String_ String, Float32_ Float32, Float64_ Float64, Decimal32_ Decimal32(5), Decimal64_ Decimal64(15), Decimal128_ Decimal128(35), ParentKeyField UInt64) ENGINE = MergeTree() ORDER BY KeyField;
-create table db_01517_atomic.source (key Int) engine=Null;
-create table db_01517_atomic_sync.source (key Int) engine=Null;
-create table db_01517_ordinary.source (key Int) engine=Null;
-CREATE TABLE db_01526.table_for_dict1 (  key_column UInt64,  second_column UInt64,  third_column String ) ENGINE = MergeTree() ORDER BY (key_column, second_column);
-create table db_01527_ranges.data engine=Memory() as select number key, number shard from numbers(100);
-create table db_01527_ranges.data engine=Memory() as select number key, number+1 shard from numbers(100);
-create table db_01530_atomic.data (key Int) Engine=ReplicatedMergeTree('/clickhouse/tables/{database}/db_01530_atomic/data', 'test') order by key;
-CREATE TABLE db_01721.table_decimal_dict( KeyField UInt64, Decimal32_ Decimal(5,4), Decimal64_ Decimal(18,8), Decimal128_ Decimal(25,8), Decimal256_ Decimal(76,37) ) ENGINE = Memory;
-create table db_01870.z_buffer_01870 as system.numbers Engine=Buffer(db_01870, a_data_01870, 1,   100, 100, /* time */   100, 100, /* rows */   100, 1e6 /* bytes */ );
-CREATE TABLE db_for_dict.table_for_dict (  key1 UInt64,  value String ) ENGINE = Memory();
-create table db_hang.test(A Int64) Engine=MergeTree order by A;
-CREATE TABLE ddl_dictonary_test_source (  id UInt64,  value UInt64 ) ENGINE = TinyLog;
-CREATE TABLE decimal (   a Array(Decimal32(3)),   b Array(Decimal64(3)),   c Array(Decimal128(3)),   nest Nested   (     a Decimal(9,2),     b Decimal(18,2),     c Decimal(38,2)   ),   tup Tuple(Decimal32(1), Decimal64(1), Decimal128(1)) ) ENGINE = Memory;
-CREATE TABLE decimal (   a Decimal(6, 4),   b Decimal(16, 7),   c Decimal(20, 8) ) ENGINE = Memory;
-CREATE TABLE decimal (   a Decimal32(4),   b Decimal64(8),   c Decimal128(8) ) ENGINE = Memory;
-CREATE TABLE decimal_in_float_test ( `a` Decimal(18, 0), `b` Decimal(36, 2) ) ENGINE = Memory;
-create table decimal_insert_cast_issue (a Decimal(76, 0)) engine = TinyLog;
-CREATE TABLE decimal_sum (   date Date,   sum32 Decimal32(4),   sum64 Decimal64(8),   sum128 Decimal128(10) ) Engine = SummingMergeTree(date, (date), 8192);
-create table decimals (key UInt64, d32 Decimal32(4), d64 Decimal64(6), d128 Decimal128(1)) Engine = Memory;
-CREATE TABLE deduplication (d Date DEFAULT '2015-01-01', x Int8) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_00226/deduplication', 'r1', d, x, 1);
-CREATE TABLE deduplication_by_partition(d Date, x UInt32) ENGINE =   ReplicatedMergeTree('/clickhouse/tables/{database}/test_00516/deduplication_by_partition', 'r1') order by x partition by toYYYYMM(d);
-CREATE TABLE default (d Date DEFAULT toDate(t), t DateTime) ENGINE = MergeTree(d, t, 8192);
-CREATE TABLE default_codec_float (   id Float64 Codec(LZ4HC) ) ENGINE MergeTree() ORDER BY tuple() SETTINGS min_bytes_for_wide_part = 0, compress_marks = false, compress_primary_key = false, ratio_of_defaults_for_sparse_serialization = 1;
-CREATE TABLE default_codec_string (   id Float64 Codec(LZ4) ) ENGINE MergeTree() ORDER BY tuple() SETTINGS min_bytes_for_wide_part = 0, compress_marks = false, compress_primary_key = false, ratio_of_defaults_for_sparse_serialization = 1;
-CREATE TABLE default_codec_synthetic (   id UInt64 Codec(ZSTD(3)) ) ENGINE MergeTree() ORDER BY tuple() SETTINGS min_bytes_for_wide_part = 0, compress_marks = false, compress_primary_key = false, ratio_of_defaults_for_sparse_serialization = 1;
-CREATE TABLE default_constraints (   x UInt8,   y UInt8 DEFAULT x + 1,   CONSTRAINT c CHECK y < 5 ) ENGINE = Memory;
-CREATE TABLE default_join1(a Int64, b Int64) ENGINE=Memory;
-CREATE TABLE default_join2(a Int64, b Int64) ENGINE=Memory;
-CREATE TABLE default_table (  id UInt64,  enum_column Enum8('undefined' = 0, 'fox' = 1, 'index' = 2) ) ENGINE ReplicatedMergeTree('/clickhouse/{database}/test_01135/default_table', '1') ORDER BY tuple();
-CREATE TABLE default_table (  key UInt64 DEFAULT 42,  value1 UInt64 MATERIALIZED key * key,  value2 ALIAS value1 * key ) ENGINE = MergeTree() ORDER BY tuple();
-create table defaulted (col1 default 0) engine=Memory;
-create table defaulted (col1 Int8, col2 UInt64 default (SELECT dummy+99 from system.one)) engine=Memory;
-create table defaulted (col1 UInt32, col2 default col1 + 1, col3 materialized col1 + 2, col4 alias col1 + 3) engine=Memory;
-create table defaulted (payload String, date materialized today(), key materialized 0 * rand()) engine=MergeTree(date, key, 8192);
-CREATE TABLE defaulted (v6 FixedString(16)) ENGINE=Memory;
-CREATE TABLE defaults (   n Int32 )ENGINE = Memory();
-CREATE TABLE defaults (   n Int32,  s String )ENGINE = Memory();
-CREATE TABLE defaults (   n Int8 )ENGINE = Memory();
-CREATE TABLE defaults (   n1 UInt8,  n2 UInt16, n3 UInt32, n4 UInt64 )ENGINE = Memory();
-CREATE TABLE defaults (   param1 Float64,   param2 Float64,   target Float64,   predict1 Float64,   predict2 Float64 ) ENGINE = Memory;
-CREATE TABLE defaults (   s FixedString(20) )ENGINE = Memory();
-CREATE TABLE defaults (   stringColumn String ) ENGINE = Memory();
-CREATE TABLE defaults (   strings String,   i8 Int8,   u16 UInt16,   u32 UInt32,   u64 UInt64 )ENGINE = Memory();
-CREATE TABLE defaults (   t1 Tuple(UInt16, UInt16),  t2 Tuple(UInt32, UInt32),  t3 Tuple(Int64, Int64) )ENGINE = Memory();
-CREATE TABLE defaults (   u8 UInt8,   u16 UInt16,   u32 UInt32,   u64 UInt64,   i8 Int8,   i16 Int16,   i32 Int32,   i64 Int64 ) ENGINE = Memory();
-CREATE TABLE defaults (   x UInt32,   y UInt32,   a DEFAULT x + y,   b Float32 DEFAULT round(log(1 + x + y), 5),   c UInt32 DEFAULT 42,   e MATERIALIZED x + y,   f ALIAS x + y ) ENGINE = MergeTree ORDER BY x;
-CREATE TABLE defaults (  s String )ENGINE = Memory();
-CREATE TABLE defaults (a UInt8, b DEFAULT 0, c DEFAULT identity(b)) ENGINE = Memory;
-CREATE TABLE defaults_all_columns (n UInt8 DEFAULT 42, s String DEFAULT concat('test', CAST(n, 'String'))) ENGINE = Memory;
-CREATE TABLE defaults_on_defaults (   key UInt64 ) ENGINE = MergeTree() ORDER BY tuple();
-CREATE TABLE delta_codec_float (   id Float64 Codec(Delta, LZ4HC) ) ENGINE MergeTree() ORDER BY tuple() SETTINGS min_bytes_for_wide_part = 0, compress_marks = false, compress_primary_key = false, ratio_of_defaults_for_sparse_serialization = 1;
-CREATE TABLE delta_codec_for_alter (date Date, x UInt32 Codec(Delta), s FixedString(128)) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE delta_codec_string (   id Float64 Codec(Delta, LZ4) ) ENGINE MergeTree() ORDER BY tuple() SETTINGS min_bytes_for_wide_part = 0, compress_marks = false, compress_primary_key = false, ratio_of_defaults_for_sparse_serialization = 1;
-CREATE TABLE delta_codec_synthetic (   id UInt64 Codec(Delta, ZSTD(3)) ) ENGINE MergeTree() ORDER BY tuple() SETTINGS min_bytes_for_wide_part = 0, compress_marks = false, compress_primary_key = false, ratio_of_defaults_for_sparse_serialization = 1;
-CREATE TABLE delta_codec_synthetic (`id` Decimal(38, 10) CODEC(Delta, ZSTD(22))) ENGINE = MergeTree() ORDER BY tuple();
-CREATE TABLE delta_table (`id` UInt64 CODEC(Delta(tuple()))) ENGINE = MergeTree() ORDER BY tuple();
-CREATE TABLE demo_loan_01568 ON CLUSTER test_cluster_two_shards_different_databases ( `id` Int64 COMMENT 'id', `date_stat` Date COMMENT 'date of stat', `customer_no` String COMMENT 'customer no', `loan_principal` Float64 COMMENT 'loan principal' ) ENGINE=ReplacingMergeTree() ORDER BY id PARTITION BY toYYYYMM(date_stat);
-CREATE TABLE demo_loan_01568_dist AS shard_0.demo_loan_01568 ENGINE=Distributed('test_cluster_two_shards_different_databases', '', 'demo_loan_01568', id % 2);
-CREATE TABLE dep (   `id` Int32,   `country` LowCardinality(String),   `purchase_location` UInt16 MATERIALIZED if(id IN joinGet(concat(currentDatabase(), '.id_join'), 'location', 'CLICK'), 123, 456) ) ENGINE = ReplicatedMergeTree('/test/02433/{database}/dep', '1') ORDER BY tuple();
-CREATE TABLE dep2 (   `id` Int32,   `country` LowCardinality(String),   `purchase_location` UInt16 MATERIALIZED if(id IN joinGet(concat(currentDatabase(), '.id_join'), 'location', 'CLICK'), 123, 456) ) ENGINE = ReplicatedMergeTree('/test/02433/{database}/dep', '2') ORDER BY tuple();
-CREATE TABLE derived_metrics_local (  timestamp DateTime,  timestamp_h DateTime materialized toStartOfHour(timestamp),  bytes UInt64 ) ENGINE=SummingMergeTree() PARTITION BY toYYYYMMDD(timestamp) ORDER BY (timestamp_h, timestamp) TTL toStartOfHour(timestamp) + INTERVAL 1 HOUR GROUP BY timestamp_h SET bytes=max(bytes), timestamp = toStartOfHour(any(timestamp));
-CREATE TABLE derived_metrics_local (  timestamp DateTime,  bytes UInt64 ) ENGINE=MergeTree() PARTITION BY toYYYYMMDD(timestamp) ORDER BY (toStartOfHour(timestamp), timestamp) TTL toStartOfHour(timestamp) + INTERVAL 1 HOUR SETTINGS min_bytes_for_wide_part = 0;
-CREATE TABLE derived_metrics_local (  timestamp DateTime,  bytes UInt64 ) ENGINE=SummingMergeTree() PARTITION BY toYYYYMMDD(timestamp) ORDER BY (toStartOfHour(timestamp), timestamp) TTL toStartOfHour(timestamp) + INTERVAL 1 HOUR GROUP BY toStartOfHour(timestamp) SET bytes=max(bytes);
-CREATE TABLE derived_metrics_local (  timestamp DateTime,  bytes UInt64 TTL toStartOfHour(timestamp) + INTERVAL 1 HOUR ) ENGINE=MergeTree() ORDER BY (toStartOfHour(timestamp), timestamp) SETTINGS min_bytes_for_wide_part = 0;
-CREATE TABLE dest(v UInt64) Engine = MergeTree() ORDER BY v;
-CREATE TABLE dest_01019(v UInt64) Engine = MergeTree() ORDER BY v;
-CREATE TABLE dest_a (count UInt32, min Int32, max Int32, count_subquery Int32, min_subquery Int32, max_subquery Int32) ENGINE=MergeTree() ORDER BY tuple();
-CREATE TABLE dest_table (`Date` Date, `Id` UInt64, `Units` Float32) ENGINE = Memory;
-CREATE TABLE destination_join ( `key` String, `id` String, `color` String, `section` String, `description` String) ENGINE = Join(ANY, LEFT, key);
-CREATE TABLE destination_set (`key` String) ENGINE = Set;
-CREATE TABLE detach_all_no_partition (x UInt64, p UInt8) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE dict_data (key UInt64, v0 UInt16, v1 UInt16, v2 UInt16, v3 UInt16, v4 UInt16) engine=Memory() AS SELECT number, number%65535, number%65535, number%6553, number%655355, number%65535 FROM numbers(1e6);
-CREATE TABLE dict_data (key UInt64, val UInt64) Engine=Memory();
-CREATE TABLE dict_data (v0 UInt16, v1 Int16, v2 Float32, v3 Decimal128(10), v4 String) engine=Memory() AS SELECT number, number%65535, number*1.1, number*1.1, 'foo' FROM numbers(10);
-CREATE TABLE dict_db_01036.dict_data (key UInt64, val UInt64) Engine=Memory();
-CREATE TABLE dict_db_01224.dict_data (key UInt64, val UInt64) Engine=Memory();
-CREATE TABLE dict_db_01225.dict_data (key UInt64, val UInt64) Engine=Memory();
-CREATE TABLE dict_db_01254.dict_data (key UInt64, val UInt64) Engine=Memory();
-CREATE TABLE dict_db_02179.dict_data (key UInt64, val UInt64) Engine=Memory();
-CREATE TABLE dict_in_01023.input (key UInt64, val UInt64) Engine=Memory();
-CREATE TABLE dict_nested_map_test_table (  test_id UInt32,   type String,  test_config Array(Map(String, Decimal(28,12))),   ncp UInt8 ) ENGINE=MergeTree() ORDER BY test_id;
-CREATE TABLE dict_string (entityIri String) ENGINE = Memory;
-create table dict_table (   `strField` String,   `dateField` Date,   `float64Field` Float64 ) Engine Log();
-CREATE TABLE dict_ui64 (learnerId UInt64) ENGINE = Memory;
-CREATE TABLE dictdb_01376.table_for_dict (  key_column UInt64,  value Float64 ) ENGINE = Memory();
-CREATE TABLE dictionary_array_source_table (   id UInt64,   array_value Array(Int64) ) ENGINE=TinyLog;
-CREATE TABLE dictionary_decimal_polygons_source_table (   key Array(Array(Array(Tuple(Float64, Float64)))),   decimal_value Decimal256(5) ) ENGINE = TinyLog;
-CREATE TABLE dictionary_decimal_source_table (   id UInt64,   decimal_value Decimal256(5) ) ENGINE = TinyLog;
-CREATE TABLE dictionary_non_nullable_source_table (id UInt64, value String) ENGINE=TinyLog;
-CREATE TABLE dictionary_nullable_default_source_table (   id UInt64,   value Nullable(UInt64) ) ENGINE=TinyLog;
-CREATE TABLE dictionary_nullable_source_table (   id UInt64,   value Nullable(Int64) ) ENGINE=TinyLog;
-CREATE TABLE dictionary_nullable_source_table (id UInt64, value Nullable(String)) ENGINE=TinyLog;
-CREATE TABLE dictionary_primary_key_source_table (   identifier UInt64,   v UInt64 ) ENGINE = TinyLog;
-CREATE TABLE dictionary_source_en (   id UInt64,   value String ) ENGINE = TinyLog;
-CREATE TABLE dictionary_source_ru (   id UInt64,   value String ) ENGINE = TinyLog;
-CREATE TABLE dictionary_source_table (   id UInt64,   value String ) ENGINE=TinyLog;
-CREATE TABLE dictionary_source_table (   key UInt64,   start UInt64,   end UInt64,   value String ) Engine = TinyLog;
-create table dictst01747(some_name String, field1 String, field2 UInt8) Engine = Memory as select 'name', 'test', 33;
-CREATE TABLE dim_model (model_id UInt8) ENGINE = Memory;
-CREATE TABLE discounts (   advertiser_id UInt64,   discount_start_date Date,   discount_end_date Nullable(Date),   amount Float64 ) ENGINE = Memory;
-create table dist (key Int) engine=Distributed(default, currentDatabase(), data) settings flush_on_detach=0;
-create table dist (key Int) engine=Distributed(default, currentDatabase(), data);
-CREATE TABLE dist (key int, INDEX i1 key TYPE minmax GRANULARITY 1) Engine=Distributed(test_shard_localhost, currentDatabase(), 'foo');
-create table dist (key LowCardinality(String)) engine=Distributed(test_cluster_two_shards, currentDatabase(), data);
-create table dist (n int) engine=Distributed(test_shard_localhost, currentDatabase(), t);
-CREATE TABLE dist (n Int128) ENGINE=Distributed(test_cluster_two_shards, currentDatabase(), mv);
-CREATE TABLE dist (s String, x String DEFAULT 'asdf') ENGINE=Distributed(test_shard_localhost, test_01155_ordinary, src);
-CREATE TABLE dist AS local_table ENGINE = Distributed(test_cluster_two_shards_localhost, currentDatabase(), local_table);
-create table dist as system.one engine=Distributed('test_shard_localhost', system, one);
-create table dist2_01071 as data2_01071 Engine=Distributed(test_cluster_two_shards, currentDatabase(), dist2_layer_01071, key%2);
-create table dist2_layer_01071 as data2_01071 Engine=Distributed(test_cluster_two_shards, currentDatabase(), data2_01071, sub_key%2);
-CREATE TABLE dist_00612 AS data_00612 ENGINE = Distributed(test_shard_localhost, currentDatabase(), data_00612, rand());
-CREATE TABLE dist_00717 (a LowCardinality(Nullable(Float64))) ENGINE = Distributed('test_cluster_two_shards_localhost', currentDatabase(), 'test_low_null_float', rand());
-CREATE TABLE dist_00967 (key UInt64) Engine=Distributed('test_shard_localhost', currentDatabase(), underlying_00967);
-create table dist_01071 as data_01071 Engine=Distributed(test_cluster_two_shards, currentDatabase(), data_01071);
-create table dist_01071 as data_01071 Engine=Distributed(test_cluster_two_shards, currentDatabase(), data_01071, key%2);
-create table dist_01072 (key Int) Engine=Distributed(test_cluster_two_shards, currentDatabase(), data_01072, key);
-create table dist_01072 (key Int, value Int, str String) Engine=Distributed(test_cluster_two_shards, currentDatabase(), data_01072, key%2);
-create table dist_01072 (key Int, value LowCardinality(Int), str String) Engine=Distributed(test_cluster_two_shards, currentDatabase(), data_01072, key%2);
-create table dist_01072 (key Int, value LowCardinality(Nullable(Int)), str String) Engine=Distributed(test_cluster_two_shards, currentDatabase(), data_01072, key%2);
-create table dist_01072 (key Int, value Nullable(Int), str String) Engine=Distributed(test_cluster_two_shards, currentDatabase(), data_01072, key%2);
-create table dist_01223 as data_01223 Engine=Distributed(test_cluster_two_shards, currentDatabase(), dist_layer_01223);
-create table dist_01247 as data_01247 engine=Distributed(test_cluster_two_shards, currentDatabase(), data_01247, key);
-create table dist_01247 as data_01247 engine=Distributed(test_cluster_two_shards, currentDatabase(), data_01247, number);
-create table dist_01247 as data_01247 engine=Distributed(test_cluster_two_shards, currentDatabase(), dist_layer_01247, number);
-create table dist_01247 as data_01247 engine=Distributed(test_cluster_two_shards, currentDatabase(), dist_layer_01247, rand());
-create table dist_01270 as data_01270 Engine=Distributed(test_cluster_two_shards, currentDatabase(), data_01270, key);
-create table dist_01293 as null_01293 engine=Distributed(test_cluster_two_shards, currentDatabase(), null_01293, key);
-create table dist_01527 as data_01527 engine=Distributed('test_cluster_two_shards', currentDatabase(), data_01527, dictGetUInt64('db_01527_ranges.dict', 'shard', key));
-create table dist_01528 as system.one engine=Distributed('test_cluster_two_shards', system, one, rand()+dummy);
-create table dist_01555 (key Int) Engine=Distributed(test_cluster_with_incorrect_pw, currentDatabase(), data_01555, key);
-create table dist_01555 (key Int) Engine=Distributed(test_shard_localhost, currentDatabase(), data_01555, key);
-create table dist_01643 as data_01643 engine=Distributed(test_cluster_two_shards, currentDatabase(), data_01643, key) settings fsync_after_insert=1, fsync_directories=1;
-create table dist_01643 as data_01643 engine=Distributed(test_cluster_two_shards, currentDatabase(), data_01643, key);
-create table dist_01670 (key Int) engine=Distributed(test_shard_localhost, currentDatabase(), data_01670) settings bytes_to_throw_insert=1;
-CREATE TABLE dist_01683 (n UInt64) Engine=Distributed(test_cluster_two_shards, currentDatabase(), tmp_01683, n);
-create table dist_01755 as data_01755 Engine=Distributed(test_cluster_two_shards, currentDatabase(), data_01755, i);
-create table dist_01756_column as system.one engine=Distributed(test_cluster_two_shards, system, one, dummy);
-create table dist_01757 as system.one engine=Distributed(test_cluster_two_shards, system, one, dummy);
-CREATE TABLE dist_01781 (n LowCardinality(String)) Engine=Distributed(test_cluster_two_shards, currentDatabase(), tmp_01781, cityHash64(n));
-create table dist_01850 (key Int) engine=Distributed('test_cluster_two_replicas_different_databases', /* default_database= */ '', data_01850, key);
-create table dist_02000 as data_02000 Engine=Distributed(test_cluster_two_shards, currentDatabase(), data_02000, key);
-create table dist_02175 as local_02175 engine=Distributed(test_cluster_two_shards, currentDatabase(), local_02175);
-create table dist_02346 (x UInt32, y String) engine=Distributed('test_cluster_two_shards_different_databases', /* default_database= */ '', data_02346);
-CREATE TABLE dist_02482(i UInt64, n LowCardinality(Nullable(String))) ENGINE = Distributed(test_cluster_two_shards, currentDatabase(), tmp_02482, i);
-CREATE TABLE dist_1 AS mem1 Engine=Distributed(test_shard_localhost, currentDatabase(), mem1);
-CREATE TABLE dist_2 AS mem2 Engine=Distributed(test_cluster_two_shards_localhost, currentDatabase(), mem2);
-CREATE TABLE dist_3 AS mem3 Engine=Distributed(test_shard_localhost, currentDatabase(), mem3);
-create table dist_layer_01223 as data_01223 Engine=Distributed(test_cluster_two_shards, currentDatabase(), data_01223);
-create table dist_layer_01223 as data_01223 Engine=Distributed(test_shard_localhost, currentDatabase(), data_01223);
-create table dist_layer_01247 as data_01247 engine=Distributed(test_cluster_two_shards, currentDatabase(), data_01247, number);
-create table dist_layer_01247 as data_01247 engine=Distributed(test_cluster_two_shards, currentDatabase(), data_01247, rand());
-create table dist_layer_01319 as data_01319 Engine=Distributed(test_cluster_two_shards, currentDatabase(), data_01319, sub_key);
-CREATE TABLE dist_out (key UInt64) Engine=Distributed(test_shard_localhost, currentDatabase(), null_, key);
-create table dist_t as t engine = Distributed(test_cluster_two_shards, currentDatabase(), t, a % 2);
-create table dist_t_different_dbs as t engine = Distributed(test_cluster_two_shards_different_databases_with_local, '', t_different_dbs);
-CREATE TABLE dist_table AS local_table ENGINE = Distributed('test_cluster_two_shards_localhost', currentDatabase(), local_table);
-CREATE TABLE dist_tbl ENGINE = Distributed('test_shard_localhost', currentDatabase(), 'local_tbl', rand());
-CREATE TABLE dist_test_01040 AS test_01040 Engine=Distributed(test_cluster_two_shards, currentDatabase(), test_01040, key) SETTINGS   background_insert_batch=1,   background_insert_sleep_time_ms=10,   background_insert_max_sleep_time_ms=100;
-CREATE TABLE distinct (Num UInt32, Name String) ENGINE = Memory;
-CREATE TABLE distinct_cardinality_low (low UInt64, medium UInt64, high UInt64) ENGINE MergeTree() ORDER BY (low, medium) SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-create table distinct_in_order (a int) engine=MergeTree() order by a settings index_granularity=10;
-create table distinct_in_order (a int, b int, c int) engine=MergeTree() order by (a, b) SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-create table distinct_in_order (low UInt64, medium UInt64, high UInt64) engine=MergeTree() order by (low, medium) SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE distinct_two_level (   time DateTime64(3),   domain String,   subdomain String ) ENGINE = MergeTree ORDER BY time;
-create table distr (number UInt64) engine = Distributed(test_cluster_two_shards_different_databases, '', num_01232);
-create table distr (number UInt64) engine = Distributed(test_cluster_two_shards_different_databases, '', tbl);
-CREATE TABLE distr (x UInt8) ENGINE = Distributed(test_shard_localhost, currentDatabase(), distr);
-create table distr as local engine = Distributed('test_cluster_two_shards', currentDatabase(), local);
-create table distr1 as shard1 engine Distributed (test_cluster_two_shards_localhost, currentDatabase(), shard1, cityHash64(id));
-create table distr2 (number UInt64) engine = Distributed(test_cluster_two_shards_different_databases, '', num2_01232);
-CREATE TABLE distr2 (x UInt8) ENGINE = Distributed(test_shard_localhost, currentDatabase(), distr1);
-create table distr2 as shard2 engine Distributed (test_cluster_two_shards_localhost, currentDatabase(), shard2, cityHash64(id));
-CREATE TABLE distr_table (x UInt32, y String) ENGINE = Distributed(test_cluster_two_shards, currentDatabase(), 'table_1');
-CREATE TABLE distributed (n Int8) ENGINE = Distributed(test_shard_localhost, currentDatabase(), 'fi' || 'le');
-CREATE TABLE distributed AS local ENGINE = Distributed(test_cluster_two_shards, currentDatabase(), local, x);
-CREATE TABLE distributed_00588 AS mergetree_00588 ENGINE = Distributed(test_shard_localhost, currentDatabase(), mergetree_00588);
-CREATE TABLE distributed_00609 AS mergetree_00609 ENGINE = Distributed(test_shard_localhost, currentDatabase(), mergetree_00609);
-CREATE TABLE distributed_00952 AS local_00952 ENGINE = Distributed('test_cluster_two_shards', currentDatabase(), local_00952, rand());
-CREATE TABLE distributed_01099_a AS local_01099_a ENGINE = Distributed('test_cluster_two_shards', currentDatabase(), local_01099_a, rand());
-CREATE TABLE distributed_01099_a AS local_01099_a ENGINE = Distributed('test_cluster_two_shards_localhost', currentDatabase(), local_01099_a, rand());
-CREATE TABLE distributed_01099_a AS local_01099_a ENGINE = Distributed('test_shard_localhost', currentDatabase(), local_01099_a, rand());
-CREATE TABLE distributed_01099_b AS local_01099_b ENGINE = Distributed('test_cluster_two_shards', currentDatabase(), local_01099_b, rand());
-CREATE TABLE distributed_01099_b AS local_01099_b ENGINE = Distributed('test_cluster_two_shards_localhost', currentDatabase(), local_01099_b, rand());
-CREATE TABLE distributed_01099_b AS local_01099_b ENGINE = Distributed('test_shard_localhost', currentDatabase(), local_01099_b, rand());
-CREATE TABLE distributed_02184 (id UInt64, name String, dt Date) Engine=Distributed('test_cluster_two_shards', 'default', 'mergeTree_02184', rand());
-CREATE TABLE distributed_table1 AS source_table1 ENGINE = Distributed('test_shard_localhost', currentDatabase(), source_table1);
-CREATE TABLE distributed_table2 AS source_table2 ENGINE = Distributed('test_shard_localhost', currentDatabase(), source_table2);
-CREATE TABLE distributed_table_1 (id String) ENGINE = Distributed(test_shard_localhost, default, local_table_1);
-CREATE TABLE distributed_table_2 (id String) ENGINE = Distributed(test_shard_localhost, default, local_table_2);
-CREATE TABLE distributed_table_merged (id String) ENGINE = Merge('default', 'distributed_table_1|distributed_table_2');
-CREATE TABLE distributed_tbl (   Date Date,   SomeType UInt8,   Alternative1 UInt64,   Alternative2 UInt64,   CharID UInt64,   User UInt32 ) ENGINE = Distributed(test_shard_localhost, currentDatabase(), merge_tree_table);
-CREATE TABLE distributed_tf as cluster('test' || '_' || 'shard_localhost', '', 'buf' || 'fer');
-CREATE TABLE dm_metric_small2 (`x` Nullable(Int64), `y` Nullable(Int64), `z` Nullable(Int64)) ENGINE = MergeTree() ORDER BY (x, y, z) SETTINGS index_granularity = 1, allow_nullable_key = 1;
-create table dp as d Engine=Distributed(test_cluster_two_shards, currentDatabase(), d, i);
-CREATE TABLE ds (   `pk1` LowCardinality(String),   `pk2` LowCardinality(String),   `pk3` LowCardinality(String),   `pk4` LowCardinality(String),   `occurences` AggregateFunction(count) ) ENGINE = ReplicatedAggregatingMergeTree('/clickhouse/' || currentDatabase() || '/ds/{shard}/', '{replica}') ORDER BY (pk1, pk2, pk3, pk4);
-CREATE TABLE dst (id UInt64, delta Int64) Engine=MergeTree ORDER BY id;
-create table dst (key Int) engine=Null();
-CREATE TABLE dst (n UInt8, s String) ENGINE = Memory;
-CREATE TABLE dst (p UInt64, k String, d UInt64) ENGINE = MergeTree PARTITION BY p ORDER BY k;
-CREATE TABLE dst (s String, x String DEFAULT 'c') ENGINE=MergeTree() PARTITION BY tuple() ORDER BY s;
-CREATE TABLE dst (x UInt8) ENGINE = Memory;
-create table dst1 (n int) engine=ReplicatedMergeTree('/test/02413/{database}/dst', '1') order by tuple() settings storage_policy='s3_cache', allow_remote_fs_zero_copy_replication=1;
-CREATE TABLE dst1 (x UInt8) ENGINE Memory;
-create table dst2 (n int) engine=ReplicatedMergeTree('/test/02413/{database}/dst', '2') order by tuple() settings storage_policy='s3_cache', allow_remote_fs_zero_copy_replication=1;
-CREATE TABLE dst_00753 (x UInt64, y UInt64) ENGINE = MergeTree ORDER BY tuple();
-create table dst_02224 (key Int) engine=Memory();
-CREATE TABLE dt(tkey Int32) ENGINE = MergeTree order by tuple();
-CREATE TABLE dt64test (   `dt64_column` DateTime64(3),   `dt_column` DateTime DEFAULT toDateTime(dt64_column) ) ENGINE = MergeTree PARTITION BY toYYYYMM(dt64_column) ORDER BY dt64_column;
-CREATE TABLE dt_interval ( `id` String, `start` DateTime, `end` DateTime ) ENGINE = MergeTree ORDER BY start;
-create table dt_overflow(d Date, i int) engine MergeTree partition by d order by i;
-CREATE TABLE dtest ( `a` Decimal(18, 0), `b` Decimal(18, 1), `c` Decimal(36, 0) ) ENGINE = Memory;
-CREATE TABLE dummy ( num1 Int32, num2 Enum8('foo' = 0, 'bar' = 1, 'tar' = 2) ) ENGINE = MergeTree ORDER BY num1 as select 5, 'bar';
-CREATE TABLE e (dt DateTime, t Int32) ENGINE = MergeTree() PARTITION BY (t, toYYYYMM(dt)) ORDER BY tuple();
-CREATE TABLE elog_cut (   date Date DEFAULT toDate(uts),   uts DateTime,   pr UInt64,   ya_uid UInt64,   adf_uid UInt64,   owner_id UInt32,   eff_uid UInt64 DEFAULT if(adf_uid != 0, adf_uid, ya_uid),   page_session UInt64 DEFAULT cityHash64(eff_uid, pr),   sample_key UInt64 ALIAS page_session ) ENGINE = MergeTree(date, cityHash64(adf_uid, ya_uid, pr), (owner_id, date, cityHash64(adf_uid, ya_uid, pr)), 8192);
-CREATE TABLE empsalary (   `depname` LowCardinality(String),   `empno` UInt64,   `salary` Int32,   `enroll_date` Date ) ENGINE = Memory;
-CREATE TABLE empty (key UInt32, val UInt32, date Datetime) ENGINE=SummingMergeTree(val) PARTITION BY date ORDER BY key;
-CREATE TABLE empty (value Int8) ENGINE = TinyLog;
-CREATE TABLE empty1 (key UInt32, val UInt32, date Datetime) ENGINE=ReplicatedSummingMergeTree('/clickhouse/tables/{database}/test_01560_optimize_on_insert', '1', val) PARTITION BY date ORDER BY key;
-CREATE TABLE empty2 (key UInt32, val UInt32, date Datetime) ENGINE=ReplicatedSummingMergeTree('/clickhouse/tables/{database}/test_01560_optimize_on_insert', '2', val) PARTITION BY date ORDER BY key;
-CREATE TABLE empty_pk (x UInt64) ENGINE = MergeTree ORDER BY tuple() SETTINGS index_granularity = 256, index_granularity_bytes = '10Mi';
-CREATE TABLE empty_summing (d Date, k UInt64, v Int8) ENGINE=SummingMergeTree(d, k, 8192);
-CREATE TABLE encryption_test (i Int, s String Codec(AES_128_GCM_SIV)) ENGINE = MergeTree ORDER BY i;
-CREATE TABLE encryption_test (i Int, s String Codec(AES_256_GCM_SIV)) ENGINE = MergeTree ORDER BY i;
-CREATE TABLE endsWith_test(S1 String, S2 String, S3 FixedString(2)) ENGINE=Memory;
-CREATE TABLE enum (x Enum8('Hello' = -100, '\\' = 0, '\t\\t' = 111), y UInt8) ENGINE = TinyLog;
-create table enum engine MergeTree order by enum as select cast(1, 'Enum8(\'zero\'=0, \'one\'=1)') AS enum;
-create table enum_alter_issue (a Enum16('one' = 1, 'two' = 2), b Int) engine = ReplicatedMergeTree('/clickhouse/tables/{database}/test_02012/enum_alter_issue', 'r2') ORDER BY b;
-CREATE TABLE enum_as_num (   Id Int32,   Value Enum('a' = 1, '3' = 2, 'b' = 3) ) ENGINE=Memory();
-CREATE TABLE enum_nested_alter (   d Date DEFAULT '2000-01-01',   x UInt64,   tasks Nested(     errcategory Enum8(       'undefined' = 0, 'system' = 1, 'generic' = 2, 'asio.netdb' = 3, 'asio.misc' = 4,       'asio.addrinfo' = 5, 'rtb.client' = 6, 'rtb.logic' = 7, 'http.status' = 8),     status Enum16('hello' = 1, 'world' = 2))) ENGINE = MergeTree(d, x, 1);
-CREATE TABLE enum_nested_alter (d Date DEFAULT '2000-01-01', x UInt64, n Nested(a String, e Enum8('Hello' = 1), b UInt8)) ENGINE = MergeTree(d, x, 1);
-CREATE TABLE enum_nested_alter (d Date DEFAULT '2000-01-01', x UInt64, n Nested(a String, e Enum8('Hello.world' = 1), b UInt8)) ENGINE = MergeTree(d, x, 1);
-CREATE TABLE enum_pk (date Date DEFAULT '0000-00-00', x Enum8('0' = 0, '1' = 1, '2' = 2), d Enum8('0' = 0, '1' = 1, '2' = 2)) ENGINE = MergeTree(date, x, 1);
-CREATE TABLE enum_test(timestamp DateTime, host String, e Enum8('IU' = 1, 'WS' = 2)) Engine = MergeTree PARTITION BY toDate(timestamp) ORDER BY (timestamp, host);
-CREATE TABLE enum_totals (e Enum8('hello' = 1, 'world' = 2)) ENGINE = Memory;
-create table enums (   d Date default '2015-12-29', k default 0,   e Enum8('world' = 2, 'hello' = 1), sign Enum8('minus' = -1, 'plus' = 1),   letter Enum16('a' = 0, 'b' = 1, 'c' = 2, '*' = -256) ) engine = MergeTree(d, k, 1);
-create table enums (e Enum8('a' = 0, 'b' = 1, 'c' = 2, 'd' = 3)) engine = TinyLog;
-create table enums_copy engine = TinyLog as select * from enums;
-create table enums_copy engine = TinyLog as select * from remote('127.0.0.2', currentDatabase(), enums);
-CREATE TABLE errors_local (level LowCardinality(String)) ENGINE=ReplacingMergeTree ORDER BY level settings min_bytes_for_wide_part = '10000000';
-CREATE TABLE errors_local(level LowCardinality(String)) ENGINE=ReplacingMergeTree ORDER BY level;
-create table ES(A String) Engine=MergeTree order by tuple() SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE ev (a Int32, b Int32) Engine=MergeTree() ORDER BY a SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE event ( id Int64, user_id Int64, content String, created_time DateTime ) ENGINE = MergeTree ORDER BY user_id;
-CREATE TABLE event_types (   type String,   active Int16 ) ENGINE = MergeTree PARTITION BY substring(type, 1, 1) ORDER BY (type, active);
-create table EventLog (   LogEntry String,   Created Int64 ) ENGINE = Memory;
-create table events (   `organisation_id` UUID,   `session_id` UUID,   `id` UUID DEFAULT generateUUIDv4(),   `timestamp` UInt64,   `payload` String,   `customer_id` UUID,   `call_id` String,   PROJECTION events_by_session_and_org   (     SELECT *     ORDER BY       organisation_id,       session_id,       timestamp   ),   PROJECTION events_by_session   (     SELECT *     ORDER BY       session_id,       timestamp   ),   PROJECTION events_by_session_and_customer   (     SELECT *     ORDER BY       customer_id,       session_id,       timestamp   ),   PROJECTION events_by_call_id   (     SELECT *     ORDER BY       call_id,       timestamp   )) engine = MergeTree order by (organisation_id, session_id, timestamp) settings index_granularity = 3;
-CREATE TABLE events32 ( `year` Int32, `month` Int32 ) ENGINE = TinyLog;
-CREATE TABLE execute_on_single_replica_r2 (x UInt64) ENGINE=ReplicatedMergeTree('/clickhouse/tables/test_01532/execute_on_single_replica', 'r2') ORDER BY tuple() SETTINGS execute_merges_on_single_replica_time_threshold=10;
-CREATE TABLE expected_times (QUERY_GROUP_ID String, max_query_duration_ms UInt64) Engine=Memory;
-CREATE TABLE f (`d_ids` Array(Int64) ) ENGINE = TinyLog;
-create table f(s String) engine File(TSV, '/dev/null');
-CREATE TABLE f32_table (my_field Float32) ENGINE=Memory();
-CREATE TABLE fact_cpc_clicks (model_id UInt8) ENGINE = Memory;
-create table fat_granularity (x UInt32, fat FixedString(160000)) engine = MergeTree order by x settings storage_policy = 's3_cache';
-CREATE TABLE fh(a_value UInt32, b_value Float64, c_value Float64, d_value Float64) ENGINE = Memory;
-CREATE TABLE file (n Int8) ENGINE = File(upper('tsv') || 'WithNames' || 'AndTypes');
-CREATE TABLE file (number UInt64) ENGINE = File(TSV);
-CREATE TABLE file (s String, n UInt32) ENGINE = File(CSVWithNames);
-CREATE TABLE file_02184 (id UInt64, name String, dt Date) ENGINE = File(TabSeparated);
-create table file_delim(a int, b int) engine File(CSV, '01545_url_file_format_settings.csv') settings format_csv_delimiter = '|';
-CREATE TABLE file_engine_table (id UInt32) ENGINE=File(TSV);
-CREATE TABLE fill (a UInt32, b Int32) ENGINE = Memory;
-CREATE TABLE fill (date Date, val Int, str String) ENGINE = Memory;
-create table final_bug (x UInt64, y UInt8) engine = ReplacingMergeTree(y) order by x settings index_granularity = 8;
-CREATE TABLE final_test (id String, version Date) ENGINE = ReplacingMergeTree(version, id, 8192);
-CREATE TABLE fixed_string (id UInt64, s FixedString(256)) ENGINE = MergeTree() ORDER BY id;
-CREATE TABLE fl_interval ( `id` String, `start` Float, `end` Float ) ENGINE = MergeTree ORDER BY start;
-CREATE TABLE float (x Float64) ENGINE = Log;
-CREATE TABLE floats (   a FLOAT,   b FLOAT(12),   c FLOAT(15, 22),   d DOUBLE,   e DOUBLE(12),   f DOUBLE(4, 18) ) engine=Memory;
-CREATE TABLE foo (   id UInt32,   a Float64,   b Float64,   c Float64,   d Float64 ) Engine = MergeTree()  PARTITION BY id  ORDER BY id;
-CREATE TABLE foo (`Id` Int32, `Val` Int32) ENGINE = MergeTree ORDER BY Id;
-create table foo (ddate Date, id Int64, n String) ENGINE = ReplacingMergeTree(ddate, (id), 8192);
-CREATE TABLE foo (id UInt64, key AggregateFunction(max, UInt64)) ENGINE MergeTree ORDER BY key;
-CREATE TABLE foo (key int, INDEX i1 key TYPE minmax GRANULARITY 1) Engine=MergeTree() ORDER BY key;
-CREATE TABLE foo (key String, macro String MATERIALIZED __getScalar(key)) Engine=Null();
-CREATE TABLE foo (key UInt32, a String, b Int64, c String) ENGINE = TinyLog;
-CREATE TABLE foo (n String) ENGINE = Memory;
-CREATE TABLE foo (server_date Date, dimension_1 String, metric_1 UInt32) ENGINE = MergeTree() PARTITION BY toYYYYMM(server_date) ORDER BY (server_date);
-CREATE TABLE foo (server_date Date, server_time Datetime('Asia/Istanbul'), dimension_1 String) ENGINE = MergeTree() PARTITION BY toYYYYMM(server_date) ORDER BY (server_date);
-CREATE TABLE foo (ts DateTime, x UInt64) ENGINE = MergeTree PARTITION BY toYYYYMMDD(ts) ORDER BY (ts);
-create table foo(bar String, projection p (select * apply groupUniqArray(100))) engine MergeTree order by bar;
-CREATE TABLE foo(Id Int32, Val Int32) Engine=MergeTree PARTITION BY Val ORDER BY Id;
-CREATE TABLE foo(Id Int32, Val Nullable(Int32)) Engine=MergeTree ORDER BY Id;
-CREATE TABLE foo1(Id Int32, Val Decimal32(9)) Engine=MergeTree PARTITION BY Val ORDER BY Id;
-CREATE TABLE foo2 (`Id` Int32, `Val` Int32) ENGINE = MergeTree ORDER BY Id;
-CREATE TABLE foo2_dist (`Id` UInt32, `Val` String) ENGINE = Distributed(test_shard_localhost, currentDatabase(), foo2);
-CREATE TABLE foo__fuzz_0 (`Id` Int64, `Val` Nullable(Int32)) ENGINE = MergeTree ORDER BY Id;
-CREATE TABLE foo_c(d DateTime) ENGINE = Memory;
-CREATE TABLE foo_distributed AS foo_local ENGINE = Distributed('test_cluster_two_shards_localhost', currentDatabase(), foo_local);
-CREATE TABLE foo_lc (n LowCardinality(String)) ENGINE = Memory;
-CREATE TABLE foo_local (bar UInt64) ENGINE = MergeTree() ORDER BY tuple();
-CREATE TABLE foo_merge as foo ENGINE=Merge(currentDatabase(), '^foo');
-create table fooL (a Int32, v String) engine = Memory;
-create table fooR (a Int32, v String) engine = Memory;
-CREATE TABLE format_nested(attrs Nested(k String, v String)) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE forms (  `form_id` FixedString(24),  `text_field` String ) ENGINE = MergeTree PRIMARY KEY form_id ORDER BY form_id;
-CREATE TABLE four_rows_per_granule (  p Date,  k UInt64,  v1 UInt64,  v2 Int64 ) ENGINE MergeTree() PARTITION BY toYYYYMM(p) ORDER BY k  SETTINGS index_granularity_bytes = 110,      min_index_granularity_bytes = 10,      write_final_mark = 0,      enable_vertical_merge_algorithm=1,      vertical_merge_algorithm_min_rows_to_activate=0,      vertical_merge_algorithm_min_columns_to_activate=0,      min_bytes_for_wide_part = 0,      min_rows_for_wide_part = 0;
-CREATE TABLE four_rows_per_granule (  p Date,  k UInt64,  v1 UInt64,  v2 Int64 ) ENGINE MergeTree() PARTITION BY toYYYYMM(p) ORDER BY k SETTINGS index_granularity_bytes = 110, min_index_granularity_bytes = 10, write_final_mark = 0, min_bytes_for_wide_part = 0, min_rows_for_wide_part = 0;
-CREATE TABLE four_rows_per_granule (  p Date,  k UInt64,  v1 UInt64,  v2 Int64 ) ENGINE ReplacingMergeTree() PARTITION BY toYYYYMM(p) ORDER BY k  SETTINGS index_granularity_bytes = 110,      min_index_granularity_bytes=100,      write_final_mark = 0,      enable_vertical_merge_algorithm=1,      vertical_merge_algorithm_min_rows_to_activate=0,      vertical_merge_algorithm_min_columns_to_activate=0,      min_bytes_for_wide_part = 0,      min_rows_for_wide_part = 0;
-CREATE TABLE four_rows_per_granule (  p Date,  k UInt64,  v1 UInt64,  v2 Int64,  Sign Int8 ) ENGINE CollapsingMergeTree(Sign) PARTITION BY toYYYYMM(p) ORDER BY k  SETTINGS index_granularity_bytes=110, min_index_granularity_bytes=100, write_final_mark = 0,  min_bytes_for_wide_part = 0,  min_rows_for_wide_part = 0,  enable_vertical_merge_algorithm=1,  vertical_merge_algorithm_min_rows_to_activate=0,  vertical_merge_algorithm_min_columns_to_activate=0;
-CREATE TABLE four_rows_per_granule (  p Date,  k UInt64,  v1 UInt64,  v2 Int64,  Sign Int8,  Version UInt8 ) ENGINE VersionedCollapsingMergeTree(Sign, Version) PARTITION BY toYYYYMM(p) ORDER BY k  SETTINGS index_granularity_bytes=120,  min_index_granularity_bytes = 100,  write_final_mark = 0,  enable_vertical_merge_algorithm=1,  vertical_merge_algorithm_min_rows_to_activate=0,  vertical_merge_algorithm_min_columns_to_activate=0,  min_bytes_for_wide_part = 0,  min_rows_for_wide_part = 0;
-CREATE TABLE four_rows_per_granule1 (  p Date,  k UInt64,  v1 UInt64,  v2 Int64 ) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_00926/four_rows_in_granule', '1') PARTITION BY toYYYYMM(p) ORDER BY k SETTINGS index_granularity_bytes = 110, min_index_granularity_bytes = 100, write_final_mark = 0;
-CREATE TABLE four_rows_per_granule2 (  p Date,  k UInt64,  v1 UInt64,  v2 Int64 ) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_00926/four_rows_in_granule', '2') PARTITION BY toYYYYMM(p) ORDER BY k SETTINGS index_granularity_bytes = 110, min_index_granularity_bytes = 100 ,write_final_mark = 0;
-create table from_table (x UInt32) engine=MergeTree order by x;
-CREATE TABLE fromModifiedJulianDay_test (d Int32) ENGINE = Memory;
-CREATE TABLE full_join (x UInt32, s String) engine = Join(ALL, FULL, x) SETTINGS join_use_nulls = 1;
-CREATE TABLE full_join (x UInt32, s String) engine = Join(ALL, FULL, x);
-CREATE TABLE full_join__fuzz_4 (`x` LowCardinality(UInt32), `s` LowCardinality(String)) ENGINE = Join(`ALL`, FULL, x) SETTINGS join_use_nulls = 1;
-create table funnel_test (timestamp UInt32, event UInt32) engine=Memory;
-create table funnel_test2 (uid UInt32 default 1,timestamp DateTime, event UInt32) engine=Memory;
-create table funnel_test_non_null (`dt` DateTime, `u` int, `a` Nullable(String), `b` Nullable(String)) engine = MergeTree() partition by dt order by u;
-create table funnel_test_strict (timestamp UInt32, event UInt32) engine=Memory;
-create table funnel_test_strict_increase (timestamp UInt32, event UInt32) engine=Memory;
-create table funnel_test_strict_order (dt DateTime, user int, event String) engine = MergeTree() partition by dt order by user;
-create table funnel_test_u64 (uid UInt32 default 1,timestamp UInt64, event UInt32) engine=Memory;
-CREATE TABLE fuse_tbl(a Nullable(Int32), b Int32) Engine = Log;
-CREATE TABLE fuse_tbl(a Nullable(Int8), b Int8) Engine = Log;
-CREATE TABLE geo (a Point, b Ring, c Polygon, d MultiPolygon) ENGINE=Memory();
-CREATE TABLE geo (p Array(Array(Array(Tuple(Float64, Float64)))), id Int) engine=Memory();
-CREATE TABLE geo (p Array(Array(Array(Tuple(Float64, Float64)))), s String, id Int) engine=Memory();
-CREATE TABLE geo (p Array(Array(Tuple(Float64, Float64))), id Int) engine=Memory();
-CREATE TABLE geo (p Array(Array(Tuple(Float64, Float64))), s String, id Int) engine=Memory();
-CREATE TABLE geo (p Array(Tuple(Float64, Float64)), id Int) engine=Memory();
-CREATE TABLE geo (p Array(Tuple(Float64, Float64)), s String, id Int) engine=Memory();
-CREATE TABLE geo (p Tuple(Float64, Float64), id Int) engine=Memory();
-CREATE TABLE geo (p Tuple(Float64, Float64), s String, id Int) engine=Memory();
-CREATE TABLE geo (s String, id Int) engine=Memory();
-create table geohash_test_data (  latitude Float64, longitude Float64, encoded  String ) engine = MergeTree order by (latitude, longitude, encoded);
-CREATE TABLE github_events AS gen ENGINE=MergeTree ORDER BY (event_type, repo_name, created_at) SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE globalin (CounterID UInt32, StartDate Date ) ENGINE = Memory;
-CREATE TABLE goal (   `CounterID` UInt32,   `StartDate` Date,   `GoalID` UInt32,   `Visits` AggregateFunction(sumIf, Int8, UInt8),   `GoalReaches` AggregateFunction(sum, Int8) ) ENGINE = AggregatingMergeTree PARTITION BY toStartOfMonth(StartDate) ORDER BY (CounterID, StartDate, GoalID) SETTINGS index_granularity = 256, index_granularity_bytes = '10Mi';
-CREATE TABLE grop_uniq_array_date (d Date, dt DateTime, id Integer) ENGINE = Memory;
-CREATE TABLE group_bitmap_data_test (   `pickup_date` Date,   `city_id` UInt32,   `uid` UInt32 ) ENGINE = Memory;
-CREATE TABLE group_by_all (   a String,   b int,   c int ) engine = Memory;
-CREATE TABLE group_by_null_key (c1 Nullable(Int32), c2 LowCardinality(Nullable(Int32))) ENGINE = Memory();
-CREATE TABLE group_by_pk (k UInt64, v UInt64) ENGINE = MergeTree ORDER BY k PARTITION BY v % 50;
-CREATE TABLE group_uniq_arr_int ENGINE = Memory AS SELECT g as id, if(c == 0, [v], if(c == 1, emptyArrayInt64(), [v, v])) as v FROM    (SELECT intDiv(number%1000000, 100) as v, intDiv(number%100, 10) as g, number%10 as c FROM system.numbers WHERE c < 3 LIMIT 10000000);
-CREATE TABLE group_uniq_arr_str ENGINE = Memory AS   SELECT hex(intHash32(g)) as id, if(c == 0, [hex(v)], if(c == 1, emptyArrayString(), [hex(v), hex(v)])) as v FROM     (SELECT intDiv(number%1000000, 100) as v, intDiv(number%100, 10) as g, number%10 as c FROM system.numbers WHERE c < 3 LIMIT 10000000);
-CREATE TABLE group_uniq_str ENGINE = Memory AS SELECT number % 10 as id, toString(intDiv((number%10000), 10)) as v FROM system.numbers LIMIT 10000000;
-CREATE TABLE grouping_sets(fact_1_id Int32, fact_2_id Int32, fact_3_id Int32, fact_4_id Int32, sales_value Int32) ENGINE = Memory;
-create table h (EventDate Date, CounterID UInt64, WatchID UInt64) engine = MergeTree order by (CounterID, EventDate);
-CREATE TABLE h3_indexes (h3_index UInt64) ENGINE = Memory;
-CREATE TABLE h3_indexes (h3_index UInt64, res UInt8) ENGINE = Memory;
-CREATE TABLE h3_indexes (id int, start String, end String) ENGINE = Memory;
-CREATE TABLE han_1 (k Int32, date_dt LowCardinality(Nullable(String))) ENGINE = MergeTree() PARTITION BY k ORDER BY k;
-CREATE TABLE has_column_in_table (i Int64, s String, nest Nested(x UInt8, y UInt32)) ENGINE = Memory;
-create table has_final_mark (i int, j int) engine MergeTree partition by i % 2 order by j settings index_granularity = 10, write_final_mark = 1;
-CREATE TABLE has_function(arr Array(Nullable(String))) ENGINE = Memory;
-CREATE TABLE HASH_TEST_INSERT (`STR_VAL` String) ENGINE = Null;
-CREATE TABLE HASH_TEST_INSERT (STR_VAL String) ENGINE = Null;
-CREATE TABLE hierarchy_source_table (id UInt64, parent_id UInt64) ENGINE = TinyLog;
-create table histogram(num Int64) engine=TinyLog;
-CREATE TABLE hit (  `UserID` UInt32,  `URL` String,  `EventTime` DateTime ) ENGINE = MergeTree partition by f1(URL) ORDER BY (EventTime);
-CREATE TABLE hits(EventDate Date, WatchID UInt8) ENGINE MergeTree ORDER BY(EventDate);
-CREATE TABLE hits_layer(EventDate Date, WatchID UInt8) ENGINE Distributed(test_cluster_two_shards_localhost, currentDatabase(), 'hits');
-CREATE TABLE household_demographics (   `hd_demo_sk` Int64,   `hd_income_band_sk` Nullable(Int64),   `hd_buy_potential` Nullable(String),   `hd_dep_count` Nullable(Int64),   `hd_vehicle_count` Nullable(Int64) ) ENGINE = MergeTree ORDER BY hd_demo_sk;
-CREATE TABLE huge_granularity_small_blocks (  p Date,  k UInt64,  v1 UInt64,  v2 Int64 ) ENGINE MergeTree() PARTITION BY toYYYYMM(p) ORDER BY k  SETTINGS index_granularity_bytes=1000000, write_final_mark = 0,      enable_vertical_merge_algorithm=1,      vertical_merge_algorithm_min_rows_to_activate=0,      vertical_merge_algorithm_min_columns_to_activate=0,      min_bytes_for_wide_part = 0,      min_rows_for_wide_part = 0;
-CREATE TABLE huge_granularity_small_blocks (  p Date,  k UInt64,  v1 UInt64,  v2 Int64 ) ENGINE MergeTree() PARTITION BY toYYYYMM(p) ORDER BY k SETTINGS index_granularity_bytes = 1000000, write_final_mark = 0, min_bytes_for_wide_part = 0, min_rows_for_wide_part = 0;
-CREATE TABLE huge_granularity_small_blocks (  p Date,  k UInt64,  v1 UInt64,  v2 Int64 ) ENGINE ReplacingMergeTree() PARTITION BY toYYYYMM(p) ORDER BY k  SETTINGS index_granularity_bytes=1000000, write_final_mark = 0,      enable_vertical_merge_algorithm=1,      vertical_merge_algorithm_min_rows_to_activate=0,      vertical_merge_algorithm_min_columns_to_activate=0,      min_bytes_for_wide_part = 0,      min_rows_for_wide_part = 0;
-CREATE TABLE i20203_1 (a Int8) ENGINE = ReplicatedMergeTree('/clickhouse/{database}/01715_background_checker_i20203', 'r1') ORDER BY tuple();
-CREATE TABLE i20203_2 (a Int8) ENGINE = ReplicatedMergeTree('/clickhouse/{database}/01715_background_checker_i20203', 'r2') ORDER BY tuple();
-CREATE TABLE id1(`id1` UInt32, `val1` UInt8) ENGINE = Join(ANY, LEFT, id1);
-CREATE TABLE id2(`id2` UInt32, `val2` UInt8) ENGINE = Join(ANY, LEFT, id2);
-CREATE TABLE id_join (`country` String, `location` Array(Int32)) ENGINE = Join(ANY, LEFT, country);
-create table id_val(id Int32, val Array(Int32)) engine Join(ANY, LEFT, id) settings join_use_nulls = 1;
-CREATE TABLE ids (id UInt64) ENGINE = Memory;
-CREATE TABLE idx (a Int32) Engine=MergeTree() ORDER BY a SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE IF NOT EXISTS agg_table (   time DateTime CODEC(DoubleDelta, LZ4),   xxx String,   two_values Tuple(Array(UInt16), UInt32),   agg_simple SimpleAggregateFunction(sum, UInt64),   agg SimpleAggregateFunction(sumMap, Tuple(Array(Int16), Array(UInt64))) ) ENGINE = AggregatingMergeTree() ORDER BY (xxx, time);
-create table if not exists alias_column_should_not_allow_compression ( user_id UUID, user_id_hashed ALIAS (cityHash64(user_id))) engine=MergeTree() order by tuple();
-create table if not exists alias_column_should_not_allow_compression_fail ( user_id UUID, user_id_hashed ALIAS (cityHash64(user_id)) codec(LZ4HC(1))) engine=MergeTree() order by tuple();
-CREATE TABLE IF NOT EXISTS badFixedStringSort (uuid5_old FixedString(16), subitem String) engine=MergeTree order by tuple();
-CREATE TABLE IF NOT EXISTS bug(k UInt64, s UInt64) ENGINE = Memory;
-CREATE TABLE IF NOT EXISTS cool_table (   id UInt64,   n Nested(n UInt64, lc1 Array(LowCardinality(String))) ) ENGINE = MergeTree ORDER BY id;
-CREATE TABLE IF NOT EXISTS cool_table (   id UInt64,   n Nested(n UInt64, lc1 LowCardinality(String)) ) ENGINE = MergeTree ORDER BY id;
-CREATE TABLE IF NOT EXISTS cool_table (   id UInt64,   n Nested(n UInt64, lc1 Map(LowCardinality(String), UInt64)) ) ENGINE = MergeTree ORDER BY id;
-CREATE TABLE IF NOT EXISTS data (sketch Array(Int8)) ENGINE=Memory;
-CREATE TABLE IF NOT EXISTS data_a_02187 (a Int64) ENGINE=Memory;
-CREATE TABLE IF NOT EXISTS data_b_02187 (a Int64) ENGINE=Memory;
-CREATE TABLE IF NOT EXISTS decimal (   a DEC(9, 2),   b DEC(18, 5),   c DEC(38, 5),   d Nullable(DEC(9, 4)),   e Nullable(DEC(18, 8)),   f Nullable(DEC(38, 8)) ) ENGINE = Memory;
-CREATE TABLE IF NOT EXISTS decimal (   a DEC(9, 3),   b DEC(18, 9),   c DEC(38, 18) ) ENGINE = Memory;
-CREATE TABLE IF NOT EXISTS decimal (   a DECIMAL(9,0),   b DECIMAL(18,0),   c DECIMAL(38,0),   d DECIMAL(9, 9),   e DEC(18, 18),   f dec(38, 38),   g Decimal(9, 3),   h decimal(18, 9),   i deciMAL(38, 18),   j dec(4, 2),   k NumEriC(23, 4),   l numeric(9, 3),   m NUMEric(18, 9),   n FixED(12, 6),   o fixed(8, 6) ) ENGINE = Memory;
-CREATE TABLE IF NOT EXISTS decimal (   a DECIMAL(9,0),   b DECIMAL(18,0),   c DECIMAL(38,0),   d DECIMAL(9, 9),   e Decimal64(18),   f Decimal128(38),   g Decimal32(5),   h Decimal64(9),   i Decimal128(18),   j dec(4,2) ) ENGINE = Memory;
-CREATE TABLE IF NOT EXISTS decimal (   a DECIMAL(9,4) DEFAULT 0,   b DECIMAL(18,4) DEFAULT a / 2,   c DECIMAL(38,4) DEFAULT b / 3,   d MATERIALIZED a + toDecimal32('0.2', 1),   e ALIAS b * 2,   f ALIAS c * 6 ) ENGINE = Memory;
-CREATE TABLE IF NOT EXISTS decimal (   A UInt64,   B Decimal128(18),   C Decimal128(18) ) Engine = Memory;
-CREATE TABLE IF NOT EXISTS decimal (   d1 DECIMAL(9, 8),   d2 DECIMAL(18),   d3 DECIMAL ) ENGINE = MergeTree PARTITION BY toInt32(d1) ORDER BY (d2, d3);
-CREATE TABLE IF NOT EXISTS decimal (   d1 DECIMAL(9, 8),   d2 DECIMAL(18, 8),   d3 DECIMAL(38, 8) ) ENGINE = MergeTree PARTITION BY toInt32(d1) ORDER BY (d2, d3);
-CREATE TABLE IF NOT EXISTS decimal (x DECIMAL(10, -2)) ENGINE = Memory;
-CREATE TABLE IF NOT EXISTS defaults (   vals UInt64 ) ENGINE = Memory;
-CREATE TABLE IF NOT EXISTS defaults (   param1 Float64,   param2 Float64,   param3 Float64,   param4 Float64,   param5 Float64,   param6 Float64,   param7 Float64,   target Float64,   predict1 Float64,   predict2 Float64,   predict3 Float64,   predict4 Float64,   predict5 Float64,   predict6 Float64,   predict7 Float64 ) ENGINE = Memory;
-CREATE TABLE IF NOT EXISTS defaults (   param1 Float64,   param2 Float64,   target Float64,   predict1 Float64,   predict2 Float64 ) ENGINE = Memory;
-CREATE TABLE IF NOT EXISTS defaults (   vals DateTime ) ENGINE = Memory;
-CREATE TABLE IF NOT EXISTS defaults (   vals Int32 ) ENGINE = Memory;
-CREATE TABLE IF NOT EXISTS defaults (   vals String ) ENGINE = Memory;
-CREATE TABLE IF NOT EXISTS defaults (   vals UInt32 ) ENGINE = Memory;
-CREATE TABLE IF NOT EXISTS dict_source (key UInt64, value String) ENGINE=MergeTree ORDER BY key;
-CREATE TABLE IF NOT EXISTS dist_01213 AS local_01213 ENGINE = Distributed(test_cluster_two_shards_localhost, currentDatabase(), local_01213, id);
-CREATE TABLE IF NOT EXISTS empty_tiny_log(A UInt8) Engine = TinyLog;
-CREATE TABLE IF NOT EXISTS foo_00234(id UInt64) Engine=Memory;
-CREATE TABLE IF NOT EXISTS functional_index_mergetree (x Float64) ENGINE = MergeTree ORDER BY round(x);
-CREATE TABLE IF NOT EXISTS grouptest (   user_id UInt32,   p1 Float64,   p2 Float64,   target Float64 ) ENGINE = Memory;
-CREATE TABLE IF NOT EXISTS joint (   id  UUID,   value LowCardinality(String) ) ENGINE = Join (ANY, LEFT, id);
-create table if not exists left_table (id UInt64, val_left String) engine=ReplacingMergeTree() ORDER BY id;
-CREATE TABLE IF NOT EXISTS merge (d Date DEFAULT '2000-01-01', x UInt64) ENGINE = MergeTree(d, x, 5);
-CREATE TABLE IF NOT EXISTS merge (d Date DEFAULT '2000-01-01', x UInt64) ENGINE = MergeTree(d, x, 8192);
-CREATE TABLE IF NOT EXISTS merge1 (x UInt64) ENGINE = Merge(currentDatabase(), '^merge\\d$');
-CREATE TABLE IF NOT EXISTS merge2 (x UInt64) ENGINE = Merge(currentDatabase(), '^merge\\d$');
-create table if not exists middle_table (id UInt64, val_middle String) engine=MergeTree() ORDER BY id;
-CREATE TABLE IF NOT EXISTS mytable (start_ts UInt32, end_ts UInt32, uuid String) ENGINE = MergeTree() ORDER BY start_ts;
-create table if not exists null_01016 (x Nullable(String)) engine MergeTree order by ifNull(x, 'order-null') partition by ifNull(x, 'partition-null');
-CREATE TABLE IF NOT EXISTS outer (   `id` UInt64,   `organization_id` UInt64,   `version` UInt64 ) ENGINE = ReplacingMergeTree(version) PARTITION BY organization_id % 8 ORDER BY (organization_id, id);
-CREATE TABLE IF NOT EXISTS parallel_replicas_final (x String) ENGINE=ReplacingMergeTree() ORDER BY x;
-CREATE TABLE IF NOT EXISTS parallel_replicas_plain (x String) ENGINE=MergeTree() ORDER BY x;
-CREATE TABLE IF NOT EXISTS partition_id (d Date DEFAULT '2000-01-01', x UInt64) ENGINE = MergeTree(d, x, 5);
-CREATE TABLE IF NOT EXISTS post_metrics (   `page_id` LowCardinality(String),   `post_id` String CODEC(LZ4),   `created` DateTime CODEC(T64, LZ4),   `impressions` UInt32 CODEC(T64, LZ4),   `clicks` UInt32 CODEC(T64, LZ4),   `as_of` DateTime CODEC(T64, LZ4) ) ENGINE = ReplacingMergeTree(as_of) PARTITION BY toStartOfMonth(created) ORDER BY (page_id, post_id);
-CREATE TABLE IF NOT EXISTS posts (   `page_id` LowCardinality(String),   `post_id` String CODEC(LZ4),   `host_id` UInt32 CODEC(T64, LZ4),   `path_id` UInt32,   `created` DateTime CODEC(T64, LZ4),   `as_of` DateTime CODEC(T64, LZ4) ) ENGINE = ReplacingMergeTree(as_of) PARTITION BY toStartOfMonth(created) ORDER BY (page_id, post_id);
-create table if not exists regular_mt_table (x String) engine=MergeTree() ORDER BY x;
-CREATE TABLE IF NOT EXISTS replicated_deduplicate_by_columns_r2 (   id Int32, val UInt32, unique_value UInt64 MATERIALIZED rowNumberInBlock() ) ENGINE=ReplicatedMergeTree('/clickhouse/tables/{database}/test_01581/replicated_deduplicate', 'r2') ORDER BY id;
-create table if not exists rhs (x String) engine=ReplacingMergeTree() ORDER BY x;
-create table if not exists right_table (id UInt64, val_right String) engine=ReplacingMergeTree() ORDER BY id;
-create table if not exists right_table engine=Distributed('test_shard_localhost', currentDatabase(), right_table_local) AS right_table_local;
-create table if not exists right_table_local (id UInt64, val_right String) engine=ReplacingMergeTree() ORDER BY id;
-CREATE TABLE IF NOT EXISTS sample_correct (`x` String) ENGINE = MergeTree ORDER BY tuple(sipHash64(x)) SAMPLE BY sipHash64(x);
-CREATE TABLE IF NOT EXISTS sample_incorrect (`x` UUID) ENGINE = MergeTree ORDER BY tuple(x) SAMPLE BY x;
-CREATE TABLE IF NOT EXISTS t (   id  UUID,   d   DateTime ) ENGINE = MergeTree PARTITION BY toDate(d) ORDER BY id;
-create table if not exists t (`arr.key` Array(LowCardinality(String)), `arr.value` Array(LowCardinality(String))) engine = Memory;
-CREATE TABLE IF NOT EXISTS t1_00844 ( f1 UInt32, f2 String ) ENGINE = MergeTree ORDER BY (f1);
-CREATE TABLE IF NOT EXISTS t2_00844 ( f1 String, f3 String ) ENGINE = MergeTree ORDER BY (f1);
-CREATE TABLE IF NOT EXISTS t_02708(x DateTime) ENGINE = MergeTree ORDER BY tuple();
-create table if not exists table_to_merge_a (id UInt64, val String) engine=ReplacingMergeTree() ORDER BY id;
-create table if not exists table_to_merge_b (id UInt64, val String) engine=MergeTree() ORDER BY id;
-create table if not exists table_to_merge_c (id UInt64, val String) engine=ReplacingMergeTree() ORDER BY id;
-CREATE table if not exists table_with_dot_column (date Date, regular_column String, `other_column.2` String) ENGINE = MergeTree() ORDER BY date;
-create table if not exists test (num UInt64) engine=Memory;
-CREATE TABLE IF NOT EXISTS test( id UInt32, track UInt8, codec String, content String, rdate Date DEFAULT '2018-02-03', track_id String DEFAULT concat(concat(concat(toString(track), '-'), codec), content) ) ENGINE=MergeTree(rdate, (id, track_id), 8192);
-CREATE TABLE IF NOT EXISTS test01603 (   f64 Float64,   d Decimal64(3) DEFAULT toDecimal32(f64, 3),   f32 Float32 DEFAULT f64 ) ENGINE=MergeTree() ORDER BY f32;
-CREATE TABLE IF NOT EXISTS test2_d as test2 ENGINE = Distributed(test_cluster_two_shard_three_replicas_localhost, currentDatabase(), test2, id);
-CREATE TABLE IF NOT EXISTS test_01035_avg (   i8 Int8     DEFAULT i64,   i16 Int16    DEFAULT i64,   i32 Int32    DEFAULT i64,   i64 Int64    DEFAULT if(u64 % 2 = 0, toInt64(u64), toInt64(-u64)),   i128 Int128   DEFAULT i64,   i256 Int256   DEFAULT i64,   u8 UInt8    DEFAULT u64,   u16 UInt16   DEFAULT u64,   u32 UInt32   DEFAULT u64,   u64 UInt64,   u128 UInt128  DEFAULT u64,   u256 UInt256  DEFAULT u64,   f32 Float32   DEFAULT u64,   f64 Float64   DEFAULT u64,   d32 Decimal32(4)  DEFAULT toDecimal32(i32 / 1000, 4),   d64 Decimal64(18)  DEFAULT toDecimal64(u64 / 1000000, 8),   d128 Decimal128(20) DEFAULT toDecimal128(i128 / 100000, 20),   d256 Decimal256(40) DEFAULT toDecimal256(i256 / 100000, 40) ) ENGINE = MergeTree() ORDER BY i64 SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE IF NOT EXISTS test_base_condition (dt DateTime, id int, action String, referrer String) ENGINE = MergeTree() PARTITION BY dt ORDER BY id;
-CREATE TABLE IF NOT EXISTS test_d as test ENGINE = Distributed(test_cluster_one_shard_three_replicas_localhost, currentDatabase(), test);
-CREATE TABLE IF NOT EXISTS test_max_num_to_warn_02931.test_max_num_to_warn_1 (id Int32, str String) Engine=Memory;
-CREATE TABLE IF NOT EXISTS test_max_num_to_warn_02931.test_max_num_to_warn_10 (id Int32, str String) Engine=Memory;
-CREATE TABLE IF NOT EXISTS test_max_num_to_warn_02931.test_max_num_to_warn_11 (id Int32, str String) Engine=Memory;
-CREATE TABLE IF NOT EXISTS test_max_num_to_warn_02931.test_max_num_to_warn_2 (id Int32, str String) Engine=Memory;
-CREATE TABLE IF NOT EXISTS test_max_num_to_warn_02931.test_max_num_to_warn_3 (id Int32, str String) Engine=Memory;
-CREATE TABLE IF NOT EXISTS test_max_num_to_warn_02931.test_max_num_to_warn_4 (id Int32, str String) Engine=Memory;
-CREATE TABLE IF NOT EXISTS test_max_num_to_warn_02931.test_max_num_to_warn_5 (id Int32, str String) Engine=Memory;
-CREATE TABLE IF NOT EXISTS test_max_num_to_warn_02931.test_max_num_to_warn_6 (id Int32, str String) Engine=Memory;
-CREATE TABLE IF NOT EXISTS test_max_num_to_warn_02931.test_max_num_to_warn_7 (id Int32, str String) Engine=Memory;
-CREATE TABLE IF NOT EXISTS test_max_num_to_warn_02931.test_max_num_to_warn_8 (id Int32, str String) Engine=Memory;
-CREATE TABLE IF NOT EXISTS test_max_num_to_warn_02931.test_max_num_to_warn_9 (id Int32, str String) Engine=Memory;
-CREATE TABLE IF NOT EXISTS test_move_partition_dest (   pk UInt8,   val UInt32 ) Engine = MergeTree()  PARTITION BY pk  ORDER BY (pk, val) SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE IF NOT EXISTS test_move_partition_src (   pk UInt8,   val UInt32 ) Engine = MergeTree()  PARTITION BY pk  ORDER BY (pk, val) SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE IF NOT EXISTS test_sequenceNextNode (dt DateTime, id int, action String) ENGINE = MergeTree() PARTITION BY dt ORDER BY id;
-CREATE TABLE IF NOT EXISTS test_sequenceNextNode_Nullable (dt DateTime, id int, action Nullable(String)) ENGINE = MergeTree() PARTITION BY dt ORDER BY id;
-CREATE TABLE IF NOT EXISTS uuid (   created_at DateTime,   id UUID ) ENGINE = MergeTree PARTITION BY toDate(created_at) ORDER BY (created_at, id);
-CREATE TABLE IF NOT EXISTS uuid (   created_at DateTime,   id0 String,   id1 FixedString(36) ) ENGINE = MergeTree PARTITION BY toDate(created_at) ORDER BY (created_at);
-CREATE TABLE IF NOT EXISTS {CLICKHOUSE_DATABASE:Identifier}.r1 (name String) Engine=Memory();
-CREATE TABLE IF NOT EXISTS {CLICKHOUSE_DATABASE:Identifier}.r2 (name String) Engine=Memory();
-CREATE TABLE IF NOT EXISTS {CLICKHOUSE_DATABASE:Identifier}.source_table (         id UInt64,         value String       ) ENGINE = Memory;
-CREATE TABLE ignore_auto_increment (   di DEFAULT 1, id int AUTO_INCREMENT, s String EPHEMERAL ) ENGINE=MergeTree() ORDER BY tuple();
-CREATE TABLE ignore_auto_increment (   id AUTO_INCREMENT ) ENGINE=MergeTree() ORDER BY tuple();
-CREATE TABLE ignore_auto_increment (   id int AUTO_INCREMENT ) ENGINE=MergeTree() ORDER BY tuple();
-CREATE TABLE ignore_auto_increment (   id int AUTO_INCREMENT, di AUTO_INCREMENT, s String AUTO_INCREMENT ) ENGINE=MergeTree() ORDER BY tuple();
-CREATE TABLE ignore_auto_increment (id int AUTO_INCREMENT DEFAULT 1) ENGINE=MergeTree() ORDER BY tuple();
-CREATE TABLE ignore_auto_increment (id int DEFAULT 1 AUTO_INCREMENT) ENGINE=MergeTree() ORDER BY tuple();
-CREATE TABLE imdb_01148.anything AS imdb_01148.movie_directors;
-CREATE TABLE imdb_01148.movie_directors (`director_id` UInt64, `movie_id` UInt64) ENGINE = ReplicatedMergeTree ORDER BY (director_id, movie_id) SETTINGS index_granularity = 8192;
-create table in_01277 as out_01277 Engine=Null();
-create table in_02231 (number Int) engine=Null();
-CREATE TABLE income_band (   `ib_income_band_sk` Int64,   `ib_lower_bound` Nullable(Int64),   `ib_upper_bound` Nullable(Int64) ) ENGINE = MergeTree ORDER BY ib_income_band_sk;
-CREATE TABLE index (   key Int32,   name String,   merge_date Date ) ENGINE = MergeTree(merge_date, key, 8192);
-CREATE TABLE index (d Date) ENGINE = MergeTree ORDER BY d;
-CREATE TABLE index_compact(a UInt32, b UInt32, index i1 b type minmax granularity 1)   ENGINE = MergeTree ORDER BY a   SETTINGS min_rows_for_wide_part = 1000, index_granularity = 128, merge_max_block_size = 100;
-CREATE TABLE index_for_like (s String, d Date DEFAULT today()) ENGINE = MergeTree(d, (s, d), 1);
-CREATE TABLE index_memory (x UInt64) ENGINE = MergeTree ORDER BY x SETTINGS index_granularity = 1;
-CREATE TABLE index_test (  x UInt32,  y UInt32,  z UInt32 ) ENGINE = MergeTree order by x;
-CREATE TABLE indexed_table (   `tm` DateTime,   `log_message` String,   INDEX log_message log_message TYPE tokenbf_v1(4096, 2, 0) GRANULARITY 1 ) ENGINE = MergeTree ORDER BY (tm) SETTINGS index_granularity_bytes = 50, min_index_granularity_bytes = 40;
-CREATE TABLE inner (   `id` UInt64,   `outer_id` UInt64,   `organization_id` UInt64,   `version` UInt64,   `date` Date ) ENGINE = ReplacingMergeTree(version) PARTITION BY toYYYYMM(date) ORDER BY (organization_id, outer_id);
-CREATE TABLE inner_distributed AS inner ENGINE = Distributed('test_cluster_two_shards', currentDatabase(), 'inner', intHash64(organization_id));
-CREATE TABLE inner_join (x UInt32, s String) engine = Join(ALL, INNER, x) SETTINGS join_use_nulls = 1;
-CREATE TABLE inner_join (x UInt32, s String) engine = Join(ALL, INNER, x);
-CREATE TABLE input  (key UInt64) Engine=Distributed(test_shard_localhost, currentDatabase(), buffer_, key);
-CREATE TABLE insert (i UInt64, s String, u UUID, d Date, t DateTime, a Array(UInt32)) ENGINE = Memory;
-CREATE TABLE insert_dedup_token (   id Int32, val UInt32 ) ENGINE=MergeTree() ORDER BY id SETTINGS non_replicated_deduplication_window=0xFFFFFFFF;
-CREATE TABLE insert_dedup_token1 (   id Int32, val UInt32 ) ENGINE=ReplicatedMergeTree('/clickhouse/tables/{database}/insert_dedup_token', 'r1') ORDER BY id;
-CREATE TABLE insert_dedup_token2 (   id Int32, val UInt32 ) ENGINE=ReplicatedMergeTree('/clickhouse/tables/{database}/insert_dedup_token', 'r2') ORDER BY id;
-CREATE TABLE insert_fewer_columns (a UInt8, b UInt8) ENGINE = Memory;
-CREATE TABLE insert_fewer_columns_2 (b UInt8, a UInt8) ENGINE = Memory;
-CREATE TABLE insert_select_dst (i int, middle_a int, middle_b int, j int) ENGINE = Log;
-CREATE TABLE insert_select_src (i int, j int) ENGINE = Log;
-CREATE TABLE installation_stats (message String, info String, message_type String) ENGINE = Log;
-create table insub (i int, j int) engine MergeTree order by i settings index_granularity = 1;
-CREATE TABLE interval ( `id` String, `start` Int64, `end` Int64 ) ENGINE = MergeTree ORDER BY start;
-CREATE TABLE ints (   a TINYINT,   b TINYINT(8),   c SMALLINT,   d SMALLINT(16),   e INT,   f INT(32),   g BIGINT,   h BIGINT(64) ) engine=Memory;
-CREATE TABLE ints (i64 Int64, i32 Int32) ENGINE = Memory;
-create table ints (key UInt64, i8 Int8, i16 Int16, i32 Int32, i64 Int64, u8 UInt8, u16 UInt16, u32 UInt32, u64 UInt64) Engine = Memory;
-CREATE TABLE invalid_min_index_granularity_bytes_setting (  id UInt64,  value String ) ENGINE MergeTree() ORDER BY id SETTINGS index_granularity_bytes = 1, min_index_granularity_bytes = 1024;
-CREATE TABLE ip4test (ip IPv4) ENGINE=Memory;
-CREATE TABLE ip_bloom (   `a` UInt32,   `ip4` Nullable(IPv4),   `ip6` Nullable(IPv6),   INDEX x4 ip4 TYPE bloom_filter(0.1) GRANULARITY 3,   INDEX x6 ip6 TYPE bloom_filter(0.1) GRANULARITY 3 ) ENGINE = MergeTree ORDER BY a;
-CREATE TABLE ip_part_test ( ipv4 IPv4, ipv6 IPv6 ) ENGINE = MergeTree PARTITION BY ipv4 ORDER BY ipv4 AS SELECT '1.2.3.4', '::ffff:1.2.3.4';
-CREATE TABLE ip_part_test ( ipv4 IPv4, ipv6 IPv6 ) ENGINE = MergeTree PARTITION BY ipv6 ORDER BY ipv6 AS SELECT '1.2.3.4', '::ffff:1.2.3.4';
-CREATE TABLE ip_trie_dictionary_array_source_table (   prefix String,   array_value Array(Int64) ) ENGINE = TinyLog;
-CREATE TABLE ip_trie_dictionary_decimal_source_table (   prefix String,   decimal_value Decimal256(5) ) ENGINE = TinyLog;
-CREATE TABLE ip_trie_dictionary_source_table (   prefix String ) ENGINE = TinyLog;
-CREATE TABLE ip_trie_source_table_01862 (   prefix String,   value String ) ENGINE = Memory();
-create table ips_v6(i IPv6) Engine=Memory;
-CREATE TABLE ipv4_range(ip IPv4, cidr UInt8) ENGINE = Memory;
-CREATE TABLE ipv4_t64 (uid Int16, ip IPv4 CODEC(T64), INDEX ip_idx ip TYPE bloom_filter GRANULARITY 4) ENGINE=MergeTree ORDER BY uid;
-CREATE TABLE ipv4_test (   id UInt64,   value String ) ENGINE=MergeTree ORDER BY id;
-CREATE TABLE ipv6_range(ip IPv6, cidr UInt8) ENGINE = Memory;
-CREATE TABLE ipv6_test (   id UInt64,   value String ) ENGINE=MergeTree ORDER BY id;
-CREATE TABLE ipv6_test26473 ( `ip` String, `ipv6` IPv6 MATERIALIZED toIPv6(ip), `is_ipv6` Boolean  MATERIALIZED isIPv6String(ip), `cblock` IPv6  MATERIALIZED cutIPv6(ipv6, 10, 1), `cblock1` IPv6 MATERIALIZED toIPv6(cutIPv6(ipv6, 10, 1))  ) ENGINE = Memory;
-CREATE TABLE issue32107(A Int64, s_quantiles AggregateFunction(quantilesTDigest(0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.99), Float64)) ENGINE = AggregatingMergeTree ORDER BY A;
-CREATE TABLE Issue_2231_Invalid_Nested_Columns_Size (   Date Date,   NestedColumn Nested(     ID  Int32,     Count Int64   ) ) Engine = MergeTree   PARTITION BY tuple()   ORDER BY Date;
-create table issue_46128 ( id Int64,  a LowCardinality(Nullable(String)),   b LowCardinality(Nullable(String)) ) Engine = MergeTree order by id as select number%100, 'xxxx', 'yyyy' from numbers(10);
-CREATE TABLE item (   `i_item_sk` Int64,   `i_item_id` String,   `i_rec_start_date` Nullable(Date),   `i_rec_end_date` Nullable(Date),   `i_item_desc` Nullable(String),   `i_current_price` Nullable(Float32),   `i_wholesale_cost` Nullable(Float32),   `i_brand_id` Nullable(Int64),   `i_brand` Nullable(String),   `i_class_id` Nullable(Int64),   `i_class` Nullable(String),   `i_category_id` Nullable(Int64),   `i_category` Nullable(String),   `i_manufact_id` Nullable(Int64),   `i_manufact` Nullable(String),   `i_size` Nullable(String),   `i_formulation` Nullable(String),   `i_color` Nullable(String),   `i_units` Nullable(String),   `i_container` Nullable(String),   `i_manager_id` Nullable(Int64),   `i_product_name` Nullable(String) ) ENGINE = MergeTree ORDER BY i_item_sk;
-CREATE TABLE j (id UInt8, val UInt8) Engine = Join(ALL, INNER, id);
-create table j (id1 Int8, id2 Int8, projection p (select id1, id2 order by id2)) Engine=MergeTree order by id1 settings index_granularity = 1;
-CREATE TABLE j(`id` UInt32, `val` UInt8) ENGINE = Join(ANY, LEFT, id);
-CREATE TABLE join (k UInt64, s String) ENGINE = Join(ANY, LEFT, k) SETTINGS persistent=0;
-CREATE TABLE join (k UInt64, s String) ENGINE = Join(ANY, LEFT, k) SETTINGS persistent=1;
-CREATE TABLE join (k UInt64, s String) ENGINE = Join(ANY, LEFT, k);
-CREATE TABLE join (k UInt8, x String) ENGINE = Join(ANY, LEFT, k);
-CREATE TABLE join (k UInt8, x String) ENGINE = Memory;
-CREATE TABLE join_all_inner (s String, x Array(UInt8), k UInt64) ENGINE = Join(ALL, INNER, k);
-CREATE TABLE join_all_left (s String, x Array(UInt8), k UInt64) ENGINE = Join(ALL, LEFT, k);
-CREATE TABLE join_any_inner (s String, x Array(UInt8), k UInt64) ENGINE = Join(ANY, INNER, k);
-CREATE TABLE join_any_left (s String, x Array(UInt8), k UInt64) ENGINE = Join(ANY, LEFT, k);
-CREATE TABLE join_inner_table (   id UUID,   key String,   number Int64,   value1 String,   value2 String,   time Int64 ) ENGINE=ReplicatedMergeTree('/clickhouse/tables/{database}/join_inner_table', 'r1') ORDER BY (id, number, key);
-CREATE TABLE join_inner_table__fuzz_1 (   `id` UUID,   `key` Nullable(Date),   `number` Int64,   `value1` LowCardinality(String),   `value2` LowCardinality(String),   `time` Int128 ) ENGINE = MergeTree ORDER BY (id, number, key) SETTINGS allow_nullable_key = 1;
-CREATE TABLE join_on_disk (id Int) Engine=MergeTree() ORDER BY id;
-CREATE TABLE join_outer_table (   id UUID,   key String,   otherValue1 String,   otherValue2 String,   time Int64 ) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/join_outer_table', 'r1') ORDER BY (id, time, key);
-CREATE TABLE join_string_key (s String, x Array(UInt8), k UInt64) ENGINE = Join(ANY, LEFT, s);
-CREATE TABLE join_table_mutation(id Int32, name String) ENGINE = Join(ANY, LEFT, id);
-CREATE TABLE join_tbl (`id` String, `name` String, lcname LowCardinality(String)) ENGINE = Join(any, left, id);
-CREATE TABLE join_test ( `key` UInt64, `value` UInt64 ) ENGINE = Join(ANY, LEFT, key);
-CREATE TABLE join_test (id UInt16, num Array(UInt16)) engine = Join(ANY, LEFT, id);
-CREATE TABLE join_test (id UInt16, num Nullable(UInt16)) engine = Join(ANY, LEFT, id);
-CREATE TABLE join_test (id UInt16, num UInt16) engine = Join(ANY, LEFT, id) settings join_any_take_last_row = 1;
-CREATE TABLE join_test (id UInt16, num UInt16) engine = Join(ANY, LEFT, id);
-CREATE TABLE join_test (number UInt8, value Float32) Engine = Join(ANY, LEFT, number);
-CREATE TABLE join_with_index (key UInt32, data UInt64) ENGINE = MergeTree ORDER BY key SETTINGS index_granularity=1;
-CREATE TABLE joinbug (  event_date Date MATERIALIZED toDate(created, 'Asia/Istanbul'),  id UInt64,  id2 UInt64,  val UInt64,  val2 Int32,  created UInt64 ) ENGINE = MergeTree(event_date, (id, id2), 8192);
-CREATE TABLE joinbug_join (  id UInt64,  id2 UInt64,  val UInt64,  val2 Int32,  created UInt64 ) ENGINE = Join(SEMI, LEFT, id2);
-CREATE TABLE json (x Enum8('browser' = 1, 'mobile' = 2), y String) ENGINE = Memory;
-CREATE TABLE json (x UInt8, title String) ENGINE = Memory;
-create table json(a int, b int default 7, c default a + b) engine File(JSONEachRow, 'data1622.json');
-CREATE TABLE json_columns (n UInt32, s String) ENGINE = MergeTree order by n;
-CREATE TABLE json_square_brackets (field String) ENGINE = Memory;
-CREATE TABLE json_square_brackets (id UInt32, name String) ENGINE = Memory;
-CREATE TABLE kcu1 (i UInt32, s String) ENGINE MergeTree ORDER BY i;
-CREATE TABLE kcu2 (i UInt32, d Date, u UUID) ENGINE MergeTree ORDER BY (u, d);
-CREATE TABLE keeper_retries_r1(a UInt8) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test/02456_keeper_retries_during_insert', 'r1') ORDER BY tuple ();
-CREATE TABLE keeper_retries_r2(a UInt8) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test/02456_keeper_retries_during_insert', 'r2') ORDER BY tuple();
-CREATE TABLE kek (a UInt32) ENGINE = MergeTree ORDER BY a;
-CREATE TABLE kek (n int) SETTINGS log_queries=1;
-create table kek (uuid FixedString(16), id int, ns String, dt DateTime64(6), projection null_pk (select * order by ns, 1, 4)) engine=MergeTree order by (id, dt, uuid);
-CREATE TABLE kql_table1 ENGINE = Memory AS select *, now() as new_column From kql(Customers | project LastName | filter LastName=='Diaz');
-CREATE TABLE kql_table2 (     FirstName Nullable(String),   LastName String,   Age Nullable(UInt8) ) ENGINE = Memory;
-CREATE TABLE kstest (left Float64, right Float64) ENGINE = Memory;
-CREATE TABLE kv (   `key` UInt64,   `value` UInt64,   `s` String,   INDEX value_idx value TYPE minmax GRANULARITY 1 ) ENGINE = ReplacingMergeTree ORDER BY key SETTINGS index_granularity = 32, index_granularity_bytes = 1024;
-CREATE TABLE kv (k UInt32, v UInt32) ENGINE Join(Any, Left, k);
-create table kv (key int, v1 int, v2 int, v3 int, v4 int, v5 int) engine MergeTree order by key;
-CREATE TABLE kv_overwrite (k UInt32, v UInt32) ENGINE Join(Any, Left, k) SETTINGS join_any_take_last_row = 1;
-CREATE TABLE l (a String, b String) ENGINE = Memory();
-CREATE TABLE l (a String, b Tuple(String, String)) ENGINE = Memory();
-CREATE TABLE landing (   `time` DateTime,   `pk1` LowCardinality(String),   `pk2` LowCardinality(String),   `pk3` LowCardinality(String),   `pk4` String ) ENGINE = ReplicatedReplacingMergeTree('/clickhouse/' || currentDatabase() || '/landing/{shard}/', '{replica}') ORDER BY (pk1, pk2, pk3, pk4);
-CREATE TABLE landing (   time DateTime,   number Int64 ) Engine=ReplicatedReplacingMergeTree('/clickhouse/' || currentDatabase() || '/landing/{shard}/', '{replica}') PARTITION BY toYYYYMMDD(time) ORDER BY time;
-CREATE TABLE large_alter_table_00804 (   somedate Date CODEC(ZSTD, ZSTD, ZSTD(12), LZ4HC(12)),   id UInt64 CODEC(LZ4, ZSTD, NONE, LZ4HC),   data String CODEC(ZSTD(2), LZ4HC, NONE, LZ4, LZ4) ) ENGINE = MergeTree() PARTITION BY somedate ORDER BY id SETTINGS index_granularity = 2, index_granularity_bytes = '10Mi', min_bytes_for_wide_part = 0;
-CREATE TABLE large_alter_table_00926 (   somedate Date CODEC(ZSTD, ZSTD, ZSTD(12), LZ4HC(12)),   id UInt64 CODEC(LZ4, ZSTD, NONE, LZ4HC),   data String CODEC(ZSTD(2), LZ4HC, NONE, LZ4, LZ4) ) ENGINE = MergeTree() PARTITION BY somedate ORDER BY id SETTINGS min_index_granularity_bytes=30, write_final_mark = 0, min_bytes_for_wide_part = '10M', min_rows_for_wide_part = 0;
-create table largestTriangleThreeBucketsTestDateTime64Float64 (x DateTime64(3), y Float64) engine = MergeTree order by (y,x);
-CREATE TABLE largestTriangleThreeBucketsTestDecimal64Decimal64 (   x Decimal64(2),   y Decimal64(2) ) ENGINE = MergeTree order by (y,x);
-CREATE TABLE largestTriangleThreeBucketsTestFloat64Float64 (   x Float64,   y Float64 ) ENGINE = MergeTree order by (y,x);
-CREATE TABLE largestTriangleTreeBucketsBucketSizeTest (   x UInt32,   y UInt32 ) ENGINE = MergeTree ORDER BY x;
-CREATE TABLE lc (`date` Date, `name` LowCardinality(Nullable(String)), `clicks` Nullable(Int32)) ENGINE = MergeTree() ORDER BY date SETTINGS index_granularity = 8192;
-CREATE TABLE lc (a LowCardinality(Nullable(String)), b LowCardinality(Nullable(String))) ENGINE = MergeTree order by tuple();
-create table lc_00688 (str StringWithDictionary, val UInt8WithDictionary) engine = MergeTree order by tuple();
-create table lc_00752 (str StringWithDictionary) engine = MergeTree order by tuple();
-create table lc_00800_1 (names Array(LowCardinality(String))) engine=MergeTree order by tuple();
-create table lc_00800_2 (val LowCardinality(UInt64)) engine = MergeTree order by val;
-create table lc_00906 (b LowCardinality(String)) engine=MergeTree order by b SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE lc_00906__fuzz_46 (`b` Int64) ENGINE = MergeTree ORDER BY b;
-CREATE TABLE lc_00931 (   key UInt64,   value Array(LowCardinality(String))) ENGINE = MergeTree ORDER BY key;
-create table lc_big_dict (str StringWithDictionary) engine = MergeTree order by str SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-create table lc_dict_reading (val UInt64, str StringWithDictionary, pat String) engine = MergeTree order by val SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-create table lc_fix_str_0 (str LowCardinality(FixedString(2))) engine = Memory;
-create table lc_fix_str_1 (str FixedStringWithDictionary(2)) engine = Memory;
-create table lc_int8_0 (val LowCardinality(Int8)) engine = Memory;
-create table lc_int8_1 (val Int8WithDictionary) engine = Memory;
-create table lc_lambda (arr Array(LowCardinality(UInt64))) engine = Memory;
-CREATE TABLE lc_left_aj (   str Array(LowCardinality(String)),   null_str Array(LowCardinality(Nullable(String))),   val Array(LowCardinality(Float64)),   null_val Array(LowCardinality(Nullable(Float64))) ) ENGINE = Memory;
-create table lc_null_fix_str_0 (str LowCardinality(Nullable(FixedString(2)))) engine = Memory;
-create table lc_null_fix_str_1 (str NullableWithDictionary(FixedString(2))) engine = Memory;
-create table lc_null_int8_0 (val LowCardinality(Nullable(Int8))) engine = Memory;
-create table lc_null_int8_1 (val NullableWithDictionary(Int8)) engine = Memory;
-CREATE TABLE lc_null_int8_defnull (val LowCardinality(Nullable(Int8)) DEFAULT NULL) ENGINE = MergeTree order by tuple();
-create table lc_null_str_0 (str LowCardinality(Nullable(String))) engine = Memory;
-create table lc_null_str_1 (str NullableWithDictionary(String)) engine = Memory;
-CREATE TABLE lc_nullable (   order_key  Array(LowCardinality(Nullable(UInt64))),   i8 Array(LowCardinality(Nullable(Int8))),   i16 Array(LowCardinality(Nullable(Int16))),   i32 Array(LowCardinality(Nullable(Int32))),   i64 Array(LowCardinality(Nullable(Int64))),   u8 Array(LowCardinality(Nullable(UInt8))),   u16 Array(LowCardinality(Nullable(UInt16))),   u32 Array(LowCardinality(Nullable(UInt32))),   u64 Array(LowCardinality(Nullable(UInt64))),   f32 Array(LowCardinality(Nullable(Float32))),   f64 Array(LowCardinality(Nullable(Float64))),   date Array(LowCardinality(Nullable(Date))),   date_time Array(LowCardinality(Nullable(DateTime('Asia/Istanbul')))),   str Array(LowCardinality(Nullable(String))),   fixed_string Array(LowCardinality(Nullable(FixedString(5)))) ) ENGINE = MergeTree() ORDER BY order_key SETTINGS allow_nullable_key = 1;
-CREATE TABLE lc_nullable_string(`c1` LowCardinality(Nullable(String)) DEFAULT CAST(NULL, 'LowCardinality(Nullable(String))')) ENGINE = Memory;
-create table lc_perm (val UInt32, str LowCardinality(String)) engine = MergeTree order by val;
-create table lc_prewhere (key UInt64, val UInt64, str StringWithDictionary, s String) engine = MergeTree order by key settings index_granularity = 8192;
-create table lc_small_dict (str StringWithDictionary) engine = MergeTree order by str SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-create table lc_str_0 (str LowCardinality(String)) engine = Memory;
-create table lc_str_1 (str StringWithDictionary) engine = Memory;
-create table lc_str_uuid(str1 String, str2 LowCardinality(String), str3 StringWithDictionary) ENGINE=Memory;
-CREATE TABLE lc_table (   col LowCardinality(String) ) ENGINE=TinyLog;
-CREATE TABLE lc_test (   `id` LowCardinality(String) ) ENGINE = MergeTree PARTITION BY tuple() ORDER BY id;
-CREATE TABLE Ledger (  Supplier Nullable(String),  Fruit String ,  Price Float64,  Purchase Date ) ENGINE = Memory;
-CREATE TABLE left ( key UInt32, value String ) ENGINE = MergeTree ORDER BY key SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE left_join (x UInt32, s String) engine = Join(ALL, LEFT, x) SETTINGS join_use_nulls = 1;
-CREATE TABLE left_join (x UInt32, s String) engine = Join(ALL, LEFT, x);
-create table left_table as dest_table;
-CREATE TABLE left_table(APIKey Int32, SomeColumn String) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE legacy_column_name_of_tuple_literal (`x` UInt32, `y` UInt64, PROJECTION p (SELECT sum(y in (1,2,3)))) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE limit_by (Num UInt32, Name String) ENGINE = Memory;
-create table limit_by(id Int, val Int) engine = Memory;
-CREATE TABLE limited_merge_table (   key UInt64 ) ENGINE = MergeTree() ORDER BY key SETTINGS max_parts_to_merge_at_once = 3;
-CREATE TABLE literal_alias_misclassification (   `id` Int64,   `a` Nullable(String),   `b` Nullable(Int64) ) ENGINE = MergeTree ORDER BY id;
-create table local (a UInt64, b UInt64, c UInt64, d UInt64, e UInt64, f UInt64, g UInt64, h UInt64) engine = Log;
-CREATE TABLE local (x UInt8) ENGINE = Memory;
-CREATE TABLE local_00952 (date Date, value Date MATERIALIZED toDate('2017-08-01')) ENGINE = MergeTree(date, date, 8192);
-CREATE TABLE local_01099_a (number UInt64) ENGINE = Log;
-CREATE TABLE local_01099_a (number UInt64) ENGINE = MergeTree() ORDER BY number;
-CREATE TABLE local_01099_b (number UInt64) ENGINE = Log;
-CREATE TABLE local_01099_b (number UInt64) ENGINE = MergeTree() ORDER BY number;
-create table local_02175 engine=Memory() as select * from system.one;
-CREATE TABLE local_statements ( statementId String, eventDate Date, eventHour DateTime, eventTime DateTime, verb String, objectId String, onCourse UInt8, courseId UInt16, contextRegistration String, resultScoreRaw Float64, resultScoreMin Float64, resultScoreMax Float64, resultSuccess UInt8, resultCompletition UInt8, resultDuration UInt32, resultResponse String, learnerId String, learnerHash String, contextId UInt16) ENGINE = MergeTree ORDER BY tuple();
-create table local_t engine Log as select 1 a;
-create table local_t_l5ydey on cluster test_shard_localhost (   c_qv5rv INTEGER ,   c_rutjs4 INTEGER ,   c_wmj INTEGER ,   c_m3 TEXT NOT NULL,   primary key(c_qv5rv) ) engine=ReplicatedMergeTree('/clickhouse/tables/test_' || currentDatabase() || '/{shard}/local_t_l5ydey', '{replica}');
-CREATE TABLE local_table (   id Int32,   name String,   ts DateTime,   oth_id Int32 ) ENGINE = MergeTree() PARTITION BY toMonday(ts) ORDER BY (ts, id);
-CREATE TABLE local_table (id UInt64, val String) ENGINE = Memory;
-CREATE TABLE local_table (number UInt64) ENGINE = Memory;
-CREATE TABLE local_table_1 (id String) ENGINE = MergeTree ORDER BY (id);
-CREATE TABLE local_table_2(id String) ENGINE = MergeTree ORDER BY (id);
-CREATE TABLE local_table_merged (id String) ENGINE = Merge('default', 'local_table_1|local_table_2');
-CREATE TABLE local_tbl (`key` UInt32, `value` UInt32 DEFAULT 42) ENGINE = MergeTree ORDER BY key;
-CREATE TABLE location (id UInt32, name String) ENGINE=MergeTree() Order by id;
-CREATE TABLE log (A String) ENGINE= FileLog('/tmp/aaa.csv', 'CSV');
-CREATE TABLE log (s String) ENGINE = Log;
-CREATE TABLE log (x UInt8) ENGINE = Log;
-CREATE TABLE log (x UInt8) ENGINE = StripeLog;
-CREATE TABLE log (x UInt8) ENGINE = TinyLog;
-CREATE TABLE log ENGINE=Log AS val;
-CREATE TABLE log1 AS log;
-CREATE TABLE log_02184 (id UInt64, name String, dt Date) ENGINE = Log();
-CREATE TABLE log_for_alter (  id UInt64,  Data String ) ENGINE = Log();
-create table log_proxy_02572 as system.query_log engine=Distributed('test_shard_localhost', currentDatabase(), 'receiver_02572');
-CREATE TABLE LOG_T (   `fingerprint` UInt64,   `fields` Nested(   name LowCardinality(String),   value String) ) ENGINE = MergeTree ORDER BY fingerprint;
-CREATE TABLE logs(  date_visited DateTime,  date Date MATERIALIZED toDate(date_visited) ) ENGINE = MergeTree() ORDER BY tuple();
-CREATE TABLE lol (n int) ENGINE=MergeTree ORDER BY n SETTINGS min_bytes_for_wide_part=123 SETTINGS log_queries=1;
-CREATE TABLE long (e Int64, t DateTime ) ENGINE = MergeTree PARTITION BY (e, toStartOfMonth(t)) ORDER BY t;
-CREATE TABLE low_card (   `lc` LowCardinality(String) ) ENGINE = Join(ANY, LEFT, lc);
-CREATE TABLE low_cardinality (d Date, x UInt32, s LowCardinality(String)) ENGINE = MergeTree(d, x, 8192);
-CREATE TABLE low_cardinality_all (d Date, x UInt32, s LowCardinality(String)) ENGINE = Distributed(test_shard_localhost, currentDatabase(), low_cardinality, sipHash64(s));
-CREATE TABLE low_null_float (a LowCardinality(Nullable(Float64))) ENGINE = MergeTree order by tuple();
-CREATE TABLE lower_test (   a Int32,   b String ) ENGINE=MergeTree PARTITION BY b ORDER BY a;
-CREATE TABLE lwd_test (   `id` UInt64,   `value` String ) ENGINE = MergeTree ORDER BY id SETTINGS   vertical_merge_algorithm_min_rows_to_activate = 1,   vertical_merge_algorithm_min_columns_to_activate = 1,   min_rows_for_wide_part = 1,   min_bytes_for_wide_part = 1;
-CREATE TABLE lwd_test (id UInt64 , value String) ENGINE MergeTree() ORDER BY id SETTINGS index_granularity=8192, index_granularity_bytes='10Mi';
-CREATE TABLE lwd_test_02521 (id UInt64, value String, event_time DateTime) ENGINE MergeTree() ORDER BY id SETTINGS min_bytes_for_wide_part = 0, index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE m (   `a` String,   `f` UInt8 DEFAULT 0 ) ENGINE = Merge(currentDatabase(), '^(t1|t2)$');
-CREATE TABLE m (   `a` String,   `f` UInt8 EPHEMERAL 0 ) ENGINE = Merge(currentDatabase(), '^(t1|t2)$');
-CREATE TABLE m (   `v` Enum8('a' = 1, 'b' = 2) ) ENGINE = MergeTree() PARTITION BY tuple() ORDER BY v;
-CREATE TABLE m (   `v` UInt8 ) ENGINE = MergeTree() PARTITION BY tuple() ORDER BY v;
-CREATE TABLE m (   a String,   date Date,   f UInt8 ) ENGINE = Merge(currentDatabase(), '^(t1|t2)$');
-create table m (a int) engine Log;
-CREATE TABLE m (key UInt32) ENGINE = Merge(currentDatabase(), 'a');
-create table m (n int) engine=Memory;
-CREATE TABLE m1 (id UInt64, s String) ENGINE=MergeTree ORDER BY id SETTINGS index_granularity = 1, ratio_of_defaults_for_sparse_serialization = 1.0;
-CREATE TABLE m2 (id UInt64) ENGINE=Merge(currentDatabase(),'m0|m1v');
-create table m3(a Int64, b UInt64) Engine=MergeTree order by tuple();
-create table ma_dist (x UInt64) ENGINE = Distributed(test_cluster_two_shards_different_databases, '', 'shard_01231_distributed_aggregation_memory_efficient');
-CREATE TABLE main ( `id` String, `color` String, `section` String, `description` String) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE main_table_01818 (   `id` UInt32,   `advertiser_id` String,   `campaign_id` String,   `name` String,   `budget` Float64,   `budget_mode` String,   `landing_type` String,   `status` String,   `modify_time` String,   `campaign_type` String,   `campaign_create_time` DateTime,   `campaign_modify_time` DateTime,   `create_time` DateTime,   `update_time` DateTime ) ENGINE = MergeTree PARTITION BY advertiser_id ORDER BY campaign_id SETTINGS index_granularity = 8192;
-CREATE TABLE make_series_test_table (  Supplier Nullable(String),  Fruit String ,  Price Float64,  Purchase Date ) ENGINE = Memory;
-CREATE TABLE make_series_test_table2 (  Supplier Nullable(String),  Fruit String ,  Price Int32,  Purchase Int32 ) ENGINE = Memory;
-CREATE TABLE make_series_test_table3 (   timestamp datetime,   metric Float64, ) ENGINE = Memory;
-CREATE TABLE mann_whitney_test (left Float64, right UInt8) ENGINE = Memory;
-CREATE TABLE map_comb(a int, statusMap Map(UInt16, UInt32)) ENGINE = Log;
-CREATE TABLE map_containsKeyLike_test (id UInt32, map Map(String, String)) Engine=MergeTree() ORDER BY id settings index_granularity=2;
-CREATE TABLE map_extractKeyLike_test (id UInt32, map Map(String, String)) Engine=MergeTree() ORDER BY id settings index_granularity=2;
-CREATE TABLE map_formats (m Map(String, UInt32), m1 Map(String, Date), m2 Map(String, Array(UInt32))) ENGINE = Log;
-CREATE TABLE map_lc (   `kv` Map(LowCardinality(String), LowCardinality(String)) ) ENGINE = Memory;
-CREATE TABLE map_subcolumns (id UInt32, m Map(String, UInt32)) ENGINE = MergeTree ORDER BY id;
-create table map_test engine=TinyLog() as (select ([1, number], [toInt32(2),2]) as map from numbers(1, 10));
-create table map_test engine=TinyLog() as (select (number + 1) as n, ([1, number], [1,2]) as map from numbers(1, 5));
-create table map_test engine=TinyLog() as (select (number + 1) as n, map(1, 1, number,2) as m from numbers(1, 5));
-CREATE TABLE map_test(`tags` Map(String, String)) ENGINE = MergeTree PRIMARY KEY tags ORDER BY tags SETTINGS index_granularity = 8192;
-CREATE TABLE map_test_index_map_keys (   row_id UInt32,   map Map(String, String),   INDEX map_bloom_filter_keys mapKeys(map) TYPE bloom_filter GRANULARITY 1 ) Engine=MergeTree() ORDER BY row_id SETTINGS index_granularity = 1;
-CREATE TABLE map_test_index_map_values (   row_id UInt32,   map Map(String, String),   INDEX map_bloom_filter_values mapValues(map) TYPE bloom_filter GRANULARITY 1 ) Engine=MergeTree() ORDER BY row_id SETTINGS index_granularity = 1;
-create table mapop_test engine=TinyLog() as (select map(1, toInt32(2), number, 2) as m from numbers(1, 10));
-CREATE TABLE markdown (id UInt32, name String, array Array(Int32), nullable Nullable(String), low_cardinality LowCardinality(String), decimal Decimal32(6)) ENGINE = Memory;
-CREATE TABLE mass_table_117 (`dt` Date, `site_id` Int32, `site_key` String) ENGINE = MergeTree(dt, (site_id, site_key, dt), 8192);
-CREATE TABLE mass_table_312 (d Date DEFAULT '2000-01-01', x UInt64, n Nested(a String, b String)) ENGINE = MergeTree(d, x, 1);
-CREATE TABLE mass_table_457 (key Array(Tuple(Float64, Float64)), name String, value UInt64) ENGINE = Memory;
-CREATE TABLE master (id Int32, name String) ENGINE = Join (ANY, LEFT, id) SETTINGS any_join_distinct_right_table_keys = 1;
-CREATE TABLE max_length_alias_14053 (`a` Date,`b` UInt16,`c.d` Array(Date),`dcount` UInt16 ALIAS length(c.d)) ENGINE = MergeTree PARTITION BY toMonday(a) ORDER BY (a, b) SETTINGS index_granularity = 8192;
-CREATE TABLE max_length_alias_14053__fuzz_45 (   `a` Date,   `b` Nullable(Decimal(76, 45)),   `c.d` Array(Nullable(DateTime64(3))),   `dcount` Int8 ALIAS length(c.d) ) ENGINE = MergeTree PARTITION BY toMonday(a) ORDER BY (a, b) SETTINGS allow_nullable_key = 1, index_granularity = 8192;
-create table max_parts_in_total (x UInt64) ENGINE = MergeTree PARTITION BY x ORDER BY x SETTINGS max_parts_in_total = 10;
-CREATE TABLE md(key UInt32, t DateTime, bid Float64, ask Float64) ENGINE = MergeTree() ORDER BY (key, t);
-CREATE TABLE mean_ztest (v int, s UInt8) ENGINE = Memory;
-CREATE TABLE mem AS log1 ENGINE=Memory;
-CREATE TABLE mem AS SELECT 1 as n;
-CREATE TABLE mem ENGINE=Memory AS SELECT 1 as n;
-CREATE TABLE mem ORDER BY n AS SELECT 1 as n;
-CREATE TABLE mem1 (key Int) Engine=Memory();
-CREATE TABLE mem2 (key Int) Engine=Memory();
-CREATE TABLE mem3 (key Int, _shard_num String) Engine=Memory();
-CREATE TABLE mem_test (   `a` Int64,   `b` Int64 ) ENGINE = Memory;
-CREATE TABLE memory (x UInt8) ENGINE = Memory;
-CREATE TABLE memory_01069.file (n UInt8) ENGINE = File(CSV);
-CREATE TABLE memory_01069.mt (n UInt8) ENGINE = MergeTree() ORDER BY n;
-CREATE TABLE memory_02184 (id UInt64, name String, dt Date) ENGINE = Memory();
-create table merge (   dt Date,   colAlias0 Int32,   colAlias1 Int32,   col2 Int32,   colAlias2 UInt32,   col3 Int32,   colAlias3 UInt32 ) engine = Merge(currentDatabase(), '^alias_');
-create table merge ( CounterID UInt32, StartDate Date, Sign Int8, VisitID UInt64, UserID UInt64, StartTime DateTime,  ClickLogID UInt64) ENGINE = Merge(currentDatabase(), 'merge\[0-9\]');
-CREATE TABLE merge (id UInt64) ENGINE = Merge(currentDatabase(), '^mt[0-9]+$');
-CREATE TABLE merge (n Int8) ENGINE = Merge('', lower('DISTRIBUTED'));
-create table merge1 ( CounterID UInt32, StartDate Date, Sign Int8, VisitID UInt64, UserID UInt64, StartTime DateTime,  ClickLogID UInt64) ENGINE = CollapsingMergeTree(StartDate, intHash32(UserID), tuple(CounterID, StartDate, intHash32(UserID), VisitID, ClickLogID), 8192, Sign);
-CREATE TABLE merge1 AS foo ENGINE = Merge(currentDatabase(), '^(foo|foo2_dist)$');
-CREATE TABLE merge1 AS foo ENGINE = Merge(currentDatabase(), '^foo');
-CREATE TABLE merge1(Id Int32, Val Int32) Engine=Merge(currentDatabase(), '^foo');
-create table merge2 ( CounterID UInt32, StartDate Date, Sign Int8, VisitID UInt64, UserID UInt64, StartTime DateTime,  ClickLogID UInt64) ENGINE = CollapsingMergeTree(StartDate, intHash32(UserID), tuple(CounterID, StartDate, intHash32(UserID), VisitID, ClickLogID), 8192, Sign);
-CREATE TABLE merge2 (`Id` Int32, `Val` Int32) ENGINE = Merge(currentDatabase(), '^foo');
-CREATE TABLE merge3 (`Id` Int32, `Val` Int32) ENGINE = Merge(currentDatabase(), '^foo__fuzz_0');
-CREATE TABLE merge_00160 (d Date, x UInt64) ENGINE = Merge(currentDatabase(), '^mt_00160$');
-CREATE TABLE merge_00401 AS stripe1 ENGINE = Merge(currentDatabase(), '^stripe\\d+');
-CREATE TABLE merge_02184 (id UInt64, name String, dt Date) ENGINE = Merge('default', 'distributed_02184');
-CREATE TABLE merge_32_64 (x UInt64) ENGINE = Merge(currentDatabase(), '^u32|u64$');
-CREATE TABLE merge_a (x UInt8) ENGINE = StripeLog;
-CREATE TABLE merge_ab AS merge(currentDatabase(), '^merge_[ab]$');
-CREATE TABLE merge_b (x UInt8) ENGINE = StripeLog;
-create table merge_dist_01223 as dist_01223 engine=Merge(currentDatabase(), 'dist_01223');
-create table merge_distributed ( CounterID UInt32, StartDate Date, Sign Int8, VisitID UInt64, UserID UInt64, StartTime DateTime,  ClickLogID UInt64) ENGINE = Distributed(test_shard_localhost, currentDatabase(), merge_distributed1);
-create table merge_distributed1 ( CounterID UInt32, StartDate Date, Sign Int8, VisitID UInt64, UserID UInt64, StartTime DateTime,  ClickLogID UInt64) ENGINE = CollapsingMergeTree(StartDate, intHash32(UserID), tuple(CounterID, StartDate, intHash32(UserID), VisitID, ClickLogID), 8192, Sign);
-CREATE TABLE merge_one_two (x Array(UInt64), z String, y Array(UInt64)) ENGINE = Merge(currentDatabase(), '^one_00458$|^two_00458$');
-CREATE TABLE merge_one_two (x String) ENGINE = Merge(currentDatabase(), '^one_00458$|^two_00458$');
-CREATE TABLE merge_one_two (x UInt64) ENGINE = Merge(currentDatabase(), '^one_00458$|^two_00458$');
-CREATE TABLE merge_s64_u64 (x UInt64) ENGINE = Merge(currentDatabase(), '^s64|u64$');
-CREATE TABLE merge_table Engine=Merge(currentDatabase(), '^(table_to_merge_[a-z])$') AS table_to_merge_a;
-CREATE TABLE merge_table_standard_delete(id Int32, name String) ENGINE = MergeTree order by id settings min_bytes_for_wide_part=0;
-CREATE TABLE merge_table_standard_delete(id Int32, name String) ENGINE = MergeTree order by id settings min_bytes_for_wide_part=10000000;
-CREATE TABLE merge_tf as merge(currentDatabase(), '.*');
-CREATE TABLE merge_tree   (d Date, a String, b UInt8, x String, y Int8, z UInt32) ENGINE = MergeTree(d, (a, b), 111);
-create table merge_tree ( CounterID UInt32, StartDate Date, Sign Int8, VisitID UInt64, UserID UInt64, StartTime DateTime,  ClickLogID UInt64) ENGINE = CollapsingMergeTree(StartDate, intHash32(UserID), tuple(CounterID, StartDate, intHash32(UserID), VisitID, ClickLogID), 8192, Sign);
-CREATE TABLE merge_tree (d Date) ENGINE = MergeTree ORDER BY d PARTITION BY d;
-CREATE TABLE merge_tree (x UInt32) ENGINE = MergeTree ORDER BY x SETTINGS index_granularity = 1;
-CREATE TABLE merge_tree (x UInt32) ENGINE = MergeTree ORDER BY x SETTINGS index_granularity_bytes = 4, min_index_granularity_bytes=1, write_final_mark = 0;
-CREATE TABLE merge_tree (x UInt64, date Date) ENGINE = MergeTree(date, x, 1);
-CREATE TABLE merge_tree (x UInt8) ENGINE = MergeTree ORDER BY x;
-CREATE TABLE merge_tree_deduplication (   key UInt64,   value String,   part UInt8 DEFAULT 77 ) ENGINE=MergeTree() ORDER BY key PARTITION BY part SETTINGS non_replicated_deduplication_window=3;
-CREATE TABLE merge_tree_in_subqueries (id UInt64, name String, num UInt64) ENGINE = MergeTree ORDER BY (id, name);
-CREATE TABLE merge_tree_no_deduplication (   key UInt64,   value String ) ENGINE=MergeTree() ORDER BY key;
-CREATE TABLE merge_tree_pk (   key UInt64,   value String ) ENGINE = ReplacingMergeTree() PRIMARY KEY key;
-CREATE TABLE merge_tree_pk_sql (   key UInt64,   value String,   PRIMARY KEY (key) ) ENGINE = ReplacingMergeTree();
-CREATE TABLE merge_tree_table (   Date Date,   SomeType UInt8,   Alternative1 UInt64,   Alternative2 UInt64,   User UInt32,   CharID UInt64 ALIAS multiIf(SomeType IN (3, 4, 11), 0, SomeType IN (7, 8), Alternative1, Alternative2) ) ENGINE = MergeTree() ORDER BY tuple();
-CREATE TABLE merge_tree_table1 (`s` LowCardinality(String), x UInt32) ENGINE = MergeTree ORDER BY x settings index_granularity = 1;
-CREATE TABLE merge_tree_with_sampling  (d Date, a String, b UInt8, x String, y Int8, z UInt32) ENGINE = MergeTree(d, sipHash64(a) + b, (a, sipHash64(a) + b), 111);
-CREATE TABLE merge_view_00270 (number UInt64) ENGINE = Merge(currentDatabase(), '^view');
-CREATE TABLE merged as short ENGINE = Merge(currentDatabase(), 'short|long');
-CREATE TABLE mergetree_00588 (x UInt64, s String) ENGINE = MergeTree ORDER BY x;
-CREATE TABLE mergetree_00609 (x UInt64, s String) ENGINE = MergeTree ORDER BY x;
-CREATE TABLE mergetree_00673 (x UInt64) ENGINE = MergeTree ORDER BY x;
-CREATE TABLE mergetree_00698 (k UInt32, `n.x` Array(UInt64), `n.y` Array(UInt64)) ENGINE = MergeTree ORDER BY k;
-CREATE TABLE mergetree_00712 (x UInt8, s String) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE mergeTree_02184 (id UInt64, name String, dt Date) Engine=MergeTree ORDER BY id;
-CREATE TABLE min_if (arr Array(UInt8), str String, int Int32) ENGINE = Memory;
-CREATE TABLE min_max_with_nullable_string (  t DateTime,  nullable_str Nullable(String),  INDEX nullable_str_min_max nullable_str TYPE minmax GRANULARITY 1 ) ENGINE = MergeTree ORDER BY (t);
-CREATE TABLE minimum_sample_size_continuos (baseline Float64, sigma Float64) ENGINE = Memory();
-CREATE TABLE minimum_sample_size_continuos (baseline UInt64, sigma UInt64) ENGINE = Memory();
-CREATE TABLE minimum_sample_size_conversion (p1 Float64) ENGINE = Memory();
-CREATE TABLE minmax_compact (   u64 UInt64,   i64 Int64,   i32 Int32 ) ENGINE = MergeTree() PARTITION BY i32 ORDER BY u64 SETTINGS index_granularity = 2, index_granularity_bytes = '10Mi', min_rows_for_wide_part = 1000000;
-CREATE TABLE minmax_idx (   u64 UInt64,   i32 Int32 ) ENGINE = MergeTree() ORDER BY u64;
-CREATE TABLE minmax_idx (   u64 UInt64,   i32 Int32 ) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_00836/indices_alter1', 'r1') ORDER BY u64;
-CREATE TABLE minmax_idx1 (   u64 UInt64,   i32 Int32,   f64 Float64,   d Decimal(10, 2),   s String,   e Enum8('a' = 1, 'b' = 2, 'c' = 3),   dt Date,   INDEX    idx_all (i32, i32 + f64, d, s, e, dt) TYPE minmax GRANULARITY 1,   INDEX    idx_2 (u64 + toYear(dt), substring(s, 2, 4)) TYPE minmax GRANULARITY 3 ) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_00837/minmax', 'r1') ORDER BY u64 SETTINGS index_granularity = 2, index_granularity_bytes = '10Mi';
-CREATE TABLE minmax_idx2 (   u64 UInt64,   i32 Int32,   f64 Float64,   d Decimal(10, 2),   s String,   e Enum8('a' = 1, 'b' = 2, 'c' = 3),   dt Date,   INDEX    idx_all (i32, i32 + f64, d, s, e, dt) TYPE minmax GRANULARITY 1,   INDEX    idx_2 (u64 + toYear(dt), substring(s, 2, 4)) TYPE minmax GRANULARITY 3 ) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_00837/minmax', 'r2') ORDER BY u64 SETTINGS index_granularity = 2, index_granularity_bytes = '10Mi';
-CREATE TABLE minmax_idx2 (   u64 UInt64,   i32 Int32,   INDEX idx1 (u64 + i32) TYPE minmax GRANULARITY 10,   INDEX idx2 u64 * i32 TYPE minmax GRANULARITY 10 ) ENGINE = MergeTree() ORDER BY u64;
-CREATE TABLE minmax_idx2 (   u64 UInt64,   i32 Int32,   INDEX idx1 u64 + i32 TYPE minmax GRANULARITY 10,   INDEX idx2 u64 * i32 TYPE minmax GRANULARITY 10 ) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_00836/indices_alter2', 'r1') ORDER BY u64;
-CREATE TABLE minmax_idx2_r (   u64 UInt64,   i32 Int32,   INDEX idx1 u64 + i32 TYPE minmax GRANULARITY 10,   INDEX idx2 u64 * i32 TYPE minmax GRANULARITY 10 ) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_00836/indices_alter2', 'r2') ORDER BY u64;
-CREATE TABLE minmax_idx_r (   u64 UInt64,   i32 Int32 ) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_00836/indices_alter1', 'r2') ORDER BY u64;
-create table mixed_final_mark (i int, j int) engine MergeTree partition by i % 2 order by j settings index_granularity = 10;
-CREATE TABLE mmm ENGINE=MergeTree ORDER BY number AS SELECT number, rand() % 10 AS a FROM numbers(1000);
-create table model engine = Memory as select stochasticLinearRegressionState(0.03, 0.00001, 2, 'Momentum')(target, param1, param2) as state from defaults;
-create table model engine = Memory as select stochasticLinearRegressionState(0.03, 0.00001, 2, 'Nesterov')(target, param1, param2) as state from defaults;
-create table model engine = Memory as select stochasticLinearRegressionState(0.1, 0.0, 2, 'SGD')(target, param1, param2) as state from defaults;
-create table model engine = Memory as select stochasticLinearRegressionState(0.1, 0.0, 5, 'SGD')(target, param1, param2, param3, param4, param5, param6, param7) as state from defaults;
-create table model engine = Memory as select stochasticLogisticRegressionState(0.1, 0.0, 1.0, 'SGD')(target, param1, param2) as state from defaults;
-CREATE TABLE modify_sample (d Date DEFAULT '2000-01-01', x UInt8) ENGINE = MergeTree PARTITION BY d ORDER BY x;
-CREATE TABLE modify_sample_old (d Date DEFAULT '2000-01-01', x UInt8, y UInt64) ENGINE = MergeTree(d, (x, y), 8192);
-CREATE TABLE modify_sample_replicated (d Date DEFAULT '2000-01-01', x UInt8, y UInt64) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_01430', 'modify_sample') PARTITION BY d ORDER BY (x, y);
-CREATE TABLE moons(a Float64, b Float64) Engine=Memory();
-create table morton_numbers_02457(   n1 UInt32,   n2 UInt32,   n3 UInt16,   n4 UInt16,   n5 UInt8,   n6 UInt8,   n7 UInt8,   n8 UInt8 )   Engine=MergeTree()   ORDER BY n1 SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-create table morton_numbers_1_02457(   n1 UInt64,   n2 UInt64,   n3 UInt64,   n4 UInt64,   n5 UInt64,   n6 UInt64,   n7 UInt64,   n8 UInt64 )   Engine=MergeTree()   ORDER BY n1 SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-create table morton_numbers_2_02457(   n1 UInt64,   n2 UInt64,   n3 UInt64,   n4 UInt64 )   Engine=MergeTree()   ORDER BY n1 SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-create table morton_numbers_3_02457(   n1 UInt64,   n2 UInt64 )   Engine=MergeTree()   ORDER BY n1 SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-create table morton_numbers_mask_02457(   n1 UInt16,   n2 UInt16,   n3 UInt8, )   Engine=MergeTree()   ORDER BY n1 SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-create table morton_numbers_mask_02457(   n1 UInt32,   n2 UInt8 )   Engine=MergeTree()   ORDER BY n1 SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-create table morton_numbers_mask_02457(   n1 UInt8,   n2 UInt8,   n3 UInt8,   n4 UInt8 )   Engine=MergeTree()   ORDER BY n1 SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-create table morton_numbers_mask_1_02457(   n1 UInt64,   n2 UInt64,   n3 UInt64,   n4 UInt64 )   Engine=MergeTree()   ORDER BY n1 SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-create table morton_numbers_mask_2_02457(   n1 UInt64,   n2 UInt64 )   Engine=MergeTree()   ORDER BY n1 SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-create table morton_numbers_mask_3_02457(   n1 UInt64,   n2 UInt64,   n3 UInt64 )   Engine=MergeTree()   ORDER BY n1 SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE most_ordinary_mt (  Key UInt64 ) ENGINE = MergeTree() ORDER BY tuple();
-CREATE TABLE moving_sum_dec ENGINE = Memory AS  SELECT k, dt, toDecimal64(v, 2) as v  FROM moving_sum_num;
-CREATE TABLE moving_sum_num (  k String,  dt DateTime,  v UInt64 ) ENGINE = MergeTree ORDER BY (k, dt);
-CREATE TABLE ms (n Int32) ENGINE = MergeTree() ORDER BY n SETTINGS min_compress_block_size = 1024, max_compress_block_size = 10240;
-CREATE TABLE mt (d Date, x String) ENGINE = MergeTree(d, x, 8192);
-CREATE TABLE mt (d Date, x UInt8) ENGINE = MergeTree(d, x, 8192);
-create table mt (id1 Int8, id2 Int8) Engine=MergeTree order by tuple();
-create table mt (n int, s String) engine=MergeTree order by n;
-create table mt (n UInt64) engine=MergeTree order by n partition by n % 10;
-create table mt (n UInt64, s String) engine = MergeTree partition by intDiv(n, 10) order by n;
-create table mt (p int, n int) engine=MergeTree order by tuple() partition by p;
-CREATE TABLE mt (x String, y UInt64, INDEX idx (y) TYPE minmax GRANULARITY 1) ENGINE = MergeTree ORDER BY y;
-CREATE TABLE mt (x UInt64) ENGINE = MergeTree ORDER BY x   SETTINGS cleanup_delay_period = 1, cleanup_delay_period_random_add = 0,   cleanup_thread_preferred_points_per_iteration=0, old_parts_lifetime = 1, parts_to_delay_insert = 100000, parts_to_throw_insert = 100000;
-CREATE TABLE mt (x UInt64) ENGINE = MergeTree ORDER BY x SETTINGS parts_to_delay_insert = 100000, parts_to_throw_insert = 100000;
-CREATE TABLE mt (x UInt8, y Date) ENGINE = MergeTree ORDER BY x;
-CREATE TABLE mt ORDER BY n AS SELECT 1 as n;
-CREATE TABLE mt(a Int32, timestamp DateTime) ENGINE=MergeTree ORDER BY tuple();
-CREATE TABLE mt1 (id UInt64) ENGINE = MergeTree ORDER BY id;
-create table mt1 (n Int64) engine=MergeTree order by n;
-CREATE TABLE mt2 (id UInt64) ENGINE = MergeTree ORDER BY id;
-create table mt2 (n Int64) engine=MergeTree order by n;
-CREATE TABLE mt2 AS mt;
-CREATE TABLE mt3 (id UInt64) ENGINE = TinyLog;
-CREATE TABLE mt_00160 (d Date DEFAULT toDate('2015-05-01'), x UInt64) ENGINE = MergeTree PARTITION BY d ORDER BY x SETTINGS index_granularity = 1, min_bytes_for_wide_part = 0;
-CREATE TABLE mt_00160 (d Date DEFAULT toDate('2015-05-01'), x UInt64, y UInt64, z UInt64) ENGINE = MergeTree PARTITION BY d ORDER BY (x, z) SETTINGS index_granularity = 1, min_bytes_for_wide_part = 0;
-CREATE TABLE mt_00168 (EventDate Date, UTCEventTime DateTime, MoscowEventDate Date DEFAULT toDate(UTCEventTime)) ENGINE = MergeTree(EventDate, UTCEventTime, 8192);
-CREATE TABLE mt_00168_buffer AS mt_00168 ENGINE = Buffer(currentDatabase(), mt_00168, 16, 10, 100, 10000, 1000000, 10000000, 100000000);
-CREATE TABLE mt_01451 (v UInt8) ENGINE = MergeTree() order by tuple() SETTINGS old_parts_lifetime=0;
-create table mt_compact (a Int, s String) engine = MergeTree order by a partition by a settings index_granularity_bytes = 0, min_rows_for_wide_part = 1000;
-create table mt_compact (a Int, s String) engine = MergeTree order by a partition by a settings index_granularity_bytes = 0;
-CREATE TABLE mt_compact (d Date, id UInt32, s String)   ENGINE = MergeTree ORDER BY id PARTITION BY d   SETTINGS min_bytes_for_wide_part = 10000000, index_granularity = 128;
-create table mt_compact(a UInt64, b UInt64 DEFAULT a * a, s String, n Nested(x UInt32, y String), lc LowCardinality(String)) engine = MergeTree order by a partition by a % 10 settings index_granularity = 8, min_bytes_for_wide_part = 0, min_rows_for_wide_part = 10;
-create table mt_compact(a UInt64, b UInt64 DEFAULT a * a, s String, n Nested(x UInt32, y String), lc LowCardinality(String)) engine = ReplicatedMergeTree('/clickhouse/{database}/test_01201/mt_compact_replicated', '1') order by a partition by a % 10 settings index_granularity = 8, min_rows_for_wide_part = 10;
-create table mt_compact_2 (a Int, s String) engine = MergeTree order by a partition by a settings min_rows_for_wide_part = 1000;
-CREATE TABLE mt_match_pk (v String) ENGINE = MergeTree ORDER BY v SETTINGS index_granularity = 1;
-CREATE TABLE mt_pk ENGINE = MergeTree PARTITION BY d ORDER BY x SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi' AS SELECT toDate(number % 32) AS d, number AS x FROM system.numbers LIMIT 10000010;
-CREATE TABLE mt_table (d Date, key UInt64, data String) ENGINE = MergeTree() PARTITION BY toYYYYMM(d) ORDER BY key;
-CREATE TABLE mt_with_pk (  d Date DEFAULT '2000-01-01',  x DateTime,  y Array(UInt64),  z UInt64,  n Nested (Age UInt8, Name String),  w Int16 DEFAULT 10 ) ENGINE = MergeTree() PARTITION BY toYYYYMM(d) ORDER BY (x, z) SETTINGS index_granularity_bytes=10000;
-CREATE TABLE mt_with_small_granularity (  d Date DEFAULT '2000-01-01',  x DateTime,  y Array(UInt64),  z UInt64,  n Nested (Age UInt8, Name String),  w Int16 DEFAULT 10 ) ENGINE = MergeTree() PARTITION BY toYYYYMM(d) ORDER BY (x, z) SETTINGS index_granularity_bytes=30, min_index_granularity_bytes=20, write_final_mark=1;
-CREATE TABLE mt_without_pk (  d Date DEFAULT '2000-01-01',  x DateTime,  y Array(UInt64),  z UInt64,  n Nested (Age UInt8, Name String),  w Int16 DEFAULT 10 ) ENGINE = MergeTree() PARTITION BY toYYYYMM(d) ORDER BY tuple() SETTINGS index_granularity_bytes=10000, write_final_mark=1;
-CREATE TABLE mt_without_pk (SomeField1 Int64, SomeField2 Double) ENGINE = MergeTree() ORDER BY tuple();
-CREATE TABLE mult_aggregation(a UInt32, b UInt32) ENGINE = Memory;
-create table mult_tab (date Date, value String, version UInt64, sign Int8) engine = VersionedCollapsingMergeTree(date, (date), 8192, sign, version);
-create table mult_tab (date Date, value String, version UInt64, sign Int8) engine = VersionedCollapsingMergeTree(date, (date, value), 8192, sign, version);
-create table mult_tab (date Date, value String, version UInt64, sign Int8) engine = VersionedCollapsingMergeTree(sign, version) order by (date) settings enable_vertical_merge_algorithm = 1, vertical_merge_algorithm_min_rows_to_activate = 1, vertical_merge_algorithm_min_columns_to_activate = 0;
-create table mult_tab (date Date, value String, version UInt64, sign Int8) engine = VersionedCollapsingMergeTree(sign, version) order by (date, value) settings enable_vertical_merge_algorithm = 1, vertical_merge_algorithm_min_rows_to_activate = 1, vertical_merge_algorithm_min_columns_to_activate = 0;
-create table mult_tab (date Date, value UInt64, key UInt64, version UInt64, sign Int8) engine = VersionedCollapsingMergeTree(date, (date), 8192, sign, version);
-create table mult_tab (date Date, value UInt64, key UInt64, version UInt64, sign Int8) engine = VersionedCollapsingMergeTree(sign, version) order by (date) settings enable_vertical_merge_algorithm = 1, vertical_merge_algorithm_min_rows_to_activate = 1, vertical_merge_algorithm_min_columns_to_activate = 0;
-CREATE TABLE multi_if_check(col1 UInt64) ENGINE=TinyLog;
-CREATE TABLE multi_if_check(col1 UInt64, col2 String, col3 String, col4 String) ENGINE=TinyLog;
-CREATE TABLE multi_if_check(col1 UInt64, col2 String, col3 String, col4 String, col5 String, col6 String, col7 String) ENGINE=TinyLog;
-CREATE TABLE multi_if_check(value String) ENGINE=TinyLog;
-CREATE TABLE multidimensional (x UInt64, arr Array(Array(String))) ENGINE = MergeTree ORDER BY x;
-CREATE TABLE multidimensional (x UInt64, arr Array(Array(String)), t Tuple(String, Array(Nullable(String)), Tuple(UInt32, Date))) ENGINE = Log;
-CREATE TABLE multidimensional (x UInt64, arr Array(Array(String)), t Tuple(String, Array(Nullable(String)), Tuple(UInt32, Date))) ENGINE = Memory;
-CREATE TABLE multidimensional (x UInt64, arr Array(Array(String)), t Tuple(String, Array(Nullable(String)), Tuple(UInt32, Date))) ENGINE = StripeLog;
-CREATE TABLE multidimensional (x UInt64, arr Array(Array(String)), t Tuple(String, Array(Nullable(String)), Tuple(UInt32, Date))) ENGINE = TinyLog;
-CREATE TABLE multidimensional ENGINE = MergeTree ORDER BY number SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi' AS SELECT number, arrayMap(x -> (x, [x], [[x]], (x, toString(x))), arrayMap(x -> range(x), range(number % 10))) AS value FROM system.numbers LIMIT 100000;
-CREATE TABLE multiword_types (   a DOUBLE,   b DOUBLE PRECISION,   c CHAR DEFAULT 'str',   d CHAR VARYING,   e CHAR LARGE OBJECT COMMENT 'comment',   f CHARACTER VARYING(123),   g ChArAcTeR  large  OBJECT,   h nchar varying (456) default toString(a) comment 'comment',   i NCHAR LARGE OBJECT,   j BINARY LARGE OBJECT,   k BINARY VARYING,   l NATIONAL CHAR,   m NATIONAL CHARACTER,   n NATIONAL CHARACTER LARGE OBJECT,   o NATIONAL CHARACTER VARYING,   p NATIONAL CHAR VARYING ) ENGINE=Memory;
-create table mut (n int) engine=ReplicatedMergeTree('/test/02440/{database}/mut', '1') order by tuple();
-CREATE TABLE mutate_and_zero_copy_replication1 (   a UInt64,   b String,   c Float64 ) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_02427_mutate_and_zero_copy_replication/alter', '1') ORDER BY tuple() SETTINGS old_parts_lifetime=0, cleanup_delay_period=300, max_cleanup_delay_period=300, cleanup_delay_period_random_add=300, min_bytes_for_wide_part = 0;
-CREATE TABLE mutate_and_zero_copy_replication2 (   a UInt64,   b String,   c Float64 ) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_02427_mutate_and_zero_copy_replication/alter', '2') ORDER BY tuple() SETTINGS old_parts_lifetime=0, cleanup_delay_period=300, max_cleanup_delay_period=300, cleanup_delay_period_random_add=300;
-CREATE TABLE mutation_1 (   a UInt64,   b String ) ENGINE = ReplicatedMergeTree('/clickhouse/test/{database}/t', '1') ORDER BY tuple() SETTINGS min_bytes_for_wide_part=0, allow_remote_fs_zero_copy_replication=1;
-CREATE TABLE mutation_2 (   a UInt64,   b String ) ENGINE = ReplicatedMergeTree('/clickhouse/test/{database}/t', '2') ORDER BY tuple() SETTINGS min_bytes_for_wide_part=0, allow_remote_fs_zero_copy_replication=1;
-CREATE TABLE mutation_delete_null_rows (   `EventDate` Date,   `CounterID` Nullable(String),   `UserID` Nullable(UInt32) ) ENGINE = MergeTree() ORDER BY EventDate;
-CREATE TABLE mutation_table (   date Date,   key UInt64,   value String ) ENGINE = MergeTree() PARTITION BY date ORDER BY tuple();
-CREATE TABLE mutation_table (   id int,   price Nullable(Int32) ) ENGINE = MergeTree() PARTITION BY id ORDER BY id;
-create table mutation_table ( dt Nullable(Date), name Nullable(String)) engine MergeTree order by tuple();
-CREATE TABLE mutations_and_escaping_1648 (d Date, e Enum8('foo'=1, 'bar'=2)) Engine = MergeTree(d, (d), 8192);
-CREATE TABLE mutations_and_quorum1 (`server_date` Date, `something` String) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_01090/mutations_and_quorum', '1') PARTITION BY toYYYYMM(server_date) ORDER BY (server_date, something);
-CREATE TABLE mutations_and_quorum2 (`server_date` Date, `something` String) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_01090/mutations_and_quorum', '2') PARTITION BY toYYYYMM(server_date) ORDER BY (server_date, something);
-CREATE TABLE mv_expand_test_table (    a UInt8,  b Array(String),  c Array(Int8),  d Array(Int8) ) ENGINE = Memory;
-CREATE TABLE mv_extra_columns_dst (   v UInt64 ) ENGINE = MergeTree()   PARTITION BY tuple()   ORDER BY v;
-CREATE TABLE mv_extra_columns_src (   v1 UInt64,   v2 UInt64 ) ENGINE = Null;
-CREATE TABLE mv_source (`a` UInt64) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE mv_source (a Int64, insert_time DateTime) ENGINE = MergeTree() ORDER BY insert_time;
-CREATE TABLE mv_target (`a` UInt64) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE mv_target (a Int64, insert_time DateTime) ENGINE = MergeTree() ORDER BY insert_time;
-CREATE TABLE mview_backend (n Int32, n2 Int64) ENGINE MergeTree PARTITION BY n ORDER BY n;
-CREATE TABLE my_table (values Array(Int32)) ENGINE = MergeTree() ORDER BY values;
-create table my_table(Id UInt32, Object Nested(Key UInt8, Value String)) engine MergeTree order by Id;
-CREATE TABLE mytable (   operand Float64,   low   Float64,   high   Float64,   count  UInt64,   PRIMARY KEY (operand, low, high, count) ) ENGINE = MergeTree();
-CREATE TABLE mytable (   timestamp    UInt64,   insert_timestamp UInt64,   key       UInt64,   value      Float64 ) ENGINE = ReplacingMergeTree(insert_timestamp)   PRIMARY KEY (key, timestamp)   ORDER BY (key, timestamp);
-CREATE TABLE mytable (`a` UInt8) ENGINE = Buffer(currentDatabase(), 'mytable_stored', 4, 600, 3600, 10, 100, 10000, 10000000);
-CREATE TABLE myTable (myDay Date, myOrder Int32, someData String) ENGINE = ReplacingMergeTree PARTITION BY floor(toYYYYMMDD(myDay), -1) ORDER BY (myOrder);
-CREATE TABLE mytable_local (   created     DateTime,   eventday     Date,   user_id     UInt32 ) ENGINE = MergeTree() PARTITION BY toYYYYMM(eventday) ORDER BY (eventday, user_id) SETTINGS number_of_free_entries_in_pool_to_execute_mutation = 100;
-CREATE TABLE mytable_local (   created     DateTime,   eventday     Date,   user_id     UInt32 ) ENGINE = MergeTree() PARTITION BY toYYYYMM(eventday) ORDER BY (eventday, user_id);
-CREATE TABLE mytable_stored (`a` UInt8) ENGINE = MergeTree ORDER BY a;
-CREATE TABLE n (k UInt32) ENGINE = Memory;
-create table n(nc Nullable(int)) engine = MergeTree order by (tuple()) partition by (nc) settings allow_nullable_key = 1;
-CREATE TABLE needle_table (   key String ) ENGINE=TinyLog;
-CREATE TABLE neighbor_test (   `rowNr` UInt8,   `val_string` String,   `val_low` LowCardinality(String) ) ENGINE = MergeTree PARTITION BY tuple() ORDER BY rowNr;
-CREATE TABLE nested (   col1 Nested(a UInt32, s String),   col2 Nested(a UInt32, n Nested(s String, b UInt32)),   col3 Nested(n1 Nested(a UInt32, b UInt32), n2 Nested(s String, t String)) ) ENGINE = MergeTree ORDER BY tuple() SETTINGS min_bytes_for_wide_part = 0;
-CREATE TABLE nested (   column Nested   (     name String,     names Array(String),     types Array(Enum8('PU' = 1, 'US' = 2, 'OTHER' = 3))   ) ) ENGINE = Log;
-CREATE TABLE nested (   column Nested   (     name String,     names Array(String),     types Array(Enum8('PU' = 1, 'US' = 2, 'OTHER' = 3))   ) ) ENGINE = Memory;
-CREATE TABLE nested (   column Nested   (     name String,     names Array(String),     types Array(Enum8('PU' = 1, 'US' = 2, 'OTHER' = 3))   ) ) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE nested (   column Nested   (     name String,     names Array(String),     types Array(Enum8('PU' = 1, 'US' = 2, 'OTHER' = 3))   ) ) ENGINE = StripeLog;
-CREATE TABLE nested (   column Nested   (     name String,     names Array(String),     types Array(Enum8('PU' = 1, 'US' = 2, 'OTHER' = 3))   ) ) ENGINE = TinyLog;
-CREATE TABLE nested (   id UInt32,   col1 Nested(a UInt32, n Nested(s String, b UInt32)) ) ENGINE = MergeTree ORDER BY id SETTINGS min_bytes_for_wide_part = 0;
-CREATE TABLE nested (n Nested(x UInt8)) ENGINE = Memory;
-CREATE TABLE nested (nest Nested(a UInt8, b String)) ENGINE = Memory;
-CREATE TABLE nested (nest Nested(x UInt8, y UInt8)) ENGINE = Memory;
-CREATE TABLE nested (x UInt64, filter UInt8, n Nested(a UInt64)) ENGINE = MergeTree ORDER BY x SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE nested (x UInt8, n Nested(a UInt64, b String)) ENGINE = Log;
-CREATE TABLE nested (x UInt8, n Nested(a UInt64, b String)) ENGINE = Memory;
-CREATE TABLE nested (x UInt8, n Nested(a UInt64, b String)) ENGINE = MergeTree ORDER BY x;
-CREATE TABLE nested (x UInt8, n Nested(a UInt64, b String)) ENGINE = StripeLog;
-CREATE TABLE nested (x UInt8, n Nested(a UInt64, b String)) ENGINE = TinyLog;
-CREATE TABLE nested1 (d Date DEFAULT '2000-01-01', x UInt64, n Nested(a String, b String)) ENGINE = MergeTree(d, x, 1);
-CREATE TABLE nested2 (d Date DEFAULT '2000-01-01', x UInt64, n Nested(a String, b String)) ENGINE = MergeTree(d, x, 1);
-CREATE TABLE nested_01800_log (`column` Nested(name String, names Array(String), types Array(Enum8('PU' = 1, 'US' = 2, 'OTHER' = 3)))) ENGINE = Log;
-CREATE TABLE nested_01800_stripe_log (`column` Nested(name String, names Array(String), types Array(Enum8('PU' = 1, 'US' = 2, 'OTHER' = 3)))) ENGINE = StripeLog;
-CREATE TABLE nested_01800_tiny_log (`column` Nested(name String, names Array(String), types Array(Enum8('PU' = 1, 'US' = 2, 'OTHER' = 3)))) ENGINE = TinyLog;
-CREATE TABLE nested_alter (`d` Date, `k` UInt64, `i32` Int32, `dt` DateTime, `n.ui8` Array(UInt8), `n.s` Array(String), `n.d` Array(Date), `s` String DEFAULT '0') ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_01062/nested_alter', 'r2', d, k, 8192);
-create table nested_map (d default today(), k UInt64, payload default rand(), SomeMap Nested(ID String, Num Int64)) engine=SummingMergeTree(d, k, 8192);
-create table nested_map (d default today(), k UInt64, payload default rand(), SomeMap Nested(ID UInt32, Num Int64)) engine=SummingMergeTree(d, k, 8192);
-create table nested_map_explicit (d default today(), k UInt64, SomeIntExcluded UInt32, SomeMap Nested(ID UInt32, Num Int64)) engine=SummingMergeTree(d, k, 8192, (SomeMap));
-create table nested_map_multiple_values (d materialized today(), k UInt64, payload materialized rand(), SomeMap Nested(ID UInt32, Num1 Int64, Num2 Float64)) engine=SummingMergeTree(d, k, 8192);
-CREATE TABLE nested_name_tuples (   `a` Tuple(x String, y Tuple(i Int32, j String)) ) ENGINE = Memory;
-create table nested_not_a_map (d materialized today(), k UInt64, payload materialized rand(), OnlyOneColumnMap Nested(ID UInt32), NonArithmeticValueMap Nested(ID UInt32, Date Date), Nested_ Nested(ID UInt32, Num Int64)) engine=SummingMergeTree(d, k, 8192);
-create table nested_smt (   date date,   val UInt64,   counters_Map Nested (     id UInt8,     count Int32   ) ) ENGINE = SummingMergeTree() ORDER BY (date);
-CREATE TABLE nested_table (id UInt64, first Nested(a Int8, b String)) ENGINE = MergeTree() ORDER BY id;
-CREATE TABLE nested_test (s String, nest Nested(x UInt8, y UInt32)) ENGINE = Memory;
-CREATE TABLE nested_test (x UInt32, `nest.col1` Array(String), `nest.col2` Array(Int8)) ENGINE = MergeTree ORDER BY x;
-CREATE TABLE new_table_test(name String) ENGINE = MergeTree ORDER BY name;
-CREATE TABLE ngrambf_tab (   id UInt32,   str String,   INDEX idx str TYPE ngrambf_v1(3, 256, 2, 0) ) ENGINE = MergeTree ORDER BY id SETTINGS index_granularity = 1;
-CREATE TABLE ngrambf_v1_hasany_test (   id UInt32,   array Array(String),   INDEX idx_array_ngrambf_v1 array TYPE ngrambf_v1(3,512,3,0) GRANULARITY 1, ) Engine=MergeTree() ORDER BY id SETTINGS index_granularity = 1;
-CREATE TABLE nnd (   id Int8, ts DateTime64(3, 'UTC'), metric Float64 ) ENGINE=MergeTree() ORDER BY id;
-CREATE TABLE no_order(a UInt32, b UInt32) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE no_prop_table (   some_column UInt64 ) ENGINE MergeTree() ORDER BY tuple();
-CREATE TABLE non_ascii (`привет` String, `мир` String) ENGINE = TinyLog;
-create table non_const_needle  (id UInt32, haystack String, needle String)  engine = MergeTree()  order by id;
-CREATE TABLE non_metadata_alters (  key UInt64,  value1 String,  value2 Enum8('Hello' = 1, 'World' = 2),  value3 UInt16,  value4 DateTime,  value5 Date ) ENGINE = MergeTree() ORDER BY tuple();
-CREATE TABLE normal (   `key` UInt32,   `ts` DateTime,   `value` UInt32,   PROJECTION aaaa   (     SELECT       ts,       key,       value     ORDER BY ts, key   ) ) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE normalize_test (id int, value String) ENGINE = MergeTree ORDER BY value;
-CREATE TABLE nORX (`A` Int64, `B` Int64, `V` Int64) ENGINE = MergeTree ORDER BY (A, negate(B)) SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE not_partitioned(x UInt8) ENGINE MergeTree ORDER BY x;
-CREATE TABLE not_partitioned_replica1_00502(x UInt8) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test/not_partitioned_00502', '1') ORDER BY x;
-CREATE TABLE not_partitioned_replica2_00502(x UInt8) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test/not_partitioned_00502', '2') ORDER BY x;
-CREATE TABLE nr (`x` Nullable(UInt32), `lc` Nullable(String)) ENGINE = Memory;
-CREATE TABLE nr (`x` Nullable(UInt32), `s` Nullable(String)) ENGINE = Memory;
-CREATE TABLE nt (x Nullable(String)) ENGINE = Log();
-CREATE TABLE ntxy (x Nullable(String), y Nullable(String)) ENGINE = Log();
-CREATE TABLE NULL (c String) ENGINE = MergeTree ORDER BY c;
-CREATE TABLE null_  (key UInt64) Engine=Null();
-CREATE TABLE null_00117 (a Array(UInt64), b Array(String), c Array(Array(Date))) ENGINE = Memory;
-CREATE TABLE null_00481 (x UInt8) ENGINE = Null;
-CREATE TABLE null_00549 (k UInt64, a String, b Nullable(String)) ENGINE = Log;
-CREATE TABLE null_00557 (x UInt8) ENGINE = Null;
-create table null_01293 (key Int) engine=Null();
-CREATE TABLE null_02184 AS system.one Engine=Null();
-create table null_02230_column_ttl engine=Null() as data_02230_column_ttl;
-create table null_02230_ttl engine=Null() as data_02230_ttl;
-CREATE TABLE null_02902 (t Tuple(num Int64, str String)) ENGINE = Null;
-CREATE TABLE null_before (id DEFAULT 1 NOT NULL) ENGINE=MergeTree() ORDER BY tuple();
-CREATE TABLE null_before (id DEFAULT 1 NULL) ENGINE=MergeTree() ORDER BY tuple();
-CREATE TABLE null_before (id INT DEFAULT 1 NOT NULL) ENGINE=MergeTree() ORDER BY tuple();
-CREATE TABLE null_before (id INT DEFAULT 1 NULL) ENGINE=MergeTree() ORDER BY tuple();
-CREATE TABLE null_before (id INT NOT NULL DEFAULT 1) ENGINE=MergeTree() ORDER BY tuple();
-CREATE TABLE null_before (id INT NOT NULL) ENGINE=MergeTree() ORDER BY tuple();
-CREATE TABLE null_before (id INT NULL DEFAULT 1) ENGINE=MergeTree() ORDER BY tuple();
-CREATE TABLE null_before (id INT NULL) ENGINE=MergeTree() ORDER BY tuple();
-CREATE TABLE null_before (id NOT NULL DEFAULT 1) ENGINE=MergeTree() ORDER BY tuple();
-CREATE TABLE null_before (id NULL DEFAULT 1) ENGINE=MergeTree() ORDER BY tuple();
-CREATE TABLE null_in (dt DateTime, idx int, i Nullable(int), s Nullable(String)) ENGINE = MergeTree() PARTITION BY dt ORDER BY idx SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE null_in_1 (a Nullable(UInt32), b Nullable(UInt32)) ENGINE = Memory;
-CREATE TABLE null_in_1 (u UInt32, n Nullable(UInt32)) ENGINE = Memory;
-CREATE TABLE null_in__fuzz_6 (`dt` LowCardinality(UInt16), `idx` Int32, `i` Nullable(Int256), `s` Int32) ENGINE = MergeTree PARTITION BY dt ORDER BY idx;
-CREATE TABLE null_in_subquery (dt DateTime, idx int, i Nullable(UInt64)) ENGINE = MergeTree() PARTITION BY dt ORDER BY idx SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE null_in_tuple (dt DateTime, idx int, t Tuple(Nullable(UInt64), Nullable(String))) ENGINE = MergeTree() PARTITION BY dt ORDER BY idx SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE null_issue_3767 (value Nullable(String)) ENGINE=Memory;
-CREATE TABLE null_lc_set_index (  timestamp     DateTime,  action      LowCardinality(Nullable(String)),  user       LowCardinality(Nullable(String)),  INDEX test_user_idx (user) TYPE set(0) GRANULARITY 8192 ) ENGINE=MergeTree  PARTITION BY toYYYYMMDD(timestamp)  ORDER BY (timestamp, action, cityHash64(user)) SETTINGS allow_nullable_key = 1;
-CREATE TABLE null_sink_00126 (a UInt8, b String, c Array(UInt32)) ENGINE = Null;
-CREATE TABLE null_subcolumns (id UInt32, n Nullable(String)) ENGINE = MergeTree ORDER BY id;
-CREATE TABLE null_table (number UInt64) ENGINE = Null;
-CREATE TABLE null_table_buffer (number UInt64) ENGINE = Buffer(currentDatabase(), null_table, 1, 1, 1, 100, 200, 10000, 20000);
-CREATE TABLE nullable_00457 (s String, ns Nullable(String), narr Array(Nullable(UInt64))) ENGINE = Log;
-CREATE TABLE nullable_00457 (s String, ns Nullable(String), narr Array(Nullable(UInt64))) ENGINE = StripeLog;
-CREATE TABLE nullable_00457 (s String, ns Nullable(String), narr Array(Nullable(UInt64))) ENGINE = TinyLog;
-CREATE TABLE nullable_00465 (id Nullable(UInt32), cat String) ENGINE = Log;
-CREATE TABLE nullable_00571 (x String) ENGINE = MergeTree ORDER BY x;
-CREATE TABLE nullable_alter (d Date DEFAULT '2000-01-01', x String) ENGINE = MergeTree(d, d, 1);
-CREATE TABLE nullable_division (x UInt32, y Nullable(UInt32), a Decimal(7, 2), b Nullable(Decimal(7, 2))) ENGINE=MergeTree() order by x;
-CREATE TABLE nullable_key (k Nullable(int), v int) ENGINE MergeTree ORDER BY k SETTINGS allow_nullable_key = 1, index_granularity = 1;
-CREATE TABLE nullable_key_without_final_mark (s Nullable(String)) ENGINE MergeTree ORDER BY s SETTINGS allow_nullable_key = 1, write_final_mark = 0;
-CREATE TABLE nullable_minmax_index (k int, v Nullable(int), INDEX v_minmax v TYPE minmax GRANULARITY 4) ENGINE MergeTree ORDER BY k SETTINGS index_granularity = 1;
-create table nullable_set_index (a UInt64, b LowCardinality(Nullable(String)), INDEX b_index b TYPE set(0) GRANULARITY 8192) engine = MergeTree order by a;
-create table nullable_set_index (a UInt64, b LowCardinality(Nullable(String)), INDEX b_index b TYPE set(1) GRANULARITY 8192) engine = MergeTree order by a;
-create table nullable_set_index (a UInt64, b Nullable(String), INDEX b_index b TYPE set(0) GRANULARITY 8192) engine = MergeTree order by a;
-create table nullable_set_index (a UInt64, b Nullable(String), INDEX b_index b TYPE set(1) GRANULARITY 8192) engine = MergeTree order by a;
-CREATE TABLE nullable_string_value (value Nullable(String)) ENGINE=TinyLog;
-CREATE TABLE nullable_string_value__fuzz_2 (`value` LowCardinality(String)) ENGINE = TinyLog;
-CREATE TABLE nulls (d Date, x Nullable(UInt64)) ENGINE = MergeTree(d, d, 8192);
-CREATE TABLE nulls_first_sort_test (a Nullable(Int32), b Nullable(Int32), c Nullable(Int32)) ENGINE = Memory;
-CREATE TABLE nullt (c1 Nullable(UInt32), c2 Nullable(String))ENGINE = Log;
-CREATE TABLE num AS numbers(1000);
-create table num_10m (number UInt64) engine = MergeTree order by tuple();
-CREATE TABLE number (number UInt64) ENGINE = Memory();
-CREATE TABLE numbers (number UInt64) ENGINE=Memory;
-CREATE TABLE numbers1 AS SELECT number FROM numbers(10);
-CREATE TABLE numbers1 ENGINE = Memory AS SELECT number as _table FROM numbers(1000);
-CREATE TABLE numbers1 ENGINE = Memory AS SELECT number FROM numbers(1000);
-CREATE TABLE numbers1 ENGINE = MergeTree ORDER BY intHash32(number) SAMPLE BY intHash32(number) AS SELECT number FROM numbers(1000);
-CREATE TABLE numbers1 ENGINE = StripeLog AS SELECT number FROM numbers(1000);
-CREATE TABLE numbers2 ENGINE = Memory AS SELECT number as _table FROM numbers(1000);
-CREATE TABLE numbers2 ENGINE = Memory AS SELECT number FROM numbers(1000);
-CREATE TABLE numbers2 ENGINE = MergeTree ORDER BY intHash32(number) SAMPLE BY intHash32(number) AS SELECT number FROM numbers(1000);
-CREATE TABLE numbers2 ENGINE = TinyLog AS SELECT number FROM numbers(1000);
-CREATE TABLE numbers2 ORDER BY intHash32(number) SAMPLE BY intHash32(number) AS SELECT number FROM numbers(10);
-CREATE TABLE numbers3 ENGINE = Log AS SELECT number FROM numbers(10);
-CREATE TABLE numbers3 ENGINE = Log AS SELECT number FROM numbers(1000);
-CREATE TABLE numbers4 ENGINE = Memory AS SELECT number FROM numbers(1000);
-CREATE TABLE numbers5 ENGINE = MergeTree ORDER BY number AS SELECT number FROM numbers(1000);
-CREATE TABLE numbers500k (`number` UInt32) ENGINE = MergeTree() ORDER BY tuple();
-create table numbers_10 (number UInt64) engine = MergeTree order by number;
-CREATE TABLE numbers_1001 (number UInt64) ENGINE = Memory;
-CREATE TABLE numbers_100k_log ENGINE = Log AS SELECT * FROM system.numbers LIMIT 100000;
-CREATE TABLE numbers_10_00223 ENGINE = Log AS SELECT * FROM system.numbers LIMIT 10000;
-CREATE TABLE numbers_10_00290 ENGINE = Log AS SELECT * FROM system.numbers LIMIT 10000;
-CREATE TABLE numbers_10k_log ENGINE = Log AS SELECT number FROM system.numbers LIMIT 10000;
-CREATE TABLE numbers_indexed Engine=MergeTree ORDER BY number PARTITION BY bitShiftRight(number,8) SETTINGS index_granularity=8 AS SELECT * FROM numbers(16384);
-CREATE TABLE numbers_memory AS system.numbers ENGINE = Memory;
-CREATE TABLE numbers_mt (number UInt64) ENGINE = Log;
-CREATE TABLE numbers_squashed (number UInt8) ENGINE = StripeLog;
-CREATE TABLE numbers_squashed AS system.numbers ENGINE = StripeLog;
-CREATE TABLE nums ( n UInt64, m UInt64 MATERIALIZED n+1 ) ENGINE = Log;
-CREATE TABLE nums(n UInt32) ENGINE = Memory;
-CREATE TABLE nums_buf AS nums ENGINE = Buffer(currentDatabase(), nums, 1, 10, 100, 1, 3, 10000000, 100000000);
-create table nums_in_mem(v UInt64) engine=Memory;
-create table nums_in_mem_dist as nums_in_mem engine=Distributed('test_shard_localhost', currentDatabase(), nums_in_mem);
-CREATE TABLE offset_without_limit (   value UInt32 ) Engine = MergeTree()  PRIMARY KEY value  ORDER BY value;
-CREATE TABLE old_format_mt (  event_date Date,  key UInt64,  value1 UInt64,  value2 String ) ENGINE = MergeTree(event_date, (key, value1), 8192);
-CREATE TABLE old_partition_key (sd Date, dh UInt64, ak UInt32, ed Date) ENGINE=MergeTree(sd, dh, (ak, ed, dh), 8192);
-CREATE TABLE old_school_table (   key UInt64,   value String ) ENGINE = MergeTree() ORDER BY key SETTINGS index_granularity_bytes = 0, enable_mixed_granularity_parts = 0, min_bytes_for_wide_part = 0, vertical_merge_algorithm_min_rows_to_activate = 1, vertical_merge_algorithm_min_columns_to_activate = 1;
-CREATE TABLE old_style(d Date, x UInt32) ENGINE MergeTree(d, x, 8192);
-CREATE TABLE old_style(d Date, x UInt32) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_00754/old_style', 'r1', d, x, 8192);
-CREATE TABLE old_syntax_01071_test (date Date, id UInt8) ENGINE = MergeTree(date, id, 8192);
-CREATE TABLE one(dummy UInt8) ENGINE = Memory;
-CREATE TABLE one_00458 (x Array(UInt32), z String DEFAULT '', y Array(UInt32)) ENGINE = Memory;
-CREATE TABLE one_00458 (x DateTime) ENGINE = Memory;
-CREATE TABLE one_00458 (x Int32) ENGINE = Memory;
-CREATE TABLE one_00458 (x String) ENGINE = Memory;
-create table one_table (date Date, one UInt64) engine = MergeTree(date, (date, one), 8192);
-CREATE TABLE ontime (FlightDate Date, Carrier String, FlightNum String) ENGINE = Memory;
-CREATE TABLE open_events_tmp (`APIKey` UInt32, `EventDate` Date) ENGINE = MergeTree PARTITION BY toMonday(EventDate) ORDER BY (APIKey, EventDate);
-CREATE TABLE optimize_final(t DateTime, x Int32) ENGINE = MergeTree() PARTITION BY toYYYYMM(t) ORDER BY x;
-CREATE TABLE optimize_sorting (a UInt64, b UInt64) ENGINE MergeTree() ORDER BY tuple();
-CREATE TABLE optimize_sorting (a UInt64, b UInt64, c UInt64) ENGINE MergeTree() ORDER BY (a, b);
-CREATE TABLE or_bug (key UInt8) ENGINE=MergeTree ORDER BY key;
-CREATE TABLE or_expr_bug (a UInt64, b UInt64) ENGINE = Memory;
-CREATE TABLE order (   ID Int64,   Type Int64,   Num UInt64,   t DateTime ) ENGINE = MergeTree() PARTITION BY toYYYYMMDD(t) ORDER BY (ID, Type, Num);
-CREATE TABLE order(id UInt32, pId UInt32, uId UInt32) ENGINE = TinyLog;
-CREATE TABLE order_by_all (   a String,   b Nullable(Int32),   all UInt64, ) ENGINE = Memory;
-create table order_by_another (a Nullable(UInt64), b UInt64) Engine = MergeTree order by tuple();
-CREATE TABLE order_by_desc (u UInt32, s String) ENGINE MergeTree ORDER BY u PARTITION BY u % 100 SETTINGS index_granularity = 1024, index_granularity_bytes = '10Mi';
-create table order_test1 (   timestamp DateTime64(3),   color   LowCardinality(String) ) engine = MergeTree() ORDER BY tuple();
-CREATE TABLE order_with_aggr(a Int) ENGINE = MergeTree ORDER BY a;
-CREATE TABLE orders (order_id UUID, user_id UUID) ENGINE = Memory;
-CREATE TABLE Orders (OrderId UInt64, OrderName String, OrderDate DateTime) engine = Log;
-create table ordinary_distinct (low UInt64, medium UInt64, high UInt64) engine=MergeTree() order by (low, medium) SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-create table orin_test (c1 Int32) engine=Memory;
-CREATE TABLE other_table (   id Int32,   name String,   ts DateTime,   trd_id Int32 ) ENGINE = MergeTree() PARTITION BY toMonday(ts) ORDER BY (ts, id);
-create table out_01277 (   k1 Int,   k2 Int,   a1 Int,   a2 Int,   b1 Int,   b2 Int,   c Int ) Engine=Null();
-create table out_02231 as buffer_02231 engine=Null();
-CREATE TABLE outer_distributed AS outer ENGINE = Distributed('test_cluster_two_shards', currentDatabase(), 'outer', intHash64(organization_id));
-CREATE TABLE output (key UInt64, val UInt64) Engine=Memory();
-CREATE TABLE p (`polygon_id` Int64, `polygon_name` String, `shape` Array(Array(Tuple(Float64, Float64))), `state` String) ENGINE = Memory();
-create table p(d Date, i int, j int) engine MergeTree partition by d order by i settings max_partitions_to_read = 1;
-CREATE TABLE parallel_replicas (d Date DEFAULT today(), x UInt32, u UInt64, s String) ENGINE = MergeTree(d, cityHash64(u, s), (x, d, cityHash64(u, s)), 8192);
-CREATE TABLE parallel_replicas_backup(d Date DEFAULT today(), x UInt32, u UInt64, s String) ENGINE = Memory;
-create table parent (id int, primary key(id)) engine MergeTree;
-CREATE TABLE parsed_eph (  name String,  num_ephemeral UInt32 EPHEMERAL,  num UInt32 MATERIALIZED num_ephemeral, ) ENGINE = MergeTree ORDER BY (name);
-CREATE TABLE part_info (t DateTime) ENGINE = MergeTree PARTITION BY toDate(t) ORDER BY (t);
-CREATE TABLE part_log_bytes_uncompressed (   key UInt8,   value UInt8 ) Engine=MergeTree() ORDER BY key;
-CREATE TABLE part_log_profile_events_r1 (x UInt64) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_02378/part_log_profile_events', 'r1') ORDER BY x PARTITION BY x >= 128 ;
-CREATE TABLE part_log_profile_events_r2 (x UInt64) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_02378/part_log_profile_events', 'r2') ORDER BY x PARTITION BY x >= 128 ;
-CREATE TABLE partial_duplicates (   pk Int32, sk Int32, val UInt32, partition_key UInt32 DEFAULT 1, mat UInt32 MATERIALIZED rand(), alias UInt32 ALIAS 2,   PRIMARY KEY (pk) ) ENGINE=MergeTree ORDER BY (pk, sk);
-create table partial_sort_opt_bug (x UInt64) engine = MergeTree order by tuple() settings index_granularity = 1000;
-CREATE TABLE partition_all (x UInt64, p UInt8, q UInt8) ENGINE = MergeTree ORDER BY tuple() PARTITION BY p;
-CREATE TABLE partition_all2 (x UInt64, p UInt8, q UInt8) ENGINE = MergeTree ORDER BY tuple() PARTITION BY p;
-CREATE TABLE partition_and_primary_keys_using_same_expression(dt DateTime)   ENGINE MergeTree PARTITION BY toDate(dt) ORDER BY toDayOfWeek(toDate(dt));
-CREATE TABLE partition_by_ignore (ts DateTime, ts_2 DateTime) ENGINE=MergeTree PARTITION BY (toYYYYMM(ts), ignore(ts_2)) ORDER BY tuple() SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE partitioned_by_string(s String, x UInt8) ENGINE = MergeTree PARTITION BY s ORDER BY x;
-CREATE TABLE partitioned_by_string_replica1(s String, x UInt8) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test/partitioned_by_string_00502', '1') PARTITION BY s ORDER BY x;
-CREATE TABLE partitioned_by_string_replica2(s String, x UInt8) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test/partitioned_by_string_00502', '2') PARTITION BY s ORDER BY x;
-CREATE TABLE partitioned_by_tuple (d Date, x UInt8, w String, y UInt8) ENGINE SummingMergeTree (y) PARTITION BY (d, x) ORDER BY (d, x, w);
-CREATE TABLE partitioned_by_tuple(d Date, x UInt8, y UInt8) ENGINE MergeTree ORDER BY x PARTITION BY (d, x);
-CREATE TABLE partitioned_by_tuple_replica1_00502(d Date, x UInt8, y UInt8) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test/partitioned_by_tuple_00502', '1') ORDER BY x PARTITION BY (d, x);
-CREATE TABLE partitioned_by_tuple_replica1_00661(d Date, x UInt8, w String, y UInt8) ENGINE = ReplicatedSummingMergeTree('/clickhouse/tables/{database}/test/partitioned_by_tuple_00661', '1') PARTITION BY (d, x) ORDER BY (d, x, w);
-CREATE TABLE partitioned_by_tuple_replica2_00502(d Date, x UInt8, y UInt8) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test/partitioned_by_tuple_00502', '2') ORDER BY x PARTITION BY (d, x);
-CREATE TABLE partitioned_by_tuple_replica2_00661(d Date, x UInt8, w String, y UInt8) ENGINE = ReplicatedSummingMergeTree('/clickhouse/tables/{database}/test/partitioned_by_tuple_00661', '2') PARTITION BY (d, x) ORDER BY (d, x, w);
-CREATE TABLE partitioned_by_week(d Date, x UInt8) ENGINE = MergeTree PARTITION BY toMonday(d) ORDER BY x;
-CREATE TABLE partitioned_by_week_replica1(d Date, x UInt8) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test/partitioned_by_week_00502', '1') PARTITION BY toMonday(d) ORDER BY x;
-CREATE TABLE partitioned_by_week_replica2(d Date, x UInt8) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test/partitioned_by_week_00502', '2') PARTITION BY toMonday(d) ORDER BY x;
-CREATE TABLE partitioned_table (   key UInt64,   partitioner UInt8,   value String ) ENGINE ReplicatedMergeTree('/clickhouse/{database}/01650_drop_part_and_deduplication_partitioned_table', '1') ORDER BY key PARTITION BY partitioner;
-CREATE TABLE partitions (x UInt64) ENGINE = MergeTree ORDER BY x PARTITION BY x;
-CREATE TABLE partslost_0 (x String) ENGINE=ReplicatedMergeTree('/clickhouse/table/{database}_02067_lost/partslost', '0') ORDER BY tuple()   SETTINGS min_rows_for_wide_part = 0, min_bytes_for_wide_part = 0, old_parts_lifetime = 1,   cleanup_delay_period = 1, cleanup_delay_period_random_add = 1, cleanup_thread_preferred_points_per_iteration=0,   index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE partslost_1 (x String) ENGINE=ReplicatedMergeTree('/clickhouse/table/{database}_02067_lost/partslost', '1') ORDER BY tuple()   SETTINGS min_rows_for_wide_part = 0, min_bytes_for_wide_part = 0, old_parts_lifetime = 1,   cleanup_delay_period = 1, cleanup_delay_period_random_add = 1, cleanup_thread_preferred_points_per_iteration=0,   index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE partslost_2 (x String) ENGINE=ReplicatedMergeTree('/clickhouse/table/{database}_02067_lost/partslost', '2') ORDER BY tuple()   SETTINGS min_rows_for_wide_part = 0, min_bytes_for_wide_part = 0, old_parts_lifetime = 1,   cleanup_delay_period = 1, cleanup_delay_period_random_add = 1, cleanup_thread_preferred_points_per_iteration=0,   index_granularity = 8192, index_granularity_bytes = '10Mi';
-create table pd (dt DateTime, i int, dt_m DateTime alias toStartOfMinute(dt)) engine Distributed(test_shard_localhost, currentDatabase(), 'pl');
-create table per_table_ttl_02265 (key Int, date Date, value String) engine=MergeTree() order by key;
-CREATE TABLE perf (site String, user_id UInt64, z Float64) ENGINE = Log;
-CREATE TABLE perf_lc_num(　    num UInt8,　    arr Array(LowCardinality(Int64)) default [num]　    ) ENGINE = Log;
-CREATE TABLE perf_lc_num(　    num UInt8,　    arr Array(LowCardinality(Int64)) default [num]　    ) ENGINE = StripeLog;
-CREATE TABLE perf_lc_num(　    num UInt8,　    arr Array(LowCardinality(Int64)) default [num]　    ) ENGINE = TinyLog;
-create table persons (id String, name String) engine MergeTree order by id;
-CREATE TABLE pk (d Date DEFAULT '2000-01-01', x DateTime, y UInt64, z UInt64) ENGINE = MergeTree() PARTITION BY d ORDER BY (toStartOfMinute(x), y, z) SETTINGS index_granularity_bytes=19, min_index_granularity_bytes=1, write_final_mark = 0;
-CREATE TABLE pk (d Date DEFAULT '2000-01-01', x UInt64, y UInt64, z UInt64) ENGINE = MergeTree(d, (x, y, z), 1);
-CREATE TABLE pk (x DateTime) ENGINE = MergeTree ORDER BY toStartOfMinute(x) SETTINGS index_granularity = 1;
-CREATE TABLE pk_func (`d` DateTime, `ui` UInt32 ) ENGINE = MergeTree ORDER BY toDate(d);
-CREATE TABLE pk_func(d DateTime, ui UInt32) ENGINE = MergeTree ORDER BY toDate(d) SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE pk_func(d DateTime, ui UInt32) ENGINE = SummingMergeTree ORDER BY toDate(d);
-CREATE TABLE pk_order (a Int, b Int) ENGINE = MergeTree ORDER BY (a / b);
-CREATE TABLE pk_order (d DateTime, a Int32, b Int32) ENGINE = MergeTree ORDER BY (d, a)   PARTITION BY toDate(d) SETTINGS index_granularity=1;
-CREATE TABLE pk_order(a UInt64, b UInt64, c UInt64, d UInt64) ENGINE=MergeTree() ORDER BY (a, b);
-CREATE TABLE pk_set (d Date, n UInt64, host String, code UInt64) ENGINE = MergeTree(d, (n, host, code), 1);
-CREATE TABLE pk_test1 (a String PRIMARY KEY, b String, c String);
-CREATE TABLE pk_test19 (a String PRIMARY KEY, b String PRIMARY KEY, c String) ORDER BY (a,b,c);
-CREATE TABLE pk_test2 (a String PRIMARY KEY, b String PRIMARY KEY, c String);
-CREATE TABLE pk_test20 (a String PRIMARY KEY, b String PRIMARY KEY, c String PRIMARY KEY) ORDER BY (a,b,c);
-CREATE TABLE pk_test21 (a String, b String PRIMARY KEY, c String PRIMARY KEY) ORDER BY (a,b,c);
-CREATE TABLE pk_test3 (a String PRIMARY KEY, b String PRIMARY KEY, c String PRIMARY KEY);
-CREATE TABLE pk_test4 (a String, b String PRIMARY KEY, c String PRIMARY KEY);
-CREATE TABLE pk_test5 (a String, b String PRIMARY KEY, c String);
-CREATE TABLE pk_test6 (a String, b String, c String PRIMARY KEY);
-CREATE TABLE pk_test7 (a String PRIMARY KEY, b String, c String, PRIMARY KEY (a));
-create table pl (dt DateTime, i int, projection p (select sum(i) group by toStartOfMinute(dt))) engine MergeTree order by dt;
-CREATE TABLE points_01862 (x Float64, y Float64) ENGINE = Memory;
-create table polygon_01302 (x Array(Array(Array(Tuple(Float64, Float64)))), y Array(Array(Array(Tuple(Float64, Float64))))) engine=Memory();
-CREATE TABLE polygon_dictionary_array_source_table (   key Array(Array(Array(Tuple(Float64, Float64)))),   array_value Array(Int64) ) ENGINE = TinyLog;
-CREATE TABLE polygon_dictionary_nullable_default_source_table (   key Tuple(Float64, Float64),   value Nullable(UInt64) ) ENGINE=TinyLog;
-CREATE TABLE polygon_dictionary_nullable_source_table (   key Array(Array(Array(Tuple(Float64, Float64)))),   value Nullable(Int64) ) ENGINE = TinyLog;
-create table polygons ( id Int32, poly Array(Array(Tuple(Int32, Int32)))) engine = Log();
-create table polygons ( id Int32, poly Array(Tuple(Int32, Int32))) engine = Log();
-create table polygons ( id Int32, pt Tuple(Int32, Int32), poly Array(Array(Tuple(Int32, Int32)))) engine = Log();
-create table polygons ( id Int32, pt Tuple(Int32, Int32), poly Array(Tuple(Int32, Int32))) engine = Log();
-CREATE TABLE polygons_01862 (   key Array(Array(Array(Tuple(Float64, Float64)))),   name String ) ENGINE = Memory;
-CREATE TABLE polygons_test_table (   key Array(Array(Array(Tuple(Float64, Float64)))),   name String ) ENGINE = TinyLog;
-create table pr_t(a UInt64, b UInt64) engine=MergeTree order by a;
-CREATE TABLE predicate_table (value UInt8) ENGINE=TinyLog;
-CREATE TABLE prefetched_table(key UInt64, s String) Engine = MergeTree() order by key;
-CREATE TABLE prewhere (d Date, a String, b String) ENGINE = MergeTree(d, d, 8192);
-CREATE TABLE prewhere (light UInt8, heavy String) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE prewhere (x Array(UInt64), y ALIAS x, s String) ENGINE = MergeTree ORDER BY tuple();
-create table prewhere_alias (a Int32, b Int32, c alias a + b) engine = MergeTree order by b;
-CREATE TABLE prewhere_alias (a UInt8, b Int32, c UInt8 ALIAS a, d Int64 ALIAS b + 1, e Int32 alias a + b) ENGINE = MergeTree ORDER BY tuple();
-create table prewhere_column_missing (d Date default '2015-01-01', x UInt64) engine=MergeTree(d, x, 1);
-CREATE TABLE prewhere_defaults (d Date DEFAULT '2000-01-01', k UInt64 DEFAULT 0, x UInt16) ENGINE = MergeTree(d, k, 1);
-CREATE TABLE prewhere_int128 (a Int128) ENGINE=MergeTree ORDER BY a;
-CREATE TABLE prewhere_int256 (a Int256) ENGINE=MergeTree ORDER BY a;
-CREATE TABLE prewhere_move (x Int, y String) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE prewhere_move (x1 Int, x2 Int, x3 Int, x4 Int) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE prewhere_move_select_final (x Int, y Int, z Int) ENGINE = ReplacingMergeTree() ORDER BY (x, y);
-CREATE TABLE prewhere_uint128 (a UInt128) ENGINE=MergeTree ORDER BY a;
-CREATE TABLE prewhere_uint256 (a UInt256) ENGINE=MergeTree ORDER BY a;
-CREATE TABLE primary (   `primary` String ) ENGINE = MergeTree ORDER BY primary settings min_bytes_for_wide_part=0,min_bytes_for_wide_part=0 AS SELECT * FROM numbers(1000);
-CREATE TABLE primary_key (d Date DEFAULT today(), x Int8) ENGINE = MergeTree(d, -x, 1);
-CREATE TABLE primary_key (d Date DEFAULT today(), x Int8) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_00215/primary_key', 'r1', d, -x, 1);
-CREATE TABLE primary_key_test(v Int32) ENGINE=ReplacingMergeTree ORDER BY v PRIMARY KEY(v);
-CREATE TABLE primary_key_test(v Int32, PRIMARY KEY(v)) ENGINE=ReplacingMergeTree ORDER BY v;
-CREATE TABLE primary_key_test(v1 Int32, v2 Int32) ENGINE=ReplacingMergeTree ORDER BY (v1, v2) PRIMARY KEY(v1, v2);
-CREATE TABLE primary_key_test(v1 Int32, v2 Int32, PRIMARY KEY(v1, v2)) ENGINE=ReplacingMergeTree ORDER BY (v1, v2);
-CREATE TABLE primary_key_test(v1 Int64, v2 Int32, v3 String, PRIMARY KEY(v1, gcd(v1, v2))) ENGINE=ReplacingMergeTree ORDER BY v1;
-CREATE TABLE prod_hist (categoryId UUID, productId UUID) ENGINE = MergeTree ORDER BY productId;
-CREATE TABLE producer_02366 (   `id` UInt16,   `dec` String ) ENGINE = MergeTree PRIMARY KEY id ORDER BY id;
-CREATE TABLE product(id UInt32, name String, cate String) ENGINE = Join(ANY, LEFT, id);
-CREATE TABLE product_fp32_fp32 (x Array(Float32), y Array(Float32)) engine = MergeTree() order by x;
-CREATE TABLE product_fp32_fp64 (x Array(Float32), y Array(Float64)) engine = MergeTree() order by x;
-CREATE TABLE product_fp64_fp64 (x Array(Float64), y Array(Float64)) engine = MergeTree() order by x;
-CREATE TABLE product_groups (  group_id Int64,   group_name String ) Engine = Memory;
-CREATE TABLE product_int32_uint64 (x Array(Int32), y Array(UInt64)) engine = MergeTree() order by x;
-CREATE TABLE product_uint64_uint64 (x Array(UInt64), y Array(UInt64)) engine = MergeTree() order by x;
-CREATE TABLE product_uint8_fp64 (x Array(UInt8), y Array(Float64)) engine = MergeTree() order by x;
-CREATE TABLE product_uint8_uint8 (x Array(UInt8), y Array(UInt8)) engine = MergeTree() order by x;
-CREATE TABLE products (   product_id Int64,  product_name String,  price DECIMAL(11, 2),  group_id Int64 ) Engine = Memory;
-CREATE TABLE products (`price` UInt32) ENGINE = Memory;
-CREATE TABLE products as prod_hist ENGINE = Merge(currentDatabase(), '^products_');
-CREATE TABLE products_l AS prod_hist ENGINE = Distributed(test_cluster_two_shards, currentDatabase(), prod_hist);
-create table proj (   bool_value UInt8,   zero_integer_value Int32,   integer_value Int32,   float_value Float32,   datetime_value DateTime,   string_value String,   projection test_projection (    select     toStartOfDay (toDateTime (datetime_value)) as Day,     datetime_value,     float_value,     count(      distinct if(zero_integer_value = 1, string_value, NULL)     )    group by     Day,     datetime_value,     float_value   )  ) engine MergeTree partition by  toDate (datetime_value) order by  bool_value;
-CREATE TABLE proj(date Date, PROJECTION maxdate( SELECT max(date) GROUP BY date )) ENGINE = MergeTree ORDER BY tuple() as select toDate('2012-10-24')-number%100 from numbers(1e2);
-CREATE TABLE proj_agg_02343 (   k1 UInt32,   k2 UInt32,   k3 UInt32,   value UInt32,   PROJECTION aaaa   (     SELECT       k1,       k2,       k3,       sum(value)     GROUP BY k1, k2, k3   ) ) ENGINE = MergeTree ORDER BY tuple();
-create table projection_test (dt DateTime, cost Int64, projection p (select toStartOfMinute(dt) dt_m, sum(cost) group by dt_m)) engine MergeTree partition by toDate(dt) order by dt;
-create table projection_test_d (dt DateTime, cost Int64) engine Distributed(test_cluster_two_shards, currentDatabase(), projection_test);
-create table projection_without_key (key UInt32, PROJECTION x (SELECT max(key))) engine MergeTree order by key;
-create table projection_without_key (key UInt32, PROJECTION x (SELECT sum(key) group by key % 3)) engine MergeTree order by key;
-CREATE TABLE promotion (   `p_promo_sk` Int64,   `p_promo_id` String,   `p_start_date_sk` Nullable(Int64),   `p_end_date_sk` Nullable(Int64),   `p_item_sk` Nullable(Int64),   `p_cost` Nullable(Float64),   `p_response_target` Nullable(Int64),   `p_promo_name` Nullable(String),   `p_channel_dmail` Nullable(String),   `p_channel_email` Nullable(String),   `p_channel_catalog` Nullable(String),   `p_channel_tv` Nullable(String),   `p_channel_radio` Nullable(String),   `p_channel_press` Nullable(String),   `p_channel_event` Nullable(String),   `p_channel_demo` Nullable(String),   `p_channel_details` Nullable(String),   `p_purpose` Nullable(String),   `p_discount_active` Nullable(String) ) ENGINE = MergeTree ORDER BY p_promo_sk;
-CREATE TABLE prop_table (   column_default UInt64 DEFAULT 42,   column_materialized UInt64 MATERIALIZED column_default * 42,   column_alias UInt64 ALIAS column_default + 1,   column_codec String CODEC(ZSTD(10)),   column_comment Date COMMENT 'Some comment',   column_ttl UInt64 TTL column_comment + INTERVAL 1 MONTH ) ENGINE MergeTree() ORDER BY tuple() TTL column_comment + INTERVAL 2 MONTH;
-CREATE TABLE proportions_ztest (sx UInt64, sy UInt64, tx UInt64, ty UInt64) Engine = Memory();
-create table proxy_02572 (key Int) engine=Distributed('test_shard_localhost', currentDatabase(), 'receiver_02572');
-CREATE TABLE queue (   `day` Date,   `uid` String ) ENGINE = MergeTree ORDER BY (day, uid);
-CREATE TABLE quorum1(x UInt32) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_02887/quorum', '1') ORDER BY x;
-CREATE TABLE quorum1(x UInt32, y Date) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_00732/quorum1', '1') ORDER BY x PARTITION BY y;
-CREATE TABLE quorum1(x UInt32, y Date) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_00732/quorum2', '1') ORDER BY x PARTITION BY y;
-CREATE TABLE quorum1(x UInt32, y Date) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_00732/quorum_have_data', '1') ORDER BY x PARTITION BY y;
-CREATE TABLE quorum1(x UInt32, y Date) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_00732/quorum_lost', '1') ORDER BY x PARTITION BY y;
-CREATE TABLE quorum1(x UInt32, y Date) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_00732/quorum_lost_alive', '1') ORDER BY x PARTITION BY y;
-CREATE TABLE quorum1(x UInt32, y Date) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_00732/quorum_old_data', '1') ORDER BY x PARTITION BY y;
-CREATE TABLE quorum1(x UInt32, y Date) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_01513/sequence_consistency', '1') ORDER BY x PARTITION BY y;
-CREATE TABLE quorum1(x UInt32, y Date) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_02377/quorum', '1') ORDER BY x PARTITION BY y;
-CREATE TABLE quorum2(x UInt32) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_02887/quorum', '2') ORDER BY x;
-CREATE TABLE quorum2(x UInt32, y Date) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_00732/quorum1', '2') ORDER BY x PARTITION BY y;
-CREATE TABLE quorum2(x UInt32, y Date) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_00732/quorum2', '2') ORDER BY x PARTITION BY y;
-CREATE TABLE quorum2(x UInt32, y Date) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_00732/quorum_have_data', '2') ORDER BY x PARTITION BY y;
-CREATE TABLE quorum2(x UInt32, y Date) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_00732/quorum_lost', '2') ORDER BY x PARTITION BY y;
-CREATE TABLE quorum2(x UInt32, y Date) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_00732/quorum_lost_alive', '2') ORDER BY x PARTITION BY y;
-CREATE TABLE quorum2(x UInt32, y Date) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_00732/quorum_old_data', '2') ORDER BY x PARTITION BY y;
-CREATE TABLE quorum2(x UInt32, y Date) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_01513/sequence_consistency', '2') ORDER BY x PARTITION BY y;
-CREATE TABLE quorum2(x UInt32, y Date) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_02377/quorum', '2') ORDER BY x PARTITION BY y;
-CREATE TABLE quorum2(x UInt32, y Date) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_02377/quorum1', '2') ORDER BY x PARTITION BY y;
-CREATE TABLE quorum3(x UInt32, y Date) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_01513/sequence_consistency', '3') ORDER BY x PARTITION BY y;
-CREATE TABLE quorum3(x UInt32, y Date) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_02377/quorum1', '3') ORDER BY x PARTITION BY y;
-CREATE TABLE r (   x String,   a LowCardinality(String),   q AggregateFunction(quantilesTiming(0.5, 0.95, 0.99), Int64),   s Int64,   PROJECTION p     (SELECT a, quantilesTimingMerge(0.5, 0.95, 0.99)(q), sum(s) GROUP BY a) ) Engine=SummingMergeTree order by (x, a);
-CREATE TABLE r (`x` LowCardinality(Nullable(UInt32)), `s` Nullable(String)) ENGINE = Memory;
-CREATE TABLE r (a String, c Array(String)) ENGINE = Memory();
-CREATE TABLE r (a String, c Tuple(String, String)) ENGINE = Memory();
-CREATE TABLE r (k UInt32, name String) ENGINE = Memory;
-CREATE TABLE r (ruid Nullable(Int16), name String) ENGINE=MergeTree order by ruid settings allow_nullable_key=1 as select * from VALUES ((1231, 'John'),(1232, 'Johny'));
-CREATE TABLE r (ruid Nullable(Int16), name String) ENGINE=MergeTree order by tuple() as select * from VALUES ((1231, 'John'),(1232, 'Johny'));
-CREATE TABLE r1 (   key UInt64, value String ) ENGINE = ReplicatedMergeTree('/clickhouse/{database}/01509_parallel_quorum_insert_no_replicas', '1') ORDER BY tuple();
-CREATE TABLE r1 (x String) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/r', 'r1') ORDER BY x;
-CREATE TABLE r2 (   key UInt64, value String ) ENGINE = ReplicatedMergeTree('/clickhouse/{database}/01509_parallel_quorum_insert_no_replicas', '2') ORDER BY tuple();
-CREATE TABLE r2 (x String) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/r', 'r2') ORDER BY x;
-CREATE TABLE r_no_prop_table (  some_column UInt64 ) ENGINE ReplicatedMergeTree('/clickhouse/{database}/test/01493_r_no_prop_table', '1') ORDER BY tuple();
-CREATE TABLE r_prop_table1 (  column_default UInt64 DEFAULT 42,  column_codec String CODEC(ZSTD(10)),  column_comment Date COMMENT 'Some comment',  column_ttl UInt64 TTL column_comment + INTERVAL 1 MONTH ) ENGINE ReplicatedMergeTree('/clickhouse/{database}/test_01493/r_prop_table', '1') ORDER BY tuple() TTL column_comment + INTERVAL 2 MONTH;
-CREATE TABLE r_prop_table2 (  column_default UInt64 DEFAULT 42,  column_codec String CODEC(ZSTD(10)),  column_comment Date COMMENT 'Some comment',  column_ttl UInt64 TTL column_comment + INTERVAL 1 MONTH ) ENGINE ReplicatedMergeTree('/clickhouse/{database}/test_01493/r_prop_table', '2') ORDER BY tuple() TTL column_comment + INTERVAL 2 MONTH;
-CREATE TABLE random_mt (   key UInt64,   value String ) ENGINE MergeTree() ORDER BY tuple();
-CREATE TABLE range_dictionary_array_source_table (  key UInt64,  start_date Date,  end_date Date,  array_value Array(Int64) ) ENGINE = TinyLog;
-CREATE TABLE range_dictionary_nullable_default_source_table (   key UInt64,   value Nullable(UInt64) ) ENGINE=TinyLog;
-CREATE TABLE range_dictionary_nullable_source_table (  key UInt64,  start_date Date,  end_date Date,  value Nullable(UInt64) ) ENGINE = TinyLog;
-CREATE TABLE range_key_dictionary_source_table (   key UInt64,   start_date Date,   end_date Date,   value String,   value_nullable Nullable(String) ) ENGINE = TinyLog();
-CREATE TABLE range_key_dictionary_source_table__fuzz_323 (   `key` UInt256,   `start_date` Int8,   `end_date` LowCardinality(UInt256),   `value` Tuple(UInt8, Array(DateTime), Decimal(9, 1), Array(Int16), Array(UInt8)),   `value_nullable` UUID ) ENGINE = TinyLog;
-CREATE TABLE range_key_source_table_01862 (   id UInt64,   value String,   first Date,   last Date ) ENGINE = Memory();
-create table rate_test (timestamp UInt32, event UInt32) engine=Memory;
-create table rate_test2 (uid UInt32 default 1,timestamp DateTime, event UInt32) engine=Memory;
-CREATE TABLE raw (  name String,  num String ) ENGINE = MergeTree ORDER BY (name);
-CREATE TABLE rdb ( `key` UInt32, `value` String ) ENGINE = EmbeddedRocksDB PRIMARY KEY key;
-CREATE TABLE rdb (key UInt32, value Array(UInt32), value2 String) ENGINE = EmbeddedRocksDB PRIMARY KEY (key);
-CREATE TABLE rdst (p UInt64, k String, d UInt64) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_alter_attach_00626_rdst', 'r1') PARTITION BY p ORDER BY k;
-CREATE TABLE realtimebuff(amount Int64,transID String,userID String,appID String,appName String,transType String,orderSource String,nau String,fau String,transactionType String,supplier String,fMerchant String,bankConnCode String,reqDate DateTime) ENGINE = Buffer(currentDatabase(), 'realtimedistributed', 16, 3600, 36000, 10000, 1000000, 10000000, 100000000);
-CREATE TABLE realtimedistributed(amount Int64,transID String,userID String,appID String,appName String,transType String,orderSource String,nau String,fau String,transactionType String,supplier String,fMerchant String,bankConnCode String,reqDate DateTime) ENGINE = Distributed(test_cluster_two_shards, currentDatabase(), realtimedrep, rand());
-CREATE TABLE realtimedrep(amount Int64,transID String,userID String,appID String,appName String,transType String,orderSource String,nau String,fau String,transactionType String,supplier String,fMerchant String,bankConnCode String,reqDate DateTime) ENGINE = MergeTree PARTITION BY toDate(reqDate) ORDER BY transID SETTINGS index_granularity = 8192;
-create table receiver_02572 as data_02572;
-CREATE TABLE recompression_table (   dt DateTime,   key UInt64,   value String ) ENGINE MergeTree() ORDER BY tuple() PARTITION BY key TTL dt + INTERVAL 1 MONTH RECOMPRESS CODEC(ZSTD(17)), dt + INTERVAL 1 YEAR RECOMPRESS CODEC(LZ4HC(10)) SETTINGS min_rows_for_wide_part = 0, min_bytes_for_wide_part = 0;
-CREATE TABLE recompression_table_compact (  dt DateTime,  key UInt64,  value String ) ENGINE MergeTree() ORDER BY tuple() PARTITION BY key TTL dt + INTERVAL 1 MONTH RECOMPRESS CODEC(ZSTD(17)), dt + INTERVAL 1 YEAR RECOMPRESS CODEC(LZ4HC(10)) SETTINGS min_rows_for_wide_part = 10000;
-CREATE TABLE regex_test_table (   regex String ) ENGINE = MergeTree ORDER BY regex;
-CREATE TABLE regexp_dictionary_source_table (   id UInt64,   parent_id UInt64,   regexp String,   keys  Array(String),   values Array(String), ) ENGINE=TinyLog;
-CREATE TABLE regression_for_in_operator (d Date, v UInt32, g String) ENGINE=MergeTree(d, d, 8192);
-CREATE TABLE remote_test(a1 UInt8) ENGINE=Memory;
-CREATE TABLE remote_test(uid String, its UInt32, action_code String, day Date) ENGINE = MergeTree(day, (uid, its), 8192);
-CREATE TABLE rename1 (p Int64, i Int64, v UInt64) ENGINE = ReplicatedReplacingMergeTree('/clickhouse/tables/{database}/rename', '1', v) PARTITION BY p ORDER BY i;
-CREATE TABLE rename2 (p Int64, i Int64, v UInt64) ENGINE = ReplicatedReplacingMergeTree('/clickhouse/tables/{database}/rename', '2', v) PARTITION BY p ORDER BY i;
-CREATE TABLE rename_table (key Int32, value1 Int32, value2 Int32) ENGINE = MergeTree ORDER BY tuple() SETTINGS min_bytes_for_wide_part=0;
-CREATE TABLE rename_table_multiple (key Int32, value1 String, value2 Int32) ENGINE = MergeTree ORDER BY tuple() SETTINGS min_bytes_for_wide_part=0;
-CREATE TABLE rename_table_multiple_compact (key Int32, value1 String, value2 Int32) ENGINE = MergeTree ORDER BY tuple() SETTINGS min_rows_for_wide_part = 100000;
-CREATE TABLE rename_table_polymorphic (  key Int32,  value1 Int32,  value2 Int32 ) ENGINE = MergeTree ORDER BY tuple() SETTINGS min_rows_for_wide_part = 10000;
-CREATE TABLE rep_data (   p Int,   t DateTime,   INDEX idx t TYPE minmax GRANULARITY 1 ) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/rep_data', '1') PARTITION BY p ORDER BY t SETTINGS number_of_free_entries_in_pool_to_execute_mutation=0;
-create table rep_fsync_r1 (key Int) engine=ReplicatedMergeTree('/clickhouse/tables/{database}/rep_fsync', 'r1') order by key settings min_bytes_for_wide_part=0, fsync_after_insert=1, fsync_part_directory=1;
-create table rep_fsync_r1 (key Int) engine=ReplicatedMergeTree('/clickhouse/tables/{database}/rep_fsync', 'r1') order by key settings min_bytes_for_wide_part=0, fsync_after_insert=1;
-create table rep_fsync_r1 (key Int) engine=ReplicatedMergeTree('/clickhouse/tables/{database}/rep_fsync', 'r1') order by key settings min_bytes_for_wide_part=0, fsync_part_directory=1, enable_vertical_merge_algorithm=1, vertical_merge_algorithm_min_rows_to_activate=0, vertical_merge_algorithm_min_columns_to_activate=0;
-create table rep_fsync_r1 (key Int) engine=ReplicatedMergeTree('/clickhouse/tables/{database}/rep_fsync', 'r1') order by key settings min_rows_for_wide_part=2, fsync_after_insert=1, fsync_part_directory=1;
-create table rep_fsync_r1 (key Int) engine=ReplicatedMergeTree('/clickhouse/tables/{database}/rep_fsync', 'r1') order by key settings min_rows_for_wide_part=2, fsync_after_insert=1;
-create table rep_fsync_r1 (key Int) engine=ReplicatedMergeTree('/clickhouse/tables/{database}/rep_fsync', 'r1') order by key;
-create table rep_fsync_r2 (key Int) engine=ReplicatedMergeTree('/clickhouse/tables/{database}/rep_fsync', 'r2') order by key settings min_bytes_for_wide_part=0, fsync_after_insert=1, fsync_part_directory=1;
-create table rep_fsync_r2 (key Int) engine=ReplicatedMergeTree('/clickhouse/tables/{database}/rep_fsync', 'r2') order by key settings min_bytes_for_wide_part=0, fsync_after_insert=1;
-create table rep_fsync_r2 (key Int) engine=ReplicatedMergeTree('/clickhouse/tables/{database}/rep_fsync', 'r2') order by key settings min_bytes_for_wide_part=0, fsync_part_directory=1, enable_vertical_merge_algorithm=1, vertical_merge_algorithm_min_rows_to_activate=0, vertical_merge_algorithm_min_columns_to_activate=0;
-create table rep_fsync_r2 (key Int) engine=ReplicatedMergeTree('/clickhouse/tables/{database}/rep_fsync', 'r2') order by key settings min_rows_for_wide_part=2, fsync_after_insert=1, fsync_part_directory=1;
-create table rep_fsync_r2 (key Int) engine=ReplicatedMergeTree('/clickhouse/tables/{database}/rep_fsync', 'r2') order by key settings min_rows_for_wide_part=2, fsync_after_insert=1;
-create table rep_fsync_r2 (key Int) engine=ReplicatedMergeTree('/clickhouse/tables/{database}/rep_fsync', 'r2') order by key;
-CREATE TABLE replace ( EventDate Date, Id UInt64, Data String, Version UInt32) ENGINE = ReplacingMergeTree(EventDate, Id, 8192, Version);
-CREATE TABLE replace_partition_dest1 (   key UInt64 ) ENGINE = ReplicatedMergeTree('/test/02271_replace_partition_many/{database}/dest1', '1') PARTITION BY key ORDER BY tuple();
-CREATE TABLE replace_partition_dest1_2 (   key UInt64 ) ENGINE = ReplicatedMergeTree('/test/02271_replace_partition_many/{database}/dest1', '2') PARTITION BY key ORDER BY tuple();
-CREATE TABLE replace_partition_dest2 (   key UInt64 ) ENGINE = ReplicatedMergeTree('/test/02271_replace_partition_many/{database}/dest2', '1') PARTITION BY key ORDER BY tuple();
-CREATE TABLE replace_partition_dest2_2 (   key UInt64 ) ENGINE = ReplicatedMergeTree('/test/02271_replace_partition_many/{database}/dest2', '2') PARTITION BY key ORDER BY tuple();
-CREATE TABLE replace_partition_source (   key UInt64 ) ENGINE = ReplicatedMergeTree('/test/02271_replace_partition_many/{database}/source', '1') PARTITION BY key ORDER BY tuple();
-CREATE TABLE replaceall (date Date DEFAULT today(), fs FixedString(16)) ENGINE = MergeTree(date, (date, fs), 8192);
-CREATE TABLE replaceall (str FixedString(3)) ENGINE = Memory;
-create table replacing(  `A` Int64,  `D` DateTime64(9, 'Asia/Istanbul'),  `S` String)  ENGINE = ReplacingMergeTree(D) ORDER BY A;
-CREATE TABLE replacing(d Date, x UInt32, s String) ENGINE = ReplacingMergeTree ORDER BY x PARTITION BY d;
-CREATE TABLE replacing_00616 ENGINE = ReplacingMergeTree(date, x, 4096, ver) AS SELECT * FROM test_00616;
-CREATE TABLE replacing_merge_tree (key UInt32, date Datetime) ENGINE=ReplacingMergeTree() PARTITION BY date ORDER BY key;
-CREATE TABLE replacing_table (   key UInt64,   value UInt64 ) ENGINE = ReplacingMergeTree ORDER BY key SETTINGS   vertical_merge_algorithm_min_rows_to_activate=0,   vertical_merge_algorithm_min_columns_to_activate=0,   min_bytes_for_wide_part = 0;
-CREATE TABLE replacing_table (a UInt32, b UInt32, c UInt32) ENGINE = ReplacingMergeTree ORDER BY a SETTINGS vertical_merge_algorithm_min_rows_to_activate = 1,   vertical_merge_algorithm_min_columns_to_activate = 1,   index_granularity = 16,   min_bytes_for_wide_part = 0,   merge_max_block_size = 16;
-CREATE TABLE replica1 (v UInt8) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/'||currentDatabase()||'test/01451/attach', 'r1') order by tuple() settings max_replicated_merges_in_queue = 0;
-CREATE TABLE replica1 (v UInt8) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test/01451/quorum', 'r1') order by tuple() settings max_replicated_merges_in_queue = 0;
-CREATE TABLE replica2 (v UInt8) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/'||currentDatabase()||'test/01451/attach', 'r2') order by tuple() settings max_replicated_merges_in_queue = 0;
-CREATE TABLE replica2 (v UInt8) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test/01451/quorum', 'r2') order by tuple() settings max_replicated_merges_in_queue = 0;
-CREATE TABLE replicated_aggregating_merge_tree (d Date, a String, b UInt8, x String, y Int8, z UInt32) ENGINE = ReplicatedAggregatingMergeTree('/clickhouse/tables/{database}/test_00083/01/replicated_aggregating_merge_tree/', 'r1', d, (a, b), 111);
-CREATE TABLE replicated_aggregating_merge_tree_with_sampling  (d Date, a String, b UInt8, x String, y Int8, z UInt32) ENGINE = ReplicatedAggregatingMergeTree('/clickhouse/tables/{database}/test_00083/01/replicated_aggregating_merge_tree_with_sampling/', 'r1', d, sipHash64(a) + b, (a, sipHash64(a) + b), 111);
-CREATE TABLE replicated_alter1 (d Date, k UInt64, i32 Int32) ENGINE=ReplicatedMergeTree('/clickhouse/tables/{database}/test_00062/alter', 'r1', d, k, 8192);
-CREATE TABLE replicated_alter2 (d Date, k UInt64, i32 Int32) ENGINE=ReplicatedMergeTree('/clickhouse/tables/{database}/test_00062/alter', 'r2', d, k, 8192);
-CREATE TABLE replicated_collapsing(d Date, x UInt32, sign Int8)   ENGINE = ReplicatedCollapsingMergeTree('/clickhouse/tables/{database}/test_00509/replicated_collapsing', 'r1', sign)   PARTITION BY toYYYYMM(d) ORDER BY d;
-CREATE TABLE replicated_collapsing_merge_tree  (d Date, a String, b UInt8, x String, y Int8, z UInt32) ENGINE = ReplicatedCollapsingMergeTree('/clickhouse/tables/{database}/test_00083/01/replicated_collapsing_merge_tree/', 'r1', d, (a, b), 111, y);
-CREATE TABLE replicated_collapsing_merge_tree_with_sampling   (d Date, a String, b UInt8, x String, y Int8, z UInt32) ENGINE = ReplicatedCollapsingMergeTree('/clickhouse/tables/{database}/test_00083/01/replicated_collapsing_merge_tree_with_sampling/', 'r1', d, sipHash64(a) + b, (a, sipHash64(a) + b), 111, y);
-CREATE TABLE replicated_constraints1 (   a UInt32,   b UInt32,   CONSTRAINT a_constraint CHECK a < 10 ) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_00988/alter_constraints', 'r1') ORDER BY (a);
-CREATE TABLE replicated_constraints2 (   a UInt32,   b UInt32,   CONSTRAINT a_constraint CHECK a < 10 ) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_00988/alter_constraints', 'r2') ORDER BY (a);
-CREATE TABLE replicated_merge_tree (d Date, a String, b UInt8, x String, y Int8, z UInt32) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_00083/01/replicated_merge_tree/', 'r1', d, (a, b), 111);
-CREATE TABLE replicated_merge_tree_pk_sql (   key UInt64,   value String,   PRIMARY KEY (key) ) ENGINE = ReplicatedReplacingMergeTree('/clickhouse/tables/{database}/01532_primary_key_without', 'r1');
-CREATE TABLE replicated_merge_tree_with_sampling  (d Date, a String, b UInt8, x String, y Int8, z UInt32) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_00083/01/replicated_merge_tree_with_sampling/', 'r1', d, sipHash64(a) + b, (a, sipHash64(a) + b), 111);
-CREATE TABLE replicated_mt_without_pk (SomeField1 Int64, SomeField2 Double) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_01037/replicated_mt_without_pk', '1') ORDER BY tuple();
-CREATE TABLE replicated_mutations_empty_partitions (   key UInt64,   value String ) ENGINE = ReplicatedMergeTree('/clickhouse/test/'||currentDatabase()||'/01586_replicated_mutations_empty_partitions/{shard}', '{replica}') ORDER BY key PARTITION by key;
-CREATE TABLE replicated_report (   `product` Enum8('IU' = 1, 'WS' = 2),   `machine` String,   `branch` String,   `generated_time` DateTime ) ENGINE = ReplicatedMergeTree('/clickhouse/{database}/01747_alter_partition_key/t', '1') PARTITION BY (product, toYYYYMM(generated_time)) ORDER BY (product, machine, branch, generated_time);
-CREATE TABLE replicated_summing_merge_tree (d Date, a String, b UInt8, x String, y Int8, z UInt32) ENGINE = ReplicatedSummingMergeTree('/clickhouse/tables/{database}/test_00083/01/replicated_summing_merge_tree/', 'r1', d, (a, b), 111);
-CREATE TABLE replicated_summing_merge_tree_with_list_of_columns_to_sum (d Date, a String, b UInt8, x String, y Int8, z UInt32) ENGINE = ReplicatedSummingMergeTree('/clickhouse/tables/{database}/test_00083/01/replicated_summing_merge_tree_with_list_of_columns_to_sum/', 'r1', d, (a, b), 111, (y, z));
-CREATE TABLE replicated_summing_merge_tree_with_sampling  (d Date, a String, b UInt8, x String, y Int8, z UInt32) ENGINE = ReplicatedSummingMergeTree('/clickhouse/tables/{database}/test_00083/01/replicated_summing_merge_tree_with_sampling/', 'r1', d, sipHash64(a) + b, (a, sipHash64(a) + b), 111);
-CREATE TABLE replicated_summing_merge_tree_with_sampling_with_list_of_columns_to_sum  (d Date, a String, b UInt8, x String, y Int8, z UInt32) ENGINE = ReplicatedSummingMergeTree('/clickhouse/tables/{database}/test_00083/01/replicated_summing_merge_tree_with_sampling_with_list_of_columns_to_sum/', 'r1', d, sipHash64(a) + b, (a, sipHash64(a) + b), 111, (y, z));
-CREATE TABLE replicated_table_detach_all1 (  id UInt64,  Data String ) ENGINE = ReplicatedMergeTree('/clickhouse/tables/test_00753_{database}/replicated_table_detach_all', '1') ORDER BY id PARTITION BY id;
-CREATE TABLE replicated_table_detach_all2 (  id UInt64,  Data String ) ENGINE = ReplicatedMergeTree('/clickhouse/tables/test_00753_{database}/replicated_table_detach_all', '2') ORDER BY id PARTITION BY id;
-CREATE TABLE replicated_table_for_alter1 (  id UInt64,  Data String ) ENGINE = ReplicatedMergeTree('/clickhouse/tables/test_00980_{database}/replicated_table_for_alter', '1') ORDER BY id;
-CREATE TABLE replicated_table_for_alter2 (  id UInt64,  Data String ) ENGINE = ReplicatedMergeTree('/clickhouse/tables/test_00980_{database}/replicated_table_for_alter', '2') ORDER BY id;
-CREATE TABLE replicated_table_for_reset_setting1 ( id UInt64, Data String ) ENGINE = ReplicatedMergeTree('/clickhouse/tables/test_00980_{database}/replicated_table_for_reset_setting', '1') ORDER BY id;
-CREATE TABLE replicated_table_for_reset_setting2 ( id UInt64, Data String ) ENGINE = ReplicatedMergeTree('/clickhouse/tables/test_00980_{database}/replicated_table_for_reset_setting', '2') ORDER BY id;
-CREATE TABLE replicated_table_r1(id Int32, name String) ENGINE = ReplicatedMergeTree('/test/02352/{database}/t_rep','1') ORDER BY id;
-CREATE TABLE replicated_table_r2(id Int32, name String) ENGINE = ReplicatedMergeTree('/test/02352/{database}/t_rep','2') ORDER BY id;
-CREATE TABLE replicated_truncate1 (d Date, k UInt64, i32 Int32) ENGINE=ReplicatedMergeTree('/clickhouse/tables/{database}/test_00623/truncate', 'r1') order by k partition by toYYYYMM(d);
-CREATE TABLE replicated_truncate2 (d Date, k UInt64, i32 Int32) ENGINE=ReplicatedMergeTree('/clickhouse/tables/{database}/test_00623/truncate', 'r2') order by k partition by toYYYYMM(d);
-CREATE TABLE replicated_versioned_collapsing(d Date, x UInt32, sign Int8, version UInt8)   ENGINE = ReplicatedVersionedCollapsingMergeTree('/clickhouse/tables/{database}/test_00509/replicated_versioned_collapsing', 'r1', sign, version)   PARTITION BY toYYYYMM(d) ORDER BY (d, version);
-CREATE TABLE replicated_versioned_collapsing_merge_tree   (d Date, a String, b UInt8, x String, y Int8, z UInt32) ENGINE = ReplicatedVersionedCollapsingMergeTree('/clickhouse/tables/{database}/test_00083/01/replicated_versioned_collapsing_merge_tree/', 'r1', d, (a, b), 111, y, b);
-CREATE TABLE replicated_versioned_collapsing_merge_tree_with_sampling  (d Date, a String, b UInt8, x String, y Int8, z UInt32) ENGINE = ReplicatedVersionedCollapsingMergeTree('/clickhouse/tables/{database}/test_00083/01/replicated_versioned_collapsing_merge_tree_with_sampling/', 'r1', d, sipHash64(a) + b, (a, sipHash64(a) + b, b), 111, y, b);
-CREATE TABLE replicated_with_sampling(x UInt8)   ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_00509/replicated_with_sampling', 'r1')   ORDER BY x   SAMPLE BY x;
-CREATE TABLE report (   `product` Enum8('IU' = 1, 'WS' = 2),   `machine` String,   `branch` String,   `generated_time` DateTime ) ENGINE = MergeTree PARTITION BY (product, toYYYYMM(generated_time)) ORDER BY (product, machine, branch, generated_time);
-CREATE TABLE report(id UInt32, event_date Date, priority UInt32, description String) ENGINE = MergeTree(event_date, intHash32(id), (id, event_date, intHash32(id)), 8192);
-CREATE TABLE report1(id UInt32, event_date Date, priority UInt32, description String) ENGINE = MergeTree(event_date, intHash32(id), (id, event_date, intHash32(id)), 8192);
-CREATE TABLE report2(id UInt32, event_date Date, priority UInt32, description String) ENGINE = MergeTree(event_date, intHash32(id), (id, event_date, intHash32(id)), 8192);
-CREATE TABLE repro_hits ( date Date, metric Float64) ENGINE = MergeTree() ORDER BY date;
-CREATE TABLE requests (   event_time DateTime,   event_date Date MATERIALIZED toDate(event_time),   event_tm DateTime ALIAS event_time ) ENGINE = MergeTree ORDER BY (event_time);
-CREATE TABLE reserved_word_table (`index` UInt8) ENGINE = MergeTree ORDER BY `index`;
-CREATE TABLE restore_01640(i Int64, d Date, s String) ENGINE = ReplicatedMergeTree('/clickhouse/{database}/{shard}/tables/restore_01640','{replica}') PARTITION BY toYYYYMM(d) ORDER BY i SETTINGS allow_remote_fs_zero_copy_replication=0;
-CREATE TABLE retention_test(date Date, uid Int32)ENGINE = Memory;
-CREATE TABLE right ( key UInt32, value String ) ENGINE = MergeTree ORDER BY tuple() SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE right_join (x UInt32, s String) engine = Join(ALL, RIGHT, x) SETTINGS join_use_nulls = 1;
-CREATE TABLE right_join (x UInt32, s String) engine = Join(ALL, RIGHT, x);
-create table right_table as dest_table;
-CREATE TABLE right_table(APIKey Int32, EventValueForPostback String) ENGINE = MergeTree ORDER BY tuple();
-create table rmt (n int) engine=ReplicatedMergeTree('/test/02468/{database}', '1') order by tuple() partition by n % 2 settings replicated_max_ratio_of_wrong_parts=0, max_suspicious_broken_parts=0, max_suspicious_broken_parts_bytes=0;
-create table rmt (n int, m int) engine=ReplicatedMergeTree('/test/02439/{shard}/{database}', '{replica}') partition by n order by n;
-create table rmt (n int, ts DateTime64(8, 'UTC')) engine=ReplicatedMergeTree('/test/02487/{database}/rmt', '1') order by n;
-CREATE TABLE rmt (n UInt64, s String) ENGINE = ReplicatedMergeTree('/clickhouse/test_01148/{shard}/{database}/{table}', '{replica}') ORDER BY n;
-create table rmt (n UInt64, s String) engine = ReplicatedMergeTree('/clickhouse/test_01149_{database}/rmt', 'r1') partition by intDiv(n, 10) order by n;
-CREATE TABLE rmt (n UInt64, s String) ENGINE = ReplicatedMergeTree('{default_path_test}{uuid}', '{default_name_test}') ORDER BY n;
-create table rmt1 (d DateTime, n int) engine=ReplicatedMergeTree('/test/01165/{database}/rmt', '1') order by n partition by tuple();
-create table rmt1 (n int) engine=ReplicatedMergeTree('/test/02448/{database}/rmt', '1') order by tuple()   settings min_replicated_logs_to_keep=1, max_replicated_logs_to_keep=2,   max_cleanup_delay_period=1, cleanup_delay_period=0, cleanup_delay_period_random_add=1,   cleanup_thread_preferred_points_per_iteration=0, old_parts_lifetime=0, max_parts_to_merge_at_once=4,   merge_selecting_sleep_ms=1000, max_merge_selecting_sleep_ms=2000;
-create table rmt1 (n int) engine=ReplicatedMergeTree('/test/02468/{database}', '2') order by tuple() partition by n % 2 settings replicated_max_ratio_of_wrong_parts=0, max_suspicious_broken_parts=0, max_suspicious_broken_parts_bytes=0;
-create table rmt1 (n UInt8, m Int32, d Date, t DateTime) engine=ReplicatedMergeTree('/test/01165/{database}/rmt', '1') order by n partition by (n, m, d, t);
-create table rmt2 (d DateTime, n int) engine=ReplicatedMergeTree('/test/01165/{database}/rmt', '2') order by n partition by toYYYYMMDD(d);
-create table rmt2 (d DateTime, n int) engine=ReplicatedMergeTree('/test/01165/{database}/rmt', '2') order by n partition by tuple();
-create table rmt2 (n int) engine=ReplicatedMergeTree('/test/02448/{database}/rmt', '2') order by tuple()   settings min_replicated_logs_to_keep=1, max_replicated_logs_to_keep=2,   max_cleanup_delay_period=1, cleanup_delay_period=0, cleanup_delay_period_random_add=1,   cleanup_thread_preferred_points_per_iteration=0, old_parts_lifetime=0, max_parts_to_merge_at_once=4,   merge_selecting_sleep_ms=1000, max_merge_selecting_sleep_ms=2000;
-create table rmt2 (n int) engine=ReplicatedMergeTree('/test/02468/{database}2', '1') order by tuple() partition by n % 2 settings replicated_max_ratio_of_wrong_parts=0, max_suspicious_broken_parts=0, max_suspicious_broken_parts_bytes=0;
-create table rmt2 (n int) engine=ReplicatedMergeTree('/test/{database}/02438/', '2') order by tuple();
-create table rmt2 (n int, m int, k int) engine=ReplicatedMergeTree('/test/02446/{database}/rmt', '2') order by n   settings storage_policy='s3_cache', allow_remote_fs_zero_copy_replication=1, old_parts_lifetime=0, cleanup_delay_period=0, max_cleanup_delay_period=1, cleanup_delay_period_random_add=1, min_bytes_for_wide_part=0;
-create table rmt2 (n int, m int, k int) engine=ReplicatedMergeTree('/test/02485/{database}/rmt', '2') order by n   settings storage_policy='s3_cache', allow_remote_fs_zero_copy_replication=1, old_parts_lifetime=0, cleanup_delay_period=0, max_cleanup_delay_period=1, cleanup_delay_period_random_add=1, min_bytes_for_wide_part=0;
-create table rmt2 (n int, ts DateTime64(8, 'UTC'), index idx1 date(ts) TYPE MinMax GRANULARITY 1, index idx2 date(ts) TYPE MinMax GRANULARITY 1) engine=ReplicatedMergeTree('/test/02487/{database}/rmt', '2') order by n;
-create table rmt2 (n UInt8, m Int32, d Date, t DateTime) engine=ReplicatedMergeTree('/test/01165/{database}/rmt', '2') order by n partition by (n, m, d, t);
-create table rmt3 (n int) engine=ReplicatedMergeTree('/test/02468/{database}3', '1') order by tuple() settings replicated_max_ratio_of_wrong_parts=0, max_suspicious_broken_parts=0, max_suspicious_broken_parts_bytes=0;
-CREATE TABLE rng (   `user_id_raw` UInt64,   `device_id_raw` UInt64,   `domain_raw` UInt64,   `bytes_raw` UInt64,   `duration_raw` UInt64 ) ENGINE = GenerateRandom(1024);
-CREATE TABLE rollup(a String, b Int32, s Int32) ENGINE = Memory;
-CREATE TABLE rollup_having (  a Nullable(String),  b Nullable(String) ) ENGINE = Memory;
-CREATE TABLE row_level_policy_prewhere (x Int16, y String) ENGINE = MergeTree ORDER BY x;
-CREATE TABLE rows_events_test (k UInt32, v UInt32) ENGINE = MergeTree ORDER BY k;
-CREATE TABLE runningConcurrency_test(begin Date, end Date) ENGINE = Memory;
-CREATE TABLE runningConcurrency_test(begin DateTime, end DateTime) ENGINE = Memory;
-CREATE TABLE runningConcurrency_test(begin DateTime64(3), end DateTime64(3)) ENGINE = Memory;
-CREATE TABLE s (  id UInt64,  value String ) ENGINE = Memory;
-CREATE TABLE s (`id` String, `lng` Int64, `lat` Int64) ENGINE = Memory();
-create table s (k Int64, d DateTime) Engine=Memory;
-create table s(a Int64, b Int64) engine = Memory;
-create table s(a Int64, b Int64) engine = TinyLog;
-create table s(a Int64, b Int64, c Nullable(String)) engine = Memory;
-create table s(a Int64, b Int64, c String) engine = Memory;
-create table s(a Int64, b Nullable(Int64), c Nullable(String)) engine = Memory;
-create table s(a Int64, b Nullable(Int64), c String) engine = Memory;
-create table s(a Nullable(Int64), b Nullable(Int64), c Nullable(String)) engine = Memory;
-CREATE TABLE s2_indexes (s2_index UInt64, longitude Float64, latitude Float64) ENGINE = Memory;
-CREATE TABLE s64 (x Int64) ENGINE = Memory;
-create table s_00725_2(a Int64, b Int64) engine = TinyLog;
-create table s_00725_4(a Int64, b Int64, c String) engine = TinyLog;
-create table s_00818(a Nullable(Int64), b Nullable(Int64), c Nullable(String)) engine = Memory;
-CREATE TABLE sales ("日期" Date, "店铺" UInt32, "地址" UInt32, "销售额" Float32) ENGINE=MergeTree() Order by "日期";
-CREATE TABLE sales (DATE_SOLD DateTime64(3, 'UTC'), PRODUCT_ID Nullable(String)) Engine MergeTree() PARTITION BY toYYYYMM(DATE_SOLD) ORDER BY DATE_SOLD;
-CREATE TABLE sample_00276 (d Date DEFAULT '2000-01-01', x UInt16) ENGINE = MergeTree(d, x, x, 10);
-CREATE TABLE sample_00276 (d Date DEFAULT '2000-01-01', x UInt8) ENGINE = MergeTree(d, x, x, 10);
-CREATE TABLE sample_00314_1 (x UInt64, d Date DEFAULT today()) ENGINE = MergeTree(d, intHash64(x), intHash64(x), 10);
-CREATE TABLE sample_00314_2 (x UInt64, d Date DEFAULT today()) ENGINE = MergeTree(d, intHash64(x), intHash64(x), 10);
-CREATE TABLE sample_00579_1 (x UInt64, d Date DEFAULT today()) ENGINE = MergeTree(d, intHash64(x), intHash64(x), 10);
-CREATE TABLE sample_00579_2 (x UInt64, d Date DEFAULT today()) ENGINE = MergeTree(d, intHash64(x), intHash64(x), 10);
-CREATE TABLE sample_00632 (d Date DEFAULT '2000-01-01', x UInt16) ENGINE = MergeTree(d, x, x, 10);
-create table sample_final (CounterID UInt32, EventDate Date, EventTime DateTime, UserID UInt64, Sign Int8) engine = CollapsingMergeTree(Sign) order by (CounterID, EventDate, intHash32(UserID), EventTime) sample by intHash32(UserID) SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE sample_merge_00314 AS sample_00314_1 ENGINE = Merge(currentDatabase(), '^sample_00314_\\d$');
-CREATE TABLE sample_merge_00579 AS sample_00579_1 ENGINE = Merge(currentDatabase(), '^sample_00579_\\d$');
-CREATE TABLE sample_merge_tree (dt DateTime, x UInt64) ENGINE = MergeTree PARTITION BY toYYYYMMDD(dt) ORDER BY x SETTINGS min_merge_bytes_to_use_direct_io=1, index_granularity = 8192;
-CREATE TABLE sample_prewhere (CounterID UInt32, UserID UInt64) ENGINE = MergeTree ORDER BY UserID SAMPLE BY UserID;
-CREATE TABLE sample_table (   key UInt64 ) ENGINE ReplicatedMergeTree('/clickhouse/{database}/01700_system_zookeeper_path_in/{shard}', '{replica}') ORDER BY tuple();
-CREATE TABLE samples (key UInt32, value UInt32) ENGINE = MergeTree() ORDER BY key PRIMARY KEY key;
-create table saved_intervals_mgt Engine=MergeTree() ORDER BY EventID as SELECT number as EventID, toIntervalSecond(number+1) as v1, toIntervalHour(number+2) as v2, toIntervalNanosecond(number+3) as v3 from numbers(2);
-create table saved_intervals_tmp Engine=Memory as SELECT number as EventID, toIntervalSecond(number+1) as v1, toIntervalHour(number+2) as v2, toIntervalNanosecond(number+3) as v3 from numbers(2);
-CREATE TABLE segfault (   id     UInt32,   uuid    UUID,   tags_ids  Array(UInt32) ) ENGINE = MergeTree() ORDER BY (id);
-CREATE TABLE segfault_table (id UInt16 CODEC(Delta(2))) ENGINE MergeTree() order by tuple();
-CREATE TABLE select_final (t DateTime, x Int32, string String) ENGINE = ReplacingMergeTree() PARTITION BY toYYYYMM(t) ORDER BY (x, t) SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE select_in_test(value Int8) ENGINE=TinyLog;
-CREATE TABLE select_in_test(value UInt8) ENGINE=TinyLog;
-CREATE TABLE semi_left_join (x UInt32, s String) engine = Join(SEMI, LEFT, x);
-CREATE TABLE semi_right_join (x UInt32, s String) engine = Join(SEMI, RIGHT, x);
-CREATE TABLE sensor_value (   received_at DateTime('Asia/Istanbul'),   device_id UUID,   sensor_id UUID,   value Nullable(Decimal(18, 4)),   low_warning Nullable(Decimal(18, 4)),   low_critical Nullable(Decimal(18, 4)),   high_warning Nullable(Decimal(18, 4)),   high_critical Nullable(Decimal(18, 4)) ) ENGINE = MergeTree PARTITION BY toDate(received_at) ORDER BY (device_id, sensor_id);
-CREATE TABLE sequence (   userID UInt64,   eventType Enum8('A' = 1, 'B' = 2, 'C' = 3, 'D' = 4),   EventTime UInt64 ) ENGINE = Memory;
-create table sequence_test (time UInt32, data UInt8) engine=Memory;
-CREATE TABLE series(i UInt32, x Float64, y Float64) ENGINE = Memory;
-CREATE TABLE series(i UInt32, x_value Float64, y_value Float64) ENGINE = Memory;
-CREATE TABLE series__fuzz_35 (`i` UInt8, `x_value` Decimal(18, 14), `y_value` DateTime) ENGINE = Memory;
-CREATE TABLE session (   `day` Date,   `uid` String,   `dummy` String DEFAULT '' ) ENGINE = MergeTree ORDER BY (day, uid);
-CREATE TABLE session_events (   clientId UInt64,   sessionId String,   pageId UInt64,   eventNumber UInt64,   timestamp UInt64,   type LowCardinality(String),   data String ) ENGINE = MergeTree PARTITION BY toYYYYMM(toDate(pageId / 1000)) ORDER BY (clientId, sessionId, pageId, timestamp);
-CREATE TABLE sessions (  `user_id` UInt64 ) ENGINE = MergeTree ORDER BY user_id SAMPLE BY user_id;
-create table set (s String) engine=Set as select arrayJoin(['src_table_1', 'src_table_2']);
-CREATE TABLE set (val UInt64) ENGINE = Set() SETTINGS persistent=0;
-CREATE TABLE set (val UInt64) ENGINE = Set() SETTINGS persistent=1;
-CREATE TABLE set (val UInt64) ENGINE = Set();
-CREATE TABLE set (x String) ENGINE = Memory;
-CREATE TABLE set (x String) ENGINE = Set;
-CREATE TABLE set_array (   primary_key String,   index_array Array(UInt64),   INDEX additional_index_array (index_array) TYPE set(10000) GRANULARITY 1 ) ENGINE = MergeTree() ORDER BY (primary_key);
-CREATE TABLE set_crash (key1 Int32, id1 Int64, c1 Int64) ENGINE = MergeTree PARTITION BY id1 ORDER BY key1;
-create table set_index (a Int32, b Int32, INDEX b_set b type set(0) granularity 1) engine MergeTree order by tuple();
-CREATE TABLE set_index__fuzz_41 (`a` Date, `b` Nullable(DateTime64(3)), INDEX b_set b TYPE set(0) GRANULARITY 1) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE set_index_not (  name String, status Enum8('alive' = 0, 'rip' = 1),   INDEX idx_status status TYPE set(2) GRANULARITY 1 ) ENGINE = MergeTree() ORDER BY name SETTINGS index_granularity = 8192;
-CREATE TABLE set_null (   a INT NULL,   b INT NOT NULL,   c Nullable(INT),   d INT,   f DEFAULT 1 ) engine=Memory();
-create table shard1 (id Int32) engine = MergeTree order by cityHash64(id);
-create table shard2 (id Int32) engine = MergeTree order by cityHash64(id);
-create table shard_0.data_01850 (key Int) engine=Memory();
-create table shard_0.data_02346 (x UInt32, y String) engine = MergeTree order by x settings index_granularity = 2;
-CREATE TABLE shard_0.demo_loan_01568 ON CLUSTER test_cluster_two_shards_different_databases ( `id` Int64 COMMENT 'id', `date_stat` Date COMMENT 'date of stat', `customer_no` String COMMENT 'customer no', `loan_principal` Float64 COMMENT 'loan principal' ) ENGINE=ReplacingMergeTree() ORDER BY id PARTITION BY toYYYYMM(date_stat);
-create table shard_0.from_0 (x UInt32) engine = ReplicatedMergeTree('/clickhouse/tables/from_0_' || currentDatabase(), '0') order by x settings old_parts_lifetime=1, max_cleanup_delay_period=1, cleanup_delay_period=1;
-create table shard_0.from_1 (x UInt32) engine = ReplicatedMergeTree('/clickhouse/tables/from_1_' || currentDatabase(), '0') order by x settings old_parts_lifetime=1, max_cleanup_delay_period=1, cleanup_delay_period=1;
-CREATE TABLE shard_0.l (value UInt8) ENGINE = MergeTree ORDER BY value;
-create table shard_0.num2_01232 (number UInt64) engine = MergeTree order by number;
-create table shard_0.num_01232 (number UInt64) engine = MergeTree order by number;
-create table shard_0.shard_01231_distributed_aggregation_memory_efficient (x UInt64) engine = MergeTree order by x;
-create table shard_0.tbl (number UInt64) engine = MergeTree order by number;
-create table shard_0.to (x UInt32) engine = ReplicatedMergeTree('/clickhouse/tables/to_' || currentDatabase(), '0') order by x settings old_parts_lifetime=1, max_cleanup_delay_period=1, cleanup_delay_period=1;
-create table shard_1.data_02346 (x UInt32, y String) engine = MergeTree order by x settings index_granularity = 2;
-CREATE TABLE shard_1.demo_loan_01568 ON CLUSTER test_cluster_two_shards_different_databases ( `id` Int64 COMMENT 'id', `date_stat` Date COMMENT 'date of stat', `customer_no` String COMMENT 'customer no', `loan_principal` Float64 COMMENT 'loan principal' ) ENGINE=ReplacingMergeTree() ORDER BY id PARTITION BY toYYYYMM(date_stat);
-create table shard_1.from_0 (x UInt32) engine = ReplicatedMergeTree('/clickhouse/tables/from_0_' || currentDatabase(), '1') order by x settings old_parts_lifetime=1, max_cleanup_delay_period=1, cleanup_delay_period=1;
-create table shard_1.from_1 (x UInt32) engine = ReplicatedMergeTree('/clickhouse/tables/from_1_' || currentDatabase(), '1') order by x settings old_parts_lifetime=1, max_cleanup_delay_period=1, cleanup_delay_period=1;
-CREATE TABLE shard_1.l (value UInt8) ENGINE = MergeTree ORDER BY value;
-create table shard_1.num2_01232 (number UInt64) engine = MergeTree order by number;
-create table shard_1.num_01232 (number UInt64) engine = MergeTree order by number;
-create table shard_1.shard_01231_distributed_aggregation_memory_efficient (x UInt64) engine = MergeTree order by x;
-create table shard_1.t_different_dbs(a UInt64, b UInt64) engine = MergeTree order by tuple();
-create table shard_1.tbl (number UInt64) engine = MergeTree order by number;
-create table shard_1.to (x UInt32) engine = ReplicatedMergeTree('/clickhouse/tables/to_' || currentDatabase(), '1') order by x settings old_parts_lifetime=1, max_cleanup_delay_period=1, cleanup_delay_period=1;
-CREATE TABLE short (e Int64, t DateTime ) ENGINE = MergeTree PARTITION BY e ORDER BY t;
-CREATE TABLE signed_table (   k UInt32,   v String,   s Int8 ) ENGINE CollapsingMergeTree(s) ORDER BY k;
-create table simple (   id UInt64,   nullable_str SimpleAggregateFunction(anyLast,Nullable(String)),   low_str SimpleAggregateFunction(anyLast,LowCardinality(Nullable(String))),   ip SimpleAggregateFunction(anyLast,IPv4),   status SimpleAggregateFunction(groupBitOr, UInt32),   tup SimpleAggregateFunction(sumMap, Tuple(Array(Int32), Array(Int64))),   tup_min SimpleAggregateFunction(minMap, Tuple(Array(Int32), Array(Int64))),   tup_max SimpleAggregateFunction(maxMap, Tuple(Array(Int32), Array(Int64))),   arr SimpleAggregateFunction(groupArrayArray, Array(Int32)),   uniq_arr SimpleAggregateFunction(groupUniqArrayArray, Array(Int32)) ) engine=AggregatingMergeTree order by id;
-CREATE TABLE simple (d Int8) ENGINE = ReplicatedMergeTree('/clickhouse/{database}/test_00563/tables/simple', '1') ORDER BY d;
-create table simple (id UInt64,val SimpleAggregateFunction(sum,Double)) engine=AggregatingMergeTree order by id;
-create table simple_agf_summing_mt (a Int64, grp_aggreg AggregateFunction(groupUniqArrayArray, Array(UInt64)), grp_simple SimpleAggregateFunction(groupUniqArrayArray, Array(UInt64))) engine = SummingMergeTree() order by a;
-CREATE TABLE simple_key_dictionary_source_table (   id UInt64,   value String,   value_nullable Nullable(String) ) ENGINE = TinyLog;
-CREATE TABLE simple_key_source_table_01862 (   id UInt64,   value String ) ENGINE = Memory();
-CREATE TABLE single_column_bloom_filter (u64 UInt64, i32 Int32, i64 UInt64, INDEX idx (i32) TYPE bloom_filter GRANULARITY 1) ENGINE = MergeTree() ORDER BY u64 SETTINGS index_granularity = 6, index_granularity_bytes = '10Mi';
-CREATE TABLE sipHashKeyed_keys (key Tuple(UInt64, UInt64), val UInt64) ENGINE=Memory;
-CREATE TABLE sipHashKeyed_keys (key0 UInt64, key1 UInt64) ENGINE=Memory;
-CREATE TABLE sipHashKeyed_keys (key0 UInt64, key1 UInt64, val UInt64) ENGINE=Memory;
-CREATE TABLE sipHashKeyed_test ENGINE = Memory() AS SELECT 1 a, 'test' b;
-CREATE TABLE sites (Domain UInt8, `Users.UserID` Array(UInt64), `Users.Dates` Array(Array(Date))) ENGINE = MergeTree ORDER BY Domain SETTINGS vertical_merge_algorithm_min_rows_to_activate = 0, vertical_merge_algorithm_min_columns_to_activate = 0;
-CREATE TABLE six_rows_per_granule (  p Date,  k UInt64,  v1 UInt64,  v2 Int64,  Sign Int8,  Version UInt8 ) ENGINE VersionedCollapsingMergeTree(Sign, Version) PARTITION BY toYYYYMM(p) ORDER BY k  SETTINGS index_granularity_bytes=170,  min_index_granularity_bytes = 100,  write_final_mark = 0,  enable_vertical_merge_algorithm=1,  vertical_merge_algorithm_min_rows_to_activate=0,  vertical_merge_algorithm_min_columns_to_activate=0,  min_bytes_for_wide_part = 0,  min_rows_for_wide_part = 0;
-CREATE TABLE size_hint (s Array(String)) ENGINE = MergeTree ORDER BY tuple() SETTINGS index_granularity = 1000, index_granularity_bytes = '10Mi';
-CREATE TABLE skip_idx_comp_parts (a Int, b Int, index b_idx b TYPE minmax GRANULARITY 4)   ENGINE = MergeTree ORDER BY a   SETTINGS index_granularity=256, index_granularity_bytes = '10Mi', merge_max_block_size=100;
-CREATE TABLE smta (   `k` Int64,   `a` AggregateFunction(max, Int64),   `city` SimpleAggregateFunction(max, LowCardinality(String)) ) ENGINE = SummingMergeTree ORDER BY k;
-CREATE TABLE some_invalid (id UInt64, query String) ENGINE=MergeTree ORDER BY id;
-CREATE TABLE some_join (id String, value String) ENGINE = Join(ANY, LEFT, id) SETTINGS any_join_distinct_right_table_keys = 1;
-CREATE TABLE sometable (   date Date,   time Int64,   value UInt64 ) ENGINE=MergeTree() ORDER BY time;
-CREATE TABLE sorted (d Date DEFAULT '2000-01-01', x UInt64) ENGINE = MergeTree(d, x, 8192);
-create table sorting_key_contain_function (datetime DateTime, a int) engine=MergeTree() order by (toDate(datetime)) SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-create table sorting_key_empty_tuple (a int, b int) engine=MergeTree() order by tuple() SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE source (   `dt` Date,   `ts` DateTime,   `dt_32` Date32,   `ts_64` DateTime64(3),   `n` Int32 ) ENGINE = MergeTree PARTITION BY toYYYYMM(ts) ORDER BY tuple();
-CREATE TABLE source (   `ts` DateTime('UTC'),   `n` Int32 ) ENGINE = MergeTree PARTITION BY toYYYYMM(ts) ORDER BY tuple();
-CREATE TABLE source_data (   pk Int32, sk Int32, val UInt32, partition_key UInt32 DEFAULT 1,   PRIMARY KEY (pk) ) ENGINE=MergeTree ORDER BY (pk, sk);
-CREATE TABLE source_null AS source ENGINE=Null;
-CREATE TABLE source_table (  date Date,  datetime DateTime,  zoneId UInt64,  test1 ALIAS zoneId == 1,  test2 DEFAULT zoneId * 3,  test3 MATERIALIZED zoneId * 5 ) ENGINE = MergeTree(date, (date, zoneId), 8192);
-CREATE TABLE source_table (x UInt16) ENGINE = TinyLog;
-CREATE TABLE source_table(id UInt64, value String) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE source_table1 (a Int64, b String) ENGINE = Memory;
-CREATE TABLE source_table2 (c Int64, d String) ENGINE = Memory;
-CREATE TABLE source_table_log (x UInt16) ENGINE = Log;
-CREATE TABLE source_table_merge_tree (x UInt16) ENGINE = MergeTree ORDER BY x PARTITION BY x;
-CREATE TABLE source_table_stripe_log (x UInt16) ENGINE = StripeLog;
-CREATE TABLE source_table_tiny_log (x UInt16) ENGINE = TinyLog;
-CREATE TABLE spark_bar_test (`cnt` UInt64,`event_date` Date) ENGINE = MergeTree ORDER BY event_date SETTINGS index_granularity = 8192;
-CREATE TABLE spark_bar_test (`value` Int64, `event_date` Date) ENGINE = MergeTree ORDER BY event_date;
-CREATE TABLE sparse_tuple (id UInt64, t Tuple(a UInt64, b Tuple(u UInt32, s String))) ENGINE = MergeTree ORDER BY tuple() SETTINGS ratio_of_defaults_for_sparse_serialization = 0.5;
-CREATE TABLE sparse_tuple (id UInt64, t Tuple(a UInt64, s String)) ENGINE = MergeTree ORDER BY tuple() SETTINGS ratio_of_defaults_for_sparse_serialization = 0.5;
-CREATE TABLE special_set_table (   id UInt64 ) ENGINE=Set;
-CREATE TABLE sqllt.table (   i UInt8, s String ) ENGINE = MergeTree PARTITION BY tuple() ORDER BY tuple();
-CREATE TABLE src ( id UInt64, ip4 IPv4, ip6 IPv6 ) Engine=Memory AS  SELECT * FROM VALUES( (1, '1.1.1.1', '::1.1.1.1'), (2, '2.2.2.2', '::2.2.2.2') );
-CREATE TABLE src (id UInt64, s String) ENGINE = MergeTree ORDER BY id AS SELECT number, toString(number) FROM numbers(1000000);
-CREATE TABLE src (k UInt64, s FixedString(11)) ENGINE = Memory;
-create table src (key Int) engine=Null();
-CREATE TABLE src (n UInt64) ENGINE=MergeTree ORDER BY n;
-CREATE TABLE src (n UInt64, s FixedString(16)) ENGINE=Memory;
-CREATE TABLE src (p UInt64, k String, d UInt64) ENGINE = MergeTree PARTITION BY p ORDER BY k;
-CREATE TABLE src (s String, x String DEFAULT 'a') ENGINE=MergeTree() PARTITION BY tuple() ORDER BY s;
-CREATE TABLE src (x UInt8) ENGINE = Memory;
-CREATE TABLE src (x UInt8) ENGINE = Null;
-CREATE TABLE src (x UInt8) ENGINE Memory;
-CREATE TABLE src Engine=MergeTree ORDER BY id AS SELECT number as id, toInt32(1) as value FROM numbers(1);
-create table src( A Int64, B String, C String) Engine=MergeTree order by A SETTINGS min_bytes_for_wide_part=0;
-create table src( A Int64, B String, C String) Engine=ReplicatedMergeTree('/clickhouse/{database}/test/src1', '1') order by A SETTINGS min_bytes_for_wide_part=0;
-create table src( A String, B String, C String) Engine=MergeTree order by A SETTINGS min_bytes_for_wide_part=0;
-create table src( A String, B String, C String) Engine=ReplicatedMergeTree('/clickhouse/{database}/test/src2', '1') order by A SETTINGS min_bytes_for_wide_part=0;
-create table src( A String, B String, C String) Engine=ReplicatedMergeTree('/clickhouse/{database}/test/src3', '1') order by A SETTINGS min_bytes_for_wide_part=0;
-create table src( A String, B String, C String) Engine=ReplicatedMergeTree('/clickhouse/{database}/test/src4', '1') order by A SETTINGS min_bytes_for_wide_part=0;
-CREATE TABLE src(v UInt64) ENGINE = Null;
-create table src2 (n int) engine=ReplicatedMergeTree('/test/02413/{database}/src', '2') order by tuple() settings storage_policy='s3_cache', allow_remote_fs_zero_copy_replication=1;
-CREATE TABLE src_00726 (x UInt8) ENGINE = Null;
-CREATE TABLE src_00942 (x UInt8) ENGINE = Null;
-CREATE TABLE src_01019(v UInt64) ENGINE = Null;
-create table src_02224 (key Int) engine=Memory();
-create table src_table Engine=Memory as system.numbers;
-create table src_table_1 (n UInt64) engine=Memory as select * from numbers(10);
-create table src_table_2 (n UInt64) engine=Log as select number * 10 from numbers(10);
-create table src_table_3 (n UInt64) engine=MergeTree order by n as select number * 100 from numbers(10);
-create table stack(item_id Int64, brand_id Int64, rack_id Int64, dt DateTime, expiration_dt DateTime, quantity UInt64) Engine = MergeTree partition by toYYYYMM(dt) order by (brand_id, toStartOfHour(dt)) SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE startsWith_test(S1 String, S2 String, S3 FixedString(2)) ENGINE=Memory;
-CREATE TABLE statements ( statementId String, eventDate Date, eventHour DateTime, eventTime DateTime, verb String, objectId String, onCourse UInt8, courseId UInt16, contextRegistration String, resultScoreRaw Float64, resultScoreMin Float64, resultScoreMax Float64, resultSuccess UInt8, resultCompletition UInt8, resultDuration UInt32, resultResponse String, learnerId String, learnerHash String, contextId UInt16) ENGINE = Distributed(test_shard_localhost, currentDatabase(), 'local_statements', sipHash64(learnerHash));
-CREATE TABLE storage(UserID UInt64) ENGINE=Memory;
-CREATE TABLE store (id UInt32, "名称" String, "状态" String) ENGINE=MergeTree() Order by id;
-CREATE TABLE store_of_hash_00804 (hash UInt64) ENGINE = Memory();
-CREATE TABLE store_of_hash_00926 (hash UInt64) ENGINE = Memory();
-CREATE TABLE store_returns (   `sr_returned_date_sk` Nullable(Int64),   `sr_return_time_sk` Nullable(Int64),   `sr_item_sk` Int64,   `sr_customer_sk` Nullable(Int64),   `sr_cdemo_sk` Nullable(Int64),   `sr_hdemo_sk` Nullable(Int64),   `sr_addr_sk` Nullable(Int64),   `sr_store_sk` Nullable(Int64),   `sr_reason_sk` Nullable(Int64),   `sr_ticket_number` Int64,   `sr_return_quantity` Nullable(Int64),   `sr_return_amt` Nullable(Float32),   `sr_return_tax` Nullable(Float32),   `sr_return_amt_inc_tax` Nullable(Float32),   `sr_fee` Nullable(Float32),   `sr_return_ship_cost` Nullable(Float32),   `sr_refunded_cash` Nullable(Float32),   `sr_reversed_charge` Nullable(Float32),   `sr_store_credit` Nullable(Float32),   `sr_net_loss` Nullable(Float32) ) ENGINE = MergeTree ORDER BY (sr_item_sk, sr_ticket_number);
-CREATE TABLE store_sales (   `ss_sold_date_sk` Float64,   `ss_sold_time_sk` Float64,   `ss_customer_sk` Float64,   `ss_cdemo_sk` Float64,   `ss_hdemo_sk` Float64 ) ENGINE = Memory;
-CREATE TABLE stored_aggregates (   d  Date,   Uniq    AggregateFunction(uniq, UInt64) ) ENGINE = AggregatingMergeTree(d, d, 8192);
-CREATE TABLE stored_aggregates (   d Date,   Uniq AggregateFunction(uniq, UInt64) ) ENGINE = AggregatingMergeTree(d, d, 8192);
-CREATE TABLE stored_aggregates (   d Date,   Uniq AggregateFunction(uniq, UInt64),   UniqThetaSketch AggregateFunction(uniqTheta, UInt64) ) ENGINE = AggregatingMergeTree(d, d, 8192);
-CREATE TABLE stored_aggregates (  d  Date,  k1 UInt64,   k2 String,   Sum     AggregateFunction(sum, UInt64),   Avg     AggregateFunction(avg, UInt64),   Uniq    AggregateFunction(uniq, UInt64),  Any     AggregateFunction(any, String),   AnyIf    AggregateFunction(anyIf, String, UInt8),  Quantiles  AggregateFunction(quantiles(0.5, 0.9), UInt64),   GroupArray AggregateFunction(groupArray, String) ) ENGINE = AggregatingMergeTree(d, (d, k1, k2), 8192);
-CREATE TABLE stored_aggregates (  d  Date,  Uniq    AggregateFunction(uniq, UInt64) ) ENGINE = AggregatingMergeTree(d, d, 8192);
-create table strict_BiteTheDDDD (ts UInt64, event String) engine = Log();
-CREATE TABLE strings (   a VARCHAR,   b VARCHAR(11) ) engine=Memory;
-create table strings (key UInt64, str String) Engine = Memory;
-CREATE TABLE strings_00469(x String, y String) ENGINE = TinyLog;
-CREATE TABLE stripe1 ENGINE = StripeLog AS SELECT number AS x FROM system.numbers LIMIT 10;
-CREATE TABLE stripe10 ENGINE = StripeLog AS SELECT number AS x FROM system.numbers LIMIT 10;
-CREATE TABLE stripe2 ENGINE = StripeLog AS SELECT number AS x FROM system.numbers LIMIT 10;
-CREATE TABLE stripe3 ENGINE = StripeLog AS SELECT number AS x FROM system.numbers LIMIT 10;
-CREATE TABLE stripe4 ENGINE = StripeLog AS SELECT number AS x FROM system.numbers LIMIT 10;
-CREATE TABLE stripe5 ENGINE = StripeLog AS SELECT number AS x FROM system.numbers LIMIT 10;
-CREATE TABLE stripe6 ENGINE = StripeLog AS SELECT number AS x FROM system.numbers LIMIT 10;
-CREATE TABLE stripe7 ENGINE = StripeLog AS SELECT number AS x FROM system.numbers LIMIT 10;
-CREATE TABLE stripe8 ENGINE = StripeLog AS SELECT number AS x FROM system.numbers LIMIT 10;
-CREATE TABLE stripe9 ENGINE = StripeLog AS SELECT number AS x FROM system.numbers LIMIT 10;
-CREATE TABLE stripe_log_02184 (id UInt64, name String, dt Date) ENGINE = StripeLog;
-CREATE TABLE stripelog (x UInt8) ENGINE = StripeLog;
-CREATE TABLE subcolumns (   t Tuple   (     a Array(Nullable(UInt32)),     u UInt32,     s Nullable(String)   ),   arr Array(Nullable(String)),   arr2 Array(Array(Nullable(String))),   lc LowCardinality(String),   nested Nested(col1 String, col2 Nullable(UInt32)) ) ENGINE = MergeTree order by tuple() SETTINGS min_bytes_for_wide_part = '10M';
-CREATE TABLE subcolumns (   t Tuple   (     a Array(Nullable(UInt32)),     u UInt32,     s Nullable(String)   ),   arr Array(Nullable(String)),   arr2 Array(Array(Nullable(String))),   lc LowCardinality(String),   nested Nested(col1 String, col2 Nullable(UInt32)) ) ENGINE = MergeTree order by tuple() SETTINGS min_bytes_for_wide_part = 0;
-CREATE TABLE sum_map(date Date, timeslot DateTime, statusMap Nested(status UInt16, requests UInt64)) ENGINE = Log;
-CREATE TABLE sum_map_decimal(   statusMap Nested(     goal_id UInt16,     revenue Decimal32(5)   ) ) ENGINE = Log;
-CREATE TABLE sum_map_decimal(statusMap Map(UInt16,Decimal32(5))) ENGINE = Log;
-CREATE TABLE sum_map_decimal_nullable (`statusMap` Nested(goal_id UInt16, revenue Nullable(Decimal(9, 5)))) engine=Log;
-CREATE TABLE sum_map_overflow(events Array(UInt8), counts Array(UInt8)) ENGINE = Log;
-CREATE TABLE summing (k String, x UInt64, e Enum('hello' = 1, 'world' = 2)) ENGINE = SummingMergeTree ORDER BY k;
-CREATE TABLE summing (p Date, k UInt64, s UInt64) ENGINE = SummingMergeTree(p, k, 1);
-CREATE TABLE summing(x UInt32, y UInt32, val UInt32) ENGINE SummingMergeTree ORDER BY (x, y);
-CREATE TABLE summing_composite_key (d Date, k UInt64, FirstMap Nested(k1 UInt32, k2ID Int8, s Float64), SecondMap Nested(k1ID UInt64, k2Key String, k3Type Int32, s Int64)) ENGINE = SummingMergeTree(d, k, 1);
-CREATE TABLE summing_merge_tree   (d Date, a String, b UInt8, x String, y Int8, z UInt32) ENGINE = SummingMergeTree(d, (a, b), 111);
-CREATE TABLE summing_merge_tree (d Date, a String, x UInt32, y UInt64, z Float64) ENGINE = SummingMergeTree(d, a, 8192);
-CREATE TABLE summing_merge_tree (d Date, a String, x UInt32, y UInt64, z Float64) ENGINE = SummingMergeTree(d, a, 8192, (y, z));
-CREATE TABLE summing_merge_tree (key UInt32, val UInt32, date Datetime) ENGINE=SummingMergeTree(val) PARTITION BY date ORDER BY key;
-create table summing_merge_tree_aggregate_function (   d Date,   k UInt64,   u AggregateFunction(uniq, UInt64) ) engine=SummingMergeTree(d, k, 1);
-create table summing_merge_tree_aggregate_function (   d materialized today(),   k UInt64,   c UInt64,   u AggregateFunction(uniq, UInt8),   ue AggregateFunction(uniqExact, UInt8) ) engine=SummingMergeTree(d, k, 8192);
-CREATE TABLE summing_merge_tree_datetime64 ( `pk` UInt64, `timestamp` DateTime64(3), `value` UInt64 ) ENGINE = SummingMergeTree() ORDER BY pk;
-create table summing_merge_tree_null (   d materialized today(),   k UInt64,   c UInt64,   u UInt64 ) engine=Null;
-CREATE TABLE summing_merge_tree_with_list_of_columns_to_sum   (d Date, a String, b UInt8, x String, y Int8, z UInt32) ENGINE = SummingMergeTree(d, (a, b), 111, (y, z));
-CREATE TABLE summing_merge_tree_with_sampling  (d Date, a String, b UInt8, x String, y Int8, z UInt32) ENGINE = SummingMergeTree(d, sipHash64(a) + b, (a, sipHash64(a) + b), 111);
-CREATE TABLE summing_merge_tree_with_sampling_with_list_of_columns_to_sum  (d Date, a String, b UInt8, x String, y Int8, z UInt32) ENGINE = SummingMergeTree(d, sipHash64(a) + b, (a, sipHash64(a) + b), 111, (y, z));
-CREATE TABLE summing_mt_aggregating_column (   Key UInt64,   Value UInt64,   ConcatArraySimple SimpleAggregateFunction(groupArrayArray, Array(UInt64)),   ConcatArrayComplex AggregateFunction(groupArrayArray, Array(UInt64)) ) ENGINE = SummingMergeTree() ORDER BY Key;
-CREATE TABLE summing_r1(x UInt32, y UInt32, val UInt32) ENGINE ReplicatedSummingMergeTree('/clickhouse/tables/{database}/test_00754/summing', 'r1') ORDER BY (x, y);
-CREATE TABLE summing_r2(x UInt32, y UInt32, val UInt32) ENGINE ReplicatedSummingMergeTree('/clickhouse/tables/{database}/test_00754/summing', 'r2') ORDER BY (x, y);
-CREATE TABLE summing_table (   id UInt32,   `ip4Map.value` Array(IPv4), `ip4Map.total` Array(UInt32),   `ip6Map.value` Array(IPv6), `ip6Map.total` Array(UInt32),   `uuidMap.value` Array(UUID), `uuidMap.total` Array(UInt32) ) ENGINE = SummingMergeTree ORDER BY id;
-CREATE TABLE summing_table01747 (   some_name        String,   user_id         UInt64,   amount         Int64,   currency        String ) ENGINE = SummingMergeTree() ORDER BY (some_name);
-CREATE TABLE suspicious_fixed_string (id UInt64, s FixedString(257)) ENGINE = MergeTree() ORDER BY id;
-CREATE TABLE t (   `account_id` UInt64,   `_is_deleted` UInt8,   `_version` UInt64 ) ENGINE = ReplacingMergeTree(_version, _is_deleted) ORDER BY (account_id);
-CREATE TABLE t (   `d` Date,   `s` LowCardinality(FixedString(3)),   `c` UInt32 ) ENGINE = SummingMergeTree() PARTITION BY d ORDER BY (d, s);
-CREATE TABLE t (   `d` Nullable(Date),   `f1` Nullable(String),   `f2` Nullable(String),   `c` Nullable(Int64) ) ENGINE = ReplacingMergeTree ORDER BY (f1, f2, d) SETTINGS allow_nullable_key = 1;
-CREATE TABLE t (   `d` Nullable(Date),   `f1` Nullable(String),   `f2` Nullable(String),   `c` Nullable(Int64) ) ENGINE = SummingMergeTree ORDER BY (f1, f2, d) SETTINGS allow_nullable_key = 1, index_granularity = 1;
-CREATE TABLE t (   `id` UInt64,   `id2` UInt64,   `id3` UInt64,   PROJECTION t_normal   (     SELECT       id,       id2,       id3     ORDER BY       id2,       id,       id3   ),   PROJECTION t_agg   (     SELECT       sum(id3)     GROUP BY id2   ) ) ENGINE = MergeTree ORDER BY id SETTINGS index_granularity = 8;
-CREATE TABLE t (   `key` UInt64,   `str` String,   INDEX inv_idx str TYPE inverted(0) GRANULARITY 1 ) ENGINE = MergeTree ORDER BY key;
-CREATE TABLE t (   `n` int )   ENGINE = MergeTree     ORDER BY n AS SELECT * FROM numbers(10);
-CREATE TABLE t (   `n` Int8 ) ENGINE = MergeTree ORDER BY n COMMENT 'this is a MergeTree table';
-CREATE TABLE t (   `rDate` String,   `cpu_total` Int64 ) ENGINE = Log;
-CREATE TABLE t (   `timestamp` UInt64,   `s` String,   INDEX idx s TYPE inverted(3) GRANULARITY 1 ) ENGINE = MergeTree ORDER BY tuple() SETTINGS min_rows_for_wide_part = 1, min_bytes_for_wide_part = 1;
-CREATE TABLE t (   c0 DateTime,   c1 DateTime,   a DateTime alias toStartOfFifteenMinutes(c0) ) ENGINE = MergeTree() ORDER BY tuple();
-CREATE TABLE t (   id Int64,   d String,   p Map(String, String) ) ENGINE = ReplacingMergeTree order by id settings index_granularity = 0;
-create table t (   s Array(Int),   l Int8,   r Int8 ) engine = Memory;
-CREATE TABLE t (   s String,   l Int8,   r Int8 ) ENGINE = Memory;
-CREATE TABLE t (   s1 String,   s2 String ) ENGINE = MergeTree ORDER BY s1;
-CREATE TABLE t (  d1 Decimal32(5),  d2 Decimal64(10),  d3 Decimal128(30), d4 Decimal256(50), f1 Float32,   f2 Float32 )ENGINE = Memory;
-CREATE TABLE t (  key1 UInt64,  value1 String,  value2 String,  INDEX idx (value1) TYPE set(10) GRANULARITY 1 ) ENGINE MergeTree ORDER BY key1 SETTINGS index_granularity = 1;
-CREATE TABLE t (  number UInt64 ) ENGINE = MergeTree ORDER BY number SETTINGS index_granularity = 128, ratio_of_defaults_for_sparse_serialization = 1.0, index_granularity_bytes = '10Mi';
-CREATE TABLE t (  tid UInt64,  processed_at DateTime,  created_at DateTime,  amount Int64 ) ENGINE = ReplacingMergeTree PARTITION BY toStartOfQuarter(created_at) PRIMARY KEY (toStartOfDay(created_at), toStartOfDay(processed_at)) ORDER BY (toStartOfDay(created_at), toStartOfDay(processed_at), tid) SETTINGS index_granularity = 1;
-CREATE TABLE t ( a String ) ENGINE = Memory();
-CREATE TABLE t (`A` Int64) ENGINE = MergeTree() ORDER BY tuple();
-CREATE TABLE t (`item_id` UInt64, `price_sold` Float32, `date` Date) ENGINE = MergeTree ORDER BY item_id;
-CREATE TABLE t (`key` UInt32, `created_at` Date, `value` UInt32, PROJECTION xxx (SELECT key, created_at, sum(value) GROUP BY key, created_at)) ENGINE = MergeTree PARTITION BY toYYYYMM(created_at) ORDER BY key;
-CREATE TABLE t (`x` UInt32, `lc` LowCardinality(String)) ENGINE = Memory;
-CREATE TABLE t (`x` UInt32, `s` LowCardinality(String)) ENGINE = Memory;
-CREATE TABLE t (a DateTime('UTC'), b String, c String, d String, e Int32) ENGINE = Memory;
-create table t (a Int) engine = MergeTree order by a;
-create table t (a Int, b Int) engine = MergeTree order by (a, b) settings index_granularity = 400;
-CREATE TABLE t (a Int, b Int, c Int) ENGINE = MergeTree ORDER BY tuple();
-create table t (a Int8, val Float32) engine = Memory();
-CREATE TABLE t (a String, b Int) ENGINE = TinyLog;
-create table t (a UInt64) Engine = Null;
-create table t (a UInt64, b UInt64) engine=MergeTree() order by (a);
-CREATE TABLE t (b UInt8) ENGINE = Memory;
-create table t (c Decimal32(9)) engine MergeTree order by c;
-CREATE TABLE t (c String) ENGINE = Memory;
-create table t (c1 Int64, c2 String, c3 DateTime, c4 Int8, c5 String, c6 String, c7 String, c8 String, c9 String, c10 String, c11 String, c12 String, c13 Int8, c14 Int64, c15 String, c16 String, c17 String, c18 Int64, c19 Int64, c20 Int64) engine MergeTree order by c18 SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-create table t (c1 Int64, c2 String, c3 DateTime, c4 Int8, c5 String, c6 String, c7 String, c8 String, c9 String, c10 String, c11 String, c12 String, c13 Int8, c14 Int64, c15 String, c16 String, c17 String, c18 Int64, c19 Int64, c20 Int64) engine ReplicatedMergeTree('/clickhouse/test/{database}/test_02477', '1') order by c18 SETTINGS allow_remote_fs_zero_copy_replication=1, index_granularity=8092, index_granularity_bytes='10Mi';
-CREATE TABLE t (click_city_id UInt32, click_country_id UInt32) Engine = Memory;
-CREATE TABLE t (d Date, z UInt32) ENGINE = MergeTree(d, (z), 1);
-create table t (i Int, a Int, s String, index ind_s (s) type set(1) granularity 1) engine = MergeTree order by i;
-create table t (i int, j int) engine MergeTree order by i;
-create table t (i int, j int, k int, projection p (select * order by j)) engine MergeTree order by i settings index_granularity = 1;
-create table t (i int, j int, projection p (select i order by i)) engine MergeTree order by tuple();
-create table t (i int, j int, projection x (select * order by j)) engine MergeTree partition by i order by i;
-create table t (id UInt32, a Int) engine = MergeTree order by id settings min_bytes_for_wide_part=0;
-create table t (id UInt32, a Int) engine = MergeTree order by id;
-CREATE TABLE t (id UInt64, id2 UInt64, id3 UInt64, PROJECTION t_reverse (SELECT id, id2, id3 ORDER BY id2, id, id3)) ENGINE = MergeTree ORDER BY (id) settings index_granularity = 4;
-CREATE TABLE t (item_id UInt64, price_sold Float32, date Date) ENGINE MergeTree ORDER BY item_id;
-CREATE TABLE t (k UInt64, s String) ENGINE = MergeTree ORDER BY k;
-CREATE TABLE t (k1 UInt64, k2 UInt64, v UInt64) ENGINE = ReplacingMergeTree() ORDER BY (k1, k2);
-CREATE TABLE t (key UInt64, value UInt64, INDEX value_idx value TYPE bloom_filter GRANULARITY 1) ENGINE=MergeTree() ORDER BY key;
-CREATE TABLE t (key2 UInt64, key1 Int64, b UInt64, x UInt64, val UInt64) ENGINE = Memory;
-create table t (n int) engine MergeTree order by n;
-create table t (n int, s String) engine MergeTree order by n;
-create table t (n Int32, s String) engine=MergeTree order by n;
-CREATE TABLE t (n UInt32) ENGINE=Memory;
-create table t (n UInt32, a Array(Int32)) engine=Memory;
-CREATE TABLE t (n UInt64, f Float32, s String, fs FixedString(42), d Decimal(9, 6)) ENGINE = Memory;
-create table t (n UInt64, s String default 's' || toString(n)) engine=Memory;
-CREATE TABLE t (n UInt8) ENGINE=MergeTree ORDER BY n SAMPLE BY tuple();
-CREATE TABLE t (o Nullable(String), p Nullable(String)) ENGINE = ReplacingMergeTree ORDER BY (p, o) SETTINGS allow_nullable_key = 1, index_granularity = 2;
-create table t (s UInt16, l UInt16, projection p (select s, l order by l)) engine MergeTree order by s;
-create table t (server_date Date, something String) engine MergeTree partition by (toYYYYMM(server_date), server_date) order by (server_date, something);
-CREATE TABLE t (uid Int16, name String, age Nullable(Int8), i Int16, j Int16, projection p1 (select name, age, uniq(i), count(j) group by name, age)) ENGINE=MergeTree order by uid settings index_granularity = 1;
-create table t (val UInt32) engine = MergeTree order by val;
-CREATE TABLE t (value UInt8) ENGINE = Memory;
-create table t (x Bool) engine=Memory();
+CREATE TABLE t1 (c0 Int32, PRIMARY KEY (c0)) ENGINE=MergeTree;
 CREATE TABLE t (x DateTime64(3)) ENGINE = MergeTree ORDER BY x;
 CREATE TABLE t (x Decimal(18, 3)) ENGINE = MergeTree ORDER BY x;
-CREATE TABLE t (x Enum8('abc' = 0, 'def' = 1, 'ghi' = 2)) ENGINE = TinyLog;
-create table t (x Int32, codectest Int32) engine = MergeTree order by x;
-CREATE TABLE t (x String) ENGINE = Log();
-CREATE TABLE t (x String) ENGINE = MergeTree ORDER BY cityHash64(x) SAMPLE BY cityHash64(x);
-CREATE TABLE t (x String) ENGINE = MergeTree ORDER BY x;
-create table t (x UInt32) engine = MergeTree order by tuple() settings index_granularity = 8;
-create table t (x UInt64) engine = MergeTree order by (x, intHash64(x)) sample by intHash64(x);
-CREATE TABLE t (x UInt64) ENGINE = MergeTree ORDER BY tuple();
-create table t (x UInt64) engine = MergeTree order by x;
-CREATE TABLE t (x UInt64) ENGINE = StripeLog;
-CREATE TABLE t (x UInt64, i256 Int256, u256 UInt256, d256 Decimal256(2)) ENGINE = Memory;
-create table t (x UInt64, s String) engine = MergeTree order by x SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE t (x UInt8) ENGINE = Log;
-CREATE TABLE t (x UInt8) ENGINE = Memory;
-CREATE TABLE t (x UInt8) ENGINE = MergeTree ORDER BY () COMMENT 'Hello';
-CREATE TABLE t (x UInt8) ENGINE = MergeTree ORDER BY ();
-CREATE TABLE t (x UInt8) ENGINE = MergeTree ORDER BY x;
-CREATE TABLE t (x UInt8) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_comment_table2/t', '1') ORDER BY () COMMENT 'Hello';
-CREATE TABLE t (x UInt8) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_comment_table3/t', '1') ORDER BY ();
-CREATE TABLE t (x UInt8) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_comment_table4/t', '1') ORDER BY ();
-CREATE TABLE t (x UInt8) ENGINE = StripeLog;
-CREATE TABLE t (x UInt8) ENGINE = TinyLog;
-create table t (x UInt8, id UInt8) ENGINE = MergeTree() order by (id);
-CREATE TABLE t (x UInt8, PROJECTION p (SELECT x GROUP BY x)) ENGINE = MergeTree ORDER BY () SETTINGS allow_experimental_block_number_column=true;
-CREATE TABLE t (x UInt8, PROJECTION p (SELECT x GROUP BY x)) ENGINE = MergeTree ORDER BY ();
-CREATE TABLE t (x UInt8, s String) ENGINE = MergeTree ORDER BY x SETTINGS number_of_free_entries_in_pool_to_execute_mutation = 15;
-CREATE TABLE t ENGINE = Log AS SELECT * FROM system.numbers LIMIT 20;
-create table t engine = Memory as with cte as (select * from numbers(10)) select * from cte;
-create table t engine Memory as select * from numbers(2);
-create table t engine=Log as select * from system.numbers limit 20;
-create table t engine=Memory empty;
-CREATE TABLE t(          s FixedString(8),          l Int8,          r Int8 ) engine = Memory;
-create table t( s String ) Engine=Memory as select arrayJoin (['a','b','c']);
-CREATE TABLE t(`id` String, `dealer_id` String) ENGINE = MergeTree() ORDER BY id SETTINGS index_granularity = 8192;
-create table t(a Int64, b Int64) engine = Memory;
-create table t(a Int64, b Int64) engine = TinyLog;
-create table t(a Int64, b Int64, c Nullable(String)) engine = Memory;
-create table t(a Int64, b Int64, c String) engine = Memory;
-create table t(a Int64, b Nullable(Int64), c Nullable(String)) engine = Memory;
-create table t(a Int64, b Nullable(Int64), c String) engine = Memory;
-create table T(a Nullable(Int64)) engine = Memory();
-create table t(a Nullable(Int64), b Nullable(Int64), c Nullable(String)) engine = Memory;
-create table t(a UInt32) engine=MergeTree order by tuple() partition by a % 16;
-CREATE TABLE t(a UInt32, b UInt32) ENGINE = MergeTree PARTITION BY a ORDER BY a;
-CREATE TABLE t(a UInt64) ENGINE = MergeTree ORDER BY a;
-create table t(a UInt64) engine=MergeTree order by tuple();
-create table t(a UInt64, b UInt64) engine=MergeTree order by a;
-create table t(a UInt8) engine=MergeTree order by a SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE t(d1 Decimal32(5), d2 Decimal64(10), d3 Decimal128(20), d4 Decimal256(40), f1 Float32, f2 Float64) ENGINE=Memory;
-create table t(i8 Int8, i16 Int16, i32 Int32, i64 Int64) engine Memory;
+CREATE TABLE t (`A` Int64) ENGINE = MergeTree() ORDER BY tuple();
+CREATE TABLE count (x UInt64) ENGINE = MergeTree ORDER BY tuple();
+CREATE TABLE 02131_rptable (x UInt8) ENGINE = MergeTree ORDER BY x;
 create table t(id UInt32) engine MergeTree order by id as select 1;
-create table t(n int, a Int64, s String) engine = MergeTree() order by a;
-CREATE TABLE t(timestamp DateTime, day ALIAS toYYYYMMDD(timestamp)) Engine = MergeTree ORDER BY timestamp;
-CREATE TABLE t0 (   `c0` Int32,   `c1` Int32 CODEC(NONE) ) ENGINE = MergeTree() ORDER BY tuple() SETTINGS index_granularity = 8192;
-CREATE TABLE t0 (   c1 Int64,   c2 Int64,   c3 Int64,   PROJECTION p1   (     SELECT       c1,       c2,       sum(c3)     GROUP BY       c2,       c1   ) ) ENGINE = MergeTree ORDER BY (c1, c2) settings min_bytes_for_wide_part = 10485760, min_rows_for_wide_part = 0;
-CREATE TABLE t0 (`c0` String, `c1` Int32 CODEC(NONE), `c2` Int32) ENGINE = MergeTree() ORDER BY tuple();
-CREATE TABLE t0 (c0 Int16, projection h (SELECT min(c0), max(c0), count() GROUP BY -c0)) ENGINE = MergeTree ORDER BY ();
-CREATE TABLE t0 (c0 Int32) ENGINE = Memory;
-CREATE TABLE t0 (c0 String) ENGINE = Log();
-create table t0 (pkey UInt32, c1 UInt32, primary key(pkey)) engine = MergeTree;
-CREATE TABLE t0 (vkey UInt32, c0 Float32, primary key(c0)) engine = AggregatingMergeTree;
-CREATE TABLE t0 (vkey UInt32, pkey UInt32, c0 UInt32) engine = TinyLog;
-CREATE TABLE t0 (x UInt32, y UInt64) engine = MergeTree ORDER BY (x,y);
-CREATE TABLE t0 ENGINE=Log() AS SELECT * FROM system.numbers limit 2;
-CREATE TABLE t0 ENGINE=MergeTree() ORDER BY tuple() AS SELECT rowNumberInAllBlocks(), * FROM (SELECT toLowCardinality(arrayJoin(['exchange', 'tables'])));
-CREATE TABLE t02006 on cluster test_shard_localhost (d Date) ENGINE = MergeTree ORDER BY d format Null;
-create table t02155_t64_tz ( a DateTime64(9, America/Chicago)) Engine = Memory;
-create table t02155_t_tz ( a DateTime('America/Chicago')) Engine = Memory;
-CREATE TABLE t02176(timestamp DateTime) ENGINE = MergeTree PARTITION BY toStartOfWeek(timestamp) ORDER BY tuple();
-create table t02845 (a Array(UInt8), s Int16, d UInt8) engine = MergeTree order by d;
-CREATE TABLE t1 (   a Float64 STATISTIC(tdigest),   b Int64 STATISTIC(tdigest),   pk String, ) Engine = MergeTree() ORDER BY pk SETTINGS min_bytes_for_wide_part = 0;
-CREATE TABLE t1 (   a Float64 STATISTIC(tdigest),   b Int64 STATISTIC(tdigest),   pk String, ) Engine = MergeTree() ORDER BY pk;
-CREATE TABLE t1 (   a Float64 STATISTIC(tdigest),   b Int64,   pk String STATISTIC(tdigest), ) Engine = MergeTree() ORDER BY pk;
-CREATE TABLE t1 (v UInt64) ENGINE=ReplicatedMergeTree('/test/tables/{database}/test/t1', 'r1') ORDER BY v PARTITION BY v;
-CREATE TABLE t1 (   `n` Int8 ) ENGINE = Memory COMMENT 'this is a temtorary table';
-CREATE TABLE t1 (   a String,   date Date,   f UInt8 ALIAS 0 ) ENGINE = MergeTree ORDER BY tuple() SETTINGS index_granularity = 8192;
-CREATE TABLE t1 (   a String,   f UInt8 DEFAULT 1 ) ENGINE = MergeTree ORDER BY tuple() SETTINGS index_granularity = 8192;
-CREATE TABLE t1 (   a String,   f UInt8 MATERIALIZED 1 ) ENGINE = MergeTree ORDER BY tuple() SETTINGS index_granularity = 8192;
-CREATE TABLE t1 (   c1 DateTime DEFAULT now() NOT NULL,   c2 DateTime DEFAULT now() NOT NULL,   c3 DateTime DEFAULT now() NOT NULL,   PRIMARY KEY(c1, c2, c3) ) ENGINE = MergeTree() ORDER BY (c1, c2, c3);
-create table t1 (   col UInt64,   x UInt64 MATERIALIZED col + 1 ) Engine = MergeTree order by tuple();
-CREATE TABLE t1 (   date Date,   s1 String,   s2 String ) ENGINE = MergeTree() PARTITION BY toYYYYMMDD(date) ORDER BY (date, s1) SETTINGS index_granularity = 8192;
-CREATE TABLE t1 (   time DateTime,   foo String,   dimension_1 String,   dt Date MATERIALIZED toDate(time),   dt1 Date MATERIALIZED toDayOfYear(time),   aliascol1 ALIAS foo || dimension_1,   time_alias DateTime ALIAS time ) ENGINE = MergeTree() PARTITION BY toYYYYMM(dt) ORDER BY (dt, foo);
-CREATE TABLE t1 ( `a1` Int64, `1a1` Int64 ) ENGINE = Memory;
-CREATE TABLE t1 ( a UInt64 ) Engine = MergeTree ORDER BY tuple() AS SELECT number AS a FROM system.numbers LIMIT 100000;
-CREATE TABLE t1 ( id UInt32, attr UInt32 ) ENGINE = MergeTree ORDER BY id SETTINGS ratio_of_defaults_for_sparse_serialization = 0.1;
-CREATE TABLE t1 ( k Int64, x Int64) ENGINE = Memory;
-CREATE TABLE t1 ( s String, f Float32, e UInt16 ) ENGINE = MergeTree ORDER BY tuple() SETTINGS min_bytes_for_wide_part = '100G';
-CREATE TABLE t1 ( x Int ) Engine = Memory;
-CREATE TABLE t1 (`1a` Nullable(Int64), `2b` Nullable(String)) engine = Memory;
-CREATE TABLE t1 (`a` Nullable(Int64), `b` Nullable(String)) engine = Memory;
-CREATE TABLE t1 (`a` UInt32, `b` UInt32, `c` UInt32 ) ENGINE = Memory;
-CREATE TABLE t1 (`cA` String, `c1` String) ENGINE = MergeTree ORDER BY (cA, c1);
-CREATE TABLE t1 (`id` Int32, `key` String) ENGINE = Memory;
-CREATE TABLE t1 (`n` UInt64) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE t1 (`s` String, `x` Array(UInt8), `k` UInt64) ENGINE = Join(ANY, LEFT, k);
-CREATE TABLE t1 (`x` UInt32, `lc` LowCardinality(String) ) ENGINE = Memory;
-CREATE TABLE t1 (a Int, b Int) ENGINE = Memory;
-CREATE TABLE t1 (a UInt32, b Nullable(Int32)) ENGINE = Memory;
-create table t1 (a UInt32, b String) engine = Memory;
-CREATE TABLE t1 (a UInt64, b UInt64) ENGINE = Memory;
-CREATE table t1 (a UInt64, b UInt64) ENGINE = Memory;
-CREATE TABLE t1 (c String) ENGINE = Memory;
-create table t1 (c0 Int32) engine = MergeTree order by sin(c0);
-CREATE TABLE t1 (c0 Int32) ENGINE = MergeTree() ORDER BY c0 PARTITION BY (- (c0));
-CREATE TABLE t1 (c0 Int32, PRIMARY KEY (c0)) ENGINE = MergeTree;
-CREATE TABLE t1 (c0 Int32, PRIMARY KEY (c0)) ENGINE=MergeTree;
-CREATE TABLE t1 (c1 Int32) ENGINE = Memory;
-CREATE TABLE t1 (c1 Int32, c2 Int32) ENGINE MergeTree ORDER BY c1;
-create table t1 (date Date, a Float64, b String) Engine=MergeTree ORDER BY date;
-CREATE TABLE t1 (id Int) ENGINE = Memory;
-CREATE TABLE t1 (id Int64, create_time DateTime) ENGINE = MergeTree ORDER BY id SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-create table t1 (id LowCardinality(Nullable(Int64))) engine MergeTree order by id settings allow_nullable_key = 1, index_granularity = 1;
-CREATE TABLE t1 (id String, name String, value UInt32) ENGINE = Join(ANY, LEFT, id) SETTINGS join_use_nulls = 1;
-CREATE TABLE t1 (id UInt32, s String) Engine = MergeTree ORDER BY id;
-CREATE TABLE t1 (id UInt32, value1 String ) ENGINE ReplacingMergeTree() ORDER BY id;
-CREATE TABLE t1 (id UInt32, value1 String) ENGINE MergeTree() ORDER BY id;
-CREATE TABLE t1 (id UInt64) ENGINE = MergeTree() ORDER BY id;
-CREATE TABLE t1 (id2 UInt64, id1 Int64, val UInt64) ENGINE = Memory;
-CREATE TABLE t1 (k UInt32) ENGINE = TinyLog;
-CREATE TABLE t1 (key Int) Engine=Memory;
-CREATE TABLE t1 (key UInt32, val UInt32) ENGINE = Memory;
-CREATE TABLE t1 (key UInt64, a UInt64) ENGINE = Memory;
-CREATE TABLE t1 (key UInt64, a UInt8, b String, c Float64) ENGINE = MergeTree() ORDER BY key;
-CREATE TABLE t1 (key UInt8) ENGINE = Memory;
-CREATE TABLE t1 (key UInt8) ENGINE = MergeTree ORDER BY key;
-CREATE TABLE t1 (n int, dt DateTime) ENGINE=Memory;
-CREATE TABLE t1 (s String) ENGINE = MergeTree ORDER BY s SETTINGS ratio_of_defaults_for_sparse_serialization = 0.5;
-CREATE TABLE t1 (str String, dec Decimal64(8)) ENGINE = MergeTree ORDER BY str;
-CREATE TABLE t1 (v UInt64, s String) ENGINE=MergeTree() ORDER BY v;
-CREATE table t1 (v1 IntervalMinute) ENGINE = Memory;
-CREATE TABLE t1 (vkey UInt32) ENGINE = AggregatingMergeTree ORDER BY vkey;
-create table t1 (vkey UInt32, primary key(vkey)) engine = MergeTree;
-CREATE TABLE t1 (x Int16, y ALIAS x + x * 2) ENGINE=MergeTree() ORDER BY x;
-CREATE TABLE t1 (x Nullable(Int64), y Nullable(UInt64)) ENGINE = TinyLog;
-CREATE TABLE t1 (x String) ENGINE = Memory AS SELECT 1;
-CREATE TABLE t1 (x UInt32, s String) engine = Memory;
-CREATE TABLE t1 (x UInt32, str String) engine = Memory;
-CREATE TABLE t1 (x UInt32, y UInt64) engine = MergeTree ORDER BY (x,y);
-CREATE TABLE t1 (x UInt64) ENGINE = TinyLog;
-CREATE TABLE t1 (x UInt64, y UInt64) ENGINE = MergeTree ORDER BY y AS SELECT sipHash64(number, 't1_x') % 100 AS x, sipHash64(number, 't1_y') % 100 AS y FROM numbers(100);
-CREATE TABLE t1 AS remote('127.0.0.1', system.one);
-create table t1 as remote('localhost', 'system.one');
-CREATE TABLE t1 AS test_view;
-create table t1(a Array(UInt32)) ENGINE = MergeTree ORDER BY tuple() as select [1,2];
-create table t1(a UInt32) engine=MergeTree order by tuple() partition by a % 4 settings index_granularity = 8192, index_granularity_bytes = 10485760;
-CREATE TABLE t1(ID UInt64, name String) engine=MergeTree order by ID;
-CREATE TABLE t1(k UInt32, v String) ENGINE ReplicatedMergeTree('/02898_parallel_replicas/{database}/test_tbl', 'r1') ORDER BY k;
-CREATE TABLE t1(k UInt32, v String) ENGINE ReplicatedMergeTree('/02946_parallel_replicas/{database}/test_tbl', 'r1') ORDER BY k;
-CREATE TABLE t1(k UInt32, v UInt32) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_02723/zookeeper_name/t1', '1') ORDER BY k;
-CREATE TABLE t1(k UInt32, v UInt32) ENGINE ReplicatedMergeTree('/parallel_replicas/{database}/test_tbl', 'r1') ORDER BY k settings index_granularity=10;
-CREATE TABLE t1(x UInt32, y UInt32) ENGINE TinyLog;
-create table t1(x1 Date32) engine Memory;
-CREATE TABLE t10 (`c0` Int32) ENGINE = MergeTree ORDER BY tuple();
-create table t10(a UInt32, b UInt32) engine=MergeTree order by a partition by (intDiv(a, 2), intDiv(b, 3)) SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-create table t12(a UInt32, b UInt32) engine=MergeTree order by a partition by a % 16;
-create table t13(a UInt32, b UInt32) engine=MergeTree order by a partition by (intDiv(a, 2), intDiv(b, 3)) SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-create table t14(a UInt32, b UInt32) engine=MergeTree order by a partition by intDiv(a, 2) + intDiv(b, 3) SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-create table t18(a UInt32, b UInt32) engine=MergeTree order by a partition by a SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-create table t19(a UInt32, b UInt32) engine=MergeTree order by a partition by a SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE t1_00203 (k1 UInt32, k2 UInt32, k3 UInt32, val_t1 String) ENGINE=TinyLog;
-create table t1_00729 (id UInt64, val Array(String),nid UInt64, eDate Date) ENGINE = MergeTree(eDate, (id, eDate), 8192);
-create table t1_00729 (id UInt64, val Array(String),nid UInt64, eDate Date)ENGINE = MergeTree(eDate, (id, eDate), 8192);
-create table t1_00816 (a Int8, val Float32) engine=Memory();
-CREATE TABLE t1_00826 (a Int8, b Nullable(Int8)) ENGINE = Memory;
-CREATE TABLE t1_00848 ( id String ) ENGINE = Memory;
-CREATE TABLE t1_00850 (dummy UInt8) ENGINE = Distributed(test_shard_localhost, currentDatabase(), 't_local');
-CREATE TABLE t1_00856 (n Int32) ENGINE = Memory;
-CREATE TABLE t1_01361 (  i UInt32,  time DateTime ) ENGINE = MergeTree() PARTITION BY time ORDER BY time;
-CREATE TABLE t1__fuzz_13 (id Nullable(Int16)) ENGINE = MergeTree() ORDER BY id SETTINGS allow_nullable_key = 1;
-CREATE TABLE t1__fuzz_17 (`a` LowCardinality(UInt8), `b` Nullable(UInt256)) ENGINE = Memory;
-CREATE TABLE t1__fuzz_8 (`x` LowCardinality(UInt32), `str` Nullable(Int16)) ENGINE = Memory;
-create table t1_all as t1_local engine Distributed(test_cluster_two_shards_localhost, test_02115, t1_local, rand());
-create table t1_distr as t1_shard engine Distributed(test_cluster_two_shards_localhost, test_01103, t1_shard, id);
-create table t1_distr as t1_shard engine Distributed(test_cluster_two_shards_localhost, test_01824, t1_shard, id);
-CREATE TABLE t1_local ON CLUSTER test_shard_localhost(partition_col_1 String, tc1 int,tc2 int) ENGINE=MergeTree() PARTITION BY partition_col_1 ORDER BY tc1;
-CREATE TABLE t1_local ON CLUSTER test_shard_localhost(partition_col_1 String, tc1 int,tc2 int)ENGINE=MergeTree() PARTITION BY partition_col_1 ORDER BY tc1;
-create table t1_local(a Int32) engine=MergeTree() order by a;
-create table t1_r1 (x Int32) engine=ReplicatedMergeTree('/test/02442/{database}/t', 'r1') order by x;
-create table t1_r2 (x Int32) engine=ReplicatedMergeTree('/test/02442/{database}/t', 'r2') order by x;
-create table t1_shard (id Int32) engine MergeTree order by id;
-CREATE TABLE t2 (   `n` Int8 ) ENGINE = MergeTree ORDER BY n COMMENT 'this is a MergeTree table';
-CREATE TABLE t2 (   a String,   f UInt8 DEFAULT 2 ) ENGINE = MergeTree ORDER BY tuple() SETTINGS index_granularity = 8192;
-CREATE TABLE t2 (   time DateTime,   bar String,   dimension_2 String,   dt Date MATERIALIZED toDate(time),   dt2 Date MATERIALIZED toDayOfYear(time),   aliascol2 ALIAS bar || dimension_2,   time_alias DateTime ALIAS time ) ENGINE = MergeTree() PARTITION BY toYYYYMM(dt) ORDER BY (dt, bar);
-create table t2 (   x UInt64 ) Engine = MergeTree order by tuple();
-CREATE TABLE t2 ( `b1` Int64, `1b1` Int64 ) ENGINE = Memory;
-CREATE TABLE t2 ( `k` UInt16 ) ENGINE = TinyLog;
-CREATE TABLE t2 ( id UInt32, attr UInt32 ) ENGINE = MergeTree ORDER BY id SETTINGS ratio_of_defaults_for_sparse_serialization = 0.1;
-CREATE TABLE t2 ( x Int ) Engine = Memory;
-CREATE TABLE t2 ( x Int64 ) ENGINE = Memory;
-CREATE TABLE t2 (`3c` Nullable(Int64), `4d` Nullable(String)) engine = Memory;
-CREATE TABLE t2 (`c` Nullable(Int64), `d` Nullable(String)) engine = Memory;
-CREATE TABLE t2 (`id` Int32, `key` String) ENGINE = Memory;
-CREATE TABLE t2 (`s` String, `x` Array(UInt8), `k` UInt64) ENGINE = Join(ANY, INNER, k);
-CREATE TABLE t2 (`x` UInt32, `lc` LowCardinality(String) ) ENGINE = Memory;
-CREATE TABLE t2 (a Int, b Nullable(Int)) ENGINE = Memory;
-CREATE TABLE t2 (a UInt32, b Nullable(Int32)) ENGINE = Memory;
-CREATE table t2 (a UInt64) ENGINE = Memory;
-CREATE TABLE t2 (a UInt64, b UInt64) ENGINE = Memory;
-CREATE TABLE t2 (c String) ENGINE = Memory;
-create table t2 (c UInt32, d String) engine = Memory;
-CREATE TABLE t2 (c1 Int32, c2 Int32, c3 String) ENGINE MergeTree ORDER BY (c1, c2, c3);
-create table t2 (date Date, a Float64, b String) Engine=MergeTree ORDER BY date;
-CREATE TABLE t2 (delete_time DateTime) ENGINE = MergeTree ORDER BY delete_time SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE t2 (id Int) ENGINE = Memory;
-CREATE TABLE t2 (Id Int32, Val Int32, X Int32) Engine=Memory;
-CREATE TABLE t2 (Id Int32, Val Int64, X UInt256) Engine=Memory;
-CREATE TABLE t2 (id String, name String, value UInt32) ENGINE = Join(ANY, LEFT, id) SETTINGS join_use_nulls = 0;
-CREATE TABLE t2 (id UInt32, value2 String ) ENGINE ReplacingMergeTree() ORDER BY id;
-CREATE TABLE t2 (id UInt32, value2 String) ENGINE MergeTree() ORDER BY id;
-CREATE TABLE t2 (id UInt64) ENGINE = MergeTree() ORDER BY id;
-CREATE TABLE t2 (id1 UInt32, id2 UInt32) Engine = MergeTree ORDER BY id1 SETTINGS index_granularity = 1;
-CREATE TABLE t2 (k Int64, l Int64, m Int64, n Int64) ENGINE = Memory;
-CREATE TABLE t2 (k UInt16) ENGINE = TinyLog;
-CREATE TABLE t2 (k UInt64, s String) ENGINE = Join(ANY, LEFT, k);
-CREATE TABLE t2 (key UInt32) ENGINE = MergeTree ORDER BY key;
-CREATE TABLE t2 (key UInt32, val UInt32) ENGINE = Memory;
-CREATE TABLE t2 (key UInt64, a UInt64) ENGINE = Join(ALL, RIGHT, key);
-CREATE TABLE t2 (s String) ENGINE = MergeTree ORDER BY s SETTINGS ratio_of_defaults_for_sparse_serialization = 0.5;
-CREATE TABLE t2 (s String, x Array(UInt8), k UInt64) ENGINE = Join(ANY, LEFT, k);
-CREATE TABLE t2 (str String, dec Decimal64(8)) ENGINE = MergeTree ORDER BY dec;
-CREATE TABLE t2 (x Nullable(Int64), y Nullable(UInt64)) ENGINE = TinyLog;
-CREATE TABLE t2 (x UInt32, s String) engine = Memory;
-CREATE TABLE t2 (x UInt32, y UInt64) engine = MergeTree ORDER BY (x,y);
-CREATE TABLE t2 (x UInt64, value String) ENGINE = TinyLog;
-CREATE TABLE t2 (x UInt64, y UInt64) ENGINE = MergeTree ORDER BY y AS SELECT sipHash64(number, 't2_x') % 100 AS x, sipHash64(number, 't2_y') % 100 AS y FROM numbers(100);
-CREATE TABLE t2 (y Int16, z Int16) ENGINE=MergeTree() ORDER BY y;
-CREATE TABLE t2 AS remote('127.0.0.1', system.numbers);
-CREATE TABLE t2 AS t1 Engine=Memory;
-CREATE TABLE t2 AS t1;
-CREATE TABLE t2 Engine=Memory AS t1;
-CREATE TABLE t2 ENGINE=Memory AS test_view;
-CREATE TABLE t2 ENGINE=MergeTree() ORDER BY tuple() AS SELECT rowNumberInAllBlocks() + (SELECT count() FROM t0), * FROM (SELECT arrayJoin(['hello', 'world']));
-create table t2(a UInt32) engine=MergeTree order by tuple() partition by a % 8 SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE t2(c0 Int32) ENGINE = MergeTree ORDER BY c0;
-CREATE TABLE t2(k UInt32, v String) ENGINE ReplicatedMergeTree('/02898_parallel_replicas/{database}/test_tbl', 'r2') ORDER BY k;
-CREATE TABLE t2(k UInt32, v String) ENGINE ReplicatedMergeTree('/02946_parallel_replicas/{database}/test_tbl', 'r2') ORDER BY k;
-CREATE TABLE t2(k UInt32, v UInt32) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_02723/zookeeper_name/t2', '1') ORDER BY k;
-CREATE TABLE t2(k UInt32, v UInt32) ENGINE ReplicatedMergeTree('/parallel_replicas/{database}/test_tbl', 'r2') ORDER BY k settings index_granularity=10;
-CREATE TABLE t2(x UInt32, y UInt32 DEFAULT x + 1) ENGINE TinyLog;
-create table t20(a UInt32, b UInt32) engine=MergeTree order by a partition by a SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-create table t21(a UInt64, b UInt64) engine=MergeTree order by a partition by a % 16 SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-create table t22(a UInt32, b UInt32) engine=SummingMergeTree order by a partition by a % 16 SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE t2_00203 (val_t2 String, k3 UInt32, k2 UInt32, k1 UInt32) ENGINE=TinyLog;
-create table t2_00816 (a Int8, val Float32) engine=Memory();
-CREATE TABLE t2_00826 (a Int8, b Nullable(Int8)) ENGINE = Memory;
-CREATE TABLE t2_00848 ( id Nullable(String) ) ENGINE = Memory;
-CREATE TABLE t2_00850 (dummy UInt8) ENGINE = Distributed(test_shard_localhost, currentDatabase(), 't_local');
-CREATE TABLE t2_00856 (a Int32, n Int32) ENGINE = Memory;
-CREATE TABLE t2_01361 (  i UInt32,  time DateTime ) ENGINE = MergeTree() PARTITION BY time ORDER BY time;
-CREATE TABLE t2__fuzz_0 (`c` UInt32, `d` String) ENGINE = Memory;
-CREATE TABLE t2__fuzz_47 (id LowCardinality(Int16)) ENGINE = MergeTree() ORDER BY id;
-create table t2_all as t2_local engine Distributed(test_cluster_two_shards_localhost, test_02115, t2_local, rand());
-create table t2_distr as t2_shard engine Distributed(test_cluster_two_shards_localhost, test_01103, t2_shard, id);
-create table t2_distr as t2_shard engine Distributed(test_cluster_two_shards_localhost, test_01824, t2_shard, id);
-create table t2_local as t1_local;
-CREATE TABLE t2_local ON CLUSTER test_shard_localhost(partition_col_1 String, tc1 int,tc2 int)ENGINE=MergeTree() PARTITION BY partition_col_1 ORDER BY tc1;
-CREATE TABLE t2_r_error (   `id` UInt64,   `val` String,   `legacy_ver` UInt64,   `deleted` UInt8 ) ENGINE = ReplicatedReplacingMergeTree('/tables/{database}/t2/', 'r3', legacy_ver, deleted) ORDER BY id;
-CREATE TABLE t2_r_ok (   `id` UInt64,   `val` String,   `legacy_ver` UInt64,   `deleted` UInt8 ) ENGINE = ReplicatedReplacingMergeTree('/tables/{database}/t2/', 'r2', legacy_ver) ORDER BY id;
-create table t2_shard (id Int32) engine MergeTree order by id;
-CREATE TABLE t3 (   `n` Int8 ) ENGINE = Log COMMENT 'this is a Log table';
-CREATE TABLE t3 ( `c1` Int64, `1c1` Int64 ) ENGINE = Memory;
-CREATE TABLE t3 (`5e` Nullable(Int64), `6f` Nullable(String)) engine = Memory;
-CREATE TABLE t3 (`e` Nullable(Int64), `f` Nullable(String)) engine = Memory;
-create table t3 (a UInt32) engine = Memory;
-CREATE TABLE t3 (a UInt32, b Nullable(Int32)) ENGINE = Memory;
-CREATE TABLE t3 (a UInt64, b UInt64) ENGINE = Memory;
-create table t3 (c17 String, primary key(c17)) engine = MergeTree;
-CREATE TABLE t3 (id Nullable(String), name String, value UInt32) ENGINE = Join(ANY, LEFT, id) SETTINGS join_use_nulls = 1;
-CREATE TABLE t3 (id UInt32, value3 String ) ENGINE ReplacingMergeTree() ORDER BY id;
-CREATE TABLE t3 (id UInt32, value3 String) ENGINE MergeTree() ORDER BY id;
-CREATE TABLE t3 (z Int64) ENGINE = Memory;
-CREATE TABLE t3 AS dict;
-CREATE TABLE t3 AS numbers(10);
-CREATE TABLE t3 AS remote('127.0.0.1', numbers(100));
-CREATE TABLE t3 AS v;
-create table t3(a UInt32) engine=MergeTree order by tuple() partition by a % 16 SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE t3(k UInt32, v String) ENGINE ReplicatedMergeTree('/02898_parallel_replicas/{database}/test_tbl', 'r3') ORDER BY k;
-CREATE TABLE t3(k UInt32, v String) ENGINE ReplicatedMergeTree('/02946_parallel_replicas/{database}/test_tbl', 'r3') ORDER BY k;
-CREATE TABLE t3(k UInt32, v UInt32) ENGINE ReplicatedMergeTree('/parallel_replicas/{database}/test_tbl', 'r3') ORDER BY k settings index_granularity=10;
-CREATE TABLE t3(x UInt32, y UInt32 MATERIALIZED x + 1) ENGINE TinyLog;
-CREATE TABLE t3_00848 ( id Nullable(String), not_id Nullable(String) ) ENGINE = Memory;
-CREATE TABLE t3_r_error (   `key` UInt64,   `metrics1` UInt64,   `metrics2` UInt64 ) ENGINE = ReplicatedSummingMergeTree('/tables/{database}/t3/', 'r3', metrics2) ORDER BY key;
-CREATE TABLE t3_r_ok (   `key` UInt64,   `metrics1` UInt64,   `metrics2` UInt64 ) ENGINE = ReplicatedSummingMergeTree('/tables/{database}/t3/', 'r2', metrics1) ORDER BY key;
-CREATE TABLE t4 (a UInt32, b Nullable(Int32)) ENGINE = Memory;
-create table t4 (c26 String) engine = Log;
-CREATE TABLE t4 (id String, name Nullable(String), value UInt32) ENGINE = Join(ANY, LEFT, id) SETTINGS join_use_nulls = 0;
-CREATE TABLE t4 (z Int64) ENGINE = Memory;
-CREATE TABLE t4 AS numbers(100);
-create table t4(a UInt32) engine=MergeTree order by a partition by a % 4 SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE t4(x UInt32, y UInt32 ALIAS x + 1) ENGINE TinyLog;
-CREATE TABLE t4_r_error (   `key` UInt32,   `Path` String,   `Time` DateTime('UTC'),   `Value` Float64,   `Version` UInt32,   `col` UInt64 ) ENGINE = ReplicatedGraphiteMergeTree('/tables/{database}/t4/', 'r3', 'graphite_rollup_alternative') ORDER BY key;
-CREATE TABLE t4_r_ok (   `key` UInt32,   `Path` String,   `Time` DateTime('UTC'),   `Value` Float64,   `Version` UInt32,   `col` UInt64 ) ENGINE = ReplicatedGraphiteMergeTree('/tables/{database}/t4/', 'r2', 'graphite_rollup') ORDER BY key;
-CREATE TABLE t5 (vkey UInt32, pkey UInt32, c18 Float32, c19 UInt32) ENGINE = Log;
-create table t5(a UInt32) engine=MergeTree order by a partition by a % 8 SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-create table t50 (a Int, b Int, s String) engine = MergeTree order by a settings index_granularity = 50, index_granularity_bytes=1000, min_index_granularity_bytes=500;
-create table t6(a UInt32) engine=MergeTree order by a partition by a % 16 SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE t64 (   i8 Int8,   t_i8 Int8 Codec(T64, LZ4),   i16 Int16,   t_i16 Int16 Codec(T64, LZ4),   i32 Int32,   t_i32 Int32 Codec(T64, LZ4),   i64 Int64,   t_i64 Int64 Codec(T64, LZ4) ) ENGINE MergeTree() ORDER BY tuple();
-CREATE TABLE t64 (   u8 UInt8,   t_u8 UInt8 Codec(T64('bit'), LZ4),   u16 UInt16,   t_u16 UInt16 Codec(T64('bit'), LZ4),   u32 UInt32,   t_u32 UInt32 Codec(T64('bit'), LZ4),   u64 UInt64,   t_u64 UInt64 Codec(T64('bit'), LZ4) ) ENGINE MergeTree() ORDER BY tuple();
-CREATE TABLE t64 (   u8 UInt8,   t_u8 UInt8 Codec(T64, ZSTD),   u16 UInt16,   t_u16 UInt16 Codec(T64, ZSTD),   u32 UInt32,   t_u32 UInt32 Codec(T64, ZSTD),   u64 UInt64,   t_u64 UInt64 Codec(T64, ZSTD) ) ENGINE MergeTree() ORDER BY tuple();
-create table t7(a UInt32) engine=MergeTree order by a partition by intDiv(a, 2) SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-create table t8(a UInt32) engine=MergeTree order by a partition by intDiv(a, 2) * 2 + 1 SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-create table t9(a UInt32) engine=MergeTree order by a partition by intDiv(a, 2) SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE t_00180 (x UInt8) ENGINE = Null;
-CREATE TABLE t_00472 (x UInt8) ENGINE = Null;
-create table t_00575(d Date) engine MergeTree(d, d, 8192);
-create table t_00712_1 (a Int32, b Int32) engine = MergeTree partition by (a,b) order by (a);
-create table t_00712_2 (date Date, counter UInt64, sampler UInt64, alias_col alias date + 1) engine = MergeTree(date, intHash32(sampler), (counter, date, intHash32(sampler)), 8192);
-create table t_00725_2(a Int64, b Int64) engine = TinyLog;
-create table t_00725_3(a Int64, b Int64) engine = TinyLog;
-create table t_00725_4(a Int64, b Int64, c String) engine = TinyLog;
-CREATE TABLE t_00751 (   date Date,   platform Enum8('a' = 0, 'b' = 1),   app Enum8('a' = 0, 'b' = 1) ) ENGINE = Memory;
-create table t_00818(a Nullable(Int64), b Nullable(Int64), c Nullable(String)) engine = Memory;
-CREATE TABLE t_01411(   str LowCardinality(String),   arr Array(LowCardinality(String)) default [str] ) ENGINE = MergeTree() ORDER BY tuple() SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE t_01411_num(   num UInt8,   arr Array(LowCardinality(Int64)) default [num] ) ENGINE = MergeTree() ORDER BY tuple() SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-create table t_01568 engine Memory as select intDiv(number, 3) p, modulo(number, 3) o, number from numbers(9);
-CREATE TABLE t_01906 (   `id` UInt64,   `update_ts` DateTime,   `value` UInt32 ) ENGINE = ReplacingMergeTree(update_ts) PARTITION BY 0 * id ORDER BY (update_ts, id);
-CREATE TABLE t_02147 (date DateTime, v UInt32) ENGINE = MergeTree ORDER BY date;
-CREATE TABLE t_02147 (date DateTime, v UInt32) ENGINE = MergeTree ORDER BY toStartOfHour(date);
-CREATE TABLE t_02147_dist AS t_02147 ENGINE = Distributed(test_shard_localhost, currentDatabase(), t_02147);
-CREATE TABLE t_02147_merge AS t_02147 ENGINE = Merge(currentDatabase(), 't_02147');
-CREATE TABLE t_02156_dist (k UInt32, v String) ENGINE = Distributed(test_shard_localhost, currentDatabase(), t_02156_mt1);
-CREATE TABLE t_02156_log (k UInt32, v String) ENGINE = Log;
-CREATE TABLE t_02156_merge1 (k UInt32, v String) ENGINE = Merge(currentDatabase(), 't_02156_mt1|t_02156_mt2');
-CREATE TABLE t_02156_merge2 (k UInt32, v String) ENGINE = Merge(currentDatabase(), 't_02156_mt1|t_02156_log');
-CREATE TABLE t_02156_merge3 (k UInt32, v String) ENGINE = Merge(currentDatabase(), 't_02156_mt2|t_02156_dist');
-CREATE TABLE t_02156_mt1 (k UInt32, v String) ENGINE = MergeTree ORDER BY k SETTINGS min_bytes_for_wide_part=0;
-CREATE TABLE t_02156_mt2 (k UInt32, v String) ENGINE = MergeTree ORDER BY k SETTINGS min_bytes_for_wide_part=0;
-CREATE TABLE t_02267 (   a Array(String),   b UInt32,   c Array(String) ) ENGINE = MergeTree ORDER BY b SETTINGS index_granularity = 500, index_granularity_bytes = '10Mi';
-CREATE TABLE t_02267_collation (x varchar(255) COLLATE utf8_unicode_ci NOT NULL) ENGINE = Memory;
-CREATE TABLE t_02559 (   key UInt64,   value Array(String)) ENGINE = MergeTree ORDER BY key SETTINGS index_granularity=400, min_bytes_for_wide_part=0;
-CREATE TABLE t_02559 (a Int64, b Int64, c Int64) ENGINE = MergeTree ORDER BY a;
-CREATE TABLE t_02784 (c1 UInt64, c2 UInt64) ENGINE=MergeTree() ORDER BY c1 SETTINGS min_bytes_for_wide_part=1;
-CREATE TABLE t_02809(a Int64, b Int64, s String) ENGINE=MergeTree order by tuple() AS SELECT number, number%10, toString(arrayMap(i-> cityHash64(i*number), range(50))) FROM numbers(10000);
-CREATE TABLE t_02809_aux(c Int64) ENGINE=Memory() AS SELECT * FROM numbers(10);
-CREATE TABLE t_02809_set(c Int64) ENGINE=Set() AS SELECT * FROM numbers(10);
-CREATE TABLE t_02833 (tup Tuple(a UInt64, b UInt64)) ENGINE=Log;
-CREATE TABLE t_02848_mt1 (k UInt32, v String) ENGINE = MergeTree ORDER BY k SETTINGS min_bytes_for_wide_part=0;
-CREATE TABLE t_02848_mt2 (a UInt32, b String, c Int32, d String) ENGINE = MergeTree ORDER BY (a,b,c) SETTINGS min_bytes_for_wide_part=0;
-CREATE TABLE t_1 (   `order_0` UInt64,   `ordinary_1` UInt32,   `p_time` Date,   `computed` ALIAS 'computed_' || cast(`p_time` AS String),   `granule` MATERIALIZED cast(`order_0` / 0x2000 AS UInt64) % 3,   INDEX `index_granule` `granule` TYPE minmax GRANULARITY 1 ) ENGINE = MergeTree PARTITION BY toYYYYMM(p_time) ORDER BY order_0 SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-create table t_2354_dist_with_external_aggr(a UInt64, b String, c FixedString(100)) engine = MergeTree order by tuple() SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE t_2710_show_table(n1 UInt32, s String) engine=Log;
-CREATE TABLE t__fuzz_282 (`k1` DateTime, `k2` LowCardinality(Nullable(Float64)), `v` Nullable(UInt32)) ENGINE = ReplacingMergeTree ORDER BY (k1, k2) SETTINGS allow_nullable_key = 1;
-CREATE TABLE t__fuzz_307 (`k1` DateTime, `k2` LowCardinality(Nullable(Float64)), `v` Nullable(UInt32)) ENGINE = ReplacingMergeTree ORDER BY (k1, k2) settings allow_nullable_key=1;
-CREATE TABLE t_arr (a Array(UInt32)) ENGINE = MergeTree ORDER BY tuple() SETTINGS min_bytes_for_wide_part = 0;
-CREATE TABLE t_array_index (n Nested(key String, value String)) ENGINE = MergeTree ORDER BY n.key;
-CREATE TABLE t_async_insert_02193_1 (id UInt32, s String) ENGINE = Memory;
-CREATE TABLE t_async_insert_skip_settings (id UInt64) ENGINE = ReplicatedMergeTree('/clickhouse/{database}/tables/t_async_insert_skip_settings', '1') ORDER BY id;
-CREATE TABLE t_async_insert_table_function (id UInt32, s String) ENGINE = Memory;
-CREATE TABLE t_async_inserts_flush (a UInt64) ENGINE = Memory;
-CREATE TABLE t_bad_constraint(a UInt32, s String, CONSTRAINT c1 ASSUME a = toUInt32(s)) ENGINE = MergeTree ORDER BY tuple();
-create table t_buf as t engine = Buffer(currentDatabase(), 't', 16, 20, 100, 100000, 10000000, 50000000, 250000000);
-CREATE TABLE t_cache_sparse (id UInt64, v UInt64) ENGINE = MergeTree ORDER BY id SETTINGS ratio_of_defaults_for_sparse_serialization = 0.9;
-CREATE TABLE t_collisions (   `col1` Int32,   `e798545eefc8b7a1c2c81ff00c064ad8` Int32 ) ENGINE = MergeTree ORDER BY tuple() SETTINGS replace_long_file_name_to_hash = 1, max_file_name_length = 42;
-CREATE TABLE t_collisions (   `id` Int,   `col` Array(String),   `col.s` Array(LowCardinality(String)),   `col.u` Array(LowCardinality(String)) ) ENGINE = MergeTree ORDER BY id;
-CREATE TABLE t_collisions (   `id` Int,   `col` String,   `col.s` Array(LowCardinality(String)),   `col.u` Array(LowCardinality(String)) ) ENGINE = MergeTree ORDER BY id;
-CREATE TABLE t_collisions (   `very_very_long_column_name_that_will_be_replaced_with_hash` Int32,   `e798545eefc8b7a1c2c81ff00c064ad8` Int32 ) ENGINE = MergeTree ORDER BY tuple() SETTINGS replace_long_file_name_to_hash = 0;
-CREATE TABLE t_collisions (   `very_very_long_column_name_that_will_be_replaced_with_hash` Int32,   `e798545eefc8b7a1c2c81ff00c064ad8` Int32 ) ENGINE = MergeTree ORDER BY tuple() SETTINGS replace_long_file_name_to_hash = 1, max_file_name_length = 42;
-CREATE TABLE t_comp_subcolumns (id UInt32, n Nullable(String), arr Array(Array(UInt32))) ENGINE = MergeTree ORDER BY id;
-CREATE TABLE t_compact_vertical_merge (id UInt64, s LowCardinality(String), arr Array(UInt64)) ENGINE MergeTree ORDER BY id SETTINGS   index_granularity = 16,   min_bytes_for_wide_part = 0,   min_rows_for_wide_part = 100,   vertical_merge_algorithm_min_rows_to_activate = 1,   vertical_merge_algorithm_min_columns_to_activate = 1,   allow_vertical_merges_from_compact_to_wide_parts = 1;
-CREATE TABLE t_constant_index (   id UInt64,   INDEX t_constant_index 'foo' TYPE set(2) GRANULARITY 1 ) ENGINE = MergeTree ORDER BY id;
-CREATE TABLE t_constraints_where(a UInt32, b UInt32, CONSTRAINT c1 ASSUME b < 10) ENGINE = Memory;
-CREATE TABLE t_constraints_where(a UInt32, b UInt32, CONSTRAINT c1 ASSUME b >= 5, CONSTRAINT c2 ASSUME b <= 10) ENGINE = Memory;
-CREATE TABLE t_create_as_tuple ENGINE = MergeTree() ORDER BY number AS SELECT number, [('string',number)] AS array FROM numbers(3);
-CREATE TABLE t_d AS t ENGINE = Distributed(test_shard_localhost, currentDatabase(), t);
-create table t_delete_projection (x UInt32, y UInt64, projection p (select sum(y))) engine = MergeTree order by tuple() SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-create table t_delete_skip_index (x UInt32, y String, index i y type minmax granularity 3) engine = MergeTree order by tuple() SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE t_desc_subcolumns (   d Date,   n Nullable(String) COMMENT 'It is a nullable column',   arr1 Array(UInt32) CODEC(ZSTD),   arr2 Array(Array(String)) TTL d + INTERVAL 1 DAY,   t Tuple(s String, a Array(Tuple(a UInt32, b UInt32))) CODEC(ZSTD) ) ENGINE = MergeTree ORDER BY d;
-CREATE TABLE t_describe_options (   id UInt64 COMMENT 'index column',   arr Array(UInt64) DEFAULT [10, 20] CODEC(ZSTD),   t Tuple(a String, b UInt64) DEFAULT ('foo', 0) CODEC(ZSTD)) ENGINE = MergeTree ORDER BY id;
-create table t_different_dbs(a UInt64, b UInt64) engine = MergeTree order by a;
-create table t_dist (a int) engine Distributed(test_shard_localhost, currentDatabase(), 't_local', cityHash64(a));
-create table t_distinct_limit (d Date, id Int64) engine = MergeTree partition by toYYYYMM(d) order by d SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE t_distr (a Int) ENGINE = Distributed(test_shard_localhost, currentDatabase(), 't_local');
-CREATE TABLE t_dst (id UInt32, v UInt32) ENGINE = MergeTree ORDER BY id PARTITION BY id;
-CREATE TABLE t_enum(x Enum8('hello' = 1, 'world' = 2)) ENGINE = TinyLog;
-CREATE TABLE t_enum16( x Enum('hello' = 1, 'world' = 128) ) ENGINE = TinyLog;
-CREATE TABLE t_enum8( x Enum('hello' = 1, 'world' = 2) ) ENGINE = TinyLog;
-CREATE TABLE t_ephemeral_02205_1 (x UInt32 DEFAULT y, y UInt32 EPHEMERAL 17, z UInt32 DEFAULT 5) ENGINE = Memory;
-CREATE TABLE t_filter(s String, a Array(FixedString(3)), u UInt64, f UInt8) ENGINE = MergeTree ORDER BY u;
-CREATE TABLE t_flatten_object(data JSON) ENGINE = Memory;
-CREATE TABLE t_flatten_tuple(t Tuple(t1 Nested(a UInt32, s String), b UInt32, t2 Tuple(k String, v UInt32))) ENGINE = Memory;
-CREATE TABLE t_from (id UInt64, value Object('json')) ENGINE MergeTree() ORDER BY id;
-CREATE TABLE t_full_pk (k UInt64, v UInt64) ENGINE = MergeTree ORDER BY k SETTINGS ratio_of_defaults_for_sparse_serialization = 1.1, index_granularity = 30;
-CREATE TABLE t_func_to_subcolumns (id UInt64, arr Array(UInt64), n Nullable(String), m Map(String, UInt64)) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE t_functions_to_subcolumns_alias (id UInt64, t Tuple(UInt64, String), m Map(String, UInt64)) ENGINE = Memory;
-CREATE TABLE t_get_subcolumn (id UInt64, n Nested(u UInt64, s String)) ENGINE = MergeTree ORDER BY id;
-CREATE table t_github_json (   event_type LowCardinality(String) DEFAULT JSONExtractString(message_raw, 'type'),   repo_name LowCardinality(String) DEFAULT JSONExtractString(message_raw, 'repo', 'name'),   message JSON DEFAULT message_raw,   message_raw String EPHEMERAL ) ENGINE = MergeTree ORDER BY (event_type, repo_name);
-CREATE TABLE t_hardware_error (   KeyID UInt32 ) Engine = ReplicatedMergeTree('/clickhouse/tables/{shard}/{database}/t_async_insert_dedup', '{replica}') ORDER BY (KeyID);
-CREATE TABLE t_having (c0 Int32, c1 UInt64) ENGINE = Memory;
-CREATE TABLE t_in_tuple_index (   `ID` String,   `USER_ID` String,   `PLATFORM` LowCardinality(String) ) ENGINE = MergeTree() ORDER BY (PLATFORM, USER_ID, ID) SETTINGS index_granularity = 2048, index_granularity_bytes = '10Mi';
-create table t_index(a int, b String) engine=MergeTree() order by a;
-create table t_index(a int, b String) engine=ReplicatedMergeTree('/test/2319/{database}', '1') order by a;
-CREATE TABLE t_index_non_materialized (a UInt32) ENGINE = MergeTree ORDER BY tuple();
-create table t_index_replica(a int, b String) engine=ReplicatedMergeTree('/test/2319/{database}', '2') order by a;
-CREATE TABLE t_inter_02233 (n Int32) ENGINE = MergeTree ORDER BY n;
-CREATE TABLE t_json(id UInt64, data Object('JSON')) ENGINE = Log;
-CREATE TABLE t_json(id UInt64, data Object('JSON')) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE t_json(id UInt64, obj JSON) ENGINE = MergeTree ORDER BY id SETTINGS min_bytes_for_wide_part = 0;
-CREATE TABLE t_json(id UInt64, obj JSON) ENGINE = MergeTree ORDER BY id;
-CREATE TABLE t_json_10 (o JSON) ENGINE = Memory;
-CREATE TABLE t_json_14 (id UInt32, o JSON) ENGINE = Memory;
-CREATE TABLE t_json_17(obj JSON) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE t_json_2(id UInt64, data Object('JSON')) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE t_json_2(id UInt64, data Object('JSON')) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_01825_2/t_json_2', 'r1') ORDER BY tuple();
-CREATE TABLE t_json_5 (data JSON) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE t_json_analyzer (a JSON) ENGINE = Memory;
-CREATE TABLE t_json_array (id UInt32, arr Array(JSON)) ENGINE = MergeTree ORDER BY id;
-CREATE TABLE t_json_attach_partition(b UInt64, c JSON) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE t_json_bools (data JSON) ENGINE = Memory;
-CREATE TABLE t_json_desc (data JSON) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE t_json_dist AS t_json_local ENGINE = Distributed(test_cluster_two_shards, currentDatabase(), t_json_local);
-CREATE TABLE t_json_empty_str(id UInt32, o JSON) ENGINE = Memory;
-CREATE TABLE t_json_field (id UInt32, data JSON) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE t_json_local(data JSON) ENGINE = MergeTree ORDER BY tuple();
-create table t_json_merge (id UInt64, s1 String, s2 String) engine = Memory;
-CREATE TABLE t_json_mutations(id UInt32, s String, obj JSON) ENGINE = MergeTree ORDER BY id;
-CREATE TABLE t_json_null(id UInt64, data Object(Nullable('JSON'))) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE t_json_parallel (data JSON) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE t_json_partitions (id UInt32, obj JSON) ENGINE MergeTree ORDER BY id PARTITION BY id;
-CREATE TABLE t_json_sparse (data JSON) ENGINE = MergeTree ORDER BY tuple() SETTINGS ratio_of_defaults_for_sparse_serialization = 0.1, min_bytes_for_wide_part = 0, index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE t_json_str_5 (data String) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE t_json_wide_parts (data JSON) ENGINE MergeTree ORDER BY tuple() SETTINGS min_bytes_for_wide_part = 0;
-CREATE TABLE t_key_condition_float (a Float32) ENGINE = MergeTree ORDER BY a;
-CREATE TABLE t_key_condition_float (a Float64) ENGINE = MergeTree ORDER BY a;
-CREATE TABLE t_key_condition_float (a UInt64) ENGINE = MergeTree ORDER BY a;
-create table t_l5ydey on cluster test_shard_localhost as local_t_l5ydey   engine=Distributed('test_shard_localhost', currentDatabase(),'local_t_l5ydey', rand());
-CREATE TABLE t_large(a UInt32, b int) ENGINE=MergeTree order BY a settings min_bytes_for_wide_part=0, index_granularity=8192, index_granularity_bytes='10Mi';
-CREATE TABLE t_leading_zeroes(id INTEGER, input String, val INTEGER, expected INTEGER) ENGINE=MergeTree ORDER BY id;
-create table t_light(a int, b int, c int, index i_c(b) type minmax granularity 4) engine = MergeTree order by a partition by c % 5 settings min_bytes_for_wide_part=0;
-create table t_light(a int, b int, c int, index i_c(b) type minmax granularity 4) engine = MergeTree order by a partition by c % 5 settings min_bytes_for_wide_part=10000000;
-CREATE TABLE t_light_r1(a int, b int, c int, index i_c(b) TYPE minmax granularity 4) ENGINE = ReplicatedMergeTree('/test/02352/{database}/t_light','1') ORDER BY a PARTITION BY c % 5;
-CREATE TABLE t_light_r2(a int, b int, c int, index i_c(b) TYPE minmax granularity 4) ENGINE = ReplicatedMergeTree('/test/02352/{database}/t_light','2') ORDER BY a PARTITION BY c % 5;
-CREATE TABLE t_light_sync_r1(a int, b int, c int, index i_c(b) TYPE minmax granularity 4) ENGINE = ReplicatedMergeTree('/test/02352/{database}/t_sync','1') ORDER BY a PARTITION BY c % 5 SETTINGS min_bytes_for_wide_part=0;
-CREATE TABLE t_light_sync_r2(a int, b int, c int, index i_c(b) TYPE minmax granularity 4) ENGINE = ReplicatedMergeTree('/test/02352/{database}/t_sync','2') ORDER BY a PARTITION BY c % 5 SETTINGS min_bytes_for_wide_part=0;
-CREATE TABLE t_local (a Int) ENGINE = Memory;
-CREATE TABLE t_local (dummy UInt8) ENGINE = Memory;
-create table t_local(a int) engine Log;
-CREATE TABLE t_logical_expressions_optimizer_low_cardinality (a LowCardinality(String), b UInt32) ENGINE = Memory;
-CREATE TABLE t_lwd_mutations(id UInt64, v UInt64) ENGINE = MergeTree ORDER BY id;
-CREATE TABLE t_map (m Map(String, UInt32)) ENGINE = MergeTree ORDER BY tuple() SETTINGS min_bytes_for_wide_part = 0;
-CREATE TABLE t_map(id UInt64, m Map(String, UInt64)) ENGINE = MergeTree ORDER BY id;
-CREATE TABLE t_map_02014(i1 UInt64, i2 Int32, m1 Map(UInt32, String), m2 Map(Int8, String), m3 Map(Int128, String)) ENGINE = Memory;
-CREATE TABLE t_map_02014(s String, fs FixedString(3), m1 Map(String, String), m2 Map(FixedString(3), String)) ENGINE = Memory;
-CREATE TABLE t_map_contains (m Map(String, UInt32)) ENGINE = Memory;
-CREATE TABLE t_map_int_key (m1 Map(UInt32, UInt32), m2 Map(Date, UInt32)) ENGINE = Memory;
-CREATE TABLE t_map_null (a Map(String, String), b String) engine = MergeTree() ORDER BY a;
-CREATE TABLE t_materialize_column (i Int32) ENGINE = MergeTree ORDER BY i PARTITION BY i SETTINGS min_bytes_for_wide_part = 0;
-CREATE TABLE t_materialize_delete (id UInt64, v UInt64) ENGINE = MergeTree ORDER BY id PARTITION BY id % 10;
-CREATE TABLE t_max_rows_to_read (a UInt64) ENGINE = MergeTree ORDER BY a SETTINGS index_granularity = 4, index_granularity_bytes = '10Mi';
-CREATE TABLE t_memory_compressed (id UInt64, s String, arr Array(LowCardinality(String)), m Map(String, String)) ENGINE = Memory SETTINGS compress = 1;
-CREATE TABLE t_merge AS t ENGINE = Merge('02111_modify_table_comment', 't') COMMENT 'this is a Merge table';
-CREATE TABLE t_missed_subcolumns (id UInt64, n String, obj Object(Nullable('json'))) ENGINE = MergeTree ORDER BY id;
-CREATE TABLE t_modify_from_lc_1 (   id UInt64,   a LowCardinality(UInt32) CODEC(NONE) ) ENGINE = MergeTree ORDER BY tuple() SETTINGS min_bytes_for_wide_part = 0, index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE t_modify_from_lc_2 (   id UInt64,   a LowCardinality(UInt32) CODEC(NONE) ) ENGINE = MergeTree ORDER BY tuple() SETTINGS min_bytes_for_wide_part = 0, index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE t_modify_to_nullable (key UInt64, id UInt64, s String) ENGINE = MergeTree ORDER BY id PARTITION BY key SETTINGS min_bytes_for_wide_part = 0, ratio_of_defaults_for_sparse_serialization = 0.9;
-CREATE TABLE t_move_to_prewhere (id UInt32, a UInt8, b UInt8, c UInt8, fat_string String) ENGINE = MergeTree ORDER BY id PARTITION BY id SETTINGS min_rows_for_wide_part = 100, min_bytes_for_wide_part = 0;
-create table t_multi_prewhere (a UInt64, b UInt64, c UInt8) engine = MergeTree order by tuple() settings min_bytes_for_wide_part = 0;
-CREATE TABLE t_mutations_subcolumns (a UInt64, obj Object(Nullable('json'))) ENGINE = MergeTree ORDER BY a PARTITION BY a;
-CREATE TABLE t_mutations_subcolumns (id UInt64, n String, obj Object(Nullable('json'))) ENGINE = MergeTree ORDER BY id;
-CREATE TABLE t_nested_detach (n Nested(u UInt32, s String)) ENGINE = Log;
-CREATE TABLE t_nested_modify (id UInt64, `n.a` Array(UInt32), `n.b` Array(String)) ENGINE = MergeTree ORDER BY id SETTINGS min_bytes_for_wide_part = 0;
-CREATE TABLE t_nested_tuple (   endUserIDs Tuple(    _experience Tuple(      aaid Tuple(        id Nullable(String),        namespace Tuple(          code LowCardinality(Nullable(String))        ),        primary LowCardinality(Nullable(UInt8))      ),      mcid Tuple(        id Nullable(String),        namespace Tuple(          code LowCardinality(Nullable(String))        ),        primary LowCardinality(Nullable(UInt8))      )    )  ) ) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE t_nested_with_dots (`t.t2` Tuple(`t3.t4.t5` Tuple(`s1.s2` String, `u1.u2` UInt64), `s3.s4.s5` String)) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE t_nested_with_dots (n Nested(id UInt64, `values.id` Array(UInt64))) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE t_nul (n Nullable(UInt32)) ENGINE = MergeTree ORDER BY tuple() SETTINGS min_bytes_for_wide_part = 0;
-CREATE TABLE t_obj(id Int32, name Object('json')) ENGINE = MergeTree() ORDER BY id;
-CREATE TABLE t_object_convert(id UInt64, data Object(Nullable('JSON'))) Engine=Memory;
-CREATE TABLE t_object_convert2(id UInt64, data Object('JSON')) Engine=Memory;
-CREATE TABLE t_parse_tuples (   id UInt32,   arr Array(Array(Tuple(c1 Int32, c2 UInt8))) ) ENGINE = Memory;
-CREATE TABLE t_parts_columns_filenames (id UInt64, v UInt64, long_v_name UInt64, long_arr_name Array(UInt64), arr_col Array(UInt64)) ENGINE = MergeTree ORDER BY id SETTINGS   min_bytes_for_wide_part = 0,   replace_long_file_name_to_hash = 1,   max_file_name_length = 8,   ratio_of_defaults_for_sparse_serialization = 0.9;
-CREATE TABLE t_parts_profile_events (a UInt32) ENGINE = MergeTree ORDER BY tuple() SETTINGS min_rows_for_wide_part = 10, min_bytes_for_wide_part = 0;
-CREATE TABLE t_proj(a UInt32, b int) ENGINE=MergeTree order BY a settings min_bytes_for_wide_part=0;
-CREATE TABLE t_proj_external (   k1 UInt32,   k2 UInt32,   k3 UInt32,   value UInt32 ) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE t_projections_lwd (a UInt32, b UInt32, PROJECTION p (SELECT * ORDER BY b)) ENGINE = MergeTree ORDER BY a;
-create table t_q1ht4gq_5 (c_zeij INTEGER NOT NULL, c_fehk75l TEXT, c_jz TEXT, c_wynzuek TEXT, c_nkt INTEGER NOT NULL, c_g TEXT, c_mc2 TEXT, primary key(c_nkt)) engine = MergeTree();
-CREATE TABLE t_r_error (   `id` UInt64,   `val` String,   `legacy_ver` UInt64 ) ENGINE = ReplicatedReplacingMergeTree('/tables/{database}/t/', 'r3') ORDER BY id;
-CREATE TABLE t_r_ok (   `id` UInt64,   `val` String,   `legacy_ver` UInt64, ) ENGINE = ReplicatedReplacingMergeTree('/tables/{database}/t/', 'r2', legacy_ver) ORDER BY id;
-CREATE TABLE t_random_1 (   `ordinary_1` UInt32 ) ENGINE = GenerateRandom(1, 5, 3);
-CREATE TABLE t_read_in_order(a UInt32, b UInt32) ENGINE = MergeTree ORDER BY (a, b) SETTINGS index_granularity = 3, index_granularity_bytes = '10Mi';
-CREATE TABLE t_read_in_order(date Date, i UInt64, v UInt64) ENGINE = MergeTree ORDER BY (date, i) SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE t_read_in_order(dt DateTime, d Decimal64(5), v UInt64) ENGINE = MergeTree ORDER BY (toStartOfDay(dt), d) SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE t_remove_sample_by(id String) ENGINE = MergeTree ORDER BY id SAMPLE BY id SETTINGS check_sample_column_is_correct = 0;
-CREATE TABLE t_remove_sample_by(id UInt64) ENGINE = Memory;
-CREATE TABLE t_remove_sample_by(id UInt64) ENGINE = MergeTree ORDER BY id SAMPLE BY id;
-CREATE TABLE t_remove_sample_by(id UInt64) ENGINE = ReplicatedMergeTree('/clickhouse/{database}/t_remove_sample_by', '1') ORDER BY id SAMPLE BY id;
-CREATE TABLE t_reverse_order_virt_col (`order_0` Decimal(76, 53), `p_time` Date) ENGINE = MergeTree PARTITION BY toYYYYMM(p_time) ORDER BY order_0;
-create table t_row_exists(a int, _row_exists int) engine=Memory;
-create table t_row_exists(a int, _row_exists int) engine=MergeTree order by a;
-create table t_row_exists(a int, b int) engine=Memory;
-CREATE TABLE t_s3_compressed_blocks (id UInt64, s String CODEC(NONE)) ENGINE = MergeTree ORDER BY id SETTINGS storage_policy = 's3_cache', min_bytes_for_wide_part = 0;
-CREATE TABLE t_s3_events_02496 (a UInt64) ENGINE = S3(s3_conn, filename = 'test_02496_{_partition_id}', format = Parquet) PARTITION BY a;
-CREATE TABLE t_s3_filter_02495 (a UInt64) ENGINE = S3(s3_conn, filename = 'test_02495_{_partition_id}', format = Parquet) PARTITION BY a;
-CREATE TABLE t_skip_index_in (   a String,   b String,   c String,   INDEX idx_c c TYPE bloom_filter GRANULARITY 1 ) ENGINE = MergeTree ORDER BY (a, b);
-CREATE TABLE t_source(x Nullable(String)) ENGINE = TinyLog;
-CREATE TABLE t_source_part_is_intact (id UInt64, u UInt64) ENGINE = MergeTree ORDER BY id SETTINGS min_bytes_for_wide_part=1, ratio_of_defaults_for_sparse_serialization = 0.5;
-CREATE TABLE t_sparse (id UInt64, u UInt64, s String) ENGINE = MergeTree ORDER BY id SETTINGS ratio_of_defaults_for_sparse_serialization = 0.9, index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE t_sparse (id UInt64, u UInt64, s String, arr1 Array(String), arr2 Array(UInt64)) ENGINE = MergeTree ORDER BY tuple() SETTINGS ratio_of_defaults_for_sparse_serialization = 0.1;
-CREATE TABLE t_sparse_02235 (a UInt8) ENGINE = MergeTree ORDER BY tuple() SETTINGS ratio_of_defaults_for_sparse_serialization = 0.9;
-CREATE TABLE t_sparse_1 (id UInt64, v Int64) ENGINE = MergeTree ORDER BY tuple() SETTINGS ratio_of_defaults_for_sparse_serialization = 0;
-CREATE TABLE t_sparse_alter (id UInt64, u UInt64, s String) ENGINE = MergeTree ORDER BY id SETTINGS ratio_of_defaults_for_sparse_serialization = 0.5;
-CREATE TABLE t_sparse_columns_clear (arr Array(UInt64), v UInt64) ENGINE = MergeTree ORDER BY tuple() SETTINGS   ratio_of_defaults_for_sparse_serialization = 0.9,   min_bytes_for_wide_part=0;
-CREATE TABLE t_sparse_detach(id UInt64, s String) ENGINE = MergeTree ORDER BY id SETTINGS ratio_of_defaults_for_sparse_serialization = 0.9;
-CREATE TABLE t_sparse_distinct (id UInt32, v String) ENGINE = MergeTree ORDER BY id SETTINGS ratio_of_defaults_for_sparse_serialization = 0.9;
-CREATE TABLE t_sparse_distinct (id UInt32, v UInt64) ENGINE = MergeTree ORDER BY id SETTINGS ratio_of_defaults_for_sparse_serialization = 0.9;
-CREATE TABLE t_sparse_full (id UInt64, u UInt64, s String) ENGINE = MergeTree ORDER BY id SETTINGS index_granularity = 32, index_granularity_bytes = '10Mi', ratio_of_defaults_for_sparse_serialization = 0.1;
-CREATE TABLE t_sparse_intersect (a UInt64, c Int64) ENGINE = MergeTree ORDER BY tuple() SETTINGS ratio_of_defaults_for_sparse_serialization = 0.8;
-CREATE TABLE t_sparse_mutation (id UInt64, v UInt64) ENGINE = MergeTree ORDER BY id SETTINGS ratio_of_defaults_for_sparse_serialization = 0.9;
-CREATE TABLE t_sparse_mutations_1 (key UInt8, id UInt64, s String) ENGINE = MergeTree ORDER BY id PARTITION BY key SETTINGS ratio_of_defaults_for_sparse_serialization = 0.9;
-CREATE TABLE t_sparse_mutations_2 (key UInt8, id UInt64, s String) ENGINE = MergeTree ORDER BY id PARTITION BY key SETTINGS ratio_of_defaults_for_sparse_serialization = 0.9;
-CREATE TABLE t_sparse_mutations_3 (key UInt8, id UInt64, s String) ENGINE = MergeTree ORDER BY id PARTITION BY key SETTINGS ratio_of_defaults_for_sparse_serialization = 0.9;
-CREATE TABLE t_sparse_mutations_4 (k UInt64, v UInt64) ENGINE = MergeTree ORDER BY k SETTINGS ratio_of_defaults_for_sparse_serialization = 0.9;
-CREATE TABLE t_sparse_mutations_5 (k UInt64, t Tuple(UInt64, UInt64)) ENGINE = MergeTree ORDER BY k SETTINGS ratio_of_defaults_for_sparse_serialization = 0.9;
-CREATE TABLE t_sparse_pk (k UInt64, s String) ENGINE = MergeTree ORDER BY k SETTINGS ratio_of_defaults_for_sparse_serialization = 0.0, index_granularity = 1;
-CREATE TABLE t_sparse_pk (k UInt64, v UInt64 CODEC(NONE)) ENGINE = MergeTree ORDER BY k SETTINGS ratio_of_defaults_for_sparse_serialization = 0.0, index_granularity = 30;
-CREATE TABLE t_sparse_reload (id UInt64, v UInt64) ENGINE = MergeTree ORDER BY id SETTINGS ratio_of_defaults_for_sparse_serialization = 0.95;
-CREATE TABLE t_sparse_s3 (id UInt32, cond UInt8, s String) engine = MergeTree ORDER BY id settings ratio_of_defaults_for_sparse_serialization = 0.01, storage_policy = 's3_cache', min_bytes_for_wide_part = 0, min_compress_block_size = 1, index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE t_sparse_short_circuit (a UInt64, b UInt64) ENGINE = MergeTree ORDER BY tuple() SETTINGS ratio_of_defaults_for_sparse_serialization = 0.9;
-CREATE TABLE t_sparse_sort_limit (date Date, i UInt64, v Int16) ENGINE = MergeTree ORDER BY (date, i) SETTINGS ratio_of_defaults_for_sparse_serialization = 0.9;
-CREATE TABLE t_src (id UInt32, v UInt32) ENGINE = MergeTree ORDER BY id PARTITION BY id;
-CREATE TABLE t_str (   `creation_time` String ) ENGINE = MergeTree PARTITION BY creation_time ORDER BY creation_time;
-CREATE TABLE t_subcolumns_dist AS t_subcolumns_local ENGINE = Distributed(test_cluster_two_shards, currentDatabase(), t_subcolumns_local);
-CREATE TABLE t_subcolumns_local (arr Array(UInt32), n Nullable(String), t Tuple(s1 String, s2 String)) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE t_subcolumns_sizes (id UInt64, arr Array(UInt64), n Nullable(String), d JSON) ENGINE = MergeTree ORDER BY id SETTINGS min_bytes_for_wide_part = 0;
-CREATE TABLE t_summing_lc (   `key` UInt32,   `val` LowCardinality(UInt32),   `date` DateTime ) ENGINE = SummingMergeTree(val) PARTITION BY date ORDER BY key;
-CREATE TABLE t_to (id UInt64, value Nullable(String)) ENGINE MergeTree() ORDER BY id;
-CREATE TABLE t_transform_or(B AggregateFunction(uniq, String), A String) Engine=MergeTree ORDER BY (A);
-CREATE TABLE t_ttl_modify_column (   InsertionDateTime DateTime,   TTLDays Int32 DEFAULT CAST(365, 'Int32') ) ENGINE = MergeTree ORDER BY tuple() TTL InsertionDateTime + toIntervalDay(TTLDays) SETTINGS min_bytes_for_wide_part = 0;
-CREATE TABLE t_ttl_modify_column (InsertionDateTime DateTime) ENGINE = MergeTree ORDER BY tuple() TTL InsertionDateTime + INTERVAL 3 DAY SETTINGS min_bytes_for_wide_part = 0;
-CREATE TABLE t_ttl_move_if_exists (d DateTime, a UInt32) ENGINE = MergeTree ORDER BY tuple() TTL d TO DISK IF EXISTS 'non_existing_disk';
-CREATE TABLE t_ttl_non_deterministic(A Int64) ENGINE = MergeTree ORDER BY A TTL now() + toIntervalMonth(1);
-CREATE TABLE t_ttl_non_deterministic(A Int64) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/ttl2', '1') ORDER BY A;
-CREATE TABLE t_ttl_non_deterministic(A Int64, B Int64 TTL now() + toIntervalMonth(1)) ENGINE = MergeTree ORDER BY A;
-CREATE TABLE t_ttl_non_deterministic(A Int64, B Int64) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/ttl4', '1') ORDER BY A;
-CREATE TABLE t_tup (t Tuple(s String, u UInt32)) ENGINE = MergeTree ORDER BY tuple() SETTINGS min_bytes_for_wide_part = 0;
-CREATE TABLE t_tuple_element(t1 Tuple(a UInt32, s String), t2 Tuple(UInt32, String)) ENGINE = Memory;
-CREATE TABLE t_tuple_null (t Tuple(null UInt32)) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE t_tuple_numeric (t JSON) ENGINE = Memory;
-CREATE TABLE t_tuple_numeric (t Tuple(`1` Tuple(`2` Int, `3` Int), `4` Int)) ENGINE = Memory;
-CREATE TABLE t_tuple_numeric (t Tuple(Tuple(Int, Int), Int)) ENGINE = Memory;
-create table t_tuple_sparse (a UInt64, b UInt64) ENGINE = MergeTree ORDER BY tuple() SETTINGS ratio_of_defaults_for_sparse_serialization = 0.0;
-CREATE TABLE t_uncompressed_cache(id UInt32, n UInt32) ENGINE = MergeTree ORDER BY tuple() SETTINGS min_bytes_for_wide_part = 0, min_compress_block_size = 12, max_compress_block_size = 12, index_granularity = 4;
-CREATE TABLE t_update_empty_nested (   `id` UInt32,   `nested.arr1` Array(UInt64), ) ENGINE = MergeTree ORDER BY id SETTINGS min_bytes_for_wide_part = 0, index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE t_uuid (x UInt8, y UUID, z String) ENGINE = TinyLog;
-CREATE TABLE t_uuid (x UUID) ENGINE=MergeTree ORDER BY x;
-CREATE TABLE t_uuid (x UUID) ENGINE=TinyLog;
-CREATE TABLE t_vertical_merges (  a  Array(Int16),  b  Int8 ) ENGINE = MergeTree ORDER BY tuple() settings   vertical_merge_algorithm_min_columns_to_activate=1,   vertical_merge_algorithm_min_rows_to_activate=1,   min_bytes_for_wide_part=0;
-CREATE TABLE t_vertical_merges (  a  Nullable(String),  b  Int8 ) ENGINE = MergeTree ORDER BY tuple() settings   vertical_merge_algorithm_min_columns_to_activate=1,   vertical_merge_algorithm_min_rows_to_activate=1,   min_bytes_for_wide_part=0;
-CREATE TABLE t_with_dots (id UInt32, arr Array(UInt32), `b.id` UInt32, `b.arr` Array(UInt32)) ENGINE = Log;
-CREATE TABLE t_with_dots (id UInt32, arr Array(UInt32), `b.id` UInt32, `b.arr` Array(UInt32)) ENGINE = MergeTree ORDER BY id SETTINGS min_bytes_for_wide_part = 0;
-CREATE TABLE t_with_dots (id UInt32, arr Array(UInt32), `b.id` UInt32, `b.arr` Array(UInt32)) ENGINE = MergeTree ORDER BY id;
-create table tab (x UInt64, `arr.a` Array(UInt64), `arr.b` Array(UInt64)) engine = MergeTree order by x;
-CREATE TABLE tab (   `key` UInt64,   `str` String ) ENGINE = MergeTree ORDER BY key;
-CREATE TABLE tab (   `machine_id` UInt64,   `name` String,   `timestamp` DateTime ) ENGINE = MergeTree PARTITION BY toYYYYMM(timestamp) ORDER BY machine_id;
-CREATE TABLE tab (   `uint64` UInt64,   `int32` Nullable(Int32) COMMENT 'example comment',   `str` String,   INDEX idx str TYPE set(1000) ) ENGINE = MergeTree PRIMARY KEY (uint64) ORDER BY (uint64, str);
-CREATE TABLE tab (   d    Date,   dt    DateTime('UTC'),   dt64   DateTime64(6, 'UTC'),   str_d  String,   str_dt  String,   str_dt64 String,   invalid String ) ENGINE MergeTree ORDER BY dt;
-CREATE TABLE tab (   foo Array(LowCardinality(String)),   INDEX idx foo TYPE bloom_filter ) ENGINE = MergeTree PRIMARY KEY tuple();
-CREATE TABLE tab (   i8 Int8,   i16 Int16,   i32 Int32,   i64 Int64,   i128 Int128,   i256 Int256,   u8 UInt8,   u16 UInt16,   u32 UInt32,   u64 UInt64,   u128 UInt128,   u256 UInt256,   id UUID,   s String,   fs FixedString(33),   a Array(UInt8),   t Tuple(UInt16, UInt32),   d Date,   dt DateTime('Asia/Istanbul'),   dt64 DateTime64(3, 'Asia/Istanbul'),   dec128 Decimal128(3),   dec256 Decimal256(4),   lc LowCardinality(String)) engine = MergeTree PARTITION BY (i8, i16, i32, i64, i128, i256, u8, u16, u32, u64, u128, u256, id, s, fs, a, t, d, dt, dt64, dec128, dec256, lc) ORDER BY tuple();
-CREATE TABLE tab (   id UInt32,   str String,   INDEX inv_idx(str) TYPE inverted(0) GRANULARITY 1 ) ENGINE = MergeTree ORDER BY id SETTINGS index_granularity = 1;
-CREATE TABLE tab (`k` UInt64, `s` Map(String, String), INDEX af mapKeys(s) TYPE inverted(2) GRANULARITY 1) ENGINE = MergeTree ORDER BY k SETTINGS index_granularity = 2, index_granularity_bytes = '10Mi';
-create table tab (a Int32, b Int32, c Int32, d Int32) engine = MergeTree order by (a, b, c);
-create table tab (A Int64) Engine=MergeTree order by tuple() SETTINGS min_bytes_for_wide_part = 0, min_rows_for_wide_part = 0;
-create table tab (a LowCardinality(String), b LowCardinality(String)) engine = MergeTree partition by a order by tuple() settings min_bytes_for_wide_part = 0, min_rows_for_wide_part = 0;
-create table tab (a UInt32, b UInt32, c UInt32, d UInt32) engine = MergeTree order by ((a + b) * c, sin(a / b));
-CREATE TABLE tab (col FixedString(2)) engine = MergeTree() ORDER BY col;
-CREATE TABLE tab (col String) Engine=MergeTree ORDER BY col;
-create table tab (d Int64, s AggregateFunction(groupUniqArrayArray, Array(UInt64)), c SimpleAggregateFunction(groupUniqArrayArray, Array(UInt64))) engine = SummingMergeTree() order by d;
-create table tab (date Date, time DateTime, data String) ENGINE = MergeTree(date, (time, data), 8192);
-create table tab (date Date, val UInt64, val2 UInt8 default 42, val3 UInt8 default val2 + 1, val4 UInt64 alias val) engine = MergeTree(date, (date, val), 8192);
-CREATE TABLE tab (haystack String, pattern String) engine = MergeTree() ORDER BY haystack;
-CREATE TABLE tab (i UInt32, a UInt32) ENGINE=Memory;
-create table tab (i8 Int8, i16 Int16, i32 Int32, i64 Int64, u8 UInt8, u16 UInt16, u32 UInt32, u64 UInt64, id UUID, s String, fs FixedString(33), a Array(UInt8), t Tuple(UInt16, UInt32), d Date, dt DateTime('Asia/Istanbul'), dt64 DateTime64(3, 'Asia/Istanbul'), dec128 Decimal128(3), lc LowCardinality(String)) engine = MergeTree PARTITION BY (i8, i16, i32, i64, u8, u16, u32, u64, id, s, fs, a, t, d, dt, dt64, dec128, lc) order by tuple();
-CREATE TABLE tab (id Int32, vec Array(Float32)) ENGINE=MergeTree ORDER BY id;
-CREATE TABLE tab (id Int32, vec Array(Float32), INDEX idx(vec) TYPE annoy) ENGINE=MergeTree ORDER BY id;
-CREATE TABLE tab (id Int32, vec Array(Float32), INDEX idx(vec) TYPE usearch) ENGINE=MergeTree ORDER BY id;
-create table tab (id UInt32, haystack String, pattern String) engine = MergeTree() order by id;
-CREATE TABLE tab (id UInt64, vec Array(Float32), INDEX idx vec TYPE annoy()) ENGINE = MergeTree() ORDER BY (id);
-CREATE TABLE tab (id UInt64, vec Array(Float32), INDEX idx vec TYPE usearch()) ENGINE = MergeTree() ORDER BY (id);
-CREATE TABLE tab (id UInt64, vec Tuple(Float32, Float32), INDEX idx vec TYPE annoy()) ENGINE = MergeTree() ORDER BY (id);
-CREATE TABLE tab (id UInt64, vec Tuple(Float32, Float32), INDEX idx vec TYPE usearch()) ENGINE = MergeTree() ORDER BY (id);
-create table tab (id UUID, value UInt32) engine = MergeTree PARTITION BY id order by tuple();
-CREATE TABLE tab (idna String) ENGINE=MergeTree ORDER BY idna;
-CREATE TABLE tab (item_id UInt64, price_sold Nullable(Float32), date Date) ENGINE = MergeTree ORDER BY item_id;
-create table tab (k UInt64, s Array(String), INDEX af(s) TYPE inverted(2))   ENGINE = MergeTree() ORDER BY k   SETTINGS index_granularity = 2, index_granularity_bytes = '10Mi';
-CREATE TABLE tab (k UInt64, s Map(String,String), INDEX af(mapKeys(s)) TYPE inverted(2))   ENGINE = MergeTree() ORDER BY k   SETTINGS index_granularity = 2, index_granularity_bytes = '10Mi';
-CREATE TABLE tab (key Tuple(UInt64, UInt64), val UInt64) ENGINE=Memory;
-CREATE TABLE tab (line String) ENGINE = Memory();
-CREATE TABLE tab (line String, patterns Array(String)) ENGINE = MergeTree ORDER BY line;
-CREATE TABLE tab (puny String) ENGINE=MergeTree ORDER BY puny;
-CREATE TABLE tab (row_id UInt32, str String, INDEX idx str TYPE inverted) ENGINE = MergeTree ORDER BY row_id;
-CREATE TABLE tab (s FixedString(8), l Int8, r Int8) ENGINE = Memory;
-CREATE TABLE tab (s String, l Int8, r Int8) ENGINE = Memory;
-CREATE TABLE tab (str String) ENGINE=MergeTree ORDER BY str;
-create table tab (t DateTime) engine = MergeTree order by toStartOfDay(t + 1);
-create table tab (t DateTime) engine = MergeTree order by toStartOfDay(t);
-CREATE TABLE tab (val Int64, tz String) engine=Log;
-create table tab (val UInt8) engine = MergeTree order by val;
-create table tab (x DateTime) engine = MergeTree order by x settings allow_nullable_key = 1, index_granularity = 2;
-create table tab (x DateTime) engine MergeTree order by x;
-create table tab (x Int32, y Int32) engine = MergeTree partition by ((x + y) + 1) * 2 order by tuple();
-create table tab (x Int32, y Int32) engine = MergeTree partition by x + y order by tuple();
-create table tab (x LowCardinality(Nullable(Float64))) engine = MergeTree order by x settings allow_nullable_key=1;
-create table tab (x LowCardinality(String)) engine = MergeTree order by tuple();
-create table tab (x LowCardinality(UInt8)) engine = MergeTree order by x settings allow_nullable_key = 1, index_granularity = 2;
-create table tab (x Nullable(UInt8)) engine = MergeTree order by x settings allow_nullable_key = 1, index_granularity = 2;
-create table tab (x String) engine = MergeTree order by x as select 'Hello';
-create table tab (x UInt128) engine = MergeTree order by x settings allow_nullable_key = 1, index_granularity = 2;
-create table tab (x UInt32, y UInt32) engine = MergeTree order by x;
-CREATE TABLE tab (x UInt32, y UInt32) ENGINE = MergeTree() ORDER BY x;
-create table tab (x UInt64) engine = MergeTree order by tuple();
-create table tab (x UInt64, v UInt64) engine = ReplacingMergeTree(v) order by (x, sipHash64(x)) sample by sipHash64(x);
-create table tab (x UInt64, y UInt64) engine MergeTree() order by (x, y);
-CREATE TABLE tab(c UInt64) ENGINE = Memory AS SELECT 1;
-CREATE TABLE tab(e8 Enum8('hello' = -5, 'world' = 15), e16 Enum16('shark' = -999, 'eagle' = 9999)) ENGINE MergeTree ORDER BY tuple();
-CREATE TABLE tab(id Int32, vec Array(Float32), INDEX idx (vec, id) TYPE annoy()) ENGINE = MergeTree ORDER BY id;
-CREATE TABLE tab(id Int32, vec Array(Float32), INDEX idx vec TYPE annoy('invalidDistance')) ENGINE = MergeTree ORDER BY id;
-CREATE TABLE tab(id Int32, vec Array(Float32), INDEX idx vec TYPE annoy('L2Distance', 'not an UInt64')) ENGINE = MergeTree ORDER BY id;
-CREATE TABLE tab(id Int32, vec Array(Float32), INDEX idx vec TYPE annoy('too', 'many', 'arguments')) ENGINE = MergeTree ORDER BY id;
-CREATE TABLE tab(id Int32, vec Array(Float32), INDEX idx vec TYPE annoy()) ENGINE = MergeTree ORDER BY id SETTINGS index_granularity_bytes=0, min_rows_for_wide_part = 0, min_bytes_for_wide_part = 0, index_granularity=8192;
-CREATE TABLE tab(id Int32, vec Array(Float32), INDEX idx vec TYPE annoy()) ENGINE = MergeTree ORDER BY id;
-CREATE TABLE tab(id Int32, vec Array(Float32), INDEX idx vec TYPE annoy(3)) ENGINE = MergeTree ORDER BY id;
-CREATE TABLE tab(id Int32, vec Array(Float32), INDEX idx vec TYPE usearch('L2Distance', 'invalidKind')) ENGINE = MergeTree ORDER BY id;
-CREATE TABLE tab(id Int32, vec Array(Float32), INDEX idx vec TYPE usearch()) ENGINE = MergeTree ORDER BY id SETTINGS index_granularity_bytes=0, min_rows_for_wide_part = 0, min_bytes_for_wide_part = 0, index_granularity=8192;
-CREATE TABLE tab(id Int32, vec Array(Float32), INDEX idx vec TYPE usearch()) ENGINE = MergeTree ORDER BY id;
-CREATE TABLE tab(id Int32, vec Float32, INDEX idx vec TYPE annoy()) ENGINE = MergeTree ORDER BY id;
-CREATE TABLE tab(k UInt64, s String, INDEX af(s) TYPE inverted(2))       ENGINE = MergeTree() ORDER BY k       SETTINGS index_granularity = 2, index_granularity_bytes = '10Mi';
-CREATE TABLE tab(k UInt64, s String, INDEX af(s) TYPE inverted(2))   ENGINE = MergeTree()   ORDER BY k   SETTINGS index_granularity = 2, index_granularity_bytes = '10Mi';
-CREATE TABLE tab(k UInt64, s String, INDEX af(s) TYPE inverted(2))   ENGINE = MergeTree() ORDER BY k   SETTINGS index_granularity = 2, index_granularity_bytes = '10Mi';
-CREATE TABLE tab(val Int64, tz String) engine=Log;
-create table tab1 (a1 Int32, b1 Int32) engine = MergeTree order by a1;
-CREATE TABLE tab1 (a1 Int32, b1 Int32, val UInt64) ENGINE = MergeTree ORDER BY a1;
-create table tab1_copy (a1 Int32, b1 Int32) engine = MergeTree order by a1;
-create table tab2 (a2 Int32, b2 Int32) engine = MergeTree order by a2;
-CREATE TABLE tab2 (a2 LowCardinality(Int32), b2 Int32) ENGINE = MergeTree ORDER BY a2;
-create table tab2 (id String, version Int64, l String, accountCode String, z Int32) engine = ReplacingMergeTree(z) PRIMARY KEY (accountCode, id) ORDER BY (accountCode, id, version, l);
-create table tab3 (a3 Int32, b3 Int32) engine = MergeTree order by a3;
-create table tab4 (a UInt32, b UInt32, c UInt32, d UInt32) engine = MergeTree order by sin(a / b);
-create table tab5 (a UInt32, b UInt32, c UInt32, d UInt32) engine = MergeTree order by (a + b) * c;
-CREATE TABLE tab_00481 (date Date, value UInt64, s String, m FixedString(16)) ENGINE = MergeTree(date, (date, value), 8);
-create table tab_00484 (date Date, x UInt64, s FixedString(128)) engine = MergeTree PARTITION BY date ORDER BY (date, x) SETTINGS min_bytes_for_wide_part = 0, ratio_of_defaults_for_sparse_serialization = 1;
-create table tab_00484 (date Date, x UInt64, s String) engine = MergeTree PARTITION BY date ORDER BY (date, x) SETTINGS min_bytes_for_wide_part = 0, ratio_of_defaults_for_sparse_serialization = 1;
-create table tab_00577 (date Date, version UInt64, val UInt64) engine = ReplacingMergeTree(version) partition by date order by date settings enable_vertical_merge_algorithm = 1,   vertical_merge_algorithm_min_rows_to_activate = 0, vertical_merge_algorithm_min_columns_to_activate = 0, min_rows_for_wide_part = 0,   min_bytes_for_wide_part = 0, allow_experimental_replacing_merge_with_cleanup=1;
-CREATE TABLE tab_00610(d Date, x UInt32) ENGINE MergeTree(d, x, 8192);
-create table tab_00612 (key UInt64, arr Array(UInt64)) Engine = MergeTree order by key;
-create table tab_00612 (key UInt64, n Nested(x UInt64)) Engine = MergeTree order by key;
-CREATE TABLE tab_00612 (key1 Int32, id1 Int64, c1 Int64) ENGINE = MergeTree PARTITION BY id1 ORDER BY (key1);
-CREATE TABLE tab_00625 (   date Date,   key UInt32,   testMap Nested(   k UInt16,   v UInt64) ) ENGINE = SummingMergeTree(date, (date, key), 1);
-create table tab_00650 (val UInt32, n Nested(x Nullable(UInt8), y String)) engine = Memory;
-create table tab_00650 (val UInt32, n Nested(x UInt8, y String)) engine = Memory;
-create table tab_00712_1 (a UInt32, b UInt32 alias a + 1, c UInt32) engine = MergeTree order by tuple();
-create table tab_00712_2 (a UInt32, b UInt32) engine = MergeTree order by b % 2 sample by b % 2;
-create table tab_00717 (a String, b StringWithDictionary) engine = MergeTree order by a;
-create table tab_00718 (a String, b LowCardinality(UInt32)) engine = MergeTree order by a;
-CREATE TABLE tab_annoy(id Int32, vec Array(Float32), INDEX idx vec TYPE annoy() GRANULARITY 2) ENGINE = MergeTree ORDER BY id SETTINGS index_granularity = 3;
-CREATE TABLE tab_annoy(id Int32, vec Array(Float32), INDEX idx vec TYPE annoy()) ENGINE = MergeTree ORDER BY id SETTINGS index_granularity = 8192;
-CREATE TABLE tab_lc (x UInt64, y LowCardinality(String)) engine = MergeTree order by x SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE tab_usearch(id Int32, vec Array(Float32), INDEX idx vec TYPE usearch() GRANULARITY 2) ENGINE = MergeTree ORDER BY id SETTINGS index_granularity = 3;
-CREATE TABLE tab_usearch(id Int32, vec Array(Float32), INDEX idx vec TYPE usearch()) ENGINE = MergeTree ORDER BY id SETTINGS index_granularity = 8192;
-CREATE TABLE tab_usearch(id Int32, vec Tuple(Float32, Float32), INDEX idx vec TYPE usearch('cosineDistance', 'f64') GRANULARITY 2) ENGINE = MergeTree ORDER BY id SETTINGS index_granularity = 3;
-CREATE TABLE tab_x(k UInt64, s String, INDEX af(s) TYPE inverted())   ENGINE = MergeTree() ORDER BY k   SETTINGS index_granularity = 2, index_granularity_bytes = '10Mi';
-CREATE TABLE tabl_1 (key String) ENGINE MergeTree ORDER BY key;
-CREATE TABLE tabl_2 (key String) ENGINE MergeTree ORDER BY key;
-CREATE TABLE table (   col MATERIALIZED dictGet(currentDatabase() || '.dict', 'value', toUInt32(1)) ) ENGINE = MergeTree() ORDER BY tuple();
-CREATE TABLE table (a UInt32, date Date, b UInt64, c UInt64, str String, d Int8, arr Array(UInt64), arr_alias Array(UInt64) ALIAS arr) ENGINE = MergeTree(date, intHash32(c), (a, date, intHash32(c), b), 8192);
-CREATE TABLE table (id Int32, values Array(Tuple(LowCardinality(String), Int32)), date Date) ENGINE MergeTree() PARTITION BY toYYYYMM(date) ORDER BY (id, date);
-CREATE TABLE table (uid UUID, date DateTime('Asia/Kamchatka')) ENGINE = MergeTree ORDER BY date;
-create table table(query String, test String, run UInt32, metrics Array(UInt32), version UInt32) engine Memory;
-create table table1 (   col1 Int32,   col2 Int32 ) ENGINE = MergeTree partition by tuple() order by col1;
-CREATE TABLE table1 ( dt Date, id Int32, arr Array(LowCardinality(String)) ) ENGINE = MergeTree PARTITION BY toMonday(dt) ORDER BY (dt, id) SETTINGS index_granularity = 8192;
-CREATE TABLE table1 ( id String ) ENGINE = Log;
-CREATE TABLE table1 (A String, B String, ts DateTime) ENGINE = MergeTree PARTITION BY toStartOfDay(ts) ORDER BY (ts, A, B);
-CREATE TABLE table1 (a UInt32) ENGINE = Memory;
-CREATE TABLE table1 (a UInt32, b UInt32) ENGINE = Memory;
-CREATE TABLE table1 (column1 String) ENGINE=MergeTree() ORDER BY tuple();
-CREATE TABLE table1 (id Int64, v UInt64) ENGINE = ReplicatedReplacingMergeTree('/clickhouse/tables/{database}/test_table12', '1', v) PARTITION BY id % 200 ORDER BY id;
-CREATE TABLE table1 (lat Float64, lon Float64, resolution UInt8) ENGINE = Memory;
-CREATE TABLE table1 (lat1 Float64, lon1 Float64, lat2 Float64, lon2 Float64) ENGINE = Memory;
-CREATE TABLE table1 (number UInt64) ENGINE=MergeTree ORDER BY tuple();
-CREATE TABLE table1 (resolution UInt8) ENGINE = Memory;
-CREATE TABLE table1 (str1 String, str2 String) ENGINE = Memory;
-CREATE TABLE table1 AS system.columns ENGINE = Distributed('test_shard_localhost', system, columns);
-CREATE TABLE table1(a String, b Date) ENGINE MergeTree order by a;
-CREATE TABLE table1__fuzz_19 (`id` LowCardinality(UInt16), `v` DateTime64(3, 'UTC')) ENGINE = ReplacingMergeTree(v) PARTITION BY id % 200 ORDER BY id;
-CREATE TABLE table2 (     EventDate Date,     Id Int32,     Value Int32 ) Engine = MergeTree() PARTITION BY toYYYYMM(EventDate) ORDER BY Id;
-CREATE TABLE table2 ( dt Date, id Int32, arr Array(LowCardinality(String)) ) ENGINE = MergeTree PARTITION BY toMonday(dt) ORDER BY (dt, id) SETTINGS index_granularity = 8192;
-CREATE TABLE table2 ( parent_id String ) ENGINE = Log;
-CREATE TABLE table2 (a UInt32, b UInt32) ENGINE = Memory;
-CREATE TABLE table2 (B String, ts DateTime) ENGINE = MergeTree PARTITION BY toStartOfDay(ts) ORDER BY (ts, B);
-CREATE TABLE table2 (column1 String, column2 String, column3 String) ENGINE=MergeTree() ORDER BY tuple();
-CREATE TABLE table2 (id Int64, v UInt64) ENGINE = MergeTree() PARTITION BY (toInt32(id / 2) % 3, id % 200) ORDER BY id;
-CREATE TABLE table2 (number UInt64) ENGINE=MergeTree ORDER BY tuple();
-CREATE TABLE table2 AS numbers(5);
-CREATE TABLE table2 AS system.tables ENGINE = Distributed('test_shard_localhost', system, tables);
-CREATE TABLE table2(c String, a String, d Date) ENGINE MergeTree order by c;
-CREATE TABLE table3 (b UInt32, c UInt32) ENGINE = Memory;
-CREATE TABLE table3 (column3 String) ENGINE=MergeTree() ORDER BY tuple();
-CREATE TABLE table3 (id Int64, v UInt64) ENGINE = MergeTree() PARTITION BY (id % 200, (id % 200) % 10, toInt32(round((id % 200) / 2, 0))) ORDER BY id;
-CREATE TABLE table3 AS table2;
-CREATE TABLE table4 (id Int64, v UInt64, s String, INDEX a (id * 2, s) TYPE minmax GRANULARITY 3 ) ENGINE = MergeTree() PARTITION BY id % 10 ORDER BY v;
-CREATE TABLE table5 (a UInt32, b UInt32, c UInt32) ENGINE = Memory;
-CREATE TABLE table_01 (   date Date,   n Int32 ) ENGINE = MergeTree() PARTITION BY date ORDER BY date;
-create table table_01323_many_parts (x UInt64) engine = MergeTree order by x partition by x % 100;
-create table table_02152 (a String, b LowCardinality(String)) engine = MergeTree order by a;
-CREATE TABLE table_02184 (x UInt8) PARTITION BY x;
-CREATE TABLE table_02184 (x UInt8) PRIMARY KEY x;
-CREATE TABLE table_02184 (x UInt8);
-CREATE TABLE table_02184 (x UInt8, y int, PRIMARY KEY (x)) PRIMARY KEY y;
-CREATE TABLE table_02513 (n UInt64) ENGINE=MergeTree() ORDER BY tuple() SETTINGS index_granularity=100;
-CREATE TABLE table_02916 (   `ID` UInt32,   `Name` String ) ENGINE = MergeTree ORDER BY ID;
-CREATE TABLE table_02916_distributed (   `ID` UInt32,   `Name` String ) ENGINE = Distributed(test_unavailable_shard, currentDatabase(), table_02916, rand()) SETTINGS skip_unavailable_shards = 1;
-create table table_1 (x UInt32, y String) engine = MergeTree order by x;
-CREATE TABLE table_2009_part (`i` Int64, `d` Date, `s` String) ENGINE = MergeTree PARTITION BY toYYYYMM(d) ORDER BY i;
-CREATE TABLE table_a (   event_id UInt64,   something String,   other Nullable(String) ) ENGINE = MergeTree ORDER BY (event_id);
-CREATE TABLE table_b (   event_id UInt64,   something Nullable(String),   other String ) ENGINE = MergeTree ORDER BY (event_id);
-CREATE TABLE table_b (a Float64, b Int64) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE table_c (a Float64) ENGINE = MergeTree ORDER BY a;
-CREATE TABLE table_csv_01375 AS tmp_01375 ENGINE = File(CSVWithNames);
-CREATE TABLE table_d (a Float64, count Int64) ENGINE MergeTree ORDER BY a;
-CREATE TABLE table_e (a Float64, count Int64) ENGINE MergeTree ORDER BY a;
-CREATE TABLE table_f (a Float64, count Int64) ENGINE MergeTree ORDER BY a;
-CREATE TABLE table_float (   f Float64,   u UInt32 ) ENGINE = MergeTree ORDER BY (f, u);
-CREATE TABLE table_for_alter (   `d` Date,   `a` String,   `b` UInt8,   `x` String,   `y` Int8,   `version` UInt64,   `sign` Int8 DEFAULT 1 ) ENGINE = ReplicatedVersionedCollapsingMergeTree('/clickhouse/tables/{database}/01526_alter_add/t1', '1', sign, version) PARTITION BY y ORDER BY d SETTINGS index_granularity = 8192;
-CREATE TABLE table_for_alter (  id UInt64,  Data String ) ENGINE = MergeTree() ORDER BY id SETTINGS index_granularity=4096, index_granularity_bytes = '10Mi';
-CREATE TABLE table_for_alter (  id UInt64,  Data String ) ENGINE = MergeTree() ORDER BY id SETTINGS parts_to_throw_insert = 1, parts_to_delay_insert = 1;
-CREATE TABLE table_for_rename (  date Date,  key UInt64,  value1 String,  value2 String,  value3 String ) ENGINE = MergeTree() PARTITION BY date ORDER BY key;
-CREATE TABLE table_for_rename (  date Date,  key UInt64,  value1 String,  value2 String,  value3 String DEFAULT concat(value1, ' + ', value2) ) ENGINE = MergeTree() PARTITION BY date ORDER BY key;
-CREATE TABLE table_for_rename (  date Date,  key UInt64,  value1 String,  value2 String,  value3 String MATERIALIZED concat(value1, ' + ', value2) ) ENGINE = MergeTree() PARTITION BY date ORDER BY key;
-CREATE TABLE table_for_rename (  date Date,  key UInt64,  value1 String,  value2 String,  value3 String,  CONSTRAINT cs_value1 CHECK toInt64(value1) < toInt64(value2),  CONSTRAINT cs_value2 CHECK toInt64(value2) < toInt64(value3) ) ENGINE = MergeTree() PARTITION BY date ORDER BY key;
-CREATE TABLE table_for_rename1 (  date Date,  key UInt64,  value1 String,  value2 String,  value3 String,  CONSTRAINT cs_value1 CHECK toInt64(value1) < toInt64(value2),  CONSTRAINT cs_value2 CHECK toInt64(value2) < toInt64(value3) ) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_01277/test_for_rename', '1') PARTITION BY date ORDER BY key;
-CREATE TABLE table_for_rename_nested (   date Date,   key UInt64,   n Nested(x UInt32, y String),   value1 String ) ENGINE = MergeTree() PARTITION BY date ORDER BY key;
-CREATE TABLE table_for_rename_pk (  date Date,  key1 UInt64,  key2 UInt64,  key3 UInt64,  value1 String,  value2 String ) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_01213/table_for_rename_pk1', '1') PARTITION BY date ORDER BY (key1, pow(key2, 2), key3);
-CREATE TABLE table_for_rename_with_primary_key (  date Date,  key1 UInt64,  key2 UInt64,  key3 UInt64,  value1 String,  value2 String,  INDEX idx (value1) TYPE set(1) GRANULARITY 1 ) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_01213/table_for_rename_pk2', '1') PARTITION BY date ORDER BY (key1, key2, key3) PRIMARY KEY (key1, key2);
-CREATE TABLE table_for_reset_setting ( id UInt64, Data String ) ENGINE = MergeTree() ORDER BY id SETTINGS index_granularity=4096, index_granularity_bytes = '10Mi';
-CREATE TABLE table_for_synchronous_mutations1(k UInt32, v1 UInt64) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_01049/table_for_synchronous_mutations', '1') ORDER BY k SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE table_for_synchronous_mutations2(k UInt32, v1 UInt64) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_01049/table_for_synchronous_mutations', '2') ORDER BY k SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE table_for_synchronous_mutations_no_replication(k UInt32, v1 UInt64) ENGINE MergeTree ORDER BY k SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE table_for_ttl(  d DateTime,  key UInt64,  value String) ENGINE = MergeTree() ORDER BY tuple() PARTITION BY key;
-CREATE TABLE table_from_numbers AS numbers(1000);
-CREATE TABLE table_from_remote AS remote('localhost', 'system', 'numbers');
-CREATE TABLE table_from_select ENGINE = MergeTree() ORDER BY tuple() AS SELECT number from system.numbers LIMIT 1;
-CREATE TABLE table_function_dictionary_source_table (  id UInt64,  value UInt64 ) ENGINE = TinyLog;
-CREATE TABLE table_gcd_codec_one_hundred_ones (a Nullable(Int64) CODEC (GCD,LZ4)) ENGINE=MergeTree Order by ();
-CREATE TABLE table_gcd_codec_one_hundred_zeros (a Nullable(Int64) CODEC (GCD,LZ4)) ENGINE=MergeTree ORDER BY ();
-CREATE TABLE table_key (keycol UInt16) ENGINE = MergeTree() ORDER BY (keycol) PARTITION BY tuple() as SELECT * FROM VALUES ( (1), (2), (3) );
-create table table_map (a Map(String, String)) engine = Memory;
-create table table_map (a Map(String, String), b String) engine = MergeTree() order by a SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-create table table_map (a Map(String, String), b String, c Array(String), d Array(String)) engine = Memory;
-create table table_map (a Map(String, UInt64)) engine = MergeTree() order by a SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE table_map (a Map(UInt8, Int), b UInt8, c UInt32, d Array(String), e Array(String)) engine = MergeTree order by tuple();
-CREATE TABLE table_map (id UInt32, col Map(String, UInt64)) engine = MergeTree() ORDER BY tuple();
-CREATE TABLE table_map (n UInt32, m Map(String, Int)) ENGINE = MergeTree ORDER BY n SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE table_map (n UInt32, m Map(String, Int)) ENGINE = MergeTree ORDER BY n SETTINGS min_bytes_for_wide_part = 0, index_granularity = 8192, index_granularity_bytes = '10Mi';
-create table table_map(a Map(String, Array(UInt8))) Engine = MergeTree() order by a SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-create table table_map(a Map(UInt8, UInt64), b UInt8) Engine = MergeTree() order by b SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE table_map_with_key_integer (d DATE, m Map(Date, Int32)) ENGINE = MergeTree() ORDER BY d;
-CREATE TABLE table_map_with_key_integer (d DATE, m Map(Int128, String)) ENGINE = MergeTree() ORDER BY d;
-CREATE TABLE table_map_with_key_integer (d DATE, m Map(Int32, UInt16)) ENGINE = MergeTree() ORDER BY d;
-CREATE TABLE table_map_with_key_integer (d DATE, m Map(Int8, Int8)) ENGINE = MergeTree() ORDER BY d;
-CREATE TABLE table_map_with_key_integer (d DATE, m Map(UUID, UInt16)) ENGINE = MergeTree() ORDER BY d;
-CREATE TABLE table_map_with_key_integer (m Map(Float32, String)) ENGINE = MergeTree() ORDER BY tuple();
-CREATE TABLE table_MySQLWire (x UInt64) ENGINE = File(MySQLWire);
-CREATE TABLE table_one (id UInt64, value UInt64) ENGINE = MergeTree PARTITION BY id ORDER BY value SETTINGS index_granularity = 8192, index_granularity_bytes = 0, min_bytes_for_wide_part = 100;
-CREATE TABLE table_one (id UInt64, value UInt64) ENGINE = MergeTree PARTITION BY id ORDER BY value SETTINGS index_granularity = 8192, index_granularity_bytes = 1024, min_bytes_for_wide_part = 100;
-CREATE TABLE table_rename_with_default (  date Date,  key UInt64,  value1 String,  value2 String DEFAULT concat('Hello ', value1),  value3 String ALIAS concat('Word ', value1) ) ENGINE = MergeTree() PARTITION BY date ORDER BY key;
-CREATE TABLE table_rename_with_ttl (  date1 Date,  date2 Date,  value1 String,  value2 String TTL date1 + INTERVAL 500 MONTH ) ENGINE = ReplicatedMergeTree('/clickhouse/{database}/test_01213/table_rename_with_ttl', '1') ORDER BY tuple() TTL date2 + INTERVAL 500 MONTH;
-CREATE TABLE table_rename_with_ttl (  date1 Date,  value1 String ) ENGINE = ReplicatedMergeTree('/clickhouse/{database}/test/table_rename_with_ttl_01378', '1') ORDER BY tuple();
-CREATE TABLE table_set ( x UInt32 ) ENGINE = Set;
-CREATE TABLE table_to_drop(x Int8) ENGINE=Log;
-CREATE TABLE table_tsv_01375 AS tmp_01375 ENGINE = File(TSVWithNames);
-CREATE TABLE table_two (id UInt64, value UInt64) ENGINE = MergeTree PARTITION BY id ORDER BY value SETTINGS index_granularity = 8192, index_granularity_bytes = 0, min_bytes_for_wide_part = 100;
-CREATE TABLE table_two (id UInt64, value UInt64) ENGINE = MergeTree PARTITION BY id ORDER BY value SETTINGS index_granularity = 8192, index_granularity_bytes = 1024, min_bytes_for_wide_part = 100;
-CREATE TABLE table_with_column_ttl (   EventTime DateTime,   UserID UInt64,   Age UInt8 TTL EventTime + INTERVAL 3 MONTH ) ENGINE MergeTree() ORDER BY tuple() SETTINGS min_bytes_for_wide_part = 0;
-CREATE TABLE table_with_compact_parts (  date Date,  key UInt64,  value1 String,  value2 String,  value3 String ) ENGINE = MergeTree() PARTITION BY date ORDER BY key settings index_granularity = 8, min_rows_for_wide_part = 10, min_bytes_for_wide_part = '10G';
-CREATE TABLE table_with_complex_default (i Int8, n UInt8 DEFAULT 42, s String DEFAULT concat('test', CAST(n, 'String'))) ENGINE=TinyLog;
-CREATE TABLE table_with_cyclic_defaults (a DEFAULT b, b DEFAULT a) ENGINE = Memory;
-CREATE TABLE table_with_defaults_on_aliases (col1 UInt32, col2 ALIAS col1, col3 DEFAULT col2) Engine = MergeTree() ORDER BY tuple();
-CREATE TABLE table_with_enum (keycol UInt16, enum_col Enum8('First' = 1,'Second' = 2))   ENGINE = MergeTree() ORDER BY (keycol) PARTITION BY tuple() as SELECT * FROM VALUES ( (2, 'Second'), (4, 'Second') );
-CREATE TABLE table_with_enum_column_for_csv_insert (   Id Int32,   Value Enum('ef' = 1, 'es' = 2) ) ENGINE=Memory();
-CREATE TABLE table_with_enum_column_for_json_insert (   Id Int32,   Value Enum('ef' = 1, 'es' = 2) ) ENGINE=Memory();
-CREATE TABLE table_with_enum_column_for_tsv_insert (   Id Int32,   Value Enum('ef' = 1, 'es' = 2) ) ENGINE=Memory();
-CREATE TABLE table_with_function_pk  (   key1 UInt8,   key2 UInt32,   key3 DateTime64(6, 'UTC'),   value String  ) ENGINE = MergeTree ORDER BY (cast(value as UInt64), key2) SETTINGS min_compress_block_size=65536, max_compress_block_size=65536;
-CREATE TABLE table_with_lc_key (   enum_key Enum8('x' = 2, 'y' = 1),   lc_key LowCardinality(String),   value String ) ENGINE MergeTree() ORDER BY (enum_key, lc_key);
-CREATE TABLE table_with_multi_pk (  key1 UInt8,  key2 UInt32,  key3 DateTime64(6, 'UTC'),  value String ) ENGINE = MergeTree ORDER BY (key1, key2, key3) SETTINGS min_compress_block_size=65536, max_compress_block_size=65536;
-CREATE TABLE table_with_pk_clear(  key1 UInt64,  key2 String,  value1 String,  value2 String ) ENGINE = MergeTree() ORDER by (key1, key2);
-CREATE TABLE table_with_range(`name` String,`number` UInt32)　ENGINE = S3('http://localhost:11111/test/tsv_with_header.tsv', 'test', 'testtest', 'TSVWithNames')　SETTINGS input_format_with_names_use_header = 1;
-CREATE TABLE table_with_single_pk (  key UInt8,  value String ) ENGINE = MergeTree ORDER BY key SETTINGS min_compress_block_size=65536, max_compress_block_size=65536;
-CREATE TABLE table_with_string_key (   int_key Int8,   str_key String,   value String ) ENGINE MergeTree() ORDER BY (int_key, str_key);
-CREATE TABLE table_with_version (   key UInt64,   value String,   version UInt8,   sign Int8 ) ENGINE VersionedCollapsingMergeTree(sign, version) ORDER BY key;
-CREATE TABLE table_with_version_replicated_1 (   key UInt64,   value String,   version UInt8,   sign Int8 ) ENGINE ReplicatedVersionedCollapsingMergeTree('/clickhouse/' || currentDatabase() || '/test_01511/{shard}/t', '1_{replica}', sign, version) ORDER BY key;
-CREATE TABLE table_with_version_replicated_2 (   key UInt64,   value String,   version UInt8,   sign Int8 ) ENGINE ReplicatedVersionedCollapsingMergeTree('/clickhouse/' || currentDatabase() || '/test_01511/{shard}/t', '2_{replica}', sign, version) ORDER BY key;
-CREATE TABLE table_without_pk (  key1 UInt8,  key2 UInt32,  key3 DateTime64(6, 'UTC'),  value String ) ENGINE = MergeTree ORDER BY tuple() SETTINGS min_compress_block_size=65536, max_compress_block_size=65536;
-CREATE TABLE tableCommon (`key` FixedString(15), `value` Nullable(Int8)) ENGINE = Log();
-CREATE TABLE tableFile_00968(number UInt64) ENGINE = File('TSV');
-CREATE TABLE tableFlowers (`key` FixedString(15), `name` Nullable(Int8)) ENGINE = Log();
-CREATE TABLE tableMergeTree_00968(id UInt64) ENGINE = MergeTree() PARTITION BY id ORDER BY id;
-create table tableOut (n int)   engine=ReplicatedMergeTree('/test/02916/{database}/table', '2')   order by tuple()   settings     storage_policy='s3_cache',     allow_remote_fs_zero_copy_replication=1;
-CREATE TABLE tableTrees (`key` FixedString(15), `name` Nullable(Int8), `name2` Nullable(Int8)) ENGINE = Log();
-CREATE TABLE tags (   id String,   seqs Array(UInt8),   create_time DateTime DEFAULT now() ) engine=ReplacingMergeTree() ORDER BY (id);
-CREATE TABLE target (n Int64) engine=MergeTree order by n;
-CREATE TABLE tb (   date Date,   `index` Int32,   value Int32,   idx Int32 ALIAS `index` ) ENGINE = MergeTree PARTITION BY date ORDER BY (date, `index`);
-CREATE TABLE tb1 (n UInt32, a Array(Int32)) engine=Memory;
-CREATE TABLE tb2 (`period` UInt32, `ts` Array(Float64)) ENGINE = Memory;
-create table tba (event_id Int64, event_dt Int64) Engine =MergeTree order by event_id ;
-CREATE TABLE tbl (   a UInt64,   b UInt64,   c UInt64,   d UInt64,   e UInt64,   INDEX mm1_idx (a, c, d) TYPE minmax,   INDEX mm2_idx (c, d, e) TYPE minmax,   INDEX set_idx (e)    TYPE set(100),   INDEX blf_idx (d, b)  TYPE bloom_filter(0.8) ) ENGINE = MergeTree PRIMARY KEY (c, a);
-CREATE TABLE tbl (`lc` LowCardinality(UUID)) ENGINE = Memory;
-CREATE TABLE tbl (eventDate Date, id String) ENGINE = MergeTree() PARTITION BY tuple() ORDER BY eventDate;
-CREATE TABLE tbl (id UInt32) ENGINE = MergeTree() ORDER BY (id + 1, id + 1);
-CREATE TABLE tbl (id UInt32) ENGINE = MergeTree() ORDER BY id;
-CREATE TABLE tbl (id UInt32, INDEX idx (id + 1, id + 1) TYPE minmax) ENGINE = MergeTree() ORDER BY id;
-CREATE TABLE tbl (id1 UInt32) ENGINE = MergeTree() ORDER BY id1;
-CREATE TABLE tbl (key UInt64, agg UInt64) ENGINE = MergeTree ORDER BY key;
-create table tbl (p Int64, t Int64, f Float64) Engine=MergeTree partition by p order by t settings index_granularity=1;
-create table tbl (s String, i int) engine MergeTree order by i;
-CREATE TABLE tbl(a String, b UInt32, c Float64, d Int64, e UInt8) ENGINE=MergeTree ORDER BY tuple();
-create table tbl(dt DateTime, i int, j String, v Float64) engine MergeTree partition by (toDate(dt), i % 2, length(j)) order by i settings index_granularity = 1;
-create table tbl2(i int) engine MergeTree order by i;
-CREATE TABLE tbl_repr( ts DateTime, x String) ENGINE=MergeTree ORDER BY ts;
-create table td engine = Distributed(test_shard_localhost, currentDatabase(), 't') as t;
-create table td1 engine = Distributed(test_shard_localhost, currentDatabase(), 't') as t;
-create table td2 engine = Distributed(test_shard_localhost, currentDatabase(), 't', xxHash32(val), default) as t;
-create table td3 engine = Distributed(test_shard_localhost, currentDatabase(), 't', xxHash32(val), 'default') as t;
-CREATE TABLE tdm (x DateTime('Asia/Istanbul')) ENGINE = MergeTree ORDER BY x SETTINGS write_final_mark = 0;
-CREATE TABLE tdm2 (timestamp UInt32) ENGINE = MergeTree ORDER BY timestamp SETTINGS index_granularity = 1;
-CREATE TABLE tdm__fuzz_23 (`x` UInt256) ENGINE = MergeTree ORDER BY x SETTINGS write_final_mark = 0;
-CREATE TABLE temp (   x Decimal(38, 2),   y Nullable(Decimal(38, 2)) ) ENGINE = Memory;
-create table tesd_dedupl (x UInt32, y UInt32) engine = MergeTree order by x;
-CREATE TABLE test (   `a0` UInt64 DEFAULT a1 + 1,   `a1` UInt64 DEFAULT a0 + 1,   `a2` UInt64 DEFAULT a3 + a4,   `a3` UInt64 DEFAULT a2 + 1,   `a4` UInt64 ALIAS a3 + 1 ) ENGINE = Log;
-CREATE TABLE test (   `c_id` String,   `p_id` String,   `d` String ) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test/test_table', '1') ORDER BY (c_id, p_id);
-CREATE TABLE test (   `c_id` String,   `p_id` String,   `d` UInt32 ) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test/test_table', '1') ORDER BY (c_id, p_id);
-CREATE TABLE test (   `id` UInt64,   `t` Tuple(a UInt64, b Array(Tuple(c UInt64, d UInt64))) ) ENGINE = MergeTree ORDER BY id SETTINGS min_rows_for_wide_part = 1, min_bytes_for_wide_part = 1, index_granularity = 8192;
-CREATE TABLE test (   `pt` String,   `count_distinct_exposure_uv` AggregateFunction(uniqHLL12, Int64) ) ENGINE = AggregatingMergeTree ORDER BY pt;
-CREATE TABLE test (   `t` UInt8,   `flag` UInt8,   `id` UInt8 ) ENGINE = MergeTree PARTITION BY t ORDER BY (t, id) SETTINGS index_granularity = 8192;
-CREATE TABLE test (   `x` Tuple(UInt64, UInt64) ) ENGINE = MergeTree ORDER BY x;
-CREATE TABLE test (   a Date,   b UInt32,   c UInt64,   p Nested (     at1 String,     at2 String   ) ) ENGINE = MergeTree() PARTITION BY a ORDER BY b SETTINGS index_granularity = 8192;
-CREATE TABLE test (   c1 String,   c2 String,   c3 String ) ENGINE = ReplacingMergeTree ORDER BY (c1, c3);
-CREATE TABLE test (   dt Date,   id UInt32,   val Nullable(UInt32) ) ENGINE = MergeTree(dt, id, 8192);
-CREATE TABLE test (   ip IPv4 Codec(ZSTD(6)), ) ENGINE MergeTree() order by ip;
-CREATE TABLE test (   uuid FixedString(16),   id int,   ns FixedString(16),   dt DateTime64(6), ) ENGINE = MergeTree ORDER BY (id, dt, uuid);
-CREATE TABLE test (   x Nullable(Int32) ) ENGINE = Log;
-CREATE TABLE test (  `id` UInt64,  `name` String,  PROJECTION projection_name  (    SELECT sum(id) GROUP BY id, name  ) ) ENGINE = MergeTree() ORDER BY id SETTINGS index_granularity_bytes = 10000;
-create table test (  n1 UInt32,  n2 UInt32 alias murmurHash3_32(n1),  n3 UInt32 materialized n2 + 1 )engine=MergeTree order by n1;
-CREATE TABLE test (  `id` Nullable(String),  `status` Nullable(Enum8('NEW' = 0, 'CANCEL' = 1)),  `nested.nestedType` Array(Nullable(String)),  `partition` Date ) ENGINE = MergeTree() PARTITION BY partition ORDER BY  partition SETTINGS index_granularity = 8192;
-CREATE TABLE test (  EventDate Date ) ENGINE = MergeTree ORDER BY tuple() PARTITION BY toMonday(EventDate);
-create table test ( `id` UInt32, `time` UInt32, index `id` (`id`) type set(0) granularity 3, index `time` (`time`) type minmax granularity 3 ) engine = MergeTree() order by (`time`);
-CREATE TABLE test ( A Int32, B Int32 ) ENGINE = Memory();
-CREATE TABLE test ( col1 Int64, dt Date ) ENGINE = MergeTree PARTITION BY dt ORDER BY tuple();
-CREATE TABLE test (`int8` Int8, `int16` Int16, `int32` Int32, `int64` Int64, INDEX idx (`int8`, `int16`, `int32`, `int64`) TYPE bloom_filter(0.01) GRANULARITY 8192 ) ENGINE = MergeTree() ORDER BY `int8`;
-CREATE TABLE test (`key` UInt32, `arr` ALIAS [1, 2]) ENGINE = MergeTree PARTITION BY tuple() ORDER BY tuple();
-CREATE TABLE test (`key` UInt32, `arr` ALIAS [1, 2], `xx` MATERIALIZED arr[1]) ENGINE = MergeTree PARTITION BY tuple() ORDER BY tuple();
-CREATE TABLE test (`key` UInt32, `arr` Array(UInt32) ALIAS [1, 2], `xx` MATERIALIZED arr[1]) ENGINE = MergeTree PARTITION BY tuple() ORDER BY tuple();
-CREATE TABLE test (`key` UInt32, `arr` Array(UInt32) ALIAS [1, 2], `xx` UInt32 MATERIALIZED arr[1]) ENGINE = MergeTree PARTITION BY tuple() ORDER BY tuple();
-CREATE TABLE test (`val` LowCardinality(Nullable(String))) ENGINE = MergeTree ORDER BY tuple() SETTINGS index_granularity = 8192;
-CREATE TABLE test (a DateTime, b DateTime(), c DateTime(2), d DateTime('Asia/Istanbul'), e DateTime(3, 'Asia/Istanbul'), f DateTime32, g DateTime32('Asia/Istanbul'), h DateTime(0)) ENGINE = MergeTree ORDER BY a;
-CREATE TABLE test (a Float32, b int) Engine = MergeTree() ORDER BY tuple() PARTITION BY a;
-CREATE TABLE test (a Float32, b int, c String, d Float64) Engine = MergeTree() ORDER BY tuple() PARTITION BY (b, c, d) settings allow_floating_point_partition_key=false;
-CREATE TABLE test (a Int32) ENGINE = MergeTree() ORDER BY tuple() SETTINGS disk = disk(type = cache,           max_size = '1Mi',           path = '/kek',           disk = 'local_disk');
-CREATE TABLE test (a Int32) ENGINE = MergeTree() order by tuple() SETTINGS disk = disk(type=local, path='/local/');
-CREATE TABLE test (a Int32, b String) ENGINE = MergeTree() ORDER BY a SETTINGS disk = disk(type = cache, disk = 'local_disk', name = '$CLICHOUSE_TEST_UNIQUE_NAME', cache_name='cache_collection_sql');
-CREATE TABLE test (a Int32, b String) ENGINE = MergeTree() ORDER BY tuple() SETTINGS disk = disk(   type = 'cache',   max_size = '10Mi',   path = '${CLICKHOUSE_TEST_UNIQUE_NAME}/',   disk = disk(type='local_blob_storage', path='/var/lib/clickhouse/disks/${CLICKHOUSE_TEST_UNIQUE_NAME}/'));
-CREATE TABLE test (a Int32, b String) ENGINE = MergeTree() ORDER BY tuple() SETTINGS disk = disk(   type = 'local_blob_storage',   path = '${CLICKHOUSE_TEST_UNIQUE_NAME}/');
-create table test (a String) Engine MergeTree order by a partition by a;
-create table test (a String, index a a type tokenbf_v1(0, 2, 0) granularity 1) engine MergeTree order by a;
-create table test (a Tuple(b String, c Tuple(d Nullable(UInt64), e Array(UInt32), f Array(Tuple(g String, h Map(String, Array(Tuple(i String, j UInt64))))), k Date), l Nullable(String))) engine=Memory;
-CREATE TABLE test (a UInt8, b UInt8, c UInt16 ALIAS a + b) ENGINE = MergeTree ORDER BY a;
-CREATE TABLE test (col Int8) ENGINE=MergeTree ORDER BY tuple() SETTINGS vertical_merge_algorithm_min_rows_to_activate=1,     vertical_merge_algorithm_min_columns_to_activate=1,     min_bytes_for_wide_part = 0;
-CREATE TABLE test (col1 Nullable(DOUBLE), col2 Nullable(DOUBLE), col3 DOUBLE) ENGINE=Memory;
-create table test (i int) engine MergeTree order by tuple();
-CREATE TABLE test (i UInt64) Engine = MergeTree() order by i;
-create table test (id Int32, key String) engine=MergeTree() order by tuple() settings index_granularity = 8192, index_granularity_bytes = '10Mi';
-create table test (id Int64, d Int64, projection dummy(select * order by id)) engine MergeTree order by id;
-CREATE TABLE test (id String, `abc.1` String, `abc.2` String, `abc` String) ENGINE MergeTree order by id;
-CREATE TABLE test (id UInt32, a UInt32) ENGINE = MergeTree ORDER BY id SETTINGS allow_experimental_block_number_column = true,   vertical_merge_algorithm_min_rows_to_activate = 1,   vertical_merge_algorithm_min_columns_to_activate = 0,   min_rows_for_wide_part = 1,   min_bytes_for_wide_part = 1;
-CREATE TABLE test (id UInt32, a UInt32) ENGINE = MergeTree ORDER BY id SETTINGS allow_experimental_block_number_column = true;
-CREATE TABLE test (id UInt64, date Date) ENGINE = MergeTree ORDER BY id AS select *, '2023-12-25' from numbers(100);
-CREATE TABLE test (id UInt64, date Date) ENGINE = MergeTree ORDER BY id;
-create table test (id UInt64,insid UInt64,insidvalue Nullable(UInt64), index insid_idx (insid) type bloom_filter() granularity 1, index insidvalue_idx (insidvalue) type bloom_filter() granularity 1) ENGINE=MergeTree() ORDER BY (insid,id);
-create table Test (impression_id String,impression_id_compressed FixedString(16) DEFAULT UUIDStringToNum(substring(impression_id, 1, 36)), impression_id_hashed UInt16 DEFAULT reinterpretAsUInt16(impression_id_compressed), event_date Date ) ENGINE = MergeTree(event_date, impression_id_hashed, (event_date, impression_id_hashed), 8192);
-CREATE TABLE test (k UInt64, v String) ENGINE = MergeTree ORDER BY k;
-create table test (key Int) engine=MergeTree() order by tuple() settings ratio_of_defaults_for_sparse_serialization=0.1;
-CREATE TABLE test (key UInt32) Engine = Buffer(currentDatabase(), test, 16, 10, 100, 10000, 1000000, 10000000, 100000000);
-CREATE TABLE test (key UInt32, value String) Engine=MergeTree() ORDER BY key SETTINGS min_bytes_for_wide_part = 10485760,     compress_marks=false,     compress_primary_key=false,     disk = disk(       type = cache,       max_size = '128Mi',       path = 'filesystem_cache_bypass_cache_threshold/',       enable_bypass_cache_with_threshold = 1,       bypass_cache_threshold = 100,       delayed_cleanup_interval_ms = 100,       disk = 's3_disk');
-CREATE TABLE test (key UInt32, value String) Engine=MergeTree() ORDER BY key SETTINGS min_bytes_for_wide_part = 10485760,     compress_marks=false,     compress_primary_key=false,     disk = disk(       type = cache,       max_size = '128Mi',       path = 'filesystem_query_cache/',       cache_on_write_operations= 1,       enable_filesystem_query_cache_limit = 1,       delayed_cleanup_interval_ms = 100,       disk = 's3_disk');
-CREATE TABLE test (key UInt64, a UInt8, b String, c Float64) ENGINE = MergeTree() ORDER BY key;
-CREATE TABLE test (key UInt64, val UInt64) engine = MergeTree Order by key PARTITION BY key >= 128;
-create table test (line String, _file String, _path String) engine=Memory;
-create table test (name String, time Int64) engine MergeTree order by time;
-create table test (name String, uuid UUID) engine=Memory();
-CREATE TABLE test (num UInt64, str String) ENGINE = MergeTree ORDER BY num;
-create table test (number UInt64) engine=File('Parquet');
-create table test (number UInt64) engine=File('Parquet', 'test_02155/test1/data.Parquet');
-create table test (number UInt64) engine=File('Parquet', 'test_02155/test3/data.Parquet.gz');
-create table test (Printer LowCardinality(String), IntervalStart DateTime) engine MergeTree partition by (hiveHash(Printer), toYear(IntervalStart)) order by (Printer, IntervalStart);
-create table test (project LowCardinality(String)) engine=MergeTree() order by project;
-CREATE TABLE test (test String, A Int64, B Int64) ENGINE = ReplicatedMergeTree ('/clickhouse/tables/{database}/test_02124/{table}', '1') ORDER BY tuple();
-CREATE TABLE test (time DateTime64(3)) ENGINE = MergeTree ORDER BY tuple() PARTITION BY toStartOfInterval(time, INTERVAL 2 YEAR);
-CREATE TABLE test (timestamp DateTime('UTC'), i UInt8) Engine=MergeTree() PARTITION BY toYYYYMM(timestamp) ORDER BY (i);
-CREATE TABLE test (type Enum('x'), s String) ENGINE = MergeTree ORDER BY s PARTITION BY type;
-CREATE TABLE test (uid String, version UInt32, is_deleted UInt8) ENGINE = ReplacingMergeTree(version) Order by (uid) settings allow_experimental_replacing_merge_with_cleanup=1;
-CREATE TABLE test (uid String, version UInt32, is_deleted UInt8) ENGINE = ReplacingMergeTree(version) Order by (uid) SETTINGS clean_deleted_rows='Always', allow_experimental_replacing_merge_with_cleanup=1;
-CREATE TABLE test (uid String, version UInt32, is_deleted UInt8) ENGINE = ReplacingMergeTree(version, is_deleted) Order by (uid) settings allow_experimental_replacing_merge_with_cleanup=1;
-CREATE TABLE test (uid String, version UInt32, is_deleted UInt8) ENGINE = ReplacingMergeTree(version, is_deleted) Order by (uid) SETTINGS clean_deleted_rows='Always', allow_experimental_replacing_merge_with_cleanup=1;
-CREATE TABLE test (uid String, version UInt32, is_deleted UInt8) ENGINE = ReplacingMergeTree(version, is_deleted) Order by (uid) SETTINGS vertical_merge_algorithm_min_rows_to_activate = 1,   vertical_merge_algorithm_min_columns_to_activate = 0,   min_rows_for_wide_part = 1,   min_bytes_for_wide_part = 1,   allow_experimental_replacing_merge_with_cleanup=1;
-CREATE TABLE test (uid String, version UInt32, is_deleted UInt8) ENGINE = ReplicatedReplacingMergeTree('/clickhouse/{database}/tables/no_cleanup/', 'r1', version, is_deleted) Order by (uid);
-create table test (val LowCardinality(Float32)) engine MergeTree order by val;
-create table test (x AggregateFunction(uniq, UInt64), y Int64) engine=Memory;
-create table test (x Array(Array(AggregateFunction(uniq, UInt64)))) engine=Memory;
-create table test (x Array(Array(Map(UInt8, AggregateFunction(uniq, UInt64))))) engine=Memory;
-create table test (x Date, y String) engine Join(ANY, LEFT, x);
-CREATE TABLE test (x Enum('hello' = 1, 'world' = 2), y String) ENGINE = MergeTree PARTITION BY x ORDER BY y;
-CREATE TABLE test (x Enum('hello' = 1, 'world' = 2), y String) ENGINE = ReplicatedMergeTree('/clickhouse/{database}/test_01346/table', 'r1') PARTITION BY x ORDER BY y;
-CREATE TABLE test (x Int8, y Int8, z Int8) ENGINE = MergeTree ORDER BY tuple();
-create table test (x LowCardinality(Int32)) engine=Memory;
-create table test (x LowCardinality(String) default 'Hello') engine=Memory();
-create table test (x Map(UInt8, AggregateFunction(uniq, UInt64))) engine=Memory;
-create table test (x Map(UInt8, Array(Map(UInt8, Array(AggregateFunction(uniq, UInt64)))))) engine=Memory;
-create table test (x Nullable(UInt32)) engine=Memory();
-create table test (x Nullable(UInt32), y UInt32) engine=Memory();
-create table test (x Tuple(a UInt32, b UInt32)) engine=Memory();
-create table test (x UInt32, y String) engine=Memory;
-create table test (x UInt32, y String, d Date) engine=Memory() as select number as x, toString(number) as y, toDate(number) as d from numbers(10);
-CREATE TABLE test (x UInt32, y UInt32) ENGINE = MergeTree ORDER BY mortonEncode(x, y) SETTINGS index_granularity = 8192, index_granularity_bytes = '1Mi';
-create table test (x UInt32, y UInt32, z UInt32) engine=Memory();
-CREATE TABLE test (x UInt64) ENGINE = MergeTree ORDER BY x SETTINGS index_granularity = 1000, index_granularity_bytes = '10Mi';
-create table test (x UInt64) engine=File(JSON);
-create table test (x UInt64) engine=Memory();
-CREATE TABLE test (x UInt64, "\\" String DEFAULT '\r\n\t\\' || ' ') ENGINE = MergeTree ORDER BY x;
-CREATE TABLE test (x UInt64, s String) ENGINE = MergeTree ORDER BY tuple() SETTINGS parts_to_throw_insert = 3, max_parts_to_merge_at_once = 1;
-CREATE TABLE test (x UInt8) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE test (x UInt8) ENGINE = MergeTree ORDER BY x;
-CREATE TABLE test (x UInt8, y String, z Array(String)) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE test (x UInt8, y UInt8 ALIAS x + 1, z String DEFAULT 'Hello') ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE test (x UInt8, y UInt8 DEFAULT x + 1) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE test (x UInt8, y UInt8 MATERIALIZED x + 1) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE test (x UInt8, y UInt8) ENGINE = MergeTree ORDER BY tuple();
-create table test as format(JSONEachRow, $$ {"a": "Hello", "b": 111} {"a": "World", "b": 123} {"a": "Hello", "b": 111} {"a": "Hello", "b": 131} {"a": "World", "b": 123} $$);
-create table test as format(TSV, 'cust_id UInt128', '20210129005809043707\n123456789\n987654321');
-CREATE TABLE test Engine = MergeTree ORDER BY number SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi' AS SELECT number, toString(rand()) x from numbers(10000000);
-CREATE TABLE Test ENGINE = MergeTree() PRIMARY KEY (String1,String2) ORDER BY (String1,String2) SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi' AS SELECT  'String1_' || toString(number) as String1,  'String2_' || toString(number) as String2,  'String3_' || toString(number) as String3,  'String4_' || toString(number%4) as String4 FROM numbers(1);
-CREATE TABLE test ENGINE = Null AS WITH (     SELECT arrayReduce('sumMapState', [(['foo'], arrayMap(x -> -0., ['foo']))])   ) AS all_metrics SELECT   (finalizeAggregation(arrayReduce('sumMapMergeState', [all_metrics])) AS metrics_tuple).1 AS metric_names,   metrics_tuple.2 AS metric_values FROM system.one;
-CREATE TABLE test( n1 Int32,  n2 UInt32, n3 Float32,   n4 Float64,   n5 Decimal32(5) ) ENGINE = Memory;
-create table test(`a` Nullable(Int32), `b` Nullable(Int32)) ENGINE = Memory;
-CREATE TABLE test(`id` Int32, `pv` AggregateFunction(sum, Int32)) ENGINE = AggregatingMergeTree() ORDER BY id;
-CREATE TABLE test(`report_date` Date, `sspid` UInt64) ENGINE MergeTree PARTITION BY report_date ORDER BY report_date;
-CREATE TABLE test(a Array(Int64), b Array(Float64), c Array(UInt64)) ENGINE=Memory;
-CREATE TABLE test(a Int, b Int) Engine=ReplacingMergeTree order by a SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-create table test(a Int64) Engine=MergeTree order by tuple();
-create table test(a UInt64, m UInt64, d DateTime) engine MergeTree partition by toYYYYMM(d) order by (a, m, d) SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE test(a UInt8, b EPHEMERAL String) Engine=Memory();
-CREATE TABLE test(a UInt8, b String EPHEMERAL) Engine=Memory();
-create table test(d Date, k Int64, s String) Engine=MergeTree partition by (toYYYYMM(d),k) order by (d, k);
-CREATE TABLE test(date Date, id Int8, name String, value Int64) ENGINE = MergeTree(date, (id, date), 8192);
-CREATE TABLE test(date Date, keys Array(Nullable(UInt8))) ENGINE = MergeTree(date, date, 1);
-create table test(day Date, id UInt32) engine=MergeTree partition by day order by tuple();
-create table test(dim1 String, dim2 String, projection p1 (select dim1, dim2, count() group by dim1, dim2)) engine MergeTree order by dim1;
-CREATE TABLE test(key FixedString(10)) ENGINE=MergeTree() PARTITION BY tuple() ORDER BY (key);
-CREATE TABLE test(number UInt64, num2 UInt64) ENGINE = Log;
-CREATE TABLE test(start Integer, end Integer) engine = Memory;
-create table test(str Nullable(String), i Int64) engine=Memory();
-CREATE TABLE test(test String DEFAULT 'test', test_tmp Int DEFAULT 1)ENGINE = Memory;
-CREATE TABLE test(timestamp DateTime) ENGINE = MergeTree ORDER BY timestamp;
-CREATE TABLE test(timestamp DateTime64) ENGINE = MergeTree ORDER BY timestamp;
-create table test(x1 Int, x2 Int, x3 Int) engine=Memory();
-CREATE TABLE test.xxx (a Int64) ENGINE=MergeTree ORDER BY ({o:String});
-CREATE TABLE test02008 (    col Tuple(      a Tuple(key1 int, key2 int),      b Tuple(key1 int, key2 int)    ) ) ENGINE=Memory();
-CREATE TABLE test02008 (    col Tuple(CPU double, Memory double, Disk double) ) ENGINE=Memory();
-CREATE TABLE test02313 (   a Enum('one' = 1, 'two' = 2),   b Enum('default' = 0, 'non-default' = 1),   c UInt8 ) ENGINE = MergeTree() ORDER BY (a, b, c);
-CREATE TABLE test02315(a UInt64, b UInt64) ENGINE=MergeTree() ORDER BY (a, b);
-CREATE TABLE test02416(a UInt64, b UInt64) ENGINE=MergeTree() ORDER BY (a, b);
-CREATE TABLE test02910 (  i Int8,   jString String ) ENGINE = MergeTree ORDER BY i;
-CREATE TABLE test02910_second (   `Id1` String,   `Id2` String,   `timestamp` DateTime64(6),   `tags` Array(String), ) ENGINE = MergeTree PRIMARY KEY (Id1, Id2) ORDER BY (Id1, Id2, timestamp) SETTINGS index_granularity = 8192, index_granularity_bytes = 0;
-create table test1 (   `pt` String,   `brand_name` String,   `total_indirect_order_cnt` Float64,   `total_indirect_gmv` Float64 ) ENGINE = Memory;
-CREATE TABLE test1 (   `pt` String,   `exposure_uv` Float64 ) ENGINE = Memory;
-CREATE TABLE test1 (   `year` String ,   `uv` AggregateFunction(uniqTheta, Int64) ) ENGINE = AggregatingMergeTree() ORDER BY (year);
-create table test1 (   c UInt32,   a alias c + 1,   index i (a) type minmax ) engine = MergeTree order by c settings index_granularity = 8192, min_index_granularity_bytes = 1024, index_granularity_bytes = 10485760;
-CREATE TABLE test1 ( `col1` UInt64, `col2` Int8 ) ENGINE = MergeTree ORDER BY col1;
-CREATE TABLE test1 (a LowCardinality(String)) ENGINE=MergeTree() ORDER BY a;
-CREATE TABLE test1 (a UInt8) ENGINE MergeTree ORDER BY a;
-CREATE TABLE test1 (a UInt8, b Array(DateTime)) ENGINE Memory;
-CREATE TABLE test1 (a UInt8, b String) ENGINE MergeTree ORDER BY a;
-create table test1 (i int, j int) engine MergeTree partition by i order by tuple() settings index_granularity = 1;
-create table test1 (i Int64) engine MergeTree order by i;
-CREATE TABLE test1 (id Int64, name String) ENGINE MergeTree PARTITION BY (id) ORDER BY (id);
-CREATE TABLE test1 (key UInt32) Engine = Buffer(currentDatabase(), test2, 16, 10, 100, 10000, 1000000, 10000000, 100000000);
-CREATE TABLE test1 (n UInt64) ENGINE = MergeTree ORDER BY n SETTINGS index_granularity = 1;
-CREATE TABLE test1 (s String) ENGINE = MergeTree ORDER BY s SETTINGS index_granularity = 1;
-CREATE TABLE test1 (x UInt8) ENGINE = Memory;
-CREATE TABLE test1(i int, j int) ENGINE Log;
-create table test1(p DateTime, k int) engine MergeTree partition by toDate(p) order by k settings index_granularity = 1;
-create table test1601_detach_permanently_atomic.test_name_reuse (number UInt64) engine=MergeTree order by tuple();
-create table test1601_detach_permanently_lazy.test_name_reuse (number UInt64) engine=Log;
-create table test1601_detach_permanently_ordinary.test_name_reuse (number UInt64) engine=MergeTree order by tuple();
-CREATE TABLE test1_00395 (col1 Nullable(String)) ENGINE=TinyLog;
-CREATE TABLE test1_00395( col1 UInt64, col2 Nullable(UInt64), col3 String, col4 Nullable(String), col5 Array(UInt64), col6 Array(Nullable(UInt64)), col7 Array(String), col8 Array(Nullable(String)), d Date) Engine = Log;
-CREATE TABLE test1_00395( col1 UInt64, col2 Nullable(UInt64), col3 String, col4 Nullable(String), col5 Array(UInt64), col6 Array(Nullable(UInt64)), col7 Array(String), col8 Array(Nullable(String)), d Date) Engine = Memory;
-CREATE TABLE test1_00395( col1 UInt64, col2 Nullable(UInt64), col3 String, col4 Nullable(String), col5 Array(UInt64), col6 Array(Nullable(UInt64)), col7 Array(String), col8 Array(Nullable(String)), d Date) Engine = MergeTree(d, (col1, d), 8192);
-CREATE TABLE test1_00395( col1 UInt64, col2 Nullable(UInt64), col3 String, col4 Nullable(String), col5 Array(UInt64), col6 Array(Nullable(UInt64)), col7 Array(String), col8 Array(Nullable(String)), d Date) Engine = StripeLog;
-CREATE TABLE test1_00395( col1 UInt64, col2 Nullable(UInt64), col3 String, col4 Nullable(String), col5 Array(UInt64), col6 Array(Nullable(UInt64)), col7 Array(String), col8 Array(Nullable(String)), d Date) Engine = TinyLog;
-CREATE TABLE test1_00395(col1 Array(Nullable(String))) Engine=TinyLog;
-CREATE TABLE test1_00395(col1 Array(Nullable(String)), col2 Nullable(String)) Engine=TinyLog;
-CREATE TABLE test1_00395(col1 Array(Nullable(String)), col2 String) Engine=TinyLog;
-CREATE TABLE test1_00395(col1 Array(Nullable(String)), col2 UInt64) Engine=TinyLog;
-CREATE TABLE test1_00395(col1 Array(Nullable(UInt64))) Engine=Memory;
-CREATE TABLE test1_00395(col1 Array(Nullable(UInt64))) Engine=TinyLog;
-CREATE TABLE test1_00395(col1 Array(Nullable(UInt64)), col2 Nullable(UInt64)) Engine=TinyLog;
-CREATE TABLE test1_00395(col1 Array(Nullable(UInt64)), col2 UInt64) Engine=TinyLog;
-CREATE TABLE test1_00395(col1 Array(Nullable(UInt8)), col2 String) ENGINE=TinyLog;
-CREATE TABLE test1_00395(col1 Nullable(Int8), col2 Nullable(UInt16), col3 Nullable(Float32)) Engine=TinyLog;
-CREATE TABLE test1_00395(col1 Nullable(String)) Engine=TinyLog;
-CREATE TABLE test1_00395(col1 Nullable(String), col2 Nullable(UInt8), col3 String) ENGINE=TinyLog;
-CREATE TABLE test1_00395(col1 Nullable(String), col2 String) ENGINE=TinyLog;
-CREATE TABLE test1_00395(col1 Nullable(UInt64)) Engine=TinyLog;
-CREATE TABLE test1_00395(col1 Nullable(UInt64), col2 Nullable(UInt64)) Engine=Memory;
-CREATE TABLE test1_00395(col1 Nullable(UInt64), col2 UInt64) Engine=Memory;
-CREATE TABLE test1_00395(col1 Nullable(UInt64), col2 UInt64, col3 Nullable(UInt64), col4 String) ENGINE=TinyLog;
-CREATE TABLE test1_00395(col1 Nullable(UInt64), col2 UInt64, col3 String) ENGINE=TinyLog;
-CREATE TABLE test1_00395(col1 Nullable(UInt8), col2 String) ENGINE=TinyLog;
-CREATE TABLE test1_00395(col1 String) Engine=TinyLog;
-CREATE TABLE test1_00395(col1 String, col2 Nullable(UInt8), col3 String) ENGINE=TinyLog;
-CREATE TABLE test1_00395(col1 UInt64) Engine=TinyLog;
-CREATE TABLE test1_00395(cond1 Nullable(UInt8), then1 Int8, cond2 UInt8, then2 Nullable(UInt16), then3 Nullable(Float32)) Engine=TinyLog;
-create table test1_00634 (id UInt8) engine = TinyLog;
-CREATE TABLE test1_00671(start Integer, end Integer) engine = Memory;
-CREATE TABLE test1_00843 (a UInt8) ENGINE = Memory;
-create table test1_00863 (id UInt64, code String) engine = Memory;
-CREATE TABLE test1__fuzz_37 (`i` Date) ENGINE = MergeTree ORDER BY i;
-CREATE TABLE test1_distributed AS test1 ENGINE = Distributed(test_cluster_two_shards_localhost, default, test1);
-create table test2 (   `pt` String,   `brand_name` String,   `exposure_uv` Float64,   `click_uv` Float64 ) ENGINE = Memory;
-CREATE TABLE test2 (   `year` String ,   `uv` Int64 ) ENGINE = MergeTree() ORDER BY (year);
-create table test2 (   c UInt32,   a1 alias c + 1,   a2 alias a1 + 1,   index i (a2) type minmax ) engine = MergeTree order by c settings index_granularity = 8192, min_index_granularity_bytes = 1024, index_granularity_bytes = 10485760;
-CREATE TABLE test2 (   time DateTime,   value String ) ENGINE = MergeTree ORDER BY (time) AS SELECT 0, '';
-CREATE TABLE test2 (  a UInt32,  b Int64 ) ENGINE = MergeTree ORDER BY tuple() PARTITION BY (a * b, b * b);
-CREATE TABLE test2 ( `col1` UInt64, `col3` Int16 ) ENGINE = MergeTree ORDER BY col1;
-CREATE TABLE test2 (a Int32, b String) ENGINE = MergeTree() ORDER BY a SETTINGS disk = disk(type = cache, disk = 'local_disk', name = '$CLICHOUSE_TEST_UNIQUE_NAME_2', cache_name='cache_collection');
-CREATE TABLE test2 (a UInt64) engine=MergeTree() ORDER BY a;
-CREATE TABLE test2 (a UInt8) ENGINE MergeTree ORDER BY a;
-CREATE TABLE test2 (c UInt8, d String) ENGINE MergeTree ORDER BY c;
-CREATE TABLE test2 (id UInt64, date Date) ENGINE = MergeTree ORDER BY id;
-CREATE TABLE test2 (key UInt32) Engine = Buffer(currentDatabase(), test1, 16, 10, 100, 10000, 1000000, 10000000, 100000000);
-CREATE TABLE test2 (s LowCardinality(String)) ENGINE = MergeTree ORDER BY s SETTINGS index_granularity = 1;
-CREATE TABLE test2 (s String) ENGINE = MergeTree ORDER BY s SETTINGS index_granularity = 1;
-CREATE TABLE test2 (x Enum('hello' = 1, 'world' = 2), y String) ENGINE = ReplicatedMergeTree('/clickhouse/{database}/test_01346/table', 'r2') PARTITION BY x ORDER BY y;
-CREATE TABLE test2 (x UInt8) ENGINE = Memory;
-CREATE TABLE test2 as test1 ENGINE Distributed(test_shard_localhost, currentDatabase(), test1);
-CREATE TABLE test2(col1 UInt64, col2 Nullable(UInt64)) Engine=Memory;
-create table test2(x1 Int, x2 Int, x3 Int) engine=Memory;
-create table test2_00634 (id UInt8) engine = TinyLog;
-CREATE TABLE test2_00671(start Integer, end Integer) engine = Memory;
-create table test2_00863 (id UInt64, code String, test1_id UInt64, test3_id UInt64) engine = Memory;
-CREATE TABLE test3 (  a UInt32,  b Int64 ) ENGINE = MergeTree ORDER BY tuple() PARTITION BY a;
-CREATE TABLE test3 (d Decimal(4, 3)) ENGINE = MergeTree ORDER BY d SETTINGS index_granularity = 1;
-create table test3_00863 (id UInt64, code String) engine = Memory;
-CREATE TABLE test4 (EventDate Date) ENGINE = MergeTree() ORDER BY tuple() PARTITION BY EventDate;
-CREATE TABLE test5 (  a UInt32,  b Int64 ) ENGINE = MergeTree ORDER BY tuple() PARTITION BY (a, b);
-CREATE TABLE test5346 (`Id` String, `Timestamp` DateTime, `updated` DateTime) ENGINE = ReplacingMergeTree(updated) PARTITION BY tuple() ORDER BY (Timestamp, Id);
-CREATE TABLE test54378 (`part_date` Date, `pk_date` Date, `date` Date) ENGINE = MergeTree(part_date, pk_date, 8192);
-create table test54378 (part_date Date, pk_date Date, date Date) Engine=MergeTree(part_date, pk_date, 8192);
-CREATE TABLE test6 (  a UInt32,  b Int64 ) ENGINE = MergeTree ORDER BY tuple() PARTITION BY (a, b);
-CREATE TABLE test_00209 (x UInt8) ENGINE = Log;
-CREATE TABLE test_00562 ( s String, i Int64) ENGINE = Memory;
-CREATE TABLE test_00563 ( dt Date, site_id Int32, site_key String ) ENGINE = MergeTree(dt, (site_id, site_key, dt), 8192);
-CREATE TABLE test_00571 ( date Date, platform Enum8('a' = 0, 'b' = 1, 'c' = 2), app Enum8('a' = 0, 'b' = 1) ) ENGINE = MergeTree(date, (platform, app), 8192);
-CREATE TABLE Test_00584 (   createdDate Date,   str String,   key Enum8('A' = 0, 'B' = 1, 'ALL' = 2),   a Int64 ) ENGINE = MergeTree(createdDate, str, 8192);
-CREATE TABLE test_00597(date Date, id Int8, name String, value Int64) ENGINE = MergeTree(date, (id, date), 8192);
-CREATE TABLE test_00599(id UInt64) ENGINE = Log;
-create table test_00609 (a Int8) engine=Memory;
-CREATE TABLE test_00615 (   dt Date,   id Int32,   key String,   data Nullable(Int8) ) ENGINE = MergeTree(dt, (id, key, dt), 8192);
-CREATE TABLE test_00616 (   date Date,   x Int32,   ver UInt64 ) ENGINE = MergeTree(date, x, 4096);
-CREATE TABLE test_00681(x Int32) ENGINE = Log;
-CREATE TABLE test_00687 (x String) ENGINE = Null;
-CREATE TABLE test_00688 (a UInt8) ENGINE = Memory;
-CREATE TABLE test_00808(date Date, id Int8, name String, value Int64, sign Int8) ENGINE = CollapsingMergeTree(sign) ORDER BY (id, date);
-CREATE TABLE test_00808_push_down_with_finalizeAggregation ENGINE = AggregatingMergeTree ORDER BY n AS SELECT   intDiv(number, 25) AS n,   avgState(number) AS s FROM numbers(2500) GROUP BY n ORDER BY n;
-CREATE TABLE test_00818 (field String, not_field String) ENGINE = Memory;
-CREATE TABLE test_00861 (key UInt64, d32 Decimal32(2), d64 Decimal64(2), d128 Decimal128(2)) ENGINE = Memory;
-CREATE TABLE test_00961 (d Date, a String, b UInt8, x String, y Int8, z UInt32)   ENGINE = MergeTree PARTITION BY d ORDER BY (a, b)   SETTINGS index_granularity = 111,   min_bytes_for_wide_part = 0,   compress_marks = 0,   compress_primary_key = 0,   index_granularity_bytes = '10Mi',   ratio_of_defaults_for_sparse_serialization = 1,   replace_long_file_name_to_hash = 0;
-CREATE TABLE test_00974 (   date Date,   x Int32,   ver UInt64 ) ENGINE = ReplacingMergeTree(date, x, 1);
-CREATE TABLE test_01040 (key UInt64) ENGINE=TinyLog();
-CREATE TABLE test_01048.mt(a Int32, b Int32, timestamp DateTime) ENGINE=MergeTree ORDER BY tuple();
-CREATE TABLE test_01048.mt_2(a Int32, b Int32, timestamp DateTime) ENGINE=MergeTree ORDER BY tuple();
-create table test_01054_overflow.ints (key UInt64, i8 Int8, i16 Int16, i32 Int32, i64 Int64, u8 UInt8, u16 UInt16, u32 UInt32, u64 UInt64) Engine = Memory;
-CREATE TABLE test_01073_crlf_end_of_line (value UInt8, word String) ENGINE = MergeTree() ORDER BY value;
-create table test_01081 (key Int) engine=MergeTree() order by key;
-CREATE TABLE test_01109_ordinary.t4 AS t1;
-CREATE TABLE test_01109_other_atomic.t3 ENGINE=MergeTree() ORDER BY tuple()   AS SELECT rowNumberInAllBlocks() + (SELECT max((*,*).1.1) + 1 FROM (SELECT (*,) FROM t1 UNION ALL SELECT (*,) FROM t2)), *   FROM (SELECT arrayJoin(['another', 'db']));
-CREATE TABLE test_01148_atomic.rmt2 ON CLUSTER test_shard_localhost (n int, PRIMARY KEY n) ENGINE=ReplicatedMergeTree;
-CREATE TABLE test_01148_atomic.rmt3 AS test_01148_atomic.rmt2;
-CREATE TABLE test_01191._ (n UInt64, s String) ENGINE = Memory();
-CREATE TABLE test_01191.t (n UInt64, s String) ENGINE = Memory();
-CREATE TABLE test_01307 (id UInt64, val String, INDEX ind val TYPE bloom_filter() GRANULARITY 1) ENGINE = MergeTree() ORDER BY id SETTINGS index_granularity = 2, index_granularity_bytes = '10Mi';
-CREATE TABLE test_01343 (x String) ENGINE = MergeTree ORDER BY tuple() SETTINGS min_bytes_for_wide_part = 0;
-CREATE TABLE test_01344 (x String, INDEX idx (x) TYPE set(10) GRANULARITY 1) ENGINE = MergeTree ORDER BY tuple() SETTINGS min_bytes_for_wide_part = 0;
-create table test_01383.dimension (id1 Int64, name String) ENGINE = MergeTree() ORDER BY id1;
-create table test_01383.fact (id1 Int64, id2 Int64, value Int64) ENGINE = MergeTree() ORDER BY id1;
-CREATE TABLE test_01392.leftjoin (id String) ENGINE = Log();
-CREATE TABLE test_01392.tableClick (clickId String, conversionId String, value Nullable(Double)) ENGINE = Log();
-CREATE TABLE test_01392.tableConversion (conversionId String, value Nullable(Double)) ENGINE = Log();
-CREATE TABLE test_01457.tf_merge AS merge(currentDatabase(), 'tmp');
-CREATE TABLE test_01457.tf_numbers (number String) AS numbers(1);
-CREATE TABLE test_01457.tf_remote AS remote('localhost', currentDatabase(), 'tmp');
-CREATE TABLE test_01457.tf_remote_explicit_structure (n UInt64) AS remote('localhost', currentDatabase(), 'tmp');
-CREATE TABLE test_01532_1 (a Tuple(key String, value String)) ENGINE Memory();
-CREATE TABLE test_01532_2 (a Tuple(Tuple(key String, value String))) ENGINE Memory();
-CREATE TABLE test_01532_3 (a Array(Tuple(key String, value String))) ENGINE Memory();
-CREATE TABLE test_01532_4 (a Tuple(UInt8, Tuple(key String, value String))) ENGINE Memory();
-CREATE TABLE test_01600.base ( `id` UInt64, `id2` UInt64, `d` UInt64, `value` UInt64 ) ENGINE=MergeTree() PARTITION BY d ORDER BY (id,id2,d);
-CREATE TABLE test_01600.derived1 (   `id1` UInt64,   `d1` UInt64,   `value1` UInt64 ) ENGINE = MergeTree() PARTITION BY d1 ORDER BY (id1, d1) ;
-CREATE TABLE test_01600.derived2 (   `id2` UInt64,   `d2` UInt64,   `value2` UInt64 ) ENGINE = MergeTree() PARTITION BY d2 ORDER BY (id2, d2) ;
-CREATE TABLE test_01640(i Int64, d Date, s String) ENGINE = ReplicatedMergeTree('/clickhouse/{database}/{shard}/tables/test_01640','{replica}') PARTITION BY toYYYYMM(d) ORDER BY i SETTINGS allow_remote_fs_zero_copy_replication=0;
-CREATE TABLE test_01676.dict_data (key UInt64, value UInt64) ENGINE=MergeTree ORDER BY tuple();
-CREATE TABLE test_01676.table (x UInt64, y UInt64 DEFAULT dictGet('test_01676.dict', 'value', x)) ENGINE=MergeTree ORDER BY tuple();
-CREATE TABLE test_01778 (   `key` LowCardinality(FixedString(3)),   `d` date ) ENGINE = MergeTree(d, key, 8192);
-CREATE TABLE test_01915_db.test_source_table_1 (   id UInt64,   value String ) ENGINE=TinyLog;
-CREATE TABLE test_01915_db.test_source_table_2 (   id UInt64,   value_1 String ) ENGINE=TinyLog;
-create table test_02152 (x UInt32, y String, z Array(UInt32), t Tuple(UInt32, String, Array(UInt32))) engine=File('CSV') settings format_csv_delimiter=';';
-create table test_02152 (x UInt32, y String, z Array(UInt32), t Tuple(UInt32, String, Array(UInt32))) engine=File('CustomSeparated') settings format_custom_field_delimiter='<field_delimiter>', format_custom_row_before_delimiter='<row_start>', format_custom_row_after_delimiter='<row_end_delimiter>', format_custom_escaping_rule='CSV';
-CREATE TABLE test_02187 (   info String,   id Int32 ) ENGINE = ReplacingMergeTree(id) ORDER BY id;
-create table test_02245 (a UInt64) engine = S3(s3_conn, filename='test_02245', format=Parquet);
-create table test_02245_2 (a UInt64, _path Int32) engine = S3(s3_conn, filename='test_02245_2', format=Parquet);
-create table test_02245_s3_nested_arrow1(a Int64, b Tuple(a Int64, b String)) engine=S3(s3_conn, filename='test_02245_s3_nested_arrow1_{_partition_id}', format='Arrow') partition by a;
-create table test_02245_s3_nested_arrow2(a Int64, b Tuple(a Int64, b Tuple(c Int64, d String))) engine=S3(s3_conn, filename='test_02245_s3_nested_arrow2_{_partition_id}', format='Arrow') partition by a;
-create table test_02245_s3_nested_orc1(a Int64, b Tuple(a Int64, b String)) engine=S3(s3_conn, filename='test_02245_s3_nested_orc1_{_partition_id}', format='ORC') partition by a;
-create table test_02245_s3_nested_orc2(a Int64, b Tuple(a Int64, b Tuple(c Int64, d String))) engine=S3(s3_conn, filename='test_02245_s3_nested_orc2_{_partition_id}', format='ORC') partition by a;
-create table test_02245_s3_nested_parquet1(a Int64, b Tuple(a Int64, b String)) engine=S3(s3_conn, filename='test_02245_s3_nested_parquet1_{_partition_id}', format='Parquet') partition by a;
-create table test_02245_s3_nested_parquet2(a Int64, b Tuple(a Int64, b Tuple(c Int64, d String))) engine=S3(s3_conn, filename='test_02245_s3_nested_parquet2_{_partition_id}', format='Parquet') partition by a;
-create table test_02249 (x UInt32, y String) engine=Memory();
-create table test_02250 (x Nullable(UInt32)) engine=Memory();
-create table test_02302 (a UInt64) engine = S3(s3_conn, filename='test_02302', format=Parquet);
-create table test_02302 (a UInt64) engine = S3(s3_conn, filename='test_02302.1', format=Parquet);
-create table test_02302 (a UInt64) engine = S3(s3_conn, filename='test_02302.2', format=Parquet);
-create table test_02302 (a UInt64) engine = S3(s3_conn, filename='test_02302_{_partition_id}', format=Parquet) partition by a;
-create table test_02312 (a Nested(b Nested(c UInt32))) engine=File(Arrow);
-create table test_02312 (a Nested(b Nested(c UInt32))) engine=File(ORC);
-create table test_02312 (a Nested(b Nested(c UInt32))) engine=File(Parquet);
-create table test_02312 (x Tuple(a UInt32, b UInt32)) engine=File(Arrow);
-create table test_02312 (x Tuple(a UInt32, b UInt32)) engine=File(ORC);
-create table test_02312 (x Tuple(a UInt32, b UInt32)) engine=File(Parquet);
-create table test_02377 (n UInt32, s String) engine=File(CSVWithNames);
-create table test_02381(a UInt64, b UInt64) ENGINE = MergeTree order by (a, b) SETTINGS compress_marks = false, compress_primary_key = false, ratio_of_defaults_for_sparse_serialization = 1;
-create table test_02381_compact (a UInt64, b String) ENGINE = MergeTree order by (a, b);
-create table test_02381_compress(a UInt64, b UInt64) ENGINE = MergeTree order by (a, b)   SETTINGS compress_marks = true, compress_primary_key = true, marks_compression_codec = 'ZSTD(3)', primary_key_compression_codec = 'ZSTD(3)', marks_compress_block_size = 65536, primary_key_compress_block_size = 65536, ratio_of_defaults_for_sparse_serialization = 1;
-create table test_02480_support_wildcard_write (a UInt64, b String) engine = S3(s3_conn, filename='test_02480_support_wildcard_{_partition_id}', format=Parquet) partition by a;
-create table test_02480_support_wildcard_write2 (a UInt64, b String) engine = S3(s3_conn, filename='prefix/test_02480_support_wildcard_{_partition_id}', format=Parquet) partition by a;
-create table test_02481_mismatch_files (a UInt64, b String) engine = S3(s3_conn, filename='test_02481_mismatch_files_{_partition_id}', format=Parquet) partition by a;
-CREATE TABLE test_02504 (`a` UInt32,`b` UInt32) ENGINE = MergeTree ORDER BY a;
-CREATE TABLE test_02559 (id1 UInt64, id2 UInt64) ENGINE=MergeTree ORDER BY id1;
-CREATE TABLE test_02559 (x UInt8, s String) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE test_02559__fuzz_20(`id1` Int16, `id2` Decimal(18, 14)) ENGINE = MergeTree ORDER BY id1;
-CREATE TABLE test_02771.t (x UInt8) ENGINE = MergeTree() ORDER BY x;
-create table test_1164_memory.r1 (n int) engine=ReplicatedMergeTree('/test/01164/{database}/t', '1') order by n;
-create table test_1164_memory.r2 (n int) engine=ReplicatedMergeTree('/test/01164/{database}/t', '2') order by n;
-CREATE TABLE test_1602.tbl (`EventDate` DateTime, `CounterID` UInt32, `UserID` UInt32) ENGINE = MergeTree() PARTITION BY toYYYYMM(EventDate) ORDER BY (CounterID, EventDate, intHash32(UserID)) SETTINGS index_granularity = 8192;
-create table test_1603_rename_bug_atomic.bar engine=Log as select * from numbers(200);
-create table test_1603_rename_bug_atomic.foo engine=Memory as select * from numbers(100);
-create table test_1603_rename_bug_ordinary.bar engine=Log as select * from numbers(200);
-create table test_1603_rename_bug_ordinary.foo engine=Memory as select * from numbers(100);
-CREATE TABLE test_2 (a Int32) ENGINE = MergeTree() ORDER BY tuple() SETTINGS disk = disk(type = cache,           max_size = '1Mi',           path = 'kek2',           disk = 'local_disk');
-CREATE TABLE test_23634 (id Nullable(String), s Nullable(String), s1 Nullable(String)) ENGINE = MergeTree() ORDER BY (id,s) SETTINGS allow_nullable_key = 1;
-CREATE TABLE test_2554_error (n UInt32) ENGINE = Log SETTINGS disk = 'default', storage_policy = 'default';
-CREATE TABLE test_2554_log (n UInt32) ENGINE = Log SETTINGS storage_policy = 'default';
-CREATE TABLE test_2554_stripelog (n UInt32) ENGINE = StripeLog SETTINGS storage_policy = 's3_cache';
-CREATE TABLE test_2554_tinylog (n UInt32) ENGINE = Log SETTINGS storage_policy = 'default';
-CREATE TABLE test_a (   OldColumn String DEFAULT '',   EventDate Date DEFAULT toDate(EventTime),   EventTime DateTime ) ENGINE = MergeTree(EventDate, EventTime, 8192);
-CREATE TABLE test_a (id UInt32, company UInt32, total UInt64) ENGINE=SummingMergeTree() PARTITION BY company PRIMARY KEY (id) ORDER BY (id, company);
-create table test_agg_proj_02302 (x Int32, y Int32, PROJECTION x_plus_y (select sum(x - y), argMax(x, y) group by x + y)) ENGINE = MergeTree order by tuple() settings index_granularity = 1;
-CREATE TABLE test_aggregation (x Array(Decimal64(8))) ENGINE=TinyLog;
-CREATE TABLE test_aggregation (x Array(Int)) ENGINE=TinyLog;
-CREATE TABLE test_alias (a UInt8 ALIAS b, b UInt8) ENGINE Log;
-CREATE TABLE test_alias(`a` Int64, `b` Int64, `c` Int64, `day` Date, `rtime` DateTime) ENGINE = Memory as select 0, 0, 0, '2022-01-01', 0 from zeros(10);
-CREATE TABLE test_alter (x Date, s String) ENGINE = MergeTree ORDER BY s PARTITION BY x;
-CREATE TABLE test_alter_attach_01901D (A Int64, D date) Engine=ReplicatedMergeTree('/clickhouse/tables/{database}/test_alter_attach_01901D', 'r1') PARTITION BY D ORDER BY A;
-CREATE TABLE test_alter_attach_01901S (A Int64, D date) ENGINE = MergeTree PARTITION BY D ORDER BY A;
-CREATE TABLE test_alter_decimal (n UInt64, d Decimal(15, 8)) ENGINE = ReplicatedMergeTree('/clickhouse/{database}/01761_alter_decimal_zookeeper', 'r1') ORDER BY tuple();
-CREATE TABLE test_alter_on_mutation (  date Date,  key UInt64,  value String ) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_01062/alter_on_mutation', '1') ORDER BY key PARTITION BY date;
-CREATE TABLE test_alter_r1 (x Date, s String) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_01267/alter', 'r1') ORDER BY s PARTITION BY x;
-CREATE TABLE test_alter_r2 (x Date, s String) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_01267/alter', 'r2') ORDER BY s PARTITION BY x;
-CREATE TABLE test_apply_deleted_mask(id Int64, value String) ENGINE = MergeTree ORDER BY id;
-CREATE TABLE test_array(resources_host Array(LowCardinality(String))) ENGINE = MergeTree() ORDER BY (resources_host);
-create table test_array_joins (   id UInt64 default rowNumberInAllBlocks() + 1,   arr_1 Array(String),   arr_2 Array(String),   arr_3 Array(String),   arr_4 Array(String) ) engine = MergeTree order by id;
-CREATE TABLE test_array_ops(arr Array(Nullable(Int64))) ENGINE = Memory;
-create table test_array_tuple (data Array(Tuple(x UInt64, y UInt64))) engine=Memory;
-CREATE TABLE test_b (   OldColumn String DEFAULT '',   NewColumn String DEFAULT '',   EventDate Date DEFAULT toDate(EventTime),   EventTime DateTime ) ENGINE = MergeTree(EventDate, EventTime, 8192);
-CREATE TABLE test_b (id UInt32, company UInt32, total UInt64) ENGINE=SummingMergeTree() PARTITION BY company ORDER BY (id, company);
-CREATE TABLE test_bf_indexOf ( `id` int, `ary` Array(LowCardinality(Nullable(String))), INDEX idx_ary ary TYPE bloom_filter(0.01) GRANULARITY 1) ENGINE = MergeTree() ORDER BY id SETTINGS index_granularity = 1;
-CREATE TABLE test_bit_shift_left_string_integer (str String, fixedStr FixedString(10), id Int64) engine=Log;
-CREATE TABLE test_bit_shift_right_string_integer (str String, fixedStr FixedString(10), id Int64) engine=Log;
-CREATE TABLE test_block_mismatch (   a UInt32,   b DateTime ) ENGINE = ReplacingMergeTree PARTITION BY toYYYYMM(b) ORDER BY (toDate(b), a);
-CREATE TABLE test_block_mismatch_sk2 (   a UInt32,   b DateTime ) ENGINE = ReplacingMergeTree PARTITION BY toYYYYMM(b) PRIMARY KEY (a) ORDER BY (a, toDate(b));
-CREATE TABLE test_bloom_filter_index(`uint8` UInt8, `uint16` UInt16, `index_column` UInt64, INDEX test1 `index_column` TYPE bloom_filter GRANULARITY 1) ENGINE = MergeTree() PARTITION BY tuple() ORDER BY tuple();
-create table test_bm(  dim UInt64,   id UInt64 ) ENGINE = MergeTree() ORDER BY( dim, id ) SETTINGS index_granularity = 8192;
-create table test_bm_join(  dim UInt64,  id UInt64 ) ENGINE = MergeTree() ORDER BY(dim,id) SETTINGS index_granularity = 8192;
-CREATE TABLE test_buffer.buf as test_buffer.mt ENGINE = Buffer(test_buffer, mt, 2, 10, 60, 10000, 100000, 1000000, 10000000);
-CREATE TABLE test_buffer.mt (uid UInt64, ts DateTime, val Float64) ENGINE = MergeTree PARTITION BY toDate(ts) ORDER BY (uid, ts);
-CREATE TABLE test_buffer_table (   `a` Int64 ) ENGINE = Buffer('', '', 1, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000);
-create table test_byte_size_array (   key Int32,   uints8 Array(UInt8),   ints8 Array(Int8),   ints32 Array(Int32),   floats32 Array(Float32),   decs32 Array(Decimal32(4)),   dates Array(Date),   uuids Array(UUID) ) engine MergeTree order by key;
-create table test_byte_size_complex_array (   key Int32,   ints Array(Int32),   int_ints Array(Array(Int32)),   strs Array(String),   str_strs Array(Array(String)) ) engine MergeTree order by key;
-create table test_byte_size_more_complex (   key Int32,   complex1 Array(Tuple(Nullable(FixedString(4)), Array(Tuple(Nullable(String), String)))) ) engine MergeTree order by key;
-create table test_byte_size_number0 (   key Int32,   u8 UInt8,   u16 UInt16,   u32 UInt32,   u64 UInt64,   u256 UInt256,   i8 Int8,   i16 Int16,   i32 Int32,   i64 Int64,   i128 Int128,   i256 Int256,   f32 Float32,   f64 Float64 ) engine MergeTree order by key;
-create table test_byte_size_number1 (   key Int32,   date Date,   dt DateTime,   dt64 DateTime64(3),   en8 Enum8('a'=1, 'b'=2, 'c'=3, 'd'=4),   en16 Enum16('c'=100, 'l'=101, 'i'=102, 'ck'=103, 'h'=104, 'o'=105, 'u'=106, 's'=107, 'e'=108),   dec32 Decimal32(4),   dec64 Decimal64(8),   dec128 Decimal128(16),   dec256 Decimal256(16),   uuid UUID ) engine MergeTree order by key;
-create table test_byte_size_other (   key Int32,   opt_int32 Nullable(Int32),   opt_str Nullable(String),   tuple Tuple(Int32, Nullable(String)),   strings LowCardinality(String) ) engine MergeTree order by key;
-create table test_byte_size_string (   key Int32,   str1 String,   str2 String,   fstr1 FixedString(8),   fstr2 FixedString(8) ) engine MergeTree order by key;
-CREATE TABLE test_collate (x UInt32, s LowCardinality(String)) ENGINE=Memory();
-CREATE TABLE test_collate (x UInt32, s Nullable(String)) ENGINE=Memory();
-CREATE TABLE test_collate_null (x UInt32, s LowCardinality(Nullable(String))) ENGINE=Memory();
-CREATE TABLE test_collation (   `v` String,   `v2` String ) ENGINE = MergeTree ORDER BY v SETTINGS index_granularity = 8192;
-CREATE TABLE test_count (`pt` Date) ENGINE = MergeTree PARTITION BY pt ORDER BY pt SETTINGS index_granularity = 8192;
-CREATE TABLE test_data (   col1 Nullable(String),   col2 Nullable(String),   col3 Nullable(String) ) ENGINE = Memory;
-CREATE TABLE test_data (cidr String) ENGINE = Memory;
-create table test_date (`data` Date) engine = MergeTree order by tuple();
-create table test_datetime (`data` DateTime) engine = MergeTree order by tuple();
-CREATE TABLE test_datetime (time DateTime) ENGINE=MergeTree PARTITION BY time ORDER BY time;
-CREATE TABLE test_datetime(timestamp DateTime('Asia/Istanbul')) ENGINE=Log;
-CREATE TABLE test_datetime(timestamp DateTime64(3, 'Asia/Istanbul')) Engine=Log;
-CREATE TABLE test_default_delta(   id UInt64 CODEC(Delta),   data String CODEC(Delta(1)),   somedate Date CODEC(Delta),   somenum Float64 CODEC(Delta),   somestr FixedString(3) CODEC(Delta(1)),   othernum Int64 CODEC(Delta),   yetothernum Float32 CODEC(Delta),   ddd Nested (age UInt8, Name String, OName String, BName String) CODEC(Delta(1)) ) ENGINE = MergeTree() ORDER BY tuple();
-CREATE TABLE test_default_using_alias (   what String,   a String DEFAULT concat(c, ' is great'),   b String DEFAULT concat(c, ' is fast'),   c String ALIAS concat(what, 'House') ) ENGINE = TinyLog;
-CREATE TABLE test_degs_to_rads (degrees Float64) ENGINE = Memory;
-CREATE TABLE test_dict_db.table1 (   `col1` String,   `col2` Int16,   `col3` String,   `col4` Int32,   `col5` String,   `col6` Float64,   `col7` Float64,   `col8` DateTime('UTC'),   `col9` String,   `col10` String,   `col11` String,   `col12` String,   `col13` Int32,   `col14` DateTime('UTC'),   `col15` DateTime('UTC'),   `col16` DateTime('UTC'),   `col17` DateTime('UTC'),   `col18` DateTime('UTC'),   `col19` DateTime('UTC'),   `col20` String ) ENGINE = MergeTree ORDER BY (col1, col2, col3, col4, col5);
-CREATE TABLE test_dict_db.table1 (   `col1` String,   `col2` Int16,   `col3` String,   `col4` Int32,   `col5` String,   `col6` Nullable(Float64),   `col7` Nullable(Float64),   `col8` Nullable(DateTime('UTC')),   `col9` Nullable(String),   `col10` Nullable(String),   `col11` Nullable(String),   `col12` Nullable(String),   `col13` Nullable(Int32),   `col14` Nullable(DateTime('UTC')),   `col15` Nullable(DateTime('UTC')),   `col16` Nullable(DateTime('UTC')),   `col17` Nullable(DateTime('UTC')),   `col18` Nullable(DateTime('UTC')),   `col19` Nullable(DateTime('UTC')),   `col20` Nullable(String) ) ENGINE = MergeTree ORDER BY (col1, col2, col3, col4, col5);
-CREATE TABLE test_dictionary_source (key String, value String) ENGINE=TinyLog;
-CREATE TABLE test_dictionary_source_table (   id UInt64,   value String ) ENGINE = TinyLog;
-CREATE TABLE test_dist_02536 (n Int8) ENGINE=Distributed(test_cluster_two_shards, currentDatabase(), test_02536, rand());
-create table test_distance (Title String) engine = Memory;
-CREATE TABLE test_distributed (text String, text2 String) ENGINE = Distributed('test_shard_localhost', currentDatabase(), test_local);
-CREATE TABLE test_distributed AS test_local ENGINE = Distributed(test_cluster_two_shards, currentDatabase(), test_local, rand());
-CREATE TABLE test_distributed_1 AS test_local_1 ENGINE = Distributed('test_shard_localhost', currentDatabase(), test_local_1, rand());
-CREATE TABLE test_distributed_2 AS test_local_2 ENGINE = Distributed('test_shard_localhost', currentDatabase(), test_local_2, rand());
-CREATE TABLE test_dup_index (  a Int64,  b Int64,  INDEX idx_a a TYPE minmax, INDEX idx_a b TYPE minmax ) Engine = MergeTree() ORDER BY a;
-create table test_entry_distance (Title String) engine = Memory;
-create table test_enum (c Nullable(Enum16('A' = 1, 'B' = 2))) engine Log;
-CREATE TABLE test_fetch(a Int32, b Int32) Engine = Memory;
-CREATE TABLE test_fixed_string_nested_json (data String) ENGINE MergeTree ORDER BY data;
-create table test_float64 (`data` Float64 Default 0.0) engine = MergeTree order by tuple();
-CREATE TABLE test_generic_events_all (APIKey UInt8, SessionType UInt8) ENGINE = MergeTree() PARTITION BY APIKey ORDER BY tuple();
-CREATE TABLE test_grace_hash (id UInt32, value UInt64) ENGINE = MergeTree ORDER BY id;
-create table test_graphite (key UInt32, Path String, Time DateTime('UTC'), Value Float64, Version UInt32, col UInt64)   engine = GraphiteMergeTree('graphite_rollup') order by key settings index_granularity=10;
-create table test_graphite (key UInt32, Path String, Time DateTime('UTC'), Value UInt8, Version UInt32, col UInt64)   engine = GraphiteMergeTree('graphite_rollup') order by key;
-CREATE TABLE test_group_by_with_rollup_order (id Int64, a Nullable(Int64), b Nullable(String)) ENGINE = MergeTree ORDER BY id;
-CREATE TABLE test_grouping_sets_predicate (   day_ Date,   type_1 String ) ENGINE=MergeTree ORDER BY day_;
-CREATE TABLE test_hierarchy_source_table (   id UInt64,   parent_id UInt64 ) ENGINE=MergeTree ORDER BY id;
-create table test_in (a LowCardinality(String)) Engine = MergeTree order by a;
-create table test_in_tuple as test_in_tuple_1 engine = Merge(currentDatabase(), '^test_in_tuple_[0-9]+$');
-create table test_in_tuple_1 (key Int32, key_2 Int32, x Array(Int32), y Array(Int32)) engine = MergeTree order by (key, key_2);
-create table test_in_tuple_2 (key Int32, key_2 Int32, x Array(Int32), y Array(Int32)) engine = MergeTree order by (key, key_2);
-CREATE TABLE test_index (   `key_string` String,   `key_uint32` ALIAS toUInt32(key_string),   INDEX idx toUInt32(key_string) TYPE set(0) GRANULARITY 1 ) ENGINE = MergeTree PARTITION BY tuple() PRIMARY KEY tuple() ORDER BY key_string SETTINGS index_granularity = 1;
-create table test_index(date Date) engine MergeTree partition by toYYYYMM(date) order by date;
-CREATE TABLE test_input(id Int32) ENGINE=MergeTree() order by id;
-create table test_ins_arr (date Date, val Array(UInt64)) engine = MergeTree(date, (date), 8192);
-create table test_ins_arr_arr (date Date, val Array(Array(UInt64))) engine = MergeTree(date, (date), 8192);
-create table test_ins_arr_arr_arr (date Date, val Array(Array(Array(UInt64)))) engine = MergeTree(date, (date), 8192);
-create table test_ins_arr_arr_null (date Date, val Array(Array(Nullable(UInt64)))) engine = MergeTree(date, (date), 8192);
-create table test_ins_arr_null (date Date, val Array(Nullable(UInt64))) engine = MergeTree(date, (date), 8192);
-create table test_ins_null (date Date, val Nullable(UInt64)) engine = MergeTree(date, (date), 8192);
-CREATE TABLE test_insert_t1 (`dt` Date, `uid` String, `name` String, `city` String) ENGINE = MergeTree PARTITION BY toYYYYMMDD(dt) ORDER BY name SETTINGS index_granularity = 8192;
-CREATE TABLE test_insert_t2 (`dt` Date, `uid` String) ENGINE = MergeTree PARTITION BY toYYYYMMDD(dt) ORDER BY uid SETTINGS index_granularity = 8192;
-CREATE TABLE test_insert_t3 (`dt` Date, `uid` String, `name` String, `city` String) ENGINE = MergeTree PARTITION BY toYYYYMMDD(dt) ORDER BY name SETTINGS index_granularity = 8192;
-CREATE TABLE test_inserts (`key` Int, `part` Int) ENGINE = MergeTree PARTITION BY part ORDER BY key SETTINGS temporary_directories_lifetime = 0, merge_tree_clear_old_temporary_directories_interval_seconds = 0;
-CREATE TABLE test_jit_nonnull (value UInt8) ENGINE = TinyLog;
-CREATE TABLE test_jit_nullable (value Nullable(UInt8)) ENGINE = TinyLog;
-create table test_join (date Date, id Int32, name Nullable(String)) engine = MergeTree partition by date order by id;
-CREATE TABLE test_joinGet(a String, b String, c Float64) ENGINE = Join(any, left, a, b);
-CREATE TABLE test_joinGet(user_id Nullable(Int32), name String) Engine = Join(ANY, LEFT, user_id);
-CREATE TABLE test_lc(a LowCardinality(String), b LowCardinality(String), c Float64) ENGINE = Join(any, left, a, b);
-CREATE TABLE test_local (date Date, value UInt32) ENGINE = MergeTree(date, date, 8192);
-create table test_local (id UInt32, path LowCardinality(String)) engine = MergeTree order by id;
-CREATE TABLE test_local (x Int64) ENGINE = MergeTree order by x as select * from numbers(10);
-CREATE TABLE test_local_1 (date Date, value UInt32) ENGINE = MergeTree(date, date, 8192);
-CREATE TABLE test_local_2 (date Date, value UInt32) ENGINE = MergeTree(date, date, 8192);
-CREATE TABLE test_log (   `crypto_name` String,   `trade_date` Date ) ENGINE = Log;
-CREATE TABLE test_log (   `crypto_name` String,   `trade_date` Date ) ENGINE = StripeLog;
-CREATE TABLE test_log (x UInt8, s String, a Array(Nullable(String))) ENGINE = Log;
-CREATE TABLE test_lookup_table (  id UInt64,  lookup_key UInt64, ) ENGINE = Memory;
-CREATE TABLE test_low_cardinality_int (data String) ENGINE MergeTree ORDER BY data;
-CREATE TABLE test_low_cardinality_string (data String) ENGINE MergeTree ORDER BY data;
-CREATE TABLE test_low_cardinality_uuid (data String) ENGINE MergeTree ORDER BY data;
-CREATE TABLE test_low_null_float (a LowCardinality(Nullable(Float64))) ENGINE = Memory;
-CREATE TABLE test_map (value Map(String, String)) ENGINE=TinyLog;
-CREATE TABLE test_max_mt_projections_alter (c1 UInt32, c2 UInt32, c3 UInt32)     ENGINE = MergeTree ORDER BY c1     SETTINGS max_projections = 3;
-CREATE TABLE test_max_mt_projections_create (c1 UInt32, c2 UInt32,     PROJECTION p1 (SELECT c1, c2 ORDER BY c2),     PROJECTION p2 (SELECT c2 ORDER BY c2))     ENGINE = MergeTree ORDER BY c1     SETTINGS max_projections = 1;
-CREATE TABLE test_max_size_drop Engine = MergeTree() ORDER BY number AS SELECT number FROM numbers(1000) ;
-CREATE TABLE test_merge AS test1 ENGINE = Merge('default', 'test1');
-CREATE TABLE test_merge AS test1 ENGINE = Merge('default', 'test1_distributed');
-CREATE TABLE test_merge_1(id UInt64) ENGINE = Log;
-CREATE TABLE test_merge_2(id UInt64) ENGINE = Log;
-CREATE TABLE test_mtree (`x` String, INDEX idx x TYPE set(10) GRANULARITY 1) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE test_nested (   `id` String,   `with_dot.str` String,   `with_dot.array` Array(Int32) ) ENGINE = MergeTree() ORDER BY id;
-create table test_nested (data Nested(x UInt32, y UInt32)) engine=Memory;
-CREATE TABLE test_nested_default (   `id` String,   `with_dot.str` String,   `with_dot.array` Array(String) ) ENGINE = MergeTree() ORDER BY id;
-CREATE TABLE test_new_col (  `_csv` String,  `csv_as_array` Array(String) ALIAS splitByChar(';',_csv),  `csv_col1` String DEFAULT csv_as_array[1],  `csv_col2` String DEFAULT csv_as_array[2] ) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE test_not_found_column_nothing (   col001 UInt8,   col002 UInt8 ) Engine=MergeTree ORDER BY tuple() PARTITION BY col001 % 3;
-CREATE TABLE test_null_as_default (a Int8, b Int64 DEFAULT a + 1000) ENGINE = Memory;
-CREATE TABLE test_null_as_default (a Int8, b Int64 DEFAULT c - 500, c Int32 DEFAULT a + 1000) ENGINE = Memory;
-CREATE TABLE test_null_as_default (a String DEFAULT 'WORLD') ENGINE = Memory;
-CREATE TABLE test_null_as_default (a String DEFAULT 'WORLD', b String DEFAULT 'PEOPLE') ENGINE = Memory;
-CREATE TABLE test_null_as_default__fuzz_46 (a Nullable(DateTime64(3)), b LowCardinality(Float32) DEFAULT a + 1000) ENGINE = Memory;
-create table test_null_filter(key UInt64, value UInt32) engine MergeTree order by key SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE test_nullable_float_issue7347 (ne UInt64,test Nullable(Float64)) ENGINE = MergeTree() PRIMARY KEY (ne) ORDER BY (ne);
-CREATE TABLE test_optimize_exception (date Date) PARTITION BY toYYYYMM(date) ORDER BY date;
-CREATE TABLE test_order_by (timestamp DateTime, key UInt32) ENGINE=MergeTree() ORDER BY (toDate(timestamp), key);
-CREATE TABLE test_order_by (timestamp DateTime, key UInt32) ENGINE=MergeTree() ORDER BY tuple();
-CREATE TABLE test_parallel_index (   z UInt64,   INDEX i z TYPE set(8) ) ENGINE = MergeTree ORDER BY ();
-CREATE TABLE test_parallel_replicas_settings (n UInt64) ENGINE=MergeTree() ORDER BY tuple();
-CREATE TABLE test_parallel_replicas_unavailable_shards (n UInt64) ENGINE=MergeTree() ORDER BY tuple();
-CREATE TABLE test_prewhere_column_type (`a` LowCardinality(String), `x` Nullable(Int32)) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE test_prewhere_default_column (APIKey UInt8, SessionType UInt8) ENGINE = MergeTree() PARTITION BY APIKey ORDER BY tuple();
-create table test_quantile (x AggregateFunction(quantileTiming(0.2), UInt64)) engine = Memory;
-CREATE TABLE test_r1 (x UInt64, "\\" String DEFAULT '\r\n\t\\' || ' ') ENGINE = ReplicatedMergeTree('/clickhouse/{database}/test_01669', 'r1') ORDER BY "\\";
-CREATE TABLE test_r1 AS test ENGINE = ReplicatedMergeTree('/clickhouse/{database}/test_01666', 'r1') ORDER BY "\\" SETTINGS min_bytes_for_wide_part = '100G';
-CREATE TABLE test_r2 (x UInt64, "\\" String DEFAULT '\r\n\t\\' || ' ') ENGINE = ReplicatedMergeTree('/clickhouse/{database}/test_01669', 'r2') ORDER BY "\\";
-CREATE TABLE test_r2 AS test ENGINE = ReplicatedMergeTree('/clickhouse/{database}/test_01666', 'r2') ORDER BY "\\" SETTINGS min_bytes_for_wide_part = '100G';
-CREATE TABLE test_rads_to_degs (radians Float64) ENGINE = Memory;
-CREATE TABLE test_repl ON CLUSTER test_shard_localhost (n UInt64) ENGINE ReplicatedMergeTree('/clickhouse/test_01181/{database}/test_repl','r1') ORDER BY tuple();
-CREATE TABLE test_rewrite_uniq_to_count (   `a` UInt8,   `b` UInt8,   `c` UInt8 ) ENGINE = MergeTree ORDER BY `a`;
-CREATE TABLE test_rlp (a Int32, b Int32) ENGINE=MergeTree() ORDER BY a SETTINGS index_granularity=5, index_granularity_bytes = '10Mi';
-create table test_rows_compact_part(f1 int,f2 int) engine=MergeTree partition by f1 order by f2 settings min_bytes_for_wide_part=10485760;
-create table test_rows_compact_part__fuzz_11 (x UInt32) engine = MergeTree order by x;
-create table test_rows_wide_part(f1 int,f2 int) engine=MergeTree partition by f1 order by f2 settings min_bytes_for_wide_part=0;
-CREATE TABLE test_s64_distributed AS test_s64_local ENGINE = Distributed('test_shard_localhost', currentDatabase(), test_s64_local, rand());
-CREATE TABLE test_s64_local (date Date, value Int64) ENGINE = MergeTree order by tuple();
-CREATE TABLE test_s64_local (date Date, value Int64) ENGINE = MergeTree(date, date, 8192);
-CREATE TABLE test_set (i Nullable(int)) ENGINE = Set();
-CREATE TABLE test_skip_idx (   id UInt32,   INDEX name_idx_g2 id TYPE minmax GRANULARITY 2,   INDEX name_idx_g1 id TYPE minmax GRANULARITY 1) ENGINE = MergeTree ORDER BY tuple() SETTINGS index_granularity = 1, index_granularity_bytes = 0, min_bytes_for_wide_part = 0;
-create table test_smt (id UInt32, sMap SimpleAggregateFunction(sumMap, Tuple(Array(UInt8), Array(Int64))), aMap AggregateFunction(sumMap, Tuple(Array(UInt8), Array(Int64)))) engine SummingMergeTree partition by tuple() order by id;
-CREATE TABLE test_startsWith (a String) Engine = MergeTree PARTITION BY tuple() ORDER BY a;
-CREATE TABLE test_string (   `c1` String,   `c2` String ) ENGINE = MergeTree ORDER BY c1;
-CREATE TABLE test_string ( s1 String, s2 String, s3 FixedString(10),   s4 FixedString(10), ) ENGINE = Memory;
-CREATE TABLE test_tab  (id UInt32, haystack String, needle String, replacement String)  engine = MergeTree()  ORDER BY id;
-CREATE TABLE test_table (   `col1` DateTime,   `col2` Int64,   `col3` AggregateFunction(sumMap, Tuple(Array(UInt8), Array(UInt8))) ) ENGINE = AggregatingMergeTree() ORDER BY (col1, col2);
-CREATE TABLE test_table (   b Int64,   a Int64,   grp_aggreg AggregateFunction(groupArrayArray, Array(UInt64)) ) ENGINE = MergeTree() ORDER BY a;
-CREATE TABLE test_table (   c0 String ALIAS c1,   c1 String,   c2 String, ) ENGINE = MergeTree ORDER BY c1;
-CREATE TABLE test_table (   col1 String,   col2 String,   INDEX test_table_col2_idx col2 TYPE set(0) GRANULARITY 1 ) ENGINE = MergeTree()    ORDER BY col1 AS SELECT 'v1', 'v2';
-CREATE TABLE test_table (   f1 Int32,   f2 Int32,   pk Int32 ) ENGINE = MergeTree PARTITION BY pk ORDER BY f1;
-CREATE TABLE test_table (   f1 Int32,   f2 Int32,   pk Int32 ) ENGINE = MergeTree() ORDER BY f1 PARTITION BY pk;
-CREATE TABLE test_table (   fingerprint UInt16,   fields Nested(name Array(UInt32), value String) ) ENGINE = MergeTree ORDER BY fingerprint;
-CREATE TABLE test_table (   id Float32,   value Float32 ) ENGINE=MergeTree ORDER BY id;
-CREATE TABLE test_table (   id UInt32,   value UInt32 ) ENGINE = MergeTree ORDER BY id;
-CREATE TABLE test_table (   id UInt32,   value_1 UInt32,   value_2 Float32 ) ENGINE = MergeTree ORDER BY id;
-CREATE TABLE test_table (   id UInt64 ) ENGINE = MergeTree ORDER BY id;
-CREATE TABLE test_table (   id UInt64,   value UInt8,   value_nullable Nullable(UInt8) ) ENGINE=TinyLog;
-CREATE TABLE test_table (   id UInt64,   alias_value_1 ALIAS id + alias_value_2 + 1,   alias_value_2 ALIAS id + 5 ) ENGINE=TinyLog;
-CREATE TABLE test_table (   id UInt64,   value Date32 ) ENGINE=TinyLog;
-CREATE TABLE test_table (   id UInt64,   value Nested (value_0_level_0 Nested(value_0_level_1 String, value_1_level_1 String), value_1_level_0 String) ) ENGINE=MergeTree ORDER BY id;
-CREATE TABLE test_table (   id UInt64,   value String ) ENGINE = MergeTree ORDER BY id;
-CREATE TABLE test_table (   id UInt64,   value String ) ENGINE = TinyLog;
-CREATE TABLE test_table (   id UInt64,   value String ) ENGINE=MergeTree ORDER BY id;
-CREATE TABLE test_table (   id UInt64,   value String ) ENGINE=ReplacingMergeTree ORDER BY id SETTINGS index_granularity = 2;
-CREATE TABLE test_table (   id UInt64,   value String ) ENGINE=TinyLog;
-CREATE TABLE test_table (   id UInt64,   value String,   alias_value ALIAS ((id + 1) AS inside_value) + inside_value ) ENGINE=TinyLog;
-CREATE TABLE test_table (   id UInt64,   value String,   alias_value ALIAS ((id + 1) AS value) + value ) ENGINE=TinyLog;
-CREATE TABLE test_table (   id UInt64,   value String,   INDEX value_idx (value) TYPE set(1000) GRANULARITY 1 ) ENGINE=MergeTree ORDER BY id;
-CREATE TABLE test_table (   id UInt64,   value String,   value_array Array(UInt64) ) ENGINE=MergeTree ORDER BY id;
-CREATE TABLE test_table (   id UInt64,   value String,   value_array Array(UInt64),   value_array_array Array(Array(UInt64)) ) ENGINE=TinyLog;
-CREATE TABLE test_table (   id UInt64,   value Tuple(value_0_level_0 Tuple(value_0_level_1 String, value_1_level_1 String), value_1_level_0 String) ) ENGINE=MergeTree ORDER BY id;
-CREATE TABLE test_table (   id UInt64,   value UInt64 ) ENGINE=MergeTree ORDER BY (id, value) SETTINGS index_granularity = 8192, index_granularity_bytes = '1Mi';
-CREATE TABLE test_table (   id UInt64,   value UInt64 ) ENGINE=MergeTree ORDER BY id;
-CREATE TABLE test_table (   id UInt64,   value_1 Array(UInt8),   value_2 Array(UInt8), ) ENGINE=TinyLog;
-CREATE TABLE test_table (   id UInt64,   value_1 String,   value_2 String,   value_3 String,   INDEX value_1_idx (value_1) TYPE bloom_filter GRANULARITY 1,   INDEX value_2_idx (value_2) TYPE ngrambf_v1(3, 512, 2, 0) GRANULARITY 1,   INDEX value_3_idx (value_3) TYPE tokenbf_v1(512, 3, 0) GRANULARITY 1 ) ENGINE=MergeTree ORDER BY id;
-CREATE TABLE test_table (   id UInt64,   value_alias ALIAS concat('AliasValue_', toString(id)),   value_materialized MATERIALIZED concat('MaterializedValue_', toString(id)) ) ENGINE=MergeTree ORDER BY id;
-CREATE TABLE test_table (   id UInt8,   value Nullable(Decimal(38, 2)) ) ENGINE = MergeTree ORDER BY id;
-CREATE TABLE test_table (   key UInt64,   value String,   INDEX value_index value TYPE minmax GRANULARITY 1 ) Engine=MergeTree() ORDER BY key SETTINGS compress_marks=false;
-CREATE TABLE test_table (   key UInt64,   value UInt16 ) ENGINE=Memory() AS SELECT number, number FROM numbers(1e5);
-CREATE TABLE test_table (   key_column UInt64,   data_column_1 UInt64,   data_column_2 UInt8 ) ENGINE = MergeTree ORDER BY key_column;
-CREATE TABLE test_table (   number UInt64 ) ENGINE=MergeTree ORDER BY number;
-CREATE TABLE test_table (  id UInt64,  value String ) ENGINE = Memory;
-CREATE TABLE test_table (  uid Int64,  start Int64,  end Int64,  insert_time DateTime ) ENGINE = MergeTree ORDER BY (uid, start);
-CREATE TABLE test_table ( `timestamp` DateTime, `value` UInt64, `day` Date ALIAS toDate(timestamp), `day1` Date ALIAS day + 1, `day2` Date ALIAS day1 + 1, `time` DateTime ALIAS timestamp ) ENGINE = MergeTree PARTITION BY toYYYYMMDD(timestamp) ORDER BY timestamp SETTINGS index_granularity = 1;
-create table test_table ( `date` Date, `__sign` Int8, `from` Float64, `to` Float64 ) ENGINE = CollapsingMergeTree(__sign) PARTITION BY toYYYYMM(date) ORDER BY (date) SETTINGS index_granularity = 8192;
-CREATE TABLE test_table (`id` Float32, `value` Float32) ENGINE = MergeTree ORDER BY id;
-CREATE TABLE test_table (`n` UInt64, `s` String) ENGINE = MergeTree PRIMARY KEY n ORDER BY n SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-create table test_table (A Nullable(String), B Nullable(String)) engine MergeTree order by (A,B) settings index_granularity = 1, allow_nullable_key=1;
-CREATE TABLE test_table (a UInt64) ENGINE = MergeTree() ORDER BY tuple();
-CREATE TABLE test_table (a UInt64, b ALIAS a, c ALIAS b) ENGINE = MergeTree() ORDER BY tuple();
-CREATE TABLE test_table (a UInt8, b UInt8) ENGINE = TinyLog;
-CREATE TABLE test_table (EventDate Date, CounterID UInt32, UserID UInt64, EventTime DateTime('America/Los_Angeles'), UTCEventTime DateTime('UTC')) ENGINE = MergeTree(EventDate, CounterID, 8192);
-CREATE TABLE test_table (EventDate Date, CounterID UInt32, UserID UInt64, EventTime DateTime('America/Los_Angeles'), UTCEventTime DateTime('UTC')) PARTITION BY EventDate PRIMARY KEY CounterID;
-CREATE TABLE test_table (id UInt64) ENGINE=TinyLog;
-CREATE TABLE test_table (id UInt64, value IPv6) ENGINE=MergeTree ORDER BY id;
-CREATE TABLE test_table (id UInt64, value Tuple(a UInt64)) ENGINE=MergeTree ORDER BY id;
-CREATE TABLE test_table (id UInt64, value_ipv4 IPv4, value_ipv6 IPv6) ENGINE=MergeTree ORDER BY id;
-CREATE TABLE test_table (key UInt32, value Decimal(16, 6)) ENGINE = SummingMergeTree() ORDER BY key;
-CREATE TABLE test_table (message String) ENGINE=TinyLog;
-CREATE TABLE test_table (n Int32, s String) ENGINE = MergeTree() PARTITION BY n % 10 ORDER BY n;
-CREATE TABLE test_table (n Int32, s String) ENGINE MergeTree PARTITION BY n ORDER BY n;
-CREATE TABLE test_table (string_value String) ENGINE = MergeTree ORDER BY string_value SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE test_table (value String) ENGINE=ExecutablePool('nonexist.py', 'TabSeparated', (foobar));
-create table test_table as test_table_sharded engine=Distributed(test_cluster_two_shards, currentDatabase(), test_table_sharded, hash);
-CREATE TABLE test_table ENGINE=MergeTree() ORDER BY tuple() AS SELECT * FROM test_table_data;
-CREATE TABLE test_table(a Array(Int8), d Decimal32(4), c Tuple(DateTime64(3), UUID)) ENGINE = GenerateRandom();
-CREATE TABLE test_table(a Array(Int8), d Decimal32(4), c Tuple(DateTime64(3, 'UTC'), UUID)) ENGINE=Memory;
-CREATE TABLE test_table_1 (   id UInt64,   value_1 String,   value_2 UInt64 ) ENGINE=MergeTree ORDER BY id;
-CREATE TABLE test_table_1 (   pkey UInt32,   c8 UInt32,   c9 String,   c10 Float32,   c11 String ) ENGINE = MergeTree ORDER BY pkey;
-CREATE TABLE test_table_1 (id UInt32) ENGINE = MergeTree ORDER BY (id);
-CREATE TABLE test_table_2 (   id UInt64,   value_1 String,   value_2 UInt64 ) ENGINE=MergeTree ORDER BY id;
-CREATE TABLE test_table_2 (   vkey UInt32,   pkey UInt32,   c15 UInt32 ) ENGINE = MergeTree ORDER BY vkey;
-create table test_table_2 (id UInt32) ENGINE = MergeTree ORDER BY (id);
-CREATE TABLE test_table_2(a Array(Int8), b UInt32, c Nullable(String), d Decimal32(4), e Nullable(Enum16('h' = 1, 'w' = 5 , 'o' = -200)), f Float64, g Tuple(Date, DateTime('UTC'), DateTime64(3, 'UTC'), UUID), h FixedString(2)) ENGINE=Memory;
-CREATE TABLE test_table_2(a Array(Int8), d Decimal32(4), c Tuple(DateTime64(3, 'UTC'), UUID)) ENGINE = GenerateRandom(10, 5, 3);
-CREATE TABLE test_table__fuzz_3 (`id` LowCardinality(Nullable(Float32)), `value` Float32) ENGINE = MergeTree ORDER BY id SETTINGS allow_nullable_key=1;
-CREATE TABLE test_table_complex (   key_1 UInt64,   key_2 UInt64,   value UInt16 ) ENGINE=Memory() AS SELECT number, number, number FROM numbers(1e5);
-CREATE TABLE test_table_compound (   id UInt64,   tuple_value Tuple(value_1 UInt64, value_2 String) ) ENGINE=TinyLog;
-CREATE TABLE test_table_data (   id UInt64,   value String ) ENGINE=MergeTree ORDER BY id;
-CREATE TABLE test_table_data (   id UInt64,   value String ) ENGINE=MergeTree() ORDER BY id;
-CREATE TABLE test_table_default (   data_1 DEFAULT dictGetUInt64('02097_db.test_dictionary', 'data_column_1', toUInt64(0)),   data_2 DEFAULT dictGet(02097_db.test_dictionary, 'data_column_2', toUInt64(0)) ) ENGINE=TinyLog;
-CREATE TABLE test_table_float_values (   id UInt64,   value1 Float32,   value2 Float64 ) ENGINE=TinyLog;
-CREATE TABLE test_table_float_values (   id UInt64,   value1 Float32,   value2 Float64,   predicate_value UInt8 ) ENGINE=TinyLog;
-CREATE TABLE test_table_float_values (   id UInt64,   value1 Float32,   value2 Float64,   weight UInt64 ) ENGINE=TinyLog;
-CREATE TABLE test_table_for_in (   id UInt64 ) ENGINE=TinyLog;
-create table test_table_hdfs_syntax (id UInt32) ENGINE = HDFS('') ;
-CREATE TABLE test_table_in (   id UInt64 ) ENGINE=TinyLog;
-CREATE TABLE test_table_ipv4 (   ip String,   ipv4 IPv4 ) ENGINE = TinyLog;
-CREATE TABLE test_table_ipv4_materialized (   ip String,   ipv6 IPv4 MATERIALIZED toIPv4(ip) ) ENGINE = TinyLog;
-CREATE TABLE test_table_ipv6 (   ip String,   ipv6 IPv6 ) ENGINE = TinyLog;
-CREATE TABLE test_table_ipv6_materialized (   ip String,   ipv6 IPv6 MATERIALIZED toIPv6(ip) ) ENGINE = TinyLog;
-CREATE TABLE test_table_join (   id UInt64,   value String ) ENGINE = Join(All, inner, id);
-CREATE TABLE test_table_join (   id UInt64,   value String ) ENGINE = Join(Any, Left, id);
-CREATE TABLE test_table_join (   id UInt64,   value String ) ENGINE=Join(Any, Left, id);
-CREATE TABLE test_table_join_1 (   id UInt64,   value String ) ENGINE = MergeTree ORDER BY id;
-CREATE TABLE test_table_join_1 (   id UInt64,   value String ) ENGINE = TinyLog;
-CREATE TABLE test_table_join_1 (   id UInt64,   value String ) ENGINE=MergeTree ORDER BY id SAMPLE BY id;
-CREATE TABLE test_table_join_1 (   id UInt64,   value String,   value_join_1 String ) ENGINE=TinyLog;
-CREATE TABLE test_table_join_1 (   id UInt64,   value UInt64 ) ENGINE=SummingMergeTree(value) ORDER BY id SAMPLE BY id;
-CREATE TABLE test_table_join_1 (   id UInt8,   value String ) ENGINE = TinyLog;
-CREATE TABLE test_table_join_1 (id UInt64, value String) ENGINE = TinyLog;
-CREATE TABLE test_table_join_2 (   id UInt16,   value String ) ENGINE = TinyLog;
-CREATE TABLE test_table_join_2 (   id UInt64,   value String ) ENGINE = MergeTree ORDER BY id;
-CREATE TABLE test_table_join_2 (   id UInt64,   value String ) ENGINE = TinyLog;
-CREATE TABLE test_table_join_2 (   id UInt64,   value String ) ENGINE=MergeTree ORDER BY id SAMPLE BY id;
-CREATE TABLE test_table_join_2 (   id UInt64,   value String,   value_join_2 String ) ENGINE=TinyLog;
-CREATE TABLE test_table_join_2 (   id UInt64,   value UInt64 ) ENGINE=SummingMergeTree(value) ORDER BY id SAMPLE BY id;
-CREATE TABLE test_table_join_2 (id UInt64, value String) ENGINE = TinyLog;
-CREATE TABLE test_table_join_3 (   id UInt64,   value String ) ENGINE = TinyLog;
-CREATE TABLE test_table_join_3 (   id UInt64,   value String,   value_join_3 String ) ENGINE=TinyLog;
-CREATE TABLE test_table_join_3 (id UInt64, value String ) ENGINE = TinyLog;
-CREATE TABLE test_table_null_specifics (   id UInt64,   value1 Nullable(UInt64),   value2 Nullable(UInt64),   value3 Nullable(UInt64) ) ENGINE=TinyLog;
-CREATE TABLE test_table_null_specifics (   id UInt64,   value1 Nullable(UInt64),   value2 Nullable(UInt64),   value3 Nullable(UInt64),   predicate_value UInt8 ) ENGINE=TinyLog;
-CREATE TABLE test_table_null_specifics (   id UInt64,   value1 Nullable(UInt64),   value2 Nullable(UInt64),   value3 Nullable(UInt64),   predicate_value UInt8,   weight UInt64 ) ENGINE=TinyLog;
-CREATE TABLE test_table_null_specifics (   id UInt64,   value1 Nullable(UInt64),   value2 Nullable(UInt64),   value3 Nullable(UInt64),   weight UInt64,   weight_nullable Nullable(UInt64) ) ENGINE=TinyLog;
-CREATE TABLE test_table_nullable (   key UInt64,   value Nullable(UInt16) ) ENGINE=Memory() AS SELECT number, number % 2 == 0 ? NULL : number FROM numbers(1e5);
-CREATE TABLE test_table_nullable (a UInt8, b Nullable(UInt8)) ENGINE = TinyLog;
-CREATE TABLE test_table_nullable_float_values (   id UInt64,   value1 Nullable(Float32),   value2 Nullable(Float64) ) ENGINE=TinyLog;
-CREATE TABLE test_table_nullable_float_values (   id UInt64,   value1 Nullable(Float32),   value2 Nullable(Float64),   predicate_value UInt8 ) ENGINE=TinyLog;
-CREATE TABLE test_table_nullable_float_values (   id UInt64,   value1 Nullable(Float32),   value2 Nullable(Float64),   weight UInt64 ) ENGINE=TinyLog;
-CREATE TABLE test_table_nullable_signed_values (   id UInt64,   value1 Nullable(Int8),   value2 Nullable(Int16),   value3 Nullable(Int32),   value4 Nullable(Int64) ) ENGINE=TinyLog;
-CREATE TABLE test_table_nullable_signed_values (   id UInt64,   value1 Nullable(Int8),   value2 Nullable(Int16),   value3 Nullable(Int32),   value4 Nullable(Int64),   predicate_value UInt8 ) ENGINE=TinyLog;
-CREATE TABLE test_table_nullable_signed_values (   id UInt64,   value1 Nullable(Int8),   value2 Nullable(Int16),   value3 Nullable(Int32),   value4 Nullable(Int64),   weight UInt64 ) ENGINE=TinyLog;
-CREATE TABLE test_table_nullable_unsigned_values (   id UInt64,   value1 Nullable(UInt8),   value2 Nullable(UInt16),   value3 Nullable(UInt32),   value4 Nullable(UInt64) ) ENGINE=TinyLog;
-CREATE TABLE test_table_nullable_unsigned_values (   id UInt64,   value1 Nullable(UInt8),   value2 Nullable(UInt16),   value3 Nullable(UInt32),   value4 Nullable(UInt64),   predicate_value UInt8 ) ENGINE=TinyLog;
-CREATE TABLE test_table_nullable_unsigned_values (   id UInt64,   value1 Nullable(UInt8),   value2 Nullable(UInt16),   value3 Nullable(UInt32),   value4 Nullable(UInt64),   weight UInt64 ) ENGINE=TinyLog;
-CREATE TABLE test_table_signed_values (   id UInt64,   value1 Int8,   value2 Int16,   value3 Int32,   value4 Int64 ) ENGINE=TinyLog;
-CREATE TABLE test_table_signed_values (   id UInt64,   value1 Int8,   value2 Int16,   value3 Int32,   value4 Int64,   predicate_value UInt8 ) ENGINE=TinyLog;
-CREATE TABLE test_table_signed_values (   id UInt64,   value1 Int8,   value2 Int16,   value3 Int32,   value4 Int64,   weight UInt64 ) ENGINE=TinyLog;
-CREATE TABLE test_table_string (   key String,   value UInt16 ) ENGINE=Memory() AS SELECT 'foo' || number::String, number FROM numbers(1e5);
-CREATE TABLE test_table_tuple (   id UInt64,   value Tuple(value_0_level_0 String, value_1_level_0 String) ) ENGINE=TinyLog;
-CREATE TABLE test_table_unsigned_values (   id UInt64,   value1 UInt8,   value2 UInt16,   value3 UInt32,   value4 UInt64 ) ENGINE=TinyLog;
-CREATE TABLE test_table_unsigned_values (   id UInt64,   value1 UInt8,   value2 UInt16,   value3 UInt32,   value4 UInt64,   predicate_value UInt8 ) ENGINE=TinyLog;
-CREATE TABLE test_table_unsigned_values (   id UInt64,   value1 UInt8,   value2 UInt16,   value3 UInt32,   value4 UInt64,   weight UInt64 ) ENGINE=TinyLog;
-create table test_table_url(id UInt32) ENGINE = URL('http://localhost/endpoint') ;
-create table test_table_url(id UInt32) ENGINE = URL('http://localhost/endpoint', 'ErrorFormat') ;
-create table test_table_url(id UInt32) ENGINE = URL('http://localhost/endpoint', 'JSONEachRow');
-create table test_table_url(id UInt32) ENGINE = URL('http://localhost/endpoint', 'JSONEachRow', 'auto');
-create table test_table_url(id UInt32) ENGINE = URL('http://localhost/endpoint', 'JSONEachRow', 'brotli');
-create table test_table_url(id UInt32) ENGINE = URL('http://localhost/endpoint', 'JSONEachRow', 'bz2');
-create table test_table_url(id UInt32) ENGINE = URL('http://localhost/endpoint', 'JSONEachRow', 'deflate');
-create table test_table_url(id UInt32) ENGINE = URL('http://localhost/endpoint', 'JSONEachRow', 'gz');
-create table test_table_url(id UInt32) ENGINE = URL('http://localhost/endpoint', 'JSONEachRow', 'lz4');
-create table test_table_url(id UInt32) ENGINE = URL('http://localhost/endpoint', 'JSONEachRow', 'lzma');
-create table test_table_url(id UInt32) ENGINE = URL('http://localhost/endpoint', 'JSONEachRow', 'none');
-create table test_table_url(id UInt32) ENGINE = URL('http://localhost/endpoint', 'JSONEachRow', 'snappy');
-create table test_table_url(id UInt32) ENGINE = URL('http://localhost/endpoint', 'JSONEachRow', 'zip') ;
-create table test_table_url(id UInt32) ENGINE = URL('http://localhost/endpoint', 'JSONEachRow', 'zstd');
-create table test_table_url(id UInt32) ENGINE = URL('http://localhost/endpoint.fr', 'JSONEachRow');
-create table test_table_url(id UInt32) ENGINE = URL('http://localhost/endpoint.gz', 'JSONEachRow');
-create table test_table_url_syntax (id UInt32) ENGINE = URL('') ;
-CREATE TABLE test_tb (a UInt64, s String) ENGINE = MergeTree() ORDER BY a;
-create table test_tbl (vend_nm String, ship_dt Date) engine MergeTree partition by toWeek(ship_dt) order by vend_nm;
-CREATE TABLE test_tiny_log (x UInt8, s String, a Array(Nullable(String))) ENGINE = TinyLog;
-CREATE TABLE test_ttl_group_by01763 (key UInt32, ts DateTime, value UInt32, min_value UInt32 default value, max_value UInt32 default value) ENGINE = MergeTree() PARTITION BY toYYYYMM(ts) ORDER BY (key, toStartOfInterval(ts, toIntervalMinute(3)), ts) TTL ts + INTERVAL 5 MINUTE GROUP BY key, toStartOfInterval(ts, toIntervalMinute(3)) SET value = sum(value), min_value = min(min_value), max_value = max(max_value), ts=min(toStartOfInterval(ts, toIntervalMinute(3)));
-CREATE TABLE test_tuple (`p` DateTime, `i` int, `j` int) ENGINE = MergeTree PARTITION BY (toDate(p), i) ORDER BY j SETTINGS index_granularity = 1;
-CREATE TABLE test_tuple (value Tuple(UInt8, UInt8)) ENGINE=TinyLog;
-create table test_tuple(p DateTime, i int, j int) engine MergeTree partition by (toDate(p), i) order by j settings index_granularity = 1;
-CREATE TABLE test_tuple_element (   tuple Tuple(k1 Nullable(UInt64), k2 UInt64) ) ENGINE = MergeTree ORDER BY tuple() SETTINGS index_granularity = 8192;
-CREATE TABLE test_tuple_filter (id UInt32, value String, log_date Date) Engine=MergeTree() ORDER BY id PARTITION BY log_date SETTINGS index_granularity = 3, index_granularity_bytes = '10Mi';
-CREATE TABLE test_tuple_filter__fuzz_2 (  `id` Nullable(UInt32),  `value` LowCardinality(String),  `log_date` LowCardinality(Date) ) ENGINE = MergeTree PARTITION BY log_date ORDER BY id SETTINGS allow_nullable_key = 1;
-CREATE TABLE test_tuple_nested_in_array (value Array(Tuple(UInt8, UInt8))) ENGINE=TinyLog;
-CREATE TABLE test_tuple_nested_in_array_nested_in_tuple (value Tuple(UInt8, Array(Tuple(UInt8, UInt8)))) ENGINE=TinyLog;
-CREATE TABLE test_tuple_nested_in_map (value Map(String, Tuple(UInt8, UInt8))) ENGINE=TinyLog;
-CREATE TABLE test_tuple_nested_in_map_nested_in_tuple (value Tuple(UInt8, Map(String, Tuple(UInt8, UInt8)))) ENGINE=TinyLog;
-create table test_two_args(i int, j int, k int) engine MergeTree partition by i + j order by k settings index_granularity = 1;
-create table test_tz_hour(t DateTime, x String) engine MergeTree partition by toYYYYMMDD(t) order by x;
-CREATE TABLE test_u64_distributed AS test_u64_local ENGINE = Distributed('test_shard_localhost', currentDatabase(), test_u64_local, rand());
-CREATE TABLE test_u64_local (date Date, value UInt64) ENGINE = MergeTree order by tuple();
-CREATE TABLE test_u64_local (date Date, value UInt64) ENGINE = MergeTree(date, date, 8192);
-create table test_uint64 (`data` UInt64 Default 0) engine = MergeTree order by tuple();
-CREATE TABLE test_vertical_merge (  k UInt64,  val1 UInt64,  val2 UInt64,  INDEX idx1 val1 * val2 TYPE minmax GRANULARITY 1,  INDEX idx2 val1 * k TYPE minmax GRANULARITY 1 ) ENGINE MergeTree() ORDER BY k SETTINGS vertical_merge_algorithm_min_rows_to_activate = 1, vertical_merge_algorithm_min_columns_to_activate = 1;
-CREATE TABLE test_wide_nested (   `id` Int,   `info.id` Array(Int),   `info.name` Array(String),   `info.age` Array(Int) ) ENGINE = MergeTree ORDER BY tuple() SETTINGS min_bytes_for_wide_part = 0;
-CREATE TABLE test_wide_not_nested (  `id` Int,  `info.id` Int,  `info.name` String,  `info.age` Int ) ENGINE = MergeTree ORDER BY tuple() SETTINGS min_bytes_for_wide_part = 0;
-CREATE TABLE test_xy (   `x` Int32,   `y` String ) ENGINE = MergeTree ORDER BY x;
-CREATE TABLE test_zk_connection_table (   key UInt64 ) ENGINE ReplicatedMergeTree('zookeeper2:/clickhouse/{database}/02731_zk_connection/{shard}', '{replica}') ORDER BY tuple();
-create table test_zkinsert (  name String,  path String,  value String ) ENGINE Memory;
-CREATE TABLE testAggregatingMT (uid String, version UInt32, is_deleted UInt8) ENGINE = AggregatingMergeTree() Order by (uid) SETTINGS clean_deleted_rows='Always', allow_experimental_replacing_merge_with_cleanup=1;
-CREATE TABLE testCleanupR1 (uid String, version UInt32, is_deleted UInt8)   ENGINE = ReplicatedReplacingMergeTree('/clickhouse/{database}/tables/test_cleanup/', 'r1', version, is_deleted)   ORDER BY uid settings allow_experimental_replacing_merge_with_cleanup=1;
-CREATE TABLE testCleanupR1 (uid String, version UInt32, is_deleted UInt8)   ENGINE = ReplicatedReplacingMergeTree('/clickhouse/{database}/tables/test_cleanup/', 'r1', version, is_deleted)   ORDER BY uid SETTINGS enable_vertical_merge_algorithm = 1, vertical_merge_algorithm_min_rows_to_activate = 0, vertical_merge_algorithm_min_columns_to_activate = 0, min_rows_for_wide_part = 0,   min_bytes_for_wide_part = 0, allow_experimental_replacing_merge_with_cleanup=1;
-CREATE TABLE testCollapsingMT (uid String, version UInt32, is_deleted UInt8, sign Int8) ENGINE = CollapsingMergeTree(sign) Order by (uid) SETTINGS clean_deleted_rows='Always', allow_experimental_replacing_merge_with_cleanup=1;
-CREATE TABLE testing (   a String,   b String,   c Int32,   d Int32,   e Int32,   PROJECTION proj_1   (     SELECT c ORDER BY d   ),   PROJECTION proj_2   (     SELECT c ORDER BY e, d   ) ) ENGINE = MergeTree() PRIMARY KEY (a) SETTINGS min_bytes_for_wide_part = 0;
-CREATE TABLE testing (   a String,   b String,   c String,   d String,   PROJECTION proj_1   (     SELECT b, c     ORDER BY d   ) ) ENGINE = MergeTree() PRIMARY KEY (a) ORDER BY (a, b) SETTINGS index_granularity = 8192, index_granularity_bytes = 0, min_bytes_for_wide_part = 0;
-CREATE TABLE testJoinTable (number UInt64, data String) ENGINE = Join(ANY, INNER, number) SETTINGS any_join_distinct_right_table_keys = 1;
-CREATE TABLE testmt (`CounterID` UInt64, `value` String) ENGINE = MergeTree() ORDER BY CounterID;
-CREATE TABLE testMT (uid String, version UInt32, is_deleted UInt8) ENGINE = MergeTree() Order by (uid) SETTINGS clean_deleted_rows='Always', allow_experimental_replacing_merge_with_cleanup=1;
-CREATE TABLE testNullableStates (  ts DateTime,  id String,  string Nullable(String),  float64 Nullable(Float64),  float32 Nullable(Float32),  decimal325 Nullable(Decimal32(5)),  date Nullable(Date),  datetime Nullable(DateTime),  datetime64 Nullable(DateTime64),  int64 Nullable(Int64),  int32 Nullable(Int32),  int16 Nullable(Int16),  int8 Nullable(Int8)) ENGINE=MergeTree PARTITION BY toStartOfDay(ts) ORDER BY id;
-CREATE TABLE testNullableStatesAgg (   `ts` DateTime,   `id` String,   `stringMin` AggregateFunction(min, Nullable(String)),   `stringMax` AggregateFunction(max, Nullable(String)),   `float64Min` AggregateFunction(min, Nullable(Float64)),   `float64Max` AggregateFunction(max, Nullable(Float64)),   `float64Avg` AggregateFunction(avg, Nullable(Float64)),   `float64Sum` AggregateFunction(sum, Nullable(Float64)),   `float32Min` AggregateFunction(min, Nullable(Float32)),   `float32Max` AggregateFunction(max, Nullable(Float32)),   `float32Avg` AggregateFunction(avg, Nullable(Float32)),   `float32Sum` AggregateFunction(sum, Nullable(Float32)),   `decimal325Min` AggregateFunction(min, Nullable(Decimal32(5))),   `decimal325Max` AggregateFunction(max, Nullable(Decimal32(5))),   `decimal325Avg` AggregateFunction(avg, Nullable(Decimal32(5))),   `decimal325Sum` AggregateFunction(sum, Nullable(Decimal32(5))),   `dateMin` AggregateFunction(min, Nullable(Date)),   `dateMax` AggregateFunction(max, Nullable(Date)),   `datetimeMin` AggregateFunction(min, Nullable(DateTime)),   `datetimeMax` AggregateFunction(max, Nullable(DateTime)),   `datetime64Min` AggregateFunction(min, Nullable(datetime64)),   `datetime64Max` AggregateFunction(max, Nullable(datetime64)),   `int64Min` AggregateFunction(min, Nullable(Int64)),   `int64Max` AggregateFunction(max, Nullable(Int64)),   `int64Avg` AggregateFunction(avg, Nullable(Int64)),   `int64Sum` AggregateFunction(sum, Nullable(Int64)),   `int32Min` AggregateFunction(min, Nullable(Int32)),   `int32Max` AggregateFunction(max, Nullable(Int32)),   `int32Avg` AggregateFunction(avg, Nullable(Int32)),   `int32Sum` AggregateFunction(sum, Nullable(Int32)),   `int16Min` AggregateFunction(min, Nullable(Int16)),   `int16Max` AggregateFunction(max, Nullable(Int16)),   `int16Avg` AggregateFunction(avg, Nullable(Int16)),   `int16Sum` AggregateFunction(sum, Nullable(Int16)),   `int8Min` AggregateFunction(min, Nullable(Int8)),   `int8Max` AggregateFunction(max, Nullable(Int8)),   `int8Avg` AggregateFunction(avg, Nullable(Int8)),   `int8Sum` AggregateFunction(sum, Nullable(Int8)) ) ENGINE = AggregatingMergeTree() PARTITION BY toStartOfDay(ts) ORDER BY id;
-CREATE TABLE testSettingsR1 (col1 String, version UInt32, is_deleted UInt8)   ENGINE = ReplicatedReplacingMergeTree('/clickhouse/{database}/tables/test_setting/', 'r1', version, is_deleted)   ORDER BY col1   SETTINGS clean_deleted_rows = 'Always', allow_experimental_replacing_merge_with_cleanup=1;
-CREATE TABLE testSummingMT (uid String, version UInt32, is_deleted UInt8) ENGINE = SummingMergeTree() Order by (uid) SETTINGS clean_deleted_rows='Always', allow_experimental_replacing_merge_with_cleanup=1;
-CREATE TABLE TESTTABLE (  _id UInt64, pt String, attr_list Array(String) ) ENGINE = MergeTree() PARTITION BY (pt) ORDER BY tuple();
-create table TestTable (column String, start DateTime, end DateTime) engine MergeTree order by start;
-CREATE TABLE TESTTABLE4 (_id UInt64, pt String, l String ) ENGINE = MergeTree() PARTITION BY (pt) ORDER BY (_id);
-CREATE TABLE TestTbl (   `id` UInt16,   `dt` Date,   `val` String ) ENGINE = MergeTree PARTITION BY dt ORDER BY (id);
-CREATE TABLE testVersionedCMT (uid String, version UInt32, is_deleted UInt8, sign Int8) ENGINE = VersionedCollapsingMergeTree(sign, version) Order by (uid) SETTINGS clean_deleted_rows='Always', allow_experimental_replacing_merge_with_cleanup=1;
-CREATE TABLE testx(t Int32, a UInt8) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE ties (a Int) ENGINE = Memory;
-CREATE TABLE time_table(timecol DateTime, value Int32) ENGINE = MergeTree order by tuple();
-CREATE TABLE ting_log_02184 (id UInt64, name String, dt Date) ENGINE = TinyLog();
-CREATE TABLE tj (key2 UInt64, key1 Int64, a UInt64, b UInt64, x UInt64, y UInt64) ENGINE = Join(ALL, RIGHT, key1, key2);
-CREATE TABLE tlc (lc LowCardinality(Nullable(String))) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE tmp (date Date, name String) ENGINE = Memory;
-CREATE TABLE tmp (n Int8) ENGINE=Memory;
-CREATE TABLE tmp (str String) ENGINE = Log;
-CREATE TABLE tmp (x Int64) ENGINE = MergeTree() ORDER BY tuple() PARTITION BY tuple();
-CREATE TABLE tmp ENGINE = TinyLog AS SELECT initialQueryID();
-CREATE TABLE tmp ENGINE = TinyLog AS SELECT queryID();
-CREATE TABLE tmp_01375 (n UInt32, s String) ENGINE = Memory;
-CREATE TABLE tmp_01683 (n Int8) ENGINE=Memory;
-CREATE TABLE tmp_01781 (n LowCardinality(String)) ENGINE=Memory;
-CREATE TABLE tmp_02482 (i UInt64, n LowCardinality(String)) ENGINE = Memory;
-CREATE TABLE tmp_mv2 AS tmp_mv;
-CREATE TABLE tmp_mv3 AS tmp_mv ENGINE = Memory;
-CREATE TABLE tmp_table_01818 (   `id` UInt32,   `advertiser_id` String,   `campaign_id` String,   `name` String,   `budget` Float64,   `budget_mode` String,   `landing_type` String,   `status` String,   `modify_time` String,   `campaign_type` String,   `campaign_create_time` DateTime,   `campaign_modify_time` DateTime,   `create_time` DateTime,   `update_time` DateTime ) ENGINE = MergeTree PARTITION BY advertiser_id ORDER BY campaign_id SETTINGS index_granularity = 8192;
-CREATE TABLE tnul (lc Nullable(String)) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE to_insert (value UInt64) ENGINE = Memory();
-create table to_table (x UInt32) engine=MergeTree order by x;
-CREATE TABLE to_uuid_test (value String) ENGINE = TinyLog();
-CREATE TABLE tokenbf_tab (   id UInt32,   str String,   INDEX idx str TYPE tokenbf_v1(256, 2, 0) ) ENGINE = MergeTree ORDER BY id SETTINGS index_granularity = 1;
-CREATE TABLE tokenbf_v1_hasany_test (   id UInt32,   array Array(String),   INDEX idx_array_tokenbf_v1 array TYPE tokenbf_v1(512,3,0) GRANULARITY 1, ) Engine=MergeTree() ORDER BY id SETTINGS index_granularity = 1;
-CREATE TABLE toModifiedJulianDay_test (d FixedString(10)) ENGINE = Memory;
-CREATE TABLE toModifiedJulianDay_test (d String) ENGINE = Memory;
-CREATE TABLE too_many_parts (x UInt64) ENGINE = MergeTree ORDER BY tuple() SETTINGS parts_to_delay_insert = 5, parts_to_throw_insert = 5;
-CREATE TABLE topk (val1 String, val2 UInt32) ENGINE = MergeTree ORDER BY val1 SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE totimezone_op_mono(i int, tz String, create_time DateTime) ENGINE MergeTree PARTITION BY toDate(create_time) ORDER BY i;
-create table tp (d1 Int32, d2 Int32, eventcnt Int64, projection p (select sum(eventcnt) group by d1)) engine = MergeTree order by (d1, d2);
-create table tp (p Date, k UInt64, v1 UInt64, v2 Int64, projection p1 ( select p, sum(k), sum(v1), sum(v2) group by p) ) engine = MergeTree partition by toYYYYMM(p) order by k settings min_bytes_for_wide_part = 0;
-create table tp (type Int32, device UUID, cnt UInt64) engine = MergeTree order by (type, device);
-create table tp (type Int32, eventcnt UInt64, projection p (select sum(eventcnt), type group by type order by sum(eventcnt))) engine = MergeTree order by type;
-create table tp (x int, projection p (select sum(x))) engine = MergeTree order by x settings min_rows_for_wide_part = 2, min_bytes_for_wide_part = 0;
-create table tp (x Int32, y Int32, projection p (select x, y order by x)) engine = MergeTree order by y settings min_rows_for_wide_part = 4, min_bytes_for_wide_part = 32;
-create table tp (x Int32, y Int32, projection p (select x, y order by x)) engine = MergeTree order by y;
-create table tp2(first_col String, second_col Int32) engine = MergeTree() order by tuple();
-create table tp_1 (x Int32, y Int32, projection p (select x, y order by x)) engine = ReplicatedMergeTree('/clickhouse/tables/{shard}/01710_projection_fetch_' || currentDatabase(), '1_{replica}') order by y settings min_rows_for_wide_part = 4, min_bytes_for_wide_part = 32;
-create table tp_2 (x Int32, y Int32, projection p (select x, y order by x)) engine = ReplicatedMergeTree('/clickhouse/tables/{shard}/01710_projection_fetch_' || currentDatabase(), '2_{replica}') order by y settings min_rows_for_wide_part = 4, min_bytes_for_wide_part = 32;
-CREATE TABLE trace_log (  `event_date` Date,  `event_time` DateTime,  `event_time_microseconds` DateTime64(6),  `timestamp_ns` UInt64,  `revision` UInt32,  `trace_type` Enum8('Real' = 0, 'CPU' = 1, 'Memory' = 2, 'MemorySample' = 3),  `thread_id` UInt64,  `query_id` String,  `trace` Array(UInt64),  `size` Int64 ) ENGINE = MergeTree PARTITION BY toYYYYMM(event_date) ORDER BY (event_date, event_time) SETTINGS index_granularity = 8192;
-CREATE TABLE tracking_events_tmp (`APIKey` UInt32, `EventDate` Date) ENGINE = MergeTree PARTITION BY toYYYYMM(EventDate) ORDER BY (APIKey, EventDate);
-CREATE TABLE trailing_comma_1 (id INT NOT NULL DEFAULT 1,) ENGINE=MergeTree() ORDER BY tuple();
-CREATE TABLE trailing_comma_2 (id INT DEFAULT 1,) ENGINE=MergeTree() ORDER BY tuple();
-CREATE TABLE trailing_comma_3 (x UInt8, y UInt8,) ENGINE=MergeTree() ORDER BY tuple();
-CREATE TABLE transaction (id Int32, value Float64, master_id Int32) ENGINE = MergeTree() ORDER BY id;
-CREATE TABLE transactions (domain String) ENGINE = Memory;
-CREATE TABLE transform_null_in (`x` UInt32, `y` UInt64, PROJECTION p (SELECT sum(y in (1,2,3)))) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE trend (   `event_date` Date,   `user_id` Int32,   `timestamp` DateTime,   `eventID` Int32,   `product` String ) ENGINE = MergeTree() PARTITION BY toYYYYMM(event_date) ORDER BY user_id;
-create table trepl(d Date,a Int32, b Int32) engine = ReplacingMergeTree(d, (a,b), 8192);
-create table trunc (n int, primary key n) engine=ReplicatedMergeTree('/test/1166/{database}', '1') partition by n % 10;
-create table trunc (n int, primary key n) partition by n % 10;
-CREATE TABLE truncate_test(uint8 UInt8) ENGINE = Log;
-CREATE TABLE truncate_test_log(id UInt64) ENGINE = Log;
-CREATE TABLE truncate_test_materialized_depend(p Date, k UInt64) ENGINE = Null;
-CREATE TABLE truncate_test_memory(id UInt64) ENGINE = Memory;
-CREATE TABLE truncate_test_merge_tree(p Date, k UInt64) ENGINE = MergeTree(p, k, 1);
-CREATE TABLE truncate_test_set(id UInt64) ENGINE = Set;
-CREATE TABLE truncate_test_stripe_log(id UInt64) ENGINE = StripeLog;
-CREATE TABLE truncate_test_tiny_log(id UInt64) ENGINE = TinyLog;
-create table ts (sensor_id UInt64, timestamp UInt64, value Float64) ENGINE=MergeTree() ORDER BY (sensor_id, timestamp);
-create table tst (timestamp DateTime, val Int8) engine SummingMergeTree partition by toYYYYMM(timestamp) ORDER by (timestamp);
-create table tst (timestamp DateTime, val Nullable(Int8)) engine SummingMergeTree partition by toYYYYMM(timestamp) ORDER by (timestamp);
-create table tsv(a int, b int default 7) engine File(TSV);
-create table tsv_raw (strval String, intval Int64, b1 String, b2 String, b3 String, b4 String) engine = Memory;
-CREATE TABLE tt (n UInt64) ENGINE=MergeTree() ORDER BY tuple();
-create table tt(p String,tmin AggregateFunction(min, DateTime)) engine = AggregatingMergeTree order by p;
-CREATE TABLE tt1 (a UInt32, b UInt32 ALIAS a) ENGINE = Memory;
-CREATE TABLE tt2 (a UInt32, b UInt32 ALIAS a * 2) ENGINE = Memory;
-CREATE TABLE tt3 (a UInt32, b UInt32 ALIAS c, c UInt32) ENGINE = Memory;
-CREATE TABLE tt4 (a UInt32, b UInt32 ALIAS 12) ENGINE = Memory;
-CREATE TABLE tt6 ( `id` UInt32,  `first_column` UInt32, `second_column` UInt32,   `third_column` UInt32, `status` String ) ENGINE = Distributed('test_shard_localhost', '', 'tt7', rand());
-CREATE TABLE tt7 as tt6 ENGINE = Distributed('test_shard_localhost', '', 'tt6', rand());
-CREATE TABLE tt_01373 (a Int64, d Int64, val Int64) ENGINE = SummingMergeTree PARTITION BY (a) ORDER BY (d) SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE tt_error_1373 ( a  Int64, d  Int64, val Int64 ) ENGINE = SummingMergeTree((a, val)) PARTITION BY (a) ORDER BY (d);
-CREATE TABLE tt_m (a UInt32, b UInt32) ENGINE = Merge(currentDatabase(), 'tt1|tt2|tt3|tt4');
-create table tt_null(p String) engine = Null;
-create table ttl (a Int, b Int, c Int default 42 ttl d, d Date, index ind (b * c) type minmax granularity 1) engine = MergeTree order by a;
-create table ttl (d Date, a Int) engine = MergeTree order by a partition by toDayOfMonth(d) SETTINGS max_number_of_merges_with_ttl_in_pool=0,materialize_ttl_recalculate_only=true;
-create table ttl (d Date, a Int) engine = MergeTree order by a partition by toDayOfMonth(d) settings remove_empty_parts = 0;
-create table ttl (d Date, a Int) engine = MergeTree order by a partition by toDayOfMonth(d) ttl d + interval 1 day;
-create table ttl (d Date, a Int) engine = MergeTree order by a partition by toDayOfMonth(d);
-create table ttl (d Date, a Int) engine = MergeTree order by tuple() partition by toDayOfMonth(d) settings remove_empty_parts = 0;
-create table ttl (d Date, i Int, s String) engine = MergeTree order by i SETTINGS max_number_of_merges_with_ttl_in_pool=0,materialize_ttl_recalculate_only=true;
-create table ttl (d Date, i Int, s String) engine = MergeTree order by i;
-CREATE TABLE ttl (d DateTime) ENGINE = MergeTree ORDER BY tuple() TTL d + INTERVAL 10 DAY SETTINGS remove_empty_parts=0;
-create table ttl (i Int, s String) engine = MergeTree order by i SETTINGS max_number_of_merges_with_ttl_in_pool=0,materialize_ttl_recalculate_only=true;
-create table ttl (i Int, s String) engine = MergeTree order by i ttl toDate('2000-01-01') TO DISK 'default';
-create table ttl (i Int, s String) engine = MergeTree order by i;
-create table ttl (i Int, s String, t String) engine = MergeTree order by i SETTINGS max_number_of_merges_with_ttl_in_pool=0,materialize_ttl_recalculate_only=true;
-create table ttl (i Int, s String, t String) engine = MergeTree order by i;
-create table ttl_00933_1 (b Int, a Int ttl '2000-10-10 00:00:00'::DateTime) engine = MergeTree order by tuple() partition by tuple() settings min_bytes_for_wide_part = 0;
-create table ttl_00933_1 (b Int, a Int ttl '2000-10-10'::Date) engine = MergeTree order by tuple() partition by tuple() settings min_bytes_for_wide_part = 0;
-create table ttl_00933_1 (b Int, a Int ttl '2100-10-10 00:00:00'::DateTime) engine = MergeTree order by tuple() partition by tuple() settings min_bytes_for_wide_part = 0;
-create table ttl_00933_1 (b Int, a Int ttl '2100-10-10'::Date) engine = MergeTree order by tuple() partition by tuple() settings min_bytes_for_wide_part = 0;
-create table ttl_00933_1 (d Date, a Int)   engine = MergeTree order by a partition by toDayOfMonth(d) ttl d + interval 1 day   settings remove_empty_parts = 0;
-create table ttl_00933_1 (d DateTime ttl d) engine = MergeTree order by tuple() partition by toSecond(d);
-create table ttl_00933_1 (d DateTime, a Int ttl d + interval 1 DAY) engine = MergeTree order by tuple() partition by toDayOfMonth(d) settings min_bytes_for_wide_part = 0;
-create table ttl_00933_1 (d DateTime, a Int)   engine = MergeTree order by tuple() partition by tuple() ttl d + interval 1 day   settings remove_empty_parts = 0;
-create table ttl_00933_1 (d DateTime, a Int, b Int)   engine = MergeTree order by toDate(d) partition by tuple() ttl d + interval 1 second   settings remove_empty_parts = 0;
-create table ttl_00933_2 (d DateTime, a Int default 111 ttl d + interval 1 DAY) engine = MergeTree order by tuple() partition by toDayOfMonth(d);
-create table ttl_00933_2 (d DateTime, a Int, b default 222 ttl d + interval 1 DAY) engine = MergeTree order by tuple() partition by toDayOfMonth(d);
-create table ttl_00933_2 (d DateTime, a Int, b default a * 2 ttl d + interval 1 DAY) engine = MergeTree order by tuple() partition by toDayOfMonth(d);
-create table ttl_02265_r2 (date Date, key Int, value String TTL date + interval 1 month) engine=ReplicatedMergeTree('/clickhouse/tables/{database}/ttl_02265', 'r2') order by key partition by date settings min_bytes_for_wide_part=0;
-CREATE TABLE ttl_group_by (   `d` Date,   `i` UInt32,   `v` UInt64 ) ENGINE = MergeTree ORDER BY (toStartOfMonth(d), i % 10) TTL d + toIntervalYear(10) GROUP BY toStartOfMonth(d), i % 10 SET d = any(toStartOfMonth(d)), i = any(i % 10), v = sum(v),   d + toIntervalYear(40) GROUP BY toStartOfMonth(d) SET d = any(toStartOfMonth(d)), v = sum(v);
-CREATE TABLE ttl_group_by_bug (key UInt32, ts DateTime, value UInt32, min_value UInt32 default value, max_value UInt32 default value) ENGINE = MergeTree() PARTITION BY toYYYYMM(ts) ORDER BY (key, toStartOfInterval(ts, toIntervalMinute(3)), ts) TTL ts + INTERVAL 5 MINUTE GROUP BY key, toStartOfInterval(ts, toIntervalMinute(3)) SET value = sum(value), min_value = min(min_value), max_value = max(max_value), ts=min(toStartOfInterval(ts, toIntervalMinute(3)));
-CREATE TABLE ttl_old_syntax (d Date, i Int) ENGINE = MergeTree(d, i, 8291);
-CREATE TABLE ttl_table (   date Date,   value UInt64 ) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_01713_table_ttl', '1', date, date, 8192) TTL date + INTERVAL 2 MONTH;
-CREATE TABLE ttl_table (   EventDate Date,   Longitude Float64 TTL EventDate + toIntervalWeek(2) ) ENGINE = MergeTree() ORDER BY EventDate SETTINGS vertical_merge_algorithm_min_rows_to_activate=1, vertical_merge_algorithm_min_columns_to_activate=1;
-create table ttl_test_02129(a Int64, b String, d Date) Engine=MergeTree partition by d order by a settings min_bytes_for_wide_part = 0, min_rows_for_wide_part = 0, materialize_ttl_recalculate_only = 0;
-create table ttl_test_02129(a Int64, b String, d Date) Engine=MergeTree partition by d order by a settings min_bytes_for_wide_part = 0, min_rows_for_wide_part = 0, materialize_ttl_recalculate_only = 1;
-CREATE TABLE ttl_where (   `d` Date,   `i` UInt32 ) ENGINE = MergeTree ORDER BY tuple() TTL d + toIntervalYear(10) DELETE WHERE i % 3 = 0,   d + toIntervalYear(40) DELETE WHERE i % 3 = 1;
-CREATE TABLE ttl_with_default (d DateTime, a Int default 777 ttl d + interval 5 SECOND) ENGINE = MergeTree ORDER BY d;
-CREATE TABLE ttt01746 (d Date, n UInt64) ENGINE = MergeTree() PARTITION BY toMonday(d) ORDER BY n SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE ttt01778 (`1` String, `2` INT) ENGINE = MergeTree() ORDER BY tuple();
-CREATE TABLE ttttttt (   `timestamp` DateTime,   `col1` Float64,   `col2` Float64,   `col3` Float64 ) ENGINE = MergeTree() ORDER BY tuple();
-CREATE TABLE tuple (   `j` Tuple(a Int8, b String) ) ENGINE = Memory;
-CREATE TABLE tuple (t Tuple(Date, UInt32, UInt64)) ENGINE = Memory;
-CREATE TABLE tuple ENGINE = Memory AS SELECT CAST((1, 'Test'), 'Tuple(a Int8, b String)') AS j;
-CREATE TABLE tuple_01016(a Tuple(DateTime, Int32)) ENGINE = MergeTree() ORDER BY a;
-CREATE TABLE tuple_values (t Tuple(int)) ENGINE = Memory;
-create table tutorial ( inner_poly Array(Tuple(Int32, Int32)), outer_poly Array(Tuple(Int32, Int32)) ) engine = Log();
-CREATE TABLE tv(key UInt32, t DateTime, tv Float64) ENGINE = MergeTree() ORDER BY (key, t);
-CREATE TABLE tvs(k UInt32, t UInt32, tv UInt64) ENGINE = Memory;
-CREATE TABLE two_00458 (x Array(UInt64), z String DEFAULT '', y Array(UInt64)) ENGINE = Memory;
-CREATE TABLE two_00458 (x FixedString(16)) ENGINE = Memory;
-CREATE TABLE two_00458 (x UInt64) ENGINE = Memory;
-CREATE TABLE two_rows_per_granule (  p Date,  k UInt64,  v1 UInt64,  v2 Int64 ) ENGINE MergeTree() PARTITION BY toYYYYMM(p) ORDER BY k  SETTINGS index_granularity_bytes=40,      min_index_granularity_bytes = 10,      write_final_mark = 0,      enable_vertical_merge_algorithm=1,      vertical_merge_algorithm_min_rows_to_activate=0,      vertical_merge_algorithm_min_columns_to_activate=0,      min_bytes_for_wide_part = 0,      min_rows_for_wide_part = 0;
-CREATE TABLE two_rows_per_granule (  p Date,  k UInt64,  v1 UInt64,  v2 Int64 ) ENGINE MergeTree() PARTITION BY toYYYYMM(p) ORDER BY k SETTINGS index_granularity_bytes = 40, min_index_granularity_bytes = 10, write_final_mark = 0, min_bytes_for_wide_part = 0, min_rows_for_wide_part = 0;
-CREATE TABLE two_rows_per_granule (  p Date,  k UInt64,  v1 UInt64,  v2 Int64 ) ENGINE ReplacingMergeTree() PARTITION BY toYYYYMM(p) ORDER BY k  SETTINGS index_granularity_bytes = 40,      min_index_granularity_bytes = 10,      write_final_mark = 0,      enable_vertical_merge_algorithm=1,      vertical_merge_algorithm_min_rows_to_activate=0,      vertical_merge_algorithm_min_columns_to_activate=0,      min_bytes_for_wide_part = 0,      min_rows_for_wide_part = 0;
-create table txn_counters (n Int64, creation_tid DEFAULT transactionID()) engine=MergeTree order by n SETTINGS old_parts_lifetime=3600;
-CREATE TABLE type_json_dst (data JSON) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE type_json_dst AS type_json_src;
-CREATE TABLE type_json_src (data String) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE type_json_src (id UInt32, data JSON) ENGINE = MergeTree ORDER BY id;
-CREATE TABLE type_names (n UInt8, s1 String, s2 String, s3 String) ENGINE=Memory;
-CREATE TABLE tztest (   timeBerlin DateTime('Europe/Berlin'),   timeLA DateTime('America/Los_Angeles') ) ENGINE = Memory;
-CREATE TABLE u32 (x UInt32, y UInt32 DEFAULT x) ENGINE = Memory;
-CREATE TABLE u64 (x UInt64) ENGINE = Memory;
-CREATE TABLE u64 (x UInt64, y UInt64 DEFAULT x) ENGINE = Memory;
-CREATE TABLE u_00751 (app Enum8('a' = 0, 'b' = 1)) ENGINE = Memory;
-CREATE TABLE underlying_00967 (key Nullable(UInt64)) Engine=TinyLog();
-CREATE TABLE underlying_01795 (key UInt64) Engine=TinyLog();
-CREATE TABLE underlying_01796 (key UInt64) Engine=Log();
-CREATE TABLE underlying_01797 (key UInt64) Engine=StripeLog();
-create table unhex_in_fix_string_table ( dt Date, s1 FixedString(20), s2 String) engine=MergeTree partition by dt order by tuple();
-CREATE TABLE unicode(c1 String, c2 String) ENGINE = Memory;
-CREATE TABLE union1 ( date Date, a Int32, b Int32, c Int32, d Int32) ENGINE = MergeTree(date, (a, date), 8192);
-CREATE TABLE union2 ( date Date, a Int32, b Int32, c Int32, d Int32) ENGINE = Distributed(test_shard_localhost, currentDatabase(), 'union1');
-CREATE TABLE union3 ( date Date, a Int32, b Int32, c Int32, d Int32) ENGINE = Distributed(test_shard_localhost, currentDatabase(), 'union2');
-CREATE TABLE union_bug (   Event String,   Datetime DateTime('Asia/Istanbul') ) Engine = Memory;
-CREATE TABLE unsigned_types (   a TINYINT SIGNED,   b INT1   SIGNED,   c SMALLINT SIGNED,   d INT   SIGNED,   e INTEGER SIGNED,   f BIGINT  SIGNED,   g TINYINT UNSIGNED,   h INT1   UNSIGNED,   i SMALLINT UNSIGNED,   j INT   UNSIGNED,   k INTEGER UNSIGNED,   l BIGINT  UNSIGNED ) ENGINE=Memory;
-CREATE TABLE unsorted (x UInt32, y String) ENGINE MergeTree ORDER BY tuple() SETTINGS vertical_merge_algorithm_min_rows_to_activate=0, vertical_merge_algorithm_min_columns_to_activate=0;
-CREATE TABLE unsorted_collapsing (x UInt32, s String, sign Int8) ENGINE CollapsingMergeTree(sign) ORDER BY tuple();
-CREATE TABLE unsorted_replacing (x UInt32, s String, v UInt32) ENGINE ReplacingMergeTree(v) ORDER BY tuple();
-CREATE TABLE updates (   `x` Int32,   `y` String ) ENGINE = MergeTree ORDER BY x;
-CREATE TABLE upyachka (x UInt64) ENGINE = Memory;
-create table url (i String) engine=URL('http://127.0.0.1:8123?query=select+12', 'RawBLOB', headers('X-ClickHouse-Format'='JSONEachRow'));
-CREATE TABLE url (n UInt64, col String) ENGINE=URL (   replace   (     'https://localhost:8443/?query=' || 'select n, _table from ' || currentDatabase() || '.merge format CSV', ' ', '+'   ),   CSV );
-create table url_delim(a int, b int) engine URL('http://127.0.0.1:8123/?query=select%201%2C%202%20format%20CSV%20settings%20format_csv_delimiter%3D%27/%27%3B%0A', CSV) settings format_csv_delimiter = '/';
-CREATE TABLE user(id UInt32, name String) ENGINE = Join(ANY, LEFT, id);
-CREATE TABLE user_all ( id Int64, name String, age Int32 ) ENGINE = Distributed('test_shard_localhost', currentDatabase(), user_local, rand());
-CREATE TABLE userid_set(userid UInt64) ENGINE = Set;
-CREATE TABLE userid_set(userid UInt64, name String) ENGINE = Set;
-CREATE TABLE userid_set2(userid UInt64, name String, birthdate Date) ENGINE = Set;
-CREATE TABLE userid_test (userid UInt64) ENGINE = MergeTree() PARTITION BY (intDiv(userid, 500)) ORDER BY (userid) SETTINGS index_granularity = 8192;
-CREATE TABLE userid_test (userid UInt64, name String) ENGINE = MergeTree() PARTITION BY (intDiv(userid, 500)) ORDER BY (userid) SETTINGS index_granularity = 8192;
-CREATE TABLE users (uid Int16, name String, age Int16) ENGINE=MergeTree() ORDER BY uid;
-CREATE TABLE users (user_id UUID) ENGINE = Memory;
-CREATE TABLE users_02534 (id Int16, name String) ENGINE=MergeTree ORDER BY id;
-CREATE TABLE users_02534 (id Int16, name String, INDEX bf_idx(name) TYPE minmax) ENGINE=MergeTree ORDER BY id;
-CREATE TABLE using1(a UInt8, b UInt8) ENGINE=Memory;
-CREATE TABLE using2(a UInt8, b UInt8) ENGINE=Memory;
-create table utf8_overlap (str String) engine=Memory();
-CREATE TABLE v1 ( id Int32 ) ENGINE = MergeTree() ORDER BY id;
-CREATE TABLE v2 ( value Int32 ) ENGINE = MergeTree() ORDER BY value;
-CREATE TABLE v_00751 (platform Enum8('a' = 0, 'b' = 1)) ENGINE = Memory;
-CREATE TABLE val AS values('n int', 1, 2);
-CREATE TABLE val2 AS val;
-CREATE TABLE valid_min_index_granularity_bytes_setting (  id UInt64,  value String ) ENGINE MergeTree() ORDER BY id SETTINGS index_granularity_bytes = 2024, min_index_granularity_bytes = 1024;
-CREATE TABLE values_list AS VALUES('a UInt64, s String', (1, 'one'), (2, 'two'), (3, 'three'));
-CREATE TABLE values_template (d Date, s String, u UInt8, i Int64, f Float64, a Array(UInt8)) ENGINE = Memory;
-CREATE TABLE values_template_fallback (n UInt8) ENGINE = Memory;
-CREATE TABLE values_template_nullable (d Date, s Nullable(String), u Nullable(UInt8), a Array(Nullable(Float32))) ENGINE = Memory;
-CREATE TABLE vec1 (id UInt64, v Array(UInt8)) ENGINE = Memory;
-CREATE TABLE vec1d (id UInt64, v Array(Float64)) ENGINE = Memory;
-CREATE TABLE vec1f (id UInt64, v Array(Float32)) ENGINE = Memory;
-CREATE TABLE vec2 (id UInt64, v Array(Int64)) ENGINE = Memory;
-CREATE TABLE vec2d (id UInt64, v Array(Float64)) ENGINE = Memory;
-CREATE TABLE vec2f (id UInt64, v Array(Float32)) ENGINE = Memory;
-create table versioned_collapsing(d Date, x UInt32, sign Int8, version UInt32) engine = VersionedCollapsingMergeTree(d, x, 8192, sign, version);
-CREATE TABLE versioned_collapsing_merge_tree  (d Date, a String, b UInt8, x String, y Int8, z UInt32) ENGINE = VersionedCollapsingMergeTree(d, (a, b), 111, y, b);
-CREATE TABLE versioned_collapsing_merge_tree (key UInt32, sign Int8, version Int32, date Datetime) ENGINE=VersionedCollapsingMergeTree(sign, version) PARTITION BY date ORDER BY (key, version);
-CREATE TABLE versioned_collapsing_merge_tree_with_sampling (d Date, a String, b UInt8, x String, y Int8, z UInt32) ENGINE = VersionedCollapsingMergeTree(d, sipHash64(a) + b, (a, sipHash64(a) + b, b), 111, y, b);
-CREATE TABLE versioned_collapsing_table(  d Date,  key1 UInt64,  key2 UInt32,  value String,  sign Int8,  version UInt16 ) ENGINE = ReplicatedVersionedCollapsingMergeTree('/clickhouse/{database}/versioned_collapsing_table/{shard}', '{replica}', sign, version) PARTITION BY d ORDER BY (key1, key2);
-CREATE TABLE Versions (     Version String ) ENGINE = Memory;
-CREATE TABLE video_log (   `datetime` DateTime,   `user_id` UInt64,   `device_id` UInt64,   `domain` LowCardinality(String),   `bytes` UInt64,   `duration` UInt64 ) ENGINE = MergeTree PARTITION BY toDate(datetime) ORDER BY (user_id, device_id) SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE video_log (   `datetime` DateTime,   `user_id` UInt64,   `device_id` UInt64,   `domain` LowCardinality(String),   `bytes` UInt64,   `duration` UInt64 ) ENGINE = MergeTree PARTITION BY toDate(datetime) ORDER BY (user_id, device_id) SETTINGS index_granularity_bytes=10485760, index_granularity=8192;
-CREATE TABLE video_log_result (   `hour` DateTime,   `sum_bytes` UInt64,   `avg_duration` Float64 ) ENGINE = MergeTree PARTITION BY toDate(hour) ORDER BY sum_bytes SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE video_log_result__fuzz_0 (   `hour` Nullable(DateTime),   `sum_bytes` UInt64,   `avg_duration` Float64 ) ENGINE = MergeTree PARTITION BY toDate(hour) ORDER BY sum_bytes SETTINGS allow_nullable_key = 1;
-CREATE TABLE video_views (   entityIri String,   courseId UInt64,   learnerId UInt64,   actorId UInt64,   duration UInt16,   fullWatched UInt8,   fullWatchedDate DateTime,   fullWatchedDuration UInt16,   fullWatchedTime UInt16,   fullWatchedViews UInt16,   `views.viewId` Array(String),   `views.startedAt` Array(DateTime),   `views.endedAt` Array(DateTime),   `views.viewDuration` Array(UInt16),   `views.watchedPart` Array(Float32),   `views.fullWatched` Array(UInt8),   `views.progress` Array(Float32),   `views.reject` Array(UInt8),   `views.viewNumber` Array(UInt16),   `views.repeatingView` Array(UInt8),   `views.ranges` Array(String),   version DateTime ) ENGINE = ReplacingMergeTree(version) PARTITION BY entityIri ORDER BY (learnerId, entityIri) SETTINGS index_granularity = 8192;
-CREATE TABLE view (id UInt32, value String) ENGINE=ReplicatedMergeTree('/test/2449/{database}', '1') ORDER BY id;
-CREATE TABLE visits (   `CounterID` UInt32,   `StartDate` Date,   `StartTime` DateTime,   `GoalsID` Array(UInt32),   `Sign` Int8 ) ENGINE = Null;
-CREATE TABLE visits (str String) ENGINE = MergeTree ORDER BY (str);
-CREATE TABLE visits(StartDate Date) ENGINE MergeTree ORDER BY(StartDate);
-CREATE TABLE visits(StartDate Date, Name String) ENGINE MergeTree ORDER BY(StartDate);
-CREATE TABLE visits1 (   Sign Int8,   Arr Array(Int8),   `ParsedParams.Key1` Array(String),   `ParsedParams.Key2` Array(String),   CounterID UInt32 ) ENGINE = Memory;
-CREATE TABLE visits_dist AS visits ENGINE Distributed(test_cluster_two_shards_localhost, currentDatabase(), 'visits', rand());
-CREATE TABLE visits_layer(StartDate Date) ENGINE Distributed(test_cluster_two_shards_localhost, currentDatabase(), 'visits');
-CREATE TABLE weird_mmx (x Array(UInt64)) ENGINE = TinyLog;
-CREATE TABLE weird_partitions_02245(d DateTime, d1 DateTime default d - toIntervalHour(8), id Int64) Engine=MergeTree PARTITION BY (toYYYYMM(toDateTime(d)), ignore(d1)) ORDER BY id;
-CREATE TABLE welch_ttest (left Float64, right Float64) ENGINE = Memory;
-CREATE TABLE welch_ttest (left Float64, right UInt8) ENGINE = Memory;
-CREATE TABLE welch_ttest__fuzz_7 (left UInt128, right UInt128) ENGINE = Memory;
-CREATE TABLE where_qualified(a UInt32, b UInt8) ENGINE = Memory;
-CREATE TABLE wide_to_comp (a Int, b Int, c Int)   ENGINE = MergeTree ORDER BY a   settings vertical_merge_algorithm_min_rows_to_activate = 1,   vertical_merge_algorithm_min_columns_to_activate = 1,   min_bytes_for_wide_part = 0,   min_rows_for_wide_part = 0,   index_granularity = 8192, index_granularity_bytes = '10Mi';
-CREATE TABLE wikistat1 (   time DateTime,   project LowCardinality(String),   subproject LowCardinality(String),   path String,   hits UInt64,   PROJECTION total   (     SELECT       project,       subproject,       path,       sum(hits),       count()     GROUP BY       project,       subproject,       path   ) ) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/02494_zero_copy_and_projection', '1') ORDER BY (path, time) SETTINGS old_parts_lifetime = 1, cleanup_delay_period = 0, cleanup_delay_period_random_add = 0,   cleanup_thread_preferred_points_per_iteration=0, allow_remote_fs_zero_copy_replication=1, min_bytes_for_wide_part=0;
-CREATE TABLE wikistat2 (   time DateTime,   project LowCardinality(String),   subproject LowCardinality(String),   path String,   hits UInt64,   PROJECTION total   (     SELECT       project,       subproject,       path,       sum(hits),       count()     GROUP BY       project,       subproject,       path   ) ) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/02494_zero_copy_and_projection', '2') ORDER BY (path, time) SETTINGS old_parts_lifetime = 1, cleanup_delay_period = 0, cleanup_delay_period_random_add = 0,   cleanup_thread_preferred_points_per_iteration=0, allow_remote_fs_zero_copy_replication=1, min_bytes_for_wide_part=0;
-create table window_mt engine MergeTree order by number   as select number, mod(number, 3) p from numbers(100);
-CREATE TABLE with_deduplication(x UInt32)   ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_00510/with_deduplication', 'r1') ORDER BY x;
-CREATE TABLE with_fill_date (d Date, d32 Date32) ENGINE = Memory;
-CREATE TABLE with_fill_date (d DateTime('UTC'), d64 DateTime64(3, 'UTC')) ENGINE = Memory;
-CREATE TABLE with_nullable ( timestamp UInt32,  country LowCardinality(Nullable(String)) ) ENGINE = Memory;
-create table with_overflow (   id UInt64,   s SimpleAggregateFunction(sumWithOverflow, UInt8) ) engine AggregatingMergeTree order by id;
-CREATE TABLE with_settings(x UInt32)   ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_00509/with_settings', 'r1')   ORDER BY x   SETTINGS replicated_can_become_leader = 0;
-create table with_test engine=Memory as select cast(number-1 as Nullable(Int64)) n from numbers(10000);
-CREATE TABLE without_deduplication(x UInt32)   ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_00510/without_deduplication', 'r1') ORDER BY x SETTINGS replicated_deduplication_window = 0;
-CREATE TABLE without_fixed_size_columns(s String) ENGINE MergeTree PARTITION BY length(s) ORDER BY s;
-CREATE TABLE without_fixed_size_columns_replica1(s String) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test/without_fixed_size_columns_00502', '1') PARTITION BY length(s) ORDER BY s;
-CREATE TABLE without_fixed_size_columns_replica2(s String) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test/without_fixed_size_columns_00502', '2') PARTITION BY length(s) ORDER BY s;
-CREATE TABLE words(i Int, word String) ENGINE = Memory;
-CREATE TABLE wrong_metadata(   column1 UInt64,   column2 UInt64,   column3 UInt64 ) ENGINE ReplicatedMergeTree('/test/{database}/tables/wrong_metadata', '1') ORDER BY tuple();
-CREATE TABLE wrong_metadata_wide(   column1 UInt64,   column2 UInt64,   column3 UInt64 ) ENGINE ReplicatedMergeTree('/test/{database}/tables/wrong_metadata_wide', '1') ORDER BY tuple() SETTINGS min_bytes_for_wide_part = 0;
-create table wt (a Int, b Int) engine = Memory;
-CREATE TABLE x ( `arr.key` Array(String), `arr.value` Array(String), `n` String ) ENGINE = Memory;
-CREATE TABLE x (d Date, t DateTime) ENGINE = MergeTree(d, (d, t), 1);
-create table x (dt String) engine MergeTree partition by toYYYYMM(toDate(dt)) order by tuple();
-create table x (i int) engine MergeTree order by tuple();
-create table x (i int, j int) engine MergeTree order by i / 10 settings index_granularity = 1;
-create table x (i int, j int) engine MergeTree partition by i order by j settings index_granularity = 1;
-create table x (i UInt64, j UInt64, k UInt64, projection agg (select sum(j), avg(k) group by i), projection norm (select j, k order by i)) engine MergeTree order by tuple();
-CREATE TABLE X (id Int) ENGINE=Memory;
-create table X (id Int32, x_a String, x_b Nullable(Int32)) engine Memory;
-create table X (id Int32, x_name String) engine Memory;
-create table X (id Int64) Engine = Memory;
-create table x (pk int, arr Array(int), projection p (select arr order by pk)) engine MergeTree order by tuple();
 CREATE TABLE x AS system.numbers ENGINE = MergeTree ORDER BY number;
-create table x engine=Merge(currentDatabase(), '^x_(1|2)$') as x_1;
-create table x(i int, index mm LOG2(i) type minmax granularity 1, projection p (select MAX(i))) engine ReplicatedMergeTree('/clickhouse/tables/{database}/x', 'r') order by i;
-create table x_1 engine=Log as select * from numbers(10);
-create table x_2 engine=Log as select * from numbers(10);
-CREATE TABLE x_dist as x ENGINE = Distributed('test_cluster_two_shards', currentDatabase(), x);
-CREATE TABLE xp (`A` Date, `B` Int64, `S` String) ENGINE = MergeTree PARTITION BY toYYYYMM(A) ORDER BY B;
-create table xp(A Date, B Int64, S String) Engine=MergeTree partition by toYYYYMM(A) order by B;
-create table xp(i Nullable(UInt64), j UInt64) engine MergeTree order by i settings index_granularity = 1, allow_nullable_key = 1;
-create table xp(i UInt64, j UInt64) engine MergeTree order by i settings index_granularity = 1;
-CREATE TABLE xp_d AS xp ENGINE = Distributed(test_shard_localhost, currentDatabase(), xp);
-create table xp_d as xp engine Distributed(test_shard_localhost, currentDatabase(), xp);
-create table xp_d as xp Engine=Distributed(test_shard_localhost, currentDatabase(), xp);
-CREATE TABLE xx (   `date` Date,   `id` Int64,   `clicks` Int64,   `price` Float64,   `spend` Float64 ) ENGINE = SummingMergeTree([price, spend]) PARTITION BY toYYYYMM(date) ORDER BY id SAMPLE BY id SETTINGS index_granularity = 8192;
-CREATE TABLE XXXX (p Nullable(Int64), k Decimal(76, 39)) ENGINE = MergeTree PARTITION BY toDate(p) ORDER BY k SETTINGS index_granularity = 1, allow_nullable_key = 1;
-create table XXXX (t Int64, f Float64) Engine=MergeTree order by t settings index_granularity=128, index_granularity_bytes = '10Mi';
-create table XXXX (t Int64, f Float64) Engine=MergeTree order by t settings index_granularity=8192, index_granularity_bytes = '10Mi';
-CREATE TABLE xxxx_null (`ts` Nullable(DateTime)) ENGINE = MergeTree ORDER BY toStartOfHour(ts) SETTINGS allow_nullable_key = 1;
-create table xy(x int, y int) engine MergeTree partition by intHash64(x) % 2 order by y settings index_granularity = 1;
-create table xyz(x int, y int, z int) engine MergeTree partition by if(toUInt8(x), y, z) order by x settings index_granularity = 1;
-CREATE TABLE Y (id Int) ENGINE=Memory;
-create table Y (id Int32, y_a String, y_b Nullable(String)) engine Memory;
-create table Y (id Int32, y_name String) engine Memory;
-create table Y (id Int64) Engine = Memory;
-CREATE TABLE y AS system.numbers ENGINE = MergeTree ORDER BY number;
-create table y(a Int64, b Int64) engine = Memory;
-create table y(a Int64, b Int64) engine = TinyLog;
-CREATE TABLE y_dist as y ENGINE = Distributed('test_cluster_two_shards_localhost', currentDatabase(), y);
-create table z (pk Int64, d Date, id UInt64, c UInt64) Engine MergeTree partition by d order by pk settings ratio_of_defaults_for_sparse_serialization = 1.0;
-create table z_00725_3(c Int64, d Int64, e Int64) engine = TinyLog;
-CREATE TABLE zero_rows_per_granule (  p Date,  k UInt64,  v1 UInt64,  v2 Int64 ) ENGINE MergeTree() PARTITION BY toYYYYMM(p) ORDER BY k  SETTINGS index_granularity_bytes = 20,      min_index_granularity_bytes = 10,      write_final_mark = 0,      enable_vertical_merge_algorithm=1,      vertical_merge_algorithm_min_rows_to_activate=0,      vertical_merge_algorithm_min_columns_to_activate=0,      min_bytes_for_wide_part = 0,      min_rows_for_wide_part = 0;
-CREATE TABLE zero_rows_per_granule (  p Date,  k UInt64,  v1 UInt64,  v2 Int64 ) ENGINE MergeTree() PARTITION BY toYYYYMM(p) ORDER BY k SETTINGS index_granularity_bytes = 20, min_index_granularity_bytes = 10, write_final_mark = 0, min_bytes_for_wide_part = 0, min_rows_for_wide_part = 0;
-CREATE TABLE zero_rows_per_granule (  p Date,  k UInt64,  v1 UInt64,  v2 Int64 ) ENGINE ReplacingMergeTree() PARTITION BY toYYYYMM(p) ORDER BY k  SETTINGS index_granularity_bytes=20,      min_index_granularity_bytes = 10,      write_final_mark = 0,      enable_vertical_merge_algorithm=1,      vertical_merge_algorithm_min_rows_to_activate=0,      vertical_merge_algorithm_min_columns_to_activate=0,      min_bytes_for_wide_part = 0,      min_rows_for_wide_part = 0;
-CREATE TABLE zero_rows_per_granule (  p Date,  k UInt64,  v1 UInt64,  v2 Int64,  Sign Int8 ) ENGINE CollapsingMergeTree(Sign) PARTITION BY toYYYYMM(p) ORDER BY k  SETTINGS index_granularity_bytes=20, min_index_granularity_bytes=10, write_final_mark = 0,      min_bytes_for_wide_part = 0,      min_rows_for_wide_part = 0,      enable_vertical_merge_algorithm=1,      vertical_merge_algorithm_min_rows_to_activate=0,      vertical_merge_algorithm_min_columns_to_activate=0;
-CREATE TABLE zero_rows_per_granule (  p Date,  k UInt64,  v1 UInt64,  v2 Int64,  Sign Int8,  Version UInt8 ) ENGINE VersionedCollapsingMergeTree(Sign, Version) PARTITION BY toYYYYMM(p) ORDER BY k  SETTINGS index_granularity_bytes = 20,      min_index_granularity_bytes = 10,      write_final_mark = 0,      enable_vertical_merge_algorithm=1,      vertical_merge_algorithm_min_rows_to_activate=0,      vertical_merge_algorithm_min_columns_to_activate=0,      min_bytes_for_wide_part = 0,      min_rows_for_wide_part = 0;
-CREATE TABLE zero_rows_per_granule1 (  p Date,  k UInt64,  v1 UInt64,  v2 Int64 ) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_00926/zero_rows_in_granule', '1') PARTITION BY toYYYYMM(p) ORDER BY k SETTINGS index_granularity_bytes = 20, min_index_granularity_bytes = 10, write_final_mark = 0;
-CREATE TABLE zero_rows_per_granule2 (  p Date,  k UInt64,  v1 UInt64,  v2 Int64 ) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_00926/zero_rows_in_granule', '2') PARTITION BY toYYYYMM(p) ORDER BY k SETTINGS index_granularity_bytes = 20, min_index_granularity_bytes = 10, write_final_mark = 0;
-CREATE TABLE zstd_1_00(n Int, b String CODEC(ZSTD(1))) ENGINE = MergeTree ORDER BY n;
-CREATE TABLE zstd_1_24(n Int, b String CODEC(ZSTD(1,24))) ENGINE = MergeTree ORDER BY n;
-CREATE TABLE zstd_9_00(n Int, b String CODEC(ZSTD(9))) ENGINE = MergeTree ORDER BY n;
-CREATE TABLE zstd_9_24(n Int, b String CODEC(ZSTD(9,24))) ENGINE = MergeTree ORDER BY n;
-CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.A (A UInt8) ENGINE = Null;
-CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.A (A UInt8) ENGINE = TinyLog;
-CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.B (A UInt8) ENGINE = TinyLog;
-CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.date_table (  CountryID UInt64,  StartDate Date,  EndDate Date,  Tax Float64 ) ENGINE = MergeTree() ORDER BY CountryID;
-CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.datetime_table (  CountryID UInt64,  StartDate DateTime,  EndDate DateTime,  Tax Float64 ) ENGINE = MergeTree() ORDER BY CountryID;
-CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.dicttbl(key Int64, value_default String, value_expression String) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.join_test (a UInt8, b UInt8) Engine = Join(ANY, LEFT, a);
-CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.mt(a Int32, b Int32, timestamp DateTime) ENGINE=MergeTree ORDER BY tuple();
-CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.mt(a Int32, market Int32, timestamp DateTime) ENGINE=MergeTree ORDER BY tuple();
-CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.mt_2(a Int32, b Int32, timestamp DateTime) ENGINE=MergeTree ORDER BY tuple();
-CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.mt_buffer_00158 (d Date DEFAULT today(), x UInt64) ENGINE = Buffer({CLICKHOUSE_DATABASE:Identifier}, mt_00158, 16, 100, 100, 1000000, 1000000, 1000000000, 1000000000);
-create table {CLICKHOUSE_DATABASE:Identifier}.my_table ENGINE = MergeTree(day, (day), 8192) as select today() as day, 'mystring' as str;
-CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.table_for_dict (  key_column UInt64,  second_column UInt8,  third_column String ) ENGINE = MergeTree() ORDER BY key_column;
-CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.table_for_dict (  key_column UInt64,  second_column UInt8,  third_column String,  fourth_column Float64 ) ENGINE = MergeTree() ORDER BY key_column;
-CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.table_for_dict (  key_column UInt64,  value Float64 ) ENGINE = MergeTree() ORDER BY key_column;
-CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.table_from_ip_trie_dict (  prefix String,  val String ) ENGINE = Dictionary({CLICKHOUSE_DATABASE:Identifier}.dict_ip_trie);
-CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.table_from_ipv4_trie_dict (  prefix String,  asn UInt32,  cca2 String ) ENGINE = Dictionary({CLICKHOUSE_DATABASE:Identifier}.dict_ipv4_trie);
-CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.table_ip_trie (   prefix String,   val String ) engine = TinyLog;
-CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.table_ipv4_trie (   prefix String,   asn UInt32,   cca2 String ) engine = TinyLog;
-CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.table_ipv4_trie (  prefix String,  val UInt32 ) engine = TinyLog;
-CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.table_ipv4_trie ( prefix String, val UInt32 ) engine = TinyLog;
-CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.table_with_hierarchy (  RegionID UInt64,  ParentRegionID UInt64,  RegionName String ) ENGINE = MergeTree() ORDER BY RegionID;
-CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.tablefunc01 (x int) AS postgresql('127.121.0.1:5432', 'postgres_db', 'postgres_table', 'postgres_user', '124444');
-CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.tablefunc01_without_schema AS postgresql('127.121.0.1:5432', 'postgres_db', 'postgres_table', 'postgres_user', '124444');
-CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.tablefunc02 (x int) AS mysql('127.123.0.1:3306', 'mysql_db', 'mysql_table', 'mysql_user','123123');
-CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.tablefunc03 (a int) AS sqlite('db_path', 'table_name');
-CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.tablefunc04 (a int) AS mongodb('127.0.0.1:27017','test', 'my_collection', 'test_user', 'password', 'a Int');
-CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.tablefunc05 (a int) AS redis('127.0.0.1:6379', 'key', 'key UInt32');
-CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.tablefunc06 (a int) AS s3('http://some_addr:9000/cloud-storage-01/data.tsv', 'M9O7o0SX5I4udXhWxI12', '9ijqzmVN83fzD9XDkEAAAAAAAA', 'TSV');
-CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.test1 (test UInt8) ENGINE = TinyLog;
-CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.test2 (test UInt8) ENGINE = TinyLog;
-CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.test3 (test UInt8) ENGINE = TinyLog;
-CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.test4 (test UInt8) ENGINE = TinyLog;
-CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.test5 (test UInt8) ENGINE = TinyLog;
-CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.test6 (test UInt8) ENGINE = TinyLog;
-create table {CLICKHOUSE_DATABASE:Identifier}.test_01051_d (key UInt64, value String) engine = MergeTree order by key;
-CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.test_log(id UInt64) ENGINE = Log;
-CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.test_table_01080 (dim_key Int64, dim_id String) ENGINE = MergeTree Order by (dim_key);
-CREATE TABLE {CLICKHOUSE_DATABASE_1:Identifier}.data_02716_3 (v UInt64) ENGINE = MergeTree ORDER BY v;
-CREATE TABLE {CLICKHOUSE_DATABASE_1:Identifier}.dict_data (key Int, value UInt16) Engine=Memory();
-CREATE TABLE {new_db_name:Identifier}.{old_tbl_name:Identifier} (a UInt64) ENGINE = MergeTree ORDER BY tuple();
-CREATE TEMPORARY TABLE _tmp_baz (qux UInt64);
-CREATE TEMPORARY TABLE a (a UInt64);
-CREATE TEMPORARY TABLE a (x String);
-CREATE TEMPORARY TABLE Accounts (AccountID UInt64, Currency String);
-CREATE TEMPORARY TABLE alter_test (a UInt32, b UInt8) ENGINE=Log;
+CREATE TABLE test1__fuzz_37 (`i` Date) ENGINE = MergeTree ORDER BY i;
+-- описания данного синтаксиса https://clickhouse.com/docs/en/sql-reference/syntax#defining-and-using-query-parameters
+CREATE TABLE test.xxx (a Int64) ENGINE=MergeTree ORDER BY ({o:String});
+CREATE TABLE t (x UInt8) ENGINE = MergeTree ORDER BY () COMMENT 'Hello';
+CREATE TABLE tab (col FixedString(2)) engine = MergeTree() ORDER BY col;
+create table test (a String) Engine MergeTree order by a partition by a;
+CREATE TABLE pk_order (a Int, b Int) ENGINE = MergeTree ORDER BY (a / b);
+CREATE TABLE pk_order (a Int, b Int) ENGINE = MergeTree ORDER BY a / b;
+create table shard1 (id Int32) engine = MergeTree order by cityHash64(id);
+CREATE TABLE table_d (a Float64, count Int64) ENGINE MergeTree ORDER BY a;
+create table mt (n UInt64) engine=MergeTree order by n partition by n % 10;
+CREATE TABLE t1 (x Int16, y ALIAS x + x * 2) ENGINE=MergeTree() ORDER BY x;
+create table tab (x String) engine = MergeTree order by x as select 'Hello';
+CREATE TABLE tbl (id UInt32) ENGINE = MergeTree() ORDER BY (id + 1, id + 1);
+CREATE TABLE tnul (lc Nullable(String)) ENGINE = MergeTree ORDER BY tuple();
+CREATE TABLE Dates (date DateTime('UTC')) ENGINE = MergeTree() ORDER BY date;
+CREATE TABLE auto_assign_enum (x enum('a', 'b')) ENGINE=MergeTree() order by x;
+CREATE TABLE test (ip IPv4 Codec(ZSTD(6)),) ENGINE MergeTree() order by ip;
+CREATE TABLE codecs6 (a UInt8 CODEC(Delta)) ENGINE = MergeTree ORDER BY tuple();
+CREATE TABLE test (`x` Tuple(UInt64, UInt64)) ENGINE = MergeTree ORDER BY x;
+-- парсер ломается на 2, если заменить правило literal на expr то все работает и показатели неоднозначности не меняются
+create table a (i int) engine MergeTree order by i settings index_granularity = 2;
+CREATE TABLE t1 (c0 Int32) ENGINE = MergeTree() ORDER BY c0 PARTITION BY (- (c0));
 CREATE TEMPORARY TABLE alter_test (a UInt32, b UInt8) ENGINE=MergeTree ORDER BY a;
-CREATE TEMPORARY TABLE alter_test (a UInt32, b UInt8) ENGINE=Null;
-CREATE TEMPORARY TABLE alter_test (CounterID UInt32, StartDate Date, UserID UInt32, VisitID UInt32, NestedColumn Nested(A UInt8, S String), ToDrop UInt32);
-create temporary table arrays_out_02735 as arrays_02735;
-CREATE TEMPORARY TABLE b (key UInt32);
-CREATE TEMPORARY TABLE b (x LowCardinality(String));
-create temporary table basic_types_02735 as select * from generateRandom('   u8 UInt8,   u16 UInt16,   u32 UInt32,   u64 UInt64,   i8 Int8,   i16 Int16,   i32 Int32,   i64 Int64,   date Date,   date32 Date32,   datetime DateTime,   datetime64 DateTime64,   enum8 Enum8(''x'' = 1, ''y'' = 2, ''z'' = 3),   enum16 Enum16(''xx'' = 1000, ''yy'' = 2000, ''zz'' = 3000),   float32 Float32,   float64 Float64,   str String,   fstr FixedString(12),   u128 UInt128,   u256 UInt256,   i128 Int128,   i256 Int256,   decimal32 Decimal32(3),   decimal64 Decimal64(10),   decimal128 Decimal128(20),   decimal256 Decimal256(40),   ipv4 IPv4,   ipv6 IPv6') limit 10101;
-CREATE TEMPORARY TABLE c (x Nullable(String));
-CREATE TEMPORARY TABLE commententry1 (created_date Date, link_id String, subreddit String);
-CREATE TEMPORARY TABLE constrained (   `URL` String,   CONSTRAINT identity CHECK domainWithoutWWW(URL) = domainWithoutWWW(URL),   CONSTRAINT is_utf8 CHECK isValidUTF8(URL) );
-CREATE TEMPORARY TABLE constrained (x UInt8, CONSTRAINT bogus CHECK 0);
-CREATE TEMPORARY TABLE d (x LowCardinality(Nullable(String)));
-create temporary table data (id UInt64) engine=Memory() as with [   0,   1,   0x7f, 0x80, 0xff,   0x7fff, 0x8000, 0xffff,   0x7fffffff, 0x80000000, 0xffffffff,   0x7fffffffffffffff, 0x8000000000000000, 0xffffffffffffffff ] as values select arrayJoin(values) id;
-CREATE TEMPORARY TABLE datetime (`d` DateTime('UTC'));
-CREATE TEMPORARY TABLE datetime__fuzz_14 (`d` LowCardinality(Nullable(UInt128)));
-CREATE TEMPORARY TABLE decimal (   f dec(38, 38) );
-CREATE TEMPORARY TABLE default_constraints (   x UInt8,   y UInt8 DEFAULT x + 1,   CONSTRAINT c CHECK y < 5 );
-CREATE TEMPORARY TABLE enum (x Enum('hello' = 1, 'world' = 2));
-CREATE TEMPORARY TABLE file2 AS SELECT * FROM file;
-CREATE TEMPORARY TABLE IF NOT EXISTS default_table (x UInt32, y UInt32 DEFAULT 42, z UInt32 DEFAULT 33) ENGINE = Memory;
-CREATE TEMPORARY TABLE IF NOT EXISTS temporary_table (column UInt32) ENGINE = Memory;
-CREATE TEMPORARY TABLE keys AS SELECT * FROM system.numbers LIMIT 1 OFFSET 4;
-create temporary table madness_02735 as select * from generateRandom('   aa Array(Array(UInt32)),   aaa Array(Array(Array(UInt32))),   an Array(Nullable(String)),   aan Array(Array(Nullable(FixedString(10)))),   l LowCardinality(String),   ln LowCardinality(Nullable(FixedString(11))),   al Array(LowCardinality(UInt128)),   aaln Array(Array(LowCardinality(Nullable(String)))),   mln Map(LowCardinality(String), Nullable(Int8)),   t Tuple(Map(FixedString(5), Tuple(Array(UInt16), Nullable(UInt16), Array(Tuple(Int8, Decimal64(10))))), Tuple(kitchen UInt64, sink String)),   n Nested(hello UInt64, world Tuple(first String, second FixedString(1)))   ') limit 10000;
-CREATE TEMPORARY TABLE map_json (m1 Map(String, UInt64), m2 Map(UInt32, UInt32), m3 Map(Date, String));
-CREATE TEMPORARY TABLE moving_sum_num (   `k` String,   `dt` DateTime,   `v` UInt64 );
-CREATE TEMPORARY TABLE my_table (col_date Date, col_date32 Date32, col_datetime DateTime('UTC'), col_datetime32 DateTime32('UTC'), col_datetime64 DateTime64);
-create temporary table nullables_02735 as select * from generateRandom('   u16 Nullable(UInt16),   i64 Nullable(Int64),   datetime64 Nullable(DateTime64),   enum8 Nullable(Enum8(''x'' = 1, ''y'' = 2, ''z'' = 3)),   float64 Nullable(Float64),   str Nullable(String),   fstr Nullable(FixedString(12)),   i256 Nullable(Int256),   decimal256 Nullable(Decimal256(40)),   ipv6 Nullable(IPv6)') limit 10000;
-create temporary table one_0023 as select 1;
-CREATE TEMPORARY TABLE orders (date DateTime, visitorId String, orderId String);
-create temporary table other_encoders_02735 as select number, number*2 from numbers(10000);
-CREATE TEMPORARY TABLE readonly00542 (   ID Int ) Engine = Memory;
-CREATE TEMPORARY TABLE sessions (date DateTime, visitorId String, sessionId String);
+CREATE TABLE codecs4 (a UInt8 CODEC(LZ4, LZ4)) ENGINE = MergeTree ORDER BY tuple();
+CREATE TABLE IF NOT EXISTS t_02708(x DateTime) ENGINE = MergeTree ORDER BY tuple();
+create table "/t1" (a Int64, b Int64) engine = MergeTree() partition by a order by a;
+CREATE TABLE 02703_db.02703_rptable (x UInt8, y UInt8) ENGINE = MergeTree ORDER BY x;
+create table alter_ttl(i Int) engine = MergeTree order by i ttl toDate('2020-05-05');
+CREATE TABLE null_before (id DEFAULT 1 NOT NULL) ENGINE=MergeTree() ORDER BY tuple();
+CREATE TABLE null_before (id INT DEFAULT 1 NULL) ENGINE=MergeTree() ORDER BY tuple();
+CREATE TABLE null_before (id INT NULL DEFAULT 1) ENGINE=MergeTree() ORDER BY tuple();
+CREATE TABLE null_before (id NOT NULL DEFAULT 1) ENGINE=MergeTree() ORDER BY tuple();
+create table t1(a Array(UInt32)) ENGINE = MergeTree ORDER BY tuple() as select [1,2];
+CREATE TABLE auto_assign_enum3 (x enum('a', 'b', NULL)) ENGINE=MergeTree() order by x;
+CREATE TABLE data_02222 engine=MergeTree() ORDER BY dummy AS SELECT * FROM system.one;
+CREATE TABLE trailing_comma_2 (id INT DEFAULT 1,) ENGINE=MergeTree() ORDER BY tuple();
+CREATE TABLE primary_key (d Date DEFAULT today(), x Int8) ENGINE = MergeTree ORDER BY d;
+create table aggr (n int, s AggregateFunction(max, String)) engine=MergeTree order by n;
+CREATE TABLE auto_assign_enum1 (x enum('a' = -1000, 'b')) ENGINE=MergeTree() order by x;
+CREATE TABLE store (id UInt32, "名称" String, "状态" String) ENGINE=MergeTree() Order by id;
+CREATE TABLE `default` (d Date DEFAULT toDate(t), t DateTime) ENGINE = MergeTree order by d;
+create table tab (x Int32, y Int32) engine = MergeTree partition by x + y order by tuple();
+CREATE TABLE t (x UInt8, PROJECTION p (SELECT x GROUP BY x)) ENGINE = MergeTree ORDER BY ();
+CREATE TABLE test (x UInt8, y UInt8 MATERIALIZED x + 1) ENGINE = MergeTree ORDER BY tuple();
+create table ttl (d Date, a Int) engine = MergeTree order by a partition by toDayOfMonth(d);
+CREATE TABLE numbers5 ENGINE = MergeTree ORDER BY number AS SELECT number FROM numbers(1000);
+--создает аналогичную таблицу упомянутую во FROM, стягивает название столбцов и их типо индексы и прочее не создает
+--нужно потестить подробнее подобный синтаксис
+CREATE TABLE test_table ENGINE=MergeTree() ORDER BY tuple() AS SELECT * FROM test_table_data;
+create table data_02230_ttl (date Date, `key` Int) Engine=MergeTree() order by key TTL date + 14;
+--просто так не завелось требует "set `compatibility_ignore_auto_increment_in_create_table` to true"
+-- CREATE TABLE ignore_auto_increment (id AUTO_INCREMENT) ENGINE=MergeTree() ORDER BY tuple();
+CREATE TABLE test_table (a UInt64, b ALIAS a, c ALIAS b) ENGINE = MergeTree() ORDER BY tuple();
+create table x (dt String) engine MergeTree partition by toYYYYMM(toDate(dt)) order by tuple();
+create table alter_ttl(d Date, s String) engine = MergeTree order by d ttl d + interval 1 month;
+create table lc_00800_1 (names Array(LowCardinality(String))) engine=MergeTree order by tuple();
+CREATE TABLE table (uid UUID, date DateTime('Asia/Kamchatka')) ENGINE = MergeTree ORDER BY date;
+create table tp (type Int32, device UUID, cnt UInt64) engine = MergeTree order by (type, device);
+CREATE TABLE bad_conversions_2 (e Enum('foo' = 1, 'bar' = 2)) ENGINE = MergeTree ORDER BY tuple();
+CREATE TABLE samples (key UInt32, value UInt32) ENGINE = MergeTree() ORDER BY key PRIMARY KEY key;
+CREATE TABLE sessions (`user_id` UInt64) ENGINE = MergeTree ORDER BY user_id SAMPLE BY user_id;
+-- интересный кейс стоит отнести к синтаксическому сахара така как бд хранит столбец n как n.key и n.value а типы у них Array(String)
+CREATE TABLE t_array_index (n Nested(key String, value String)) ENGINE = MergeTree ORDER BY n.key;
+-- синтаксический сахар бд будет возвращать другую запись значение default
+CREATE TABLE test (x UInt64, "\\" String DEFAULT '\r\n\t\\' || ' ') ENGINE = MergeTree ORDER BY x;
+CREATE TABLE delta_table (`id` UInt64 CODEC(Delta(tuple()))) ENGINE = MergeTree() ORDER BY tuple();
+CREATE TABLE foo (key int, INDEX i1 key TYPE minmax GRANULARITY 1) Engine=MergeTree() ORDER BY key;
+CREATE TABLE tab(id Int32, vec Float32, INDEX idx vec TYPE annoy()) ENGINE = MergeTree ORDER BY id;
+CREATE TABLE test (key UInt64, val UInt64) engine = MergeTree Order by key PARTITION BY key >= 128;
+CREATE TABLE encryption_test (i Int, s String Codec(AES_128_GCM_SIV)) ENGINE = MergeTree ORDER BY i;
+CREATE TABLE interval (`id` String, `start` Int64, `end` Int64) ENGINE = MergeTree ORDER BY start;
+create table t (i int, j int, projection p (select i order by i)) engine MergeTree order by tuple();
+create table t (id UInt32, a Int) engine = MergeTree order by id settings min_bytes_for_wide_part=0;
+CREATE TABLE tdm__fuzz_23 (`x` UInt256) ENGINE = MergeTree ORDER BY x SETTINGS write_final_mark = 0;
+create table test_ins_null (date Date, val Nullable(UInt64)) engine = MergeTree(date, (date), 8192);
+CREATE TABLE binary_op_mono1(i int, j int) ENGINE MergeTree PARTITION BY toDate(i / 1000) ORDER BY j;
+CREATE TABLE 02703_db_asterisk.`*` (x UInt8, y UInt8) ENGINE = MergeTree ORDER BY x AS SELECT 100, 20;
+-- один индекс может содержать несколько уникальных выражений
+CREATE TABLE tbl (id UInt32, INDEX idx (id + 1, id - 1) TYPE minmax) ENGINE = MergeTree() ORDER BY id;
+CREATE TABLE t36 (id UInt32, id2 UInt32, INDEX idx (id + 1, id2) TYPE minmax) ENGINE = MergeTree() ORDER BY id;
+CREATE TABLE t37 (id UInt32, id2 UInt32, INDEX idx (id + 1, id + 1 != 12) TYPE minmax) ENGINE = MergeTree() ORDER BY id;
+CREATE TABLE {CLICKHOUSE_DATABASE_1:Identifier}.data_02716_3 (v UInt64) ENGINE = MergeTree ORDER BY v;
+create table cc (a UInt64, b String) ENGINE = MergeTree order by (a, b) SETTINGS compress_marks = true;
+CREATE TABLE t02006 on cluster test_shard_localhost (d Date) ENGINE = MergeTree ORDER BY d format Null;
+create table tab (x Int32, y Int32) engine = MergeTree partition by ((x + y) + 1) * 2 order by tuple();
 CREATE TEMPORARY TABLE src (p UInt64, k String, d UInt64) ENGINE = MergeTree PARTITION BY p ORDER BY k;
-CREATE TEMPORARY TABLE sum_map_overflow (events Array(UInt8), counts Array(UInt8));
-CREATE TEMPORARY TABLE t (a UInt8);
-CREATE TEMPORARY TABLE t (i UInt8, x DateTime64(3, 'UTC'));
-CREATE TEMPORARY TABLE t (x DateTime('UTC'));
-CREATE TEMPORARY TABLE t (x Float64);
-CREATE TEMPORARY TABLE t (x Nullable(String) DEFAULT 'Hello', y String DEFAULT 'World');
-CREATE TEMPORARY TABLE t (x UInt64);
-create temporary table t (x UInt64, y alias x);
-CREATE TEMPORARY TABLE t (x UInt8);
-CREATE TEMPORARY TABLE t AS SELECT * FROM system.numbers LIMIT 11;
-CREATE TEMPORARY TABLE t0 AS SELECT quantileArrayState(0.10)([number]) FROM numbers(100);
-CREATE TEMPORARY TABLE t1 (a Int64);
-create temporary table t1 (a Nullable(UInt8));
-CREATE TEMPORARY TABLE t1 AS SELECT quantileDistinctState(0.10)(number) FROM numbers(100);
-create temporary table t1(a String);
-CREATE TEMPORARY TABLE t10_02271 (x INT() SIGNED DEFAULT 1);
-CREATE TEMPORARY TABLE t1_00519 AS SELECT 1;
-CREATE TEMPORARY TABLE t1_00841 (x UInt8);
-CREATE TEMPORARY TABLE t1_02271 (x INT(11));
-CREATE TEMPORARY TABLE t2 (a Int64, b Int64);
-create temporary table t2 (a UInt8);
-CREATE TEMPORARY TABLE t2 AS SELECT quantileForEachState(0.10)([number]) FROM numbers(100);
-create temporary table t2(a LowCardinality(String));
-CREATE TEMPORARY TABLE t2_02271 (x INT(11) DEFAULT 1);
-CREATE TEMPORARY TABLE t3 AS SELECT quantileIfState(0.10)(number, number % 2) FROM numbers(100);
-CREATE TEMPORARY TABLE t3_00519 AS SELECT * FROM t1_00519;
-CREATE TEMPORARY TABLE t3_02271 (x INT(11) UNSIGNED);
-CREATE TEMPORARY TABLE t4 AS SELECT quantileMergeState(0.10)(state) FROM (SELECT quantileState(0.10)(number) as state FROM numbers(100));
-CREATE TEMPORARY TABLE t4_02271 (x INT(11) SIGNED);
-CREATE TEMPORARY TABLE t5 AS SELECT quantileOrNullState(0.10)(number) FROM numbers(100);
-CREATE TEMPORARY TABLE t5_02271 (x INT(11) SIGNED DEFAULT 1);
-CREATE TEMPORARY TABLE t6 AS SELECT quantileOrDefaultState(0.10)(number) FROM numbers(100);
-CREATE TEMPORARY TABLE t6_02271 (x INT());
-CREATE TEMPORARY TABLE t7 AS SELECT quantileResampleState(0.10, 1, 2, 42)(number, number) FROM numbers(100);
-CREATE TEMPORARY TABLE t7_02271 (x INT() DEFAULT 1);
-CREATE TEMPORARY TABLE t8 AS SELECT quantileState(0.10)(number) FROM numbers(100);
-CREATE TEMPORARY TABLE t8_02271 (x INT() UNSIGNED);
-CREATE TEMPORARY TABLE t9 AS SELECT quantileArrayResampleOrDefaultIfState(0.10, 1, 2, 42)([number], number, number % 2) FROM numbers(100);
-CREATE TEMPORARY TABLE t9_02271 (x INT() SIGNED);
-CREATE TEMPORARY TABLE t_00477 (x Array( /* Hello */ UInt32 /* World */ )) ENGINE = Memory;
-CREATE TEMPORARY TABLE t_00693 (x UInt8);
-CREATE TEMPORARY TABLE t_01048 (x UInt8);
-CREATE TEMPORARY TABLE table_gcd (id UInt64, ui UInt256 CODEC(GCD, LZ4)) ENGINE = Memory;
-CREATE TEMPORARY TABLE table_gcd_codec_date32 (n Date32 CODEC(GCD, LZ4)) ENGINE = Memory;
-CREATE TEMPORARY TABLE table_gcd_codec_datetime64 (n DateTime64(3, 'Asia/Istanbul') CODEC(GCD, LZ4)) ENGINE = Memory;
-CREATE TEMPORARY TABLE table_gcd_codec_decimal128 (n Decimal128(1) CODEC(GCD, LZ4)) ENGINE = Memory;
-CREATE TEMPORARY TABLE table_gcd_codec_decimal256 (n Decimal256(1) CODEC(GCD, LZ4)) ENGINE = Memory;
-CREATE TEMPORARY TABLE table_gcd_codec_decimal64 (n Decimal64(1) CODEC(GCD, LZ4)) ENGINE = Memory;
-CREATE TEMPORARY TABLE table_gcd_codec_int128 (n Int128 CODEC(GCD, LZ4)) ENGINE = Memory;
-CREATE TEMPORARY TABLE table_gcd_codec_int16 (n Int16 CODEC(GCD, LZ4)) ENGINE = Memory;
-CREATE TEMPORARY TABLE table_gcd_codec_int256 (n Int256 CODEC(GCD, LZ4)) ENGINE = Memory;
-CREATE TEMPORARY TABLE table_gcd_codec_int32 (n Int32 CODEC(GCD, LZ4)) ENGINE = Memory;
-CREATE TEMPORARY TABLE table_gcd_codec_int64 (n Int64 CODEC(GCD, LZ4)) ENGINE = Memory;
-CREATE TEMPORARY TABLE table_gcd_codec_uint128 (n UInt128 CODEC(GCD, LZ4)) ENGINE = Memory;
-CREATE TEMPORARY TABLE table_gcd_codec_uint16 (n UInt16 CODEC(GCD, LZ4)) ENGINE = Memory;
-CREATE TEMPORARY TABLE table_gcd_codec_uint256 (n UInt256 CODEC(GCD, LZ4)) ENGINE = Memory;
-CREATE TEMPORARY TABLE table_gcd_codec_uint32 (n UInt32 CODEC(GCD, LZ4)) ENGINE = Memory;
-CREATE TEMPORARY TABLE table_gcd_codec_uint64 (n UInt64 CODEC(GCD, LZ4)) ENGINE = Memory;
-CREATE TEMPORARY TABLE table_keeper_map_02525 (   key String,   value UInt32 ) Engine=KeeperMap('/' || currentDatabase() || '/test02525') PRIMARY KEY(key);
-CREATE TEMPORARY TABLE table_log_02525 (   id UInt64,   info String ) ENGINE = Log;
-CREATE TEMPORARY TABLE table_merge_tree_02525 (   id UInt64,   info String ) ENGINE = MergeTree ORDER BY id PRIMARY KEY id;
-CREATE TEMPORARY TABLE table_replicated_merge_tree_02525 (   id UInt64,   info String ) ENGINE ReplicatedMergeTree('/clickhouse/tables/{database}/test_02525/table_replicated_merge_tree_02525', 'r1') ORDER BY id PRIMARY KEY id;
-CREATE TEMPORARY TABLE table_stripe_log_02525 (   id UInt64,   info String ) ENGINE = StripeLog;
-CREATE TEMPORARY TABLE table_tiny_log_02525 (   id UInt64,   info String ) ENGINE = TinyLog;
-CREATE TEMPORARY TABLE table_to_drop(x Int8);
-CREATE TEMPORARY TABLE temp_tab (number UInt64);
-create temporary table temp_table3(val0 UInt64) ENGINE=Memory();
-CREATE TEMPORARY TABLE temporary_table AS SELECT * FROM numbers(1) WHERE number NOT IN (SELECT id FROM merge(currentDatabase(), 'test_merge_1|test_merge_2'));
-create temporary table test (   arr Array(Array(LowCardinality(String))) );
-create temporary table test (   data int,   default DateTime DEFAULT '1977-01-01 00:00:00' ) engine = Memory();
-create temporary table test (   data int,   default Nullable(DateTime) DEFAULT '1977-01-01 00:00:00' ) engine = Memory();
-CREATE TEMPORARY TABLE test (`i` Int64, `d` DateTime);
-CREATE TEMPORARY TABLE test (`i` Int64, `d` DateTime64);
-CREATE TEMPORARY TABLE test (`id` String, `products` Nested (`产品` Array(String), `销量` Array(Int32)));
-CREATE TEMPORARY TABLE test (d Date);
-CREATE TEMPORARY TABLE test (x String NULL);
-CREATE TEMPORARY TABLE test.t2_00841 (x UInt8);
-CREATE TEMPORARY TABLE test_00645 (d DateTime) ENGINE = Memory;
-create temporary table test_00670(id int);
-CREATE TEMPORARY TABLE test_00707 (x Float32, y Float64, z UInt64, s String);
-CREATE TEMPORARY TABLE test_00724 (d Date, dt DateTime);
-CREATE TEMPORARY TABLE test_00744 (   x Int32 );
-CREATE TEMPORARY TABLE test_01602a(x UInt32);
-CREATE TEMPORARY TABLE test_01602b(y Float64, z String);
-CREATE TEMPORARY TABLE test_02327 (name String) AS SELECT * FROM VALUES(('Vasya'), ('Petya'));
-CREATE TEMPORARY table test_block_numbers (m UInt64);
-CREATE TEMPORARY TABLE test_float (x Float64);
-CREATE TEMPORARY TABLE test_temporary_table (id UInt64);
-CREATE TEMPORARY TABLE times (t DateTime);
-CREATE TEMPORARY TABLE tmp (d Date, dt DateTime, dtms DateTime64(3));
-CREATE TEMPORARY TABLE tmp (n int);
-create temporary table tmp (s String);
-CREATE TEMPORARY TABLE tmp1 (n int) ENGINE=Memory;
-CREATE TEMPORARY TABLE tmp2 (n int) ENGINE=Log;
-CREATE TEMPORARY TABLE tmp2 (n int) ORDER BY n;
-CREATE TEMPORARY TABLE tmp_log (n int);
-create temporary table wups (a Array(Nullable(String)));
+CREATE TABLE IF NOT EXISTS sample_incorrect (`x` UUID) ENGINE = MergeTree ORDER BY tuple(x) SAMPLE BY x;
+CREATE TABLE mmm ENGINE=MergeTree ORDER BY number AS SELECT number, rand() % 10 AS a FROM numbers(1000);
+create table tab (x UInt64, `arr.a` Array(UInt64), `arr.b` Array(UInt64)) engine = MergeTree order by x;
+CREATE TABLE test_parallel_index (z UInt64, INDEX i z TYPE set(8)) ENGINE = MergeTree ORDER BY ();
+CREATE TABLE test_table (id UInt8, value Nullable(Decimal(38, 2))) ENGINE = MergeTree ORDER BY id;
+create table tp (x Int32, y Int32, projection p (select x, y order by x)) engine = MergeTree order by y;
+CREATE TABLE ignore_auto_increment (id int AUTO_INCREMENT DEFAULT 1) ENGINE=MergeTree() ORDER BY tuple();
+CREATE TABLE ignore_auto_increment (id int DEFAULT 1 AUTO_INCREMENT) ENGINE=MergeTree() ORDER BY tuple();
+CREATE TABLE sales ("日期" Date, "店铺" UInt32, "地址" UInt32, "销售额" Float32) ENGINE=MergeTree() Order by "日期";
+CREATE TABLE src Engine=MergeTree ORDER BY id AS SELECT number as id, toInt32(1) as value FROM numbers(1);
+create table enum engine MergeTree order by enum as select cast(1, 'Enum8(\'zero\'=0, \'one\'=1)') AS enum;
+CREATE TABLE t_ttl_non_deterministic(A Int64) ENGINE = MergeTree ORDER BY A TTL now() + toIntervalMonth(1);
+CREATE TABLE tdm (x DateTime('Asia/Istanbul')) ENGINE = MergeTree ORDER BY x SETTINGS write_final_mark = 0;
+CREATE TABLE test2 (a UInt32, b Int64) ENGINE = MergeTree ORDER BY tuple() PARTITION BY (a * b, b * b);
+CREATE TABLE producer_02366 (`id` UInt16, `dec` String) ENGINE = MergeTree PRIMARY KEY id ORDER BY id;
+create table ttl (i Int, s String) engine = MergeTree order by i ttl toDate('2000-01-01') TO DISK 'default';
+CREATE TABLE t_json(id UInt64, obj JSON) ENGINE = MergeTree ORDER BY id SETTINGS min_bytes_for_wide_part = 0;
+create table foo(bar String, projection p (select * apply groupUniqArray(100))) engine MergeTree order by bar;
+create table projection_without_key (key UInt32, PROJECTION x (SELECT max(key))) engine MergeTree order by key;
+--нужно разобраться с этим синтаксисом
+CREATE TABLE {new_db_name:Identifier}.{old_tbl_name:Identifier} (a UInt64) ENGINE = MergeTree ORDER BY tuple();
+create table tab (a UInt32, b UInt32, c UInt32, d UInt32) engine = MergeTree order by ((a + b) * c, sin(a / b));
+-- валидный кейс
+CREATE TABLE lol (n int) ENGINE=MergeTree ORDER BY n SETTINGS min_bytes_for_wide_part=123 SETTINGS log_queries=1;
+create table tab (x UInt128) engine = MergeTree order by x settings allow_nullable_key = 1, index_granularity = 2;
+CREATE TABLE t1 (s String) ENGINE = MergeTree ORDER BY s SETTINGS ratio_of_defaults_for_sparse_serialization = 0.5;
+CREATE TABLE test (a Int32) ENGINE = MergeTree() order by tuple() SETTINGS disk = disk(type=local, path='/local/');
+create table p(d Date, i int, j int) engine MergeTree partition by d order by i settings max_partitions_to_read = 1;
+CREATE TABLE t_map (m Map(String, UInt32)) ENGINE = MergeTree ORDER BY tuple() SETTINGS min_bytes_for_wide_part = 0;
+CREATE TABLE 02483_substitute_udf (id UInt32, number UInt32 DEFAULT 02483_plusone(id)) ENGINE=MergeTree() ORDER BY id;
+CREATE TABLE delta_codec_synthetic (`id` Decimal(38, 10) CODEC(Delta, ZSTD(22))) ENGINE = MergeTree() ORDER BY tuple();
+CREATE TABLE table2 (id Int64, v UInt64) ENGINE = MergeTree() PARTITION BY (toInt32(id / 2) % 3, id % 200) ORDER BY id;
+CREATE TABLE t0 (c0 Int16, projection h (SELECT min(c0), max(c0), count() GROUP BY -c0)) ENGINE = MergeTree ORDER BY ();
+create table test (key Int) engine=MergeTree() order by tuple() settings ratio_of_defaults_for_sparse_serialization=0.1;
+create table data_01643
+(
+    key Int
+) engine=MergeTree() order by key settings min_rows_for_wide_part=2, fsync_after_insert=1;
+CREATE TABLE t_bad_constraint
+(
+    a UInt32,
+    s String,
+    CONSTRAINT c1 ASSUME a = toUInt32(s)
+) ENGINE = MergeTree ORDER BY tuple();
+create table pl
+(
+    dt DateTime,
+    i int,
+    projection p (select sum(i) group by toStartOfMinute(dt))
+) engine MergeTree order by dt;
+CREATE TABLE test
+(
+    time DateTime64(3)
+) ENGINE = MergeTree ORDER BY tuple() PARTITION BY toStartOfInterval(time, INTERVAL 2 YEAR);
+create table ttl
+(
+    d Date,
+    a Int
+) engine = MergeTree order by tuple() partition by toDayOfMonth(d) settings remove_empty_parts = 0;
+create table 02681_undrop_no_uuid_on_cluster on cluster test_shard_localhost
+(
+    id Int32
+) Engine=MergeTree() order by id format Null;
+CREATE TABLE a
+(
+    number UInt64
+) ENGINE = MergeTree ORDER BY if(now() > toDateTime('2020-06-01 13:31:40'), toInt64(number), -number);
+CREATE TABLE dummy
+(
+    num1 Int32,
+    num2 Enum8('foo' = 0, 'bar' = 1, 'tar' = 2)
+) ENGINE = MergeTree ORDER BY num1 as select 5, 'bar';
+CREATE TABLE ".inner_id.e15f3ab5-6cae-4df3-b879-f40deafd82c2"
+(
+    n Int32,
+    n2 Int64
+) ENGINE = MergeTree PARTITION BY n % 10 ORDER BY n;
+-- синтаксический сахар ceiling на сервере превращается в ceil
+create table d
+(
+    dt DateTime,
+    j int
+) engine MergeTree partition by (toDate(dt), ceiling(j), toDate(dt), CEILING(j)) order by tuple();
+create table fat_granularity
+(
+    x UInt32,
+    fat FixedString(160000)
+) engine = MergeTree order by x settings storage_policy = 's3_cache';
+-- какая то функция обращается к таблице и мб ее столбцам нужно потестить на примерах
+CREATE TABLE test_01676.table
+(
+    x UInt64,
+    y UInt64 DEFAULT dictGet('test_01676.dict', 'value', x)
+) ENGINE=MergeTree ORDER BY tuple();
+-- EPHEMERAL может быть без значения остальные дефолтные типы должны иметь значения
+CREATE TABLE ignore_auto_increment (di DEFAULT 1, s String EPHEMERAL) ENGINE=MergeTree() ORDER BY tuple();
+CREATE TABLE tab
+(
+    e8 Enum8('hello' = -5, 'world' = 15), e16 Enum16('shark' = -999, 'eagle' = 9999)
+) ENGINE MergeTree ORDER BY tuple();
+CREATE TABLE test
+(
+    `key` UInt32,
+    `arr` ALIAS [1, 2],
+    `xx` MATERIALIZED arr[1]
+) ENGINE = MergeTree PARTITION BY tuple() ORDER BY tuple();
+CREATE TABLE column_swap_test_test
+(
+    i Int64,
+    a String,
+    b UInt64,
+    CONSTRAINT c1 ASSUME b = cityHash64(a)
+) ENGINE = MergeTree() ORDER BY i;
+CREATE TABLE event_types
+(
+    type String,
+    active Int16
+) ENGINE = MergeTree PARTITION BY substring(type, 1, 1) ORDER BY (type, active);
+CREATE TABLE t_ttl_move_if_exists
+(
+    d DateTime,
+    a UInt32
+) ENGINE = MergeTree ORDER BY tuple() TTL d TO DISK IF EXISTS 'non_existing_disk';
+CREATE TABLE too_many_parts
+(
+    x UInt64
+) ENGINE = MergeTree ORDER BY tuple() SETTINGS parts_to_delay_insert = 5, parts_to_throw_insert = 5;
+CREATE TABLE ip_part_test
+(
+    ipv4 IPv4,
+    ipv6 IPv6
+) ENGINE = MergeTree PARTITION BY ipv4 ORDER BY ipv4 AS SELECT '1.2.3.4', '::ffff:1.2.3.4';
+-- для тестирования нужно создать DICTINORY
+CREATE TABLE table
+(
+    col MATERIALIZED dictGet(currentDatabase() || '.dict', 'value', toUInt32(1))
+) ENGINE = MergeTree() ORDER BY tuple();
+-- создаем таблицу и инсертим в ней значения
+CREATE TABLE table_key
+(
+    keycol UInt16
+) ENGINE = MergeTree() ORDER BY (keycol) PARTITION BY tuple() as SELECT * FROM VALUES ((1), (2), (3));
+create table ttl_00933_2
+(
+    d DateTime,
+    a Int,
+    b default 222 ttl d + interval 1 DAY
+) engine = MergeTree order by tuple() partition by toDayOfMonth(d);
+CREATE TABLE 01154_test
+(
+    x UUID,
+    INDEX ix_x x TYPE bloom_filter(0.01) GRANULARITY 1
+) ENGINE = MergeTree() ORDER BY x SETTINGS index_granularity=8192;
+CREATE TABLE source_data
+(
+    pk Int32,
+    sk Int32,
+    val UInt32,
+    partition_key UInt32 DEFAULT 1,
+    PRIMARY KEY (pk)
+) ENGINE=MergeTree ORDER BY (pk, sk);
+create table if not exists null_01016
+(
+    x Nullable(String)
+) engine MergeTree order by ifNull(x, 'order-null') partition by ifNull(x, 'partition-null');
+CREATE TABLE parsed_eph
+(
+    name String,
+    num_ephemeral UInt32 EPHEMERAL,
+    num UInt32 MATERIALIZED num_ephemeral,
+) ENGINE = MergeTree ORDER BY (name);
+CREATE TABLE 01154_test
+(
+    x Int128,
+    INDEX ix_x x TYPE bloom_filter(0.01) GRANULARITY 1
+) ENGINE = MergeTree() ORDER BY x SETTINGS index_granularity=8192;
+CREATE TABLE click_storage
+(
+    `PhraseID` UInt64,
+    `PhraseProcessedID` UInt64 ALIAS if(PhraseID > 5, PhraseID, 0)
+) ENGINE = MergeTree() ORDER BY tuple();
+CREATE TABLE column_swap_test_test
+(
+    i Int64,
+    a String,
+    b String,
+    CONSTRAINT c1 ASSUME a = substring(reverse(b), 1, 1)
+) ENGINE = MergeTree() ORDER BY i;
+CREATE TABLE legacy_column_name_of_tuple_literal
+(
+    `x` UInt32,
+    `y` UInt64,
+    PROJECTION p (SELECT sum(y in (1, 2 ,3)))
+) ENGINE = MergeTree ORDER BY tuple();
+CREATE TABLE t_nested_with_dots
+(
+    `t.t2` Tuple(`t3.t4.t5` Tuple(`s1.s2` String, `u1.u2` UInt64), `s3.s4.s5` String)
+) ENGINE = MergeTree ORDER BY tuple();
+CREATE TABLE t_skip_index_in
+(
+    a String,
+    b String,
+    c String,
+    INDEX idx_c c TYPE bloom_filter GRANULARITY 1
+) ENGINE = MergeTree ORDER BY (a, b);
+create table ttl
+(
+    i Int,
+    s String
+) engine = MergeTree order by i SETTINGS max_number_of_merges_with_ttl_in_pool=0,materialize_ttl_recalculate_only=true;
+CREATE TABLE t0 ENGINE=MergeTree() ORDER BY tuple() AS SELECT rowNumberInAllBlocks(), * FROM (SELECT toLowCardinality(arrayJoin(['exchange', 'tables'])));
+CREATE TABLE merge_tree
+(
+    x UInt32
+) ENGINE = MergeTree ORDER BY x SETTINGS index_granularity_bytes = 4, min_index_granularity_bytes=1, write_final_mark = 0;
+CREATE TABLE default_table
+(
+    key UInt64 DEFAULT 42,
+    value1 UInt64 MATERIALIZED key * key,
+    value2 ALIAS value1 * key
+) ENGINE = MergeTree() ORDER BY tuple();
+CREATE TABLE mytable
+(
+    operand Float64,
+    low Float64,
+    high Float64,
+    count UInt64,
+    PRIMARY KEY (operand, low, high, count)
+) ENGINE = MergeTree();
+CREATE TABLE t2 ENGINE=MergeTree() ORDER BY tuple() AS SELECT rowNumberInAllBlocks() + (SELECT count() FROM t0), * FROM (SELECT arrayJoin(['hello', 'world']));
+CREATE TABLE github_events AS gen ENGINE=MergeTree ORDER BY (event_type, repo_name, created_at) SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi';
+CREATE TABLE t_s3_compressed_blocks
+(
+    id UInt64,
+    s String CODEC(NONE)
+) ENGINE = MergeTree ORDER BY id SETTINGS storage_policy = 's3_cache', min_bytes_for_wide_part = 0;
+CREATE TABLE test_a
+(
+    OldColumn String DEFAULT '',
+    EventDate Date DEFAULT toDate(EventTime),
+    EventTime DateTime
+) ENGINE = MergeTree(EventDate, EventTime, 8192);
+CREATE TABLE IF NOT EXISTS uuid
+(
+    created_at DateTime,
+    id0 String,
+    id1 FixedString(36)
+) ENGINE = MergeTree PARTITION BY toDate(created_at) ORDER BY (created_at);
+CREATE TABLE primary
+(
+    `primary` String
+) ENGINE = MergeTree ORDER BY primary settings min_bytes_for_wide_part=0,min_bytes_for_wide_part=0 AS SELECT * FROM numbers(1000);
+CREATE TABLE test
+(
+    a Int32,
+    b String
+) ENGINE = MergeTree() ORDER BY tuple() SETTINGS disk = disk(type = 'local_blob_storage', path = '${CLICKHOUSE_TEST_UNIQUE_NAME}/');
+-- для чего может быть приминим подобный синтаксис?
+CREATE TABLE ".inner_id.e15f3ab5-6cae-4df3-b879-f40deafd82c2" UUID '3bd68e3c-2693-4352-ad66-a66eba9e345e'
+(
+    n Int32,
+    n2 Int64
+) ENGINE = MergeTree PARTITION BY n % 10 ORDER BY n;
+-- по сделал такое отображения в целях улучшения читабильности
+create table test_byte_size_more_complex
+(
+    key Int32,
+    complex1 Array(
+    			  Tuple(
+    				   Nullable(FixedString(4)),
+    				   Array(
+    					    Tuple(
+    						     Nullable(String),
+    						     String
+    						     )
+    					    )
+    				   )
+    			  )
+) engine MergeTree order by key;
+-- так подобные кейсы со множественной вложенностью отображаются в БД
+CREATE TABLE nested
+(
+    column Nested (name String, names Array(String), types Array(Enum8('PU' = 1, 'US' = 2, 'OTHER' = 3)))
+) ENGINE = MergeTree ORDER BY tuple();
+CREATE TABLE test
+(
+    a Int32
+) ENGINE = MergeTree() ORDER BY tuple() SETTINGS disk = disk(type = cache, max_size = '1Mi', path = '/kek', disk = 'local_disk');
+CREATE TABLE ttl_where
+(
+    `d` Date,
+    `i` UInt32
+) ENGINE = MergeTree ORDER BY tuple() TTL d + toIntervalYear(10) DELETE WHERE i % 3 = 0, d + toIntervalYear(40) DELETE WHERE i % 3 = 1;
+CREATE TABLE t_02809
+(
+    a Int64,
+    b Int64,
+    s String
+) ENGINE=MergeTree order by tuple() AS SELECT number, number%10, toString(arrayMap(i-> cityHash64(i*number), range(50))) FROM numbers(10000);
+create table test_02381
+(
+    a UInt64,
+    b UInt64
+) ENGINE = MergeTree order by (a, b) SETTINGS compress_marks = false, compress_primary_key = false, ratio_of_defaults_for_sparse_serialization = 1;
+create table data_01809
+(
+    i int
+) engine MergeTree order by i settings old_parts_lifetime = 10000000000, min_bytes_for_wide_part = 0, inactive_parts_to_throw_insert = 0, inactive_parts_to_delay_insert = 1;
+CREATE TABLE tab
+(
+    `uint64` UInt64,
+    `int32` Nullable(Int32) COMMENT 'example comment',
+    `str` String,
+    INDEX idx str TYPE set(1000)
+) ENGINE = MergeTree PRIMARY KEY (uint64) ORDER BY (uint64, str);
+CREATE TABLE test
+(
+    `int8` Int8,
+    `int16` Int16,
+    `int32` Int32,
+    `int64` Int64,
+    INDEX idx (`int8`, `int16`, `int32`, `int64`) TYPE bloom_filter(0.01) GRANULARITY 8192
+) ENGINE = MergeTree() ORDER BY `int8`;
+-- также можно этим кейсом дополнить случаи со сравнением дефолтного скрипта и синтактического сахара
+CREATE TABLE cast
+(
+    x UInt8,
+    e Enum8 ('hello' = 1, 'world' = 2) DEFAULT CAST (x AS Enum8 ('hello' = 1, 'world' = 2))
+) ENGINE = MergeTree ORDER BY e;
+CREATE TABLE test02910_second
+(
+    `Id1` String,
+    `Id2` String,
+    `timestamp` DateTime64(6),
+    `tags` Array(String),
+) ENGINE = MergeTree PRIMARY KEY (Id1, Id2) ORDER BY (Id1, Id2, timestamp) SETTINGS index_granularity = 8192, index_granularity_bytes = 0;
+CREATE TABLE merge_tree_table
+(
+    Date Date,
+    SomeType UInt8,
+    Alternative1 UInt64,
+    Alternative2 UInt64,
+    User UInt32,
+    CharID UInt64 ALIAS multiIf(SomeType IN (3, 4, 11), 0, SomeType IN (7, 8), Alternative1, Alternative2)
+) ENGINE = MergeTree() ORDER BY tuple();
+CREATE TABLE recompression_table_compact
+(
+    dt DateTime,
+    key UInt64,
+    value String
+) ENGINE MergeTree()
+ORDER BY tuple()
+PARTITION BY key
+TTL dt + INTERVAL 1 MONTH RECOMPRESS CODEC(ZSTD(17)), dt + INTERVAL 1 YEAR RECOMPRESS CODEC(LZ4HC(10))
+SETTINGS min_rows_for_wide_part = 10000;
+CREATE TABLE tbl
+(
+    a UInt64,
+    b UInt64,
+    c UInt64,
+    d UInt64,
+    e UInt64,
+    INDEX mm1_idx (a, c, d) TYPE minmax,
+    INDEX mm2_idx (c, d, e) TYPE minmax,
+    INDEX set_idx (e) TYPE set(100),
+    INDEX blf_idx (d, b) TYPE bloom_filter(0.8)
+) ENGINE = MergeTree PRIMARY KEY (c, a);
+CREATE TABLE table_for_rename
+(
+    date Date,
+    key UInt64,
+    value1 String,
+    value2 String,
+    value3 String,
+    CONSTRAINT cs_value1 CHECK toInt64(value1) < toInt64(value2),
+    CONSTRAINT cs_value2 CHECK toInt64(value2) < toInt64(value3)
+) ENGINE = MergeTree() PARTITION BY date ORDER BY key;
+-- очень веселый кейс
+CREATE TABLE multidimensional
+ENGINE = MergeTree
+ORDER BY number
+SETTINGS index_granularity = 8192,
+index_granularity_bytes = '10Mi'
+AS SELECT number, arrayMap(x -> (x, [x], [[x]], (x, toString(x))), arrayMap(x -> range(x), range(number % 10))) AS value FROM system.numbers LIMIT 100000;
+CREATE TABLE large_alter_table_00804
+(
+    somedate Date CODEC(ZSTD, ZSTD, ZSTD(12), LZ4HC(12)),
+    id UInt64 CODEC(LZ4, ZSTD, NONE, LZ4HC),
+    data String CODEC(ZSTD(2), LZ4HC, NONE, LZ4, LZ4)
+) ENGINE = MergeTree() PARTITION BY somedate ORDER BY id SETTINGS index_granularity = 2, index_granularity_bytes = '10Mi', min_bytes_for_wide_part = 0;
+CREATE TABLE Test
+ENGINE = MergeTree()
+PRIMARY KEY (String1,String2)
+ORDER BY (String1,String2)
+SETTINGS index_granularity = 8192, index_granularity_bytes = '10Mi'
+AS SELECT 'String1_' || toString(number) as String1, 'String2_' || toString(number) as String2, 'String3_' || toString(number) as String3, 'String4_' || toString(number%4) as String4 FROM numbers(1);
+CREATE TABLE test
+(
+    key UInt32,
+    value String
+) ENGINE=MergeTree()
+ORDER BY key
+SETTINGS min_bytes_for_wide_part = 10485760,
+compress_marks=false,
+compress_primary_key=false,
+disk = disk(type = cache, max_size = '128Mi',
+path = 'filesystem_query_cache/',
+cache_on_write_operations= 1,
+enable_filesystem_query_cache_limit = 1,
+delayed_cleanup_interval_ms = 100, disk = 's3_disk');
 
-alter table mt update n = n + (n not in m) in partition id '1' where 1 settings mutations_sync=1;
-alter table ttl_test_02129 modify TTL (d + INTERVAL 1 MONTH) DELETE WHERE c=1 settings mutations_sync=2;
-ALTER TABLE 02155_test_dictionary COMMENT COLUMN value 'value_column';
-ALTER TABLE 02155_test_dictionary MODIFY COMMENT '02155_test_dictionary_comment_1';
-ALTER TABLE 02155_test_dictionary_view COMMENT COLUMN value 'value_column';
-ALTER TABLE 02416_rocksdb DELETE WHERE key >= 4;
-ALTER TABLE 02416_rocksdb UPDATE key = key * 10 WHERE 1 = 1;
-ALTER TABLE 02416_rocksdb UPDATE value = 'Another' WHERE key > 2;
-ALTER TABLE 02416_rocksdb UPDATE value2 = value2 * 10 + 2 WHERE 1 = 1;
-ALTER TABLE 02483_substitute_udf ADD COLUMN new_number UInt32 DEFAULT 02483_plusthree(id);
-ALTER TABLE 02483_substitute_udf DROP COLUMN number;
-ALTER TABLE 02483_substitute_udf MODIFY COLUMN number UInt32 DEFAULT 02483_plustwo(id);
-ALTER TABLE 02484_substitute_udf ADD COLUMN id2 UInt64, MODIFY ORDER BY (02484_plusone(id), 02484_plusthree(id2));
-ALTER TABLE 02484_substitute_udf MODIFY TTL 02484_plusthreedays(dt);
-ALTER TABLE 02500_nested ADD COLUMN z Int32;
-ALTER TABLE 02500_nested DROP COLUMN nes;
-ALTER TABLE 02577_keepermap_delete_update DELETE WHERE key >= 4;
-ALTER TABLE 02577_keepermap_delete_update ON CLUSTER test_shard_localhost UPDATE value2 = value2 * 10 + 2 WHERE value2 < 100;
-ALTER TABLE 02577_keepermap_delete_update UPDATE key = key * 10 WHERE 1 = 1;
-ALTER TABLE 02577_keepermap_delete_update UPDATE value = 'Another' WHERE key > 2;
-ALTER TABLE 02577_keepermap_delete_update UPDATE value2 = value2 * 10 + 2 WHERE value2 < 100;
-ALTER TABLE 02581_trips DELETE WHERE id IN (SELECT (number*10 + 7)::UInt32 FROM numbers(200000000)) SETTINGS mutations_sync=0;
-ALTER TABLE 02581_trips UPDATE description='2' WHERE id IN (SELECT (number*10+2)::UInt32 FROM numbers(10000)) SETTINGS mutations_sync=2;
-ALTER TABLE 02581_trips UPDATE description='5' WHERE id IN (SELECT (number*10 + 5)::UInt32 FROM numbers(200000000)) SETTINGS mutations_sync=0;
-ALTER TABLE 02581_trips UPDATE description='6' WHERE id IN (SELECT (number*10 + 6)::UInt32 FROM numbers(200000000)) SETTINGS mutations_sync=0;
-ALTER TABLE 02581_trips UPDATE description='8' WHERE id IN (SELECT (number*10 + 8)::UInt32 FROM numbers(200000000)) SETTINGS mutations_sync=0;
-ALTER TABLE 02581_trips UPDATE description='a' WHERE id IN (SELECT (number*10 + 1)::UInt32 FROM numbers(10000000)) SETTINGS mutations_sync=2, max_rows_in_set=1000;
-ALTER TABLE 02581_trips UPDATE description='a' WHERE id IN (SELECT (number*10 + 1)::UInt32 FROM numbers(200000000)) SETTINGS mutations_sync=2, max_rows_in_set=1000;
-alter table 02681_undrop_detach update num = 2 where id = 1;
-ALTER TABLE 02691_drop_column_replicated DROP COLUMN col2 SETTINGS alter_sync = 2;
-ALTER TABLE 02707_keepermap_delete_update DELETE WHERE key >= 4;
-ALTER TABLE 02707_keepermap_delete_update UPDATE key = key * 10 WHERE 1 = 1;
-ALTER TABLE 02707_keepermap_delete_update UPDATE value = 'Another' WHERE key > 2;
-ALTER TABLE 02707_keepermap_delete_update UPDATE value2 = value2 * 10 + 2 WHERE value2 < 100;
-ALTER TABLE `.inner_id.00000510-1000-4000-8000-000000000002` DROP PARTITION ID 'all';
-ALTER TABLE `01746_buffer`   DROP COLUMN n1;
-ALTER TABLE `01746_dist`   DROP COLUMN n1;
-ALTER TABLE `01746_merge_tree`   DROP COLUMN n3;
-ALTER TABLE `01746_merge`   DROP COLUMN n1;
-ALTER TABLE `01746_null`   DROP COLUMN n1;
-ALTER TABLE `01851_merge_tree`   DROP COLUMN n3;
-alter table `table_00609` add column def UInt64 default val + 1;
-alter table `table_00609` add column def UInt64;
-alter table a8x update number=0 WHERE number=-3;
-ALTER TABLE adaptive_granularity_alter MODIFY COLUMN v1 Int16;
-ALTER TABLE adaptive_granularity_alter MODIFY COLUMN v2 String;
-ALTER TABLE adaptive_granularity_alter1 MODIFY COLUMN v2 String;
-ALTER TABLE adaptive_granularity_alter2 MODIFY COLUMN v1 Int16;
-ALTER TABLE add_materialized_column_after ADD COLUMN y String MATERIALIZED toString(x) AFTER x;
-ALTER TABLE add_table ADD COLUMN IF NOT EXISTS key String, ADD COLUMN IF NOT EXISTS value1 UInt64;
-ALTER TABLE add_table ADD COLUMN IF NOT EXISTS value1 UInt64, ADD COLUMN IF NOT EXISTS value2 UInt64;
-ALTER TABLE add_table ADD COLUMN IF NOT EXISTS value1 UInt64;
-ALTER TABLE add_table ADD COLUMN value3 UInt64, ADD COLUMN IF NOT EXISTS value3 UInt32;
-ALTER TABLE agg_func_col ADD COLUMN af_avg1 AggregateFunction(avg, UInt8);
-ALTER TABLE agg_table UPDATE agg = (agg.1, agg.2) WHERE time BETWEEN toDateTime('2020-08-01 00:00:00') AND toDateTime('2020-12-01 00:00:00') SETTINGS mutations_sync = 2;
-ALTER TABLE agg_table UPDATE agg = (agg.1, arrayMap(x -> toUInt64(x / 2), agg.2)) WHERE time BETWEEN toDateTime('2020-08-01 00:00:00') AND toDateTime('2020-12-01 00:00:00') SETTINGS mutations_sync = 2;
-ALTER TABLE agg_table UPDATE agg_simple = 5 WHERE time BETWEEN toDateTime('2020-08-01 00:00:00') AND toDateTime('2020-12-01 00:00:00') SETTINGS mutations_sync = 2;
-alter table alias_column_should_not_allow_compression modify column user_id_hashed codec(LZ4HC(1));
-alter table aliases_test add column struct.key Array(UInt8) default [0, 1, 2], add column struct.value Array(UInt8) default array;
-alter table aliases_test modify column array alias [0, 1, 2];
-alter table aliases_test modify column array default [0, 1, 2];
-alter table aliases_test modify column struct.value alias array;
-ALTER TABLE alter_00061 ADD COLUMN `n.d` Array(Date), MODIFY COLUMN s UInt32;
-ALTER TABLE alter_00061 ADD COLUMN `n.d` Array(Date);
-ALTER TABLE alter_00061 ADD COLUMN n Nested(ui8 UInt8, s String);
-ALTER TABLE alter_00061 ADD COLUMN n.s Array(String), ADD COLUMN n.d Array(Date);
-ALTER TABLE alter_00061 ADD COLUMN s String DEFAULT '0';
-ALTER TABLE alter_00061 DROP COLUMN `n.d`, MODIFY COLUMN s Int64;
-ALTER TABLE alter_00061 DROP COLUMN n.s;
-ALTER TABLE alter_00061 DROP COLUMN n.ui8, DROP COLUMN n.d;
-ALTER TABLE alter_00061 DROP COLUMN n;
-ALTER TABLE alter_00121 ADD COLUMN x UInt8;
-ALTER TABLE alter_00121 DROP COLUMN x;
-ALTER TABLE alter_00147 ADD COLUMN n.y Array(UInt64);
-ALTER TABLE alter_00394 ADD COLUMN `n.i8` Array(Int8) AFTER i32;
-ALTER TABLE alter_00665 MODIFY COLUMN `boolean_false` Nullable(UInt8);
-ALTER TABLE alter_02834 MODIFY QUERY SELECT a FROM alter_02834;
-ALTER TABLE alter_attach ADD COLUMN s String;
-ALTER TABLE alter_attach ATTACH PARTITION 1;
-ALTER TABLE alter_attach ATTACH PARTITION 2;
-ALTER TABLE alter_attach DETACH PARTITION 1;
-ALTER TABLE alter_attach DETACH PARTITION 2;
-ALTER TABLE alter_attach DETACH PARTITION ALL;
-ALTER TABLE alter_attach DROP COLUMN s;
-ALTER TABLE alter_bad_codec ADD COLUMN alter_column DateTime DEFAULT '2019-01-01 00:00:00' CODEC(gbdgkjsdh);
-ALTER TABLE alter_bug MODIFY COLUMN epoch DEFAULT toUInt64(_time_dec) CODEC(Delta,LZ4);
-ALTER TABLE alter_column MODIFY COLUMN y Int64;
-ALTER TABLE alter_column_02126 ALTER COLUMN x TYPE Float32;
-ALTER TABLE alter_column_02126 ALTER COLUMN x TYPE Float64, MODIFY COLUMN y Float32;
-ALTER TABLE alter_column_02126 MODIFY COLUMN y TYPE Float32;
-ALTER TABLE alter_compression_codec ADD COLUMN alter_column String DEFAULT 'default_value' CODEC(ZSTD);
-ALTER TABLE alter_compression_codec MODIFY COLUMN alter_column CODEC(NONE);
-ALTER TABLE alter_compression_codec MODIFY COLUMN alter_column CODEC(ZSTD, LZ4HC, LZ4, LZ4, NONE);
-ALTER TABLE alter_compression_codec MODIFY COLUMN alter_column FixedString(100);
-ALTER TABLE alter_compression_codec1 ADD COLUMN alter_column String DEFAULT 'default_value' CODEC(ZSTD);
-ALTER TABLE alter_compression_codec1 MODIFY COLUMN alter_column CODEC(NONE);
-ALTER TABLE alter_compression_codec1 MODIFY COLUMN alter_column CODEC(ZSTD, LZ4HC, LZ4, LZ4, NONE);
-ALTER TABLE alter_compression_codec1 MODIFY COLUMN alter_column FixedString(100);
-ALTER TABLE alter_default ADD COLUMN bad_column UInt8 DEFAULT 'q';
-ALTER TABLE alter_default ADD COLUMN other_date String DEFAULT '0';
-ALTER TABLE alter_default MODIFY COLUMN other_date DateTime;
-ALTER TABLE alter_default MODIFY COLUMN value DEFAULT 100;
-ALTER TABLE alter_default MODIFY COLUMN value UInt16 DEFAULT 100;
-ALTER TABLE alter_default MODIFY COLUMN value UInt64 DEFAULT 10;
-ALTER TABLE alter_default MODIFY COLUMN value UInt64;
-ALTER TABLE alter_default MODIFY COLUMN value UInt8 DEFAULT 10;
-ALTER TABLE alter_drop_version DROP COLUMN ver;
-ALTER TABLE alter_enum_array MODIFY COLUMN Value Array(Enum8('Option1'=1, 'Option2'=2, 'Option3'=3)) SETTINGS mutations_sync=2;
-ALTER TABLE alter_index_test ADD INDEX index_b b type minmax granularity 1 FIRST;
-ALTER TABLE alter_index_test ADD INDEX index_c c type set(0) granularity 2 AFTER index_b;
-ALTER TABLE alter_index_test ADD INDEX index_d d type set(0) granularity 1;
-ALTER TABLE alter_table   MODIFY COLUMN `b` DateTime DEFAULT now(([NULL, NULL, NULL, [-2147483648], [NULL, NULL, NULL, NULL, NULL, NULL, NULL]] AND (1048576 AND NULL) AND (NULL AND 1048575 AND NULL AND -2147483649) AND NULL) IN (test_01103.t1_distr.id));
-ALTER TABLE alter_test ADD COLUMN Added0 UInt32;
-ALTER TABLE alter_test ADD COLUMN Added1 UInt32 AFTER Added0;
-ALTER TABLE alter_test ADD COLUMN Added1 UInt32 FIRST;
-ALTER TABLE alter_test ADD COLUMN Added2 UInt32 AFTER NestedColumn;
-ALTER TABLE alter_test ADD COLUMN Added2 UInt32;
-ALTER TABLE alter_test ADD COLUMN Added3 UInt32 AFTER ToDrop;
-ALTER TABLE alter_test ADD COLUMN AddedNested1 Nested(A UInt32, B UInt64) AFTER Added2;
-ALTER TABLE alter_test ADD COLUMN AddedNested1.C Array(String) AFTER AddedNested1.B;
-ALTER TABLE alter_test ADD COLUMN AddedNested2 Nested(A UInt32, B UInt64) AFTER AddedNested1;
-ALTER TABLE alter_test ADD COLUMN IF NOT EXISTS Added0 UInt32;
-ALTER TABLE alter_test ADD COLUMN IF NOT EXISTS AddedNested1 Nested(A UInt32, B UInt64);
-ALTER TABLE alter_test ADD COLUMN IF NOT EXISTS AddedNested1.C Array(String);
-ALTER TABLE alter_test COMMENT COLUMN IF EXISTS ToDrop 'new comment';
-ALTER TABLE alter_test DROP COLUMN AddedNested1.B;
-ALTER TABLE alter_test DROP COLUMN IF EXISTS ToDrop;
-ALTER TABLE alter_test DROP COLUMN NestedColumn.A;
-ALTER TABLE alter_test DROP COLUMN NestedColumn.S;
-ALTER TABLE alter_test DROP COLUMN ToDrop;
-ALTER TABLE alter_test MODIFY COLUMN `b` DateTime DEFAULT now();
-ALTER TABLE alter_test MODIFY COLUMN `b` DEFAULT now() + 1;
-ALTER TABLE alter_test MODIFY COLUMN Added0 String;
-ALTER TABLE alter_test MODIFY COLUMN Added2 UInt32 FIRST;
-ALTER TABLE alter_test MODIFY COLUMN Added3 UInt32 AFTER CounterID;
-ALTER TABLE alter_test MODIFY COLUMN IF EXISTS ToDrop UInt64;
-ALTER TABLE alter_test RENAME COLUMN Added0 to RenamedColumn;
-alter table alter_ttl add column s String;
-alter table alter_ttl modify column s String ttl d + interval 1 day;
-alter table alter_ttl modify column s String ttl toDate('2020-01-01');
-ALTER TABLE alter_update_00806 UPDATE e = CAST('foo', 'Enum8(\'foo\' = 1, \'bar\' = 2)') WHERE d='2018-01-02' SETTINGS mutations_sync = 1;
-ALTER TABLE alter_update_00806 UPDATE e = CAST('foo', 'Enum8(\'foo\' = 1, \'bar\' = 2)') WHERE d='2018-01-02' SETTINGS mutations_sync = 2;
-ALTER TABLE attach_partition_t2 ATTACH PARTITION tuple() FROM attach_partition_t1;
-ALTER TABLE attach_partition_t4 ATTACH PARTITION tuple() FROM attach_partition_t3;
-ALTER TABLE attach_partition_t6 ATTACH PARTITION tuple() FROM attach_partition_t5;
-ALTER TABLE attach_r2 DROP PARTITION 201402;
-ALTER TABLE bad_conversions MODIFY COLUMN a Array(String);
-ALTER TABLE bad_conversions_2 MODIFY COLUMN e Enum('bar' = 1, 'foo' = 2);
-ALTER TABLE bad_skip_idx ADD INDEX idx value TYPE bloom_filter(0.01) GRANULARITY 4;
-ALTER TABLE bar UPDATE x = 1 WHERE x = (SELECT x from bar WHERE x = 4);
-ALTER TABLE bar UPDATE x = 1 WHERE x IN (SELECT x FROM bar WHERE x != 0);
-ALTER TABLE broken_partition DROP PARTITION ID '20210325_0_13241_6_12747';
-ALTER TABLE buf ADD COLUMN s String;
-ALTER TABLE buf_dest ADD COLUMN s String;
-ALTER TABLE buffer_02184 MODIFY COLUMN name String TTL dt + INTERVAL 1 MONTH;
-alter table cardinality add column y LowCardinality(String);
-alter table cc attach part 'all_1_1_0';
-alter table cc detach part 'all_1_1_0';
-ALTER TABLE cdp_orders DELETE WHERE order_time >= '2019-12-03 00:00:00';
-alter table cdp_segments update mid_seqs = bitmapOr(mid_seqs, (select groupBitmapState(mid_seq) from cdp_customers where mid in ('6bf3c2ee-2b33-3030-9dc2-25c6c618d141'))) where seg_id = '1234567890';
-ALTER TABLE check_comments COMMENT COLUMN column_name1 'another comment';
-ALTER TABLE check_query_comment_column  COMMENT COLUMN first_column 'comment 1_1',  COMMENT COLUMN second_column 'comment 2_1',  COMMENT COLUMN third_column 'comment 3_1',  COMMENT COLUMN fourth_column 'comment 4_1',  COMMENT COLUMN fifth_column 'comment 5_1';
-ALTER TABLE check_query_comment_column  COMMENT COLUMN first_column 'comment 1_2',  COMMENT COLUMN second_column 'comment 2_2',  COMMENT COLUMN third_column 'comment 3_2';
-ALTER TABLE check_query_comment_column  MODIFY COLUMN first_column COMMENT 'comment 1_2',  MODIFY COLUMN second_column COMMENT 'comment 2_2',  MODIFY COLUMN third_column COMMENT 'comment 3_2',  MODIFY COLUMN fourth_column COMMENT 'comment 4_2',  MODIFY COLUMN fifth_column COMMENT 'comment 5_2';
-ALTER TABLE check_query_comment_column  MODIFY COLUMN first_column COMMENT 'comment 1_3',  MODIFY COLUMN second_column COMMENT 'comment 2_3',  MODIFY COLUMN third_column COMMENT 'comment 3_3';
-ALTER TABLE check_system_tables DETACH PARTITION 1;
-ALTER TABLE checksums_r1 MODIFY COLUMN column1 Int32 SETTINGS alter_sync=1;
-ALTER TABLE clear_column CLEAR COLUMN num IN PARTITION '201611';
-ALTER TABLE clear_column CLEAR COLUMN num IN PARTITION '201612';
-ALTER TABLE clear_column CLEAR COLUMN y IN PARTITION 1;
-ALTER TABLE clear_column CLEAR COLUMN y IN PARTITION 2;
-ALTER TABLE clear_column1 ADD COLUMN s String;
-ALTER TABLE clear_column1 CLEAR COLUMN i IN PARTITION '200001';
-ALTER TABLE clear_column1 CLEAR COLUMN i IN PARTITION '200002';
-ALTER TABLE clear_column1 CLEAR COLUMN s IN PARTITION '200001';
-ALTER TABLE clear_column1 CLEAR COLUMN s IN PARTITION '200002';
-ALTER TABLE column_size_bug DELETE WHERE value=1;
-ALTER TABLE columns_with_multiple_streams MODIFY COLUMN field1 Nullable(UInt8);
-ALTER TABLE columns_with_multiple_streams MODIFY COLUMN field3 CODEC(Delta, Default);
-ALTER TABLE columns_with_multiple_streams_compact MODIFY COLUMN field1 Nullable(UInt8);
-ALTER TABLE columns_with_multiple_streams_compact MODIFY COLUMN field3 CODEC(Delta, Default);
-ALTER TABLE compress_table MODIFY COLUMN value2 CODEC(Default(5));
-ALTER TABLE compress_table MODIFY COLUMN value3 CODEC(Default);
-ALTER TABLE compression_codec_on_alias ADD COLUMN `c3` ALIAS c2 CODEC(ZSTD) AFTER c2;
-ALTER TABLE compression_codec_on_alias ADD COLUMN c2 UInt64 CODEC(ZSTD) AFTER c1;
-ALTER TABLE cool_table ADD COLUMN IF NOT EXISTS `n.lc2` Array(Array(LowCardinality(String)));
-ALTER TABLE cool_table ADD COLUMN IF NOT EXISTS `n.lc2` Array(LowCardinality(String));
-ALTER TABLE cool_table ADD COLUMN IF NOT EXISTS `n.lc2` Array(Map(LowCardinality(String), UInt64));
-ALTER TABLE crash_02919 UPDATE b = 0.1 WHERE 1=1 SETTINGS mutations_sync = 1;
-ALTER TABLE crash_02919 UPDATE b = 1 WHERE 1=1 SETTINGS mutations_sync = 1;
-alter table data add column `features_legacy_Map.id` Array(UInt8), add column `features_legacy_Map.count` Array(UInt32);
-alter table data drop column legacy_features_Map settings mutations_sync=2;
-ALTER TABLE data MATERIALIZE INDEX idx IN PARTITION ID '2';
-ALTER TABLE data MATERIALIZE INDEX idx IN PARTITION ID 'NO_SUCH_PART';
-ALTER TABLE data_01269 ADD COLUMN alias UInt8 ALIAS value>0;
-ALTER TABLE data_02342 ADD COLUMN s String;
-ALTER TABLE data_compact ADD COLUMN root.nested_array Array(Array(UInt8));
-alter table data_order_by_proj_incomp add projection tSort (select * order by t);
-alter table data_proj_order_by_incomp add projection tSort (select * order by t);
-ALTER TABLE data_wide ADD COLUMN root.nested_array Array(Array(UInt8));
-ALTER TABLE deduplication_by_partition DROP PARTITION 200001;
-ALTER TABLE default_table MODIFY COLUMN enum_column Enum8('undefined' = 0, 'fox' = 1, 'index' = 2) DEFAULT 'fox';
-ALTER TABLE default_table MODIFY COLUMN enum_column Enum8('undefined' = 0, 'fox' = 1, 'index' = 2) DEFAULT 'undefined';
-ALTER TABLE default_table MODIFY COLUMN key REMOVE MATERIALIZED;
-alter table defaulted add column payload_length UInt64 materialized length(payload);
-alter table defaulted drop column payload_length;
-alter table defaulted modify column payload_length default length(payload) % 65535;
-alter table defaulted modify column payload_length default length(payload);
-alter table defaulted modify column payload_length UInt16 default length(payload);
-ALTER TABLE defaults ADD COLUMN m Int8;
-ALTER TABLE defaults ADD COLUMN n Nested(a UInt64, b String);
-ALTER TABLE defaults ADD COLUMN n.c Array(UInt8) DEFAULT arrayMap(x -> 0, n.a) AFTER n.a;
-ALTER TABLE defaults DELETE WHERE n = 100;
-ALTER TABLE defaults DROP COLUMN n;
-ALTER TABLE defaults UPDATE n = 100 WHERE s = '1';
-ALTER TABLE defaults_on_defaults ADD COLUMN `Arr.C1` Array(UInt32) DEFAULT emptyArrayUInt32();
-ALTER TABLE defaults_on_defaults ADD COLUMN `Arr.C2` Array(UInt32) DEFAULT arrayResize(emptyArrayUInt32(), length(Arr.C1));
-ALTER TABLE defaults_on_defaults ADD COLUMN `Arr.C3` Array(UInt32) ALIAS arrayResize(emptyArrayUInt32(), length(Arr.C2));
-ALTER TABLE defaults_on_defaults ADD COLUMN `Arr.C4` Array(UInt32) DEFAULT arrayResize(emptyArrayUInt32(), length(Arr.C3));
-ALTER TABLE defaults_on_defaults ADD COLUMN `ArrLen` UInt64 DEFAULT length(Arr.C4);
-ALTER TABLE delta_codec_for_alter MODIFY COLUMN x Codec(Delta, LZ4);
-ALTER TABLE delta_codec_for_alter MODIFY COLUMN x UInt64 Codec(Delta, LZ4);
-ALTER TABLE dest ADD COLUMN v2 UInt64;
-ALTER TABLE dest_01019   ADD COLUMN v2 UInt64;
-ALTER TABLE detach_all_no_partition ATTACH PARTITION tuple();
-ALTER TABLE detach_all_no_partition DETACH PARTITION ALL;
-ALTER TABLE distributed_02184 MODIFY COLUMN name String TTL dt + INTERVAL 1 MONTH;
-ALTER TABLE dst ATTACH PARTITION 1 FROM src;
-ALTER TABLE dst ATTACH PARTITION 1;
-ALTER TABLE dst DETACH PARTITION 0;
-ALTER TABLE dst DETACH PARTITION 1;
-ALTER TABLE dst DETACH PARTITION 2;
-ALTER TABLE dst DROP PARTITION 1;
-ALTER TABLE dst REPLACE PARTITION 1 FROM dst;
-ALTER TABLE dst REPLACE PARTITION 1 FROM src;
-alter table dst1 replace partition id 'all' from src1;
-ALTER TABLE dst_00753 DROP COLUMN x, MODIFY COLUMN y String, ADD COLUMN z String DEFAULT 'DEFZ';
-alter table enum_alter_issue attach partition id 'all';
-alter table enum_alter_issue detach partition id 'all';
-alter table enum_alter_issue modify column a Enum8('one' = 1, 'two' = 2, 'three' = 3);
-ALTER TABLE enum_nested_alter   MODIFY COLUMN tasks.errcategory Array(Enum8(       'undefined' = 0, 'system' = 1, 'generic' = 2, 'asio.netdb' = 3, 'asio.misc' = 4,       'asio.addrinfo' = 5, 'rtb.client' = 6, 'rtb.logic' = 7, 'http.status' = 8, 'http.code' = 9)),   MODIFY COLUMN tasks.status Array(Enum8('hello' = 1, 'world' = 2, 'goodbye' = 3));
-ALTER TABLE enum_nested_alter MODIFY COLUMN n.e Array(Enum16('Hello' = 1, 'World' = 2, 'a' = 300));
-ALTER TABLE enum_nested_alter MODIFY COLUMN n.e Array(Enum8('Hello' = 1, 'World' = 2));
-ALTER TABLE enum_nested_alter MODIFY COLUMN n.e Array(Enum8('Hello.world' = 1, 'a' = 2));
-ALTER TABLE enum_nested_alter MODIFY COLUMN n.e Array(String);
-ALTER TABLE enum_nested_alter MODIFY COLUMN n.e Array(UInt16);
-ALTER TABLE enum_test MODIFY COLUMN e Enum8('IU' = 1, 'WS' = 2, 'PS' = 3);
-alter table enums   modify column e Enum8('world' = 2, 'hello' = 1, '!' = 3),   modify column sign Enum8('minus' = -1, 'plus' = 1);
-alter table enums modify column e Enum8('world' = 2, 'hello' = 1, '!' = 3);
-ALTER TABLE execute_on_single_replica_r1 MODIFY SETTING execute_merges_on_single_replica_time_threshold=0;
-ALTER TABLE execute_on_single_replica_r2 MODIFY SETTING execute_merges_on_single_replica_time_threshold=0;
-ALTER TABLE file_02184 MODIFY COLUMN name String TTL dt + INTERVAL 1 MONTH;
-ALTER TABLE foo UPDATE x = 1 WHERE x = (SELECT x from foo WHERE x = 4);
-ALTER TABLE foo UPDATE x = 1 WHERE x IN (SELECT x FROM foo WHERE x != 0);
-ALTER TABLE index_test   ADD INDEX i_x mortonDecode(2, z).1 TYPE minmax GRANULARITY 1,   ADD INDEX i_y mortonDecode(2, z).2 TYPE minmax GRANULARITY 1,   MATERIALIZE INDEX i_x,   MATERIALIZE INDEX i_y;
-ALTER TABLE ipv4_test MODIFY COLUMN value IPv4 DEFAULT '';
-ALTER TABLE ipv6_test MODIFY COLUMN value IPv6 DEFAULT '';
-ALTER TABLE issue_46128 UPDATE a = b WHERE id= 1 settings mutations_sync=2;
-ALTER TABLE join_table_mutation DELETE WHERE 1;
-ALTER TABLE join_table_mutation DELETE WHERE id % 2 = 0;
-ALTER TABLE join_table_mutation DELETE WHERE id = 10;
-ALTER TABLE join_table_mutation DELETE WHERE name IN ('1', '2', '3', '4');
-ALTER TABLE join_table_mutation UPDATE name = 'some' WHERE 1;
-ALTER TABLE kv   UPDATE s = 'The Containers library is a generic collection of class templates and algorithms that allow programmers to easily implement common data structures like queues, lists and stacks' WHERE 1 SETTINGS mutations_sync = 2;
-ALTER TABLE large_alter_table_00804 MODIFY COLUMN data CODEC(NONE, LZ4, LZ4HC, ZSTD);
-ALTER TABLE large_alter_table_00926 MODIFY COLUMN data CODEC(NONE, LZ4, LZ4HC, ZSTD);
-alter table lc_null_int8_defnull add column val2 LowCardinality(Nullable(Int8)) DEFAULT NULL;
-ALTER TABLE log_02184 MODIFY COLUMN name String TTL dt + INTERVAL 1 MONTH;
-ALTER TABLE log_for_alter MODIFY SETTING aaa=123;
-ALTER TABLE lwd_test DELETE WHERE id % 3 == 0 SETTINGS mutations_sync = 2;
-ALTER TABLE lwd_test UPDATE value = 'v' WHERE id % 2 == 0 SETTINGS mutations_sync = 2;
-ALTER TABLE lwd_test_02521 DELETE WHERE id >= 40000 SETTINGS mutations_sync = 1;
-ALTER TABLE lwd_test_02521 MODIFY TTL event_time + INTERVAL 1 MONTH SETTINGS mutations_sync = 1;
-ALTER TABLE mem_test   UPDATE a = 0 WHERE b = 99;
-ALTER TABLE memory_02184 MODIFY COLUMN name String TTL dt + INTERVAL 1 MONTH;
-alter table merge add column dummy String after CounterID;
-alter table merge drop column dummy;
-alter table merge1 add column dummy String after CounterID;
-alter table merge2 add column dummy String after CounterID;
-ALTER TABLE merge_02184 MODIFY COLUMN name String TTL dt + INTERVAL 1 MONTH;
-alter table merge_distributed add column dummy String after CounterID;
-alter table merge_distributed drop column dummy;
-alter table merge_distributed1 add column dummy String after CounterID;
-alter table merge_tree drop column dummy;
-ALTER TABLE merge_tree DROP PARTITION '2020-01-05';
-ALTER TABLE merge_tree DROP PARTITION '202001-06';
-ALTER TABLE merge_tree DROP PARTITION '20200104';
-ALTER TABLE merge_tree DROP PARTITION 20200103;
-ALTER TABLE merge_tree_deduplication DROP PART '77_13_13_0';
-ALTER TABLE merge_tree_deduplication DROP PART '77_9_9_0';
-ALTER TABLE merge_tree_deduplication DROP PARTITION 77;
-ALTER TABLE merge_tree_deduplication MODIFY SETTING non_replicated_deduplication_window = 0;
-ALTER TABLE merge_tree_deduplication MODIFY SETTING non_replicated_deduplication_window = 3;
-ALTER TABLE merge_tree_no_deduplication MODIFY SETTING non_replicated_deduplication_window = 3;
-ALTER TABLE merge_tree_pk_sql ADD COLUMN key2 UInt64, MODIFY ORDER BY (key, key2);
-ALTER TABLE mergetree_00712 ADD COLUMN y UInt8 DEFAULT 0;
-ALTER TABLE mergeTree_02184 MODIFY COLUMN name String TTL dt + INTERVAL 1 MONTH;
-ALTER TABLE minmax_compact ADD INDEX idx (i64, u64 * i64) TYPE minmax GRANULARITY 1;
-ALTER TABLE minmax_compact CLEAR INDEX idx IN PARTITION 1;
-ALTER TABLE minmax_compact CLEAR INDEX idx IN PARTITION 2;
-ALTER TABLE minmax_compact MATERIALIZE INDEX idx IN PARTITION 1;
-ALTER TABLE minmax_compact MATERIALIZE INDEX idx IN PARTITION 2;
-ALTER TABLE minmax_idx ADD INDEX idx1 (u64 * i32) TYPE minmax GRANULARITY 10;
-ALTER TABLE minmax_idx ADD INDEX idx1 u64 * i32 TYPE minmax GRANULARITY 10;
-ALTER TABLE minmax_idx ADD INDEX idx2 u64 + i32 TYPE minmax GRANULARITY 10;
-ALTER TABLE minmax_idx ADD INDEX idx3 (u64 - i32) TYPE minmax GRANULARITY 10 AFTER idx1;
-ALTER TABLE minmax_idx ADD INDEX idx3 u64 - i32 TYPE minmax GRANULARITY 10 AFTER idx1;
-ALTER TABLE minmax_idx DROP INDEX idx1;
-ALTER TABLE minmax_idx DROP INDEX idx2;
-ALTER TABLE minmax_idx DROP INDEX idx3;
-ALTER TABLE minmax_idx2 DROP INDEX idx1, DROP INDEX idx2;
-ALTER TABLE minmax_idx2_r DROP INDEX idx1, DROP INDEX idx2;
-ALTER TABLE minmax_idx_r ADD INDEX idx2 u64 + i32 TYPE minmax GRANULARITY 10;
-ALTER TABLE minmax_idx_r DROP INDEX idx3;
-alter table mixed_final_mark attach partition 1 from has_final_mark;
-ALTER TABLE mmm DELETE WHERE a IN (SELECT a FROM mmm) SETTINGS mutations_sync=1;
-ALTER TABLE modify_sample_old MODIFY SAMPLE BY x;
-ALTER TABLE modify_sample_replicated MODIFY SAMPLE BY d;
-ALTER TABLE most_ordinary_mt RESET SETTING ttl;
-ALTER TABLE mt FREEZE;
-alter table mt update s = (select toString(groupArray((*,))) from system.zookeeper where path='/') where n=1 settings mutations_sync=2;
-ALTER TABLE mt UPDATE x = 'Goodbye' WHERE y = 1;
-ALTER TABLE mt_01451 ATTACH PART 'all_2_2_0';
-ALTER TABLE mt_01451 ATTACH PART 'all_4_4_0';
-ALTER TABLE mt_01451 DETACH PART 'all_100_100_0';
-ALTER TABLE mt_01451 DROP PART 'all_4_4_0';
-alter table mt_compact add column n.y Array(String) DEFAULT ['qwqw'] after n.x;
-alter table mt_compact attach partition 1 from mt_compact_2;
-alter table mt_compact drop column n.y;
-ALTER TABLE mt_compact MODIFY COLUMN s UInt64;
-alter table mt_compact modify setting min_rows_for_wide_part = 0;
-alter table mt_compact modify setting min_rows_for_wide_part = 1000;
-alter table mt_compact update b = 42 where 1 SETTINGS mutations_sync = 2;
-alter table mt_compact update b = 42 where 1;
-ALTER TABLE mt_with_pk ADD INDEX idx1 z + w TYPE minmax GRANULARITY 1;
-ALTER TABLE mt_with_pk MODIFY COLUMN y Array(String);
-ALTER TABLE mt_with_pk UPDATE w = 0 WHERE 1 SETTINGS mutations_sync = 2;
-ALTER TABLE mt_with_pk UPDATE y = ['q', 'q', 'q'] WHERE 1 SETTINGS mutations_sync = 2;
-ALTER TABLE multidimensional ADD COLUMN t Tuple(String, Array(Nullable(String)), Tuple(UInt32, Date));
+--ReplicatedMergeTree
+create table t1_r1 (x Int32) engine=ReplicatedMergeTree('/test/02442/{database}/t', 'r1') order by x;
+CREATE TABLE test_01148_atomic.rmt2 ON CLUSTER test_shard_localhost
+(
+    n int,
+    PRIMARY KEY n
+) ENGINE=ReplicatedMergeTree('/test/02442/{database}/t', 'r1');
+create table trunc (n int, primary key n) engine=ReplicatedMergeTree('/test/1166/{database}', '1') partition by n % 10;
+CREATE TABLE cast2 AS cast1 ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_00643/cast', 'r2') ORDER BY e;
+CREATE TABLE replicated_mutations_empty_partitions
+(
+    key UInt64,
+    value String
+) ENGINE = ReplicatedMergeTree('/clickhouse/test/'||currentDatabase()||'/01586_replicated_mutations_empty_partitions/{shard}', '{replica}') ORDER BY key PARTITION by key;
+CREATE TABLE replicated_merge_tree_with_sampling
+(
+    d Date,
+    a String,
+    b UInt8,
+    x String,
+    y Int8,
+    z UInt32
+) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/test_00083/01/replicated_merge_tree_with_sampling/', 'r1', d, sipHash64(a) + b, (a, sipHash64(a) + b), 111);
+
+--ReplicatedSummingMergeTree
+CREATE TABLE summing_r1
+(
+    x UInt32,
+    y UInt32,
+    val UInt32
+) ENGINE ReplicatedSummingMergeTree('/clickhouse/tables/{database}/test_00754/summing', 'r1') ORDER BY (x, y);
+
+--ReplicatedReplacingMergeTree
+CREATE TABLE rename1
+(
+    p Int64,
+    i Int64,
+    v UInt64
+) ENGINE = ReplicatedReplacingMergeTree('/clickhouse/tables/{database}/rename', '1', v) PARTITION BY p ORDER BY i;
+
+--ReplicatedAggregatingMergeTree
+CREATE TABLE replicated_aggregating_merge_tree
+(
+    d Date,
+    a String,
+    b UInt8,
+    x String,
+    y Int8,
+    z UInt32
+) ENGINE = ReplicatedAggregatingMergeTree('/clickhouse/tables/{database}/test_00083/01/replicated_aggregating_merge_tree/', 'r1', d, (a, b), 111);
+
+--ReplicatedCollapsingMergeTree
+create table data_rep_02228
+(
+    key1 UInt32,
+    sign Int8,
+    s UInt64
+) engine = ReplicatedCollapsingMergeTree('/clickhouse/{database}', 'r1', sign) order by (key1) partition by key1 % 1024;
+
+--ReplicatedVersionedCollapsingMergeTree
+CREATE TABLE table_with_version_replicated_1
+(
+    key UInt64,
+    value String,
+    version UInt8,
+    sign Int8
+) ENGINE ReplicatedVersionedCollapsingMergeTree('/clickhouse/' || currentDatabase() || '/test_01511/{shard}/t', '1_{replica}', sign, version) ORDER BY key;
+
+--ReplicatedGraphiteMergeTree
+CREATE TABLE t4_r_ok
+(
+    `key` UInt32,
+    `Path` String,
+    `Time` DateTime('UTC'),
+    `Value` Float64,
+    `Version` UInt32,
+    `col` UInt64
+) ENGINE = ReplicatedGraphiteMergeTree('/tables/{database}/t4/', 'r2', 'graphite_rollup') ORDER BY key;
+
+--ReplacingMergeTree
+create table if not exists rhs (x String) engine=ReplacingMergeTree() ORDER BY x;
+CREATE TABLE primary_key_test
+(
+    v1 Int64,
+    v2 Int32,
+    v3 String,
+    PRIMARY KEY(v1, gcd(v1, v2))
+) ENGINE=ReplacingMergeTree ORDER BY v1;
+CREATE TABLE t
+(
+    `account_id` UInt64,
+    `_is_deleted` UInt8,
+    `_version` UInt64
+) ENGINE = ReplacingMergeTree(_version, _is_deleted) ORDER BY (account_id);
+
+--SummingMergeTree
+CREATE TABLE pk_func(d DateTime, ui UInt32) ENGINE = SummingMergeTree ORDER BY toDate(d);
+CREATE TABLE summing_merge_tree
+(
+    key UInt32,
+    val UInt32,
+    date Datetime
+) engine=SummingMergeTree(val) PARTITION BY date ORDER BY key;
+
+--AggregatingMergeTree
+CREATE TABLE t1 (vkey UInt32) ENGINE = AggregatingMergeTree ORDER BY vkey;
+
+--CollapsingMergeTree
+CREATE TABLE signed_table (k UInt32, v String, s Int8) ENGINE CollapsingMergeTree(s) ORDER BY k;
+
+
+--VersionedCollapsingMergeTree
+CREATE TABLE table_with_version
+(
+    key UInt64,
+    value String,
+    version UInt8,
+    sign Int8
+) ENGINE VersionedCollapsingMergeTree(sign, version) ORDER BY key;
+
+--GraphiteMergeTree
+create table test_graphite
+(
+    key UInt32,
+    Path String,
+    Time DateTime('UTC'),
+    Value UInt8,
+    Version UInt32,
+    col UInt64
+) engine = GraphiteMergeTree('graphite_rollup') order by key;
+
+--Log
+create table m (a int) engine Log;
+CREATE TABLE log ENGINE=Log AS val;
+CREATE TABLE float (x Float64) ENGINE = Log;
+create table local_t engine Log as select 1 a;
+CREATE TEMPORARY TABLE tmp2 (n int) ENGINE=Log;
+create table 02681_undrop_log (id Int32) Engine=Log();
+CREATE TABLE t3 (`n` Int8) ENGINE = Log COMMENT 'this is a Log table';
+CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.test_log(id UInt64) ENGINE = Log;
+CREATE TABLE test_2554_log (n UInt32) ENGINE = Log SETTINGS storage_policy = 'default';
+-- CH сможет обработать подобный кейс вопрос нужно ли нам подобное допускать на уровне парсера
+--CREATE TABLE perf_lc_num(　 num UInt8,　 arr Array(LowCardinality(Int64)) default [num]　) ENGINE = Log
+CREATE TABLE constrained
+(
+    URL String,
+    CONSTRAINT is_censor CHECK domainWithoutWWW(URL) = 'censor.net',
+    CONSTRAINT is_utf8 CHECK isValidUTF8(URL)
+) ENGINE = Log;
+
+--Stripelog
+CREATE TABLE t (x UInt8) ENGINE = StripeLog;
+CREATE TABLE numbers_squashed AS system.numbers ENGINE = StripeLog;
+
+--TinyLog
+CREATE TABLE t (x UInt8) ENGINE = TinyLog;
+CREATE TABLE tmp ENGINE = TinyLog AS SELECT queryID();
+CREATE TABLE order(id UInt32, pId UInt32, uId UInt32) ENGINE = TinyLog;
+CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.A (A UInt8) ENGINE = TinyLog;
+CREATE TABLE constraint_on_nullable_type (`id` Nullable(UInt64), CONSTRAINT `c0` CHECK `id` = 1) engine = TinyLog();
+CREATE TABLE constraint_test_transitivity3
+(
+    a Int64,
+    b Int64,
+    c Int64,
+    CONSTRAINT c1 ASSUME b > 10 AND 1 > a
+) engine = TinyLog;
+CREATE TABLE constraint_constant_number_expression
+(
+    id UInt64,
+    CONSTRAINT `c0` CHECK 1,
+    CONSTRAINT `c1` CHECK 1 < 2,
+    CONSTRAINT `c2` CHECK isNull(cast(NULL, 'Nullable(UInt8)'))
+) engine = TinyLog();
+
+-- EmbeddedRocksDB
+CREATE TABLE 01504_test (key String, value UInt32) Engine=EmbeddedRocksDB PRIMARY KEY(key);
+
+--HDFS
+create table test_table_hdfs_syntax (id UInt32) ENGINE = HDFS('') ;
+
+--S3
+create table test_02245 (a UInt64) engine = S3(s3_conn, filename='test_02245', format=Parquet);
+create table test_02481_mismatch_files
+(
+    a UInt64,
+    b String
+) engine = S3(s3_conn, filename='test_02481_mismatch_files_{_partition_id}', format=Parquet) partition by a;
+create table test_02245_s3_nested_orc1
+(
+    a Int64
+) engine=S3(s3_conn, filename='test_02245_s3_nested_orc1_{_partition_id}', format='ORC') partition by a;
+-- CH такой запрос тоже сможет обработать
+--CREATE TABLE table_with_range
+--(
+--    `name` String,`
+--    number` UInt32
+--)　ENGINE = S3('http://localhost:11111/test/tsv_with_header.tsv', 'test', 'testtest', 'TSVWithNames')　SETTINGS input_format_with_names_use_header = 1;
+
+--Distributed
+create table dist (key Int) engine=Distributed(default, currentDatabase(), data);
+create table dist as system.one engine=Distributed('test_shard_localhost', system, one);
+create table td engine = Distributed(test_shard_localhost, currentDatabase(), 't') as t;
+CREATE TABLE tt7 as tt6 ENGINE = Distributed('test_shard_localhost', '', 'tt6', rand());
+CREATE TABLE inner_distributed AS inner ENGINE = Distributed('test_cluster_two_shards', currentDatabase(), 'inner', intHash64(organization_id));
+CREATE TABLE outer_distributed AS outer ENGINE = Distributed('test_cluster_two_shards', currentDatabase(), 'outer', intHash64(organization_id));
+create table dist_01850
+(
+    key Int
+) engine=Distributed('test_cluster_two_replicas_different_databases', /* default_database= */ '', data_01850, key);
+
+--Dictionary
+CREATE TABLE 02155_test_dictionary_view
+(
+    id UInt64,
+    value String
+) ENGINE=Dictionary(concat(currentDatabase(), '.02155_test_dictionary'));
+CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.table_from_ip_trie_dict
+(
+    prefix String,
+    val String
+) ENGINE = Dictionary({CLICKHOUSE_DATABASE:Identifier}.dict_ip_trie);
+
+-- не тестил создание подобных объектов 24.02.01
+--Merge
+CREATE TABLE merge_tf as merge(currentDatabase(), '.*');
+CREATE TABLE A_M as A1 ENGINE = Merge(currentDatabase(), '^A1$');
+CREATE TABLE test_merge AS test1 ENGINE = Merge('default', 'test1');
+CREATE TABLE merge (n Int8) ENGINE = Merge('', lower('DISTRIBUTED'));
+CREATE TABLE 01902_db.t_merge1 as 01902_db.t ENGINE=Merge('01902_db', '^t$');
+CREATE TABLE merged as short ENGINE = Merge(currentDatabase(), 'short|long');
+CREATE TABLE merge (id UInt64) ENGINE = Merge(currentDatabase(), '^mt[0-9]+$');
+CREATE TABLE 01902_db.t_merge as 01902_db.t ENGINE=Merge(REGEXP('^01902_db'), '^t');
+CREATE TABLE m (`a` String, `f` UInt8 DEFAULT 0) ENGINE = Merge(currentDatabase(), '^(t1|t2)$');
+CREATE TABLE m (`a` String, `f` UInt8 EPHEMERAL 0) ENGINE = Merge(currentDatabase(), '^(t1|t2)$');
+CREATE TABLE merge_table Engine=Merge(currentDatabase(), '^(table_to_merge_[a-z])$') AS table_to_merge_a;
+CREATE TABLE t_merge AS t ENGINE = Merge('02111_modify_table_comment', 't') COMMENT 'this is a Merge table';
+
+--File
+create table test (x UInt64) engine=File(JSON);
+CREATE TABLE file (number UInt64) ENGINE = File(TSV);
+create table f(s String) engine File(TSV, '/dev/null');
+create table test (number UInt64) engine=File('Parquet');
+CREATE TABLE table_MySQLWire (x UInt64) ENGINE = File(MySQLWire);
+CREATE TABLE file (s String, n UInt32) ENGINE = File(CSVWithNames);
+CREATE TABLE table_tsv_01375 AS tmp_01375 ENGINE = File(TSVWithNames);
+create table test_02312 (x UInt32) engine=File(ORC);
+CREATE TABLE file (n Int8) ENGINE = File(upper('tsv') || 'WithNames' || 'AndTypes');
+CREATE TABLE file_02184 (id UInt64, name String, dt Date) ENGINE = File(TabSeparated);
+create table test (number UInt64) engine=File('Parquet', 'test_02155/test1/data.Parquet');
+create table json(a int, b int default 7, c default a + b) engine File(JSONEachRow, 'data1622.json');
+create table file_delim
+(
+    a int,
+    b int
+) engine File(CSV, '01545_url_file_format_settings.csv') settings format_csv_delimiter = '|';
+create table test_02152
+(
+    x UInt32,
+    y String,
+    z Array(UInt32),
+    t Tuple(UInt32,
+    String,
+    Array(UInt32))
+) engine=File('CSV') settings format_csv_delimiter=';';
+create table test_02152
+(
+    x UInt32,
+    y String,
+    z Array(UInt32),
+    t Tuple(UInt32,
+    String,
+    Array(UInt32))
+) engine=File('CustomSeparated')
+settings format_custom_field_delimiter='<field_delimiter>',
+format_custom_row_before_delimiter='<row_start>',
+format_custom_row_after_delimiter='<row_end_delimiter>',
+format_custom_escaping_rule='CSV';
+
+--Null
+create table t (a UInt64) Engine = Null;
+CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.A (A UInt8) ENGINE = Null;
+CREATE TABLE test
+ENGINE = Null AS WITH (SELECT arrayReduce('sumMapState', [(['foo'], arrayMap(x -> -0., ['foo']))])) AS all_metrics SELECT (finalizeAggregation(arrayReduce('sumMapMergeState', [all_metrics])) AS metrics_tuple).1 AS metric_names, metrics_tuple.2 AS metric_values FROM system.one;
+
+--Set
+CREATE TABLE set (x String) ENGINE = Set;
+CREATE TABLE set (val UInt64) ENGINE = Set() SETTINGS persistent=0;
+create table set (s String) engine=Set as select arrayJoin(['src_table_1', 'src_table_2']);
+
+--Join
+CREATE TABLE kv (k UInt32, v UInt32) ENGINE Join(Any, Left, k);
+CREATE TABLE j (id UInt8, val UInt8) Engine = Join(ALL, INNER, id);
+CREATE TABLE t2 (key UInt64, a UInt64) ENGINE = Join(ALL, RIGHT, key);
+CREATE TABLE left_join (x UInt32, s String) engine = Join(ALL, LEFT, x);
+CREATE TABLE semi_left_join (x UInt32, s String) engine = Join(SEMI, LEFT, x);
+CREATE TABLE anti_right_join (x UInt32, s String) engine = Join(ANTI, RIGHT, x);
+CREATE TABLE t2 (s String, x Array(UInt8), k UInt64) ENGINE = Join(ANY, LEFT, k);
+CREATE TABLE join (k UInt64, s String) ENGINE = Join(ANY, LEFT, k) SETTINGS persistent=0;
+CREATE TABLE full_join (x UInt32, s String) engine = Join(ALL, FULL, x) SETTINGS join_use_nulls = 1;
+
+--URL
+create table test_table_url_syntax (id UInt32) ENGINE = URL('') ;
+create table test_table_url(id UInt32) ENGINE = URL('http://localhost/endpoint') ;
+create table test_table_url(id UInt32) ENGINE = URL('http://localhost/endpoint', 'JSONEachRow');
+create table test_table_url(id UInt32) ENGINE = URL('http://localhost/endpoint', 'JSONEachRow', 'gz');
+create table url
+(
+    i String
+) engine=URL('http://127.0.0.1:8123?query=select+12', 'RawBLOB', headers('X-ClickHouse-Format'='JSONEachRow'));
+CREATE TABLE url
+(
+    n UInt64,
+    col String
+) ENGINE=URL (replace ('https://localhost:8443/?query=' || 'select n, _table from ' || currentDatabase() || '.merge format CSV', ' ', '+'), CSV);
+
+--Memory
+-- не удалось воспроизвести нужно разобраться глебже в подобном синтаксисе
+--create table t engine=Memory empty;
+CREATE TABLE t2 AS t1 Engine=Memory;
+CREATE TABLE t2 Engine=Memory AS t1;
+create table m (n int) engine=Memory;
+CREATE TABLE join (k UInt8, x String) ENGINE = Memory;
+CREATE TABLE test(start Integer, end Integer) engine = Memory;
+-- сломался после правки правил для представлений
+--CREATE TABLE distinct (Num UInt32, Name String) ENGINE = Memory;
+CREATE TABLE h3_indexes (id int, start String, end String) ENGINE = Memory;
+CREATE TABLE mann_whitney_test (left Float64, right UInt8) ENGINE = Memory;
+CREATE TABLE geo (a Point, b Ring, c Polygon, d MultiPolygon) ENGINE=Memory();
+-- БД возвращает 
+create table t02155_t64_tz (a DateTime64(9, 'America/Chicago')) Engine = Memory;
+CREATE TABLE t1 (`n` Int8) ENGINE = Memory COMMENT 'this is a temtorary table';
+CREATE TABLE table_with_cyclic_defaults (a DEFAULT b, b DEFAULT a) ENGINE = Memory;
+CREATE TEMPORARY TABLE t_00477 (x Array(/* Hello */ UInt32 /* World */)) ENGINE = Memory;
+create table t engine = Memory as with cte as (select * from numbers(10)) select * from cte;
+CREATE TABLE IF NOT EXISTS {CLICKHOUSE_DATABASE:Identifier}.r2 (name String) Engine=Memory();
+CREATE TABLE tuple ENGINE = Memory AS SELECT CAST((1, 'Test'), 'Tuple(a Int8, b String)') AS j;
+create table defaulted (col1 Int8, col2 UInt64 default (SELECT dummy+99 from system.one)) engine=Memory;
+CREATE TABLE polygons_01862 (key Array(Array(Array(Tuple(Float64, Float64)))), name String) ENGINE = Memory;
+CREATE TABLE default_constraints (x UInt8, y UInt8 DEFAULT x + 1, CONSTRAINT c CHECK y < 5) ENGINE = Memory;
+CREATE TABLE t_constraints_where
+(
+    a UInt32,
+    b UInt32,
+    CONSTRAINT c1 ASSUME b >= 5,
+    CONSTRAINT c2 ASSUME b <= 10
+) ENGINE = Memory;
+CREATE TABLE floats (a FLOAT, b FLOAT(12), c FLOAT(15, 22), d DOUBLE, e DOUBLE(12), f DOUBLE(4, 18)) engine=Memory;
+CREATE TABLE ints
+(
+    a TINYINT,
+    b TINYINT(8),
+    c SMALLINT,
+    d SMALLINT(16),
+    e INT,
+    f INT(32),
+    g BIGINT,
+    h BIGINT(64)
+) engine=Memory;
+create table model engine = Memory as select stochasticLogisticRegressionState(0.1, 0.0, 1.0, 'SGD')(target, param1, param2) as state from defaults;
+CREATE TABLE test_table_nullable
+(
+    key UInt64,
+    value Nullable(UInt16)
+) ENGINE=Memory() AS SELECT number, number % 2 == 0 ? NULL : number FROM numbers(1e5);
+CREATE TABLE IF NOT EXISTS decimal
+(
+    a DEC(9, 2),
+    b DEC(18, 5),
+    c DEC(38, 5),
+    d Nullable(DEC(9, 4)),
+    e Nullable(DEC(18, 8)),
+    f Nullable(DEC(38, 8))
+) engine = Memory;
+CREATE TABLE database_for_dict.table_for_dict
+(
+    CompanyID String,
+    OSType Enum('UNKNOWN' = 0, 'WINDOWS' = 1, 'LINUX' = 2, 'ANDROID' = 3, 'MAC' = 4),
+    SomeID Int32
+) engine = Memory();
+CREATE TABLE dict_data
+(
+    key UInt64,
+    v0 UInt16,
+    v1 UInt16,
+    v2 UInt16,
+    v3 UInt16,
+    v4 UInt16
+) engine=Memory() AS SELECT number, number%65535, number%65535, number%6553, number%655355, number%65535 FROM numbers(1e6);
+CREATE TABLE IF NOT EXISTS decimal
+(
+    a DECIMAL(9, 4) DEFAULT 0,
+    b DECIMAL(18, 4) DEFAULT a / 2,
+    c DECIMAL(38, 4) DEFAULT b / 3,
+    d MATERIALIZED a + toDecimal32('0.2', 1),
+    e ALIAS b * 2,
+    f ALIAS c * 6
+) engine = Memory;
+create temporary table data
+(
+    id UInt64
+) engine=Memory() as with [ 0, 1, 0x7f, 0x80, 0xff, 0x7fff, 0x8000, 0xffff, 0x7fffffff, 0x80000000, 0xffffffff, 0x7fffffffffffffff, 0x8000000000000000, 0xffffffffffffffff ] as values select arrayJoin(values) id;
+CREATE TABLE unsigned_types
+(
+    a TINYINT SIGNED,
+    b INT1 SIGNED,
+    c SMALLINT SIGNED,
+    d INT SIGNED,
+    e INTEGER SIGNED,
+    f BIGINT SIGNED,
+    g TINYINT UNSIGNED,
+    h INT1 UNSIGNED,
+    i SMALLINT UNSIGNED,
+    j INT UNSIGNED,
+    k INTEGER UNSIGNED,
+    l BIGINT UNSIGNED
+) engine=Memory;
+create table arrays_02735 engine = Memory as select * from generateRandom(' u32 Array(UInt32), i8 Array(Int8), datetime Array(DateTime), enum16 Array(Enum16(''xx'' = 1000, ''yy'' = 2000, ''zz'' = 3000)), float32 Array(Float32), str Array(String), fstr Array(FixedString(12)), u128 Array(UInt128), decimal64 Array(Decimal64(10)), ipv4 Array(IPv4), msi Map(String, Int16), tup Tuple(FixedString(3), Array(String), Map(Int8, Date))') limit 10000;
+
+--Buffer
+create table buf (n int) engine=Buffer(currentDatabase(), dist, 1, 10, 100, 10, 100, 1000, 1000);
+CREATE TABLE mytable
+(
+    `a` UInt8
+) ENGINE = Buffer(currentDatabase(), 'mytable_stored', 4, 600, 3600, 10, 100, 10000, 10000000);
+CREATE TABLE test_buffer_table
+(
+    `a` Int64
+) ENGINE = Buffer('', '', 1, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000);
+create table buffer_01277 as out_01277 Engine=Buffer(currentDatabase(), out_01277, 1, 86400, 86400, 1e5, 1e6, 10e6, 100e6);
+create table buffer_01256 as system.numbers Engine=Buffer(currentDatabase(), data_01256, 1, 2, 100, /* time */ 4, 100, /* rows */ 1, 1e6 /* bytes */);
+CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.mt_buffer_00158
+(
+    d Date DEFAULT today(),
+    x UInt64
+) ENGINE = Buffer({CLICKHOUSE_DATABASE:Identifier}, mt_00158, 16, 100, 100, 1000000, 1000000, 1000000000, 1000000000);
+
+--GenerateRandom
+CREATE TABLE t_random_1 (`ordinary_1` UInt32) ENGINE = GenerateRandom(1, 5, 3);
+
+CREATE TABLE test_table_2
+(
+    a Array(Int8),
+    d Decimal32(4),
+    c Tuple(DateTime64(3, 'UTC'), UUID)
+) ENGINE = GenerateRandom(10, 5, 3);
+CREATE TABLE rng
+(
+    `user_id_raw` UInt64,
+    `device_id_raw` UInt64,
+    `domain_raw` UInt64,
+    `bytes_raw` UInt64,
+    `duration_raw` UInt64
+) ENGINE = GenerateRandom(1024);
+
+--KeeperMap
+CREATE TABLE 02416_test
+(
+    key String,
+    value UInt32
+) Engine=KeeperMap('/' || currentDatabase() || '/test2416') PRIMARY KEY(key);
+CREATE TABLE 02418_test
+(
+    key UInt64,
+    value Float64
+) Engine=KeeperMap('/' || currentDatabase() || '/test2418', 3) PRIMARY KEY(key);
+
+--FileLog
+CREATE TABLE log (A String) ENGINE= FileLog('/tmp/aaa.csv', 'CSV');
+
+--OtherCases
+CREATE TABLE t3 AS v;
+CREATE TEMPORARY TABLE t3_00519 AS SELECT * FROM t1_00519;
+CREATE TABLE 02919_test_table_noarg(str String) ENGINE = FuzzJSON('{}');
+CREATE TABLE 02919_test_table_valid_args(str String) ENGINE = FuzzJSON('{"pet":"rat"}', NULL);
+CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.tablefunc03 (a int) AS sqlite('db_path', 'table_name');
+CREATE TABLE test_table (value String) ENGINE=ExecutablePool('nonexist.py', 'TabSeparated');
+CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.tablefunc02 (x int) AS mysql('127.123.0.1:3306', 'mysql_db', 'mysql_table', 'mysql_user','123123');
+CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.tablefunc04 (a int) AS mongodb('127.0.0.1:27017','test', 'my_collection', 'test_user', 'password', 'a Int');
+CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.tablefunc01 (x int) AS postgresql('127.121.0.1:5432', 'postgres_db', 'postgres_table', 'postgres_user', '124444');
+CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.tablefunc06 (a int) AS s3('http://some_addr:9000/cloud-storage-01/data.tsv', 'M9O7o0SX5I4udXhWxI12', '9ijqzmVN83fzD9XDkEAAAAAAAA', 'TSV');
+
+--Alter
+ALTER TABLE t FREEZE;
+alter table ttl modify ttl a;
+ALTER TABLE tbl DROP COLUMN a;
+alter table x add column j int;
+ALTER TABLE test CLEAR COLUMN z;
+alter table ttl materialize ttl;
+ALTER TABLE src DROP PARTITION 1;
+alter table t attach partition 1;
+alter table t detach partition 1;
+ALTER TABLE prop_table REMOVE TTL;
+alter table tp drop projection pp;
+alter table rmt drop partition '0';
+alter table t rename column j to k;
 alter table mut delete where n = 10;
-alter table mut drop column k settings alter_sync=0;
-alter table mut modify setting max_number_of_mutations_for_replica=100;
-alter table mut update n = 2 where n = 1;
-ALTER TABLE mutate_and_zero_copy_replication1 UPDATE a = 2 WHERE 1;
-ALTER TABLE mutation_1 UPDATE a = 2 WHERE b = 'xxxxxx' SETTINGS mutations_sync=1;
-ALTER TABLE mutation_delete_null_rows DELETE WHERE UserID = 0 SETTINGS mutations_sync=1;
-ALTER TABLE mutation_table MODIFY COLUMN value String SETTINGS mutations_sync = 2;
-ALTER TABLE mutation_table MODIFY COLUMN value UInt64 SETTINGS mutations_sync = 2;
-alter table mutation_table update dt = Null where name is not null SETTINGS mutations_sync = 2;
-alter table mutation_table update dt = toDateOrNull('2020-08-02') where name = 'car' SETTINGS mutations_sync = 2;
-alter table mutation_table update dt = toDateOrNull('2020-08-03') where name = 'car' and dt is null SETTINGS mutations_sync = 2;
-alter table mutation_table update dt = toDateOrNull('2020-08-04') where name = 'car' or dt is null SETTINGS mutations_sync = 2;
-ALTER TABLE mutation_table UPDATE price = 150 WHERE id = 1 SETTINGS mutations_sync = 2;
-ALTER TABLE mutations_and_escaping_1648 UPDATE e = CAST('foo', 'Enum8(\'foo\' = 1, \'bar\' = 2)') WHERE d='2018-01-02' SETTINGS mutations_sync = 1;
-ALTER TABLE mutations_and_quorum1 DELETE WHERE something = 'test1' SETTINGS mutations_sync=2;
-ALTER TABLE mv_00610 DROP PARTITION 201801;
-ALTER TABLE mv_source MODIFY TTL insert_time + toIntervalDay(1);
-ALTER TABLE mv_target ADD COLUMN b UInt8 DEFAULT a + 1;
-ALTER TABLE mv_target ADD COLUMN b UInt8;
-ALTER TABLE mytable_local MODIFY SETTING number_of_free_entries_in_pool_to_execute_mutation = 100;
-ALTER TABLE nested ADD COLUMN n.b Array(UInt64);
-ALTER TABLE nested ADD COLUMN n.c Array(UInt64) DEFAULT arrayMap(x -> x * 2, n.a);
-ALTER TABLE nested_alter DROP COLUMN `n.d`;
-ALTER TABLE nested_table ADD COLUMN fourth Nested(g Int8, h String);
-ALTER TABLE nested_table ADD COLUMN second Nested(c Int8, d String) AFTER id;
-ALTER TABLE nested_table ADD COLUMN third Nested(e Int8, f String) FIRST;
-ALTER TABLE nested_test ADD COLUMN `nest.col3` Array(LowCardinality(String));
-ALTER TABLE new_syntax_01071_test ADD INDEX id_minmax id TYPE minmax GRANULARITY 1;
-ALTER TABLE no_order MODIFY ORDER BY (a);
-ALTER TABLE non_metadata_alters ADD COLUMN value6 Decimal(3, 3);
-ALTER TABLE non_metadata_alters MODIFY COLUMN value1 String DEFAULT 'X';
-ALTER TABLE non_metadata_alters MODIFY COLUMN value2 Enum8('Hello' = 1, 'World' = 2, '!' = 3);
-ALTER TABLE non_metadata_alters MODIFY COLUMN value3 Date;
-ALTER TABLE non_metadata_alters MODIFY COLUMN value3 UInt16 TTL value5 + INTERVAL 5 DAY;
-ALTER TABLE non_metadata_alters MODIFY COLUMN value3 UInt64;
-ALTER TABLE non_metadata_alters MODIFY COLUMN value4 UInt32;
-ALTER TABLE not_partitioned DETACH PARTITION ID 'all';
-ALTER TABLE not_partitioned_replica1_00502 DETACH PARTITION ID 'all';
-ALTER TABLE null_00557 ADD COLUMN y String, MODIFY COLUMN x Int64 DEFAULT toInt64(y);
-ALTER TABLE null_02184 MODIFY COLUMN dummy Int TTL now() + INTERVAL 1 MONTH;
-ALTER TABLE null_before ALTER COLUMN id TYPE INT NULL;
-ALTER TABLE null_before MODIFY COLUMN id NULL DEFAULT 1;
-ALTER TABLE nullable_00571 ADD COLUMN n Nullable(UInt64) DEFAULT 0;
-ALTER TABLE nullable_00571 ADD COLUMN n Nullable(UInt64) DEFAULT NULL;
-ALTER TABLE nullable_00571 ADD COLUMN n Nullable(UInt64);
-ALTER TABLE nullable_00571 DROP COLUMN n;
-ALTER TABLE nullable_alter MODIFY COLUMN x Nullable(FixedString(5));
-ALTER TABLE nullable_alter MODIFY COLUMN x Nullable(String);
-ALTER TABLE old_format_mt MODIFY SETTING enable_mixed_granularity_parts = 1;
-ALTER TABLE old_partition_key DROP PARTITION ID '20210325_0_13241_6_12747';
-ALTER TABLE old_school_table MODIFY SETTING vertical_merge_algorithm_min_rows_to_activate = 10000, vertical_merge_algorithm_min_columns_to_activate = 10000;
-ALTER TABLE old_style ADD COLUMN y UInt32, MODIFY ORDER BY (x, y);
-ALTER TABLE old_syntax_01071_test ADD INDEX id_minmax id TYPE minmax GRANULARITY 1;
-ALTER TABLE part_info FREEZE PARTITION '1970-10-02';
-ALTER TABLE part_info FREEZE;
-ALTER TABLE part_log_bytes_uncompressed DROP PART 'all_4_4_0' SETTINGS mutations_sync=2;
-ALTER TABLE part_log_bytes_uncompressed UPDATE value = 3 WHERE 1 = 1 SETTINGS mutations_sync=2;
-ALTER TABLE partition_and_primary_keys_using_same_expression DROP PARTITION '2018-02-20';
-ALTER TABLE partitioned_by_string DROP PARTITION 'bbb';
-ALTER TABLE partitioned_by_string_replica1 DROP PARTITION 'bbb';
-ALTER TABLE partitioned_by_tuple DETACH PARTITION ID '20000101-1';
-ALTER TABLE partitioned_by_tuple_replica1_00502 DETACH PARTITION ID '20000101-1';
-ALTER TABLE partitioned_by_week DROP PARTITION '1999-12-27';
-ALTER TABLE partitioned_by_week_replica1 DROP PARTITION '1999-12-27';
-ALTER TABLE partitioned_table DROP PART '3_1_1_0';
-ALTER TABLE partslost_0 ADD INDEX idx x TYPE tokenbf_v1(285000, 3, 12345) GRANULARITY 3;
-ALTER TABLE partslost_0 DROP INDEX idx;
+ALTER TABLE t MODIFY COMMENT 'World';
+ALTER TABLE t1 MODIFY COLUMN a Int64;
+ALTER TABLE tmp MATERIALIZE COLUMN s;
+alter table tp_1 clear projection pp;
+ALTER TABLE union2 MODIFY ORDER BY a;
+alter table rmt1 update k = 0 where 0;
+ALTER TABLE t ATTACH PART 'all_1_1_0';
+ALTER TABLE t DETACH PART 'all_1_1_0';
+ALTER TABLE test MATERIALIZE INDEX i1;
+ALTER TABLE minmax_idx DROP INDEX idx1;
+ALTER TABLE t MODIFY SAMPLE BY tuple();
+alter table trunc detach partition all;
+ALTER TABLE t1 ADD STATISTIC a TYPE xyz;
+alter table rmt update n = n + 1 where 1;
+ALTER TABLE test MATERIALIZE PROJECTION p1;
+alter table tp drop projection if exists p;
+ALTER TABLE dst ATTACH PARTITION 1 FROM src;
+ALTER TABLE dst REPLACE PARTITION 1 FROM dst;
+ALTER TABLE sqllt.table CLEAR COLUMN new_col;
+ALTER TABLE t1 DROP STATISTIC a TYPE tdigest;
 ALTER TABLE partslost_0 MATERIALIZE INDEX idx;
-alter table per_table_ttl_02265 modify TTL date + interval 1 month;
-alter table per_table_ttl_02265 modify TTL date + interval 2 month group by key set value = argMax(value, date);
-alter table per_table_ttl_02265 modify TTL date + interval 2 month recompress codec(ZSTD(17));
-alter table per_table_ttl_02265 modify TTL date + interval 2 month;
-ALTER TABLE pipe MODIFY QUERY SELECT v * 2 as v, 1 as v2 FROM src;
+ALTER TABLE t RENAME COLUMN value1 TO value11;
+ALTER TABLE tab ADD INDEX idx(vec) TYPE annoy;
+ALTER TABLE test_table DROP INDEX value_index;
+alter table ttl modify ttl d + interval 1 day;
+ALTER TABLE join_table_mutation DELETE WHERE 1;
+ALTER TABLE most_ordinary_mt RESET SETTING ttl;
+ALTER TABLE t UPDATE s = 'goodbye' WHERE k = 1;
+ALTER TABLE t UPDATE x = x - 1 WHERE x % 2 = 1;
+ALTER TABLE t1 ADD STATISTIC a, b TYPE tdigest;
+ALTER TABLE t_lwd_mutations APPLY DELETED MASK;
+ALTER TABLE test ADD COLUMN x UInt32 default 0;
+ALTER TABLE test MODIFY COLUMN x Enum8('' = 1);
+ALTER TABLE t1 DROP STATISTIC a, b TYPE tdigest;
+ALTER TABLE t_remove_sample_by REMOVE SAMPLE BY;
+ALTER TABLE tab ADD INDEX idx(vec) TYPE usearch;
+ALTER TABLE test CLEAR COLUMN x IN PARTITION '';
+ALTER TABLE t MODIFY COMMENT 'MergeTree Table';
+ALTER TABLE test DROP PARTITION {partition:Date};
+ALTER TABLE test5 DROP PARTITION ({f:UInt32}, 2);
+ALTER TABLE alter_test DROP COLUMN NestedColumn.S;
 ALTER TABLE prewhere ADD COLUMN a1 String AFTER a;
-alter table prewhere_column_missing add column arr Array(UInt64);
-alter table prewhere_column_missing add column hash_x UInt64 default intHash64(x);
-ALTER TABLE prewhere_defaults ADD COLUMN y UInt16 DEFAULT x;
+ALTER TABLE test UPDATE d = d || '1' where x = 42;
+alter table rmt replace partition id '0' from rmt2;
+ALTER TABLE t_merge MODIFY COMMENT 'Merge Table';
+alter table tmp update n = sleepEachRow(1) where 1;
+alter table x add projection p_agg (select sum(j));
+ALTER TABLE alter_test DROP COLUMN IF EXISTS ToDrop;
+alter table mut drop column k settings alter_sync=0;
+alter table rmt update s = 's'||toString(n) where 1;
+alter table t add projection p (select uniqHLL12(x));
+alter table t add projection x (select * order by j);
+ALTER TABLE null_before ALTER COLUMN id TYPE INT NULL;
+ALTER TABLE test MODIFY COLUMN `abc` String AFTER `id`;
+ALTER TABLE table_two REPLACE PARTITION 0 FROM table_one;
+ALTER TABLE minmax_compact CLEAR INDEX idx IN PARTITION 1;
+alter table ttl materialize ttl settings mutations_sync=2;
+ALTER TABLE data MATERIALIZE INDEX idx IN PARTITION ID '2';
+ALTER TABLE t DELETE WHERE id in (select id from t as tmp);
+ALTER TABLE test MODIFY SETTING clean_deleted_rows='Never';
+alter table ttl modify column a Int ttl d + interval 1 day;
+ALTER TABLE ttl_old_syntax MODIFY TTL toDate('2020-01-01');
+ALTER TABLE test ADD COLUMN `xx` UInt32 MATERIALIZED arr[1];
+ALTER TABLE test_alter MODIFY COLUMN x DEFAULT '2000-01-01';
+ALTER TABLE add_table ADD COLUMN IF NOT EXISTS value1 UInt64;
+alter table aliases_test modify column array alias [0, 1, 2];
+ALTER TABLE sqllt.table MODIFY COLUMN new_col REMOVE COMMENT;
+--нужно потестить этот кейс, если сработает
+ALTER TABLE t MODIFY COMMENT 'World', MODIFY COLUMN x UInt16;
+--alter table t_light drop index i_c SETTINGS mutations_sync=2;
+ALTER TABLE alter_test ADD COLUMN IF NOT EXISTS Added0 UInt32;
+--ALTER TABLE test6 DROP PARTITION {tuple:Tuple(UInt32, Int64)};
+-- изменяем выражения матириализованного представления
+ALTER TABLE alter_02834 MODIFY QUERY SELECT a FROM alter_02834;
+ALTER TABLE mv MODIFY QUERY
+  SELECT toStartOfDay(ts) ts, event_type, browser,
+  count() events_cnt,
+  sum(cost) cost
+  FROM events
+  GROUP BY ts, event_type, browser;
+ALTER TABLE clear_column1 CLEAR COLUMN i IN PARTITION '200001';
+ALTER TABLE compress_table MODIFY COLUMN value3 CODEC(Default);
 ALTER TABLE prop_table MODIFY COLUMN column_alias REMOVE ALIAS;
-ALTER TABLE prop_table MODIFY COLUMN column_codec REMOVE CODEC;
+alter table z add projection pp (select id, sum(c) group by id);
 ALTER TABLE prop_table MODIFY COLUMN column_comment REMOVE COMMENT;
 ALTER TABLE prop_table MODIFY COLUMN column_default REMOVE DEFAULT;
-ALTER TABLE prop_table MODIFY COLUMN column_materialized REMOVE MATERIALIZED;
-ALTER TABLE prop_table MODIFY COLUMN column_ttl REMOVE TTL;
-ALTER TABLE prop_table REMOVE TTL;
-ALTER TABLE r_no_prop_table MODIFY COLUMN some_column REMOVE DEFAULT;
-ALTER TABLE r_no_prop_table MODIFY COLUMN some_column REMOVE ttl;
-ALTER TABLE r_prop_table1 MODIFY COLUMN column_comment REMOVE COMMENT;
-ALTER TABLE r_prop_table1 REMOVE TTL;
-ALTER TABLE r_prop_table2 MODIFY COLUMN column_codec REMOVE CODEC;
-ALTER TABLE r_prop_table2 MODIFY COLUMN column_default REMOVE DEFAULT;
-ALTER TABLE r_prop_table2 MODIFY COLUMN column_ttl REMOVE TTL;
-ALTER TABLE rdst ATTACH PARTITION 1 FROM src;
-ALTER TABLE rdst DROP PARTITION 3;
-ALTER TABLE rdst REPLACE PARTITION 3 FROM src;
-ALTER TABLE recompression_table MODIFY TTL dt + INTERVAL 1 DAY RECOMPRESS CODEC(ZSTD(12)) SETTINGS mutations_sync = 2;
-ALTER TABLE recompression_table_compact MODIFY TTL dt + INTERVAL 1 MONTH RECOMPRESS CODEC(ZSTD(12)) SETTINGS mutations_sync = 2;
-ALTER TABLE rename_table_multiple DROP COLUMN value2_old, RENAME COLUMN value2 TO value2_old;
-ALTER TABLE rename_table_multiple MODIFY COLUMN value1_string String;
-ALTER TABLE rename_table_multiple RENAME COLUMN value1 TO value1_string, MODIFY COLUMN value1_string String;
-ALTER TABLE rename_table_multiple RENAME COLUMN value2 TO value2_old, ADD COLUMN value2 Int64 DEFAULT 7;
-ALTER TABLE rename_table_multiple_compact DROP COLUMN value2_old, RENAME COLUMN value2 TO value2_old;
-ALTER TABLE rename_table_multiple_compact MODIFY COLUMN value1_string String;
-ALTER TABLE rename_table_multiple_compact RENAME COLUMN value1 TO value1_string, MODIFY COLUMN value1_string String;
-ALTER TABLE rename_table_multiple_compact RENAME COLUMN value2 TO value2_old, ADD COLUMN value2 Int64 DEFAULT 7;
-ALTER TABLE rename_table_polymorphic RENAME COLUMN value1 TO old_value1, RENAME COLUMN value2 TO value1;
-ALTER TABLE rep_data MATERIALIZE INDEX idx IN PARTITION ID '2';
-ALTER TABLE rep_data MATERIALIZE INDEX idx IN PARTITION ID 'NO_SUCH_PART';
-ALTER TABLE replace_partition_dest1 REPLACE PARTITION 1 FROM replace_partition_source;
-ALTER TABLE replace_partition_dest2 REPLACE PARTITION 1 FROM replace_partition_source;
-ALTER TABLE replica1 ATTACH PART 'all_3_3_0';
-ALTER TABLE replica1 DETACH PART 'all_100_100_0';
-ALTER TABLE replica1 DETACH PART 'all_2_2_0';
-ALTER TABLE replica1 DROP PART 'all_3_3_0';
-ALTER TABLE replica1 MODIFY SETTING max_replicated_merges_in_queue = 1;
-ALTER TABLE replica2 ATTACH PART 'all_1_1_0' SETTINGS insert_keeper_fault_injection_probability=0;
-ALTER TABLE replica2 DETACH PART 'all_0_0_0';
-ALTER TABLE replica2 DETACH PART 'all_1_1_0';
-ALTER TABLE replicated_alter1 ADD COLUMN `n.d` Array(Date), MODIFY COLUMN s UInt32;
-ALTER TABLE replicated_alter1 ADD COLUMN `n.d` Array(Date);
-ALTER TABLE replicated_alter1 ADD COLUMN dt DateTime('UTC');
-ALTER TABLE replicated_alter1 ADD COLUMN n Nested(ui8 UInt8, s String);
-ALTER TABLE replicated_alter1 ADD COLUMN n.s Array(String), ADD COLUMN n.d Array(Date);
-ALTER TABLE replicated_alter1 ADD COLUMN s String DEFAULT '0';
-ALTER TABLE replicated_alter1 DROP COLUMN `n.d`, MODIFY COLUMN s Int64;
-ALTER TABLE replicated_alter1 DROP COLUMN n.s;
-ALTER TABLE replicated_alter1 DROP COLUMN n.ui8, DROP COLUMN n.d;
-ALTER TABLE replicated_alter1 DROP COLUMN n;
-ALTER TABLE replicated_alter1 MODIFY COLUMN dt Date, MODIFY COLUMN s DateTime('UTC') DEFAULT '1970-01-01 00:00:00';
-ALTER TABLE replicated_constraints1 ADD CONSTRAINT b_constraint CHECK b > 10;
-ALTER TABLE replicated_constraints2 ADD CONSTRAINT a_constraint CHECK a < 10;
-ALTER TABLE replicated_merge_tree_pk_sql ADD COLUMN key2 UInt64, MODIFY ORDER BY (key, key2);
-ALTER TABLE replicated_mutations_empty_partitions DROP PARTITION '3';
-ALTER TABLE replicated_mutations_empty_partitions DROP PARTITION '4';
-ALTER TABLE replicated_mutations_empty_partitions DROP PARTITION '5';
-ALTER TABLE replicated_mutations_empty_partitions DROP PARTITION '9';
-ALTER TABLE replicated_mutations_empty_partitions MODIFY COLUMN value UInt64 SETTINGS replication_alter_partitions_sync=2;
-ALTER TABLE replicated_report MODIFY COLUMN product Enum8('IU' = 1, 'WS' = 2, 'PS' = 3) SETTINGS alter_sync=2;
-ALTER TABLE replicated_table_detach_all1 ATTACH PARTITION tuple(1);
-ALTER TABLE replicated_table_detach_all1 DETACH PARTITION ALL;
-ALTER TABLE replicated_table_detach_all1 FETCH PARTITION ALL FROM '/clickhouse/tables/test_00753_{database}/replicated_table_detach_all1';
-ALTER TABLE replicated_table_for_alter1 ADD COLUMN Data2 UInt64, MODIFY SETTING check_delay_period=5, check_delay_period=10, check_delay_period=15;
-ALTER TABLE replicated_table_for_alter1 MODIFY SETTING index_granularity = 4096;
-ALTER TABLE replicated_table_for_alter1 MODIFY SETTING use_minimalistic_part_header_in_zookeeper = 1;
-ALTER TABLE replicated_table_for_alter2 MODIFY SETTING parts_to_throw_insert = 1, parts_to_delay_insert = 1;
-ALTER TABLE replicated_table_for_reset_setting1 MODIFY SETTING index_granularity = 4096;
-ALTER TABLE replicated_table_for_reset_setting1 MODIFY SETTING merge_with_ttl_timeout = 100;
-ALTER TABLE replicated_table_for_reset_setting2 MODIFY SETTING merge_with_ttl_timeout = 200;
-ALTER TABLE replicated_table_for_reset_setting2 RESET SETTING merge_with_ttl_timeout;
-ALTER TABLE report MODIFY COLUMN product Enum8('IU' = 1, 'WS' = 2, 'PS' = 3);
-ALTER TABLE restore_01640 ATTACH PARTITION tuple(toYYYYMM(toDate('2021-01-01'))) SETTINGS insert_keeper_fault_injection_probability=0;
-ALTER TABLE restore_01640 FETCH PARTITION tuple(toYYYYMM(toDate('2021-01-01')))  FROM '/clickhouse/{database}/{shard}/tables/test_01640' SETTINGS insert_keeper_fault_injection_probability=0;
-alter table rmt add index idx1 date(ts) TYPE MinMax GRANULARITY 1;
-alter table rmt drop column s;
-alter table rmt drop partition '0';
-alter table rmt drop partition id '0';
-alter table rmt modify column k String;
-alter table rmt modify column k UInt128;
-alter table rmt modify setting old_parts_lifetime=0, max_replicated_mutations_in_queue=100 settings replication_alter_partitions_sync=2;
-alter table rmt replace partition '0' from mt;
-alter table rmt replace partition id '0' from rmt2;
-alter table rmt update n = n * 10 where 1;
-alter table rmt update n = n + 1 where 1;
-alter table rmt update s = 's'||toString(n) where 1;
-alter table rmt1 modify setting fault_probability_before_part_commit=1;
-alter table rmt1 move partition id '1' to table rmt2;
-alter table rmt1 update k = 0 where 0;
-alter table rmt1 update m = 0 where n=0;
-alter table rmt1 update n=10 where n=123 settings mutations_sync=1;
-alter table rmt2 drop part 'all_19_19_0';
-alter table rmt2 modify column k Nullable(String);
-alter table rmt2 update k = 'zero copy' where 1 settings mutations_sync=2;
-alter table rmt2 update m = m * 10 where 1 settings mutations_sync=2;
-alter table rmt2 update n = n + 1 where 1;
-alter table rmt3 drop part 'all_1_1_0';
-ALTER TABLE sales ADD PROJECTION test (SELECT toInt64(COUNT(*)) GROUP BY PRODUCT_ID, DATE_SOLD);
-alter table shard_0.from_0 on cluster test_cluster_two_shards_different_databases move partition tuple() to table shard_0.to format Null settings distributed_ddl_output_mode='never_throw', distributed_ddl_task_timeout = 1;
-alter table shard_0.from_1 on cluster test_cluster_two_shards_different_databases move partition tuple() to table shard_0.to format Null settings distributed_ddl_output_mode='never_throw', distributed_ddl_task_timeout = 1;
-ALTER TABLE signed_table DROP COLUMN s;
-ALTER TABLE simple_agf_aggregating_mt   DELETE WHERE (a % 3) = 0 SETTINGS mutations_sync = 1;
-ALTER TABLE simple_agf_summing_mt   DELETE WHERE (a % 3) = 0 SETTINGS mutations_sync = 1;
-ALTER TABLE sqllt.table ADD COLUMN new_col UInt32 DEFAULT 123456789;
-ALTER TABLE sqllt.table CLEAR COLUMN new_col;
-ALTER TABLE sqllt.table COMMENT COLUMN new_col 'dummy column with a comment';
-ALTER TABLE sqllt.table DELETE WHERE i > 65535;
-ALTER TABLE sqllt.table DROP COLUMN the_new_col;
-ALTER TABLE sqllt.table MODIFY COLUMN new_col DateTime DEFAULT '2015-05-18 07:40:13';
-ALTER TABLE sqllt.table MODIFY COLUMN new_col REMOVE COMMENT;
-ALTER TABLE sqllt.table RENAME COLUMN new_col TO the_new_col;
-ALTER TABLE sqllt.table UPDATE i = i + 1 WHERE 1;
-alter table src attach partition tuple();
-alter table src detach partition tuple();
-ALTER TABLE src DROP PARTITION 1;
-alter table src modify column A LowCardinality(String);
-alter table src modify column B Nullable(String);
-alter table src modify column C LowCardinality(String);
-alter table src rename column B to D;
-alter table src update C = 'test1' where 1 settings mutations_sync=2;
-ALTER TABLE stripe_log_02184 MODIFY COLUMN name String TTL dt + INTERVAL 1 MONTH;
-ALTER TABLE summing_r1 ADD COLUMN t UInt32 AFTER z, MODIFY ORDER BY (x, y, t * t) SETTINGS replication_alter_partitions_sync = 2;
-ALTER TABLE t   MODIFY COMMENT 'MergeTree Table';
-alter table t add column s String default 'foo';
-alter table t add projection p (select uniqHLL12(x));
-alter table t add projection p_norm (select * order by c1);
-alter table t add projection x (select * order by codectest);
-alter table t add projection x (select * order by j);
-ALTER TABLE t ATTACH PART 'all_1_1_0';
-alter table t attach partition 1;
-ALTER TABLE t DELETE WHERE id in (select id from t as tmp);
-ALTER TABLE t DETACH PART 'all_1_1_0';
-alter table t detach partition 1;
-ALTER TABLE t FREEZE;
-alter table t materialize projection p_norm settings mutations_sync = 1;
-ALTER TABLE t MODIFY COLUMN a DateTime ALIAS c1;
-ALTER TABLE t MODIFY COLUMN s Enum('goodbye' = 1, 'world' = 2);
-ALTER TABLE t MODIFY COLUMN s Enum('hello' = 1, 'world' = 2);
-ALTER TABLE t MODIFY COMMENT 'World', MODIFY COLUMN x UInt16;
-ALTER TABLE t MODIFY COMMENT 'World';
-ALTER TABLE t MODIFY SAMPLE BY tuple();
-alter table t rename column j to k;
-ALTER TABLE t RENAME COLUMN value1 TO value11;
-ALTER TABLE t UPDATE s = 'goodbye' WHERE k = 1;
-ALTER TABLE t UPDATE s = 'world' WHERE x = 1;
-ALTER TABLE t UPDATE value = 0 WHERE (value > 0) AND (created_at >= '2021-12-21') SETTINGS optimize_use_projections = 1;
-ALTER TABLE t UPDATE x = x - 1 WHERE x % 2 = 1;
-ALTER TABLE t02006 on cluster test_shard_localhost ADD COLUMN IF NOT EXISTS f UInt64 format Null;
-ALTER TABLE t1 ADD COLUMN s String;
-alter table t1 add column s3 String DEFAULT concat(s2,'_',s1);
-ALTER TABLE t1 ADD STATISTIC a TYPE tdigest;
-ALTER TABLE t1 ADD STATISTIC a TYPE xyz;
-ALTER TABLE t1 ADD STATISTIC a, b TYPE tdigest;
-ALTER TABLE t1 ADD STATISTIC b TYPE tdigest;
-alter table t1 detach partition 1;
-ALTER TABLE t1 DROP STATISTIC a TYPE tdigest;
-ALTER TABLE t1 DROP STATISTIC a, b TYPE tdigest;
-ALTER TABLE t1 MATERIALIZE STATISTIC a, b TYPE tdigest;
-ALTER TABLE t1 MODIFY COLUMN a Float64 TTL toDateTime(b) + INTERVAL 1 MONTH;
-ALTER TABLE t1 MODIFY COLUMN a Int64;
-ALTER TABLE t1 MODIFY COLUMN s Nullable(String);
-ALTER TABLE t1 RENAME COLUMN b TO c;
-ALTER TABLE t1_local ON CLUSTER test_shard_localhost MOVE PARTITION 'partition2' TO TABLE t2_local;
-ALTER TABLE t1_local ON CLUSTER test_shard_localhost REPLACE PARTITION 'partition1' FROM t2_local;
-ALTER TABLE t2 ADD PROJECTION proj (SELECT id2 ORDER BY id2);
-alter table t_00712_1 add column c Int32;
-ALTER TABLE t_1 ADD COLUMN foo String DEFAULT 'foo';
-ALTER TABLE t_collisions ADD COLUMN very_very_long_column_name_that_will_be_replaced_with_hash Int32;
-ALTER TABLE t_collisions MODIFY COLUMN col Array(String);
-ALTER TABLE t_collisions MODIFY SETTING replace_long_file_name_to_hash = 1, max_file_name_length = 42;
-alter table t_delete_projection delete where x < 8192;
-alter table t_delete_skip_index delete where x < 8192;
-ALTER TABLE t_index_non_materialized ADD INDEX ind_minmax (a) TYPE minmax() GRANULARITY 1;
-ALTER TABLE t_index_non_materialized ADD INDEX ind_set (a) TYPE set(1) GRANULARITY 1;
-ALTER TABLE t_json_attach_partition ATTACH PARTITION tuple();
-ALTER TABLE t_json_attach_partition DETACH PARTITION tuple();
-ALTER TABLE t_json_mutations DELETE WHERE id = 2;
-ALTER TABLE t_json_mutations DROP COLUMN s, DROP COLUMN obj, ADD COLUMN t String DEFAULT 'foo';
-ALTER TABLE t_large DELETE WHERE a=1 SETTINGS mutations_sync=2;
-ALTER TABLE t_large UPDATE b = -2 WHERE a between 1000 and 1005 SETTINGS mutations_sync=2;
-alter table t_light drop index i_c SETTINGS mutations_sync=2;
-alter table t_light MATERIALIZE INDEX i_c SETTINGS mutations_sync=2;
-alter table t_light update b=-1 where a<3 SETTINGS mutations_sync=2;
-ALTER TABLE t_lwd_mutations APPLY DELETED MASK;
-ALTER TABLE t_lwd_mutations DELETE WHERE id % 10 = 6, UPDATE _row_exists = 0 WHERE id % 10 = 7;
-ALTER TABLE t_lwd_mutations UPDATE _row_exists = 0 WHERE id % 10 = 4, DELETE WHERE id % 10 = 5;
-ALTER TABLE t_lwd_mutations UPDATE v = 1 WHERE id % 4 = 0, DELETE WHERE id % 10 = 1;
-ALTER TABLE t_lwd_mutations UPDATE v = 1 WHERE id % 4 = 1, DELETE WHERE id % 10 = 3;
-ALTER TABLE t_materialize_column ADD COLUMN s LowCardinality(String) DEFAULT toString(i);
-ALTER TABLE t_materialize_column ADD INDEX s_bf (s) TYPE bloom_filter(0.01) GRANULARITY 1;
-ALTER TABLE t_materialize_column MATERIALIZE COLUMN s SETTINGS mutations_sync = 2;
-ALTER TABLE t_materialize_column MATERIALIZE INDEX s_bf SETTINGS mutations_sync = 2;
 ALTER TABLE t_materialize_delete APPLY DELETED MASK IN PARTITION 5;
-ALTER TABLE t_materialize_delete APPLY DELETED MASK;
-ALTER TABLE t_merge   MODIFY COMMENT 'Merge Table';
-ALTER TABLE t_missed_subcolumns DELETE WHERE obj.k4 = 5;
-ALTER TABLE t_modify_from_lc_1 MODIFY COLUMN a UInt32;
-ALTER TABLE t_modify_to_nullable MODIFY COLUMN s Nullable(String);
-ALTER TABLE t_mutations_nondeterministic DELETE WHERE d < now();
-ALTER TABLE t_mutations_nondeterministic UPDATE v = (SELECT groupArray(number) FROM numbers(10)) WHERE 1;
-ALTER TABLE t_mutations_nondeterministic UPDATE v = (SELECT sum(number) FROM numbers(100)) WHERE 1;
-ALTER TABLE t_mutations_nondeterministic UPDATE v = (SELECT uniqExactState(number) FROM numbers(5)) WHERE 1;
-ALTER TABLE t_mutations_nondeterministic UPDATE v = filesystemCapacity(materialize('default')) WHERE 1;
-ALTER TABLE t_mutations_nondeterministic UPDATE v = now() WHERE 1;
-ALTER TABLE t_mutations_subcolumns DELETE WHERE isNull(obj.k1);
-ALTER TABLE t_mutations_subcolumns DELETE WHERE obj.k1 = ('foo', 'baz');
-ALTER TABLE t_mutations_subcolumns DELETE WHERE obj.k2 = 1;
-ALTER TABLE t_mutations_subcolumns DELETE WHERE obj.k3 = 5;
-ALTER TABLE t_mutations_subcolumns UPDATE n = 'ttt' WHERE obj.k1.k2 = 'foo';
-ALTER TABLE t_nested_modify MODIFY COLUMN `n.b` String;
-ALTER TABLE t_proj ADD PROJECTION p_1 (SELECT avg(a), avg(b), count()) SETTINGS mutations_sync=2;
-ALTER TABLE t_proj_external ADD PROJECTION aaaa (   SELECT     k1,     k2,     k3,     sum(value)   GROUP BY k1, k2, k3 );
-ALTER TABLE t_proj_external MATERIALIZE PROJECTION aaaa SETTINGS mutations_sync = 2;
-ALTER TABLE t_remove_sample_by REMOVE SAMPLE BY;
-ALTER TABLE t_remove_sample_by RESET SETTING check_sample_column_is_correct;
-alter table t_row_exists add column _row_exists int;
-alter table t_row_exists drop column _row_exists;
-alter table t_row_exists rename column b to _row_exists;
-ALTER TABLE t_sparse_alter DROP COLUMN s, RENAME COLUMN u TO t;
-ALTER TABLE t_sparse_alter MODIFY COLUMN t UInt16;
-ALTER TABLE t_sparse_columns_clear CLEAR COLUMN v;
-ALTER TABLE t_sparse_detach   MODIFY SETTING vertical_merge_algorithm_min_rows_to_activate = 1,   vertical_merge_algorithm_min_columns_to_activate = 1;
-ALTER TABLE t_sparse_mutation DELETE WHERE id % 3 = 0;
-ALTER TABLE t_sparse_mutation UPDATE v = v * 2 WHERE id % 5 = 0;
-ALTER TABLE t_sparse_mutations_1 MODIFY COLUMN s Nullable(String);
-ALTER TABLE t_sparse_mutations_1 MODIFY COLUMN s String;
-ALTER TABLE t_sparse_mutations_2 UPDATE s = '' WHERE id % 13 != 0;
-ALTER TABLE t_sparse_mutations_3 MODIFY COLUMN s Tuple(Nullable(UInt64), Nullable(UInt64), Nullable(UInt64), Nullable(UInt64), Nullable(String));
-ALTER TABLE t_sparse_mutations_3 MODIFY COLUMN s Tuple(UInt64, UInt64, String, String, String);
-ALTER TABLE t_sparse_mutations_3 MODIFY COLUMN s Tuple(UInt64, UInt64, UInt64, UInt64, String);
-ALTER TABLE t_sparse_mutations_4 MODIFY COLUMN v String;
-ALTER TABLE t_sparse_mutations_5 MODIFY COLUMN t Tuple(UInt64, String);
-ALTER TABLE t_sparse_reload MODIFY SETTING ratio_of_defaults_for_sparse_serialization = 1.0;
-ALTER TABLE t_src MOVE PARTITION 1 TO TABLE t_dst;
-ALTER TABLE t_to MODIFY COLUMN value Object('json');
-ALTER TABLE t_ttl_modify_column MODIFY COLUMN InsertionDateTime Date;
-ALTER TABLE t_ttl_modify_column MODIFY COLUMN InsertionDateTime Float32;
-ALTER TABLE t_ttl_modify_column modify column TTLDays Int16 DEFAULT CAST(365, 'Int16');
-ALTER TABLE t_ttl_non_deterministic MODIFY COLUMN B Int64 TTL now() + toIntervalMonth(1);
-ALTER TABLE t_ttl_non_deterministic MODIFY TTL now() + toIntervalMonth(1);
-ALTER TABLE t_update_empty_nested ADD COLUMN `nested.arr2` Array(UInt64);
-ALTER TABLE t_update_empty_nested UPDATE `nested.arr2` = `nested.arr1` WHERE 1;
-ALTER TABLE t_vertical_merges ADD COLUMN c String;
-ALTER TABLE t_vertical_merges CLEAR COLUMN b;
-ALTER TABLE tab ADD INDEX idx(vec) TYPE annoy;
-ALTER TABLE tab ADD INDEX idx(vec) TYPE usearch;
-ALTER TABLE tab ADD INDEX inv_idx(str) TYPE inverted(0);
-alter table tab delete where x > 1000 and y in (select sum(number + 1) from numbers_mt(1e7) group by number % 2 with totals);
-alter table tab_00718 modify column b LowCardinality(UInt32);
-alter table tab_00718 modify column b String;
-alter table tab_00718 modify column b StringWithDictionary;
-alter table tab_00718 modify column b UInt32;
-ALTER TABLE table2 MODIFY COLUMN `Value` DEFAULT 'some_string';
-ALTER TABLE table_01 ATTACH PART '20191001_1_1_0';
-ALTER TABLE table_01 DETACH PARTITION ALL;
-ALTER TABLE table_01 DETACH PARTITION ID '20191001';
-ALTER TABLE table_2009_part ATTACH PARTITION tuple(arrayJoin([0, 1]));
-ALTER TABLE table_for_alter ADD COLUMN Data2 UInt64, MODIFY SETTING check_delay_period=5, check_delay_period=10, check_delay_period=15;
-ALTER TABLE table_for_alter ADD COLUMN datum UInt32, MODIFY ORDER BY (d, order, datum);
-ALTER TABLE table_for_alter ADD COLUMN order UInt32, MODIFY ORDER BY (d, order);
-ALTER TABLE table_for_alter MODIFY SETTING parts_to_throw_insert = 1, parts_to_delay_insert = 1;
-ALTER TABLE table_for_alter MODIFY SETTING check_delay_period=10, check_delay_period=20, check_delay_period=30;
-ALTER TABLE table_for_alter MODIFY SETTING index_granularity=555;
-ALTER TABLE table_for_rename RENAME COLUMN value1 to renamed_value1;
-ALTER TABLE table_for_rename RENAME COLUMN value1 TO value4;
-ALTER TABLE table_for_rename RENAME COLUMN value100 to renamed_value100;
-ALTER TABLE table_for_rename RENAME COLUMN value2 TO value5;
-ALTER TABLE table_for_rename RENAME COLUMN value3 to value2;
-ALTER TABLE table_for_rename RENAME COLUMN value4 TO value1;
-ALTER TABLE table_for_rename RENAME COLUMN value5 TO value2;
-ALTER TABLE table_for_rename1 RENAME COLUMN value1 TO value4;
-ALTER TABLE table_for_rename1 RENAME COLUMN value2 TO value5;
-ALTER TABLE table_for_rename1 RENAME COLUMN value4 TO value1;
-ALTER TABLE table_for_rename1 RENAME COLUMN value5 TO value2;
-ALTER TABLE table_for_rename_nested RENAME COLUMN n.renamed_x TO not_nested_x;
-ALTER TABLE table_for_rename_nested RENAME COLUMN n.x TO n.renamed_x;
-ALTER TABLE table_for_rename_nested RENAME COLUMN n.y TO n.renamed_y;
-ALTER TABLE table_for_rename_pk RENAME COLUMN key1 TO renamed_key1;
-ALTER TABLE table_for_rename_with_primary_key RENAME COLUMN key1 TO renamed_key1;
-ALTER TABLE table_for_reset_setting MODIFY SETTING parts_to_throw_insert = 1, parts_to_delay_insert = 1;
-ALTER TABLE table_for_reset_setting MODIFY SETTING index_granularity=555;
+alter table mt_compact modify setting min_rows_for_wide_part = 1000;
+--alter table t_light MATERIALIZE INDEX i_c SETTINGS mutations_sync=2;
+alter table t_light update b=-1 where a<3 SETTINGS mutations_sync=2;
 ALTER TABLE table_for_reset_setting RESET SETTING index_granularity;
-ALTER TABLE table_for_reset_setting RESET SETTING max_concurrent_queries, merge_with_ttl_timeout;
-ALTER TABLE table_for_synchronous_mutations1 UPDATE v1 = v1 + 1 WHERE 1 SETTINGS mutations_sync = 2;
-ALTER TABLE table_for_synchronous_mutations_no_replication UPDATE v1 = v1 + 1 WHERE 1 SETTINGS mutations_sync = 2;
-ALTER TABLE table_for_ttl MODIFY COLUMN value String TTL d + INTERVAL 1 DAY SETTINGS materialize_ttl_after_modify = 0;
-ALTER TABLE table_for_ttl MODIFY TTL d + INTERVAL 1 YEAR SETTINGS materialize_ttl_after_modify = 0;
-ALTER TABLE table_from_numbers ADD COLUMN col UInt8;
-ALTER TABLE table_from_remote ADD COLUMN col UInt8;
-ALTER TABLE table_from_select ADD COLUMN col UInt8;
-ALTER TABLE table_rename_with_default RENAME COLUMN value1 TO renamed_value1;
-ALTER TABLE table_rename_with_ttl materialize TTL settings mutations_sync=2;
-ALTER TABLE table_rename_with_ttl MODIFY TTL date1 + INTERVAL 1 MONTH;
-ALTER TABLE table_rename_with_ttl RENAME COLUMN date1 TO renamed_date1;
-ALTER TABLE table_rename_with_ttl RENAME COLUMN date2 TO renamed_date2;
-ALTER TABLE table_two REPLACE PARTITION 0 FROM table_one;
-ALTER TABLE table_with_column_ttl MODIFY COLUMN Age REMOVE TTL;
-ALTER TABLE table_with_compact_parts RENAME COLUMN value1 to renamed_value1;
-ALTER TABLE table_with_compact_parts RENAME COLUMN value2 TO renamed_value2, RENAME COLUMN value3 TO renamed_value3;
-ALTER TABLE table_with_cyclic_defaults ADD COLUMN c String DEFAULT b, ADD COLUMN b String DEFAULT c;
-ALTER TABLE table_with_defaults_on_aliases ADD COLUMN col5 UInt64 ALIAS col2 * col4;
-ALTER TABLE table_with_defaults_on_aliases ADD COLUMN col6 UInt64 MATERIALIZED col2 * col4;
-ALTER TABLE table_with_function_pk DELETE WHERE key1 % 77 = 0 SETTINGS mutations_sync = 1;
-ALTER TABLE table_with_lc_key MODIFY COLUMN enum_key Enum('x' = 2, 'y' = 1, 'z' = 3);
-ALTER TABLE table_with_lc_key MODIFY COLUMN enum_key Enum16('x' = 2, 'y' = 1, 'z' = 3);
-ALTER TABLE table_with_lc_key MODIFY COLUMN enum_key Int8;
-ALTER TABLE table_with_lc_key MODIFY COLUMN lc_key String;
-ALTER TABLE table_with_multi_pk DELETE WHERE key1 % 77 = 0 SETTINGS mutations_sync = 1;
-ALTER TABLE table_with_pk_clear CLEAR COLUMN key1 IN PARTITION tuple();
-ALTER TABLE table_with_pk_clear CLEAR COLUMN key2 IN PARTITION tuple();
-ALTER TABLE table_with_single_pk DELETE WHERE key % 77 = 0 SETTINGS mutations_sync = 1;
-ALTER TABLE table_with_string_key MODIFY COLUMN int_key Enum8('y' = 1, 'x' = 2);
-ALTER TABLE table_with_string_key MODIFY COLUMN str_key LowCardinality(String);
-ALTER TABLE table_with_version MODIFY COLUMN version String;
-ALTER TABLE table_with_version MODIFY COLUMN version UInt32;
-ALTER TABLE table_with_version_replicated_1 MODIFY COLUMN version UInt32 SETTINGS replication_alter_partitions_sync=2;
-ALTER TABLE table_without_pk DELETE WHERE key1 % 77 = 0 SETTINGS mutations_sync = 1;
-ALTER TABLE tbl ADD COLUMN `id2` UInt32, MODIFY ORDER BY (id1, id2, id2);
-ALTER TABLE tbl ADD COLUMN a Int64;
-ALTER TABLE tbl ADD COLUMN b String;
-ALTER TABLE tbl ADD COLUMN c UInt8;
-ALTER TABLE tbl ADD COLUMN d Float64;
-ALTER TABLE tbl ADD COLUMN e UInt32;
-ALTER TABLE tbl ADD COLUMN xi Float64;
-ALTER TABLE tbl ADD COLUMN xi String;
-ALTER TABLE tbl ADD COLUMN xi UInt32;
-ALTER TABLE tbl ADD COLUMN xi UInt8;
-ALTER TABLE tbl ADD INDEX idx (id+1, id, id+1) TYPE minmax;
-ALTER TABLE tbl DROP COLUMN a;
-ALTER TABLE tbl DROP COLUMN b;
-ALTER TABLE tbl DROP COLUMN c;
-ALTER TABLE tbl DROP COLUMN d;
-ALTER TABLE tbl DROP COLUMN e;
-ALTER TABLE tbl DROP COLUMN xi;
-ALTER TABLE tbl MODIFY COLUMN a Int64, MODIFY COLUMN b String, MODIFY COLUMN c UInt8, MODIFY COLUMN d Float64, MODIFY COLUMN e UInt32;
-ALTER TABLE tbl UPDATE a = xi WHERE 1;
-ALTER TABLE tbl UPDATE b = xi WHERE 1;
-ALTER TABLE tbl UPDATE c = xi WHERE 1;
-ALTER TABLE tbl UPDATE d = xi WHERE 1;
-ALTER TABLE tbl UPDATE e = xi WHERE 1;
-ALTER TABLE tbl UPDATE xi = a WHERE 1;
-ALTER TABLE tbl UPDATE xi = b WHERE 1;
-ALTER TABLE tbl UPDATE xi = c WHERE 1;
-ALTER TABLE tbl UPDATE xi = d WHERE 1;
-ALTER TABLE tbl UPDATE xi = e WHERE 1;
-ALTER TABLE test ADD COLUMN `xx` UInt32 MATERIALIZED arr[1];
-ALTER TABLE test ADD COLUMN col2 String;
-ALTER TABLE test ADD COLUMN col3 String;
-ALTER TABLE test ADD COLUMN s1 String;
-ALTER TABLE test ADD COLUMN s2 String DEFAULT s1;
-ALTER TABLE test ADD COLUMN x UInt32 default 0;
-ALTER TABLE test ADD INDEX i1 (col1, col2) TYPE set(100) GRANULARITY 1;
-ALTER TABLE test ADD PROJECTION d_order ( SELECT min(c_id) GROUP BY `d`);
-ALTER TABLE test ADD PROJECTION mtlog_proj_source_reference (SELECT * ORDER BY substring(ns, 1, 5));
-ALTER TABLE test ADD PROJECTION p1 ( SELECT col2, sum(col1) GROUP BY col2 );
-ALTER TABLE test ATTACH PARTITION tuple();
-alter table Test clear column impression_id in partition '202001';
-ALTER TABLE test CLEAR COLUMN x IN PARTITION '';
-ALTER TABLE test CLEAR COLUMN x;
-ALTER TABLE test CLEAR COLUMN z;
-ALTER TABLE test DETACH PARTITION tuple();
-ALTER TABLE test DROP COLUMN `abc`;
-ALTER TABLE test DROP COLUMN col3;
-ALTER TABLE test DROP COLUMN x SETTINGS mutations_sync = 2;
-ALTER TABLE test DROP COLUMN x;
-ALTER TABLE test DROP PARTITION ID {partition_id:String};
-ALTER TABLE test DROP PARTITION tuple(toMonday({partition:Date}));
-ALTER TABLE test DROP PARTITION {partition:Date};
-ALTER TABLE test DROP PARTITION {partition:String};
-ALTER TABLE test DROP PROJECTION d_order SETTINGS mutations_sync = 2;
-ALTER TABLE test MATERIALIZE INDEX i1;
-ALTER TABLE test MATERIALIZE PROJECTION d_order;
-ALTER TABLE test MATERIALIZE PROJECTION p1;
-ALTER TABLE test MODIFY COLUMN `abc.1` String AFTER `abc`;
-ALTER TABLE test MODIFY COLUMN `abc.2` String AFTER `abc`;
-ALTER TABLE test MODIFY COLUMN `abc` String AFTER `abc.1`;
-ALTER TABLE test MODIFY COLUMN `abc` String AFTER `abc.2`;
-ALTER TABLE test MODIFY COLUMN `abc` String AFTER `id`;
-ALTER TABLE test MODIFY COLUMN type Enum('x', 'y');
-ALTER TABLE test MODIFY COLUMN x Enum('hello' = 1, 'world' = 2);
-ALTER TABLE test MODIFY COLUMN x Enum('hello' = 1, 'world' = 2, 'goodbye' = 3);
-ALTER TABLE test MODIFY COLUMN x Enum('hello' = 1, 'world' = 2, 'goodbye' = 4);
-ALTER TABLE test MODIFY COLUMN x Enum8('' = 1);
-ALTER TABLE test MODIFY SETTING clean_deleted_rows='Never';
-ALTER TABLE test UPDATE a=0 WHERE id<4;
-ALTER TABLE test UPDATE d = d + sleepEachRow(0.3) where 1;
-ALTER TABLE test UPDATE d = d || '1' where x = 42;
-ALTER TABLE test UPDATE d = d || toString(sleepEachRow(0.3)) where 1;
-ALTER TABLE test UPDATE d = x + 1 where 1;
-ALTER TABLE test UPDATE val = 0 WHERE key % 2 == 0 SETTINGS mutations_sync = 2;
-ALTER TABLE test UPDATE x = x + 1 where 1;
-ALTER TABLE test02910 ADD COLUMN j2 Tuple(JSON) DEFAULT jString;
-ALTER TABLE test02910_second ADD COLUMN `tags_json` Tuple(JSON) DEFAULT jString;
-ALTER TABLE test2 DROP PARTITION tuple({first:UInt32},{second:Int64});
-ALTER TABLE test3 DROP PARTITION {simple:String};
-ALTER TABLE test4 ON CLUSTER 'test_shard_localhost' DROP PARTITION {partition:String} FORMAT Null;
-ALTER TABLE test5 DROP PARTITION ({f:UInt32}, 2);
-ALTER TABLE test6 DROP PARTITION {tuple:Tuple(UInt32, Int64)};
-alter table test_00615 add column data Nullable(Float64);
-alter table test_00615 drop column data;
-alter table test_02381_compact modify setting compress_marks = true, compress_primary_key = true;
-alter table test_02381_compress modify setting compress_marks=false, compress_primary_key=false;
-ALTER TABLE test_02504 UPDATE b = 33 WHERE arrayJoin([1, 2]) = a;
-ALTER TABLE test_02559 ADD COLUMN y UInt8 DEFAULT 0;
-ALTER TABLE test_02559 ADD COLUMN z UInt8 DEFAULT 10;
-alter table test_1164_memory.r1 add column m int;
-ALTER TABLE test_a ADD COLUMN NewColumn String DEFAULT '' AFTER OldColumn;
-ALTER TABLE test_alter MODIFY COLUMN s DEFAULT 'Hello';
-ALTER TABLE test_alter MODIFY COLUMN x DEFAULT '2000-01-01';
-ALTER TABLE test_alter_attach_01901D ATTACH PARTITION '2020-01-01' FROM test_alter_attach_01901S;
-ALTER TABLE test_alter_attach_01901D REPLACE PARTITION '2020-01-01' FROM test_alter_attach_01901S;
-ALTER TABLE test_alter_decimal MODIFY COLUMN d Decimal(18, 8);
-ALTER TABLE test_alter_on_mutation ADD COLUMN value1 Float64;
-ALTER TABLE test_alter_on_mutation DROP COLUMN value;
-ALTER TABLE test_alter_on_mutation MODIFY COLUMN value String;
-ALTER TABLE test_alter_on_mutation MODIFY COLUMN value UInt64 DEFAULT 10;
-ALTER TABLE test_alter_on_mutation MODIFY COLUMN value UInt64;
-ALTER TABLE test_alter_r1 MODIFY COLUMN s DEFAULT 'Hello' SETTINGS replication_alter_partitions_sync = 2;
-ALTER TABLE test_alter_r2 MODIFY COLUMN x DEFAULT '2000-01-01' SETTINGS replication_alter_partitions_sync = 2;
-ALTER TABLE test_b REPLACE PARTITION '0' FROM test_a;
-ALTER TABLE test_extract ADD COLUMN `15Id` Nullable(UInt16) DEFAULT toUInt16OrNull(arrayFirst((v, k) -> (k = '4Id'), arr[2], arr[1]));
-ALTER TABLE test_generic_events_all ADD COLUMN OperatingSystem UInt64 DEFAULT 42;
-ALTER TABLE test_generic_events_all ADD COLUMN OperatingSystem UInt64 DEFAULT SessionType+1;
-ALTER TABLE test_max_mt_projections_alter     ADD PROJECTION p4 (SELECT c2, c3 ORDER BY c2, c3);
-ALTER TABLE test_max_mt_projections_alter ADD PROJECTION p1 (SELECT c2 ORDER BY c2);
-ALTER TABLE test_max_mt_projections_alter ADD PROJECTION p2 (SELECT c3 ORDER BY c3);
-ALTER TABLE test_max_mt_projections_alter ADD PROJECTION p3 (SELECT c1, c2 ORDER BY c1, c2);
-ALTER TABLE test_max_mt_projections_alter ADD PROJECTION p4 (SELECT c2, c3 ORDER BY c2, c3);
-ALTER TABLE test_max_mt_projections_create     ADD PROJECTION p2 (SELECT c2 ORDER BY c2);
-ALTER TABLE test_max_size_drop DROP PART 'all_1_1_0' SETTINGS max_partition_size_to_drop = 1;
-ALTER TABLE test_max_size_drop DROP PARTITION tuple() SETTINGS max_partition_size_to_drop = 1;
-ALTER TABLE test_move_partition_src MOVE PART '0_1_1_0' TO TABLE test_move_partition_dest;
-ALTER TABLE test_move_partition_src MOVE PARTITION 1 TO TABLE test_move_partition_dest;
-ALTER TABLE test_move_partition_throttling MOVE PARTITION tuple() TO VOLUME 'remote' SETTINGS max_remote_write_network_bandwidth=1600000;
-ALTER TABLE test_nested ADD COLUMN `with_dot.bool` UInt8;
-ALTER TABLE test_new_col ADD COLUMN `csv_col3` String DEFAULT csv_as_array[3];
-ALTER TABLE test_prewhere_default_column ADD COLUMN OperatingSystem UInt64 DEFAULT SessionType+1;
-ALTER TABLE test_rlp ADD COLUMN c Int32 DEFAULT b+10;
-ALTER TABLE test_table add column array Array(UInt8) default [1, 2, 3];
-ALTER TABLE test_table add column struct.key Array(UInt8) default [2, 4, 6], add column struct.value Array(UInt8) alias array;
-ALTER TABLE test_table ADD INDEX value_index value TYPE minmax GRANULARITY 1;
-ALTER TABLE test_table DROP INDEX value_index;
-ALTER TABLE test_table MATERIALIZE INDEX value_index SETTINGS mutations_sync=1;
-ALTER TABLE test_view DELETE WHERE pk = 2;
-ALTER TABLE test_wide_nested ADD COLUMN `info2.id` Array(Int);
-ALTER TABLE test_wide_nested ADD COLUMN `info2.name` Array(String);
-alter table test_wide_nested update `info.id` = [100,200,300], `info.age` = [10,20,30] where id = 1;
-alter table test_wide_nested update `info.id` = [100,200,300], `info.age` = [10,20,30], `info.name` = ['a','b','c'] where id = 2;
-alter table test_wide_nested update `info.id` = [100,200,300], `info.age` = `info.id`, `info.name` = ['a','b','c'] where id = 2;
-alter table test_wide_nested update `info.id` = [100,200] where id = 1;
-alter table test_wide_nested update `info.id` = [100,200], `info.age` = [10,20,30], `info.name` = ['a','b','c'] where id = 0;
-alter table test_wide_nested update `info.id` = [100,200], `info.age`=[68,72] where id = 3;
-alter table test_wide_nested update `info.id` = `info.age` where id = 3;
-ALTER table test_wide_nested update `info2.id` = `info.id`, `info2.name` = `info.name` where 1;
-ALTER TABLE test_wide_not_nested UPDATE `info.name` = 'bb' WHERE id = 1;
-ALTER table test_xy   UPDATE   y = transform(x,     (select groupArray(x) from (select x, y from updates order by x) t1),     (select groupArray(y) from (select x, y from updates order by x) t2),     y)   WHERE 1;
-ALTER TABLE testing MODIFY COLUMN c LowCardinality(String) SETTINGS mutations_sync=2;
-ALTER TABLE ting_log_02184 MODIFY COLUMN name String TTL dt + INTERVAL 1 MONTH;
-ALTER TABLE tmp ADD COLUMN s String MATERIALIZED toString(x);
-ALTER TABLE tmp DROP COLUMN s;
-ALTER TABLE tmp MATERIALIZE COLUMN s;
-ALTER TABLE tmp MATERIALIZE COLUMN x;
-ALTER TABLE tmp MODIFY COLUMN s String DEFAULT toString(x+1);
-ALTER TABLE tmp MODIFY COLUMN s String DEFAULT toString(x+2);
-ALTER TABLE tmp MODIFY COLUMN s String DEFAULT toString(x+3);
-ALTER TABLE tmp MODIFY COLUMN s String MATERIALIZED toString(x+1);
-ALTER TABLE tmp MODIFY COLUMN s String MATERIALIZED toString(x+2);
-ALTER TABLE tmp MODIFY COLUMN s String MATERIALIZED toString(x+3);
-alter table tmp update n = sleepEachRow(1) where 1;
+alter table rmt2 update m = m * 10 where 1 settings mutations_sync=2;
+--ALTER TABLE test DROP PROJECTION d_order SETTINGS mutations_sync = 2;
+ALTER TABLE mt_with_pk ADD INDEX idx1 z + w TYPE minmax GRANULARITY 1;
+ALTER TABLE alter_test ADD COLUMN IF NOT EXISTS AddedNested1.C Array(String);
+ALTER TABLE replicated_constraints1 ADD CONSTRAINT b_constraint CHECK b > 10;
 ALTER TABLE tmp_table_01818 MOVE PARTITION 'ClickHouse' TO TABLE main_table_01818;
-alter table tp add projection uniq_city_proj ( select type, uniq(cityHash64(device)), sum(cnt) group by type );
-alter table tp drop projection if exists p;
-alter table tp drop projection p;
-alter table tp drop projection pp;
-alter table tp materialize projection uniq_city_proj settings mutations_sync = 1;
-alter table tp_1 add projection pp (select x, count() group by x);
-alter table tp_1 clear projection pp;
-alter table tp_1 drop projection pp;
-alter table tp_1 materialize projection pp;
-alter table trunc attach partition id '0';
-alter table trunc attach partition id '1';
-alter table trunc attach partition id '2';
-alter table trunc attach partition id '3';
-alter table trunc detach partition all;
-alter table ttl materialize ttl settings mutations_sync=2;
-alter table ttl materialize ttl;
-alter table ttl modify column a Int ttl d + interval 1 day;
-alter table ttl modify column d Int ttl d + interval 1 day;
-alter table ttl modify column s String ttl d + interval 1 month;
+ALTER TABLE test_move_partition_src MOVE PART '0_1_1_0' TO TABLE test_move_partition_dest;
 alter table ttl modify column s String ttl i % 2 = 0 ? today() - 10 : toDate('2100-01-01');
-alter table ttl modify column s String ttl i % 3 = 0 ? today() - 10 : toDate('2100-01-01'),         modify column t String ttl i % 3 = 1 ? today() - 10 : toDate('2100-01-01');
-alter table ttl modify column s String ttl toDate('2000-01-01');
-alter table ttl modify column s String ttl toDate('2000-01-02');
-alter table ttl modify ttl a % 2 = 0 ? today() - 10 : toDate('2100-01-01');
-alter table ttl modify ttl a;
-alter table ttl modify ttl d + interval 1 day;
-alter table ttl modify ttl i % 2 = 0 ? toDate('2000-01-01') : toDate('2100-01-01');
-alter table ttl modify ttl i % 2 = 0 ? today() - 10 : toDate('2100-01-01');
-alter table ttl modify ttl i % 3 = 0 ? toDate('2000-01-01') : toDate('2100-01-01');
-alter table ttl modify ttl i % 3 = 0 ? today() - 10 : toDate('2100-01-01');
-alter table ttl modify ttl toDate('2000-01-01');
-alter table ttl update a = 0 where i % 2 = 0;
-alter table ttl update d = '2000-01-01' where 1;
-ALTER TABLE ttl_old_syntax MODIFY TTL toDate('2020-01-01');
-alter table ttl_test_02129 add column c Int64 settings mutations_sync=2;
-alter table txn_counters drop partition id 'all';
-ALTER TABLE union2 MODIFY ORDER BY a;
-ALTER TABLE users_02534 ADD INDEX bf_idx(name) TYPE minmax;
-ALTER TABLE uuid MODIFY COLUMN id0 UUID;
-ALTER TABLE uuid MODIFY COLUMN id1 UUID;
-ALTER TABLE video_log   ADD PROJECTION p_agg   (     SELECT       toStartOfHour(datetime) AS hour,       domain,       sum(bytes),       avg(duration)     GROUP BY       hour,       domain   );
-ALTER TABLE video_log   ADD PROJECTION p_norm   (     SELECT       datetime,       device_id,       bytes,       duration     ORDER BY device_id   );
-ALTER TABLE video_log   MATERIALIZE PROJECTION p_agg SETTINGS mutations_sync = 1;
-ALTER TABLE video_log   MATERIALIZE PROJECTION p_norm SETTINGS mutations_sync = 1;
-ALTER TABLE video_log ADD PROJECTION p_agg (   SELECT     toStartOfHour(datetime) AS hour,     domain,     sum(bytes),     avg(duration)   GROUP BY     hour,     domain );
-ALTER TABLE video_log ADD PROJECTION p_norm (   SELECT     datetime,     device_id,     bytes,     duration   ORDER BY device_id );
-ALTER TABLE video_log MATERIALIZE PROJECTION p_agg settings mutations_sync=1;
-ALTER TABLE video_log MATERIALIZE PROJECTION p_norm settings mutations_sync=1;
-ALTER TABLE visits RENAME COLUMN Name TO Name2;
-ALTER TABLE visits_dist RENAME COLUMN Name TO Name2;
-ALTER TABLE wide_to_comp MODIFY setting min_rows_for_wide_part = 10000000;
-ALTER TABLE wikistat1 DELETE where time = toDateTime('2022-12-20 00:00:00') SETTINGS mutations_sync = 1;
-ALTER TABLE without_fixed_size_columns DROP PARTITION 1;
-ALTER TABLE without_fixed_size_columns_replica1 DROP PARTITION 1;
-ALTER TABLE wrong_metadata RENAME COLUMN column1 TO column1_renamed SETTINGS replication_alter_partitions_sync = 0;
-ALTER TABLE wrong_metadata RENAME COLUMN column2 to column2_renamed SETTINGS replication_alter_partitions_sync = 2;
-ALTER TABLE wrong_metadata_wide RENAME COLUMN column1 TO column1_renamed SETTINGS replication_alter_partitions_sync = 0;
-ALTER TABLE wrong_metadata_wide RENAME COLUMN column2 to column2_renamed SETTINGS replication_alter_partitions_sync = 2;
-alter table x add column j int;
+ALTER TABLE sales ADD PROJECTION test (SELECT toInt64(COUNT(*)) GROUP BY PRODUCT_ID, DATE_SOLD);
+ALTER TABLE table_for_alter MODIFY SETTING parts_to_throw_insert = 1, parts_to_delay_insert = 1;
+alter table test_02381_compress modify setting compress_marks=false, compress_primary_key=false;
 alter table x add index nn LOG2(i) type minmax granularity 1, add projection p2 (select MIN(i));
-alter table x add projection p_agg (select sum(j));
-alter table x materialize projection p_agg settings mutations_sync = 1;
-alter table z add projection pp (select id, sum(c) group by id);
-alter table z materialize projection pp settings mutations_sync=1;
-ALTER TEMPORARY TABLE alter_test ADD COLUMN Added2 UInt32;
-ALTER TEMPORARY TABLE alter_test COMMENT COLUMN b 'this is comment for log engine';
-ALTER TEMPORARY TABLE alter_test MODIFY COLUMN b UInt8 FIRST;
+ALTER TABLE test4 ON CLUSTER 'test_shard_localhost' DROP PARTITION {partition:String} FORMAT Null;
+ALTER TABLE alter_compression_codec1 MODIFY COLUMN alter_column CODEC(ZSTD, LZ4HC, LZ4, LZ4, NONE);
+ALTER TABLE t_mutations_nondeterministic UPDATE v = (SELECT sum(number) FROM numbers(100)) WHERE 1;
+--ALTER TABLE table_for_ttl MODIFY TTL d + INTERVAL 1 YEAR SETTINGS materialize_ttl_after_modify = 0;
+ALTER TABLE table_with_cyclic_defaults ADD COLUMN c String DEFAULT b, ADD COLUMN b String DEFAULT c;
+ALTER TABLE add_table ADD COLUMN IF NOT EXISTS value1 UInt64, ADD COLUMN IF NOT EXISTS value2 UInt64;
+ALTER TABLE replicated_table_detach_all1 FETCH PARTITION ALL FROM '/clickhouse/tables/test_00753_{database}/replicated_table_detach_all1';
+ALTER TABLE agg_table UPDATE agg_simple = 5 WHERE time BETWEEN toDateTime('2020-08-01 00:00:00') AND toDateTime('2020-12-01 00:00:00') SETTINGS mutations_sync = 2;
+ALTER TABLE check_query_comment_column COMMENT COLUMN first_column 'comment 1_2', COMMENT COLUMN second_column 'comment 2_2', COMMENT COLUMN third_column 'comment 3_2';
 
-drop table  {CLICKHOUSE_DATABASE:Identifier}.test_table_01080;
-DROP TABLE t_large;
-drop table with_test ;
-DROP TABLE "/t0";
-DROP TABLE "/t1";
-DROP TABLE id_join;
-drop table id_val;
-DROP TABLE IF EMPTY data_02716_1;
-drop table if exists data_order_by_proj_incomp;
-drop table if exists data_proj_order_by_incomp;
-DROP TABLE IF EXISTS test_not_found_column_nothing;
-DROP TABLE IF EXISTS ".inner_id.e15f3ab5-6cae-4df3-b879-f40deafd82c2";
-DROP TABLE IF EXISTS "/t0";
-DROP TABLE IF EXISTS "/t1";
-DROP TABLE IF EXISTS 01504_test;
-DROP TABLE IF EXISTS 01504_test_memory;
-DROP TABLE IF EXISTS 01686_test;
-DROP TABLE IF EXISTS 01760_db.example_complex_key_source;
-DROP TABLE IF EXISTS {CLICKHOUSE_DATABASE:Identifier}.test_view_00740;
-DROP TABLE IF EXISTS {CLICKHOUSE_DATABASE_1:Identifier}.data_02716_3;
-drop table in_01277;
-drop table in_02231;
-DROP TABLE index;
-DROP TABLE index_compact;
-DROP TABLE index_for_like;
-DROP TABLE non_ascii;
-DROP TABLE normal;
-DROP TABLE nORX;
-DROP TABLE not_partitioned;
-DROP TABLE not_partitioned_replica2_00502 SYNC;
+--Drop
 DROP TABLE nr;
-DROP TABLE nt;
-DROP TABLE ntxy;
-DROP TABLE NULL;
-DROP TABLE test_max_size_drop SETTINGS max_table_size_to_drop = 1;
-DROP TABLE {CLICKHOUSE_DATABASE:Identifier}.dst;
-DROP TABLE {CLICKHOUSE_DATABASE:Identifier}.wv;
-DROP TABLE {CLICKHOUSE_DATABASE_1:Identifier}.dict_data;
+DROP TABLE IF EXISTS "/t0";
 DROP TEMPORARY TABLE constrained;
-drop temporary table if exists one_0023;
-DROP TEMPORARY TABLE IF EXISTS src;
 DROP TEMPORARY TABLE IF EXISTS t1;
-DROP TEMPORARY TABLE test_block_numbers;
+DROP TABLE {CLICKHOUSE_DATABASE:Identifier}.wv;
+DROP TABLE IF EXISTS 01760_db.example_complex_key_source;
+
+--Optimize
+OPTIMIZE TABLE table DEDUPLICATE; -- all columns
+OPTIMIZE TABLE table DEDUPLICATE BY *; -- excludes MATERIALIZED and ALIAS columns
+OPTIMIZE TABLE table DEDUPLICATE BY colX,colY,colZ;
+OPTIMIZE TABLE table DEDUPLICATE BY * EXCEPT colX;
+OPTIMIZE TABLE table DEDUPLICATE BY * EXCEPT (colX, colY);
+OPTIMIZE TABLE table DEDUPLICATE BY COLUMNS('column-matched-by-regex');
+OPTIMIZE TABLE table DEDUPLICATE BY COLUMNS('column-matched-by-regex') EXCEPT colX;
+OPTIMIZE TABLE table DEDUPLICATE BY COLUMNS('column-matched-by-regex') EXCEPT (colX, colY);
+
