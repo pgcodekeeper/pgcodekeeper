@@ -50,7 +50,7 @@ class CHParserTest {
             // "ch_insert",
             // "ch_other",
             // "ch_select",
-            // "ch_table",
+            "ch_table",
             "ch_view"
     })
     void parse(final String fileNameTemplate) throws IOException {
