@@ -100,12 +100,12 @@
 				</dependency>
 			</dependencies>
 		</location>
-		<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
+		<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" label="CH deps" missingManifest="generate" type="Maven">
 			<dependencies>
 				<dependency>
-					<groupId>com.clickhouse</groupId>
-					<artifactId>clickhouse-jdbc</artifactId>
-					<version>0.5.0</version>
+					<groupId>org.lz4</groupId>
+					<artifactId>lz4-java</artifactId>
+					<version>1.8.0</version>
 					<type>jar</type>
 				</dependency>
 			</dependencies>
