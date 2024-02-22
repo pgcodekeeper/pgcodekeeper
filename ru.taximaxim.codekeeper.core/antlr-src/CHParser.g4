@@ -45,6 +45,25 @@ dml_stmt
     | watch_stmt
     | ctes? insert_stmt
     | select_stmt
+    | transaction_stmt
+    ;
+
+create_stmt
+    : create_database_stmt
+    | create_dictinary_stmt
+    | create_live_view_stmt
+    | create_mat_view_stmt
+    | create_table_stmt
+    | create_view_stmt
+    | create_function_stmt
+    | create_policy_stmt
+    | create_named_collection_stmt
+    ;
+
+alter_stmt
+    : alter_table_stmt
+    | alter_policy_stmt
+    | alter_named_collection_stmt
     ;
 
 ctes
@@ -79,10 +98,47 @@ select_ops_no_parens
     ;
 
 column_aliases
-    : LPAREN identifier (COMMA identifier)* RPAREN
+    : LPAREN identifier_list RPAREN
     ;
 
-alter_stmt
+create_named_collection_stmt
+    : CREATE NAMED COLLECTION if_not_exists? qualified_name cluster_clause?
+    AS named_collection_pair (COMMA named_collection_pair)*
+    ;
+
+alter_named_collection_stmt
+    : ALTER NAMED COLLECTION if_exists? qualified_name cluster_clause?
+    (SET named_collection_pair (COMMA named_collection_pair)* | DELETE identifier_list)?
+    ;
+
+named_collection_pair
+    : identifier EQ_SINGLE STRING_LITERAL (NOT? OVERRIDABLE)?
+    ;
+
+create_policy_stmt
+    : CREATE ROW? POLICY (if_not_exists | OR REPLACE) policy_name (COMMA policy_name)* policy_action*
+    ;
+
+alter_policy_stmt
+    : ALTER ROW? POLICY if_exists? policy_name rename_to? (COMMA policy_name rename_to?)* policy_action*
+    ;
+
+policy_name
+    : qualified_name cluster_clause? ON qualified_name
+    ;
+
+policy_action
+    : AS (PERMISSIVE | RESTRICTIVE)
+    | USING expr_list
+    | FOR SELECT
+    | TO (identifier_list | ALL | ALL EXCEPT identifier_list)
+    ;
+
+rename_to
+    : RENAME TO qualified_name
+    ;
+
+alter_table_stmt
     : ALTER TEMPORARY? TABLE qualified_name cluster_clause? alter_table_action (COMMA alter_table_action)*
     ;
 
@@ -92,7 +148,7 @@ alter_table_action
     | APPLY DELETED MASK (IN partition_clause)?
     | ATTACH partition_clause (FROM qualified_name)?
     | CLEAR alter_table_clear_action
-    | COMMENT COLUMN (IF EXISTS)? qualified_name STRING_LITERAL
+    | COMMENT COLUMN if_exists? qualified_name STRING_LITERAL
     | DELETE (IN partition_clause)? WHERE expr
     | DETACH partition_clause
     | DROP alter_table_drop_action
@@ -102,7 +158,7 @@ alter_table_action
     | MODIFY alter_table_modify_action
     | MOVE partition_clause TO (DISK STRING_LITERAL | VOLUME STRING_LITERAL | TABLE qualified_name)
     | REMOVE (TTL | SAMPLE BY)
-    | RENAME COLUMN (IF EXISTS)? qualified_name TO qualified_name
+    | RENAME COLUMN if_exists? qualified_name TO qualified_name
     | REPLACE partition_clause FROM qualified_name
     | RESET SETTING (identifier | setting_expr) (COMMA (identifier | setting_expr))*
     | UNFREEZE partition_clause? WITH NAME identifier
@@ -118,18 +174,18 @@ alter_table_add_action
     ;
 
 alter_table_clear_action
-    : (COLUMN | INDEX | PROJECTION) (IF EXISTS)? qualified_name (IN partition_clause)?
+    : (COLUMN | INDEX | PROJECTION) if_exists? qualified_name (IN partition_clause)?
     | alter_statistic
     ;
 
 alter_table_drop_action
-    : (COLUMN | INDEX | PROJECTION | CONSTRAINT) (IF EXISTS)? qualified_name settings_clause?
+    : (COLUMN | INDEX | PROJECTION | CONSTRAINT) if_exists? qualified_name settings_clause?
     | DETACHED? partition_clause
     | alter_statistic
     ;
 
 alter_table_mat_action
-    : (COLUMN | INDEX | PROJECTION) (IF EXISTS)? qualified_name  (IN partition_clause)?
+    : (COLUMN | INDEX | PROJECTION) if_exists? qualified_name  (IN partition_clause)?
     | alter_statistic
     | qualified_name settings_clause?
     ;
@@ -145,12 +201,12 @@ alter_table_modify_action
     ;
 
 modify_column_expr
-    : COLUMN (IF EXISTS)? qualified_name data_type? table_column_property_expr? codec_expr? ttl_clause? setting_expr? position?
+    : COLUMN if_exists? qualified_name data_type? table_column_property_expr? codec_expr? ttl_clause? setting_expr? position?
     | COLUMN qualified_name REMOVE (ALIAS | CODEC | COMMENT | DEFAULT | MATERIALIZED | EPHEMERAL | TTL | SETTINGS)
     ;
 
 alter_statistic
-    : STATISTIC (IF EXISTS)? qualified_name (COMMA qualified_name)* TYPE identifier
+    : STATISTIC if_exists? qualified_name (COMMA qualified_name)* TYPE identifier
     ;
 
 partition_clause
@@ -159,21 +215,25 @@ partition_clause
     ;
 
 attach_stmt
+    : attach_dictionary_stmt
+    | attach_table_stmt
+    ;
+
+attach_dictionary_stmt
     : ATTACH DICTIONARY qualified_name cluster_clause?
     ;
 
-check_stmt
-    : CHECK TABLE qualified_name partition_clause?
+attach_table_stmt
+    : ATTACH TABLE if_not_exists? qualified_name (uuid_clause | from_file_clause)?
+    cluster_clause? table_body_expr? comment_expr? settings_clause?
     ;
 
-create_stmt
-    : create_database_stmt
-    | create_dictinary_stmt
-    | create_live_view_stmt
-    | create_mat_view_stmt
-    | create_table_stmt
-    | create_view_stmt
-    | create_function_stmt
+from_file_clause
+    : FROM STRING_LITERAL
+    ;
+
+check_stmt
+    : CHECK TABLE qualified_name partition_clause? settings_clause?
     ;
 
 create_database_stmt
@@ -195,8 +255,12 @@ create_function_stmt
     ;
 
 create_table_stmt
-    : (ATTACH | CREATE (OR REPLACE)? | REPLACE) TEMPORARY? TABLE if_not_exists?
+    : (CREATE (OR REPLACE)? | REPLACE) TEMPORARY? TABLE if_not_exists?
      qualified_name uuid_clause? cluster_clause? table_body_expr comment_expr?
+    ;
+
+if_exists
+    : IF EXISTS
     ;
 
 if_not_exists
@@ -255,7 +319,7 @@ create_mat_view_stmt
     ;
 
 destination_clause
-    : TO qualified_name
+    : TO qualified_name uuid_clause?
     ;
 
 subquery_clause
@@ -340,7 +404,7 @@ codec_arg_expr
     ;
 
 ttl_expr
-    : expr (DELETE | RECOMPRESS CODEC expr | TO DISK (IF EXISTS)? STRING_LITERAL | TO VOLUME STRING_LITERAL)?
+    : expr (DELETE | RECOMPRESS CODEC expr | TO DISK if_exists? STRING_LITERAL | TO VOLUME STRING_LITERAL)?
     where_clause? group_by_clause?
     ;
 
@@ -349,18 +413,18 @@ describe_stmt
     ;
 
 drop_stmt
-    : (DETACH | DROP) DATABASE (IF EXISTS)? identifier cluster_clause?
-    | (DETACH | DROP) (DICTIONARY | TEMPORARY? VIEW) (IF EXISTS)? qualified_name cluster_clause? (NO DELAY)?
+    : (DETACH | DROP) DATABASE if_exists? identifier cluster_clause?
+    | (DETACH | DROP) (DICTIONARY | TEMPORARY? VIEW) if_exists? qualified_name cluster_clause? (NO DELAY)?
     | drop_function_stmt
     | drop_table_stmt
     ;
 
 drop_function_stmt
-    : DROP FUNCTION (IF EXISTS)? qualified_name
+    : DROP FUNCTION if_exists? qualified_name
     ;
 
 drop_table_stmt
-    : DROP TEMPORARY? TABLE (IF EXISTS)? (IF EMPTY)? qualified_name cluster_clause? SYNC?
+    : DROP TEMPORARY? TABLE if_exists? (IF EMPTY)? qualified_name cluster_clause? SYNC?
     ;
 
 exists_stmt
@@ -378,6 +442,7 @@ insert_stmt
 
 columns_clause
     : LPAREN qualified_name (COMMA qualified_name)* RPAREN
+    | LPAREN ASTERISK EXCEPT LPAREN identifier_list RPAREN RPAREN
     ;
 
 data_clause
@@ -399,7 +464,7 @@ optimize_stmt
     ;
 
 optimize_by_expr
-    : BY (ASTERISK | identifier (COMMA identifier)* | COLUMNS expr) (EXCEPT expr)?
+    : BY (ASTERISK | identifier_list | COLUMNS expr) (EXCEPT expr)?
     ;
 
 rename_stmt
@@ -572,6 +637,10 @@ win_frame_bound
 //    : RANGE LPAREN (MIN identifier MAX identifier | MAX identifier MIN identifier) RPAREN
 //    ;
 
+transaction_stmt
+    : (BEGIN | ROLLBACK | COMMIT) TRANSACTION?
+    ;
+
 set_stmt
     : SET setting_expr_list
     ;
@@ -596,7 +665,7 @@ system_stmt
     ;
 
 truncate_stmt
-    : TRUNCATE TEMPORARY? TABLE? (IF EXISTS)? qualified_name cluster_clause?
+    : TRUNCATE TEMPORARY? TABLE? if_exists? qualified_name cluster_clause?
     ;
 
 use_stmt
@@ -770,7 +839,7 @@ column_lambda_expr
 function_arguments
     : blank_paren
     | identifier
-    | LPAREN identifier (COMMA identifier)* RPAREN
+    | LPAREN identifier_list RPAREN
     ;
 
 qualified_name
@@ -852,6 +921,7 @@ keyword
     | ASYNC
     | ATTACH
     | AUTO_INCREMENT
+    | BEGIN
     | BETWEEN
     | BIGINT
     | BINARY
@@ -872,9 +942,11 @@ keyword
     | CLUSTER
     | CODEC
     | COLLATE
+    | COLLECTION
     | COLUMN
     | COLUMNS
     | COMMENT
+    | COMMIT
     | CONSTRAINT
     | CREATE
     | CROSS
@@ -992,6 +1064,7 @@ keyword
     | MULTI_POLYGON
     | MUTATION
     | NAME
+    | NAMED
     | NAN
     | NATIONAL
     | NCHAR
@@ -1013,9 +1086,12 @@ keyword
     | OUTER
     | OUTFILE
     | OVER
+    | OVERRIDABLE
     | PART
     | PARTITION
+    | PERMISSIVE
     | POINT
+    | POLICY
     | POLYGIN
     | POPULATE
     | PRECEDING
@@ -1034,8 +1110,10 @@ keyword
     | REPLICA
     | REPLICATED
     | RESET
+    | RESTRICTIVE
     | RIGHT
     | RING
+    | ROLLBACK
     | ROLLUP
     | ROW
     | ROWS
@@ -1077,6 +1155,7 @@ keyword
     | TOP
     | TOTALS
     | TRAILING
+    | TRANSACTION
     | TRIM
     | TRUNCATE
     | TTL
@@ -1110,6 +1189,7 @@ keyword_for_alias
     | TEST
     | SELECT
     | DATE
+    | QUERY
     ;
 
 alias
@@ -1120,6 +1200,10 @@ alias
 alias_clause
     : alias
     | AS identifier
+    ;
+
+identifier_list
+    : identifier (COMMA identifier)*
     ;
 
 identifier
