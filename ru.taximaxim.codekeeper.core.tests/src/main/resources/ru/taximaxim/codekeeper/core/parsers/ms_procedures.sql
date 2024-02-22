@@ -119,3 +119,33 @@ BEGIN
   RETURN ISNULL(@is_member,0)
 END
 GO
+
+CREATE   PROCEDURE [dbo].[p_CheckDetails_Get]
+    @FirmId INT,
+    @InvoiceID INT
+WITH EXECUTE AS OWNER
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @zeroMoney MONEY = 0;
+    DECLARE @true BIT = 1;
+    DECLARE @false BIT = 0;
+   -- special character 0x200b ​
+    
+    ​
+    SELECT i.InvoiceID,
+           i.UserID,
+           i.SummaBezNDS AS SumWithoutVat,
+           i.NDS AS Vat,
+           i.Deleted,
+           i.PeriodID,
+           ISNULL(p.PayDate, i.InvDate) AS PayDate,
+           i.InvoiceNumber
+    FROM dbo.Invoices i WITH (NOLOCK)
+        LEFT JOIN dbo.Payments p WITH (NOLOCK)
+            ON p.PayNumber = i.InvoiceID
+    WHERE i.InvoiceID = @InvoiceID
+          AND i.UserID = @FirmId;
+
+END
+​GO

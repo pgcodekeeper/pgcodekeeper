@@ -15,6 +15,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.parsers.antlr;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -26,6 +27,8 @@ import org.antlr.v4.runtime.Vocabulary;
 import org.antlr.v4.runtime.misc.IntervalSet;
 
 abstract class CustomAntlrErrorStrategy extends DefaultErrorStrategy {
+
+    private static final int EXPECTED_TOKEN_LIMIT = 10;
 
     protected static final String IDENTIFIER = "Identifier";
     protected static final String NUMBER = "Number";
@@ -74,10 +77,15 @@ abstract class CustomAntlrErrorStrategy extends DefaultErrorStrategy {
 
     private void fillTokens(StringBuilder sb, Vocabulary vocabulary, IntervalSet tokens) {
         Stream<Integer> stream = getTokenStream(tokens);
-
-        String rules = stream.map(e -> this.getTokenName(e, vocabulary))
-                .distinct().collect(Collectors.joining(", "));
+        AtomicInteger tokenCount = new AtomicInteger();
+        String rules = stream.map(e -> this.getTokenName(e, vocabulary)).distinct()
+                .filter(e -> tokenCount.incrementAndGet() <= EXPECTED_TOKEN_LIMIT)
+                .collect(Collectors.joining(", "));
         sb.append(rules);
+
+        if (tokenCount.get() > EXPECTED_TOKEN_LIMIT) {
+            sb.append(" or " + (tokenCount.get() - EXPECTED_TOKEN_LIMIT) + " more");
+        }
     }
 
     protected abstract Stream<Integer> getTokenStream(IntervalSet tokens);
