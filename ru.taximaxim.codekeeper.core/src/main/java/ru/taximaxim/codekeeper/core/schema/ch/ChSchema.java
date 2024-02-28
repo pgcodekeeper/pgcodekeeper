@@ -24,11 +24,11 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
-public class СhSchema extends AbstractSchema {
+public class ChSchema extends AbstractSchema {
 
     private String engine = "Atomic";
     
-    public СhSchema(String name) {
+    public ChSchema(String name) {
         super(name);
     }
 
@@ -81,7 +81,7 @@ public class СhSchema extends AbstractSchema {
 
     @Override
     protected AbstractSchema getSchemaCopy() {
-        var schema = new СhSchema(name);
+        var schema = new ChSchema(name);
         schema.setEngine(engine);
         return schema;
     }
@@ -97,10 +97,10 @@ public class СhSchema extends AbstractSchema {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof СhSchema)) {
+        if (!(obj instanceof ChSchema)) {
             return false;
         }
-        var schema = (СhSchema) obj;
+        var schema = (ChSchema) obj;
         return super.compare(schema)
                 && Objects.equals(engine, schema.getEngine());
     }

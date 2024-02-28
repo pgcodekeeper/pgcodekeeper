@@ -24,7 +24,7 @@ import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
-import ru.taximaxim.codekeeper.core.schema.ch.СhSchema;
+import ru.taximaxim.codekeeper.core.schema.ch.ChSchema;
 
 public class ChSchemasReader extends AbstractStatementReader {
 
@@ -42,7 +42,7 @@ public class ChSchemasReader extends AbstractStatementReader {
             return;
         }
         loader.setCurrentObject(new GenericColumn(schemaName, DbObjType.SCHEMA));
-        var schema = new СhSchema(schemaName);
+        var schema = new ChSchema(schemaName);
         schema.setEngine(result.getString("engine_full"));
         loader.setComment(schema, result);
         loader.putSchema(schemaName, schema);

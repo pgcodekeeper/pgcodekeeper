@@ -21,9 +21,8 @@ import ru.taximaxim.codekeeper.core.ChDiffUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Create_database_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Engine_exprContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ms.ChParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
-import ru.taximaxim.codekeeper.core.schema.ch.СhSchema;
+import ru.taximaxim.codekeeper.core.schema.ch.ChSchema;
 
 public class CreateChSchema extends ChParserAbstract {
 
@@ -36,7 +35,7 @@ public class CreateChSchema extends ChParserAbstract {
 
     @Override
     public void parseObject() {
-        var schema = new СhSchema(ChDiffUtils.unQuoteName(ctx.identifier().getText()));
+        var schema = new ChSchema(ChDiffUtils.unQuoteName(ctx.identifier().getText()));
         schema.setEngine(getEngine(ctx.engine_expr()));
         var commCtx = ctx.comment_expr();
         if (commCtx != null) {

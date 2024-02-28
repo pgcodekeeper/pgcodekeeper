@@ -19,12 +19,14 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.text.MessageFormat;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.SubMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
+import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
 import ru.taximaxim.codekeeper.core.loader.jdbc.ch.ChSchemasReader;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
@@ -71,5 +73,12 @@ public final class JdbcChLoader extends JdbcLoaderBase {
                     e.getLocalizedMessage(), getCurrentLocation()), e);
         }
         return d;
+    }
+
+    @Override
+    public String getSchemas() {
+        return schemaIds.keySet().stream()
+                .map(e -> PgDiffUtils.quoteString(e.toString()))
+                .collect(Collectors.joining(", "));
     }
 }

@@ -28,9 +28,9 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Create_data
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Create_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Drop_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.QueryContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.ChParserAbstract;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChSchema;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.DropChStatement;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ms.ChParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 
 public class CustomChSQLParserListener extends CustomParserListener implements ChSqlContextProcessor {
