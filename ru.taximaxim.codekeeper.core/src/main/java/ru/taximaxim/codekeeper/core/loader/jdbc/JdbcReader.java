@@ -47,19 +47,20 @@ public abstract class JdbcReader extends AbstractStatementReader {
     @Override
     protected void processResult(ResultSet result) throws SQLException, XmlReaderException {
         String schemaColumn = getSchemaColumn();
-        long schemaId = result.getLong(schemaColumn.substring(schemaColumn.indexOf('.') + 1));
+        var schemaId = result.getObject(schemaColumn.substring(schemaColumn.indexOf('.') + 1));
         AbstractSchema schema = loader.getSchema(schemaId);
-        if (schema != null) {
-            try {
-                processResult(result, schema);
-            } catch (ConcurrentModificationException ex) {
-                if (!loader.getArgs().isIgnoreConcurrentModification()) {
-                    throw ex;
-                }
-                LOG.error(ex.getLocalizedMessage(), ex);
-            }
-        } else {
+        if (schema == null) {
             LOG.warn("No schema found for id {}", schemaId);
+            return;
+        }
+
+        try {
+            processResult(result, schema);
+        } catch (ConcurrentModificationException ex) {
+            if (!loader.getArgs().isIgnoreConcurrentModification()) {
+                throw ex;
+            }
+            LOG.error(ex.getLocalizedMessage(), ex);
         }
     }
 
@@ -75,7 +76,7 @@ public abstract class JdbcReader extends AbstractStatementReader {
 
         StringBuilder sb = new StringBuilder();
         sb.append(getSchemaColumn()).append(" IN (");
-        for (Long id : schemas.keySet()) {
+        for (Object id : schemas) {
             sb.append(id).append(',');
         }
         sb.setLength(sb.length() - 1);

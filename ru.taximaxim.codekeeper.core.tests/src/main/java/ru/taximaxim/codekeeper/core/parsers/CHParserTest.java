@@ -45,6 +45,7 @@ class CHParserTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
+            "ch_database",
             "ch_function",
             // "ch_index",
             // "ch_insert",

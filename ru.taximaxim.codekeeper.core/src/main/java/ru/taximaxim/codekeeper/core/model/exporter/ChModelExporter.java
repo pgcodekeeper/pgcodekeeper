@@ -46,7 +46,7 @@ public class ChModelExporter extends AbstractModelExporter {
     static Path getRelativeFilePath(PgStatement st, Path baseDir, boolean addExtension) {
         PgStatement parentSt = st.getParent();
 
-        Path path = baseDir;
+        Path path = baseDir.resolve(WorkDirs.CH_DATABASES);
         DbObjType type = st.getStatementType();
         var dbType = st.getDbType();
         String dirName = WorkDirs.getDirectoryNameForType(dbType, type);
@@ -56,9 +56,17 @@ public class ChModelExporter extends AbstractModelExporter {
         case VIEW:
         case USER:
         case ROLE:
-        case DICTIONARY:
             path = path.resolve(dirName);
             break;
+
+        case SCHEMA:
+            path = path.resolve(getExportedFilename(st));
+            if (!addExtension) {
+                // return schema dir path
+                return path;
+            }
+            break;
+
         case CONSTRAINT:
         case INDEX:
         case COLUMN:

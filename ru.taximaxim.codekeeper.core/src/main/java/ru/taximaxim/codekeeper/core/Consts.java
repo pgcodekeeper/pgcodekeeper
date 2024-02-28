@@ -32,6 +32,7 @@ public interface Consts {
     String UTC = "UTC";
     String PUBLIC = "public";
     String DBO = "dbo";
+    String CH_DEFAULT_DB = "default";
     String HEAP = "heap";
 
     String PG_DEFAULT = "pg_default";

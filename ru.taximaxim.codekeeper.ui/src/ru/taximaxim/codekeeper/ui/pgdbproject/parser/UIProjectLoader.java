@@ -117,11 +117,7 @@ public class UIProjectLoader extends ProjectLoader {
         if (!baseDir.exists()) {
             return;
         }
-
-        // TODO check when parser will be added
-        for (String workDirName : WorkDirs.getDirectoryNames(DatabaseType.CH)) {
-            loadSubdir(baseDir.getFolder(new Path(workDirName)), db, this::checkIgnoreSchemaList);
-        }
+        loadPgChStructure(baseDir, db, WorkDirs.CH_DATABASES);
     }
 
     private void loadPgStructure(IContainer baseDir, PgDatabase db)
@@ -135,21 +131,30 @@ public class UIProjectLoader extends ProjectLoader {
             loadSubdir(baseDir.getFolder(new Path(workDirName)), db, this::checkIgnoreSchemaList);
         }
 
-        IFolder schemasCommonDir = baseDir.getFolder(new Path(WorkDirs.PG_SCHEMA));
+        loadPgChStructure(baseDir, db, WorkDirs.PG_SCHEMA);
+    }
+
+    private void loadPgChStructure(IContainer baseDir, PgDatabase db, String commonDir)
+            throws CoreException, InterruptedException {
+        IFolder schemasCommonDir = baseDir.getFolder(new Path(commonDir));
+
         // skip walking SCHEMA folder if it does not exist
-        if (schemasCommonDir.exists()) {
-            // new schemas + content
-            // step 2
-            // read out schemas names, and work in loop on each
-            for (IResource sub : schemasCommonDir.members()) {
-                if (sub.getType() == IResource.FOLDER) {
-                    IFolder schemaDir = (IFolder) sub;
-                    if (checkIgnoreSchemaList(schemaDir.getName())) {
-                        loadSubdir(schemaDir, db);
-                        for (DbObjType dirSub : DIR_LOAD_ORDER) {
-                            loadSubdir(schemaDir.getFolder(dirSub.name()), db);
-                        }
-                    }
+        if (!schemasCommonDir.exists()) {
+            return;
+        }
+
+        // new schemas + content
+        // step 2
+        // read out schemas names, and work in loop on each
+        for (IResource sub : schemasCommonDir.members()) {
+            if (sub.getType() != IResource.FOLDER) {
+                continue;
+            }
+            IFolder schemaDir = (IFolder) sub;
+            if (checkIgnoreSchemaList(schemaDir.getName())) {
+                loadSubdir(schemaDir, db);
+                for (DbObjType dirSub : DIR_LOAD_ORDER) {
+                    loadSubdir(schemaDir.getFolder(dirSub.name()), db);
                 }
             }
         }
@@ -277,15 +282,17 @@ public class UIProjectLoader extends ProjectLoader {
         return newDb;
     }
 
-    private PgDatabase buildPgFiles(Collection<IFile> files, SubMonitor mon)
+    private PgDatabase buildPgChFiles(Collection<IFile> files, SubMonitor mon, String schemasDir, DatabaseType dbType)
             throws InterruptedException, CoreException {
         Set<String> schemaDirnamesLoaded = new HashSet<>();
-        IPath schemasPath = new Path(WorkDirs.PG_SCHEMA);
-        PgDatabase db = new PgDatabase(new PgDiffArguments());
+        IPath schemasPath = new Path(schemasDir);
+        var args = new PgDiffArguments();
+        args.setDbType(dbType);
+        PgDatabase db = new PgDatabase(args);
 
         for (IFile file : files) {
             IPath filePath = file.getProjectRelativePath();
-            if (!SQL_EXTENSION.equals(file.getFileExtension()) || !isInProject(filePath, DatabaseType.PG)) {
+            if (!SQL_EXTENSION.equals(file.getFileExtension()) || !isInProject(filePath, dbType)) {
                 // skip non-sql or non-project files
                 // still report work
                 mon.worked(1);
@@ -329,24 +336,6 @@ public class UIProjectLoader extends ProjectLoader {
                 }
             }
 
-            loadFile(file, mon, db);
-        }
-        return db;
-    }
-
-    private PgDatabase buildChFiles(Collection<IFile> files, SubMonitor mon)
-            throws InterruptedException, CoreException {
-        var args = new PgDiffArguments();
-        args.setDbType(DatabaseType.CH);
-        var db = new PgDatabase(args);
-        for (IFile file : files) {
-            IPath filePath = file.getProjectRelativePath();
-            if (!SQL_EXTENSION.equals(file.getFileExtension()) || !isInProject(filePath, DatabaseType.CH)) {
-                // skip non-sql or non-project files
-                // still report work
-                mon.worked(1);
-                continue;
-            }
             loadFile(file, mon, db);
         }
         return db;
@@ -416,13 +405,13 @@ public class UIProjectLoader extends ProjectLoader {
         PgDatabase db;
         switch (dbType) {
         case PG:
-            db = loader.buildPgFiles(files, mon);
+            db = loader.buildPgChFiles(files, mon, WorkDirs.PG_SCHEMA, dbType);
+            break;
+        case CH:
+            db = loader.buildPgChFiles(files, mon, WorkDirs.CH_DATABASES, dbType);
             break;
         case MS:
             db = loader.buildMsFiles(files, mon);
-            break;
-        case CH:
-            db = loader.buildChFiles(files, mon);
             break;
         default:
             throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
@@ -507,7 +496,7 @@ public class UIProjectLoader extends ProjectLoader {
         case MS:
             return isMsSchemaFile(path);
         case CH:
-            return false;
+            return isChSchemaFile(path);
         default:
             throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
         }
@@ -535,5 +524,11 @@ public class UIProjectLoader extends ProjectLoader {
                 && path.segment(0).equals(WorkDirs.MS_SECURITY)
                 && path.segment(1).equals(WorkDirs.MS_SCHEMAS)
                 && path.segment(2).endsWith(".sql"); //$NON-NLS-1$
+    }
+
+    private static boolean isChSchemaFile(IPath path) {
+        return path.segmentCount() == 3
+                && path.segment(0).equals(WorkDirs.CH_DATABASES)
+                && path.segment(2).endsWith(".sql");
     }
 }

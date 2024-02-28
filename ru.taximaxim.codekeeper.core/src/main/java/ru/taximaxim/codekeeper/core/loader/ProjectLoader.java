@@ -130,9 +130,7 @@ public class ProjectLoader extends DatabaseLoader {
     }
 
     private void loadChStructure(Path dir, PgDatabase db) throws InterruptedException, IOException {
-        for (String dirSub : WorkDirs.getDirectoryNames(DatabaseType.CH)) {
-            loadSubdir(dir, dirSub, db);
-        }
+        loadPgChStructure(dir, db, WorkDirs.CH_DATABASES);
     }
 
     private void loadPgStructure(Path dir, PgDatabase db) throws InterruptedException, IOException {
@@ -143,7 +141,13 @@ public class ProjectLoader extends DatabaseLoader {
             loadSubdir(dir, dirName, db, this::checkIgnoreSchemaList);
         }
 
-        Path schemasCommonDir = dir.resolve(WorkDirs.PG_SCHEMA);
+        loadPgChStructure(dir, db, WorkDirs.PG_SCHEMA);
+    }
+
+    private void loadPgChStructure(Path baseDir, PgDatabase db, String commonDir)
+            throws InterruptedException, IOException {
+
+        Path schemasCommonDir = baseDir.resolve(commonDir);
         // skip walking SCHEMA folder if it does not exist
         if (!Files.isDirectory(schemasCommonDir)) {
             return;
@@ -154,8 +158,7 @@ public class ProjectLoader extends DatabaseLoader {
         // read out schemas names, and work in loop on each
         try (Stream<Path> schemas = Files.list(schemasCommonDir)) {
             for (Path schemaDir : PgDiffUtils.sIter(schemas)) {
-                if (Files.isDirectory(schemaDir) &&
-                        checkIgnoreSchemaList(schemaDir.getFileName().toString())) {
+                if (Files.isDirectory(schemaDir) && checkIgnoreSchemaList(schemaDir.getFileName().toString())) {
                     loadSubdir(schemasCommonDir, schemaDir.getFileName().toString(), db);
                     for (DbObjType dirSub : DIR_LOAD_ORDER) {
                         loadSubdir(schemaDir, dirSub.name(), db);

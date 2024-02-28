@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ru.taximaxim.codekeeper.core.ChDiffUtils;
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
@@ -736,6 +737,9 @@ public abstract class PgStatement implements IStatement, IHashable {
             break;
         case MS:
             quoter = MsDiffUtils::quoteName;
+            break;
+        case CH:
+            quoter = ChDiffUtils::quoteName;
             break;
         default:
             throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + getDbType());

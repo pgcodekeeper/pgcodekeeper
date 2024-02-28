@@ -44,7 +44,7 @@ public class MsSchemasReader extends AbstractStatementReader {
         AbstractSchema schema = getSchema(result);
         if (loader.checkIgnoreSchemaList(schema.getName())) {
             db.addSchema(schema);
-            loader.putSchema(result.getLong("schema_id"), schema);
+            loader.putSchema(result.getInt("schema_id"), schema);
         }
     }
 

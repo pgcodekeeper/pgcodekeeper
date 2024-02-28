@@ -37,6 +37,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
+import ru.taximaxim.codekeeper.core.schema.ch.СhSchema;
 import ru.taximaxim.codekeeper.core.schema.ms.MsSchema;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
 
@@ -74,6 +75,9 @@ public final class TestUtils {
             break;
         case MS:
             schema = new MsSchema(Consts.DBO);
+            break;
+        case CH:
+            schema = new СhSchema(Consts.CH_DEFAULT_DB);
             break;
         default:
             throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
@@ -117,6 +121,24 @@ public final class TestUtils {
     public static Path getPathToResource(String resourceName, Class<?> clazz) throws URISyntaxException, IOException {
         URL url = clazz.getResource(resourceName);
         return Paths.get(URIUtil.toURI("file".equals(url.getProtocol()) ? url : FileLocator.toFileURL(url)));
+    }
+
+    static void runDiff(String fileNameTemplate, DatabaseType dbType, Class<?> clazz) throws IOException, InterruptedException {
+        PgDiffArguments args = new PgDiffArguments();
+        args.setDbType(dbType);
+        String script = getScript(fileNameTemplate, args, clazz);
+        TestUtils.compareResult(script, fileNameTemplate, clazz);
+    }
+
+    static String getScript(String fileNameTemplate, PgDiffArguments args, Class<?> clazz)
+            throws IOException, InterruptedException {
+        PgDatabase dbOld = TestUtils.loadTestDump(fileNameTemplate + FILES_POSTFIX.ORIGINAL_SQL, clazz, args);
+        TestUtils.runDiffSame(dbOld, fileNameTemplate, args);
+
+        PgDatabase dbNew = TestUtils.loadTestDump(fileNameTemplate + FILES_POSTFIX.NEW_SQL, clazz, args);
+        TestUtils.runDiffSame(dbNew, fileNameTemplate, args);
+
+        return new PgDiff(args).diffDatabaseSchemas(dbOld, dbNew, null);
     }
 
     private TestUtils() {

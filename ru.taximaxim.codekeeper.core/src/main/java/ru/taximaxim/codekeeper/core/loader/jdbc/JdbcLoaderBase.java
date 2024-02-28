@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -81,7 +82,7 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
     private final SubMonitor monitor;
     private final PgDiffArguments args;
     private final IgnoreSchemaList ignorelistSchema;
-    private final Map<Long, AbstractSchema> schemaIds = new HashMap<>();
+    private final Map<Object, AbstractSchema> schemaIds = new HashMap<>();
     protected final JdbcConnector connector;
 
     private boolean isGreenplumDb;
@@ -138,16 +139,16 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
         return extensionSchema;
     }
 
-    public void putSchema(long schemaId, AbstractSchema schema) {
+    public void putSchema(Object schemaId, AbstractSchema schema) {
         schemaIds.put(schemaId, schema);
     }
 
-    public AbstractSchema getSchema(long schemaId) {
+    protected AbstractSchema getSchema(Object schemaId) {
         return schemaIds.get(schemaId);
     }
 
-    public Map<Long, AbstractSchema> getSchemas() {
-        return Collections.unmodifiableMap(schemaIds);
+    public Set<Object> getSchemas() {
+        return Collections.unmodifiableSet(schemaIds.keySet());
     }
 
     public void setCurrentObject(GenericColumn currentObject) {
