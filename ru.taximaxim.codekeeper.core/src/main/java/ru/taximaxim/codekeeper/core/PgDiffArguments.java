@@ -65,6 +65,7 @@ public class PgDiffArguments {
     private boolean autoFormatObjectCode;
     private FormatConfiguration formatConfiguration = new FormatConfiguration();
     private boolean generateExists;
+    private boolean generateExistDoBlock;
     private boolean dropBeforeCreate;
     private boolean commentsToEnd;
     private List<String> preFilePath = new ArrayList<>();
@@ -108,6 +109,14 @@ public class PgDiffArguments {
 
     public void setGenerateExists(boolean generateExists) {
         this.generateExists = generateExists;
+    }
+
+    public boolean isGenerateExistDoBlock() {
+        return generateExistDoBlock;
+    }
+
+    public void setGenerateExistDoBlock(boolean generateExistDoBlock) {
+        this.generateExistDoBlock = generateExistDoBlock;
     }
 
     public void setNewSrc(final String newSrc) {
@@ -392,6 +401,7 @@ public class PgDiffArguments {
         arg.autoFormatObjectCode = isAutoFormatObjectCode();
         arg.formatConfiguration = formatConfiguration.copy();
         arg.generateExists = isGenerateExists();
+        arg.generateExistDoBlock = isGenerateExistDoBlock();
         arg.dropBeforeCreate = isDropBeforeCreate();
         arg.commentsToEnd = isCommentsToEnd();
         arg.preFilePath.addAll(getPreFilePath());

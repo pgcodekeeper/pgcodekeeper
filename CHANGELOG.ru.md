@@ -9,6 +9,8 @@
 
 ### Добавлено
 
+ - Добавлена настройка для оборачивания создания IDENTITY и CONSTRAINT в DO блок с секцией EXCEPTION (`Window -> Preferences -> pgCodeKeeper -> Обновление БД -> Печатать создание CONSTRAINT и IDENTITY в DO блоке`, CLI-опция `-do (--generate-exist-do-block)`).
+
 ### Изменено
 
 - Отдельный мастер создания проекта для MS SQL заменен на выбор типа БД.

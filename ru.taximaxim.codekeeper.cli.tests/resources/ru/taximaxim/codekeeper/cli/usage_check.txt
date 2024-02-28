@@ -69,6 +69,8 @@ Usage
                                           = ON for MS SQL
  --generate-exist                       : print CREATE IF NOT EXISTS / DROP IF
                                           EXISTS
+ -do (--generate-exist-do-block)        : print creation of CONSTRAINT and
+                                          IDENTITY in DO block (PG only)
  --drop-before-create                   : print DROP before CREATE statement
  --comments-to-end                      : print comments at the end of the
                                           script

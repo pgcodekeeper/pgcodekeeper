@@ -50,6 +50,7 @@ public class DbUpdateProperties extends PropertyPage {
     private Button btnConstraintNotValid;
     private Button btnScriptFromSelObjs;
     private Button btnGenerateExists;
+    private Button btnGenerateExistDoBlock;
     private Button btnDropBeforeCreate;
     private Button btnCommentsToEnd;
     private Button btnAddPrePostScript;
@@ -89,6 +90,7 @@ public class DbUpdateProperties extends PropertyPage {
                 btnConstraintNotValid.setEnabled(btnEnableProjPref.getSelection());
                 btnScriptFromSelObjs.setEnabled(btnEnableProjPref.getSelection());
                 btnGenerateExists.setEnabled(btnEnableProjPref.getSelection());
+                btnGenerateExistDoBlock.setEnabled(btnEnableProjPref.getSelection());
                 btnDropBeforeCreate.setEnabled(btnEnableProjPref.getSelection());
                 btnCommentsToEnd.setEnabled(btnEnableProjPref.getSelection());
                 btnAddPrePostScript.setEnabled(btnEnableProjPref.getSelection());
@@ -110,6 +112,8 @@ public class DbUpdateProperties extends PropertyPage {
                 Messages.DbUpdatePrefPage_script_from_selected_objs, overridePref);
         btnGenerateExists = createPropertyButton(panel, DB_UPDATE_PREF.GENERATE_EXISTS,
                 Messages.DbUpdatePrefPage_option_if_exists, overridePref);
+        btnGenerateExistDoBlock = createPropertyButton(panel, DB_UPDATE_PREF.GENERATE_EXIST_DO_BLOCK,
+                Messages.DbUpdatePrefPage_generate_exist_do_block, overridePref);
         btnDropBeforeCreate = createPropertyButton(panel, DB_UPDATE_PREF.DROP_BEFORE_CREATE,
                 Messages.DbUpdatePrefPage_option_drop_object, overridePref);
         btnCommentsToEnd = createPropertyButton(panel, DB_UPDATE_PREF.COMMENTS_TO_END,
@@ -144,6 +148,7 @@ public class DbUpdateProperties extends PropertyPage {
         setDefault(mainPS, btnConstraintNotValid, DB_UPDATE_PREF.PRINT_CONSTRAINT_NOT_VALID);
         setDefault(mainPS, btnScriptFromSelObjs, DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS);
         setDefault(mainPS, btnGenerateExists, DB_UPDATE_PREF.GENERATE_EXISTS);
+        setDefault(mainPS, btnGenerateExistDoBlock, DB_UPDATE_PREF.GENERATE_EXIST_DO_BLOCK);
         setDefault(mainPS, btnDropBeforeCreate, DB_UPDATE_PREF.DROP_BEFORE_CREATE);
         setDefault(mainPS, btnCommentsToEnd, DB_UPDATE_PREF.COMMENTS_TO_END);
         setDefault(mainPS, btnAddPrePostScript, DB_UPDATE_PREF.ADD_PRE_POST_SCRIPT);
@@ -187,6 +192,7 @@ public class DbUpdateProperties extends PropertyPage {
         prefs.putBoolean(DB_UPDATE_PREF.PRINT_CONSTRAINT_NOT_VALID, btnConstraintNotValid.getSelection());
         prefs.putBoolean(DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS, btnScriptFromSelObjs.getSelection());
         prefs.putBoolean(DB_UPDATE_PREF.GENERATE_EXISTS, btnGenerateExists.getSelection());
+        prefs.putBoolean(DB_UPDATE_PREF.GENERATE_EXIST_DO_BLOCK, btnGenerateExistDoBlock.getSelection());
         prefs.putBoolean(DB_UPDATE_PREF.DROP_BEFORE_CREATE, btnDropBeforeCreate.getSelection());
         prefs.putBoolean(DB_UPDATE_PREF.COMMENTS_TO_END, btnCommentsToEnd.getSelection());
         prefs.putBoolean(DB_UPDATE_PREF.ADD_PRE_POST_SCRIPT, btnAddPrePostScript.getSelection());

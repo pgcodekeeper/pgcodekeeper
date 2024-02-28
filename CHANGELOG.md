@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added setting to wrap the creation of IDENTITY and CONSTRAINT in DO block with EXCEPTION section (`Window -> Preferences -> pgCodeKeeper -> Database update -> Print creation of CONSTRAINT and IDENTITY in DO block`, CLI option `-do (--generate-exist-do-block)`).
+
 ### Changed
 
 - The separate project creation wizard for MS SQL has been replaced by database type selection.

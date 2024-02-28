@@ -171,19 +171,17 @@ public abstract class AbstractPgTable extends AbstractTable {
         });
     }
 
-    private void writeSequences(PgColumn column, StringBuilder sbOption) {
+    private void writeSequences(PgColumn column, StringBuilder sbOption, boolean newLine) {
         AbstractSequence sequence = column.getSequence();
-        if (sequence != null) {
-            sbOption.append(getAlterTable(true, false))
-            .append(ALTER_COLUMN)
-            .append(PgDiffUtils.getQuotedName(column.getName()))
-            .append(" ADD GENERATED ")
-            .append(column.getIdentityType())
-            .append(" AS IDENTITY (");
-            sbOption.append("\n\tSEQUENCE NAME ").append(sequence.getQualifiedName());
-            sequence.fillSequenceBody(sbOption);
-            sbOption.append("\n);");
-        }
+        sbOption.append(getAlterTable(newLine, false))
+        .append(ALTER_COLUMN)
+        .append(PgDiffUtils.getQuotedName(column.getName()))
+        .append(" ADD GENERATED ")
+        .append(column.getIdentityType())
+        .append(" AS IDENTITY (");
+        sbOption.append("\n\tSEQUENCE NAME ").append(sequence.getQualifiedName());
+        sequence.fillSequenceBody(sbOption);
+        sbOption.append("\n);");
     }
 
     @Override
@@ -381,7 +379,16 @@ public abstract class AbstractPgTable extends AbstractTable {
         }
 
         writeOptions(column, sbOption, isInherit);
-        writeSequences(column, sbOption);
+        AbstractSequence sequence = column.getSequence();
+        if (sequence != null) {
+            if (getDatabaseArguments().isGenerateExistDoBlock()) {
+                StringBuilder sbSeq = new StringBuilder();
+                writeSequences(column, sbSeq, false);
+                PgDiffUtils.appendSqlWrappedInDo(sbOption, sbSeq, Consts.DUPLICATE_RELATION);
+            } else {
+                writeSequences(column, sbOption, true);
+            }
+        }
     }
 
     private void fillInheritOptions(AbstractColumn column, StringBuilder sb) {

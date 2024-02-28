@@ -207,12 +207,16 @@ public class CliArgs extends PgDiffArguments {
             usage="print CREATE IF NOT EXISTS / DROP IF EXISTS")
     private boolean generateExists;
 
+    @Option(name="-do", aliases="--generate-exist-do-block", forbids={"--graph", "--parse"},
+            usage="print creation of CONSTRAINT and IDENTITY in DO block (PG only)")
+    private boolean generateExistDoBlock;
+
     @Option(name="--drop-before-create", forbids={"--graph", "--parse"},
             usage="print DROP before CREATE statement")
     private boolean dropBeforeCreate;
 
     @Option(name="--comments-to-end", forbids={"--graph", "--parse"},
-            usage = "print comments at the end of the script")
+            usage="print comments at the end of the script")
     private boolean commentsToEnd;
 
     @Option(name="-S", aliases="--safe-mode", forbids={"--graph", "--parse"},
@@ -608,6 +612,16 @@ public class CliArgs extends PgDiffArguments {
     @Override
     public boolean isGenerateExists() {
         return generateExists;
+    }
+
+    @Override
+    public boolean isGenerateExistDoBlock() {
+        return generateExistDoBlock;
+    }
+
+    @Override
+    public void setGenerateExistDoBlock(boolean generateExistDoBlock) {
+        this.generateExistDoBlock = generateExistDoBlock;
     }
 
     @Override

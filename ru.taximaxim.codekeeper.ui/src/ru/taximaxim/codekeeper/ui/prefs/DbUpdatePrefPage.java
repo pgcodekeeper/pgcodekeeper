@@ -90,6 +90,9 @@ public class DbUpdatePrefPage extends FieldEditorPreferencePage implements IWork
         addField(new BooleanFieldEditor(DB_UPDATE_PREF.GENERATE_EXISTS,
                 Messages.DbUpdatePrefPage_option_if_exists, getFieldEditorParent()));
 
+        addField(new BooleanFieldEditor(DB_UPDATE_PREF.GENERATE_EXIST_DO_BLOCK,
+                Messages.DbUpdatePrefPage_generate_exist_do_block, getFieldEditorParent()));
+
         addField(new BooleanFieldEditor(DB_UPDATE_PREF.DROP_BEFORE_CREATE,
                 Messages.DbUpdatePrefPage_option_drop_object, getFieldEditorParent()));
 

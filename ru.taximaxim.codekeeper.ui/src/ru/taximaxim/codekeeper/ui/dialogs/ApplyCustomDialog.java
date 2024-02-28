@@ -48,6 +48,7 @@ public class ApplyCustomDialog extends Dialog {
     private Button btnConstraintNotValid;
     private Button btnScriptFromSelObjs;
     private Button btnGenerateExists;
+    private Button btnGenerateExistDoBlock;
     private Button btndropBeforeCreate;
     private Button btnCommInScriptEnd;
     private Button btnAddPrePostScript;
@@ -92,6 +93,9 @@ public class ApplyCustomDialog extends Dialog {
 
         btnGenerateExists = createCustomButton(panel, DB_UPDATE_PREF.GENERATE_EXISTS,
                 Messages.DbUpdatePrefPage_option_if_exists);
+
+        btnGenerateExistDoBlock = createCustomButton(panel, DB_UPDATE_PREF.GENERATE_EXIST_DO_BLOCK,
+                Messages.DbUpdatePrefPage_generate_exist_do_block);
 
         btndropBeforeCreate = createCustomButton(panel, DB_UPDATE_PREF.DROP_BEFORE_CREATE,
                 Messages.DbUpdatePrefPage_option_drop_object);
@@ -148,6 +152,8 @@ public class ApplyCustomDialog extends Dialog {
                 btnConstraintNotValid.getSelection());
         customSettings.put(DB_UPDATE_PREF.GENERATE_EXISTS,
                 btnGenerateExists.getSelection());
+        customSettings.put(DB_UPDATE_PREF.GENERATE_EXIST_DO_BLOCK,
+                btnGenerateExistDoBlock.getSelection());
         customSettings.put(DB_UPDATE_PREF.DROP_BEFORE_CREATE,
                 btndropBeforeCreate.getSelection());
         customSettings.put(DB_UPDATE_PREF.COMMENTS_TO_END,

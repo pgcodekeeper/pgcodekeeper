@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
@@ -209,5 +210,10 @@ public final class PgConstraintExclude extends PgConstraint implements PgIndexPa
         con.setPredicate(getPredicate());
         con.setTablespace(getTablespace());
         return con;
+    }
+
+    @Override
+    public String getErrorCode() {
+        return Consts.DUPLICATE_RELATION;
     }
 }

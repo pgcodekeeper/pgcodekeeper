@@ -45,7 +45,8 @@ class DiffTest {
                 Arguments.of(new LibrariesArgumentsProvider()),
                 Arguments.of(new SelectedOnlyArgumentsProvider()),
                 Arguments.of(new AddConstraintNotValid()),
-                Arguments.of(new AddDropBeforeCreate()));
+                Arguments.of(new AddDropBeforeCreate()),
+                Arguments.of(new GenerateExistDoBlock()));
     }
 
     @ParameterizedTest
@@ -365,6 +366,24 @@ class AddDropBeforeCreate extends ArgumentsProvider {
         Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
 
         return new String[] {"--drop-before-create", "-o", getDiffResultFile().toString(),
+                fNew.toString(), fOriginal.toString()};
+    }
+}
+/**
+ * {@link ArgumentsProvider} implementation for print checking existence sequence, constraints
+ */
+class GenerateExistDoBlock extends ArgumentsProvider {
+
+    public GenerateExistDoBlock() {
+        super("generate_exist_do_block");
+    }
+
+    @Override
+    protected String[] args() throws URISyntaxException, IOException {
+        Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
+        Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
+
+        return new String[] {"-do", "-o", getDiffResultFile().toString(),
                 fNew.toString(), fOriginal.toString()};
     }
 }
