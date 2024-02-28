@@ -21,7 +21,6 @@ import java.util.List;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Drop_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.IdentifierContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ms.ChParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 
 public class DropChStatement extends ChParserAbstract {

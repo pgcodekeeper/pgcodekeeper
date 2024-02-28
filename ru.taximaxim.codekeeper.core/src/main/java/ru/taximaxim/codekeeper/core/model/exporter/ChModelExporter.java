@@ -45,18 +45,14 @@ public class ChModelExporter extends AbstractModelExporter {
 
     static Path getRelativeFilePath(PgStatement st, Path baseDir, boolean addExtension) {
         PgStatement parentSt = st.getParent();
+        String parentExportedFileName = parentSt == null ? null : getExportedFilename(parentSt);
 
         Path path = baseDir.resolve(WorkDirs.CH_DATABASES);
         DbObjType type = st.getStatementType();
-        var dbType = st.getDbType();
-        String dirName = WorkDirs.getDirectoryNameForType(dbType, type);
         switch (type) {
-        case TABLE:
-        case FUNCTION:
-        case VIEW:
         case USER:
         case ROLE:
-            path = path.resolve(dirName);
+            path = baseDir.resolve(WorkDirs.getDirectoryNameForType(st.getDbType(), type));
             break;
 
         case SCHEMA:
@@ -67,12 +63,18 @@ public class ChModelExporter extends AbstractModelExporter {
             }
             break;
 
+        case TABLE:
+        case FUNCTION:
+        case VIEW:
+            path = path.resolve(parentExportedFileName).resolve(type.name());
+            break;
+
         case CONSTRAINT:
         case INDEX:
         case COLUMN:
             st = parentSt;
-            dirName = WorkDirs.getDirectoryNameForType(dbType, parentSt.getStatementType());
-            path = path.resolve(dirName);
+            String dirName = getExportedFilename(parentSt.getParent());
+            path = path.resolve(dirName).resolve(parentSt.getStatementType().name());
             break;
         default:
             throw new IllegalStateException(Messages.DbObjType_unsupported_type + type);

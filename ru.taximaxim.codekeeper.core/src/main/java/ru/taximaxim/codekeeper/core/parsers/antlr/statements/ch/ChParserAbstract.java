@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package ru.taximaxim.codekeeper.core.parsers.antlr.statements.ms;
+package ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;

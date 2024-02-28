@@ -66,8 +66,8 @@ public abstract class JdbcReader extends AbstractStatementReader {
 
     @Override
     protected QueryBuilder makeQuery() {
-        var schemas = loader.getSchemas();
-        if (schemas.isEmpty()) {
+        String schemas = loader.getSchemas();
+        if (schemas.isBlank()) {
             return null;
         }
 
@@ -75,12 +75,7 @@ public abstract class JdbcReader extends AbstractStatementReader {
         builder.column(getSchemaColumn());
 
         StringBuilder sb = new StringBuilder();
-        sb.append(getSchemaColumn()).append(" IN (");
-        for (Object id : schemas) {
-            sb.append(id).append(',');
-        }
-        sb.setLength(sb.length() - 1);
-        sb.append(')');
+        sb.append(getSchemaColumn()).append(" IN (").append(schemas).append(')');
 
         builder.where(sb.toString());
 

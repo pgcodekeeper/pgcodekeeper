@@ -21,11 +21,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -82,7 +80,7 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
     private final SubMonitor monitor;
     private final PgDiffArguments args;
     private final IgnoreSchemaList ignorelistSchema;
-    private final Map<Object, AbstractSchema> schemaIds = new HashMap<>();
+    protected final Map<Object, AbstractSchema> schemaIds = new HashMap<>();
     protected final JdbcConnector connector;
 
     private boolean isGreenplumDb;
@@ -147,8 +145,8 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
         return schemaIds.get(schemaId);
     }
 
-    public Set<Object> getSchemas() {
-        return Collections.unmodifiableSet(schemaIds.keySet());
+    public String getSchemas() {
+        return schemaIds.keySet().stream().map(Object::toString).collect(Collectors.joining(", "));
     }
 
     public void setCurrentObject(GenericColumn currentObject) {

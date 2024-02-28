@@ -51,7 +51,7 @@ import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.StatementOverride;
-import ru.taximaxim.codekeeper.core.schema.ch.СhSchema;
+import ru.taximaxim.codekeeper.core.schema.ch.ChSchema;
 import ru.taximaxim.codekeeper.core.schema.ms.MsSchema;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
 
@@ -146,7 +146,7 @@ public class PgDumpLoader extends DatabaseLoader {
             schema = new PgSchema(Consts.PUBLIC);
             break;
         case CH:
-            schema = new СhSchema(Consts.CH_DEFAULT_DB);
+            schema = new ChSchema(Consts.CH_DEFAULT_DB);
             break;
         default:
             throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + args.getDbType());
