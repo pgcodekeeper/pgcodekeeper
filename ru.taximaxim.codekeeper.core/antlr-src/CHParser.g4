@@ -237,7 +237,7 @@ check_stmt
     ;
 
 create_database_stmt
-    : (ATTACH | CREATE) DATABASE if_not_exists? identifier cluster_clause? engine_expr?
+    : (ATTACH | CREATE) DATABASE if_not_exists? identifier cluster_clause? engine_expr settings_clause? comment_expr?
     ;
 
 create_view_stmt
@@ -308,6 +308,14 @@ cluster_clause
     : ON CLUSTER (identifier | STRING_LITERAL)
     ;
 
+table_override_clause
+    : TABLE OVERRIDE identifier LPAREN over_column? order_by_clause? primary_key_clause? partition_by_clause? sample_by_clause? ttl_clause? RPAREN
+    ;
+
+over_column
+    : COLUMNS LPAREN table_element_expr (COMMA table_element_expr)* RPAREN
+    ;
+
 uuid_clause
     : UUID STRING_LITERAL
     ;
@@ -353,7 +361,7 @@ ttl_clause
     ;
 
 engine_expr
-    : ENGINE EQ_SINGLE? (identifier | NULL) (LPAREN expr_list? RPAREN)?
+    : ENGINE EQ_SINGLE? (identifier | NULL) (LPAREN expr_list? RPAREN)? (table_override_clause (COMMA table_override_clause)*)?
     ;
 
 table_element_expr
@@ -1087,6 +1095,7 @@ keyword
     | OUTFILE
     | OVER
     | OVERRIDABLE
+    | OVERRIDE
     | PART
     | PARTITION
     | PERMISSIVE

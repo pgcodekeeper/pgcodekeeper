@@ -61,16 +61,15 @@ public class WorkDirs {
     /*
      * directory names for ClickHouse
      */
+    public static final String CH_DATABASES = "DATABASE";
     private static final String CH_USERS = "Users";
     private static final String CH_ROLES = "Roles";
-    private static final String CH_DICTIONARIES = "Dictionaries";
     private static final String CH_TABLES = "Tables";
     private static final String CH_FUNCTIONS = "Functions";
     private static final String CH_VIEWS = "Views";
 
-    // CH first level folders
-    private static final List<String> CH_DIRECTORY_NAMES = List.of(CH_TABLES, CH_FUNCTIONS, CH_VIEWS, CH_USERS,
-            CH_ROLES);
+    // CH first level folder
+    private static final List<String> CH_DIRECTORY_NAMES = List.of(CH_DATABASES);
 
     public static List<String> getDirectoryNames(DatabaseType databaseType) {
         switch (databaseType) {
@@ -100,6 +99,8 @@ public class WorkDirs {
 
     private static String getChDirectoryNameForType(DbObjType type) {
         switch (type) {
+        case SCHEMA:
+            return CH_DATABASES;
         case TABLE:
             return CH_TABLES;
         case FUNCTION:
@@ -110,8 +111,6 @@ public class WorkDirs {
             return CH_USERS;
         case ROLE:
             return CH_ROLES;
-        case DICTIONARY:
-            return CH_DICTIONARIES;
         case CONSTRAINT:
         case INDEX:
         case COLUMN:

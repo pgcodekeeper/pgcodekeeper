@@ -144,7 +144,7 @@ Usage
                                           hide objects specified by the filter
 
 DANGER_STATEMENT : [DROP_TABLE | ALTER_COLUMN | DROP_COLUMN | RESTART_WITH | UPDATE]
-OBJECT_TYPE : [CAST | USER | ROLE | ASSEMBLY | SCHEMA | EXTENSION | EVENT_TRIGGER | FOREIGN_DATA_WRAPPER | SERVER | USER_MAPPING | COLLATION | TYPE | DOMAIN | SEQUENCE | OPERATOR | FTS_PARSER | FTS_TEMPLATE | FTS_DICTIONARY | FTS_CONFIGURATION | DICTIONARY | TABLE | FUNCTION | PROCEDURE | AGGREGATE | INDEX | CONSTRAINT | VIEW | TRIGGER | RULE | POLICY]
+OBJECT_TYPE : [CAST | USER | ROLE | ASSEMBLY | SCHEMA | EXTENSION | EVENT_TRIGGER | FOREIGN_DATA_WRAPPER | SERVER | USER_MAPPING | COLLATION | TYPE | DOMAIN | SEQUENCE | OPERATOR | FTS_PARSER | FTS_TEMPLATE | FTS_DICTIONARY | FTS_CONFIGURATION | TABLE | FUNCTION | PROCEDURE | AGGREGATE | INDEX | CONSTRAINT | VIEW | TRIGGER | RULE | POLICY]
 
 Library load order
 	Libraries are loaded in the following order:
@@ -158,4 +158,4 @@ Live database connections
 	Use JDBC connection URL to specify live databases
 		PostgreSQL: https://jdbc.postgresql.org/documentation/head/connect.html
 		MS SQL: https://docs.microsoft.com/sql/connect/jdbc/building-the-connection-url
-
+		ClickHouse: https://clickhouse.com/docs/en/integrations/java#configuration

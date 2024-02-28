@@ -74,7 +74,7 @@ public class JdbcConnector {
     public static JdbcConnector fromUrl(String url) {
         return fromUrl(url, Consts.UTC);
     }
-    
+
     /**
      * @throws IllegalArgumentException url isn't valid
      */
@@ -95,7 +95,7 @@ public class JdbcConnector {
         }
         throw new IllegalArgumentException(MESSAGE_UNKNOWN_URL_SCHEMA);
     }
-    
+
     /**
      * @throws IllegalArgumentException url isn't valid
      */
@@ -120,20 +120,20 @@ public class JdbcConnector {
             return encoded;
         }
     }
-    
-     public static JdbcConnector getJdbcConnector(DatabaseType type, String host, int port, String user, String pass, String dbName,
-            Map<String, String> properties, boolean isReadOnly, String timezone, boolean winAuth, String domain) {
-         switch (type) {
-         case PG:
-             return new JdbcConnector(host, port, user, pass, dbName, properties, isReadOnly, timezone);
-         case MS:
-             return new JdbcMsConnector(host, port, user, pass, dbName, properties, isReadOnly, winAuth, domain);
-         case CH:
-             return new JdbcChConnector(host, port, user, pass, dbName, properties, isReadOnly);
-         default:
-             throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + type);
-         }
-     }
+
+    public static JdbcConnector getJdbcConnector(DatabaseType type, String host, int port, String user, String pass,
+            String dbName, Map<String, String> properties, boolean isReadOnly, String timezone, boolean winAuth, String domain) {
+        switch (type) {
+        case PG:
+            return new JdbcConnector(host, port, user, pass, dbName, properties, isReadOnly, timezone);
+        case MS:
+            return new JdbcMsConnector(host, port, user, pass, dbName, properties, isReadOnly, winAuth, domain);
+        case CH:
+            return new JdbcChConnector(host, port, user, pass, dbName, properties, isReadOnly);
+        default:
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + type);
+        }
+    }
 
     public JdbcConnector(String host, int port, String user, String pass, String dbName, String timezone) {
         this(host, port, user, pass, dbName, null, false, timezone);

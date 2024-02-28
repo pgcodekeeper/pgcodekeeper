@@ -107,6 +107,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.ISharedImages;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.libraries.PgLibrarySource;
 import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
@@ -641,12 +642,16 @@ public class DiffTableViewer extends Composite {
 
             @Override
             public String getText(Object element) {
-                return ((TreeElement) element).getType().toString();
+                return getElementType((TreeElement) element).getTypeName();
             }
 
             @Override
             public Image getImage(Object element) {
-                return Activator.getDbObjImage(((TreeElement) element).getType());
+                return Activator.getDbObjImage(getElementType((TreeElement) element));
+            }
+
+            private DbObjType getElementType(TreeElement element) {
+                return element.getType();
             }
         });
 

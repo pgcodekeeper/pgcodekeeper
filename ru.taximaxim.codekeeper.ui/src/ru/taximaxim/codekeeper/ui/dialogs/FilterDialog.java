@@ -247,6 +247,14 @@ public class FilterDialog extends Dialog {
         new Label(container, SWT.NONE).setText(Messages.FilterDialog_show_object_types);
 
         objViewer = CheckboxTableViewer.newCheckList(container, SWT.BORDER);
+        objViewer.setContentProvider(ArrayContentProvider.getInstance());
+        objViewer.setLabelProvider(new LabelProvider() {
+
+            @Override
+            public String getText(Object element) {
+                return ((DbObjType) element).getTypeName();
+            }
+        });
         EnumSet<DbObjType> typeList = EnumSet.complementOf(EnumSet.of(DbObjType.DATABASE, DbObjType.COLUMN));
         Object[] sortedTypeList = typeList.stream().sorted((e1, e2) -> e1.name().compareTo(e2.name())).toArray();
         objViewer.add(sortedTypeList);

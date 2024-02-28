@@ -27,8 +27,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
-
 /**
  * Tests for PgDiff class.
  *
@@ -591,8 +589,7 @@ class PgDiffTest {
             "add_objects_with_quoted_name"
     })
     void runDiff(String fileNameTemplate) throws IOException, InterruptedException {
-        String script = getScript(fileNameTemplate, new PgDiffArguments());
-        TestUtils.compareResult(script, fileNameTemplate, PgDiffTest.class);
+        TestUtils.runDiff(fileNameTemplate, DatabaseType.PG, PgDiffTest.class);
     }
 
     /**
@@ -605,7 +602,7 @@ class PgDiffTest {
             "compare_function;              Comparing a signature in a function",
     })
     void runCompare(String fileNameTemplate, String description) throws IOException, InterruptedException {
-        String script = getScript(fileNameTemplate, new PgDiffArguments());
+        String script = TestUtils.getScript(fileNameTemplate, new PgDiffArguments(), PgDiffTest.class);
         assertEquals(script.trim(), "");
     }
 
@@ -621,19 +618,7 @@ class PgDiffTest {
     void testCommentsInScriptEnd(String fileNameTemplate) throws IOException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();
         args.setCommentsToEnd(true);
-        String script = getScript(fileNameTemplate, args);
+        String script = TestUtils.getScript(fileNameTemplate, args, PgDiffTest.class);
         TestUtils.compareResult(script, fileNameTemplate, PgDiffTest.class);
-    }
-
-    private String getScript(String fileNameTemplate, PgDiffArguments args) throws IOException, InterruptedException {
-        PgDatabase dbOld = TestUtils.loadTestDump(
-                fileNameTemplate + FILES_POSTFIX.ORIGINAL_SQL, PgDiffTest.class, args);
-        TestUtils.runDiffSame(dbOld, fileNameTemplate, args);
-
-        PgDatabase dbNew = TestUtils.loadTestDump(
-                fileNameTemplate + FILES_POSTFIX.NEW_SQL, PgDiffTest.class, args);
-        TestUtils.runDiffSame(dbNew, fileNameTemplate, args);
-
-        return new PgDiff(args).diffDatabaseSchemas(dbOld, dbNew, null);
     }
 }
