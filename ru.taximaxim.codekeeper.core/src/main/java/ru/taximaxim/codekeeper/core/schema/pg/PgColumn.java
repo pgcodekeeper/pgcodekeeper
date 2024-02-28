@@ -271,8 +271,7 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
         compareOptions(newColumn, sb);
         compareForeignOptions(getForeignOptions(), newColumn.getForeignOptions(), sb);
         compareStats(getStatistics(), newColumn.getStatistics(), sb);
-        compareIdentity(getIdentityType(), newColumn.getIdentityType(),
-                getSequence(), newColumn.getSequence(), sb);
+        compareIdentity(getIdentityType(), newColumn.getIdentityType(), getSequence(), newColumn.getSequence(), sb);
         compareComments(sb, newColumn);
 
         return sb.length() > startLength;
@@ -317,12 +316,15 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
      */
     private void compareIdentity(String oldIdentityType, String newIdentityType,
             AbstractSequence oldSequence, AbstractSequence newSequence, StringBuilder sb) {
-
         if (!Objects.equals(oldIdentityType, newIdentityType)) {
             sb.append(getAlterColumn(true, false, name));
 
             if (newIdentityType == null) {
-                sb.append(" DROP IDENTITY;");
+                sb.append(" DROP IDENTITY");
+                if (getDatabaseArguments().isGenerateExists()) {
+                    sb.append(" IF EXISTS");
+                }
+                sb.append(";");
             } else if (oldIdentityType == null) {
                 sb.append(" ADD GENERATED ")
                 .append(newIdentityType)

@@ -58,6 +58,16 @@ public interface Consts {
 
     String GREENPLUM = "Greenplum";
 
+    /**
+     * Error codes for check existence objects
+     */
+    //If PK exists we get this error code.
+    String INVALID_DEFINITION = "'42P16'";
+    //If table (maybe with sequence) exists we get this error code.
+    String DUPLICATE_RELATION = "'42P07'";
+    //If object exists we get this error code.
+    String DUPLICATE_OBJECT = "'42710'";
+
     enum FUNC_SIGN {
         IN("(cstring)"),
         IN_ADVANCED("(cstring, oid, integer)"),

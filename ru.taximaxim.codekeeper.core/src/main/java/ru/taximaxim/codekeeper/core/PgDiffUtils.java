@@ -183,7 +183,7 @@ public final class PgDiffUtils {
     }
 
     public static String getErrorSubstr(String s, int pos) {
-        return PgDiffUtils.getErrorSubstr(s, pos, ERROR_SUBSTRING_LENGTH);
+        return getErrorSubstr(s, pos, ERROR_SUBSTRING_LENGTH);
     }
 
     public static String getErrorSubstr(String s, int pos, int len) {
@@ -272,5 +272,22 @@ public final class PgDiffUtils {
     }
 
     private PgDiffUtils() {
+    }
+
+    public static void appendSqlWrappedInDo(StringBuilder sbResult, StringBuilder sbSQL, String expectedErrCode) {
+        String body = sbSQL.toString().replace("\n", "\n\t");
+
+        sbResult
+        .append("\n\nDO $$")
+        .append("\nBEGIN")
+        .append("\n\t").append(body)
+        .append("\nEXCEPTION WHEN OTHERS THEN")
+        .append("\n\tIF (SQLSTATE = ").append(expectedErrCode).append(") THEN")
+        .append("\n\t\tRAISE NOTICE '%, skip', SQLERRM;")
+        .append("\n\tELSE")
+        .append("\n\t\tRAISE;")
+        .append("\n\tEND IF;")
+        .append("\nEND; $$")
+        .append("\nLANGUAGE 'plpgsql';");
     }
 }

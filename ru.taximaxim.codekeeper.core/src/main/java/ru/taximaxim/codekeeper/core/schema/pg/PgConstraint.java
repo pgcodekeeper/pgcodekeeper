@@ -54,6 +54,8 @@ public abstract class PgConstraint extends AbstractConstraint {
         return initially;
     }
 
+    protected abstract String getErrorCode();
+
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
@@ -86,6 +88,12 @@ public abstract class PgConstraint extends AbstractConstraint {
         }
 
         appendExtraOptions(sbSQL);
+
+        if (getDatabaseArguments().isGenerateExistDoBlock()) {
+            StringBuilder sb = new StringBuilder();
+            PgDiffUtils.appendSqlWrappedInDo(sb, sbSQL, getErrorCode());
+            return sb.toString();
+        }
 
         return sbSQL.toString();
     }
