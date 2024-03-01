@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Fixed an error when parsing some special characters in MS SQL.
+- Fixed an error when parsing `$n%TYPE` construction in PostgreSQL.
 
 ## [9.3.0] - 2024-02-06
 

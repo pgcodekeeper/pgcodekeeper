@@ -16,6 +16,7 @@
 package ru.taximaxim.codekeeper.core.parsers.antlr.expr;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
@@ -153,7 +154,14 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
         } else if (ctx.ROWTYPE() != null) {
             declareNamespaceVar(alias, null, addTypeDepcy(ctx.schema_qualified_name_nontype()));
         } else {
-            String varType = processColumn(PgParserAbstract.getIdentifiers(ctx.schema_qualified_name())).getSecond();
+            List<? extends ParserRuleContext> ids;
+            if (ctx.dollar_number() != null) {
+                ids = Arrays.asList(ctx.dollar_number());
+            } else {
+                ids = PgParserAbstract.getIdentifiers(ctx.schema_qualified_name());
+            }
+
+            String varType = processColumn(ids).getSecond();
             addNamespaceVariable(new Pair<>(alias, varType));
         }
     }
