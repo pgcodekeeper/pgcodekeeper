@@ -9,6 +9,14 @@
 
 ### Добавлено
 
+### Изменено
+
+### Исправлено
+
+## [9.4.0] - 2024-03-05
+
+### Добавлено
+
  - Добавлена настройка для оборачивания создания IDENTITY и CONSTRAINT в DO блок с секцией EXCEPTION (`Window -> Preferences -> pgCodeKeeper -> Обновление БД -> Печатать создание CONSTRAINT и IDENTITY в DO блоке`, CLI-опция `-do (--generate-exist-do-block)`).
 
 ### Изменено
@@ -1868,7 +1876,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.3.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.4.0...HEAD
+[9.4.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.3.0...v9.4.0
 [9.3.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.2.0...v9.3.0
 [9.2.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.1.0...v9.2.0
 [9.1.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.0.0...v9.1.0

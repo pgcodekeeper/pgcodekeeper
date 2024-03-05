@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [9.4.0] - 2024-03-05
+
+### Added
+
 - Added setting to wrap the creation of IDENTITY and CONSTRAINT in DO block with EXCEPTION section (`Window -> Preferences -> pgCodeKeeper -> Database update -> Print creation of CONSTRAINT and IDENTITY in DO block`, CLI option `-do (--generate-exist-do-block)`).
 
 ### Changed
@@ -1867,7 +1875,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.3.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.4.0...HEAD
+[9.4.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.3.0...v9.4.0
 [9.3.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.2.0...v9.3.0
 [9.2.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.1.0...v9.2.0
 [9.1.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.0.0...v9.1.0
