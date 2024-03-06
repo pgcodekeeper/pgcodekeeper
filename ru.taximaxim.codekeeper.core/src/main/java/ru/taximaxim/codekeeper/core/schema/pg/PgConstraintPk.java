@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
@@ -107,6 +108,11 @@ public final class PgConstraintPk extends PgConstraint implements IConstraintPk,
     public void addColumn(String column) {
         columns.add(column);
         resetHash();
+    }
+
+    @Override
+    public String getErrorCode() {
+        return isPrimaryKey ? Consts.INVALID_DEFINITION : Consts.DUPLICATE_RELATION;
     }
 
     @Override

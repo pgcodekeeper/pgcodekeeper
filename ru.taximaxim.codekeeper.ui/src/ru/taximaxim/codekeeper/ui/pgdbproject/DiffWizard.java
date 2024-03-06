@@ -185,6 +185,7 @@ class PageDiff extends WizardPage implements Listener {
     private Button btnConstraintNotValid;
     private Button btnScriptFromSelObjs;
     private Button btnGenerateExists;
+    private Button btnGenerateExistDoBlock;
     private Button btnDropBeforeCreate;
     private Button btnCommentsToEnd;
 
@@ -294,6 +295,7 @@ class PageDiff extends WizardPage implements Listener {
                 btnConstraintNotValid.setVisible(selected);
                 btnScriptFromSelObjs.setVisible(selected);
                 btnGenerateExists.setVisible(selected);
+                btnGenerateExistDoBlock.setVisible(selected);
                 btnDropBeforeCreate.setVisible(selected);
                 btnCommentsToEnd.setVisible(selected);
                 btnDataMovementMode.setVisible(selected);
@@ -326,6 +328,9 @@ class PageDiff extends WizardPage implements Listener {
         btnCheckFuncBodies = createBoooleanButton(container, DB_UPDATE_PREF.CHECK_FUNCTION_BODIES,
                 Messages.dbUpdatePrefPage_check_function_bodies);
 
+        btnScriptFromSelObjs = createBoooleanButton(container, DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS,
+                Messages.DbUpdatePrefPage_script_from_selected_objs);
+
         btnAlterColUsingExpr = createBoooleanButton(container, DB_UPDATE_PREF.USING_ON_OFF,
                 Messages.dbUpdatePrefPage_switch_on_off_using);
 
@@ -335,11 +340,11 @@ class PageDiff extends WizardPage implements Listener {
         btnConstraintNotValid = createBoooleanButton(container, DB_UPDATE_PREF.PRINT_CONSTRAINT_NOT_VALID,
                 Messages.ApplyCustomDialog_constraint_not_valid);
 
-        btnScriptFromSelObjs = createBoooleanButton(container, DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS,
-                Messages.DbUpdatePrefPage_script_from_selected_objs);
-
         btnGenerateExists = createBoooleanButton(container, DB_UPDATE_PREF.GENERATE_EXISTS,
                 Messages.DbUpdatePrefPage_option_if_exists);
+
+        btnGenerateExistDoBlock = createBoooleanButton(container, DB_UPDATE_PREF.GENERATE_EXIST_DO_BLOCK,
+                Messages.DbUpdatePrefPage_generate_exist_do_block);
 
         btnDropBeforeCreate = createBoooleanButton(container, DB_UPDATE_PREF.DROP_BEFORE_CREATE,
                 Messages.DbUpdatePrefPage_option_drop_object);
@@ -427,6 +432,7 @@ class PageDiff extends WizardPage implements Listener {
         oneTimePrefs.put(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY, btnCreateIdxConcurrent.getSelection());
         oneTimePrefs.put(DB_UPDATE_PREF.PRINT_CONSTRAINT_NOT_VALID, btnConstraintNotValid.getSelection());
         oneTimePrefs.put(DB_UPDATE_PREF.GENERATE_EXISTS, btnGenerateExists.getSelection());
+        oneTimePrefs.put(DB_UPDATE_PREF.GENERATE_EXIST_DO_BLOCK, btnGenerateExistDoBlock.getSelection());
         oneTimePrefs.put(DB_UPDATE_PREF.DROP_BEFORE_CREATE, btnDropBeforeCreate.getSelection());
         oneTimePrefs.put(DB_UPDATE_PREF.COMMENTS_TO_END, btnCommentsToEnd.getSelection());
         oneTimePrefs.put(DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS, btnScriptFromSelObjs.getSelection());

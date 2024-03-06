@@ -17,6 +17,7 @@ package ru.taximaxim.codekeeper.core.schema.pg;
 
 import java.util.Objects;
 
+import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
@@ -90,5 +91,10 @@ public final class PgConstraintCheck extends PgConstraint {
         con.setInherit(isInherit());
         con.setExpression(getExpression());
         return con;
+    }
+
+    @Override
+    public String getErrorCode() {
+        return Consts.DUPLICATE_OBJECT;
     }
 }

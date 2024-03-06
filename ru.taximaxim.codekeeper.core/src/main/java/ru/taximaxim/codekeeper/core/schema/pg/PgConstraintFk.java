@@ -20,6 +20,7 @@ import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
@@ -118,6 +119,10 @@ public final class PgConstraintFk extends PgConstraint implements IConstraintFk 
         return updAction;
     }
 
+    @Override
+    public String getErrorCode() {
+        return Consts.DUPLICATE_OBJECT;
+    }
 
     @Override
     public String getDefinition() {
@@ -125,7 +130,7 @@ public final class PgConstraintFk extends PgConstraint implements IConstraintFk 
         sbSQL.append("FOREIGN KEY ");
         StatementUtils.appendCols(sbSQL, columns, getDbType());
         sbSQL.append(" REFERENCES ").append(PgDiffUtils.getQuotedName(getForeignSchema())).append('.')
-            .append(PgDiffUtils.getQuotedName(getForeignTable()));
+        .append(PgDiffUtils.getQuotedName(getForeignTable()));
         if (!refs.isEmpty()) {
             StatementUtils.appendCols(sbSQL, getForeignColumns(), getDbType());
         }

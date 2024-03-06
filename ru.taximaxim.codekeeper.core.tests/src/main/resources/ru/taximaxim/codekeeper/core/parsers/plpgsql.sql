@@ -2411,3 +2411,10 @@ BEGIN
 
     return query explain insert into public.t1 (c1) values (1) returning c1;
 END;
+
+DECLARE
+    s $1%TYPE;
+    t2_row table2%ROWTYPE;
+BEGIN
+    RETURN;
+END;

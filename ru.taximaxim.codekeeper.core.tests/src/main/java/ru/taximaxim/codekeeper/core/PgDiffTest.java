@@ -621,4 +621,20 @@ class PgDiffTest {
         String script = TestUtils.getScript(fileNameTemplate, args, PgDiffTest.class);
         TestUtils.compareResult(script, fileNameTemplate, PgDiffTest.class);
     }
+
+    /**
+     * test generation exeption block for table with identity & costraint in migration script
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "add_sequence_with_exeption_block",
+            "add_costraints_with_exeption_block"
+    })
+    void testGenerateExistDoBlock(String fileNameTemplate) throws IOException, InterruptedException {
+        PgDiffArguments args = new PgDiffArguments();
+        args.setGenerateExistDoBlock(true);
+
+        String script = TestUtils.getScript(fileNameTemplate, args, PgDiffTest.class);
+        TestUtils.compareResult(script, fileNameTemplate, PgDiffTest.class);
+    }
 }
