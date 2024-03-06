@@ -21,9 +21,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 
+import ru.taximaxim.codekeeper.core.PgDiffArguments;
+import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrTask;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
+import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
+import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
+import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 
 public abstract class DatabaseLoader {
 
@@ -37,10 +42,23 @@ public abstract class DatabaseLoader {
      *
      * @return database schema
      */
-    public PgDatabase loadAndAnalyze() throws IOException, InterruptedException {
-        PgDatabase d = load();
+    public AbstractDatabase loadAndAnalyze() throws IOException, InterruptedException {
+        AbstractDatabase d = load();
         FullAnalyze.fullAnalyze(d, errors);
         return d;
+    }
+
+    public static AbstractDatabase createDb(PgDiffArguments arguments) {
+        switch (arguments.getDbType()) {
+        case CH:
+            return new ChDatabase(arguments);
+        case MS:
+            return new MsDatabase(arguments);
+        case PG:
+            return new PgDatabase(arguments);
+        default:
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
+        }
     }
 
     /**
@@ -48,7 +66,7 @@ public abstract class DatabaseLoader {
      *
      * @return database schema
      */
-    public abstract PgDatabase load() throws IOException, InterruptedException;
+    public abstract AbstractDatabase load() throws IOException, InterruptedException;
 
     protected DatabaseLoader() {
         this(new ArrayList<>());

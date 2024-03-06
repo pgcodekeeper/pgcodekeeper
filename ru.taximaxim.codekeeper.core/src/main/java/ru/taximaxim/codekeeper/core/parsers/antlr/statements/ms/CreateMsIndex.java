@@ -28,15 +28,15 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Index_nam
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Qualified_nameContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractIndex;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
+import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsIndex;
 
 public class CreateMsIndex extends MsTableAbstract {
 
     private final Create_indexContext ctx;
 
-    public CreateMsIndex(Create_indexContext ctx, PgDatabase db) {
+    public CreateMsIndex(Create_indexContext ctx, MsDatabase db) {
         super(db);
         this.ctx = ctx;
     }

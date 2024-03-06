@@ -21,14 +21,14 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Create_schemaContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsSchema;
 
 public class CreateMsSchema extends MsParserAbstract {
 
     private final Create_schemaContext ctx;
 
-    public CreateMsSchema(Create_schemaContext ctx, PgDatabase db) {
+    public CreateMsSchema(Create_schemaContext ctx, MsDatabase db) {
         super(db);
         this.ctx = ctx;
     }

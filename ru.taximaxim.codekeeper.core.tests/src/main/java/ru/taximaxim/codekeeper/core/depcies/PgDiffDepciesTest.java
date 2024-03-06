@@ -26,7 +26,7 @@ import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 
 /**
  * Тестирует сравнение БД с неполным выбором различающихся объектов
@@ -297,10 +297,10 @@ class PgDiffDepciesTest {
      */
     void testDepcy(String userSelTemplate, boolean isEnableFunctionBodiesDependencies)
             throws IOException, InterruptedException {
-        PgDatabase oldDatabase;
-        PgDatabase newDatabase;
-        PgDatabase oldDbFull;
-        PgDatabase newDbFull;
+        AbstractDatabase oldDatabase;
+        AbstractDatabase newDatabase;
+        AbstractDatabase oldDbFull;
+        AbstractDatabase newDbFull;
         PgDiffArguments args = new PgDiffArguments();
         args.setEnableFunctionBodiesDependencies(isEnableFunctionBodiesDependencies);
 

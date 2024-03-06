@@ -23,7 +23,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_fts_dictionary_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Storage_parameter_optionContext;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgFtsDictionary;
 
 public class CreateFtsDictionary extends PgParserAbstract {

@@ -25,6 +25,7 @@ import java.util.stream.Stream;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.ICast;
 import ru.taximaxim.codekeeper.core.schema.IConstraint;
@@ -32,22 +33,22 @@ import ru.taximaxim.codekeeper.core.schema.IFunction;
 import ru.taximaxim.codekeeper.core.schema.IOperator;
 import ru.taximaxim.codekeeper.core.schema.IRelation;
 import ru.taximaxim.codekeeper.core.schema.IStatement;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation.LocationType;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 public class MetaUtils {
 
-    public static MetaContainer createTreeFromDb(PgDatabase db) {
+    public static MetaContainer createTreeFromDb(AbstractDatabase db) {
         MetaContainer tree = new MetaContainer();
         db.getDescendants()
         .map(MetaUtils::createMetaFromStatement)
         .forEach(tree::addStatement);
 
-        if (db.getArguments().getDbType() == DatabaseType.PG) {
-            MetaStorage.getSystemObjects(db.getPostgresVersion()).forEach(tree::addStatement);
+        if (db instanceof PgDatabase) {
+            MetaStorage.getSystemObjects(((PgDatabase) db).getPostgresVersion()).forEach(tree::addStatement);
         }
         return tree;
     }
@@ -176,7 +177,7 @@ public class MetaUtils {
                 .build();
     }
 
-    public static Map<String, List<MetaStatement>> getObjDefinitions(PgDatabase db) {
+    public static Map<String, List<MetaStatement>> getObjDefinitions(AbstractDatabase db) {
         Map<String, List<MetaStatement>> definitions = new HashMap<>();
 
         db.getDescendants().forEach(st -> {

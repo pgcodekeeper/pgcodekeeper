@@ -29,8 +29,8 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_pol
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.User_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
+import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgEventType;
 import ru.taximaxim.codekeeper.core.schema.pg.PgPolicy;
 

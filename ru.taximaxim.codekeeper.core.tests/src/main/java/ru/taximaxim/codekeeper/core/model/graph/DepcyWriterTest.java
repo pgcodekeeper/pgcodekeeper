@@ -29,7 +29,7 @@ import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.FILES_POSTFIX;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.TestUtils;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 
 public class DepcyWriterTest {
 
@@ -55,7 +55,7 @@ public class DepcyWriterTest {
         }
         args.setEnableFunctionBodiesDependencies(true);
 
-        PgDatabase db = TestUtils.loadTestDump(fileName + FILES_POSTFIX.SQL, getClass(), args);
+        AbstractDatabase db = TestUtils.loadTestDump(fileName + FILES_POSTFIX.SQL, getClass(), args);
 
         StringWriter out = new StringWriter();
         PrintWriter writer = new PrintWriter(out);

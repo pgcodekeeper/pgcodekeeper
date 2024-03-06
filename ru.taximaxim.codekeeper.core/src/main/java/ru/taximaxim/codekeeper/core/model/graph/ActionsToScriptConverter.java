@@ -45,9 +45,9 @@ import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSequence;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.ms.MsColumn;
 import ru.taximaxim.codekeeper.core.schema.ms.MsView;
@@ -74,8 +74,8 @@ public class ActionsToScriptConverter {
     private final Set<ActionContainer> actions;
     private final Set<PgStatement> toRefresh;
     private final PgDiffArguments arguments;
-    private final PgDatabase oldDbFull;
-    private final PgDatabase newDbFull;
+    private final AbstractDatabase oldDbFull;
+    private final AbstractDatabase newDbFull;
 
     private final Set<PgSequence> sequencesOwnedBy = new LinkedHashSet<>();
     private final List<String> postComments = new ArrayList<>();
@@ -96,7 +96,7 @@ public class ActionsToScriptConverter {
     private List<String> partitionChildren;
 
     public ActionsToScriptConverter(PgDiffScript script, Set<ActionContainer> actions,
-            PgDiffArguments arguments, PgDatabase oldDbFull, PgDatabase newDbFull) {
+            PgDiffArguments arguments, AbstractDatabase oldDbFull, AbstractDatabase newDbFull) {
         this(script, actions, Collections.emptySet(), arguments, oldDbFull, newDbFull);
     }
 
@@ -104,7 +104,8 @@ public class ActionsToScriptConverter {
      * @param toRefresh an ordered set of refreshed statements in reverse order
      */
     public ActionsToScriptConverter(PgDiffScript script, Set<ActionContainer> actions,
-            Set<PgStatement> toRefresh, PgDiffArguments arguments, PgDatabase oldDbFull, PgDatabase newDbFull) {
+            Set<PgStatement> toRefresh, PgDiffArguments arguments, AbstractDatabase oldDbFull,
+            AbstractDatabase newDbFull) {
         this.script = script;
         this.actions = actions;
         this.arguments = arguments;

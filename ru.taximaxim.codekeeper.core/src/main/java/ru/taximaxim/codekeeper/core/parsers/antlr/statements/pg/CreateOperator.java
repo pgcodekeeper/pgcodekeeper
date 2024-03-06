@@ -30,7 +30,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Identifier
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Operator_optionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qualified_nameContext;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgOperator;
 
 public class CreateOperator extends PgParserAbstract {

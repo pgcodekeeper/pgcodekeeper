@@ -36,12 +36,12 @@ import org.jgrapht.traverse.DepthFirstIterator;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractFunction;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.Argument;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.SourceStatement;
 import ru.taximaxim.codekeeper.core.schema.ms.MsTable;
@@ -80,8 +80,8 @@ import ru.taximaxim.codekeeper.core.schema.pg.TypedPgTable;
  */
 public class DepcyResolver {
 
-    private final PgDatabase oldDb;
-    private final PgDatabase newDb;
+    private final AbstractDatabase oldDb;
+    private final AbstractDatabase newDb;
     private final DepcyGraph oldDepcyGraph;
     private final DepcyGraph newDepcyGraph;
     private final Set<ActionContainer> actions = new LinkedHashSet<>();
@@ -124,7 +124,7 @@ public class DepcyResolver {
         return Collections.unmodifiableSet(toRefresh);
     }
 
-    public DepcyResolver(PgDatabase oldDatabase, PgDatabase newDatabase) {
+    public DepcyResolver(AbstractDatabase oldDatabase, AbstractDatabase newDatabase) {
         this.oldDb = oldDatabase;
         this.newDb = newDatabase;
         this.oldDepcyGraph = new DepcyGraph(oldDatabase);

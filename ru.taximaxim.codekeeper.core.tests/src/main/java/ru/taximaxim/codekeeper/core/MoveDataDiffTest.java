@@ -25,7 +25,7 @@ import org.junit.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 
 /**
  * Tests for migrate data option .
@@ -77,9 +77,9 @@ class MoveDataDiffTest {
         PgDiffArguments args = new PgDiffArguments();
         args.setDataMovementMode(true);
         args.setDbType(dbType);
-        PgDatabase dbOld = TestUtils.loadTestDump(
+        AbstractDatabase dbOld = TestUtils.loadTestDump(
                 fileNameTemplate + FILES_POSTFIX.ORIGINAL_SQL, MoveDataDiffTest.class, args);
-        PgDatabase dbNew = TestUtils.loadTestDump(
+        AbstractDatabase dbNew = TestUtils.loadTestDump(
                 fileNameTemplate + FILES_POSTFIX.NEW_SQL, MoveDataDiffTest.class, args);
 
         TestUtils.runDiffSame(dbOld, fileNameTemplate, args);

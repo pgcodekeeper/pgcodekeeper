@@ -57,7 +57,6 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Table_of_t
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.pg.AbstractForeignTable;
@@ -68,6 +67,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgConstraintCheck;
 import ru.taximaxim.codekeeper.core.schema.pg.PgConstraintExclude;
 import ru.taximaxim.codekeeper.core.schema.pg.PgConstraintFk;
 import ru.taximaxim.codekeeper.core.schema.pg.PgConstraintPk;
+import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgIndexParamContainer;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
 

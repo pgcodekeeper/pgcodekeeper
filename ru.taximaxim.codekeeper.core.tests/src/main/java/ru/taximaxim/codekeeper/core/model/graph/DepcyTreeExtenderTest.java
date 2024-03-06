@@ -32,7 +32,7 @@ import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 
 /**
  * An 'factory' that creates 'artificial' predefined objects
@@ -49,7 +49,7 @@ interface TreeElementCreator {
      * Возвращает зависимости от объектов в дереве
      * @param db
      */
-    Set<TreeElement> getDepcySet(PgDatabase source, PgDatabase target, TreeElement tree);
+    Set<TreeElement> getDepcySet(AbstractDatabase source, AbstractDatabase target, TreeElement tree);
 }
 
 /**
@@ -77,9 +77,9 @@ class DepcyTreeExtenderTest {
         String fileName = "depcy_schema_" + fileIndex + ".sql";
         String targetFileName = "depcy_schema_new_" + fileIndex + ".sql";
 
-        PgDatabase dbSource = TestUtils.loadTestDump(
+        AbstractDatabase dbSource = TestUtils.loadTestDump(
                 fileName, DepcyTreeExtenderTest.class, args);
-        PgDatabase dbTarget = TestUtils.loadTestDump(
+        AbstractDatabase dbTarget = TestUtils.loadTestDump(
                 targetFileName, DepcyTreeExtenderTest.class, args);
 
         TreeElement tree = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
@@ -129,7 +129,7 @@ class Predefined1 implements TreeElementCreator {
     }
 
     @Override
-    public Set<TreeElement> getDepcySet(PgDatabase source, PgDatabase target, TreeElement tree) {
+    public Set<TreeElement> getDepcySet(AbstractDatabase source, AbstractDatabase target, TreeElement tree) {
         TreeElement table = tree.findElement(target.getDefaultSchema().getTable("t1"));
         TreeElement view = tree.findElement(target.getDefaultSchema().getView("v2"));
         TreeElement publicSchema = tree.findElement(target.getDefaultSchema());
@@ -154,7 +154,7 @@ class Predefined2 implements TreeElementCreator {
     }
 
     @Override
-    public Set<TreeElement> getDepcySet(PgDatabase source, PgDatabase target, TreeElement tree) {
+    public Set<TreeElement> getDepcySet(AbstractDatabase source, AbstractDatabase target, TreeElement tree) {
         return new HashSet<>();
     }
 }
@@ -178,7 +178,7 @@ class Predefined3 implements TreeElementCreator {
     }
 
     @Override
-    public Set<TreeElement> getDepcySet(PgDatabase source, PgDatabase target, TreeElement tree) {
+    public Set<TreeElement> getDepcySet(AbstractDatabase source, AbstractDatabase target, TreeElement tree) {
         //        PgSchema schema = db.getSchema(Consts.PUBLIC);
         //        PgTable table = schema.getTable("t1");
         //        PgSequence seq = schema.getSequence("s1");
@@ -206,7 +206,7 @@ class Predefined4 implements TreeElementCreator {
     }
 
     @Override
-    public Set<TreeElement> getDepcySet(PgDatabase source, PgDatabase target, TreeElement tree) {
+    public Set<TreeElement> getDepcySet(AbstractDatabase source, AbstractDatabase target, TreeElement tree) {
         return new HashSet<>(Arrays.asList(tree.findElement(source.getDefaultSchema())));
     }
 }
@@ -234,7 +234,7 @@ class Predefined5 implements TreeElementCreator {
     }
 
     @Override
-    public Set<TreeElement> getDepcySet(PgDatabase source, PgDatabase target, TreeElement tree) {
+    public Set<TreeElement> getDepcySet(AbstractDatabase source, AbstractDatabase target, TreeElement tree) {
         TreeElement table = tree.findElement(target.getSchema("republic").getTable("t_test2foreign"));
         return new HashSet<>(Arrays.asList(table));
     }
@@ -260,7 +260,7 @@ class Predefined6 implements TreeElementCreator {
     }
 
     @Override
-    public Set<TreeElement> getDepcySet(PgDatabase source, PgDatabase target, TreeElement tree) {
+    public Set<TreeElement> getDepcySet(AbstractDatabase source, AbstractDatabase target, TreeElement tree) {
         TreeElement func = tree.findElement(target.getSchema(Consts.PUBLIC).getFunction("f1()"));
         return new HashSet<>(Arrays.asList(func));
     }

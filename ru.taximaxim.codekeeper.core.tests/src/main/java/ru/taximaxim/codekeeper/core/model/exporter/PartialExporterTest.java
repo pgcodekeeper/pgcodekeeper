@@ -42,7 +42,7 @@ import ru.taximaxim.codekeeper.core.fileutils.TempDir;
 import ru.taximaxim.codekeeper.core.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeFlattener;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 
 /**
  * Test for partial export
@@ -103,8 +103,8 @@ import ru.taximaxim.codekeeper.core.schema.PgDatabase;
  */
 public class PartialExporterTest {
 
-    private static PgDatabase dbSource;
-    private static PgDatabase dbTarget;
+    private static AbstractDatabase dbSource;
+    private static AbstractDatabase dbTarget;
 
     @BeforeAll
     static void initDiffTree() throws InterruptedException, IOException {

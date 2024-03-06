@@ -27,7 +27,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Alter_fts_
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.IdentifierContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qualified_nameContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgFtsConfiguration;
 
 public class AlterFtsStatement extends PgParserAbstract {

@@ -38,8 +38,8 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.ExpressionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.msexpr.MsAbstractExprWithNmspc;
 import ru.taximaxim.codekeeper.core.parsers.antlr.msexpr.MsValueExpr;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.PgStatementWithSearchPath;
@@ -90,7 +90,7 @@ public abstract class AbstractAnalysisLauncher {
      * @param db
      *            database
      */
-    public void updateStmt(PgDatabase db) {
+    public void updateStmt(AbstractDatabase db) {
         if (stmt.getDatabase() != db) {
             // statement came from another DB object, probably a library
             // for proper depcy processing, find its twin in the final DB object

@@ -119,7 +119,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.core.model.graph.DepcyTreeExtender;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgOverride;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -347,8 +347,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         if (isDBLoaded){
             ManualDepciesDialog dialog = new ManualDepciesDialog(parent.getShell(),
                     manualDepciesSource, manualDepciesTarget,
-                    PgDatabase.listPgObjects(dbRemote.getDbObject()),
-                    PgDatabase.listPgObjects(dbProject.getDbObject()),
+                    AbstractDatabase.listPgObjects(dbRemote.getDbObject()),
+                    AbstractDatabase.listPgObjects(dbProject.getDbObject()),
                     Messages.database, Messages.ProjectEditorDiffer_project);
             if (dialog.open() == Window.OK) {
                 manualDepciesSource = dialog.getDepciesSourceList();

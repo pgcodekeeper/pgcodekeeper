@@ -36,14 +36,16 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Identifier
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qualified_nameContext;
 import ru.taximaxim.codekeeper.core.schema.Argument;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgAggregate;
 import ru.taximaxim.codekeeper.core.schema.pg.PgAggregate.AggFuncs;
 import ru.taximaxim.codekeeper.core.schema.pg.PgAggregate.AggKinds;
 import ru.taximaxim.codekeeper.core.schema.pg.PgAggregate.ModifyType;
+import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 
 public class CreateAggregate extends PgParserAbstract {
+
     private final Create_aggregate_statementContext ctx;
+
     public CreateAggregate(Create_aggregate_statementContext ctx, PgDatabase db) {
         super(db);
         this.ctx = ctx;

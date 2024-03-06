@@ -9,8 +9,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import ru.taximaxim.codekeeper.core.loader.DatabaseLoader;
 import ru.taximaxim.codekeeper.core.loader.LibraryLoader;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 
 class LibDiffTest {
 
@@ -48,8 +49,8 @@ class LibDiffTest {
         for (String lib : libList) {
             libs.add(TestUtils.getPathToResource(lib, getClass()).toString());
         }
-        PgDatabase dbOld = new PgDatabase(args);
-        PgDatabase dbNew = TestUtils.loadTestDump(fileNameTemplate + FILES_POSTFIX.NEW_SQL, getClass(), args);
+        AbstractDatabase dbOld = DatabaseLoader.createDb(args);
+        AbstractDatabase dbNew = TestUtils.loadTestDump(fileNameTemplate + FILES_POSTFIX.NEW_SQL, getClass(), args);
         LibraryLoader loader = new LibraryLoader(dbNew, null, null);
 
         loader.loadLibraries(args, isIgnorePrivileges, libs);

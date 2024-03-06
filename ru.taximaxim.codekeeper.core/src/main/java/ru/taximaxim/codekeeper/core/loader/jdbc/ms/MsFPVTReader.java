@@ -35,7 +35,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ms.CreateMsView;
 import ru.taximaxim.codekeeper.core.schema.AbstractFunction;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsTrigger;
 import ru.taximaxim.codekeeper.core.schema.ms.MsView;
 
@@ -83,7 +83,7 @@ public class MsFPVTReader extends JdbcReader {
 
         List<XmlReader> acls = XmlReader.readXML(res.getString("acl"));
 
-        PgDatabase db = schema.getDatabase();
+        MsDatabase db = (MsDatabase) schema.getDatabase();
 
         if (tt == DbObjType.TRIGGER) {
             loader.submitMsAntlrTask(def, p -> {

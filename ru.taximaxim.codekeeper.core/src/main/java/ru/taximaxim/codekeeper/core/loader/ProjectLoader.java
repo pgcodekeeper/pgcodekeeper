@@ -42,9 +42,9 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgPrivilege;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
@@ -90,15 +90,15 @@ public class ProjectLoader extends DatabaseLoader {
     }
 
     @Override
-    public PgDatabase load() throws InterruptedException, IOException {
-        PgDatabase db = new PgDatabase(arguments);
+    public AbstractDatabase load() throws InterruptedException, IOException {
+        AbstractDatabase db = createDb(arguments);
 
         Path dir = Paths.get(dirPath);
         loadDbStructure(dir, db);
         return db;
     }
 
-    public void loadOverrides(PgDatabase db) throws InterruptedException, IOException {
+    public void loadOverrides(AbstractDatabase db) throws InterruptedException, IOException {
         Path dir = Paths.get(dirPath, WorkDirs.OVERRIDES);
         if (arguments.isIgnorePrivileges() || !Files.isDirectory(dir)) {
             return;
@@ -112,7 +112,7 @@ public class ProjectLoader extends DatabaseLoader {
         }
     }
 
-    private void loadDbStructure(Path dir, PgDatabase db) throws InterruptedException, IOException {
+    private void loadDbStructure(Path dir, AbstractDatabase db) throws InterruptedException, IOException {
         switch (arguments.getDbType()) {
         case MS:
             loadMsStructure(dir, db);
@@ -129,11 +129,11 @@ public class ProjectLoader extends DatabaseLoader {
         finishLoaders();
     }
 
-    private void loadChStructure(Path dir, PgDatabase db) throws InterruptedException, IOException {
+    private void loadChStructure(Path dir, AbstractDatabase db) throws InterruptedException, IOException {
         loadPgChStructure(dir, db, WorkDirs.CH_DATABASES);
     }
 
-    private void loadPgStructure(Path dir, PgDatabase db) throws InterruptedException, IOException {
+    private void loadPgStructure(Path dir, AbstractDatabase db) throws InterruptedException, IOException {
         // step 1
         // read files in schema folder, add schemas to db
         for (String dirName : WorkDirs.getDirectoryNames(DatabaseType.PG)) {
@@ -144,7 +144,7 @@ public class ProjectLoader extends DatabaseLoader {
         loadPgChStructure(dir, db, WorkDirs.PG_SCHEMA);
     }
 
-    private void loadPgChStructure(Path baseDir, PgDatabase db, String commonDir)
+    private void loadPgChStructure(Path baseDir, AbstractDatabase db, String commonDir)
             throws InterruptedException, IOException {
 
         Path schemasCommonDir = baseDir.resolve(commonDir);
@@ -168,7 +168,7 @@ public class ProjectLoader extends DatabaseLoader {
         }
     }
 
-    private void loadMsStructure(Path dir, PgDatabase db) throws InterruptedException, IOException {
+    private void loadMsStructure(Path dir, AbstractDatabase db) throws InterruptedException, IOException {
         Path securityFolder = dir.resolve(WorkDirs.MS_SECURITY);
 
         loadSubdir(securityFolder, WorkDirs.MS_SCHEMAS, db, this::checkIgnoreSchemaList);
@@ -190,7 +190,7 @@ public class ProjectLoader extends DatabaseLoader {
         }
     }
 
-    protected void addDboSchema(PgDatabase db) {
+    protected void addDboSchema(AbstractDatabase db) {
         if (!db.containsSchema(Consts.DBO)) {
             MsSchema schema = new MsSchema(Consts.DBO);
             PgObjLocation loc = new PgObjLocation.Builder()
@@ -202,14 +202,16 @@ public class ProjectLoader extends DatabaseLoader {
             db.setDefaultSchema(Consts.DBO);
         }
     }
-    private void loadSubdir(Path dir, String sub, PgDatabase db) throws InterruptedException, IOException {
+
+    private void loadSubdir(Path dir, String sub, AbstractDatabase db) throws InterruptedException, IOException {
         loadSubdir(dir, sub, db, null);
     }
 
     /**
      * @param checkFilename filter for file names without extensions. Can be null.
      */
-    private void loadSubdir(Path dir, String sub, PgDatabase db, Predicate<String> checkFilename) throws InterruptedException, IOException {
+    private void loadSubdir(Path dir, String sub, AbstractDatabase db, Predicate<String> checkFilename)
+            throws InterruptedException, IOException {
         Path subDir = dir.resolve(sub);
         if (!Files.isDirectory(subDir)) {
             return;

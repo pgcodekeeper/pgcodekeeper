@@ -35,11 +35,11 @@ import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractSequence;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.AbstractView;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.tests.ProjectUpdaterTest;
@@ -101,11 +101,11 @@ interface DifferData {
 
     int getCaseNumber();
 
-    default List<Entry<PgStatement, PgStatement>> getAdditionalDepciesSource(PgDatabase source) {
+    default List<Entry<PgStatement, PgStatement>> getAdditionalDepciesSource(AbstractDatabase source) {
         return new ArrayList<>();
     }
 
-    default List<Entry<PgStatement, PgStatement>> getAdditionalDepciesTarget(PgDatabase target) {
+    default List<Entry<PgStatement, PgStatement>> getAdditionalDepciesTarget(AbstractDatabase target) {
         return new ArrayList<>();
     }
 }
@@ -144,7 +144,7 @@ class DifferData2 implements DifferData {
     }
 
     @Override
-    public List<Entry<PgStatement, PgStatement>> getAdditionalDepciesSource(PgDatabase source) {
+    public List<Entry<PgStatement, PgStatement>> getAdditionalDepciesSource(AbstractDatabase source) {
         AbstractTable t = source.getSchema(Consts.PUBLIC).getTable("t1");
         AbstractSequence s = source.getSchema(Consts.PUBLIC).getSequence("t1_c1_seq");
         Entry<PgStatement, PgStatement> arr = new AbstractMap.SimpleEntry<>(s, t);
@@ -154,7 +154,7 @@ class DifferData2 implements DifferData {
     }
 
     @Override
-    public List<Entry<PgStatement, PgStatement>> getAdditionalDepciesTarget(PgDatabase target) {
+    public List<Entry<PgStatement, PgStatement>> getAdditionalDepciesTarget(AbstractDatabase target) {
         return this.getAdditionalDepciesSource(target);
     }
 }
@@ -176,7 +176,7 @@ class DifferData3 implements DifferData {
     }
 
     @Override
-    public List<Entry<PgStatement, PgStatement>> getAdditionalDepciesSource(PgDatabase source) {
+    public List<Entry<PgStatement, PgStatement>> getAdditionalDepciesSource(AbstractDatabase source) {
         AbstractColumn c = source.getSchema(Consts.PUBLIC).getTable("t1").getColumn("c1");
         AbstractSequence s = source.getSchema(Consts.PUBLIC).getSequence("t1_c1_seq");
         Entry<PgStatement, PgStatement> arr = new AbstractMap.SimpleEntry<>(s, c);
@@ -186,7 +186,7 @@ class DifferData3 implements DifferData {
     }
 
     @Override
-    public List<Entry<PgStatement, PgStatement>> getAdditionalDepciesTarget(PgDatabase target) {
+    public List<Entry<PgStatement, PgStatement>> getAdditionalDepciesTarget(AbstractDatabase target) {
         return this.getAdditionalDepciesSource(target);
     }
 }
@@ -224,7 +224,7 @@ class DifferData5 implements DifferData {
     }
 
     @Override
-    public List<Entry<PgStatement, PgStatement>> getAdditionalDepciesTarget(PgDatabase target) {
+    public List<Entry<PgStatement, PgStatement>> getAdditionalDepciesTarget(AbstractDatabase target) {
         AbstractSchema s = target.getSchema("newschema");
         AbstractView v = target.getSchema(Consts.PUBLIC).getView("v1");
         Entry<PgStatement, PgStatement> arr = new AbstractMap.SimpleEntry<>(v, s);

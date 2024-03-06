@@ -23,9 +23,9 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_cas
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Data_typeContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qualified_nameContext;
 import ru.taximaxim.codekeeper.core.schema.ICast.CastContext;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgCast;
 import ru.taximaxim.codekeeper.core.schema.pg.PgCast.CastMethod;
+import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 
 public class CreateCast extends PgParserAbstract {
 

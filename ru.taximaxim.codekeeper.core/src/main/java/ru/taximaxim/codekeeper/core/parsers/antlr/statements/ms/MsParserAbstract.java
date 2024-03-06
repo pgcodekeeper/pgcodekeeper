@@ -21,7 +21,6 @@ import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
@@ -46,7 +45,6 @@ import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.IOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.ISimpleColumnContainer;
 import ru.taximaxim.codekeeper.core.schema.IStatementContainer;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.SimpleColumn;
@@ -54,19 +52,15 @@ import ru.taximaxim.codekeeper.core.schema.ms.MsColumn;
 import ru.taximaxim.codekeeper.core.schema.ms.MsConstraintCheck;
 import ru.taximaxim.codekeeper.core.schema.ms.MsConstraintFk;
 import ru.taximaxim.codekeeper.core.schema.ms.MsConstraintPk;
+import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsIndex;
 import ru.taximaxim.codekeeper.core.schema.ms.MsTable;
 import ru.taximaxim.codekeeper.core.schema.ms.MsType;
 
-public abstract class MsParserAbstract extends ParserAbstract {
+public abstract class MsParserAbstract extends ParserAbstract<MsDatabase> {
 
-    protected MsParserAbstract(PgDatabase db) {
+    protected MsParserAbstract(MsDatabase db) {
         super(db);
-    }
-
-    @Override
-    protected DatabaseType getDbType() {
-        return DatabaseType.MS;
     }
 
     protected AbstractConstraint getMsPKConstraint(String schema, String table, String conName,

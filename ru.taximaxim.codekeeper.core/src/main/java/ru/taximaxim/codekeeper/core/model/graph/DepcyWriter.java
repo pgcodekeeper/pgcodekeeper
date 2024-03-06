@@ -30,15 +30,15 @@ import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public class DepcyWriter {
 
     private static final int START_LEVEL = 0;
 
-    private final PgDatabase db;
+    private final AbstractDatabase db;
     private final Graph<PgStatement, DefaultEdge> graph;
     private final int depth;
     private final PrintWriter writer;
@@ -46,7 +46,8 @@ public class DepcyWriter {
     private final boolean isInvertFilter;
     private final List<PrintObj> printObjects = new ArrayList<>();
 
-    public DepcyWriter(PgDatabase db, int depth, PrintWriter writer, boolean isReverse, Collection<DbObjType> filterObjTypes, boolean isInvertFilter) {
+    public DepcyWriter(AbstractDatabase db, int depth, PrintWriter writer, boolean isReverse,
+            Collection<DbObjType> filterObjTypes, boolean isInvertFilter) {
         this.db = db;
         DepcyGraph dg = new DepcyGraph(db);
         this.graph = isReverse ? dg.getGraph() : dg.getReversedGraph();

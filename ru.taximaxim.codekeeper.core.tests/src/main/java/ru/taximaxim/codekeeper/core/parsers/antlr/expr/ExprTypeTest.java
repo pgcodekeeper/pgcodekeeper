@@ -35,8 +35,8 @@ import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.loader.FullAnalyze;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.IRelation;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaUtils;
 import ru.taximaxim.codekeeper.core.utils.Pair;
@@ -96,7 +96,7 @@ class ExprTypeTest {
 
     private MetaContainer loadAndAnalyze(String fileNameTemplate, PgDiffArguments args, FILES_POSTFIX postfix)
             throws InterruptedException, IOException {
-        PgDatabase dbNew = TestUtils.loadTestDump(
+        AbstractDatabase dbNew = TestUtils.loadTestDump(
                 fileNameTemplate + postfix, ExprTypeTest.class, args, false);
         MetaContainer metaDb = MetaUtils.createTreeFromDb(dbNew);
         FullAnalyze.fullAnalyze(dbNew, metaDb, new ArrayList<>());

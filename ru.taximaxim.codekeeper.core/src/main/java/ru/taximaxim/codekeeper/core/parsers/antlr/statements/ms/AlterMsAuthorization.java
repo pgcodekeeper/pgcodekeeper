@@ -26,20 +26,20 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Alter_aut
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Class_typeContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.StatementOverride;
+import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 
 public class AlterMsAuthorization extends MsParserAbstract {
 
     private final Alter_authorizationContext ctx;
     private final Map<PgStatement, StatementOverride> overrides;
 
-    public AlterMsAuthorization(Alter_authorizationContext ctx, PgDatabase db) {
+    public AlterMsAuthorization(Alter_authorizationContext ctx, MsDatabase db) {
         this(ctx, db, null);
     }
 
-    public AlterMsAuthorization(Alter_authorizationContext ctx, PgDatabase db,
+    public AlterMsAuthorization(Alter_authorizationContext ctx, MsDatabase db,
             Map<PgStatement, StatementOverride> overrides) {
         super(db);
         this.ctx = ctx;
@@ -70,13 +70,13 @@ public class AlterMsAuthorization extends MsParserAbstract {
             addObjReference(Arrays.asList(schemaCtx, nameCtx),
                     st != null ? st.getStatementType() : DbObjType.TABLE, ACTION_ALTER);
         } else if (type.ASSEMBLY() != null) {
-            st = getSafe(PgDatabase::getAssembly, db, nameCtx);
+            st = getSafe(MsDatabase::getAssembly, db, nameCtx);
             addObjReference(Arrays.asList(nameCtx), DbObjType.ASSEMBLY, ACTION_ALTER);
         } else if (type.ROLE() != null) {
-            st = getSafe(PgDatabase::getRole, db, nameCtx);
+            st = getSafe(MsDatabase::getRole, db, nameCtx);
             addObjReference(Arrays.asList(nameCtx), DbObjType.ROLE, ACTION_ALTER);
         } else if (type.SCHEMA() != null) {
-            st = getSafe(PgDatabase::getSchema, db, nameCtx);
+            st = getSafe(MsDatabase::getSchema, db, nameCtx);
             addObjReference(Arrays.asList(nameCtx), DbObjType.SCHEMA, ACTION_ALTER);
         }
 

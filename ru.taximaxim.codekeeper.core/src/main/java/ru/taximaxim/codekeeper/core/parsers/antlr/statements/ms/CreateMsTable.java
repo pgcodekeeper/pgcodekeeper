@@ -31,8 +31,8 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Data_type
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_indexContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_optionsContext;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsColumn;
+import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsIndex;
 import ru.taximaxim.codekeeper.core.schema.ms.MsTable;
 
@@ -42,7 +42,7 @@ public class CreateMsTable extends MsTableAbstract {
 
     private final boolean ansiNulls;
 
-    public CreateMsTable(Create_tableContext ctx, PgDatabase db, boolean ansiNulls) {
+    public CreateMsTable(Create_tableContext ctx, MsDatabase db, boolean ansiNulls) {
         super(db);
         this.ctx = ctx;
         this.ansiNulls = ansiNulls;

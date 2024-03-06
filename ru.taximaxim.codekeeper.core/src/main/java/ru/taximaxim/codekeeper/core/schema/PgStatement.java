@@ -160,7 +160,7 @@ public abstract class PgStatement implements IStatement, IHashable {
         return meta;
     }
 
-    public abstract PgDatabase getDatabase();
+    public abstract AbstractDatabase getDatabase();
 
     public PgDiffArguments getDatabaseArguments() {
         return getDatabase().getArguments();
@@ -553,13 +553,13 @@ public abstract class PgStatement implements IStatement, IHashable {
     /**
      * @return an element in another db sharing the same name and location
      */
-    public PgStatement getTwin(PgDatabase db) {
+    public PgStatement getTwin(AbstractDatabase db) {
         // fast path for getting a "twin" from the same database
         // return the same object immediately
         return getDatabase() == db ? this : getTwinRecursive(db);
     }
 
-    private PgStatement getTwinRecursive(PgDatabase db) {
+    private PgStatement getTwinRecursive(AbstractDatabase db) {
         DbObjType type = getStatementType();
         if (DbObjType.DATABASE == type) {
             return db;
@@ -747,7 +747,7 @@ public abstract class PgStatement implements IStatement, IHashable {
         StringBuilder sb = new StringBuilder(quoter.apply(getName()));
 
         PgStatement par = this.parent;
-        while (par != null && !(par instanceof PgDatabase)) {
+        while (par != null && !(par instanceof AbstractDatabase)) {
             sb.insert(0, '.').insert(0, quoter.apply(par.getName()));
             par = par.getParent();
         }

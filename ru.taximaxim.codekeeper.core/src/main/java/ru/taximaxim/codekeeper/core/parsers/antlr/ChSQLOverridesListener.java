@@ -25,15 +25,15 @@ import ru.taximaxim.codekeeper.core.loader.ParserListenerMode;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrContextProcessor.ChSqlContextProcessor;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Ch_fileContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.QueryContext;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.StatementOverride;
+import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 
-public class ChSQLOverridesListener extends CustomParserListener implements ChSqlContextProcessor {
+public class ChSQLOverridesListener extends CustomParserListener<ChDatabase> implements ChSqlContextProcessor {
 
     private Map<PgStatement, StatementOverride> overrides;
 
-    public ChSQLOverridesListener(PgDatabase database, String filename, ParserListenerMode mode, List<Object> errors,
+    public ChSQLOverridesListener(ChDatabase database, String filename, ParserListenerMode mode, List<Object> errors,
             IProgressMonitor monitor, Map<PgStatement, StatementOverride> overrides) {
         super(database, filename, mode, errors, monitor);
         this.overrides = overrides;

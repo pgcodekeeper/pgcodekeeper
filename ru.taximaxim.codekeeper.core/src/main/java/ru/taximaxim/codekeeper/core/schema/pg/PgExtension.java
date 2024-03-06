@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 /**
@@ -61,8 +61,8 @@ public class PgExtension extends PgStatement {
     }
 
     @Override
-    public PgDatabase getDatabase() {
-        return (PgDatabase)getParent();
+    public AbstractDatabase getDatabase() {
+        return (AbstractDatabase) getParent();
     }
 
     @Override

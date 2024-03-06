@@ -26,7 +26,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
@@ -54,12 +53,12 @@ import ru.taximaxim.codekeeper.core.schema.Argument;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.ICast;
 import ru.taximaxim.codekeeper.core.schema.ISimpleColumnContainer;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation.LocationType;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.SimpleColumn;
 import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgFunction;
+import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgFunction;
 import ru.taximaxim.codekeeper.core.schema.pg.PgOperator;
 import ru.taximaxim.codekeeper.core.utils.Pair;
@@ -67,15 +66,10 @@ import ru.taximaxim.codekeeper.core.utils.Pair;
 /**
  * Abstract Class contents common operations for parsing
  */
-public abstract class PgParserAbstract extends ParserAbstract {
+public abstract class PgParserAbstract extends ParserAbstract<PgDatabase> {
 
     protected PgParserAbstract(PgDatabase db) {
         super(db);
-    }
-
-    @Override
-    protected DatabaseType getDbType() {
-        return DatabaseType.PG;
     }
 
     protected void fillSimpleColumns(ISimpleColumnContainer cont,

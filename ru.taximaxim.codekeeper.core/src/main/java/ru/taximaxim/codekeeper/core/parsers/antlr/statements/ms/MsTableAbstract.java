@@ -26,14 +26,14 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_con
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_constraint_bodyContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.ms.MsConstraintCheck;
 import ru.taximaxim.codekeeper.core.schema.ms.MsConstraintFk;
+import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 
 public abstract class MsTableAbstract extends MsParserAbstract {
 
-    protected MsTableAbstract(PgDatabase db) {
+    protected MsTableAbstract(MsDatabase db) {
         super(db);
     }
 

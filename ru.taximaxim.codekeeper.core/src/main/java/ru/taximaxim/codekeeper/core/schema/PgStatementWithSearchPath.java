@@ -31,7 +31,7 @@ public abstract class PgStatementWithSearchPath extends PgStatement implements I
     public abstract AbstractSchema getContainingSchema();
 
     @Override
-    public PgDatabase getDatabase() {
-        return (PgDatabase)getContainingSchema().getParent();
+    public AbstractDatabase getDatabase() {
+        return (AbstractDatabase) getContainingSchema().getParent();
     }
 }

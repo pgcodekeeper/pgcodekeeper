@@ -40,7 +40,7 @@ import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.fileutils.TempDir;
 import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.fileutils.UIProjectUpdater;
@@ -49,8 +49,8 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 public class ProjectUpdaterTest {
 
     private static final String ENCODING = Consts.UTF_8;
-    private PgDatabase dbOld;
-    private PgDatabase  dbNew;
+    private AbstractDatabase dbOld;
+    private AbstractDatabase dbNew;
     private TempDir workingDir;
     private TempDir referenceDir;
 

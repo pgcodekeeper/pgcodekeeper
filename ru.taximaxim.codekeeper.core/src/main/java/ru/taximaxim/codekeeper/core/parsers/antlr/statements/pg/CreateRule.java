@@ -27,9 +27,10 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.RuleAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_rewrite_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Rewrite_commandContext;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
+import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgEventType;
 import ru.taximaxim.codekeeper.core.schema.pg.PgRule;
 
@@ -61,7 +62,7 @@ public class CreateRule extends PgParserAbstract {
     }
 
     public static void setConditionAndAddCommands(Create_rewrite_statementContext ctx,
-            PgRule rule, PgDatabase db, String location) {
+            PgRule rule, AbstractDatabase db, String location) {
         rule.setCondition((ctx.WHERE() != null) ? getFullCtxText(ctx.vex()) : null);
 
         // allows to write a common namespace-setup code with no copy-paste for each cmd type

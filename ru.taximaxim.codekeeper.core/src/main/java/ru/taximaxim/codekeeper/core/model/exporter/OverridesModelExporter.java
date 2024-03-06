@@ -37,8 +37,8 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgPrivilege;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
@@ -46,7 +46,7 @@ public class OverridesModelExporter extends AbstractModelExporter {
 
     private final DatabaseType dbType;
 
-    public OverridesModelExporter(Path outDir, PgDatabase newDb, PgDatabase oldDb,
+    public OverridesModelExporter(Path outDir, AbstractDatabase newDb, AbstractDatabase oldDb,
             Collection<TreeElement> changedObjects, String sqlEncoding, DatabaseType dbType) {
         super(outDir, newDb, oldDb, changedObjects, sqlEncoding);
         this.dbType = dbType;

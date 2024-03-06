@@ -56,8 +56,8 @@ import ru.taximaxim.codekeeper.core.loader.JdbcRunner;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.parsers.antlr.ScriptParser;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractFunction;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
@@ -174,7 +174,7 @@ class QuickUpdateJob extends SingletonEditorJob {
         IEclipsePreferences projPrefs = proj.getPrefs();
         String timezone = projPrefs.get(PROJ_PREF.TIMEZONE, Consts.UTC);
 
-        PgDatabase dbProjectFragment = UIProjectLoader
+        AbstractDatabase dbProjectFragment = UIProjectLoader
                 .buildFiles(Arrays.asList(file), dbType, monitor.newChild(1));
         Collection<PgStatement> listPgObjectsFragment = dbProjectFragment.getDescendants().collect(Collectors.toList());
 
@@ -268,7 +268,7 @@ class QuickUpdateJob extends SingletonEditorJob {
      * были помечены как выбранные.
      */
     private Collection<TreeElement> setCheckedFromFragment(TreeElement treeFull,
-            Collection<PgStatement> listPgObjectsFragment, PgDatabase left, PgDatabase right) {
+            Collection<PgStatement> listPgObjectsFragment, AbstractDatabase left, AbstractDatabase right) {
         // mark schemas only when there are no schema-nested objects
         boolean markSchemas = listPgObjectsFragment.stream()
                 .map(PgStatement::getStatementType)
@@ -310,7 +310,7 @@ class QuickUpdateJob extends SingletonEditorJob {
     }
 
     private void markFunctions(AbstractFunction func, TreeElement elFunc, Set<TreeElement> checked,
-            PgDatabase left, PgDatabase right) {
+            AbstractDatabase left, AbstractDatabase right) {
         // check every "adjacent" element for overload changes
         elFunc.getParent().getChildren().stream()
         .filter(el -> el.getType() == DbObjType.FUNCTION)

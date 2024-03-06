@@ -30,12 +30,13 @@ import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.URIUtil;
 import org.junit.jupiter.api.Assertions;
 
+import ru.taximaxim.codekeeper.core.loader.DatabaseLoader;
 import ru.taximaxim.codekeeper.core.loader.PgDumpLoader;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.ch.ChSchema;
 import ru.taximaxim.codekeeper.core.schema.ms.MsSchema;
@@ -52,22 +53,24 @@ public final class TestUtils {
     public static final String RESOURCE_MS_DUMP = "testing_ms_dump.sql";
     public static final List<String> IGNORED_SCHEMAS_LIST = List.of("worker", "country", "ignore1", "ignore4vrw");
 
-    public static PgDatabase loadTestDump(String resource, Class<?> c, PgDiffArguments args)
+    public static AbstractDatabase loadTestDump(String resource, Class<?> c, PgDiffArguments args)
             throws IOException, InterruptedException {
         return loadTestDump(resource, c, args, true);
     }
 
-    public static PgDatabase loadTestDump(String resource, Class<?> c, PgDiffArguments args, boolean analysis)
+    public static AbstractDatabase loadTestDump(String resource, Class<?> c, PgDiffArguments args, boolean analysis)
             throws IOException, InterruptedException {
         PgDumpLoader loader = new PgDumpLoader(() -> c.getResourceAsStream(resource),
                 "test/" + c.getName() + '/' + resource, args);
-        PgDatabase db = analysis ? loader.loadAndAnalyze() : loader.load();
+        AbstractDatabase db = analysis ? loader.loadAndAnalyze() : loader.load();
         Assertions.assertEquals("[]", loader.getErrors().toString(), "Test resource caused loader errors!");
         return db;
     }
 
-    public static PgDatabase createDumpDB(DatabaseType dbType) {
-        PgDatabase db = new PgDatabase();
+    public static AbstractDatabase createDumpDB(DatabaseType dbType) {
+        PgDiffArguments args = new PgDiffArguments();
+        args.setDbType(dbType);
+        AbstractDatabase db = DatabaseLoader.createDb(args);
         AbstractSchema schema;
         switch (dbType) {
         case PG:
@@ -91,7 +94,7 @@ public final class TestUtils {
         return db;
     }
 
-    public static void runDiffSame(PgDatabase db, String template, PgDiffArguments args)
+    public static void runDiffSame(AbstractDatabase db, String template, PgDiffArguments args)
             throws IOException, InterruptedException {
         String script = new PgDiff(args).diffDatabaseSchemas(db, db, null);
         Assertions.assertEquals("", script.trim(), "File name template: " + template);
@@ -132,10 +135,10 @@ public final class TestUtils {
 
     static String getScript(String fileNameTemplate, PgDiffArguments args, Class<?> clazz)
             throws IOException, InterruptedException {
-        PgDatabase dbOld = TestUtils.loadTestDump(fileNameTemplate + FILES_POSTFIX.ORIGINAL_SQL, clazz, args);
+        AbstractDatabase dbOld = TestUtils.loadTestDump(fileNameTemplate + FILES_POSTFIX.ORIGINAL_SQL, clazz, args);
         TestUtils.runDiffSame(dbOld, fileNameTemplate, args);
 
-        PgDatabase dbNew = TestUtils.loadTestDump(fileNameTemplate + FILES_POSTFIX.NEW_SQL, clazz, args);
+        AbstractDatabase dbNew = TestUtils.loadTestDump(fileNameTemplate + FILES_POSTFIX.NEW_SQL, clazz, args);
         TestUtils.runDiffSame(dbNew, fileNameTemplate, args);
 
         return new PgDiff(args).diffDatabaseSchemas(dbOld, dbNew, null);

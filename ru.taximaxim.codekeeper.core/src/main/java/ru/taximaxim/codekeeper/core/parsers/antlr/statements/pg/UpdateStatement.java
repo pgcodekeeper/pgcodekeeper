@@ -22,8 +22,8 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import ru.taximaxim.codekeeper.core.DangerStatement;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Update_stmt_for_psqlContext;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
+import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 
 public class UpdateStatement extends PgParserAbstract {
 

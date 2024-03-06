@@ -24,8 +24,8 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Assembly_
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Create_assemblyContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.ExpressionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsAssembly;
+import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 
 public class CreateMsAssembly extends MsParserAbstract {
 
@@ -34,7 +34,7 @@ public class CreateMsAssembly extends MsParserAbstract {
 
     private final Create_assemblyContext ctx;
 
-    public CreateMsAssembly(Create_assemblyContext ctx, PgDatabase db) {
+    public CreateMsAssembly(Create_assemblyContext ctx, MsDatabase db) {
         super(db);
         this.ctx = ctx;
     }

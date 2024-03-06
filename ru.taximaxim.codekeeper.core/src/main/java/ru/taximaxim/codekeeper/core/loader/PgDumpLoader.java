@@ -45,14 +45,17 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.CustomSQLParserListener;
 import ru.taximaxim.codekeeper.core.parsers.antlr.CustomTSQLParserListener;
 import ru.taximaxim.codekeeper.core.parsers.antlr.SQLOverridesListener;
 import ru.taximaxim.codekeeper.core.parsers.antlr.TSQLOverridesListener;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.StatementOverride;
+import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 import ru.taximaxim.codekeeper.core.schema.ch.ChSchema;
+import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsSchema;
+import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
 
 /**
@@ -128,14 +131,14 @@ public class PgDumpLoader extends DatabaseLoader {
     }
 
     @Override
-    public PgDatabase load() throws IOException, InterruptedException {
-        PgDatabase d = new PgDatabase(args);
+    public AbstractDatabase load() throws IOException, InterruptedException {
+        AbstractDatabase d = createDb(args);
         loadAsync(d, antlrTasks);
         finishLoaders();
         return d;
     }
 
-    public PgDatabase loadAsync(PgDatabase d, Queue<AntlrTask<?>> antlrTasks)
+    public AbstractDatabase loadAsync(AbstractDatabase d, Queue<AntlrTask<?>> antlrTasks)
             throws InterruptedException {
         AbstractSchema schema;
         switch (args.getDbType()) {
@@ -162,16 +165,18 @@ public class PgDumpLoader extends DatabaseLoader {
         return d;
     }
 
-    public PgDatabase loadDatabase(PgDatabase intoDb, Queue<AntlrTask<?>> antlrTasks)
+    public AbstractDatabase loadDatabase(AbstractDatabase intoDb, Queue<AntlrTask<?>> antlrTasks)
             throws InterruptedException {
         PgDiffUtils.checkCancelled(monitor);
         switch (args.getDbType()) {
         case PG:
             SqlContextProcessor sqlListener;
             if (overrides != null) {
-                sqlListener = new SQLOverridesListener(intoDb, inputObjectName, mode, errors, monitor, overrides);
+                sqlListener = new SQLOverridesListener((PgDatabase) intoDb, inputObjectName, mode, errors, monitor,
+                        overrides);
             } else {
-                sqlListener = new CustomSQLParserListener(intoDb, inputObjectName, mode, errors, antlrTasks, monitor);
+                sqlListener = new CustomSQLParserListener((PgDatabase) intoDb, inputObjectName, mode, errors,
+                        antlrTasks, monitor);
             }
 
             AntlrParser.parseSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
@@ -180,9 +185,11 @@ public class PgDumpLoader extends DatabaseLoader {
         case MS:
             TSqlContextProcessor tsqlListener;
             if (overrides != null) {
-                tsqlListener = new TSQLOverridesListener(intoDb, inputObjectName, mode, errors, monitor, overrides);
+                tsqlListener = new TSQLOverridesListener((MsDatabase) intoDb, inputObjectName, mode, errors, monitor,
+                        overrides);
             } else {
-                tsqlListener = new CustomTSQLParserListener(intoDb, inputObjectName, mode, errors, monitor);
+                tsqlListener = new CustomTSQLParserListener((MsDatabase) intoDb, inputObjectName, mode, errors,
+                        monitor);
             }
             AntlrParser.parseTSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
                     monitor, monitoringLevel, tsqlListener, antlrTasks);
@@ -190,9 +197,11 @@ public class PgDumpLoader extends DatabaseLoader {
         case CH:
             ChSqlContextProcessor chSqlListener;
             if (overrides != null) {
-                chSqlListener = new ChSQLOverridesListener(intoDb, inputObjectName, mode, errors, monitor, overrides);
+                chSqlListener = new ChSQLOverridesListener((ChDatabase) intoDb, inputObjectName, mode, errors, monitor,
+                        overrides);
             } else {
-                chSqlListener = new CustomChSQLParserListener(intoDb, inputObjectName, mode, errors, monitor);
+                chSqlListener = new CustomChSQLParserListener((ChDatabase) intoDb, inputObjectName, mode, errors,
+                        monitor);
             }
             AntlrParser.parseChSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
                     monitor, monitoringLevel, chSqlListener, antlrTasks);

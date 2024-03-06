@@ -34,14 +34,17 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Table_init
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Trigger_referencingContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.When_triggerContext;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
+import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgTrigger;
 import ru.taximaxim.codekeeper.core.schema.pg.PgTrigger.TgTypes;
 
 public class CreateTrigger extends PgParserAbstract {
+
     private final Create_trigger_statementContext ctx;
+
     public CreateTrigger(Create_trigger_statementContext ctx, PgDatabase db) {
         super(db);
         this.ctx = ctx;
@@ -134,7 +137,7 @@ public class CreateTrigger extends PgParserAbstract {
     }
 
     public static void parseWhen(When_triggerContext whenCtx, PgTrigger trigger,
-            PgDatabase db, String location) {
+            AbstractDatabase db, String location) {
         if (whenCtx != null) {
             VexContext vex = whenCtx.vex();
             trigger.setWhen(getFullCtxText(vex));

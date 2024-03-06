@@ -31,10 +31,10 @@ import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.fileutils.TempDir;
 import ru.taximaxim.codekeeper.core.model.exporter.MsModelExporter;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.Argument;
 import ru.taximaxim.codekeeper.core.schema.FuncTypes;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgPrivilege;
 import ru.taximaxim.codekeeper.core.schema.SimpleColumn;
 import ru.taximaxim.codekeeper.core.schema.ms.MsColumn;
@@ -59,18 +59,18 @@ class MsAntlrLoaderTest {
 
     private static final String ENCODING = Consts.UTF_8;
 
-    void testDatabase(String fileName, PgDatabase d) throws IOException, InterruptedException {
+    void testDatabase(String fileName, AbstractDatabase d) throws IOException, InterruptedException {
         loadSchema(fileName, d);
         exportFullDb(fileName, d);
     }
 
-    void loadSchema(String fileName, PgDatabase dbPredefined) throws IOException, InterruptedException {
+    void loadSchema(String fileName, AbstractDatabase dbPredefined) throws IOException, InterruptedException {
         // first test the dump loader itself
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(ENCODING);
         args.setKeepNewlines(true);
         args.setDbType(DatabaseType.MS);
-        PgDatabase d = TestUtils.loadTestDump(fileName, MsAntlrLoaderTest.class, args);
+        AbstractDatabase d = TestUtils.loadTestDump(fileName, MsAntlrLoaderTest.class, args);
 
         Assertions.assertEquals(dbPredefined, d, "PgDumpLoader: predefined object is not equal to file " + fileName);
 
@@ -79,13 +79,13 @@ class MsAntlrLoaderTest {
         Assertions.assertEquals(dbPredefined, d, "PgStatement deep copy altered original");
     }
 
-    void exportFullDb(String fileName, PgDatabase dbPredefined) throws IOException, InterruptedException {
+    void exportFullDb(String fileName, AbstractDatabase dbPredefined) throws IOException, InterruptedException {
         // prepare db object from sql file
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(ENCODING);
         args.setKeepNewlines(true);
         args.setDbType(DatabaseType.MS);
-        PgDatabase dbFromFile = TestUtils.loadTestDump(fileName, MsAntlrLoaderTest.class, args);
+        AbstractDatabase dbFromFile = TestUtils.loadTestDump(fileName, MsAntlrLoaderTest.class, args);
 
         Path exportDir = null;
         try (TempDir dir = new TempDir("pgCodekeeper-test-files")) {
@@ -96,7 +96,7 @@ class MsAntlrLoaderTest {
             args.setInCharsetName(ENCODING);
             args.setKeepNewlines(true);
             args.setDbType(DatabaseType.MS);
-            PgDatabase dbAfterExport = new ProjectLoader(exportDir.toString(), args).loadAndAnalyze();
+            AbstractDatabase dbAfterExport = new ProjectLoader(exportDir.toString(), args).loadAndAnalyze();
 
             // check the same db similarity before and after export
             Assertions.assertEquals(dbPredefined, dbAfterExport, "Predefined object PgDB" + fileName +
@@ -109,7 +109,7 @@ class MsAntlrLoaderTest {
 
     @Test
     void testDB0() throws IOException, InterruptedException {
-        PgDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
+        AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
         AbstractSchema schema = d.getDefaultSchema();
 
         MsTable table = new MsTable("fax_boxes");
@@ -237,7 +237,7 @@ class MsAntlrLoaderTest {
 
     @Test
     void testDB1() throws IOException, InterruptedException {
-        PgDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
+        AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
 
         AbstractSchema schema = new MsSchema("msschema");
         d.addSchema(schema);
@@ -269,7 +269,7 @@ class MsAntlrLoaderTest {
 
     @Test
     void testDB2() throws IOException, InterruptedException {
-        PgDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
+        AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
         AbstractSchema schema = d.getDefaultSchema();
 
         MsSequence seq = new MsSequence("admins_aid_seq");
@@ -373,7 +373,7 @@ class MsAntlrLoaderTest {
 
     @Test
     void testDB3() throws IOException, InterruptedException {
-        PgDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
+        AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
         AbstractSchema schema = d.getDefaultSchema();
 
         MsSequence seq = new MsSequence("call_logs_id_seq");
@@ -399,7 +399,7 @@ class MsAntlrLoaderTest {
 
     @Test
     void testDB4() throws IOException, InterruptedException {
-        PgDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
+        AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
         AbstractSchema schema = d.getDefaultSchema();
 
         MsTable table = new MsTable("table1");
@@ -476,7 +476,7 @@ class MsAntlrLoaderTest {
 
     @Test
     void testDB5() throws IOException, InterruptedException {
-        PgDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
+        AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
         AbstractSchema schema = d.getDefaultSchema();
 
         schema.addPrivilege(new PgPrivilege("REVOKE", "SELECT", "SCHEMA::[dbo]", "[ms_user]", false));
@@ -513,7 +513,7 @@ class MsAntlrLoaderTest {
 
     @Test
     void testDB6() throws IOException, InterruptedException {
-        PgDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
+        AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
 
         AbstractSchema schema = new MsSchema("common");
         d.addSchema(schema);
@@ -539,7 +539,7 @@ class MsAntlrLoaderTest {
 
     @Test
     void testDB7() throws IOException, InterruptedException {
-        PgDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
+        AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
         AbstractSchema schema = d.getDefaultSchema();
 
         // TODO uncomment and remade this for MsType when it will be supported
@@ -582,7 +582,7 @@ class MsAntlrLoaderTest {
 
     @Test
     void testDB8() throws IOException, InterruptedException {
-        PgDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
+        AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
         AbstractSchema schema = d.getDefaultSchema();
 
         MsSequence seq = new MsSequence("user_id_seq");
@@ -692,7 +692,7 @@ class MsAntlrLoaderTest {
 
     @Test
     void testDB9() throws IOException, InterruptedException {
-        PgDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
+        AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
         AbstractSchema schema = new MsSchema("admin");
         d.addSchema(schema);
         d.setDefaultSchema("admin");
@@ -791,7 +791,7 @@ class MsAntlrLoaderTest {
 
     @Test
     void testDB10() throws IOException, InterruptedException {
-        PgDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
+        AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
         AbstractSchema schema = d.getDefaultSchema();
 
         MsFunction func = new MsFunction("curdate");
@@ -814,7 +814,7 @@ class MsAntlrLoaderTest {
 
     @Test
     void testDB11() throws IOException, InterruptedException {
-        PgDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
+        AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
         // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
         // d.setComment("'This is my comment on this database.'");
 
@@ -859,7 +859,7 @@ class MsAntlrLoaderTest {
 
     @Test
     void testDB12() throws IOException, InterruptedException {
-        PgDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
+        AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
         AbstractSchema schema = d.getDefaultSchema();
 
         MsFunction func = new MsFunction("function_string_to_table");
@@ -912,7 +912,7 @@ class MsAntlrLoaderTest {
 
     @Test
     void testDB13() throws IOException, InterruptedException {
-        PgDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
+        AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
         AbstractSchema schema = d.getDefaultSchema();
 
         schema.addPrivilege(new PgPrivilege("REVOKE", "SELECT", "SCHEMA::[dbo]", "[ms_user]", false));
@@ -1074,7 +1074,7 @@ class MsAntlrLoaderTest {
 
     @Test
     void testDB14() throws IOException, InterruptedException {
-        PgDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
+        AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
         AbstractSchema schema = d.getDefaultSchema();
 
         MsTable table = new MsTable("test");
@@ -1093,7 +1093,7 @@ class MsAntlrLoaderTest {
 
     @Test
     void testDB15() throws IOException, InterruptedException {
-        PgDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
+        AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
         AbstractSchema schema = d.getDefaultSchema();
 
         // table1
@@ -1133,7 +1133,7 @@ class MsAntlrLoaderTest {
 
     @Test
     void testDB16() throws IOException, InterruptedException {
-        PgDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
+        AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
         AbstractSchema schema = d.getDefaultSchema();
 
         // table1
