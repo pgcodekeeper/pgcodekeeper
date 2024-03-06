@@ -27,8 +27,8 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Batch_sta
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Create_or_alter_triggerContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
+import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsTrigger;
 
 public class CreateMsTrigger extends BatchContextProcessor {
@@ -38,7 +38,7 @@ public class CreateMsTrigger extends BatchContextProcessor {
     private final boolean ansiNulls;
     private final boolean quotedIdentifier;
 
-    public CreateMsTrigger(Batch_statementContext ctx, PgDatabase db,
+    public CreateMsTrigger(Batch_statementContext ctx, MsDatabase db,
             boolean ansiNulls, boolean quotedIdentifier, CommonTokenStream stream) {
         super(db, ctx, stream);
         this.ctx = ctx.batch_statement_body().create_or_alter_trigger();

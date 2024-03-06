@@ -31,11 +31,11 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.QueryContex
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.ChParserAbstract;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChSchema;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.DropChStatement;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 
-public class CustomChSQLParserListener extends CustomParserListener implements ChSqlContextProcessor {
+public class CustomChSQLParserListener extends CustomParserListener<ChDatabase> implements ChSqlContextProcessor {
 
-    public CustomChSQLParserListener(PgDatabase database, String filename, ParserListenerMode mode,
+    public CustomChSQLParserListener(ChDatabase database, String filename, ParserListenerMode mode,
             List<Object> errors, IProgressMonitor monitor) {
         super(database, filename, mode, errors, monitor);
     }

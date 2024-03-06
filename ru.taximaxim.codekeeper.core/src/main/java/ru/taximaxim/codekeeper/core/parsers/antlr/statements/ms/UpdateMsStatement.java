@@ -24,14 +24,14 @@ import ru.taximaxim.codekeeper.core.DangerStatement;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Qualified_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Update_statementContext;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
+import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 
 public class UpdateMsStatement extends MsParserAbstract {
 
     private final Update_statementContext ctx;
 
-    public UpdateMsStatement(Update_statementContext ctx, PgDatabase db) {
+    public UpdateMsStatement(Update_statementContext ctx, MsDatabase db) {
         super(db);
         this.ctx = ctx;
     }

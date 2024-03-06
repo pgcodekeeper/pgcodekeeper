@@ -28,11 +28,11 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.VexAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.CreateDomain;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractType;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.ICompressOptionContainer;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.pg.PgBaseType;
 import ru.taximaxim.codekeeper.core.schema.pg.PgColumn;
@@ -98,7 +98,7 @@ public final class TypesReader extends JdbcReader {
             addDep(d, schemaName, collationName, DbObjType.COLLATION);
         }
 
-        PgDatabase dataBase = schema.getDatabase();
+        AbstractDatabase dataBase = schema.getDatabase();
 
         String def = res.getString("dom_defaultbin");
         if (def == null) {

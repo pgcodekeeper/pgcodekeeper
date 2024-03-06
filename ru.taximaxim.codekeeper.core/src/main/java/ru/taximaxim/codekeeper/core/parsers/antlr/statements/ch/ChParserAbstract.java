@@ -15,18 +15,12 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch;
 
-import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 
-public abstract class ChParserAbstract extends ParserAbstract {
+public abstract class ChParserAbstract extends ParserAbstract<ChDatabase> {
 
-    protected ChParserAbstract(PgDatabase db) {
+    protected ChParserAbstract(ChDatabase db) {
         super(db);
-    }
-
-    @Override
-    protected DatabaseType getDbType() {
-        return DatabaseType.CH;
     }
 }

@@ -23,14 +23,14 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Create_us
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.User_loginContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.User_optionContext;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsUser;
 
 public class CreateMsUser extends MsParserAbstract {
 
     private final Create_userContext ctx;
 
-    public CreateMsUser(Create_userContext ctx, PgDatabase db) {
+    public CreateMsUser(Create_userContext ctx, MsDatabase db) {
         super(db);
         this.ctx = ctx;
     }

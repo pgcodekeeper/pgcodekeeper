@@ -39,7 +39,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UiSync;
@@ -77,7 +77,7 @@ public class NormalizeProject extends AbstractHandler {
                 try {
                     boolean projectOnly = true;
                     Map<String, Boolean> oneTimePrefs = Map.of(Consts.PROJECT_ONLY, projectOnly);
-                    PgDatabase db = DbSource.fromProject(proj, oneTimePrefs).get(mon.newChild(1));
+                    AbstractDatabase db = DbSource.fromProject(proj, oneTimePrefs).get(mon.newChild(1));
                     mon.newChild(1).subTask(Messages.NormalizeProject_exporting_project);
                     new UIProjectUpdater(db, proj).updateFull(projectOnly);
                 } catch (IOException | CoreException ex) {

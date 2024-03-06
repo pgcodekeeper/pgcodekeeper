@@ -60,10 +60,12 @@ import ru.taximaxim.codekeeper.core.loader.DatabaseLoader;
 import ru.taximaxim.codekeeper.core.loader.FullAnalyze;
 import ru.taximaxim.codekeeper.core.loader.ParserListenerMode;
 import ru.taximaxim.codekeeper.core.loader.PgDumpLoader;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaStatement;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaUtils;
+import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
@@ -176,7 +178,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         args.setInCharsetName(file.getCharset());
         PgUIDumpLoader loader = new PgUIDumpLoader(file, args, monitor);
         loader.setMode(ParserListenerMode.REF);
-        PgDatabase db = loader.loadFile(new PgDatabase(args));
+        AbstractDatabase db = loader.loadFile(DatabaseLoader.createDb(args));
         removeResFromRefs(file);
         objDefinitions.putAll(MetaUtils.getObjDefinitions(db));
         objReferences.putAll(db.getObjReferences());
@@ -185,13 +187,14 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
 
     public void getObjFromProjFiles(Collection<IFile> files, IProgressMonitor monitor, DatabaseType dbType)
             throws InterruptedException, IOException, CoreException {
-        PgDatabase db = UIProjectLoader.buildFiles(files, dbType, monitor);
+        AbstractDatabase db = UIProjectLoader.buildFiles(files, dbType, monitor);
         files.forEach(this::removeResFromRefs);
         // fill definitions, view columns will be filled in the analysis
         objDefinitions.putAll(MetaUtils.getObjDefinitions(db));
         List<Object> errors = new ArrayList<>();
-        FullAnalyze.fullAnalyze(db, MetaUtils.createTreeFromDefs(
-                getAllObjDefinitions(), dbType, db.getPostgresVersion()), errors);
+        FullAnalyze.fullAnalyze(db,
+                MetaUtils.createTreeFromDefs(getAllObjDefinitions(), dbType, getVersion(db)),
+                errors);
         UIProjectLoader.markErrors(errors);
         objReferences.putAll(db.getObjReferences());
         notifyListeners();
@@ -204,16 +207,23 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         args.setInCharsetName(proj.getDefaultCharset(true));
         args.setDbType(OpenProjectUtils.getDatabaseType(proj));
         DatabaseLoader loader = new UIProjectLoader(proj, args, mon);
-        PgDatabase db = loader.load();
+        AbstractDatabase db = loader.load();
         clear();
+
         // fill definitions, view columns will be filled in the analysis
         objDefinitions.putAll(MetaUtils.getObjDefinitions(db));
         FullAnalyze.fullAnalyze(db,
-                MetaUtils.createTreeFromDefs(getAllObjDefinitions(),
-                        args.getDbType(), db.getPostgresVersion()),
+                MetaUtils.createTreeFromDefs(getAllObjDefinitions(), args.getDbType(), getVersion(db)),
                 loader.getErrors());
         objReferences.putAll(db.getObjReferences());
         notifyListeners();
+    }
+
+    private SupportedVersion getVersion(AbstractDatabase db) {
+        if (db instanceof PgDatabase) {
+            return ((PgDatabase) db).getPostgresVersion();
+        }
+        return null;
     }
 
     public void removeResFromRefs(IResource res) {
@@ -228,7 +238,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         args.setDbType(dbType);
         PgDumpLoader loader = new PgDumpLoader(() -> input, fileName, args, monitor);
         loader.setMode(ParserListenerMode.REF);
-        PgDatabase db = loader.load();
+        AbstractDatabase db = loader.load();
         objDefinitions.clear();
         objDefinitions.putAll(MetaUtils.getObjDefinitions(db));
         objReferences.clear();

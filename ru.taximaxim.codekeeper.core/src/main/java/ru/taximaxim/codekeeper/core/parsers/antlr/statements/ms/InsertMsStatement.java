@@ -22,13 +22,13 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Insert_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Qualified_nameContext;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 
 public class InsertMsStatement extends MsParserAbstract {
 
     private final Insert_statementContext ctx;
 
-    public InsertMsStatement(Insert_statementContext ctx, PgDatabase db) {
+    public InsertMsStatement(Insert_statementContext ctx, MsDatabase db) {
         super(db);
         this.ctx = ctx;
     }

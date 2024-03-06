@@ -28,14 +28,14 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Data_type
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Sequence_bodyContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsSequence;
 
 public class CreateMsSequence extends MsParserAbstract {
 
     private final Create_sequenceContext ctx;
 
-    public CreateMsSequence(Create_sequenceContext ctx, PgDatabase db) {
+    public CreateMsSequence(Create_sequenceContext ctx, MsDatabase db) {
         super(db);
         this.ctx = ctx;
     }

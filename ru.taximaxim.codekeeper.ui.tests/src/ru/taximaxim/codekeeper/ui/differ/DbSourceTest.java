@@ -45,14 +45,14 @@ import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.fileutils.TempDir;
 import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.model.exporter.MsModelExporter;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public class DbSourceTest {
 
-    private static PgDatabase dbPredefined;
+    private static AbstractDatabase dbPredefined;
     private static File workspacePath;
     private static IWorkspaceRoot workspaceRoot;
 
@@ -122,7 +122,7 @@ public class DbSourceTest {
             TestUtils.createIgnoredSchemaFile(dir);
 
             DbSource dbSourceProj = DbSource.fromProject(new PgDbProject(project));
-            PgDatabase db = dbSourceProj.get(SubMonitor.convert(null, "", 1));
+            AbstractDatabase db = dbSourceProj.get(SubMonitor.convert(null, "", 1));
 
             for (AbstractSchema dbSchema : db.getSchemas()) {
                 if (TestUtils.IGNORED_SCHEMAS_LIST.contains(dbSchema.getName())) {
@@ -147,7 +147,7 @@ public class DbSourceTest {
             IProject project = createProjectInWorkspace(dir.getFileName().toString(), DatabaseType.MS);
 
             // populate project with data
-            PgDatabase msDb = TestUtils.loadTestDump(TestUtils.RESOURCE_MS_DUMP, TestUtils.class, args);
+            AbstractDatabase msDb = TestUtils.loadTestDump(TestUtils.RESOURCE_MS_DUMP, TestUtils.class, args);
             new MsModelExporter(dir, msDb, Consts.UTF_8).exportFull();
             project.refreshLocal(IResource.DEPTH_INFINITE, null);
 
@@ -155,7 +155,7 @@ public class DbSourceTest {
             TestUtils.createIgnoredSchemaFile(dir);
 
             DbSource dbSourceProj = DbSource.fromProject(new PgDbProject(project));
-            PgDatabase db = dbSourceProj.get(SubMonitor.convert(null, "", 1));
+            AbstractDatabase db = dbSourceProj.get(SubMonitor.convert(null, "", 1));
 
             for (AbstractSchema dbSchema : db.getSchemas()) {
                 if (TestUtils.IGNORED_SCHEMAS_LIST.contains(dbSchema.getName())) {
@@ -178,7 +178,7 @@ public class DbSourceTest {
         } catch (IllegalStateException ex) {
             // do nothing: expected behavior
         }
-        PgDatabase dbSource = source.get(SubMonitor.convert(null, "", 1));
+        AbstractDatabase dbSource = source.get(SubMonitor.convert(null, "", 1));
 
         assertTrue(source.isLoaded(), "DB source should be loaded");
 

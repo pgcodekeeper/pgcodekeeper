@@ -34,11 +34,12 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Storage_pa
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.With_storage_parameterContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
+import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgIndex;
 
 public class CreateIndex extends PgParserAbstract {
+
     private final Create_index_statementContext ctx;
     private final String tablespace;
     private final CommonTokenStream stream;

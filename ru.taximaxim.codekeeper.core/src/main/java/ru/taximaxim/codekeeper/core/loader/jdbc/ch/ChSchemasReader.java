@@ -23,14 +23,14 @@ import ru.taximaxim.codekeeper.core.loader.jdbc.AbstractStatementReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 import ru.taximaxim.codekeeper.core.schema.ch.ChSchema;
 
 public class ChSchemasReader extends AbstractStatementReader {
 
-    private final PgDatabase db;
+    private final ChDatabase db;
 
-    public ChSchemasReader(JdbcLoaderBase loader, PgDatabase db) {
+    public ChSchemasReader(JdbcLoaderBase loader, ChDatabase db) {
         super(loader);
         this.db = db;
     }

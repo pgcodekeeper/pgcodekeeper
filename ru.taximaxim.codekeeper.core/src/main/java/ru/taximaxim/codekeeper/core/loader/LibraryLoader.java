@@ -42,23 +42,23 @@ import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.libraries.PgLibrary;
 import ru.taximaxim.codekeeper.core.libraries.PgLibrarySource;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.xmlstore.DependenciesXmlStore;
 
 public class LibraryLoader extends DatabaseLoader {
 
-    private final PgDatabase database;
+    private final AbstractDatabase database;
     private final Path metaPath;
     private final Set<String> loadedLibs;
 
     private boolean loadNested;
 
 
-    public LibraryLoader(PgDatabase database, Path metaPath, List<Object> errors) {
+    public LibraryLoader(AbstractDatabase database, Path metaPath, List<Object> errors) {
         this(database, metaPath, errors, new HashSet<>());
     }
 
-    public LibraryLoader(PgDatabase database, Path metaPath, List<Object> errors, Set<String> loadedPaths) {
+    public LibraryLoader(AbstractDatabase database, Path metaPath, List<Object> errors, Set<String> loadedPaths) {
         super(errors);
         this.database = database;
         this.metaPath = metaPath;
@@ -66,7 +66,7 @@ public class LibraryLoader extends DatabaseLoader {
     }
 
     @Override
-    public PgDatabase load() throws IOException, InterruptedException {
+    public AbstractDatabase load() throws IOException, InterruptedException {
         throw new IllegalStateException("Unsupported operation for LibraryLoader");
     }
 
@@ -86,7 +86,7 @@ public class LibraryLoader extends DatabaseLoader {
             loadNested = xmlStore.readLoadNestedFlag();
             for (PgLibrary lib : xmlLibs) {
                 String path = lib.getPath();
-                PgDatabase l = getLibrary(path, args, lib.isIgnorePriv(), xmlPath);
+                AbstractDatabase l = getLibrary(path, args, lib.isIgnorePriv(), xmlPath);
                 database.addLib(l, path, lib.getOwner());
             }
         } finally {
@@ -94,15 +94,15 @@ public class LibraryLoader extends DatabaseLoader {
         }
     }
 
-    private PgDatabase getLibrary(String path, PgDiffArguments arguments, boolean isIgnorePriv)
+    private AbstractDatabase getLibrary(String path, PgDiffArguments arguments, boolean isIgnorePriv)
             throws InterruptedException, IOException {
         return getLibrary(path, arguments, isIgnorePriv, null);
     }
 
-    private PgDatabase getLibrary(String path, PgDiffArguments arguments, boolean isIgnorePriv, Path xmlPath)
+    private AbstractDatabase getLibrary(String path, PgDiffArguments arguments, boolean isIgnorePriv, Path xmlPath)
             throws InterruptedException, IOException {
         if (!loadedLibs.add(path)) {
-            return new PgDatabase();
+            return createDb(arguments);
         }
 
         PgDiffArguments args = arguments.copy();
@@ -134,7 +134,7 @@ public class LibraryLoader extends DatabaseLoader {
 
         if (Files.isDirectory(p)) {
             if (Files.exists(p.resolve(Consts.FILENAME_WORKING_DIR_MARKER))) {
-                PgDatabase db = new ProjectLoader(p.toString(), args, errors).load();
+                AbstractDatabase db = new ProjectLoader(p.toString(), args, errors).load();
 
                 if (loadNested) {
                     new LibraryLoader(db, metaPath, errors, loadedLibs).loadXml(
@@ -144,7 +144,7 @@ public class LibraryLoader extends DatabaseLoader {
                 return db;
             }
 
-            PgDatabase db = new PgDatabase(args);
+            AbstractDatabase db = createDb(args);
             readStatementsFromDirectory(p, db);
             finishLoaders();
             return db;
@@ -154,7 +154,7 @@ public class LibraryLoader extends DatabaseLoader {
             return loadZip(p, args, isIgnorePriv);
         }
 
-        PgDatabase db = new PgDatabase(args);
+        AbstractDatabase db = createDb(args);
         PgDumpLoader loader = new PgDumpLoader(Paths.get(path), args);
         loader.loadAsync(db, antlrTasks);
         launchedLoaders.add(loader);
@@ -162,13 +162,13 @@ public class LibraryLoader extends DatabaseLoader {
         return db;
     }
 
-    private PgDatabase loadZip(Path path, PgDiffArguments args, boolean isIgnorePriv)
+    private AbstractDatabase loadZip(Path path, PgDiffArguments args, boolean isIgnorePriv)
             throws InterruptedException, IOException {
         Path dir = FileUtils.getUnzippedFilePath(metaPath, path);
         return getLibrary(unzip(path, dir), args, isIgnorePriv);
     }
 
-    private PgDatabase loadJdbc(PgDiffArguments args, String path) throws IOException, InterruptedException {
+    private AbstractDatabase loadJdbc(PgDiffArguments args, String path) throws IOException, InterruptedException {
         String timezone = args.getTimeZone() == null ? Consts.UTC : args.getTimeZone();
         DatabaseLoader loader;
         if (path.startsWith("jdbc:sqlserver")) {
@@ -177,7 +177,7 @@ public class LibraryLoader extends DatabaseLoader {
             loader = new JdbcLoader(JdbcConnector.fromUrl(path, timezone), args);
         }
 
-        PgDatabase db;
+        AbstractDatabase db;
         try {
             db = loader.load();
         } finally {
@@ -187,7 +187,7 @@ public class LibraryLoader extends DatabaseLoader {
         return db;
     }
 
-    private PgDatabase loadURI(URI uri, PgDiffArguments args, boolean isIgnorePriv)
+    private AbstractDatabase loadURI(URI uri, PgDiffArguments args, boolean isIgnorePriv)
             throws InterruptedException, IOException {
         String path = uri.getPath();
         String fileName = FileUtils.getValidFilename(Paths.get(path).getFileName().toString());
@@ -267,7 +267,7 @@ public class LibraryLoader extends DatabaseLoader {
         return destDir.toString();
     }
 
-    private void readStatementsFromDirectory(Path f, PgDatabase db)
+    private void readStatementsFromDirectory(Path f, AbstractDatabase db)
             throws IOException, InterruptedException {
         try (Stream<Path> stream = Files.list(f)) {
             List<Path> dirs = new ArrayList<>();
@@ -285,7 +285,7 @@ public class LibraryLoader extends DatabaseLoader {
         }
     }
 
-    private void readStatementsFromFile(Path sub, PgDatabase db)
+    private void readStatementsFromFile(Path sub, AbstractDatabase db)
             throws InterruptedException, IOException {
         String filePath = sub.toString();
         PgDiffArguments args = db.getArguments();

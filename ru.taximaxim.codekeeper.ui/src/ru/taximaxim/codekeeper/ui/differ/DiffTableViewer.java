@@ -107,7 +107,6 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.ISharedImages;
 
-import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.libraries.PgLibrarySource;
 import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
@@ -118,7 +117,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeFlattener;
 import ru.taximaxim.codekeeper.core.model.exporter.AbstractModelExporter;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.AggregatingListener;
@@ -847,8 +846,8 @@ public class DiffTableViewer extends Composite {
             selected = Collections.emptyList();
             tabs = Collections.emptySet();
         } else {
-            PgDatabase source = dbProject.getDbObject();
-            PgDatabase target = dbRemote.getDbObject();
+            AbstractDatabase source = dbProject.getDbObject();
+            AbstractDatabase target = dbRemote.getDbObject();
             selected = new TreeFlattener()
                     .onlyEdits(source, target)
                     .useIgnoreList(ignoreList, dbRemote.getDbName())

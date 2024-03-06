@@ -40,16 +40,16 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.St_clause
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Tsql_fileContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ms.AlterMsAuthorization;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ms.GrantMsPrivilege;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.StatementOverride;
+import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 
-public class TSQLOverridesListener extends CustomParserListener
+public class TSQLOverridesListener extends CustomParserListener<MsDatabase>
 implements TSqlContextProcessor {
 
     private final Map<PgStatement, StatementOverride> overrides;
 
-    public TSQLOverridesListener(PgDatabase db, String filename, ParserListenerMode mode,
+    public TSQLOverridesListener(MsDatabase db, String filename, ParserListenerMode mode,
             List<Object> errors, IProgressMonitor mon, Map<PgStatement, StatementOverride> overrides) {
         super(db, filename, mode, errors, mon);
         this.overrides = overrides;
@@ -92,7 +92,7 @@ implements TSqlContextProcessor {
     private void create(Schema_createContext ctx) {
         Create_assemblyContext ass = ctx.create_assembly();
         if (ass!= null && ass.owner_name != null) {
-            computeOverride(PgDatabase::getAssembly, ass.assembly_name, ass.owner_name);
+            computeOverride(MsDatabase::getAssembly, ass.assembly_name, ass.owner_name);
         }
     }
 
@@ -106,12 +106,12 @@ implements TSqlContextProcessor {
     private void batch(Batch_statementContext batch) {
         Create_schemaContext schema = batch.create_schema();
         if (schema != null && schema.owner_name != null) {
-            computeOverride(PgDatabase::getSchema, schema.schema_name, schema.owner_name);
+            computeOverride(MsDatabase::getSchema, schema.schema_name, schema.owner_name);
         }
     }
 
     private <R extends PgStatement> void computeOverride(
-            BiFunction<PgDatabase, String, R> getter, IdContext nameCtx, IdContext ownerCtx) {
+            BiFunction<MsDatabase, String, R> getter, IdContext nameCtx, IdContext ownerCtx) {
         String name = nameCtx.getText();
         R statement = getter.apply(db, name);
         if (statement == null) {

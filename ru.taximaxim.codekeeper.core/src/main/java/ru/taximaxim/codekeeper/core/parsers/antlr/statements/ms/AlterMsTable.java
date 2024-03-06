@@ -35,10 +35,10 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_con
 import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.ms.MsColumn;
 import ru.taximaxim.codekeeper.core.schema.ms.MsConstraint;
+import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsTable;
 import ru.taximaxim.codekeeper.core.schema.ms.MsTrigger;
 
@@ -46,7 +46,7 @@ public class AlterMsTable extends MsTableAbstract {
 
     private final Alter_tableContext ctx;
 
-    public AlterMsTable(Alter_tableContext ctx, PgDatabase db) {
+    public AlterMsTable(Alter_tableContext ctx, MsDatabase db) {
         super(db);
         this.ctx = ctx;
     }

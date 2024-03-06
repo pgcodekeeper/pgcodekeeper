@@ -20,8 +20,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.ICast;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public class PgCast extends PgStatement implements ICast {
@@ -88,8 +88,8 @@ public class PgCast extends PgStatement implements ICast {
     }
 
     @Override
-    public PgDatabase getDatabase() {
-        return (PgDatabase) getParent();
+    public AbstractDatabase getDatabase() {
+        return (AbstractDatabase) getParent();
     }
 
     @Override

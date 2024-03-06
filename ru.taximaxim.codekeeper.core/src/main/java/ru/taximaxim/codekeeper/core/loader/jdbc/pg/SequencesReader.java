@@ -34,11 +34,11 @@ import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcReader;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractSequence;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgColumn;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
 
@@ -127,7 +127,8 @@ public class SequencesReader extends JdbcReader {
                         + " FROM test_id78901234567890123456789.test_id78901234567890123456789 UNION ALL ").length();
     }
 
-    public static void querySequencesData(PgDatabase db, JdbcLoaderBase loader) throws SQLException, InterruptedException {
+    public static void querySequencesData(AbstractDatabase db, JdbcLoaderBase loader)
+            throws SQLException, InterruptedException {
         loader.setCurrentOperation("sequences data query");
 
         List<String> schemasAccess = new ArrayList<>();

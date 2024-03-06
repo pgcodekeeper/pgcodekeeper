@@ -27,7 +27,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Alter_view
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Alter_view_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgView;
 
 public class AlterView extends PgParserAbstract {

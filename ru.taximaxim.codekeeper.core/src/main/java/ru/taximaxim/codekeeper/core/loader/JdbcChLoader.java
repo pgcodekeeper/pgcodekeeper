@@ -31,7 +31,8 @@ import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
 import ru.taximaxim.codekeeper.core.loader.jdbc.ch.ChSchemasReader;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
+import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 
 public final class JdbcChLoader extends JdbcLoaderBase {
 
@@ -47,8 +48,8 @@ public final class JdbcChLoader extends JdbcLoaderBase {
     }
 
     @Override
-    public PgDatabase load() throws IOException, InterruptedException {
-        PgDatabase d = new PgDatabase(getArgs());
+    public AbstractDatabase load() throws IOException, InterruptedException {
+        ChDatabase d = (ChDatabase) createDb(getArgs());
 
         LOG.info("Reading db using JDBC.");
         setCurrentOperation("connection setup");

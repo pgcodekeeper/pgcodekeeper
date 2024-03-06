@@ -28,9 +28,9 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_constraint_bodyContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_indexContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Type_definitionContext;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsColumn;
 import ru.taximaxim.codekeeper.core.schema.ms.MsConstraintCheck;
+import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsIndex;
 import ru.taximaxim.codekeeper.core.schema.ms.MsType;
 
@@ -38,7 +38,7 @@ public class CreateMsType extends MsParserAbstract {
 
     private final Create_typeContext ctx;
 
-    public CreateMsType(Create_typeContext ctx, PgDatabase db) {
+    public CreateMsType(Create_typeContext ctx, MsDatabase db) {
         super(db);
         this.ctx = ctx;
     }

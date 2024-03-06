@@ -29,7 +29,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Qualified_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Select_statementContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsView;
 
 public class CreateMsView extends BatchContextProcessor {
@@ -39,7 +39,7 @@ public class CreateMsView extends BatchContextProcessor {
     private final boolean ansiNulls;
     private final boolean quotedIdentifier;
 
-    public CreateMsView(Batch_statementContext ctx, PgDatabase db,
+    public CreateMsView(Batch_statementContext ctx, MsDatabase db,
             boolean ansiNulls, boolean quotedIdentifier, CommonTokenStream stream) {
         super(db, ctx, stream);
         this.ctx = ctx.batch_statement_body().create_or_alter_view();
@@ -47,7 +47,7 @@ public class CreateMsView extends BatchContextProcessor {
         this.quotedIdentifier = quotedIdentifier;
     }
 
-    public CreateMsView(Create_or_alter_viewContext ctx, PgDatabase db,
+    public CreateMsView(Create_or_alter_viewContext ctx, MsDatabase db,
             boolean ansiNulls, boolean quotedIdentifier, CommonTokenStream stream) {
         super(db, ctx.getParent(), stream);
         this.ctx = ctx;

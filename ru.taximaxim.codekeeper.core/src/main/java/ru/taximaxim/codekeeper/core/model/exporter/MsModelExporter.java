@@ -25,17 +25,17 @@ import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.PgStatementWithSearchPath;
 
 public class MsModelExporter extends AbstractModelExporter {
 
-    public MsModelExporter(Path outDir, PgDatabase db, String sqlEncoding) {
+    public MsModelExporter(Path outDir, AbstractDatabase db, String sqlEncoding) {
         super(outDir, db, sqlEncoding);
     }
 
-    public MsModelExporter(Path outDir, PgDatabase newDb, PgDatabase oldDb,
+    public MsModelExporter(Path outDir, AbstractDatabase newDb, AbstractDatabase oldDb,
             Collection<TreeElement> changedObjects, String sqlEncoding) {
         super(outDir, newDb, oldDb, changedObjects, sqlEncoding);
     }

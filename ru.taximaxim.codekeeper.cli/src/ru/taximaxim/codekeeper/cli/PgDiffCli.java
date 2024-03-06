@@ -26,7 +26,7 @@ import ru.taximaxim.codekeeper.core.ignoreparser.IgnoreParser;
 import ru.taximaxim.codekeeper.core.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 
 public class PgDiffCli extends PgDiff {
 
@@ -40,8 +40,8 @@ public class PgDiffCli extends PgDiff {
     public void updateProject()
             throws IOException, InterruptedException, PgCodekeeperException {
 
-        PgDatabase oldDatabase = loadOldDatabaseWithLibraries();
-        PgDatabase newDatabase = loadNewDatabaseWithLibraries();
+        AbstractDatabase oldDatabase = loadOldDatabaseWithLibraries();
+        AbstractDatabase newDatabase = loadNewDatabaseWithLibraries();
         IgnoreList ignoreList = new IgnoreList();
         IgnoreParser ignoreParser = new IgnoreParser(ignoreList);
         for (String listFilename : arguments.getIgnoreLists()) {

@@ -40,11 +40,11 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgPrivilege;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.StatementOverride;
 import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgFunction;
+import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 
 public class GrantPrivilege extends PgParserAbstract {
     private final Rule_commonContext ctx;
@@ -254,50 +254,50 @@ public class GrantPrivilege extends PgParserAbstract {
         ParserRuleContext idCtx = QNameParser.getFirstNameCtx(ids);
         AbstractSchema schema;
         switch (type) {
-            case SCHEMA:
-                schema = getSafe(PgDatabase::getSchema, db, idCtx);
-                break;
-            case FOREIGN_DATA_WRAPPER:
-            case SERVER:
-                schema = null;
-                break;
-            default:
-                schema = getSchemaSafe(ids);
+        case SCHEMA:
+            schema = getSafe(PgDatabase::getSchema, db, idCtx);
+            break;
+        case FOREIGN_DATA_WRAPPER:
+        case SERVER:
+            schema = null;
+            break;
+        default:
+            schema = getSchemaSafe(ids);
         }
 
         PgStatement statement = null;
         String typeName = null;
         switch (type) {
-            case TABLE:
-                statement = (PgStatement) getSafe(AbstractSchema::getRelation, schema, idCtx);
-                break;
-            case SEQUENCE:
-                statement = getSafe(AbstractSchema::getSequence, schema, idCtx);
-                break;
-            case SCHEMA:
-                statement = schema;
-                break;
-            case TYPE:
-                statement = schema.getType(idCtx.getText());
+        case TABLE:
+            statement = (PgStatement) getSafe(AbstractSchema::getRelation, schema, idCtx);
+            break;
+        case SEQUENCE:
+            statement = getSafe(AbstractSchema::getSequence, schema, idCtx);
+            break;
+        case SCHEMA:
+            statement = schema;
+            break;
+        case TYPE:
+            statement = schema.getType(idCtx.getText());
 
-                // if type not found try domain
-                if (statement == null) {
-                    statement = getSafe(AbstractSchema::getDomain, schema, idCtx);
-                }
-                break;
-            case DOMAIN:
+            // if type not found try domain
+            if (statement == null) {
                 statement = getSafe(AbstractSchema::getDomain, schema, idCtx);
-                break;
-            case SERVER:
-                statement = getSafe(PgDatabase::getServer, db, idCtx);
-                typeName = "FOREIGN SERVER";
-                break;
-            case FOREIGN_DATA_WRAPPER:
-                statement = getSafe(PgDatabase::getForeignDW, db, idCtx);
-                typeName = "FOREIGN DATA WRAPPER";
-                break;
-            default:
-                break;
+            }
+            break;
+        case DOMAIN:
+            statement = getSafe(AbstractSchema::getDomain, schema, idCtx);
+            break;
+        case SERVER:
+            statement = getSafe(PgDatabase::getServer, db, idCtx);
+            typeName = "FOREIGN SERVER";
+            break;
+        case FOREIGN_DATA_WRAPPER:
+            statement = getSafe(PgDatabase::getForeignDW, db, idCtx);
+            typeName = "FOREIGN DATA WRAPPER";
+            break;
+        default:
+            break;
         }
         if (typeName == null) {
             typeName = type.name();

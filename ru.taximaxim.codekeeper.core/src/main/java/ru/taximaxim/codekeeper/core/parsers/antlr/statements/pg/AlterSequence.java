@@ -28,12 +28,14 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Sequence_b
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Tokens_nonreserved_except_function_typeContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
+import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
 
 public class AlterSequence extends PgParserAbstract {
+
     private final Alter_sequence_statementContext ctx;
+
     public AlterSequence(Alter_sequence_statementContext ctx, PgDatabase db) {
         super(db);
         this.ctx = ctx;

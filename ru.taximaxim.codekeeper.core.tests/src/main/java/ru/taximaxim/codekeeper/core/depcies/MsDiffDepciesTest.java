@@ -28,7 +28,7 @@ import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 
 /**
  * Тестирует сравнение БД с неполным выбором различающихся объектов
@@ -77,12 +77,12 @@ class MsDiffDepciesTest {
         args.setDbType(DatabaseType.MS);
         args.setEnableFunctionBodiesDependencies(isEnableDepcies);
 
-        PgDatabase oldDatabase = TestUtils.loadTestDump(
+        AbstractDatabase oldDatabase = TestUtils.loadTestDump(
                 userSelTemplate + FILES_POSTFIX.ORIGINAL_SQL, MsDiffDepciesTest.class, args);
-        PgDatabase newDatabase = TestUtils.loadTestDump(
+        AbstractDatabase newDatabase = TestUtils.loadTestDump(
                 userSelTemplate + FILES_POSTFIX.NEW_SQL, MsDiffDepciesTest.class, args);
-        PgDatabase oldDbFull;
-        PgDatabase newDbFull;
+        AbstractDatabase oldDbFull;
+        AbstractDatabase newDbFull;
         if (userSelTemplate.equals(dbTemplate)) {
             oldDbFull = oldDatabase;
             newDbFull = newDatabase;

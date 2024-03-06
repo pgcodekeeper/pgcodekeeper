@@ -24,17 +24,17 @@ import ru.taximaxim.codekeeper.core.WorkDirs;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public class ChModelExporter extends AbstractModelExporter {
 
-    public ChModelExporter(Path outDir, PgDatabase db, String sqlEncoding) {
+    public ChModelExporter(Path outDir, AbstractDatabase db, String sqlEncoding) {
         super(outDir, db, sqlEncoding);
     }
 
-    public ChModelExporter(Path outDir, PgDatabase newDb, PgDatabase oldDb, Collection<TreeElement> changedObjects,
-            String sqlEncoding) {
+    public ChModelExporter(Path outDir, AbstractDatabase newDb, AbstractDatabase oldDb,
+            Collection<TreeElement> changedObjects, String sqlEncoding) {
         super(outDir, newDb, oldDb, changedObjects, sqlEncoding);
     }
 

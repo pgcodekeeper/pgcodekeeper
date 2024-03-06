@@ -29,14 +29,16 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_dom
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Domain_constraintContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.IdentifierContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgConstraintCheck;
+import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDomain;
 
 public class CreateDomain extends PgParserAbstract {
 
     private final Create_domain_statementContext ctx;
     private final CommonTokenStream stream;
+
     public CreateDomain(Create_domain_statementContext ctx, PgDatabase db, CommonTokenStream stream) {
         super(db);
         this.ctx = ctx;
@@ -76,7 +78,7 @@ public class CreateDomain extends PgParserAbstract {
     }
 
     public static void parseDomainConstraint(PgDomain domain, PgConstraintCheck constr,
-            Domain_constraintContext ctx, PgDatabase db, String location) {
+            Domain_constraintContext ctx, AbstractDatabase db, String location) {
         VexContext vexCtx = ctx.vex();
         constr.setExpression(getFullCtxText(vexCtx));
         db.addAnalysisLauncher(new DomainAnalysisLauncher(domain, vexCtx, location));

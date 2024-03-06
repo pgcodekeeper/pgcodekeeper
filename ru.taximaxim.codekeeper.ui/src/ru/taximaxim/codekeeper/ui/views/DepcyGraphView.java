@@ -50,7 +50,7 @@ import org.eclipse.zest.layouts.algorithms.SpringLayoutAlgorithm;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.core.model.graph.SimpleDepcyResolver;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.ProjectIcon;
@@ -186,8 +186,8 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         currentProject = selectedProj;
 
         boolean showProject = projectAction.isChecked();
-        PgDatabase newDb = showProject ? dbPair.dbProject.getDbObject() : dbPair.dbRemote.getDbObject();
-        PgDatabase currentDb = newDb;
+        AbstractDatabase newDb = showProject ? dbPair.dbProject.getDbObject() : dbPair.dbRemote.getDbObject();
+        AbstractDatabase currentDb = newDb;
         depRes = new SimpleDepcyResolver(currentDb, isShowColumns);
         if (currentDb == null || depRes == null) {
             gv.setInput(null);

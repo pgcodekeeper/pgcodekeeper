@@ -24,9 +24,9 @@ import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcReader;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.VexAnalysisLauncher;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.core.schema.pg.PgEventType;
 import ru.taximaxim.codekeeper.core.schema.pg.PgPolicy;
@@ -76,7 +76,7 @@ public class PoliciesReader extends JdbcReader {
         if (SupportedVersion.VERSION_10.isLE(loader.getVersion())) {
             p.setPermissive(res.getBoolean("polpermissive"));
         }
-        PgDatabase db = schema.getDatabase();
+        AbstractDatabase db = schema.getDatabase();
 
         String using = res.getString("polqual");
         if (using != null) {

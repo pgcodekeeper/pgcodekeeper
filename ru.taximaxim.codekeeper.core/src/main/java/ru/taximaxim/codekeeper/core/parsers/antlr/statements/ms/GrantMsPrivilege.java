@@ -38,11 +38,11 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_col
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgPrivilege;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.PgStatementWithSearchPath;
 import ru.taximaxim.codekeeper.core.schema.StatementOverride;
+import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 
 public class GrantMsPrivilege extends MsParserAbstract {
     private final Rule_commonContext ctx;
@@ -50,11 +50,11 @@ public class GrantMsPrivilege extends MsParserAbstract {
     private final boolean isGO;
     private final Map<PgStatement, StatementOverride> overrides;
 
-    public GrantMsPrivilege(Rule_commonContext ctx, PgDatabase db) {
+    public GrantMsPrivilege(Rule_commonContext ctx, MsDatabase db) {
         this(ctx, db, null);
     }
 
-    public GrantMsPrivilege(Rule_commonContext ctx, PgDatabase db, Map<PgStatement, StatementOverride> overrides) {
+    public GrantMsPrivilege(Rule_commonContext ctx, MsDatabase db, Map<PgStatement, StatementOverride> overrides) {
         super(db);
         this.ctx = ctx;
         this.overrides = overrides;
@@ -141,13 +141,13 @@ public class GrantMsPrivilege extends MsParserAbstract {
                     e -> e.getBareName().equals(v))
                     .findAny().orElse(null), schema, nameCtx);
         } else if (type.ASSEMBLY() != null) {
-            st = getSafe(PgDatabase::getAssembly, db, nameCtx);
+            st = getSafe(MsDatabase::getAssembly, db, nameCtx);
         } else if (type.ROLE() != null) {
-            st = getSafe(PgDatabase::getRole, db, nameCtx);
+            st = getSafe(MsDatabase::getRole, db, nameCtx);
         } else if (type.USER() != null) {
-            st = getSafe(PgDatabase::getUser, db, nameCtx);
+            st = getSafe(MsDatabase::getUser, db, nameCtx);
         } else if (type.SCHEMA() != null) {
-            st = getSafe(PgDatabase::getSchema, db, nameCtx);
+            st = getSafe(MsDatabase::getSchema, db, nameCtx);
         } else {
             return null;
         }

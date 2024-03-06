@@ -84,9 +84,9 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.GrantPrivilege;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.InsertStatement;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.MergeStatement;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.UpdateStatement;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 
-public class CustomSQLParserListener extends CustomParserListener
+public class CustomSQLParserListener extends CustomParserListener<PgDatabase>
 implements SqlContextProcessor {
 
     private String tablespace;

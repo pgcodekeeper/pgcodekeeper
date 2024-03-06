@@ -26,14 +26,14 @@ import ru.taximaxim.codekeeper.core.loader.jdbc.XmlReaderException;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ms.CreateMsAssembly;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsAssembly;
+import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 
 public class MsAssembliesReader extends AbstractStatementReader {
 
-    private final PgDatabase db;
+    private final MsDatabase db;
 
-    public MsAssembliesReader(JdbcLoaderBase loader, PgDatabase db) {
+    public MsAssembliesReader(JdbcLoaderBase loader, MsDatabase db) {
         super(loader);
         this.db = db;
     }

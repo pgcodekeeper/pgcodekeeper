@@ -65,12 +65,12 @@ public class GenericColumn implements Serializable {
         this(schema, null, type);
     }
 
-    public PgStatement getStatement(PgDatabase db) {
+    public PgStatement getStatement(AbstractDatabase db) {
         return doGetStatementLog(db, type);
     }
 
     // debug method with selective logging
-    private PgStatement doGetStatementLog(PgDatabase db, DbObjType type) {
+    private PgStatement doGetStatementLog(AbstractDatabase db, DbObjType type) {
         PgStatement st = doGetStatement(db, type);
         if (st != null || !LOG.isTraceEnabled()) {
             return st;
@@ -109,24 +109,32 @@ public class GenericColumn implements Serializable {
                 || (table != null && table.startsWith("pg_"));
     }
 
-    private PgStatement doGetStatement(PgDatabase db, DbObjType type) {
+    private PgStatement doGetStatement(AbstractDatabase db, DbObjType type) {
         if (type == null) {
             return null;
         }
 
         switch (type) {
-        case DATABASE: return db;
-        case SCHEMA: return db.getSchema(schema);
-        case EXTENSION: return db.getExtension(schema);
-        case FOREIGN_DATA_WRAPPER: return db.getForeignDW(schema);
-        case SERVER: return db.getServer(schema);
-        case EVENT_TRIGGER: return db.getEventTrigger(schema);
-        case CAST: return db.getCast(schema);
-        case USER_MAPPING: return db.getUserMapping(schema);
-        case ASSEMBLY: return db.getAssembly(schema);
-        case USER: return db.getUser(schema);
-        case ROLE: return db.getRole(schema);
-        default: break;
+        case DATABASE:
+            return db;
+        case SCHEMA:
+        case EXTENSION:
+        case FOREIGN_DATA_WRAPPER:
+        case SERVER:
+        case EVENT_TRIGGER:
+        case CAST:
+        case USER_MAPPING:
+        case ASSEMBLY:
+        case USER:
+        case ROLE:
+            return db.getChild(schema, type);
+        case FUNCTION:
+            if (db.getDbType() == DatabaseType.CH) {
+                return db.getChild(schema, type);
+            }
+            break;
+        default:
+            break;
         }
 
         AbstractSchema s = db.getSchema(schema);
@@ -135,40 +143,44 @@ public class GenericColumn implements Serializable {
         }
 
         switch (type) {
-        case TYPE: return getType(s);
-        case DOMAIN: return s.getDomain(table);
-        case SEQUENCE: return s.getSequence(table);
+        case DOMAIN:
+        case SEQUENCE:
+        case VIEW:
+        case COLLATION:
+        case FTS_PARSER:
+        case FTS_TEMPLATE:
+        case FTS_DICTIONARY:
+        case FTS_CONFIGURATION:
+            return s.getChild(table, type);
+        case TYPE:
+            return getType(s);
         case FUNCTION:
         case PROCEDURE:
-        case AGGREGATE: return resolveFunctionCall(s);
-        case OPERATOR: return resolveOperatorCall(s);
-        case TABLE: return getRelation(s);
-        case VIEW: return s.getView(table);
-        case COLLATION: return s.getCollation(table);
-        case FTS_PARSER: return s.getFtsParser(table);
-        case FTS_TEMPLATE: return s.getFtsTemplate(table);
-        case FTS_DICTIONARY: return s.getFtsDictionary(table);
-        case FTS_CONFIGURATION: return s.getFtsConfiguration(table);
-        case INDEX: return s.getIndexByName(table);
-        // handled in getStatement, left here for consistency
+        case AGGREGATE:
+            return resolveFunctionCall(s);
+        case OPERATOR:
+            return resolveOperatorCall(s);
+        case TABLE:
+            return getRelation(s);
+        case INDEX:
+            return s.getIndexByName(table);
+            // handled in getStatement, left here for consistency
         case COLUMN:
             AbstractTable t = s.getTable(table);
             return t == null ? null : t.getColumn(column);
-        default: break;
+        default:
+            break;
         }
 
-        PgStatementContainer sc = s.getStatementContainer(table);
         switch (type) {
         case CONSTRAINT:
-            return sc == null ? null : sc.getConstraint(column);
         case TRIGGER:
-            return sc == null ? null : sc.getTrigger(column);
         case RULE:
-            return sc == null ? null : sc.getRule(column);
         case POLICY:
-            return sc == null ? null : sc.getPolicy(column);
-
-        default: throw new IllegalStateException("Unhandled DbObjType: " + type);
+            PgStatementContainer sc = s.getStatementContainer(table);
+            return sc == null ? null : sc.getChild(column, type);
+        default:
+            throw new IllegalStateException("Unhandled DbObjType: " + type);
         }
     }
 

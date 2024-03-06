@@ -46,7 +46,7 @@ import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 /**
@@ -74,12 +74,12 @@ public abstract class AbstractModelExporter {
     /**
      * Database to export.
      */
-    protected final PgDatabase newDb;
+    protected final AbstractDatabase newDb;
 
     /**
      * Old state db to fetch filenames from
      */
-    protected final PgDatabase oldDb;
+    protected final AbstractDatabase oldDb;
 
     /**
      * SQL files encoding.
@@ -101,11 +101,11 @@ public abstract class AbstractModelExporter {
      * @param sqlEncoding
      *            encoding
      */
-    protected AbstractModelExporter(Path outDir, PgDatabase db, String sqlEncoding) {
+    protected AbstractModelExporter(Path outDir, AbstractDatabase db, String sqlEncoding) {
         this(outDir, db, null, null, sqlEncoding);
     }
 
-    protected AbstractModelExporter(Path outDir, PgDatabase newDb, PgDatabase oldDb,
+    protected AbstractModelExporter(Path outDir, AbstractDatabase newDb, AbstractDatabase oldDb,
             Collection<TreeElement> changedObjects, String sqlEncoding) {
         this.outDir = outDir;
         this.newDb = newDb;
@@ -293,8 +293,9 @@ public abstract class AbstractModelExporter {
         return exporter.getRelativeFilePath(st, true);
     }
 
-    public static void exportPartial(DatabaseType dbType, Path dirExport, PgDatabase dbNew, PgDatabase dbOld,
-            Collection<TreeElement> changedObjects, String encoding) throws IOException, PgCodekeeperException {
+    public static void exportPartial(DatabaseType dbType, Path dirExport, AbstractDatabase dbNew,
+            AbstractDatabase dbOld, Collection<TreeElement> changedObjects, String encoding)
+                    throws IOException, PgCodekeeperException {
         AbstractModelExporter exporter;
         switch (dbType) {
         case MS:
@@ -312,7 +313,7 @@ public abstract class AbstractModelExporter {
         exporter.exportPartial();
     }
 
-    public static void exportFull(DatabaseType dbType, Path dirExport, PgDatabase dbNew, String encoding)
+    public static void exportFull(DatabaseType dbType, Path dirExport, AbstractDatabase dbNew, String encoding)
             throws IOException {
         AbstractModelExporter exporter;
         switch (dbType) {
