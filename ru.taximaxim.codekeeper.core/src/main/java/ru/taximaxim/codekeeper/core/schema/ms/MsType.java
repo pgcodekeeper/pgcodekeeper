@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
@@ -228,4 +229,10 @@ public final class MsType extends AbstractType implements IStatementContainer {
         // no impl
         return null;
     }
+
+    @Override
+    public DatabaseType getDbType() {
+        return DatabaseType.MS;
+    }
+
 }

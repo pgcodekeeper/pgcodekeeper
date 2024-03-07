@@ -22,6 +22,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
@@ -328,5 +329,10 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
             table.pkeys.addAll(pkeys);
         }
         return table;
+    }
+
+    @Override
+    public DatabaseType getDbType() {
+        return DatabaseType.MS;
     }
 }

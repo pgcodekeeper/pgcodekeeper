@@ -18,6 +18,7 @@ package ru.taximaxim.codekeeper.core.schema.ms;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractView;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
@@ -170,5 +171,10 @@ public class MsView extends AbstractView implements SourceStatement {
 
     public boolean isSchemaBinding() {
         return schemaBinding;
+    }
+
+    @Override
+    public DatabaseType getDbType() {
+        return DatabaseType.MS;
     }
 }

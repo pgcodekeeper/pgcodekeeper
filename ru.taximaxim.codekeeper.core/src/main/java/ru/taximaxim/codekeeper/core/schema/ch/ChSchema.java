@@ -19,6 +19,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.ChDiffUtils;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
@@ -26,7 +27,7 @@ import ru.taximaxim.codekeeper.core.schema.PgStatement;
 public class ChSchema extends AbstractSchema {
 
     private String engine = "Atomic";
-    
+
     public ChSchema(String name) {
         super(name);
     }
@@ -102,5 +103,10 @@ public class ChSchema extends AbstractSchema {
     @Override
     public void appendComments(StringBuilder sb) {
         // no impl
+    }
+
+    @Override
+    public DatabaseType getDbType() {
+        return DatabaseType.CH;
     }
 }

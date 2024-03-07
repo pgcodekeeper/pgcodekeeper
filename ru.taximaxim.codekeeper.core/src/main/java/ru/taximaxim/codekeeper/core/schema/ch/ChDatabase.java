@@ -25,6 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
@@ -163,6 +164,11 @@ public class ChDatabase extends AbstractDatabase {
     @Override
     protected AbstractDatabase getDatabaseCopy() {
         return new ChDatabase(getArguments());
+    }
+
+    @Override
+    public DatabaseType getDbType() {
+        return DatabaseType.CH;
     }
 
 }

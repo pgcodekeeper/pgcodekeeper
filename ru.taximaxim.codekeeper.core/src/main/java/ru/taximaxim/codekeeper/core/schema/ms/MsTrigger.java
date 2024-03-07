@@ -18,6 +18,7 @@ package ru.taximaxim.codekeeper.core.schema.ms;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractTrigger;
@@ -193,5 +194,10 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
     public void setSecondPart(String secondPart) {
         this.secondPart = secondPart;
         resetHash();
+    }
+
+    @Override
+    public DatabaseType getDbType() {
+        return DatabaseType.MS;
     }
 }

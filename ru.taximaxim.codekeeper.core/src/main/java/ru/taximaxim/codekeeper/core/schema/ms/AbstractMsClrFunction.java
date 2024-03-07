@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractFunction;
 import ru.taximaxim.codekeeper.core.schema.Argument;
@@ -90,5 +91,10 @@ public abstract class AbstractMsClrFunction extends AbstractFunction {
         AbstractMsClrFunction functionDst = (AbstractMsClrFunction) super.shallowCopy();
         functionDst.options.addAll(options);
         return functionDst;
+    }
+
+    @Override
+    public DatabaseType getDbType() {
+        return DatabaseType.MS;
     }
 }

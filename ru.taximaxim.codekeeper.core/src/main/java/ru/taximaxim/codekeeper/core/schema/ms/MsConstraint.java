@@ -17,6 +17,7 @@ package ru.taximaxim.codekeeper.core.schema.ms;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
@@ -129,5 +130,10 @@ public abstract class MsConstraint extends AbstractConstraint {
         MsConstraint con = (MsConstraint) super.shallowCopy();
         con.setDisabled(isDisabled());
         return con;
+    }
+
+    @Override
+    public DatabaseType getDbType() {
+        return DatabaseType.MS;
     }
 }

@@ -19,6 +19,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractSequence;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
@@ -226,4 +227,10 @@ public class MsSequence extends AbstractSequence {
         sequence.setCached(isCached());
         return sequence;
     }
+
+    @Override
+    public DatabaseType getDbType() {
+        return DatabaseType.MS;
+    }
+
 }
