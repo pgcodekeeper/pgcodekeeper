@@ -17,7 +17,6 @@ package ru.taximaxim.codekeeper.core.schema.ms;
 
 import java.util.Objects;
 
-import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractFunction;
 import ru.taximaxim.codekeeper.core.schema.SourceStatement;
@@ -104,10 +103,5 @@ implements SourceStatement {
         functionDst.setFirstPart(getFirstPart());
         functionDst.setSecondPart(getSecondPart());
         return functionDst;
-    }
-
-    @Override
-    public DatabaseType getDbType() {
-        return DatabaseType.MS;
     }
 }

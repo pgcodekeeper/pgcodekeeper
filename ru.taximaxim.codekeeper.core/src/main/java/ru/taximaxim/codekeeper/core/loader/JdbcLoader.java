@@ -133,7 +133,7 @@ public class JdbcLoader extends JdbcLoaderBase {
 
             d.sortColumns();
 
-            d.setPostgresVersion(SupportedVersion.valueOf(getVersion()));
+            d.setVersion(SupportedVersion.valueOf(getVersion()));
             LOG.info("Database object has been successfully queried from JDBC");
         } catch (InterruptedException ex) {
             throw ex;

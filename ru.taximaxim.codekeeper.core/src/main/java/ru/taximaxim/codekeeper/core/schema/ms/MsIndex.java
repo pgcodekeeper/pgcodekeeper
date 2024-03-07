@@ -19,7 +19,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.schema.AbstractIndex;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
@@ -146,11 +145,6 @@ public class MsIndex extends AbstractIndex {
         .append(" ON ")
         .append(getParent().getQualifiedName());
         return sb;
-    }
-
-    @Override
-    public DatabaseType getDbType() {
-        return DatabaseType.MS;
     }
 
     @Override

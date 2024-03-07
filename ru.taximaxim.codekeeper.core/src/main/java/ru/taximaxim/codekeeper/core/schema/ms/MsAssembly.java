@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
@@ -193,10 +192,5 @@ public class MsAssembly extends PgStatement {
     public void setVisible(final boolean isVisible) {
         this.isVisible = isVisible;
         resetHash();
-    }
-
-    @Override
-    public DatabaseType getDbType() {
-        return DatabaseType.MS;
     }
 }

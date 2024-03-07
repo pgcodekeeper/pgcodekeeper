@@ -33,6 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
+import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.AbstractAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgTable;
@@ -43,6 +44,8 @@ import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgTable;
 public abstract class AbstractDatabase extends PgStatement implements IDatabase {
 
     private PgDiffArguments arguments;
+
+    private SupportedVersion version;
 
     /**
      * Current default schema.
@@ -67,7 +70,7 @@ public abstract class AbstractDatabase extends PgStatement implements IDatabase 
         return overrides;
     }
 
-    public AbstractDatabase() {
+    protected AbstractDatabase() {
         this(new PgDiffArguments());
     }
 
@@ -87,6 +90,14 @@ public abstract class AbstractDatabase extends PgStatement implements IDatabase 
 
     public final PgDiffArguments getArguments() {
         return arguments;
+    }
+
+    public SupportedVersion getVersion() {
+        return version != null ? version : SupportedVersion.VERSION_10;
+    }
+
+    public void setVersion(SupportedVersion version) {
+        this.version = version;
     }
 
     public Map<String, Set<PgObjLocation>> getObjReferences() {
@@ -272,6 +283,7 @@ public abstract class AbstractDatabase extends PgStatement implements IDatabase 
     @Override
     public final AbstractDatabase shallowCopy() {
         AbstractDatabase dbDst = getDatabaseCopy();
+        dbDst.setVersion(version);
         copyBaseFields(dbDst);
         return dbDst;
     }

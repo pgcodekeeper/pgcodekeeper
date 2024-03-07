@@ -28,7 +28,6 @@ import java.util.Map;
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
-import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
@@ -51,22 +50,12 @@ public class PgDatabase extends AbstractDatabase {
     private final Map<String, PgUserMapping> userMappings = new LinkedHashMap<>();
     private final Map<String, PgCast> casts = new LinkedHashMap<>();
 
-    private SupportedVersion postgresVersion;
-
     public PgDatabase() {
         super();
     }
 
     public PgDatabase(PgDiffArguments arguments) {
         super(arguments);
-    }
-
-    public SupportedVersion getPostgresVersion() {
-        return postgresVersion != null ? postgresVersion : SupportedVersion.VERSION_10;
-    }
-
-    public void setPostgresVersion(SupportedVersion postgresVersion) {
-        this.postgresVersion = postgresVersion;
     }
 
     public boolean containsExtension(final String name) {
@@ -321,8 +310,6 @@ public class PgDatabase extends AbstractDatabase {
 
     @Override
     protected AbstractDatabase getDatabaseCopy() {
-        PgDatabase dbDst = new PgDatabase(getArguments());
-        dbDst.setPostgresVersion(getPostgresVersion());
-        return dbDst;
+        return new PgDatabase(getArguments());
     }
 }

@@ -81,8 +81,8 @@ public abstract class PgStatement implements IStatement, IHashable {
         return name;
     }
 
-    public DatabaseType getDbType() {
-        return DatabaseType.PG;
+    public final DatabaseType getDbType() {
+        return getDatabaseArguments().getDbType();
     }
 
     public boolean canDrop() {

@@ -36,7 +36,6 @@ import ru.taximaxim.codekeeper.core.schema.IStatement;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation.LocationType;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 public class MetaUtils {
@@ -47,8 +46,8 @@ public class MetaUtils {
         .map(MetaUtils::createMetaFromStatement)
         .forEach(tree::addStatement);
 
-        if (db instanceof PgDatabase) {
-            MetaStorage.getSystemObjects(((PgDatabase) db).getPostgresVersion()).forEach(tree::addStatement);
+        if (db.getDbType() == DatabaseType.PG) {
+            MetaStorage.getSystemObjects(db.getVersion()).forEach(tree::addStatement);
         }
         return tree;
     }

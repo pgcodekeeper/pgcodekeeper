@@ -21,7 +21,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
@@ -143,10 +142,5 @@ public class MsRole extends PgStatement {
 
         return obj instanceof MsRole && super.compare(obj)
                 && Objects.equals(members, ((MsRole) obj).members);
-    }
-
-    @Override
-    public DatabaseType getDbType() {
-        return DatabaseType.MS;
     }
 }

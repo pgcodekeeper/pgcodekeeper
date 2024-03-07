@@ -19,7 +19,6 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
@@ -189,10 +188,5 @@ public class MsUser extends PgStatement {
                     && allowEncrypted == user.isAllowEncrypted();
         }
         return false;
-    }
-
-    @Override
-    public DatabaseType getDbType() {
-        return DatabaseType.MS;
     }
 }

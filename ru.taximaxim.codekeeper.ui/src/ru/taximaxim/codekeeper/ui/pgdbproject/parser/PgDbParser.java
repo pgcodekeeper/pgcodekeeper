@@ -60,12 +60,10 @@ import ru.taximaxim.codekeeper.core.loader.DatabaseLoader;
 import ru.taximaxim.codekeeper.core.loader.FullAnalyze;
 import ru.taximaxim.codekeeper.core.loader.ParserListenerMode;
 import ru.taximaxim.codekeeper.core.loader.PgDumpLoader;
-import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaStatement;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaUtils;
-import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
@@ -193,7 +191,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         objDefinitions.putAll(MetaUtils.getObjDefinitions(db));
         List<Object> errors = new ArrayList<>();
         FullAnalyze.fullAnalyze(db,
-                MetaUtils.createTreeFromDefs(getAllObjDefinitions(), dbType, getVersion(db)),
+                MetaUtils.createTreeFromDefs(getAllObjDefinitions(), dbType, db.getVersion()),
                 errors);
         UIProjectLoader.markErrors(errors);
         objReferences.putAll(db.getObjReferences());
@@ -213,17 +211,10 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         // fill definitions, view columns will be filled in the analysis
         objDefinitions.putAll(MetaUtils.getObjDefinitions(db));
         FullAnalyze.fullAnalyze(db,
-                MetaUtils.createTreeFromDefs(getAllObjDefinitions(), args.getDbType(), getVersion(db)),
+                MetaUtils.createTreeFromDefs(getAllObjDefinitions(), args.getDbType(), db.getVersion()),
                 loader.getErrors());
         objReferences.putAll(db.getObjReferences());
         notifyListeners();
-    }
-
-    private SupportedVersion getVersion(AbstractDatabase db) {
-        if (db instanceof PgDatabase) {
-            return ((PgDatabase) db).getPostgresVersion();
-        }
-        return null;
     }
 
     public void removeResFromRefs(IResource res) {
