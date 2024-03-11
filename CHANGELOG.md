@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+## [9.4.1] - 2024-03-11
+
+### Fixed
+
+- Fixed error when reading tables in GreenPlum 7.
+
 ## [9.4.0] - 2024-03-05
 
 ### Added
