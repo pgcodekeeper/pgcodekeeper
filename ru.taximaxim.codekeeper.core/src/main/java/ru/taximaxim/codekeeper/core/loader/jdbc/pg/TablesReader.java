@@ -69,7 +69,7 @@ public class TablesReader extends JdbcReader {
             partitionBound = res.getString("partition_bound");
             checkObjectValidity(partitionBound, DbObjType.TABLE, tableName);
         }
-        if (loader.isGreenplumDb()) {
+        if (loader.isGreenplumDb() && !SupportedVersion.VERSION_10.isLE(loader.getVersion())) {
             partitionGpBound = res.getString("partclause");
             partitionGpTemplate = res.getString("parttemplate");
         }
@@ -530,15 +530,18 @@ public class TablesReader extends JdbcReader {
             .column("x.options")
             .column("pg_catalog.pg_encoding_to_char(x.encoding) AS enc")
             .column("x.writable")
-            .column("ps.tablename as parent_table")
-            .column("CASE WHEN pl.parlevel = 0 THEN (SELECT pg_get_partition_def(res.oid, true, false)) END AS partclause")
-            .column("CASE WHEN pl.parlevel = 0 THEN (SELECT pg_get_partition_template_def(res.oid, true, false)) END as parttemplate")
-            .join("LEFT JOIN pg_exttable x ON res.oid = x.reloid")
-            .join("LEFT JOIN pg_partitions ps on (res.relname = ps.partitiontablename)")
-            .join("LEFT JOIN pg_partition_rule pr ON res.oid = pr.parchildrelid")
-            .join("LEFT JOIN pg_partition p ON pr.paroid = p.oid")
-            .join("LEFT JOIN pg_partition pl ON (res.oid = pl.parrelid AND pl.parlevel = 0)")
-            .where("ps.tablename IS NULL");
+            .join("LEFT JOIN pg_exttable x ON res.oid = x.reloid");
+
+            if (!SupportedVersion.VERSION_10.isLE(loader.getVersion())) {
+                builder
+                .column("CASE WHEN pl.parlevel = 0 THEN (SELECT pg_get_partition_def(res.oid, true, false)) END AS partclause")
+                .column("CASE WHEN pl.parlevel = 0 THEN (SELECT pg_get_partition_template_def(res.oid, true, false)) END as parttemplate")
+                .join("LEFT JOIN pg_partitions ps on (res.relname = ps.partitiontablename)")
+                .join("LEFT JOIN pg_partition_rule pr ON res.oid = pr.parchildrelid")
+                .join("LEFT JOIN pg_partition p ON pr.paroid = p.oid")
+                .join("LEFT JOIN pg_partition pl ON (res.oid = pl.parrelid AND pl.parlevel = 0)")
+                .where("ps.tablename IS NULL");
+            }
         }
     }
 
