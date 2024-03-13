@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -47,12 +48,13 @@ import ru.taximaxim.codekeeper.core.xmlstore.DependenciesXmlStore;
 
 public class LibraryLoader extends DatabaseLoader {
 
+    private static final Random RANDOM = new Random();
+
     private final PgDatabase database;
     private final Path metaPath;
     private final Set<String> loadedLibs;
 
     private boolean loadNested;
-
 
     public LibraryLoader(PgDatabase database, Path metaPath, List<Object> errors) {
         this(database, metaPath, errors, new HashSet<>());
@@ -232,9 +234,11 @@ public class LibraryLoader extends DatabaseLoader {
         if (Files.exists(dir)) {
             return dir.toString();
         }
+        // create a directory with a unique name to avoid problems with parallel downloads
+        Path tempDir = dir.resolveSibling(dir.getFileName() + "_" + RANDOM.nextInt());
 
-        Files.createDirectories(dir);
-        Path destDir = dir.toRealPath();
+        Files.createDirectories(tempDir);
+        Path destDir = tempDir.toRealPath();
 
         try (FileSystem fs = FileSystems.newFileSystem(zip, (ClassLoader) null)) {
             final Path root = fs.getPath("/");
@@ -243,18 +247,15 @@ public class LibraryLoader extends DatabaseLoader {
             Files.walkFileTree(root, new SimpleFileVisitor<Path>(){
 
                 @Override
-                public FileVisitResult visitFile(Path file,
-                        BasicFileAttributes attrs) throws IOException {
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                     Path destFile = Paths.get(destDir.toString(), file.toString());
                     Files.copy(file, destFile, StandardCopyOption.REPLACE_EXISTING);
                     return FileVisitResult.CONTINUE;
                 }
 
                 @Override
-                public FileVisitResult preVisitDirectory(Path dir,
-                        BasicFileAttributes attrs) throws IOException {
+                public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
                     Path dirToCreate = Paths.get(destDir.toString(), dir.toString());
-
                     if (Files.notExists(dirToCreate)){
                         Files.createDirectory(dirToCreate);
                     }
@@ -264,7 +265,10 @@ public class LibraryLoader extends DatabaseLoader {
             });
         }
 
-        return destDir.toString();
+        // rename to expected name
+        Files.move(tempDir, dir, StandardCopyOption.REPLACE_EXISTING);
+
+        return dir.toRealPath().toString();
     }
 
     private void readStatementsFromDirectory(Path f, PgDatabase db)

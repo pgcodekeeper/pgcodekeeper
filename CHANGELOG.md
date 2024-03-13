@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Fixed code generation for partition tables with access method in GreenPlum 7.
+- Fixed bug when loading libraries at the same time.
 
 ## [9.4.1] - 2024-03-11
 
