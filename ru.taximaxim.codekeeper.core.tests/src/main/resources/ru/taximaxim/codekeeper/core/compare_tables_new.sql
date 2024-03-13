@@ -49,7 +49,6 @@ ALTER TABLE public.t30 FORCE ROW LEVEL SECURITY;
 -- create
 CREATE UNLOGGED TABLE public.t31 (c1 integer) INHERITS (public.t1)
 PARTITION BY RANGE (c2 COLLATE public.french varchar_pattern_ops)
-USING hash
 WITH (autovacuum_enabled, fillfactor = 80, oids = true)
 TABLESPACE test_tablespace;
 

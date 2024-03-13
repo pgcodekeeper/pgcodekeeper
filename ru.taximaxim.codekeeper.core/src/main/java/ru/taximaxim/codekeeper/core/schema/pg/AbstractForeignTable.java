@@ -93,7 +93,7 @@ public abstract class AbstractForeignTable extends AbstractPgTable implements Pg
     }
 
     @Override
-    protected void compareTableTypes(AbstractPgTable newTable,  StringBuilder sb) {
+    protected void compareTableTypes(AbstractPgTable newTable, StringBuilder sb) {
         // untransformable
     }
 

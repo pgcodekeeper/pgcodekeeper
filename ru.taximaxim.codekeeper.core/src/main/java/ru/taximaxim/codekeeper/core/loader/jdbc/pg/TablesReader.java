@@ -100,10 +100,10 @@ public class TablesReader extends JdbcReader {
             t = new SimplePgTable(tableName);
         }
 
-        if (SupportedVersion.VERSION_12.isLE(loader.getVersion())) {
+        if (SupportedVersion.VERSION_12.isLE(loader.getVersion()) && t instanceof AbstractRegularTable) {
             String accessMethod = res.getString("access_method");
             if (accessMethod != null) {
-                t.setMethod(accessMethod);
+                ((AbstractRegularTable) t).setMethod(accessMethod);
             }
         }
 

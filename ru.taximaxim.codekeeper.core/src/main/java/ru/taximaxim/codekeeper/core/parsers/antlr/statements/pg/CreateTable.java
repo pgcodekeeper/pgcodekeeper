@@ -131,7 +131,8 @@ public class CreateTable extends TableAbstract {
             table.setTablespace(tablespace);
         }
 
-        table.setDistribution(parseDistribution(ctx.distributed_clause()));
+        String distribution = parseDistribution(ctx.distributed_clause());
+        table.setDistribution(distribution);
 
         if (table instanceof PartitionGpTable) {
             var partitionGP = ctx.partition_gp();
@@ -166,11 +167,12 @@ public class CreateTable extends TableAbstract {
         Partition_byContext part = ctx.partition_by();
         if (part != null) {
             table.setPartitionBy(getFullCtxText(part.partition_method()));
+        }
 
-            // table access method for partitioned tables is not supported
-        } else if (ctx.USING() != null) {
+        // table access method for partitioned tables is not supported for PG
+        if (ctx.USING() != null) {
             table.setMethod(ctx.identifier().getText());
-        } else if (accessMethod != null) {
+        } else if (accessMethod != null && (part == null || distribution != null)) {
             table.setMethod(accessMethod);
         }
 
