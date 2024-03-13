@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed code generation for partition tables with access method in GreenPlum 7.
+
 ## [9.4.1] - 2024-03-11
 
 ### Fixed
