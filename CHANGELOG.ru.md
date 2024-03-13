@@ -13,6 +13,10 @@
 
 ### Исправлено
 
+## [9.4.2] - 2024-03-13
+
+### Исправлено
+
  - Исправлена генерация кода партицонных таблиц с методом доступа в GreenPlum 7.
  - Исправлена ошибка при одновременной загрузке библиотек.
 
@@ -1885,7 +1889,9 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.4.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.4.2...HEAD
+[9.4.2]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.4.1...v9.4.2
+[9.4.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.4.0...v9.4.1
 [9.4.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.3.0...v9.4.0
 [9.3.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.2.0...v9.3.0
 [9.2.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.1.0...v9.2.0
