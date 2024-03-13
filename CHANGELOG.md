@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+## [9.4.2] - 2024-03-13
+
+### Fixed
+
 - Fixed code generation for partition tables with access method in GreenPlum 7.
 - Fixed bug when loading libraries at the same time.
 
@@ -1884,7 +1888,9 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.4.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.4.2...HEAD
+[9.4.2]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.4.1...v9.4.2
+[9.4.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.4.0...v9.4.1
 [9.4.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.3.0...v9.4.0
 [9.3.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.2.0...v9.3.0
 [9.2.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.1.0...v9.2.0
