@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
@@ -205,6 +206,8 @@ public class LibraryLoader extends DatabaseLoader {
             try (InputStream in = uri.toURL().openStream()) {
                 Files.createDirectories(dir);
                 Files.copy(in, file);
+            } catch (FileAlreadyExistsException e) {
+                // someone else won the race and created the file
             } catch (IOException e) {
                 IOException ioe = new IOException(
                         MessageFormat.format("Error while read library from URI : {0} - {1} ",
@@ -265,8 +268,10 @@ public class LibraryLoader extends DatabaseLoader {
             });
         }
 
-        // rename to expected name
-        Files.move(tempDir, dir, StandardCopyOption.REPLACE_EXISTING);
+        if (!Files.exists(dir)) {
+            // rename to expected name
+            Files.move(tempDir, dir, StandardCopyOption.REPLACE_EXISTING);
+        }
 
         return dir.toRealPath().toString();
     }
