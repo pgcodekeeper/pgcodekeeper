@@ -157,7 +157,7 @@ public final class NewObjectPage extends WizardPage {
 
     private void parseFolder(IResource resource) {
         type = allowedTypes.stream()
-                .filter(e -> WorkDirs.getDirectoryNameForType(DatabaseType.PG, type).equals(resource.getName()))
+                .filter(e -> resource.getName().equals(WorkDirs.getDirectoryNameForType(DatabaseType.PG, e)))
                 .findAny().orElse(null);
         IContainer cont = resource.getParent();
         if (cont != null) {
