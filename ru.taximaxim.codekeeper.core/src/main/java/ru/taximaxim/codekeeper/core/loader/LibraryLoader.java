@@ -268,6 +268,7 @@ public class LibraryLoader extends DatabaseLoader {
             });
         }
 
+        // data racing
         if (!Files.exists(dir)) {
             // rename to expected name
             Files.move(tempDir, dir, StandardCopyOption.REPLACE_EXISTING);
