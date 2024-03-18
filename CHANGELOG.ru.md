@@ -13,6 +13,10 @@
 
 ### Исправлено
 
+## [9.4.3] - 2024-03-18
+
+### Исправлено
+
  - Исправлена ошибка при одновременной загрузке библиотек.
  - Исправлена ошибка при попытке открытия мастера создания новых объектов.
 
@@ -1892,7 +1896,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.4.2...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.4.3...HEAD
+[9.4.3]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.4.2...v9.4.3
 [9.4.2]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.4.1...v9.4.2
 [9.4.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.4.0...v9.4.1
 [9.4.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.3.0...v9.4.0
