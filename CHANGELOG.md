@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+## [9.4.3] - 2024-03-18
+
+### Fixed
+
 - Fixed bug when loading libraries at the same time.
 - Fixed an error when trying to open the New Object wizard.
 
@@ -1891,7 +1895,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.4.2...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.4.3...HEAD
+[9.4.3]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.4.2...v9.4.3
 [9.4.2]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.4.1...v9.4.2
 [9.4.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.4.0...v9.4.1
 [9.4.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.3.0...v9.4.0
