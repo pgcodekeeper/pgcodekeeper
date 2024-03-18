@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed bug when loading libraries at the same time.
+- Fixed an error when trying to open the New Object wizard.
+
 ## [9.4.2] - 2024-03-13
 
 ### Fixed
