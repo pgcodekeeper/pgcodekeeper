@@ -19,6 +19,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 
 import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
@@ -40,6 +41,7 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements IS
     private boolean isForceSecurity;
     private String partitionBy;
     private String distribution;
+    private String method = Consts.HEAP;
 
     protected AbstractRegularTable(String name) {
         super(name);
@@ -77,6 +79,10 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements IS
         if (partitionBy != null) {
             sbSQL.append("\nPARTITION BY ");
             sbSQL.append(partitionBy);
+        }
+
+        if (!Consts.HEAP.equals(getMethod())) {
+            sbSQL.append("\nUSING ").append(PgDiffUtils.getQuotedName(getMethod()));
         }
 
         for (Entry <String, String> entry : options.entrySet()) {
@@ -124,6 +130,15 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements IS
             sbSQL.append(getAlterTable(true, true));
             sbSQL.append(" FORCE ROW LEVEL SECURITY;");
         }
+    }
+
+    public String getMethod() {
+        return method;
+    }
+
+    public void setMethod(String using) {
+        this.method = using;
+        resetHash();
     }
 
     @Override
@@ -217,10 +232,17 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements IS
 
     @Override
     protected boolean isNeedRecreate(AbstractTable newTable) {
-        return  super.isNeedRecreate(newTable)
-                || !(newTable instanceof AbstractRegularTable)
-                || !Objects.equals(getPartitionBy(),
-                        ((AbstractRegularTable)newTable).getPartitionBy());
+        if (super.isNeedRecreate(newTable)) {
+            return true;
+        }
+
+        if (!(newTable instanceof AbstractRegularTable)) {
+            return true;
+        }
+
+        AbstractRegularTable regTable = (AbstractRegularTable) newTable;
+        return !Objects.equals(getMethod(), regTable.getMethod())
+                || !Objects.equals(getPartitionBy(), regTable.getPartitionBy());
     }
 
     public boolean isLogged() {
@@ -286,7 +308,8 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements IS
                     && isRowSecurity == table.isRowSecurity()
                     && isForceSecurity == table.isForceSecurity()
                     && Objects.equals(partitionBy, table.getPartitionBy())
-                    && Objects.equals(distribution, table.getDistribution());
+                    && Objects.equals(distribution, table.getDistribution())
+                    && Objects.equals(method, table.getMethod());
         }
 
         return false;
@@ -301,6 +324,7 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements IS
         copy.setForceSecurity(isForceSecurity());
         copy.setPartitionBy(getPartitionBy());
         copy.setDistribution(getDistribution());
+        copy.setMethod(getMethod());
         return copy;
     }
 
@@ -313,5 +337,6 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements IS
         hasher.put(isForceSecurity);
         hasher.put(partitionBy);
         hasher.put(distribution);
+        hasher.put(method);
     }
 }

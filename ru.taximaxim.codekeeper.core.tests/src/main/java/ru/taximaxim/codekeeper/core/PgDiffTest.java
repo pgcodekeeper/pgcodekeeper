@@ -113,6 +113,8 @@ class PgDiffTest {
             "add_foreign_table",
             // Test scenario for greenplum where new FOREIGN TABLE is added.
             "add_greenplum_foreign_table",
+            // Test scenario for greenplum where new TABLE is added.
+            "add_gp_tables",
             // Test scenario for greenplum where new EXTERNAL tables is added.
             "add_gp_external_tables",
             // Test scenario for greenplum where drop EXTERNAL table.
