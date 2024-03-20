@@ -379,20 +379,12 @@ public class PgDiff {
             IgnoreList ignoreList) {
         PgDiffScript script = new PgDiffScript();
 
-        if (arguments.isAddTransaction()) {
-            script.addStatement("BEGIN TRANSACTION;");
-        }
-
         DepcyResolver depRes = new DepcyResolver(oldDbFull, newDbFull);
         List<TreeElement> selected = getSelectedElements(root, ignoreList);
         createScript(depRes, selected, oldDbFull, newDbFull,
                 additionalDepciesSource, additionalDepciesTarget);
 
         new ActionsToScriptConverter(script, depRes.getActions(), arguments, oldDbFull, newDbFull).fillScript(selected);
-
-        if (arguments.isAddTransaction()) {
-            script.addStatement("COMMIT;");
-        }
 
         return script.getText();
     }

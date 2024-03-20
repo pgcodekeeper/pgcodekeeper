@@ -1,0 +1,301 @@
+/*******************************************************************************
+ * Copyright 2017-2024 TAXTELECOM, LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *******************************************************************************/
+package ru.taximaxim.codekeeper.core.schema.ch;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import ru.taximaxim.codekeeper.core.ChDiffUtils;
+import ru.taximaxim.codekeeper.core.DatabaseType;
+import ru.taximaxim.codekeeper.core.hashers.Hasher;
+import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
+import ru.taximaxim.codekeeper.core.schema.PgStatement;
+
+public class ChColumn extends AbstractColumn {
+
+    private String defaultType;
+    // it can be use only with MergeTree engine family
+    private String ttl;
+    // probably order matters
+    private final List<String> codecs = new ArrayList<>();
+    private boolean isAutoIncremental;
+
+    public ChColumn(String name) {
+        super(name);
+    }
+
+    public void setDefaultType(String defaultType) {
+        this.defaultType = defaultType;
+        resetHash();
+    }
+
+    public String getDefaultType() {
+        return defaultType;
+    }
+
+    public void setTtl(String ttl) {
+        this.ttl = ttl;
+        resetHash();
+    }
+
+    public String getTtl() {
+        return ttl;
+    }
+
+    public void addCodec(String codec) {
+        codecs.add(codec);
+        resetHash();
+    }
+
+    public List<String> getCodecs() {
+        return Collections.unmodifiableList(codecs);
+    }
+
+    public void setAutoIncremental(boolean isAutoIncremental) {
+        this.isAutoIncremental = isAutoIncremental;
+    }
+
+    public boolean isAutoIncremental() {
+        return isAutoIncremental;
+    }
+
+    @Override
+    public String getFullDefinition() {
+        var sb = new StringBuilder();
+        sb.append(ChDiffUtils.quoteName(name));
+
+        /*
+         * logic with implement the part of syntax sugar
+         *
+        if (getNullValue()) {
+            if (getType() != null) {
+                sb.append(" Nullable(").append(getType()).append(")");
+            } else if (getDefaultValue() != null) {
+                sb.append(" NULL");
+            }
+        } else if (getType() != null) {
+            sb.append(' ').append(getType());
+        }
+         */
+
+        // more simple and rude logic
+        if (getType() != null) {
+            sb.append(' ').append(getType());
+            if (!getNullValue()) {
+                sb.append(" NOT NULL");
+            }
+        }
+
+        // DB return col_name Nullable(type)....
+
+        appendColumnOptions(sb);
+
+        // don't implement STATISTIC and SETTINGS. maybe not to need
+
+        return sb.toString();
+    }
+
+    @Override
+    public String getCreationSQL() {
+        var sb = new StringBuilder();
+        sb.append(getAlterTable(false, false)).append("\n\tADD COLUMN ");
+        appendIfNotExists(sb);
+        sb.append(ChDiffUtils.getQuotedName(name));
+
+        if (getType() != null) {
+            sb.append(' ').append(getType());
+        }
+        appendColumnOptions(sb);
+        sb.append(getSeparator());
+        return sb.toString();
+    }
+
+    public void appendColumnOptions(StringBuilder sb) {
+        if (defaultType != null) {
+            sb.append(' ').append(defaultType);
+            if (getDefaultValue() != null) {
+                sb.append(' ').append(getDefaultValue());
+            }
+        }
+
+        if (getComment() != null) {
+            sb.append(" COMMENT ").append(getComment());
+        }
+
+        if (!codecs.isEmpty()) {
+            sb.append(" CODEC(");
+            for (var codec : codecs) {
+                sb.append(codec).append(", ");
+            }
+            sb.setLength(sb.length() - 2);
+            sb.append(')');
+        }
+
+        if (ttl != null) {
+            sb.append(" TTL ").append(ttl);
+        }
+    }
+
+    @Override
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
+        final int startLength = sb.length();
+        ChColumn newColumn = (ChColumn) newCondition;
+
+        compareTypes(sb, newColumn.getType());
+        compareDefaults(sb, newColumn);
+        compareCodecs(sb, newColumn.getCodecs());
+        compareTtl(sb, newColumn.getTtl());
+        compareComment(sb, newColumn.getComment());
+
+        return sb.length() > startLength;
+    }
+
+    @Override
+    public String getDropSQL(boolean optionExists) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append(getAlterTable(false, false)).append("\n\tDROP COLUMN ");
+        if (optionExists) {
+            sb.append("IF EXISTS ");
+        }
+        sb.append(ChDiffUtils.getQuotedName(getName())).append(getSeparator());
+        return sb.toString();
+    }
+
+    private void compareTypes(StringBuilder sb, String newType) {
+        if (getType().equals(newType)) {
+            return;
+        }
+        appendAlterColumn(sb, true);
+        sb.append(' ').append(newType).append(getSeparator());
+    }
+
+    private void compareDefaults(StringBuilder sb, ChColumn newColumn) {
+        if (Objects.equals(defaultType, newColumn.getDefaultType())
+                && Objects.equals(getDefaultValue(), newColumn.getDefaultValue())) {
+            return;
+        }
+        appendAlterColumn(sb, true);
+        if (newColumn.getDefaultType() == null) {
+            sb.append(" REMOVE ").append(defaultType);
+        } else {
+            sb.append(' ').append(newColumn.getDefaultType()).append(' ').append(newColumn.getDefaultValue());
+        }
+        sb.append(getSeparator());
+    }
+
+    private void compareCodecs(StringBuilder sb, List<String> newCodecs) {
+        if (Objects.equals(codecs, newCodecs)) {
+            return;
+        }
+        appendAlterColumn(sb, true);
+        if (newCodecs.isEmpty()) {
+            sb.append(" REMOVE CODEC");
+        } else {
+            sb.append(" CODEC(");
+            for (var codec : newCodecs) {
+                sb.append(codec).append(", ");
+            }
+            sb.setLength(sb.length() - 2);
+            sb.append(')');
+        }
+        sb.append(getSeparator());
+        return;
+    }
+
+    private void compareTtl(StringBuilder sb, String newTtl) {
+        if (Objects.equals(ttl, newTtl)) {
+            return;
+        }
+        appendAlterColumn(sb, true);
+        if (newTtl == null) {
+            sb.append(" REMOVE TTL");
+        } else {
+            sb.append(" TTL ").append(newTtl);
+        }
+        sb.append(getSeparator());
+    }
+
+    private void compareComment(StringBuilder sb, String newComment) {
+        if (Objects.equals(getComment(), newComment)) {
+            return;
+        }
+        sb.append(getAlterTable(true, false));
+        if (newComment == null) {
+            sb.append(" MODIFY COLUMN ").append(ChDiffUtils.getQuotedName(name)).append(" REMOVE COMMENT");
+        } else {
+            sb.append(" COMMENT COLUMN ");
+            appendIfNotExists(sb);
+            sb.append(ChDiffUtils.getQuotedName(name)).append(' ').append(newComment);
+        }
+        sb.append(getSeparator());
+    }
+
+    private void appendAlterColumn(StringBuilder sb, boolean nextLine) {
+        sb.append(getAlterTable(nextLine, false)).append(" MODIFY COLUMN ");
+        appendIfNotExists(sb);
+        sb.append(ChDiffUtils.getQuotedName(name));
+    }
+
+    @Override
+    public boolean compare(PgStatement obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof ChColumn)) {
+            return false;
+        }
+        var column = (ChColumn) obj;
+        return super.compare(column)
+                && Objects.equals(defaultType, column.getDefaultType())
+                && Objects.equals(ttl, column.getTtl())
+                && Objects.equals(codecs, column.getCodecs());
+    }
+    
+    @Override
+    public void computeHash(Hasher hasher) {
+        super.computeHash(hasher);
+        hasher.put(defaultType);
+        hasher.put(ttl);
+        hasher.put(codecs);
+    }
+
+    @Override
+    protected AbstractColumn getColumnCopy() {
+        var column = new ChColumn(name);
+        column.setDefaultType(defaultType);
+        column.setTtl(ttl);
+        column.codecs.addAll(codecs);
+        return column;
+    }
+
+    @Override
+    public DatabaseType getDbType() {
+        return DatabaseType.CH;
+    }
+
+    @Override
+    public void appendComments(StringBuilder sb) {
+        // no impl
+    }
+
+    @Override
+    protected void appendCommentSql(StringBuilder sb) {
+        // no impl
+    }
+}

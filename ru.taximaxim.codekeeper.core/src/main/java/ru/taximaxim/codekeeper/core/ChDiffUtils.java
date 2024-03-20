@@ -18,10 +18,47 @@ package ru.taximaxim.codekeeper.core;
 public class ChDiffUtils {
 
     public static String quoteName(String name) {
-        return '`' + name + '`';
+        return name.startsWith("`") ? name : '`' + name + '`';
+    }
+
+    public static String getQuotedName(String name) {
+        return isValidId(name, true) ? name : quoteName(name);
+    }
+
+    public static boolean isValidId(String id, boolean allowCaps) {
+        if (id.isEmpty()) {
+            return true;
+        }
+
+        for (int i = 0; i < id.length(); i++) {
+            if (!isValidIdChar(id.charAt(i), allowCaps, i != 0)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public static boolean isValidIdChar(char c, boolean allowCaps, boolean allowDigits) {
+        if (c >= 'a' && c <= 'z') {
+            return true;
+        }
+
+        if (allowCaps && c >= 'A' && c <= 'Z') {
+            return true;
+        }
+
+        if (allowDigits && c >= '0' && c <= '9') {
+            return true;
+        }
+
+        return c == '_';
     }
 
     public static String unQuoteName(String name) {
-        return name.startsWith("`") ? name.substring(1, name.length() - 1).replace("''", "'") : name;
+        return name.startsWith("`") ? name.substring(1, name.length() - 1).replace("``", "`") : name;
+    }
+
+    private ChDiffUtils() {
     }
 }

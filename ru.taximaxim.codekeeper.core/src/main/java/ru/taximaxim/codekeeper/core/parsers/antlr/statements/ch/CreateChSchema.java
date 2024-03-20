@@ -17,7 +17,6 @@ package ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch;
 
 import java.util.Arrays;
 
-import ru.taximaxim.codekeeper.core.ChDiffUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Create_database_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Engine_exprContext;
@@ -35,7 +34,7 @@ public class CreateChSchema extends ChParserAbstract {
 
     @Override
     public void parseObject() {
-        var schema = new ChSchema(ChDiffUtils.unQuoteName(ctx.identifier().getText()));
+        var schema = new ChSchema(ctx.identifier().getText());
         schema.setEngine(getEngine(ctx.engine_expr()));
         var commCtx = ctx.comment_expr();
         if (commCtx != null) {
