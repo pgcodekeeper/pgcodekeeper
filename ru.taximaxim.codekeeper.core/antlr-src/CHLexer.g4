@@ -321,27 +321,6 @@ HEXADECIMAL_LITERAL: '0' X HEX_DIGIT+;
 
 IDENTIFIER
     : (LETTER | UNDERSCORE | DEC_DIGIT)+
-    | BACKQUOTE ( ~([\\`]) | (BACKSLASH .) | (BACKQUOTE BACKQUOTE) )* BACKQUOTE
-    | QOUTED_IDENTIFIER
-    ;
-
-/* Quoted Identifiers
-*
-* These are divided into four separate tokens, allowing distinction of valid quoted identifiers from invalid quoted
-* identifiers without sacrificing the ability of the lexer to reliably recover from lexical errors in the input.
-*/
-QOUTED_IDENTIFIER
-    : UNTERMINATED_QOUTED_IDENTIFIER '"'
-    // unquote so that we may always call getText() and not worry about quotes
-        {
-            String __tx = getText();
-            setText(__tx.substring(1, __tx.length() - 1).replace("\"\"", "\""));
-        }
-    ;
-
-// This is a quoted identifier which only contains valid characters but is not terminated
-fragment UNTERMINATED_QOUTED_IDENTIFIER
-    : '"' ( '""' | ~[\u0000"] )*
     ;
 
 FLOATING_LITERAL
@@ -428,3 +407,35 @@ BOM: '\ufeff';
 MULTI_LINE_COMMENT: '/*' .*? '*/' -> skip;
 SINGLE_LINE_COMMENT: '--' ~('\n'|'\r')* ('\n' | '\r' | EOF) -> skip;
 WHITESPACE: [ \u000B\u000C\t\r\n] -> skip;  // '\n' can be part of multiline single query
+
+/* Quoted Identifiers
+*
+* These are divided into four separate tokens, allowing distinction of valid quoted identifiers from invalid quoted
+* identifiers without sacrificing the ability of the lexer to reliably recover from lexical errors in the input.
+*/
+DOUBLE_QUOTED_IDENTIFIER
+    : UNTERMINATED_DOUBLE_QUOTED_IDENTIFIER '"'
+    // unquote so that we may always call getText() and not worry about quotes
+        {
+            String __tx = getText();
+            setText(__tx.substring(1, __tx.length() - 1).replace("\"\"", "\""));
+        }
+    ;
+
+BACK_QUOTED_IDENTIFIER
+    : UNTERMINATED_BACK_QUOTED_IDENTIFIER '`'
+    // unquote so that we may always call getText() and not worry about quotes
+        {
+            String __tx = getText();
+            setText(__tx.substring(1, __tx.length() - 1).replace("``", "`"));
+        }
+    ;
+
+// This is a quoted identifier which only contains valid characters but is not terminated
+fragment UNTERMINATED_BACK_QUOTED_IDENTIFIER
+    : '`' ( '``' | ~[\u0000`] )*
+    ;
+
+fragment UNTERMINATED_DOUBLE_QUOTED_IDENTIFIER
+    : '"' ( '""' | ~[\u0000"] )*
+    ;

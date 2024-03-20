@@ -18,7 +18,6 @@ package ru.taximaxim.codekeeper.core.schema.ch;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import ru.taximaxim.codekeeper.core.ChDiffUtils;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
@@ -44,8 +43,7 @@ public class ChSchema extends AbstractSchema {
     @Override
     public String getCreationSQL() {
         var sb = new StringBuilder();
-        sb.append("CREATE DATABASE ").append(ChDiffUtils.quoteName(name))
-        .append("\nENGINE = ").append(engine);
+        sb.append("CREATE DATABASE ").append(getQualifiedName()).append("\nENGINE = ").append(engine);
         if (getComment() != null) {
             sb.append("\nCOMMENT ").append(getComment());
         }

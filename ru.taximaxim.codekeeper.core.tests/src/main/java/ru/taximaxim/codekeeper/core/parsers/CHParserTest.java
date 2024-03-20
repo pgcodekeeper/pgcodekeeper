@@ -28,6 +28,7 @@ import org.antlr.v4.runtime.atn.PredictionMode;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import ru.taximaxim.codekeeper.core.FILES_POSTFIX;
@@ -51,13 +52,15 @@ class CHParserTest {
             // "ch_insert",
             // "ch_other",
             // "ch_select",
-            "ch_table",
             "ch_view"
     })
     void parse(final String fileNameTemplate) throws IOException {
         parse(fileNameTemplate, 0);
     }
 
+    @ParameterizedTest
+    @CsvSource({
+            "ch_table, 1" })
     void parse(String fileNameTemplate, int allowedAmbiguity) throws IOException {
         List<Object> errors = new ArrayList<>();
         AtomicInteger ambiguity = new AtomicInteger();

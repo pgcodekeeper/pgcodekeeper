@@ -26,10 +26,13 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Alter_stmtC
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Ch_fileContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Create_database_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Create_stmtContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Create_table_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Drop_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.QueryContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.AlterChTable;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.ChParserAbstract;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChSchema;
+import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChTable;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.DropChStatement;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 
@@ -76,8 +79,11 @@ public class CustomChSQLParserListener extends CustomParserListener<ChDatabase> 
     private void create(Create_stmtContext ctx, CommonTokenStream stream) {
         ChParserAbstract p;
         Create_database_stmtContext createDatabase;
+        Create_table_stmtContext createTable;
         if ((createDatabase = ctx.create_database_stmt()) != null) {
             p = new CreateChSchema(createDatabase, db);
+        } else if ((createTable = ctx.create_table_stmt()) != null) {
+            p = new CreateChTable(createTable, db);
         } else {
             return;
         }
@@ -96,5 +102,12 @@ public class CustomChSQLParserListener extends CustomParserListener<ChDatabase> 
     }
 
     private void alter(Alter_stmtContext ctx, CommonTokenStream stream) {
+        ChParserAbstract p;
+        if (ctx.alter_table_stmt() != null) {
+            p = new AlterChTable(ctx.alter_table_stmt(), db);
+        } else {
+            return;
+        }
+        safeParseStatement(p, ctx);
     }
 }

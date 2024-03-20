@@ -169,7 +169,7 @@ alter_table_add_action
     : COLUMN if_not_exists? table_column_def position?
     | INDEX if_not_exists? table_index_def position?
     | PROJECTION if_not_exists? table_projection_def position?
-    | CONSTRAINT identifier CHECK expr
+    | table_constraint_def
     | alter_statistic
     ;
 
@@ -341,7 +341,16 @@ table_schema_clause
     ;
 
 engine_clause
-    : engine_expr (order_by_clause | partition_by_clause | primary_key_clause | sample_by_clause | ttl_clause | settings_clause)*
+    : engine_expr engine_option*
+    ;
+
+engine_option
+    : order_by_clause
+    | partition_by_clause
+    | primary_key_clause
+    | sample_by_clause
+    | ttl_clause
+    | settings_clause
     ;
 
 partition_by_clause
@@ -357,7 +366,11 @@ sample_by_clause
     ;
 
 ttl_clause
-    : TTL ttl_expr (COMMA ttl_expr)*
+    : TTL ttl_expr_list
+    ;
+
+ttl_expr_list
+    : ttl_expr (COMMA ttl_expr)*
     ;
 
 engine_expr
@@ -367,15 +380,19 @@ engine_expr
 table_element_expr
     : primary_key_clause
     | table_column_def
-    | CONSTRAINT identifier (CHECK | ASSUME) expr
+    | table_constraint_def
     | INDEX table_index_def
     | PROJECTION table_projection_def
     ;
 
+table_constraint_def
+    : CONSTRAINT identifier (CHECK | ASSUME) expr
+    ;
+
 table_column_def
     : qualified_name data_type_expr not_null? comment_expr? codec_expr?
-     (STATISTIC LPAREN expr RPAREN)?
-     (TTL expr)?
+     (STATISTIC LPAREN stat=expr RPAREN)?
+     (TTL ttl=expr)?
      (PRIMARY KEY)?
      (SETTINGS LPAREN setting_expr_list RPAREN)?
     ;
@@ -396,7 +413,11 @@ table_column_property_expr
     ;
 
 table_index_def
-    : qualified_name expr TYPE (identifier | function_call | data_type) (GRANULARITY DECIMAL_LITERAL?)?
+    : identifier expr TYPE index_type (GRANULARITY gran=DECIMAL_LITERAL?)?
+    ;
+
+index_type
+    : identifier | function_call | data_type
     ;
 
 table_projection_def
@@ -553,7 +574,7 @@ where_clause
     ;
 
 group_by_clause
-    : GROUP BY grouping_element_list
+    : GROUP BY grouping_element_list set_stmt?
     ;
 
 grouping_element_list
@@ -1217,6 +1238,8 @@ identifier_list
 
 identifier
     : IDENTIFIER
+    | DOUBLE_QUOTED_IDENTIFIER
+    | BACK_QUOTED_IDENTIFIER
     | interval
     | keyword
     | LBRACE identifier COLON IDENTIFIER RBRACE

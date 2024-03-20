@@ -48,6 +48,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrUtils;
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.MonitorCancelledRuntimeException;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
@@ -556,6 +557,11 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
     public <T> void submitMsAntlrTask(String sql,
             Function<TSQLParser, T> parserCtxReader, Consumer<T> finalizer) {
         submitAntlrTask(sql, parserCtxReader, finalizer, false, TSQLParser.class);
+    }
+    
+    public <T> void submitChAntlrTask(String sql,
+            Function<CHParser, T> parserCtxReader, Consumer<T> finalizer) {
+        submitAntlrTask(sql, parserCtxReader, finalizer, false, CHParser.class);
     }
 
     private <T, P extends Parser> void submitAntlrTask(String sql,

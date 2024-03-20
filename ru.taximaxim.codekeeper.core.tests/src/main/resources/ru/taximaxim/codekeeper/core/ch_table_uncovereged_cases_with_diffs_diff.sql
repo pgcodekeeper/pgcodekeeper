@@ -1,0 +1,8 @@
+ALTER TABLE default.t1
+	MODIFY SAMPLE BY d;
+
+ALTER TABLE default.t2
+	REMOVE TTL;
+
+ALTER TABLE default.t2
+	DROP COLUMN col3;

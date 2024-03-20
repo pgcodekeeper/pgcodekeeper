@@ -618,6 +618,18 @@ CREATE TABLE summing_merge_tree
     val UInt32,
     date Datetime
 ) engine=SummingMergeTree(val) PARTITION BY date ORDER BY key;
+CREATE TABLE default.derived_metrics_local 
+(
+    `timestamp` DateTime, 
+    `timestamp_h` DateTime MATERIALIZED toStartOfHour(timestamp), 
+    `bytes` UInt64
+) ENGINE = SummingMergeTree 
+PARTITION BY toYYYYMMDD(timestamp) 
+ORDER BY (timestamp_h, timestamp) 
+TTL toStartOfHour(timestamp) + toIntervalHour(1) 
+    GROUP BY timestamp_h 
+    SET bytes = max(bytes), timestamp = toStartOfHour(any(timestamp))
+SETTINGS index_granularity = 8192;
 
 --AggregatingMergeTree
 CREATE TABLE t1 (vkey UInt32) ENGINE = AggregatingMergeTree ORDER BY vkey;

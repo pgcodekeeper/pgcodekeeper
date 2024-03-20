@@ -739,7 +739,7 @@ public abstract class PgStatement implements IStatement, IHashable {
             quoter = MsDiffUtils::quoteName;
             break;
         case CH:
-            quoter = ChDiffUtils::quoteName;
+            quoter = ChDiffUtils::getQuotedName;
             break;
         default:
             throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + getDbType());

@@ -1,1 +1,1 @@
-DROP DATABASE `db_comment`;
+DROP DATABASE db_comment;
