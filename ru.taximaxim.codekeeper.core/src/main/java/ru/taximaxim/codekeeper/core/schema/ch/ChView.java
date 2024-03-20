@@ -15,48 +15,296 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.ch;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
+import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrUtils;
 import ru.taximaxim.codekeeper.core.schema.AbstractView;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public class ChView extends AbstractView {
 
+    public enum ChViewType {
+        SIMPLE("VIEW"), MATERIALIZED("MATERIALIZED VIEW"), LIVE("LIVE VIEW");
+
+        private String sql;
+
+        ChViewType(String sql) {
+            this.sql = sql;
+        }
+
+        public String getSql() {
+            return sql;
+        }
+    }
+
+    private ChViewType type = ChViewType.SIMPLE;
+    private String destination;
+    private String query;
+    private String normalizedQuery;
+    private String definer;
+    private String sqlSecurity;
+    private boolean isWithRefresh;
+    private int refreshPeriod;
+    private final List<ChColumn> columns = new ArrayList<>();
+    private ChEngine engine;
+
     public ChView(String name) {
         super(name);
     }
 
-    @Override
-    public void computeHash(Hasher hasher) {
-        // TODO Auto-generated method stub
-
+    public void setType(ChViewType type) {
+        this.type = type;
+        resetHash();
     }
 
-    @Override
-    protected AbstractView getViewCopy() {
-        // TODO Auto-generated method stub
-        return null;
+    public ChViewType getViewType() {
+        return type;
+    }
+
+    public void setQuery(String query, String normalizedQuery) {
+        this.query = query;
+        this.normalizedQuery = normalizedQuery;
+        resetHash();
+    }
+
+    public String getQuery() {
+        return query;
+    }
+
+    /**
+     * @return query string with whitespace normalized.
+     * @see AntlrUtils#normalizeWhitespaceUnquoted
+     */
+    public String getNormalizedQuery() {
+        return normalizedQuery;
+    }
+
+    public void setRefreshPeriod(int refreshPeriod) {
+        this.refreshPeriod = refreshPeriod;
+        resetHash();
+    }
+
+    public void setWithRefresh(boolean isWithRefresh) {
+        this.isWithRefresh = isWithRefresh;
+        resetHash();
+    }
+
+    public int getRefreshPeriod() {
+        return refreshPeriod;
+    }
+
+    public boolean isWithRefresh() {
+        return isWithRefresh;
+    }
+
+    public void addColumn(ChColumn column) {
+        columns.add(column);
+        resetHash();
+    }
+
+    public void setEngine(ChEngine engine) {
+        this.engine = engine;
+    }
+
+    public ChEngine getEngine() {
+        return engine;
+    }
+
+    /**
+     * Getter for {@link #columns}. The list cannot be modified.
+     *
+     * @return {@link #columns}
+     */
+    public List<ChColumn> getColumns() {
+        return Collections.unmodifiableList(columns);
+    }
+
+    public void setDefiner(String definer) {
+        this.definer = definer;
+        resetHash();
+    }
+
+    public String getDefiner() {
+        return definer;
+    }
+
+    public void setSqlSecurity(String sqlSecurity) {
+        this.sqlSecurity = sqlSecurity;
+        resetHash();
+    }
+
+    public String getSqlSecurity() {
+        return sqlSecurity;
+    }
+
+    public void setDestination(String destination) {
+        this.destination = destination;
+        resetHash();
+    }
+
+    public String getDestination() {
+        return destination;
     }
 
     @Override
     public String getCreationSQL() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("CREATE VIEW ");
+        StringBuilder sb = new StringBuilder(getQuery().length() * 2);
+        sb.append("CREATE ").append(type.getSql()).append(" ");
         appendFullName(sb);
+
+        if (getDestination() != null) {
+            sb.append(" TO ").append(getDestination());
+        }
+
+        if (isWithRefresh()) {
+            sb.append(" WITH REFRESH");
+            if (getRefreshPeriod() != 0) {
+                sb.append(" ").append(getRefreshPeriod());
+            }
+        }
+
+        appendColumns(sb);
+
+        if (getEngine() != null) {
+            engine.appendCreationSQL(sb);
+        }
+
+        if (getDefiner() != null || getSqlSecurity() != null) {
+            sb.append("\n");
+            if (getDefiner() != null) {
+                sb.append("DEFINER = ").append(getDefiner()).append(" ");
+            }
+            if (getSqlSecurity() != null) {
+                sb.append("SQL SECURITY ").append(getSqlSecurity());
+            }
+        }
+
+        sb.append("\nAS ");
+        sb.append(getQuery());
         sb.append(";");
         return sb.toString();
     }
 
+    private void appendColumns(StringBuilder sb) {
+        if (columns.isEmpty()) {
+            return;
+        }
+
+        sb.append("\n(");
+        for (var column : columns) {
+            sb.append("\n\t").append(column.getFullDefinition()).append(",");
+        }
+        sb.setLength(sb.length() - 1);
+        sb.append("\n)");
+    }
+
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
-        // TODO Auto-generated method stub
-        return false;
+        final int startLength = sb.length();
+        ChView newView = (ChView) newCondition;
+
+        if (getViewType() != newView.getViewType() || isViewModified(newView)
+                || !ChEngine.isAlterable(getEngine(), newView.getEngine())) {
+            isNeedDepcies.set(true);
+            return true;
+        }
+
+        ChEngine.appendAlterSQL(getEngine(), newView.getEngine());
+        compareSqlSecurity(sb, newView);
+
+        return sb.length() > startLength;
+    }
+
+    private void compareSqlSecurity(StringBuilder sb, ChView newView) {
+        if (Objects.equals(getSqlSecurity(), newView.getSqlSecurity())
+                && Objects.equals(getDefiner(), newView.getDefiner())) {
+            return;
+        }
+
+        sb.append("ALTER TABLE ").append(getQualifiedName()).append("\n\t(MODIFY SQL SECURITY ");
+        if (newView.getSqlSecurity() != null) {
+            sb.append(newView.getSqlSecurity());
+        } else if (getViewType() == ChViewType.MATERIALIZED) {
+            sb.append("DEFINER");
+        } else {
+            sb.append("INVOKER");
+        }
+        sb.append(" DEFINER = ");
+        if (newView.getDefiner() != null) {
+            sb.append(newView.getDefiner());
+        } else {
+            sb.append("CURRENT_USER");
+        }
+        sb.append(");");
+    }
+
+    /**
+     * Returns true if either column names or query of the view has been modified.
+     *
+     * @param newView
+     *            new view
+     *
+     * @return true if view has been modified, otherwise false
+     */
+    private boolean isViewModified(final ChView newView) {
+        return !columns.equals(newView.columns)
+                || !getNormalizedQuery().equals(newView.getNormalizedQuery());
     }
 
     @Override
     public DatabaseType getDbType() {
         return DatabaseType.CH;
+    }
+
+    @Override
+    public void computeHash(Hasher hasher) {
+        hasher.put(type);
+        hasher.put(normalizedQuery);
+        hasher.put(destination);
+        hasher.put(isWithRefresh);
+        hasher.put(refreshPeriod);
+        hasher.put(definer);
+        hasher.put(sqlSecurity);
+        hasher.putOrdered(columns);
+        hasher.put(engine);
+    }
+
+    @Override
+    public boolean compare(PgStatement obj) {
+        if (obj instanceof ChView && super.compare(obj)) {
+            ChView view = (ChView) obj;
+            return Objects.equals(normalizedQuery, view.getNormalizedQuery())
+                    && Objects.equals(type, view.type)
+                    && Objects.equals(destination, view.destination)
+                    && Objects.equals(isWithRefresh, view.isWithRefresh)
+                    && Objects.equals(refreshPeriod, view.refreshPeriod)
+                    && Objects.equals(definer, view.definer)
+                    && Objects.equals(sqlSecurity, view.sqlSecurity)
+                    && Objects.equals(columns, view.columns)
+                    && Objects.equals(engine, view.engine);
+        }
+
+        return false;
+    }
+
+    @Override
+    protected AbstractView getViewCopy() {
+        ChView view = new ChView(name);
+        view.columns.addAll(columns);
+        view.setQuery(getQuery(), getNormalizedQuery());
+        view.setType(getViewType());
+        view.setDestination(getDestination());
+        view.setWithRefresh(isWithRefresh());
+        view.setRefreshPeriod(getRefreshPeriod());
+        view.setDefiner(getDefiner());
+        view.setSqlSecurity(getSqlSecurity());
+        view.setEngine(getEngine());
+        return view;
     }
 }

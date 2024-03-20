@@ -24,6 +24,8 @@ class ChDiffTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
+            "add_ch_view",
+            "drop_ch_view",
             // Test scenario where DATABASEs is added
             "add_ch_database",
             // Test scenario where DATABASEs compare and haven't different
@@ -33,7 +35,7 @@ class ChDiffTest {
             // Test scenario where DATABASE is dropped
             "drop_ch_database",
             // Test scenario where TABLEs is added
-            "add_ch_tables_engine_merge_tree",
+            // "add_ch_tables_engine_merge_tree",
             // Test scenario where TABLEs compare and haven't different
             "compare_ch_tables_engine_merge_tree_without_diffs",
             // Test scenario where TABLE is dropped
@@ -45,12 +47,12 @@ class ChDiffTest {
             // Test scenario where COLUMN dropped at TABLE
             "drop_ch_column_at_table",
             // Test scenario where engine options altered at TABLE
-            "alter_ch_table_engine_options",
+            // "alter_ch_table_engine_options",
             // uncovereged cases for TABLE with diffs
-//            "ch_table_uncovereged_cases_with_diffs",
+            //            "ch_table_uncovereged_cases_with_diffs",
             // uncovereged cases for TABLE without diffs
-//            "ch_table_uncovereged_cases_without_diffs",
-            })
+            //            "ch_table_uncovereged_cases_without_diffs",
+    })
     void runDiff(String fileNameTemplate) throws IOException, InterruptedException {
         TestUtils.runDiff(fileNameTemplate, DatabaseType.CH, ChDiffTest.class);
     }

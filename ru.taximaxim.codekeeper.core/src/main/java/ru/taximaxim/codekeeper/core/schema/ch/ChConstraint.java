@@ -66,7 +66,7 @@ public class ChConstraint extends AbstractConstraint {
         final StringBuilder sb = new StringBuilder();
         appendAlterTable(sb, true);
         sb.append(" ADD CONSTRAINT ").append(ChDiffUtils.getQuotedName(name)).append(' ').append(getDefinition())
-          .append(getSeparator());
+            .append(getSeparator());
         return sb.toString();
     }
 

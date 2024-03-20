@@ -127,11 +127,12 @@ public class ChIndex extends AbstractIndex {
         return DatabaseType.CH;
     }
 
+
     @Override
     public String getCreationSQL() {
         final StringBuilder sb = new StringBuilder();
         sb.append("ALTER TABLE ").append(getParent().getQualifiedName()).append(" ADD ").append(getDefinition())
-          .append(getSeparator());
+        .append(getSeparator());
         return sb.toString();
     }
 }

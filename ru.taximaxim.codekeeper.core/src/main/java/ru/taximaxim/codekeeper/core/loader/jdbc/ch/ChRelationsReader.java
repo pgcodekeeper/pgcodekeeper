@@ -19,18 +19,22 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Locale;
 
+import org.antlr.v4.runtime.CommonTokenStream;
+
 import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.XmlReaderException;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChTable;
+import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChView;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 import ru.taximaxim.codekeeper.core.schema.ch.ChTable;
 import ru.taximaxim.codekeeper.core.schema.ch.ChView;
+import ru.taximaxim.codekeeper.core.utils.Pair;
 
 public class ChRelationsReader extends JdbcReader {
 
@@ -43,7 +47,6 @@ public class ChRelationsReader extends JdbcReader {
         PgStatement child;
         if (result.getString("engine").toLowerCase(Locale.ROOT).contains("view")) {
             child = getView(result, schema);
-            return;
         } else {
             child = getTable(result, schema);
         }
@@ -55,7 +58,13 @@ public class ChRelationsReader extends JdbcReader {
         var viewName = result.getString("name");
         loader.setCurrentObject(new GenericColumn(schema.getName(), viewName, DbObjType.VIEW));
         ChView view = new ChView(viewName);
-
+        String definition = result.getString("definition");
+        loader.submitChAntlrTask(definition,
+                p -> new Pair<>(
+                        p.ch_file().query(0).stmt().ddl_stmt().create_stmt().create_view_stmt(),
+                        (CommonTokenStream) p.getTokenStream()),
+                pair -> new CreateChView(pair.getFirst(), (ChDatabase) schema.getDatabase(), pair.getSecond())
+                .parseObject(view));
         return view;
     }
 
@@ -66,7 +75,7 @@ public class ChRelationsReader extends JdbcReader {
         String definition = result.getString("definition");
         loader.submitChAntlrTask(definition,
                 p -> p.ch_file().query(0).stmt().ddl_stmt().create_stmt().create_table_stmt(),
-                ctx -> new CreateChTable(ctx, (ChDatabase) schema.getDatabase()).parseChTable(table));
+                ctx -> new CreateChTable(ctx, (ChDatabase) schema.getDatabase()).parseObject(table));
         return table;
     }
 

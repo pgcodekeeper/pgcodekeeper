@@ -79,7 +79,6 @@ public class ChColumn extends AbstractColumn {
     public String getFullDefinition() {
         var sb = new StringBuilder();
         sb.append(ChDiffUtils.quoteName(name));
-
         /*
          * logic with implement the part of syntax sugar
          *
@@ -215,7 +214,6 @@ public class ChColumn extends AbstractColumn {
             sb.append(')');
         }
         sb.append(getSeparator());
-        return;
     }
 
     private void compareTtl(StringBuilder sb, String newTtl) {
@@ -266,7 +264,7 @@ public class ChColumn extends AbstractColumn {
                 && Objects.equals(ttl, column.getTtl())
                 && Objects.equals(codecs, column.getCodecs());
     }
-    
+
     @Override
     public void computeHash(Hasher hasher) {
         super.computeHash(hasher);

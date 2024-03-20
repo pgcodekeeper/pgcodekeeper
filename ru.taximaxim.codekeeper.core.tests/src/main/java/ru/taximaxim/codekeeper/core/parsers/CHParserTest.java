@@ -40,7 +40,6 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser;
  * Tests for ClickHouse parser rules.
  *
  * @author khazieva_gr
- * @since 9.2.0
  */
 class CHParserTest {
 
@@ -52,6 +51,7 @@ class CHParserTest {
             // "ch_insert",
             // "ch_other",
             // "ch_select",
+            "ch_show",
             "ch_view"
     })
     void parse(final String fileNameTemplate) throws IOException {
@@ -60,7 +60,8 @@ class CHParserTest {
 
     @ParameterizedTest
     @CsvSource({
-            "ch_table, 1" })
+        "ch_table, 1"
+    })
     void parse(String fileNameTemplate, int allowedAmbiguity) throws IOException {
         List<Object> errors = new ArrayList<>();
         AtomicInteger ambiguity = new AtomicInteger();
