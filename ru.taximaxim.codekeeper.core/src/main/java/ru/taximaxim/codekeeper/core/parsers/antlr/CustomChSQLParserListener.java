@@ -27,12 +27,14 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Ch_fileCont
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Create_database_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Create_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Create_table_stmtContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Create_view_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Drop_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.QueryContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.AlterChTable;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.ChParserAbstract;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChSchema;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChTable;
+import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChView;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.DropChStatement;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 
@@ -80,10 +82,13 @@ public class CustomChSQLParserListener extends CustomParserListener<ChDatabase> 
         ChParserAbstract p;
         Create_database_stmtContext createDatabase;
         Create_table_stmtContext createTable;
+        Create_view_stmtContext createView;
         if ((createDatabase = ctx.create_database_stmt()) != null) {
             p = new CreateChSchema(createDatabase, db);
         } else if ((createTable = ctx.create_table_stmt()) != null) {
             p = new CreateChTable(createTable, db);
+        } else if ((createView = ctx.create_view_stmt()) != null) {
+            p = new CreateChView(createView, db, stream);
         } else {
             return;
         }

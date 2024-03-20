@@ -43,7 +43,7 @@ public class AlterChTable extends ChParserAbstract {
         AbstractSchema schema = getSchemaSafe(ids);
         AbstractTable table = getSafe(AbstractSchema::getTable, schema, nameCtx);
         addObjReference(ids, DbObjType.TABLE, ACTION_ALTER);
-        for (Alter_table_actionContext alterAction : ctx.alter_table_action()) {
+        for (Alter_table_actionContext alterAction : ctx.alter_table_actions().alter_table_action()) {
             if (alterAction.ADD() == null) {
                 continue;
             }

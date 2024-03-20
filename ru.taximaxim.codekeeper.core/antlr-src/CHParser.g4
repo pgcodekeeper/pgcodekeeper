@@ -39,7 +39,7 @@ dml_stmt
     | exists_stmt
     | explain_stmt
     | set_stmt
-    | show_stmt
+    | SHOW show_stmt
     | system_stmt
     | use_stmt
     | watch_stmt
@@ -51,8 +51,6 @@ dml_stmt
 create_stmt
     : create_database_stmt
     | create_dictinary_stmt
-    | create_live_view_stmt
-    | create_mat_view_stmt
     | create_table_stmt
     | create_view_stmt
     | create_function_stmt
@@ -139,7 +137,12 @@ rename_to
     ;
 
 alter_table_stmt
-    : ALTER TEMPORARY? TABLE qualified_name cluster_clause? alter_table_action (COMMA alter_table_action)*
+    : ALTER TEMPORARY? TABLE qualified_name cluster_clause? alter_table_actions
+    ;
+
+alter_table_actions
+    : LPAREN alter_table_action (COMMA alter_table_action)* RPAREN
+    | alter_table_action (COMMA alter_table_action)*
     ;
 
 alter_table_action
@@ -198,6 +201,7 @@ alter_table_modify_action
     | ttl_clause
     | comment_expr
     | sample_by_clause
+    | sql_security_clause definer_clause?
     ;
 
 modify_column_expr
@@ -241,13 +245,35 @@ create_database_stmt
     ;
 
 create_view_stmt
-    : (ATTACH | CREATE) (OR REPLACE)? VIEW if_not_exists? qualified_name
-    uuid_clause? cluster_clause? table_schema_clause? subquery_clause
+    : (ATTACH | CREATE) (create_simple_view_stmt | create_mat_view_stmt | create_live_view_stmt) AS subquery_clause
+    ;
+
+create_simple_view_stmt
+    : (OR REPLACE)? VIEW if_not_exists? qualified_name
+    cluster_clause? table_schema_clause? definer_clause? sql_security_clause?
+    ;
+
+create_mat_view_stmt
+    : MATERIALIZED VIEW if_not_exists? qualified_name
+    cluster_clause? destination_clause? table_schema_clause? engine_clause? POPULATE? definer_clause? sql_security_clause?
     ;
 
 create_live_view_stmt
-    : (ATTACH | CREATE) LIVE VIEW if_not_exists? qualified_name uuid_clause? cluster_clause?
-    (WITH TIMEOUT DECIMAL_LITERAL?)? destination_clause? table_schema_clause? subquery_clause
+    : LIVE VIEW if_not_exists? qualified_name (WITH PERIODIC? REFRESH DECIMAL_LITERAL?)? table_schema_clause?
+    ;
+
+definer_clause
+    : DEFINER EQ_SINGLE identifier
+    ;
+
+sql_security_clause
+    : SQL SECURITY sec=(DEFINER | INVOKER | NONE)
+    ;
+
+subquery_clause
+    : select_stmt
+    | qualified_name
+    | table_function_expr
     ;
 
 create_function_stmt
@@ -256,7 +282,7 @@ create_function_stmt
 
 create_table_stmt
     : (CREATE (OR REPLACE)? | REPLACE) TEMPORARY? TABLE if_not_exists?
-     qualified_name uuid_clause? cluster_clause? table_body_expr comment_expr?
+     qualified_name cluster_clause? table_body_expr comment_expr?
     ;
 
 if_exists
@@ -282,7 +308,7 @@ common_table_query_expr
 
 create_dictinary_stmt
     : (ATTACH | CREATE (OR REPLACE)? | REPLACE) DICTIONARY if_not_exists?
-    qualified_name uuid_clause? cluster_clause?
+    qualified_name cluster_clause?
     LPAREN dictionary_attr_def (COMMA dictionary_attr_def)* RPAREN
     (PRIMARY KEY expr_list)?
     dictionary_option*
@@ -320,18 +346,8 @@ uuid_clause
     : UUID STRING_LITERAL
     ;
 
-create_mat_view_stmt
-    : (ATTACH | CREATE) MATERIALIZED VIEW if_not_exists? qualified_name uuid_clause? cluster_clause?
-    destination_clause? table_schema_clause? engine_clause? POPULATE?
-    subquery_clause
-    ;
-
 destination_clause
-    : TO qualified_name uuid_clause?
-    ;
-
-subquery_clause
-    : AS (select_stmt | qualified_name | table_function_expr)
+    : TO qualified_name
     ;
 
 table_schema_clause
@@ -458,7 +474,7 @@ drop_table_stmt
 
 exists_stmt
     : EXISTS DATABASE identifier
-    | EXISTS (DICTIONARY | TEMPORARY? TABLE | VIEW)? qualified_name (INTO OUTFILE expr)? (FORMAT expr)?
+    | EXISTS (DICTIONARY | TEMPORARY? TABLE | VIEW)? qualified_name
     ;
 
 explain_stmt
@@ -675,12 +691,40 @@ set_stmt
     ;
 
 show_stmt
-    : SHOW CREATE DATABASE identifier
-    | SHOW CREATE DICTIONARY qualified_name
-    | SHOW CREATE TEMPORARY? TABLE? qualified_name
-    | SHOW DATABASES
-    | SHOW DICTIONARIES (FROM identifier)?
-    | SHOW TEMPORARY? TABLES ((FROM | IN) identifier)? (LIKE STRING_LITERAL | where_clause)? limit_clause?
+    : ACCESS
+    | CHANGED? SETTINGS like_expr?
+    | (CLUSTER | SETTING) expr
+    | CREATE (ROLE | QUOTA) identifier_list
+    | CREATE ROW? POLICY (identifier | identifier? (ON expr_list))
+    | CREATE SETTINGS? PROFILE identifier_list
+    | CREATE TEMPORARY? qualified_name
+    | CREATE USER identifier_list?
+    | CREATE? TEMPORARY? (TABLE | DICTIONARY | VIEW | DATABASE) qualified_name
+    | CURRENT? QUOTA
+    | (CURRENT | ENABLED)? ROLES
+    | (DATABASES | MERGES | CLUSTERS) like_expr? limit_clause?
+    | DICTIONARIES from_in_db? (like_expr | where_clause)? limit_clause?
+    | ENGINES
+    | EXTENDED? (INDEX | INDEXES | INDICES | KEYS) (FROM | IN) qualified_name from_in_db? (WHERE expr)?
+    | EXTENDED? FULL? (FIELDS | COLUMNS) (FROM | IN) qualified_name from_in_db? (like_expr | where_clause)? limit_clause?
+    | FILESYSTEM CACHES
+    | FULL? TEMPORARY? TABLES from_in_db? (like_expr | where_clause)? limit_clause?
+    | FUNCTIONS like_expr?
+    | GRANTS (FOR identifier_list)?
+    | PRIVILEGES
+    | PROCESSLIST
+    | QUOTAS
+    | ROW? POLICIES (ON expr)?
+    | SETTINGS? PROFILES
+    | USERS
+    ;
+
+like_expr
+    : NOT? (LIKE | ILIKE) literal
+    ;
+
+from_in_db
+    : (FROM | IN) identifier
     ;
 
 system_stmt
@@ -797,11 +841,12 @@ expr
     | expr IS NOT? NULL
     | (PLUS | MINUS) expr
     | expr op expr
-    | expr (GLOBAL? NOT? IN | NOT? (LIKE | ILIKE)) expr
+    | expr (GLOBAL? NOT? IN) expr
+    | expr like_expr
     | NOT expr
     | expr NOT? BETWEEN expr AND expr
     | expr QUESTION expr COLON expr
-    | expr alias_clause
+    | expr alias_clause // FIXME in select only?
     | expr APPLY expr
     | expr_primary
     ;
@@ -872,7 +917,7 @@ function_arguments
     ;
 
 qualified_name
-    : identifier (DOT identifier (DOT identifier)?)?
+    : identifier (DOT identifier (DOT identifier)?)? uuid_clause?
     ;
 
 // Tables
@@ -931,7 +976,8 @@ interval
     ;
 
 keyword
-    : ADD
+    : ACCESS
+    | ADD
     | AFTER
     | AGGREGATE_FUNCTION
     | ALIAS
@@ -961,14 +1007,17 @@ keyword
     | BY
     | BYTE
     | BYTEA
+    | CACHES
     | CASE
     | CAST
+    | CHANGED
     | CHAR
     | CHARACTER
     | CHECK
     | CLEAR
     | CLOB
     | CLUSTER
+    | CLUSTERS
     | CODEC
     | COLLATE
     | COLLECTION
@@ -990,6 +1039,7 @@ keyword
     | DECIMAL_BIT
     | DEDUPLICATE
     | DEFAULT
+    | DEFINER
     | DELAY
     | DELETE
     | DELETED
@@ -1007,8 +1057,10 @@ keyword
     | DROP
     | ELSE
     | EMPTY
+    | ENABLED
     | END
     | ENGINE
+    | ENGINES
     | ENUM
     | EPHEMERAL
     | EVENTS
@@ -1016,9 +1068,12 @@ keyword
     | EXISTS
     | EXPLAIN
     | EXPRESSION
+    | EXTENDED
     | EXTRACT
     | FETCH
     | FETCHES
+    | FIELDS
+    | FILESYSTEM
     | FILL
     | FINAL
     | FIRST
@@ -1033,8 +1088,10 @@ keyword
     | FROM
     | FULL
     | FUNCTION
+    | FUNCTIONS
     | GEOMETRY
     | GLOBAL
+    | GRANTS
     | GRANULARITY
     | GROUP
     | GROUPING
@@ -1045,6 +1102,8 @@ keyword
     | ILIKE
     | IN
     | INDEX
+    | INDEXES
+    | INDICES
     | INF
     | INJECTIVE
     | INNER
@@ -1056,6 +1115,7 @@ keyword
     | INTERVAL
     | INTERVAL_TYPE
     | INTO
+    | INVOKER
     | IPV4
     | IPV6
     | IS
@@ -1063,6 +1123,7 @@ keyword
     | JOIN
     | JSON
     | KEY
+    | KEYS
     | KILL
     | LARGE
     | LAST
@@ -1099,6 +1160,7 @@ keyword
     | NCHAR
     | NESTED
     | NO
+    | NONE
     | NOT
     | NOTHING
     | NULLABLE
@@ -1119,8 +1181,10 @@ keyword
     | OVERRIDE
     | PART
     | PARTITION
+    | PERIODIC
     | PERMISSIVE
     | POINT
+    | POLICIES
     | POLICY
     | POLYGIN
     | POPULATE
@@ -1128,11 +1192,18 @@ keyword
     | PRECISION
     | PREWHERE
     | PRIMARY
+    | PRIVILEGES
+    | PROCESSLIST
+    | PROFILE
+    | PROFILES
     | PROJECTION
     | QUERY
+    | QUOTA
+    | QUOTAS
     | RANGE
     | REAL
     | RECOMPRESS
+    | REFRESH
     | RELOAD
     | REMOVE
     | RENAME
@@ -1143,11 +1214,14 @@ keyword
     | RESTRICTIVE
     | RIGHT
     | RING
+    | ROLE
+    | ROLES
     | ROLLBACK
     | ROLLUP
     | ROW
     | ROWS
     | SAMPLE
+    | SECURITY
     | SEMI
     | SENDS
     | SET
@@ -1159,6 +1233,7 @@ keyword
     | SINGLE
     | SMALLINT
     | SOURCE
+    | SQL
     | START
     | STATISTIC
     | STEP
@@ -1197,6 +1272,8 @@ keyword
     | UNSIGNED
     | UPDATE
     | USE
+    | USER
+    | USERS
     | USING
     | UUID
     | VALUES
@@ -1229,6 +1306,7 @@ alias
 
 alias_clause
     : alias
+    | AS SELECT
     | AS identifier
     ;
 
