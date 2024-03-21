@@ -215,7 +215,8 @@ public class ChView extends AbstractView {
             return true;
         }
 
-        ChEngine.appendAlterSQL(getEngine(), newView.getEngine());
+        // TODO fix prefix here or refactor this method late
+        ChEngine.appendAlterSQL(sb, engine, newView.getEngine(), isNeedDepcies, "ALTER SOMETHING");
         compareSqlSecurity(sb, newView);
 
         return sb.length() > startLength;
