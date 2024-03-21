@@ -16,10 +16,13 @@
 package ru.taximaxim.codekeeper.core.schema.ch;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
@@ -68,8 +71,7 @@ public class ChTable extends AbstractTable {
 
     @Override
     protected boolean isNeedRecreate(AbstractTable newTable) {
-        // TODO Auto-generated method stub
-        return false;
+        return ChEngine.compareUnalterable(engine, ((ChTable) newTable).getEngine());
     }
 
     public void setEngine(ChEngine engine) {
@@ -124,8 +126,73 @@ public class ChTable extends AbstractTable {
 
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
-        // TODO Auto-generated method stub
-        return false;
+        final int startLength = sb.length();
+        ChTable newTable = (ChTable) newCondition;
+
+        if (isRecreated(newTable)) {
+            isNeedDepcies.set(true);
+            return true;
+        }
+
+        comparePojections(sb, newTable.getProjections());
+        ChEngine.appendAlterSQL(sb, engine, newTable.getEngine(), isNeedDepcies, getAlterTable(true, false));
+        compareComment(sb, newTable.getComment());
+        return sb.length() > startLength;
+    }
+
+    private void comparePojections(StringBuilder sb, Map<String, String> newProjections) {
+        if (Objects.equals(projections, newProjections)) {
+            return;
+        }
+        Set<String> toDrops = new HashSet<>();
+        Map<String, String> toAdds = new HashMap<>();
+
+        String newValue;
+
+        for (String oldKey : projections.keySet()) {
+            if (!newProjections.containsKey(oldKey)) {
+                toDrops.add(oldKey);
+                continue;
+            }
+            newValue = newProjections.get(oldKey);
+            if (!Objects.equals(newValue, projections.get(oldKey))) {
+                toDrops.add(oldKey);
+                toAdds.put(oldKey, newValue);
+            }
+        }
+
+        for (String newKey : newProjections.keySet()) {
+            if (!projections.containsKey(newKey)) {
+                toAdds.put(newKey, newProjections.get(newKey));
+            }
+        }
+
+        appendAlterProjections(sb, toDrops, toAdds);
+    }
+
+    private void appendAlterProjections(StringBuilder sb, Set<String> toDrops, Map<String, String> toAdds) {
+        for (String toDrop : toDrops) {
+            sb.append(getAlterTable(true, false)).append("\n\tDROP PROJECTION IF EXISTS ").append(toDrop)
+                    .append(getSeparator());
+        }
+        for (Entry<String, String> toAdd : toAdds.entrySet()) {
+            sb.append(getAlterTable(true, false)).append("\n\tADD PROJECTION ");
+            appendIfNotExists(sb);
+            sb.append(toAdd.getKey()).append(' ').append(toAdd.getValue()).append(getSeparator());
+        }
+    }
+
+    private void compareComment(StringBuilder sb, String newComment) {
+        if (Objects.equals(getComment(), newComment)) {
+            return;
+        }
+        sb.append(getAlterTable(true, false)).append("\n\tMODIFY COMMENT ");
+        if (newComment == null) {
+            sb.append("''");
+        } else {
+            sb.append(newComment);
+        }
+        sb.append(getSeparator());
     }
 
     @Override
@@ -156,6 +223,11 @@ public class ChTable extends AbstractTable {
 
     @Override
     public void appendComments(StringBuilder sb) {
+        // no impl
+    }
+
+    @Override
+    protected void appendCommentSql(StringBuilder sb) {
         // no impl
     }
 }

@@ -17,6 +17,7 @@ package ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -127,6 +128,10 @@ public abstract class ChParserAbstract extends ParserAbstract<ChDatabase> {
         }
         for (var option : engineClause.engine_option()) {
             parseEngineOption(engine, option);
+        }
+        // TODO check all table engine type to find all default values for each type
+        if (Objects.equals(engine.getName(), "MergeTree") && !engine.getOptions().contains("index_granularity")) {
+            engine.addOption("index_granularity", "8192");
         }
 
         return engine;

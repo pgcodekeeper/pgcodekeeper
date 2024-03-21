@@ -18,4 +18,3 @@ ORDER BY col1
 SETTINGS index_granularity = 8192;
 
 ALTER TABLE default.t3 ADD INDEX ind1 col3 TYPE minmax;
-
