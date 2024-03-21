@@ -225,4 +225,9 @@ public class ChTable extends AbstractTable {
     public void appendComments(StringBuilder sb) {
         // no impl
     }
+
+    @Override
+    protected void appendCommentSql(StringBuilder sb) {
+        // no impl
+    }
 }

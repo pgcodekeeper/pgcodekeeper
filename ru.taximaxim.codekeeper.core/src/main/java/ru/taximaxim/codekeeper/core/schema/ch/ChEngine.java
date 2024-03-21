@@ -16,6 +16,7 @@
 package ru.taximaxim.codekeeper.core.schema.ch;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -104,6 +105,11 @@ public final class ChEngine implements Serializable, IHashable {
 
     public void addOption(String option, String value) {
         options.put(option, value);
+    }
+
+
+    public Set<String> getOptions() {
+        return Collections.unmodifiableSet(options.keySet());
     }
 
     public void appendCreationSQL(StringBuilder sb) {

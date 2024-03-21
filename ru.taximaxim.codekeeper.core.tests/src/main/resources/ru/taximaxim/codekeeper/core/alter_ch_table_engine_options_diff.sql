@@ -62,8 +62,7 @@ ALTER TABLE default.t4_1
 ALTER TABLE default.t4_2
 	MODIFY SAMPLE BY col1;
 
-CREATE TABLE default.t3_1
-(
+CREATE TABLE default.t3_1(
 	`col1` Int64 NOT NULL,
 	`col2` Int64 NOT NULL
 )
@@ -71,8 +70,7 @@ ENGINE = MergeTree
 ORDER BY col2
 SETTINGS index_granularity = 8192;
 
-CREATE TABLE default.t3_2
-(
+CREATE TABLE default.t3_2(
 	`col1` Int64 NOT NULL,
 	`col2` Int64 NOT NULL
 )
