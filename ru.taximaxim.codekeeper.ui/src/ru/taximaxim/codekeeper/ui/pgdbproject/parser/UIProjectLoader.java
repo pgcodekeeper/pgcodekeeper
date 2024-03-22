@@ -119,6 +119,7 @@ public class UIProjectLoader extends ProjectLoader {
             return;
         }
         loadPgChStructure(baseDir, db, WorkDirs.CH_DATABASES);
+        loadSubdir(baseDir.getFolder(new Path(WorkDirs.CH_FUNCTIONS)), db);
     }
 
     private void loadPgStructure(IContainer baseDir, AbstractDatabase db)

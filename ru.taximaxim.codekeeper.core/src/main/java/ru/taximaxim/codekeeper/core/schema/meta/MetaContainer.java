@@ -23,12 +23,13 @@ import java.util.List;
 import java.util.Map;
 
 import ru.taximaxim.codekeeper.core.schema.ICast;
+import ru.taximaxim.codekeeper.core.schema.ICast.CastContext;
 import ru.taximaxim.codekeeper.core.schema.IConstraint;
 import ru.taximaxim.codekeeper.core.schema.IFunction;
 import ru.taximaxim.codekeeper.core.schema.IOperator;
 import ru.taximaxim.codekeeper.core.schema.IRelation;
 import ru.taximaxim.codekeeper.core.schema.IStatement;
-import ru.taximaxim.codekeeper.core.schema.ICast.CastContext;
+import ru.taximaxim.codekeeper.core.schema.ch.ChFunction;
 
 public class MetaContainer {
 
@@ -38,6 +39,11 @@ public class MetaContainer {
      * Functions grouped by schema name
      */
     private final Map<String, Map<String, IFunction>> functions = new LinkedHashMap<>();
+
+    /**
+     * ClickHouse functions
+     */
+    private final Map<String, IFunction> chFunctions = new LinkedHashMap<>();
 
     /**
      * Operators grouped by schema name
@@ -62,6 +68,11 @@ public class MetaContainer {
         case FUNCTION:
         case PROCEDURE:
         case AGGREGATE:
+            if (st instanceof ChFunction) {
+                ChFunction f = (ChFunction) st;
+                chFunctions.put(f.getName(), f);
+                break;
+            }
             IFunction f = (IFunction) st;
             functions.computeIfAbsent(f.getSchemaName(), e -> new LinkedHashMap<>()).put(f.getName(), f);
             break;
@@ -108,6 +119,14 @@ public class MetaContainer {
 
     public IFunction findFunction(String schemaName, String functionName) {
         return functions.getOrDefault(schemaName, Collections.emptyMap()).get(functionName);
+    }
+
+    public boolean findChFunction(String functionName) {
+        return chFunctions.containsKey(functionName);
+    }
+
+    public Collection<IFunction> availableChFunctions() {
+        return Collections.unmodifiableCollection(chFunctions.values());
     }
 
     public Collection<IFunction> availableFunctions(String schemaName) {

@@ -147,7 +147,6 @@ public class MetaUtils {
         case FTS_DICTIONARY:
         case FTS_PARSER:
         case FTS_TEMPLATE:
-        case FUNCTION:
         case OPERATOR:
         case PROCEDURE:
         case SEQUENCE:
@@ -165,6 +164,13 @@ public class MetaUtils {
         case POLICY:
             IStatement parent = st.getParent();
             gc = new GenericColumn(parent.getParent().getName(), parent.getName(), st.getName(), type);
+            break;
+        case FUNCTION:
+            if (st.getDbType() == DatabaseType.CH) {
+                gc = new GenericColumn(st.getName(), type);
+            } else {
+                gc = new GenericColumn(st.getParent().getName(), st.getName(), type);
+            }
             break;
         default:
             throw new IllegalArgumentException("Unsupported type " + type);

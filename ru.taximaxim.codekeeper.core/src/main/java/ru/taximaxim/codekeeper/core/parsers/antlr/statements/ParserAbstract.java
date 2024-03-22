@@ -52,6 +52,7 @@ import ru.taximaxim.codekeeper.core.schema.IStatementContainer;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation.LocationType;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 
 /**
  * Abstract Class contents common operations for parsing
@@ -276,6 +277,11 @@ public abstract class ParserAbstract<S extends AbstractDatabase> {
                     new GenericColumn(nameCtx.getText(), type));
         default:
             break;
+        }
+
+        if (db instanceof ChDatabase && type == DbObjType.FUNCTION) {
+            return buildLocation(nameCtx, action, locationType,
+                    new GenericColumn(nameCtx.getText(), type));
         }
 
         ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);

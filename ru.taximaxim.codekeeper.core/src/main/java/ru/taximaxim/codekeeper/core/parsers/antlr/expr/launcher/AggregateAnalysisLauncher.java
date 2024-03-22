@@ -41,7 +41,7 @@ public class AggregateAnalysisLauncher extends AbstractAnalysisLauncher {
             MetaContainer meta) {
 
         IFunction func = meta.findFunction(function.schema, function.table);
-        IFunction aggr = meta.findFunction(stmt.getSchemaName(), stmt.getName());
+        IFunction aggr = meta.findFunction(getSchemaName(), stmt.getName());
 
 
         if (aggr != null && func != null) {

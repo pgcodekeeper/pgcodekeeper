@@ -1,0 +1,1 @@
+CREATE FUNCTION test_qual AS x -> default.t2;

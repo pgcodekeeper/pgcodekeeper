@@ -40,7 +40,7 @@ public class MsExpressionAnalysisLauncher extends AbstractAnalysisLauncher {
     @Override
     public Set<PgObjLocation> analyze(ParserRuleContext ctx, MetaContainer meta) {
         if (stmt instanceof AbstractColumn) {
-            var expr = new MsExprWithNmspc(stmt.getSchemaName(), meta);
+            var expr = new MsExprWithNmspc(getSchemaName(), meta);
             PgStatement table = stmt.getParent();
             String schemaName = table.getParent().getName();
             String rawTableReference = table.getName();
@@ -48,7 +48,7 @@ public class MsExpressionAnalysisLauncher extends AbstractAnalysisLauncher {
             expr.addRawTableReference(new GenericColumn(schemaName, rawTableReference, DbObjType.TABLE));
             return analyze((ExpressionContext) ctx, expr);
         }
-        MsValueExpr expr = new MsValueExpr(stmt.getSchemaName(), meta);
+        MsValueExpr expr = new MsValueExpr(getSchemaName(), meta);
         return analyze((ExpressionContext) ctx, expr);
     }
 }

@@ -39,7 +39,7 @@ public class OperatorAnalysisLauncher extends AbstractAnalysisLauncher {
     @Override
     protected Set<PgObjLocation> analyze(ParserRuleContext ctx, MetaContainer meta) {
         IFunction func = meta.findFunction(function.schema, function.table);
-        IOperator oper = meta.findOperator(stmt.getSchemaName(), stmt.getName());
+        IOperator oper = meta.findOperator(getSchemaName(), stmt.getName());
 
         if (oper != null && func != null) {
             oper.setReturns(func.getReturns());

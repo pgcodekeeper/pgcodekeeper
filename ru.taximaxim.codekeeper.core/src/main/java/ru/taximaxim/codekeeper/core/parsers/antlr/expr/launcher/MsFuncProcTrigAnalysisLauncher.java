@@ -57,7 +57,7 @@ public class MsFuncProcTrigAnalysisLauncher extends AbstractAnalysisLauncher {
 
     @Override
     public Set<PgObjLocation> analyze(ParserRuleContext ctx, MetaContainer meta) {
-        String schema = stmt.getSchemaName();
+        String schema = getSchemaName();
 
         if (ctx instanceof Sql_clausesContext) {
             MsSqlClauses clauses = new MsSqlClauses(schema, meta);

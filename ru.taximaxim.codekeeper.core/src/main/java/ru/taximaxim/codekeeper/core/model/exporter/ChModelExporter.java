@@ -52,6 +52,7 @@ public class ChModelExporter extends AbstractModelExporter {
         switch (type) {
         case USER:
         case ROLE:
+        case FUNCTION:
             path = baseDir.resolve(WorkDirs.getDirectoryNameForType(st.getDbType(), type));
             break;
 
@@ -64,7 +65,6 @@ public class ChModelExporter extends AbstractModelExporter {
             break;
 
         case TABLE:
-        case FUNCTION:
         case VIEW:
             path = path.resolve(parentExportedFileName).resolve(type.name());
             break;

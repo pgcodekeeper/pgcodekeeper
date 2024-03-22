@@ -32,6 +32,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Drop_stmtCo
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.QueryContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.AlterChTable;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.ChParserAbstract;
+import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChFunction;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChSchema;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChTable;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChView;
@@ -89,6 +90,8 @@ public class CustomChSQLParserListener extends CustomParserListener<ChDatabase> 
             p = new CreateChTable(createTable, db);
         } else if ((createView = ctx.create_view_stmt()) != null) {
             p = new CreateChView(createView, db, stream);
+        } else if (ctx.create_function_stmt() != null) {
+            p = new CreateChFunction(ctx.create_function_stmt(), db);
         } else {
             return;
         }

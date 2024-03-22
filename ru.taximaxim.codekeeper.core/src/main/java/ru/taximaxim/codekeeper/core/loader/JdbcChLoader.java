@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
+import ru.taximaxim.codekeeper.core.loader.jdbc.ch.CHFunctionReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.ch.ChSchemasReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.ch.ChRelationsReader;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
@@ -62,6 +63,7 @@ public final class JdbcChLoader extends JdbcLoaderBase {
             connection.setAutoCommit(false);
 
             new ChSchemasReader(this, d).read();
+            new CHFunctionReader(this, d).read();
             new ChRelationsReader(this).read();
 
             finishLoaders();

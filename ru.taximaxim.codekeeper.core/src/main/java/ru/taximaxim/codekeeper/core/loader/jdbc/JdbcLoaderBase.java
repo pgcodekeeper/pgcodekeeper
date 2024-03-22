@@ -558,7 +558,7 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
             Function<TSQLParser, T> parserCtxReader, Consumer<T> finalizer) {
         submitAntlrTask(sql, parserCtxReader, finalizer, false, TSQLParser.class);
     }
-    
+
     public <T> void submitChAntlrTask(String sql,
             Function<CHParser, T> parserCtxReader, Consumer<T> finalizer) {
         submitAntlrTask(sql, parserCtxReader, finalizer, false, CHParser.class);

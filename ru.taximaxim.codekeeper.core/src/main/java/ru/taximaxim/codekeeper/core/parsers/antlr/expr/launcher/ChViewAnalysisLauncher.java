@@ -20,6 +20,8 @@ import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
+import ru.taximaxim.codekeeper.core.parsers.antlr.chexpr.ChSelect;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Select_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Subquery_clauseContext;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.ch.ChView;
@@ -33,7 +35,13 @@ public class ChViewAnalysisLauncher extends AbstractAnalysisLauncher {
 
     @Override
     public Set<PgObjLocation> analyze(ParserRuleContext ctx, MetaContainer meta) {
-        // TODO add later
+        Subquery_clauseContext subQueryCtx = (Subquery_clauseContext) ctx;
+        Select_stmtContext selectCtx = subQueryCtx.select_stmt();
+        if (selectCtx != null) {
+            ChSelect select = new ChSelect(getSchemaName(), meta);
+            return analyze(selectCtx, select);
+        }
+
         return Collections.emptySet();
     }
 }

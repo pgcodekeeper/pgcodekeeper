@@ -20,13 +20,8 @@ import java.io.IOException;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import ru.taximaxim.codekeeper.core.FILES_POSTFIX;
-import ru.taximaxim.codekeeper.core.PgDiff;
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.TestUtils;
-import ru.taximaxim.codekeeper.core.model.difftree.DiffTree;
-import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 
 /**
  * Тестирует сравнение БД с неполным выбором различающихся объектов
@@ -240,7 +235,7 @@ class PgDiffDepciesTest {
             "add_objects_with_collation_usr_all",
     })
     void runDiff(final String userSelTemplate) throws IOException, InterruptedException {
-        testDepcy(userSelTemplate, false);
+        TestUtils.testDepcy(userSelTemplate, false, DatabaseType.PG, getClass());
     }
 
     @ParameterizedTest
@@ -284,55 +279,11 @@ class PgDiffDepciesTest {
             "add_func_with_copying_type_usr_func_f2",
     })
     void runDiffWithFunctionDependencies(final String userSelTemplate) throws IOException, InterruptedException {
-        testDepcy(userSelTemplate, true);
+        TestUtils.testDepcy(userSelTemplate, true, DatabaseType.PG, getClass());
     }
 
-    /**
-     * Diff test with partial selection, required 5 file: <br>
-     *  - file_name_original.sql - old database state <br>
-     *  - file_name_new.sql - new database state<br>
-     *  - file_name_usr_sel_original.sql - old selected objects state<br>
-     *  - file_name_usr_sel_new.sql - new selected objects state<br>
-     *  - file_name_usr_sel_diff.sql - expected diff script<br>
-     * <br>
-     * file_name_usr_sel = userSelTemplate
-     */
     void testDepcy(String userSelTemplate, boolean isEnableFunctionBodiesDependencies)
             throws IOException, InterruptedException {
-        AbstractDatabase oldDatabase;
-        AbstractDatabase newDatabase;
-        AbstractDatabase oldDbFull;
-        AbstractDatabase newDbFull;
-        PgDiffArguments args = new PgDiffArguments();
-        args.setEnableFunctionBodiesDependencies(isEnableFunctionBodiesDependencies);
-
-        String dbTemplate = userSelTemplate.replaceAll("_usr.*", "");
-        if (userSelTemplate.equals(dbTemplate)) {
-            oldDatabase = TestUtils.loadTestDump(
-                    userSelTemplate + FILES_POSTFIX.ORIGINAL_SQL, PgDiffDepciesTest.class, args);
-            newDatabase = TestUtils.loadTestDump(
-                    userSelTemplate + FILES_POSTFIX.NEW_SQL, PgDiffDepciesTest.class, args);
-            oldDbFull = oldDatabase;
-            newDbFull = newDatabase;
-        } else {
-            oldDatabase = TestUtils.loadTestDump(
-                    userSelTemplate + FILES_POSTFIX.ORIGINAL_SQL, PgDiffDepciesTest.class, args, false);
-            newDatabase = TestUtils.loadTestDump(
-                    userSelTemplate + FILES_POSTFIX.NEW_SQL, PgDiffDepciesTest.class, args, false);
-            oldDbFull = TestUtils.loadTestDump(
-                    dbTemplate + FILES_POSTFIX.ORIGINAL_SQL, PgDiffDepciesTest.class, args);
-            newDbFull = TestUtils.loadTestDump(
-                    dbTemplate + FILES_POSTFIX.NEW_SQL, PgDiffDepciesTest.class, args);
-        }
-
-        TestUtils.runDiffSame(oldDbFull, dbTemplate, args);
-        TestUtils.runDiffSame(newDbFull, dbTemplate, args);
-
-        TreeElement tree = DiffTree.create(oldDatabase, newDatabase, null);
-        tree.setAllChecked();
-        String script = new PgDiff(args).diffDatabaseSchemasAdditionalDepcies(
-                tree, oldDbFull, newDbFull, null, null);
-
-        TestUtils.compareResult(script, userSelTemplate, PgDiffDepciesTest.class);
+        TestUtils.testDepcy(userSelTemplate, isEnableFunctionBodiesDependencies, DatabaseType.PG, getClass());
     }
 }
