@@ -52,7 +52,13 @@ class ChDiffTest {
             //            "ch_table_uncovereged_cases_with_diffs",
             // uncovereged cases for TABLE without diffs
             //            "ch_table_uncovereged_cases_without_diffs",
-    })
+            //Test scenario where FUNCTION is added
+            "add_ch_function",
+            //Test scenario where FUNCTIONs are compared
+            "compare_ch_function",
+            //Test scenario where FUNCTION is dropped
+            "drop_ch_function"
+})
     void runDiff(String fileNameTemplate) throws IOException, InterruptedException {
         TestUtils.runDiff(fileNameTemplate, DatabaseType.CH, ChDiffTest.class);
     }

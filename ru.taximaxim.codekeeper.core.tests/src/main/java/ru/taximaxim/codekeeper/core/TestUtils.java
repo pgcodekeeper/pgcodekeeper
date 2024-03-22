@@ -34,6 +34,8 @@ import ru.taximaxim.codekeeper.core.loader.DatabaseLoader;
 import ru.taximaxim.codekeeper.core.loader.PgDumpLoader;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.model.difftree.DiffTree;
+import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
@@ -142,6 +144,57 @@ public final class TestUtils {
         TestUtils.runDiffSame(dbNew, fileNameTemplate, args);
 
         return new PgDiff(args).diffDatabaseSchemas(dbOld, dbNew, null);
+    }
+
+    /**
+     * Diff test with partial selection, required 5 file: <br>
+     *  - file_name_original.sql - old database state <br>
+     *  - file_name_new.sql - new database state<br>
+     *  - file_name_usr_sel_original.sql - old selected objects state<br>
+     *  - file_name_usr_sel_new.sql - new selected objects state<br>
+     *  - file_name_usr_sel_diff.sql - expected diff script<br>
+     * <br>
+     * file_name_usr_sel = userSelTemplate
+     */
+    public static void testDepcy(String userSelTemplate, boolean isEnableFunctionBodiesDependencies,
+            DatabaseType dbType, Class<?> clazz)
+                    throws IOException, InterruptedException {
+        AbstractDatabase oldDatabase;
+        AbstractDatabase newDatabase;
+        AbstractDatabase oldDbFull;
+        AbstractDatabase newDbFull;
+        PgDiffArguments args = new PgDiffArguments();
+        args.setDbType(dbType);
+        args.setEnableFunctionBodiesDependencies(isEnableFunctionBodiesDependencies);
+
+        String dbTemplate = userSelTemplate.replaceAll("_usr.*", "");
+        if (userSelTemplate.equals(dbTemplate)) {
+            oldDatabase = TestUtils.loadTestDump(
+                    userSelTemplate + FILES_POSTFIX.ORIGINAL_SQL, clazz, args);
+            newDatabase = TestUtils.loadTestDump(
+                    userSelTemplate + FILES_POSTFIX.NEW_SQL, clazz, args);
+            oldDbFull = oldDatabase;
+            newDbFull = newDatabase;
+        } else {
+            oldDatabase = TestUtils.loadTestDump(
+                    userSelTemplate + FILES_POSTFIX.ORIGINAL_SQL, clazz, args, false);
+            newDatabase = TestUtils.loadTestDump(
+                    userSelTemplate + FILES_POSTFIX.NEW_SQL, clazz, args, false);
+            oldDbFull = TestUtils.loadTestDump(
+                    dbTemplate + FILES_POSTFIX.ORIGINAL_SQL, clazz, args);
+            newDbFull = TestUtils.loadTestDump(
+                    dbTemplate + FILES_POSTFIX.NEW_SQL, clazz, args);
+        }
+
+        TestUtils.runDiffSame(oldDbFull, dbTemplate, args);
+        TestUtils.runDiffSame(newDbFull, dbTemplate, args);
+
+        TreeElement tree = DiffTree.create(oldDatabase, newDatabase, null);
+        tree.setAllChecked();
+        String script = new PgDiff(args).diffDatabaseSchemasAdditionalDepcies(
+                tree, oldDbFull, newDbFull, null, null);
+
+        TestUtils.compareResult(script, userSelTemplate, clazz);
     }
 
     private TestUtils() {

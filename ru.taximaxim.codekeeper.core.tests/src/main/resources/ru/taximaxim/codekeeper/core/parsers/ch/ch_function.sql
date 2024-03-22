@@ -23,6 +23,7 @@ CREATE FUNCTION plustwo AS (a) -> a + 2;
 CREATE FUNCTION f1 AS (x) -> x;
 CREATE FUNCTION hasValidSizes17 AS (arr1, arr2) -> length(arr1) = length(arr2) AND arrayAll((x, y) -> length(x) = length(y), arr1, arr2);
 CREATE FUNCTION "from select" AS (a) -> a + 2;
+CREATE FUNCTION test_qual AS (x) -> default.t2;
 
 DROP FUNCTION test_function_0;
 DROP FUNCTION test_function;

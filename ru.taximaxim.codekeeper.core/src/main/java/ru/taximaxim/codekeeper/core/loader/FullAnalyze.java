@@ -86,7 +86,7 @@ public final class FullAnalyze {
             AbstractAnalysisLauncher l = launchers.get(i);
             if (l instanceof ViewAnalysisLauncher
                     && (rel == null
-                    || (rel.getSchemaName().equals(l.getStmt().getSchemaName())
+                    || (rel.getSchemaName().equals(l.getSchemaName())
                             && rel.getName().equals(l.getStmt().getName())))) {
                 // allow GC to reclaim context memory immediately
                 // and protects from infinite recursion

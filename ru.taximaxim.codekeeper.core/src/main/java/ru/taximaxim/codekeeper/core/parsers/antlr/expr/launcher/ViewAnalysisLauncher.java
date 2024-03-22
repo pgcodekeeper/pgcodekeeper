@@ -43,7 +43,7 @@ public class ViewAnalysisLauncher extends AbstractAnalysisLauncher {
     public Set<PgObjLocation> analyze(ParserRuleContext ctx, MetaContainer meta) {
         Select select = new Select(meta);
         select.setFullAnaLyze(fullAnalyze);
-        MetaUtils.initializeView(meta, stmt.getSchemaName(), stmt.getName(),
+        MetaUtils.initializeView(meta, getSchemaName(), stmt.getName(),
                 select.analyze((Select_stmtContext) ctx));
         return select.getDepcies();
     }

@@ -891,9 +891,9 @@ function_call
     | SUBSTRING LPAREN expr FROM expr (FOR expr)? RPAREN
     | TIMESTAMP STRING_LITERAL
     | TRIM LPAREN (BOTH | LEADING | TRAILING) STRING_LITERAL FROM expr RPAREN
-    | identifier ((LPAREN expr RPAREN)? LPAREN expr_list? RPAREN) OVER window_expr
-    | identifier (LPAREN expr_list? RPAREN) OVER identifier
-    | identifier (LPAREN expr_list? RPAREN)? LPAREN DISTINCT? column_arg_list? RPAREN
+    | name=identifier ((LPAREN expr RPAREN)? LPAREN expr_list? RPAREN) OVER window_expr
+    | name=identifier (LPAREN expr_list? RPAREN) OVER identifier
+    | name=identifier (LPAREN expr_list? RPAREN)? LPAREN DISTINCT? column_arg_list? RPAREN
     ;
 
 column_arg_list

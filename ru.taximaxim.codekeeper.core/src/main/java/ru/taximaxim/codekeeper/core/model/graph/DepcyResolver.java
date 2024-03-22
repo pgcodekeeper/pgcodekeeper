@@ -604,6 +604,7 @@ public class DepcyResolver {
             }
 
             if ((type == DbObjType.FUNCTION || type == DbObjType.PROCEDURE)
+                    && oldSt.getDbType() != DatabaseType.CH
                     && !((AbstractFunction) oldSt).needDrop((AbstractFunction) newSt)) {
                 return;
             }

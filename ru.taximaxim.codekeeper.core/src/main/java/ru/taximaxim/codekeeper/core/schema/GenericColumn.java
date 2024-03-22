@@ -28,6 +28,7 @@ import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgTable;
 import ru.taximaxim.codekeeper.core.schema.pg.PgOperator;
 
@@ -128,13 +129,12 @@ public class GenericColumn implements Serializable {
         case USER:
         case ROLE:
             return db.getChild(schema, type);
-        case FUNCTION:
-            if (db.getDbType() == DatabaseType.CH) {
-                return db.getChild(schema, type);
-            }
-            break;
         default:
             break;
+        }
+
+        if (db instanceof ChDatabase && type == DbObjType.FUNCTION) {
+            return db.getChild(schema, type);
         }
 
         AbstractSchema s = db.getSchema(schema);

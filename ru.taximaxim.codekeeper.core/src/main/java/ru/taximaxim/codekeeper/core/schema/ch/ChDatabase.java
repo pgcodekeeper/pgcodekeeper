@@ -42,9 +42,7 @@ import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
  * @author fordfrog
  */
 public class ChDatabase extends AbstractDatabase {
-
-    // TODO change to ChFunction
-    private final Map<String, PgStatement> functions = new LinkedHashMap<>();
+    private final Map<String, ChFunction> functions = new LinkedHashMap<>();
 
     public ChDatabase(PgDiffArguments arguments) {
         super(arguments);
@@ -76,7 +74,7 @@ public class ChDatabase extends AbstractDatabase {
             addSchema((AbstractSchema) st);
             break;
         case FUNCTION:
-            addFunction((PgStatement) st);
+            addFunction((ChFunction) st);
             break;
         default:
             throw new IllegalArgumentException("Unsupported child type: " + type);
@@ -91,7 +89,7 @@ public class ChDatabase extends AbstractDatabase {
      *
      * @return found function or null
      */
-    public PgStatement getFunction(final String name) {
+    public ChFunction getFunction(final String name) {
         return functions.get(name);
     }
 
@@ -100,11 +98,11 @@ public class ChDatabase extends AbstractDatabase {
      *
      * @return {@link #functions}
      */
-    public Collection<PgStatement> getFunctions() {
+    public Collection<ChFunction> getFunctions() {
         return Collections.unmodifiableCollection(functions.values());
     }
 
-    public void addFunction(final PgStatement function) {
+    public void addFunction(final ChFunction function) {
         addUnique(functions, function);
     }
 

@@ -65,11 +65,11 @@ public class WorkDirs {
     private static final String CH_USERS = "Users";
     private static final String CH_ROLES = "Roles";
     private static final String CH_TABLES = "Tables";
-    private static final String CH_FUNCTIONS = "Functions";
+    public static final String CH_FUNCTIONS = "Functions";
     private static final String CH_VIEWS = "Views";
 
     // CH first level folder
-    private static final List<String> CH_DIRECTORY_NAMES = List.of(CH_DATABASES);
+    private static final List<String> CH_DIRECTORY_NAMES = List.of(CH_DATABASES, CH_FUNCTIONS);
 
     public static List<String> getDirectoryNames(DatabaseType databaseType) {
         switch (databaseType) {

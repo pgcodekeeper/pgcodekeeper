@@ -78,13 +78,10 @@ public class Argument implements Serializable, IHashable {
     public StringBuilder appendDeclaration(StringBuilder sbString,
             boolean includeDefaultValue, boolean includeArgName) {
         if (includeArgName) {
-            ArgMode mode = getMode();
             if (mode != ArgMode.IN) {
                 sbString.append(mode);
                 sbString.append(' ');
             }
-
-            String name = getName();
 
             if (name != null && !name.isEmpty()) {
                 sbString.append(PgDiffUtils.getQuotedName(name));
