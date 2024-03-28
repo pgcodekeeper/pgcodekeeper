@@ -26,6 +26,7 @@ class ChDiffTest {
     @ValueSource(strings = {
             "add_ch_view",
             "drop_ch_view",
+            "alter_ch_view",
             // Test scenario where DATABASEs is added
             "add_ch_database",
             // Test scenario where DATABASEs compare and haven't different
@@ -46,12 +47,16 @@ class ChDiffTest {
             "alter_ch_columns_at_table",
             // Test scenario where COLUMN dropped at TABLE
             "drop_ch_column_at_table",
+            // Test scenario where TABLE altered
+            "alter_ch_table",
             // Test scenario where engine options altered at TABLE
-            "alter_ch_table_engine_options",
+            "alter_ch_table_engine",
             // uncovereged cases for TABLE with diffs
-            //            "ch_table_uncovereged_cases_with_diffs",
+            // "ch_table_uncovereged_cases_with_diffs",
             // uncovereged cases for TABLE without diffs
-            //            "ch_table_uncovereged_cases_without_diffs",
+            // "ch_table_uncovereged_cases_without_diffs",
+            // uncovereged cases for VIEW with diffs
+            // "ch_view_uncovereged_cases_with_diffs_original",
             //Test scenario where FUNCTION is added
             "add_ch_function",
             //Test scenario where FUNCTIONs are compared

@@ -18,15 +18,12 @@ package ru.taximaxim.codekeeper.core.schema.ch;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import ru.taximaxim.codekeeper.core.ChDiffUtils;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractIndex;
+import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-
-/*
- * TODO when will be test behaviours need decide maybe better extends from another class. because i think better
- * use some like AbstractColumn, PgStatementWithSearchPath or AbstractConstraint
- */
 
 public class ChIndex extends AbstractIndex {
 
@@ -65,15 +62,6 @@ public class ChIndex extends AbstractIndex {
         return granVal;
     }
 
-    @Override
-    protected AbstractIndex getIndexCopy() {
-        var index = new ChIndex(name);
-        index.setExpr(expr);
-        index.setType(type);
-        index.setGranVal(granVal);
-        return index;
-    }
-
     public String getDefinition() {
         final StringBuilder sb = new StringBuilder();
         sb.append("INDEX ").append(getName()).append(' ').append(expr)
@@ -85,8 +73,15 @@ public class ChIndex extends AbstractIndex {
     }
 
     @Override
+    public String getCreationSQL() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append(getAlterTable(false, false)).append(" ADD ").append(getDefinition()).append(getSeparator());
+        return sb.toString();
+    }
+
+    @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
-        ChConstraint newConstr = (ChConstraint) newCondition;
+        var newConstr = (ChIndex) newCondition;
         if (!compareUnalterable(newConstr)) {
             isNeedDepcies.set(true);
             return true;
@@ -95,8 +90,36 @@ public class ChIndex extends AbstractIndex {
         return false;
     }
 
-    private boolean compareUnalterable(ChConstraint newConstr) {
+    @Override
+    public String getDropSQL(boolean optionExists) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append(getAlterTable(false, false)).append("\n\tDROP INDEX ");
+        if (optionExists) {
+            sb.append("IF EXISTS ");
+        }
+        sb.append(ChDiffUtils.getQuotedName(getName())).append(getSeparator());
+        return sb.toString();
+    }
+
+    private String getAlterTable(boolean nextLine, boolean only) {
+        return ((AbstractTable) getParent()).getAlterTable(nextLine, only);
+    }
+
+    private boolean compareUnalterable(ChIndex newConstr) {
         return compare(newConstr);
+    }
+
+    @Override
+    public DatabaseType getDbType() {
+        return DatabaseType.CH;
+    }
+
+    @Override
+    public void computeHash(Hasher hasher) {
+        super.computeHash(hasher);
+        hasher.put(expr);
+        hasher.put(type);
+        hasher.put(granVal);
     }
 
     @Override
@@ -115,24 +138,11 @@ public class ChIndex extends AbstractIndex {
     }
 
     @Override
-    public void computeHash(Hasher hasher) {
-        super.computeHash(hasher);
-        hasher.put(expr);
-        hasher.put(type);
-        hasher.put(granVal);
-    }
-
-    @Override
-    public DatabaseType getDbType() {
-        return DatabaseType.CH;
-    }
-
-
-    @Override
-    public String getCreationSQL() {
-        final StringBuilder sb = new StringBuilder();
-        sb.append("ALTER TABLE ").append(getParent().getQualifiedName()).append(" ADD ").append(getDefinition())
-        .append(getSeparator());
-        return sb.toString();
+    protected AbstractIndex getIndexCopy() {
+        var index = new ChIndex(name);
+        index.setExpr(expr);
+        index.setType(type);
+        index.setGranVal(granVal);
+        return index;
     }
 }

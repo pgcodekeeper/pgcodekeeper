@@ -3,8 +3,7 @@ CREATE TABLE default.t1_2
 	`col1` Int64 NOT NULL,
 	`col2` Int64 NOT NULL,
 	`col3` Date NOT NULL,
-	`col4` Date NOT NULL,
-	 PROJECTION proj1 (SELECT * ORDER BY col2)
+	`col4` Date NOT NULL
 )
 ENGINE = MergeTree
 ORDER BY col1
@@ -32,8 +31,7 @@ CREATE TABLE default.t2_2
 	`col1` Int64 NOT NULL,
 	`col2` Int64 NOT NULL,
 	`col3` Date NOT NULL,
-	`col4` Date NOT NULL,
-	PROJECTION proj1 (SELECT * ORDER BY col2)
+	`col4` Date NOT NULL
 )
 ENGINE = MergeTree
 ORDER BY col1
@@ -46,8 +44,7 @@ CREATE TABLE default.t2_1
 	`col1` Int64 NOT NULL,
 	`col2` Int64 NOT NULL,
 	`col3` Date NOT NULL,
-	`col4` Date NOT NULL,
-	PROJECTION proj1 (SELECT col1 AS some_name ORDER BY col2)
+	`col4` Date NOT NULL
 )
 ENGINE = MergeTree
 ORDER BY col1
@@ -89,5 +86,16 @@ CREATE TABLE default.t4_1
 )
 ENGINE = MergeTree
 PRIMARY KEY col1
+ORDER BY col1
+SETTINGS index_granularity = 8192;
+
+CREATE TABLE default.t5_1
+(
+	`col1` Int64,
+	`col2` DateTime64(3),
+	`col3` DateTime64(4)
+)
+ENGINE = MergeTree
+PARTITION BY col3
 ORDER BY col1
 SETTINGS index_granularity = 8192;

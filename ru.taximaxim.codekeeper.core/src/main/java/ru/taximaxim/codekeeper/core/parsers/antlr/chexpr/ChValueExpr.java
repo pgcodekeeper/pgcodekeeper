@@ -66,6 +66,17 @@ public class ChValueExpr extends ChAbstractExpr {
                 analyze(exp);
             }
         }
+
+        var argList = functionCall.arg_list();
+        if (argList != null) {
+            for (var argExpr : argList.arg_expr()) {
+                var expr = argExpr.expr();
+                if (expr != null) {
+                    analyze(expr);
+                }
+            }
+        }
+
         var funcName = functionCall.name;
         if (funcName != null) {
             return addFuncDepcy(funcName, DbObjType.FUNCTION);

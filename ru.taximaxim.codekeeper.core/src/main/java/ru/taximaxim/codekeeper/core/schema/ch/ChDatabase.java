@@ -36,11 +36,6 @@ import ru.taximaxim.codekeeper.core.schema.PgOverride;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
 
-/**
- * Stores database information.
- *
- * @author fordfrog
- */
 public class ChDatabase extends AbstractDatabase {
     private final Map<String, ChFunction> functions = new LinkedHashMap<>();
 

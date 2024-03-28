@@ -81,5 +81,4 @@ public class CreateChTable extends ChParserAbstract {
     protected String getStmtAction() {
         return getStrForStmtAction(ACTION_CREATE, DbObjType.TABLE, ctx.qualified_name());
     }
-
 }
