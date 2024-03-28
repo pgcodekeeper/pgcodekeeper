@@ -8,7 +8,7 @@ CREATE TABLE default.t3
 ENGINE = MergeTree 
 ORDER BY col1;
 
-CREATE TABLE default.01154_test
+CREATE TABLE default.`01154_test`
 (
 
     `col1` Int32

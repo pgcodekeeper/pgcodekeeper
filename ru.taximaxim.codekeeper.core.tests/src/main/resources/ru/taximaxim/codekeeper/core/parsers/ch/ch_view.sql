@@ -182,7 +182,13 @@ CREATE MATERIALIZED VIEW with_deduplication_mv UUID '00000510-1000-4000-8000-000
 CREATE MATERIALIZED VIEW without_deduplication_mv UUID '00000510-1000-4000-8000-000000000002'   ENGINE = ReplicatedAggregatingMergeTree('/clickhouse/tables/{database}/test_00510/without_deduplication_mv', 'r1') ORDER BY dummy   AS SELECT 0 AS dummy, countState(x) AS cnt FROM without_deduplication;
 create materialized view {CLICKHOUSE_DATABASE:Identifier}.my_materialized_view ENGINE = MergeTree(day, (day), 8192) as select * from {CLICKHOUSE_DATABASE:Identifier}.my_table;
 CREATE MATERIALIZED VIEW {CLICKHOUSE_DATABASE:Identifier}.test_materialized ENGINE = Log AS SELECT * FROM {CLICKHOUSE_DATABASE:Identifier}.test_log;
-
+CREATE OR REPLACE TABLE test_query_log_factories_info1.memory_table (id BIGINT, date DATETIME) ENGINE=Memory();
+CREATE OR REPLACE VIEW t (number UInt64) AS SELECT number FROM system.numbers;
+CREATE OR REPLACE VIEW t AS SELECT number+1 AS next_number FROM system.numbers;
+CREATE OR REPLACE VIEW view_no_nulls AS SELECT * FROM ( SELECT number + 1 AS a, number + 11 AS b FROM numbers(2) ) AS t1 FULL JOIN ( SELECT number + 2 AS a, number + 22 AS c FROM numbers(2) ) AS t2 USING a ORDER BY a;
+CREATE OR REPLACE VIEW view_no_nulls_set AS SELECT * FROM ( SELECT number + 1 AS a, number + 11 AS b FROM numbers(2) ) AS t1 FULL JOIN ( SELECT number + 2 AS a, number + 22 AS c FROM numbers(2) ) AS t2 USING a ORDER BY a SETTINGS join_use_nulls = 0;
+CREATE OR REPLACE VIEW view_nulls AS SELECT * FROM ( SELECT number + 1 AS a, number + 11 AS b FROM numbers(2) ) AS t1 FULL JOIN ( SELECT number + 2 AS a, number + 22 AS c FROM numbers(2) ) AS t2 USING a ORDER BY a;
+CREATE OR REPLACE VIEW view_nulls_set AS SELECT * FROM ( SELECT number + 1 AS a, number + 11 AS b FROM numbers(2) ) AS t1 FULL JOIN ( SELECT number + 2 AS a, number + 22 AS c FROM numbers(2) ) AS t2 USING a ORDER BY a SETTINGS join_use_nulls = 1;
 
 DROP VIEW db_01048.v_01048;
 drop view dst_mv;
@@ -195,3 +201,7 @@ DROP VIEW mv_01210;
 drop view my_view;
 DROP VIEW parse_mv_eph;
 DROP VIEW v_01210;
+
+ATTACH MATERIALIZED VIEW mv UUID '3bd68e3c-2693-4352-ad66-a66eba9e345e' TO INNER UUID '3bd68e3c-2693-4352-ad66-a66eba9e345e' (n Int32, n2 Int64) ENGINE = MergeTree PARTITION BY n % 10 ORDER BY n AS SELECT n, n * n AS n2 FROM src;
+ATTACH MATERIALIZED VIEW mv UUID 'e15f3ab5-6cae-4df3-b879-f40deafd82c2' (n Int32, n2 Int64) ENGINE = MergeTree PARTITION BY n % 10 ORDER BY n AS SELECT n, n * n AS n2 FROM src;
+ATTACH MATERIALIZED VIEW mv UUID 'e15f3ab5-6cae-4df3-b879-f40deafd82c2' TO INNER UUID '3bd68e3c-2693-4352-ad66-a66eba9e345e' (n Int32, n2 Int64) ENGINE = MergeTree PARTITION BY n % 10 ORDER BY n AS SELECT n, n * n AS n2 FROM src;

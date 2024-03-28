@@ -164,7 +164,7 @@ public abstract class ChParserAbstract extends ParserAbstract<ChDatabase> {
 
         var settings = optionCtx.settings_clause();
         if (settings != null && !settings.isEmpty()) {
-            for (var setting : settings.setting_expr_list().setting_expr()) {
+            for (var setting : settings.pairs().pair()) {
                 engine.addOption(setting.identifier().getText(), getFullCtxText(setting.expr()));
             }
             return;

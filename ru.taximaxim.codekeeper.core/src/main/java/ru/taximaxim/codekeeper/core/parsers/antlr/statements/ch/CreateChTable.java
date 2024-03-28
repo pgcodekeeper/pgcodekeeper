@@ -70,7 +70,8 @@ public class CreateChTable extends ChParserAbstract {
         } else if (elementCtx.INDEX() != null) {
             table.addChild(getIndex(elementCtx.table_index_def()));
         } else if ((proj = elementCtx.table_projection_def()) != null) {
-            table.addProjection(proj.qualified_name().getText(), getFullCtxText(proj.projection_select_stmt()));
+            table.addProjection(proj.qualified_name().getText(),
+                    "(" + getFullCtxText(proj.select_stmt_no_parens()) + ")");
         } else {
             throw new IllegalArgumentException("unsupported Table_element_exprContext\n" + getFullCtxText(elementCtx));
         }

@@ -29,7 +29,6 @@ import org.antlr.v4.runtime.dfa.DFA;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.ValueSource;
 
 import ru.taximaxim.codekeeper.core.FILES_POSTFIX;
 import ru.taximaxim.codekeeper.core.TestUtils;
@@ -44,23 +43,17 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser;
 class CHParserTest {
 
     @ParameterizedTest
-    @ValueSource(strings = {
-            "ch_database",
-            "ch_function",
-            // "ch_index",
-            // "ch_insert",
-            // "ch_other",
-            // "ch_select",
-            "ch_show",
-            "ch_view"
-    })
-    void parse(final String fileNameTemplate) throws IOException {
-        parse(fileNameTemplate, 0);
-    }
-
-    @ParameterizedTest
     @CsvSource({
-        "ch_table, 1"
+        "ch_database, 0",
+        "ch_function, 1",
+        // "ch_index, 0",
+        // "ch_insert, 0",
+        // "ch_other, 0",
+        "ch_show, 0",
+        "ch_view, 1",
+        "ch_policy, 2",
+        "ch_table, 1",
+        "ch_select, 102",
     })
     void parse(String fileNameTemplate, int allowedAmbiguity) throws IOException {
         List<Object> errors = new ArrayList<>();

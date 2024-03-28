@@ -15,7 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.parsers.antlr.rulectx;
 
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.CtesContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Select_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Select_stmt_no_parensContext;
 
@@ -35,10 +34,6 @@ public class ChSelectStmt {
         this.selectNp = select;
         this.select = null;
         this.isNp = true;
-    }
-
-    public CtesContext withExpression() {
-        return isNp ? selectNp.ctes() : select.ctes();
     }
 
     public ChSelectOps selectOps() {

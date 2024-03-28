@@ -37,7 +37,7 @@ class ChDiffTest {
             // Test scenario where TABLEs is added
             "add_ch_tables_engine_merge_tree",
             // Test scenario where TABLEs compare and haven't different
-            "compare_ch_tables_engine_merge_tree_without_diffs",
+            "compare_ch_engine_no_diffs",
             // Test scenario where TABLE is dropped
             "drop_ch_table",
             // Test scenario where COLUMNs added at TABLE
@@ -58,7 +58,7 @@ class ChDiffTest {
             "compare_ch_function",
             //Test scenario where FUNCTION is dropped
             "drop_ch_function"
-})
+    })
     void runDiff(String fileNameTemplate) throws IOException, InterruptedException {
         TestUtils.runDiff(fileNameTemplate, DatabaseType.CH, ChDiffTest.class);
     }

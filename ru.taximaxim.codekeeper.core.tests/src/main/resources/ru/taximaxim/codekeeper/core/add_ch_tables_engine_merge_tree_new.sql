@@ -94,7 +94,7 @@ TTL d + toIntervalMonth(1) RECOMPRESS CODEC(ZSTD(17)),
  d + toIntervalYear(1) RECOMPRESS CODEC(LZ4HC(10));
 
 -- table with specific name
-CREATE TABLE default.01154_test
+CREATE TABLE default.`01154_test`
 (
     `col1` Int32
 )

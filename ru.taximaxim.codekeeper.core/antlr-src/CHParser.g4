@@ -24,9 +24,10 @@ stmt
 
 ddl_stmt
     : alter_stmt
-    | attach_stmt
+    | ATTACH attach_stmt
     | create_stmt
-    | drop_stmt
+    | DROP drop_stmt
+    | detach_stmt
     | kill_stmt
     | optimize_stmt
     | rename_stmt
@@ -43,7 +44,7 @@ dml_stmt
     | system_stmt
     | use_stmt
     | watch_stmt
-    | ctes? insert_stmt
+    | insert_stmt
     | select_stmt
     | transaction_stmt
     ;
@@ -64,39 +65,32 @@ alter_stmt
     | alter_named_collection_stmt
     ;
 
-ctes
-    : WITH named_query (COMMA named_query)*
-    ;
-
-named_query
-    : name=identifier (column_aliases)? AS LPAREN dml_stmt RPAREN
-    ;
-
 select_stmt
-    : ctes? select_ops
+    : select_ops
     ;
 
 select_stmt_no_parens
-    : ctes? select_ops_no_parens
+    : select_ops_no_parens
     ;
 
 with_clause
-    : WITH expr_list
+    : WITH with_query (COMMA with_query)*
+    ;
+
+with_query
+    : expr AS name=identifier
+    | name=identifier AS LPAREN dml_stmt RPAREN
     ;
 
 select_ops
     : LPAREN select_stmt RPAREN
-    | select_ops UNION ALL select_ops
+    | select_ops (INTERSECT | EXCEPT | UNION ALL?) DISTINCT? select_ops
     | select_primary
     ;
 
 select_ops_no_parens
-    : select_ops UNION ALL select_ops
+    : select_ops (INTERSECT | EXCEPT | UNION ALL?) DISTINCT? select_ops
     | select_primary
-    ;
-
-column_aliases
-    : LPAREN identifier_list RPAREN
     ;
 
 create_named_collection_stmt
@@ -114,7 +108,7 @@ named_collection_pair
     ;
 
 create_policy_stmt
-    : CREATE ROW? POLICY (if_not_exists | OR REPLACE) policy_name (COMMA policy_name)* policy_action*
+    : CREATE ROW? POLICY (if_not_exists | OR REPLACE)? policy_name (COMMA policy_name)* policy_action*
     ;
 
 alter_policy_stmt
@@ -122,14 +116,15 @@ alter_policy_stmt
     ;
 
 policy_name
-    : qualified_name cluster_clause? ON qualified_name
+    : identifier_list ON qualified_name_or_asterisk cluster_clause?
+    | identifier      ON qualified_name_or_asterisk (COMMA qualified_name_or_asterisk)+ cluster_clause?
     ;
 
 policy_action
     : AS (PERMISSIVE | RESTRICTIVE)
     | USING expr_list
     | FOR SELECT
-    | TO (identifier_list | ALL | ALL EXCEPT identifier_list)
+    | TO (identifier_list | ALL EXCEPT identifier_list)
     ;
 
 rename_to
@@ -163,7 +158,7 @@ alter_table_action
     | REMOVE (TTL | SAMPLE BY)
     | RENAME COLUMN if_exists? qualified_name TO qualified_name
     | REPLACE partition_clause FROM qualified_name
-    | RESET SETTING (identifier | setting_expr) (COMMA (identifier | setting_expr))*
+    | RESET SETTING (identifier | pair) (COMMA (identifier | pair))*
     | UNFREEZE partition_clause? WITH NAME identifier
     | UPDATE qualified_name EQ_SINGLE expr (COMMA qualified_name EQ_SINGLE expr)* (IN partition_clause)? where_clause settings_clause?
     ;
@@ -194,10 +189,10 @@ alter_table_mat_action
     ;
 
 alter_table_modify_action
-    : modify_column_expr
+    : COLUMN modify_column_expr
     | order_by_clause
     | QUERY select_stmt
-    | SETTING (identifier | setting_expr) (COMMA (identifier | setting_expr))*
+    | SETTING (identifier | pair) (COMMA (identifier | pair))*
     | ttl_clause
     | comment_expr
     | sample_by_clause
@@ -205,8 +200,9 @@ alter_table_modify_action
     ;
 
 modify_column_expr
-    : COLUMN if_exists? qualified_name data_type? table_column_property_expr? codec_expr? ttl_clause? setting_expr? position?
-    | COLUMN qualified_name REMOVE (ALIAS | CODEC | COMMENT | DEFAULT | MATERIALIZED | EPHEMERAL | TTL | SETTINGS)
+    : if_exists? qualified_name data_type? table_column_property_expr? codec_expr? ttl_clause? pair? position?
+    | identifier MODIFY SETTING pairs
+    | qualified_name REMOVE (ALIAS | CODEC | COMMENT | DEFAULT | MATERIALIZED | EPHEMERAL | TTL | SETTINGS)
     ;
 
 alter_statistic
@@ -219,16 +215,14 @@ partition_clause
     ;
 
 attach_stmt
-    : attach_dictionary_stmt
+    : DICTIONARY if_not_exists? qualified_name cluster_clause?
+    | DATABASE if_not_exists? identifier engine_clause? cluster_clause?
+    | MATERIALIZED VIEW if_not_exists? qualified_name
     | attach_table_stmt
     ;
 
-attach_dictionary_stmt
-    : ATTACH DICTIONARY qualified_name cluster_clause?
-    ;
-
 attach_table_stmt
-    : ATTACH TABLE if_not_exists? qualified_name (uuid_clause | from_file_clause)?
+    : TABLE if_not_exists? qualified_name (uuid_clause | from_file_clause)?
     cluster_clause? table_body_expr? comment_expr? settings_clause?
     ;
 
@@ -241,7 +235,7 @@ check_stmt
     ;
 
 create_database_stmt
-    : (ATTACH | CREATE) DATABASE if_not_exists? identifier cluster_clause? engine_expr settings_clause? comment_expr?
+    : CREATE DATABASE if_not_exists? identifier cluster_clause? engine_expr? settings_clause? comment_expr?
     ;
 
 create_view_stmt
@@ -259,7 +253,7 @@ create_mat_view_stmt
     ;
 
 create_live_view_stmt
-    : LIVE VIEW if_not_exists? qualified_name (WITH PERIODIC? REFRESH DECIMAL_LITERAL?)? table_schema_clause?
+    : LIVE VIEW if_not_exists? qualified_name (WITH PERIODIC? REFRESH NUMBER?)? table_schema_clause?
     ;
 
 definer_clause
@@ -277,7 +271,7 @@ subquery_clause
     ;
 
 create_function_stmt
-    : CREATE FUNCTION qualified_name cluster_clause? AS column_lambda_expr
+    : CREATE FUNCTION qualified_name cluster_clause? AS lambda_expr
     ;
 
 create_table_stmt
@@ -320,10 +314,10 @@ dictionary_attr_def
 
 dictionary_option
     : SOURCE LPAREN identifier LPAREN dictionary_arg_expr* RPAREN RPAREN
-    | LIFETIME LPAREN (DECIMAL_LITERAL | MIN DECIMAL_LITERAL MAX DECIMAL_LITERAL | MAX DECIMAL_LITERAL MIN DECIMAL_LITERAL) RPAREN
+    | LIFETIME LPAREN (NUMBER | MIN NUMBER MAX NUMBER | MAX NUMBER MIN NUMBER) RPAREN
     | LAYOUT LPAREN identifier LPAREN dictionary_arg_expr* RPAREN RPAREN
     | RANGE LPAREN (MIN identifier MAX identifier | MAX identifier MIN identifier) RPAREN
-    | SETTINGS LPAREN setting_expr_list RPAREN
+    | SETTINGS LPAREN pairs RPAREN
     ;
 
 dictionary_arg_expr
@@ -410,7 +404,7 @@ table_column_def
      (STATISTIC LPAREN stat=expr RPAREN)?
      (TTL ttl=expr)?
      (PRIMARY KEY)?
-     (SETTINGS LPAREN setting_expr_list RPAREN)?
+     (SETTINGS LPAREN pairs RPAREN)?
     ;
 
 data_type_expr
@@ -429,7 +423,7 @@ table_column_property_expr
     ;
 
 table_index_def
-    : identifier expr TYPE index_type (GRANULARITY gran=DECIMAL_LITERAL?)?
+    : identifier expr TYPE index_type (GRANULARITY gran=NUMBER?)?
     ;
 
 index_type
@@ -437,7 +431,7 @@ index_type
     ;
 
 table_projection_def
-    : qualified_name projection_select_stmt
+    : qualified_name LPAREN select_stmt_no_parens RPAREN
     ;
 
 codec_expr
@@ -458,18 +452,21 @@ describe_stmt
     ;
 
 drop_stmt
-    : (DETACH | DROP) DATABASE if_exists? identifier cluster_clause?
-    | (DETACH | DROP) (DICTIONARY | TEMPORARY? VIEW) if_exists? qualified_name cluster_clause? (NO DELAY)?
-    | drop_function_stmt
-    | drop_table_stmt
+    : DATABASE if_exists? identifier cluster_clause? SYNC?
+    | TEMPORARY? TABLE if_exists? (IF EMPTY)? qualified_name cluster_clause? SYNC?
+    | DICTIONARY if_exists? qualified_name SYNC?
+    | (ROLE | USER) if_exists? identifier_list cluster_clause? (FROM identifier)?
+    | ROW? POLICY if_exists? policy_name (COMMA policy_name)* (FROM identifier)?
+    | QUOTA if_exists? identifier_list cluster_clause? (FROM identifier)?
+    | SETTINGS? PROFILE if_exists? identifier_list cluster_clause? (FROM identifier)?
+    | VIEW if_exists? qualified_name cluster_clause? SYNC?
+    | FUNCTION if_exists? qualified_name cluster_clause?
+    | NAMED COLLECTION if_exists? identifier cluster_clause?
+    | INDEX if_exists? identifier ON qualified_name
     ;
 
-drop_function_stmt
-    : DROP FUNCTION if_exists? qualified_name
-    ;
-
-drop_table_stmt
-    : DROP TEMPORARY? TABLE if_exists? (IF EMPTY)? qualified_name cluster_clause? SYNC?
+detach_stmt
+    : DETACH (TABLE | VIEW | DICTIONARY | DATABASE) if_exists? qualified_name cluster_clause? PERMANENTLY? SYNC?
     ;
 
 exists_stmt
@@ -478,7 +475,19 @@ exists_stmt
     ;
 
 explain_stmt
-    : EXPLAIN (AST | SYNTAX) stmt
+    : EXPLAIN (AST | SYNTAX | QUERY TREE | PLAN | PIPELINE | ESTIMATE | TABLE OVERRIDE)? pairs? stmt
+    ;
+
+pairs
+    : pair (COMMA pair)*
+    ;
+
+pair
+    : identifier EQ_SINGLE expr
+    ;
+
+json_pair
+    : literal COLON literal
     ;
 
 insert_stmt
@@ -509,26 +518,17 @@ optimize_stmt
     ;
 
 optimize_by_expr
-    : BY (ASTERISK | identifier_list | COLUMNS expr) (EXCEPT expr)?
+    : BY (ASTERISK | identifier_list | COLUMNS LPAREN literal RPAREN) (EXCEPT (LPAREN expr_list RPAREN | identifier | literal))?
     ;
 
 rename_stmt
     : RENAME TABLE qualified_name TO qualified_name (COMMA qualified_name TO qualified_name)* cluster_clause?
     ;
 
-projection_select_stmt:
-    LPAREN
-    with_clause?
-    SELECT expr_list
-    group_by_clause?
-    order_by_clause?
-    RPAREN
-    ;
-
 select_primary:
     with_clause?
     SELECT DISTINCT? top_clause?
-    select_list COMMA? // strange but valid syntax: select 1, from t
+    select_list
     from_clause?
     array_join_clause?
     window_clause?
@@ -543,17 +543,17 @@ select_primary:
     ;
 
 select_list
-    : expr select_mode* (COMMA expr select_mode*)*
+    : expr (COMMA expr)*
     ;
 
 select_mode
-    : APPLY (LPAREN identifier RPAREN | identifier)
-    | EXCEPT (LPAREN expr_list RPAREN | expr)
-    | REPLACE (LPAREN expr RPAREN | expr)
+    : APPLY (LPAREN identifier RPAREN | identifier | function_call | lambda_expr)
+    | EXCEPT (LPAREN expr_list RPAREN | identifier | literal)
+    | REPLACE (LPAREN expr AS identifier RPAREN | expr AS identifier)
     ;
 
 top_clause
-    : TOP DECIMAL_LITERAL (WITH TIES)?
+    : TOP NUMBER (WITH TIES)?
     ;
 
 from_clause
@@ -562,7 +562,7 @@ from_clause
 
 from_item
     : from_item (GLOBAL | LOCAL)? join_op? JOIN from_item (ON | USING) expr_list
-    | from_item (GLOBAL | LOCAL)? CROSS JOIN from_item
+    | from_item (GLOBAL | LOCAL)? (PASTE | CROSS) JOIN from_item
     | LPAREN from_item RPAREN
     | from_primary alias_clause? FINAL? sample_clause?
     ;
@@ -570,6 +570,7 @@ from_item
 from_primary
     : qualified_name
     | function_call
+    | LPAREN explain_stmt RPAREN
     | LPAREN select_ops RPAREN
     ;
 
@@ -620,7 +621,7 @@ limit_clause
     ;
 
 settings_clause
-    : SETTINGS setting_expr_list
+    : SETTINGS pairs
     ;
 
 join_op
@@ -656,14 +657,6 @@ ratio_expr
     : number_literal (SLASH number_literal)?
     ;
 
-setting_expr_list
-    : setting_expr (COMMA setting_expr)*
-    ;
-
-setting_expr
-    : identifier EQ_SINGLE expr
-    ;
-
 window_expr
     : identifier
     | LPAREN (PARTITION BY expr_list)? order_by_clause? ((ROWS | RANGE) win_frame_extend)? RPAREN
@@ -675,7 +668,11 @@ win_frame_extend
     ;
 
 win_frame_bound
-    : (CURRENT ROW | UNBOUNDED PRECEDING | UNBOUNDED FOLLOWING | number_literal PRECEDING | number_literal FOLLOWING)
+    : CURRENT ROW
+    | UNBOUNDED PRECEDING
+    | UNBOUNDED FOLLOWING
+    | number_literal PRECEDING
+    | number_literal FOLLOWING
     ;
 
 //range_clause
@@ -687,7 +684,7 @@ transaction_stmt
     ;
 
 set_stmt
-    : SET setting_expr_list
+    : SET pairs
     ;
 
 show_stmt
@@ -720,7 +717,7 @@ show_stmt
     ;
 
 like_expr
-    : NOT? (LIKE | ILIKE) literal
+    : NOT? (LIKE | ILIKE) expr
     ;
 
 from_in_db
@@ -746,7 +743,7 @@ use_stmt
     ;
 
 watch_stmt
-    : WATCH qualified_name EVENTS? (LIMIT DECIMAL_LITERAL)?
+    : WATCH qualified_name EVENTS? (LIMIT NUMBER)?
     ;
 
 data_type
@@ -841,13 +838,15 @@ expr
     | expr IS NOT? NULL
     | (PLUS | MINUS) expr
     | expr op expr
+    | expr (MOD | DIV) expr
     | expr (GLOBAL? NOT? IN) expr
     | expr like_expr
     | NOT expr
     | expr NOT? BETWEEN expr AND expr
     | expr QUESTION expr COLON expr
-    | expr alias_clause // FIXME in select only?
-    | expr APPLY expr
+    | expr alias_clause
+    | expr select_mode
+    | expr DOT literal // tuple
     | expr_primary
     ;
 
@@ -856,13 +855,14 @@ expr_primary
     | (qualified_name DOT)? ASTERISK
     | qualified_name
     | DATE STRING_LITERAL
-    | function_call (DOT DECIMAL_LITERAL)?
-    | identifier (DOT DECIMAL_LITERAL)+
+    | function_call
+    | lambda_expr
     | LPAREN select_stmt_no_parens RPAREN
-    | LPAREN expr_list RPAREN (DOT literal)*
+    | LPAREN expr_list COMMA? RPAREN
     | LBRACKET expr_list? RBRACKET
     | LBRACE identifier COLON data_type RBRACE
-    | LBRACE literal COLON literal RBRACE
+    | LBRACE json_pair (COMMA json_pair)* RBRACE
+    | GLOBAL_VARIABLE
     ;
 
 op
@@ -881,6 +881,7 @@ op
     | PERCENT
     | AND
     | OR
+    | NOT_DIST
     ;
 
 function_call
@@ -890,23 +891,21 @@ function_call
     | EXTRACT LPAREN interval FROM expr RPAREN
     | SUBSTRING LPAREN expr FROM expr (FOR expr)? RPAREN
     | TIMESTAMP STRING_LITERAL
-    | TRIM LPAREN (BOTH | LEADING | TRAILING) STRING_LITERAL FROM expr RPAREN
+    | TRIM LPAREN (BOTH | LEADING | TRAILING) expr FROM expr RPAREN
     | name=identifier ((LPAREN expr RPAREN)? LPAREN expr_list? RPAREN) OVER window_expr
-    | name=identifier (LPAREN expr_list? RPAREN) OVER identifier
-    | name=identifier (LPAREN expr_list? RPAREN)? LPAREN DISTINCT? column_arg_list? RPAREN
+    | name=identifier (LPAREN expr_list? RPAREN)? LPAREN DISTINCT? arg_list? RPAREN
     ;
 
-column_arg_list
-    : column_arg_expr (COMMA column_arg_expr)*
+arg_list
+    : arg_expr (COMMA arg_expr)*
     ;
 
-column_arg_expr
-    : column_lambda_expr
-    | select_stmt_no_parens
+arg_expr
+    : select_stmt_no_parens
     | expr
     ;
 
-column_lambda_expr
+lambda_expr
     : function_arguments ARROW expr
     ;
 
@@ -918,6 +917,11 @@ function_arguments
 
 qualified_name
     : identifier (DOT identifier (DOT identifier)?)? uuid_clause?
+    ;
+
+qualified_name_or_asterisk
+    : qualified_name
+    | (qualified_name DOT)? ASTERISK
     ;
 
 // Tables
@@ -943,16 +947,11 @@ table_arg_expr
     | literal
     ;
 
-// Basics
-
-floating_literal
-    : FLOATING_LITERAL
-    | DOT (DECIMAL_LITERAL | OCTAL_LITERAL)
-    | DECIMAL_LITERAL DOT (DECIMAL_LITERAL | OCTAL_LITERAL)?  // can't move this to the lexer or it will break nested tuple access: t.1.2
-    ;
-
 number_literal
-    : floating_literal | OCTAL_LITERAL | DECIMAL_LITERAL | HEXADECIMAL_LITERAL | INF | NAN
+    : FLOATING_LITERAL
+    | NUMBER
+    | INF
+    | NAN
     ;
 
 signed_number_literal
@@ -967,12 +966,23 @@ sign
 literal
     : number_literal
     | STRING_LITERAL
-    // | BeginDollarStringConstant Text_between_Dollar* EndDollarStringConstant
+    // | DOLLAR_LITERAL
     | NULL
+    | BINARY_LITERAL
     ;
 
 interval
-    : SECOND | MINUTE | HOUR | DAY | WEEK | MONTH | QUARTER | YEAR
+    : NANOSECOND
+    | MICROSECOND
+    | MILLISECOND
+    | SECOND
+    | MINUTE
+    | HOUR
+    | DAY
+    | WEEK
+    | MONTH
+    | QUARTER
+    | YEAR
     ;
 
 keyword
@@ -1053,6 +1063,7 @@ keyword
     | DISK
     // | DISTINCT
     | DISTRIBUTED
+    | DIV
     | DOUBLE
     | DROP
     | ELSE
@@ -1063,6 +1074,7 @@ keyword
     | ENGINES
     | ENUM
     | EPHEMERAL
+    | ESTIMATE
     | EVENTS
     | EXCEPT
     | EXISTS
@@ -1104,7 +1116,6 @@ keyword
     | INDEX
     | INDEXES
     | INDICES
-    | INF
     | INJECTIVE
     | INNER
     | INSERT
@@ -1112,6 +1123,7 @@ keyword
     | INT_TYPE
     | INTEGER
     | INTERPOLATE
+    | INTERSECT
     | INTERVAL
     | INTERVAL_TYPE
     | INTO
@@ -1148,14 +1160,17 @@ keyword
     | MEDIUMINT
     | MEDIUMTEXT
     | MERGES
+    | MICROSECOND
+    | MILLISECOND
     | MIN
+    | MOD
     | MODIFY
     | MOVE
     | MULTI_POLYGON
     | MUTATION
     | NAME
     | NAMED
-    | NAN
+    | NANOSECOND
     | NATIONAL
     | NCHAR
     | NESTED
@@ -1181,8 +1196,12 @@ keyword
     | OVERRIDE
     | PART
     | PARTITION
+    | PASTE
     | PERIODIC
+    | PERMANENTLY
     | PERMISSIVE
+    | PIPELINE
+    | PLAN
     | POINT
     | POLICIES
     | POLICY
@@ -1261,6 +1280,7 @@ keyword
     | TOTALS
     | TRAILING
     | TRANSACTION
+    | TREE
     | TRIM
     | TRUNCATE
     | TTL
@@ -1297,6 +1317,8 @@ keyword_for_alias
     | SELECT
     | DATE
     | QUERY
+    | INF
+    | NAN
     ;
 
 alias

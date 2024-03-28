@@ -18,7 +18,6 @@ package ru.taximaxim.codekeeper.core.parsers.antlr.chexpr;
 import java.util.Collections;
 import java.util.List;
 
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.CtesContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Select_primaryContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Select_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Select_stmt_no_parensContext;
@@ -46,11 +45,6 @@ public class ChSelect extends ChAbstractExprWithNmspc<Select_stmtContext> {
     }
 
     public List<String> analyze(ChSelectStmt select) {
-        CtesContext with = select.withExpression();
-        if (with != null) {
-            analyzeCte(with);
-        }
-
         return selectOps(select.selectOps());
     }
 
@@ -61,7 +55,7 @@ public class ChSelect extends ChAbstractExprWithNmspc<Select_stmtContext> {
 
         if (selectOps.leftParen() != null && selectOps.rightParen() != null && selectStmt != null) {
             ret = analyze(selectStmt);
-        } else if (selectOps.union() != null) {
+        } else if (selectOps.intersect() != null || selectOps.union() != null || selectOps.except() != null) {
             // analyze each in a separate scope
             // use column names from the first one
             ret = new ChSelect(this).selectOps(selectOps.selectOps(0));
@@ -75,6 +69,11 @@ public class ChSelect extends ChAbstractExprWithNmspc<Select_stmtContext> {
     }
 
     private List<String> select(Select_primaryContext query) {
+        var with = query.with_clause();
+        if (with != null) {
+            analyzeCte(with);
+        }
+
         // TODO add later
         return Collections.emptyList();
     }

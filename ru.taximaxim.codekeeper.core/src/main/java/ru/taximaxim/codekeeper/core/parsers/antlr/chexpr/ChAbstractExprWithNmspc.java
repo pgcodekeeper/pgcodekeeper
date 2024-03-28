@@ -23,9 +23,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.CtesContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Dml_stmtContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Named_queryContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.With_clauseContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.With_queryContext;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
 
@@ -99,15 +99,19 @@ public abstract class ChAbstractExprWithNmspc<T> extends ChAbstractExpr {
         return found ? new SimpleEntry<>(name, dereferenced) : null;
     }
 
-    protected void analyzeCte(CtesContext with) {
-        for (Named_queryContext withQuery : with.named_query()) {
+    protected void analyzeCte(With_clauseContext with) {
+        for (With_queryContext withQuery : with.with_query()) {
             String withName = withQuery.name.getText();
-
-            Dml_stmtContext data = withQuery.dml_stmt();
-            var select = data.select_stmt();
-            // TODO add other later
-            if (select != null) {
-                new ChSelect(this).analyze(select);
+            var expr = withQuery.expr();
+            if (expr != null) {
+                new ChValueExpr(this).analyze(expr);
+            } else {
+                Dml_stmtContext data = withQuery.dml_stmt();
+                var select = data.select_stmt();
+                // TODO add other later
+                if (select != null) {
+                    new ChSelect(this).analyze(select);
+                }
             }
 
             if (!cte.add(withName)) {

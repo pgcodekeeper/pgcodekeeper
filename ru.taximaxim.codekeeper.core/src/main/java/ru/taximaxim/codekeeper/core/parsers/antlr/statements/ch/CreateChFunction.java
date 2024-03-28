@@ -50,10 +50,10 @@ public class CreateChFunction extends ChParserAbstract {
     }
 
     public void parseObject(ChFunction function) {
-        var bodyCtx = ctx.column_lambda_expr().expr();
+        var bodyCtx = ctx.lambda_expr().expr();
         function.setBody(getFullCtxText(bodyCtx));
 
-        parseArgs(function, ctx.column_lambda_expr().function_arguments());
+        parseArgs(function, ctx.lambda_expr().function_arguments());
 
         db.addAnalysisLauncher(new ChFuncAnalysisLauncher(function, bodyCtx, fileName));
     }

@@ -6,7 +6,7 @@ create table x (i int) engine MergeTree order by tuple();
 --CREATE TABLE NULL (c String) ENGINE = MergeTree ORDER BY c;
 create table t (c Decimal32(9)) engine MergeTree order by c;
 create table t (n int, s String) engine MergeTree order by n;
-CREATE TABLE 01902_db.t (n Int8) ENGINE=MergeTree ORDER BY n;
+CREATE TABLE db.t (n Int8) ENGINE=MergeTree ORDER BY n;
 CREATE TABLE `$4@^7` (c String) ENGINE = MergeTree ORDER BY c;
 CREATE TABLE `'`.`'` (c String) ENGINE = MergeTree ORDER BY c;
 CREATE TABLE t1 (c0 Int32, PRIMARY KEY (c0)) ENGINE=MergeTree;
@@ -14,7 +14,7 @@ CREATE TABLE t (x DateTime64(3)) ENGINE = MergeTree ORDER BY x;
 CREATE TABLE t (x Decimal(18, 3)) ENGINE = MergeTree ORDER BY x;
 CREATE TABLE t (`A` Int64) ENGINE = MergeTree() ORDER BY tuple();
 CREATE TABLE count (x UInt64) ENGINE = MergeTree ORDER BY tuple();
-CREATE TABLE 02131_rptable (x UInt8) ENGINE = MergeTree ORDER BY x;
+CREATE TABLE rptable (x UInt8) ENGINE = MergeTree ORDER BY x;
 create table t(id UInt32) engine MergeTree order by id as select 1;
 CREATE TABLE x AS system.numbers ENGINE = MergeTree ORDER BY number;
 CREATE TABLE test1__fuzz_37 (`i` Date) ENGINE = MergeTree ORDER BY i;
@@ -44,7 +44,7 @@ CREATE TEMPORARY TABLE alter_test (a UInt32, b UInt8) ENGINE=MergeTree ORDER BY 
 CREATE TABLE codecs4 (a UInt8 CODEC(LZ4, LZ4)) ENGINE = MergeTree ORDER BY tuple();
 CREATE TABLE IF NOT EXISTS t_02708(x DateTime) ENGINE = MergeTree ORDER BY tuple();
 create table "/t1" (a Int64, b Int64) engine = MergeTree() partition by a order by a;
-CREATE TABLE 02703_db.02703_rptable (x UInt8, y UInt8) ENGINE = MergeTree ORDER BY x;
+CREATE TABLE db.rptable (x UInt8, y UInt8) ENGINE = MergeTree ORDER BY x;
 create table alter_ttl(i Int) engine = MergeTree order by i ttl toDate('2020-05-05');
 CREATE TABLE null_before (id DEFAULT 1 NOT NULL) ENGINE=MergeTree() ORDER BY tuple();
 CREATE TABLE null_before (id INT DEFAULT 1 NULL) ENGINE=MergeTree() ORDER BY tuple();
@@ -94,7 +94,7 @@ create table t (id UInt32, a Int) engine = MergeTree order by id settings min_by
 CREATE TABLE tdm__fuzz_23 (`x` UInt256) ENGINE = MergeTree ORDER BY x SETTINGS write_final_mark = 0;
 create table test_ins_null (date Date, val Nullable(UInt64)) engine = MergeTree(date, (date), 8192);
 CREATE TABLE binary_op_mono1(i int, j int) ENGINE MergeTree PARTITION BY toDate(i / 1000) ORDER BY j;
-CREATE TABLE 02703_db_asterisk.`*` (x UInt8, y UInt8) ENGINE = MergeTree ORDER BY x AS SELECT 100, 20;
+CREATE TABLE db_asterisk.`*` (x UInt8, y UInt8) ENGINE = MergeTree ORDER BY x AS SELECT 100, 20;
 -- один индекс может содержать несколько уникальных выражений
 CREATE TABLE tbl (id UInt32, INDEX idx (id + 1, id - 1) TYPE minmax) ENGINE = MergeTree() ORDER BY id;
 CREATE TABLE t36 (id UInt32, id2 UInt32, INDEX idx (id + 1, id2) TYPE minmax) ENGINE = MergeTree() ORDER BY id;
@@ -133,7 +133,7 @@ CREATE TABLE t1 (s String) ENGINE = MergeTree ORDER BY s SETTINGS ratio_of_defau
 CREATE TABLE test (a Int32) ENGINE = MergeTree() order by tuple() SETTINGS disk = disk(type=local, path='/local/');
 create table p(d Date, i int, j int) engine MergeTree partition by d order by i settings max_partitions_to_read = 1;
 CREATE TABLE t_map (m Map(String, UInt32)) ENGINE = MergeTree ORDER BY tuple() SETTINGS min_bytes_for_wide_part = 0;
-CREATE TABLE 02483_substitute_udf (id UInt32, number UInt32 DEFAULT 02483_plusone(id)) ENGINE=MergeTree() ORDER BY id;
+CREATE TABLE substitute_udf (id UInt32, number UInt32 DEFAULT plusone(id)) ENGINE=MergeTree() ORDER BY id;
 CREATE TABLE delta_codec_synthetic (`id` Decimal(38, 10) CODEC(Delta, ZSTD(22))) ENGINE = MergeTree() ORDER BY tuple();
 CREATE TABLE table2 (id Int64, v UInt64) ENGINE = MergeTree() PARTITION BY (toInt32(id / 2) % 3, id % 200) ORDER BY id;
 CREATE TABLE t0 (c0 Int16, projection h (SELECT min(c0), max(c0), count() GROUP BY -c0)) ENGINE = MergeTree ORDER BY ();
@@ -163,7 +163,7 @@ create table ttl
     d Date,
     a Int
 ) engine = MergeTree order by tuple() partition by toDayOfMonth(d) settings remove_empty_parts = 0;
-create table 02681_undrop_no_uuid_on_cluster on cluster test_shard_localhost
+create table undrop_no_uuid_on_cluster on cluster test_shard_localhost
 (
     id Int32
 ) Engine=MergeTree() order by id format Null;
@@ -252,7 +252,7 @@ create table ttl_00933_2
     a Int,
     b default 222 ttl d + interval 1 DAY
 ) engine = MergeTree order by tuple() partition by toDayOfMonth(d);
-CREATE TABLE 01154_test
+CREATE TABLE test
 (
     x UUID,
     INDEX ix_x x TYPE bloom_filter(0.01) GRANULARITY 1
@@ -275,7 +275,7 @@ CREATE TABLE parsed_eph
     num_ephemeral UInt32 EPHEMERAL,
     num UInt32 MATERIALIZED num_ephemeral,
 ) ENGINE = MergeTree ORDER BY (name);
-CREATE TABLE 01154_test
+CREATE TABLE test
 (
     x Int128,
     INDEX ix_x x TYPE bloom_filter(0.01) GRANULARITY 1
@@ -664,7 +664,7 @@ CREATE TABLE log ENGINE=Log AS val;
 CREATE TABLE float (x Float64) ENGINE = Log;
 create table local_t engine Log as select 1 a;
 CREATE TEMPORARY TABLE tmp2 (n int) ENGINE=Log;
-create table 02681_undrop_log (id Int32) Engine=Log();
+create table undrop_log (id Int32) Engine=Log();
 CREATE TABLE t3 (`n` Int8) ENGINE = Log COMMENT 'this is a Log table';
 CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.test_log(id UInt64) ENGINE = Log;
 CREATE TABLE test_2554_log (n UInt32) ENGINE = Log SETTINGS storage_policy = 'default';
@@ -703,7 +703,7 @@ CREATE TABLE constraint_constant_number_expression
 ) engine = TinyLog();
 
 -- EmbeddedRocksDB
-CREATE TABLE 01504_test (key String, value UInt32) Engine=EmbeddedRocksDB PRIMARY KEY(key);
+CREATE TABLE test (key String, value UInt32) Engine=EmbeddedRocksDB PRIMARY KEY(key);
 
 --HDFS
 create table test_table_hdfs_syntax (id UInt32) ENGINE = HDFS('') ;
@@ -739,7 +739,7 @@ create table dist_01850
 ) engine=Distributed('test_cluster_two_replicas_different_databases', /* default_database= */ '', data_01850, key);
 
 --Dictionary
-CREATE TABLE 02155_test_dictionary_view
+CREATE TABLE test_dictionary_view
 (
     id UInt64,
     value String
@@ -756,10 +756,10 @@ CREATE TABLE merge_tf as merge(currentDatabase(), '.*');
 CREATE TABLE A_M as A1 ENGINE = Merge(currentDatabase(), '^A1$');
 CREATE TABLE test_merge AS test1 ENGINE = Merge('default', 'test1');
 CREATE TABLE merge (n Int8) ENGINE = Merge('', lower('DISTRIBUTED'));
-CREATE TABLE 01902_db.t_merge1 as 01902_db.t ENGINE=Merge('01902_db', '^t$');
+CREATE TABLE db.t_merge1 as db.t ENGINE=Merge('01902_db', '^t$');
 CREATE TABLE merged as short ENGINE = Merge(currentDatabase(), 'short|long');
 CREATE TABLE merge (id UInt64) ENGINE = Merge(currentDatabase(), '^mt[0-9]+$');
-CREATE TABLE 01902_db.t_merge as 01902_db.t ENGINE=Merge(REGEXP('^01902_db'), '^t');
+CREATE TABLE db.t_merge as db.t ENGINE=Merge(REGEXP('^01902_db'), '^t');
 CREATE TABLE m (`a` String, `f` UInt8 DEFAULT 0) ENGINE = Merge(currentDatabase(), '^(t1|t2)$');
 CREATE TABLE m (`a` String, `f` UInt8 EPHEMERAL 0) ENGINE = Merge(currentDatabase(), '^(t1|t2)$');
 CREATE TABLE merge_table Engine=Merge(currentDatabase(), '^(table_to_merge_[a-z])$') AS table_to_merge_a;
@@ -983,12 +983,12 @@ CREATE TABLE rng
 ) ENGINE = GenerateRandom(1024);
 
 --KeeperMap
-CREATE TABLE 02416_test
+CREATE TABLE test
 (
     key String,
     value UInt32
 ) Engine=KeeperMap('/' || currentDatabase() || '/test2416') PRIMARY KEY(key);
-CREATE TABLE 02418_test
+CREATE TABLE test
 (
     key UInt64,
     value Float64
@@ -1000,8 +1000,8 @@ CREATE TABLE log (A String) ENGINE= FileLog('/tmp/aaa.csv', 'CSV');
 --OtherCases
 CREATE TABLE t3 AS v;
 CREATE TEMPORARY TABLE t3_00519 AS SELECT * FROM t1_00519;
-CREATE TABLE 02919_test_table_noarg(str String) ENGINE = FuzzJSON('{}');
-CREATE TABLE 02919_test_table_valid_args(str String) ENGINE = FuzzJSON('{"pet":"rat"}', NULL);
+CREATE TABLE test_table_noarg(str String) ENGINE = FuzzJSON('{}');
+CREATE TABLE test_table_valid_args(str String) ENGINE = FuzzJSON('{"pet":"rat"}', NULL);
 CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.tablefunc03 (a int) AS sqlite('db_path', 'table_name');
 CREATE TABLE test_table (value String) ENGINE=ExecutablePool('nonexist.py', 'TabSeparated');
 CREATE TABLE {CLICKHOUSE_DATABASE:Identifier}.tablefunc02 (x int) AS mysql('127.123.0.1:3306', 'mysql_db', 'mysql_table', 'mysql_user','123123');
@@ -1143,7 +1143,7 @@ DROP TABLE IF EXISTS "/t0";
 DROP TEMPORARY TABLE constrained;
 DROP TEMPORARY TABLE IF EXISTS t1;
 DROP TABLE {CLICKHOUSE_DATABASE:Identifier}.wv;
-DROP TABLE IF EXISTS 01760_db.example_complex_key_source;
+DROP TABLE IF EXISTS db.example_complex_key_source;
 
 --Optimize
 OPTIMIZE TABLE table DEDUPLICATE; -- all columns

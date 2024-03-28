@@ -107,7 +107,7 @@ public class CreateChView extends ChParserAbstract {
         if (liveViewStmtCtx.REFRESH() != null) {
             view.setWithRefresh(true);
 
-            var period = liveViewStmtCtx.DECIMAL_LITERAL();
+            var period = liveViewStmtCtx.NUMBER();
             if (period != null) {
                 view.setRefreshPeriod(Integer.parseInt(period.getText()));
             }

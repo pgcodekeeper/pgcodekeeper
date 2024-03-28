@@ -27,6 +27,10 @@ import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
 
 public class ChValueExpr extends ChAbstractExpr {
 
+    protected ChValueExpr(ChAbstractExpr parent) {
+        super(parent);
+    }
+
     public ChValueExpr(MetaContainer meta) {
         super(meta);
     }
