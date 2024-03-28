@@ -19,6 +19,7 @@ import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
+import ru.taximaxim.codekeeper.core.parsers.antlr.chexpr.ChValueExpr;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.ExprContext;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgStatementWithSearchPath;
@@ -32,7 +33,7 @@ public class ChExpressionAnalysisLauncher extends AbstractAnalysisLauncher {
 
     @Override
     protected Set<PgObjLocation> analyze(ParserRuleContext ctx, MetaContainer meta) {
-        // TODO Auto-generated method stub
-        return null;
+        var expr = new ChValueExpr(meta);
+        return analyze((ExprContext) ctx, expr);
     }
 }
