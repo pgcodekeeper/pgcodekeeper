@@ -30,9 +30,7 @@ import ru.taximaxim.codekeeper.core.schema.PgStatement;
 public class ChColumn extends AbstractColumn {
 
     private String defaultType;
-    // it can be use only with MergeTree engine family
     private String ttl;
-    // probably order matters
     private final List<String> codecs = new ArrayList<>();
     private boolean isAutoIncremental;
 
@@ -79,34 +77,14 @@ public class ChColumn extends AbstractColumn {
     public String getFullDefinition() {
         var sb = new StringBuilder();
         sb.append(ChDiffUtils.quoteName(name));
-        /*
-         * logic with implement the part of syntax sugar
-         *
-        if (getNullValue()) {
-            if (getType() != null) {
-                sb.append(" Nullable(").append(getType()).append(")");
-            } else if (getDefaultValue() != null) {
-                sb.append(" NULL");
-            }
-        } else if (getType() != null) {
-            sb.append(' ').append(getType());
-        }
-         */
 
-        // more simple and rude logic
         if (getType() != null) {
             sb.append(' ').append(getType());
             if (!getNullValue()) {
                 sb.append(" NOT NULL");
             }
         }
-
-        // DB return col_name Nullable(type)....
-
         appendColumnOptions(sb);
-
-        // don't implement STATISTIC and SETTINGS. maybe not to need
-
         return sb.toString();
     }
 
@@ -159,7 +137,7 @@ public class ChColumn extends AbstractColumn {
         compareTypes(sb, newColumn.getType());
         compareDefaults(sb, newColumn);
         compareCodecs(sb, newColumn.getCodecs());
-        compareTtl(sb, newColumn.getTtl());
+        compareTtl(sb, newColumn.getTtl(), newColumn.getType());
         compareComment(sb, newColumn.getComment());
 
         return sb.length() > startLength;
@@ -190,10 +168,15 @@ public class ChColumn extends AbstractColumn {
             return;
         }
         appendAlterColumn(sb, true);
-        if (newColumn.getDefaultType() == null) {
-            sb.append(" REMOVE ").append(defaultType);
-        } else {
+        if (newColumn.getDefaultType() != null) {
             sb.append(' ').append(newColumn.getDefaultType()).append(' ').append(newColumn.getDefaultValue());
+        } else if ("EPHEMERAL".equals(defaultType)) {
+            // because we can't drop EPHEMERAL default type
+            sb.append(" DEFAULT ").append("0").append(getSeparator());
+            appendAlterColumn(sb, true);
+            sb.append(" REMOVE").append(" DEFAULT ");
+        } else {
+            sb.append(" REMOVE ").append(defaultType);
         }
         sb.append(getSeparator());
     }
@@ -216,7 +199,7 @@ public class ChColumn extends AbstractColumn {
         sb.append(getSeparator());
     }
 
-    private void compareTtl(StringBuilder sb, String newTtl) {
+    private void compareTtl(StringBuilder sb, String newTtl, String newType) {
         if (Objects.equals(ttl, newTtl)) {
             return;
         }
@@ -224,7 +207,7 @@ public class ChColumn extends AbstractColumn {
         if (newTtl == null) {
             sb.append(" REMOVE TTL");
         } else {
-            sb.append(" TTL ").append(newTtl);
+            sb.append(' ').append(newType).append(" TTL ").append(newTtl);
         }
         sb.append(getSeparator());
     }
@@ -251,6 +234,19 @@ public class ChColumn extends AbstractColumn {
     }
 
     @Override
+    public DatabaseType getDbType() {
+        return DatabaseType.CH;
+    }
+
+    @Override
+    public void computeHash(Hasher hasher) {
+        super.computeHash(hasher);
+        hasher.put(defaultType);
+        hasher.put(ttl);
+        hasher.put(codecs);
+    }
+
+    @Override
     public boolean compare(PgStatement obj) {
         if (this == obj) {
             return true;
@@ -266,25 +262,12 @@ public class ChColumn extends AbstractColumn {
     }
 
     @Override
-    public void computeHash(Hasher hasher) {
-        super.computeHash(hasher);
-        hasher.put(defaultType);
-        hasher.put(ttl);
-        hasher.put(codecs);
-    }
-
-    @Override
     protected AbstractColumn getColumnCopy() {
         var column = new ChColumn(name);
         column.setDefaultType(defaultType);
         column.setTtl(ttl);
         column.codecs.addAll(codecs);
         return column;
-    }
-
-    @Override
-    public DatabaseType getDbType() {
-        return DatabaseType.CH;
     }
 
     @Override

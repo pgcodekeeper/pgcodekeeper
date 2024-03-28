@@ -40,3 +40,18 @@ CREATE TABLE default.t4
 ENGINE = MergeTree
 PRIMARY KEY (col1, col2)
 ORDER BY (col1, col2);
+
+CREATE TABLE default.t5 (
+	`col1` Int64 NOT NULL,
+	INDEX idx_t10_1 col1 TYPE minmax,
+	INDEX idx_t10_2 col1 TYPE minmax
+)
+ENGINE = MergeTree
+ORDER BY col1
+SETTINGS index_granularity = 8192;
+
+ALTER TABLE default.t5 ADD INDEX idx_t10_3 col1 TYPE minmax FIRST;
+
+ALTER TABLE default.t5 ADD INDEX idx_t10_4 col1 TYPE minmax AFTER idx_t10_1;
+
+ALTER TABLE default.t5 ADD INDEX idx_t10_5 col1 TYPE minmax;

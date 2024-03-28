@@ -16,14 +16,12 @@
 package ru.taximaxim.codekeeper.core.schema.ch;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.hashers.IHashable;
@@ -44,10 +42,6 @@ public final class ChEngine implements Serializable, IHashable {
     private String primaryKey;
     private String orderBy;
     private String sampleBy;
-    // TODO with action, where or group by, maybe better someway split it and save
-    // where and group by part separate. maybe Map<String, String> with keys: name,
-    // expr, where, group by and etc. but we can have more then one expr with all
-    // options. append counter for keys?
     private String ttl;
     private Map<String, String> options = new HashMap<>();
 
@@ -107,13 +101,7 @@ public final class ChEngine implements Serializable, IHashable {
         options.put(option, value);
     }
 
-
-    public Set<String> getOptions() {
-        return Collections.unmodifiableSet(options.keySet());
-    }
-
     public void appendCreationSQL(StringBuilder sb) {
-        // maybe better will be when engineBody be between parens
         sb.append("\nENGINE = ").append(name);
         if (body != null) {
             sb.append(" (").append(body).append(')');
@@ -134,48 +122,37 @@ public final class ChEngine implements Serializable, IHashable {
             sb.append("\nTTL ").append(ttl);
         }
 
-        // it's must be every time? is important order by?
         if (!options.isEmpty()) {
             sb.append("\nSETTINGS ");
-            // in DB stored not like Map. settings can be duplicate. example in table `primary`
             for (var option : options.entrySet()) {
-                // in db stored in one line
                 sb.append(option.getKey()).append(" = ").append(option.getValue()).append(",\n\t");
             }
             sb.setLength(sb.length() - 3);
         }
     }
 
-    public static void appendAlterSQL(StringBuilder sb, ChEngine oldEngine, ChEngine newEngine,
-            AtomicBoolean isNeedDepcies, String prefix) {
-        compareSampleBy(sb, oldEngine.getSampleBy(), newEngine.getSampleBy(), isNeedDepcies, prefix);
-        if (isNeedDepcies.get()) {
-            return;
-        }
-        compareTtl(sb, oldEngine.getTtl(), newEngine.getTtl(), prefix);
-        compareOptions(sb, oldEngine.options, newEngine.options, prefix);
+    public void appendAlterSQL(StringBuilder sb, ChEngine newEngine, String prefix) {
+        compareSampleBy(sb, newEngine.sampleBy, prefix);
+        compareTtl(sb, newEngine.ttl, prefix);
+        compareOptions(sb, newEngine.options, prefix);
     }
 
-    private static void compareSampleBy(StringBuilder sb, String oldSampleBy, String newSampleBy,
-            AtomicBoolean isNeedDepcies, String prefix) {
-        if (Objects.equals(oldSampleBy, newSampleBy)) {
+    private void compareSampleBy(StringBuilder sb, String newSampleBy, String prefix) {
+        if (Objects.equals(sampleBy, newSampleBy)) {
             return;
         }
         if (newSampleBy == null) {
             sb.append(prefix);
             sb.append("\n\tREMOVE SAMPLE BY");
-        } else if (oldSampleBy == null) {
+        } else {
             sb.append(prefix);
             sb.append("\n\tMODIFY SAMPLE BY ").append(newSampleBy);
-        } else {
-            isNeedDepcies.set(true);
-            return;
         }
         sb.append(';');
     }
 
-    private static void compareTtl(StringBuilder sb, String oldTtl, String newTtl, String prefix) {
-        if (Objects.equals(oldTtl, newTtl)) {
+    private void compareTtl(StringBuilder sb, String newTtl, String prefix) {
+        if (Objects.equals(ttl, newTtl)) {
             return;
         }
         sb.append(prefix);
@@ -187,9 +164,9 @@ public final class ChEngine implements Serializable, IHashable {
         sb.append(';');
     }
 
-    private static void compareOptions(StringBuilder sb, Map<String, String> oldOptions, Map<String, String> newOptions,
+    private void compareOptions(StringBuilder sb, Map<String, String> newOptions,
             String prefix) {
-        if (oldOptions.equals(newOptions)) {
+        if (options.equals(newOptions)) {
             return;
         }
         
@@ -197,7 +174,7 @@ public final class ChEngine implements Serializable, IHashable {
         Map<String, String> modifyOptions = new HashMap<>();
         
         String newValue;
-        for (String option : oldOptions.keySet()) {
+        for (String option : options.keySet()) {
             // added to reset if in new condition havn't this option
             if (!newOptions.containsKey(option)) {
                 resetOptions.add(option);
@@ -206,14 +183,14 @@ public final class ChEngine implements Serializable, IHashable {
 
             // add to modify if options have different values
             newValue = newOptions.get(option);
-            if (!Objects.equals(newValue, oldOptions.get(option))) {
+            if (!Objects.equals(newValue, options.get(option))) {
                 modifyOptions.put(option, newValue);
             }
         }
 
         // add to modify if old condition havn't this option
         for (String key : newOptions.keySet()) {
-            if (!oldOptions.containsKey(key)) {
+            if (!options.containsKey(key)) {
                 modifyOptions.put(key, newOptions.get(key));
             }
         }
@@ -221,7 +198,7 @@ public final class ChEngine implements Serializable, IHashable {
         appendAlterOptions(sb, resetOptions, modifyOptions, prefix);
     }
 
-    private static void appendAlterOptions(StringBuilder sb, Set<String> resetOptions,
+    private void appendAlterOptions(StringBuilder sb, Set<String> resetOptions,
             Map<String, String> modifyOptions, String prefix) {
         if (!resetOptions.isEmpty()) {
             sb.append(prefix)
@@ -246,34 +223,12 @@ public final class ChEngine implements Serializable, IHashable {
         sb.append(';');
     }
     
-    @Override
-    public boolean equals(Object obj) {
-        boolean eq = false;
-
-        if (this == obj) {
-            eq = true;
-        } else if (obj instanceof ChEngine) {
-            final ChEngine engine = (ChEngine) obj;
-            eq = Objects.equals(name, engine.getName())
-                    && Objects.equals(body, engine.body)
-                    && Objects.equals(partitionBy, engine.getPartitionBy())
-                    && Objects.equals(primaryKey, engine.getPrimaryKey())
-                    && Objects.equals(orderBy, engine.getOrderBy())
-                    && Objects.equals(sampleBy, engine.getSampleBy())
-                    && Objects.equals(ttl, engine.getTtl())
-                    && Objects.equals(options, engine.options);
-        }
-
-        return eq;
+    public boolean containsOption(String Key) {
+        return options.containsKey(Key);
     }
 
-    public static boolean compareUnalterable(ChEngine oldEngine, ChEngine newEngine) {
-        return !Objects.equals(oldEngine.getPrimaryKey(), newEngine.getPrimaryKey())
-                || !Objects.equals(oldEngine.getOrderBy(), newEngine.getOrderBy())
-                || !Objects.equals(oldEngine.getName(), newEngine.getName())
-                || !Objects.equals(oldEngine.body, newEngine.body)
-                // TODO remove it when it will be done
-                || !Objects.equals(oldEngine.getPartitionBy(), newEngine.getPartitionBy());
+    public boolean isModifybleSampleBy(String newSampleBy) {
+        return !Objects.equals(sampleBy, newSampleBy) && (newSampleBy == null || sampleBy == null);
     }
 
     @Override
@@ -286,25 +241,37 @@ public final class ChEngine implements Serializable, IHashable {
     @Override
     public void computeHash(Hasher hasher) {
         hasher.put(name);
-        hasher.put(body);
-        hasher.put(partitionBy);
         hasher.put(primaryKey);
         hasher.put(orderBy);
+        hasher.put(body);
+        hasher.put(partitionBy);
         hasher.put(sampleBy);
         hasher.put(ttl);
         hasher.put(options);
     }
 
-    public static boolean isAlterable(ChEngine engine, ChEngine newEngine) {
-        if (Objects.equals(engine, newEngine)) {
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
             return true;
         }
-        if (engine == null || newEngine == null) {
+        
+        if (!(obj instanceof ChEngine)) {
             return false;
         }
-
-        return Objects.equals(engine.name, newEngine.name)
-                && Objects.equals(engine.body, newEngine.body);
+        
+        final ChEngine engine = (ChEngine) obj;
+        return compareUnalterable(engine)
+                && Objects.equals(sampleBy, engine.getSampleBy())
+                && Objects.equals(ttl, engine.getTtl())
+                && Objects.equals(options, engine.options);
     }
 
+    public boolean compareUnalterable(ChEngine newEngine) {
+        return Objects.equals(name, newEngine.getName())
+                && Objects.equals(primaryKey, newEngine.getPrimaryKey())
+                && Objects.equals(orderBy, newEngine.getOrderBy())
+                && Objects.equals(body, newEngine.body)
+                && Objects.equals(partitionBy, newEngine.getPartitionBy());
+    }
 }

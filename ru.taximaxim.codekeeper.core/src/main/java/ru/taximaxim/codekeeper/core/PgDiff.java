@@ -439,7 +439,6 @@ public class PgDiff {
         depRes.removeExtraActions();
     }
 
-
     /**
      * После реализации колонок как подэлементов таблицы выпилить метод!
      */

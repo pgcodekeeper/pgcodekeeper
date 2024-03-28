@@ -49,6 +49,10 @@ ENGINE = MergeTree
 ORDER BY col1
 SETTINGS index_granularity = 8192;
 
+--------------------------------------------------------------------------
+
+ALTER TABLE default.t4_1 ADD INDEX ind1 col3 TYPE minmax;
+
 -- table with projection
 CREATE TABLE default.t5
 (
@@ -81,11 +85,12 @@ SETTINGS min_bytes_for_wide_part = 123,
 index_granularity = 8192
 COMMENT 'TEST';
 
-CREATE TABLE default.t85
+CREATE TABLE default.t7
 (
     `d` DateTime,
     `key` UInt64,
-    `value` String
+    `value` String,
+    CONSTRAINT c_check CHECK value>0
 )
 ENGINE = MergeTree
 PARTITION BY key
@@ -102,4 +107,6 @@ ENGINE = MergeTree
 ORDER BY col1
 SETTINGS index_granularity = 8192;
 
-ALTER TABLE default.t4_1 ADD INDEX ind1 col3 TYPE minmax;
+---------------------------------------------------------------------------------
+
+ALTER TABLE default.`01154_test` ADD CONSTRAINT c_check_1 CHECK col1>0;

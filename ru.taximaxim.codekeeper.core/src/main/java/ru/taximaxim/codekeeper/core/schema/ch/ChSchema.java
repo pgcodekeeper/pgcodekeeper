@@ -73,10 +73,8 @@ public class ChSchema extends AbstractSchema {
     }
 
     @Override
-    protected AbstractSchema getSchemaCopy() {
-        var schema = new ChSchema(name);
-        schema.setEngine(engine);
-        return schema;
+    public DatabaseType getDbType() {
+        return DatabaseType.CH;
     }
 
     @Override
@@ -99,12 +97,14 @@ public class ChSchema extends AbstractSchema {
     }
 
     @Override
-    public void appendComments(StringBuilder sb) {
-        // no impl
+    protected AbstractSchema getSchemaCopy() {
+        var schema = new ChSchema(name);
+        schema.setEngine(engine);
+        return schema;
     }
 
     @Override
-    public DatabaseType getDbType() {
-        return DatabaseType.CH;
+    public void appendComments(StringBuilder sb) {
+        // no impl
     }
 }

@@ -10,9 +10,12 @@ ENGINE = MergeTree
 ORDER BY col1 
 SETTINGS index_granularity = 8192;
 
+------------------------------------------------------------------------
+
+ALTER TABLE default.t3 ADD CONSTRAINT c_check CHECK col1>0;
+
 CREATE TABLE default.`01154_test`
 (
-
     `col1` Int32
 )
 ENGINE = MergeTree

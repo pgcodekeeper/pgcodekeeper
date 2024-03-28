@@ -24,11 +24,10 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Alter_table
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
-import ru.taximaxim.codekeeper.core.schema.ch.ChIndex;
 
 public class AlterChTable extends ChParserAbstract {
 
-    Alter_table_stmtContext ctx;
+    private final Alter_table_stmtContext ctx;
 
     public AlterChTable(Alter_table_stmtContext ctx, ChDatabase db) {
         super(db);
@@ -40,8 +39,7 @@ public class AlterChTable extends ChParserAbstract {
         var ids = getIdentifiers(ctx.qualified_name());
         var schemaCtx = QNameParser.getSchemaNameCtx(ids);
         var nameCtx = QNameParser.getFirstNameCtx(ids);
-        AbstractSchema schema = getSchemaSafe(ids);
-        AbstractTable table = getSafe(AbstractSchema::getTable, schema, nameCtx);
+        AbstractTable table = getSafe(AbstractSchema::getTable, getSchemaSafe(ids), nameCtx);
         addObjReference(ids, DbObjType.TABLE, ACTION_ALTER);
         for (Alter_table_actionContext alterAction : ctx.alter_table_actions().alter_table_action()) {
             if (alterAction.ADD() == null) {
@@ -55,7 +53,7 @@ public class AlterChTable extends ChParserAbstract {
                 addSafe(table, constr, Arrays.asList(schemaCtx, nameCtx, constraintCtx.identifier()));
             } else if (addAction.INDEX() != null) {
                 var indexCtx = addAction.table_index_def();
-                ChIndex index = getIndex(indexCtx);
+                var index = getIndex(indexCtx);
                 addSafe(table, index, Arrays.asList(schemaCtx, nameCtx, indexCtx.identifier()));
             }
         }

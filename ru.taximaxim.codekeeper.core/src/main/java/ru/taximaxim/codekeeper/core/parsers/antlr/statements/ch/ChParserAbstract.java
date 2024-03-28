@@ -55,10 +55,8 @@ public abstract class ChParserAbstract extends ParserAbstract<ChDatabase> {
         Data_type_exprContext typeExpr = column.data_type_expr();
         if (typeExpr.data_type() != null) {
             col.setType(getFullCtxText(typeExpr.data_type()));
-            if ((typeExpr.not_null() != null && typeExpr.not_null().NOT() != null)
-                    || typeExpr.data_type().NULLABLE() == null) {
-                col.setNullValue(false);
-            }
+            col.setNullValue(!isColumnNotNullable(typeExpr));
+
             var defType = typeExpr.table_column_property_expr();
             if (defType != null) {
                 col.setAutoIncremental(defType.AUTO_INCREMENT() != null);
@@ -110,6 +108,11 @@ public abstract class ChParserAbstract extends ParserAbstract<ChDatabase> {
         return col;
     }
 
+    private boolean isColumnNotNullable(Data_type_exprContext typeExpr) {
+        return (typeExpr.not_null() != null && typeExpr.not_null().NOT() != null)
+                || typeExpr.data_type().NULLABLE() == null;
+    }
+
     protected String getQuery(Subquery_clauseContext vQuery) {
         return getFullCtxText(vQuery);
     }
@@ -120,8 +123,6 @@ public abstract class ChParserAbstract extends ParserAbstract<ChDatabase> {
         }
 
         var engineCtx = engineClause.engine_expr();
-        // TODO maybe it will be better if we create special tokens for all engines
-        // because they are case sensitive but i'm not sure(note by 26.02.2024)
         ChEngine engine = new ChEngine(engineCtx.NULL() != null ? "Null" : getFullCtxText(engineCtx.identifier()));
         if (engineCtx.expr_list() != null) {
             engine.setBody(getFullCtxText(engineCtx.expr_list()));
@@ -129,8 +130,7 @@ public abstract class ChParserAbstract extends ParserAbstract<ChDatabase> {
         for (var option : engineClause.engine_option()) {
             parseEngineOption(engine, option);
         }
-        // TODO check all table engine type to find all default values for each type
-        if (Objects.equals(engine.getName(), "MergeTree") && !engine.getOptions().contains("index_granularity")) {
+        if (Objects.equals(engine.getName(), "MergeTree") && !engine.containsOption("index_granularity")) {
             engine.addOption("index_granularity", "8192");
         }
 
@@ -139,31 +139,31 @@ public abstract class ChParserAbstract extends ParserAbstract<ChDatabase> {
 
     protected void parseEngineOption(ChEngine engine, Engine_optionContext optionCtx) {
         var orderBy = optionCtx.order_by_clause();
-        if (orderBy != null && !orderBy.isEmpty()) {
+        if (orderBy != null) {
             engine.setOrderBy(getFullCtxText(orderBy.order_expr_list()));
             return;
         }
 
         var pk = optionCtx.primary_key_clause();
-        if (pk != null && !pk.isEmpty()) {
+        if (pk != null) {
             engine.setPrimaryKey(getFullCtxText(pk.expr()));
             return;
         }
 
         var partBy = optionCtx.partition_by_clause();
-        if (partBy != null && !partBy.isEmpty()) {
+        if (partBy != null) {
             engine.setPartitionBy(getFullCtxText(partBy.expr()));
             return;
         }
 
         var ttl = optionCtx.ttl_clause();
-        if (ttl != null && !ttl.isEmpty()) {
+        if (ttl != null) {
             engine.setTtl(getFullCtxText(ttl.ttl_expr_list()));
             return;
         }
 
         var settings = optionCtx.settings_clause();
-        if (settings != null && !settings.isEmpty()) {
+        if (settings != null) {
             for (var setting : settings.pairs().pair()) {
                 engine.addOption(setting.identifier().getText(), getFullCtxText(setting.expr()));
             }
@@ -171,7 +171,7 @@ public abstract class ChParserAbstract extends ParserAbstract<ChDatabase> {
         }
 
         var sampleBy = optionCtx.sample_by_clause();
-        if (sampleBy != null && !sampleBy.isEmpty()) {
+        if (sampleBy != null) {
             engine.setSampleBy(getFullCtxText(sampleBy.expr()));
         }
     }

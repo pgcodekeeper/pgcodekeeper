@@ -90,6 +90,7 @@ public class ChRelationsReader extends JdbcReader {
         .column("res.name")
         .column("res.create_table_query AS definition")
         .column("res.engine")
-        .from("system.tables res");
+        .from("system.tables res")
+        .where("notLike(res.name, '.inner_id.%')");
     }
 }

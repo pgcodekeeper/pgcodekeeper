@@ -1,4 +1,5 @@
-CREATE TABLE default.t2(
+CREATE TABLE default.t2
+(
 	`col1` Int64 NOT NULL,
 	`col2` Int64 NOT NULL
 )

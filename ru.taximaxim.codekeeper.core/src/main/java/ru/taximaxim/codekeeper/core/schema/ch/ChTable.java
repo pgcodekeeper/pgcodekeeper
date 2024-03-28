@@ -16,7 +16,6 @@
 package ru.taximaxim.codekeeper.core.schema.ch;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -33,9 +32,7 @@ import ru.taximaxim.codekeeper.core.schema.IOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public class ChTable extends AbstractTable {
-    /**
-     * key - name, value - expression(select_stmt)
-     */
+
     private final Map<String, String> projections = new LinkedHashMap<>();
 
     private ChEngine engine;
@@ -53,27 +50,6 @@ public class ChTable extends AbstractTable {
         return Collections.unmodifiableMap(projections);
     }
 
-    @Override
-    public void compareOptions(IOptionContainer newContainer, StringBuilder sb) {
-        // TODO Auto-generated method stub
-    }
-
-    @Override
-    public String getAlterTable(boolean nextLine, boolean only) {
-        StringBuilder sb = new StringBuilder();
-        if (nextLine) {
-            sb.append("\n\n");
-        }
-        sb.append("ALTER TABLE ");
-        sb.append(getQualifiedName());
-        return sb.toString();
-    }
-
-    @Override
-    protected boolean isNeedRecreate(AbstractTable newTable) {
-        return ChEngine.compareUnalterable(engine, ((ChTable) newTable).getEngine());
-    }
-
     public void setEngine(ChEngine engine) {
         this.engine = engine;
         resetHash();
@@ -89,17 +65,9 @@ public class ChTable extends AbstractTable {
     }
 
     @Override
-    protected AbstractTable getTableCopy() {
-        var table = new ChTable(name);
-        table.projections.putAll(projections);
-        table.setEngine(getEngine());
-        return table;
-    }
-
-    @Override
     public String getCreationSQL() {
         var sb = new StringBuilder();
-        sb.append("CREATE TABLE ").append(getQualifiedName()).append("(");
+        sb.append("CREATE TABLE ").append(getQualifiedName()).append("\n(");
 
         for (AbstractColumn column : columns) {
             sb.append("\n\t").append(column.getFullDefinition()).append(",");
@@ -135,7 +103,7 @@ public class ChTable extends AbstractTable {
         }
 
         comparePojections(sb, newTable.getProjections());
-        ChEngine.appendAlterSQL(sb, engine, newTable.getEngine(), isNeedDepcies, getAlterTable(true, false));
+        engine.appendAlterSQL(sb, newTable.getEngine(), getAlterTable(true, false));
         compareComment(sb, newTable.getComment());
         return sb.length() > startLength;
     }
@@ -145,16 +113,14 @@ public class ChTable extends AbstractTable {
             return;
         }
         Set<String> toDrops = new HashSet<>();
-        Map<String, String> toAdds = new HashMap<>();
-
-        String newValue;
+        Map<String, String> toAdds = new LinkedHashMap<>();
 
         for (String oldKey : projections.keySet()) {
             if (!newProjections.containsKey(oldKey)) {
                 toDrops.add(oldKey);
                 continue;
             }
-            newValue = newProjections.get(oldKey);
+            var newValue = newProjections.get(oldKey);
             if (!Objects.equals(newValue, projections.get(oldKey))) {
                 toDrops.add(oldKey);
                 toAdds.put(oldKey, newValue);
@@ -196,6 +162,36 @@ public class ChTable extends AbstractTable {
     }
 
     @Override
+    public String getAlterTable(boolean nextLine, boolean only) {
+        StringBuilder sb = new StringBuilder();
+        if (nextLine) {
+            sb.append("\n\n");
+        }
+        sb.append("ALTER TABLE ");
+        sb.append(getQualifiedName());
+        return sb.toString();
+    }
+
+    @Override
+    protected boolean isNeedRecreate(AbstractTable newTable) {
+        var newEngine = ((ChTable) newTable).getEngine();
+        return !engine.compareUnalterable(newEngine)
+                && !engine.isModifybleSampleBy(newEngine.getSampleBy());
+    }
+
+    @Override
+    public DatabaseType getDbType() {
+        return DatabaseType.CH;
+    }
+
+    @Override
+    public void computeHash(Hasher hasher) {
+        super.computeHash(hasher);
+        hasher.put(projections);
+        hasher.put(engine);
+    }
+
+    @Override
     public boolean compare(PgStatement obj) {
         if (this == obj) {
             return true;
@@ -210,15 +206,11 @@ public class ChTable extends AbstractTable {
     }
 
     @Override
-    public void computeHash(Hasher hasher) {
-        super.computeHash(hasher);
-        hasher.put(projections);
-        hasher.put(engine);
-    }
-
-    @Override
-    public DatabaseType getDbType() {
-        return DatabaseType.CH;
+    protected AbstractTable getTableCopy() {
+        var table = new ChTable(name);
+        table.projections.putAll(projections);
+        table.setEngine(getEngine());
+        return table;
     }
 
     @Override
@@ -228,6 +220,11 @@ public class ChTable extends AbstractTable {
 
     @Override
     protected void appendCommentSql(StringBuilder sb) {
+        // no impl
+    }
+
+    @Override
+    public void compareOptions(IOptionContainer newContainer, StringBuilder sb) {
         // no impl
     }
 }

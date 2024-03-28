@@ -55,16 +55,9 @@ public class ChConstraint extends AbstractConstraint {
     }
 
     @Override
-    protected AbstractConstraint getConstraintCopy() {
-        var constr = new ChConstraint(name, isAssume);
-        constr.setExpr(expr);
-        return constr;
-    }
-
-    @Override
     public String getCreationSQL() {
         final StringBuilder sb = new StringBuilder();
-        appendAlterTable(sb, true);
+        appendAlterTable(sb, false);
         sb.append(" ADD CONSTRAINT ").append(ChDiffUtils.getQuotedName(name)).append(' ').append(getDefinition())
             .append(getSeparator());
         return sb.toString();
@@ -72,7 +65,7 @@ public class ChConstraint extends AbstractConstraint {
 
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
-        ChConstraint newConstr = (ChConstraint) newCondition;
+        var newConstr = (ChConstraint) newCondition;
         if (!compareUnalterable(newConstr)) {
             isNeedDepcies.set(true);
             return true;
@@ -81,8 +74,32 @@ public class ChConstraint extends AbstractConstraint {
         return false;
     }
 
+    @Override
+    public String getDropSQL(boolean optionExists) {
+        final StringBuilder sb = new StringBuilder();
+        appendAlterTable(sb, false);
+        sb.append("\n\tDROP CONSTRAINT ");
+        if (optionExists) {
+            sb.append("IF EXISTS ");
+        }
+        sb.append(ChDiffUtils.getQuotedName(getName())).append(getSeparator());
+        return sb.toString();
+    }
+
     private boolean compareUnalterable(ChConstraint newConstr) {
         return compare(newConstr);
+    }
+
+    @Override
+    public DatabaseType getDbType() {
+        return DatabaseType.CH;
+    }
+
+    @Override
+    public void computeHash(Hasher hasher) {
+        super.computeHash(hasher);
+        hasher.put(isAssume);
+        hasher.put(expr);
     }
 
     @Override
@@ -100,14 +117,9 @@ public class ChConstraint extends AbstractConstraint {
     }
 
     @Override
-    public void computeHash(Hasher hasher) {
-        super.computeHash(hasher);
-        hasher.put(isAssume);
-        hasher.put(expr);
-    }
-
-    @Override
-    public DatabaseType getDbType() {
-        return DatabaseType.CH;
+    protected AbstractConstraint getConstraintCopy() {
+        var constr = new ChConstraint(name, isAssume);
+        constr.setExpr(expr);
+        return constr;
     }
 }

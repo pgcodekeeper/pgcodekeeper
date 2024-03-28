@@ -239,7 +239,7 @@ create_database_stmt
     ;
 
 create_view_stmt
-    : (ATTACH | CREATE) (create_simple_view_stmt | create_mat_view_stmt | create_live_view_stmt) AS subquery_clause
+    : (ATTACH | CREATE) (create_simple_view_stmt | create_mat_view_stmt | create_live_view_stmt) AS subquery_clause comment_expr?
     ;
 
 create_simple_view_stmt

@@ -187,6 +187,9 @@ public class ChView extends AbstractView {
 
         sb.append("\nAS ");
         sb.append(getQuery());
+        if (getComment() != null) {
+            sb.append("\nCOMMENT ").append(getComment());
+        }
         sb.append(";");
         return sb.toString();
     }
@@ -210,14 +213,14 @@ public class ChView extends AbstractView {
         ChView newView = (ChView) newCondition;
 
         if (getViewType() != newView.getViewType() || isViewModified(newView)
-                || !ChEngine.isAlterable(getEngine(), newView.getEngine())) {
+                || !Objects.equals(engine, newView.getEngine())) {
             isNeedDepcies.set(true);
             return true;
         }
 
-        // TODO fix prefix here or refactor this method late
-        ChEngine.appendAlterSQL(sb, engine, newView.getEngine(), isNeedDepcies, "ALTER SOMETHING");
         compareSqlSecurity(sb, newView);
+        compareSql(sb, newView.getNormalizedQuery());
+        compareComment(sb, newView.getComment());
 
         return sb.length() > startLength;
     }
@@ -245,6 +248,27 @@ public class ChView extends AbstractView {
         sb.append(");");
     }
 
+    private void compareSql(StringBuilder sb, String newNormalizedSql) {
+        if (normalizedQuery.equals(newNormalizedSql)) {
+            return;
+        }
+        sb.append("\n\nALTER TABLE ").append(getQualifiedName()).append("\n\tMODIFY QUERY ").append(newNormalizedSql)
+                .append(getSeparator());
+    }
+
+    private void compareComment(StringBuilder sb, String newComment) {
+        if (Objects.equals(getComment(), newComment)) {
+            return;
+        }
+        sb.append("\n\nALTER TABLE ").append(getQualifiedName()).append("\n\tMODIFY COMMENT ");
+        if (newComment == null) {
+            sb.append("''");
+        } else {
+            sb.append(newComment);
+        }
+        sb.append(getSeparator());
+    }
+
     /**
      * Returns true if either column names or query of the view has been modified.
      *
@@ -255,7 +279,7 @@ public class ChView extends AbstractView {
      */
     private boolean isViewModified(final ChView newView) {
         return !columns.equals(newView.columns)
-                || !getNormalizedQuery().equals(newView.getNormalizedQuery());
+                ||(getViewType() != ChViewType.MATERIALIZED && !getNormalizedQuery().equals(newView.getNormalizedQuery()));
     }
 
     @Override
@@ -280,8 +304,8 @@ public class ChView extends AbstractView {
     public boolean compare(PgStatement obj) {
         if (obj instanceof ChView && super.compare(obj)) {
             ChView view = (ChView) obj;
-            return Objects.equals(normalizedQuery, view.getNormalizedQuery())
-                    && Objects.equals(type, view.type)
+            return Objects.equals(type, view.type)
+                    && Objects.equals(normalizedQuery, view.getNormalizedQuery())
                     && Objects.equals(destination, view.destination)
                     && Objects.equals(isWithRefresh, view.isWithRefresh)
                     && Objects.equals(refreshPeriod, view.refreshPeriod)
@@ -297,15 +321,25 @@ public class ChView extends AbstractView {
     @Override
     protected AbstractView getViewCopy() {
         ChView view = new ChView(name);
-        view.columns.addAll(columns);
-        view.setQuery(getQuery(), getNormalizedQuery());
         view.setType(getViewType());
+        view.setQuery(getQuery(), getNormalizedQuery());
         view.setDestination(getDestination());
         view.setWithRefresh(isWithRefresh());
-        view.setRefreshPeriod(getRefreshPeriod());
         view.setDefiner(getDefiner());
+        view.setRefreshPeriod(getRefreshPeriod());
         view.setSqlSecurity(getSqlSecurity());
+        view.columns.addAll(columns);
         view.setEngine(getEngine());
         return view;
+    }
+
+    @Override
+    public void appendComments(StringBuilder sb) {
+        // no impl
+    }
+
+    @Override
+    protected void appendCommentSql(StringBuilder sb) {
+        // no impl
     }
 }

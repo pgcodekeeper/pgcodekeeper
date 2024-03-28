@@ -79,14 +79,18 @@ public class CreateChView extends ChParserAbstract {
             db.addAnalysisLauncher(new ChViewAnalysisLauncher(view, vQuery, fileName));
         }
 
+        var commentCtx = ctx.comment_expr();
+        if (commentCtx != null) {
+            view.setComment(commentCtx.STRING_LITERAL().getText());
+        }
+
         var simpleViewCtx = ctx.create_simple_view_stmt();
         if (simpleViewCtx != null) {
             parseSimpleView(simpleViewCtx, view);
             return;
         }
-
-        var matViewCtx = ctx.create_mat_view_stmt();
-        if (matViewCtx != null) {
+        Create_mat_view_stmtContext matViewCtx = ctx.create_mat_view_stmt();
+        if ((matViewCtx) != null) {
             parseMatView(matViewCtx, view);
             return;
         }
