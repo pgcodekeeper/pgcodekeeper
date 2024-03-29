@@ -22,10 +22,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Create_table_stmtContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Primary_key_clauseContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Table_column_defContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Table_element_exprContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Table_projection_defContext;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 import ru.taximaxim.codekeeper.core.schema.ch.ChTable;
 
@@ -48,33 +45,44 @@ public class CreateChTable extends ChParserAbstract {
     }
 
     public void parseObject(ChTable table) {
+        table.setEngine(getEnginePart(ctx.table_body_expr().engine_clause()));
         for (Table_element_exprContext elementCtx : ctx.table_body_expr().table_element_expr()) {
             parseTableElement(table, elementCtx);
         }
-        table.setEngine(getEnginePart(ctx.table_body_expr().engine_clause()));
         if (ctx.comment_expr() != null) {
             table.setComment(ctx.comment_expr().STRING_LITERAL().getText());
         }
     }
 
     private void parseTableElement(ChTable table, Table_element_exprContext elementCtx) {
-        Table_column_defContext columnCtx = elementCtx.table_column_def();
-        Primary_key_clauseContext pk;
-        Table_projection_defContext proj;
+        var columnCtx = elementCtx.table_column_def();
         if (columnCtx != null) {
             table.addColumn(getColumn(columnCtx));
-        } else if ((pk = elementCtx.primary_key_clause()) != null) {
-            table.setPkExpr(getFullCtxText(pk.expr()));
-        } else if (elementCtx.table_constraint_def() != null) {
-            table.addChild(getConstraint(elementCtx.table_constraint_def()));
-        } else if (elementCtx.INDEX() != null) {
-            table.addChild(getIndex(elementCtx.table_index_def()));
-        } else if ((proj = elementCtx.table_projection_def()) != null) {
-            table.addProjection(proj.qualified_name().getText(),
-                    "(" + getFullCtxText(proj.select_stmt_no_parens()) + ")");
-        } else {
-            throw new IllegalArgumentException("unsupported Table_element_exprContext\n" + getFullCtxText(elementCtx));
+            return;
         }
+        var pkCtx = elementCtx.primary_key_clause();
+        if (pkCtx != null) {
+            table.setPkExpr(getFullCtxText(pkCtx.expr()));
+            return;
+        }
+        var constrCtx = elementCtx.table_constraint_def();
+        if (constrCtx != null) {
+            table.addChild(getConstraint(elementCtx.table_constraint_def()));
+            return;
+        }
+        var indexCtx = elementCtx.table_index_def();
+        if (indexCtx != null) {
+            table.addChild(getIndex(indexCtx));
+            return;
+        }
+        var projCtx = elementCtx.table_projection_def();
+        if (projCtx != null) {
+            table.addProjection(projCtx.qualified_name().getText(),
+                    '(' + getFullCtxText(projCtx.select_stmt_no_parens()) + ')');
+            return;
+        }
+
+        throw new IllegalArgumentException("unsupported Table_element_exprContext\n" + getFullCtxText(elementCtx));
     }
 
     @Override

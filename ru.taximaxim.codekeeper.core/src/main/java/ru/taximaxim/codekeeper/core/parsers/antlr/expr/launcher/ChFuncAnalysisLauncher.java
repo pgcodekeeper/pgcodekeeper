@@ -30,8 +30,7 @@ import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
 
 public class ChFuncAnalysisLauncher extends AbstractAnalysisLauncher {
 
-    public ChFuncAnalysisLauncher(ChFunction st, ExprContext ctx,
-            String location) {
+    public ChFuncAnalysisLauncher(ChFunction st, ExprContext ctx, String location) {
         super(st, ctx, location);
     }
 
