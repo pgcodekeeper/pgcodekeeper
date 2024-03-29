@@ -18,9 +18,10 @@ package ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch;
 import java.util.Arrays;
 import java.util.List;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Drop_stmtContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.IdentifierContext;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 
 public class DropChStatement extends ChParserAbstract {
@@ -34,19 +35,37 @@ public class DropChStatement extends ChParserAbstract {
 
     @Override
     public void parseObject() {
-        if (ctx.DATABASE() != null) {
-            addObjReference(Arrays.asList(ctx.identifier()), DbObjType.DATABASE, ACTION_DROP);
+        var element = ctx.drop_element();
+        if (element.DATABASE() != null) {
+            addObjReference(Arrays.asList(ctx.drop_element().identifier()), DbObjType.SCHEMA, ACTION_DROP);
+        } else if (element.VIEW() != null) {
+            addObjReference(getIdentifiers(element.qualified_name()), DbObjType.VIEW, ACTION_DROP);
+        } else if (element.TABLE() != null) {
+            addObjReference(getIdentifiers(element.qualified_name()), DbObjType.TABLE, ACTION_DROP);
+        } else if (element.FUNCTION() != null) {
+            addObjReference(Arrays.asList(ctx.drop_element().identifier()), DbObjType.FUNCTION, ACTION_DROP);
         }
     }
 
     @Override
     protected String getStmtAction() {
+        var element = ctx.drop_element();
         DbObjType type = null;
-        List<IdentifierContext> ids = null;
-        if (ctx.DATABASE() != null) {
-            type = DbObjType.DATABASE;
-            ids = Arrays.asList(ctx.identifier());
+        List<ParserRuleContext> ids = null;
+        if (element.DATABASE() != null) {
+            type = DbObjType.SCHEMA;
+            ids = Arrays.asList(ctx.drop_element().identifier());
+        } else if (element.VIEW() != null) {
+            type = DbObjType.VIEW;
+            ids = getIdentifiers(element.qualified_name());
+        } else if (element.TABLE() != null) {
+            type = DbObjType.TABLE;
+            ids = getIdentifiers(element.qualified_name());
+        } else if (element.FUNCTION() != null) {
+            type = DbObjType.FUNCTION;
+            ids = Arrays.asList(ctx.drop_element().identifier());
         }
+
         return type != null && ids != null ? getStrForStmtAction(ACTION_DROP, type, ids) : null;
     }
 

@@ -100,7 +100,11 @@ public class CustomChSQLParserListener extends CustomParserListener<ChDatabase> 
 
     private void drop(Drop_stmtContext ctx) {
         ChParserAbstract p;
-        if (ctx.DATABASE() != null) {
+        var element = ctx.drop_element();
+        if (element.DATABASE() != null
+                || element.FUNCTION() != null
+                || element.TABLE() != null
+                || element.VIEW() != null) {
             p = new DropChStatement(ctx, db);
         } else {
             addToQueries(ctx, "DROP");

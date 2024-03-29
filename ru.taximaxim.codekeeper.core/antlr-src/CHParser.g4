@@ -26,7 +26,7 @@ ddl_stmt
     : alter_stmt
     | ATTACH attach_stmt
     | create_stmt
-    | DROP drop_stmt
+    | drop_stmt
     | detach_stmt
     | kill_stmt
     | optimize_stmt
@@ -452,6 +452,10 @@ describe_stmt
     ;
 
 drop_stmt
+    : DROP drop_element
+    ;
+
+drop_element
     : DATABASE if_exists? identifier cluster_clause? SYNC?
     | TEMPORARY? TABLE if_exists? (IF EMPTY)? qualified_name cluster_clause? SYNC?
     | DICTIONARY if_exists? qualified_name SYNC?
@@ -460,7 +464,7 @@ drop_stmt
     | QUOTA if_exists? identifier_list cluster_clause? (FROM identifier)?
     | SETTINGS? PROFILE if_exists? identifier_list cluster_clause? (FROM identifier)?
     | VIEW if_exists? qualified_name cluster_clause? SYNC?
-    | FUNCTION if_exists? qualified_name cluster_clause?
+    | FUNCTION if_exists? identifier cluster_clause?
     | NAMED COLLECTION if_exists? identifier cluster_clause?
     | INDEX if_exists? identifier ON qualified_name
     ;
