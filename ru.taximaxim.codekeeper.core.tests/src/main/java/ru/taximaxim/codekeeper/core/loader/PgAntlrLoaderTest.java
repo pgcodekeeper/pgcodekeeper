@@ -98,7 +98,7 @@ class PgAntlrLoaderTest {
         Path exportDir = null;
         try (TempDir dir = new TempDir("pgCodekeeper-test-files")) {
             exportDir = dir.get();
-            new ModelExporter(exportDir, dbPredefined, ENCODING).exportFull();
+            new ModelExporter(exportDir, dbPredefined, DatabaseType.PG, ENCODING).exportFull();
 
             args = new PgDiffArguments();
             args.setInCharsetName(ENCODING);

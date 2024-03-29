@@ -32,7 +32,6 @@ import java.util.stream.Collectors;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgCodekeeperException;
 import ru.taximaxim.codekeeper.core.WorkDirs;
-import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
@@ -42,14 +41,11 @@ import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.PgPrivilege;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
-public class OverridesModelExporter extends AbstractModelExporter {
-
-    private final DatabaseType dbType;
+public class OverridesModelExporter extends ModelExporter {
 
     public OverridesModelExporter(Path outDir, AbstractDatabase newDb, AbstractDatabase oldDb,
             Collection<TreeElement> changedObjects, String sqlEncoding, DatabaseType dbType) {
-        super(outDir, newDb, oldDb, changedObjects, sqlEncoding);
-        this.dbType = dbType;
+        super(outDir, newDb, oldDb, dbType, changedObjects, sqlEncoding);
     }
 
     @Override
@@ -63,9 +59,8 @@ public class OverridesModelExporter extends AbstractModelExporter {
             throw new PgCodekeeperException("Old database should not be null for partial export.");
         }
         if (Files.notExists(outDir) || !Files.isDirectory(outDir)) {
-            throw new DirectoryException(MessageFormat.format(
-                    "Output directory does not exist: {0}",
-                    outDir.toAbsolutePath()));
+            throw new DirectoryException(
+                    MessageFormat.format("Output directory does not exist: {0}", outDir.toAbsolutePath()));
         }
 
         List<PgStatement> list = oldDb.getDescendants().collect(Collectors.toList());
@@ -89,7 +84,7 @@ public class OverridesModelExporter extends AbstractModelExporter {
                     PgStatement stInNew = el.getPgStatement(newDb);
                     PgStatement stInOld = el.getPgStatement(oldDb);
                     list.set(list.indexOf(stInOld), stInNew);
-                    paths.add(getRelativeFilePath(stInNew, true));
+                    paths.add(getRelativeFilePath(stInNew, Paths.get(WorkDirs.OVERRIDES)));
                     deleteStatementIfExists(stInNew);
                 }
             }
@@ -97,7 +92,7 @@ public class OverridesModelExporter extends AbstractModelExporter {
 
         Map<Path, StringBuilder> dumps = new HashMap<>();
         list.stream()
-        .filter(st -> paths.contains(getRelativeFilePath(st, true)))
+        .filter(st -> paths.contains(getRelativeFilePath(st, Paths.get(WorkDirs.OVERRIDES))))
         .forEach(st -> dumpStatement(st, dumps));
 
         for (Entry<Path, StringBuilder> dump : dumps.entrySet()) {
@@ -122,27 +117,5 @@ public class OverridesModelExporter extends AbstractModelExporter {
         }
 
         return sb.toString();
-    }
-
-    @Override
-    protected Path getRelativeFilePath(PgStatement st, boolean addExtension) {
-        switch (dbType) {
-        case MS:
-            return MsModelExporter.getRelativeFilePath(
-                    st, Paths.get(WorkDirs.OVERRIDES), addExtension);
-        case PG:
-            return ModelExporter.getRelativeFilePath(
-                    st, Paths.get(WorkDirs.OVERRIDES), addExtension);
-        case CH:
-            return ChModelExporter.getRelativeFilePath(
-                    st, Paths.get(WorkDirs.OVERRIDES), addExtension);
-        default:
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + st.getDbType());
-        }
-    }
-
-    @Override
-    protected DatabaseType getDatabaseType() {
-        return dbType;
     }
 }

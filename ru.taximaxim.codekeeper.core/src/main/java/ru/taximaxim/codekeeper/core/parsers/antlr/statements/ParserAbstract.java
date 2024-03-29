@@ -39,7 +39,7 @@ import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.WorkDirs;
 import ru.taximaxim.codekeeper.core.loader.ParserListenerMode;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.model.exporter.AbstractModelExporter;
+import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.MisplacedObjectException;
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.UnresolvedReferenceException;
@@ -228,7 +228,7 @@ public abstract class ParserAbstract<S extends AbstractDatabase> {
             return;
         }
 
-        String filePath = AbstractModelExporter.getRelativeFilePath(statement).toString();
+        String filePath = ModelExporter.getRelativeFilePath(statement).toString();
         if (!PgDiffUtils.endsWithIgnoreCase(fileName, filePath)
                 && isInProject(statement.getDbType())) {
             throw new MisplacedObjectException(MessageFormat.format(LOCATION_ERROR,

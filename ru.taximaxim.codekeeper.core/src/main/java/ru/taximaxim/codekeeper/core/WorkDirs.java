@@ -15,10 +15,13 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core;
 
+import java.nio.file.Path;
 import java.util.List;
 
+import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public class WorkDirs {
 
@@ -61,15 +64,11 @@ public class WorkDirs {
     /*
      * directory names for ClickHouse
      */
-    public static final String CH_DATABASES = "DATABASE";
-    private static final String CH_USERS = "Users";
-    private static final String CH_ROLES = "Roles";
-    private static final String CH_TABLES = "Tables";
-    public static final String CH_FUNCTIONS = "Functions";
-    private static final String CH_VIEWS = "Views";
+    public static final String CH_DATABASE = "DATABASE";
+    public static final String CH_FUNCTION = "FUNCTION";
 
     // CH first level folder
-    private static final List<String> CH_DIRECTORY_NAMES = List.of(CH_DATABASES, CH_FUNCTIONS);
+    private static final List<String> CH_DIRECTORY_NAMES = List.of(CH_DATABASE, CH_FUNCTION);
 
     public static List<String> getDirectoryNames(DatabaseType databaseType) {
         switch (databaseType) {
@@ -97,20 +96,29 @@ public class WorkDirs {
         }
     }
 
+    public static Path getRelativeFolderPath(PgStatement st, Path baseDir) {
+        var databaseType = st.getDbType();
+        switch (databaseType) {
+        case CH:
+            return getChRelativeFolderPath(st, baseDir);
+        case MS:
+            return getMsRelativeFolderPath(st, baseDir);
+        case PG:
+            return getPgRelativeFolderPath(st, baseDir);
+        default:
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + databaseType);
+        }
+    }
+
     private static String getChDirectoryNameForType(DbObjType type) {
         switch (type) {
         case SCHEMA:
-            return CH_DATABASES;
-        case TABLE:
-            return CH_TABLES;
+            return CH_DATABASE;
         case FUNCTION:
-            return CH_FUNCTIONS;
+            return CH_FUNCTION;
+        case TABLE:
         case VIEW:
-            return CH_VIEWS;
-        case USER:
-            return CH_USERS;
-        case ROLE:
-            return CH_ROLES;
+            return type.name();
         case CONSTRAINT:
         case INDEX:
         case COLUMN:
@@ -191,6 +199,80 @@ public class WorkDirs {
 
     public static boolean isInMsSchema(String dirSub) {
         return !dirSub.equals(MS_ASSEMBLIES) && !dirSub.equals(MS_SECURITY);
+    }
+
+    private static Path getPgRelativeFolderPath(PgStatement st, Path baseDir) {
+        DbObjType type = st.getStatementType();
+        switch (type) {
+        case EXTENSION:
+        case SERVER:
+        case USER_MAPPING:
+        case CAST:
+        case EVENT_TRIGGER:
+        case FOREIGN_DATA_WRAPPER:
+            return baseDir.resolve(getPgDirectoryNameForType(type));
+        case SCHEMA:
+            String schemaName = FileUtils.getValidFilename(st.getBareName());
+            return baseDir.resolve(PG_SCHEMA).resolve(schemaName);
+
+        case COLLATION:
+        case SEQUENCE:
+        case TYPE:
+        case DOMAIN:
+        case VIEW:
+        case TABLE:
+        case FUNCTION:
+        case PROCEDURE:
+        case AGGREGATE:
+        case OPERATOR:
+        case FTS_TEMPLATE:
+        case FTS_PARSER:
+        case FTS_DICTIONARY:
+        case FTS_CONFIGURATION:
+            PgStatement parentSt = st.getParent();
+            schemaName = FileUtils.getValidFilename(parentSt.getBareName());
+            return baseDir.resolve(PG_SCHEMA).resolve(schemaName).resolve(getPgDirectoryNameForType(type));
+        default:
+            throw new IllegalStateException(Messages.DbObjType_unsupported_type + type);
+        }
+    }
+
+    private static Path getMsRelativeFolderPath(PgStatement st, Path baseDir) {
+        DbObjType type = st.getStatementType();
+        switch (type) {
+        case SCHEMA:
+        case ROLE:
+        case USER:
+            return baseDir.resolve(MS_SECURITY).resolve(getMsDirectoryNameForType(type));
+        case ASSEMBLY:
+        case SEQUENCE:
+        case VIEW:
+        case TABLE:
+        case FUNCTION:
+        case PROCEDURE:
+        case TYPE:
+            return baseDir.resolve(getMsDirectoryNameForType(type));
+        default:
+            throw new IllegalStateException(Messages.DbObjType_unsupported_type + type);
+        }
+    }
+
+    private static Path getChRelativeFolderPath(PgStatement st, Path baseDir) {
+        DbObjType type = st.getStatementType();
+        switch (type) {
+        case FUNCTION:
+            return baseDir.resolve(getChDirectoryNameForType(type));
+        case SCHEMA:
+            String databaseName = FileUtils.getValidFilename(st.getBareName());
+            return baseDir.resolve(CH_DATABASE).resolve(databaseName);
+        case TABLE:
+        case VIEW:
+            PgStatement parentSt = st.getParent();
+            databaseName = FileUtils.getValidFilename(parentSt.getBareName());
+            return baseDir.resolve(CH_DATABASE).resolve(databaseName).resolve(getPgDirectoryNameForType(type));
+        default:
+            throw new IllegalStateException(Messages.DbObjType_unsupported_type + type);
+        }
     }
 
     private WorkDirs() {

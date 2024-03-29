@@ -130,7 +130,7 @@ public class ProjectLoader extends DatabaseLoader {
     }
 
     private void loadChStructure(Path dir, AbstractDatabase db) throws InterruptedException, IOException {
-        loadPgChStructure(dir, db, WorkDirs.CH_DATABASES);
+        loadPgChStructure(dir, db, WorkDirs.CH_DATABASE);
     }
 
     private void loadPgStructure(Path dir, AbstractDatabase db) throws InterruptedException, IOException {

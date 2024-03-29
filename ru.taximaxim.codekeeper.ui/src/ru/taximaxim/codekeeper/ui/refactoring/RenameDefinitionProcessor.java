@@ -39,7 +39,7 @@ import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.model.exporter.AbstractModelExporter;
+import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation.LocationType;
 import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
@@ -172,21 +172,14 @@ public class RenameDefinitionProcessor extends RenameProcessor {
     }
 
     private void addFileRenames(IFile file, PgObjLocation ref, List<RenameDefinitionChange> fileRenames) {
-        switch (ref.getType()) {
-        case TRIGGER:
-        case RULE:
-        case CONSTRAINT:
-        case INDEX:
-        case POLICY:
+        if (ref.getType().isSubElement()) {
             return;
-        default:
-            break;
         }
 
         switch (dbType) {
         case PG:
             fileRenames.add(new RenameDefinitionChange(file.getFullPath(),
-                    AbstractModelExporter.getExportedFilenameSql(newName)));
+                    ModelExporter.getExportedFilenameSql(newName)));
             if (ref.getType() == DbObjType.SCHEMA) {
                 // rename schema folder for PG
                 fileRenames.add(new RenameDefinitionChange(file.getParent().getFullPath(),
@@ -202,7 +195,7 @@ public class RenameDefinitionProcessor extends RenameProcessor {
             }
 
             fileRenames.add(new RenameDefinitionChange(file.getFullPath(),
-                    AbstractModelExporter.getExportedFilenameSql(name)));
+                    ModelExporter.getExportedFilenameSql(name)));
             break;
         default:
             throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);

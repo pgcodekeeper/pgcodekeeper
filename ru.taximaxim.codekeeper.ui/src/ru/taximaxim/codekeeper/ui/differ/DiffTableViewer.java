@@ -116,7 +116,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeFlattener;
-import ru.taximaxim.codekeeper.core.model.exporter.AbstractModelExporter;
+import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -966,7 +966,7 @@ public class DiffTableViewer extends Composite {
                     Map<String, List<ElementMetaInfo>> metas = new HashMap<>();
                     elementInfoMap.forEach((k,v) -> {
                         if (k.getSide() != DiffSide.RIGHT) {
-                            Path fullPath = location.resolve(AbstractModelExporter.getRelativeFilePath(
+                            Path fullPath = location.resolve(ModelExporter.getRelativeFilePath(
                                     k.getPgStatement(dbProject.getDbObject())));
                             // git always uses linux paths
                             // since all paths here are relative it's ok to simply

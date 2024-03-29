@@ -36,6 +36,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.fileutils.TempDir;
@@ -133,9 +134,9 @@ public class PartialExporterTest {
             exportDirPartial = dirPartial.get();
 
             // full export of source
-            new ModelExporter(exportDirFull, dbSource, Consts.UTF_8).exportFull();
+            new ModelExporter(exportDirFull, dbSource, DatabaseType.PG, Consts.UTF_8).exportFull();
             // full export of source to target directory
-            new ModelExporter(exportDirPartial, dbSource, Consts.UTF_8).exportFull();
+            new ModelExporter(exportDirPartial, dbSource, DatabaseType.PG, Consts.UTF_8).exportFull();
 
             // get new db with selected changes
             info.setUserSelection(tree);
@@ -144,7 +145,8 @@ public class PartialExporterTest {
                     .onlyEdits(dbSource, dbTarget)
                     .flatten(tree);
             // apply partial changes to the full database
-            new ModelExporter(exportDirPartial, dbTarget, dbSource, list, Consts.UTF_8).exportPartial();
+            new ModelExporter(exportDirPartial, dbTarget, dbSource, DatabaseType.PG, list, Consts.UTF_8)
+            .exportPartial();
 
             walkAndComare(exportDirFull, exportDirPartial, info);
         }

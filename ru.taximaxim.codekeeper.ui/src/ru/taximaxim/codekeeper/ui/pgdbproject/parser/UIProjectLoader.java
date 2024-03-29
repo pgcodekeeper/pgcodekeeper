@@ -52,7 +52,7 @@ import ru.taximaxim.codekeeper.core.loader.LibraryLoader;
 import ru.taximaxim.codekeeper.core.loader.ProjectLoader;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
-import ru.taximaxim.codekeeper.core.model.exporter.AbstractModelExporter;
+import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrError;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
@@ -118,8 +118,8 @@ public class UIProjectLoader extends ProjectLoader {
         if (!baseDir.exists()) {
             return;
         }
-        loadPgChStructure(baseDir, db, WorkDirs.CH_DATABASES);
-        loadSubdir(baseDir.getFolder(new Path(WorkDirs.CH_FUNCTIONS)), db);
+        loadPgChStructure(baseDir, db, WorkDirs.CH_DATABASE);
+        loadSubdir(baseDir.getFolder(new Path(WorkDirs.CH_FUNCTION)), db);
     }
 
     private void loadPgStructure(IContainer baseDir, AbstractDatabase db)
@@ -274,7 +274,7 @@ public class UIProjectLoader extends ProjectLoader {
 
         // exclude empty schemas (except loaded from schema files) that have been loaded early
         db.getSchemas().stream()
-        .filter(sc -> schemaFiles.contains(AbstractModelExporter.getExportedFilename(sc)) || sc.hasChildren())
+        .filter(sc -> schemaFiles.contains(ModelExporter.getExportedFilename(sc)) || sc.hasChildren())
         .forEach(st -> newDb.addChild(st.deepCopy()));
 
         db.getAssemblies().forEach(st -> newDb.addChild(st.deepCopy()));
@@ -413,7 +413,7 @@ public class UIProjectLoader extends ProjectLoader {
             db = loader.buildPgChFiles(files, mon, WorkDirs.PG_SCHEMA, dbType);
             break;
         case CH:
-            db = loader.buildPgChFiles(files, mon, WorkDirs.CH_DATABASES, dbType);
+            db = loader.buildPgChFiles(files, mon, WorkDirs.CH_DATABASE, dbType);
             break;
         case MS:
             db = loader.buildMsFiles(files, mon);
@@ -533,7 +533,7 @@ public class UIProjectLoader extends ProjectLoader {
 
     private static boolean isChSchemaFile(IPath path) {
         return path.segmentCount() == 3
-                && path.segment(0).equals(WorkDirs.CH_DATABASES)
+                && path.segment(0).equals(WorkDirs.CH_DATABASE)
                 && path.segment(2).endsWith(".sql");
     }
 }
