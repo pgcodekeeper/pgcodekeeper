@@ -30,7 +30,7 @@ import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.fileutils.TempDir;
-import ru.taximaxim.codekeeper.core.model.exporter.MsModelExporter;
+import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.Argument;
@@ -90,7 +90,7 @@ class MsAntlrLoaderTest {
         Path exportDir = null;
         try (TempDir dir = new TempDir("pgCodekeeper-test-files")) {
             exportDir = dir.get();
-            new MsModelExporter(exportDir, dbPredefined, ENCODING).exportFull();
+            new ModelExporter(exportDir, dbPredefined, DatabaseType.MS, ENCODING).exportFull();
 
             args = new PgDiffArguments();
             args.setInCharsetName(ENCODING);

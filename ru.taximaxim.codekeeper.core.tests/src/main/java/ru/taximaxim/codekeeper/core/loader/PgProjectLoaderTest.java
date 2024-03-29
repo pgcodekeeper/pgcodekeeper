@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.fileutils.TempDir;
@@ -43,7 +44,7 @@ class PgProjectLoaderTest {
             AbstractDatabase dbDump = TestUtils.loadTestDump(
                     TestUtils.RESOURCE_DUMP, TestUtils.class, args);
 
-            new ModelExporter(dir, dbDump, Consts.UTF_8).exportFull();
+            new ModelExporter(dir, dbDump, DatabaseType.PG, Consts.UTF_8).exportFull();
 
             TestUtils.createIgnoredSchemaFile(dir);
             Path listFile = dir.resolve(".pgcodekeeperignoreschema");

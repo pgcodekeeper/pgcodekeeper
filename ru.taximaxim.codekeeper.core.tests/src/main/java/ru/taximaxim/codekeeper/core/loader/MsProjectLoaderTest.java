@@ -29,7 +29,7 @@ import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.fileutils.TempDir;
 import ru.taximaxim.codekeeper.core.ignoreparser.IgnoreParser;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
-import ru.taximaxim.codekeeper.core.model.exporter.MsModelExporter;
+import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 
@@ -45,7 +45,7 @@ class MsProjectLoaderTest {
             AbstractDatabase msDbDump = TestUtils.loadTestDump(
                     TestUtils.RESOURCE_MS_DUMP, TestUtils.class, args);
 
-            new MsModelExporter(dir, msDbDump, Consts.UTF_8).exportFull();
+            new ModelExporter(dir, msDbDump, DatabaseType.MS, Consts.UTF_8).exportFull();
 
             TestUtils.createIgnoredSchemaFile(dir);
             Path listFile = dir.resolve(".pgcodekeeperignoreschema");

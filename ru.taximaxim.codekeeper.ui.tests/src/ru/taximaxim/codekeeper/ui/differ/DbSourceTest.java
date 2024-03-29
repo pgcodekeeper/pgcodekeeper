@@ -44,7 +44,6 @@ import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.fileutils.TempDir;
 import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
-import ru.taximaxim.codekeeper.core.model.exporter.MsModelExporter;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
@@ -71,7 +70,7 @@ public class DbSourceTest {
     void testDirTree() throws IOException, InterruptedException, CoreException {
         try (TempDir exportDir = new TempDir("pgcodekeeper-test")) {
             Path dir = exportDir.get();
-            new ModelExporter(dir, dbPredefined, Consts.UTF_8).exportFull();
+            new ModelExporter(dir, dbPredefined, DatabaseType.PG, Consts.UTF_8).exportFull();
 
             performTest(DbSource.fromDirTree(true, dir.toAbsolutePath().toString(),
                     Consts.UTF_8, DatabaseType.PG, null));
@@ -92,7 +91,7 @@ public class DbSourceTest {
             IProject project = createProjectInWorkspace(dir.getFileName().toString(), DatabaseType.PG);
 
             // populate project with data
-            new ModelExporter(dir, dbPredefined, Consts.UTF_8).exportFull();
+            new ModelExporter(dir, dbPredefined, DatabaseType.PG, Consts.UTF_8).exportFull();
             project.refreshLocal(IResource.DEPTH_INFINITE, null);
 
             // create pgcodekeeperignoreschema file in tempDir
@@ -115,7 +114,7 @@ public class DbSourceTest {
             IProject project = createProjectInWorkspace(dir.getFileName().toString(), DatabaseType.PG);
 
             // populate project with data
-            new ModelExporter(dir, dbPredefined, Consts.UTF_8).exportFull();
+            new ModelExporter(dir, dbPredefined, DatabaseType.PG, Consts.UTF_8).exportFull();
             project.refreshLocal(IResource.DEPTH_INFINITE, null);
 
             // create .pgcodekeeperignoreschema file with black list rule in tempDir
@@ -148,7 +147,7 @@ public class DbSourceTest {
 
             // populate project with data
             AbstractDatabase msDb = TestUtils.loadTestDump(TestUtils.RESOURCE_MS_DUMP, TestUtils.class, args);
-            new MsModelExporter(dir, msDb, Consts.UTF_8).exportFull();
+            new ModelExporter(dir, msDb, DatabaseType.MS, Consts.UTF_8).exportFull();
             project.refreshLocal(IResource.DEPTH_INFINITE, null);
 
             // create .pgcodekeeperignoreschema file with black list rule in tempDir

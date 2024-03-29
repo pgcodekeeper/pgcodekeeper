@@ -72,7 +72,7 @@ import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.WorkDirs;
 import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.model.exporter.AbstractModelExporter;
+import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParserWrapper;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.PgStatementWithSearchPath;
@@ -484,7 +484,7 @@ public final class NewObjectPage extends WizardPage {
         if (!schemaFolder.exists()) {
             schemaFolder.create(false, true, null);
         }
-        IFile file = schemaFolder.getFile(AbstractModelExporter.getExportedFilenameSql(name));
+        IFile file = schemaFolder.getFile(ModelExporter.getExportedFilenameSql(name));
         if (!file.exists()) {
             StringBuilder sb = new StringBuilder();
             sb.append(MessageFormat.format(PATTERN, DbObjType.SCHEMA, PgDiffUtils.getQuotedName(name)));
@@ -505,10 +505,10 @@ public final class NewObjectPage extends WizardPage {
             if (!folder.exists()) {
                 folder.create(false, true, null);
             }
-            file = folder.getFile(AbstractModelExporter.getExportedFilenameSql(name));
+            file = folder.getFile(ModelExporter.getExportedFilenameSql(name));
         } else {
             file = getFolder(schema, type, project)
-                    .getFile(AbstractModelExporter.getExportedFilenameSql(name));
+                    .getFile(ModelExporter.getExportedFilenameSql(name));
         }
 
         if (!file.exists()) {
@@ -527,7 +527,7 @@ public final class NewObjectPage extends WizardPage {
             String name, boolean parentIsTable, IProject project, DbObjType type) throws CoreException {
         DbObjType parentType = parentIsTable ? DbObjType.TABLE : DbObjType.VIEW;
         IFile file = getFolder(schema, parentType, project)
-                .getFile(AbstractModelExporter.getExportedFilenameSql(parent));
+                .getFile(ModelExporter.getExportedFilenameSql(parent));
 
         if (!file.exists()) {
             file.create(new ByteArrayInputStream(
