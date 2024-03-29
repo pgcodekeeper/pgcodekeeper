@@ -108,7 +108,7 @@ public abstract class ChAbstractExpr {
     }
 
     protected void addDepcy(GenericColumn depcy, ParserRuleContext ctx, Token start) {
-        if (!Utils.isPgSystemSchema(depcy.schema)) {
+        if (!Utils.isChSystemSchema(depcy.schema)) {
             PgObjLocation loc = new PgObjLocation.Builder()
                     .setObject(depcy)
                     .setCtx(ctx)
