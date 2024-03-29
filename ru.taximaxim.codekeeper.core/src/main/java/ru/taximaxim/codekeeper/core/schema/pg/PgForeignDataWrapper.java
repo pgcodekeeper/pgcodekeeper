@@ -27,7 +27,8 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
-public class PgForeignDataWrapper extends PgStatement implements PgForeignOptionContainer{
+public class PgForeignDataWrapper extends PgStatement implements PgForeignOptionContainer {
+
     private String handler;
     private String validator;
     private final Map<String, String> options = new LinkedHashMap<>();

@@ -28,6 +28,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public class PgUserMapping extends PgStatement implements PgForeignOptionContainer {
+
     private final String user;
     private final String server;
     private final Map<String, String> options = new LinkedHashMap<>();

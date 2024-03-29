@@ -49,5 +49,4 @@ public class ChSQLOverridesListener extends CustomParserListener<ChDatabase> imp
     private void query(QueryContext query) {
 
     }
-
 }

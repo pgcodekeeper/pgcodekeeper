@@ -16,8 +16,11 @@ ALTER TABLE default.t3 ADD CONSTRAINT c_check CHECK col1>0;
 
 CREATE TABLE default.`01154_test`
 (
-    `col1` Int32
+    `col1` Int32,
+    `col2` Int32,
+    `col3` Int32
 )
 ENGINE = MergeTree
-ORDER BY col1
+PRIMARY KEY (col1, col2)
+ORDER BY (col1, col2)
 SETTINGS index_granularity = 8192;

@@ -27,7 +27,8 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
-public class PgServer extends PgStatement implements PgForeignOptionContainer{
+public class PgServer extends PgStatement implements PgForeignOptionContainer {
+
     private String type;
     private String version;
     private String fdw;

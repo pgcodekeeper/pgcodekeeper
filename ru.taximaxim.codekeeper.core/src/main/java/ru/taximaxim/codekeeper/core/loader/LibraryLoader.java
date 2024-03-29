@@ -57,7 +57,6 @@ public class LibraryLoader extends DatabaseLoader {
 
     private boolean loadNested;
 
-
     public LibraryLoader(AbstractDatabase database, Path metaPath, List<Object> errors) {
         this(database, metaPath, errors, new HashSet<>());
     }

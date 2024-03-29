@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import ru.taximaxim.codekeeper.core.loader.ParserListenerMode;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrContextProcessor.ChSqlContextProcessor;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Alter_stmtContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Alter_table_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Ch_fileContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Create_database_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Create_stmtContext;
@@ -115,8 +116,9 @@ public class CustomChSQLParserListener extends CustomParserListener<ChDatabase> 
 
     private void alter(Alter_stmtContext ctx, CommonTokenStream stream) {
         ChParserAbstract p;
-        if (ctx.alter_table_stmt() != null) {
-            p = new AlterChTable(ctx.alter_table_stmt(), db);
+        Alter_table_stmtContext altertableCtx = ctx.alter_table_stmt();
+        if (altertableCtx != null) {
+            p = new AlterChTable(altertableCtx, db);
         } else {
             return;
         }

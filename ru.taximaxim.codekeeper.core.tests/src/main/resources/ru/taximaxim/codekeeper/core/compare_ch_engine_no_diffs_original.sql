@@ -15,8 +15,11 @@ ALTER TABLE default.t3 ADD INDEX ind1 col3 TYPE minmax;
 
 CREATE TABLE default.`01154_test`
 (
-    `col1` Int32
+    `col1` Int32,
+    `col2` Int32,
+    `col3` Int32,
+    PRIMARY KEY (col1, col2)
 )
 ENGINE = MergeTree
-ORDER BY col1
+ORDER BY (col1, col2)
 SETTINGS index_granularity = 8192;
