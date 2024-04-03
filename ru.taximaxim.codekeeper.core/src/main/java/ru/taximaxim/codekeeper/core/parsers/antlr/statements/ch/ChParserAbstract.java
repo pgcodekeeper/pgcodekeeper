@@ -18,19 +18,24 @@ package ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
+import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.ChExpressionAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Data_type_exprContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Engine_clauseContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Engine_optionContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.ExprContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Qualified_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Subquery_clauseContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Table_column_defContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Table_constraint_defContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Table_index_defContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
+import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
+import ru.taximaxim.codekeeper.core.schema.PgStatementWithSearchPath;
 import ru.taximaxim.codekeeper.core.schema.ch.ChColumn;
 import ru.taximaxim.codekeeper.core.schema.ch.ChConstraint;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
@@ -73,7 +78,7 @@ public abstract class ChParserAbstract extends ParserAbstract<ChDatabase> {
                             + getFullCtxText(defType));
                 }
                 if (defType.expr() != null) {
-                    col.setDefaultValue(getFullCtxText(defType.expr()));
+                    setExprWithAnalyze(AbstractColumn::setDefaultValue, col, defType.expr());
                 }
             }
         } else {
@@ -92,7 +97,7 @@ public abstract class ChParserAbstract extends ParserAbstract<ChDatabase> {
             }
         }
         if (column.TTL() != null) {
-            col.setTtl(getFullCtxText(column.ttl));
+            setExprWithAnalyze(ChColumn::setTtl, col, column.ttl);
         }
         if (column.STATISTIC() != null) {
             throw new IllegalArgumentException(
@@ -178,18 +183,24 @@ public abstract class ChParserAbstract extends ParserAbstract<ChDatabase> {
 
     protected ChConstraint getConstraint(Table_constraint_defContext constraintCtx) {
         var constr = new ChConstraint(constraintCtx.identifier().getText(), constraintCtx.ASSUME() != null);
-        constr.setExpr(getFullCtxText(constraintCtx.expr()));
+        setExprWithAnalyze(ChConstraint::setExpr, constr, constraintCtx.expr());
         return constr;
     }
 
     protected ChIndex getIndex(Table_index_defContext indexCtx) {
         var index = new ChIndex(indexCtx.identifier().getText());
-        index.setExpr(getFullCtxText(indexCtx.expr()));
+        setExprWithAnalyze(ChIndex::setExpr, index, indexCtx.expr());
         index.setType(getFullCtxText(indexCtx.index_type()));
         var granVal = indexCtx.gran;
         if (granVal != null) {
             index.setGranVal(Integer.parseInt(granVal.getText()));
         }
         return index;
+    }
+
+    private <T extends PgStatementWithSearchPath> void setExprWithAnalyze(BiConsumer<T, String> adder, T stmt,
+            ExprContext ctx) {
+        adder.accept(stmt, getFullCtxText(ctx));
+        db.addAnalysisLauncher(new ChExpressionAnalysisLauncher(stmt, ctx, fileName));
     }
 }

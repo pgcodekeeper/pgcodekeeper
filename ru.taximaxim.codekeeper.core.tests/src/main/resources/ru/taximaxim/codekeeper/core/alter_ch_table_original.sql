@@ -53,7 +53,6 @@ ALTER TABLE default.t2_1 ADD INDEX ind2 col1 > 0 TYPE bloom_filter GRANULARITY 1
 CREATE TABLE default.t2_2
 (
 	`col1` Int64 NOT NULL,
-	`col2` Int64 NOT NULL,
 	`col3` Date NOT NULL,
 	`col4` Date NOT NULL,
 )

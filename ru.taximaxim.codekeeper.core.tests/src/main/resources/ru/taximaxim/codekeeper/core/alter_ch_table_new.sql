@@ -26,9 +26,8 @@ SETTINGS index_granularity = 8192;
 CREATE TABLE default.t2_1
 (
 	`col1` Int64 NOT NULL,
-	`col2` Int64 NOT NULL,
 	`col3` Date NOT NULL,
-	`col4` Date NOT NULL,
+	`col4` Date NOT NULL
 )
 ENGINE = MergeTree
 ORDER BY col1
@@ -45,9 +44,9 @@ ALTER TABLE default.t2_1 ADD INDEX ind1 col1 > 0 TYPE bloom_filter GRANULARITY 1
 CREATE TABLE default.t2_2
 (
 	`col1` Int64 NOT NULL,
-	`col2` Int64 NOT NULL,
 	`col3` Date NOT NULL,
 	`col4` Date NOT NULL,
+	`col2` Int64 NOT NULL
 )
 ENGINE = MergeTree
 ORDER BY col1

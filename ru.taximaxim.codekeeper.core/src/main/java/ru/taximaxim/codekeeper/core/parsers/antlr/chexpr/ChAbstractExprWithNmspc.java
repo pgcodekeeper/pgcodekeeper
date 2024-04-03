@@ -16,18 +16,23 @@
 package ru.taximaxim.codekeeper.core.parsers.antlr.chexpr;
 
 import java.util.AbstractMap.SimpleEntry;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Stream;
 
+import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Dml_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.With_clauseContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.With_queryContext;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
+import ru.taximaxim.codekeeper.core.schema.IRelation;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
+import ru.taximaxim.codekeeper.core.utils.Pair;
 
 public abstract class ChAbstractExprWithNmspc<T> extends ChAbstractExpr {
 
@@ -97,6 +102,43 @@ public abstract class ChAbstractExprWithNmspc<T> extends ChAbstractExpr {
         }
 
         return found ? new SimpleEntry<>(name, dereferenced) : null;
+    }
+
+    public boolean addRawTableReference(GenericColumn qualifiedTable) {
+        boolean exists = !unaliasedNamespace.add(qualifiedTable);
+        if (exists) {
+            log("Duplicate unaliased table: {} {}", qualifiedTable.schema, qualifiedTable.table);
+        }
+        return !exists;
+    }
+
+    @Override
+    protected Pair<IRelation, Pair<String, String>> findColumn(String name) {
+        Pair<IRelation, Pair<String, String>> ret = findColumn(name, namespace.values());
+        if (ret == null) {
+            ret = findColumn(name, unaliasedNamespace);
+        }
+        return ret != null ? ret : super.findColumn(name);
+    }
+
+    private Pair<IRelation, Pair<String, String>> findColumn(String name, Collection<GenericColumn> refs) {
+        for (GenericColumn ref : refs) {
+            if (ref == null) {
+                continue;
+            }
+            IRelation rel = findRelation(ref.schema, ref.table);
+            if (rel == null) {
+                continue;
+            }
+
+            Stream<Pair<String, String>> columns = rel.getRelationColumns();
+            for (Pair<String, String> col : PgDiffUtils.sIter(columns)) {
+                if (col.getFirst().equals(name)) {
+                    return new Pair<>(rel, col);
+                }
+            }
+        }
+        return null;
     }
 
     protected void analyzeCte(With_clauseContext with) {

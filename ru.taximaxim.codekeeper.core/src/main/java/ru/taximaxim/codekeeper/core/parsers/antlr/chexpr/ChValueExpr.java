@@ -18,12 +18,13 @@ package ru.taximaxim.codekeeper.core.parsers.antlr.chexpr;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.ExprContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Expr_primaryContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Function_callContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.IdentifierContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Qualified_nameContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Select_stmt_no_parensContext;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
+import ru.taximaxim.codekeeper.core.schema.IRelation;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
+import ru.taximaxim.codekeeper.core.utils.Pair;
 
 public class ChValueExpr extends ChAbstractExpr {
 
@@ -40,22 +41,46 @@ public class ChValueExpr extends ChAbstractExpr {
             analyze(v);
         }
 
-        Qualified_nameContext tableCtx;
-        Function_callContext fc;
-        Select_stmt_no_parensContext selectCtx;
         var exprPrimary = expr.expr_primary();
         if (exprPrimary != null) {
-            if ((fc = exprPrimary.function_call()) != null) {
-                functionCall(fc);
-            } else if ((selectCtx = exprPrimary.select_stmt_no_parens()) != null ) {
-                new ChSelect(this).analyze(selectCtx);
-            } else if ((tableCtx = exprPrimary.qualified_name()) != null) {
-                addObjectDepcy(tableCtx, DbObjType.TABLE);
+            exprPrimary(exprPrimary);
+        }
+    }
+
+    private void exprPrimary(Expr_primaryContext exprPrimary) {
+        var fc = exprPrimary.function_call();
+        if (fc != null) {
+            functionCall(fc);
+            return;
+        }
+
+        var selectCtx = exprPrimary.select_stmt_no_parens();
+        if (selectCtx != null) {
+            new ChSelect(this).analyze(selectCtx);
+            return;
+        }
+
+        var stmtNameCtx = exprPrimary.qualified_name();
+        if (stmtNameCtx != null) {
+            var relCol = findColumn(stmtNameCtx.getText());
+            if (relCol != null) {
+                addColumnDepcy(exprPrimary, relCol);
+                return;
+            }
+
+            addObjectDepcy(stmtNameCtx, DbObjType.TABLE);
+            return;
+        }
+
+        var exprList = exprPrimary.expr_list();
+        if (exprList != null) {
+            for (var e : exprList.expr()) {
+                analyze(e);
             }
         }
     }
 
-    public GenericColumn functionCall(Function_callContext functionCall) {
+    public void functionCall(Function_callContext functionCall) {
         for (ExprContext exp : functionCall.expr()) {
             analyze(exp);
         }
@@ -67,30 +92,31 @@ public class ChValueExpr extends ChAbstractExpr {
             }
         }
 
-        var argList = functionCall.arg_list();
-        if (argList != null) {
-            for (var argExpr : argList.arg_expr()) {
-                var expr = argExpr.expr();
-                if (expr != null) {
-                    analyze(expr);
-                }
-            }
-        }
-
         var funcName = functionCall.name;
         if (funcName != null) {
-            return addFuncDepcy(funcName, DbObjType.FUNCTION);
+            addDepcy(new GenericColumn(funcName.getText(), DbObjType.FUNCTION), funcName);
         }
-        return null;
+
+        var argList = functionCall.arg_list();
+        if (argList == null) {
+            return;
+        }
+
+        for (var argExpr : argList.arg_expr()) {
+            var expr = argExpr.expr();
+            if (expr != null) {
+                analyze(expr);
+            }
+        }
     }
 
-    protected GenericColumn addFuncDepcy(IdentifierContext id, DbObjType type) {
-        GenericColumn depcy = new GenericColumn(id.getText(), type);
-        addDepcy(depcy, id);
-        return depcy;
+    private void addColumnDepcy(Expr_primaryContext exprPrimary, Pair<IRelation, Pair<String, String>> relCol) {
+        IRelation rel = relCol.getFirst();
+        Pair<String, String> col = relCol.getSecond();
+        addDepcy(new GenericColumn(rel.getSchemaName(), rel.getName(), col.getFirst(), DbObjType.COLUMN), exprPrimary);
     }
 
-    protected GenericColumn addObjectDepcy(Qualified_nameContext qualifiedName,
+    protected void addObjectDepcy(Qualified_nameContext qualifiedName,
             DbObjType type) {
         var ids = qualifiedName.identifier();
         var schemaCtx = QNameParser.getSchemaNameCtx(ids);
@@ -103,8 +129,6 @@ public class ChValueExpr extends ChAbstractExpr {
             addDepcy(new GenericColumn(schemaName, DbObjType.SCHEMA), schemaCtx);
         }
 
-        GenericColumn depcy = new GenericColumn(schemaName, relationName, type);
-        addDepcy(depcy, relationCtx);
-        return depcy;
+        addDepcy(new GenericColumn(schemaName, relationName, type), relationCtx);
     }
 }

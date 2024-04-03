@@ -30,3 +30,24 @@ CREATE TABLE default.t1
 ENGINE = MergeTree
 ORDER BY a
 SETTINGS index_granularity = 8192;
+
+CREATE TABLE default.t2
+(
+	`a` UInt8 NOT NULL,
+	`b` UInt8 NOT NULL TTL (c + toIntervalDay(1)),
+	`c` Date NOT NULL
+)
+ENGINE = MergeTree
+ORDER BY a
+TTL c + toIntervalDay(3)
+SETTINGS index_granularity = 8192;
+
+CREATE TABLE default.t4
+(
+    `a` UInt8,
+    `b` Int64,
+    `c` Int64 ALIAS b + a
+)
+ENGINE = MergeTree
+ORDER BY a
+SETTINGS index_granularity = 8192;

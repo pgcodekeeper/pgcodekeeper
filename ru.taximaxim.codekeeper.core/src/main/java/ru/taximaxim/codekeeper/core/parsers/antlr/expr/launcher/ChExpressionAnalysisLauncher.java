@@ -19,21 +19,38 @@ import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
+import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.parsers.antlr.chexpr.ChExprWithNmspc;
 import ru.taximaxim.codekeeper.core.parsers.antlr.chexpr.ChValueExpr;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.ExprContext;
+import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
+import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.PgStatementWithSearchPath;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
 
 public class ChExpressionAnalysisLauncher extends AbstractAnalysisLauncher {
 
-    protected ChExpressionAnalysisLauncher(PgStatementWithSearchPath stmt, ExprContext ctx, String location) {
+    public ChExpressionAnalysisLauncher(PgStatementWithSearchPath stmt, ExprContext ctx, String location) {
         super(stmt, ctx, location);
     }
 
     @Override
     protected Set<PgObjLocation> analyze(ParserRuleContext ctx, MetaContainer meta) {
+        if (isNeedNmspc()) {
+            var expr = new ChExprWithNmspc(getSchemaName(), meta);
+            PgStatement table = stmt.getParent();
+            String schemaName = table.getParent().getName();
+            String rawTableReference = table.getName();
+
+            expr.addRawTableReference(new GenericColumn(schemaName, rawTableReference, DbObjType.TABLE));
+            return analyze((ExprContext) ctx, expr);
+        }
         var expr = new ChValueExpr(meta);
         return analyze((ExprContext) ctx, expr);
+    }
+
+    private boolean isNeedNmspc() {
+        return stmt.getStatementType().in(DbObjType.COLUMN, DbObjType.INDEX, DbObjType.CONSTRAINT);
     }
 }
