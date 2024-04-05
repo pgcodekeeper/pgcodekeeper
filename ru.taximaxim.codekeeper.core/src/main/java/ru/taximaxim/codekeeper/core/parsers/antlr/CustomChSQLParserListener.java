@@ -18,6 +18,7 @@ package ru.taximaxim.codekeeper.core.parsers.antlr;
 import java.util.List;
 
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import ru.taximaxim.codekeeper.core.loader.ParserListenerMode;
@@ -66,18 +67,12 @@ public class CustomChSQLParserListener extends CustomParserListener<ChDatabase> 
                 alter(alter, stream);
             } else if ((dropCtx = ddlStmt.drop_stmt()) != null) {
                 drop(dropCtx);
+            } else {
+                addToQueries(query, getAction(query));
             }
         } else {
             addToQueries(query, getAction(query));
         }
-    }
-
-    private String getAction(QueryContext query) {
-        var dml = query.stmt().dml_stmt();
-        if (dml.select_stmt() != null) {
-            return "SELECT";
-        }
-        return null;
     }
 
     private void create(Create_stmtContext ctx, CommonTokenStream stream) {
@@ -94,6 +89,7 @@ public class CustomChSQLParserListener extends CustomParserListener<ChDatabase> 
         } else if (ctx.create_function_stmt() != null) {
             p = new CreateChFunction(ctx.create_function_stmt(), db);
         } else {
+            addToQueries(ctx, getAction(ctx));
             return;
         }
         safeParseStatement(p, ctx);
@@ -108,7 +104,7 @@ public class CustomChSQLParserListener extends CustomParserListener<ChDatabase> 
                 || element.VIEW() != null) {
             p = new DropChStatement(ctx, db);
         } else {
-            addToQueries(ctx, "DROP");
+            addToQueries(ctx, getAction(ctx));
             return;
         }
         safeParseStatement(p, ctx);
@@ -120,8 +116,13 @@ public class CustomChSQLParserListener extends CustomParserListener<ChDatabase> 
         if (altertableCtx != null) {
             p = new AlterChTable(altertableCtx, db);
         } else {
+            addToQueries(ctx, getAction(ctx));
             return;
         }
         safeParseStatement(p, ctx);
+    }
+
+    private String getAction(ParserRuleContext ctx) {
+        return getActionDescription(ctx, 1);
     }
 }
