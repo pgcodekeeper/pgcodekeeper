@@ -1,0 +1,1 @@
+CREATE FUNCTION plusthreemonths AS (a) -> a + INTERVAL 3 MONTH;

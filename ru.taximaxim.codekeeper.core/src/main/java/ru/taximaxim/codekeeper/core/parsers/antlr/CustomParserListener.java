@@ -33,20 +33,20 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.exception.MonitorCancelledRunt
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.ObjectCreationException;
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.UnresolvedReferenceException;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 
-public class CustomParserListener {
+public class CustomParserListener<T extends AbstractDatabase> {
 
     private static final Logger LOG = LoggerFactory.getLogger(CustomParserListener.class);
 
-    protected final PgDatabase db;
+    protected final T db;
     protected final ParserListenerMode mode;
     protected final String filename;
     protected final List<Object> errors;
     private final IProgressMonitor monitor;
 
-    public CustomParserListener(PgDatabase database, String filename,
+    public CustomParserListener(T database, String filename,
             ParserListenerMode mode, List<Object> errors, IProgressMonitor monitor) {
         this.db = database;
         this.errors = errors;

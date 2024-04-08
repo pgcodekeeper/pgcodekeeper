@@ -25,7 +25,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
-import ru.taximaxim.codekeeper.core.model.exporter.AbstractModelExporter;
+import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
@@ -82,7 +82,7 @@ public class MisplaceCompletionProposal implements ICompletionProposal{
 
     @Override
     public String getDisplayString() {
-        return Messages.MisplaceCompletionProposal_rename_file_to + AbstractModelExporter.getExportedFilenameSql(pgObjLocation.getBareName());
+        return Messages.MisplaceCompletionProposal_rename_file_to + ModelExporter.getExportedFilenameSql(pgObjLocation.getBareName());
     }
 
     @Override

@@ -149,12 +149,12 @@ public class MsIndex extends AbstractIndex {
     }
 
     @Override
-    public DatabaseType getDbType() {
-        return DatabaseType.MS;
+    protected AbstractIndex getIndexCopy() {
+        return new MsIndex(getName());
     }
 
     @Override
-    protected AbstractIndex getIndexCopy() {
-        return new MsIndex(getName());
+    public DatabaseType getDbType() {
+        return DatabaseType.MS;
     }
 }

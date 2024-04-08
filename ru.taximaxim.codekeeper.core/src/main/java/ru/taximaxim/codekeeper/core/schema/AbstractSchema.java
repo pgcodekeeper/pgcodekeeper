@@ -21,6 +21,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
+
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.pg.PgCollation;
@@ -60,8 +61,8 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
     }
 
     @Override
-    public PgDatabase getDatabase() {
-        return (PgDatabase)getParent();
+    public AbstractDatabase getDatabase() {
+        return (AbstractDatabase) getParent();
     }
 
     /**

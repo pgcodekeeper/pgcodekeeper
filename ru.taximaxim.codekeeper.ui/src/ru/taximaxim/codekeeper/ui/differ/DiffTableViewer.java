@@ -116,8 +116,8 @@ import ru.taximaxim.codekeeper.core.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeFlattener;
-import ru.taximaxim.codekeeper.core.model.exporter.AbstractModelExporter;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.AggregatingListener;
@@ -641,12 +641,16 @@ public class DiffTableViewer extends Composite {
 
             @Override
             public String getText(Object element) {
-                return ((TreeElement) element).getType().toString();
+                return getElementType((TreeElement) element).getTypeName();
             }
 
             @Override
             public Image getImage(Object element) {
-                return Activator.getDbObjImage(((TreeElement) element).getType());
+                return Activator.getDbObjImage(getElementType((TreeElement) element));
+            }
+
+            private DbObjType getElementType(TreeElement element) {
+                return element.getType();
             }
         });
 
@@ -842,8 +846,8 @@ public class DiffTableViewer extends Composite {
             selected = Collections.emptyList();
             tabs = Collections.emptySet();
         } else {
-            PgDatabase source = dbProject.getDbObject();
-            PgDatabase target = dbRemote.getDbObject();
+            AbstractDatabase source = dbProject.getDbObject();
+            AbstractDatabase target = dbRemote.getDbObject();
             selected = new TreeFlattener()
                     .onlyEdits(source, target)
                     .useIgnoreList(ignoreList, dbRemote.getDbName())
@@ -962,7 +966,7 @@ public class DiffTableViewer extends Composite {
                     Map<String, List<ElementMetaInfo>> metas = new HashMap<>();
                     elementInfoMap.forEach((k,v) -> {
                         if (k.getSide() != DiffSide.RIGHT) {
-                            Path fullPath = location.resolve(AbstractModelExporter.getRelativeFilePath(
+                            Path fullPath = location.resolve(ModelExporter.getRelativeFilePath(
                                     k.getPgStatement(dbProject.getDbObject())));
                             // git always uses linux paths
                             // since all paths here are relative it's ok to simply

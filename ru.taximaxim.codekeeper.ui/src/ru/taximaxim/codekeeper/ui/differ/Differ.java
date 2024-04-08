@@ -36,7 +36,7 @@ import ru.taximaxim.codekeeper.core.PgDiff;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
@@ -46,8 +46,8 @@ import ru.taximaxim.codekeeper.ui.properties.OverridablePrefs;
 
 public class Differ implements IRunnableWithProgress {
 
-    private final PgDatabase sourceDbFull;
-    private final PgDatabase targetDbFull;
+    private final AbstractDatabase sourceDbFull;
+    private final AbstractDatabase targetDbFull;
     private final TreeElement root;
     private final boolean needTwoWay;
     private final String timezone;
@@ -85,7 +85,7 @@ public class Differ implements IRunnableWithProgress {
         return additionalDepciesSource;
     }
 
-    public Differ(PgDatabase sourceDbFull, PgDatabase targetDbFull, TreeElement root,
+    public Differ(AbstractDatabase sourceDbFull, AbstractDatabase targetDbFull, TreeElement root,
             boolean needTwoWay, String timezone, DatabaseType dbType, IProject proj,
             Map<String, Boolean> oneTimePrefs) {
         this.sourceDbFull = sourceDbFull;
@@ -98,7 +98,7 @@ public class Differ implements IRunnableWithProgress {
         this.oneTimePrefs = oneTimePrefs;
     }
 
-    public Differ(PgDatabase sourceDbFull, PgDatabase targetDbFull, TreeElement root,
+    public Differ(AbstractDatabase sourceDbFull, AbstractDatabase targetDbFull, TreeElement root,
             boolean needTwoWay, String timezone, DatabaseType dbType, IProject proj) {
         this(sourceDbFull, targetDbFull, root, needTwoWay, timezone, dbType, proj, null);
     }
@@ -181,7 +181,7 @@ public class Differ implements IRunnableWithProgress {
         private final Consumer<PgDiffArguments> consumer;
         private final PgDiffArguments oldArgs;
 
-        public Getter(PgDatabase db, IProject proj, Map<String, Boolean> oneTimePrefs) {
+        public Getter(AbstractDatabase db, IProject proj, Map<String, Boolean> oneTimePrefs) {
             oldArgs = db.getArguments();
             consumer = (db::setArguments);
             PgDiffArguments newArgs = oldArgs.copy();

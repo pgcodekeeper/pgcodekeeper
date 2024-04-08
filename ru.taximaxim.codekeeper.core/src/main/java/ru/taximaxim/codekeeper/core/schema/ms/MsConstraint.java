@@ -126,14 +126,14 @@ public abstract class MsConstraint extends AbstractConstraint {
     }
 
     @Override
-    public DatabaseType getDbType() {
-        return DatabaseType.MS;
-    }
-
-    @Override
     public AbstractConstraint shallowCopy() {
         MsConstraint con = (MsConstraint) super.shallowCopy();
         con.setDisabled(isDisabled());
         return con;
+    }
+
+    @Override
+    public DatabaseType getDbType() {
+        return DatabaseType.MS;
     }
 }

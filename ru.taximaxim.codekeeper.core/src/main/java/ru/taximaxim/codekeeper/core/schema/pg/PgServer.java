@@ -24,10 +24,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
-public class PgServer extends PgStatement implements PgForeignOptionContainer{
+public class PgServer extends PgStatement implements PgForeignOptionContainer {
+
     private String type;
     private String version;
     private String fdw;
@@ -109,8 +110,8 @@ public class PgServer extends PgStatement implements PgForeignOptionContainer{
     }
 
     @Override
-    public PgDatabase getDatabase() {
-        return (PgDatabase)getParent();
+    public AbstractDatabase getDatabase() {
+        return (AbstractDatabase) getParent();
     }
 
     @Override

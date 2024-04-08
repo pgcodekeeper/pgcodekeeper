@@ -58,12 +58,12 @@ public class MsSchema extends AbstractSchema {
     }
 
     @Override
-    public DatabaseType getDbType() {
-        return DatabaseType.MS;
+    protected AbstractSchema getSchemaCopy() {
+        return new MsSchema(getName());
     }
 
     @Override
-    protected AbstractSchema getSchemaCopy() {
-        return new MsSchema(getName());
+    public DatabaseType getDbType() {
+        return DatabaseType.MS;
     }
 }

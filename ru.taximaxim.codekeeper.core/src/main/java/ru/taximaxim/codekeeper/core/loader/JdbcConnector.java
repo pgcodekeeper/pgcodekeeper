@@ -45,11 +45,13 @@ public class JdbcConnector {
     private static final String DRIVER_NAME = "org.postgresql.Driver";
 
     private static final int DEFAULT_PORT = 5432;
-
+    
     private static final String URL_START_MS = "jdbc:sqlserver:";
     private static final String URL_START_PG = "jdbc:postgresql:";
-
-    private static final String MESSAGE_UNKNOWN_URL_SCHEMA = "Unknown url schema, supported schemas are 'postgresql', 'sqlserver'";
+    private static final String URL_START_CH1 = "jdbc:ch:";
+    private static final String URL_START_CH2 = "jdbc:clickhouse:";
+    
+    private static final String MESSAGE_UNKNOWN_URL_SCHEMA = "Unknown url schema, supported schemas are 'postgresql', 'sqlserver', 'ch', 'clickhouse'";
 
     protected String host;
     protected int port;
@@ -83,6 +85,8 @@ public class JdbcConnector {
                 return new JdbcConnector(url, timezone);
             case MS:
                 return new JdbcMsConnector(url);
+            case CH:
+                return new JdbcChConnector(url);
             default:
                 break;
             }
@@ -98,6 +102,9 @@ public class JdbcConnector {
     public static DatabaseType getDatabaseTypeFromUrl(String url) {
         if (url.startsWith(URL_START_MS)) {
             return DatabaseType.MS;
+        }
+        if (url.startsWith(URL_START_CH1) || url.startsWith(URL_START_CH2)) {
+            return DatabaseType.CH;
         }
         if (url.startsWith(URL_START_PG)) {
             return DatabaseType.PG;
@@ -115,13 +122,14 @@ public class JdbcConnector {
     }
 
     public static JdbcConnector getJdbcConnector(DatabaseType type, String host, int port, String user, String pass,
-            String dbName, Map<String, String> properties, boolean isReadOnly, String timezone, boolean winAuth,
-            String domain) {
+            String dbName, Map<String, String> properties, boolean isReadOnly, String timezone, boolean winAuth, String domain) {
         switch (type) {
         case PG:
             return new JdbcConnector(host, port, user, pass, dbName, properties, isReadOnly, timezone);
         case MS:
             return new JdbcMsConnector(host, port, user, pass, dbName, properties, isReadOnly, winAuth, domain);
+        case CH:
+            return new JdbcChConnector(host, port, user, pass, dbName, properties, isReadOnly);
         default:
             throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + type);
         }

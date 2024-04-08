@@ -36,13 +36,14 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.fileutils.TempDir;
 import ru.taximaxim.codekeeper.core.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeFlattener;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 
 /**
  * Test for partial export
@@ -103,8 +104,8 @@ import ru.taximaxim.codekeeper.core.schema.PgDatabase;
  */
 public class PartialExporterTest {
 
-    private static PgDatabase dbSource;
-    private static PgDatabase dbTarget;
+    private static AbstractDatabase dbSource;
+    private static AbstractDatabase dbTarget;
 
     @BeforeAll
     static void initDiffTree() throws InterruptedException, IOException {
@@ -133,9 +134,9 @@ public class PartialExporterTest {
             exportDirPartial = dirPartial.get();
 
             // full export of source
-            new ModelExporter(exportDirFull, dbSource, Consts.UTF_8).exportFull();
+            new ModelExporter(exportDirFull, dbSource, DatabaseType.PG, Consts.UTF_8).exportFull();
             // full export of source to target directory
-            new ModelExporter(exportDirPartial, dbSource, Consts.UTF_8).exportFull();
+            new ModelExporter(exportDirPartial, dbSource, DatabaseType.PG, Consts.UTF_8).exportFull();
 
             // get new db with selected changes
             info.setUserSelection(tree);
@@ -144,7 +145,8 @@ public class PartialExporterTest {
                     .onlyEdits(dbSource, dbTarget)
                     .flatten(tree);
             // apply partial changes to the full database
-            new ModelExporter(exportDirPartial, dbTarget, dbSource, list, Consts.UTF_8).exportPartial();
+            new ModelExporter(exportDirPartial, dbTarget, dbSource, DatabaseType.PG, list, Consts.UTF_8)
+            .exportPartial();
 
             walkAndComare(exportDirFull, exportDirPartial, info);
         }

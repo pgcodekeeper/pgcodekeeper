@@ -39,13 +39,14 @@ import ru.taximaxim.codekeeper.core.IProgressReporter;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.fileutils.InputStreamProvider;
 import ru.taximaxim.codekeeper.core.loader.DatabaseLoader;
+import ru.taximaxim.codekeeper.core.loader.JdbcChLoader;
 import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
 import ru.taximaxim.codekeeper.core.loader.JdbcLoader;
 import ru.taximaxim.codekeeper.core.loader.JdbcMsLoader;
 import ru.taximaxim.codekeeper.core.loader.PgDumpLoader;
 import ru.taximaxim.codekeeper.core.loader.ProjectLoader;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
@@ -67,7 +68,7 @@ import ru.taximaxim.codekeeper.ui.properties.OverridablePrefs;
 public abstract class DbSource {
 
     private final String origin;
-    private PgDatabase dbObject;
+    private AbstractDatabase dbObject;
     private List<Object> errors = Collections.emptyList();
 
     public String getOrigin() {
@@ -81,7 +82,7 @@ public abstract class DbSource {
         return null;
     }
 
-    public PgDatabase getDbObject() {
+    public AbstractDatabase getDbObject() {
         if (dbObject == null) {
             throw new IllegalStateException(
                     Messages.dbSource_db_is_not_loaded_yet_object_is_null);
@@ -89,7 +90,7 @@ public abstract class DbSource {
         return dbObject;
     }
 
-    public PgDatabase get(SubMonitor monitor)
+    public AbstractDatabase get(SubMonitor monitor)
             throws IOException, InterruptedException, CoreException {
         Log.log(Log.LOG_INFO, "Loading DB from " + origin); //$NON-NLS-1$
 
@@ -97,7 +98,7 @@ public abstract class DbSource {
         return dbObject;
     }
 
-    protected PgDatabase load(DatabaseLoader loader) throws IOException, InterruptedException {
+    protected AbstractDatabase load(DatabaseLoader loader) throws IOException, InterruptedException {
         try {
             return loader.loadAndAnalyze();
         } finally {
@@ -117,7 +118,7 @@ public abstract class DbSource {
         this.origin = origin;
     }
 
-    protected abstract PgDatabase loadInternal(SubMonitor monitor)
+    protected abstract AbstractDatabase loadInternal(SubMonitor monitor)
             throws IOException, InterruptedException, CoreException;
 
     static PgDiffArguments getPgDiffArgs(String charset, boolean forceUnixNewlines,
@@ -221,7 +222,7 @@ public abstract class DbSource {
         return fromDbInfo(dbinfo, forceUnixNewlines, charset, timezone, proj, null);
     }
 
-    public static DbSource fromDbObject(PgDatabase db, String origin) {
+    public static DbSource fromDbObject(AbstractDatabase db, String origin) {
         return new DbSourceFromDbObject(db, origin);
     }
 
@@ -253,7 +254,7 @@ class DbSourceDirTree extends DbSource {
     }
 
     @Override
-    protected PgDatabase loadInternal(SubMonitor monitor)
+    protected AbstractDatabase loadInternal(SubMonitor monitor)
             throws InterruptedException, IOException {
         monitor.subTask(Messages.dbSource_loading_tree);
 
@@ -275,7 +276,7 @@ class DbSourceProject extends DbSource {
     }
 
     @Override
-    protected PgDatabase loadInternal(SubMonitor monitor)
+    protected AbstractDatabase loadInternal(SubMonitor monitor)
             throws InterruptedException, CoreException, IOException {
         String charset = proj.getProjectCharset();
         monitor.subTask(Messages.dbSource_loading_tree);
@@ -326,7 +327,7 @@ class DbSourceFile extends DbSource {
     }
 
     @Override
-    protected PgDatabase loadInternal(SubMonitor monitor)
+    protected AbstractDatabase loadInternal(SubMonitor monitor)
             throws InterruptedException, IOException {
         monitor.subTask(Messages.dbSource_loading_dump);
 
@@ -403,7 +404,7 @@ class DbSourceDb extends DbSource {
     }
 
     @Override
-    protected PgDatabase loadInternal(SubMonitor monitor)
+    protected AbstractDatabase loadInternal(SubMonitor monitor)
             throws IOException, InterruptedException {
         SubMonitor pm = SubMonitor.convert(monitor, 2);
 
@@ -462,7 +463,7 @@ class DbSourceJdbc extends DbSource {
     }
 
     @Override
-    protected PgDatabase loadInternal(SubMonitor monitor)
+    protected AbstractDatabase loadInternal(SubMonitor monitor)
             throws IOException, InterruptedException {
         monitor.subTask(Messages.reading_db_from_jdbc);
         PgDiffArguments args = getPgDiffArgs(Consts.UTF_8, forceUnixNewlines,
@@ -478,6 +479,8 @@ class DbSourceJdbc extends DbSource {
             return load(new JdbcLoader(jdbcConnector, args, monitor, ignoreShemaList));
         case MS:
             return load(new JdbcMsLoader(jdbcConnector, args, monitor, ignoreShemaList));
+        case CH:
+            return load(new JdbcChLoader(jdbcConnector, args, monitor, ignoreShemaList));
         default:
             throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
         }
@@ -485,15 +488,15 @@ class DbSourceJdbc extends DbSource {
 }
 class DbSourceFromDbObject extends DbSource {
 
-    PgDatabase db;
+    AbstractDatabase db;
 
-    protected DbSourceFromDbObject(PgDatabase db, String origin) {
+    protected DbSourceFromDbObject(AbstractDatabase db, String origin) {
         super(origin);
         this.db = db;
     }
 
     @Override
-    protected PgDatabase loadInternal(SubMonitor monitor) throws IOException {
+    protected AbstractDatabase loadInternal(SubMonitor monitor) throws IOException {
         return db;
     }
 }

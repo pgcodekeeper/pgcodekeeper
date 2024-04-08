@@ -33,8 +33,8 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Qualified
 import ru.taximaxim.codekeeper.core.schema.AbstractFunction;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.Argument;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsClrProcedure;
+import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsProcedure;
 
 public class CreateMsProcedure extends BatchContextProcessor {
@@ -44,7 +44,7 @@ public class CreateMsProcedure extends BatchContextProcessor {
     private final boolean ansiNulls;
     private final boolean quotedIdentifier;
 
-    public CreateMsProcedure(Batch_statementContext ctx, PgDatabase db,
+    public CreateMsProcedure(Batch_statementContext ctx, MsDatabase db,
             boolean ansiNulls, boolean quotedIdentifier, CommonTokenStream stream) {
         super(db, ctx, stream);
         this.ctx = ctx.batch_statement_body().create_or_alter_procedure();

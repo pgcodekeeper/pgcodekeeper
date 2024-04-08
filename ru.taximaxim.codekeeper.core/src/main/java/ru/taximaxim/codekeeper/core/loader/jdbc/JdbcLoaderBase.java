@@ -21,7 +21,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +48,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrUtils;
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.MonitorCancelledRuntimeException;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
@@ -81,7 +81,7 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
     private final SubMonitor monitor;
     private final PgDiffArguments args;
     private final IgnoreSchemaList ignorelistSchema;
-    private final Map<Long, AbstractSchema> schemaIds = new HashMap<>();
+    protected final Map<Object, AbstractSchema> schemaIds = new HashMap<>();
     protected final JdbcConnector connector;
 
     private boolean isGreenplumDb;
@@ -138,16 +138,16 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
         return extensionSchema;
     }
 
-    public void putSchema(long schemaId, AbstractSchema schema) {
+    public void putSchema(Object schemaId, AbstractSchema schema) {
         schemaIds.put(schemaId, schema);
     }
 
-    public AbstractSchema getSchema(long schemaId) {
+    protected AbstractSchema getSchema(Object schemaId) {
         return schemaIds.get(schemaId);
     }
 
-    public Map<Long, AbstractSchema> getSchemas() {
-        return Collections.unmodifiableMap(schemaIds);
+    public String getSchemas() {
+        return schemaIds.keySet().stream().map(Object::toString).collect(Collectors.joining(", "));
     }
 
     public void setCurrentObject(GenericColumn currentObject) {
@@ -557,6 +557,11 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
     public <T> void submitMsAntlrTask(String sql,
             Function<TSQLParser, T> parserCtxReader, Consumer<T> finalizer) {
         submitAntlrTask(sql, parserCtxReader, finalizer, false, TSQLParser.class);
+    }
+
+    public <T> void submitChAntlrTask(String sql,
+            Function<CHParser, T> parserCtxReader, Consumer<T> finalizer) {
+        submitAntlrTask(sql, parserCtxReader, finalizer, false, CHParser.class);
     }
 
     private <T, P extends Parser> void submitAntlrTask(String sql,

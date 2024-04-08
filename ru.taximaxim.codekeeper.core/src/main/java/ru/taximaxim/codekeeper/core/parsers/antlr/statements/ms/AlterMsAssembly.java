@@ -21,21 +21,21 @@ import java.util.List;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Alter_assemblyContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Assembly_optionContext;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsAssembly;
+import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 
 public class AlterMsAssembly extends MsParserAbstract {
 
     private final Alter_assemblyContext ctx;
 
-    public AlterMsAssembly(Alter_assemblyContext ctx, PgDatabase db) {
+    public AlterMsAssembly(Alter_assemblyContext ctx, MsDatabase db) {
         super(db);
         this.ctx = ctx;
     }
 
     @Override
     public void parseObject() {
-        MsAssembly assembly = getSafe(PgDatabase::getAssembly, db, ctx.name);
+        MsAssembly assembly = getSafe(MsDatabase::getAssembly, db, ctx.name);
         addObjReference(Arrays.asList(ctx.name), DbObjType.ASSEMBLY, ACTION_ALTER);
 
         List<Assembly_optionContext> options = ctx.assembly_option();

@@ -111,7 +111,7 @@ public class Activator extends AbstractUIPlugin {
 
         for (DbObjType dbObjType : DbObjType.values()) {
             reg.put(dbObjType.name(), ImageDescriptor.createFromURL(context.getBundle()
-                    .getResource(ProjectIcon.PG_ADMIN_ICON_FOLDER + dbObjType.name().toLowerCase(Locale.ROOT) + ".png"))); //$NON-NLS-1$
+                .getResource(ProjectIcon.PG_ADMIN_ICON_FOLDER + dbObjType.name().toLowerCase(Locale.ROOT) + ".png"))); //$NON-NLS-1$
         }
     }
 }

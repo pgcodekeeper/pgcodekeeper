@@ -30,16 +30,19 @@ import org.slf4j.LoggerFactory;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrError;
 import ru.taximaxim.codekeeper.core.parsers.antlr.ErrorTypes;
+import ru.taximaxim.codekeeper.core.parsers.antlr.chexpr.ChAbstractExprWithNmspc;
+import ru.taximaxim.codekeeper.core.parsers.antlr.chexpr.ChValueExpr;
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.MisplacedObjectException;
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.UnresolvedReferenceException;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.AbstractExprWithNmspc;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.ValueExprWithNmspc;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.ExprContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.ExpressionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.msexpr.MsAbstractExprWithNmspc;
 import ru.taximaxim.codekeeper.core.parsers.antlr.msexpr.MsValueExpr;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.PgStatementWithSearchPath;
@@ -55,7 +58,7 @@ public abstract class AbstractAnalysisLauncher {
 
     private final List<PgObjLocation> references = new ArrayList<>();
 
-    protected PgStatementWithSearchPath stmt;
+    protected PgStatement stmt;
     private final ParserRuleContext ctx;
     private final String location;
 
@@ -63,15 +66,23 @@ public abstract class AbstractAnalysisLauncher {
     private int lineOffset;
     private int inLineOffset;
 
-    protected AbstractAnalysisLauncher(PgStatementWithSearchPath stmt,
+    protected AbstractAnalysisLauncher(PgStatement stmt,
             ParserRuleContext ctx, String location) {
         this.stmt = stmt;
         this.ctx = ctx;
         this.location = location;
     }
 
-    public PgStatementWithSearchPath getStmt() {
+    public PgStatement getStmt() {
         return stmt;
+    }
+
+    public String getSchemaName() {
+        if (stmt instanceof PgStatementWithSearchPath) {
+            return ((PgStatementWithSearchPath) stmt).getSchemaName();
+        }
+
+        return null;
     }
 
     public List<PgObjLocation> getReferences() {
@@ -90,13 +101,13 @@ public abstract class AbstractAnalysisLauncher {
      * @param db
      *            database
      */
-    public void updateStmt(PgDatabase db) {
+    public void updateStmt(AbstractDatabase db) {
         if (stmt.getDatabase() != db) {
             // statement came from another DB object, probably a library
             // for proper depcy processing, find its twin in the final DB object
 
             // twin implies the exact same object type, hence this is safe
-            stmt = (PgStatementWithSearchPath) stmt.getTwin(db);
+            stmt = stmt.getTwin(db);
         }
     }
 
@@ -159,7 +170,18 @@ public abstract class AbstractAnalysisLauncher {
         return analyzer.getDepcies();
     }
 
+    protected <T extends ParserRuleContext> Set<PgObjLocation> analyze(
+            T ctx, ChAbstractExprWithNmspc<T> analyzer) {
+        analyzer.analyze(ctx);
+        return analyzer.getDepcies();
+    }
+
     protected Set<PgObjLocation> analyze(ExpressionContext ctx, MsValueExpr analyzer) {
+        analyzer.analyze(ctx);
+        return analyzer.getDepcies();
+    }
+
+    protected Set<PgObjLocation> analyze(ExprContext ctx, ChValueExpr analyzer) {
         analyzer.analyze(ctx);
         return analyzer.getDepcies();
     }

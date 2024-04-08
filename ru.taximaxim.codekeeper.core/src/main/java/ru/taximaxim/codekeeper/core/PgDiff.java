@@ -37,6 +37,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import ru.taximaxim.codekeeper.core.ignoreparser.IgnoreParser;
 import ru.taximaxim.codekeeper.core.loader.DatabaseLoader;
 import ru.taximaxim.codekeeper.core.loader.FullAnalyze;
+import ru.taximaxim.codekeeper.core.loader.JdbcChLoader;
 import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
 import ru.taximaxim.codekeeper.core.loader.JdbcLoader;
 import ru.taximaxim.codekeeper.core.loader.JdbcMsLoader;
@@ -55,8 +56,8 @@ import ru.taximaxim.codekeeper.core.model.difftree.TreeFlattener;
 import ru.taximaxim.codekeeper.core.model.graph.ActionsToScriptConverter;
 import ru.taximaxim.codekeeper.core.model.graph.DepcyResolver;
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.LibraryObjectDuplicationException;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgOverride;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.xmlstore.DependenciesXmlStore;
@@ -86,8 +87,8 @@ public class PgDiff {
      * Creates diff on the two database schemas.
      */
     public String createDiff() throws InterruptedException, IOException, PgCodekeeperException {
-        PgDatabase oldDatabase = loadOldDatabaseWithLibraries();
-        PgDatabase newDatabase = loadNewDatabaseWithLibraries();
+        AbstractDatabase oldDatabase = loadOldDatabaseWithLibraries();
+        AbstractDatabase newDatabase = loadNewDatabaseWithLibraries();
         IgnoreList ignoreList =  new IgnoreList();
         IgnoreParser ignoreParser = new IgnoreParser(ignoreList);
 
@@ -98,13 +99,13 @@ public class PgDiff {
         return diffDatabaseSchemas(oldDatabase, newDatabase, ignoreList);
     }
 
-    private void analyzeDatabase(PgDatabase db)
+    private void analyzeDatabase(AbstractDatabase db)
             throws InterruptedException, IOException, PgCodekeeperException {
         FullAnalyze.fullAnalyze(db, errors);
         assertErrors();
     }
 
-    private void loadOverrides(PgDatabase db, String format, String source)
+    private void loadOverrides(AbstractDatabase db, String format, String source)
             throws InterruptedException, IOException, PgCodekeeperException {
         if (!"parsed".equals(format)) {
             return;
@@ -114,7 +115,7 @@ public class PgDiff {
         assertErrors();
     }
 
-    private void loadLibraries(PgDatabase db, Collection<String> libXmls,
+    private void loadLibraries(AbstractDatabase db, Collection<String> libXmls,
             Collection<String> libs, Collection<String> libsWithoutPriv)
                     throws InterruptedException, IOException, PgCodekeeperException {
         LibraryLoader ll = new LibraryLoader(db, META_PATH, errors);
@@ -128,9 +129,9 @@ public class PgDiff {
         assertErrors();
     }
 
-    public PgDatabase loadNewDatabaseWithLibraries()
+    public AbstractDatabase loadNewDatabaseWithLibraries()
             throws IOException, InterruptedException, PgCodekeeperException {
-        PgDatabase newDatabase = loadNewDatabase();
+        AbstractDatabase newDatabase = loadNewDatabase();
 
         loadLibraries(newDatabase, arguments.getTargetLibXmls(),
                 arguments.getTargetLibs(), arguments.getTargetLibsWithoutPriv());
@@ -148,9 +149,9 @@ public class PgDiff {
         return newDatabase;
     }
 
-    public PgDatabase loadOldDatabaseWithLibraries()
+    public AbstractDatabase loadOldDatabaseWithLibraries()
             throws IOException, InterruptedException, PgCodekeeperException {
-        PgDatabase oldDatabase = loadOldDatabase();
+        AbstractDatabase oldDatabase = loadOldDatabase();
 
         loadLibraries(oldDatabase, arguments.getSourceLibXmls(),
                 arguments.getSourceLibs(), arguments.getSourceLibsWithoutPriv());
@@ -168,14 +169,14 @@ public class PgDiff {
         return oldDatabase;
     }
 
-    public PgDatabase loadNewDatabase() throws IOException, InterruptedException, PgCodekeeperException {
-        PgDatabase db = loadDatabaseSchema(arguments.getNewSrcFormat(), arguments.getNewSrc());
+    public AbstractDatabase loadNewDatabase() throws IOException, InterruptedException, PgCodekeeperException {
+        AbstractDatabase db = loadDatabaseSchema(arguments.getNewSrcFormat(), arguments.getNewSrc());
         assertErrors();
         return db;
     }
 
-    public PgDatabase loadOldDatabase() throws IOException, InterruptedException, PgCodekeeperException {
-        PgDatabase db = loadDatabaseSchema(arguments.getOldSrcFormat(), arguments.getOldSrc());
+    public AbstractDatabase loadOldDatabase() throws IOException, InterruptedException, PgCodekeeperException {
+        AbstractDatabase db = loadDatabaseSchema(arguments.getOldSrcFormat(), arguments.getOldSrc());
         assertErrors();
         return db;
     }
@@ -195,7 +196,7 @@ public class PgDiff {
      *
      * @return the loaded database
      */
-    public PgDatabase loadDatabaseSchema(String format, String srcPath)
+    public AbstractDatabase loadDatabaseSchema(String format, String srcPath)
             throws InterruptedException, IOException {
         DatabaseLoader loader;
         IgnoreSchemaList ignoreSchemaList =  new IgnoreSchemaList();
@@ -218,6 +219,10 @@ public class PgDiff {
                 loader = new JdbcLoader(JdbcConnector.fromUrl(srcPath, timezone),
                         arguments, SubMonitor.convert(null), ignoreSchemaList);
                 break;
+            case CH:
+                loader = new JdbcChLoader(JdbcConnector.fromUrl(srcPath, timezone),
+                        arguments, SubMonitor.convert(null), ignoreSchemaList);
+                break;
             default:
                 throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
             }
@@ -232,7 +237,7 @@ public class PgDiff {
         }
     }
 
-    public String diffDatabaseSchemas(PgDatabase oldDbFull, PgDatabase newDbFull,
+    public String diffDatabaseSchemas(AbstractDatabase oldDbFull, AbstractDatabase newDbFull,
             IgnoreList ignoreList) throws InterruptedException, IOException {
         TreeElement root = DiffTree.create(oldDbFull, newDbFull);
         root.setAllChecked();
@@ -242,6 +247,8 @@ public class PgDiff {
             return diffMsDatabaseSchemas(root, oldDbFull, newDbFull, null, null, ignoreList);
         case PG:
             return diffPgDatabaseSchemas(root, oldDbFull, newDbFull, null, null, ignoreList);
+        case CH:
+            return diffChDatabaseSchemas(root, oldDbFull, newDbFull, null, null, ignoreList);
         default:
             throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
         }
@@ -252,7 +259,7 @@ public class PgDiff {
      * элементы нужные для наката
      */
     public String diffDatabaseSchemasAdditionalDepcies(TreeElement root,
-            PgDatabase oldDbFull, PgDatabase newDbFull,
+            AbstractDatabase oldDbFull, AbstractDatabase newDbFull,
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget) throws IOException {
         switch (arguments.getDbType()) {
@@ -262,13 +269,16 @@ public class PgDiff {
         case PG:
             return diffPgDatabaseSchemas(root, oldDbFull, newDbFull,
                     additionalDepciesSource, additionalDepciesTarget, null);
+        case CH:
+            return diffChDatabaseSchemas(root, oldDbFull, newDbFull,
+                    additionalDepciesSource, additionalDepciesTarget, null);
         default:
             throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
         }
     }
 
     private String diffPgDatabaseSchemas(
-            TreeElement root, PgDatabase oldDbFull, PgDatabase newDbFull,
+            TreeElement root, AbstractDatabase oldDbFull, AbstractDatabase newDbFull,
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget,
             IgnoreList ignoreList) throws IOException {
@@ -338,7 +348,7 @@ public class PgDiff {
     }
 
     private String diffMsDatabaseSchemas(
-            TreeElement root, PgDatabase oldDbFull, PgDatabase newDbFull,
+            TreeElement root, AbstractDatabase oldDbFull, AbstractDatabase newDbFull,
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget,
             IgnoreList ignoreList) {
@@ -362,6 +372,23 @@ public class PgDiff {
         return script.getText();
     }
 
+    private String diffChDatabaseSchemas(
+            TreeElement root, AbstractDatabase oldDbFull, AbstractDatabase newDbFull,
+            List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
+            List<Entry<PgStatement, PgStatement>> additionalDepciesTarget,
+            IgnoreList ignoreList) {
+        PgDiffScript script = new PgDiffScript();
+
+        DepcyResolver depRes = new DepcyResolver(oldDbFull, newDbFull);
+        List<TreeElement> selected = getSelectedElements(root, ignoreList);
+        createScript(depRes, selected, oldDbFull, newDbFull,
+                additionalDepciesSource, additionalDepciesTarget);
+
+        new ActionsToScriptConverter(script, depRes.getActions(), arguments, oldDbFull, newDbFull).fillScript(selected);
+
+        return script.getText();
+    }
+
     protected List<TreeElement> getSelectedElements(TreeElement root, IgnoreList ignoreList) {
         return new TreeFlattener()
                 .onlySelected()
@@ -371,7 +398,7 @@ public class PgDiff {
     }
 
     private void createScript(DepcyResolver depRes, List<TreeElement> selected,
-            PgDatabase oldDbFull, PgDatabase newDbFull,
+            AbstractDatabase oldDbFull, AbstractDatabase newDbFull,
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget) {
         if (additionalDepciesSource != null) {
@@ -412,12 +439,11 @@ public class PgDiff {
         depRes.removeExtraActions();
     }
 
-
     /**
      * После реализации колонок как подэлементов таблицы выпилить метод!
      */
     @Deprecated
-    private void addColumnsAsElements(PgDatabase oldDbFull, PgDatabase newDbFull,
+    private void addColumnsAsElements(AbstractDatabase oldDbFull, AbstractDatabase newDbFull,
             List<TreeElement> selected) {
         List<TreeElement> tempColumns = new ArrayList<>();
         for (TreeElement el : selected) {

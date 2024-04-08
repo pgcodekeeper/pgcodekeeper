@@ -40,7 +40,6 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Set_statem
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.SqlContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.StatementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.AlterDomain;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.AlterFtsStatement;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.AlterIndex;
@@ -83,10 +82,11 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.DropStatement;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.GrantPrivilege;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.InsertStatement;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.MergeStatement;
+import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.PgParserAbstract;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.UpdateStatement;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 
-public class CustomSQLParserListener extends CustomParserListener
+public class CustomSQLParserListener extends CustomParserListener<PgDatabase>
 implements SqlContextProcessor {
 
     private String tablespace;
@@ -132,7 +132,7 @@ implements SqlContextProcessor {
     }
 
     private void create(Schema_createContext ctx, CommonTokenStream stream) {
-        ParserAbstract p;
+        PgParserAbstract p;
         if (ctx.create_table_statement() != null) {
             p = new CreateTable(ctx.create_table_statement(), db, tablespace, accessMethod, oids, stream);
         } else if (ctx.create_foreign_table_statement() != null) {
@@ -204,7 +204,7 @@ implements SqlContextProcessor {
     }
 
     private void alter(Schema_alterContext ctx, CommonTokenStream stream) {
-        ParserAbstract p;
+        PgParserAbstract p;
         if (ctx.alter_table_statement() != null) {
             p = new AlterTable(ctx.alter_table_statement(), db, tablespace, stream);
         } else if (ctx.alter_index_statement() != null) {
@@ -242,7 +242,7 @@ implements SqlContextProcessor {
     }
 
     private void drop(Schema_dropContext ctx) {
-        ParserAbstract p;
+        PgParserAbstract p;
         if (ctx.drop_database_statement() != null
                 || ctx.drop_function_statement() != null
                 || ctx.drop_trigger_statement() != null
@@ -261,7 +261,7 @@ implements SqlContextProcessor {
     }
 
     private void data(Data_statementContext ctx) {
-        ParserAbstract p;
+        PgParserAbstract p;
         if (ctx.update_stmt_for_psql() != null) {
             p = new UpdateStatement(ctx.update_stmt_for_psql(), db);
         } else if (ctx.insert_stmt_for_psql() != null) {

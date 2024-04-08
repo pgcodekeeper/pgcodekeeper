@@ -288,11 +288,6 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
     }
 
     @Override
-    public DatabaseType getDbType() {
-        return DatabaseType.MS;
-    }
-
-    @Override
     public boolean compare(PgStatement obj) {
         if (this == obj) {
             return true;
@@ -334,5 +329,10 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
             table.pkeys.addAll(pkeys);
         }
         return table;
+    }
+
+    @Override
+    public DatabaseType getDbType() {
+        return DatabaseType.MS;
     }
 }

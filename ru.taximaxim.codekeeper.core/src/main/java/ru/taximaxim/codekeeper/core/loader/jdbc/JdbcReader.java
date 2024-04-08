@@ -47,26 +47,27 @@ public abstract class JdbcReader extends AbstractStatementReader {
     @Override
     protected void processResult(ResultSet result) throws SQLException, XmlReaderException {
         String schemaColumn = getSchemaColumn();
-        long schemaId = result.getLong(schemaColumn.substring(schemaColumn.indexOf('.') + 1));
+        var schemaId = result.getObject(schemaColumn.substring(schemaColumn.indexOf('.') + 1));
         AbstractSchema schema = loader.getSchema(schemaId);
-        if (schema != null) {
-            try {
-                processResult(result, schema);
-            } catch (ConcurrentModificationException ex) {
-                if (!loader.getArgs().isIgnoreConcurrentModification()) {
-                    throw ex;
-                }
-                LOG.error(ex.getLocalizedMessage(), ex);
-            }
-        } else {
+        if (schema == null) {
             LOG.warn("No schema found for id {}", schemaId);
+            return;
+        }
+
+        try {
+            processResult(result, schema);
+        } catch (ConcurrentModificationException ex) {
+            if (!loader.getArgs().isIgnoreConcurrentModification()) {
+                throw ex;
+            }
+            LOG.error(ex.getLocalizedMessage(), ex);
         }
     }
 
     @Override
     protected QueryBuilder makeQuery() {
-        var schemas = loader.getSchemas();
-        if (schemas.isEmpty()) {
+        String schemas = loader.getSchemas();
+        if (schemas.isBlank()) {
             return null;
         }
 
@@ -74,12 +75,7 @@ public abstract class JdbcReader extends AbstractStatementReader {
         builder.column(getSchemaColumn());
 
         StringBuilder sb = new StringBuilder();
-        sb.append(getSchemaColumn()).append(" IN (");
-        for (Long id : schemas.keySet()) {
-            sb.append(id).append(',');
-        }
-        sb.setLength(sb.length() - 1);
-        sb.append(')');
+        sb.append(getSchemaColumn()).append(" IN (").append(schemas).append(')');
 
         builder.where(sb.toString());
 

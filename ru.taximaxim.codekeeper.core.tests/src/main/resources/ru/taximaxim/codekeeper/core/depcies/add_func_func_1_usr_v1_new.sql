@@ -1,0 +1,1 @@
+CREATE FUNCTION func_1 AS (a) -> default.v1;

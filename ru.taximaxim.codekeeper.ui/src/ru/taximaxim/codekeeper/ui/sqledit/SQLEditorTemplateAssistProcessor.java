@@ -64,6 +64,8 @@ public class SQLEditorTemplateAssistProcessor extends TemplateCompletionProcesso
                 return SQLEditorTemplateContextType.CONTEXT_TYPE_PG;
             case MS:
                 return SQLEditorTemplateContextType.CONTEXT_TYPE_MS;
+            case CH:
+                return SQLEditorTemplateContextType.CONTEXT_TYPE_CH;
             default:
                 throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
             }

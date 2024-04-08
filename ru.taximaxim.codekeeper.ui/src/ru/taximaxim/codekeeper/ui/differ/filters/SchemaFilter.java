@@ -19,7 +19,7 @@ import java.util.Map;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.ui.differ.ElementMetaInfo;
 
 /**
@@ -32,7 +32,7 @@ public class SchemaFilter extends AbstractFilter {
 
     @Override
     public boolean checkElement(TreeElement el, Map<TreeElement, ElementMetaInfo> elementInfoMap,
-            PgDatabase dbProject, PgDatabase dbRemote) {
+            AbstractDatabase dbProject, AbstractDatabase dbRemote) {
 
         String container = el.getContainerQName();
         if (!container.isEmpty()) {

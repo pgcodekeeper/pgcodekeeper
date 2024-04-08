@@ -798,6 +798,16 @@
         <builder id="ru.taximaxim.codekeeper.ui.builder">
         </builder>
     </extension>
+    <extension
+        id="ru.taximaxim.codekeeper.ui.chnature"
+        point="org.eclipse.core.resources.natures">
+        <runtime>
+            <run class="ru.taximaxim.codekeeper.ui.natures.ProjectNature">
+            </run>
+        </runtime>
+        <builder id="ru.taximaxim.codekeeper.ui.builder">
+        </builder>
+    </extension>
     <extension point="org.eclipse.ui.ide.projectNatureImages">
         <image
             icon="icons/nature_decorator.png"
@@ -1103,6 +1113,11 @@
             class="ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateContextType"
             id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs"
             name="SQLEditor Context Type MicrosoftSQL">
+        </contextType>
+        <contextType
+            class="ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateContextType"
+            id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCh"
+            name="SQLEditor Context Type ClickHouse">
         </contextType>
         <contextType
             class="ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateContextType"

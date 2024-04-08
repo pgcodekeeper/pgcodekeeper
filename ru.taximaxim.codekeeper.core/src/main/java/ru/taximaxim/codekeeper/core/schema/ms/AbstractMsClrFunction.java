@@ -65,11 +65,6 @@ public abstract class AbstractMsClrFunction extends AbstractFunction {
     }
 
     @Override
-    public DatabaseType getDbType() {
-        return DatabaseType.MS;
-    }
-
-    @Override
     protected boolean compareUnalterable(AbstractFunction function) {
         if (function instanceof AbstractMsClrFunction && super.compareUnalterable(function)) {
             AbstractMsClrFunction func = (AbstractMsClrFunction) function;
@@ -96,5 +91,10 @@ public abstract class AbstractMsClrFunction extends AbstractFunction {
         AbstractMsClrFunction functionDst = (AbstractMsClrFunction) super.shallowCopy();
         functionDst.options.addAll(options);
         return functionDst;
+    }
+
+    @Override
+    public DatabaseType getDbType() {
+        return DatabaseType.MS;
     }
 }

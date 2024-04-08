@@ -29,6 +29,7 @@ public enum ProjectIcon {
     ZIP("/icons/zip.png"), //$NON-NLS-1$
     PG_ICON("/icons/postgresql_icon.png"), //$NON-NLS-1$
     MS_ICON("/icons/mssql_icon.png"), //$NON-NLS-1$
+    CH_ICON("/icons/ch_icon16.png"), //$NON-NLS-1$
     DECOR_DATABASE("/icons/db_decorator.png"), //$NON-NLS-1$
     DECOR_PGCODEKEEPER("/icons/nature_decorator.png"), //$NON-NLS-1$
 

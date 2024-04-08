@@ -19,7 +19,8 @@ import ru.taximaxim.codekeeper.core.localizations.Messages;
 
 public enum DatabaseType {
     PG("PostgreSQL"),
-    MS("MS SQL");
+    MS("MS SQL"),
+    CH("ClickHouse");
 
     private final String dbTypeName;
 

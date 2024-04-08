@@ -20,9 +20,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.IStatementContainer;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 /**
@@ -131,9 +131,9 @@ public class TreeElement {
     }
 
     /**
-     * Gets corresponding {@link PgStatement} from {@link PgDatabase}.
+     * Gets corresponding {@link PgStatement} from {@link AbstractDatabase}.
      */
-    public PgStatement getPgStatement(PgDatabase db) {
+    public PgStatement getPgStatement(AbstractDatabase db) {
         if (type == DbObjType.DATABASE) {
             return db;
         }
@@ -154,7 +154,7 @@ public class TreeElement {
     /**
      * @return Statement from the corresponding DB, based on client's side. BOTH uses left.
      */
-    public PgStatement getPgStatementSide(PgDatabase left, PgDatabase right) {
+    public PgStatement getPgStatementSide(AbstractDatabase left, AbstractDatabase right) {
         switch (side) {
         case LEFT:
         case BOTH:

@@ -42,8 +42,8 @@ import ru.taximaxim.codekeeper.core.schema.AbstractFunction;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.Argument;
 import ru.taximaxim.codekeeper.core.schema.FuncTypes;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsClrFunction;
+import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsFunction;
 
 public class CreateMsFunction extends BatchContextProcessor {
@@ -53,7 +53,7 @@ public class CreateMsFunction extends BatchContextProcessor {
     private final boolean ansiNulls;
     private final boolean quotedIdentifier;
 
-    public CreateMsFunction(Batch_statementContext ctx, PgDatabase db,
+    public CreateMsFunction(Batch_statementContext ctx, MsDatabase db,
             boolean ansiNulls, boolean quotedIdentifier, CommonTokenStream stream) {
         super(db, ctx, stream);
         this.ctx = ctx.batch_statement_body().create_or_alter_function();

@@ -20,7 +20,7 @@ import java.util.Set;
 
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.ElementMetaInfo;
@@ -36,7 +36,7 @@ public class CodeFilter extends AbstractFilter {
 
     @Override
     public boolean checkElement(TreeElement el, Map<TreeElement, ElementMetaInfo> elementInfoMap,
-            PgDatabase dbProject, PgDatabase dbRemote) {
+            AbstractDatabase dbProject, AbstractDatabase dbRemote) {
 
         Set<TreeElement> elements = elementInfoMap.keySet();
         if (el.getSide() != DiffSide.RIGHT && checkSide(el, dbProject, elements)) {
@@ -50,7 +50,7 @@ public class CodeFilter extends AbstractFilter {
         return false;
     }
 
-    private boolean checkSide(TreeElement el, PgDatabase db, Set<TreeElement> elements) {
+    private boolean checkSide(TreeElement el, AbstractDatabase db, Set<TreeElement> elements) {
         PgStatement statement = el.getPgStatement(db);
         if (statement != null) {
             if (searchMatches(statement.getCreationSQL())) {

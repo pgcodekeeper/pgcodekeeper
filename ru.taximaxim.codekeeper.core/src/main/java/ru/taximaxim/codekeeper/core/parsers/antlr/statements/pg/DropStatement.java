@@ -37,8 +37,8 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Operator_n
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_dropContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qualified_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Target_operatorContext;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
+import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 
 public class DropStatement extends PgParserAbstract {
 
@@ -129,7 +129,7 @@ public class DropStatement extends PgParserAbstract {
         }
 
         for (Schema_qualified_nameContext objName : ctx.if_exist_names_restrict_cascade().names_references()
-            .schema_qualified_name()) {
+                .schema_qualified_name()) {
             List<ParserRuleContext> ids = getIdentifiers(objName);
             PgObjLocation loc = addObjReference(ids, type, ACTION_DROP);
 
@@ -242,7 +242,7 @@ public class DropStatement extends PgParserAbstract {
             type = getTypeOfDropStmt(dropStmtCtx);
             if (type != null) {
                 List<Schema_qualified_nameContext> objNames = dropStmtCtx
-                    .if_exist_names_restrict_cascade().names_references().schema_qualified_name();
+                        .if_exist_names_restrict_cascade().names_references().schema_qualified_name();
                 ids = objNames.size() == 1 ? getIdentifiers(objNames.get(0))
                         : Collections.emptyList();
             }

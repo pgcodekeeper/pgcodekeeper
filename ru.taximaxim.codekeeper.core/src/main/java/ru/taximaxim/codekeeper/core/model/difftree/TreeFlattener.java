@@ -23,14 +23,14 @@ import java.util.List;
 
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoredObject.AddStatus;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 
 public class TreeFlattener {
 
     private boolean onlySelected;
     private boolean onlyEdits;
-    private PgDatabase dbSource;
-    private PgDatabase dbTarget;
+    private AbstractDatabase dbSource;
+    private AbstractDatabase dbTarget;
     private IgnoreList ignoreList;
     private String[] dbNames;
     private Collection<DbObjType> onlyTypes;
@@ -51,7 +51,7 @@ public class TreeFlattener {
         return this;
     }
 
-    public TreeFlattener onlyEdits(PgDatabase dbSource, PgDatabase dbTarget) {
+    public TreeFlattener onlyEdits(AbstractDatabase dbSource, AbstractDatabase dbTarget) {
         onlyEdits = dbSource != null && dbTarget != null;
         this.dbSource = dbSource;
         this.dbTarget = dbTarget;

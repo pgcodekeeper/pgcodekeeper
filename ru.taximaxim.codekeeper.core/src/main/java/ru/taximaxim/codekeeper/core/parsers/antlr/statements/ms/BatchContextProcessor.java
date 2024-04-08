@@ -24,16 +24,16 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.SourceStatement;
+import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 
 public abstract class BatchContextProcessor extends MsParserAbstract {
 
     private final ParserRuleContext batchCtx;
     private final CommonTokenStream stream;
 
-    protected BatchContextProcessor(PgDatabase db, ParserRuleContext batchCtx,
+    protected BatchContextProcessor(MsDatabase db, ParserRuleContext batchCtx,
             CommonTokenStream stream) {
         super(db);
         this.batchCtx = batchCtx;

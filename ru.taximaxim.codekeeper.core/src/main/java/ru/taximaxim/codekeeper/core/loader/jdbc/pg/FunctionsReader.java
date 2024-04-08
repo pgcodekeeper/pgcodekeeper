@@ -36,12 +36,12 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.CreateAggregate;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractFunction;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.ArgMode;
 import ru.taximaxim.codekeeper.core.schema.Argument;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgFunction;
 import ru.taximaxim.codekeeper.core.schema.pg.PgAggregate;
 import ru.taximaxim.codekeeper.core.schema.pg.PgAggregate.AggFuncs;
@@ -149,7 +149,7 @@ public class FunctionsReader extends JdbcReader {
             function.setRows(rows);
         }
 
-        PgDatabase db = schema.getDatabase();
+        AbstractDatabase db = schema.getDatabase();
         fillBody(function, db, res);
         fillDefaultValues(function, db, res);
         fillConfiguration(function, res);
@@ -168,7 +168,8 @@ public class FunctionsReader extends JdbcReader {
         }
     }
 
-    private void fillDefaultValues(AbstractPgFunction function, PgDatabase db, ResultSet res) throws SQLException {
+    private void fillDefaultValues(AbstractPgFunction function, AbstractDatabase db, ResultSet res)
+            throws SQLException {
         String defaultValuesAsString = res.getString("default_values_as_string");
         if (defaultValuesAsString == null) {
             return;
@@ -231,7 +232,7 @@ public class FunctionsReader extends JdbcReader {
         }
     }
 
-    private void fillBody(AbstractPgFunction function, PgDatabase db, ResultSet res) throws SQLException {
+    private void fillBody(AbstractPgFunction function, AbstractDatabase db, ResultSet res) throws SQLException {
         List<Pair<String, GenericColumn>> argsQualTypes = fillArguments(function, res);
 
         String body = "";

@@ -100,6 +100,8 @@ public class PgDbProject {
             newProject.getNature(NATURE.ID).configure();
             if (dbType == DatabaseType.MS) {
                 newProject.getNature(NATURE.MS).configure();
+            } else if (dbType == DatabaseType.CH) {
+                newProject.getNature(NATURE.CH).configure();
             }
         }
         return new PgDbProject(newProject);

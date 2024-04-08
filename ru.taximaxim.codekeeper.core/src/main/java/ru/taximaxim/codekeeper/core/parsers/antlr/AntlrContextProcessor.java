@@ -18,6 +18,7 @@ package ru.taximaxim.codekeeper.core.parsers.antlr;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Ch_fileContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.SqlContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Tsql_fileContext;
 
@@ -28,5 +29,8 @@ public interface AntlrContextProcessor<R extends ParserRuleContext> {
     }
 
     public static interface TSqlContextProcessor extends AntlrContextProcessor<Tsql_fileContext> {
+    }
+
+    public static interface ChSqlContextProcessor extends AntlrContextProcessor<Ch_fileContext> {
     }
 }

@@ -27,14 +27,14 @@ import ru.taximaxim.codekeeper.core.loader.jdbc.XmlReaderException;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsSchema;
 
 public class MsSchemasReader extends AbstractStatementReader {
 
-    private final PgDatabase db;
+    private final MsDatabase db;
 
-    public MsSchemasReader(JdbcLoaderBase loader, PgDatabase db) {
+    public MsSchemasReader(JdbcLoaderBase loader, MsDatabase db) {
         super(loader);
         this.db = db;
     }
@@ -44,7 +44,7 @@ public class MsSchemasReader extends AbstractStatementReader {
         AbstractSchema schema = getSchema(result);
         if (loader.checkIgnoreSchemaList(schema.getName())) {
             db.addSchema(schema);
-            loader.putSchema(result.getLong("schema_id"), schema);
+            loader.putSchema(result.getInt("schema_id"), schema);
         }
     }
 

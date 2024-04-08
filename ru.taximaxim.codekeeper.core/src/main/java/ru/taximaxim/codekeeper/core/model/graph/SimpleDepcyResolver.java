@@ -25,21 +25,21 @@ import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.DepthFirstIterator;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public class SimpleDepcyResolver {
 
-    private final PgDatabase oldDb;
-    private final PgDatabase newDb;
+    private final AbstractDatabase oldDb;
+    private final AbstractDatabase newDb;
     private final DepcyGraph oldDepcyGraph;
     private final DepcyGraph newDepcyGraph;
 
-    public SimpleDepcyResolver(PgDatabase oldDatabase, boolean isShowColumns) {
+    public SimpleDepcyResolver(AbstractDatabase oldDatabase, boolean isShowColumns) {
         this(oldDatabase, null, isShowColumns);
     }
 
-    public SimpleDepcyResolver(PgDatabase oldDatabase, PgDatabase newDatabase, boolean isShowColumns) {
+    public SimpleDepcyResolver(AbstractDatabase oldDatabase, AbstractDatabase newDatabase, boolean isShowColumns) {
         this.oldDb = oldDatabase;
         this.newDb = newDatabase;
         this.oldDepcyGraph = new DepcyGraph(oldDatabase, !isShowColumns);

@@ -235,6 +235,9 @@ final class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
                 case MS:
                     projectIcon = ProjectIcon.MS_ICON;
                     break;
+                case CH:
+                    projectIcon = ProjectIcon.CH_ICON;
+                    break;
                 default:
                     throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
                 }

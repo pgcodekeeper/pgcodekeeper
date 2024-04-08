@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.ElementMetaInfo;
 
@@ -33,7 +33,7 @@ public class UserFilter extends AbstractFilter {
 
     @Override
     public boolean checkElement(TreeElement el, Map<TreeElement, ElementMetaInfo> elementInfoMap,
-            PgDatabase dbProject, PgDatabase dbRemote) {
+            AbstractDatabase dbProject, AbstractDatabase dbRemote) {
         ElementMetaInfo meta = elementInfoMap.get(el);
 
         if (meta != null) {

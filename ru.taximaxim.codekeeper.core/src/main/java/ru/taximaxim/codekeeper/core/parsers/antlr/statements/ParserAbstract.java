@@ -39,24 +39,25 @@ import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.WorkDirs;
 import ru.taximaxim.codekeeper.core.loader.ParserListenerMode;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.model.exporter.AbstractModelExporter;
+import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.MisplacedObjectException;
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.UnresolvedReferenceException;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.ArgMode;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.IStatement;
 import ru.taximaxim.codekeeper.core.schema.IStatementContainer;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation.LocationType;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 
 /**
  * Abstract Class contents common operations for parsing
  */
-public abstract class ParserAbstract {
+public abstract class ParserAbstract<S extends AbstractDatabase> {
 
     private static final String SCHEMA_ERROR = "Object must be schema qualified: ";
     private static final String LOCATION_ERROR  = "The object {0} must be defined in the file: {1}";
@@ -70,12 +71,12 @@ public abstract class ParserAbstract {
     protected static final String ACTION_MERGE = "MERGE";
     protected static final String ACTION_COMMENT = "COMMENT";
 
-    protected final PgDatabase db;
+    protected final S db;
 
     private boolean refMode;
     protected String fileName;
 
-    protected ParserAbstract(PgDatabase db) {
+    protected ParserAbstract(S db) {
         this.db = db;
     }
 
@@ -227,7 +228,7 @@ public abstract class ParserAbstract {
             return;
         }
 
-        String filePath = AbstractModelExporter.getRelativeFilePath(statement).toString();
+        String filePath = ModelExporter.getRelativeFilePath(statement).toString();
         if (!PgDiffUtils.endsWithIgnoreCase(fileName, filePath)
                 && isInProject(statement.getDbType())) {
             throw new MisplacedObjectException(MessageFormat.format(LOCATION_ERROR,
@@ -276,6 +277,11 @@ public abstract class ParserAbstract {
                     new GenericColumn(nameCtx.getText(), type));
         default:
             break;
+        }
+
+        if (db instanceof ChDatabase && type == DbObjType.FUNCTION) {
+            return buildLocation(nameCtx, action, locationType,
+                    new GenericColumn(nameCtx.getText(), type));
         }
 
         ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
@@ -358,7 +364,9 @@ public abstract class ParserAbstract {
         }
     }
 
-    protected abstract DatabaseType getDbType();
+    protected final DatabaseType getDbType() {
+        return db.getDbType();
+    }
 
     protected AbstractSchema getSchemaSafe(List<? extends ParserRuleContext> ids) {
         ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);

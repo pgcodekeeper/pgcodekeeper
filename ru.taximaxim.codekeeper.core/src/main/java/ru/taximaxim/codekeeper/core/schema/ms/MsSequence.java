@@ -222,14 +222,15 @@ public class MsSequence extends AbstractSequence {
     }
 
     @Override
-    public DatabaseType getDbType() {
-        return DatabaseType.MS;
-    }
-
-    @Override
     protected AbstractSequence getSequenceCopy() {
         MsSequence sequence = new MsSequence(getName());
         sequence.setCached(isCached());
         return sequence;
     }
+
+    @Override
+    public DatabaseType getDbType() {
+        return DatabaseType.MS;
+    }
+
 }

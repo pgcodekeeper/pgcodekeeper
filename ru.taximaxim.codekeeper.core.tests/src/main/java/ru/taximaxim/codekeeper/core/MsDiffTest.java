@@ -20,8 +20,6 @@ import java.io.IOException;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
-
 /**
  * Tests for MS SQL statements
  *
@@ -321,19 +319,6 @@ class MsDiffTest {
             "modify_ms_table_schemabinding",
     })
     void runDiff(String fileNameTemplate) throws IOException, InterruptedException {
-        PgDiffArguments args = new PgDiffArguments();
-        args.setDbType(DatabaseType.MS);
-
-        PgDatabase dbOld = TestUtils.loadTestDump(
-                fileNameTemplate + FILES_POSTFIX.ORIGINAL_SQL, MsDiffTest.class, args);
-        PgDatabase dbNew = TestUtils.loadTestDump(
-                fileNameTemplate + FILES_POSTFIX.NEW_SQL, MsDiffTest.class, args);
-
-        TestUtils.runDiffSame(dbOld, fileNameTemplate, args);
-        TestUtils.runDiffSame(dbNew, fileNameTemplate, args);
-
-        String script = new PgDiff(args).diffDatabaseSchemas(dbOld, dbNew, null);
-
-        TestUtils.compareResult(script, fileNameTemplate, MsDiffTest.class);
+        TestUtils.runDiff(fileNameTemplate, DatabaseType.MS, MsDiffTest.class);
     }
 }

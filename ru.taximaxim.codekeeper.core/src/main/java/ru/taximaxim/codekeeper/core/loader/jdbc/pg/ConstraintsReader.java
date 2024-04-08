@@ -35,6 +35,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgConstraintCheck;
 import ru.taximaxim.codekeeper.core.schema.pg.PgConstraintExclude;
 import ru.taximaxim.codekeeper.core.schema.pg.PgConstraintFk;
 import ru.taximaxim.codekeeper.core.schema.pg.PgConstraintPk;
+import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgIndexParamContainer;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
@@ -94,7 +95,7 @@ public class ConstraintsReader extends JdbcReader {
         loader.submitAntlrTask(ADD_CONSTRAINT + definition + ';',
                 p -> new Pair<>(p.sql().statement(0).schema_statement().schema_alter()
                         .alter_table_statement().table_action(0), (CommonTokenStream) p.getTokenStream()),
-                pair -> new AlterTable(null, schema.getDatabase(), tablespace, pair.getSecond())
+                pair -> new AlterTable(null, (PgDatabase) schema.getDatabase(), tablespace, pair.getSecond())
                 .parseAlterTableConstraint(
                         pair.getFirst(), constr, schemaName, tableName, loader.getCurrentLocation()));
         loader.setAuthor(constr, res);

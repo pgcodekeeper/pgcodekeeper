@@ -114,11 +114,6 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
     }
 
     @Override
-    public DatabaseType getDbType() {
-        return DatabaseType.MS;
-    }
-
-    @Override
     public boolean compare(PgStatement obj) {
         if (obj instanceof MsTrigger && super.compare(obj)) {
             MsTrigger trigger = (MsTrigger) obj;
@@ -199,5 +194,10 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
     public void setSecondPart(String secondPart) {
         this.secondPart = secondPart;
         resetHash();
+    }
+
+    @Override
+    public DatabaseType getDbType() {
+        return DatabaseType.MS;
     }
 }

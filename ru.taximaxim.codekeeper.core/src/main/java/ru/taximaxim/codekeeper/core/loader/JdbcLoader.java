@@ -53,7 +53,7 @@ import ru.taximaxim.codekeeper.core.loader.jdbc.pg.UserMappingReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.pg.ViewsReader;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 
 public class JdbcLoader extends JdbcLoaderBase {
 
@@ -70,7 +70,7 @@ public class JdbcLoader extends JdbcLoaderBase {
 
     @Override
     public PgDatabase load() throws IOException, InterruptedException {
-        PgDatabase d = new PgDatabase(getArgs());
+        PgDatabase d = (PgDatabase) createDb(getArgs());
 
         LOG.info("Reading db using JDBC.");
         setCurrentOperation("connection setup");
@@ -133,7 +133,7 @@ public class JdbcLoader extends JdbcLoaderBase {
 
             d.sortColumns();
 
-            d.setPostgresVersion(SupportedVersion.valueOf(getVersion()));
+            d.setVersion(SupportedVersion.valueOf(getVersion()));
             LOG.info("Database object has been successfully queried from JDBC");
         } catch (InterruptedException ex) {
             throw ex;

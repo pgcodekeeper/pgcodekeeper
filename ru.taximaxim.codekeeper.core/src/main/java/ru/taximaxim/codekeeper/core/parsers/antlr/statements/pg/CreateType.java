@@ -29,10 +29,10 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Table_colu
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractType;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgBaseType;
 import ru.taximaxim.codekeeper.core.schema.pg.PgColumn;
 import ru.taximaxim.codekeeper.core.schema.pg.PgCompositeType;
+import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgEnumType;
 import ru.taximaxim.codekeeper.core.schema.pg.PgRangeType;
 import ru.taximaxim.codekeeper.core.schema.pg.PgShellType;
@@ -40,6 +40,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgShellType;
 public final class CreateType extends PgParserAbstract {
 
     private final Create_type_statementContext ctx;
+
     public CreateType(Create_type_statementContext ctx, PgDatabase db) {
         super(db);
         this.ctx = ctx;

@@ -33,12 +33,12 @@ import ru.taximaxim.codekeeper.core.fileutils.TempDir;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractSequence;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.Argument;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgPrivilege;
 import ru.taximaxim.codekeeper.core.schema.SimpleColumn;
 import ru.taximaxim.codekeeper.core.schema.pg.PgColumn;
@@ -46,6 +46,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgCompositeType;
 import ru.taximaxim.codekeeper.core.schema.pg.PgConstraintCheck;
 import ru.taximaxim.codekeeper.core.schema.pg.PgConstraintFk;
 import ru.taximaxim.codekeeper.core.schema.pg.PgConstraintPk;
+import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgEventType;
 import ru.taximaxim.codekeeper.core.schema.pg.PgExtension;
 import ru.taximaxim.codekeeper.core.schema.pg.PgFunction;
@@ -67,17 +68,17 @@ class PgAntlrLoaderTest {
 
     private static final String ENCODING = Consts.UTF_8;
 
-    void testDatabase(String fileName, PgDatabase d) throws IOException, InterruptedException {
+    void testDatabase(String fileName, AbstractDatabase d) throws IOException, InterruptedException {
         loadSchema(fileName, d);
         exportFullDb(fileName, d);
     }
 
-    void loadSchema(String fileName, PgDatabase dbPredefined) throws IOException, InterruptedException {
+    void loadSchema(String fileName, AbstractDatabase dbPredefined) throws IOException, InterruptedException {
         // first test the dump loader itself
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(ENCODING);
         args.setKeepNewlines(true);
-        PgDatabase d = TestUtils.loadTestDump(fileName, PgAntlrLoaderTest.class, args);
+        AbstractDatabase d = TestUtils.loadTestDump(fileName, PgAntlrLoaderTest.class, args);
 
         Assertions.assertEquals(dbPredefined, d, "PgDumpLoader: predefined object is not equal to file " + fileName);
 
@@ -86,23 +87,23 @@ class PgAntlrLoaderTest {
         Assertions.assertEquals(dbPredefined, d, "PgStatement deep copy altered original");
     }
 
-    void exportFullDb(String fileName, PgDatabase dbPredefined) throws IOException, InterruptedException {
+    void exportFullDb(String fileName, AbstractDatabase dbPredefined) throws IOException, InterruptedException {
         // prepare db object from sql file
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(ENCODING);
         args.setKeepNewlines(true);
-        PgDatabase dbFromFile = TestUtils.loadTestDump(
+        AbstractDatabase dbFromFile = TestUtils.loadTestDump(
                 fileName, PgAntlrLoaderTest.class, args);
 
         Path exportDir = null;
         try (TempDir dir = new TempDir("pgCodekeeper-test-files")) {
             exportDir = dir.get();
-            new ModelExporter(exportDir, dbPredefined, ENCODING).exportFull();
+            new ModelExporter(exportDir, dbPredefined, DatabaseType.PG, ENCODING).exportFull();
 
             args = new PgDiffArguments();
             args.setInCharsetName(ENCODING);
             args.setKeepNewlines(true);
-            PgDatabase dbAfterExport = new ProjectLoader(exportDir.toString(), args).loadAndAnalyze();
+            AbstractDatabase dbAfterExport = new ProjectLoader(exportDir.toString(), args).loadAndAnalyze();
 
             // check the same db similarity before and after export
             Assertions.assertEquals(dbPredefined, dbAfterExport, "Predefined object PgDB" + fileName +
@@ -115,7 +116,7 @@ class PgAntlrLoaderTest {
 
     @Test
     void testDB1() throws IOException, InterruptedException {
-        PgDatabase d = TestUtils.createDumpDB(DatabaseType.PG);
+        AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.PG);
         AbstractSchema schema = d.getDefaultSchema();
 
         AbstractTable table = new SimplePgTable("fax_boxes");
@@ -219,14 +220,14 @@ class PgAntlrLoaderTest {
 
     @Test
     void testDB2() throws IOException, InterruptedException {
-        PgDatabase d = TestUtils.createDumpDB(DatabaseType.PG);
+        AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.PG);
 
         AbstractSchema schema = new PgSchema("postgis");
         d.addSchema(schema);
 
         PgExtension ext = new PgExtension("postgis");
         ext.setSchema("postgis");
-        d.addExtension(ext);
+        ((PgDatabase) d).addExtension(ext);
         ext.setComment("'PostGIS geometry, geography, and raster spatial types and functions'");
 
         schema = d.getSchema(Consts.PUBLIC);
@@ -254,7 +255,7 @@ class PgAntlrLoaderTest {
 
     @Test
     void testDB3() throws IOException, InterruptedException {
-        PgDatabase d = TestUtils.createDumpDB(DatabaseType.PG);
+        AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.PG);
         AbstractSchema schema = d.getDefaultSchema();
 
         AbstractSequence seq = new PgSequence("admins_aid_seq");
@@ -347,7 +348,7 @@ class PgAntlrLoaderTest {
 
     @Test
     void testDB4() throws IOException, InterruptedException {
-        PgDatabase d = TestUtils.createDumpDB(DatabaseType.PG);
+        AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.PG);
         AbstractSchema schema = d.getDefaultSchema();
 
         AbstractTable table = new SimplePgTable("call_logs");
@@ -364,7 +365,7 @@ class PgAntlrLoaderTest {
 
     @Test
     void testDB5() throws IOException, InterruptedException {
-        PgDatabase d = TestUtils.createDumpDB(DatabaseType.PG);
+        AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.PG);
         AbstractSchema schema = d.getDefaultSchema();
 
         PgFunction func = new PgFunction("gtsq_in");
@@ -436,7 +437,7 @@ class PgAntlrLoaderTest {
 
     @Test
     void testDB6() throws IOException, InterruptedException {
-        PgDatabase d = TestUtils.createDumpDB(DatabaseType.PG);
+        AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.PG);
         AbstractSchema schema = d.getDefaultSchema();
 
         schema.addPrivilege(new PgPrivilege("REVOKE", "ALL", "SCHEMA public", "PUBLIC", false));
@@ -468,7 +469,7 @@ class PgAntlrLoaderTest {
 
     @Test
     void testDB7() throws IOException, InterruptedException {
-        PgDatabase d = TestUtils.createDumpDB(DatabaseType.PG);
+        AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.PG);
 
         AbstractSchema schema = new PgSchema("common");
         d.addSchema(schema);
@@ -527,7 +528,7 @@ class PgAntlrLoaderTest {
 
     @Test
     void testDB8() throws IOException, InterruptedException {
-        PgDatabase d = TestUtils.createDumpDB(DatabaseType.PG);
+        AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.PG);
         AbstractSchema schema = d.getDefaultSchema();
 
         PgCompositeType type = new PgCompositeType("testtt");
@@ -559,7 +560,7 @@ class PgAntlrLoaderTest {
 
     @Test
     void testDB9() throws IOException, InterruptedException {
-        PgDatabase d = TestUtils.createDumpDB(DatabaseType.PG);
+        AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.PG);
         AbstractSchema schema = d.getDefaultSchema();
 
         AbstractTable table = new SimplePgTable("user_data");
@@ -638,7 +639,7 @@ class PgAntlrLoaderTest {
 
     @Test
     void testDB10() throws IOException, InterruptedException {
-        PgDatabase d = TestUtils.createDumpDB(DatabaseType.PG);
+        AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.PG);
         AbstractSchema schema = new PgSchema("admin");
         d.addSchema(schema);
         d.setDefaultSchema("admin");
@@ -730,7 +731,7 @@ class PgAntlrLoaderTest {
 
     @Test
     void testDB11() throws IOException, InterruptedException {
-        PgDatabase d = TestUtils.createDumpDB(DatabaseType.PG);
+        AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.PG);
         AbstractSchema schema = d.getDefaultSchema();
 
         PgFunction func = new PgFunction("curdate");
@@ -744,7 +745,7 @@ class PgAntlrLoaderTest {
 
     @Test
     void testDB12() throws IOException, InterruptedException {
-        PgDatabase d = TestUtils.createDumpDB(DatabaseType.PG);
+        AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.PG);
 
         // d.setComment("'The status : ''E'' for enabled, ''D'' for disabled.'")
 
@@ -753,7 +754,7 @@ class PgAntlrLoaderTest {
 
     @Test
     void testDB13() throws IOException, InterruptedException {
-        PgDatabase d = TestUtils.createDumpDB(DatabaseType.PG);
+        AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.PG);
         AbstractSchema schema = d.getDefaultSchema();
 
         PgFunction func = new PgFunction("drop_fk_except_for");
@@ -771,7 +772,7 @@ class PgAntlrLoaderTest {
 
     @Test
     void testDB14() throws IOException, InterruptedException {
-        PgDatabase d = TestUtils.createDumpDB(DatabaseType.PG);
+        AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.PG);
         AbstractSchema schema = d.getDefaultSchema();
 
         schema.addPrivilege(new PgPrivilege("REVOKE", "ALL", "SCHEMA public", "PUBLIC", false));
@@ -871,7 +872,7 @@ class PgAntlrLoaderTest {
 
     @Test
     void testDB15() throws IOException, InterruptedException {
-        PgDatabase d = TestUtils.createDumpDB(DatabaseType.PG);
+        AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.PG);
         AbstractSchema schema = d.getDefaultSchema();
 
         AbstractTable table = new SimplePgTable("test");
@@ -888,7 +889,7 @@ class PgAntlrLoaderTest {
 
     @Test
     void testDB16() throws IOException, InterruptedException {
-        PgDatabase d = TestUtils.createDumpDB(DatabaseType.PG);
+        AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.PG);
         AbstractSchema schema = d.getDefaultSchema();
 
         // table1
@@ -919,7 +920,7 @@ class PgAntlrLoaderTest {
 
     @Test
     void testDB17() throws IOException, InterruptedException {
-        PgDatabase d = TestUtils.createDumpDB(DatabaseType.PG);
+        AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.PG);
         AbstractSchema schema = d.getDefaultSchema();
 
         // table1

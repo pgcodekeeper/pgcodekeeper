@@ -32,7 +32,7 @@ import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.loader.PgDumpLoader;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrError;
 import ru.taximaxim.codekeeper.core.parsers.antlr.ErrorTypes;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
 
@@ -72,7 +72,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
         this(ifile, args, new NullProgressMonitor(), 0);
     }
 
-    public PgDatabase loadFile(PgDatabase db) throws InterruptedException, IOException {
+    public AbstractDatabase loadFile(AbstractDatabase db) throws InterruptedException, IOException {
         loadDatabase(db, antlrTasks);
         finishLoaders();
         return db;

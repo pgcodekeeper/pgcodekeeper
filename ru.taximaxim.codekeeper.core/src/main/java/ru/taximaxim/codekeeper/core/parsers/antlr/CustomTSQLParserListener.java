@@ -73,16 +73,16 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ms.DropMsStatement;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ms.GrantMsPrivilege;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ms.InsertMsStatement;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ms.UpdateMsStatement;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
+import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 
-public class CustomTSQLParserListener extends CustomParserListener
+public class CustomTSQLParserListener extends CustomParserListener<MsDatabase>
 implements TSqlContextProcessor {
 
     private boolean ansiNulls = true;
     private boolean quotedIdentifier = true;
 
-    public CustomTSQLParserListener(PgDatabase database, String filename,
+    public CustomTSQLParserListener(MsDatabase database, String filename,
             ParserListenerMode mode, List<Object> errors, IProgressMonitor monitor) {
         super(database, filename, mode, errors, monitor);
     }

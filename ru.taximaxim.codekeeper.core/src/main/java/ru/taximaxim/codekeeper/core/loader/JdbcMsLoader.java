@@ -40,7 +40,8 @@ import ru.taximaxim.codekeeper.core.loader.jdbc.ms.MsTypesReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.ms.MsUsersReader;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
+import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 
 public class JdbcMsLoader extends JdbcLoaderBase {
 
@@ -56,8 +57,8 @@ public class JdbcMsLoader extends JdbcLoaderBase {
     }
 
     @Override
-    public PgDatabase load() throws IOException, InterruptedException {
-        PgDatabase d = new PgDatabase(getArgs());
+    public AbstractDatabase load() throws IOException, InterruptedException {
+        MsDatabase d = (MsDatabase) createDb(getArgs());
 
         LOG.info("Reading db using JDBC.");
         setCurrentOperation("connection setup");

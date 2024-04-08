@@ -43,7 +43,7 @@ import org.eclipse.ui.part.ViewPart;
 
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgOverride;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
@@ -88,7 +88,7 @@ public class ProjectOverrideView extends ViewPart implements ISelectionListener 
             return;
         }
 
-        PgDatabase db = dbPair.dbProject.getDbObject();
+        AbstractDatabase db = dbPair.dbProject.getDbObject();
 
         List<PgOverride> overrides = db.getOverrides();
 

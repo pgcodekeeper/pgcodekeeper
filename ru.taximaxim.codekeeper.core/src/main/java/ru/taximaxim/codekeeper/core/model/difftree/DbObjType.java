@@ -63,4 +63,17 @@ public enum DbObjType {
     public String getTypeName() {
         return typeName;
     }
+
+    public boolean isSubElement() {
+        return in(CONSTRAINT, INDEX, TRIGGER, TRIGGER, POLICY, RULE, COLUMN);
+    }
+
+    public boolean in(DbObjType... types) {
+        for (DbObjType type : types) {
+            if (this == type) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

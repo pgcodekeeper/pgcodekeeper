@@ -27,9 +27,9 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Alter_owne
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.IdentifierContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Target_operatorContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.StatementOverride;
+import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 
 public class AlterOwner extends PgParserAbstract {
 

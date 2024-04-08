@@ -206,11 +206,6 @@ public final class MsType extends AbstractType implements IStatementContainer {
     }
 
     @Override
-    public DatabaseType getDbType() {
-        return DatabaseType.MS;
-    }
-
-    @Override
     public void addChild(IStatement stmt) {
         var type = stmt.getStatementType();
         switch (type) {
@@ -234,4 +229,10 @@ public final class MsType extends AbstractType implements IStatementContainer {
         // no impl
         return null;
     }
+
+    @Override
+    public DatabaseType getDbType() {
+        return DatabaseType.MS;
+    }
+
 }

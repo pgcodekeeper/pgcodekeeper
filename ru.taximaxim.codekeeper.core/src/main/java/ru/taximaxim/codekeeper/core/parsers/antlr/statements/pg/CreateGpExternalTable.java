@@ -35,8 +35,8 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Format_opt
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.IdentifierContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.GpExternalTable;
+import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 
 public final class CreateGpExternalTable extends TableAbstract {
 

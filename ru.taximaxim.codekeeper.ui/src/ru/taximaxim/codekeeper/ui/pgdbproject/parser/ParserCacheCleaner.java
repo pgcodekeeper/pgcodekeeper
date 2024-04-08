@@ -51,6 +51,7 @@ public class ParserCacheCleaner implements IStartup {
                 if (cleaningInterval != 0) {
                     AntlrParser.checkToClean(DatabaseType.PG, cleaningInterval);
                     AntlrParser.checkToClean(DatabaseType.MS, cleaningInterval);
+                    AntlrParser.checkToClean(DatabaseType.CH, cleaningInterval);
                 }
             }
         });

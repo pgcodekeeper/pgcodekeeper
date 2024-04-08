@@ -27,8 +27,8 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.AbstractAnalysis
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.AggregateAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.OperatorAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.ViewAnalysisLauncher;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.IRelation;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaUtils;
@@ -38,21 +38,21 @@ public final class FullAnalyze {
     private final List<Object> errors;
     private final List<PgObjLocation> refs = new ArrayList<>();
     private final Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>();
-    private final PgDatabase db;
+    private final AbstractDatabase db;
     private final MetaContainer meta;
 
-    private FullAnalyze(PgDatabase db, MetaContainer meta, List<Object> errors) {
+    private FullAnalyze(AbstractDatabase db, MetaContainer meta, List<Object> errors) {
         this.db = db;
         this.meta = meta;
         this.errors = errors;
     }
 
-    public static void fullAnalyze(PgDatabase db, List<Object> errors)
+    public static void fullAnalyze(AbstractDatabase db, List<Object> errors)
             throws InterruptedException, IOException {
         fullAnalyze(db, MetaUtils.createTreeFromDb(db), errors);
     }
 
-    public static void fullAnalyze(PgDatabase db, MetaContainer metaDb, List<Object> errors)
+    public static void fullAnalyze(AbstractDatabase db, MetaContainer metaDb, List<Object> errors)
             throws InterruptedException, IOException {
         new FullAnalyze(db, metaDb, errors).fullAnalyze();
     }
@@ -86,7 +86,7 @@ public final class FullAnalyze {
             AbstractAnalysisLauncher l = launchers.get(i);
             if (l instanceof ViewAnalysisLauncher
                     && (rel == null
-                    || (rel.getSchemaName().equals(l.getStmt().getSchemaName())
+                    || (rel.getSchemaName().equals(l.getSchemaName())
                             && rel.getName().equals(l.getStmt().getName())))) {
                 // allow GC to reclaim context memory immediately
                 // and protects from infinite recursion

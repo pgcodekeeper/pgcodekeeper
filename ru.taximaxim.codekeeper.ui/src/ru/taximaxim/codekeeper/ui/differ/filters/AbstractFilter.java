@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.ui.dialogs.FilterDialog;
 import ru.taximaxim.codekeeper.ui.differ.ElementMetaInfo;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
@@ -85,7 +85,7 @@ public abstract class AbstractFilter {
      * @return true if element meets the conditions
      */
     public abstract boolean checkElement(TreeElement el, Map<TreeElement, ElementMetaInfo> elementInfoMap,
-            PgDatabase dbProject, PgDatabase dbRemote);
+            AbstractDatabase dbProject, AbstractDatabase dbRemote);
 
     /**
      * Looks for matches in a given string by filter pattern

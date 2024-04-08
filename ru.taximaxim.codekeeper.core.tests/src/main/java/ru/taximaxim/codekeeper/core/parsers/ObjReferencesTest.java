@@ -29,8 +29,8 @@ import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.loader.ParserListenerMode;
 import ru.taximaxim.codekeeper.core.loader.PgDumpLoader;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 
 class ObjReferencesTest {
@@ -192,7 +192,7 @@ class ObjReferencesTest {
         String resource = fileNameTemplate + FILES_POSTFIX.SQL;
         PgDumpLoader loader = new PgDumpLoader(() -> getClass().getResourceAsStream(resource), resource, args);
         loader.setMode(ParserListenerMode.REF);
-        PgDatabase db = loader.load();
+        AbstractDatabase db = loader.load();
 
         String expected = TestUtils
                 .readResource(fileNameTemplate + FILES_POSTFIX.REFS_TXT, getClass()).strip();

@@ -29,6 +29,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.CreateIndex;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
+import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgIndex;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
@@ -57,7 +58,7 @@ public class IndicesReader extends JdbcReader {
                 p ->  new Pair<>(p.sql().statement(0).schema_statement().schema_create().create_index_statement().index_rest(),
                         (CommonTokenStream) p.getTokenStream()),
                 pair -> CreateIndex.parseIndex(pair.getFirst(), tablespace, schemaName, tableName, i,
-                        schema.getDatabase(), loader.getCurrentLocation(), pair.getSecond()));
+                        (PgDatabase) schema.getDatabase(), loader.getCurrentLocation(), pair.getSecond()));
         loader.setAuthor(i, res);
         loader.setComment(i, res);
 

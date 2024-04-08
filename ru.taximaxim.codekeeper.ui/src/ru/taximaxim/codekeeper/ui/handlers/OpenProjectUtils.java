@@ -85,6 +85,9 @@ public final class OpenProjectUtils {
                 if (proj.hasNature(UIConsts.NATURE.MS)) {
                     return DatabaseType.MS;
                 }
+                if (proj.hasNature(UIConsts.NATURE.CH)) {
+                    return DatabaseType.CH;
+                }
             }
         } catch (CoreException e) {
             Log.log(e);
@@ -100,6 +103,9 @@ public final class OpenProjectUtils {
             break;
         case MS:
             natures = new String[] { NATURE.ID, NATURE.MS };
+            break;
+        case CH:
+            natures = new String[] {NATURE.ID, NATURE.CH};
             break;
         default:
             throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
@@ -167,7 +173,7 @@ public final class OpenProjectUtils {
     }
 
     public static boolean isPgProject(IProject proj) throws CoreException {
-        return proj.hasNature(NATURE.ID) && !proj.hasNature(NATURE.MS);
+        return proj.hasNature(NATURE.ID) && !proj.hasNature(NATURE.MS) && !proj.hasNature(NATURE.CH);
     }
 
     /**

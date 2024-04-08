@@ -93,11 +93,6 @@ public class MsView extends AbstractView implements SourceStatement {
     }
 
     @Override
-    public DatabaseType getDbType() {
-        return DatabaseType.MS;
-    }
-
-    @Override
     public boolean compare(PgStatement obj) {
         if (obj instanceof MsView && super.compare(obj)) {
             MsView view = (MsView) obj;
@@ -176,5 +171,10 @@ public class MsView extends AbstractView implements SourceStatement {
 
     public boolean isSchemaBinding() {
         return schemaBinding;
+    }
+
+    @Override
+    public DatabaseType getDbType() {
+        return DatabaseType.MS;
     }
 }

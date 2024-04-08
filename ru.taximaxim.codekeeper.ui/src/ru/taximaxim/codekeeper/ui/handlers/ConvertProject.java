@@ -43,7 +43,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.WorkDirs;
-import ru.taximaxim.codekeeper.core.model.exporter.AbstractModelExporter;
+import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -97,7 +97,7 @@ public class ConvertProject extends AbstractHandler {
 
         Path markerFile = path.resolve(Consts.FILENAME_WORKING_DIR_MARKER);
         if (Files.notExists(markerFile)) {
-            AbstractModelExporter.writeProjVersion(markerFile);
+            ModelExporter.writeProjVersion(markerFile);
         }
         return true;
     }

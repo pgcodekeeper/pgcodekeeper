@@ -161,22 +161,22 @@ public class MsColumn extends AbstractColumn {
     private void compareOption(boolean oldOption, boolean newOption, String optionName, StringBuilder sb) {
         compareOption(oldOption, newOption, optionName, sb, null);
     }
-    
+
     private void compareOption(boolean oldOption, boolean newOption, String optionName, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
 
         if (oldOption == newOption) {
             return;
         }
-        
-        /* 
+
+        /*
          * we can set PERSISTED without drop dependencies, but can't simple drop this option
          * for first we have to drop dependencies
          */
         if (isNeedDepcies != null && (!"PERSISTED".equalsIgnoreCase(optionName) || oldOption)) {
-                isNeedDepcies.set(true);
+            isNeedDepcies.set(true);
         }
-        
+
         sb.append(getAlterColumn(true, false, name));
         sb.append(newOption ? " ADD " : " DROP ");
         sb.append(optionName);
@@ -323,11 +323,6 @@ public class MsColumn extends AbstractColumn {
         return sbString.toString();
     }
 
-    @Override
-    public DatabaseType getDbType() {
-        return DatabaseType.MS;
-    }
-
     public boolean isSparse() {
         return isSparse;
     }
@@ -458,5 +453,10 @@ public class MsColumn extends AbstractColumn {
         copy.setExpression(getExpression());
         copy.setMaskingFunction(getMaskingFunction());
         return copy;
+    }
+
+    @Override
+    public DatabaseType getDbType() {
+        return DatabaseType.MS;
     }
 }

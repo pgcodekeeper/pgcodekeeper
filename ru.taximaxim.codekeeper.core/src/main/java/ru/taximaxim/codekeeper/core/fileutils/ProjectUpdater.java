@@ -33,16 +33,16 @@ import ru.taximaxim.codekeeper.core.PgCodekeeperException;
 import ru.taximaxim.codekeeper.core.WorkDirs;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.core.model.exporter.AbstractModelExporter;
+import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.model.exporter.OverridesModelExporter;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 
 public class ProjectUpdater {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProjectUpdater.class);
 
-    private final PgDatabase dbNew;
-    private final PgDatabase dbOld;
+    private final AbstractDatabase dbNew;
+    private final AbstractDatabase dbOld;
 
     private final Collection<TreeElement> changedObjects;
     private final String encoding;
@@ -50,11 +50,11 @@ public class ProjectUpdater {
     private final DatabaseType dbType;
     private final boolean overridesOnly;
 
-    public ProjectUpdater(PgDatabase dbNew, DatabaseType dbType, String encoding, Path dirExport) {
+    public ProjectUpdater(AbstractDatabase dbNew, DatabaseType dbType, String encoding, Path dirExport) {
         this(dbNew, null, null, dbType, encoding, dirExport, false);
     }
 
-    public ProjectUpdater(PgDatabase dbNew, PgDatabase dbOld, Collection<TreeElement> changedObjects,
+    public ProjectUpdater(AbstractDatabase dbNew, AbstractDatabase dbOld, Collection<TreeElement> changedObjects,
             DatabaseType dbType, String encoding, Path dirExport, boolean overridesOnly) {
         this.dbNew = dbNew;
         this.dbOld = dbOld;
@@ -117,7 +117,7 @@ public class ProjectUpdater {
             updateFolder(dirTmp, subdirName);
         }
 
-        AbstractModelExporter.exportPartial(dbType, dirExport, dbNew, dbOld, changedObjects, encoding);
+        new ModelExporter(dirExport, dbNew, dbOld, dbType, changedObjects, encoding).exportPartial();
     }
 
     private void updateFolder(Path dirTmp, String folder) throws IOException {
@@ -149,7 +149,7 @@ public class ProjectUpdater {
 
             try {
                 safeCleanProjectDir(dirTmp);
-                AbstractModelExporter.exportFull(dbType, dirExport, dbNew, encoding);
+                new ModelExporter(dirExport, dbNew, dbType, encoding).exportFull();
                 if (projectOnly) {
                     restoreFolder(dirTmp, WorkDirs.OVERRIDES);
                 }

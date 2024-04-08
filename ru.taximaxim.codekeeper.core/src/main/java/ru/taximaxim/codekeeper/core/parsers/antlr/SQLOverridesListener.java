@@ -43,14 +43,15 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.User_nameC
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.AlterOwner;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.GrantPrivilege;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.PgParserAbstract;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.IRelation;
 import ru.taximaxim.codekeeper.core.schema.IStatement;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.StatementOverride;
+import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 
-public class SQLOverridesListener extends CustomParserListener
+public class SQLOverridesListener extends CustomParserListener<PgDatabase>
 implements SqlContextProcessor {
 
     private final Map<PgStatement, StatementOverride> overrides;
@@ -105,7 +106,7 @@ implements SqlContextProcessor {
             return;
         }
 
-        PgStatement st = getSafe(PgDatabase::getSchema, db, ctx.name);
+        PgStatement st = getSafe(AbstractDatabase::getSchema, db, ctx.name);
         if (st.getName().equals(Consts.PUBLIC) && "postgres".equals(owner.getText())) {
             return;
         }
@@ -117,7 +118,7 @@ implements SqlContextProcessor {
         List<ParserRuleContext> ids = PgParserAbstract.getIdentifiers(ctx.name);
         ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
         AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() :
-            getSafe(PgDatabase::getSchema, db, schemaCtx);
+            getSafe(AbstractDatabase::getSchema, db, schemaCtx);
 
         ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
 

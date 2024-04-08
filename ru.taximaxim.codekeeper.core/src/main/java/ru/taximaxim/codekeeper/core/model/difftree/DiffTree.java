@@ -27,17 +27,18 @@ import org.eclipse.core.runtime.SubMonitor;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public final class DiffTree {
 
-    public static TreeElement create(PgDatabase left, PgDatabase right) throws InterruptedException {
+    public static TreeElement create(AbstractDatabase left, AbstractDatabase right) throws InterruptedException {
         return create(left, right, null);
     }
 
-    public static TreeElement create(PgDatabase left, PgDatabase right, SubMonitor sMonitor) throws InterruptedException {
+    public static TreeElement create(AbstractDatabase left, AbstractDatabase right, SubMonitor sMonitor)
+            throws InterruptedException {
         return new DiffTree(sMonitor).createTree(left, right);
     }
 
@@ -66,7 +67,7 @@ public final class DiffTree {
     }
 
     public static Set<TreeElement> getTablesWithChangedColumns(
-            PgDatabase oldDbFull, PgDatabase newDbFull, List<TreeElement> selected) {
+            AbstractDatabase oldDbFull, AbstractDatabase newDbFull, List<TreeElement> selected) {
 
         Set<TreeElement> tables = new HashSet<>();
         for (TreeElement el : selected) {
@@ -108,7 +109,7 @@ public final class DiffTree {
         this.monitor = monitor;
     }
 
-    public TreeElement createTree(PgDatabase left, PgDatabase right) throws InterruptedException {
+    public TreeElement createTree(AbstractDatabase left, AbstractDatabase right) throws InterruptedException {
         PgDiffUtils.checkCancelled(monitor);
         TreeElement db = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
         addChildren(left, right, db);

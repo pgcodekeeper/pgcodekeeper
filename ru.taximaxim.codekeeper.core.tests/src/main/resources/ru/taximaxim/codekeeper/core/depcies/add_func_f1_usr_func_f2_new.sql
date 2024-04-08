@@ -1,0 +1,1 @@
+CREATE FUNCTION function_1 AS (a, b) -> function_2(x);

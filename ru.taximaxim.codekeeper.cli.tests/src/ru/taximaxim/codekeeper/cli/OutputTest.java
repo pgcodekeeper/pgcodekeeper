@@ -52,10 +52,22 @@ class OutputTest {
                 Arguments.of(new ConcurrentlyArgumentsProvider()),
                 Arguments.of(new MsConcurrentlyArgumentsProvider()),
                 Arguments.of(new FailMsArgumentsWithPgProvider()),
+                Arguments.of(new FailMsArgumentsWithChProvider()),
                 Arguments.of(new FailPgArgumentsWithMsProvider()),
+                Arguments.of(new FailPgArgumentsWithChProvider()),
+                Arguments.of(new FailChFirstArgumentsWithPgProvider()),
+                Arguments.of(new FailChSecondArgumentsWithPgProvider()),
+                Arguments.of(new FailChFirstArgumentsWithMsProvider()),
+                Arguments.of(new FailChSecondArgumentsWithMsProvider()),
                 Arguments.of(new FailCompareArgumentsProvider()),
                 Arguments.of(new FailParseMsArgumentsWithPgProvider()),
+                Arguments.of(new FailParseMsArgumentsWithChFirstProvider()),
+                Arguments.of(new FailParseMsArgumentsWithChSecondProvider()),
                 Arguments.of(new FailParsePgArgumentsWithMsProvider()),
+                Arguments.of(new FailParsePgArgumentsWithChFirstProvider()),
+                Arguments.of(new FailParsePgArgumentsWithChSecondProvider()),
+                Arguments.of(new FailParseChArgumentsWithMsProvider()),
+                Arguments.of(new FailParseChArgumentsWithPgProvider()),
                 Arguments.of(new OverrideArgumentsProvider()),
                 Arguments.of(new FailGraphReverseArgumentsProvider()),
                 Arguments.of(new FailGraphDepthArgumentsProvider()),
@@ -449,6 +461,22 @@ class FailMsArgumentsWithPgProvider extends ArgumentsProvider {
 }
 
 /**
+ * {@link ArgumentsProvider} implementation testing MS SQL database with --db-type CH
+ */
+class FailMsArgumentsWithChProvider extends ArgumentsProvider {
+
+    @Override
+    public String[] args() throws URISyntaxException, IOException {
+        return new String[] {"--db-type", "CH", "-s", "dumb", "--target", "jdbc:sqlserver://xxx" };
+    }
+
+    @Override
+    public String output() {
+        return "Source (CH) and target (MS) are of different types, possibly missing --db-type parameter.\n";
+    }
+}
+
+/**
  * {@link ArgumentsProvider} implementation testing PostgreSQL database with --db-type MS
  */
 class FailPgArgumentsWithMsProvider extends ArgumentsProvider {
@@ -461,6 +489,86 @@ class FailPgArgumentsWithMsProvider extends ArgumentsProvider {
     @Override
     public String output() {
         return "Source (MS) and target (PG) are of different types, possibly missing --db-type parameter.\n";
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing PostgreSQL database with --db-type CH
+ */
+class FailPgArgumentsWithChProvider extends ArgumentsProvider {
+
+    @Override
+    public String[] args() throws URISyntaxException, IOException {
+        return new String[] { "--db-type", "CH", "-s", "dumb", "--target", "jdbc:postgresql://xxx" };
+    }
+
+    @Override
+    public String output() {
+        return "Source (CH) and target (PG) are of different types, possibly missing --db-type parameter.\n";
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing clickHouse database without --db-type CH
+ */
+class FailChFirstArgumentsWithPgProvider extends ArgumentsProvider {
+
+    @Override
+    public String[] args() throws URISyntaxException, IOException {
+        return new String[] { "-s", "dumb", "--target", "jdbc:ch://xxx" };
+    }
+
+    @Override
+    public String output() {
+        return "Source (PG) and target (CH) are of different types, possibly missing --db-type parameter.\n";
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing clickHouse database without --db-type CH
+ */
+class FailChSecondArgumentsWithPgProvider extends ArgumentsProvider {
+
+    @Override
+    public String[] args() throws URISyntaxException, IOException {
+        return new String[] { "-s", "dumb", "--target", "jdbc:clickhouse://xxx" };
+    }
+
+    @Override
+    public String output() {
+        return "Source (PG) and target (CH) are of different types, possibly missing --db-type parameter.\n";
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing clickHouse database with --db-type MS
+ */
+class FailChFirstArgumentsWithMsProvider extends ArgumentsProvider {
+
+    @Override
+    public String[] args() throws URISyntaxException, IOException {
+        return new String[] { "--db-type", "MS", "-s", "dumb", "--target", "jdbc:ch://xxx" };
+    }
+
+    @Override
+    public String output() {
+        return "Source (MS) and target (CH) are of different types, possibly missing --db-type parameter.\n";
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing clickHouse database with --db-type MS
+ */
+class FailChSecondArgumentsWithMsProvider extends ArgumentsProvider {
+
+    @Override
+    public String[] args() throws URISyntaxException, IOException {
+        return new String[] { "--db-type", "MS", "-s", "dumb", "--target", "jdbc:clickhouse://xxx" };
+    }
+
+    @Override
+    public String output() {
+        return "Source (MS) and target (CH) are of different types, possibly missing --db-type parameter.\n";
     }
 }
 
@@ -497,6 +605,38 @@ class FailParseMsArgumentsWithPgProvider extends ArgumentsProvider {
 }
 
 /**
+ * {@link ArgumentsProvider} implementation testing parse clickHouse database as MS SQL project
+ */
+class FailParseMsArgumentsWithChFirstProvider extends ArgumentsProvider {
+
+    @Override
+    public String[] args() throws URISyntaxException, IOException {
+        return new String[] { "--db-type", "MS", "--parse", "-o", "dir", "jdbc:ch://xxx" };
+    }
+
+    @Override
+    public String output() {
+        return "Cannot work with CH database as MS project.\n";
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing parse clickHouse database as MS SQL project
+ */
+class FailParseMsArgumentsWithChSecondProvider extends ArgumentsProvider {
+
+    @Override
+    public String[] args() throws URISyntaxException, IOException {
+        return new String[] { "--db-type", "MS", "--parse", "-o", "dir", "jdbc:clickhouse://xxx" };
+    }
+
+    @Override
+    public String output() {
+        return "Cannot work with CH database as MS project.\n";
+    }
+}
+
+/**
  * {@link ArgumentsProvider} implementation testing parse MS SQL database as PostgreSQL project
  */
 class FailParsePgArgumentsWithMsProvider extends ArgumentsProvider {
@@ -509,6 +649,70 @@ class FailParsePgArgumentsWithMsProvider extends ArgumentsProvider {
     @Override
     public String output() {
         return "Cannot work with MS database as PG project.\n";
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing parse clickHouse database as PostgreSQL project
+ */
+class FailParsePgArgumentsWithChFirstProvider extends ArgumentsProvider {
+
+    @Override
+    public String[] args() throws URISyntaxException, IOException {
+        return new String[] { "--parse", "-o", "dir", "jdbc:ch://xxx" };
+    }
+
+    @Override
+    public String output() {
+        return "Cannot work with CH database as PG project.\n";
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing parse clickHouse database as PostgreSQL project
+ */
+class FailParsePgArgumentsWithChSecondProvider extends ArgumentsProvider {
+
+    @Override
+    public String[] args() throws URISyntaxException, IOException {
+        return new String[] { "--parse", "-o", "dir", "jdbc:clickhouse://xxx" };
+    }
+
+    @Override
+    public String output() {
+        return "Cannot work with CH database as PG project.\n";
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing parse PostgreSQL database as clickHouse project
+ */
+class FailParseChArgumentsWithPgProvider extends ArgumentsProvider {
+
+    @Override
+    public String[] args() throws URISyntaxException, IOException {
+        return new String[] { "--db-type", "CH", "--parse", "-o", "dir", "jdbc:postgresql://xxx" };
+    }
+
+    @Override
+    public String output() {
+        return "Cannot work with PG database as CH project.\n";
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing parse MS SQL database as clickHouse project
+ */
+class FailParseChArgumentsWithMsProvider extends ArgumentsProvider {
+
+    @Override
+    public String[] args() throws URISyntaxException, IOException {
+        return new String[] { "--db-type", "CH", "--parse", "-o", "dir", "jdbc:sqlserver://xxx" };
+    }
+
+    @Override
+    public String output() {
+        return "Cannot work with MS database as CH project.\n";
     }
 }
 

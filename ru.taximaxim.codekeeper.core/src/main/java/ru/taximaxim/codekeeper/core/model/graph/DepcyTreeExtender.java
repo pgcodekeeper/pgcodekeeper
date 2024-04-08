@@ -25,7 +25,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeFlattener;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 /**
@@ -37,8 +37,8 @@ import ru.taximaxim.codekeeper.core.schema.PgStatement;
  */
 public class DepcyTreeExtender {
 
-    private final PgDatabase dbSource;
-    private final PgDatabase dbTarget;
+    private final AbstractDatabase dbSource;
+    private final AbstractDatabase dbTarget;
     private final SimpleDepcyResolver depRes;
     private final TreeElement root;
     /**
@@ -54,7 +54,7 @@ public class DepcyTreeExtender {
      */
     private final List<TreeElement> treeDepcyDelete = new ArrayList<>();
 
-    public DepcyTreeExtender(PgDatabase dbSource, PgDatabase dbTarget, TreeElement root) {
+    public DepcyTreeExtender(AbstractDatabase dbSource, AbstractDatabase dbTarget, TreeElement root) {
         this.dbSource = dbSource;
         this.dbTarget = dbTarget;
         this.root = root;

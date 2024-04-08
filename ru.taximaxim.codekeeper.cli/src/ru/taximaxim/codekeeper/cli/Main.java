@@ -45,10 +45,10 @@ import ru.taximaxim.codekeeper.core.UnixPrintWriter;
 import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
 import ru.taximaxim.codekeeper.core.loader.JdbcRunner;
-import ru.taximaxim.codekeeper.core.model.exporter.AbstractModelExporter;
+import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.model.graph.DepcyWriter;
 import ru.taximaxim.codekeeper.core.parsers.antlr.ScriptParser;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 
 /**
  * Compares two PostgreSQL dumps and outputs information about differences in
@@ -161,8 +161,8 @@ public final class Main {
             if (arguments.isProjUpdate()) {
                 diff.updateProject();
             } else {
-                AbstractModelExporter.exportFull(arguments.getDbType(), Paths.get(arguments.getOutputTarget()),
-                        diff.loadNewDatabase(), arguments.getOutCharsetName());
+                new ModelExporter(Paths.get(arguments.getOutputTarget()), diff.loadNewDatabase(),
+                        arguments.getDbType(), arguments.getOutCharsetName()).exportFull();
             }
         } catch (PgCodekeeperException ex) {
             diff.getErrors().forEach(System.err::println);
@@ -174,7 +174,7 @@ public final class Main {
     private static boolean graph(PrintWriter writer, CliArgs arguments)
             throws IOException, InterruptedException {
         PgDiff diff = new PgDiff(arguments);
-        PgDatabase d;
+        AbstractDatabase d;
         try {
             d = diff.loadNewDatabaseWithLibraries();
         } catch (PgCodekeeperException ex) {

@@ -53,6 +53,7 @@ public class ChangeLanguageItem extends ContributionItem {
 
     private final LanguageAction msAction = new LanguageAction(DatabaseType.MS, IAction.AS_RADIO_BUTTON);
     private final LanguageAction pgAction = new LanguageAction(DatabaseType.PG, IAction.AS_RADIO_BUTTON);
+    private final LanguageAction chAction = new LanguageAction(DatabaseType.CH, IAction.AS_RADIO_BUTTON);
 
     private SQLEditor editor;
 
@@ -124,6 +125,7 @@ public class ChangeLanguageItem extends ContributionItem {
         MenuManager contextMenu = new MenuManager();
         contextMenu.add(pgAction);
         contextMenu.add(msAction);
+        contextMenu.add(chAction);
         control.setMenu(contextMenu.createContextMenu(control));
     }
 
@@ -136,6 +138,7 @@ public class ChangeLanguageItem extends ContributionItem {
         fLabel.setText(type.getDbTypeName());
         pgAction.setChecked(type);
         msAction.setChecked(type);
+        chAction.setChecked(type);
     }
 
     private final class LanguageAction extends Action {

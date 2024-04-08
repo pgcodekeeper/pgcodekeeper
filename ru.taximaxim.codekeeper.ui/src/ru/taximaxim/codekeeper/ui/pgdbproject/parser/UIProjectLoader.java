@@ -52,11 +52,12 @@ import ru.taximaxim.codekeeper.core.loader.LibraryLoader;
 import ru.taximaxim.codekeeper.core.loader.ProjectLoader;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
-import ru.taximaxim.codekeeper.core.model.exporter.AbstractModelExporter;
+import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrError;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -83,8 +84,8 @@ public class UIProjectLoader extends ProjectLoader {
     }
 
     @Override
-    public PgDatabase loadAndAnalyze() throws IOException, InterruptedException {
-        PgDatabase d = load();
+    public AbstractDatabase loadAndAnalyze() throws IOException, InterruptedException {
+        AbstractDatabase d = load();
         List<Object> analyzeErrors = new ArrayList<>();
         FullAnalyze.fullAnalyze(d, analyzeErrors);
         markErrors(analyzeErrors);
@@ -93,7 +94,7 @@ public class UIProjectLoader extends ProjectLoader {
     }
 
     @Override
-    public PgDatabase load() throws InterruptedException, IOException {
+    public AbstractDatabase load() throws InterruptedException, IOException {
         try {
             return loadDatabaseWithLibraries();
         } catch (CoreException e) {
@@ -113,7 +114,15 @@ public class UIProjectLoader extends ProjectLoader {
         }
     }
 
-    private void loadPgStructure(IContainer baseDir, PgDatabase db)
+    private void loadChStructure(IContainer baseDir, AbstractDatabase db) throws InterruptedException, CoreException {
+        if (!baseDir.exists()) {
+            return;
+        }
+        loadPgChStructure(baseDir, db, WorkDirs.CH_DATABASE);
+        loadSubdir(baseDir.getFolder(new Path(WorkDirs.CH_FUNCTION)), db);
+    }
+
+    private void loadPgStructure(IContainer baseDir, AbstractDatabase db)
             throws InterruptedException, CoreException {
         if (!baseDir.exists()) {
             return;
@@ -124,27 +133,36 @@ public class UIProjectLoader extends ProjectLoader {
             loadSubdir(baseDir.getFolder(new Path(workDirName)), db, this::checkIgnoreSchemaList);
         }
 
-        IFolder schemasCommonDir = baseDir.getFolder(new Path(WorkDirs.PG_SCHEMA));
+        loadPgChStructure(baseDir, db, WorkDirs.PG_SCHEMA);
+    }
+
+    private void loadPgChStructure(IContainer baseDir, AbstractDatabase db, String commonDir)
+            throws CoreException, InterruptedException {
+        IFolder schemasCommonDir = baseDir.getFolder(new Path(commonDir));
+
         // skip walking SCHEMA folder if it does not exist
-        if (schemasCommonDir.exists()) {
-            // new schemas + content
-            // step 2
-            // read out schemas names, and work in loop on each
-            for (IResource sub : schemasCommonDir.members()) {
-                if (sub.getType() == IResource.FOLDER) {
-                    IFolder schemaDir = (IFolder) sub;
-                    if (checkIgnoreSchemaList(schemaDir.getName())) {
-                        loadSubdir(schemaDir, db);
-                        for (DbObjType dirSub : DIR_LOAD_ORDER) {
-                            loadSubdir(schemaDir.getFolder(dirSub.name()), db);
-                        }
-                    }
+        if (!schemasCommonDir.exists()) {
+            return;
+        }
+
+        // new schemas + content
+        // step 2
+        // read out schemas names, and work in loop on each
+        for (IResource sub : schemasCommonDir.members()) {
+            if (sub.getType() != IResource.FOLDER) {
+                continue;
+            }
+            IFolder schemaDir = (IFolder) sub;
+            if (checkIgnoreSchemaList(schemaDir.getName())) {
+                loadSubdir(schemaDir, db);
+                for (DbObjType dirSub : DIR_LOAD_ORDER) {
+                    loadSubdir(schemaDir.getFolder(dirSub.name()), db);
                 }
             }
         }
     }
 
-    private void loadMsStructure(IContainer baseDir, PgDatabase db)
+    private void loadMsStructure(IContainer baseDir, AbstractDatabase db)
             throws InterruptedException, IOException, CoreException {
         if (!baseDir.exists()) {
             return;
@@ -170,7 +188,7 @@ public class UIProjectLoader extends ProjectLoader {
         }
     }
 
-    private void loadSubdir(IFolder folder, PgDatabase db)
+    private void loadSubdir(IFolder folder, AbstractDatabase db)
             throws InterruptedException, CoreException {
         loadSubdir(folder, db, null);
     }
@@ -178,7 +196,7 @@ public class UIProjectLoader extends ProjectLoader {
     /**
      * @param checkFilename filter for file names without extensions. Can be null.
      */
-    private void loadSubdir(IFolder folder, PgDatabase db, Predicate<String> checkFilename)
+    private void loadSubdir(IFolder folder, AbstractDatabase db, Predicate<String> checkFilename)
             throws InterruptedException, CoreException {
         if (!folder.exists()) {
             return;
@@ -190,8 +208,9 @@ public class UIProjectLoader extends ProjectLoader {
     /**
      * @param checkFile additional filter for loaded sql files
      */
-    private void filterFile(IResource[] iResources, IProgressMonitor monitor, PgDatabase db,  Predicate<IResource> checkFile)
-            throws CoreException, InterruptedException {
+    private void filterFile(IResource[] iResources, IProgressMonitor monitor, AbstractDatabase db,
+            Predicate<IResource> checkFile)
+                    throws CoreException, InterruptedException {
 
         Stream<IResource> streamR = Arrays.stream(iResources)
                 .filter(r -> r.getType() == IResource.FILE && SQL_EXTENSION.equals(r.getFileExtension()))
@@ -202,7 +221,7 @@ public class UIProjectLoader extends ProjectLoader {
         }
     }
 
-    private void loadFile(IFile file, IProgressMonitor monitor, PgDatabase db)
+    private void loadFile(IFile file, IProgressMonitor monitor, AbstractDatabase db)
             throws CoreException, InterruptedException {
         PgDiffArguments arguments = db.getArguments().copy();
         arguments.setInCharsetName(file.getCharset());
@@ -215,11 +234,11 @@ public class UIProjectLoader extends ProjectLoader {
         launchedLoaders.add(loader);
     }
 
-    private PgDatabase buildMsFiles(Collection<IFile> files, SubMonitor mon)
+    private AbstractDatabase buildMsFiles(Collection<IFile> files, SubMonitor mon)
             throws InterruptedException, IOException, CoreException {
         PgDiffArguments args = new PgDiffArguments();
         args.setDbType(DatabaseType.MS);
-        PgDatabase db = new PgDatabase(args);
+        MsDatabase db = (MsDatabase) createDb(args);
 
         IPath schemasPath = new Path(WorkDirs.MS_SECURITY).append(WorkDirs.MS_SCHEMAS);
         Set<String> schemaFiles = new HashSet<>();
@@ -251,11 +270,11 @@ public class UIProjectLoader extends ProjectLoader {
         }
         AntlrParser.finishAntlr(antlrTasks);
 
-        PgDatabase newDb = new PgDatabase(args);
+        AbstractDatabase newDb = createDb(args);
 
         // exclude empty schemas (except loaded from schema files) that have been loaded early
         db.getSchemas().stream()
-        .filter(sc -> schemaFiles.contains(AbstractModelExporter.getExportedFilename(sc)) || sc.hasChildren())
+        .filter(sc -> schemaFiles.contains(ModelExporter.getExportedFilename(sc)) || sc.hasChildren())
         .forEach(st -> newDb.addChild(st.deepCopy()));
 
         db.getAssemblies().forEach(st -> newDb.addChild(st.deepCopy()));
@@ -266,15 +285,17 @@ public class UIProjectLoader extends ProjectLoader {
         return newDb;
     }
 
-    private PgDatabase buildPgFiles(Collection<IFile> files, SubMonitor mon)
-            throws InterruptedException, CoreException {
+    private AbstractDatabase buildPgChFiles(Collection<IFile> files, SubMonitor mon, String schemasDir,
+            DatabaseType dbType) throws InterruptedException, CoreException {
         Set<String> schemaDirnamesLoaded = new HashSet<>();
-        IPath schemasPath = new Path(WorkDirs.PG_SCHEMA);
-        PgDatabase db = new PgDatabase(new PgDiffArguments());
+        IPath schemasPath = new Path(schemasDir);
+        var args = new PgDiffArguments();
+        args.setDbType(dbType);
+        AbstractDatabase db = createDb(args);
 
         for (IFile file : files) {
             IPath filePath = file.getProjectRelativePath();
-            if (!SQL_EXTENSION.equals(file.getFileExtension()) || !isInProject(filePath, DatabaseType.PG)) {
+            if (!SQL_EXTENSION.equals(file.getFileExtension()) || !isInProject(filePath, dbType)) {
                 // skip non-sql or non-project files
                 // still report work
                 mon.worked(1);
@@ -323,9 +344,9 @@ public class UIProjectLoader extends ProjectLoader {
         return db;
     }
 
-    private PgDatabase loadDatabaseWithLibraries()
+    private AbstractDatabase loadDatabaseWithLibraries()
             throws InterruptedException, IOException, CoreException {
-        PgDatabase db = new PgDatabase(arguments);
+        AbstractDatabase db = createDb(arguments);
         loadDbStructure(iProject,  db);
 
         if (!projectOnly) {
@@ -348,7 +369,8 @@ public class UIProjectLoader extends ProjectLoader {
         return db;
     }
 
-    private void loadDbStructure(IContainer dir, PgDatabase db) throws InterruptedException, IOException, CoreException {
+    private void loadDbStructure(IContainer dir, AbstractDatabase db)
+            throws InterruptedException, IOException, CoreException {
         switch (arguments.getDbType()) {
         case PG:
             loadPgStructure(dir, db);
@@ -356,13 +378,17 @@ public class UIProjectLoader extends ProjectLoader {
         case MS:
             loadMsStructure(dir, db);
             break;
+        case CH:
+            loadChStructure(dir, db);
+            break;
         default:
             throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
         }
         AntlrParser.finishAntlr(antlrTasks);
     }
 
-    private void loadLibraries(PgDatabase db, PgDiffArguments arguments) throws InterruptedException, IOException {
+    private void loadLibraries(AbstractDatabase db, PgDiffArguments arguments)
+            throws InterruptedException, IOException {
         LibraryLoader ll = new LibraryLoader(db,
                 Paths.get(Platform.getStateLocation(Activator.getContext().getBundle())
                         .append("dependencies").toString()), errors); //$NON-NLS-1$
@@ -377,14 +403,17 @@ public class UIProjectLoader extends ProjectLoader {
         loader.updateMarkers();
     }
 
-    public static PgDatabase buildFiles(Collection<IFile> files,  DatabaseType dbType, IProgressMonitor monitor)
+    public static AbstractDatabase buildFiles(Collection<IFile> files, DatabaseType dbType, IProgressMonitor monitor)
             throws InterruptedException, IOException, CoreException {
         UIProjectLoader loader = new UIProjectLoader(null, null, monitor);
         SubMonitor mon = SubMonitor.convert(monitor, files.size());
-        PgDatabase db;
+        AbstractDatabase db;
         switch (dbType) {
         case PG:
-            db = loader.buildPgFiles(files, mon);
+            db = loader.buildPgChFiles(files, mon, WorkDirs.PG_SCHEMA, dbType);
+            break;
+        case CH:
+            db = loader.buildPgChFiles(files, mon, WorkDirs.CH_DATABASE, dbType);
             break;
         case MS:
             db = loader.buildMsFiles(files, mon);
@@ -434,6 +463,8 @@ public class UIProjectLoader extends ProjectLoader {
             DatabaseType dbType;
             if (project.hasNature(NATURE.MS)) {
                 dbType = DatabaseType.MS;
+            } else if (project.hasNature(NATURE.CH)) {
+                dbType = DatabaseType.CH;
             } else {
                 dbType = DatabaseType.PG;
             }
@@ -469,6 +500,8 @@ public class UIProjectLoader extends ProjectLoader {
             return isPgSchemaFile(path);
         case MS:
             return isMsSchemaFile(path);
+        case CH:
+            return isChSchemaFile(path);
         default:
             throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
         }
@@ -496,5 +529,11 @@ public class UIProjectLoader extends ProjectLoader {
                 && path.segment(0).equals(WorkDirs.MS_SECURITY)
                 && path.segment(1).equals(WorkDirs.MS_SCHEMAS)
                 && path.segment(2).endsWith(".sql"); //$NON-NLS-1$
+    }
+
+    private static boolean isChSchemaFile(IPath path) {
+        return path.segmentCount() == 3
+                && path.segment(0).equals(WorkDirs.CH_DATABASE)
+                && path.segment(2).endsWith(".sql");
     }
 }

@@ -49,7 +49,7 @@ import org.eclipse.ui.PartInitException;
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreList;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.ProjectIcon;
 import ru.taximaxim.codekeeper.ui.UIConsts;
@@ -138,7 +138,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
     public boolean performFinish() {
         try {
             TreeDiffer treediffer = pagePartial.getTreeDiffer();
-            PgDatabase source = treediffer.getDbSource().getDbObject();
+            AbstractDatabase source = treediffer.getDbSource().getDbObject();
 
             Differ differ = new Differ(source, treediffer.getDbTarget().getDbObject(),
                     treediffer.getDiffTree(), false, pageDiff.getTimezone(),

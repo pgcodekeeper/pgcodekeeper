@@ -295,7 +295,7 @@ public class CliArgs extends PgDiffArguments {
     private boolean msSql;
 
     @Option(name="--db-type",
-            usage="specify database type for work: PG, MS")
+            usage="specify database type for work: PG, MS, CH")
     private DatabaseType dbType;
 
     @Option(name="--update-project", depends={"--parse"}, forbids={"--graph"},

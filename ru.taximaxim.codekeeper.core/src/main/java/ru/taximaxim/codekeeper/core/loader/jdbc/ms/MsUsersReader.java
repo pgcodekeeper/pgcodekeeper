@@ -25,14 +25,14 @@ import ru.taximaxim.codekeeper.core.loader.jdbc.XmlReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.XmlReaderException;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
-import ru.taximaxim.codekeeper.core.schema.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsUser;
 
 public class MsUsersReader extends AbstractStatementReader {
 
-    private final PgDatabase db;
+    private final MsDatabase db;
 
-    public MsUsersReader(JdbcLoaderBase loader, PgDatabase db) {
+    public MsUsersReader(JdbcLoaderBase loader, MsDatabase db) {
         super(loader);
         this.db = db;
     }
