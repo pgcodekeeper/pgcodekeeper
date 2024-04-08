@@ -32,6 +32,7 @@ ddl_stmt
     | optimize_stmt
     | rename_stmt
     | truncate_stmt
+    | privilegy_stmt
     ;
 
 dml_stmt
@@ -63,6 +64,148 @@ alter_stmt
     : alter_table_stmt
     | alter_policy_stmt
     | alter_named_collection_stmt
+    ;
+
+privilegy_stmt
+    : (GRANT | REVOKE) cluster_clause? privileges (TO | FROM) users with_option*
+    ;
+
+privileges
+    : (GRANT OPTION FOR)? privilege (COMMA privilege)*
+    | (ADMIN OPTION FOR)? identifier_list
+    ;
+
+privilege
+    : (permissions | columns_permissions) ON names_references
+    ;
+
+names_references
+    : qualified_name (DOT ASTERISK)?
+    | ASTERISK (DOT ASTERISK)?
+    ;
+
+columns_permissions
+    : table_column_privileges (COMMA table_column_privileges)*
+    ;
+
+table_column_privileges
+    : permission LPAREN identifier_list RPAREN
+    ;
+
+permissions
+    : permission (COMMA permission)*
+    ;
+
+permission
+    : ACCESS MANAGEMENT
+    | ALL
+//  | ALLOW SQL SECURITY NONE
+    | ALTER (object_type | CONSTRAINT | INDEX)?
+    | ALTER ADD (COLUMN | CONSTRAINT | INDEX | PROJECTION | STATISTIC)
+    | ALTER CLEAR (COLUMN | INDEX | PROJECTION)
+    | ALTER (RENAME | COMMENT)? COLUMN
+    | ALTER DATABASE SETTINGS
+    | ALTER (DELETE | UPDATE)
+    | ALTER DROP (COLUMN | CONSTRAINT | INDEX | PROJECTION | STATISTIC)
+    | ALTER (FETCH | FREEZE | MOVE) PARTITION
+    | ALTER MATERIALIZE (COLUMN | INDEX | PROJECTION | STATISTIC | TTL)
+    | ALTER MODIFY (COLUMN | COMMENT)
+    | ALTER (ORDER BY | PROJECTION | SAMPLE BY | SETTINGS | STATISTIC | TTL)
+    | ALTER VIEW MODIFY (QUERY | REFRESH | SQL SECURITY)
+    | CLUSTER
+    | CREATE (object_type | DICTIONARY | FUNCTION | ARBITRARY? TEMPORARY TABLE)?
+    | DELETE
+    | DICTGET
+    | DROP (object_type | DICTIONARY | FUNCTION)?
+    | source_privilige
+    | INSERT
+    | INTROSPECTION
+    | KILL (QUERY | TRANSACTION)
+//  | MOVE PARTITION BETWEEN SHARDS
+    | NAMED COLLECTION ADMIN?
+    | NONE
+    | OPTIMIZE
+    | ROLE ADMIN
+    | SELECT
+    | SET DEFINER
+    | SHOW (COLUMNS | DATABASES | DICTIONARIES | QUOTAS | ROLES | ROW POLICIES | TABLES | USERS
+           | ACCESS | FILESYSTEM CACHES | SETTINGS PROFILES)?
+//  | SHOW NAMED COLLECTIONS SECRETS?
+    | SOURCES
+    | SYSTEM
+//  | SYSTEM CLEANUP
+    | SYSTEM (DISTRIBUTED | REPLICATED)? SENDS
+    | SYSTEM DROP (DISTRIBUTED | DNS | FILESYSTEM | MARK | QUERY | UNCOMPRESSED)? CACHE
+//  | SYSTEM DROP (COMPILED EXPRESSION |CONNECTIONS | FORMAT SCHEMA | MMAP | PAGE) CACHE
+    | SYSTEM DROP REPLICA
+//  | SYSTEM DROP S3 CLIENT CACHE
+//  | SYSTEM DROP SCHEMA CACHE
+//  | SYSTEM FAILPOINT
+    | SYSTEM (TTL? MERGES | MOVES | FETCHES)
+//  | SYSTEM FLUSH ASYNC INSERT QUEUE
+    | SYSTEM FLUSH (DISTRIBUTED | LOGS)?
+//  | SYSTEM (JEMALLOC | LISTEN)
+//  | SYSTEM PULLING REPLICATION LOG
+    | SYSTEM RELOAD (CONFIG | DICTIONARY | EMBEDDED DICTIONARIES | FUNCTION | USERS)?
+//  | SYSTEM RELOAD (ASYNCHRONOUS METRICS | MODEL)
+//  | SYSTEM REPLICA READINESS
+    | SYSTEM REPLICATION QUEUES
+    | SYSTEM RESTART (DISK | REPLICA)
+//  | SYSTEM RESTORE REPLICA
+    | SYSTEM (SHUTDOWN | UNFREEZE)
+    | SYSTEM SYNC (FILE CACHE | FILESYSTEM CACHE | DATABASE? REPLICA)
+//  | SYSTEM SYNC TRANSACTION LOG
+//  | SYSTEM THREAD FUZZER
+//  | SYSTEM VIEWS
+//  | SYSTEM VIRTUAL PARTS UPDATE
+//  | SYSTEM WAIT LOADING PARTS
+    | TRUNCATE
+//  | UNDROP TABLE
+    | USAGE
+//  | addressToLine
+//  | addressToLineWithInlines
+//  | addressToSymbol
+//  | demangle
+//  | displaySecretsInShowAndSelect
+    ;
+
+object_type
+    : DATABASE
+    | NAMED COLLECTION
+    | QUOTA
+    | ROLE
+    | ROW POLICY
+    | SETTINGS PROFILE
+    | TABLE
+    | USER
+    | VIEW
+    ;
+
+source_privilige
+    : FILE
+//  | BACKUP
+    | URL
+    | REMOTE
+    | MYSQL
+    | ODBC
+    | JDBC
+    | HDFS
+//  | S3
+//  | POSTGRES
+//  | REDIS
+//  | AZURE
+//  | MONGO
+//  | SQLITE
+//  | HIVE
+    ;
+
+with_option
+    : WITH (GRANT | REPLACE | ADMIN) OPTION
+    ;
+
+users
+    : identifier_list
+    | ALL (EXCEPT identifier_list)?
     ;
 
 select_stmt
@@ -992,6 +1135,7 @@ interval
 keyword
     : ACCESS
     | ADD
+    | ADMIN
     | AFTER
     | AGGREGATE_FUNCTION
     | ALIAS
@@ -1001,6 +1145,7 @@ keyword
     | ANTI
     | ANY
     | APPLY
+    | ARBITRARY
     | ARRAY
     | AS
     | ASCENDING
@@ -1021,6 +1166,7 @@ keyword
     | BY
     | BYTE
     | BYTEA
+    | CACHE
     | CACHES
     | CASE
     | CAST
@@ -1039,11 +1185,13 @@ keyword
     | COLUMNS
     | COMMENT
     | COMMIT
+    | CONFIG
     | CONSTRAINT
     | CREATE
     | CROSS
     | CUBE
     | CURRENT
+    | CURRENT_USER
     | DATABASE
     | DATABASES
     | DATE
@@ -1062,12 +1210,14 @@ keyword
     | DESCRIBE
     | DETACH
     | DETACHED
+    | DICTGET
     | DICTIONARIES
     | DICTIONARY
     | DISK
     // | DISTINCT
     | DISTRIBUTED
     | DIV
+    | DNS
     | DOUBLE
     | DROP
     | ELSE
@@ -1077,6 +1227,7 @@ keyword
     | ENGINE
     | ENGINES
     | ENUM
+    | EMBEDDED
     | EPHEMERAL
     | ESTIMATE
     | EVENTS
@@ -1089,6 +1240,7 @@ keyword
     | FETCH
     | FETCHES
     | FIELDS
+    | FILE
     | FILESYSTEM
     | FILL
     | FINAL
@@ -1107,11 +1259,13 @@ keyword
     | FUNCTIONS
     | GEOMETRY
     | GLOBAL
+    | GRANT
     | GRANTS
     | GRANULARITY
     | GROUP
     | GROUPING
     | HAVING
+    | HDFS
     | HIERARCHICAL
     | ID
     | IF
@@ -1131,6 +1285,7 @@ keyword
     | INTERVAL
     | INTERVAL_TYPE
     | INTO
+    | INTROSPECTION
     | INVOKER
     | IPV4
     | IPV6
@@ -1138,6 +1293,7 @@ keyword
     | IS_OBJECT_ID
     | JOIN
     | JSON
+    | JDBC
     | KEY
     | KEYS
     | KILL
@@ -1156,7 +1312,9 @@ keyword
     | LONGTEXT
     | LOW_CARDINALITY
     | MAP
+    | MARK
     | MASK
+    | MANAGEMENT
     | MATERIALIZE
     | MATERIALIZED
     | MAX
@@ -1170,8 +1328,10 @@ keyword
     | MOD
     | MODIFY
     | MOVE
+    | MOVES
     | MULTI_POLYGON
     | MUTATION
+    | MYSQL
     | NAME
     | NAMED
     | NANOSECOND
@@ -1188,9 +1348,11 @@ keyword
     | NVARCHAR
     | OBJECT
     | OBJECT_TYPE
+    | ODBC
     | OFFSET
     | ON
     | OPTIMIZE
+    | OPTION
     | OR
     | ORDER
     | OUTER
@@ -1223,18 +1385,23 @@ keyword
     | QUERY
     | QUOTA
     | QUOTAS
+    | QUEUES
     | RANGE
     | REAL
     | RECOMPRESS
     | REFRESH
     | RELOAD
     | REMOVE
+    | REMOTE
     | RENAME
     | REPLACE
     | REPLICA
     | REPLICATED
+    | REPLICATION
     | RESET
+    | RESTART
     | RESTRICTIVE
+    | REVOKE
     | RIGHT
     | RING
     | ROLE
@@ -1252,10 +1419,12 @@ keyword
     | SETTING
     | SETTINGS
     | SHOW
+    | SHUTDOWN
     | SIGNED
     | SINGLE
     | SMALLINT
     | SOURCE
+    | SOURCES
     | SQL
     | START
     | STATISTIC
@@ -1292,9 +1461,12 @@ keyword
     | TYPE
     | UNBOUNDED
     | UNFREEZE
+    | UNCOMPRESSED
     | UNION
     | UNSIGNED
     | UPDATE
+    | URL
+    | USAGE
     | USE
     | USER
     | USERS
