@@ -9,11 +9,15 @@
 
 ### Добавлено
 
-- Добавлена поддержка работы с ClickHouse в тестовом режиме.
-
 ### Изменено
 
 ### Исправлено
+
+## [9.5.0] - 2024-04-09
+
+### Добавлено
+
+- Добавлена поддержка работы с ClickHouse в тестовом режиме.
 
 ## [9.4.3] - 2024-03-18
 
@@ -1898,7 +1902,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.4.3...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.5.0...HEAD
+[9.5.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.4.3...v9.5.0
 [9.4.3]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.4.2...v9.4.3
 [9.4.2]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.4.1...v9.4.2
 [9.4.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.4.0...v9.4.1
