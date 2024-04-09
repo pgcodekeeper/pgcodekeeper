@@ -35,6 +35,7 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import ru.taximaxim.codekeeper.core.ChDiffUtils;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.NotAllowedObjectException;
@@ -69,6 +70,7 @@ public class ActionsToScriptConverter {
 
     private static final String RENAME_PG_OBJECT = "ALTER {0} {1} RENAME TO {2};";
     private static final String RENAME_MS_OBJECT = "EXEC sp_rename {0}, {1}\nGO";
+    private static final String RENAME_CH_OBJECT = "RENAME {0} {1} TO {2};";
 
     private final PgDiffScript script;
     private final Set<ActionContainer> actions;
@@ -476,6 +478,8 @@ public class ActionsToScriptConverter {
                             + PgStatement.GO);
                 }
                 break;
+            case CH:
+                break;
             default:
                 throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
             }
@@ -506,6 +510,9 @@ public class ActionsToScriptConverter {
             return MessageFormat.format(RENAME_MS_OBJECT,
                     PgDiffUtils.quoteString(st.getQualifiedName()),
                     PgDiffUtils.quoteString(newName));
+        case CH:
+            return MessageFormat.format(RENAME_CH_OBJECT, st.getStatementType(),
+                    st.getQualifiedName(), ChDiffUtils.getQuotedName(newName));
         default:
             throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
         }
@@ -531,6 +538,9 @@ public class ActionsToScriptConverter {
             break;
         case MS:
             quoter = MsDiffUtils::quoteName;
+            break;
+        case CH:
+            quoter = ChDiffUtils::getQuotedName;
             break;
         default:
             throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
@@ -627,6 +637,8 @@ public class ActionsToScriptConverter {
         case PG:
             cols = cols.map(PgColumn.class::cast)
             .filter(pgCol -> !pgCol.isGenerated());
+            break;
+        case CH:
             break;
         default:
             throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
