@@ -268,6 +268,7 @@ public abstract class PgStatement implements IStatement, IHashable {
             }
             break;
         case MS:
+        case CH:
             privileges.add(privilege);
             break;
         default:
