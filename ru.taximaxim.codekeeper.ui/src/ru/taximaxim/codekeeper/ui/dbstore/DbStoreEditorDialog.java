@@ -39,7 +39,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.events.ShellAdapter;
 import org.eclipse.swt.events.ShellEvent;
 import org.eclipse.swt.layout.GridData;
@@ -99,22 +98,6 @@ public final class DbStoreEditorDialog extends TrayDialog {
 
     private IgnoreListEditor ignoreListEditor;
     private DbPropertyListEditor propertyListEditor;
-
-    private final SelectionListener msStateUpdater = new SelectionAdapter() {
-
-        @Override
-        public void widgetSelected(SelectionEvent e) {
-            boolean ms = DatabaseType.MS == getSelectedDbType();
-            boolean win = ms && isWinAuth();
-            if (btnWinAuth != null) {
-                btnWinAuth.setEnabled(ms);
-            }
-            txtDbUser.setEnabled(!win);
-            txtDbPass.setEnabled(!win);
-            txtDomain.setEnabled(ms && !isWinAuth());
-            btnMsCert.setEnabled(ms);
-        }
-    };
 
     public DbInfo getDbInfo(){
         return dbInfo;
@@ -180,7 +163,6 @@ public final class DbStoreEditorDialog extends TrayDialog {
                     if (btnWinAuth != null) {
                         btnWinAuth.setSelection(dbInitial.isWinAuth());
                     }
-                    msStateUpdater.widgetSelected(null);
 
                     btnUseDump.setSelection(dbInitial.isPgDumpSwitch());
                     txtDumpFile.setText(dbInitial.getPgdumpExePath());
@@ -330,10 +312,15 @@ public final class DbStoreEditorDialog extends TrayDialog {
         cmbDbType.getCombo().select(0);
 
         cmbDbType.addSelectionChangedListener(e -> {
-            StructuredSelection sel = (StructuredSelection) e.getSelection();
-            DatabaseType selDbType = (DatabaseType) sel.getFirstElement();
-            btnMsCert.setEnabled(selDbType == DatabaseType.MS);
-            btnMsCert.setSelection(selDbType == DatabaseType.MS);
+            boolean ms = DatabaseType.MS == getSelectedDbType();
+            boolean win = ms && isWinAuth();
+            if (btnWinAuth != null) {
+                btnWinAuth.setEnabled(ms);
+            }
+            txtDbUser.setEnabled(!win);
+            txtDbPass.setEnabled(!win);
+            txtDomain.setEnabled(ms && !isWinAuth());
+            btnMsCert.setEnabled(ms);
         });
         new Label(tabAreaDb, SWT.NONE).setText(Messages.DbStoreEditorDialog_ms_cert);
 
@@ -361,7 +348,7 @@ public final class DbStoreEditorDialog extends TrayDialog {
 
             btnWinAuth = new Button(cWinAuth, SWT.CHECK);
             btnWinAuth.setText(Messages.DbStoreEditorDialog_use_win_auth);
-            btnWinAuth.addSelectionListener(msStateUpdater);
+            btnWinAuth.setEnabled(false);
 
             Link l = new Link(cWinAuth, SWT.NONE);
             l.setText(Messages.DbStoreEditorDialog_learn_more);
