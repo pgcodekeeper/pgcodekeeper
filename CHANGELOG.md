@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Fixed behaviours of domain field in DB settings.
+- Fixed an error while read ClickHouse DB.
 
 ## [9.5.0] - 2024-04-09
 
