@@ -45,7 +45,11 @@ public class ChRelationsReader extends JdbcReader {
     @Override
     protected void processResult(ResultSet result, AbstractSchema schema) throws SQLException, XmlReaderException {
         PgStatement child;
-        if (result.getString("engine").toLowerCase(Locale.ROOT).contains("view")) {
+        var engineName = result.getString("engine").toLowerCase(Locale.ROOT);
+        if (engineName.contains("dictionary")) {
+            return;
+        }
+        if (engineName.contains("view")) {
             child = getView(result, schema);
         } else {
             child = getTable(result, schema);
