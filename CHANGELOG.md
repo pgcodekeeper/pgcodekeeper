@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+## [9.5.1] - 2024-04-24
+
+### Fixed
+
 - Fixed behaviours of domain field in DB settings.
 - Fixed an error while read ClickHouse DB.
 
@@ -1904,7 +1908,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.5.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.5.1...HEAD
+[9.5.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.5.0...v9.5.1
 [9.5.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.4.3...v9.5.0
 [9.4.3]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.4.2...v9.4.3
 [9.4.2]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.4.1...v9.4.2
