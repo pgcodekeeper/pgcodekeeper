@@ -68,7 +68,6 @@ public class MsCheckConstraintsReader extends JdbcReader {
         .column("res.is_disabled")
         .column("res.definition")
         .from("sys.check_constraints res WITH (NOLOCK)")
-        .join("INNER JOIN sys.objects so WITH (NOLOCK) ON so.object_id=res.parent_object_id")
-        .where("SCHEMA_NAME(so.schema_id) <> 'sys'");
+        .join("INNER JOIN sys.objects so WITH (NOLOCK) ON so.object_id=res.parent_object_id");
     }
 }

@@ -469,7 +469,6 @@ public class TablesReader extends JdbcReader {
 
     @Override
     protected void fillQueryBuilder(QueryBuilder builder) {
-        addSysSchemasCte(builder);
         addExtensionDepsCte(builder);
         addDescriptionPart(builder, true);
         addColumnsPart(builder);

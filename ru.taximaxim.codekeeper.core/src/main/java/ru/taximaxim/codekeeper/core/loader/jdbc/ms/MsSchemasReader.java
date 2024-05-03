@@ -40,26 +40,23 @@ public class MsSchemasReader extends AbstractStatementReader {
     }
 
     @Override
-    protected void processResult(ResultSet result) throws SQLException, XmlReaderException {
-        AbstractSchema schema = getSchema(result);
-        if (loader.checkIgnoreSchemaList(schema.getName())) {
-            db.addSchema(schema);
-            loader.putSchema(result.getInt("schema_id"), schema);
-        }
-    }
-
-    private AbstractSchema getSchema(ResultSet res) throws SQLException, XmlReaderException {
+    protected void processResult(ResultSet res) throws SQLException, XmlReaderException {
         String schemaName = res.getString("name");
         loader.setCurrentObject(new GenericColumn(schemaName, DbObjType.SCHEMA));
-        AbstractSchema s = new MsSchema(schemaName);
-
-        String owner = res.getString("owner");
-        if (!schemaName.equalsIgnoreCase(Consts.DBO) || !owner.equalsIgnoreCase(Consts.DBO)) {
-            loader.setOwner(s, owner);
+        if (!loader.checkIgnoreSchemaList(schemaName)) {
+            return;
         }
 
-        loader.setPrivileges(s, XmlReader.readXML(res.getString("acl")));
-        return s;
+        AbstractSchema schema = new MsSchema(schemaName);
+        String owner = res.getString("owner");
+        if (!schemaName.equalsIgnoreCase(Consts.DBO) || !owner.equalsIgnoreCase(Consts.DBO)) {
+            loader.setOwner(schema, owner);
+        }
+
+        loader.setPrivileges(schema, XmlReader.readXML(res.getString("acl")));
+        loader.putSchema(res.getInt("schema_id"), schema);
+
+        db.addSchema(schema);
     }
 
     @Override

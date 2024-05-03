@@ -11,7 +11,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Removed unnecessary condition in queries for reading objects.
+
 ### Fixed
+
+- Fixed schema reading logic when using the `.pgcodekeeperignoreschema` file.
 
 ## [9.5.1] - 2024-04-24
 

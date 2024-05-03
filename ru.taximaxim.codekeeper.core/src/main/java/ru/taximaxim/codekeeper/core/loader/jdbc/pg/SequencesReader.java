@@ -221,7 +221,6 @@ public class SequencesReader extends JdbcReader {
 
     @Override
     protected void fillQueryBuilder(QueryBuilder builder) {
-        addSysSchemasCte(builder);
         addExtensionDepsCte(builder);
         addDescriptionPart(builder, true);
 

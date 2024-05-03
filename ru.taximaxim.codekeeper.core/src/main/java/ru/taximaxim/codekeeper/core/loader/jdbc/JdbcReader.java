@@ -38,7 +38,12 @@ public abstract class JdbcReader extends AbstractStatementReader {
 
     private static final Logger LOG = LoggerFactory.getLogger(JdbcReader.class);
 
-    private static final String SYS_SCHEMAS = "sys_schemas";
+    private static final String EXTENSIONS_SCHEMAS = "extensions_schemas";
+
+    private static final String EXTENSION_SCHEMAS_CTE = "SELECT n.oid\n"
+            + "  FROM pg_catalog.pg_namespace n\n"
+            + "  WHERE EXISTS (SELECT 1 FROM pg_catalog.pg_depend dp WHERE dp.objid = n.oid AND dp.deptype = 'e'\n"
+            + "      AND dp.classid = 'pg_catalog.pg_namespace'::pg_catalog.regclass)";
 
     protected JdbcReader(JdbcLoaderBase loader) {
         super(loader);
@@ -153,15 +158,9 @@ public abstract class JdbcReader extends AbstractStatementReader {
 
     protected abstract String getSchemaColumn();
 
-    protected void addSysSchemasCte(QueryBuilder builder) {
-        builder.with(SYS_SCHEMAS,
-                "SELECT oid FROM pg_catalog.pg_namespace WHERE nspname LIKE 'pg\\_%' OR nspname = 'information_schema'");
-        builder.where(getSchemaColumn() + " NOT IN (SELECT oid FROM sys_schemas)");
-    }
-
-    protected void addSysSchemasWithExtensionCte(QueryBuilder builder) {
-        builder.with(SYS_SCHEMAS, SYS_SCHEMAS_WITH_EXTENSION_DEPS_CTE);
-        builder.where(getSchemaColumn() + " NOT IN (SELECT oid FROM sys_schemas)");
+    protected void addExtensionSchemasCte(QueryBuilder builder) {
+         builder.with(EXTENSIONS_SCHEMAS, EXTENSION_SCHEMAS_CTE);
+         builder.where(getSchemaColumn() + " NOT IN (SELECT oid FROM extensions_schemas)");
     }
 
     @Override

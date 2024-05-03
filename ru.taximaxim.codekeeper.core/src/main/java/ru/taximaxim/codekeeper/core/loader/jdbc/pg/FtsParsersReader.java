@@ -61,7 +61,6 @@ public class FtsParsersReader extends JdbcReader {
 
     @Override
     protected void fillQueryBuilder(QueryBuilder builder) {
-        addSysSchemasCte(builder);
         addDescriptionPart(builder);
         addExtensionDepsCte(builder);
 

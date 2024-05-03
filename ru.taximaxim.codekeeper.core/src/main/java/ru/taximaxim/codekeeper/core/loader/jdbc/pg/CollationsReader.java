@@ -104,7 +104,6 @@ public class CollationsReader extends JdbcReader {
 
     @Override
     protected void fillQueryBuilder(QueryBuilder builder) {
-        addSysSchemasCte(builder);
         addExtensionDepsCte(builder);
         addDescriptionPart(builder);
 

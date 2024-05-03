@@ -127,7 +127,6 @@ public class OperatorsReader extends JdbcReader {
     @Override
     protected void fillQueryBuilder(QueryBuilder builder) {
         addExtensionDepsCte(builder);
-        addSysSchemasCte(builder);
         addDescriptionPart(builder);
 
         builder

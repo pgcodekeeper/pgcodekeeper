@@ -92,7 +92,6 @@ public class FtsConfigurationsReader extends JdbcReader {
 
     @Override
     protected void fillQueryBuilder(QueryBuilder builder) {
-        addSysSchemasCte(builder);
         addExtensionDepsCte(builder);
         addDescriptionPart(builder);
         addWordsPart(builder);
