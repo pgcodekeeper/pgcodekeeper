@@ -110,7 +110,7 @@ public class PoliciesReader extends JdbcReader {
 
     @Override
     protected void fillQueryBuilder(QueryBuilder builder) {
-        addSysSchemasWithExtensionCte(builder);
+        addExtensionSchemasCte(builder);
         addDescriptionPart(builder);
 
         builder

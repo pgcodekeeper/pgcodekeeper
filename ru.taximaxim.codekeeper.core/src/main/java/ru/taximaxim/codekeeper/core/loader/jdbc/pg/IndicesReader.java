@@ -90,7 +90,7 @@ public class IndicesReader extends JdbcReader {
 
     @Override
     protected void fillQueryBuilder(QueryBuilder builder) {
-        addSysSchemasWithExtensionCte(builder);
+        addExtensionSchemasCte(builder);
         addDescriptionPart(builder, true);
 
         builder

@@ -148,7 +148,6 @@ public class ViewsReader extends JdbcReader {
 
     @Override
     protected void fillQueryBuilder(QueryBuilder builder) {
-        addSysSchemasCte(builder);
         addExtensionDepsCte(builder);
         addColumnsPart(builder);
         addDescriptionPart(builder, true);

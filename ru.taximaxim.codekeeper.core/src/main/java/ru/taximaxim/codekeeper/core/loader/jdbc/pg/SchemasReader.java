@@ -41,6 +41,10 @@ public class SchemasReader extends AbstractStatementReader {
     protected void processResult(ResultSet res) throws SQLException {
         String schemaName = res.getString("nspname");
         loader.setCurrentObject(new GenericColumn(schemaName, DbObjType.SCHEMA));
+        if (!loader.checkIgnoreSchemaList(schemaName)) {
+            return;
+        }
+
         AbstractSchema s = new PgSchema(schemaName);
         long owner = res.getLong("nspowner");
 
@@ -52,12 +56,10 @@ public class SchemasReader extends AbstractStatementReader {
         }
 
         loader.setPrivileges(s, res.getString("nspacl"), null);
+        loader.setAuthor(s, res);
+        loader.putSchema(res.getLong("oid"), s);
 
-        if (loader.checkIgnoreSchemaList(schemaName)) {
-            db.addSchema(s);
-            loader.putSchema(res.getLong("oid"), s);
-            loader.setAuthor(s, res);
-        }
+        db.addSchema(s);
     }
 
     @Override

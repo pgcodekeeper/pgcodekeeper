@@ -54,13 +54,6 @@ public abstract class AbstractStatementReader {
     private static final String DESCRIPTION_JOIN =
             "LEFT JOIN pg_catalog.pg_description d ON d.objoid = res.oid AND d.classoid = {0}::pg_catalog.regclass {1}";
 
-    protected static final String SYS_SCHEMAS_WITH_EXTENSION_DEPS_CTE = "SELECT n.oid\n"
-            + "  FROM pg_catalog.pg_namespace n\n"
-            + "  WHERE n.nspname LIKE 'pg\\_%'\n"
-            + "    OR n.nspname = 'information_schema'\n"
-            + "    OR EXISTS (SELECT 1 FROM pg_catalog.pg_depend dp WHERE dp.objid = n.oid AND dp.deptype = 'e'\n"
-            + "      AND dp.classid = 'pg_catalog.pg_namespace'::pg_catalog.regclass)";
-
     protected final JdbcLoaderBase loader;
     private final String classId;
 
@@ -106,8 +99,7 @@ public abstract class AbstractStatementReader {
     }
 
     protected void addExtensionDepsCte(QueryBuilder builder) {
-        builder.with("extension_deps",
-                MessageFormat.format(EXTENSION_DEPS_CTE, classId));
+        builder.with("extension_deps", MessageFormat.format(EXTENSION_DEPS_CTE, classId));
         builder.where("res.oid NOT IN (SELECT objid FROM extension_deps)");
     }
 
