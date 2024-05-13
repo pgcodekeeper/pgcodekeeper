@@ -43,9 +43,9 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.msexpr.MsAbstractExprWithNmspc
 import ru.taximaxim.codekeeper.core.parsers.antlr.msexpr.MsValueExpr;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
+import ru.taximaxim.codekeeper.core.schema.ISearchPath;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.schema.PgStatementWithSearchPath;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
 
 /**
@@ -78,8 +78,8 @@ public abstract class AbstractAnalysisLauncher {
     }
 
     public String getSchemaName() {
-        if (stmt instanceof PgStatementWithSearchPath) {
-            return ((PgStatementWithSearchPath) stmt).getSchemaName();
+        if (stmt instanceof ISearchPath) {
+            return ((ISearchPath) stmt).getSchemaName();
         }
 
         return null;

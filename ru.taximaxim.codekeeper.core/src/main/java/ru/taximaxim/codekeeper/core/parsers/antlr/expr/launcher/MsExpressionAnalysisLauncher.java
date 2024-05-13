@@ -27,13 +27,11 @@ import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.schema.PgStatementWithSearchPath;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
 
 public class MsExpressionAnalysisLauncher extends AbstractAnalysisLauncher {
 
-    public MsExpressionAnalysisLauncher(PgStatementWithSearchPath stmt,
-            ExpressionContext ctx, String location) {
+    public MsExpressionAnalysisLauncher(PgStatement stmt, ExpressionContext ctx, String location) {
         super(stmt, ctx, location);
     }
 

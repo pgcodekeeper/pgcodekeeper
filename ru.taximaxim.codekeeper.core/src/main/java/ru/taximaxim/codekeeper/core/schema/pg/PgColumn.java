@@ -40,6 +40,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.ICompressOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.ISimpleOptionContainer;
+import ru.taximaxim.codekeeper.core.schema.IStatement;
 import ru.taximaxim.codekeeper.core.schema.Inherits;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
@@ -548,8 +549,8 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
      */
     public AbstractColumn getParentCol(AbstractPgTable tbl) {
         for (Inherits in : tbl.getInherits()) {
-            PgStatement parent = new GenericColumn(in.getKey(), in.getValue(),
-                    DbObjType.TABLE).getStatement(getDatabase());
+            IStatement parent = getDatabase().getStatement(new GenericColumn(in.getKey(), in.getValue(),
+                    DbObjType.TABLE));
             if (parent == null) {
                 LOG.error("There is no such object of inheritance as table: {}", in.getQualifiedName());
                 continue;

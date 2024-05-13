@@ -52,6 +52,8 @@ public class DepcyWriterTest {
         PgDiffArguments args = new PgDiffArguments();
         if (fileName.startsWith("ms_")) {
             args.setDbType(DatabaseType.MS);
+        } else if (fileName.startsWith("ch_")) {
+            args.setDbType(DatabaseType.CH);
         }
         args.setEnableFunctionBodiesDependencies(true);
 

@@ -29,9 +29,9 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_rew
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Rewrite_commandContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
+import ru.taximaxim.codekeeper.core.schema.EventType;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
-import ru.taximaxim.codekeeper.core.schema.pg.PgEventType;
 import ru.taximaxim.codekeeper.core.schema.pg.PgRule;
 
 public class CreateRule extends PgParserAbstract {
@@ -48,7 +48,7 @@ public class CreateRule extends PgParserAbstract {
         addObjReference(ids, DbObjType.TABLE, null);
 
         PgRule rule = new PgRule(ctx.name.getText());
-        rule.setEvent(PgEventType.valueOf(ctx.event.getText().toUpperCase(Locale.ROOT)));
+        rule.setEvent(EventType.valueOf(ctx.event.getText().toUpperCase(Locale.ROOT)));
         if (ctx.INSTEAD() != null){
             rule.setInstead(true);
         }

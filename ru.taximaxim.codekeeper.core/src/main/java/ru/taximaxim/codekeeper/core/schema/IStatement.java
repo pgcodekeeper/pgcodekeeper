@@ -20,9 +20,9 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 public interface IStatement {
     String getName();
     DbObjType getStatementType();
+    AbstractDatabase getDatabase();
     IStatement getParent();
     String getQualifiedName();
     String getComment();
-
     String getBareName();
 }

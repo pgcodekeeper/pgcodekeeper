@@ -23,7 +23,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 /**
  * Stores column information.
  */
-public abstract class AbstractColumn extends PgStatementWithSearchPath {
+public abstract class AbstractColumn extends PgStatement implements ISearchPath {
 
     protected static final String ALTER_COLUMN = "\n\tALTER COLUMN ";
     protected static final String COLLATE = " COLLATE ";
@@ -147,5 +147,10 @@ public abstract class AbstractColumn extends PgStatementWithSearchPath {
     @Override
     public AbstractSchema getContainingSchema() {
         return (AbstractSchema) getParent().getParent();
+    }
+
+    @Override
+    public boolean isSubElement() {
+        return true;
     }
 }

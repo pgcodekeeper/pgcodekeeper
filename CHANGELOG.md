@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added support for POLICY object in ClickHouse.
+
 ### Changed
 
 - Removed unnecessary condition in queries for reading objects.

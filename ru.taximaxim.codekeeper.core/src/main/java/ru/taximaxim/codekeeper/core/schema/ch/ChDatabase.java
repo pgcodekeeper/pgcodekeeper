@@ -31,6 +31,7 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
+import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.IStatement;
 import ru.taximaxim.codekeeper.core.schema.PgOverride;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
@@ -38,6 +39,7 @@ import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
 
 public class ChDatabase extends AbstractDatabase {
     private final Map<String, ChFunction> functions = new LinkedHashMap<>();
+    private final Map<String, ChPolicy> policies = new LinkedHashMap<>();
 
     public ChDatabase(PgDiffArguments arguments) {
         super(arguments);
@@ -47,6 +49,7 @@ public class ChDatabase extends AbstractDatabase {
     protected void fillChildrenList(List<Collection<? extends PgStatement>> l) {
         super.fillChildrenList(l);
         l.add(functions.values());
+        l.add(policies.values());
     }
 
     @Override
@@ -56,6 +59,8 @@ public class ChDatabase extends AbstractDatabase {
             return getSchema(name);
         case FUNCTION:
             return getFunction(name);
+        case POLICY:
+            return getPolicy(name);
         default:
             return null;
         }
@@ -70,6 +75,9 @@ public class ChDatabase extends AbstractDatabase {
             break;
         case FUNCTION:
             addFunction((ChFunction) st);
+            break;
+        case POLICY:
+            addPolicy((ChPolicy) st);
             break;
         default:
             throw new IllegalArgumentException("Unsupported child type: " + type);
@@ -101,11 +109,37 @@ public class ChDatabase extends AbstractDatabase {
         addUnique(functions, function);
     }
 
+    /**
+     * Finds policy according to specified policy {@code name}.
+     *
+     * @param name
+     *            name of the policy to be searched
+     *
+     * @return found policy or null if no such policy has been found
+     */
+    public ChPolicy getPolicy(final String name) {
+        return policies.get(name);
+    }
+
+    /**
+     * Getter for {@link #policies}. The list cannot be modified.
+     *
+     * @return {@link #policies}
+     */
+    public Collection<ChPolicy> getPolicies() {
+        return Collections.unmodifiableCollection(policies.values());
+    }
+
+    public void addPolicy(final ChPolicy policy) {
+        addUnique(policies, policy);
+    }
+
     @Override
     public boolean compareChildren(PgStatement obj) {
         if (obj instanceof ChDatabase && super.compareChildren(obj)) {
             ChDatabase db = (ChDatabase) obj;
-            return functions.equals(db.functions);
+            return functions.equals(db.functions)
+                    && policies.equals(db.policies);
         }
         return false;
     }
@@ -114,6 +148,7 @@ public class ChDatabase extends AbstractDatabase {
     public void computeChildrenHash(Hasher hasher) {
         super.computeChildrenHash(hasher);
         hasher.putUnordered(functions);
+        hasher.putUnordered(policies);
     }
 
     @Override
@@ -162,6 +197,20 @@ public class ChDatabase extends AbstractDatabase {
     @Override
     public DatabaseType getDbType() {
         return DatabaseType.CH;
+    }
+
+    @Override
+    public PgStatement getStatement(GenericColumn gc) {
+        DbObjType type = gc.type;
+        if (type == DbObjType.FUNCTION) {
+            return getFunction(gc.schema);
+        }
+
+        if (type == DbObjType.POLICY) {
+            return getPolicy(gc.schema);
+        }
+
+        return super.getStatement(gc);
     }
 
 }

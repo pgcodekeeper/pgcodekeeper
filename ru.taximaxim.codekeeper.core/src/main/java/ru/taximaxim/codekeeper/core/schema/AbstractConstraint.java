@@ -28,7 +28,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 /**
  * Stores table constraint information.
  */
-public abstract class AbstractConstraint extends PgStatementWithSearchPath implements IConstraint {
+public abstract class AbstractConstraint extends PgStatement implements IConstraint, ISearchPath {
 
     private boolean notValid;
 
@@ -46,6 +46,7 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath imple
         return Collections.emptySet();
     }
 
+    @Override
     public boolean containsColumn(String name) {
         return getColumns().contains(name);
     }
@@ -114,5 +115,10 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath imple
     @Override
     public String getTableName() {
         return getParent().getName();
+    }
+
+    @Override
+    public boolean isSubElement() {
+        return true;
     }
 }

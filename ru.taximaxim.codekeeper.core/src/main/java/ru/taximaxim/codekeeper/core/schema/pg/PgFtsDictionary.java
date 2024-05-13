@@ -25,12 +25,12 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.IOptionContainer;
+import ru.taximaxim.codekeeper.core.schema.ISearchPath;
 import ru.taximaxim.codekeeper.core.schema.ISimpleOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.schema.PgStatementWithSearchPath;
 
-public class PgFtsDictionary extends PgStatementWithSearchPath
-implements ISimpleOptionContainer {
+public class PgFtsDictionary extends PgStatement
+        implements ISimpleOptionContainer, ISearchPath {
 
     private String template;
     private final Map<String, String> options = new LinkedHashMap<>();
@@ -46,7 +46,7 @@ implements ISimpleOptionContainer {
 
     @Override
     public AbstractSchema getContainingSchema() {
-        return (AbstractSchema)getParent();
+        return (AbstractSchema) getParent();
     }
 
     @Override

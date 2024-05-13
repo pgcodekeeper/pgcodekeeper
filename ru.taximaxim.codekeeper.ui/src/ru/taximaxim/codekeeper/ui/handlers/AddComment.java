@@ -77,7 +77,7 @@ public class AddComment extends AbstractHandler {
         AbstractDatabase oldDb = UIProjectLoader.buildFiles(List.of(file), DatabaseType.PG, null);
         AbstractDatabase newDb = (AbstractDatabase) oldDb.deepCopy();
 
-        PgStatement statement = location.getObj().getStatement(newDb);
+        PgStatement statement = newDb.getStatement(location.getObj());
         if (statement == null) {
             return;
         }

@@ -118,8 +118,13 @@ public class UIProjectLoader extends ProjectLoader {
         if (!baseDir.exists()) {
             return;
         }
-        loadPgChStructure(baseDir, db, WorkDirs.CH_DATABASE);
-        loadSubdir(baseDir.getFolder(new Path(WorkDirs.CH_FUNCTION)), db);
+        for (String dir : WorkDirs.getDirectoryNames(DatabaseType.CH)) {
+            if (WorkDirs.CH_DATABASE.equals(dir)) {
+                loadPgChStructure(baseDir, db, dir);
+            } else {
+                loadSubdir(baseDir.getFolder(new Path(dir)), db);
+            }
+        }
     }
 
     private void loadPgStructure(IContainer baseDir, AbstractDatabase db)

@@ -23,14 +23,14 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.IFunction;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
-import ru.taximaxim.codekeeper.core.schema.PgStatementWithSearchPath;
+import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
 
 public class AggregateAnalysisLauncher extends AbstractAnalysisLauncher {
 
     private final GenericColumn function;
 
-    public AggregateAnalysisLauncher(PgStatementWithSearchPath stmt, GenericColumn function,
+    public AggregateAnalysisLauncher(PgStatement stmt, GenericColumn function,
             String location) {
         super(stmt, null, location);
         this.function = function;

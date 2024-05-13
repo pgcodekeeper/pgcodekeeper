@@ -62,7 +62,13 @@ class ChDiffTest {
             //Test scenario where FUNCTIONs are compared
             "compare_ch_function",
             //Test scenario where FUNCTION is dropped
-            "drop_ch_function"
+            "drop_ch_function",
+            // Test scenario where POLICY is added
+            "add_ch_policy",
+            // Test scenario where POLICY is dropped
+            "drop_ch_policy",
+            // Test scenario where POLICY is changed
+            "change_ch_policy"
     })
     void runDiff(String fileNameTemplate) throws IOException, InterruptedException {
         TestUtils.runDiff(fileNameTemplate, DatabaseType.CH, ChDiffTest.class);

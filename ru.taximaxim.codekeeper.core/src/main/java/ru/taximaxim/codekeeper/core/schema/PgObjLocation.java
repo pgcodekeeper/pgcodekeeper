@@ -137,6 +137,10 @@ public class PgObjLocation extends ContextLocation {
         return obj == null ? null : obj.table;
     }
 
+    public String getColumn() {
+        return obj == null ? null : obj.column;
+    }
+
     public DbObjType getType() {
         return obj == null ? null : obj.type;
     }
@@ -154,12 +158,12 @@ public class PgObjLocation extends ContextLocation {
         }
         String objName = getObjName();
         switch (obj.type) {
-            case FUNCTION:
-            case PROCEDURE:
-            case AGGREGATE:
-                break;
-            default:
-                return objName;
+        case FUNCTION:
+        case PROCEDURE:
+        case AGGREGATE:
+            break;
+        default:
+            return objName;
         }
         if (objName.indexOf('(') == -1) {
             return objName;
@@ -191,19 +195,19 @@ public class PgObjLocation extends ContextLocation {
         }
 
         switch (objType) {
-            case TABLE:
-            case VIEW:
-            case SEQUENCE:
-                return type == DbObjType.TABLE || type == DbObjType.VIEW || type == DbObjType.SEQUENCE;
-            case FUNCTION:
-            case AGGREGATE:
-            case PROCEDURE:
-                return type == DbObjType.FUNCTION || type == DbObjType.AGGREGATE || type == DbObjType.PROCEDURE;
-            case TYPE:
-            case DOMAIN:
-                return type == DbObjType.TYPE || type == DbObjType.DOMAIN;
-            default:
-                return false;
+        case TABLE:
+        case VIEW:
+        case SEQUENCE:
+            return type.in(DbObjType.TABLE, DbObjType.VIEW, DbObjType.SEQUENCE);
+        case FUNCTION:
+        case AGGREGATE:
+        case PROCEDURE:
+            return type.in(DbObjType.FUNCTION, DbObjType.AGGREGATE, DbObjType.PROCEDURE);
+        case TYPE:
+        case DOMAIN:
+            return type.in(DbObjType.TYPE, DbObjType.DOMAIN);
+        default:
+            return false;
         }
     }
 

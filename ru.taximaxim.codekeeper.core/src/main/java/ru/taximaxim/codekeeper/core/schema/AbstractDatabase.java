@@ -289,4 +289,112 @@ public abstract class AbstractDatabase extends PgStatement implements IDatabase 
     }
 
     protected abstract AbstractDatabase getDatabaseCopy();
+
+    public PgStatement getStatement(GenericColumn gc) {
+        DbObjType type = gc.type;
+        switch (type) {
+        case DATABASE:
+            return this;
+        case SCHEMA:
+        case EXTENSION:
+        case FOREIGN_DATA_WRAPPER:
+        case SERVER:
+        case EVENT_TRIGGER:
+        case CAST:
+        case USER_MAPPING:
+        case ASSEMBLY:
+        case USER:
+        case ROLE:
+            return getChild(gc.schema, type);
+        default:
+            break;
+        }
+
+        AbstractSchema s = getSchema(gc.schema);
+        if (s == null) {
+            return null;
+        }
+
+        switch (type) {
+        case DOMAIN:
+        case SEQUENCE:
+        case VIEW:
+        case COLLATION:
+        case FTS_PARSER:
+        case FTS_TEMPLATE:
+        case FTS_DICTIONARY:
+        case FTS_CONFIGURATION:
+            return s.getChild(gc.table, type);
+        case TYPE:
+            return (PgStatement) resolveTypeCall(s, gc.table);
+        case FUNCTION:
+        case PROCEDURE:
+        case AGGREGATE:
+            return (PgStatement) resolveFunctionCall(s, gc.table);
+        case OPERATOR:
+            return (PgStatement) resolveOperatorCall(s, gc.table);
+        case TABLE:
+            return (PgStatement) s.getRelation(gc.table);
+        case INDEX:
+            return s.getIndexByName(gc.table);
+            // handled in getStatement, left here for consistency
+        case COLUMN:
+            AbstractTable t = s.getTable(gc.table);
+            return t == null ? null : t.getColumn(gc.column);
+        case CONSTRAINT:
+        case TRIGGER:
+        case RULE:
+        case POLICY:
+            PgStatementContainer sc = s.getStatementContainer(gc.table);
+            return sc == null ? null : sc.getChild(gc.column, type);
+        default:
+            throw new IllegalStateException("Unhandled DbObjType: " + type);
+        }
+    }
+
+    private IStatement resolveTypeCall(AbstractSchema s, String table) {
+        PgStatement st = s.getType(table);
+        if (st != null) {
+            return st;
+        }
+        st = s.getDomain(table);
+        if (st != null) {
+            return st;
+        }
+        // every "selectable" relation can be used as a type
+        // getRelation should only look for "selectable" relations
+        return s.getRelation(table);
+    }
+
+    private IFunction resolveFunctionCall(AbstractSchema schema, String table) {
+        if (schema.getDbType() == DatabaseType.PG) {
+            return schema.getFunction(table);
+        }
+
+        for (IFunction f : schema.getFunctions()) {
+            if (f.getBareName().equals(table)) {
+                return f;
+            }
+        }
+        return null;
+    }
+
+    private IOperator resolveOperatorCall(AbstractSchema schema, String table) {
+        IOperator oper = null;
+        if (table.indexOf('(') != -1) {
+            oper = schema.getOperator(table);
+        }
+        if (oper != null) {
+            return oper;
+        }
+
+        int found = 0;
+        for (IOperator o : schema.getOperators()) {
+            if (o.getBareName().equals(table)) {
+                ++found;
+                oper = o;
+            }
+        }
+        return found == 1 ? oper : null;
+    }
 }

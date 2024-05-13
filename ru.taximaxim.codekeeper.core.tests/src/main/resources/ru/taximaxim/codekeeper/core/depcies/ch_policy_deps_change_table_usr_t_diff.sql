@@ -1,0 +1,7 @@
+ALTER TABLE default.t2
+	DROP COLUMN col2;
+
+ALTER POLICY pol1 ON default.t2
+  USING col1 != 3
+  AS RESTRICTIVE
+  TO ALL;

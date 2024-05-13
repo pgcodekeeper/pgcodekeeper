@@ -112,7 +112,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      * @return {@link #functions}
      */
     @Override
-    public Collection<AbstractFunction> getFunctions() {
+    public Collection<IFunction> getFunctions() {
         return Collections.unmodifiableCollection(functions.values());
     }
 
@@ -448,7 +448,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      * @return {@link #operators}
      */
     @Override
-    public Collection<PgOperator> getOperators() {
+    public Collection<IOperator> getOperators() {
         return Collections.unmodifiableCollection(operators.values());
     }
 

@@ -19,12 +19,12 @@ import java.util.Collection;
 import java.util.stream.Stream;
 
 public interface ISchema extends IStatementContainer {
-    Stream<? extends IRelation> getRelations();
+    Stream<IRelation> getRelations();
     IRelation getRelation(String name);
 
-    Collection<? extends IFunction> getFunctions();
+    Collection<IFunction> getFunctions();
     IFunction getFunction(String signature);
 
-    Collection<? extends IOperator> getOperators();
+    Collection<IOperator> getOperators();
     IOperator getOperator(String signature);
 }

@@ -1,0 +1,4 @@
+ALTER POLICY pol1 ON default.t2
+  USING col2 != 3 AND col1 < 10
+  AS RESTRICTIVE
+  TO ALL;

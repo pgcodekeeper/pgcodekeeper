@@ -74,8 +74,8 @@ import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParserWrapper;
+import ru.taximaxim.codekeeper.core.schema.ISearchPath;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.schema.PgStatementWithSearchPath;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
@@ -179,8 +179,8 @@ public final class NewObjectPage extends WizardPage {
             PgStatement st = UIProjectLoader.parseStatement((IFile) resource, types);
             if (st != null) {
                 type = st.getStatementType();
-                if (st instanceof PgStatementWithSearchPath) {
-                    schema = ((PgStatementWithSearchPath) st).getSchemaName();
+                if (st instanceof ISearchPath) {
+                    schema = ((ISearchPath) st).getSchemaName();
                 }
 
                 if (type == DbObjType.TABLE || type == DbObjType.VIEW) {
