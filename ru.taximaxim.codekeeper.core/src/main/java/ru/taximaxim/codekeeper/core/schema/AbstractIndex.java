@@ -33,8 +33,8 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 /**
  * Stores table index information.
  */
-public abstract class AbstractIndex extends PgStatementWithSearchPath
-implements ISimpleOptionContainer, ISimpleColumnContainer {
+public abstract class AbstractIndex extends PgStatement
+implements ISimpleOptionContainer, ISimpleColumnContainer, ISearchPath {
 
     private String where;
     private String tablespace;
@@ -189,5 +189,10 @@ implements ISimpleOptionContainer, ISimpleColumnContainer {
     @Override
     public AbstractSchema getContainingSchema() {
         return (AbstractSchema) getParent().getParent();
+    }
+
+    @Override
+    public boolean isSubElement() {
+        return true;
     }
 }

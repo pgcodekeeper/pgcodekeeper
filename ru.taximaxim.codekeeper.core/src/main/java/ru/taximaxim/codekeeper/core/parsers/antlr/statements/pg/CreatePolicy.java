@@ -29,9 +29,9 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_pol
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.User_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
+import ru.taximaxim.codekeeper.core.schema.EventType;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
-import ru.taximaxim.codekeeper.core.schema.pg.PgEventType;
 import ru.taximaxim.codekeeper.core.schema.pg.PgPolicy;
 
 public class CreatePolicy extends PgParserAbstract {
@@ -53,7 +53,7 @@ public class CreatePolicy extends PgParserAbstract {
         policy.setPermissive(ctx.RESTRICTIVE() == null);
 
         if (ctx.FOR() != null && ctx.ALL() == null) {
-            policy.setEvent(PgEventType.valueOf(ctx.event.getText().toUpperCase(Locale.ROOT)));
+            policy.setEvent(EventType.valueOf(ctx.event.getText().toUpperCase(Locale.ROOT)));
         }
 
         for (User_nameContext role : ctx.user_name()) {

@@ -9,8 +9,16 @@ options {
 
 // Top-level statements
 
+@members {
+    private int selectLevel = 0;
+}
+
 ch_file
     : BOM? SEMICOLON* (query (SEMICOLON+ | EOF))* EOF
+    ;
+
+expr_eof
+    : expr EOF
     ;
 
 query
@@ -204,16 +212,21 @@ with_option
     ;
 
 users
-    : identifier_list
-    | ALL (EXCEPT identifier_list)?
+    : roles=identifier_list (EXCEPT excepts=identifier_list)?
     ;
 
 select_stmt
-    : select_ops
+    :
+    {selectLevel++;}
+    select_ops
+    {selectLevel--;}
     ;
 
 select_stmt_no_parens
-    : select_ops_no_parens
+    :
+    {selectLevel++;}
+    select_ops_no_parens
+    {selectLevel--;}
     ;
 
 with_clause
@@ -259,15 +272,14 @@ alter_policy_stmt
     ;
 
 policy_name
-    : identifier_list ON qualified_name_or_asterisk cluster_clause?
-    | identifier      ON qualified_name_or_asterisk (COMMA qualified_name_or_asterisk)+ cluster_clause?
+    : identifier (COMMA identifier)* ON qualified_name_or_asterisk (COMMA qualified_name_or_asterisk)* cluster_clause?
     ;
 
 policy_action
     : AS (PERMISSIVE | RESTRICTIVE)
-    | USING expr_list
+    | USING expr
     | FOR SELECT
-    | TO (identifier_list | ALL EXCEPT identifier_list)
+    | TO users
     ;
 
 rename_to
@@ -991,7 +1003,7 @@ expr
     | NOT expr
     | expr NOT? BETWEEN expr AND expr
     | expr QUESTION expr COLON expr
-    | expr alias_clause
+    | expr {selectLevel > 0}? alias_clause
     | expr select_mode
     | expr DOT literal // tuple
     | expr_primary

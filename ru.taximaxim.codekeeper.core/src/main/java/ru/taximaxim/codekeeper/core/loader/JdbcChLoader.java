@@ -29,8 +29,9 @@ import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
 import ru.taximaxim.codekeeper.core.loader.jdbc.ch.CHFunctionReader;
-import ru.taximaxim.codekeeper.core.loader.jdbc.ch.ChSchemasReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.ch.ChPoliciesReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.ch.ChRelationsReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.ch.ChSchemasReader;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
@@ -65,6 +66,7 @@ public final class JdbcChLoader extends JdbcLoaderBase {
             new ChSchemasReader(this, d).read();
             new CHFunctionReader(this, d).read();
             new ChRelationsReader(this).read();
+            new ChPoliciesReader(this, d).read();
 
             finishLoaders();
             connection.commit();

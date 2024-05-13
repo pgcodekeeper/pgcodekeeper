@@ -22,6 +22,7 @@ import java.util.function.BiConsumer;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
+import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.ChExpressionAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Data_type_exprContext;
@@ -35,7 +36,10 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Table_const
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Table_index_defContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
-import ru.taximaxim.codekeeper.core.schema.PgStatementWithSearchPath;
+import ru.taximaxim.codekeeper.core.schema.GenericColumn;
+import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
+import ru.taximaxim.codekeeper.core.schema.PgObjLocation.LocationType;
+import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.ch.ChColumn;
 import ru.taximaxim.codekeeper.core.schema.ch.ChConstraint;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
@@ -198,9 +202,28 @@ public abstract class ChParserAbstract extends ParserAbstract<ChDatabase> {
         return index;
     }
 
-    private <T extends PgStatementWithSearchPath> void setExprWithAnalyze(BiConsumer<T, String> adder, T stmt,
+    private <T extends PgStatement> void setExprWithAnalyze(BiConsumer<T, String> adder, T stmt,
             ExprContext ctx) {
         adder.accept(stmt, getFullCtxText(ctx));
         db.addAnalysisLauncher(new ChExpressionAnalysisLauncher(stmt, ctx, fileName));
+    }
+
+    @Override
+    protected PgObjLocation getLocation(List<? extends ParserRuleContext> ids, DbObjType type, String action,
+            boolean isDep, String signature, LocationType locationType) {
+        ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
+
+        if (type == DbObjType.FUNCTION) {
+            return buildLocation(nameCtx, action, locationType, new GenericColumn(nameCtx.getText(), type));
+        }
+
+        if (type == DbObjType.POLICY) {
+            String shortName = nameCtx.getText();
+            String tableName = getFullCtxText(QNameParser.getSchemaNameCtx(ids));
+            String fullName = shortName + " ON " + tableName;
+            return buildLocation(nameCtx, action, locationType, new GenericColumn(fullName, type));
+        }
+
+        return super.getLocation(ids, type, action, isDep, signature, locationType);
     }
 }

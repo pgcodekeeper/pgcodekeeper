@@ -48,7 +48,6 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.St_clause
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Transaction_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Tsql_fileContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Update_statementContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ms.AlterMsAssembly;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ms.AlterMsAuthorization;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ms.AlterMsBatch;
@@ -72,6 +71,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ms.DisableMsTrigger
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ms.DropMsStatement;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ms.GrantMsPrivilege;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ms.InsertMsStatement;
+import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ms.MsParserAbstract;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ms.UpdateMsStatement;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
@@ -175,7 +175,7 @@ implements TSqlContextProcessor {
             return;
         }
 
-        ParserAbstract p;
+        MsParserAbstract p;
 
         if (ctx.create_schema() != null) {
             p = new CreateMsSchema(ctx.create_schema(), db);
@@ -202,7 +202,7 @@ implements TSqlContextProcessor {
 
 
     private void create(Schema_createContext ctx) {
-        ParserAbstract p;
+        MsParserAbstract p;
         if (ctx.create_sequence() != null) {
             p = new CreateMsSequence(ctx.create_sequence(), db);
         } else if (ctx.create_index() != null) {
@@ -225,7 +225,7 @@ implements TSqlContextProcessor {
     }
 
     private void alter(Schema_alterContext ctx) {
-        ParserAbstract p;
+        MsParserAbstract p;
         if (ctx.alter_authorization() != null) {
             p = new AlterMsAuthorization(ctx.alter_authorization(), db);
         } else if (ctx.alter_table() != null) {
@@ -246,7 +246,7 @@ implements TSqlContextProcessor {
     }
 
     private void drop(Schema_dropContext ctx) {
-        ParserAbstract p;
+        MsParserAbstract p;
         if (ctx.drop_assembly() != null
                 || ctx.drop_index() != null
                 || ctx.drop_statements() != null) {

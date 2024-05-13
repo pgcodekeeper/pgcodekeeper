@@ -160,8 +160,6 @@ public abstract class PgStatement implements IStatement, IHashable {
         return meta;
     }
 
-    public abstract AbstractDatabase getDatabase();
-
     public PgDiffArguments getDatabaseArguments() {
         return getDatabase().getArguments();
     }
@@ -764,7 +762,7 @@ public abstract class PgStatement implements IStatement, IHashable {
     protected void assertUnique(PgStatement found, PgStatement newSt) {
         if (found != null) {
             PgStatement foundParent = found.getParent();
-            throw foundParent instanceof PgStatementWithSearchPath
+            throw foundParent instanceof ISearchPath
             ? new ObjectCreationException(newSt, foundParent)
                     : new ObjectCreationException(newSt);
         }
@@ -776,5 +774,9 @@ public abstract class PgStatement implements IStatement, IHashable {
         assertUnique(found, newSt);
         newSt.setParent(this);
         resetHash();
+    }
+
+    public boolean isSubElement() {
+        return false;
     }
 }

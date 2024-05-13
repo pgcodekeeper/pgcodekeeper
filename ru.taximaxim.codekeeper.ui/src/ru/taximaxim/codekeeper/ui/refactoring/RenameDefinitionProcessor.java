@@ -172,7 +172,7 @@ public class RenameDefinitionProcessor extends RenameProcessor {
     }
 
     private void addFileRenames(IFile file, PgObjLocation ref, List<RenameDefinitionChange> fileRenames) {
-        if (ref.getType().isSubElement()) {
+        if (ref.getColumn() != null) {
             return;
         }
 

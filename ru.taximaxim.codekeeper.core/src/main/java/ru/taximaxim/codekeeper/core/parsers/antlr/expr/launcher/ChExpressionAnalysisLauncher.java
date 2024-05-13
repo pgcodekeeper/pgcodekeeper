@@ -26,12 +26,11 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.ExprContext
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.schema.PgStatementWithSearchPath;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
 
 public class ChExpressionAnalysisLauncher extends AbstractAnalysisLauncher {
 
-    public ChExpressionAnalysisLauncher(PgStatementWithSearchPath stmt, ExprContext ctx, String location) {
+    public ChExpressionAnalysisLauncher(PgStatement stmt, ExprContext ctx, String location) {
         super(stmt, ctx, location);
     }
 
@@ -51,6 +50,6 @@ public class ChExpressionAnalysisLauncher extends AbstractAnalysisLauncher {
     }
 
     private boolean isNeedNmspc() {
-        return stmt.getStatementType().in(DbObjType.COLUMN, DbObjType.INDEX, DbObjType.CONSTRAINT);
+        return stmt.isSubElement();
     }
 }

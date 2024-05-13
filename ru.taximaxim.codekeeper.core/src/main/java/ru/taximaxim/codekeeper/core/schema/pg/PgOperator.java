@@ -23,10 +23,10 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.IOperator;
+import ru.taximaxim.codekeeper.core.schema.ISearchPath;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.schema.PgStatementWithSearchPath;
 
-public class PgOperator extends PgStatementWithSearchPath implements IOperator {
+public class PgOperator extends PgStatement implements IOperator, ISearchPath {
 
     private String procedure;
     private String leftArg;

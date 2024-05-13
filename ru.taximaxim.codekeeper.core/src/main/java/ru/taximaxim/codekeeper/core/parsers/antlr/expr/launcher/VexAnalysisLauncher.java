@@ -24,12 +24,12 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext
 import ru.taximaxim.codekeeper.core.parsers.antlr.rulectx.Vex;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
-import ru.taximaxim.codekeeper.core.schema.PgStatementWithSearchPath;
+import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
 
 public class VexAnalysisLauncher extends AbstractAnalysisLauncher {
 
-    public VexAnalysisLauncher(PgStatementWithSearchPath stmt, VexContext ctx, String location) {
+    public VexAnalysisLauncher(PgStatement stmt, VexContext ctx, String location) {
         super(stmt, ctx, location);
     }
 

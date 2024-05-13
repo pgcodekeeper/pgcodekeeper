@@ -24,9 +24,9 @@ import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcReader;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.CreateRule;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
+import ru.taximaxim.codekeeper.core.schema.EventType;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
-import ru.taximaxim.codekeeper.core.schema.pg.PgEventType;
 import ru.taximaxim.codekeeper.core.schema.pg.PgRule;
 
 public class RulesReader extends JdbcReader {
@@ -55,16 +55,16 @@ public class RulesReader extends JdbcReader {
 
         switch (res.getString("ev_type")) {
         case "1":
-            r.setEvent(PgEventType.SELECT);
+            r.setEvent(EventType.SELECT);
             break;
         case "2":
-            r.setEvent(PgEventType.UPDATE);
+            r.setEvent(EventType.UPDATE);
             break;
         case "3":
-            r.setEvent(PgEventType.INSERT);
+            r.setEvent(EventType.INSERT);
             break;
         case "4":
-            r.setEvent(PgEventType.DELETE);
+            r.setEvent(EventType.DELETE);
             break;
         }
 

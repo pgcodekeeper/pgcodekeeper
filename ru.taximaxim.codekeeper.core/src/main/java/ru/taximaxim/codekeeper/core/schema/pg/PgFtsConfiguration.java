@@ -25,10 +25,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
+import ru.taximaxim.codekeeper.core.schema.ISearchPath;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.schema.PgStatementWithSearchPath;
 
-public class PgFtsConfiguration extends PgStatementWithSearchPath {
+public class PgFtsConfiguration extends PgStatement implements ISearchPath {
 
     private static final String ALTER_CONFIGURATION = "\n\nALTER TEXT SEARCH CONFIGURATION ";
 

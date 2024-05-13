@@ -18,6 +18,7 @@ package ru.taximaxim.codekeeper.core.schema.meta;
 import java.io.Serializable;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.IStatement;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
@@ -61,11 +62,6 @@ public class MetaStatement implements IStatement, Serializable {
     }
 
     @Override
-    public MetaStatement getParent() {
-        throw new IllegalStateException("Unsupported operation");
-    }
-
-    @Override
     public String getQualifiedName() {
         return getGenericColumn().getQualifiedName();
     }
@@ -93,5 +89,15 @@ public class MetaStatement implements IStatement, Serializable {
 
     public int getLineNumber() {
         return object.getLineNumber();
+    }
+
+    @Override
+    public MetaStatement getParent() {
+        throw new IllegalStateException("Unsupported operation");
+    }
+
+    @Override
+    public AbstractDatabase getDatabase() {
+        throw new IllegalStateException("Unsupported operation");
     }
 }

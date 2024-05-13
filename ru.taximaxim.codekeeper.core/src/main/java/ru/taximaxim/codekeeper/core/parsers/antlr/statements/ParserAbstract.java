@@ -52,7 +52,6 @@ import ru.taximaxim.codekeeper.core.schema.IStatementContainer;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation.LocationType;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 
 /**
  * Abstract Class contents common operations for parsing
@@ -261,9 +260,6 @@ public abstract class ParserAbstract<S extends AbstractDatabase> {
             LocationType locationType) {
         ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
         switch (type) {
-        case CAST:
-        case USER_MAPPING:
-            throw new IllegalStateException();
         case ASSEMBLY:
         case EXTENSION:
         case EVENT_TRIGGER:
@@ -273,15 +269,9 @@ public abstract class ParserAbstract<S extends AbstractDatabase> {
         case ROLE:
         case USER:
         case DATABASE:
-            return buildLocation(nameCtx, action, locationType,
-                    new GenericColumn(nameCtx.getText(), type));
+            return buildLocation(nameCtx, action, locationType, new GenericColumn(nameCtx.getText(), type));
         default:
             break;
-        }
-
-        if (db instanceof ChDatabase && type == DbObjType.FUNCTION) {
-            return buildLocation(nameCtx, action, locationType,
-                    new GenericColumn(nameCtx.getText(), type));
         }
 
         ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);

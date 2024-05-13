@@ -38,6 +38,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractSequence;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.Argument;
+import ru.taximaxim.codekeeper.core.schema.EventType;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgPrivilege;
 import ru.taximaxim.codekeeper.core.schema.SimpleColumn;
@@ -47,7 +48,6 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgConstraintCheck;
 import ru.taximaxim.codekeeper.core.schema.pg.PgConstraintFk;
 import ru.taximaxim.codekeeper.core.schema.pg.PgConstraintPk;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
-import ru.taximaxim.codekeeper.core.schema.pg.PgEventType;
 import ru.taximaxim.codekeeper.core.schema.pg.PgExtension;
 import ru.taximaxim.codekeeper.core.schema.pg.PgFunction;
 import ru.taximaxim.codekeeper.core.schema.pg.PgIndex;
@@ -584,7 +584,7 @@ class PgAntlrLoaderTest {
         table.setOwner("postgres");
 
         PgRule rule = new PgRule("on_select");
-        rule.setEvent(PgEventType.SELECT);
+        rule.setEvent(EventType.SELECT);
         rule.setCondition("(1=1)");
         rule.setInstead(true);
         table.addRule(rule);
@@ -612,19 +612,19 @@ class PgAntlrLoaderTest {
         view.setOwner("postgres");
 
         rule = new PgRule("on_delete");
-        rule.setEvent(PgEventType.DELETE);
+        rule.setEvent(EventType.DELETE);
         rule.addCommand("DELETE FROM public.user_data WHERE (user_data.id = old.id)");
         view.addRule(rule);
 
         rule = new PgRule("on_insert");
-        rule.setEvent(PgEventType.INSERT);
+        rule.setEvent(EventType.INSERT);
         rule.setInstead(true);
         rule.addCommand("INSERT INTO public.user_data (id, email, created) VALUES (new.id, new.email, new.created)");
         rule.addCommand("INSERT INTO public.t1(c1) DEFAULT VALUES");
         view.addRule(rule);
 
         rule = new PgRule("on_update");
-        rule.setEvent(PgEventType.UPDATE);
+        rule.setEvent(EventType.UPDATE);
         rule.setInstead(true);
         rule.addCommand("UPDATE public.user_data SET id = new.id, email = new.email, created = new.created WHERE (user_data.id = old.id)");
         view.addRule(rule);

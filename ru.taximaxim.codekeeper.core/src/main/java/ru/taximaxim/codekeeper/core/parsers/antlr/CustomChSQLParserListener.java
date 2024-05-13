@@ -32,9 +32,11 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Create_tabl
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Create_view_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Drop_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.QueryContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.AlterChOther;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.AlterChTable;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.ChParserAbstract;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChFunction;
+import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChPolicy;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChSchema;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChTable;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChView;
@@ -88,6 +90,8 @@ public class CustomChSQLParserListener extends CustomParserListener<ChDatabase> 
             p = new CreateChView(createView, db, stream);
         } else if (ctx.create_function_stmt() != null) {
             p = new CreateChFunction(ctx.create_function_stmt(), db);
+        } else if (ctx.create_policy_stmt() != null) {
+            p = new CreateChPolicy(ctx.create_policy_stmt(), db);
         } else {
             addToQueries(ctx, getAction(ctx));
             return;
@@ -115,6 +119,8 @@ public class CustomChSQLParserListener extends CustomParserListener<ChDatabase> 
         Alter_table_stmtContext altertableCtx = ctx.alter_table_stmt();
         if (altertableCtx != null) {
             p = new AlterChTable(altertableCtx, db);
+        } else if (ctx.alter_policy_stmt() != null) {
+            p = new AlterChOther(ctx, db);
         } else {
             addToQueries(ctx, getAction(ctx));
             return;

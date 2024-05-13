@@ -21,4 +21,9 @@ public interface ISearchPath extends IStatement {
     default String getSchemaName() {
         return getContainingSchema().getName();
     }
+
+    @Override
+    default AbstractDatabase getDatabase() {
+        return (AbstractDatabase) getContainingSchema().getParent();
+    }
 }

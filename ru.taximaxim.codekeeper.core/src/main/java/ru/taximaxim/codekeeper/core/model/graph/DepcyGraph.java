@@ -38,6 +38,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.IConstraintFk;
 import ru.taximaxim.codekeeper.core.schema.IConstraintPk;
+import ru.taximaxim.codekeeper.core.schema.IStatement;
 import ru.taximaxim.codekeeper.core.schema.Inherits;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
@@ -189,7 +190,7 @@ public class DepcyGraph {
 
     private void processDeps(PgStatement st) {
         for (GenericColumn dep : st.getDeps()) {
-            PgStatement depSt = dep.getStatement(db);
+            PgStatement depSt = db.getStatement(dep);
             if (depSt != null && !st.equals(depSt)) {
                 graph.addEdge(st, depSt);
             }
@@ -208,7 +209,8 @@ public class DepcyGraph {
             return;
         }
 
-        PgStatement cont = new GenericColumn(con.getForeignSchema(), con.getForeignTable(), DbObjType.TABLE).getStatement(db);
+        IStatement cont = db.getStatement(
+                new GenericColumn(con.getForeignSchema(), con.getForeignTable(), DbObjType.TABLE));
 
         if (cont instanceof PgStatementContainer) {
             PgStatementContainer c = (PgStatementContainer) cont;
@@ -233,8 +235,7 @@ public class DepcyGraph {
      */
     private void createChildColToPartTblCol(PartitionPgTable tbl, PgColumn col) {
         for (Inherits in : tbl.getInherits()) {
-            PgStatement parentTbl = new GenericColumn(in.getKey(), in.getValue(),
-                    DbObjType.TABLE).getStatement(db);
+            IStatement parentTbl = db.getStatement(new GenericColumn(in.getKey(), in.getValue(), DbObjType.TABLE));
             if (parentTbl == null) {
                 LOG.error("There is no such partitioned table as: {}", in.getQualifiedName());
                 continue;

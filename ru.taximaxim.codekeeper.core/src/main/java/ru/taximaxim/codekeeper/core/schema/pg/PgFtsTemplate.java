@@ -21,10 +21,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
+import ru.taximaxim.codekeeper.core.schema.ISearchPath;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.schema.PgStatementWithSearchPath;
 
-public class PgFtsTemplate extends PgStatementWithSearchPath {
+public class PgFtsTemplate extends PgStatement implements ISearchPath {
 
     private String initFunction;
     private String lexizeFunction;
@@ -40,7 +40,7 @@ public class PgFtsTemplate extends PgStatementWithSearchPath {
 
     @Override
     public AbstractSchema getContainingSchema() {
-        return (AbstractSchema)getParent();
+        return (AbstractSchema) getParent();
     }
 
     @Override

@@ -38,9 +38,9 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_col
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
+import ru.taximaxim.codekeeper.core.schema.ISearchPath;
 import ru.taximaxim.codekeeper.core.schema.PgPrivilege;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.schema.PgStatementWithSearchPath;
 import ru.taximaxim.codekeeper.core.schema.StatementOverride;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 
@@ -98,7 +98,7 @@ public class GrantMsPrivilege extends MsParserAbstract {
         addObjReference(getIdentifiers(nameCtx.qualified_name()), st.getStatementType(), state);
 
         StringBuilder name = new StringBuilder();
-        if (st.getStatementType() == DbObjType.TYPE || !(st instanceof PgStatementWithSearchPath)) {
+        if (st.getStatementType() == DbObjType.TYPE || !(st instanceof ISearchPath)) {
             name.append(st.getStatementType()).append("::");
         }
 

@@ -20,7 +20,8 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 /**
  * Stores trigger information.
  */
-public abstract class AbstractTrigger extends PgStatementWithSearchPath {
+public abstract class AbstractTrigger extends PgStatement implements ISearchPath
+{
 
     @Override
     public DbObjType getStatementType() {
@@ -43,5 +44,10 @@ public abstract class AbstractTrigger extends PgStatementWithSearchPath {
     @Override
     public AbstractSchema getContainingSchema() {
         return (AbstractSchema) getParent().getParent();
+    }
+
+    @Override
+    public boolean isSubElement() {
+        return true;
     }
 }

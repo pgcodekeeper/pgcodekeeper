@@ -161,9 +161,16 @@ public class MetaUtils {
         case CONSTRAINT:
         case RULE:
         case TRIGGER:
-        case POLICY:
             IStatement parent = st.getParent();
             gc = new GenericColumn(parent.getParent().getName(), parent.getName(), st.getName(), type);
+            break;
+        case POLICY:
+            if (st.getDbType() == DatabaseType.CH) {
+                gc = new GenericColumn(st.getName(), type);
+            } else {
+                parent = st.getParent();
+                gc = new GenericColumn(parent.getParent().getName(), parent.getName(), st.getName(), type);
+            }
             break;
         case FUNCTION:
             if (st.getDbType() == DatabaseType.CH) {

@@ -26,8 +26,9 @@ import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
+import ru.taximaxim.codekeeper.core.schema.EventType;
+import ru.taximaxim.codekeeper.core.schema.ISearchPath;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.schema.PgStatementWithSearchPath;
 
 /**
  * Stores table rule information.
@@ -35,9 +36,9 @@ import ru.taximaxim.codekeeper.core.schema.PgStatementWithSearchPath;
  * @author akifiev_an
  *
  */
-public class PgRule extends PgStatementWithSearchPath{
+public class PgRule extends PgStatement implements ISearchPath {
 
-    private PgEventType event;
+    private EventType event;
     private String condition;
     private boolean instead;
     private final List<String> commands = new ArrayList<>();
@@ -51,11 +52,11 @@ public class PgRule extends PgStatementWithSearchPath{
         return DbObjType.RULE;
     }
 
-    public PgEventType getEvent() {
+    public EventType getEvent() {
         return event;
     }
 
-    public void setEvent(PgEventType event) {
+    public void setEvent(EventType event) {
         this.event = event;
         resetHash();
     }
@@ -242,5 +243,10 @@ public class PgRule extends PgStatementWithSearchPath{
     @Override
     public AbstractSchema getContainingSchema() {
         return (AbstractSchema) this.getParent().getParent();
+    }
+
+    @Override
+    public boolean isSubElement() {
+        return true;
     }
 }

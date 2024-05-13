@@ -58,7 +58,7 @@ public class CustomParserListener<T extends AbstractDatabase> {
     /**
      * @param ctx statememnt's first token rule
      */
-    protected void safeParseStatement(ParserAbstract p, ParserRuleContext ctx) {
+    protected void safeParseStatement(ParserAbstract<T> p, ParserRuleContext ctx) {
         safeParseStatement(() -> p.parseObject(filename, mode, ctx), ctx);
     }
 

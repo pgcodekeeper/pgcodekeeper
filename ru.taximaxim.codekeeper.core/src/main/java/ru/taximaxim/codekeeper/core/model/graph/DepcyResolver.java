@@ -42,6 +42,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.Argument;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
+import ru.taximaxim.codekeeper.core.schema.IFunction;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.SourceStatement;
 import ru.taximaxim.codekeeper.core.schema.ms.MsTable;
@@ -319,7 +320,7 @@ public class DepcyResolver {
             PgSequence seq = (PgSequence) statement;
             GenericColumn ownedBy = seq.getOwnedBy();
             if (ownedBy != null) {
-                PgStatement column = ownedBy.getStatement(oldDb);
+                PgStatement column = oldDb.getStatement(ownedBy);
                 return column != null && (inDropsList(column) || inDropsList(column.getParent()));
             }
         }
@@ -432,7 +433,7 @@ public class DepcyResolver {
             if (oldObj instanceof PgSequence) {
                 PgSequence seq = (PgSequence) oldObj;
                 GenericColumn ownedBy = seq.getOwnedBy();
-                if (ownedBy != null && ownedBy.getStatement(newDb) == null) {
+                if (ownedBy != null && newDb.getStatement(ownedBy) == null) {
                     return true;
                 }
             }
@@ -512,8 +513,8 @@ public class DepcyResolver {
             if (newObj instanceof PgSequence) {
                 PgSequence seq = (PgSequence) newObj;
                 GenericColumn ownedBy = seq.getOwnedBy();
-                if (ownedBy != null && ownedBy.getStatement(oldDb) == null) {
-                    PgStatement col = ownedBy.getStatement(newDb);
+                if (ownedBy != null && oldDb.getStatement(ownedBy) == null) {
+                    PgStatement col = newDb.getStatement(ownedBy);
                     if (col != null) {
                         addCreateStatements(col);
                     }
@@ -594,7 +595,7 @@ public class DepcyResolver {
             DbObjType type = oldSt.getStatementType();
             if (newSt == null) {
                 if (type == DbObjType.FUNCTION && oldSt.getDbType() == DatabaseType.PG
-                        && isDefaultsOnlyChange((AbstractFunction) oldSt)) {
+                        && isDefaultsOnlyChange((IFunction) oldSt)) {
                     // when function's signature changes it has no twin
                     // but the dependent object might be unchanged
                     // due to default arguments changing in the signature
@@ -615,7 +616,7 @@ public class DepcyResolver {
             }
         }
 
-        private boolean isDefaultsOnlyChange(AbstractFunction oldFunc) {
+        private boolean isDefaultsOnlyChange(IFunction oldFunc) {
             AbstractSchema newSchema = newDb.getSchema(oldFunc.getSchemaName());
             if (newSchema == null) {
                 return false;
@@ -626,7 +627,7 @@ public class DepcyResolver {
             // if there is such, then the drop is necessary,
             // if there is no such, then the drop is not necessary
 
-            Function<AbstractFunction, List<Argument>> argsBeforeDefaults = f -> {
+            Function<IFunction, List<Argument>> argsBeforeDefaults = f -> {
                 List<Argument> args = f.getArguments();
                 OptionalInt firstDefault = IntStream.range(0, args.size())
                         .filter(i -> args.get(i).getDefaultExpression() != null)

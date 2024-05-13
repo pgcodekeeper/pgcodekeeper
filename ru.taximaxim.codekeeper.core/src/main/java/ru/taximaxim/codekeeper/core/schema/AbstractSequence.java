@@ -29,7 +29,7 @@ import ru.taximaxim.codekeeper.core.utils.Pair;
 /**
  * Stores sequence information.
  */
-public abstract class AbstractSequence extends PgStatementWithSearchPath implements IRelation {
+public abstract class AbstractSequence extends PgStatement implements IRelation, ISearchPath {
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractSequence.class);
 

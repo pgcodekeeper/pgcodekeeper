@@ -55,9 +55,9 @@ import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
+import ru.taximaxim.codekeeper.core.schema.ISearchPath;
 import ru.taximaxim.codekeeper.core.schema.PgPrivilege;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.schema.PgStatementWithSearchPath;
 import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgFunction;
 
 /**
@@ -430,7 +430,7 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
             String col = null;
             StringBuilder sb = new StringBuilder();
 
-            if (st instanceof PgStatementWithSearchPath) {
+            if (st instanceof ISearchPath) {
                 col = acl.getString("c");
                 if (st.getStatementType() == DbObjType.TYPE) {
                     sb.append("TYPE::");

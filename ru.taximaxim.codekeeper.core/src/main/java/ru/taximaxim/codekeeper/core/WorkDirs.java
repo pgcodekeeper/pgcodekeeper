@@ -30,12 +30,12 @@ public class WorkDirs {
     /*
      * directory names for Postgres
      */
-    public static final String PG_SCHEMA = "SCHEMA";
-    private static final String PG_EXTENSION = "EXTENSION";
-    private static final String PG_EVENT_TRIGGER = "EVENT_TRIGGER";
-    private static final String PG_USER_MAPPING = "USER_MAPPING";
-    private static final String PG_CAST = "CAST";
-    private static final String PG_SERVER = "SERVER";
+    public static final String PG_SCHEMA = DbObjType.SCHEMA.name();
+    private static final String PG_EXTENSION = DbObjType.EXTENSION.name();
+    private static final String PG_EVENT_TRIGGER = DbObjType.EVENT_TRIGGER.name();
+    private static final String PG_USER_MAPPING = DbObjType.USER_MAPPING.name();
+    private static final String PG_CAST = DbObjType.CAST.name();
+    private static final String PG_SERVER = DbObjType.SERVER.name();
     private static final String PG_FDW = "FDW";
 
     // PG first level folders
@@ -64,11 +64,12 @@ public class WorkDirs {
     /*
      * directory names for ClickHouse
      */
-    public static final String CH_DATABASE = "DATABASE";
-    public static final String CH_FUNCTION = "FUNCTION";
+    public static final String CH_DATABASE = DbObjType.DATABASE.name();
+    private static final String CH_FUNCTION = DbObjType.FUNCTION.name();
+    private static final String CH_POLICY = DbObjType.POLICY.name();
 
     // CH first level folder
-    private static final List<String> CH_DIRECTORY_NAMES = List.of(CH_DATABASE, CH_FUNCTION);
+    private static final List<String> CH_DIRECTORY_NAMES = List.of(CH_DATABASE, CH_FUNCTION, CH_POLICY);
 
     public static List<String> getDirectoryNames(DatabaseType databaseType) {
         switch (databaseType) {
@@ -115,7 +116,7 @@ public class WorkDirs {
         case SCHEMA:
             return CH_DATABASE;
         case FUNCTION:
-            return CH_FUNCTION;
+        case POLICY:
         case TABLE:
         case VIEW:
             return type.name();
@@ -261,6 +262,7 @@ public class WorkDirs {
         DbObjType type = st.getStatementType();
         switch (type) {
         case FUNCTION:
+        case POLICY:
             return baseDir.resolve(getChDirectoryNameForType(type));
         case SCHEMA:
             String databaseName = FileUtils.getValidFilename(st.getBareName());
@@ -269,7 +271,7 @@ public class WorkDirs {
         case VIEW:
             PgStatement parentSt = st.getParent();
             databaseName = FileUtils.getValidFilename(parentSt.getBareName());
-            return baseDir.resolve(CH_DATABASE).resolve(databaseName).resolve(getPgDirectoryNameForType(type));
+            return baseDir.resolve(CH_DATABASE).resolve(databaseName).resolve(getChDirectoryNameForType(type));
         default:
             throw new IllegalStateException(Messages.DbObjType_unsupported_type + type);
         }

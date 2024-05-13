@@ -23,16 +23,15 @@ import java.util.Map;
 
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.schema.pg.PgPolicy;
 import ru.taximaxim.codekeeper.core.schema.pg.PgRule;
 
-public abstract class PgStatementContainer extends PgStatementWithSearchPath
-implements IRelation, IStatementContainer {
+public abstract class PgStatementContainer extends PgStatement
+implements IRelation, IStatementContainer, ISearchPath {
 
     private final Map<String, AbstractIndex> indexes = new LinkedHashMap<>();
     private final Map<String, AbstractTrigger> triggers = new LinkedHashMap<>();
     private final Map<String, PgRule> rules = new LinkedHashMap<>();
-    private final Map<String, PgPolicy> policies = new LinkedHashMap<>();
+    private final Map<String, AbstractPolicy> policies = new LinkedHashMap<>();
 
     protected PgStatementContainer(String name) {
         super(name);
@@ -81,7 +80,7 @@ implements IRelation, IStatementContainer {
             addRule((PgRule) st);
             break;
         case POLICY:
-            addPolicy((PgPolicy) st);
+            addPolicy((AbstractPolicy) st);
             break;
         default:
             throw new IllegalArgumentException("Unsupported child type: " + type);
@@ -153,7 +152,7 @@ implements IRelation, IStatementContainer {
      *
      * @return found policy or null if no such policy has been found
      */
-    public PgPolicy getPolicy(String name) {
+    public AbstractPolicy getPolicy(String name) {
         return policies.get(name);
     }
 
@@ -191,7 +190,7 @@ implements IRelation, IStatementContainer {
      *
      * @return {@link #policies}
      */
-    public Collection<PgPolicy> getPolicies() {
+    public Collection<AbstractPolicy> getPolicies() {
         return Collections.unmodifiableCollection(policies.values());
     }
 
@@ -209,7 +208,7 @@ implements IRelation, IStatementContainer {
         addUnique(rules, rule);
     }
 
-    public void addPolicy(PgPolicy policy) {
+    public void addPolicy(AbstractPolicy policy) {
         addUnique(policies, policy);
     }
 

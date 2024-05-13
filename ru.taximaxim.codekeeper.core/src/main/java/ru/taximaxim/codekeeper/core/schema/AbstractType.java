@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 
-public abstract class AbstractType extends PgStatementWithSearchPath{
+public abstract class AbstractType extends PgStatement implements ISearchPath {
 
     protected AbstractType(String name) {
         super(name);

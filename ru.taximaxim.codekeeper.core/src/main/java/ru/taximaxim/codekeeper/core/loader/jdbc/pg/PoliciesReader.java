@@ -26,9 +26,9 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.VexAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
+import ru.taximaxim.codekeeper.core.schema.EventType;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
-import ru.taximaxim.codekeeper.core.schema.pg.PgEventType;
 import ru.taximaxim.codekeeper.core.schema.pg.PgPolicy;
 
 public class PoliciesReader extends JdbcReader {
@@ -53,16 +53,16 @@ public class PoliciesReader extends JdbcReader {
 
         switch (res.getString("polcmd")) {
         case "r":
-            p.setEvent(PgEventType.SELECT);
+            p.setEvent(EventType.SELECT);
             break;
         case "w":
-            p.setEvent(PgEventType.UPDATE);
+            p.setEvent(EventType.UPDATE);
             break;
         case "a":
-            p.setEvent(PgEventType.INSERT);
+            p.setEvent(EventType.INSERT);
             break;
         case "d":
-            p.setEvent(PgEventType.DELETE);
+            p.setEvent(EventType.DELETE);
             break;
         }
 

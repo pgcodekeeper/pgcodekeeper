@@ -47,8 +47,8 @@ import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
+import ru.taximaxim.codekeeper.core.schema.ISearchPath;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.schema.PgStatementWithSearchPath;
 
 /**
  * Exports AbstractDatabase model as a directory tree with sql files with objects' code as leaves.<br>
@@ -273,14 +273,14 @@ public class ModelExporter {
     }
 
     static Path getRelativeFilePath(PgStatement st, Path baseDir) {
-        if (st.getStatementType().isSubElement()) {
+        if (st.isSubElement()) {
             st = st.getParent();
         }
         Path path = WorkDirs.getRelativeFolderPath(st, baseDir);
 
         String fileName = getExportedFilenameSql(getExportedFilename(st));
-        if (st.getDbType() == DatabaseType.MS && st instanceof PgStatementWithSearchPath) {
-            fileName = FileUtils.getValidFilename(((PgStatementWithSearchPath) st).getSchemaName()) + '.' + fileName;
+        if (st.getDbType() == DatabaseType.MS && st instanceof ISearchPath) {
+            fileName = FileUtils.getValidFilename(((ISearchPath) st).getSchemaName()) + '.' + fileName;
         }
 
         return path.resolve(fileName);

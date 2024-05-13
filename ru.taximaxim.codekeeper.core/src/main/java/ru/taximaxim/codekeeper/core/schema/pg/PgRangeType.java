@@ -21,7 +21,7 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractType;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
-public final class PgRangeType extends AbstractType{
+public final class PgRangeType extends AbstractType {
 
     private String subtype;
     private String subtypeOpClass;

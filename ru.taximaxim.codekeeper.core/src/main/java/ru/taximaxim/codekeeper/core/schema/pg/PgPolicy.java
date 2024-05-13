@@ -15,57 +15,23 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.pg;
 
-import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
-import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.schema.AbstractPolicy;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
+import ru.taximaxim.codekeeper.core.schema.ISearchPath;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.schema.PgStatementWithSearchPath;
 
-public class PgPolicy extends PgStatementWithSearchPath {
+public final class PgPolicy extends AbstractPolicy implements ISearchPath {
 
-    private PgEventType event;
-    private final Set<String> roles = new LinkedHashSet<>();
-    private String using;
     private String check;
-    private boolean isPermissive = true;
 
-    @Override
-    public DbObjType getStatementType() {
-        return DbObjType.POLICY;
-    }
-
-    public PgEventType getEvent() {
-        return event;
-    }
-
-    public void setEvent(PgEventType event) {
-        this.event = event;
-        resetHash();
-    }
-
-    public Set<String> getRoles() {
-        return Collections.unmodifiableSet(roles);
-    }
-
-    public void addRole(String role) {
-        roles.add(role);
-        resetHash();
-    }
-
-    public String getUsing() {
-        return using;
-    }
-
-    public void setUsing(String using) {
-        this.using = using;
-        resetHash();
+    public PgPolicy(String name) {
+        super(name);
     }
 
     public String getCheck() {
@@ -75,18 +41,6 @@ public class PgPolicy extends PgStatementWithSearchPath {
     public void setCheck(String check) {
         this.check = check;
         resetHash();
-    }
-
-    public boolean isPermissive() {
-        return isPermissive;
-    }
-
-    public void setPermissive(boolean isPermissive) {
-        this.isPermissive = isPermissive;
-    }
-
-    public PgPolicy(String name) {
-        super(name);
     }
 
     @Override
@@ -171,13 +125,8 @@ public class PgPolicy extends PgStatementWithSearchPath {
     }
 
     @Override
-    public PgPolicy shallowCopy() {
+    protected AbstractPolicy getPolicyCopy() {
         PgPolicy copy = new PgPolicy(getName());
-        copyBaseFields(copy);
-        copy.setPermissive(isPermissive());
-        copy.setEvent(getEvent());
-        copy.roles.addAll(roles);
-        copy.setUsing(getUsing());
         copy.setCheck(getCheck());
         return copy;
     }
@@ -190,10 +139,7 @@ public class PgPolicy extends PgStatementWithSearchPath {
 
         if (obj instanceof PgPolicy && super.compare(obj)) {
             PgPolicy police = (PgPolicy) obj;
-            return compareUnalterable(police)
-                    && roles.equals(police.roles)
-                    && Objects.equals(getUsing(), police.getUsing())
-                    && Objects.equals(getCheck(), police.getCheck());
+            return Objects.equals(getCheck(), police.getCheck());
         }
 
         return false;
@@ -214,15 +160,17 @@ public class PgPolicy extends PgStatementWithSearchPath {
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.put(isPermissive);
-        hasher.put(event);
-        hasher.put(roles);
-        hasher.put(using);
+        super.computeHash(hasher);
         hasher.put(check);
     }
 
     @Override
-    public AbstractSchema getContainingSchema() {
+    public boolean isSubElement() {
+        return true;
+    }
+
+    @Override
+    public final AbstractSchema getContainingSchema() {
         return (AbstractSchema) this.getParent().getParent();
     }
 }
