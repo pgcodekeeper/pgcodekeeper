@@ -155,8 +155,9 @@ class MsDiffTest {
             // Tests scenario where MS TYPE owner is modified.
             "modify_ms_type_owner",
             // Tests scenario where MS TYPE with function dep is modified.
-            // FIXME broken test, need to recreate function
             "modify_ms_type_with_dep",
+            // Tests scenario where modified MS TABLE with FUNCTION dep & MS TYPE dep is tested.
+            "modify_ms_table_with_type_dep",
             // Tests scenario where MS TYPE compared with no diff
             "compare_ms_table_type",
 
