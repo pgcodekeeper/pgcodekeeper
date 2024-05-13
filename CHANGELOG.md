@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed a bug in re-creating dependencies when changing a custom data type in MS SQL.
 - Fixed schema reading logic when using the `.pgcodekeeperignoreschema` file.
 
 ## [9.5.1] - 2024-04-24
@@ -116,7 +117,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-- `--ms-sql` parameter has been replaced by `--db-type` parameter with name of database type. Currently, 2 values are supported: PG (default value) and MS. The `--ms-sql` option is marked as deprecated and will be removed in future versions. All checkboxes for selecting an MSSQL database are replaced with a combobox for selecting DB type.
+- `--ms-sql` parameter has been replaced by `--db-type` parameter with name of database type. Currently, 2 values are supported: PG (default value) and MS. The `--ms-sql` option is marked as deprecated and will be removed in future versions. All checkboxes for selecting an MS SQL database are replaced with a combobox for selecting DB type.
 - The mechanism for working with CONSTRAINT and INDEX objects has been changed: objects are now stored not as a string, but as separate fields, which avoids unnecessary differences in keywords and spaces. To maintain compatibility, the old code generation template is used.
 - Updated all library dependencies of the core program. To use [Windows authentication](https://pgcodekeeper.readthedocs.io/en/latest/windowsauth.html#id2) you need to update [DDL](https://github.com/microsoft/mssql-jdbc/releases/tag/v12.4.2).
 - Improved parser rules for MS SQL.

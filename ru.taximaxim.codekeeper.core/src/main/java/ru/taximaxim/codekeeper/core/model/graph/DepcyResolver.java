@@ -45,7 +45,9 @@ import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.IFunction;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.SourceStatement;
+import ru.taximaxim.codekeeper.core.schema.ms.AbstractMsFunction;
 import ru.taximaxim.codekeeper.core.schema.ms.MsTable;
+import ru.taximaxim.codekeeper.core.schema.ms.MsType;
 import ru.taximaxim.codekeeper.core.schema.ms.MsView;
 import ru.taximaxim.codekeeper.core.schema.pg.PgIndex;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
@@ -265,12 +267,29 @@ public class DepcyResolver {
         if (!(newSt instanceof SourceStatement)) {
             return false;
         }
-
+        if (newSt instanceof AbstractMsFunction && isMsTypeDep(newSt))  {
+            return false;
+        }
         if (newSt instanceof MsView && ((MsView) newSt).isSchemaBinding()) {
             return false;
         }
 
         return newSt.equals(drop) && !inDropsList(newSt.getParent());
+    }
+
+    // check if obj dependence of ms Type
+    private boolean isMsTypeDep(PgStatement newSt) {
+        var graph = newDepcyGraph.getGraph();
+        for (DefaultEdge edge : newDepcyGraph.getGraph().edgeSet()) {
+            PgStatement source = graph.getEdgeSource(edge);
+            if (newSt.equals(source)) {
+                PgStatement target = graph.getEdgeTarget(edge);
+                if (target instanceof MsType && inDropsList(target)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
