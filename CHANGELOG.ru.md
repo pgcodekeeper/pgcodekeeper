@@ -9,6 +9,14 @@
 
 ### Добавлено
 
+### Изменено
+
+### Исправлено
+
+## [9.6.0] - 2024-05-14
+
+### Добавлено
+
 - Добавлена поддержка объекта POLICY в ClickHouse.
 
 ### Изменено
@@ -1916,7 +1924,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.5.1...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.6.0...HEAD
+[9.6.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.5.1...v9.6.0
 [9.5.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.5.0...v9.5.1
 [9.5.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.4.3...v9.5.0
 [9.4.3]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.4.2...v9.4.3
