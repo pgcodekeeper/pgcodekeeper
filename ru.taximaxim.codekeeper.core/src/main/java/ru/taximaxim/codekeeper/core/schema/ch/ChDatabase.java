@@ -160,6 +160,7 @@ public class ChDatabase extends AbstractDatabase {
         PgStatement orig = null;
         switch (type) {
         case SCHEMA:
+        case POLICY:
         case FUNCTION:
             orig = getChild(name, type);
             if (orig == null) {
