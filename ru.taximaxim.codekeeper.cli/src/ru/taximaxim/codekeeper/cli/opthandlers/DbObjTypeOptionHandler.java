@@ -28,7 +28,6 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 
 public class DbObjTypeOptionHandler extends EnumOptionHandler<DbObjType> {
 
-    // TODO add VIEWCOLUMN when merged
     private static final Set<DbObjType> HIDE = Set.of(DbObjType.DATABASE, DbObjType.COLUMN);
 
     public DbObjTypeOptionHandler(CmdLineParser parser, OptionDef option, Setter<DbObjType> setter) {

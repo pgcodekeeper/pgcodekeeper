@@ -72,8 +72,6 @@ public class JdbcMsLoader extends JdbcLoaderBase {
             // may need to be removed, Source Control seems to work in default READ COMMITTED state
             getRunner().run(statement, "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ");
 
-            // TODO add role cache if needed to process permissions, or remove this
-            //queryRoles();
             // TODO add counting objects later
             //setupMonitorWork();
 

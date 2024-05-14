@@ -41,8 +41,8 @@ class MsDiffDepciesTest {
             // пользователь выбрал только таблицу с измененным constraintPk
             "change_ms_constrPk_usr",
     })
-    void runDiff(String userSelTemplate) throws IOException, InterruptedException {
-        TestUtils.testDepcy(userSelTemplate, false, DatabaseType.MS, getClass());
+    void testDepcy(String userSelTemplate) throws IOException, InterruptedException {
+        testDepcy(userSelTemplate, false);
     }
 
     @ParameterizedTest
@@ -60,7 +60,7 @@ class MsDiffDepciesTest {
         // user: f2
         "change_ms_func_arg_usr_f2, true",
     })
-    void runDiff(String userSelTemplate, Boolean isEnableDepcies) throws IOException, InterruptedException {
+    void testDepcy(String userSelTemplate, Boolean isEnableDepcies) throws IOException, InterruptedException {
         TestUtils.testDepcy(userSelTemplate, isEnableDepcies, DatabaseType.MS, getClass());
     }
 }

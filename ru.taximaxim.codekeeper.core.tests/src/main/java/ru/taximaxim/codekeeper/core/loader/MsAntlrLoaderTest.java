@@ -48,6 +48,7 @@ import ru.taximaxim.codekeeper.core.schema.ms.MsSchema;
 import ru.taximaxim.codekeeper.core.schema.ms.MsSequence;
 import ru.taximaxim.codekeeper.core.schema.ms.MsTable;
 import ru.taximaxim.codekeeper.core.schema.ms.MsTrigger;
+import ru.taximaxim.codekeeper.core.schema.ms.MsType;
 import ru.taximaxim.codekeeper.core.schema.ms.MsView;
 
 /**
@@ -57,6 +58,14 @@ import ru.taximaxim.codekeeper.core.schema.ms.MsView;
  */
 class MsAntlrLoaderTest {
 
+    private static final String BIGINT = "[bigint]";
+    private static final String NVARCHAR_40 = "[nvarchar](40)";
+    private static final String BIT = "[bit]";
+    private static final String DATETIME = "[datetime]";
+    private static final String TEXT = "[text]";
+    private static final String INT = "[int]";
+    private static final String MS_USER = "ms_user";
+    private static final String PRIMARY = "PRIMARY";
     private static final String ENCODING = Consts.UTF_8;
 
     void testDatabase(String fileName, AbstractDatabase d) throws IOException, InterruptedException {
@@ -117,74 +126,74 @@ class MsAntlrLoaderTest {
         schema.addTable(table);
 
         MsColumn col = new MsColumn("fax_box_id");
-        col.setType("[int]");
+        col.setType(INT);
         col.setNullValue(false);
         table.addColumn(col);
 
         col = new MsColumn("name");
-        col.setType("[text]");
+        col.setType(TEXT);
         table.addColumn(col);
 
         MsConstraintPk constriaintPk = new MsConstraintPk("PK_fax_boxes", true);
         constriaintPk.setClustered(true);
-        constriaintPk.setDataSpace("PRIMARY");
+        constriaintPk.setDataSpace(PRIMARY);
         constriaintPk.addColumn(new SimpleColumn("fax_box_id"));
         table.addConstraint(constriaintPk);
 
-        table.setOwner("ms_user");
+        table.setOwner(MS_USER);
 
         table = new MsTable("faxes");
         table.setAnsiNulls(true);
         schema.addTable(table);
 
         col = new MsColumn("fax_id");
-        col.setType("[int]");
+        col.setType(INT);
         col.setNullValue(false);
         table.addColumn(col);
 
         col = new MsColumn("fax_box_id");
-        col.setType("[int]");
+        col.setType(INT);
         table.addColumn(col);
 
         col = new MsColumn("from_name");
-        col.setType("[text]");
+        col.setType(TEXT);
         table.addColumn(col);
 
         col = new MsColumn("from_number");
-        col.setType("[text]");
+        col.setType(TEXT);
         table.addColumn(col);
 
         col = new MsColumn("status");
-        col.setType("[int]");
+        col.setType(INT);
         table.addColumn(col);
 
         col = new MsColumn("pages");
-        col.setType("[int]");
+        col.setType(INT);
         table.addColumn(col);
 
         col = new MsColumn("time_received");
-        col.setType("[datetime]");
+        col.setType(DATETIME);
         col.setDefaultName("DF_faxes_time_received");
         col.setDefaultValue("(getdate())");
         table.addColumn(col);
 
         col = new MsColumn("time_finished_received");
-        col.setType("[datetime]");
+        col.setType(DATETIME);
         table.addColumn(col);
 
         col = new MsColumn("read");
-        col.setType("[int]");
+        col.setType(INT);
         col.setDefaultName("DF_faxes_read");
         col.setDefaultValue("0");
         table.addColumn(col);
 
         col = new MsColumn("station_id");
-        col.setType("[text]");
+        col.setType(TEXT);
         table.addColumn(col);
 
         constriaintPk = new MsConstraintPk("PK_faxes", true);
         constriaintPk.setClustered(true);
-        constriaintPk.setDataSpace("PRIMARY");
+        constriaintPk.setDataSpace(PRIMARY);
         constriaintPk.addColumn(new SimpleColumn("fax_id"));
         table.addConstraint(constriaintPk);
 
@@ -202,7 +211,7 @@ class MsAntlrLoaderTest {
         schema.addTable(table);
 
         col = new MsColumn("id");
-        col.setType("[int]");
+        col.setType(INT);
         col.setNullValue(false);
         table.addColumn(col);
 
@@ -220,7 +229,7 @@ class MsAntlrLoaderTest {
         schema.addTable(table);
 
         col = new MsColumn("id");
-        col.setType("[int]");
+        col.setType(INT);
         col.setNullValue(false);
         table.addColumn(col);
 
@@ -249,11 +258,11 @@ class MsAntlrLoaderTest {
         schema.addTable(table);
 
         MsColumn col = new MsColumn("id");
-        col.setType("[int]");
+        col.setType(INT);
         table.addColumn(col);
 
         col = new MsColumn("number_pool_id");
-        col.setType("[int]");
+        col.setType(INT);
         table.addColumn(col);
 
         col = new MsColumn("name");
@@ -284,7 +293,7 @@ class MsAntlrLoaderTest {
         schema.addTable(table);
 
         MsColumn col = new MsColumn("aid");
-        col.setType("[int]");
+        col.setType(INT);
         col.setNullValue(false);
         col.setDefaultName("DF_admins_aid");
         col.setDefaultValue("(NEXT VALUE FOR [dbo].[admins_aid_seq])");
@@ -292,19 +301,19 @@ class MsAntlrLoaderTest {
 
         MsConstraintPk constriaintPk = new MsConstraintPk("PK_admins", true);
         constriaintPk.setClustered(true);
-        constriaintPk.setDataSpace("PRIMARY");
+        constriaintPk.setDataSpace(PRIMARY);
         constriaintPk.addColumn(new SimpleColumn("aid"));
         table.addConstraint(constriaintPk);
 
         col = new MsColumn("companyid");
-        col.setType("[int]");
+        col.setType(INT);
         col.setDefaultName("DF_admins_companyid");
         col.setDefaultValue("0");
         col.setNullValue(false);
         table.addColumn(col);
 
         col = new MsColumn("groupid");
-        col.setType("[int]");
+        col.setType(INT);
         col.setDefaultName("DF_admins_groupid");
         col.setDefaultValue("0");
         col.setNullValue(false);
@@ -316,23 +325,23 @@ class MsAntlrLoaderTest {
         table.addColumn(col);
 
         col = new MsColumn("password");
-        col.setType("[nvarchar](40)");
+        col.setType(NVARCHAR_40);
         col.setNullValue(false);
         table.addColumn(col);
 
         col = new MsColumn("superuser");
-        col.setType("[bit]");
+        col.setType(BIT);
         col.setDefaultName("DF_admins_superuser");
         col.setDefaultValue("0");
         col.setNullValue(false);
         table.addColumn(col);
 
         col = new MsColumn("name");
-        col.setType("[nvarchar](40)");
+        col.setType(NVARCHAR_40);
         table.addColumn(col);
 
         col = new MsColumn("surname");
-        col.setType("[nvarchar](40)");
+        col.setType(NVARCHAR_40);
         table.addColumn(col);
 
         col = new MsColumn("email");
@@ -341,15 +350,15 @@ class MsAntlrLoaderTest {
         table.addColumn(col);
 
         col = new MsColumn("tel");
-        col.setType("[nvarchar](40)");
+        col.setType(NVARCHAR_40);
         table.addColumn(col);
 
         col = new MsColumn("mobile");
-        col.setType("[nvarchar](40)");
+        col.setType(NVARCHAR_40);
         table.addColumn(col);
 
         col = new MsColumn("enabled");
-        col.setType("[bit]");
+        col.setType(BIT);
         col.setDefaultName("DF_admins_enabled");
         col.setDefaultValue("1");
         col.setNullValue(false);
@@ -363,7 +372,7 @@ class MsAntlrLoaderTest {
         table.addColumn(col);
 
         col = new MsColumn("expirienced");
-        col.setType("[bit]");
+        col.setType(BIT);
         col.setDefaultName("DF_admins_expirienced");
         col.setDefaultValue("0");
         table.addColumn(col);
@@ -388,7 +397,7 @@ class MsAntlrLoaderTest {
         schema.addTable(table);
 
         MsColumn col = new MsColumn("id");
-        col.setType("[bigint]");
+        col.setType(BIGINT);
         col.setNullValue(false);
         col.setDefaultName("DF_call_logs_id");
         col.setDefaultValue("(NEXT VALUE FOR [dbo].[call_logs_id_seq])");
@@ -407,12 +416,12 @@ class MsAntlrLoaderTest {
         schema.addTable(table);
 
         MsColumn col = new MsColumn("id");
-        col.setType("[int]");
+        col.setType(INT);
         col.setNullValue(false);
         table.addColumn(col);
 
         col = new MsColumn("entityId");
-        col.setType("[int]");
+        col.setType(INT);
         col.setNullValue(false);
         table.addColumn(col);
 
@@ -494,14 +503,14 @@ class MsAntlrLoaderTest {
         schema.addTable(table);
 
         MsColumn col = new MsColumn("id");
-        col.setType("[bigint]");
+        col.setType(BIGINT);
         table.addColumn(col);
 
         col = new MsColumn("date_deleted");
-        col.setType("[datetime]");
+        col.setType(DATETIME);
         table.addColumn(col);
 
-        table.setOwner("ms_user");
+        table.setOwner(MS_USER);
 
         MsIndex idx = new MsIndex("IX_test_table_date_deleted");
         idx.addColumn(new SimpleColumn("date_deleted"));
@@ -542,16 +551,15 @@ class MsAntlrLoaderTest {
         AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
         AbstractSchema schema = d.getDefaultSchema();
 
-        // TODO uncomment and remade this for MsType when it will be supported
-        // MsType type = new MsType("testtt", MsTypeForm.COMPOSITE, "");
-        // MsColumn col = new MsColumn("a");
-        // col.setType("[int]");
-        // type.addAttr(col);
-        // col = new MsColumn("b");
-        // col.setType("[text]");
-        // type.addAttr(col);
-        // type.setOwner("ms_user");
-        // schema.addType(type);
+        MsType type = new MsType("testtt");
+        MsColumn col = new MsColumn("a");
+        col.setType(INT);
+        type.addChild(col);
+        col = new MsColumn("b");
+        col.setType(TEXT);
+        type.addChild(col);
+        type.setOwner(MS_USER);
+        schema.addType(type);
 
         schema = new MsSchema("``54'253-=9!@#$%^&*()__<>?:\"\"{]};',./");
         d.addSchema(schema);
@@ -573,7 +581,7 @@ class MsAntlrLoaderTest {
                 "    RETURN @Res\n" +
                 "END");
 
-        func.setOwner("ms_user");
+        func.setOwner(MS_USER);
 
         schema.addFunction(func);
 
@@ -589,16 +597,16 @@ class MsAntlrLoaderTest {
         seq.setMinMaxInc(1L, null, null, null, 0L);
         seq.setCached(true);
         seq.setCache("1");
-        seq.setOwner("ms_user");
+        seq.setOwner(MS_USER);
         schema.addSequence(seq);
 
         MsTable table = new MsTable("user_data");
         table.setAnsiNulls(true);
-        table.setOwner("ms_user");
+        table.setOwner(MS_USER);
         schema.addTable(table);
 
         MsColumn col = new MsColumn("id");
-        col.setType("[bigint]");
+        col.setType(BIGINT);
         col.setNullValue(false);
         col.setDefaultName("DF_user_data_id");
         col.setDefaultValue("(NEXT VALUE FOR [dbo].[user_id_seq])");
@@ -620,7 +628,7 @@ class MsAntlrLoaderTest {
         schema.addTable(table);
 
         col = new MsColumn("c1");
-        col.setType("[int]");
+        col.setType(INT);
         table.addColumn(col);
 
         MsView view = new MsView("\"user\"");
@@ -634,7 +642,7 @@ class MsAntlrLoaderTest {
                 "    [user_data].[created]\n" +
                 "FROM [dbo].[user_data]");
 
-        view.setOwner("ms_user");
+        view.setOwner(MS_USER);
         schema.addView(view);
 
         MsTrigger trigger = new MsTrigger("instead_of_delete");
@@ -697,31 +705,31 @@ class MsAntlrLoaderTest {
         d.addSchema(schema);
         d.setDefaultSchema("admin");
 
-        schema.setOwner("ms_user");
+        schema.setOwner(MS_USER);
 
         MsTable table = new MsTable("acl_role");
         table.setAnsiNulls(true);
         schema.addTable(table);
 
         MsColumn col = new MsColumn("id");
-        col.setType("[bigint]");
+        col.setType(BIGINT);
         col.setNullValue(false);
         table.addColumn(col);
 
         MsConstraintPk constriaintPk = new MsConstraintPk("PK_acl_role", true);
         constriaintPk.setClustered(true);
-        constriaintPk.setDataSpace("PRIMARY");
+        constriaintPk.setDataSpace(PRIMARY);
         constriaintPk.addColumn(new SimpleColumn("id"));
         table.addConstraint(constriaintPk);
 
-        table.setOwner("ms_user");
+        table.setOwner(MS_USER);
 
         table = new MsTable("\"user\"");
         table.setAnsiNulls(true);
         schema.addTable(table);
 
         col = new MsColumn("id");
-        col.setType("[bigint]");
+        col.setType(BIGINT);
         col.setNullValue(false);
         table.addColumn(col);
 
@@ -736,38 +744,38 @@ class MsAntlrLoaderTest {
         table.addColumn(col);
 
         col = new MsColumn("password");
-        col.setType("[nvarchar](40)");
+        col.setType(NVARCHAR_40);
         col.setNullValue(false);
         table.addColumn(col);
 
         col = new MsColumn("is_active");
-        col.setType("[bit]");
+        col.setType(BIT);
         col.setDefaultName("DF_admin_is_active");
         col.setDefaultValue("0");
         col.setNullValue(false);
         table.addColumn(col);
 
         col = new MsColumn("updated");
-        col.setType("[datetime]");
+        col.setType(DATETIME);
         col.setDefaultName("DF_admin_updated");
         col.setDefaultValue("(getdate())");
         col.setNullValue(false);
         table.addColumn(col);
 
         col = new MsColumn("created");
-        col.setType("[datetime]");
+        col.setType(DATETIME);
         col.setDefaultName("DF_admin_created");
         col.setDefaultValue("(getdate())");
         col.setNullValue(false);
         table.addColumn(col);
 
         col = new MsColumn("role_id");
-        col.setType("[bigint]");
+        col.setType(BIGINT);
         col.setNullValue(false);
         table.addColumn(col);
 
         col = new MsColumn("last_visit");
-        col.setType("[datetime]");
+        col.setType(DATETIME);
         col.setDefaultName("DF_admin_last_visit");
         col.setDefaultValue("(getdate())");
         col.setNullValue(false);
@@ -784,7 +792,7 @@ class MsAntlrLoaderTest {
         constraintFk.addForeignColumn("id");
         table.addConstraint(constraintFk);
 
-        table.setOwner("ms_user");
+        table.setOwner(MS_USER);
 
         testDatabase("ms_schema_9.sql", d);
     }
@@ -829,7 +837,7 @@ class MsAntlrLoaderTest {
         schema.addTable(table);
 
         MsColumn col = new MsColumn("ID");
-        col.setType("[int]");
+        col.setType(INT);
         col.setNullValue(false);
         col.setIdentity("1", "1");
         // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
@@ -850,7 +858,7 @@ class MsAntlrLoaderTest {
 
         MsConstraintPk constriaintPk = new MsConstraintPk("PK_TABLE_1", true);
         constriaintPk.setClustered(true);
-        constriaintPk.setDataSpace("PRIMARY");
+        constriaintPk.setDataSpace(PRIMARY);
         constriaintPk.addColumn(new SimpleColumn("ID"));
         table.addConstraint(constriaintPk);
 
@@ -936,7 +944,7 @@ class MsAntlrLoaderTest {
         seq.setCache("1");
         schema.addSequence(seq);
 
-        seq.setOwner("ms_user");
+        seq.setOwner(MS_USER);
 
         // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
         // seq.setComment("test table sequence");
@@ -952,7 +960,7 @@ class MsAntlrLoaderTest {
                 "BEGIN\n" +
                 "    RETURN 1\n" +
                 "END");
-        func.setOwner("ms_user");
+        func.setOwner(MS_USER);
 
         // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
         // func.setComment("test function");
@@ -973,7 +981,7 @@ class MsAntlrLoaderTest {
 
         schema.addFunction(func);
 
-        func.setOwner("ms_user");
+        func.setOwner(MS_USER);
 
         MsProcedure proc = new MsProcedure("trigger_proc");
         proc.setAnsiNulls(true);
@@ -987,14 +995,14 @@ class MsAntlrLoaderTest {
                 "END");
         schema.addFunction(proc);
 
-        proc.setOwner("ms_user");
+        proc.setOwner(MS_USER);
 
         MsTable table = new MsTable("test");
         table.setAnsiNulls(true);
         schema.addTable(table);
 
         MsColumn col = new MsColumn("id");
-        col.setType("[int]");
+        col.setType(INT);
         // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
         // col.setComment("id column");
         col.setNullValue(false);
@@ -1020,14 +1028,14 @@ class MsAntlrLoaderTest {
 
         MsConstraintPk constriaintPk = new MsConstraintPk("PK_test", true);
         constriaintPk.setClustered(true);
-        constriaintPk.setDataSpace("PRIMARY");
+        constriaintPk.setDataSpace(PRIMARY);
         constriaintPk.addColumn(new SimpleColumn("id"));
         table.addConstraint(constriaintPk);
 
         // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
         // constraint.setComment("primary key");
 
-        table.setOwner("ms_user");
+        table.setOwner(MS_USER);
 
         MsView view = new MsView("test_view");
         view.setAnsiNulls(true);
@@ -1044,7 +1052,7 @@ class MsAntlrLoaderTest {
         // view.setComment("test view");
         // view.addColumnComment("id", "view id col");
 
-        view.setOwner("ms_user");
+        view.setOwner(MS_USER);
 
         MsIndex idx = new MsIndex("IX_test_id");
         table.addIndex(idx);
@@ -1082,7 +1090,7 @@ class MsAntlrLoaderTest {
         schema.addTable(table);
 
         MsColumn col = new MsColumn("id");
-        col.setType("[bigint]");
+        col.setType(BIGINT);
         table.addColumn(col);
 
         // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
@@ -1102,7 +1110,7 @@ class MsAntlrLoaderTest {
         schema.addTable(table);
 
         MsColumn col = new MsColumn("id");
-        col.setType("[int]");
+        col.setType(INT);
         table.addColumn(col);
 
         // table2
@@ -1110,7 +1118,7 @@ class MsAntlrLoaderTest {
         table2.setAnsiNulls(true);
         schema.addTable(table2);
         col = new MsColumn("id");
-        col.setType("[int]");
+        col.setType(INT);
         table2.addColumn(col);
 
         // view
@@ -1142,7 +1150,7 @@ class MsAntlrLoaderTest {
         schema.addTable(table);
 
         MsColumn col = new MsColumn("id");
-        col.setType("[int]");
+        col.setType(INT);
         table.addColumn(col);
 
         // table2
@@ -1150,7 +1158,7 @@ class MsAntlrLoaderTest {
         table2.setAnsiNulls(true);
         schema.addTable(table2);
         col = new MsColumn("id");
-        col.setType("[int]");
+        col.setType(INT);
         table2.addColumn(col);
 
         // table 3
@@ -1158,7 +1166,7 @@ class MsAntlrLoaderTest {
         table3.setAnsiNulls(true);
         schema.addTable(table3);
         col = new MsColumn("name");
-        col.setType("[text]");
+        col.setType(TEXT);
         table3.addColumn(col);
 
         // view
