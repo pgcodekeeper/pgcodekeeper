@@ -33,10 +33,10 @@ class ChDiffDepciesTest {
             "add_func_test_qual_usr_t2",
             // test VIEW depcy
             "add_func_func_1_usr_v1",
-            // test scenario where user drop column. user choice TABLE 
+            // test scenario where user drop column. user choice TABLE
             "ch_policy_deps_change_table_usr_t"
     })
-    void runDiffWithFunctionDependencies(final String userSelTemplate) throws IOException, InterruptedException {
+    void testDepcy(final String userSelTemplate) throws IOException, InterruptedException {
         TestUtils.testDepcy(userSelTemplate, true, DatabaseType.CH, getClass());
     }
 }

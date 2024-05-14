@@ -66,6 +66,10 @@ import ru.taximaxim.codekeeper.core.schema.pg.SimplePgTable;
  */
 class PgAntlrLoaderTest {
 
+    private static final String BIGINT = "bigint";
+    private static final String BOOLEAN = "boolean";
+    private static final String CHARACTER_VARYING_40 = "character varying(40)";
+    private static final String INTEGER = "integer";
     private static final String ENCODING = Consts.UTF_8;
 
     void testDatabase(String fileName, AbstractDatabase d) throws IOException, InterruptedException {
@@ -147,7 +151,7 @@ class PgAntlrLoaderTest {
         table.addColumn(col);
 
         col = new PgColumn("fax_box_id");
-        col.setType("integer");
+        col.setType(INTEGER);
         table.addColumn(col);
 
         col = new PgColumn("from_name");
@@ -159,11 +163,11 @@ class PgAntlrLoaderTest {
         table.addColumn(col);
 
         col = new PgColumn("status");
-        col.setType("integer");
+        col.setType(INTEGER);
         table.addColumn(col);
 
         col = new PgColumn("pages");
-        col.setType("integer");
+        col.setType(INTEGER);
         table.addColumn(col);
 
         col = new PgColumn("time_received");
@@ -236,11 +240,11 @@ class PgAntlrLoaderTest {
         schema.addTable(table);
 
         AbstractColumn col = new PgColumn("id");
-        col.setType("integer");
+        col.setType(INTEGER);
         table.addColumn(col);
 
         col = new PgColumn("number_pool_id");
-        col.setType("integer");
+        col.setType(INTEGER);
         table.addColumn(col);
 
         col = new PgColumn("name");
@@ -268,19 +272,19 @@ class PgAntlrLoaderTest {
         schema.addTable(table);
 
         AbstractColumn col = new PgColumn("aid");
-        col.setType("integer");
+        col.setType(INTEGER);
         col.setDefaultValue("nextval('\"admins_aid_seq\"'::regclass)");
         col.setNullValue(false);
         table.addColumn(col);
 
         col = new PgColumn("companyid");
-        col.setType("integer");
+        col.setType(INTEGER);
         col.setDefaultValue("0");
         col.setNullValue(false);
         table.addColumn(col);
 
         col = new PgColumn("groupid");
-        col.setType("integer");
+        col.setType(INTEGER);
         col.setDefaultValue("0");
         col.setNullValue(false);
         table.addColumn(col);
@@ -291,22 +295,22 @@ class PgAntlrLoaderTest {
         table.addColumn(col);
 
         col = new PgColumn("password");
-        col.setType("character varying(40)");
+        col.setType(CHARACTER_VARYING_40);
         col.setNullValue(false);
         table.addColumn(col);
 
         col = new PgColumn("superuser");
-        col.setType("boolean");
+        col.setType(BOOLEAN);
         col.setDefaultValue("'f'::bool");
         col.setNullValue(false);
         table.addColumn(col);
 
         col = new PgColumn("name");
-        col.setType("character varying(40)");
+        col.setType(CHARACTER_VARYING_40);
         table.addColumn(col);
 
         col = new PgColumn("surname");
-        col.setType("character varying(40)");
+        col.setType(CHARACTER_VARYING_40);
         table.addColumn(col);
 
         col = new PgColumn("email");
@@ -315,15 +319,15 @@ class PgAntlrLoaderTest {
         table.addColumn(col);
 
         col = new PgColumn("tel");
-        col.setType("character varying(40)");
+        col.setType(CHARACTER_VARYING_40);
         table.addColumn(col);
 
         col = new PgColumn("mobile");
-        col.setType("character varying(40)");
+        col.setType(CHARACTER_VARYING_40);
         table.addColumn(col);
 
         col = new PgColumn("enabled");
-        col.setType("boolean");
+        col.setType(BOOLEAN);
         col.setDefaultValue("'t'::bool");
         col.setNullValue(false);
         table.addColumn(col);
@@ -335,7 +339,7 @@ class PgAntlrLoaderTest {
         table.addColumn(col);
 
         col = new PgColumn("expirienced");
-        col.setType("boolean");
+        col.setType(BOOLEAN);
         col.setDefaultValue("'f'::bool");
         table.addColumn(col);
 
@@ -355,7 +359,7 @@ class PgAntlrLoaderTest {
         schema.addTable(table);
 
         AbstractColumn col = new PgColumn("id");
-        col.setType("bigint");
+        col.setType(BIGINT);
         col.setNullValue(false);
         col.setDefaultValue("nextval('public.call_logs_id_seq'::regclass)");
         table.addColumn(col);
@@ -383,12 +387,12 @@ class PgAntlrLoaderTest {
         func.setLanguageCost("plpgsql", null);
         func.setStrict(true);
         func.setBody("$$\r\nbegin\r\n\treturn number1 * number2;\r\nend;\r\n$$");
-        func.setReturns("integer");
+        func.setReturns(INTEGER);
 
-        arg = new Argument("number1", "integer");
+        arg = new Argument("number1", INTEGER);
         func.addArgument(arg);
 
-        arg = new Argument("number2", "integer");
+        arg = new Argument("number2", INTEGER);
         func.addArgument(arg);
 
         schema.addFunction(func);
@@ -396,12 +400,12 @@ class PgAntlrLoaderTest {
         func = new PgFunction("select_something");
         func.setLanguageCost("sql", null);
         func.setBody("$$SELECT number1 * number2$$");
-        func.setReturns("integer");
+        func.setReturns(INTEGER);
 
-        arg = new Argument("number1", "integer");
+        arg = new Argument("number1", INTEGER);
         func.addArgument(arg);
 
-        arg = new Argument("number2", "integer");
+        arg = new Argument("number2", INTEGER);
         func.addArgument(arg);
 
         schema.addFunction(func);
@@ -409,12 +413,12 @@ class PgAntlrLoaderTest {
         func = new PgFunction("select_something2");
         func.setLanguageCost("sql", null);
         func.setBody("$$SELECT number1 * number2 || 'text'$$");
-        func.setReturns("integer");
+        func.setReturns(INTEGER);
 
-        arg = new Argument("number1", "integer");
+        arg = new Argument("number1", INTEGER);
         func.addArgument(arg);
 
-        arg = new Argument("number2", "integer");
+        arg = new Argument("number2", INTEGER);
         func.addArgument(arg);
 
         schema.addFunction(func);
@@ -422,12 +426,12 @@ class PgAntlrLoaderTest {
         func = new PgFunction("select_something3");
         func.setLanguageCost("sql", null);
         func.setBody("$$\nSELECT number1 * number2 || 'text'\n$$");
-        func.setReturns("integer");
+        func.setReturns(INTEGER);
 
-        arg = new Argument("number1", "integer");
+        arg = new Argument("number1", INTEGER);
         func.addArgument(arg);
 
-        arg = new Argument("number2", "integer");
+        arg = new Argument("number2", INTEGER);
         func.addArgument(arg);
 
         schema.addFunction(func);
@@ -449,7 +453,7 @@ class PgAntlrLoaderTest {
         schema.addTable(table);
 
         AbstractColumn col = new PgColumn("id");
-        col.setType("bigint");
+        col.setType(BIGINT);
         table.addColumn(col);
 
         col = new PgColumn("date_deleted");
@@ -533,7 +537,7 @@ class PgAntlrLoaderTest {
 
         PgCompositeType type = new PgCompositeType("testtt");
         AbstractColumn col = new PgColumn("a");
-        col.setType("integer");
+        col.setType(INTEGER);
         type.addAttr(col);
         col = new PgColumn("b");
         col.setType("text");
@@ -547,9 +551,9 @@ class PgAntlrLoaderTest {
         PgFunction func = new PgFunction(".x\".\"\".");
         func.setLanguageCost("plpgsql", null);
         func.setBody("$_$\ndeclare\nbegin\nraise notice 'inside: %', $1;\nreturn true;\nend;\n$_$");
-        func.setReturns("boolean");
+        func.setReturns(BOOLEAN);
 
-        Argument arg = new Argument(null, "integer");
+        Argument arg = new Argument(null, INTEGER);
         func.addArgument(arg);
 
         schema.addFunction(func);
@@ -567,7 +571,7 @@ class PgAntlrLoaderTest {
         schema.addTable(table);
 
         AbstractColumn col = new PgColumn("id");
-        col.setType("bigint");
+        col.setType(BIGINT);
         col.setNullValue(false);
         col.setDefaultValue("nextval('public.user_id_seq'::regclass)");
         table.addColumn(col);
@@ -600,7 +604,7 @@ class PgAntlrLoaderTest {
         schema.addTable(table);
 
         col = new PgColumn("c1");
-        col.setType("integer");
+        col.setType(INTEGER);
         table.addColumn(col);
 
         PgView view = new PgView("user");
@@ -650,7 +654,7 @@ class PgAntlrLoaderTest {
         schema.addTable(table);
 
         AbstractColumn col = new PgColumn("id");
-        col.setType("bigint");
+        col.setType(BIGINT);
         col.setNullValue(false);
         table.addColumn(col);
 
@@ -664,7 +668,7 @@ class PgAntlrLoaderTest {
         schema.addTable(table);
 
         col = new PgColumn("id");
-        col.setType("bigint");
+        col.setType(BIGINT);
         col.setNullValue(false);
         table.addColumn(col);
 
@@ -679,12 +683,12 @@ class PgAntlrLoaderTest {
         table.addColumn(col);
 
         col = new PgColumn("password");
-        col.setType("character varying(40)");
+        col.setType(CHARACTER_VARYING_40);
         col.setNullValue(false);
         table.addColumn(col);
 
         col = new PgColumn("is_active");
-        col.setType("boolean");
+        col.setType(BOOLEAN);
         col.setDefaultValue("false");
         col.setNullValue(false);
         table.addColumn(col);
@@ -702,7 +706,7 @@ class PgAntlrLoaderTest {
         table.addColumn(col);
 
         col = new PgColumn("role_id");
-        col.setType("bigint");
+        col.setType(BIGINT);
         col.setNullValue(false);
         table.addColumn(col);
 
@@ -786,7 +790,7 @@ class PgAntlrLoaderTest {
         PgFunction func = new PgFunction("test_fnc");
         func.setLanguageCost("plpgsql", null);
         func.setBody("$$BEGIN\nRETURN true;\nEND;$$");
-        func.setReturns("boolean");
+        func.setReturns(BOOLEAN);
 
         Argument arg = new Argument("arg", "character varying");
         func.addArgument(arg);
@@ -809,7 +813,7 @@ class PgAntlrLoaderTest {
         schema.addTable(table);
 
         AbstractColumn col = new PgColumn("id");
-        col.setType("integer");
+        col.setType(INTEGER);
         col.setNullValue(false);
         col.setComment("'id column'");
         col.setDefaultValue("nextval('public.test_id_seq'::regclass)");
@@ -879,7 +883,7 @@ class PgAntlrLoaderTest {
         schema.addTable(table);
 
         AbstractColumn col = new PgColumn("id");
-        col.setType("bigint");
+        col.setType(BIGINT);
         table.addColumn(col);
 
         table.setComment("'multiline\ncomment\n'");
@@ -897,14 +901,14 @@ class PgAntlrLoaderTest {
         schema.addTable(table);
 
         AbstractColumn col = new PgColumn("id");
-        col.setType("integer");
+        col.setType(INTEGER);
         table.addColumn(col);
 
         // table2
         AbstractTable table2 = new SimplePgTable("t_chart");
         schema.addTable(table2);
         col = new PgColumn("id");
-        col.setType("integer");
+        col.setType(INTEGER);
         table2.addColumn(col);
 
         // view
@@ -928,14 +932,14 @@ class PgAntlrLoaderTest {
         schema.addTable(table);
 
         AbstractColumn col = new PgColumn("id");
-        col.setType("integer");
+        col.setType(INTEGER);
         table.addColumn(col);
 
         // table2
         AbstractTable table2 = new SimplePgTable("t_chart");
         schema.addTable(table2);
         col = new PgColumn("id");
-        col.setType("integer");
+        col.setType(INTEGER);
         table2.addColumn(col);
 
         // table 3

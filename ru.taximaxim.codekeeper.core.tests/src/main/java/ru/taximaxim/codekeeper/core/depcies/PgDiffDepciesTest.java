@@ -235,7 +235,7 @@ class PgDiffDepciesTest {
             "add_objects_with_collation_usr_all",
     })
     void runDiff(final String userSelTemplate) throws IOException, InterruptedException {
-        TestUtils.testDepcy(userSelTemplate, false, DatabaseType.PG, getClass());
+        testDepcy(userSelTemplate, false);
     }
 
     @ParameterizedTest
@@ -279,7 +279,7 @@ class PgDiffDepciesTest {
             "add_func_with_copying_type_usr_func_f2",
     })
     void runDiffWithFunctionDependencies(final String userSelTemplate) throws IOException, InterruptedException {
-        TestUtils.testDepcy(userSelTemplate, true, DatabaseType.PG, getClass());
+        testDepcy(userSelTemplate, true);
     }
 
     void testDepcy(String userSelTemplate, boolean isEnableFunctionBodiesDependencies)

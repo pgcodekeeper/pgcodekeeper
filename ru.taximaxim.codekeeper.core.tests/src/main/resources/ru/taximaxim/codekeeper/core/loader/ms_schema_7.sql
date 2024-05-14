@@ -1,12 +1,10 @@
--- TODO uncomment and remade this for MsType when it will be supported
--- CREATE TYPE [dbo].[testtt] AS TABLE( 
---     [a] [int],
---     [b] [text])  
--- GO
+CREATE TYPE [dbo].[testtt] AS TABLE( 
+    [a] [int],
+    [b] [text])  
+GO
 
--- ALTER AUTHORIZATION ON TYPE::[dbo].[testtt] TO [ms_user];    
--- GO
-
+ALTER AUTHORIZATION ON TYPE::[dbo].[testtt] TO [ms_user];    
+GO
 
 CREATE SCHEMA [``54'253-=9!@#$%^&*()__<>?:""{]]};',./]
 GO

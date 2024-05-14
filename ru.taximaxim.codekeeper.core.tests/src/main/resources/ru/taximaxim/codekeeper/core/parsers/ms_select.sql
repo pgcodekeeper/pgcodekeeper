@@ -641,21 +641,6 @@ FROM sales.SalesOrderHeader;
 SELECT * FROM OPENROWSET('SQLOLEDB', 'Server=.\SQLEXPRESS;Trusted_Connection=yes;', 'SET FMTONLY OFF;SET NOCOUNT ON;exec(''RESTORE headeronly FROM  DISK = N''''C:\Temp\Dev\SQL2012Backup.bak'''''')')
 GO
 
-
------------------------------------------------------------------------
--- ranking_windowed_function
-
--- Simple CASE expression: 
--- CASE input_expression 
-     -- WHEN when_expression THEN result_expression [ ...n ] 
-     -- [ ELSE else_result_expression ] 
--- END 
--- Searched CASE expression:
--- CASE
-     -- WHEN Boolean_expression THEN result_expression [ ...n ] 
-     -- [ ELSE else_result_expression ] 
--- END
-
 --+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 -- Using a SELECT statement with a simple CASE expression
 
@@ -724,74 +709,67 @@ WHERE SalariedFlag = 0;
 
 --+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 -- Using CASE in a SET statement
--- TODO: uncomment when create_function will be implemented.
 
--- USE AdventureWorks2012;
--- GO
--- CREATE FUNCTION dbo.GetContactInformation(@BusinessEntityID int)
-    -- RETURNS @retContactInformation TABLE 
--- (
--- BusinessEntityID int NOT NULL,
--- FirstName nvarchar(50) NULL,
--- LastName nvarchar(50) NULL,
--- ContactType nvarchar(50) NULL,
-    -- PRIMARY KEY CLUSTERED (BusinessEntityID ASC)
--- ) 
--- AS 
--- -- Returns the first name, last name and contact type for the specified contact.
--- BEGIN
-    -- DECLARE 
-        -- @FirstName nvarchar(50), 
-        -- @LastName nvarchar(50), 
-        -- @ContactType nvarchar(50);
+USE AdventureWorks2012;
+GO
+CREATE FUNCTION dbo.GetContactInformation(@BusinessEntityID int)
+    RETURNS @retContactInformation TABLE 
+(
+BusinessEntityID int NOT NULL,
+FirstName nvarchar(50) NULL,
+LastName nvarchar(50) NULL,
+ContactType nvarchar(50) NULL,
+    PRIMARY KEY CLUSTERED (BusinessEntityID ASC)
+) 
+AS 
+-- Returns the first name, last name and contact type for the specified contact.
+BEGIN
+    DECLARE 
+        @FirstName nvarchar(50), 
+        @LastName nvarchar(50), 
+        @ContactType nvarchar(50);
 
-    -- -- Get common contact information
-    -- SELECT 
-        -- @BusinessEntityID = BusinessEntityID, 
--- @FirstName = FirstName, 
-        -- @LastName = LastName
-    -- FROM Person.Person 
-    -- WHERE BusinessEntityID = @BusinessEntityID;
+    -- Get common contact information
+    SELECT 
+        @BusinessEntityID = BusinessEntityID, 
+        @FirstName = FirstName, 
+        @LastName = LastName
+    FROM Person.Person 
+    WHERE BusinessEntityID = @BusinessEntityID;
 
-    -- SET @ContactType = 
-        -- CASE 
-            -- -- Check for employee
-            -- WHEN EXISTS(SELECT * FROM HumanResources.Employee AS e 
-                -- WHERE e.BusinessEntityID = @BusinessEntityID) 
-                -- THEN 'Employee'
+    SET @ContactType = 
+        CASE 
+            -- Check for employee
+            WHEN EXISTS(SELECT * FROM HumanResources.Employee AS e 
+                WHERE e.BusinessEntityID = @BusinessEntityID) 
+                THEN 'Employee'
 
-            -- -- Check for vendor
-            -- WHEN EXISTS(SELECT * FROM Person.BusinessEntityContact AS bec
-                -- WHERE bec.BusinessEntityID = @BusinessEntityID) 
-                -- THEN 'Vendor'
+            -- Check for vendor
+            WHEN EXISTS(SELECT * FROM Person.BusinessEntityContact AS bec
+                WHERE bec.BusinessEntityID = @BusinessEntityID) 
+                THEN 'Vendor'
 
-            -- -- Check for store
-            -- WHEN EXISTS(SELECT * FROM Purchasing.Vendor AS v          
-                -- WHERE v.BusinessEntityID = @BusinessEntityID) 
-                -- THEN 'Store Contact'
+            -- Check for store
+            WHEN EXISTS(SELECT * FROM Purchasing.Vendor AS v          
+                WHERE v.BusinessEntityID = @BusinessEntityID) 
+                THEN 'Store Contact'
 
-            -- -- Check for individual consumer
-            -- WHEN EXISTS(SELECT * FROM Sales.Customer AS c 
-                -- WHERE c.PersonID = @BusinessEntityID) 
-                -- THEN 'Consumer'
-        -- END;
+            -- Check for individual consumer
+            WHEN EXISTS(SELECT * FROM Sales.Customer AS c 
+                WHERE c.PersonID = @BusinessEntityID) 
+                THEN 'Consumer'
+        END;
 
-    -- -- Return the information to the caller
-    -- IF @BusinessEntityID IS NOT NULL 
-    -- BEGIN
-        -- INSERT @retContactInformation
-        -- SELECT @BusinessEntityID, @FirstName, @LastName, @ContactType;
-    -- END;
+    -- Return the information to the caller
+    IF @BusinessEntityID IS NOT NULL 
+    BEGIN
+        INSERT @retContactInformation
+        SELECT @BusinessEntityID, @FirstName, @LastName, @ContactType;
+    END;
 
-    -- RETURN;
--- END;
--- GO
-
--- SELECT BusinessEntityID, FirstName, LastName, ContactType
--- FROM dbo.GetContactInformation(2200);
--- GO
--- SELECT BusinessEntityID, FirstName, LastName, ContactType
--- FROM dbo.GetContactInformation(5);
+    RETURN;
+END;
+GO
 
 --+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 -- Using CASE in a HAVING clause
