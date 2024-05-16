@@ -28,11 +28,11 @@ import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 import ru.taximaxim.codekeeper.core.schema.ch.ChFunction;
 
-public class CHFunctionReader extends AbstractStatementReader {
+public class CHFunctionsReader extends AbstractStatementReader {
 
     private final ChDatabase db;
 
-    public CHFunctionReader(JdbcLoaderBase loader, ChDatabase db) {
+    public CHFunctionsReader(JdbcLoaderBase loader, ChDatabase db) {
         super(loader);
         this.db = db;
     }

@@ -66,12 +66,14 @@ create_stmt
     | create_function_stmt
     | create_policy_stmt
     | create_named_collection_stmt
+    | create_user_stmt
     ;
 
 alter_stmt
     : alter_table_stmt
     | alter_policy_stmt
     | alter_named_collection_stmt
+    | alter_user_stmt
     ;
 
 privilegy_stmt
@@ -254,6 +256,46 @@ create_named_collection_stmt
     AS named_collection_pair (COMMA named_collection_pair)*
     ;
 
+create_user_stmt
+    : CREATE USER (if_not_exists | OR REPLACE)? name+=identifier cluster_clause? (COMMA name+=identifier cluster_clause?)*
+    (NOT IDENTIFIED | IDENTIFIED identification)?
+    (HOST host)?
+    (VALID UNTIL STRING_LITERAL)?
+    (IN literal)?
+    (DEFAULT ROLE role=users)?
+    (DEFAULT DATABASE (database=identifier | NONE))?
+    (GRANTEES grantees=users)?
+    (SETTINGS user_settings (COMMA SETTINGS user_settings)* CONST?)?
+    ;
+
+identification
+    : (WITH auth_type=identifier)? BY STRING_LITERAL
+    | WITH auth_type=identifier auth_params
+    ;
+
+auth_params
+    : SERVER literal
+    | REALM STRING_LITERAL?
+    | CN STRING_LITERAL
+    | BY KEY STRING_LITERAL TYPE STRING_LITERAL
+    ;
+
+host
+    : host_type (COMMA host_type)*
+    | ANY
+    | NONE
+    ;
+
+host_type
+    : LOCAL
+    | (NAME | REGEXP | IP | LIKE) literal
+    ;
+
+user_settings
+    : identifier (EQ_SINGLE signed_number_literal)? (MIN EQ_SINGLE? signed_number_literal)? (MAX EQ_SINGLE? signed_number_literal)? (READONLY | WRITABLE)?
+    | PROFILE literal
+    ;
+
 alter_named_collection_stmt
     : ALTER NAMED COLLECTION if_exists? qualified_name cluster_clause?
     (SET named_collection_pair (COMMA named_collection_pair)* | DELETE identifier_list)?
@@ -261,6 +303,18 @@ alter_named_collection_stmt
 
 named_collection_pair
     : identifier EQ_SINGLE STRING_LITERAL (NOT? OVERRIDABLE)?
+    ;
+
+alter_user_stmt
+    : ALTER USER if_exists? name+=identifier cluster_clause? rename_to?
+    (COMMA name+=identifier cluster_clause? rename_to?)*
+    (NOT IDENTIFIED | IDENTIFIED identification)?
+    ((ADD | DROP)? HOST host)*
+    (VALID UNTIL STRING_LITERAL)?
+    (DEFAULT ROLE role=users)?
+    (DEFAULT DATABASE (database=identifier | NONE))?
+    (GRANTEES grantees=users)?
+    (SETTINGS user_settings (COMMA SETTINGS user_settings)? CONST?)?
     ;
 
 create_policy_stmt
@@ -1190,7 +1244,9 @@ keyword
     | CLOB
     | CLUSTER
     | CLUSTERS
+    | CN
     | CODEC
+    | CONST
     | COLLATE
     | COLLECTION
     | COLUMN
@@ -1272,6 +1328,7 @@ keyword
     | GEOMETRY
     | GLOBAL
     | GRANT
+    | GRANTEES
     | GRANTS
     | GRANULARITY
     | GROUP
@@ -1279,7 +1336,9 @@ keyword
     | HAVING
     | HDFS
     | HIERARCHICAL
+    | HOST
     | ID
+    | IDENTIFIED
     | IF
     | ILIKE
     | IN
@@ -1299,6 +1358,7 @@ keyword
     | INTO
     | INTROSPECTION
     | INVOKER
+    | IP
     | IPV4
     | IPV6
     | IS
@@ -1399,9 +1459,12 @@ keyword
     | QUOTAS
     | QUEUES
     | RANGE
+    | READONLY
+    | REALM
     | REAL
     | RECOMPRESS
     | REFRESH
+    | REGEXP
     | RELOAD
     | REMOVE
     | REMOTE
@@ -1426,6 +1489,7 @@ keyword
     | SECURITY
     | SEMI
     | SENDS
+    | SERVER
     | SET
     | SETS
     | SETTING
@@ -1476,6 +1540,7 @@ keyword
     | UNCOMPRESSED
     | UNION
     | UNSIGNED
+    | UNTIL
     | UPDATE
     | URL
     | USAGE
@@ -1484,6 +1549,7 @@ keyword
     | USERS
     | USING
     | UUID
+    | VALID
     | VALUES
     | VARBINARY
     | VARCHAR
@@ -1495,6 +1561,7 @@ keyword
     | WHERE
     | WINDOW
     | WITH
+    | WRITABLE
     ;
 
 keyword_for_alias

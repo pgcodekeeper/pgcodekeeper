@@ -67,9 +67,10 @@ public class WorkDirs {
     public static final String CH_DATABASE = DbObjType.DATABASE.name();
     private static final String CH_FUNCTION = DbObjType.FUNCTION.name();
     private static final String CH_POLICY = DbObjType.POLICY.name();
+    private static final String CH_USER = DbObjType.USER.name();
 
     // CH first level folder
-    private static final List<String> CH_DIRECTORY_NAMES = List.of(CH_DATABASE, CH_FUNCTION, CH_POLICY);
+    private static final List<String> CH_DIRECTORY_NAMES = List.of(CH_DATABASE, CH_FUNCTION, CH_USER, CH_POLICY);
 
     public static List<String> getDirectoryNames(DatabaseType databaseType) {
         switch (databaseType) {
@@ -117,6 +118,7 @@ public class WorkDirs {
             return CH_DATABASE;
         case FUNCTION:
         case POLICY:
+        case USER:
         case TABLE:
         case VIEW:
             return type.name();
@@ -261,6 +263,7 @@ public class WorkDirs {
     private static Path getChRelativeFolderPath(PgStatement st, Path baseDir) {
         DbObjType type = st.getStatementType();
         switch (type) {
+        case USER:
         case FUNCTION:
         case POLICY:
             return baseDir.resolve(getChDirectoryNameForType(type));

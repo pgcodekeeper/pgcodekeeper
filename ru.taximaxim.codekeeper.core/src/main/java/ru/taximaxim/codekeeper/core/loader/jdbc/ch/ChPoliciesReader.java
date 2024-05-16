@@ -21,7 +21,6 @@ import java.sql.SQLException;
 import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
 import ru.taximaxim.codekeeper.core.loader.jdbc.AbstractStatementReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
-import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.XmlReaderException;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.ChExpressionAnalysisLauncher;
@@ -47,19 +46,7 @@ public class ChPoliciesReader extends AbstractStatementReader {
 
         ChPolicy p = new ChPolicy(policyName);
 
-        String[] roles = JdbcReader.getColArray(res, "apply_to_list");
-        if (roles != null) {
-            for (String role : roles) {
-                p.addRole(role);
-            }
-        }
-
-        String[] excepts = JdbcReader.getColArray(res, "apply_to_except");
-        if (excepts != null) {
-            for (String except : excepts) {
-                p.addExcept(except);
-            }
-        }
+        ChJdbcUtils.addRoles(res, "apply_to_list", "apply_to_except", p, ChPolicy::addRole, ChPolicy::addExcept);
 
         p.setPermissive(!res.getBoolean("is_restrictive"));
 
