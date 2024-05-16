@@ -34,6 +34,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Subquery_cl
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Table_column_defContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Table_constraint_defContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Table_index_defContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.UsersContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
@@ -225,5 +226,26 @@ public abstract class ChParserAbstract extends ParserAbstract<ChDatabase> {
         }
 
         return super.getLocation(ids, type, action, isDep, signature, locationType);
+    }
+
+    protected <T extends PgStatement> void addRoles(UsersContext usersCtx, T stmt,
+            BiConsumer<T, String> addRoleMethod, BiConsumer<T, String> addExceptMethod, String ignoreRole) {
+        if (usersCtx == null) {
+            return;
+        }
+
+        for (var roleCtx : usersCtx.roles.identifier()) {
+            String role = roleCtx.getText();
+            if (!ignoreRole.equalsIgnoreCase(role)) {
+                addRoleMethod.accept(stmt, role);
+            }
+        }
+
+        var exceptRolesCtx = usersCtx.excepts;
+        if (exceptRolesCtx != null) {
+            for (var exceptCtx : exceptRolesCtx.identifier()) {
+                addExceptMethod.accept(stmt, exceptCtx.getText());
+            }
+        }
     }
 }

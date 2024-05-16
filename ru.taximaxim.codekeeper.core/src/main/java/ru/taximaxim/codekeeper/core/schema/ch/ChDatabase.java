@@ -31,15 +31,14 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
-import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.IStatement;
-import ru.taximaxim.codekeeper.core.schema.PgOverride;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
 
 public class ChDatabase extends AbstractDatabase {
+
     private final Map<String, ChFunction> functions = new LinkedHashMap<>();
     private final Map<String, ChPolicy> policies = new LinkedHashMap<>();
+    private final Map<String, ChUser> users = new LinkedHashMap<>();
 
     public ChDatabase(PgDiffArguments arguments) {
         super(arguments);
@@ -50,6 +49,7 @@ public class ChDatabase extends AbstractDatabase {
         super.fillChildrenList(l);
         l.add(functions.values());
         l.add(policies.values());
+        l.add(users.values());
     }
 
     @Override
@@ -61,6 +61,8 @@ public class ChDatabase extends AbstractDatabase {
             return getFunction(name);
         case POLICY:
             return getPolicy(name);
+        case USER:
+            return getUser(name);
         default:
             return null;
         }
@@ -78,6 +80,9 @@ public class ChDatabase extends AbstractDatabase {
             break;
         case POLICY:
             addPolicy((ChPolicy) st);
+            break;
+        case USER:
+            addUser((ChUser) st);
             break;
         default:
             throw new IllegalArgumentException("Unsupported child type: " + type);
@@ -134,11 +139,37 @@ public class ChDatabase extends AbstractDatabase {
         addUnique(policies, policy);
     }
 
+    /**
+     * Returns user of given name or null if the user has not been found.
+     *
+     * @param name
+     *            user name
+     *
+     * @return found user or null
+     */
+    public ChUser getUser(final String name) {
+        return users.get(name);
+    }
+
+    /**
+     * Getter for {@link #users}. The list cannot be modified.
+     *
+     * @return {@link #users}
+     */
+    public Collection<ChUser> getUsers() {
+        return Collections.unmodifiableCollection(users.values());
+    }
+
+    public void addUser(final ChUser user) {
+        addUnique(users, user);
+    }
+
     @Override
     public boolean compareChildren(PgStatement obj) {
         if (obj instanceof ChDatabase && super.compareChildren(obj)) {
             ChDatabase db = (ChDatabase) obj;
             return functions.equals(db.functions)
+                    && users.equals(db.users)
                     && policies.equals(db.policies);
         }
         return false;
@@ -148,46 +179,13 @@ public class ChDatabase extends AbstractDatabase {
     public void computeChildrenHash(Hasher hasher) {
         super.computeChildrenHash(hasher);
         hasher.putUnordered(functions);
+        hasher.putUnordered(users);
         hasher.putUnordered(policies);
     }
 
     @Override
-    protected void concat(PgStatement st) {
-        DbObjType type = st.getStatementType();
-        String name = st.getName();
-        PgStatement parent = st.getParent();
-        String parentName = parent.getName();
-        PgStatement orig = null;
-        switch (type) {
-        case SCHEMA:
-        case POLICY:
-        case FUNCTION:
-            orig = getChild(name, type);
-            if (orig == null) {
-                addChild(st.shallowCopy());
-            }
-            break;
-        case CONSTRAINT:
-        case INDEX:
-            PgStatementContainer cont = getSchema(parent.getParent().getName()).getStatementContainer(parentName);
-
-            orig = cont.getChild(name, type);
-            if (orig == null) {
-                cont.addChild(st.shallowCopy());
-            }
-            break;
-        default:
-            AbstractSchema schema = getSchema(parentName);
-            orig = schema.getChild(name, type);
-            if (orig == null) {
-                schema.addChild(st.shallowCopy());
-            }
-            break;
-        }
-
-        if (orig != null && !orig.compare(st)) {
-            addOverride(new PgOverride(orig, st));
-        }
+    protected boolean isFirstLevelType(DbObjType type) {
+        return type.in(DbObjType.SCHEMA, DbObjType.POLICY, DbObjType.FUNCTION, DbObjType.USER);
     }
 
     @Override
@@ -199,19 +197,4 @@ public class ChDatabase extends AbstractDatabase {
     public DatabaseType getDbType() {
         return DatabaseType.CH;
     }
-
-    @Override
-    public PgStatement getStatement(GenericColumn gc) {
-        DbObjType type = gc.type;
-        if (type == DbObjType.FUNCTION) {
-            return getFunction(gc.schema);
-        }
-
-        if (type == DbObjType.POLICY) {
-            return getPolicy(gc.schema);
-        }
-
-        return super.getStatement(gc);
-    }
-
 }

@@ -253,7 +253,32 @@ public abstract class AbstractDatabase extends PgStatement implements IDatabase 
         overrides.add(override);
     }
 
-    protected abstract void concat(PgStatement st);
+    protected void concat(PgStatement st) {
+        DbObjType type = st.getStatementType();
+        PgStatement parent = st.getParent();
+        String parentName = parent.getName();
+        IStatementContainer cont;
+
+        if (isFirstLevelType(type)) {
+            cont = this;
+        } else if (st.isSubElement()) {
+            cont = getSchema(parent.getParent().getName()).getStatementContainer(parentName);
+        } else {
+            cont = getSchema(parentName);
+        }
+
+        String name = st.getName();
+        PgStatement orig = cont.getChild(name, type);
+        if (orig == null) {
+            cont.addChild(st.shallowCopy());
+        }
+
+        if (orig != null && !orig.compare(st)) {
+            addOverride(new PgOverride(orig, st));
+        }
+    }
+
+    protected abstract boolean isFirstLevelType(DbObjType type);
 
     public static Map<String, PgStatement> listPgObjects(AbstractDatabase db) {
         Map<String, PgStatement> statements = new HashMap<>();
@@ -290,24 +315,14 @@ public abstract class AbstractDatabase extends PgStatement implements IDatabase 
 
     protected abstract AbstractDatabase getDatabaseCopy();
 
-    public PgStatement getStatement(GenericColumn gc) {
+    public final PgStatement getStatement(GenericColumn gc) {
         DbObjType type = gc.type;
-        switch (type) {
-        case DATABASE:
+        if (type == DbObjType.DATABASE) {
             return this;
-        case SCHEMA:
-        case EXTENSION:
-        case FOREIGN_DATA_WRAPPER:
-        case SERVER:
-        case EVENT_TRIGGER:
-        case CAST:
-        case USER_MAPPING:
-        case ASSEMBLY:
-        case USER:
-        case ROLE:
+        }
+
+        if (isFirstLevelType(type)) {
             return getChild(gc.schema, type);
-        default:
-            break;
         }
 
         AbstractSchema s = getSchema(gc.schema);

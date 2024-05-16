@@ -20,6 +20,7 @@ import java.util.Arrays;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Alter_policy_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Alter_stmtContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Alter_user_stmtContext;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 
 public class AlterChOther extends ChParserAbstract {
@@ -35,6 +36,8 @@ public class AlterChOther extends ChParserAbstract {
     public void parseObject() {
         if (ctx.alter_policy_stmt() != null) {
             alterPolicy(ctx.alter_policy_stmt());
+        } else if (ctx.alter_user_stmt() != null) {
+            alterUser(ctx.alter_user_stmt());
         }
     }
 
@@ -48,10 +51,19 @@ public class AlterChOther extends ChParserAbstract {
         }
     }
 
+    private void alterUser(Alter_user_stmtContext ctx) {
+        for (var userNameCtx : ctx.name) {
+            addObjReference(Arrays.asList(userNameCtx), DbObjType.USER, ACTION_ALTER);
+        }
+    }
+
     @Override
     protected String getStmtAction() {
         if (ctx.alter_policy_stmt() != null) {
             return "ALTER POLICY";
+        }
+        if (ctx.alter_user_stmt() != null) {
+            return "ALTER USER";
         }
         return null;
     }

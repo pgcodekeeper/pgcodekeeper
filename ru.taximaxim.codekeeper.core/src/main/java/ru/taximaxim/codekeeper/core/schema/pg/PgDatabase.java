@@ -32,9 +32,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.IStatement;
-import ru.taximaxim.codekeeper.core.schema.PgOverride;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
 
 /**
  * Stores database information.
@@ -263,49 +261,18 @@ public class PgDatabase extends AbstractDatabase {
     protected void concat(PgStatement st) {
         DbObjType type = st.getStatementType();
         String name = st.getName();
-        PgStatement parent = st.getParent();
-        String parentName = parent.getName();
-        PgStatement orig = null;
-        switch (type) {
-        case SCHEMA:
-        case EXTENSION:
-        case FOREIGN_DATA_WRAPPER:
-        case EVENT_TRIGGER:
-        case SERVER:
-        case USER_MAPPING:
-        case CAST:
-            orig = getChild(name, type);
-            if (orig == null) {
-                addChild(st.shallowCopy());
-            } else if (type == DbObjType.SCHEMA
-                    && Consts.PUBLIC.equals(name) && !st.hasChildren()) {
-                // skip empty public schema
-                orig = null;
-            }
-            break;
-        case CONSTRAINT:
-        case INDEX:
-        case TRIGGER:
-        case RULE:
-        case POLICY:
-            PgStatementContainer cont = getSchema(parent.getParent().getName()).getStatementContainer(parentName);
-            orig = cont.getChild(name, type);
-            if (orig == null) {
-                cont.addChild(st.shallowCopy());
-            }
-            break;
-        default:
-            AbstractSchema schema = getSchema(parentName);
-            orig = schema.getChild(name, type);
-            if (orig == null) {
-                schema.addChild(st.shallowCopy());
-            }
-            break;
+        if (type == DbObjType.SCHEMA && Consts.PUBLIC.equals(name) && !st.hasChildren()) {
+            // skip empty public schema
+            return;
         }
 
-        if (orig != null && !orig.compare(st)) {
-            addOverride(new PgOverride(orig, st));
-        }
+        super.concat(st);
+    }
+
+    @Override
+    protected boolean isFirstLevelType(DbObjType type) {
+        return type.in(DbObjType.SCHEMA, DbObjType.EXTENSION, DbObjType.FOREIGN_DATA_WRAPPER, DbObjType.EVENT_TRIGGER,
+                DbObjType.SERVER, DbObjType.USER_MAPPING, DbObjType.CAST);
     }
 
     @Override

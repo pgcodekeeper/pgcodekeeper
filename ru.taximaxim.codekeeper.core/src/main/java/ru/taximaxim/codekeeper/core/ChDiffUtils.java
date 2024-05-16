@@ -39,6 +39,10 @@ public class ChDiffUtils {
         return true;
     }
 
+    public static String quoteLiteralName(String name) {
+        return name.startsWith("'") ? name : '\'' + name + '\'';
+    }
+
     public static boolean isValidIdChar(char c, boolean allowCaps, boolean allowDigits) {
         if (c >= 'a' && c <= 'z') {
             return true;
@@ -57,6 +61,10 @@ public class ChDiffUtils {
 
     public static String unQuoteName(String name) {
         return name.startsWith("`") ? name.substring(1, name.length() - 1).replace("``", "`") : name;
+    }
+
+    public static String unQuoteLiteralName(String name) {
+        return name.startsWith("'") ? name.substring(1, name.length() - 1).replace("''", "'") : name;
     }
 
     private ChDiffUtils() {

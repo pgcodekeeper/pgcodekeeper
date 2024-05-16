@@ -66,11 +66,11 @@ public final class ChPolicy extends AbstractPolicy {
             sbSQL.append("\n  AS RESTRICTIVE");
         }
 
-        sbSQL.append("\n  TO ");
         if (!roles.isEmpty()) {
+            sbSQL.append("\n  TO ");
             sbSQL.append(String.join(", ", roles));
-        } else {
-            sbSQL.append("ALL");
+        } else if (!excepts.isEmpty() || !isCreate) {
+            sbSQL.append("\n  TO ALL");
         }
 
         if (!excepts.isEmpty()) {

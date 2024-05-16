@@ -22,7 +22,6 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.ChExpressionAnal
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Create_policy_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.ExprContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Policy_actionContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.UsersContext;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 import ru.taximaxim.codekeeper.core.schema.ch.ChPolicy;
 
@@ -66,21 +65,7 @@ public class CreateChPolicy extends ChParserAbstract {
             return;
         }
 
-        UsersContext users = actionCtx.users();
-        if (users != null) {
-            for (var roleCtx : users.roles.identifier()) {
-                String role = roleCtx.getText();
-                if (!"ALL".equalsIgnoreCase(role)) {
-                    policy.addRole(roleCtx.getText());
-                }
-            }
-            var exceptsCtx = users.excepts;
-            if (exceptsCtx != null) {
-                for (var exceptCtx : exceptsCtx.identifier()) {
-                    policy.addExcept(exceptCtx.getText());
-                }
-            }
-        }
+        addRoles(actionCtx.users(), policy, ChPolicy::addRole, ChPolicy::addExcept, "ALL");
     }
 
 

@@ -32,9 +32,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.IStatement;
-import ru.taximaxim.codekeeper.core.schema.PgOverride;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
 
 /**
  * Stores database information.
@@ -190,44 +188,8 @@ public class MsDatabase extends AbstractDatabase {
     }
 
     @Override
-    protected void concat(PgStatement st) {
-        DbObjType type = st.getStatementType();
-        String name = st.getName();
-        PgStatement parent = st.getParent();
-        String parentName = parent.getName();
-        PgStatement orig = null;
-        switch (type) {
-        case USER:
-        case ROLE:
-        case ASSEMBLY:
-        case SCHEMA:
-            orig = getChild(name, type);
-            if (orig == null) {
-                addChild(st.shallowCopy());
-            }
-            break;
-        case CONSTRAINT:
-        case INDEX:
-        case TRIGGER:
-            PgStatementContainer cont = getSchema(parent.getParent().getName()).getStatementContainer(parentName);
-
-            orig = cont.getChild(name, type);
-            if (orig == null) {
-                cont.addChild(st.shallowCopy());
-            }
-            break;
-        default:
-            AbstractSchema schema = getSchema(parentName);
-            orig = schema.getChild(name, type);
-            if (orig == null) {
-                schema.addChild(st.shallowCopy());
-            }
-            break;
-        }
-
-        if (orig != null && !orig.compare(st)) {
-            addOverride(new PgOverride(orig, st));
-        }
+    protected boolean isFirstLevelType(DbObjType type) {
+        return type.in(DbObjType.SCHEMA, DbObjType.USER, DbObjType.ROLE, DbObjType.ASSEMBLY);
     }
 
     @Override
