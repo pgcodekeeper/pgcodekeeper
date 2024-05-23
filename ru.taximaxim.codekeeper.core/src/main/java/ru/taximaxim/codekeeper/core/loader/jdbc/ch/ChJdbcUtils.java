@@ -20,6 +20,8 @@ import java.sql.SQLException;
 import java.util.function.BiConsumer;
 
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcReader;
+import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public final class ChJdbcUtils {
@@ -33,6 +35,7 @@ public final class ChJdbcUtils {
         if (roles != null) {
             for (String role : roles) {
                 addRoleMethod.accept(statement, role);
+                statement.addDep(new GenericColumn(role, DbObjType.ROLE));
             }
         }
 
@@ -40,6 +43,7 @@ public final class ChJdbcUtils {
         if (excepts != null) {
             for (String except : excepts) {
                 addExceptMethod.accept(statement, except);
+                statement.addDep(new GenericColumn(except, DbObjType.ROLE));
             }
         }
 

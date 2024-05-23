@@ -31,10 +31,12 @@ import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public class ChUser extends PgStatement {
 
+    private static final String DEF_STORAGE = "local_directory";
     private static final String EXCEPT = " EXCEPT ";
     private static final String DEFAULT = "DEFAULT ROLE ";
     private static final String DELIM = "\n\t";
 
+    private String storageType = DEF_STORAGE;
     private List<String> hosts = new ArrayList<>();
     private List<String> grantees = new ArrayList<>();
     private List<String> exGrantees = new ArrayList<>();
@@ -69,6 +71,9 @@ public class ChUser extends PgStatement {
             sbSQL.append(DELIM).append("HOST ").append(String.join(", ", hosts));
         }
 
+        if (!DEF_STORAGE.equals(storageType)) {
+            sbSQL.append(DELIM).append("IN ").append(storageType);
+        }
         //append role names
         appendRoles(defRoles, exceptRoles, DEFAULT, "ALL", true, sbSQL);
 
@@ -123,6 +128,11 @@ public class ChUser extends PgStatement {
             sb.append("ALTER USER ").append(getQualifiedName()).append(sbSql).append(";");
         }
 
+        if (!Objects.equals(storageType, newUser.getStorageType())) {
+            sb.append(DELIM).append("MOVE ROLE ")
+            .append(getQualifiedName()).append(" TO ")
+            .append(newUser.getStorageType()).append(";");
+        }
         return sb.length() > startLength;
     }
 
@@ -148,6 +158,7 @@ public class ChUser extends PgStatement {
         if (obj instanceof ChUser && super.compare(obj)) {
             ChUser user = (ChUser) obj;
             return hosts.equals(user.hosts)
+                    && Objects.equals(storageType, user.storageType)
                     && defRoles.equals(user.defRoles)
                     && exceptRoles.equals(user.exceptRoles)
                     && grantees.equals(user.grantees)
@@ -163,6 +174,7 @@ public class ChUser extends PgStatement {
         ChUser userDst = new ChUser(getName());
         copyBaseFields(userDst);
         userDst.hosts.addAll(hosts);
+        userDst.setStorageType(storageType);
         userDst.defRoles.addAll(defRoles);
         userDst.exceptRoles.addAll(exceptRoles);
         userDst.grantees.addAll(grantees);
@@ -174,6 +186,7 @@ public class ChUser extends PgStatement {
     @Override
     public void computeHash(Hasher hasher) {
         hasher.put(hosts);
+        hasher.put(storageType);
         hasher.put(defRoles);
         hasher.put(exceptRoles);
         hasher.put(grantees);
@@ -232,6 +245,15 @@ public class ChUser extends PgStatement {
 
     public void addHost(String host) {
         hosts.add(host);
+        resetHash();
+    }
+
+    public String getStorageType() {
+        return storageType;
+    }
+
+    public void setStorageType(String storageType) {
+        this.storageType = storageType;
         resetHash();
     }
 }

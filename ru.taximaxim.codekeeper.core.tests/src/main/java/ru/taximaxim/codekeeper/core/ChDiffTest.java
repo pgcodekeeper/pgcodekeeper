@@ -74,7 +74,13 @@ class ChDiffTest {
             //Test scenario where USER is compared
             "compare_ch_user",
             //Test scenario where USER is dropped
-            "drop_ch_user"
+            "drop_ch_user",
+            //Test scenario where ROLE is added
+            "add_ch_role",
+            //Test scenario where ROLE is compared
+            "compare_ch_role",
+            //Test scenario where ROLE is dropped
+            "drop_ch_role"
     })
     void runDiff(String fileNameTemplate) throws IOException, InterruptedException {
         TestUtils.runDiff(fileNameTemplate, DatabaseType.CH, ChDiffTest.class);

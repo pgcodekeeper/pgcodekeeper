@@ -34,13 +34,14 @@ public class CreateChSchema extends ChParserAbstract {
 
     @Override
     public void parseObject() {
-        var schema = new ChSchema(ctx.identifier().getText());
+        var nameCtx = ctx.name_with_cluster().identifier();
+        var schema = new ChSchema(nameCtx.getText());
         schema.setEngine(getEngine(ctx.engine_expr()));
         var commCtx = ctx.comment_expr();
         if (commCtx != null) {
             schema.setComment(commCtx.STRING_LITERAL().getText());
         }
-        addSafe(db, schema, Arrays.asList(ctx.identifier()));
+        addSafe(db, schema, Arrays.asList(nameCtx));
     }
 
     private String getEngine(Engine_exprContext engine) {
@@ -60,6 +61,6 @@ public class CreateChSchema extends ChParserAbstract {
 
     @Override
     protected String getStmtAction() {
-        return getStrForStmtAction(ACTION_CREATE, DbObjType.DATABASE, ctx.identifier());
+        return getStrForStmtAction(ACTION_CREATE, DbObjType.DATABASE, ctx.name_with_cluster().identifier());
     }
 }

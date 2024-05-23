@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- Added support for USER object in ClickHouse.
+- Added support for USER, ROLE objects in ClickHouse.
 
 ### Changed
 

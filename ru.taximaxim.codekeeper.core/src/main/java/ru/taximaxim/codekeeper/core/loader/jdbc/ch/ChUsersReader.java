@@ -46,6 +46,10 @@ public class ChUsersReader extends AbstractStatementReader {
         loader.setCurrentObject(new GenericColumn(name, DbObjType.USER));
 
         ChUser user = new ChUser(name);
+        String storage = res.getString("storage");
+        if (storage != null) {
+            user.setStorageType(storage);
+        }
 
         fillHosts(res, user);
 
@@ -58,6 +62,14 @@ public class ChUsersReader extends AbstractStatementReader {
         var defDb = res.getString("default_database");
         if (!defDb.isBlank()) {
             user.setDefaultDatabase(defDb);
+        }
+
+        for (var role : user.getDefRoles()) {
+            user.addDep(new GenericColumn(role, DbObjType.ROLE));
+        }
+
+        for (var role : user.getExceptRoles()) {
+            user.addDep(new GenericColumn(role, DbObjType.ROLE));
         }
         db.addUser(user);
     }
@@ -106,6 +118,7 @@ public class ChUsersReader extends AbstractStatementReader {
     protected void fillQueryBuilder(QueryBuilder builder) {
         builder
         .column("name")
+        .column("storage")
         .column("host_ip")
         .column("host_names")
         .column("host_names_regexp")

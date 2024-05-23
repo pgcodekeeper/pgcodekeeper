@@ -28,6 +28,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Alter_table
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Ch_fileContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Create_database_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Create_function_stmtContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Create_role_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Create_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Create_table_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Create_user_stmtContext;
@@ -39,6 +40,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.AlterChTable;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.ChParserAbstract;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChFunction;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChPolicy;
+import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChRole;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChSchema;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChTable;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChUser;
@@ -87,6 +89,7 @@ public class CustomChSQLParserListener extends CustomParserListener<ChDatabase> 
         Create_view_stmtContext createView;
         Create_function_stmtContext createFunc;
         Create_user_stmtContext createUser;
+        Create_role_stmtContext createRole;
         if ((createDatabase = ctx.create_database_stmt()) != null) {
             p = new CreateChSchema(createDatabase, db);
         } else if ((createTable = ctx.create_table_stmt()) != null) {
@@ -97,6 +100,8 @@ public class CustomChSQLParserListener extends CustomParserListener<ChDatabase> 
             p = new CreateChFunction(createFunc, db);
         } else if ((createUser = ctx.create_user_stmt()) != null) {
             p = new CreateChUser(createUser, db);
+        } else if ((createRole = ctx.create_role_stmt()) != null) {
+            p = new CreateChRole(createRole, db);
         } else if (ctx.create_policy_stmt() != null) {
             p = new CreateChPolicy(ctx.create_policy_stmt(), db);
         } else {
@@ -112,7 +117,9 @@ public class CustomChSQLParserListener extends CustomParserListener<ChDatabase> 
         if (element.DATABASE() != null
                 || element.FUNCTION() != null
                 || element.TABLE() != null
-                || element.VIEW() != null) {
+                || element.VIEW() != null
+                || element.USER() != null
+                || element.ROLE() != null) {
             p = new DropChStatement(ctx, db);
         } else {
             addToQueries(ctx, getAction(ctx));
@@ -127,7 +134,8 @@ public class CustomChSQLParserListener extends CustomParserListener<ChDatabase> 
         if (altertableCtx != null) {
             p = new AlterChTable(altertableCtx, db);
         } else if (ctx.alter_policy_stmt() != null
-                || ctx.alter_user_stmt() != null) {
+                || ctx.alter_user_stmt() != null
+                || ctx.alter_role_stmt() != null) {
             p = new AlterChOther(ctx, db);
         } else {
             addToQueries(ctx, getAction(ctx));

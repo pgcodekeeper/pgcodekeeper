@@ -48,6 +48,7 @@ dml_stmt
     | describe_stmt
     | exists_stmt
     | explain_stmt
+    | move_stmt
     | set_stmt
     | SHOW show_stmt
     | system_stmt
@@ -67,6 +68,7 @@ create_stmt
     | create_policy_stmt
     | create_named_collection_stmt
     | create_user_stmt
+    | create_role_stmt
     ;
 
 alter_stmt
@@ -74,6 +76,7 @@ alter_stmt
     | alter_policy_stmt
     | alter_named_collection_stmt
     | alter_user_stmt
+    | alter_role_stmt
     ;
 
 privilegy_stmt
@@ -217,6 +220,12 @@ users
     : roles=identifier_list (EXCEPT excepts=identifier_list)?
     ;
 
+alter_role_stmt
+    : ALTER ROLE if_exists? name_with_cluster rename_to?
+    (COMMA name_with_cluster rename_to?)*
+    user_settings?
+    ;
+
 select_stmt
     :
     {selectLevel++;}
@@ -257,15 +266,15 @@ create_named_collection_stmt
     ;
 
 create_user_stmt
-    : CREATE USER (if_not_exists | OR REPLACE)? name+=identifier cluster_clause? (COMMA name+=identifier cluster_clause?)*
+    : CREATE USER (if_not_exists | OR REPLACE)? name_with_cluster (COMMA name_with_cluster)*
     (NOT IDENTIFIED | IDENTIFIED identification)?
     (HOST host)?
     (VALID UNTIL STRING_LITERAL)?
-    (IN literal)?
+    (IN storage=identifier)?
     (DEFAULT ROLE role=users)?
     (DEFAULT DATABASE (database=identifier | NONE))?
     (GRANTEES grantees=users)?
-    (SETTINGS user_settings (COMMA SETTINGS user_settings)* CONST?)?
+    user_settings?
     ;
 
 identification
@@ -291,9 +300,29 @@ host_type
     | (NAME | REGEXP | IP | LIKE) literal
     ;
 
+create_role_stmt
+     : CREATE ROLE (if_not_exists | OR REPLACE)? name_with_cluster (COMMA name_with_cluster)*
+     (IN identifier)? user_settings?
+     ;
+
+name_with_cluster
+    : identifier cluster_clause?
+    ;
+
 user_settings
-    : identifier (EQ_SINGLE signed_number_literal)? (MIN EQ_SINGLE? signed_number_literal)? (MAX EQ_SINGLE? signed_number_literal)? (READONLY | WRITABLE)?
+    : SETTINGS user_setting ((SETTINGS | COMMA) user_setting)*
+    ;
+
+user_setting
+    : identifier (EQ_SINGLE signed_number_literal)? ((MIN | MAX) EQ_SINGLE? signed_number_literal)* option_type?
     | PROFILE literal
+    ;
+
+option_type
+    : CONST
+    | READONLY
+    | WRITABLE
+    | CHANGEABLE_IN_READONLY
     ;
 
 alter_named_collection_stmt
@@ -306,15 +335,15 @@ named_collection_pair
     ;
 
 alter_user_stmt
-    : ALTER USER if_exists? name+=identifier cluster_clause? rename_to?
-    (COMMA name+=identifier cluster_clause? rename_to?)*
+    : ALTER USER if_exists? name_with_cluster rename_to?
+    (COMMA name_with_cluster rename_to?)*
     (NOT IDENTIFIED | IDENTIFIED identification)?
     ((ADD | DROP)? HOST host)*
     (VALID UNTIL STRING_LITERAL)?
     (DEFAULT ROLE role=users)?
     (DEFAULT DATABASE (database=identifier | NONE))?
     (GRANTEES grantees=users)?
-    (SETTINGS user_settings (COMMA SETTINGS user_settings)? CONST?)?
+    user_settings?
     ;
 
 create_policy_stmt
@@ -444,7 +473,7 @@ check_stmt
     ;
 
 create_database_stmt
-    : CREATE DATABASE if_not_exists? identifier cluster_clause? engine_expr? settings_clause? comment_expr?
+    : CREATE DATABASE if_not_exists? name_with_cluster engine_expr? settings_clause? comment_expr?
     ;
 
 create_view_stmt
@@ -665,7 +694,7 @@ drop_stmt
     ;
 
 drop_element
-    : DATABASE if_exists? identifier cluster_clause? SYNC?
+    : DATABASE if_exists? name_with_cluster SYNC?
     | TEMPORARY? TABLE if_exists? (IF EMPTY)? qualified_name cluster_clause? SYNC?
     | DICTIONARY if_exists? qualified_name SYNC?
     | (ROLE | USER) if_exists? identifier_list cluster_clause? (FROM identifier)?
@@ -673,8 +702,8 @@ drop_element
     | QUOTA if_exists? identifier_list cluster_clause? (FROM identifier)?
     | SETTINGS? PROFILE if_exists? identifier_list cluster_clause? (FROM identifier)?
     | VIEW if_exists? qualified_name cluster_clause? SYNC?
-    | FUNCTION if_exists? identifier cluster_clause?
-    | NAMED COLLECTION if_exists? identifier cluster_clause?
+    | FUNCTION if_exists? name_with_cluster
+    | NAMED COLLECTION if_exists? name_with_cluster
     | INDEX if_exists? identifier ON qualified_name
     ;
 
@@ -697,6 +726,10 @@ pairs
 
 pair
     : identifier EQ_SINGLE expr
+    ;
+
+move_stmt
+    : MOVE (USER | ROLE | QUOTA | SETTINGS PROFILE | ROW POLICY) name=identifier_list TO identifier
     ;
 
 json_pair
@@ -1237,6 +1270,7 @@ keyword
     | CASE
     | CAST
     | CHANGED
+    | CHANGEABLE_IN_READONLY
     | CHAR
     | CHARACTER
     | CHECK
@@ -1246,7 +1280,6 @@ keyword
     | CLUSTERS
     | CN
     | CODEC
-    | CONST
     | COLLATE
     | COLLECTION
     | COLUMN
@@ -1254,6 +1287,7 @@ keyword
     | COMMENT
     | COMMIT
     | CONFIG
+    | CONST
     | CONSTRAINT
     | CREATE
     | CROSS

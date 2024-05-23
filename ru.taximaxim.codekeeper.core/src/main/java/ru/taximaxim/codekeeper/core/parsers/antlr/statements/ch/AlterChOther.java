@@ -19,6 +19,7 @@ import java.util.Arrays;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Alter_policy_stmtContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Alter_role_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Alter_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Alter_user_stmtContext;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
@@ -34,10 +35,15 @@ public class AlterChOther extends ChParserAbstract {
 
     @Override
     public void parseObject() {
-        if (ctx.alter_policy_stmt() != null) {
-            alterPolicy(ctx.alter_policy_stmt());
-        } else if (ctx.alter_user_stmt() != null) {
-            alterUser(ctx.alter_user_stmt());
+        var alterPolicyCtx = ctx.alter_policy_stmt();
+        var alterUserCtx = ctx.alter_user_stmt();
+        var alterRoleCtx = ctx.alter_role_stmt();
+        if (alterPolicyCtx != null) {
+            alterPolicy(alterPolicyCtx);
+        } else if (alterUserCtx != null) {
+            alterUser(alterUserCtx);
+        }  else if (alterRoleCtx != null) {
+            alterRole(alterRoleCtx);
         }
     }
 
@@ -52,8 +58,14 @@ public class AlterChOther extends ChParserAbstract {
     }
 
     private void alterUser(Alter_user_stmtContext ctx) {
-        for (var userNameCtx : ctx.name) {
-            addObjReference(Arrays.asList(userNameCtx), DbObjType.USER, ACTION_ALTER);
+        for (var userNameCtx : ctx.name_with_cluster()) {
+            addObjReference(Arrays.asList(userNameCtx.identifier()), DbObjType.USER, ACTION_ALTER);
+        }
+    }
+
+    private void alterRole(Alter_role_stmtContext ctx) {
+        for (var roleCtx : ctx.name_with_cluster()) {
+            addObjReference(Arrays.asList(roleCtx.identifier()), DbObjType.ROLE, ACTION_ALTER);
         }
     }
 
@@ -64,6 +76,9 @@ public class AlterChOther extends ChParserAbstract {
         }
         if (ctx.alter_user_stmt() != null) {
             return "ALTER USER";
+        }
+        if (ctx.alter_role_stmt() != null) {
+            return "ALTER ROLE";
         }
         return null;
     }

@@ -56,6 +56,7 @@ class CHParserTest {
         "ch_select, 102",
         "ch_privileges, 0",
         "ch_user, 0",
+        "ch_role, 0",
     })
     void parse(String fileNameTemplate, int allowedAmbiguity) throws IOException {
         List<Object> errors = new ArrayList<>();

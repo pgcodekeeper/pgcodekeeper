@@ -16,6 +16,7 @@
 package ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiConsumer;
@@ -236,15 +237,18 @@ public abstract class ChParserAbstract extends ParserAbstract<ChDatabase> {
 
         for (var roleCtx : usersCtx.roles.identifier()) {
             String role = roleCtx.getText();
+            addDepSafe(stmt, Arrays.asList(roleCtx), DbObjType.ROLE);
             if (!ignoreRole.equalsIgnoreCase(role)) {
                 addRoleMethod.accept(stmt, role);
             }
+
         }
 
         var exceptRolesCtx = usersCtx.excepts;
         if (exceptRolesCtx != null) {
             for (var exceptCtx : exceptRolesCtx.identifier()) {
                 addExceptMethod.accept(stmt, exceptCtx.getText());
+                addDepSafe(stmt, Arrays.asList(exceptCtx), DbObjType.ROLE);
             }
         }
     }

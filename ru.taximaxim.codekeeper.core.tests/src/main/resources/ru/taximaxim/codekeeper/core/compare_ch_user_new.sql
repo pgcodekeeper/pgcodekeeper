@@ -63,3 +63,21 @@ CREATE USER vinni2 HOST ANY GRANTEES ANY EXCEPT artreides;
 
 --compare USER's grantees.  We will remove sentence about DEFAULT ROLE ALL, but this is equal writing. We haven't script!
 CREATE USER vinni3 HOST ANY GRANTEES ANY EXCEPT artreides;
+
+--compare USER's access_storage_type. Added access_storage_type
+CREATE USER admin1
+    IN ldadp;
+
+--compare USER's access_storage_type. Changed default access_storage_type
+CREATE USER student
+    IN local_directory;
+
+--compare USER's access_storage_type. Changed default access_storage_type (not specified)
+CREATE USER tom;
+
+--compare USER's access_storage_type. Nothing changed
+CREATE USER mouse;
+
+--compare USER's access_storage_type. Specified default access_storage_type. Nothing changed
+CREATE USER jerry
+    IN local_directory;

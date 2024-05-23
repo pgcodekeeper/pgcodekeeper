@@ -39,6 +39,7 @@ public class ChDatabase extends AbstractDatabase {
     private final Map<String, ChFunction> functions = new LinkedHashMap<>();
     private final Map<String, ChPolicy> policies = new LinkedHashMap<>();
     private final Map<String, ChUser> users = new LinkedHashMap<>();
+    private final Map<String, ChRole> roles = new LinkedHashMap<>();
 
     public ChDatabase(PgDiffArguments arguments) {
         super(arguments);
@@ -50,6 +51,7 @@ public class ChDatabase extends AbstractDatabase {
         l.add(functions.values());
         l.add(policies.values());
         l.add(users.values());
+        l.add(roles.values());
     }
 
     @Override
@@ -63,6 +65,8 @@ public class ChDatabase extends AbstractDatabase {
             return getPolicy(name);
         case USER:
             return getUser(name);
+        case ROLE:
+            return getRole(name);
         default:
             return null;
         }
@@ -83,6 +87,9 @@ public class ChDatabase extends AbstractDatabase {
             break;
         case USER:
             addUser((ChUser) st);
+            break;
+        case ROLE:
+            addRole((ChRole) st);
             break;
         default:
             throw new IllegalArgumentException("Unsupported child type: " + type);
@@ -164,12 +171,38 @@ public class ChDatabase extends AbstractDatabase {
         addUnique(users, user);
     }
 
+    /**
+     * Finds role according to specified role {@code name}.
+     *
+     * @param name
+     *            name of the role to be searched
+     *
+     * @return found role or null if no such role has been found
+     */
+    public ChRole getRole(final String name) {
+        return roles.get(name);
+    }
+
+    /**
+     * Getter for {@link #roles}. The list cannot be modified.
+     *
+     * @return {@link #roles}
+     */
+    public Collection<ChRole> getRoles() {
+        return Collections.unmodifiableCollection(roles.values());
+    }
+
+    public void addRole(final ChRole role) {
+        addUnique(roles, role);
+    }
+
     @Override
     public boolean compareChildren(PgStatement obj) {
         if (obj instanceof ChDatabase && super.compareChildren(obj)) {
             ChDatabase db = (ChDatabase) obj;
             return functions.equals(db.functions)
                     && users.equals(db.users)
+                    && roles.equals(db.roles)
                     && policies.equals(db.policies);
         }
         return false;
@@ -180,12 +213,13 @@ public class ChDatabase extends AbstractDatabase {
         super.computeChildrenHash(hasher);
         hasher.putUnordered(functions);
         hasher.putUnordered(users);
+        hasher.putUnordered(roles);
         hasher.putUnordered(policies);
     }
 
     @Override
     protected boolean isFirstLevelType(DbObjType type) {
-        return type.in(DbObjType.SCHEMA, DbObjType.POLICY, DbObjType.FUNCTION, DbObjType.USER);
+        return type.in(DbObjType.SCHEMA, DbObjType.POLICY, DbObjType.FUNCTION, DbObjType.USER, DbObjType.ROLE);
     }
 
     @Override
