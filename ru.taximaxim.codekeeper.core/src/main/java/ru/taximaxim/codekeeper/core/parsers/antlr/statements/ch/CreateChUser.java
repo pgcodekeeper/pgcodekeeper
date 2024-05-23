@@ -17,7 +17,6 @@ package ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch;
 
 import java.util.Arrays;
 
-import ru.taximaxim.codekeeper.core.ChDiffUtils;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Create_user_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.HostContext;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
@@ -34,14 +33,19 @@ public class CreateChUser extends ChParserAbstract {
 
     @Override
     public void parseObject() {
-        for (var userName : ctx.name) {
-            ChUser user = new ChUser(ChDiffUtils.getQuotedName(userName.getText()));
+        for (var userNameWithCluster : ctx.name_with_cluster()) {
+            var userNameCtx = userNameWithCluster.identifier();
+            ChUser user = new ChUser(userNameCtx.getText());
 
             var host = ctx.host();
             if (host != null) {
                 addHostType(host, user);
             }
 
+            var storageType = ctx.storage;
+            if (storageType != null) {
+                user.setStorageType(storageType.getText());
+            }
             addRoles(ctx.role, user, ChUser::addDefRole, ChUser::addExceptRole, "ALL");
             addRoles(ctx.grantees, user, ChUser::addGrantee, ChUser::addExGrantee, "ANY");
 
@@ -50,7 +54,7 @@ public class CreateChUser extends ChParserAbstract {
                 user.setDefaultDatabase(defDb.getText());
             }
 
-            addSafe(db, user, Arrays.asList(userName));
+            addSafe(db, user, Arrays.asList(userNameCtx));
         }
     }
 

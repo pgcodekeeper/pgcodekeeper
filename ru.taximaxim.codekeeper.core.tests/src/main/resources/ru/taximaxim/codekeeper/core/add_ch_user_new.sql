@@ -37,3 +37,10 @@ CREATE USER rafik GRANTEES shaiHulud, artreides;
 --add USER with grantees and EXCEPT
 CREATE USER vinni HOST ANY GRANTEES artreides EXCEPT artreides;
 
+--create USER with access_storage_type
+CREATE USER sandy
+	IN ldadp;
+
+--create USER with access_storage_type local_directory
+CREATE USER jia_lisa
+	IN local_directory;

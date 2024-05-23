@@ -34,3 +34,8 @@ CREATE USER rafik
 
 CREATE USER vinni
 	GRANTEES artreides EXCEPT artreides;
+
+CREATE USER sandy
+	IN ldadp;
+
+CREATE USER jia_lisa;

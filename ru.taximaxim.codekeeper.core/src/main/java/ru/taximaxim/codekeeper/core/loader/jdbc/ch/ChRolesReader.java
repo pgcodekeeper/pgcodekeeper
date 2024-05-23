@@ -23,41 +23,37 @@ import ru.taximaxim.codekeeper.core.loader.jdbc.AbstractStatementReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
 import ru.taximaxim.codekeeper.core.loader.jdbc.XmlReaderException;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChFunction;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
-import ru.taximaxim.codekeeper.core.schema.ch.ChFunction;
+import ru.taximaxim.codekeeper.core.schema.ch.ChRole;
 
-public class CHFunctionsReader extends AbstractStatementReader {
+public class ChRolesReader extends AbstractStatementReader {
 
     private final ChDatabase db;
 
-    public CHFunctionsReader(JdbcLoaderBase loader, ChDatabase db) {
+    public ChRolesReader(JdbcLoaderBase loader, ChDatabase db) {
         super(loader);
         this.db = db;
     }
 
     @Override
-    protected void processResult(ResultSet result) throws SQLException, XmlReaderException{
+    protected void processResult(ResultSet result) throws SQLException, XmlReaderException {
         String name = result.getString("name");
-        loader.setCurrentObject(new GenericColumn(name, DbObjType.FUNCTION));
+        loader.setCurrentObject(new GenericColumn(name, DbObjType.ROLE));
 
-        ChFunction function = new ChFunction(name);
-        String definition = result.getString("create_query");
-
-        loader.submitChAntlrTask(definition,
-                p -> p.ch_file().query(0).stmt().ddl_stmt().create_stmt().create_function_stmt(),
-                ctx -> new CreateChFunction(ctx, db).parseObject(function));
-
-        db.addFunction(function);
+        ChRole role = new ChRole(name);
+        String storage = result.getString("storage");
+        if (storage != null) {
+            role.setStorageType(storage);
+        }
+        db.addRole(role);
     }
 
     @Override
     protected void fillQueryBuilder(QueryBuilder builder) {
         builder
-        .column("create_query")
         .column("name")
-        .from("system.functions")
-        .where("origin != 'System'");
+        .column("storage")
+        .from("system.roles");
     }
 }

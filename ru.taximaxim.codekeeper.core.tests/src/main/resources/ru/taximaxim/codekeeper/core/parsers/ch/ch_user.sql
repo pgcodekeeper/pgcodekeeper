@@ -36,6 +36,8 @@ CREATE USER luntic DEFAULT ROLE NONE;
 CREATE USER vinni GRANTEES ALL EXCEPT jack;
 CREATE USER vinni2 GRANTEES luntic, daisy EXCEPT jack;
 CREATE USER vinni3 GRANTEES luntic, daisy EXCEPT jack, hugo;
+CREATE USER user6 SETTINGS PROFILE 'default' SETTINGS max_memory_usage=5000000 WRITABLE;
+CREATE USER user7 SETTINGS PROFILE 'default', max_memory_usage=5000000 WRITABLE;
 
 ALTER USER host_user_local DROP HOST name 'drop host' ADD HOST NAME 'no' ADD HOST NAME 'dd' DROP HOST NAME 'no sss' add host IP '2001:db8::/32';
 ALTER USER user DEFAULT ROLE role1, role2;
@@ -44,6 +46,8 @@ ALTER USER user DEFAULT ROLE ALL EXCEPT role1, role2;
 ALTER USER john GRANTEES jack;
 ALTER USER john2 GRANTEES jack EXCEPT role1, role2;
 ALTER USER host_user_local HOST name 'no add', NAME 'dont do it!', NAME 'non!', NAME 'no sss';
+ALTER USER user6 SETTINGS PROFILE 'default' SETTINGS max_memory_usage=5000000 WRITABLE;
+ALTER USER user7 SETTINGS PROFILE 'default', max_memory_usage=5000000 WRITABLE;
 
 ALTER USER default_roles_2 DEFAULT ROLE ALL;
 ALTER USER default_roles_2 DEFAULT ROLE ALL EXCEPT shaiHulud;

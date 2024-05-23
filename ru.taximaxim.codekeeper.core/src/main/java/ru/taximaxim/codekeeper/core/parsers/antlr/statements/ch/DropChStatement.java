@@ -37,13 +37,23 @@ public class DropChStatement extends ChParserAbstract {
     public void parseObject() {
         var element = ctx.drop_element();
         if (element.DATABASE() != null) {
-            addObjReference(Arrays.asList(ctx.drop_element().identifier()), DbObjType.SCHEMA, ACTION_DROP);
+            addObjReference(Arrays.asList(ctx.drop_element().name_with_cluster().identifier()),
+                    DbObjType.SCHEMA, ACTION_DROP);
         } else if (element.VIEW() != null) {
             addObjReference(getIdentifiers(element.qualified_name()), DbObjType.VIEW, ACTION_DROP);
         } else if (element.TABLE() != null) {
             addObjReference(getIdentifiers(element.qualified_name()), DbObjType.TABLE, ACTION_DROP);
         } else if (element.FUNCTION() != null) {
-            addObjReference(Arrays.asList(ctx.drop_element().identifier()), DbObjType.FUNCTION, ACTION_DROP);
+            addObjReference(Arrays.asList(ctx.drop_element().name_with_cluster().identifier()),
+                    DbObjType.FUNCTION, ACTION_DROP);
+        } else if (element.ROLE() != null) {
+            for (var elementCtx : element.identifier_list().identifier()) {
+                addObjReference(Arrays.asList(elementCtx), DbObjType.ROLE, ACTION_DROP);
+            }
+        } else if (element.USER() != null) {
+            for (var elementCtx : element.identifier_list().identifier()) {
+                addObjReference(Arrays.asList(elementCtx), DbObjType.USER, ACTION_DROP);
+            }
         }
     }
 
@@ -54,7 +64,7 @@ public class DropChStatement extends ChParserAbstract {
         List<ParserRuleContext> ids = null;
         if (element.DATABASE() != null) {
             type = DbObjType.SCHEMA;
-            ids = Arrays.asList(ctx.drop_element().identifier());
+            ids = Arrays.asList(element.name_with_cluster().identifier());
         } else if (element.VIEW() != null) {
             type = DbObjType.VIEW;
             ids = getIdentifiers(element.qualified_name());
@@ -63,7 +73,11 @@ public class DropChStatement extends ChParserAbstract {
             ids = getIdentifiers(element.qualified_name());
         } else if (element.FUNCTION() != null) {
             type = DbObjType.FUNCTION;
-            ids = Arrays.asList(ctx.drop_element().identifier());
+            ids = Arrays.asList(element.name_with_cluster().identifier());
+        } else if (element.ROLE() != null) {
+            return "DROP ROLE";
+        } else if (element.USER() != null) {
+            return "DROP USER";
         }
 
         return type != null && ids != null ? getStrForStmtAction(ACTION_DROP, type, ids) : null;
