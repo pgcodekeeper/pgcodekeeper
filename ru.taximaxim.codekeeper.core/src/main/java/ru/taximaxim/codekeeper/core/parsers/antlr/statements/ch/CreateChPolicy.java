@@ -43,7 +43,7 @@ public class CreateChPolicy extends ChParserAbstract {
             for (var tableNameCtx : fullNameCtx.qualified_name_or_asterisk()) {
                 String parentName = getFullCtxText(tableNameCtx);
                 for (var policyNameCtx : fullNameCtx.identifier()) {
-                    String shortName = policyNameCtx.getText();
+                    String shortName = getFullCtxText(policyNameCtx);
                     ChPolicy policy = new ChPolicy(MessageFormat.format(POLICY_NAME, shortName, parentName));
                     ctx.policy_action().forEach(e -> parsePolicyOption(policy, e));
                     addSafe(db, policy, Arrays.asList(tableNameCtx, policyNameCtx));
