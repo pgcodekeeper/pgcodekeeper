@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed a script generation bug with the DISTRIBUTED option for partitions in GreenPlum 7.
 - Fixed missing quotes in POLICY name in ClickHouse.
 
 ## [9.6.0] - 2024-05-14
