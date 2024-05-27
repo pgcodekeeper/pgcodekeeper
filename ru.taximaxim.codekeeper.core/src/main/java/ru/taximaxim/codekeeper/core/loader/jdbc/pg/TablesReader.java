@@ -188,7 +188,7 @@ public class TablesReader extends JdbcReader {
             regTable.setTablespace(tableSpace);
         }
 
-        if (loader.isGreenplumDb()) {
+        if (loader.isGreenplumDb() && !(t instanceof PartitionPgTable)) {
             String distribution = res.getString("distribution");
             if (distribution != null && !distribution.isBlank()) {
                 regTable.setDistribution(distribution);
