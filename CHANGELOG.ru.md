@@ -9,6 +9,14 @@
 
 ### Добавлено
 
+### Изменено
+
+### Исправлено
+
+## [9.7.0] - 2024-05-28
+
+### Добавлено
+
 - Добавлена поддержка объектов USER, ROLE в ClickHouse.
 
 ### Изменено
@@ -1929,7 +1937,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.6.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.7.0...HEAD
+[9.7.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.6.0...v9.7.0
 [9.6.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.5.1...v9.6.0
 [9.5.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.5.0...v9.5.1
 [9.5.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.4.3...v9.5.0

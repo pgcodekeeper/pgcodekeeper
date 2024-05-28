@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [9.7.0] - 2024-05-28
+
+### Added
+
 - Added support for USER, ROLE objects in ClickHouse.
 
 ### Changed
@@ -1928,7 +1936,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.6.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.7.0...HEAD
+[9.7.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.6.0...v9.7.0
 [9.6.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.5.1...v9.6.0
 [9.5.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.5.0...v9.5.1
 [9.5.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.4.3...v9.5.0
