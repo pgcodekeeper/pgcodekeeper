@@ -31,6 +31,7 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
+import ru.taximaxim.codekeeper.core.schema.IOperator;
 import ru.taximaxim.codekeeper.core.schema.IStatement;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
@@ -278,5 +279,26 @@ public class PgDatabase extends AbstractDatabase {
     @Override
     protected AbstractDatabase getDatabaseCopy() {
         return new PgDatabase(getArguments());
+    }
+
+    @Override
+    protected IOperator resolveOperatorCall(AbstractSchema abstractSchema, String table) {
+        PgSchema schema = (PgSchema) abstractSchema;
+        IOperator oper = null;
+        if (table.indexOf('(') != -1) {
+            oper = schema.getOperator(table);
+        }
+        if (oper != null) {
+            return oper;
+        }
+
+        int found = 0;
+        for (IOperator o : schema.getOperators()) {
+            if (o.getBareName().equals(table)) {
+                ++found;
+                oper = o;
+            }
+        }
+        return found == 1 ? oper : null;
     }
 }

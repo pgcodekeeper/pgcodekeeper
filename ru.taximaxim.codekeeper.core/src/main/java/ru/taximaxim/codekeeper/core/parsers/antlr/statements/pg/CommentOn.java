@@ -31,7 +31,6 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Character_
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Comment_member_objectContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Comment_on_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Target_operatorContext;
-import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
@@ -40,6 +39,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgColumn;
 import ru.taximaxim.codekeeper.core.schema.pg.PgCompositeType;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDomain;
+import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
 import ru.taximaxim.codekeeper.core.schema.pg.PgView;
 
 public class CommentOn extends PgParserAbstract {
@@ -80,7 +80,7 @@ public class CommentOn extends PgParserAbstract {
             }
 
             List<? extends ParserRuleContext> tableIds = ids.subList(0, 2);
-            AbstractSchema schema = getSchemaSafe(tableIds);
+            PgSchema schema = getSchemaSafe(tableIds);
 
             ParserRuleContext tableCtx = QNameParser.getSecondNameCtx(ids);
             if (tableCtx == null) {
@@ -92,7 +92,7 @@ public class CommentOn extends PgParserAbstract {
             if (table == null) {
                 PgView view = (PgView) schema.getView(tableName);
                 if (view == null) {
-                    PgCompositeType t = ((PgCompositeType) getSafe(AbstractSchema::getType, schema, tableCtx));
+                    PgCompositeType t = ((PgCompositeType) getSafe(PgSchema::getType, schema, tableCtx));
                     addObjReference(tableIds, DbObjType.TYPE, null);
                     t.getAttr(name).setComment(db.getArguments(), comment);
                 } else {
@@ -118,7 +118,7 @@ public class CommentOn extends PgParserAbstract {
             return;
         }
 
-        AbstractSchema schema = null;
+        PgSchema schema = null;
         if (obj.table_name != null) {
             schema = getSchemaSafe(getIdentifiers(obj.table_name));
         } else if (obj.EXTENSION() == null && obj.SCHEMA() == null && obj.DATABASE() == null
@@ -137,12 +137,12 @@ public class CommentOn extends PgParserAbstract {
             } else {
                 type = DbObjType.AGGREGATE;
             }
-            st = getSafe(AbstractSchema::getFunction, schema,
+            st = getSafe(PgSchema::getFunction, schema,
                     parseSignature(name, obj.function_args()), nameCtx.getStart());
         } else if (obj.OPERATOR() != null) {
             type = DbObjType.OPERATOR;
             Target_operatorContext targetOperCtx = obj.target_operator();
-            st = getSafe(AbstractSchema::getOperator, schema,
+            st = getSafe(PgSchema::getOperator, schema,
                     parseOperatorSignature(nameCtx.getText(), targetOperCtx.operator_args()),
                     nameCtx.getStart());
         } else if (obj.EXTENSION() != null) {
@@ -163,11 +163,11 @@ public class CommentOn extends PgParserAbstract {
             type = DbObjType.CONSTRAINT;
             if (obj.DOMAIN() != null) {
                 addObjReference(parentIds, DbObjType.DOMAIN, null);
-                PgDomain domain = getSafe(AbstractSchema::getDomain, schema, parentCtx);
+                PgDomain domain = getSafe(PgSchema::getDomain, schema, parentCtx);
                 st = getSafe(PgDomain::getConstraint, domain, nameCtx);
             } else {
                 addObjReference(parentIds, DbObjType.TABLE, null);
-                PgStatementContainer table = getSafe(AbstractSchema::getStatementContainer, schema, parentCtx);
+                PgStatementContainer table = getSafe(PgSchema::getStatementContainer, schema, parentCtx);
                 st = getSafe(PgStatementContainer::getConstraint, table, nameCtx);
             }
             ids = Arrays.asList(QNameParser.getSchemaNameCtx(parentIds), parentCtx, nameCtx);
@@ -188,29 +188,29 @@ public class CommentOn extends PgParserAbstract {
             st = getSafe(PgDatabase::getSchema, db, nameCtx);
         } else if (obj.SEQUENCE() != null) {
             type = DbObjType.SEQUENCE;
-            st = getSafe(AbstractSchema::getSequence, schema, nameCtx);
+            st = getSafe(PgSchema::getSequence, schema, nameCtx);
         } else if (obj.TABLE() != null) {
             type = DbObjType.TABLE;
-            st = getSafe(AbstractSchema::getTable, schema, nameCtx);
+            st = getSafe(PgSchema::getTable, schema, nameCtx);
         } else if (obj.VIEW() != null) {
             type = DbObjType.VIEW;
-            st = getSafe(AbstractSchema::getView, schema, nameCtx);
+            st = getSafe(PgSchema::getView, schema, nameCtx);
         } else if (obj.TYPE() != null) {
             type = DbObjType.TYPE;
-            st = getSafe(AbstractSchema::getType, schema, nameCtx);
+            st = getSafe(PgSchema::getType, schema, nameCtx);
         } else if (obj.DOMAIN() != null) {
             type = DbObjType.DOMAIN;
-            st = getSafe(AbstractSchema::getDomain, schema, nameCtx);
+            st = getSafe(PgSchema::getDomain, schema, nameCtx);
         } else if (obj.COLLATION() != null) {
             type = DbObjType.COLLATION;
-            st = getSafe(AbstractSchema::getCollation, schema, nameCtx);
+            st = getSafe(PgSchema::getCollation, schema, nameCtx);
         } else if ((obj.TRIGGER() != null && obj.EVENT() == null)
                 || obj.POLICY() != null || obj.RULE() != null) {
             List<ParserRuleContext> parentIds = getIdentifiers(obj.table_name);
             addObjReference(parentIds, DbObjType.TABLE, null);
             ParserRuleContext tableCtx = QNameParser.getFirstNameCtx(parentIds);
             ids = Arrays.asList(QNameParser.getSchemaNameCtx(parentIds), tableCtx, nameCtx);
-            PgStatementContainer c = getSafe(AbstractSchema::getStatementContainer, schema, tableCtx);
+            PgStatementContainer c = getSafe(PgSchema::getStatementContainer, schema, tableCtx);
             if (obj.POLICY() != null) {
                 type = DbObjType.POLICY;
                 st = getSafe(PgStatementContainer::getPolicy, c, nameCtx);
@@ -223,16 +223,16 @@ public class CommentOn extends PgParserAbstract {
             }
         } else if (obj.CONFIGURATION() != null) {
             type = DbObjType.FTS_CONFIGURATION;
-            st = getSafe(AbstractSchema::getFtsConfiguration, schema, nameCtx);
+            st = getSafe(PgSchema::getFtsConfiguration, schema, nameCtx);
         } else if (obj.DICTIONARY() != null) {
             type = DbObjType.FTS_DICTIONARY;
-            st = getSafe(AbstractSchema::getFtsDictionary, schema, nameCtx);
+            st = getSafe(PgSchema::getFtsDictionary, schema, nameCtx);
         } else if (obj.PARSER() != null) {
             type = DbObjType.FTS_PARSER;
-            st = getSafe(AbstractSchema::getFtsParser, schema, nameCtx);
+            st = getSafe(PgSchema::getFtsParser, schema, nameCtx);
         } else if (obj.TEMPLATE() != null) {
             type = DbObjType.FTS_TEMPLATE;
-            st = getSafe(AbstractSchema::getFtsTemplate, schema, nameCtx);
+            st = getSafe(PgSchema::getFtsTemplate, schema, nameCtx);
         } else {
             addOutlineRefForCommentOrRule(ACTION_COMMENT, ctx);
             return;

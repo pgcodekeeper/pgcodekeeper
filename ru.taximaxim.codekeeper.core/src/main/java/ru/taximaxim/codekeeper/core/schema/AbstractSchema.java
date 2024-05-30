@@ -24,13 +24,6 @@ import java.util.stream.Stream;
 
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.schema.pg.PgCollation;
-import ru.taximaxim.codekeeper.core.schema.pg.PgDomain;
-import ru.taximaxim.codekeeper.core.schema.pg.PgFtsConfiguration;
-import ru.taximaxim.codekeeper.core.schema.pg.PgFtsDictionary;
-import ru.taximaxim.codekeeper.core.schema.pg.PgFtsParser;
-import ru.taximaxim.codekeeper.core.schema.pg.PgFtsTemplate;
-import ru.taximaxim.codekeeper.core.schema.pg.PgOperator;
 import ru.taximaxim.codekeeper.core.schema.pg.PgShellType;
 
 /**
@@ -38,18 +31,11 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgShellType;
  */
 public abstract class AbstractSchema extends PgStatement implements ISchema {
 
-    private final Map<String, PgDomain> domains = new LinkedHashMap<>();
     private final Map<String, AbstractFunction> functions = new LinkedHashMap<>();
     private final Map<String, AbstractSequence> sequences = new LinkedHashMap<>();
     private final Map<String, AbstractTable> tables = new LinkedHashMap<>();
     private final Map<String, AbstractView> views = new LinkedHashMap<>();
     private final Map<String, AbstractType> types = new LinkedHashMap<>();
-    private final Map<String, PgFtsParser> parsers = new LinkedHashMap<>();
-    private final Map<String, PgFtsTemplate> templates = new LinkedHashMap<>();
-    private final Map<String, PgFtsDictionary> dictionaries = new LinkedHashMap<>();
-    private final Map<String, PgFtsConfiguration> configurations = new LinkedHashMap<>();
-    private final Map<String, PgOperator> operators = new LinkedHashMap<>();
-    private final Map<String, PgCollation> collations = new LinkedHashMap<>();
 
     @Override
     public DbObjType getStatementType() {
@@ -63,26 +49,6 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
     @Override
     public AbstractDatabase getDatabase() {
         return (AbstractDatabase) getParent();
-    }
-
-    /**
-     * Finds domain according to specified domain {@code name}.
-     *
-     * @param name name of the domain to be searched
-     *
-     * @return found domain or null if no such domain has been found
-     */
-    public PgDomain getDomain(String name) {
-        return domains.get(name);
-    }
-
-    /**
-     * Getter for {@link #domains}. The list cannot be modified.
-     *
-     * @return {@link #domains}
-     */
-    public Collection<PgDomain> getDomains() {
-        return Collections.unmodifiableCollection(domains.values());
     }
 
     /**
@@ -138,15 +104,8 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         l.add(functions.values());
         l.add(sequences.values());
         l.add(types.values());
-        l.add(domains.values());
         l.add(tables.values());
         l.add(views.values());
-        l.add(parsers.values());
-        l.add(templates.values());
-        l.add(dictionaries.values());
-        l.add(configurations.values());
-        l.add(operators.values());
-        l.add(collations.values());
     }
 
     @Override
@@ -161,24 +120,10 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
             return getSequence(name);
         case TYPE:
             return getType(name);
-        case DOMAIN:
-            return getDomain(name);
         case TABLE:
             return getTable(name);
         case VIEW:
             return getView(name);
-        case FTS_PARSER:
-            return getFtsParser(name);
-        case FTS_TEMPLATE:
-            return getFtsTemplate(name);
-        case FTS_DICTIONARY:
-            return getFtsDictionary(name);
-        case FTS_CONFIGURATION:
-            return getFtsConfiguration(name);
-        case OPERATOR:
-            return getOperator(name);
-        case COLLATION:
-            return getCollation(name);
         default:
             return null;
         }
@@ -188,28 +133,10 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
     public void addChild(IStatement st) {
         DbObjType type = st.getStatementType();
         switch (type) {
-        case DOMAIN:
-            addDomain((PgDomain) st);
-            break;
-        case FTS_CONFIGURATION:
-            addFtsConfiguration((PgFtsConfiguration) st);
-            break;
-        case FTS_DICTIONARY:
-            addFtsDictionary((PgFtsDictionary) st);
-            break;
-        case FTS_PARSER:
-            addFtsParser((PgFtsParser) st);
-            break;
-        case FTS_TEMPLATE:
-            addFtsTemplate((PgFtsTemplate) st);
-            break;
         case AGGREGATE:
         case FUNCTION:
         case PROCEDURE:
             addFunction((AbstractFunction) st);
-            break;
-        case OPERATOR:
-            addOperator((PgOperator) st);
             break;
         case SEQUENCE:
             addSequence((AbstractSequence) st);
@@ -222,9 +149,6 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
             break;
         case VIEW:
             addView((AbstractView) st);
-            break;
-        case COLLATION:
-            addCollation((PgCollation) st);
             break;
         default:
             throw new IllegalArgumentException("Unsupported child type: " + type);
@@ -242,16 +166,6 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         return sequences.get(name);
     }
 
-    /**
-     * Finds collation according to specified collation {@code name}.
-     *
-     * @param name name of the collation to be searched
-     *
-     * @return found collation or null if no such collations has been found
-     */
-    public PgCollation getCollation(final String name) {
-        return collations.get(name);
-    }
 
     /**
      * Getter for {@link #sequences}. The list cannot be modified.
@@ -262,14 +176,6 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         return Collections.unmodifiableCollection(sequences.values());
     }
 
-    /**
-     * Getter for {@link #collations}. The list cannot be modified.
-     *
-     * @return {@link #collations}
-     */
-    public Collection<PgCollation> getCollations() {
-        return Collections.unmodifiableCollection(collations.values());
-    }
 
     /**
      * Finds table according to specified table {@code name}.
@@ -342,62 +248,6 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
     }
 
     /**
-     * Finds parser according to specified dictionary {@code name}.
-     *
-     * @param name name of the parser to be searched
-     *
-     * @return found parser or null if no such type has been found
-     */
-    public PgFtsParser getFtsParser(final String name) {
-        return parsers.get(name);
-    }
-
-    /**
-     * Finds template according to specified dictionary {@code name}.
-     *
-     * @param name name of the template to be searched
-     *
-     * @return found template or null if no such type has been found
-     */
-    public PgFtsTemplate getFtsTemplate(final String name) {
-        return templates.get(name);
-    }
-
-    /**
-     * Finds dictionary according to specified dictionary {@code name}.
-     *
-     * @param name name of the dictionary to be searched
-     *
-     * @return found dictionary or null if no such type has been found
-     */
-    public PgFtsDictionary getFtsDictionary(final String name) {
-        return dictionaries.get(name);
-    }
-
-    /**
-     * Finds configuration according to specified dictionary {@code name}.
-     *
-     * @param name name of the configuration to be searched
-     *
-     * @return found configuration or null if no such type has been found
-     */
-    public PgFtsConfiguration getFtsConfiguration(final String name) {
-        return configurations.get(name);
-    }
-
-    /**
-     * Finds operator according to specified operator {@code signature}.
-     *
-     * @param signature signature of the operator to be searched
-     *
-     * @return found operator or null if no such operator has been found
-     */
-    @Override
-    public PgOperator getOperator(final String signature) {
-        return operators.get(signature);
-    }
-
-    /**
      * Getter for {@link #types}. The list cannot be modified.
      *
      * @return {@link #types}
@@ -406,66 +256,12 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         return Collections.unmodifiableCollection(types.values());
     }
 
-    /**
-     * Getter for {@link #parsers}. The list cannot be modified.
-     *
-     * @return {@link #parsers}
-     */
-    public Collection<PgFtsParser> getFtsParsers() {
-        return Collections.unmodifiableCollection(parsers.values());
-    }
-
-    /**
-     * Getter for {@link #templates}. The list cannot be modified.
-     *
-     * @return {@link #templates}
-     */
-    public Collection<PgFtsTemplate> getFtsTemplates() {
-        return Collections.unmodifiableCollection(templates.values());
-    }
-
-    /**
-     * Getter for {@link #dictionaries}. The list cannot be modified.
-     *
-     * @return {@link #dictionaries}
-     */
-    public Collection<PgFtsDictionary> getFtsDictionaries() {
-        return Collections.unmodifiableCollection(dictionaries.values());
-    }
-
-    /**
-     * Getter for {@link #configurations}. The list cannot be modified.
-     *
-     * @return {@link #configurations}
-     */
-    public Collection<PgFtsConfiguration> getFtsConfigurations() {
-        return Collections.unmodifiableCollection(configurations.values());
-    }
-
-    /**
-     * Getter for {@link #operators}. The list cannot be modified.
-     *
-     * @return {@link #operators}
-     */
-    @Override
-    public Collection<IOperator> getOperators() {
-        return Collections.unmodifiableCollection(operators.values());
-    }
-
-    public void addDomain(PgDomain dom) {
-        addUnique(domains, dom);
-    }
-
     public void addFunction(final AbstractFunction function) {
         addUnique(functions, function);
     }
 
     public void addSequence(final AbstractSequence sequence) {
         addUnique(sequences, sequence);
-    }
-
-    public void addCollation(final PgCollation collation) {
-        addUnique(collations, collation);
     }
 
     public void addTable(final AbstractTable table) {
@@ -486,26 +282,6 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         addUnique(types, type);
     }
 
-    public void addFtsParser(final PgFtsParser parser) {
-        addUnique(parsers, parser);
-    }
-
-    public void addFtsTemplate(final PgFtsTemplate template) {
-        addUnique(templates, template);
-    }
-
-    public void addFtsDictionary(final PgFtsDictionary dictionary) {
-        addUnique(dictionaries, dictionary);
-    }
-
-    public void addFtsConfiguration(final PgFtsConfiguration configuration) {
-        addUnique(configurations, configuration);
-    }
-
-    public void addOperator(final PgOperator oper) {
-        addUnique(operators, oper);
-    }
-
     @Override
     public boolean compare(PgStatement obj) {
         return this == obj || obj instanceof AbstractSchema && super.compare(obj);
@@ -515,18 +291,11 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
     public boolean compareChildren(PgStatement obj) {
         if (obj instanceof AbstractSchema) {
             AbstractSchema schema = (AbstractSchema) obj;
-            return domains.equals(schema.domains)
-                    && sequences.equals(schema.sequences)
-                    && collations.equals(schema.collations)
+            return sequences.equals(schema.sequences)
                     && functions.equals(schema.functions)
                     && views.equals(schema.views)
                     && tables.equals(schema.tables)
-                    && types.equals(schema.types)
-                    && parsers.equals(schema.parsers)
-                    && templates.equals(schema.templates)
-                    && dictionaries.equals(schema.dictionaries)
-                    && configurations.equals(schema.configurations)
-                    && operators.equals(schema.operators);
+                    && types.equals(schema.types);
         }
         return false;
     }
@@ -538,18 +307,11 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
 
     @Override
     protected void computeChildrenHash(Hasher hasher) {
-        hasher.putUnordered(domains);
         hasher.putUnordered(sequences);
-        hasher.putUnordered(collations);
         hasher.putUnordered(functions);
         hasher.putUnordered(views);
         hasher.putUnordered(tables);
         hasher.putUnordered(types);
-        hasher.putUnordered(parsers);
-        hasher.putUnordered(templates);
-        hasher.putUnordered(dictionaries);
-        hasher.putUnordered(configurations);
-        hasher.putUnordered(operators);
     }
 
     @Override

@@ -41,6 +41,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgConstraintCheck;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDomain;
 import ru.taximaxim.codekeeper.core.schema.pg.PgEnumType;
 import ru.taximaxim.codekeeper.core.schema.pg.PgRangeType;
+import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
 
 public final class TypesReader extends JdbcReader {
 
@@ -56,7 +57,7 @@ public final class TypesReader extends JdbcReader {
         PgStatement typeOrDomain = getTypeDomain(result, schema);
         if (typeOrDomain != null) {
             if (typeOrDomain.getStatementType() == DbObjType.DOMAIN) {
-                schema.addDomain((PgDomain) typeOrDomain);
+                ((PgSchema) schema).addDomain((PgDomain) typeOrDomain);
             } else {
                 schema.addType((AbstractType) typeOrDomain);
             }

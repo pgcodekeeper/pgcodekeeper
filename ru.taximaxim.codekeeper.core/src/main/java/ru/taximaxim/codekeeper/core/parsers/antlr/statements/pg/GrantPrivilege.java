@@ -38,13 +38,13 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qua
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Table_column_privilegesContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
-import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.PgPrivilege;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.StatementOverride;
 import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgFunction;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
 
 public class GrantPrivilege extends PgParserAbstract {
     private final Rule_commonContext ctx;
@@ -154,8 +154,8 @@ public class GrantPrivilege extends PgParserAbstract {
         for (Function_parametersContext funct : obj.func_name) {
             List<ParserRuleContext> funcIds = getIdentifiers(funct.schema_qualified_name());
             ParserRuleContext functNameCtx = QNameParser.getFirstNameCtx(funcIds);
-            AbstractSchema schema = getSchemaSafe(funcIds);
-            AbstractPgFunction func = (AbstractPgFunction) getSafe(AbstractSchema::getFunction, schema,
+            PgSchema schema = getSchemaSafe(funcIds);
+            AbstractPgFunction func = (AbstractPgFunction) getSafe(PgSchema::getFunction, schema,
                     parseSignature(functNameCtx.getText(), funct.function_args()),
                     functNameCtx.getStart());
 
@@ -218,11 +218,11 @@ public class GrantPrivilege extends PgParserAbstract {
             return;
         }
 
-        AbstractSchema schema = getSchemaSafe(ids);
+        PgSchema schema = getSchemaSafe(ids);
         ParserRuleContext firstPart = QNameParser.getFirstNameCtx(ids);
 
         //привилегии пишем так как получили одной строкой
-        PgStatement st = (PgStatement) getSafe(AbstractSchema::getRelation, schema, firstPart);
+        PgStatement st = (PgStatement) getSafe(PgSchema::getRelation, schema, firstPart);
 
         for (Entry<String, Entry<IdentifierContext, List<String>>> colPriv : colPrivs.entrySet()) {
             StringBuilder permission = new StringBuilder();
@@ -252,10 +252,10 @@ public class GrantPrivilege extends PgParserAbstract {
             String state, String permissions, List<String> roles, boolean isGO) {
         List<ParserRuleContext> ids = getIdentifiers(name);
         ParserRuleContext idCtx = QNameParser.getFirstNameCtx(ids);
-        AbstractSchema schema;
+        PgSchema schema;
         switch (type) {
         case SCHEMA:
-            schema = getSafe(PgDatabase::getSchema, db, idCtx);
+            schema = (PgSchema) getSafe(PgDatabase::getSchema, db, idCtx);
             break;
         case FOREIGN_DATA_WRAPPER:
         case SERVER:
@@ -269,10 +269,10 @@ public class GrantPrivilege extends PgParserAbstract {
         String typeName = null;
         switch (type) {
         case TABLE:
-            statement = (PgStatement) getSafe(AbstractSchema::getRelation, schema, idCtx);
+            statement = (PgStatement) getSafe(PgSchema::getRelation, schema, idCtx);
             break;
         case SEQUENCE:
-            statement = getSafe(AbstractSchema::getSequence, schema, idCtx);
+            statement = getSafe(PgSchema::getSequence, schema, idCtx);
             break;
         case SCHEMA:
             statement = schema;
@@ -282,11 +282,11 @@ public class GrantPrivilege extends PgParserAbstract {
 
             // if type not found try domain
             if (statement == null) {
-                statement = getSafe(AbstractSchema::getDomain, schema, idCtx);
+                statement = getSafe(PgSchema::getDomain, schema, idCtx);
             }
             break;
         case DOMAIN:
-            statement = getSafe(AbstractSchema::getDomain, schema, idCtx);
+            statement = getSafe(PgSchema::getDomain, schema, idCtx);
             break;
         case SERVER:
             statement = getSafe(PgDatabase::getServer, db, idCtx);

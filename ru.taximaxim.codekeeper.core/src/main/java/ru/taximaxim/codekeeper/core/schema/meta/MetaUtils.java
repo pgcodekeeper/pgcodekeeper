@@ -38,7 +38,7 @@ import ru.taximaxim.codekeeper.core.schema.PgObjLocation.LocationType;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
-public class MetaUtils {
+public final class MetaUtils {
 
     public static MetaContainer createTreeFromDb(AbstractDatabase db) {
         MetaContainer tree = new MetaContainer();
@@ -99,6 +99,7 @@ public class MetaUtils {
             break;
         case SEQUENCE:
         case TABLE:
+        case DICTIONARY:
         case VIEW:
             MetaRelation rel = new MetaRelation(loc);
             Stream<Pair<String, String>> columns = ((IRelation) st).getRelationColumns();
@@ -151,6 +152,7 @@ public class MetaUtils {
         case PROCEDURE:
         case SEQUENCE:
         case TABLE:
+        case DICTIONARY:
         case TYPE:
         case VIEW:
             gc = new GenericColumn(st.getParent().getName(), st.getName(), type);

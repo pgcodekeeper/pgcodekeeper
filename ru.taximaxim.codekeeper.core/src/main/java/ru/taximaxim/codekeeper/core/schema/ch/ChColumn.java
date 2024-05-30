@@ -27,12 +27,14 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
-public class ChColumn extends AbstractColumn {
+public final class ChColumn extends AbstractColumn {
 
     private String defaultType;
+
     private String ttl;
     private final List<String> codecs = new ArrayList<>();
     private boolean isAutoIncremental;
+    private String option;
 
     public ChColumn(String name) {
         super(name);
@@ -67,10 +69,20 @@ public class ChColumn extends AbstractColumn {
 
     public void setAutoIncremental(boolean isAutoIncremental) {
         this.isAutoIncremental = isAutoIncremental;
+        resetHash();
     }
 
     public boolean isAutoIncremental() {
         return isAutoIncremental;
+    }
+
+    public void setOption(String option) {
+        this.option = option;
+        resetHash();
+    }
+
+    public String getOption() {
+        return option;
     }
 
     @Override
@@ -109,6 +121,11 @@ public class ChColumn extends AbstractColumn {
             if (getDefaultValue() != null) {
                 sb.append(' ').append(getDefaultValue());
             }
+        }
+
+        if (option != null) {
+            sb.append(' ').append(option);
+            return;
         }
 
         if (getComment() != null) {
@@ -242,6 +259,7 @@ public class ChColumn extends AbstractColumn {
     public void computeHash(Hasher hasher) {
         super.computeHash(hasher);
         hasher.put(defaultType);
+        hasher.put(option);
         hasher.put(ttl);
         hasher.put(codecs);
     }
@@ -257,6 +275,7 @@ public class ChColumn extends AbstractColumn {
         var column = (ChColumn) obj;
         return super.compare(column)
                 && Objects.equals(defaultType, column.getDefaultType())
+                && Objects.equals(option, column.getOption())
                 && Objects.equals(ttl, column.getTtl())
                 && Objects.equals(codecs, column.getCodecs());
     }
@@ -265,6 +284,7 @@ public class ChColumn extends AbstractColumn {
     protected AbstractColumn getColumnCopy() {
         var column = new ChColumn(name);
         column.setDefaultType(defaultType);
+        column.setOption(option);
         column.setTtl(ttl);
         column.codecs.addAll(codecs);
         return column;

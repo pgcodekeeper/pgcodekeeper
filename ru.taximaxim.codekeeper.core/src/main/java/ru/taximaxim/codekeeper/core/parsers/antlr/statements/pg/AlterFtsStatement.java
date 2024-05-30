@@ -26,9 +26,9 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Alter_fts_
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Alter_fts_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.IdentifierContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qualified_nameContext;
-import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgFtsConfiguration;
+import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
 
 public class AlterFtsStatement extends PgParserAbstract {
 
@@ -60,7 +60,7 @@ public class AlterFtsStatement extends PgParserAbstract {
             return;
         }
 
-        PgFtsConfiguration config = getSafe(AbstractSchema::getFtsConfiguration,
+        PgFtsConfiguration config = getSafe(PgSchema::getFtsConfiguration,
                 getSchemaSafe(ids), QNameParser.getFirstNameCtx(ids));
 
         Alter_fts_configurationContext afc = ctx.alter_fts_configuration();

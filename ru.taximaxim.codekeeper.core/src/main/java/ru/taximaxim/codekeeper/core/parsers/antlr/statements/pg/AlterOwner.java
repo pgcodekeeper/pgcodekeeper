@@ -26,10 +26,10 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Alter_owner_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.IdentifierContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Target_operatorContext;
-import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.StatementOverride;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
 
 public class AlterOwner extends PgParserAbstract {
 
@@ -82,35 +82,35 @@ public class AlterOwner extends PgParserAbstract {
             st = getSafe(PgDatabase::getEventTrigger, db, nameCtx);
             type = DbObjType.EVENT_TRIGGER;
         } else {
-            AbstractSchema schema = getSchemaSafe(ids);
+            PgSchema schema = getSchemaSafe(ids);
             if (ctx.DOMAIN() != null) {
-                st = getSafe(AbstractSchema::getDomain, schema, nameCtx);
+                st = getSafe(PgSchema::getDomain, schema, nameCtx);
                 type = DbObjType.DOMAIN;
             } else if (ctx.VIEW() != null) {
-                st = getSafe(AbstractSchema::getView, schema, nameCtx);
+                st = getSafe(PgSchema::getView, schema, nameCtx);
                 type = DbObjType.VIEW;
             } else if (ctx.DICTIONARY() != null) {
-                st = getSafe(AbstractSchema::getFtsDictionary, schema, nameCtx);
+                st = getSafe(PgSchema::getFtsDictionary, schema, nameCtx);
                 type = DbObjType.FTS_DICTIONARY;
             } else if (ctx.CONFIGURATION() != null) {
-                st = getSafe(AbstractSchema::getFtsConfiguration, schema, nameCtx);
+                st = getSafe(PgSchema::getFtsConfiguration, schema, nameCtx);
                 type = DbObjType.FTS_CONFIGURATION;
             } else if (ctx.SEQUENCE() != null) {
-                st = getSafe(AbstractSchema::getSequence, schema, nameCtx);
+                st = getSafe(PgSchema::getSequence, schema, nameCtx);
                 type = DbObjType.SEQUENCE;
             } else if (ctx.TYPE() != null) {
-                st = getSafe(AbstractSchema::getType, schema, nameCtx);
+                st = getSafe(PgSchema::getType, schema, nameCtx);
                 type = DbObjType.TYPE;
             } else if (ctx.COLLATION() != null) {
-                st = getSafe(AbstractSchema::getCollation, schema, nameCtx);
+                st = getSafe(PgSchema::getCollation, schema, nameCtx);
                 type = DbObjType.COLLATION;
             } else if (ctx.OPERATOR() != null) {
-                st = getSafe(AbstractSchema::getOperator, schema,
+                st = getSafe(PgSchema::getOperator, schema,
                         parseOperatorSignature(nameCtx.getText(), ctx.target_operator().operator_args()),
                         nameCtx.getStart());
                 type = DbObjType.OPERATOR;
             } else if (ctx.PROCEDURE() != null || ctx.FUNCTION() != null || ctx.AGGREGATE() != null) {
-                st = getSafe(AbstractSchema::getFunction, schema, parseSignature(nameCtx.getText(),
+                st = getSafe(PgSchema::getFunction, schema, parseSignature(nameCtx.getText(),
                         ctx.function_args()), nameCtx.getStart());
                 if (ctx.FUNCTION() != null) {
                     type = DbObjType.FUNCTION;

@@ -27,6 +27,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Alter_stmtC
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Alter_table_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Ch_fileContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Create_database_stmtContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Create_dictinary_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Create_function_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Create_role_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Create_stmtContext;
@@ -38,6 +39,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.QueryContex
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.AlterChOther;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.AlterChTable;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.ChParserAbstract;
+import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChDictionary;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChFunction;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChPolicy;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChRole;
@@ -48,7 +50,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChView;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.DropChStatement;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 
-public class CustomChSQLParserListener extends CustomParserListener<ChDatabase> implements ChSqlContextProcessor {
+public final class CustomChSQLParserListener extends CustomParserListener<ChDatabase> implements ChSqlContextProcessor {
 
     public CustomChSQLParserListener(ChDatabase database, String filename, ParserListenerMode mode,
             List<Object> errors, IProgressMonitor monitor) {
@@ -71,7 +73,7 @@ public class CustomChSQLParserListener extends CustomParserListener<ChDatabase> 
             if (createCtx != null) {
                 create(createCtx, stream);
             } else if ((alter = ddlStmt.alter_stmt()) != null) {
-                alter(alter, stream);
+                alter(alter);
             } else if ((dropCtx = ddlStmt.drop_stmt()) != null) {
                 drop(dropCtx);
             } else {
@@ -90,6 +92,7 @@ public class CustomChSQLParserListener extends CustomParserListener<ChDatabase> 
         Create_function_stmtContext createFunc;
         Create_user_stmtContext createUser;
         Create_role_stmtContext createRole;
+        Create_dictinary_stmtContext createDictionary;
         if ((createDatabase = ctx.create_database_stmt()) != null) {
             p = new CreateChSchema(createDatabase, db);
         } else if ((createTable = ctx.create_table_stmt()) != null) {
@@ -104,6 +107,8 @@ public class CustomChSQLParserListener extends CustomParserListener<ChDatabase> 
             p = new CreateChRole(createRole, db);
         } else if (ctx.create_policy_stmt() != null) {
             p = new CreateChPolicy(ctx.create_policy_stmt(), db);
+        } else if ((createDictionary = ctx.create_dictinary_stmt()) != null) {
+            p = new CreateChDictionary(createDictionary, db);
         } else {
             addToQueries(ctx, getAction(ctx));
             return;
@@ -119,7 +124,8 @@ public class CustomChSQLParserListener extends CustomParserListener<ChDatabase> 
                 || element.TABLE() != null
                 || element.VIEW() != null
                 || element.USER() != null
-                || element.ROLE() != null) {
+                || element.ROLE() != null
+                || element.DICTIONARY() != null) {
             p = new DropChStatement(ctx, db);
         } else {
             addToQueries(ctx, getAction(ctx));
@@ -128,7 +134,7 @@ public class CustomChSQLParserListener extends CustomParserListener<ChDatabase> 
         safeParseStatement(p, ctx);
     }
 
-    private void alter(Alter_stmtContext ctx, CommonTokenStream stream) {
+    private void alter(Alter_stmtContext ctx) {
         ChParserAbstract p;
         Alter_table_stmtContext altertableCtx = ctx.alter_table_stmt();
         if (altertableCtx != null) {
