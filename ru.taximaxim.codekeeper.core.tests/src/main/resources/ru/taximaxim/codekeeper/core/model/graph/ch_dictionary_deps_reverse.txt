@@ -1,0 +1,4 @@
+DICTIONARY default.dict
+	SCHEMA default
+	TABLE default.source_table
+		SCHEMA default

@@ -31,6 +31,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.pg.PgFtsConfiguration;
+import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
 
 public class FtsConfigurationsReader extends JdbcReader {
 
@@ -77,7 +78,7 @@ public class FtsConfigurationsReader extends JdbcReader {
         loader.setOwner(config, res.getLong("cfgowner"));
         loader.setComment(config, res);
         loader.setAuthor(config, res);
-        schema.addFtsConfiguration(config);
+        ((PgSchema) schema).addFtsConfiguration(config);
     }
 
     @Override

@@ -15,17 +15,25 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.ch;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
+import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
+import ru.taximaxim.codekeeper.core.schema.IStatement;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public class ChSchema extends AbstractSchema {
 
     private String engine = "Atomic";
+    private Map<String, ChDictionary> dictionaries = new LinkedHashMap<>();
 
     public ChSchema(String name) {
         super(name);
@@ -38,6 +46,42 @@ public class ChSchema extends AbstractSchema {
 
     public String getEngine() {
         return engine;
+    }
+
+    public void addDictionary(final ChDictionary dictionary) {
+        addUnique(dictionaries, dictionary);
+    }
+
+    public Collection<ChDictionary> getDictionaries() {
+        return Collections.unmodifiableCollection(dictionaries.values());
+    }
+
+    public ChDictionary getDictionary(String name) {
+        return dictionaries.get(name);
+    }
+
+    @Override
+    protected void fillChildrenList(List<Collection<? extends PgStatement>> l) {
+        super.fillChildrenList(l);
+        l.add(dictionaries.values());
+    }
+
+    @Override
+    public PgStatement getChild(String name, DbObjType type) {
+        if (type == DbObjType.DICTIONARY) {
+            return getDictionary(name);
+        }
+        return super.getChild(name, type);
+    }
+
+    @Override
+    public void addChild(IStatement st) {
+        DbObjType type = st.getStatementType();
+        if (type == DbObjType.DICTIONARY) {
+            addDictionary((ChDictionary) st);
+            return;
+        }
+        super.addChild(st);
     }
 
     @Override
@@ -94,6 +138,22 @@ public class ChSchema extends AbstractSchema {
         var schema = (ChSchema) obj;
         return super.compare(schema)
                 && Objects.equals(engine, schema.getEngine());
+    }
+
+    @Override
+    public boolean compareChildren(PgStatement obj) {
+        if (obj instanceof ChSchema) {
+            ChSchema schema = (ChSchema) obj;
+            return super.compareChildren(obj)
+                    && dictionaries.equals(schema.dictionaries);
+        }
+        return false;
+    }
+
+    @Override
+    protected void computeChildrenHash(Hasher hasher) {
+        super.computeChildrenHash(hasher);
+        hasher.putUnordered(dictionaries);
     }
 
     @Override

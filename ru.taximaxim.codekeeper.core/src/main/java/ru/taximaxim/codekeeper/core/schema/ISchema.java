@@ -24,7 +24,4 @@ public interface ISchema extends IStatementContainer {
 
     Collection<IFunction> getFunctions();
     IFunction getFunction(String signature);
-
-    Collection<IOperator> getOperators();
-    IOperator getOperator(String signature);
 }

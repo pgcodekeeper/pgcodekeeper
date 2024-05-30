@@ -31,7 +31,7 @@ import ru.taximaxim.codekeeper.core.schema.IRelation;
 import ru.taximaxim.codekeeper.core.schema.IStatement;
 import ru.taximaxim.codekeeper.core.schema.ch.ChFunction;
 
-public class MetaContainer {
+public final class MetaContainer {
 
     private final List<ICast> casts = new ArrayList<>();
 
@@ -81,6 +81,7 @@ public class MetaContainer {
             operators.computeIfAbsent(op.getSchemaName(), e -> new LinkedHashMap<>()).put(op.getName(), op);
             break;
         case TABLE:
+        case DICTIONARY:
         case VIEW:
         case SEQUENCE:
             IRelation rel = (IRelation) st;

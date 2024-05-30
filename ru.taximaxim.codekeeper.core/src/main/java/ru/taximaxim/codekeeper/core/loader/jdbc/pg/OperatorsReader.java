@@ -28,6 +28,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.pg.PgOperator;
+import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
 
 public class OperatorsReader extends JdbcReader {
 
@@ -101,7 +102,7 @@ public class OperatorsReader extends JdbcReader {
         }
 
         loader.setAuthor(oper, res);
-        schema.addOperator(oper);
+        ((PgSchema) schema).addOperator(oper);
     }
 
     private String getProcessedName(PgOperator oper, String schemaName, String funcName) {

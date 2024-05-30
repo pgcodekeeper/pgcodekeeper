@@ -80,7 +80,13 @@ class ChDiffTest {
             //Test scenario where ROLE is compared
             "compare_ch_role",
             //Test scenario where ROLE is dropped
-            "drop_ch_role"
+            "drop_ch_role",
+            // Test scenario where DICTIONARY added
+            "add_ch_dictionary",
+            // Test scenario where DICTIONARY changed
+            "change_ch_dictionary",
+            // Test scenario where DICTIONARY dropped
+            "drop_ch_dictionary"
     })
     void runDiff(String fileNameTemplate) throws IOException, InterruptedException {
         TestUtils.runDiff(fileNameTemplate, DatabaseType.CH, ChDiffTest.class);

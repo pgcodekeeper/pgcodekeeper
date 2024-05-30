@@ -24,10 +24,10 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Alter_domain_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Domain_constraintContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.IdentifierContext;
-import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.pg.PgConstraintCheck;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDomain;
+import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
 
 public class AlterDomain extends PgParserAbstract {
 
@@ -41,7 +41,7 @@ public class AlterDomain extends PgParserAbstract {
     @Override
     public void parseObject() {
         List<ParserRuleContext> ids = getIdentifiers(ctx.name);
-        PgDomain domain = getSafe(AbstractSchema::getDomain,
+        PgDomain domain = getSafe(PgSchema::getDomain,
                 getSchemaSafe(ids), QNameParser.getFirstNameCtx(ids));
 
         Domain_constraintContext constrCtx = ctx.dom_constraint;

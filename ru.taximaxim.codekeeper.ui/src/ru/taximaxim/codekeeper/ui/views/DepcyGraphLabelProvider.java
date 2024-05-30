@@ -135,6 +135,7 @@ class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvi
             case FTS_CONFIGURATION:
                 return "CONF " + st.getBareName(); //$NON-NLS-1$
             case FTS_DICTIONARY:
+            case DICTIONARY:
                 return "DICT "  + st.getBareName(); //$NON-NLS-1$
             }
             return st.getClass() + " " + st.getBareName(); //$NON-NLS-1$

@@ -61,7 +61,7 @@ public class ProjectLoader extends DatabaseLoader {
     protected static final EnumSet<DbObjType> DIR_LOAD_ORDER = EnumSet.of(DbObjType.COLLATION, DbObjType.TYPE,
             DbObjType.DOMAIN, DbObjType.SEQUENCE, DbObjType.FUNCTION, DbObjType.PROCEDURE,
             DbObjType.AGGREGATE, DbObjType.OPERATOR, DbObjType.TABLE, DbObjType.CONSTRAINT,
-            DbObjType.INDEX, DbObjType.TRIGGER, DbObjType.VIEW, DbObjType.FTS_PARSER,
+            DbObjType.INDEX, DbObjType.TRIGGER, DbObjType.VIEW, DbObjType.DICTIONARY, DbObjType.FTS_PARSER,
             DbObjType.FTS_TEMPLATE, DbObjType.FTS_DICTIONARY, DbObjType.FTS_CONFIGURATION);
 
     private final String dirPath;

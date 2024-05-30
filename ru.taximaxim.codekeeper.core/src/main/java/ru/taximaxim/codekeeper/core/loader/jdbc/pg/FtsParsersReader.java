@@ -23,6 +23,7 @@ import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcReader;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.pg.PgFtsParser;
+import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
 
 public class FtsParsersReader extends JdbcReader {
 
@@ -46,7 +47,7 @@ public class FtsParsersReader extends JdbcReader {
 
         loader.setComment(parser, res);
         loader.setAuthor(parser, res);
-        schema.addFtsParser(parser);
+        ((PgSchema) schema).addFtsParser(parser);
     }
 
     @Override

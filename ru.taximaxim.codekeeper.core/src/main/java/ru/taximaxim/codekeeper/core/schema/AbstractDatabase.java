@@ -368,11 +368,11 @@ public abstract class AbstractDatabase extends PgStatement implements IDatabase 
     }
 
     private IStatement resolveTypeCall(AbstractSchema s, String table) {
-        PgStatement st = s.getType(table);
+        PgStatement st = s.getChild(table, DbObjType.TYPE);
         if (st != null) {
             return st;
         }
-        st = s.getDomain(table);
+        st = s.getChild(table, DbObjType.DOMAIN);
         if (st != null) {
             return st;
         }
@@ -394,22 +394,7 @@ public abstract class AbstractDatabase extends PgStatement implements IDatabase 
         return null;
     }
 
-    private IOperator resolveOperatorCall(AbstractSchema schema, String table) {
-        IOperator oper = null;
-        if (table.indexOf('(') != -1) {
-            oper = schema.getOperator(table);
-        }
-        if (oper != null) {
-            return oper;
-        }
-
-        int found = 0;
-        for (IOperator o : schema.getOperators()) {
-            if (o.getBareName().equals(table)) {
-                ++found;
-                oper = o;
-            }
-        }
-        return found == 1 ? oper : null;
+    protected IOperator resolveOperatorCall(AbstractSchema schema, String table) {
+        return null;
     }
 }

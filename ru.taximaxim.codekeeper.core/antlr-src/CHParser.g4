@@ -544,22 +544,49 @@ create_dictinary_stmt
     LPAREN dictionary_attr_def (COMMA dictionary_attr_def)* RPAREN
     (PRIMARY KEY expr_list)?
     dictionary_option*
+    comment_expr?
     ;
 
 dictionary_attr_def
-    : identifier data_type (DEFAULT literal | EXPRESSION expr | HIERARCHICAL | INJECTIVE | IS_OBJECT_ID)*
+    : identifier data_type (DEFAULT literal | EXPRESSION expr)? attr_def_option?
+    ;
+
+attr_def_option
+    : IS_OBJECT_ID
+    | HIERARCHICAL
+    | INJECTIVE
     ;
 
 dictionary_option
     : SOURCE LPAREN identifier LPAREN dictionary_arg_expr* RPAREN RPAREN
-    | LIFETIME LPAREN (NUMBER | MIN NUMBER MAX NUMBER | MAX NUMBER MIN NUMBER) RPAREN
-    | LAYOUT LPAREN identifier LPAREN dictionary_arg_expr* RPAREN RPAREN
-    | RANGE LPAREN (MIN identifier MAX identifier | MAX identifier MIN identifier) RPAREN
+    | LIFETIME LPAREN life_time_expr RPAREN
+    | LAYOUT LPAREN layout_expr RPAREN
+    | RANGE LPAREN range_expr RPAREN
     | SETTINGS LPAREN pairs RPAREN
     ;
 
+life_time_expr
+    : NUMBER
+    | MIN NUMBER MAX NUMBER
+    | MAX NUMBER MIN NUMBER
+    ;
+
+layout_expr
+    : identifier LPAREN dictionary_arg_expr* RPAREN
+    ;
+
+range_expr
+    : MIN identifier MAX identifier
+    | MAX identifier MIN identifier
+    ;
+
 dictionary_arg_expr
-    : identifier (identifier blank_paren? | literal)
+    : identifier dictionary_arg_value
+    ;
+
+dictionary_arg_value
+    : identifier blank_paren?
+    | literal
     ;
 
 cluster_clause
@@ -920,10 +947,6 @@ win_frame_bound
     | number_literal PRECEDING
     | number_literal FOLLOWING
     ;
-
-//range_clause
-//    : RANGE LPAREN (MIN identifier MAX identifier | MAX identifier MIN identifier) RPAREN
-//    ;
 
 transaction_stmt
     : (BEGIN | ROLLBACK | COMMIT) TRANSACTION?

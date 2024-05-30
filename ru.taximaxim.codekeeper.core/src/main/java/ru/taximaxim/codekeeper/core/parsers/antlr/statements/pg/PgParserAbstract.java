@@ -61,6 +61,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgFunction;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgFunction;
 import ru.taximaxim.codekeeper.core.schema.pg.PgOperator;
+import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 /**
@@ -380,5 +381,10 @@ public abstract class PgParserAbstract extends ParserAbstract<PgDatabase> {
     protected String getUserMappingName(User_mapping_nameContext nameCtx) {
         return (nameCtx.user_name() != null ? nameCtx.user_name().getText() : nameCtx.USER().getText()) + " SERVER "
                 + nameCtx.identifier().getText();
+    }
+
+    @Override
+    protected PgSchema getSchemaSafe(List<? extends ParserRuleContext> ids) {
+        return (PgSchema) super.getSchemaSafe(ids);
     }
 }

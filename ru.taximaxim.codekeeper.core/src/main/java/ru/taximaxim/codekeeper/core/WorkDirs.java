@@ -23,7 +23,7 @@ import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
-public class WorkDirs {
+public final class WorkDirs {
 
     public static final String OVERRIDES = "OVERRIDES";
 
@@ -123,6 +123,7 @@ public class WorkDirs {
         case USER:
         case ROLE:
         case TABLE:
+        case DICTIONARY:
         case VIEW:
             return type.name();
         case CONSTRAINT:
@@ -275,6 +276,7 @@ public class WorkDirs {
             String databaseName = FileUtils.getValidFilename(st.getBareName());
             return baseDir.resolve(CH_DATABASE).resolve(databaseName);
         case TABLE:
+        case DICTIONARY:
         case VIEW:
             PgStatement parentSt = st.getParent();
             databaseName = FileUtils.getValidFilename(parentSt.getBareName());
