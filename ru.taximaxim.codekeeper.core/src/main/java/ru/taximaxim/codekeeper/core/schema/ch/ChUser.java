@@ -85,6 +85,7 @@ public class ChUser extends PgStatement {
         appendRoles(grantees, exGrantees, "GRANTEES ", "ANY", true, sbSQL);
 
         sbSQL.append(";");
+        appendPrivileges(sbSQL);
         return sbSQL.toString();
     }
 
@@ -133,6 +134,7 @@ public class ChUser extends PgStatement {
             .append(getQualifiedName()).append(" TO ")
             .append(newUser.getStorageType()).append(";");
         }
+        alterPrivileges(newCondition, sb);
         return sb.length() > startLength;
     }
 

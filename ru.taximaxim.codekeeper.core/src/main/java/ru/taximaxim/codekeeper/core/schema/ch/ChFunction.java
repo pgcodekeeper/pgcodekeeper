@@ -91,7 +91,8 @@ public class ChFunction extends PgStatement implements IFunction {
 
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
-        if (!compare(newCondition)) {
+        var newFunction = (ChFunction) newCondition;
+        if (!compareUnalterable(newFunction)) {
             isNeedDepcies.set(true);
             return true;
         }
@@ -101,6 +102,11 @@ public class ChFunction extends PgStatement implements IFunction {
     @Override
     public DatabaseType getDbType() {
         return DatabaseType.CH;
+    }
+
+    private boolean compareUnalterable(ChFunction newFunc) {
+        return Objects.equals(body, newFunc.getBody())
+                && arguments.equals(newFunc.arguments);
     }
 
     @Override
@@ -125,8 +131,7 @@ public class ChFunction extends PgStatement implements IFunction {
 
         var func = (ChFunction) obj;
         return super.compare(func)
-                && Objects.equals(body, func.getBody())
-                && arguments.equals(func.arguments);
+                && compareUnalterable(func);
     }
 
     @Override

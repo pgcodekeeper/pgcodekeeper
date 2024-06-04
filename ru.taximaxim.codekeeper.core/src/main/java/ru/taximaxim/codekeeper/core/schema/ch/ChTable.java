@@ -139,7 +139,7 @@ public class ChTable extends AbstractTable {
     private void appendAlterProjections(StringBuilder sb, Set<String> toDrops, Map<String, String> toAdds) {
         for (String toDrop : toDrops) {
             sb.append(getAlterTable(true, false)).append("\n\tDROP PROJECTION IF EXISTS ").append(toDrop)
-                    .append(getSeparator());
+            .append(getSeparator());
         }
         for (Entry<String, String> toAdd : toAdds.entrySet()) {
             sb.append(getAlterTable(true, false)).append("\n\tADD PROJECTION ");

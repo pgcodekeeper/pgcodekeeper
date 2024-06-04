@@ -485,18 +485,19 @@ class MsAntlrLoaderTest {
 
     @Test
     void testDB5() throws IOException, InterruptedException {
-        AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
+        DatabaseType dbType = DatabaseType.MS;
+        AbstractDatabase d = TestUtils.createDumpDB(dbType);
         AbstractSchema schema = d.getDefaultSchema();
 
-        schema.addPrivilege(new PgPrivilege("REVOKE", "SELECT", "SCHEMA::[dbo]", "[ms_user]", false));
-        schema.addPrivilege(new PgPrivilege("REVOKE", "UPDATE", "SCHEMA::[dbo]", "[ms_user]", false));
-        schema.addPrivilege(new PgPrivilege("REVOKE", "DELETE", "SCHEMA::[dbo]", "[ms_user]", false));
-        schema.addPrivilege(new PgPrivilege("REVOKE", "INSERT", "SCHEMA::[dbo]", "[ms_user]", false));
+        schema.addPrivilege(new PgPrivilege("REVOKE", "SELECT", "SCHEMA::[dbo]", "[ms_user]", false, dbType));
+        schema.addPrivilege(new PgPrivilege("REVOKE", "UPDATE", "SCHEMA::[dbo]", "[ms_user]", false, dbType));
+        schema.addPrivilege(new PgPrivilege("REVOKE", "DELETE", "SCHEMA::[dbo]", "[ms_user]", false, dbType));
+        schema.addPrivilege(new PgPrivilege("REVOKE", "INSERT", "SCHEMA::[dbo]", "[ms_user]", false, dbType));
 
-        schema.addPrivilege(new PgPrivilege("GRANT", "SELECT", "SCHEMA::[dbo]", "[ms_user]", false));
-        schema.addPrivilege(new PgPrivilege("GRANT", "UPDATE", "SCHEMA::[dbo]", "[ms_user]", false));
-        schema.addPrivilege(new PgPrivilege("GRANT", "DELETE", "SCHEMA::[dbo]", "[ms_user]", false));
-        schema.addPrivilege(new PgPrivilege("GRANT", "INSERT", "SCHEMA::[dbo]", "[ms_user]", false));
+        schema.addPrivilege(new PgPrivilege("GRANT", "SELECT", "SCHEMA::[dbo]", "[ms_user]", false, dbType));
+        schema.addPrivilege(new PgPrivilege("GRANT", "UPDATE", "SCHEMA::[dbo]", "[ms_user]", false, dbType));
+        schema.addPrivilege(new PgPrivilege("GRANT", "DELETE", "SCHEMA::[dbo]", "[ms_user]", false, dbType));
+        schema.addPrivilege(new PgPrivilege("GRANT", "INSERT", "SCHEMA::[dbo]", "[ms_user]", false, dbType));
 
         MsTable table = new MsTable("test_table");
         table.setAnsiNulls(true);
@@ -920,18 +921,19 @@ class MsAntlrLoaderTest {
 
     @Test
     void testDB13() throws IOException, InterruptedException {
-        AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
+        DatabaseType dbType = DatabaseType.MS;
+        AbstractDatabase d = TestUtils.createDumpDB(dbType);
         AbstractSchema schema = d.getDefaultSchema();
 
-        schema.addPrivilege(new PgPrivilege("REVOKE", "SELECT", "SCHEMA::[dbo]", "[ms_user]", false));
-        schema.addPrivilege(new PgPrivilege("REVOKE", "UPDATE", "SCHEMA::[dbo]", "[ms_user]", false));
-        schema.addPrivilege(new PgPrivilege("REVOKE", "DELETE", "SCHEMA::[dbo]", "[ms_user]", false));
-        schema.addPrivilege(new PgPrivilege("REVOKE", "INSERT", "SCHEMA::[dbo]", "[ms_user]", false));
+        schema.addPrivilege(new PgPrivilege("REVOKE", "SELECT", "SCHEMA::[dbo]", "[ms_user]", false, dbType));
+        schema.addPrivilege(new PgPrivilege("REVOKE", "UPDATE", "SCHEMA::[dbo]", "[ms_user]", false, dbType));
+        schema.addPrivilege(new PgPrivilege("REVOKE", "DELETE", "SCHEMA::[dbo]", "[ms_user]", false, dbType));
+        schema.addPrivilege(new PgPrivilege("REVOKE", "INSERT", "SCHEMA::[dbo]", "[ms_user]", false, dbType));
 
-        schema.addPrivilege(new PgPrivilege("GRANT", "SELECT", "SCHEMA::[dbo]", "[ms_user]", false));
-        schema.addPrivilege(new PgPrivilege("GRANT", "UPDATE", "SCHEMA::[dbo]", "[ms_user]", false));
-        schema.addPrivilege(new PgPrivilege("GRANT", "DELETE", "SCHEMA::[dbo]", "[ms_user]", false));
-        schema.addPrivilege(new PgPrivilege("GRANT", "INSERT", "SCHEMA::[dbo]", "[ms_user]", false));
+        schema.addPrivilege(new PgPrivilege("GRANT", "SELECT", "SCHEMA::[dbo]", "[ms_user]", false, dbType));
+        schema.addPrivilege(new PgPrivilege("GRANT", "UPDATE", "SCHEMA::[dbo]", "[ms_user]", false, dbType));
+        schema.addPrivilege(new PgPrivilege("GRANT", "DELETE", "SCHEMA::[dbo]", "[ms_user]", false, dbType));
+        schema.addPrivilege(new PgPrivilege("GRANT", "INSERT", "SCHEMA::[dbo]", "[ms_user]", false, dbType));
 
         // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
         // d.setComment("comments database");

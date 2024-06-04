@@ -24,7 +24,9 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import ru.taximaxim.codekeeper.core.loader.ParserListenerMode;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrContextProcessor.ChSqlContextProcessor;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Ch_fileContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Privilegy_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.QueryContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.GrantChPrivilege;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.StatementOverride;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
@@ -47,6 +49,14 @@ public class ChSQLOverridesListener extends CustomParserListener<ChDatabase> imp
     }
 
     private void query(QueryContext query) {
+        var ddlStmt = query.stmt().ddl_stmt();
+        if (ddlStmt == null) {
+            return;
+        }
 
+        Privilegy_stmtContext privilStmt = ddlStmt.privilegy_stmt();
+        if (privilStmt != null) {
+            safeParseStatement(new GrantChPrivilege(privilStmt, db, overrides), ddlStmt);
+        }
     }
 }

@@ -97,7 +97,7 @@ public class ChSchema extends AbstractSchema {
 
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
-        if (!compare(newCondition)) {
+        if (!compareUnalterable((ChSchema) newCondition)) {
             isNeedDepcies.set(true);
             return true;
         }
@@ -136,8 +136,12 @@ public class ChSchema extends AbstractSchema {
             return false;
         }
         var schema = (ChSchema) obj;
-        return super.compare(schema)
-                && Objects.equals(engine, schema.getEngine());
+        return super.compare(schema) && compareUnalterable(schema);
+    }
+
+    protected boolean compareUnalterable(ChSchema newSchema) {
+        return Objects.equals(engine, newSchema.getEngine())
+                && Objects.equals(getComment(), newSchema.getComment());
     }
 
     @Override

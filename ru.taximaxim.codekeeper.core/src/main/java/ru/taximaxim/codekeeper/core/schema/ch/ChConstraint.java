@@ -59,7 +59,7 @@ public class ChConstraint extends AbstractConstraint {
         final StringBuilder sb = new StringBuilder();
         appendAlterTable(sb, false);
         sb.append(" ADD CONSTRAINT ").append(ChDiffUtils.getQuotedName(name)).append(' ').append(getDefinition())
-            .append(getSeparator());
+        .append(getSeparator());
         return sb.toString();
     }
 
@@ -70,7 +70,6 @@ public class ChConstraint extends AbstractConstraint {
             isNeedDepcies.set(true);
             return true;
         }
-
         return false;
     }
 
@@ -87,7 +86,8 @@ public class ChConstraint extends AbstractConstraint {
     }
 
     private boolean compareUnalterable(ChConstraint newConstr) {
-        return compare(newConstr);
+        return Objects.equals(isAssume, newConstr.isAssume())
+                && Objects.equals(expr, newConstr.getExpr());
     }
 
     @Override
@@ -111,9 +111,7 @@ public class ChConstraint extends AbstractConstraint {
             return false;
         }
         var constr = (ChConstraint) obj;
-        return super.compare(constr)
-                && Objects.equals(isAssume, constr.isAssume())
-                && Objects.equals(expr, constr.getExpr());
+        return super.compare(constr) && compareUnalterable(constr);
     }
 
     @Override

@@ -86,9 +86,30 @@ class ChDiffTest {
             // Test scenario where DICTIONARY changed
             "change_ch_dictionary",
             // Test scenario where DICTIONARY dropped
-            "drop_ch_dictionary"
+            "drop_ch_dictionary",
+            //Test scenario where PRIVILLEGIES are added
+            "add_ch_privilegies",
+            //Test scenario where PRIVILLEGIES are revoke
+            "revoke_ch_privilegies",
+            //Test scenario where PRIVILLEGIES compared
+            "compare_ch_privilegies"
     })
     void runDiff(String fileNameTemplate) throws IOException, InterruptedException {
         TestUtils.runDiff(fileNameTemplate, DatabaseType.CH, ChDiffTest.class);
+    }
+
+    /**
+     * test case when ignore privillegies option enable
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "ch_ignore_privillegies"
+    })
+    void testIgnorePrivillegies(String fileNameTemplate) throws IOException, InterruptedException {
+        PgDiffArguments args = new PgDiffArguments();
+        args.setIgnorePrivileges(true);
+        args.setDbType(DatabaseType.CH);
+        String script = TestUtils.getScript(fileNameTemplate, args, ChDiffTest.class);
+        TestUtils.compareResult(script, fileNameTemplate, ChDiffTest.class);
     }
 }

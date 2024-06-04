@@ -44,6 +44,7 @@ public final class ChRole extends PgStatement {
             sbSQL.append("\n\tIN ").append(storageType);
         }
         sbSQL.append(";");
+        appendPrivileges(sbSQL);
         return sbSQL.toString();
     }
 
@@ -57,6 +58,8 @@ public final class ChRole extends PgStatement {
             .append(getQualifiedName()).append(" TO ")
             .append(newRole.getStorageType()).append(";");
         }
+        alterPrivileges(newCondition, sb);
+
         return sb.length() > startLength;
     }
 
