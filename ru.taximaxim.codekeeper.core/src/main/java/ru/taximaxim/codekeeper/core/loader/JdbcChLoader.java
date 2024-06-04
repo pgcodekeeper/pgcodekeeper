@@ -30,6 +30,7 @@ import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
 import ru.taximaxim.codekeeper.core.loader.jdbc.ch.ChFunctionsReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.ch.ChPoliciesReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.ch.ChPrivillegesReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.ch.ChRelationsReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.ch.ChRolesReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.ch.ChSchemasReader;
@@ -71,6 +72,10 @@ public final class JdbcChLoader extends JdbcLoaderBase {
             new ChPoliciesReader(this, d).read();
             new ChUsersReader(this, d).read();
             new ChRolesReader(this, d).read();
+            if (!getArgs().isIgnorePrivileges()) {
+                setCurrentOperation("reading privileges");
+                new ChPrivillegesReader(this, d).read();
+            }
 
             finishLoaders();
             connection.commit();

@@ -32,7 +32,7 @@ GRANT SHOW ON db8.* TO test_user_01999;
 GRANT SHOW TABLES ON mew.table4 TO user_1 WITH GRANT OPTION WITH REPLACE OPTION;
 GRANT sqllt_role TO sqllt_user;
 GRANT test_role_01999 to test_user_01999;
-GRANT select ON *.* TO test_user_01999 WITH REPLACE OPTION;
+GRANT USAGE ON *.* TO test_user_01999 WITH REPLACE OPTION;
 REVOKE DROP ON sqllt.view FROM sqllt_user;
 REVOKE GRANT OPTION FOR SELECT(col1) ON db.table FROM test_user_01074;
 REVOKE ADMIN OPTION FOR test_role_01999 FROM  test_user_01999;

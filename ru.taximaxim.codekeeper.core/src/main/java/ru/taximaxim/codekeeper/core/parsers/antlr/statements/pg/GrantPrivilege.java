@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
@@ -177,18 +178,13 @@ public class GrantPrivilege extends PgParserAbstract {
 
             for (String role : roles) {
                 addPrivilege(func, new PgPrivilege(state, permissions,
-                        sb.toString(), role, isGO));
+                        sb.toString(), role, isGO, DatabaseType.PG));
             }
         }
     }
 
-    /**
-     * Вычитывает из контекста привилегию, и применяет её к таблице, сиквенсу,
-     * view, колонкам в таблице
-     * @param ctx_body
-     */
     private void parseColumns(Columns_permissionsContext columnsCtx, List<String> roles) {
-        // собрать информацию о привилегиях на колонки
+        // collect information about column privileges
         Map<String, Entry<IdentifierContext, List<String>>> colPriv = new HashMap<>();
         for (Table_column_privilegesContext priv : columnsCtx.table_column_privileges()) {
             String privName = getFullCtxText(priv.table_column_privilege());
@@ -198,7 +194,7 @@ public class GrantPrivilege extends PgParserAbstract {
             }
         }
 
-        // Разобрать объекты
+        // parse objects
         for (Schema_qualified_nameContext tbl : ctx.rule_member_object().names_references().schema_qualified_name()) {
             setColumnPrivilege(tbl, colPriv, roles);
         }
@@ -221,7 +217,7 @@ public class GrantPrivilege extends PgParserAbstract {
         PgSchema schema = getSchemaSafe(ids);
         ParserRuleContext firstPart = QNameParser.getFirstNameCtx(ids);
 
-        //привилегии пишем так как получили одной строкой
+        // write privileges as we received them in one line
         PgStatement st = (PgStatement) getSafe(PgSchema::getRelation, schema, firstPart);
 
         for (Entry<String, Entry<IdentifierContext, List<String>>> colPriv : colPrivs.entrySet()) {
@@ -235,7 +231,7 @@ public class GrantPrivilege extends PgParserAbstract {
 
             for (String role : roles) {
                 PgPrivilege priv = new PgPrivilege(state, permission.toString(),
-                        "TABLE " + st.getQualifiedName(), role, isGO);
+                        "TABLE " + st.getQualifiedName(), role, isGO, DatabaseType.PG);
                 if (DbObjType.TABLE != st.getStatementType()) {
                     addPrivilege(st, priv);
                 } else {
@@ -305,7 +301,7 @@ public class GrantPrivilege extends PgParserAbstract {
         if (statement != null) {
             for (String role : roles) {
                 addPrivilege(statement, new PgPrivilege(state, permissions,
-                        typeName + " " + statement.getQualifiedName(), role, isGO));
+                        typeName + " " + statement.getQualifiedName(), role, isGO, DatabaseType.PG));
             }
         }
     }

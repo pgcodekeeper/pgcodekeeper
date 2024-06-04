@@ -383,14 +383,14 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
         // in this case for them explicitly added "REVOKE ALL from PUBLIC".
         if (!metPublicRoleGrants && isFunctionOrTypeOrDomain) {
             st.addPrivilege(new PgPrivilege("REVOKE", "ALL" + column,
-                    stType + " " + qualStSignature, "PUBLIC", false));
+                    stType + " " + qualStSignature, "PUBLIC", false, st.getDbType()));
         }
 
         // 'REVOKE ALL' for COLUMN never happened, because of the overlapping
         // privileges from the table.
         if (column.isEmpty() && !metDefaultOwnersGrants) {
             st.addPrivilege(new PgPrivilege("REVOKE", "ALL" + column,
-                    stType + " " + qualStSignature, PgDiffUtils.getQuotedName(owner), false));
+                    stType + " " + qualStSignature, PgDiffUtils.getQuotedName(owner), false, st.getDbType()));
         }
 
         for (Privilege grant : grants) {
@@ -408,7 +408,7 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
             String grantString = grant.grantValues.stream()
                     .collect(Collectors.joining(column + ',', "", column));
             st.addPrivilege(new PgPrivilege("GRANT", grantString,
-                    stType + " " + qualStSignature, grant.grantee, grant.isGO));
+                    stType + " " + qualStSignature, grant.grantee, grant.isGO, st.getDbType()));
         }
     }
 
@@ -446,7 +446,7 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
             }
 
             PgPrivilege priv = new PgPrivilege(state, permission, sb.toString(),
-                    MsDiffUtils.quoteName(role), isWithGrantOption);
+                    MsDiffUtils.quoteName(role), isWithGrantOption, st.getDbType());
 
             if (col != null && st instanceof AbstractTable) {
                 ((AbstractTable) st).getColumn(col).addPrivilege(priv);

@@ -35,18 +35,21 @@ public class PgPrivilege implements IHashable {
     private final String role;
     private final String name;
     private final boolean isGrantOption;
+    private final DatabaseType dbType;
 
     public boolean isRevoke() {
         return "REVOKE".equalsIgnoreCase(getState());
     }
 
-    public PgPrivilege(String state, String permission, String name, String role, boolean isGrantOption) {
+    public PgPrivilege(String state, String permission, String name, String role, boolean isGrantOption, DatabaseType dbType) {
         this.state = state;
         this.permission = permission;
         this.name = name;
         this.role = role;
         this.isGrantOption = isGrantOption;
+        this.dbType = dbType;
     }
+
 
     public String getCreationSQL() {
         StringBuilder sb = new StringBuilder();
@@ -58,7 +61,8 @@ public class PgPrivilege implements IHashable {
         sb.append(isRevoke() ? " FROM ": " TO ").append(getRole());
 
         if (isGrantOption) {
-            sb.append(isRevoke() ? " CASCADE" : WITH_GRANT_OPTION);
+            String cascade = dbType == DatabaseType.CH ? "" : " CASCADE";
+            sb.append(isRevoke() ? cascade : WITH_GRANT_OPTION);
         }
 
         return sb.toString();
@@ -69,7 +73,7 @@ public class PgPrivilege implements IHashable {
             return null;
         }
 
-        return new PgPrivilege("REVOKE", permission, name, role, isGrantOption).getCreationSQL();
+        return new PgPrivilege("REVOKE", permission, name, role, isGrantOption, dbType).getCreationSQL();
     }
 
     public static StringBuilder appendPrivileges(Collection<PgPrivilege> privileges,
@@ -83,7 +87,7 @@ public class PgPrivilege implements IHashable {
         }
 
         for (PgPrivilege priv : privileges) {
-            sb.append(priv.getCreationSQL()).append(dbType == DatabaseType.PG ? ';' : PgStatement.GO).append('\n');
+            sb.append(priv.getCreationSQL()).append(dbType != DatabaseType.MS ? ';' : PgStatement.GO).append('\n');
         }
 
         sb.setLength(sb.length() - 1);
@@ -141,7 +145,7 @@ public class PgPrivilege implements IHashable {
         // FUNCTION/PROCEDURE/AGGREGATE/TYPE/DOMAIN by default has "GRANT ALL to PUBLIC".
         // That's why for them set "GRANT ALL to PUBLIC".
         PgPrivilege priv = new PgPrivilege(isFunctionOrTypeOrDomain ? "GRANT" : "REVOKE",
-                "ALL", name, "PUBLIC", false);
+                "ALL", name, "PUBLIC", false, DatabaseType.PG);
         sb.append('\n').append(priv.getCreationSQL()).append(';');
 
         String owner = newObj.getOwner();
@@ -150,10 +154,10 @@ public class PgPrivilege implements IHashable {
         }
         owner = PgDiffUtils.getQuotedName(owner);
 
-        priv = new PgPrivilege("REVOKE", "ALL", name, owner, false);
+        priv = new PgPrivilege("REVOKE", "ALL", name, owner, false, DatabaseType.PG);
         sb.append('\n').append(priv.getCreationSQL()).append(';');
 
-        priv = new PgPrivilege("GRANT", "ALL", name, owner, false);
+        priv = new PgPrivilege("GRANT", "ALL", name, owner, false, DatabaseType.PG);
         sb.append('\n').append(priv.getCreationSQL()).append(';');
 
         return sb;

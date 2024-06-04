@@ -81,12 +81,11 @@ public class ChIndex extends AbstractIndex {
 
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
-        var newConstr = (ChIndex) newCondition;
-        if (!compareUnalterable(newConstr)) {
+        var newIndex = (ChIndex) newCondition;
+        if (!compareUnalterable(newIndex)) {
             isNeedDepcies.set(true);
             return true;
         }
-
         return false;
     }
 
@@ -105,8 +104,10 @@ public class ChIndex extends AbstractIndex {
         return ((AbstractTable) getParent()).getAlterTable(nextLine, only);
     }
 
-    private boolean compareUnalterable(ChIndex newConstr) {
-        return compare(newConstr);
+    private boolean compareUnalterable(ChIndex newIndex) {
+        return Objects.equals(expr, newIndex.getExpr())
+                && Objects.equals(type, newIndex.getType())
+                && granVal == newIndex.getGranVal();
     }
 
     @Override
@@ -131,10 +132,7 @@ public class ChIndex extends AbstractIndex {
             return false;
         }
         var index = (ChIndex) obj;
-        return super.compare(index)
-                && Objects.equals(expr, index.getExpr())
-                && Objects.equals(type, index.getType())
-                && granVal == index.getGranVal();
+        return super.compare(index) && compareUnalterable(index);
     }
 
     @Override

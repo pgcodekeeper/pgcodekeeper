@@ -441,13 +441,14 @@ class PgAntlrLoaderTest {
 
     @Test
     void testDB6() throws IOException, InterruptedException {
-        AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.PG);
+        DatabaseType dbType = DatabaseType.PG;
+        AbstractDatabase d = TestUtils.createDumpDB(dbType);
         AbstractSchema schema = d.getDefaultSchema();
 
-        schema.addPrivilege(new PgPrivilege("REVOKE", "ALL", "SCHEMA public", "PUBLIC", false));
-        schema.addPrivilege(new PgPrivilege("REVOKE", "ALL", "SCHEMA public", "postgres", false));
-        schema.addPrivilege(new PgPrivilege("GRANT", "ALL", "SCHEMA public", "postgres", false));
-        schema.addPrivilege(new PgPrivilege("GRANT", "ALL", "SCHEMA public", "PUBLIC", false));
+        schema.addPrivilege(new PgPrivilege("REVOKE", "ALL", "SCHEMA public", "PUBLIC", false, dbType));
+        schema.addPrivilege(new PgPrivilege("REVOKE", "ALL", "SCHEMA public", "postgres", false, dbType));
+        schema.addPrivilege(new PgPrivilege("GRANT", "ALL", "SCHEMA public", "postgres", false, dbType));
+        schema.addPrivilege(new PgPrivilege("GRANT", "ALL", "SCHEMA public", "PUBLIC", false, dbType));
 
         AbstractTable table = new SimplePgTable("test_table");
         schema.addTable(table);
@@ -776,13 +777,14 @@ class PgAntlrLoaderTest {
 
     @Test
     void testDB14() throws IOException, InterruptedException {
-        AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.PG);
+        DatabaseType dbType = DatabaseType.PG;
+        AbstractDatabase d = TestUtils.createDumpDB(dbType);
         AbstractSchema schema = d.getDefaultSchema();
 
-        schema.addPrivilege(new PgPrivilege("REVOKE", "ALL", "SCHEMA public", "PUBLIC", false));
-        schema.addPrivilege(new PgPrivilege("REVOKE", "ALL", "SCHEMA public", "postgres", false));
-        schema.addPrivilege(new PgPrivilege("GRANT", "ALL", "SCHEMA public", "postgres", false));
-        schema.addPrivilege(new PgPrivilege("GRANT", "ALL", "SCHEMA public", "PUBLIC", false));
+        schema.addPrivilege(new PgPrivilege("REVOKE", "ALL", "SCHEMA public", "PUBLIC", false, dbType));
+        schema.addPrivilege(new PgPrivilege("REVOKE", "ALL", "SCHEMA public", "postgres", false, dbType));
+        schema.addPrivilege(new PgPrivilege("GRANT", "ALL", "SCHEMA public", "postgres", false, dbType));
+        schema.addPrivilege(new PgPrivilege("GRANT", "ALL", "SCHEMA public", "PUBLIC", false, dbType));
 
         // d.setComment("'comments database'")
         // schema.setComment("'public schema'")

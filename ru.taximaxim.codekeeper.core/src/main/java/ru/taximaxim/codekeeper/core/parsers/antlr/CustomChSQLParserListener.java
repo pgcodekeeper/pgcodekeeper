@@ -35,6 +35,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Create_tabl
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Create_user_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Create_view_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Drop_stmtContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Privilegy_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.QueryContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.AlterChOther;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.AlterChTable;
@@ -42,6 +43,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.ChParserAbstract
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChDictionary;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChFunction;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChPolicy;
+import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.GrantChPrivilege;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChRole;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChSchema;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChTable;
@@ -70,12 +72,15 @@ public final class CustomChSQLParserListener extends CustomParserListener<ChData
             Create_stmtContext createCtx = ddlStmt.create_stmt();
             Alter_stmtContext alter;
             Drop_stmtContext dropCtx;
+            Privilegy_stmtContext privilStmt;
             if (createCtx != null) {
                 create(createCtx, stream);
             } else if ((alter = ddlStmt.alter_stmt()) != null) {
                 alter(alter);
             } else if ((dropCtx = ddlStmt.drop_stmt()) != null) {
                 drop(dropCtx);
+            } else if ((privilStmt = ddlStmt.privilegy_stmt()) != null) {
+                safeParseStatement(new GrantChPrivilege(privilStmt, db, null), ddlStmt);
             } else {
                 addToQueries(query, getAction(query));
             }

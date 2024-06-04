@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Class_typeContext;
@@ -110,14 +111,14 @@ public class GrantMsPrivilege extends MsParserAbstract {
             // 1 privilege for each permission
             for (String per : permissions) {
                 if (columns == null) {
-                    addPrivilege(st, new PgPrivilege(state, per, name.toString(), role, isGO));
+                    addPrivilege(st, new PgPrivilege(state, per, name.toString(), role, isGO, DatabaseType.MS));
                     continue;
                 }
 
                 // column privileges
                 for (IdContext column : columns.id()) {
                     name.append('(').append(MsDiffUtils.quoteName(column.getText())).append(')');
-                    PgPrivilege priv = new PgPrivilege(state, per, name.toString(), role, isGO);
+                    PgPrivilege priv = new PgPrivilege(state, per, name.toString(), role, isGO, DatabaseType.MS);
                     // table column privileges to columns, other columns to statement
                     if (st instanceof AbstractTable) {
                         addPrivilege(getSafe(AbstractTable::getColumn, (AbstractTable) st, column), priv);
@@ -157,7 +158,7 @@ public class GrantMsPrivilege extends MsParserAbstract {
 
     private void parseColumns(Columns_permissionsContext columnsCtx,
             Object_typeContext nameCtx, List<String> roles) {
-        // собрать информацию о привилегиях на колонки
+        // collect information about column privileges
         Map<String, Entry<IdContext, List<String>>> colPriv = new HashMap<>();
         for (Table_column_privilegesContext priv : columnsCtx.table_column_privileges()) {
             String privName = getFullCtxText(priv.permission());
@@ -184,11 +185,10 @@ public class GrantMsPrivilege extends MsParserAbstract {
             for (String pr : colPriv.getValue().getValue()) {
 
                 IdContext col = colPriv.getValue().getKey();
-                String objectName = st.getQualifiedName()
-                        + " (" + MsDiffUtils.quoteName(col.getText()) + ')';
+                String objectName = st.getQualifiedName() + " (" + MsDiffUtils.quoteName(col.getText()) + ')';
 
                 for (String role : roles) {
-                    PgPrivilege priv = new PgPrivilege(state, pr, objectName, role, isGO);
+                    PgPrivilege priv = new PgPrivilege(state, pr, objectName, role, isGO, DatabaseType.MS);
                     if (st instanceof AbstractTable) {
                         addPrivilege(getSafe(AbstractTable::getColumn, (AbstractTable) st, col), priv);
                     } else {

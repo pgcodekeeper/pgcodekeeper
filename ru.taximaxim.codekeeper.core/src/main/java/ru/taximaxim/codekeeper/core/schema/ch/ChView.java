@@ -253,7 +253,7 @@ public class ChView extends AbstractView {
             return;
         }
         sb.append("\n\nALTER TABLE ").append(getQualifiedName()).append("\n\tMODIFY QUERY ").append(newNormalizedSql)
-                .append(getSeparator());
+        .append(getSeparator());
     }
 
     private void compareComment(StringBuilder sb, String newComment) {
