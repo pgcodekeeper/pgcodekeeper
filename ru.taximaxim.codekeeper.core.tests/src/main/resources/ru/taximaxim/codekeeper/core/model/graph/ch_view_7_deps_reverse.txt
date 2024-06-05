@@ -1,0 +1,15 @@
+VIEW default.ch_view_7
+	SCHEMA default
+	TABLE default.hits
+		SCHEMA default
+	TABLE default.visits
+		SCHEMA default
+	COLUMN default.hits.CounterID
+		TABLE default.hits
+			SCHEMA default
+	COLUMN default.visits.CounterID
+		TABLE default.visits
+			SCHEMA default
+	COLUMN default.visits.Sign
+		TABLE default.visits
+			SCHEMA default

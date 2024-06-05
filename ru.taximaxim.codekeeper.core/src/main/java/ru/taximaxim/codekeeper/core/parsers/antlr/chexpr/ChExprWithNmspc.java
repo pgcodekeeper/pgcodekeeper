@@ -21,7 +21,7 @@ import java.util.List;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.ExprContext;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
 
-public class ChExprWithNmspc extends ChAbstractExprWithNmspc<ExprContext> {
+public final class ChExprWithNmspc extends ChAbstractExprWithNmspc<ExprContext> {
 
     private final ChValueExpr expr;
 

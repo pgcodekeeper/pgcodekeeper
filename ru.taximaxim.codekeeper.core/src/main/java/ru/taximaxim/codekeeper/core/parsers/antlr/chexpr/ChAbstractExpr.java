@@ -17,7 +17,6 @@ package ru.taximaxim.codekeeper.core.parsers.antlr.chexpr;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
-import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -26,10 +25,16 @@ import org.antlr.v4.runtime.Token;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.Utils;
+import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Alias_clauseContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Qualified_nameContext;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.IRelation;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
+import ru.taximaxim.codekeeper.core.schema.PgObjLocation.LocationType;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
@@ -66,7 +71,7 @@ public abstract class ChAbstractExpr {
     }
 
     protected ChAbstractExprWithNmspc<?> findCte(String cteName) {
-        return parent == null ? null : parent.findCte(cteName);
+        return hasParent() ? parent.findCte(cteName) : null;
     }
 
     protected boolean hasCte(String cteName) {
@@ -84,30 +89,36 @@ public abstract class ChAbstractExpr {
      *         null if the name is not found
      */
     protected Entry<String, GenericColumn> findReferenceRecursive(String schema, String name) {
-        return parent == null ? null : parent.findReferenceRecursive(schema, name);
+        return !hasParent() ? null : parent.findReferenceRecursive(schema, name);
+    }
+
+    protected void addReferenceInRootParent(Qualified_nameContext name, Alias_clauseContext alias, boolean isFrom) {
+        if (hasParent()) {
+            parent.addReferenceInRootParent(name, alias, isFrom);
+        }
+    }
+
+    protected final boolean hasParent() {
+        return parent != null;
     }
 
     protected final Entry<String, GenericColumn> findReference(String schema, String name) {
-        return findReferenceRecursive(schema, name.toLowerCase(Locale.ROOT));
+        return findReferenceRecursive(schema, name);
     }
 
     protected Pair<IRelation, Pair<String, String>> findColumn(String name) {
-        return parent == null ? null : parent.findColumn(name);
+        return hasParent() ? parent.findColumn(name) : null;
     }
 
     protected IRelation findRelation(String schemaName, String relationName) {
         return meta.findRelation(schemaName, relationName);
     }
 
-    protected void log(String msg, Object... args) {
-        LOG.trace(msg, args);
-    }
-
-    protected void addDepcy(GenericColumn depcy, ParserRuleContext ctx) {
+    protected final void addDepcy(GenericColumn depcy, ParserRuleContext ctx) {
         addDepcy(depcy, ctx, null);
     }
 
-    protected void addDepcy(GenericColumn depcy, ParserRuleContext ctx, Token start) {
+    protected final void addDepcy(GenericColumn depcy, ParserRuleContext ctx, Token start) {
         if (!Utils.isChSystemSchema(depcy.schema)) {
             PgObjLocation loc = new PgObjLocation.Builder()
                     .setObject(depcy)
@@ -120,5 +131,31 @@ public abstract class ChAbstractExpr {
 
             depcies.add(loc);
         }
+    }
+
+    protected final void addReference(GenericColumn depcy, ParserRuleContext ctx, LocationType type) {
+        depcies.add(new PgObjLocation.Builder()
+                .setObject(depcy)
+                .setCtx(ctx)
+                .setLocationType(type)
+                .setAlias(ctx.getText())
+                .build());
+    }
+
+    protected final GenericColumn addObjectDepcy(Qualified_nameContext qualifiedName, DbObjType type) {
+        var ids = qualifiedName.identifier();
+        var schemaCtx = QNameParser.getSchemaNameCtx(ids);
+        var relationName = QNameParser.getFirstName(ids);
+        var relationCtx = QNameParser.getFirstNameCtx(ids);
+        var schemaName = schemaCtx != null ? schemaCtx.getText() : Consts.CH_DEFAULT_DB;
+
+        addDepcy(new GenericColumn(schemaName, DbObjType.SCHEMA), schemaCtx);
+        GenericColumn depcy = new GenericColumn(schemaName, relationName, type);
+        addDepcy(depcy, relationCtx);
+        return depcy;
+    }
+
+    protected final void log(String msg, Object... args) {
+        LOG.trace(msg, args);
     }
 }

@@ -42,6 +42,13 @@ public class DepcyWriterTest {
         "ms_procedure, \\[dbo\\].\\[test_poc\\]",
         "function_circle, public.f1\\(\\)",
         "ch_dictionary, default.dict",
+        "ch_view, default.revenue0",
+        "ch_view_2, default.TestView",
+        "ch_view_3, default.goal_view",
+        "ch_view_4, default.view_join_inner_table",
+        "ch_view_5, default.view_aaa_bbb",
+        "ch_view_6, default.view_columns_transformers",
+        "ch_view_7, default.ch_view_7"
     })
     void compareGraph(String fileName, String objectName) throws IOException, InterruptedException {
         compareGraph(fileName, FILES_POSTFIX.DEPS_TXT, objectName, false);

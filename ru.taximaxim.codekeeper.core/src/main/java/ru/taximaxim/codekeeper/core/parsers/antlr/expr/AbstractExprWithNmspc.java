@@ -289,7 +289,7 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
     public boolean addReference(String alias, GenericColumn object) {
         boolean exists = namespace.containsKey(alias);
         if (exists) {
-            LOG.warn("Duplicate namespace entry: {}", alias);
+            LOG.warn(Consts.DUPLICATE_ALIASES, alias);
         } else {
             namespace.put(alias, object);
         }

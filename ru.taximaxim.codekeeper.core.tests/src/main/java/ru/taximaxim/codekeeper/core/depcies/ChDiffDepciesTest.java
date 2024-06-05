@@ -36,7 +36,17 @@ class ChDiffDepciesTest {
             // test scenario where user drop column. user choice TABLE
             "ch_policy_deps_change_table_usr_t",
             // test scenario where added USER with ROLE dep
-            "ch_add_user_timon_usr_timon"
+            "ch_add_user_timon_usr_timon",
+            // test scenario where user change TABLE. VIEW dependency from TABLE. user choice TABLE
+            "ch_view_deps_change_table_usr_t1",
+            // test scenario where user remove COLUMN in TABLE. VIEW dependency from TABLE. user choice TABLE
+            "ch_view_deps_change_table_usr_t3",
+            // test scenario where user change TABLE. MATERIALIZED VIEW dependency from TABLE. user choice TABLE
+            "ch_mat_view_deps_change_table_usr_t1",
+            // test scenario where user remove COLUMN in TABLE. MATERIALIZED VIEW dependency from TABLE. user choice TABLE
+            "ch_mat_view_deps_change_table_usr_t3",
+            // test scenario where user remove COLUMN in TABLE. VIEW dependency from TABLE. user choice TABLE
+            "ch_view_deps_change_table_usr_t4",
     })
     void testDepcy(final String userSelTemplate) throws IOException, InterruptedException {
         TestUtils.testDepcy(userSelTemplate, true, DatabaseType.CH, getClass());

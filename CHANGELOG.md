@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Added support for DICTIONARY object in ClickHouse.
 - Added support for privileges for USER and ROLE objects in ClickHouse.
+- Added analysis of SELECT command in ClickHouse.
 
 ### Changed
 

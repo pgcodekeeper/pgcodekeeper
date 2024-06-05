@@ -1102,8 +1102,8 @@ expr_list
     ;
 
 expr
-    : expr CAST_EXPRESSION data_type
-    | expr LBRACKET expr RBRACKET
+    : expr CAST_EXPRESSION data_type alias_expr?
+    | expr LBRACKET expr RBRACKET alias_expr?
     | expr IS NOT? NULL
     | (PLUS | MINUS) expr
     | expr op expr
@@ -1113,10 +1113,13 @@ expr
     | NOT expr
     | expr NOT? BETWEEN expr AND expr
     | expr QUESTION expr COLON expr
-    | expr {selectLevel > 0}? alias_clause
     | expr select_mode
-    | expr DOT literal // tuple
-    | expr_primary
+    | expr DOT literal alias_expr? // tuple
+    | expr_primary alias_expr?
+    ;
+
+alias_expr
+    : {selectLevel > 0}? alias_clause  // only available in select
     ;
 
 expr_primary
@@ -1155,6 +1158,7 @@ op
 
 function_call
     : CASE expr? (WHEN expr THEN expr)+ (ELSE expr)? END
+    | COLUMNS LPAREN column=literal RPAREN
     | identifier? CAST LPAREN expr AS data_type RPAREN // when using the data_type rule there are ambiguities with the simple function
     | INTERVAL (expr interval | STRING_LITERAL)
     | EXTRACT LPAREN interval FROM expr RPAREN
@@ -1254,31 +1258,24 @@ interval
     | YEAR
     ;
 
-keyword
+tokens_nonreserved
     : ACCESS
     | ADD
     | ADMIN
     | AFTER
     | AGGREGATE_FUNCTION
     | ALIAS
-    | ALL
     | ALTER
     | AND
-    | ANTI
-    | ANY
     | APPLY
     | ARBITRARY
-    | ARRAY
-    | AS
     | ASCENDING
-    | ASOF
     | ASSUME
     | AST
     | ASYNC
     | ATTACH
     | AUTO_INCREMENT
     | BEGIN
-    | BETWEEN
     | BIGINT
     | BINARY
     | BIT
@@ -1313,7 +1310,6 @@ keyword
     | CONST
     | CONSTRAINT
     | CREATE
-    | CROSS
     | CUBE
     | CURRENT
     | CURRENT_USER
@@ -1339,13 +1335,12 @@ keyword
     | DICTIONARIES
     | DICTIONARY
     | DISK
-    // | DISTINCT
+    | DISTINCT
     | DISTRIBUTED
     | DIV
     | DNS
     | DOUBLE
     | DROP
-    | ELSE
     | EMPTY
     | ENABLED
     | END
@@ -1356,7 +1351,6 @@ keyword
     | EPHEMERAL
     | ESTIMATE
     | EVENTS
-    | EXCEPT
     | EXISTS
     | EXPLAIN
     | EXPRESSION
@@ -1368,7 +1362,6 @@ keyword
     | FILE
     | FILESYSTEM
     | FILL
-    | FINAL
     | FIRST
     | FIXED
     | FIXED_STRING
@@ -1376,43 +1369,33 @@ keyword
     | FLUSH
     | FOLLOWING
     | FOR
-    | FORMAT
     | FREEZE
-    | FROM
-    | FULL
     | FUNCTION
     | FUNCTIONS
     | GEOMETRY
-    | GLOBAL
     | GRANT
     | GRANTEES
     | GRANTS
     | GRANULARITY
-    | GROUP
     | GROUPING
-    | HAVING
     | HDFS
     | HIERARCHICAL
     | HOST
     | ID
     | IDENTIFIED
     | IF
-    | ILIKE
     | IN
     | INDEX
     | INDEXES
     | INDICES
     | INJECTIVE
-    | INNER
     | INSERT
     | INT
     | INT_TYPE
     | INTEGER
     | INTERPOLATE
-    | INTERSECT
     | INTERVAL
     | INTERVAL_TYPE
-    | INTO
     | INTROSPECTION
     | INVOKER
     | IP
@@ -1420,7 +1403,6 @@ keyword
     | IPV6
     | IS
     | IS_OBJECT_ID
-    | JOIN
     | JSON
     | JDBC
     | KEY
@@ -1430,10 +1412,7 @@ keyword
     | LAST
     | LAYOUT
     | LEADING
-    | LEFT
     | LIFETIME
-    | LIKE
-    | LIMIT
     | LIVE
     | LOCAL
     | LOGS
@@ -1469,7 +1448,6 @@ keyword
     | NESTED
     | NO
     | NONE
-    | NOT
     | NOTHING
     | NULLABLE
     | NULLS
@@ -1478,12 +1456,9 @@ keyword
     | OBJECT
     | OBJECT_TYPE
     | ODBC
-    | OFFSET
-    | ON
     | OPTIMIZE
     | OPTION
     | OR
-    | ORDER
     | OUTER
     | OUTFILE
     | OVER
@@ -1491,7 +1466,6 @@ keyword
     | OVERRIDE
     | PART
     | PARTITION
-    | PASTE
     | PERIODIC
     | PERMANENTLY
     | PERMISSIVE
@@ -1504,7 +1478,6 @@ keyword
     | POPULATE
     | PRECEDING
     | PRECISION
-    | PREWHERE
     | PRIMARY
     | PRIVILEGES
     | PROCESSLIST
@@ -1534,7 +1507,6 @@ keyword
     | RESTART
     | RESTRICTIVE
     | REVOKE
-    | RIGHT
     | RING
     | ROLE
     | ROLES
@@ -1542,15 +1514,13 @@ keyword
     | ROLLUP
     | ROW
     | ROWS
-    | SAMPLE
     | SECURITY
-    | SEMI
+    | SELECT
     | SENDS
     | SERVER
     | SET
     | SETS
     | SETTING
-    | SETTINGS
     | SHOW
     | SHUTDOWN
     | SIGNED
@@ -1595,7 +1565,6 @@ keyword
     | UNBOUNDED
     | UNFREEZE
     | UNCOMPRESSED
-    | UNION
     | UNSIGNED
     | UNTIL
     | UPDATE
@@ -1604,8 +1573,6 @@ keyword
     | USE
     | USER
     | USERS
-    | USING
-    | UUID
     | VALID
     | VALUES
     | VARBINARY
@@ -1615,33 +1582,56 @@ keyword
     | VOLUME
     | WATCH
     | WHEN
-    | WHERE
-    | WINDOW
-    | WITH
     | WRITABLE
     ;
 
-keyword_for_alias
-    : FIRST
-    | ID
-    | KEY
-    | TEST
-    | SELECT
-    | DATE
-    | QUERY
-    | INF
-    | NAN
-    ;
-
-alias
-    : IDENTIFIER
-    | keyword_for_alias
-    ;
-
 alias_clause
-    : alias
-    | AS SELECT
-    | AS identifier
+    : AS identifier
+    | id_token
+    ;
+
+tokens_reserved
+    : ALL
+    | ANTI
+    | ANY
+    | ARRAY
+    | AS
+    | ASOF
+    | BETWEEN
+    | CROSS
+    | ELSE
+    | EXCEPT
+    | FINAL
+    | FORMAT
+    | FROM
+    | FULL
+    | GLOBAL
+    | GROUP
+    | HAVING
+    | ILIKE
+    | INNER
+    | INTERSECT
+    | INTO
+    | JOIN
+    | LEFT
+    | LIKE
+    | LIMIT
+    | NOT
+    | OFFSET
+    | ON
+    | ORDER
+    | PASTE
+    | PREWHERE
+    | RIGHT
+    | SAMPLE
+    | SEMI
+    | SETTINGS
+    | UNION
+    | USING
+    | UUID
+    | WHERE
+    | WINDOW
+    | WITH
     ;
 
 identifier_list
@@ -1649,11 +1639,16 @@ identifier_list
     ;
 
 identifier
+    : id_token
+    | tokens_reserved
+    ;
+
+id_token
     : IDENTIFIER
     | DOUBLE_QUOTED_IDENTIFIER
     | BACK_QUOTED_IDENTIFIER
+    | tokens_nonreserved
     | interval
-    | keyword
     | LBRACE identifier COLON IDENTIFIER RBRACE
     ;
 

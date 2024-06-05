@@ -1,0 +1,16 @@
+VIEW default.revenue0
+	SCHEMA default
+	TABLE default.lineitem
+		SCHEMA default
+	COLUMN default.lineitem.l_suppkey
+		TABLE default.lineitem
+			SCHEMA default
+	COLUMN default.lineitem.l_extendedprice
+		TABLE default.lineitem
+			SCHEMA default
+	COLUMN default.lineitem.l_discount
+		TABLE default.lineitem
+			SCHEMA default
+	COLUMN default.lineitem.l_shipdate
+		TABLE default.lineitem
+			SCHEMA default

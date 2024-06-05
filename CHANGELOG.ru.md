@@ -11,6 +11,7 @@
 
 - Добавлена поддержка объекта DICTIONARY в ClickHouse.
 - Добавлена поддержка привилегий для объектов USER, ROLE в ClickHouse.
+- Добавлен анализ команды SELECT в ClickHouse.
 
 ### Изменено
 
