@@ -69,6 +69,11 @@ public interface Consts {
     String DUPLICATE_RELATION = "'42P07'";
     //If object exists we get this error code.
     String DUPLICATE_OBJECT = "'42710'";
+    
+    /**
+     * Log message when in the SELECT part aliases is duplicate
+     */
+    String DUPLICATE_ALIASES = "Duplicate aliases entry: {}";
 
     enum FUNC_SIGN {
         IN("(cstring)"),

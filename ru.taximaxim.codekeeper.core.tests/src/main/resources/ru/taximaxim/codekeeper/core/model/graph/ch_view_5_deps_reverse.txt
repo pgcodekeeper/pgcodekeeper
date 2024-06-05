@@ -1,0 +1,12 @@
+VIEW default.view_aaa_bbb
+	SCHEMA default
+	TABLE default.bbb
+		SCHEMA default
+	TABLE default.aaa
+		SCHEMA default
+	COLUMN default.bbb.id
+		TABLE default.bbb
+			SCHEMA default
+	COLUMN default.aaa.id
+		TABLE default.aaa
+			SCHEMA default

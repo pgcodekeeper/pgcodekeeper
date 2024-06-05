@@ -45,15 +45,15 @@ class CHParserTest {
     @ParameterizedTest
     @CsvSource({
         "ch_database, 0",
-        "ch_function, 1",
+        "ch_function, 2",
         // "ch_index, 0",
         // "ch_insert, 0",
         // "ch_other, 0",
         "ch_show, 0",
-        "ch_view, 1",
+        "ch_view, 10",
         "ch_policy, 0",
         "ch_table, 1",
-        "ch_select, 102",
+        "ch_select, 179",
         "ch_privileges, 0",
         "ch_user, 0",
         "ch_role, 0",

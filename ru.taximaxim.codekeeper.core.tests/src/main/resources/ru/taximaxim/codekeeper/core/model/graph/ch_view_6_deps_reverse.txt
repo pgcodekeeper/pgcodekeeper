@@ -1,0 +1,22 @@
+VIEW default.view_columns_transformers
+	SCHEMA default
+	TABLE default.columns_transformers
+		SCHEMA default
+	COLUMN default.columns_transformers.i
+		TABLE default.columns_transformers
+			SCHEMA default
+	COLUMN default.columns_transformers.j
+		TABLE default.columns_transformers
+			SCHEMA default
+	COLUMN default.columns_transformers.k
+		TABLE default.columns_transformers
+			SCHEMA default
+	COLUMN default.columns_transformers.a_bytes
+		TABLE default.columns_transformers
+			SCHEMA default
+	COLUMN default.columns_transformers.b_bytes
+		TABLE default.columns_transformers
+			SCHEMA default
+	COLUMN default.columns_transformers.c_bytes
+		TABLE default.columns_transformers
+			SCHEMA default

@@ -26,6 +26,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.As_table_aliasContext;
@@ -149,7 +150,7 @@ public abstract class MsAbstractExprWithNmspc<T> extends MsAbstractExpr {
         String aliasCi = alias.toLowerCase(Locale.ROOT);
         boolean exists = namespace.containsKey(aliasCi);
         if (exists) {
-            log("Duplicate namespace entry: {}", aliasCi);
+            log(Consts.DUPLICATE_ALIASES, aliasCi);
         } else {
             namespace.put(aliasCi, object);
         }

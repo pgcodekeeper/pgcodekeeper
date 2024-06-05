@@ -1,0 +1,21 @@
+VIEW default.goal_view
+	SCHEMA default
+	TABLE default.goal
+		SCHEMA default
+	TABLE default.visits
+		SCHEMA default
+	COLUMN default.visits.CounterID
+		TABLE default.visits
+			SCHEMA default
+	COLUMN default.visits.StartDate
+		TABLE default.visits
+			SCHEMA default
+	COLUMN default.visits.Sign
+		TABLE default.visits
+			SCHEMA default
+	COLUMN default.visits.GoalsID
+		TABLE default.visits
+			SCHEMA default
+	COLUMN default.visits.GID
+		TABLE default.visits
+			SCHEMA default

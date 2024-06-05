@@ -1,0 +1,13 @@
+VIEW default.TestView
+	SCHEMA default
+	TABLE default.Test_00584
+		SCHEMA default
+	COLUMN default.Test_00584.str
+		TABLE default.Test_00584
+			SCHEMA default
+	COLUMN default.Test_00584.key
+		TABLE default.Test_00584
+			SCHEMA default
+	COLUMN default.Test_00584.a
+		TABLE default.Test_00584
+			SCHEMA default

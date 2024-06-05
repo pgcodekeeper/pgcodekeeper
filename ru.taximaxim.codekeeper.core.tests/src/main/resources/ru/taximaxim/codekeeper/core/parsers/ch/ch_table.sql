@@ -867,6 +867,7 @@ CREATE TABLE tuple ENGINE = Memory AS SELECT CAST((1, 'Test'), 'Tuple(a Int8, b 
 create table defaulted (col1 Int8, col2 UInt64 default (SELECT dummy+99 from system.one)) engine=Memory;
 CREATE TABLE polygons_01862 (key Array(Array(Array(Tuple(Float64, Float64)))), name String) ENGINE = Memory;
 CREATE TABLE default_constraints (x UInt8, y UInt8 DEFAULT x + 1, CONSTRAINT c CHECK y < 5) ENGINE = Memory;
+CREATE OR REPLACE TABLE test_query_log_factories_info1.memory_table (id BIGINT, date DATETIME) ENGINE=Memory();
 CREATE TABLE t_constraints_where
 (
     a UInt32,
