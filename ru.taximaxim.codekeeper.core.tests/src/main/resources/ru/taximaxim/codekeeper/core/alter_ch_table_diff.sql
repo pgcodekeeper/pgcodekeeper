@@ -18,7 +18,7 @@ ALTER TABLE default.t2_1
 	DROP INDEX ind1;
 
 ALTER TABLE default.t2_1
-	DROP COLUMN col2;
+	DROP COLUMN `col2`;
 
 ALTER TABLE default.t1_1
 	DROP PROJECTION IF EXISTS proj1;
@@ -39,7 +39,7 @@ ALTER TABLE default.t1_2
 	ADD PROJECTION proj1 (SELECT * ORDER BY col2);
 
 ALTER TABLE default.t2_2
-	ADD COLUMN col2 Int64;
+	ADD COLUMN `col2` Int64;
 
 ALTER TABLE default.t2_2 ADD INDEX ind3 col1 > col2 TYPE bloom_filter;
 

@@ -146,7 +146,9 @@ public final class ChDictionary extends PgStatement implements IRelation {
     @Override
     public String getCreationSQL() {
         var sb = new StringBuilder();
-        sb.append("CREATE DICTIONARY ").append(getQualifiedName());
+        sb.append("CREATE DICTIONARY ");
+        appendIfNotExists(sb);
+        sb.append(getQualifiedName());
         appendColumns(sb);
         if (pk != null) {
             sb.append("\nPRIMARY KEY ").append(pk);

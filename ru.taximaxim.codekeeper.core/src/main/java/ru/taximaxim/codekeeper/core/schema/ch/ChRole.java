@@ -39,6 +39,7 @@ public final class ChRole extends PgStatement {
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE ROLE ");
+        appendIfNotExists(sbSQL);
         sbSQL.append(ChDiffUtils.getQuotedName(getName()));
         if (!DEF_STORAGE.equals(storageType)) {
             sbSQL.append("\n\tIN ").append(storageType);

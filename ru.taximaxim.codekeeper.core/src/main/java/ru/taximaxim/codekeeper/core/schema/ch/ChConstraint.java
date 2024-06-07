@@ -79,7 +79,7 @@ public class ChConstraint extends AbstractConstraint {
         appendAlterTable(sb, false);
         sb.append("\n\tDROP CONSTRAINT ");
         if (optionExists) {
-            sb.append("IF EXISTS ");
+            sb.append(IF_EXISTS);
         }
         sb.append(ChDiffUtils.getQuotedName(getName())).append(getSeparator());
         return sb.toString();

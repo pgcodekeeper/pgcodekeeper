@@ -131,7 +131,7 @@ public class PgUserMapping extends PgStatement implements PgForeignOptionContain
         final StringBuilder sbString = new StringBuilder();
         sbString.append("DROP USER MAPPING ");
         if (generateExists) {
-            sbString.append("IF EXISTS ");
+            sbString.append(IF_EXISTS);
         }
         sbString.append("FOR ").append(getQualifiedName());
         sbString.append(';');

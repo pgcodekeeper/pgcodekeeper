@@ -66,7 +66,9 @@ public class ChUser extends PgStatement {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
-        sbSQL.append("CREATE USER ").append(ChDiffUtils.getQuotedName(getName()));
+        sbSQL.append("CREATE USER ");
+        appendIfNotExists(sbSQL);
+        sbSQL.append(ChDiffUtils.getQuotedName(getName()));
         if (!hosts.isEmpty()) {
             sbSQL.append(DELIM).append("HOST ").append(String.join(", ", hosts));
         }
