@@ -215,7 +215,7 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
             dropSb.append(getAlterTable(false, addOnly))
             .append("\n\tDROP COLUMN ");
             if (optionExists) {
-                dropSb.append("IF EXISTS ");
+                dropSb.append(IF_EXISTS);
             }
             dropSb.append(PgDiffUtils.getQuotedName(getName())).append(";");
             return dropSb.toString();

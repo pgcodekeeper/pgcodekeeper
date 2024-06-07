@@ -105,7 +105,7 @@ public final class ChColumn extends AbstractColumn {
         var sb = new StringBuilder();
         sb.append(getAlterTable(false, false)).append("\n\tADD COLUMN ");
         appendIfNotExists(sb);
-        sb.append(ChDiffUtils.getQuotedName(name));
+        sb.append(ChDiffUtils.quoteName(name));
 
         if (getType() != null) {
             sb.append(' ').append(getType());
@@ -165,9 +165,9 @@ public final class ChColumn extends AbstractColumn {
         final StringBuilder sb = new StringBuilder();
         sb.append(getAlterTable(false, false)).append("\n\tDROP COLUMN ");
         if (optionExists) {
-            sb.append("IF EXISTS ");
+            sb.append(IF_EXISTS);
         }
-        sb.append(ChDiffUtils.getQuotedName(getName())).append(getSeparator());
+        sb.append(ChDiffUtils.quoteName(name)).append(getSeparator());
         return sb.toString();
     }
 
@@ -235,19 +235,25 @@ public final class ChColumn extends AbstractColumn {
         }
         sb.append(getAlterTable(true, false));
         if (newComment == null) {
-            sb.append(" MODIFY COLUMN ").append(ChDiffUtils.getQuotedName(name)).append(" REMOVE COMMENT");
+            sb.append(" MODIFY COLUMN ").append(ChDiffUtils.quoteName(name)).append(" REMOVE COMMENT");
         } else {
             sb.append(" COMMENT COLUMN ");
-            appendIfNotExists(sb);
-            sb.append(ChDiffUtils.getQuotedName(name)).append(' ').append(newComment);
+            appendIfExists(sb);
+            sb.append(ChDiffUtils.quoteName(name)).append(' ').append(newComment);
         }
         sb.append(getSeparator());
     }
 
     private void appendAlterColumn(StringBuilder sb, boolean nextLine) {
         sb.append(getAlterTable(nextLine, false)).append(" MODIFY COLUMN ");
-        appendIfNotExists(sb);
-        sb.append(ChDiffUtils.getQuotedName(name));
+        appendIfExists(sb);
+        sb.append(ChDiffUtils.quoteName(name));
+    }
+
+    private void appendIfExists(StringBuilder sb) {
+        if (getDatabaseArguments().isGenerateExists()) {
+            sb.append(IF_EXISTS);
+        }
     }
 
     @Override

@@ -87,7 +87,9 @@ public class ChSchema extends AbstractSchema {
     @Override
     public String getCreationSQL() {
         var sb = new StringBuilder();
-        sb.append("CREATE DATABASE ").append(getQualifiedName()).append("\nENGINE = ").append(engine);
+        sb.append("CREATE DATABASE ");
+        appendIfNotExists(sb);
+        sb.append(getQualifiedName()).append("\nENGINE = ").append(engine);
         if (getComment() != null) {
             sb.append("\nCOMMENT ").append(getComment());
         }
@@ -109,7 +111,7 @@ public class ChSchema extends AbstractSchema {
         final StringBuilder sb = new StringBuilder();
         sb.append("DROP DATABASE ");
         if (generateExists) {
-            sb.append("IF EXISTS ");
+            sb.append(IF_EXISTS);
         }
         appendFullName(sb);
         sb.append(getSeparator());

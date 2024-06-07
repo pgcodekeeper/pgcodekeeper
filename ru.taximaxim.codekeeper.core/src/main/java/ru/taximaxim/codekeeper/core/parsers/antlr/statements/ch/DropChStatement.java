@@ -20,8 +20,10 @@ import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
+import ru.taximaxim.codekeeper.core.DangerStatement;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Drop_stmtContext;
+import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 
 public class DropChStatement extends ChParserAbstract {
@@ -42,7 +44,8 @@ public class DropChStatement extends ChParserAbstract {
         } else if (element.VIEW() != null) {
             addObjReference(getIdentifiers(element.qualified_name()), DbObjType.VIEW, ACTION_DROP);
         } else if (element.TABLE() != null) {
-            addObjReference(getIdentifiers(element.qualified_name()), DbObjType.TABLE, ACTION_DROP);
+            PgObjLocation loc = addObjReference(getIdentifiers(element.qualified_name()), DbObjType.TABLE, ACTION_DROP);
+            loc.setWarning(DangerStatement.DROP_TABLE);
         } else if (element.FUNCTION() != null) {
             addObjReference(Arrays.asList(ctx.drop_element().name_with_cluster().identifier()),
                     DbObjType.FUNCTION, ACTION_DROP);

@@ -3,7 +3,7 @@
 DROP VIEW default.v2;
 
 ALTER TABLE default.t3
-	DROP COLUMN b;
+	DROP COLUMN `b`;
 
 CREATE VIEW default.v2
 (

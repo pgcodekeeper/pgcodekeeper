@@ -119,7 +119,7 @@ public abstract class PgConstraint extends AbstractConstraint {
         appendAlterTable(sbSQL, false);
         sbSQL.append("\n\tDROP CONSTRAINT ");
         if (optionExists) {
-            sbSQL.append("IF EXISTS ");
+            sbSQL.append(IF_EXISTS);
         }
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));
         sbSQL.append(';');

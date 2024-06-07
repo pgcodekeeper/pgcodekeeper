@@ -57,6 +57,8 @@ public abstract class PgStatement implements IStatement, IHashable {
 
     private static final Logger LOG = LoggerFactory.getLogger(PgStatement.class);
 
+    protected static final String IF_EXISTS = "IF EXISTS ";
+
     //TODO move to MS SQL statement abstract class.
     public static final String GO = "\nGO";
     protected final String name;
@@ -470,7 +472,7 @@ public abstract class PgStatement implements IStatement, IHashable {
         final StringBuilder sbString = new StringBuilder();
         sbString.append("DROP ").append(getTypeName()).append(' ');
         if (generateExists) {
-            sbString.append("IF EXISTS ");
+            sbString.append(IF_EXISTS);
         }
         appendFullName(sbString);
         sbString.append(getSeparator());

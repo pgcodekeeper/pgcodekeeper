@@ -67,7 +67,9 @@ public class ChTable extends AbstractTable {
     @Override
     public String getCreationSQL() {
         var sb = new StringBuilder();
-        sb.append("CREATE TABLE ").append(getQualifiedName()).append("\n(");
+        sb.append("CREATE TABLE ");
+        appendIfNotExists(sb);
+        sb.append(getQualifiedName()).append("\n(");
 
         for (AbstractColumn column : columns) {
             sb.append("\n\t").append(column.getFullDefinition()).append(",");

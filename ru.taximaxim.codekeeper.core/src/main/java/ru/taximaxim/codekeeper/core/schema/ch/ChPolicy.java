@@ -52,7 +52,13 @@ public final class ChPolicy extends AbstractPolicy {
     }
 
     private void appendFullSQL(StringBuilder sbSQL, boolean isCreate) {
-        sbSQL.append(isCreate ? "CREATE" : "ALTER").append(" POLICY ").append(name);
+        sbSQL.append(isCreate ? "CREATE" : "ALTER").append(" POLICY ");
+
+        if (isCreate) {
+            appendIfNotExists(sbSQL);
+        }
+
+        sbSQL.append(name);
 
         if (event != null) {
             sbSQL.append("\n  FOR ").append(event);

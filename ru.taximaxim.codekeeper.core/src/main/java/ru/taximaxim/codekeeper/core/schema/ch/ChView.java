@@ -156,6 +156,7 @@ public class ChView extends AbstractView {
     public String getCreationSQL() {
         StringBuilder sb = new StringBuilder(getQuery().length() * 2);
         sb.append("CREATE ").append(type.getSql()).append(" ");
+        appendIfNotExists(sb);
         appendFullName(sb);
 
         if (getDestination() != null) {

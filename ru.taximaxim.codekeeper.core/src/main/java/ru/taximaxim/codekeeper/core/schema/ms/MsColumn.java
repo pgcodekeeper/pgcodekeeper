@@ -317,7 +317,7 @@ public class MsColumn extends AbstractColumn {
         final StringBuilder sbString = new StringBuilder();
         sbString.append(getAlterTable(false, false)).append("\n\tDROP COLUMN ");
         if (optionExists) {
-            sbString.append("IF EXISTS ");
+            sbString.append(IF_EXISTS);
         }
         sbString.append(MsDiffUtils.getQuotedName(getName())).append(GO);
         return sbString.toString();

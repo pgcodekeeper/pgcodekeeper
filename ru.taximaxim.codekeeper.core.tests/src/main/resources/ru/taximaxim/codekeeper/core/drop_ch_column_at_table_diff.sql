@@ -1,2 +1,2 @@
 ALTER TABLE default.t
-	DROP COLUMN col1;
+	DROP COLUMN `col1`;

@@ -97,7 +97,7 @@ public class MsAssembly extends PgStatement {
         StringBuilder dropSb = new StringBuilder();
         dropSb.append("DROP ASSEMBLY ");
         if (optionExists) {
-            dropSb.append("IF EXISTS ");
+            dropSb.append(IF_EXISTS);
         }
         dropSb.append(MsDiffUtils.quoteName(name))
         .append(" WITH NO DEPENDENTS")

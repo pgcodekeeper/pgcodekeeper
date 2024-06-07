@@ -17,12 +17,14 @@ package ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch;
 
 import java.util.Arrays;
 
+import ru.taximaxim.codekeeper.core.DangerStatement;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Alter_table_actionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Alter_table_stmtContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
+import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 
 public class AlterChTable extends ChParserAbstract {
@@ -40,8 +42,16 @@ public class AlterChTable extends ChParserAbstract {
         var schemaCtx = QNameParser.getSchemaNameCtx(ids);
         var nameCtx = QNameParser.getFirstNameCtx(ids);
         AbstractTable table = getSafe(AbstractSchema::getTable, getSchemaSafe(ids), nameCtx);
-        addObjReference(ids, DbObjType.TABLE, ACTION_ALTER);
+        PgObjLocation loc = addObjReference(ids, DbObjType.TABLE, ACTION_ALTER);
         for (Alter_table_actionContext alterAction : ctx.alter_table_actions().alter_table_action()) {
+            if (alterAction.UPDATE() != null) {
+                loc.setWarning(DangerStatement.UPDATE);
+            } else if (alterAction.DROP() != null && alterAction.alter_table_drop_action().COLUMN() != null) {
+                loc.setWarning(DangerStatement.DROP_COLUMN);
+            } else if (alterAction.MODIFY() != null && alterAction.alter_table_modify_action().COLUMN() != null) {
+                loc.setWarning(DangerStatement.ALTER_COLUMN);
+            }
+
             if (alterAction.ADD() == null) {
                 continue;
             }
