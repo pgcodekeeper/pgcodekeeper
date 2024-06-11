@@ -9,6 +9,14 @@
 
 ### Добавлено
 
+### Изменено
+
+### Исправлено
+
+## [9.8.0] - 2024-06-11
+
+### Добавлено
+
 - Добавлена поддержка объекта DICTIONARY в ClickHouse.
 - Добавлена поддержка привилегий для объектов USER, ROLE в ClickHouse.
 - Добавлен анализ команды SELECT в ClickHouse.
@@ -17,8 +25,6 @@
 ### Изменено
 
 - Исправлены ошибки в ​​генерации кода в ClickHouse.
-
-### Исправлено
 
 ## [9.7.0] - 2024-05-28
 
@@ -1942,7 +1948,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.7.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.8.0...HEAD
+[9.8.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.7.0...v9.8.0
 [9.7.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.6.0...v9.7.0
 [9.6.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.5.1...v9.6.0
 [9.5.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.5.0...v9.5.1

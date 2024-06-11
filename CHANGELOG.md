@@ -9,12 +9,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [9.8.0] - 2024-06-11
+
+### Added
+
 - Added support for DICTIONARY object in ClickHouse.
 - Added support for privileges for USER and ROLE objects in ClickHouse.
 - Added analysis of SELECT command in ClickHouse.
 - Added dangerous statements mechanism support in ClickHouse;
-
-### Changed
 
 ### Fixed
 
@@ -1941,7 +1947,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.7.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.8.0...HEAD
+[9.8.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.7.0...v9.8.0
 [9.7.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.6.0...v9.7.0
 [9.6.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.5.1...v9.6.0
 [9.5.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.5.0...v9.5.1
