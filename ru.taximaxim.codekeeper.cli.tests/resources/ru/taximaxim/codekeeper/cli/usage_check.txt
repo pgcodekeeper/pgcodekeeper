@@ -39,8 +39,8 @@ Usage
                                           transaction statements
  -F (--no-check-function-bodies)        : set check_function_bodies to false at
                                           the beginning of the script
- --enable-function-bodies-dependencies  : enable dependencies from bodies of
-                                          functions and procedures to other
+ -f (--enable-function-bodies-dependenc : enable dependencies from bodies of
+ ies)                                     functions and procedures to other
                                           functions or procedures
  -Z (--time-zone) <timezone>            : use this timezone when working with
                                           database, also add SET TIMEZONE
@@ -59,7 +59,7 @@ Usage
                                           paths
  --ignore-column-order                  : ignore differences in table column
                                           order
- --generate-constraint-not-valid        : print CONSTRAINT NOT VALID for no
+ -v (--generate-constraint-not-valid)   : print CONSTRAINT NOT VALID for no
                                           partitioned tables
  --using-off                            : do not print USING expression for
                                           ALTER COLUMN TYPE
@@ -124,7 +124,7 @@ Usage
                                           library objects
                                           otherwise, in case of conflicts
                                           objects loaded first have priority
- --ignore-concurrent-modification       : ignore concurrent modification errors
+ -m (--ignore-concurrent-modification)  : ignore concurrent modification errors
                                           of database objects
  --ms-sql                               : work with MS SQL. Deprecated option.
                                           Use --db-type instead of this

@@ -347,7 +347,7 @@ class AddConstraintNotValid extends ArgumentsProvider {
         Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
         Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
 
-        return new String[] {"--generate-constraint-not-valid", "-o", getDiffResultFile().toString(),
+        return new String[] {"-v", "-o", getDiffResultFile().toString(),
                 fNew.toString(), fOriginal.toString()};
     }
 }

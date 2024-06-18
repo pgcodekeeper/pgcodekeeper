@@ -163,7 +163,7 @@ public class CliArgs extends PgDiffArguments {
             usage="set check_function_bodies to false at the beginning of the script")
     private boolean disableCheckFunctionBodies;
 
-    @Option(name="--enable-function-bodies-dependencies", forbids={"--parse"},
+    @Option(name="-f", aliases="--enable-function-bodies-dependencies", forbids={"--parse"},
             usage="enable dependencies from bodies of functions and procedures to other functions or procedures")
     private boolean enableFunctionBodiesDependencies;
 
@@ -187,7 +187,7 @@ public class CliArgs extends PgDiffArguments {
             usage="ignore differences in table column order")
     private boolean ignoreColumnOrder;
 
-    @Option(name="--generate-constraint-not-valid",
+    @Option(name="-v", aliases="--generate-constraint-not-valid",
             usage="print CONSTRAINT NOT VALID for no partitioned tables")
     private boolean generateConstraintNotValid;
 
@@ -286,7 +286,7 @@ public class CliArgs extends PgDiffArguments {
                     + "\notherwise, in case of conflicts objects loaded first have priority")
     private boolean libSafeMode;
 
-    @Option(name="--ignore-concurrent-modification",
+    @Option(name="-m", aliases="--ignore-concurrent-modification",
             usage="ignore concurrent modification errors of database objects")
     private boolean ignoreConcurrentModification;
 
