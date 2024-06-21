@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed missing reading of some types of objects when working with a ClickHouse project via CLI.
+
 ## [9.8.0] - 2024-06-11
 
 ### Added

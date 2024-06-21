@@ -130,7 +130,13 @@ public class ProjectLoader extends DatabaseLoader {
     }
 
     private void loadChStructure(Path dir, AbstractDatabase db) throws InterruptedException, IOException {
-        loadPgChStructure(dir, db, WorkDirs.CH_DATABASE);
+        for (String dirName : WorkDirs.getDirectoryNames(DatabaseType.CH)) {
+            if (WorkDirs.CH_DATABASE.equals(dirName)) {
+                loadPgChStructure(dir, db, dirName);
+            } else {
+                loadSubdir(dir, dirName, db, this::checkIgnoreSchemaList);
+            }
+        }
     }
 
     private void loadPgStructure(Path dir, AbstractDatabase db) throws InterruptedException, IOException {
