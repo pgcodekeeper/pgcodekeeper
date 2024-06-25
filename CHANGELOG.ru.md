@@ -9,9 +9,15 @@
 
 ### Добавлено
 
-- Добавлены алиасы для некоторых длинных CLI опций.
-
 ### Изменено
+
+### Исправлено
+
+## [9.9.0] - 2024-06-25
+
+### Добавлено
+
+- Добавлены алиасы для некоторых длинных CLI опций.
 
 ### Исправлено
 
@@ -1952,7 +1958,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.8.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.9.0...HEAD
+[9.9.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.8.0...v9.9.0
 [9.8.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.7.0...v9.8.0
 [9.7.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.6.0...v9.7.0
 [9.6.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.5.1...v9.6.0
